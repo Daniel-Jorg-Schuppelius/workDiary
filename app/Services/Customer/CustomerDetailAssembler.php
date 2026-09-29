@@ -15,17 +15,13 @@ use App\Models\Audit\AuditLog;
 use App\Models\Classification\ActivityCategory;
 use App\Models\Customer\Customer;
 use App\Models\Domain\{DomainProjection, DomainResellerAccount};
-use App\Models\Integration\ExternalReference;
 use App\Models\Invoicing\Invoice;
 use App\Models\Material\MaterialCostAllocation;
 use App\Models\Platform\User;
-use App\Models\Plugins\Lexoffice\LexofficeVoucher;
 use App\Models\Reselling\ResaleSubscription;
 use App\Models\Time\TimeEntry;
-use App\Plugins\Contracts\PluginCapability;
-use App\Plugins\Lexoffice\LexofficePlugin;
-use App\Plugins\PluginManager;
-use App\Services\Billing\{CustomerAccountStatementService, RetainerChannelResolver};
+use App\Services\Billing\Contracts\ExternalRevenue;
+use App\Services\Billing\{CustomerAccountStatementService, PartyDocumentSources, RetainerChannelResolver};
 use App\Services\Licensing\FeatureFlagResolver;
 use App\Services\Stammdaten\IdentifierIssueDetector;
 use App\Services\Timeline\DiaryEntryTimelineService;
@@ -45,7 +41,6 @@ use Illuminate\Support\Facades\{DB, Gate};
  */
 class CustomerDetailAssembler {
     public function __construct(
-        private readonly PluginManager $plugins,
         private readonly CustomerStatsService $stats,
         private readonly CustomerTrendBuilder $trends,
         private readonly DiaryEntryTimelineService $timeline,
@@ -53,6 +48,8 @@ class CustomerDetailAssembler {
         private readonly CustomerAccountStatementService $accountStatements,
         private readonly FeatureFlagResolver $featureFlags,
         private readonly RetainerChannelResolver $retainerChannels,
+        private readonly ExternalRevenue $externalRevenue,
+        private readonly PartyDocumentSources $partyDocuments,
     ) {}
 
     /**
@@ -92,26 +89,8 @@ class CustomerDetailAssembler {
             ->whereBetween('date', DateRange::days($rangeFrom, $rangeTo))
             ->sum('rate');
 
-        $lexoffice = $this->plugins->withCapability(PluginCapability::TimeExport)->get(LexofficePlugin::ID);
-        $lexofficeContactRef = $lexoffice
-            ? ExternalReference::query()
-            ->forPlugin($customer->organization_id, LexofficePlugin::ID, LexofficePlugin::EXT_TYPE_CONTACT)
-            ->forReferenceable($customer)
-            ->first()
-            : null;
-        $lexofficeVouchers = $lexoffice
-            ? ExternalReference::query()
-            ->forPlugin($customer->organization_id, LexofficePlugin::ID, LexofficePlugin::EXT_TYPE_VOUCHER)
-            ->forReferenceable($customer)
-            ->orderByDesc('synced_at')
-            ->limit(10)
-            ->get()
-            : collect();
-
-        // Lexoffice-Belege auf den globalen Header-Zeitraum eingrenzen (wie die übrigen zeitraumbezogenen Ansichten).
-        $lexofficeVoucherRange = $globalRange;
-
-        // Lokale Rechnungen desselben Kunden im Header-Zeitraum (ergänzen die Lexoffice-Belege zur Rechnungssicht).
+        // Lokale Rechnungen desselben Kunden im Header-Zeitraum; die Belege der
+        // Buchhaltungsprogramme ergänzen sie zur Rechnungssicht (MVP-1038).
         $localInvoices = Gate::forUser($user)->allows('viewAny', Invoice::class)
             ? Invoice::query()
             ->where('customer_id', $customer->getKey())
@@ -121,32 +100,12 @@ class CustomerDetailAssembler {
             ->get()
             : collect();
 
-        // Lexoffice-Belege desselben Kunden im Header-Zeitraum (Belegsicht +
-        // fakturierter Umsatz der KPI).
-        $lexofficeVoucherCache = $lexoffice
-            ? LexofficeVoucher::query()
-            ->where('customer_id', $customer->getKey())
-            ->where('archived', false)
-            ->whereBetween('voucher_date', [$rangeFrom, $rangeTo])
-            ->orderByDesc('voucher_date')
-            ->limit(500)
-            // Alle Kopfspalten, aber ohne den longtext-Payload je Beleg
-            // (Vollscan 2026-08-23, A9) — die Belegliste zeigt nur Kopfdaten.
-            ->get(['id', 'organization_id', 'external_id', 'contact_external_id', 'customer_id', 'supplier_id', 'voucher_type', 'voucher_status', 'voucher_number', 'voucher_date', 'due_date', 'paid_date', 'total_amount', 'open_amount', 'net_amount', 'currency', 'archived', 'synced_at', 'created_at', 'updated_at'])
-            : collect();
-
-        // Tatsächlich fakturierter Umsatz im Zeitraum (Lexoffice-Belege + lokale
-        // Rechnungen) — ergänzt den kalkulatorischen Umsatz aus erfassten Zeiten.
-        // Gleiche Logik wie die Rechnungssumme in partials/_vouchers.
-        $invoicedRange = 0.0;
+        // Tatsächlich fakturierter Umsatz im Zeitraum — dieselbe Abgrenzung wie
+        // der Umsatztrend (Rechnungsarten ohne Stornos, ohne archivierte Belege).
+        $invoicedRange = array_sum($this->externalRevenue->monthlyRevenue((int) $customer->getKey(), $rangeFrom, $rangeTo));
         foreach ($localInvoices as $inv) {
             if (in_array($inv->type, CustomerTrendBuilder::INVOICE_TYPES, true) && ! in_array($inv->status, CustomerTrendBuilder::VOID_STATUSES, true)) {
                 $invoicedRange += $inv->total?->toFloat() ?? 0.0;
-            }
-        }
-        foreach ($lexofficeVoucherCache as $voucher) {
-            if (in_array($voucher->voucher_type, CustomerTrendBuilder::INVOICE_TYPES, true) && ! in_array($voucher->voucher_status, CustomerTrendBuilder::VOID_STATUSES, true)) {
-                $invoicedRange += $voucher->total_amount?->toFloat() ?? 0.0;
             }
         }
 
@@ -322,12 +281,9 @@ class CustomerDetailAssembler {
             'inventoryModuleActive' => $this->featureFlags->isEnabled('module.lager'),
             'chartHours' => $monthlyTrends['hours'],
             'chartRevenue' => $monthlyTrends['revenue'],
-            'lexofficePlugin' => $lexoffice,
-            'lexofficeContactRef' => $lexofficeContactRef,
-            'lexofficeVouchers' => $lexofficeVouchers,
-            'lexofficeVoucherRange' => $lexofficeVoucherRange,
             'localInvoices' => $localInvoices,
-            'lexofficeVoucherCache' => $lexofficeVoucherCache,
+            'externalDocuments' => $this->partyDocuments->forParty($customer, $rangeFrom, $rangeTo),
+            'voucherRange' => $globalRange,
             'peppolLookup' => $peppolLookup,
             // Kundenvereinbarungen (Feature 157): AVV/NDA-Verträge dieses Kunden
             // mit ihrer neuesten Fassung — ohne Modul/Recht bleibt das Panel weg.

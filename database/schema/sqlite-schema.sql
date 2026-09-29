@@ -23816,3 +23816,4 @@ INSERT INTO migrations VALUES(935,'2027_02_28_216000_neutral_service_article_ref
 INSERT INTO migrations VALUES(936,'2027_02_28_217000_retainer_voucher_links_as_external_references',47);
 INSERT INTO migrations VALUES(937,'2027_02_28_218000_accounting_numbers_in_external_references',47);
 INSERT INTO migrations VALUES(938,'2027_02_28_219000_document_mirror_detachments',48);
+INSERT INTO migrations VALUES(939,'2027_02_28_220000_msgraph_oof_setting_to_plugin',49);

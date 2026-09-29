@@ -38,7 +38,9 @@ use Throwable;
  * Bewusst ohne Sync-Capability: die Spiegelung ist ereignisgetrieben
  * (Freigabe → Outbox), kein providerneutraler Abgleicheinstieg.
  */
-class SharepointPlugin extends AbstractPlugin {
+class SharepointPlugin extends AbstractPlugin implements \App\Plugins\Contracts\InboxConflictActions {
+    use \App\Plugins\Support\Mirror\MirrorConflictActions;
+
     public const ID = 'sharepoint';
 
     public const SERVICE_PROVIDER = SharepointServiceProvider::class;

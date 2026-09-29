@@ -221,4 +221,10 @@ return [
             'capacity' => 'Staff shortages',
         ],
     ],
+    'product_revenue' => [
+        'external_net' => 'thereof from the accounting system',
+        'external_net_hint' => 'Mirrored invoices and credit notes; documents handed over from local invoices count only once.',
+        'source_local' => 'local',
+    ],
+    'external_share' => 'thereof accounting system',
 ];

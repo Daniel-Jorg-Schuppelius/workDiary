@@ -155,10 +155,7 @@ final class TimeAccountPostingService {
     public function rebuildBalances(int $accountId, array $userIds): void {
         $account = TimeAccount::query()->withoutGlobalScopes()->findOrFail($accountId);
 
-        // MariaDB-Zweig: strftime existiert nur in SQLite.
-        $driver = \Illuminate\Support\Facades\DB::connection()->getDriverName();
-        $yearExpr = $driver === 'mysql' ? 'YEAR(booking_date)' : "CAST(strftime('%Y', booking_date) AS INTEGER)";
-        $monthExpr = $driver === 'mysql' ? 'MONTH(booking_date)' : "CAST(strftime('%m', booking_date) AS INTEGER)";
+        [$yearExpr, $monthExpr] = \App\Support\Query\DateParts::yearMonth('booking_date');
 
         foreach ($userIds as $userId) {
             $rows = \Illuminate\Support\Facades\DB::table('time_account_entries')

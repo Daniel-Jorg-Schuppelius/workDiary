@@ -106,10 +106,8 @@
         </div>
     </x-form-group>
 
-    {{-- Deep-Link zur verknüpften Todoist-Aufgabe (Feature 055, MVP-116) --}}
-    @if ($task && ($todoistUrl = \App\Plugins\Todoist\TodoistPlugin::taskUrl($task)) !== null)
-        <a href="{{ $todoistUrl }}" target="_blank" rel="noopener noreferrer" class="link link-primary text-sm inline-flex items-center gap-1">
-            <x-icon name="open_in_new" class="text-base" />{{ __('todoist.task_link') }}
-        </a>
+    {{-- Verknüpfungen aus Plugins, z. B. Deep-Link zur Todoist-Aufgabe (MVP-1041). --}}
+    @if ($task)
+        {!! app(\App\Plugins\PluginManager::class)->renderSlot('task-dialog.links', $task) !!}
     @endif
 </x-modal>

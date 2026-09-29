@@ -13,10 +13,14 @@ declare(strict_types=1);
 namespace App\Plugins\Lexoffice;
 
 use App\Enums\Billing\{DocumentDirection, DocumentKind, DocumentOrigin};
+use App\Enums\User\Permission;
+use App\Models\Platform\User;
+use App\Models\Plugins\Lexoffice\LexofficeVoucher;
 use App\Services\Billing\DocumentFeedFilters;
-use App\Services\Billing\Feed\{DocumentFeedSource, FeedProjection, MarksLinkedExpenses, SuppressesCoreInvoices};
-use App\Support\Billing\VoucherTypes;
+use App\Services\Billing\Feed\{DocumentFeedSource, FeedProjection, MarksLinkedExpenses, PresentsFeedRows, SuppressesCoreInvoices};
 use App\Support\Query\DateRange;
+use App\Support\Sqid;
+use App\Support\Ui\UiAction;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 
@@ -29,7 +33,7 @@ use Illuminate\Support\Facades\DB;
  * die Registrierung selbst ist wie bisher unabhängig vom Org-Schalter des
  * Plugins, gespiegelte Zeilen existieren nur nach einem Sync.
  */
-class LexofficeDocumentFeedSource implements DocumentFeedSource, MarksLinkedExpenses, SuppressesCoreInvoices {
+class LexofficeDocumentFeedSource implements DocumentFeedSource, MarksLinkedExpenses, PresentsFeedRows, SuppressesCoreInvoices {
     public function key(): string {
         return LexofficePlugin::ID;
     }
@@ -129,5 +133,23 @@ class LexofficeDocumentFeedSource implements DocumentFeedSource, MarksLinkedExpe
             'plugin_id' => LexofficePlugin::ID,
             'external_type' => LexofficePlugin::EXT_TYPE_VOUCHER,
         ];
+    }
+
+    public function presents(\stdClass $row): bool {
+        return $row->source_type === 'voucher' && $row->origin === DocumentOrigin::Lexoffice->value;
+    }
+
+    public function rowLink(\stdClass $row, User $user): ?UiAction {
+        return new UiAction('visibility', (string) __('Belegbild anzeigen'), route('lexoffice.vouchers.preview', Sqid::encode(LexofficeVoucher::class, (int) $row->link_id)), modal: true);
+    }
+
+    public function rowActions(\stdClass $row, User $user, bool $overdue): array {
+        // Die Mahnung legt Lexoffice an — deshalb dessen Sync-Recht (MVP-547).
+        if (! $overdue || ! $user->can(Permission::VoucherLexofficeSync->value)) {
+            return [];
+        }
+
+        return [new UiAction('campaign', (string) __('billing.feed.action.dun'), route('lexoffice.vouchers.dunning', Sqid::encode(LexofficeVoucher::class, (int) $row->source_id)),
+            post: true, tone: 'warning', confirm: (string) __('billing.feed.action.dun_confirm'))];
     }
 }

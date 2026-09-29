@@ -127,7 +127,7 @@
                         <x-table.th sort type="number" align="right">{{ __('Rechnungen') }}</x-table.th>
                         <x-table.th sort type="number" align="right">{{ __('Brutto') }}</x-table.th>
                         @if ($hasExternal)
-                            <x-table.th sort type="number" align="right">{{ __('davon Lexoffice') }}</x-table.th>
+                            <x-table.th sort type="number" align="right">{{ __('reporting.external_share') }}</x-table.th>
                         @endif
                     </tr>
                 </x-slot:head>

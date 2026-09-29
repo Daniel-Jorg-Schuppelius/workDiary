@@ -15,24 +15,22 @@
     die verwaltete, versionierte Datei (`documents/_panel`), **Anhang** die
     lose Datei am Vorgang (`attachments._panel`).
 
-    lokale Rechnungen (App\Models\Invoicing\Invoice) UND Lexoffice-Belege
-    (Rechnungen/Angebote/Aufträge/Lieferscheine …) in einer Tabelle, nach Typ
-    gruppiert und auf den globalen Header-Zeitraum eingegrenzt.
+    Lokale Rechnungen und die Belege der Buchhaltungsprogramme
+    ({@see \App\Services\Billing\PartyDocumentSources}, MVP-1038) in einer
+    Tabelle, nach Typ gruppiert und auf den globalen Header-Zeitraum eingegrenzt.
 
     Erwartete Variablen:
-      $invoices    — Collection<Invoice>        (lokale Rechnungen, bereits zeitraumgefiltert; ggf. leer)
-      $vouchers    — Collection<LexofficeVoucher> (bereits zeitraumgefiltert; ggf. leer)
-      $plugin      — Lexoffice-Plugin-Instanz (oder null)
-      $contactRef  — ExternalReference des verknüpften Lexoffice-Kontakts (oder null)
+      $invoices    — Collection<Invoice> (lokale Rechnungen, bereits zeitraumgefiltert; ggf. leer)
+      $external    — list<PartyDocumentList> der aktiven Quellen
       $range       — array{label: string, ...} aus globalDateRange()
-      $syncRoute   — (optional) Route zum Beleg-Sync
       $placeholder — (optional) bool; true → Sektion auch ohne Belege als
                      Leer-Zustand zeigen (z. B. Kunden mit Rechnungsrecht)
 --}}
 @php
-    $lexofficeConnected = $plugin && $plugin->isEnabled() && $contactRef;
+    $linkedSources = collect($external)->filter(static fn ($list): bool => $list->linked);
+    $unlinkedHint = collect($external)->first(static fn ($list): bool => ! $list->linked && $list->unlinkedHint !== null)?->unlinkedHint;
 
-    // Auch ohne Lexoffice-Verknüpfung als feste Sektion zeigen, sofern der
+    // Auch ohne verknüpftes Buchhaltungsprogramm als feste Sektion zeigen, sofern der
     // Nutzer überhaupt Rechnungen sehen darf (sonst nur bei vorhandenen Daten).
     $alwaysShow = ($placeholder ?? false) && (auth()->user()?->can('viewAny', \App\Models\Invoicing\Invoice::class) ?? false);
 
@@ -46,7 +44,7 @@
         return $label === $key ? $value : $label;
     };
 
-    // Status-Tönung für lokale Invoice-Status UND Lexoffice-Voucher-Status.
+    // Status-Tönung für lokale Rechnungs- und Fremdbeleg-Status.
     $statusTone = static fn(?string $status): string => match ($status) {
         'paid', 'paidoff', 'accepted', 'transferred', 'checked' => 'success',
         'issued', 'sent' => 'info',
@@ -62,27 +60,31 @@
     foreach ($invoices as $invoice) {
         $rows->push([
             'type' => $invoice->type,
-            'source' => 'local',
+            'source' => null,
             'number' => $invoice->number,
             'date' => $invoice->issued_on,
             'status' => $invoice->status,
             'amount' => $invoice->total?->toFloat() ?? 0.0,
             'currency' => $invoice->currency->value,
             'model' => $invoice,
+            'actions' => [],
         ]);
     }
 
-    foreach ($vouchers as $voucher) {
-        $rows->push([
-            'type' => $voucher->voucher_type,
-            'source' => 'lexoffice',
-            'number' => $voucher->voucher_number,
-            'date' => $voucher->voucher_date,
-            'status' => $voucher->voucher_status,
-            'amount' => ($voucher->total_amount?->toFloat() ?? 0.0),
-            'currency' => $voucher->currency->value,
-            'model' => $voucher,
-        ]);
+    foreach ($external as $list) {
+        foreach ($list->documents as $document) {
+            $rows->push([
+                'type' => $document->type,
+                'source' => $list->source,
+                'number' => $document->number,
+                'date' => $document->date,
+                'status' => $document->status,
+                'amount' => $document->amount,
+                'currency' => $document->currency,
+                'model' => null,
+                'actions' => $document->actions,
+            ]);
+        }
     }
 
     // Reihenfolge der Typ-Badges (Rechnungen zuerst, dann Gutschriften, Angebote …).
@@ -98,7 +100,7 @@
         ->sum('amount');
 @endphp
 
-@if ($lexofficeConnected || $rows->isNotEmpty() || $alwaysShow)
+@if ($linkedSources->isNotEmpty() || $rows->isNotEmpty() || $alwaysShow)
     <x-card id="vouchers" class="space-y-3">
         <div class="flex flex-wrap items-center justify-between gap-2">
             <h2 class="flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold">
@@ -110,14 +112,11 @@
                     {{ __('Rechnungssumme') }}:
                     <span class="font-semibold">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $invoiceSum, 2, withThousandsSeparator: true) }}&nbsp;&euro;</span>
                 </span>
-                @isset($syncRoute)
-                    @if ($lexofficeConnected)
-                        <form method="POST" action="{{ $syncRoute }}">
-                            @csrf
-                            <x-icon-btn icon="sync" size="xs" tone="ghost" type="submit" :title="__('Belege synchronisieren')" />
-                        </form>
+                @foreach ($linkedSources as $list)
+                    @if ($list->refresh)
+                        <x-ui-action :action="$list->refresh" />
                     @endif
-                @endisset
+                @endforeach
             </div>
         </div>
 
@@ -133,9 +132,7 @@
             <x-empty-state compact wide
                 icon="receipt_long"
                 :title="__('Keine Belege im gewählten Zeitraum')"
-                :message="$plugin && $plugin->isEnabled() && ! $contactRef
-                    ? __('Kein Lexoffice-Kontakt verknüpft — verknüpfte Belege erscheinen erst nach Verknüpfung und Synchronisierung.')
-                    : __('Für den im Kopf gewählten Zeitraum (:range) wurden keine Rechnungen oder Belege gefunden.', ['range' => $range['label']])" />
+                :message="$unlinkedHint ?? __('Für den im Kopf gewählten Zeitraum (:range) wurden keine Rechnungen oder Belege gefunden.', ['range' => $range['label']])" />
             {{-- Kein zusätzlicher Sync-Button hier: Aktualisieren läuft über den
                  Button oben in der Karten-Ecke (und stündlich automatisch per Cron). --}}
         @else
@@ -153,7 +150,7 @@
                     @php $model = $row['model']; @endphp
                     <tr>
                         <td class="font-mono text-xs">
-                            @if ($row['source'] === 'local')
+                            @if ($model)
                                 <a href="{{ route('invoices.show', $model) }}" class="link">{{ $row['number'] ?? '–' }}</a>
                             @else
                                 {{ $row['number'] ?? '–' }}
@@ -162,8 +159,8 @@
                         <td data-sort-value="{{ optional($row['date'])->format('Y-m-d') ?? '' }}">{{ optional($row['date'])->fdate() ?? '–' }}</td>
                         <td>{{ $valueLabel($row['type']) }}</td>
                         <td>
-                            <span class="badge badge-sm {{ $row['source'] === 'local' ? 'badge-primary badge-outline' : 'badge-ghost' }}">
-                                {{ $row['source'] === 'local' ? __('Lokal') : 'Lexoffice' }}
+                            <span class="badge badge-sm {{ $model ? 'badge-primary badge-outline' : 'badge-ghost' }}">
+                                {{ $row['source'] ?? __('Lokal') }}
                             </span>
                         </td>
                         <td>
@@ -172,28 +169,17 @@
                         <td class="text-right tabular-nums" data-sort-value="{{ $row['amount'] }}">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['amount'], 2, withThousandsSeparator: true) }}&nbsp;{{ $row['currency'] }}</td>
                         <td class="text-right">
                             <div class="flex justify-end gap-1">
-                                @if ($row['source'] === 'local')
+                                @if ($model)
                                     <x-icon-btn icon="visibility" size="xs"
                                                 :href="route('invoices.show', $model)"
                                                 :label="__('Rechnung anzeigen')" />
                                     <x-icon-btn icon="download" size="xs"
                                                 :href="route('invoices.pdf', $model)"
                                                 :label="__('PDF herunterladen')" />
-                                @else
-                                    @if (in_array($row['type'], ['invoice', 'salesinvoice'], true) && $row['status'] === 'overdue')
-                                        <form method="POST" action="{{ route('lexoffice.vouchers.dunning', $model) }}">
-                                            @csrf
-                                            <x-icon-btn icon="notification_important" size="xs" tone="warning" type="submit" :title="__('Mahnung erstellen')" />
-                                        </form>
-                                    @endif
-                                    <x-icon-btn icon="visibility" size="xs"
-                                                :href="route('lexoffice.vouchers.preview', $model)"
-                                                data-entry-modal-trigger
-                                                :label="__('Belegbild anzeigen')" />
-                                    <x-icon-btn icon="download" size="xs"
-                                                :href="route('lexoffice.vouchers.file', [$model, 'download' => 1])"
-                                                :label="__('Belegbild herunterladen')" />
                                 @endif
+                                @foreach ($row['actions'] as $action)
+                                    <x-ui-action :action="$action" />
+                                @endforeach
                             </div>
                         </td>
                     </tr>

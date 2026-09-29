@@ -30,7 +30,7 @@ use Throwable;
  *
  * Plugin-Id ist "todoist", per Organisation aktivierbar.
  */
-class TodoistPlugin extends AbstractPlugin implements TaskSyncer {
+class TodoistPlugin extends AbstractPlugin implements \App\Plugins\Contracts\SlotRenderer, TaskSyncer {
     public const ID = 'todoist';
 
     public const SERVICE_PROVIDER = TodoistServiceProvider::class;
@@ -123,5 +123,14 @@ class TodoistPlugin extends AbstractPlugin implements TaskSyncer {
         } catch (Throwable $e) {
             return PluginHealth::failing(__('Todoist-API nicht erreichbar (:class).', ['class' => class_basename($e)]));
         }
+    }
+
+    public function renderActions(string $slot, mixed $context = null): ?string {
+        if ($slot !== 'task-dialog.links' || ! $context instanceof \App\Models\Project\Task || ! $this->isEnabled()) {
+            return null;
+        }
+        $url = self::taskUrl($context);
+
+        return $url !== null ? view('todoist::tasks._link', ['url' => $url])->render() : null;
     }
 }

@@ -15,7 +15,7 @@ namespace App\Http\Requests\Reselling;
 use App\Enums\Reselling\SubscriptionProvider;
 use App\Http\Requests\BaseFormRequest;
 use App\Models\Platform\Organization;
-use App\Services\Reselling\Purchase\{PurchaseDocument, PurchaseDocuments};
+use App\Services\Billing\Purchase\{PurchaseDocument, PurchaseDocuments};
 use Carbon\CarbonImmutable;
 use Illuminate\Validation\{Rule, Validator};
 

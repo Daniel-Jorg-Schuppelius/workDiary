@@ -149,6 +149,13 @@
         </x-table>
     </x-card>
 
+    @php
+        // Übergabestand je Lauf aus Plugins (MVP-1039); ohne Beitrag entfällt die Spalte.
+        $handoverCells = $schedule->runs->mapWithKeys(fn ($run): array => [
+            $run->id => $run->invoice !== null ? app(\App\Plugins\PluginManager::class)->renderSlot('invoice-schedule-run.badges', $run->invoice) : '',
+        ]);
+        $showHandover = $handoverCells->contains(fn (string $html): bool => $html !== '');
+    @endphp
     <x-card :title="__('Erzeugte Entwürfe')">
         <x-table size="sm" :zebra="true">
             <x-slot:head>
@@ -157,7 +164,9 @@
                     <th>{{ __('Rechnung') }}</th>
                     <th class="text-right">{{ __('Betrag') }}</th>
                     <th>{{ __('Status') }}</th>
-                    <th>{{ __('lexware.field.handover_state') }}</th>
+                    @if ($showHandover)
+                        <th>{{ __('Übergabe') }}</th>
+                    @endif
                 </tr>
             </x-slot:head>
             @forelse ($schedule->runs as $run)
@@ -172,16 +181,12 @@
                     </td>
                     <td class="text-right tabular-nums">{{ $run->invoice !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($run->invoice->total?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) . ' ' . $run->invoice->currency->value : '—' }}</td>
                     <td>{{ $run->invoice !== null ? __('values.' . $run->invoice->status) : '—' }}</td>
-                    <td>
-                        @if ($run->invoice !== null)
-                            @include('lexoffice::handover._badge', ['invoice' => $run->invoice])
-                        @else
-                            —
-                        @endif
-                    </td>
+                    @if ($showHandover)
+                        <td>{!! $handoverCells[$run->id] !== '' ? $handoverCells[$run->id] : '—' !!}</td>
+                    @endif
                 </tr>
             @empty
-                <x-table.empty icon="event_repeat" :colspan="5" :title="__('Noch keine Läufe')" compact />
+                <x-table.empty icon="event_repeat" :colspan="$showHandover ? 5 : 4" :title="__('Noch keine Läufe')" compact />
             @endforelse
         </x-table>
     </x-card>

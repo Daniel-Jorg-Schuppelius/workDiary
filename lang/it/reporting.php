@@ -221,4 +221,10 @@ return [
             'capacity' => 'Carenze di personale',
         ],
     ],
+    'product_revenue' => [
+        'external_net' => 'di cui dal programma contabile',
+        'external_net_hint' => 'Fatture e note di credito rispecchiate; i documenti trasferiti da fatture locali contano una sola volta.',
+        'source_local' => 'locale',
+    ],
+    'external_share' => 'di cui programma contabile',
 ];

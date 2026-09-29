@@ -143,11 +143,11 @@
                             @if ($g['shared'])<span class="badge badge-sm badge-outline" title="{{ __('Geteilte Nummer — Zuordnung gilt nur für diesen Anruf') }}">{{ __('geteilt') }}</span>@endif
                         @elseif ($form === 'user')
                             <span class="font-semibold">{{ ($g['user_email'] ?? null) ? __('Unbekannter Benutzer: :email', ['email' => $g['user_email']]) : __('Einträge ohne Benutzersignal') }}</span>
-                            @if ($g['workspace_name'] ?? null)<span class="badge badge-sm badge-outline" title="{{ __('Toggl-Workspace') }}">{{ $g['workspace_name'] }}</span>@endif
+                            @if ($g['workspace_name'] ?? null)<span class="badge badge-sm badge-outline" title="{{ __('Workspace') }}">{{ $g['workspace_name'] }}</span>@endif
                         @else
                             <span class="font-semibold">{{ $g['project_name'] ?: __('(ohne Projekt)') }}</span>
                             @if ($g['client_name'] ?? null)<span class="text-sm text-muted">· {{ $g['client_name'] }}</span>@endif
-                            @if ($g['workspace_name'] ?? null)<span class="badge badge-sm badge-outline" title="{{ __('Toggl-Workspace') }}">{{ $g['workspace_name'] }}</span>@endif
+                            @if ($g['workspace_name'] ?? null)<span class="badge badge-sm badge-outline" title="{{ __('Workspace') }}">{{ $g['workspace_name'] }}</span>@endif
                         @endif
                         <span class="ml-auto text-xs text-muted">
                             @if ($form === 'b2b_order')
@@ -211,7 +211,9 @@
                             {{-- Aktionen rechtsbündig, Primär-Aktion ganz rechts — wie auf
                                  den übrigen Kacheln (customer_project, Einzel-Items). --}}
                             <div class="ms-auto flex flex-wrap items-center justify-end gap-2">
-                                <a href="{{ route('admin.remote-support.pending.index') }}" class="btn btn-sm btn-ghost">{{ __('Neues Gerät / Mehrkundengerät …') }}</a>
+                                @if (($g['manage'] ?? null) instanceof \App\Support\Ui\UiAction)
+                                    <a href="{{ $g['manage']->url }}" class="btn btn-sm btn-ghost">{{ $g['manage']->label }}</a>
+                                @endif
                                 <button type="submit" form="{{ $dismissFormId }}" class="btn btn-sm btn-ghost">{{ __('Gruppe verwerfen') }}</button>
                                 <button type="submit" class="btn btn-sm btn-primary">{{ __('An Gerät binden & buchen') }}</button>
                             </div>
@@ -480,6 +482,8 @@
                             __('Remote') => (array) (($item->remote_snapshot ?? [])['remote'] ?? []),
                         ], fn(array $side): bool => $side !== []);
                         $remoteMissing = (bool) (($item->remote_snapshot ?? [])['remote_missing'] ?? false);
+                        $itemPlugin = app(\App\Plugins\PluginManager::class)->find((string) $item->plugin_id);
+                        $conflictActions = $item->case_type === IntegrationInboxItem::CASE_CONFLICT && $itemPlugin instanceof \App\Plugins\Contracts\InboxConflictActions ? $itemPlugin : null;
                         $tz = \App\Support\Tz::current();
                     @endphp
                     @if ($timeEntry !== null)
@@ -507,7 +511,7 @@
                             @if ($remoteMissing)
                                 <div class="flex flex-wrap items-baseline gap-x-2">
                                     <span class="w-14 font-semibold">{{ __('Remote') }}</span>
-                                    <span class="text-warning">{{ __('In Toggl nicht (mehr) vorhanden') }}</span>
+                                    <span class="text-warning">{{ __('In :system nicht (mehr) vorhanden', ['system' => $itemPlugin?->name() ?? $item->plugin_id]) }}</span>
                                 </div>
                             @endif
                             @foreach ($snapshotSides as $sideLabel => $side)
@@ -583,32 +587,15 @@
                                         <button class="btn btn-sm btn-outline">{{ __('mail.dms.action') }}</button>
                                     </form>
                                 @endif
-                            @elseif (in_array($item->plugin_id, [\App\Plugins\Webdav\WebdavPlugin::ID, \App\Plugins\Sharepoint\SharepointPlugin::ID], true) && $item->case_type === IntegrationInboxItem::CASE_CONFLICT)
-                                {{-- Ablage-Spiegelkonflikt WebDAV/SharePoint (Feature 058 Rang 18 / MVP-330): Datei-Divergenz, kein Feld-Diff. --}}
-                                <form method="POST" action="{{ route('admin.' . $item->plugin_id . '.conflict.overwrite', $item) }}"
-                                      data-confirm-dialog data-confirm-message="{{ __($item->plugin_id . '.conflict.confirm.overwrite') }}">
-                                    @csrf
-                                    <button class="btn btn-sm btn-primary">{{ __($item->plugin_id . '.conflict.action.overwrite') }}</button>
-                                </form>
-                                <form method="POST" action="{{ route('admin.' . $item->plugin_id . '.conflict.import', $item) }}"
-                                      data-confirm-dialog data-confirm-message="{{ __($item->plugin_id . '.conflict.confirm.import') }}">
-                                    @csrf
-                                    <button class="btn btn-sm btn-outline">{{ __($item->plugin_id . '.conflict.action.import') }}</button>
-                                </form>
-                                <form method="POST" action="{{ route('admin.' . $item->plugin_id . '.conflict.detach', $item) }}"
-                                      data-confirm-dialog data-confirm-message="{{ __($item->plugin_id . '.conflict.confirm.detach') }}">
-                                    @csrf
-                                    <button class="btn btn-sm btn-ghost">{{ __($item->plugin_id . '.conflict.action.detach') }}</button>
-                                </form>
+                            @elseif ($conflictActions !== null && $conflictActions->replacesDefaultConflictActions($item))
+                                {{-- Plugin-eigene Konfliktlösung (MVP-1041), z. B. Datei-Divergenz des Ablage-Spiegels. --}}
+                                @foreach ($conflictActions->inboxConflictActions($item) as $action)
+                                    <x-ui-action :action="$action" size="sm" show-label />
+                                @endforeach
                             @elseif ($item->case_type === IntegrationInboxItem::CASE_CONFLICT)
-                                @if ($item->plugin_id === \App\Plugins\Toggl\TogglPlugin::ID)
-                                    {{-- Outbox-Fehlschläge speichern keinen Fremdstand —
-                                         auf Klick den aktuellen Toggl-Stand nachladen. --}}
-                                    <form method="POST" action="{{ route('admin.toggl.conflict.inspect', $item) }}">
-                                        @csrf
-                                        <button class="btn btn-sm btn-outline">{{ __('Fremdstand laden') }}</button>
-                                    </form>
-                                @endif
+                                @foreach ($conflictActions?->inboxConflictActions($item) ?? [] as $action)
+                                    <x-ui-action :action="$action" size="sm" show-label />
+                                @endforeach
                                 <form method="POST" action="{{ route('admin.integration.inbox.accept-remote', $item) }}">
                                     @csrf
                                     <button class="btn btn-sm btn-primary">{{ __('Remote übernehmen') }}</button>

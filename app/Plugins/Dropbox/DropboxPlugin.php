@@ -19,6 +19,7 @@ use App\Plugins\Dropbox\Api\{DropboxBackupClient, DropboxClient};
 use App\Plugins\Support\Backup\BackupAccount;
 use App\Plugins\Support\Intake\{IntakeAccount, IntakeChangePage, IntakeItem};
 use App\Plugins\Support\PluginOrgContext;
+use App\Support\Ui\UiAction;
 use Psr\Http\Message\StreamInterface;
 use Throwable;
 
@@ -31,7 +32,7 @@ use Throwable;
  * Cloud-BACKUPZIEL — eigene Verbindung, eigene (Schreib-)Scopes,
  * strikt getrennt vom Dokumenteingang.
  */
-class DropboxPlugin extends AbstractPlugin implements BackupTarget, DocumentIntakeSource {
+class DropboxPlugin extends AbstractPlugin implements \App\Plugins\Contracts\BackupTargetConnector, \App\Plugins\Contracts\IntakeSourceConnector, BackupTarget, DocumentIntakeSource {
     public const ID = 'dropbox';
 
     /** Von der Plugin-Discovery VOR der Instanziierung registriert. */
@@ -156,5 +157,17 @@ class DropboxPlugin extends AbstractPlugin implements BackupTarget, DocumentInta
         } catch (Throwable $e) {
             return PluginHealth::failing(__('cloud_intake.dropbox.health.error', ['class' => class_basename($e)]));
         }
+    }
+
+    public function backupConnectAction(): UiAction {
+        return new UiAction('add', 'Dropbox', route('admin.backup-targets.dropbox.oauth.start'), post: true);
+    }
+
+    public function backupReconnectAction(\App\Models\Backup\BackupTargetConnection $connection): UiAction {
+        return new UiAction('sync', (string) __('backup_targets.reconnect'), route('admin.backup-targets.dropbox.oauth.start', ['connection' => $connection->sqid]), post: true);
+    }
+
+    public function intakeConnectAction(): UiAction {
+        return new UiAction('add', (string) __('cloud_intake.action.connect_dropbox'), route('admin.cloud-intake.dropbox.oauth.start'), post: true);
     }
 }

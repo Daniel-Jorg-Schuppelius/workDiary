@@ -124,7 +124,7 @@ class BillingReportTest extends TestCase {
         // Chart-Serie enthält beide Kunden; Tabelle weist die externe Quelle aus.
         $labels = array_column($response->viewData('customerRevenueSeries'), 'x');
         $this->assertContains('Beta Extern AG', $labels);
-        $response->assertSee('davon Lexoffice');
+        $response->assertSee(__('reporting.external_share'));
     }
 
     public function test_unbilled_kpi_ignores_exported_entries(): void {

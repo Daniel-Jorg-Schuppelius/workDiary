@@ -10,12 +10,17 @@
 
 namespace App\Plugins\RemoteSupport;
 
+use App\Enums\Import\ImportEntity;
 use App\Models\Asset\Asset;
-use App\Models\Platform\Organization;
+use App\Models\Auth\RemotePendingSession;
+use App\Models\Integration\ImportRun;
+use App\Models\Platform\{Organization, User};
 use App\Plugins\{AbstractPlugin, PluginHealth};
-use App\Plugins\Contracts\{Plugin, PluginCapability, SlotRenderer, TimeImporter};
+use App\Plugins\Contracts\{NavigationContributor, Plugin, PluginCapability, SlotRenderer, TimeImporter};
 use App\Plugins\RemoteSupport\Providers\{AnyDeskClient, TeamViewerClient};
+use App\Services\Navigation\NavigationRegistry;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\{Cache, Route};
 use Throwable;
 
 /**
@@ -28,7 +33,7 @@ use Throwable;
  * Plugin-Id ist "remote-support". Pro Organisation konfigurierbar über
  * plugin_settings; ENV dient nur als Fallback.
  */
-class RemoteSupportPlugin extends AbstractPlugin implements SlotRenderer, TimeImporter {
+class RemoteSupportPlugin extends AbstractPlugin implements NavigationContributor, SlotRenderer, TimeImporter {
     public const ID = 'remote-support';
 
     public const SERVICE_PROVIDER = RemoteSupportServiceProvider::class;
@@ -58,6 +63,27 @@ class RemoteSupportPlugin extends AbstractPlugin implements SlotRenderer, TimeIm
         $to = CarbonImmutable::now();
 
         return app(RemoteSessionImporter::class)->import($organization, $config, $to->subDays($days), $to);
+    }
+
+    public function navigationItems(User $user): array {
+        if (! Route::has('admin.remote-support.pending.index') || $user->organization_id === null) {
+            return [];
+        }
+        $organizationId = (int) $user->organization_id;
+        $pending = (int) Cache::remember(
+            'nav-badge:remote-pending:' . $organizationId,
+            NavigationRegistry::BADGE_TTL,
+            static fn (): int => RemotePendingSession::query()
+                ->where('organization_id', $organizationId)
+                ->where('status', RemotePendingSession::STATUS_OPEN)
+                ->count(),
+        );
+
+        return ['admin' => [['route' => 'admin.remote-support.pending.index', 'label' => __('Fernwartung – Inbox'), 'icon' => 'inbox', 'modal' => false, 'badge' => $pending, 'folder' => 'data']]];
+    }
+
+    public function navigationMatches(): array {
+        return [];
     }
 
     public function adminPanel(): ?array {
@@ -122,6 +148,11 @@ class RemoteSupportPlugin extends AbstractPlugin implements SlotRenderer, TimeIm
     public function renderActions(string $slot, mixed $context = null): ?string {
         if (! $this->isEnabled()) {
             return null;
+        }
+        if ($slot === 'import-run.notice' && $context instanceof ImportRun) {
+            return $context->entity === ImportEntity::RemoteSessions && $context->rows_skipped > 0
+                ? view('remote-support::_import_notice', ['skipped' => $context->rows_skipped])->render()
+                : null;
         }
         if ($slot !== 'asset-show.aside' || ! $context instanceof Asset) {
             return null;

@@ -19,8 +19,9 @@ use App\Models\Platform\User;
 use App\Models\Plugins\Msgraph\MsgraphOneNoteConnection;
 use App\Plugins\Msgraph\Api\MsgraphOneNoteClient;
 use App\Plugins\Msgraph\MsgraphConfig;
+use App\Plugins\Msgraph\Services\OneNoteNotebookReader;
 use App\Plugins\Support\Intake\{IntakeChangePage, IntakeItem};
-use App\Services\Collections\Import\{KnowledgeImportService, ObsidianVaultReader, OneNoteNotebookReader};
+use App\Services\Collections\Import\{KnowledgeImportService, ObsidianVaultReader};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\{BuildsPolicyActors, WithOrganization};
 use Tests\Support\{FakeIntakeAdapter, FakePluginHttp};
@@ -181,6 +182,42 @@ final class KnowledgeImportTest extends TestCase {
         $bau = ContentCollection::query()->whereNull('parent_id')->where('title', 'Bau')->firstOrFail();
         $archiv = ContentCollection::query()->where('parent_id', $bau->id)->where('title', 'Archiv')->firstOrFail();
         $this->assertTrue(ContentCollection::query()->where('parent_id', $archiv->id)->where('title', '2025')->exists());
+    }
+
+    public function test_onenote_import_runs_through_the_notebook_source(): void {
+        config(['plugins.msgraph.client_id' => 'cid', 'plugins.msgraph.client_secret' => 'sec', 'plugins.msgraph.onenote_import' => true]);
+        MsgraphOneNoteConnection::query()->create([
+            'organization_id' => $this->organization->id,
+            'access_token' => 'token',
+            'refresh_token' => 'refresh',
+            'token_expires_at' => now()->addHour(),
+            'status' => MsgraphOneNoteConnection::STATUS_ACTIVE,
+        ]);
+        FakePluginHttp::fake([
+            'https://graph.microsoft.com/v1.0/me/onenote/notebooks/nb-1/sections*' => FakePluginHttp::response(['value' => [['id' => 'sec-1', 'displayName' => 'Baustellen']]]),
+            'https://graph.microsoft.com/v1.0/me/onenote/notebooks/nb-1/sectionGroups*' => FakePluginHttp::response(['value' => []]),
+            'https://graph.microsoft.com/v1.0/me/onenote/notebooks*' => FakePluginHttp::response(['value' => [['id' => 'nb-1', 'displayName' => 'Bau']]]),
+            'https://graph.microsoft.com/v1.0/me/onenote/sections/sec-1/pages*' => FakePluginHttp::response(['value' => [
+                ['id' => 'page-1', 'title' => 'Rohbau Halle', 'lastModifiedDateTime' => '2026-09-01T08:00:00Z'],
+            ]]),
+            'https://graph.microsoft.com/v1.0/me/onenote/pages/page-1/content' => FakePluginHttp::response('<p>Beton</p>'),
+        ]);
+
+        // Quelle kommt aus dem Plugin (MVP-1042): Knopf im Hub, Dialog, Übernahme.
+        $this->actingAs($this->admin)->get(route('knowledge-hub.index'))->assertOk()
+            ->assertSee(route('knowledge-imports.create', ['source' => 'onenote']), false);
+        $this->actingAs($this->admin)->get(route('knowledge-imports.create', ['source' => 'onenote']))->assertOk()
+            ->assertSee(route('knowledge-imports.notebook', 'onenote'), false)
+            ->assertSee('nb-1', false);
+        $this->actingAs($this->admin)->post(route('knowledge-imports.notebook', 'onenote'), ['notebook' => 'nb-1', 'target' => KnowledgeImportService::TARGET_NOTE])
+            ->assertRedirect()
+            ->assertSessionHas('success');
+
+        $this->assertTrue(CommunicationNote::query()->where('subject', 'Rohbau Halle')->exists());
+        $this->assertNotNull(MsgraphOneNoteConnection::query()->where('organization_id', $this->organization->id)->value('last_import_at'));
+        // Unbekannte Quelle: kein Import.
+        $this->actingAs($this->admin)->post(route('knowledge-imports.notebook', 'gibt-es-nicht'), ['notebook' => 'nb-1', 'target' => KnowledgeImportService::TARGET_NOTE])
+            ->assertSessionHas('error');
     }
 
     public function test_onenote_needs_the_switch_before_connecting_or_importing(): void {

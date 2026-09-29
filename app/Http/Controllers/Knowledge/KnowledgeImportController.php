@@ -17,12 +17,10 @@ use App\Models\CloudIntake\CloudDocumentConnection;
 use App\Models\Communication\CommunicationNote;
 use App\Models\Knowledge\{ContentCollection, KnowledgeArticle};
 use App\Models\Platform\{Organization, User};
-use App\Models\Plugins\Msgraph\MsgraphOneNoteConnection;
 use App\Plugins\Contracts\DocumentIntakeSource;
-use App\Plugins\Msgraph\Api\MsgraphOneNoteClient;
-use App\Plugins\Msgraph\MsgraphConfig;
 use App\Plugins\PluginManager;
-use App\Services\Collections\Import\{KnowledgeImportReport, KnowledgeImportService, ObsidianVaultReader, OneNoteNotebookReader};
+use App\Services\Collections\Import\Contracts\NotebookSource;
+use App\Services\Collections\Import\{KnowledgeImportReport, KnowledgeImportService, NotebookSources, ObsidianVaultReader};
 use App\Services\Licensing\FeatureFlagResolver;
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -32,7 +30,8 @@ use Illuminate\View\View;
 use Throwable;
 
 /**
- * Einbahn-Übernahme aus Obsidian und OneNote (MVP-815, Feature 155): Dialoge
+ * Einbahn-Übernahme aus Obsidian und Notizbuch-Quellen der Plugins wie OneNote
+ * (MVP-815, Feature 155; Quellen seit MVP-1042 über {@see NotebookSources}): Dialoge
  * im Einstieg „Wissen“, Lauf auf Anstoß. Übernahmen legen viele Inhalte auf
  * einmal an und nutzen Anbindungen der Organisation — deshalb nur für
  * Administratoren, die zugleich Sammlungen pflegen dürfen.
@@ -42,32 +41,30 @@ class KnowledgeImportController extends Controller {
 
     public const SOURCE_OBSIDIAN = 'obsidian';
 
-    public const SOURCE_ONENOTE = 'onenote';
-
     public function __construct(private readonly KnowledgeImportService $imports) {}
 
     public function create(Request $request): View {
         $user = $this->importer();
-        $source = $request->query('source') === self::SOURCE_ONENOTE ? self::SOURCE_ONENOTE : self::SOURCE_OBSIDIAN;
         $organization = $this->currentOrganization();
+        $notebookSource = $this->notebookSource((string) $request->query('source', ''), $organization);
 
         $notebooks = [];
-        $oneNoteError = false;
-        if ($source === self::SOURCE_ONENOTE) {
-            $connection = $this->oneNoteConnection($organization);
+        $notebookError = false;
+        if ($notebookSource !== null) {
             try {
-                $notebooks = $connection !== null ? (new MsgraphOneNoteClient($connection))->notebooks() : [];
+                $notebooks = $notebookSource->notebooks($organization);
             } catch (Throwable) {
-                $oneNoteError = true;
+                $notebookError = true;
             }
         }
 
         return view('knowledge-hub._import_dialog', [
-            'source' => $source,
+            'source' => $notebookSource?->key() ?? self::SOURCE_OBSIDIAN,
+            'notebookSource' => $notebookSource,
             'targets' => $this->targets($user),
-            'connections' => $source === self::SOURCE_OBSIDIAN ? $this->cloudConnections($organization) : collect(),
+            'connections' => $notebookSource === null ? $this->cloudConnections($organization) : collect(),
             'notebooks' => $notebooks,
-            'oneNoteError' => $oneNoteError,
+            'notebookError' => $notebookError,
         ]);
     }
 
@@ -106,7 +103,7 @@ class KnowledgeImportController extends Controller {
         return $this->finished($report);
     }
 
-    public function storeOneNote(Request $request, OneNoteNotebookReader $reader): RedirectResponse {
+    public function storeNotebook(Request $request, string $source): RedirectResponse {
         $user = $this->importer();
         $organization = $this->currentOrganization();
         $data = $request->validate([
@@ -115,23 +112,22 @@ class KnowledgeImportController extends Controller {
             'title' => ['nullable', 'string', 'max:180'],
         ]);
 
-        $connection = $this->oneNoteConnection($organization);
-        if ($connection === null) {
+        $notebookSource = $this->notebookSource($source, $organization);
+        if ($notebookSource === null) {
             return back()->with('error', __('collections.import.flash.source_unavailable'));
         }
 
         try {
-            $client = new MsgraphOneNoteClient($connection);
             // Notizbuch serverseitig gegen die Liste des Kontos prüfen — keine untergeschobenen IDs.
-            $notebook = collect($client->notebooks())->firstWhere('id', (string) $data['notebook']);
+            $notebook = collect($notebookSource->notebooks($organization))->firstWhere('id', (string) $data['notebook']);
             if (! is_array($notebook)) {
                 return back()->with('error', __('collections.import.flash.notebook_invalid'));
             }
-            $read = $reader->documents($client, $notebook['id'], $notebook['name'], KnowledgeImportService::MAX_DOCUMENTS,
-                $this->imports->knownChecker($organization, 'msgraph', 'onenote_page'));
-            $report = $this->imports->import($organization, $user, 'msgraph', 'onenote_page',
+            $read = $notebookSource->documents($organization, $notebook['id'], $notebook['name'], KnowledgeImportService::MAX_DOCUMENTS,
+                $this->imports->knownChecker($organization, $notebookSource->pluginId(), $notebookSource->referenceType()));
+            $report = $this->imports->import($organization, $user, $notebookSource->pluginId(), $notebookSource->referenceType(),
                 $this->rootTitle($data['title'] ?? null, $notebook['name']), (string) $data['target'], $read['documents'], $read['limited']);
-            $connection->forceFill(['last_import_at' => now()])->save();
+            $notebookSource->markImported($organization);
         } catch (Throwable $e) {
             report($e);
 
@@ -180,13 +176,11 @@ class KnowledgeImportController extends Controller {
             ->get();
     }
 
-    private function oneNoteConnection(Organization $organization): ?MsgraphOneNoteConnection {
-        if (! MsgraphConfig::oneNoteImportEnabled((int) $organization->id)) {
-            return null;
-        }
-        $connection = MsgraphOneNoteConnection::query()->where('organization_id', $organization->id)->first();
+    /** Eingeschaltete und verbundene Notizbuch-Quelle (null = Obsidian bzw. nicht bereit). */
+    private function notebookSource(string $key, Organization $organization): ?NotebookSource {
+        $source = $key !== self::SOURCE_OBSIDIAN ? app(NotebookSources::class)->get($key) : null;
 
-        return $connection instanceof MsgraphOneNoteConnection && $connection->isActive() ? $connection : null;
+        return $source !== null && $source->ready($organization) ? $source : null;
     }
 
     private function rootTitle(?string $title, string $fallback): string {

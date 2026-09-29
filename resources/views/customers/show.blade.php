@@ -76,7 +76,7 @@
         <x-kpi-tile :label="__('Projekte')" :value="$projects->count()" tone="neutral" />
         <x-kpi-tile :label="__('Erfasste Zeit')" :value="$timeRange" tone="neutral"
                     :hint="$statsRangeLabel . ' · ' . __('gesamt :value', ['value' => $timeTotal])" />
-        {{-- Umsatz = tatsächlich fakturiert (Buchhaltung: Lexoffice-Belege + lokale
+        {{-- Umsatz = tatsächlich fakturiert (Belege des Buchhaltungsprogramms + lokale
              Rechnungen); der kalkulatorische Wert aus erfassten Zeiten × Satz nur
              als kleiner Zusatz — er ist ohne gepflegte Stundensätze wenig aussagekräftig. --}}
         <x-kpi-tile :label="__('Umsatz')" :value="$fmtMoney($invoicedRange)" tone="neutral"
@@ -103,7 +103,7 @@
                       :series="$chartRevenue"
                       :x-label="__('Monat')" y-label="{{ __('Umsatz') }}" :y2-label="__('Materialkosten')"
                       :compare-label="__('Vorjahr')"
-                      :note="__('Fakturierte Belege (Lexoffice + lokale Rechnungen) vs. zugeordnete Materialkosten, letzte 12 Monate; gestrichelt = Vorjahr.')" />
+                      :note="__('Fakturierte Belege (Buchhaltungsprogramm + lokale Rechnungen) vs. zugeordnete Materialkosten, letzte 12 Monate; gestrichelt = Vorjahr.')" />
     </div>
 
     {{-- Stammdaten --}}
@@ -412,81 +412,13 @@
     </x-card>
     @endif
 
-    @if ($lexofficePlugin && $lexofficePlugin->isEnabled())
-        @can('update', $customer)
-        <x-card class="space-y-4">
-            <div class="flex flex-wrap items-center justify-between gap-2">
-                <h2 class="flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold">
-                    <x-icon name="sync" class="text-muted" /> {{ __('Lexoffice') }}
-                </h2>
-                @if ($lexofficeContactRef)
-                    <x-status-badge tone="success">{{ __('Kontakt verknüpft') }} · {{ Str::limit($lexofficeContactRef->external_id, 8, '…') }}</x-status-badge>
-                @else
-                    <x-status-badge tone="ghost">{{ __('Noch nicht verknüpft') }}</x-status-badge>
-                @endif
-            </div>
-
-            <div class="grid gap-3 md:grid-cols-2">
-                <form method="POST" action="{{ route('customers.lexoffice.contact', $customer) }}"
-                      class="flex h-full flex-col gap-3 rounded-box border border-base-300 bg-base-200/40 p-3">
-                    @csrf
-                    <div class="flex items-center gap-2 text-sm font-semibold">
-                        <x-icon name="contacts" class="text-muted" /> {{ __('Kontakt') }}
-                    </div>
-                    <p class="text-sm text-base-content/70">
-                        {{ __('Kunde als Kontakt in Lexoffice anlegen oder aktualisieren.') }}
-                    </p>
-                    <div class="mt-auto pt-1">
-                        <x-icon-btn icon="person_add" tone="primary" size="sm" type="submit" show-label>
-                            {{ $lexofficeContactRef ? __('Kontakt aktualisieren') : __('Kontakt anlegen') }}
-                        </x-icon-btn>
-                    </div>
-                </form>
-
-                <form method="POST" action="{{ route('customers.lexoffice.time-export', $customer) }}"
-                      class="flex h-full flex-col gap-3 rounded-box border border-base-300 bg-base-200/40 p-3">
-                    @csrf
-                    <div class="flex items-center gap-2 text-sm font-semibold">
-                        <x-icon name="receipt_long" class="text-muted" /> {{ __('Zeiten als Beleg') }}
-                    </div>
-                    <p class="text-sm text-base-content/70">
-                        {{ __('Abrechenbare, noch nicht übertragene Zeiten als Beleg übertragen.') }}
-                    </p>
-                    <x-date-range
-                        :from="now()->startOfMonth()->toDateString()"
-                        :to="now()->endOfMonth()->toDateString()"
-                        :required="true"
-                    />
-                    <div class="mt-auto pt-1">
-                        <x-icon-btn icon="sync" tone="primary" size="sm" type="submit" show-label>{{ __('Zeiten übertragen') }}</x-icon-btn>
-                    </div>
-                </form>
-            </div>
-
-            @if ($lexofficeVouchers->isNotEmpty())
-                <div class="border-t border-base-300 pt-3">
-                    <h3 class="mb-2 text-sm font-semibold">{{ __('Letzte Belege') }}</h3>
-                    <ul class="divide-y divide-base-300 text-sm">
-                        @foreach ($lexofficeVouchers as $ref)
-                            <li class="flex items-center justify-between gap-2 py-1.5">
-                                <code class="text-xs text-base-content/80">{{ $ref->external_id }}</code>
-                                <span class="text-xs text-muted">{{ optional($ref->synced_at)->fdatetime() }}</span>
-                            </li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-        </x-card>
-        @endcan
-    @endif
+    {{-- Plugin-Panels (MVP-1038), z. B. Kontakt- und Zeitübergabe an das Buchhaltungsprogramm. --}}
+    {!! app(\App\Plugins\PluginManager::class)->renderSlot('customer-show.panels', $customer) !!}
 
     @include('partials._vouchers', [
         'invoices' => $localInvoices,
-        'vouchers' => $lexofficeVoucherCache,
-        'plugin' => $lexofficePlugin,
-        'contactRef' => $lexofficeContactRef,
-        'range' => $lexofficeVoucherRange,
-        'syncRoute' => route('customers.lexoffice.sync-vouchers', $customer),
+        'external' => $externalDocuments,
+        'range' => $voucherRange,
         'placeholder' => true,
     ])
 

@@ -76,7 +76,7 @@
                         @if (\App\Support\MorphMap::is($allocation->source_type, \App\Models\Inventory\StockMovement::class))
                             <span class="badge badge-ghost badge-xs align-middle">{{ __('customer-material.source_stock') }}</span>
                         @elseif ($allocation->source_type !== null)
-                            <span class="badge badge-ghost badge-xs align-middle">{{ __('customer-material.source_lexoffice') }}</span>
+                            <span class="badge badge-ghost badge-xs align-middle">{{ __('customer-material.voucher') }}</span>
                         @endif
                     </td>
                     <td class="text-sm text-base-content/70">{{ $allocation->project?->name ?? '—' }}</td>

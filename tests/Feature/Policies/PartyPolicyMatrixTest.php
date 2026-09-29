@@ -118,24 +118,14 @@ final class PartyPolicyMatrixTest extends TestCase {
         $this->assertTrue($policy->delete($accountant, $party), 'Unreferenzierte Stammdaten sind für die Abrechnung löschbar.');
     }
 
-    public function test_push_and_promote_are_billing_only(): void {
+    public function test_promote_is_billing_only(): void {
         $creator = User::factory()->user()->create(['organization_id' => $this->organization->id]);
         $accountant = User::factory()->buchhaltung()->create(['organization_id' => $this->organization->id]);
         $this->actAsTeam($this->organization);
-
-        /** @var Customer $customer */
-        $customer = $this->party(Customer::class, null, $creator);
-        $this->assertFalse((new CustomerPolicy)->pushToLexoffice($creator, $customer));
-        $this->assertTrue((new CustomerPolicy)->pushToLexoffice($accountant, $customer));
 
         /** @var ForeignCustomer $foreignCustomer */
         $foreignCustomer = $this->party(ForeignCustomer::class, null, $creator);
         $this->assertFalse((new ForeignCustomerPolicy)->promote($creator, $foreignCustomer));
         $this->assertTrue((new ForeignCustomerPolicy)->promote($accountant, $foreignCustomer));
-
-        /** @var Supplier $supplier */
-        $supplier = $this->party(Supplier::class, null, $creator);
-        $this->assertFalse((new SupplierPolicy)->pushToLexoffice($creator, $supplier));
-        $this->assertTrue((new SupplierPolicy)->pushToLexoffice($accountant, $supplier));
     }
 }

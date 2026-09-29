@@ -10,22 +10,22 @@
 
 namespace Tests\Feature\Lexoffice;
 
+use App\Plugins\Lexoffice\Services\LexofficeMaterialProvider;
 use App\Services\Material\MaterialProviderRegistry;
-use App\Services\Material\Provider\LexofficeMaterialProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Config;
-use Tests\Concerns\WithOrganization;
+use Tests\Concerns\{WithOrganization, WithPluginSecrets};
 use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
 class LexofficeMaterialProviderTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
+    use WithPluginSecrets;
 
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
-        Config::set('timesheet.providers.lexoffice.api_key', 'test-key');
+        $this->pluginSecret('lexoffice', ['api_key' => 'test-key']);
     }
 
     public function test_search_calls_lexoffice_and_upserts_local_materials(): void {
@@ -42,7 +42,7 @@ class LexofficeMaterialProviderTest extends TestCase {
             ], 200),
         ]);
 
-        $provider = (new MaterialProviderRegistry)->get('lexoffice');
+        $provider = app(MaterialProviderRegistry::class)->get('lexoffice');
         $this->assertInstanceOf(LexofficeMaterialProvider::class, $provider);
         $results = $provider->search('switch', 10);
 
@@ -52,5 +52,15 @@ class LexofficeMaterialProviderTest extends TestCase {
             'external_id' => 'lex-1',
             'name' => 'Switch 24-Port',
         ]);
+    }
+
+    public function test_lexoffice_source_needs_the_key_of_the_current_organization(): void {
+        $this->assertSame(['local', 'lexoffice'], app(MaterialProviderRegistry::class)->names());
+
+        $other = \App\Models\Platform\Organization::factory()->create();
+        \App\Support\OrganizationContext::run($other, function (): void {
+            $this->assertNull(app(MaterialProviderRegistry::class)->get('lexoffice'), 'ohne Schlüssel der Organisation keine Lexoffice-Quelle');
+            $this->assertSame(['local'], app(MaterialProviderRegistry::class)->names());
+        });
     }
 }

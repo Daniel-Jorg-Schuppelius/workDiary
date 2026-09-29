@@ -27,7 +27,7 @@ use Carbon\CarbonImmutable;
  * Plugin-Id ist "toggl". Pro Organisation konfigurierbar über plugin_settings;
  * ENV/config dient nur als Fallback.
  */
-class TogglPlugin extends AbstractPlugin implements TimeImporter {
+class TogglPlugin extends AbstractPlugin implements \App\Plugins\Contracts\InboxConflictActions, TimeImporter {
     public const ID = 'toggl';
 
     public const SERVICE_PROVIDER = TogglServiceProvider::class;
@@ -103,5 +103,14 @@ class TogglPlugin extends AbstractPlugin implements TimeImporter {
             errorStatus: PluginHealth::STATUS_FAILING,
             okMessage: 'toggl: ok',
         );
+    }
+
+    /** Outbox-Fehlschläge speichern keinen Fremdstand — auf Klick den aktuellen Toggl-Stand nachladen. */
+    public function inboxConflictActions(\App\Models\Integration\IntegrationInboxItem $item): array {
+        return [new \App\Support\Ui\UiAction('cloud_download', (string) __('Fremdstand laden'), route('admin.toggl.conflict.inspect', $item), post: true, tone: 'outline')];
+    }
+
+    public function replacesDefaultConflictActions(\App\Models\Integration\IntegrationInboxItem $item): bool {
+        return false;
     }
 }

@@ -14,7 +14,8 @@ namespace App\Plugins\Contracts;
  * Plugins, die HTML in definierte View-Slots einklinken (z. B. Buttons in
  * invoices/show, Panels in assets/show). Wird vom Core über
  * {@see \App\Plugins\PluginManager::renderSlot()} aufgerufen — der Aufruf ist
- * exception-isoliert, ein Fehler reißt die Seite nicht.
+ * exception-isoliert, ein Fehler reißt die Seite nicht. Inaktive Plugins
+ * werden nur mit {@see ContributesWhileInactive} gefragt.
  */
 interface SlotRenderer {
     /**

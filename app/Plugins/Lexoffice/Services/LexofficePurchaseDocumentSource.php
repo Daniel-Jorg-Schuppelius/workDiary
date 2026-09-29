@@ -15,8 +15,8 @@ namespace App\Plugins\Lexoffice\Services;
 use App\Enums\User\Permission;
 use App\Models\Platform\Organization;
 use App\Models\Plugins\Lexoffice\LexofficeVoucher;
-use App\Services\Reselling\Purchase\{PurchaseDocument, PurchaseDocumentSource};
-use App\Support\Billing\VoucherTypes;
+use App\Plugins\Lexoffice\VoucherTypes;
+use App\Services\Billing\Purchase\{PurchaseDocument, PurchaseDocumentSource};
 use App\Support\Query\DateRange;
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
@@ -99,6 +99,7 @@ final class LexofficePurchaseDocumentSource implements PurchaseDocumentSource {
             description: $voucher->voucherTextHint(),
             permalink: $voucher->lexofficePermalink(),
             previewUrl: ($canPreview ?? self::canPreview()) ? self::previewUrl((int) $voucher->id) : null,
+            credit: in_array($voucher->voucher_type, VoucherTypes::EXPENSE_CREDITS, true),
         );
     }
 

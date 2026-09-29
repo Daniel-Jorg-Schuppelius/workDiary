@@ -26,7 +26,6 @@ return [
     'project' => 'Projekt',
     'project_hint' => 'Optional — für eine feinere Zuordnung.',
     'no_project' => '— Kein Projekt —',
-    'source_lexoffice' => 'Lexoffice-Beleg',
     'revenue' => 'Umsatz (fakturiert)',
     'material_cost' => 'Materialkosten',
     'profit' => 'Gewinn (kalk.)',

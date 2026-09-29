@@ -36,6 +36,7 @@ class RawSqlInterpolationRuleTest extends TestCase {
         'app/Services/Integration/Match/ExactField.php' => 'Spaltenname aus der Profilkonfiguration, Wert als Bindung.',
         'app/Services/Integration/Match/CompositeField.php' => 'Spaltenname aus der Profilkonfiguration, Wert als Bindung.',
         'app/Services/TimeAccount/TimeAccountPostingService.php' => 'Jahres-/Monats-Ausdruck je Treiber, im Code gebildet.',
+        'app/Plugins/Lexoffice/Services/LexofficeRevenueSource.php' => 'Jahres-/Monats-Ausdruck aus DateParts und Vorzeichen aus einer Konstante, im Code gebildet.',
         'app/Services/Privacy/SubjectData/AbstractSubjectSection.php' => 'Datumsspalte des Abschnitts, im Code gesetzt.',
         'app/Services/Reporting/CustomerAnalysisReportBuilder.php' => 'Aggregat-Ausdruck aus einer lokalen Konstante, Werte als Bindung.',
     ];

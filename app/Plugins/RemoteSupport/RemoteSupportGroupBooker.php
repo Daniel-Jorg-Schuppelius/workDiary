@@ -15,6 +15,7 @@ namespace App\Plugins\RemoteSupport;
 use App\Models\Asset\Asset;
 use App\Models\Platform\Organization;
 use App\Services\Integration\InboxGroupBooker;
+use App\Support\Ui\UiAction;
 use Illuminate\Support\Collection;
 
 /**
@@ -41,6 +42,8 @@ class RemoteSupportGroupBooker implements InboxGroupBooker {
             return [
                 'plugin_id' => RemoteSupportPlugin::ID,
                 'form' => 'asset',
+                // Verwaltung unbekannter Geräte (Mehrkundengeräte) — Link neben der Gruppe.
+                'manage' => new UiAction('devices', (string) __('Neues Gerät / Mehrkundengerät …'), route('admin.remote-support.pending.index')),
                 'group_key' => $group->provider . '|' . $group->remote_id,
                 'provider' => $group->provider,
                 'remote_id' => $group->remote_id,

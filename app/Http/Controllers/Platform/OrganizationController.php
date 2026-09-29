@@ -162,7 +162,6 @@ class OrganizationController extends Controller {
             // Anwesenheits-Board (MVP-524): Opt-in je Organisation.
             'settings.presence.board_enabled' => ['nullable', 'in:0,1'],
             // Outlook-Abwesenheitsnotiz bei genehmigtem Urlaub (Feature-103-Delta).
-            'settings.msgraph.oof_enabled' => ['nullable', 'in:0,1'],
             'settings.validation' => ['sometimes', 'array'],
             'settings.validation.*' => ['sometimes', 'array'],
             'settings.validation.*.*' => ['nullable', 'integer', 'min:1', 'max:100000'],

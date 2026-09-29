@@ -48,8 +48,8 @@
 
     <div class="grid gap-3 sm:grid-cols-4">
         <x-kpi-tile :label="__('Nettoumsatz gesamt')" :value="$eur($total)" />
-        <x-kpi-tile :label="__('davon aus Lexoffice')" :value="$eur($lexofficeNet)"
-                    :hint="__('Gespiegelte Rechnungen und Gutschriften; aus lokalen Rechnungen übergebene Belege zählen nur einmal.')" />
+        <x-kpi-tile :label="__('reporting.product_revenue.external_net')" :value="$eur($externalNet)"
+                    :hint="__('reporting.product_revenue.external_net_hint')" />
         <x-kpi-tile :label="__('Artikel mit Umsatz')" :value="$articleCount" />
         <x-kpi-tile :label="__('Anteil ohne Artikelbezug')" :value="$withoutShare !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($withoutShare, 1) . ' %' : '–'"
                     :tone="($withoutShare ?? 0) > 50 ? 'warning' : 'neutral'"
@@ -115,7 +115,7 @@
                 <td class="text-right tabular-nums">{{ $row['invoices'] }}</td>
                 <td class="whitespace-nowrap">
                     @foreach ($row['sources'] as $source)
-                        <x-status-badge size="xs" :tone="$source === 'lexoffice' ? 'info' : 'ghost'">{{ $source === 'lexoffice' ? 'Lexoffice' : __('lokal') }}</x-status-badge>
+                        <x-status-badge size="xs" :tone="$source === \App\Services\Reporting\ProductRevenueReportBuilder::SOURCE_LOCAL ? 'ghost' : 'info'">{{ $sourceLabels[$source] ?? $source }}</x-status-badge>
                     @endforeach
                 </td>
             </tr>

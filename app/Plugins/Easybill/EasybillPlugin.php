@@ -27,7 +27,7 @@ use Throwable;
  * - Auth: API-Key als `Authorization: Bearer <key>` gegen
  *   https://api.easybill.de/rest/v1 — verschlüsselt je Organisation in
  *   plugin_settings (Auto-Form der Plugin-Karte).
- * - Faktura-Übergabe über {@see \App\Services\Finance\Targets\EasybillTarget}
+ * - Faktura-Übergabe über {@see \App\Plugins\Easybill\Services\EasybillTarget}
  *   ({@see \App\Enums\Finance\TransferTarget::Easybill}): easybill führt die
  *   Rechnung — Übergabe als Entwurf, `/documents/{id}/done` wird nie gerufen.
  * - Rate-Limits sind tarifabhängig (PLUS 10, BUSINESS 60 req/min) — das

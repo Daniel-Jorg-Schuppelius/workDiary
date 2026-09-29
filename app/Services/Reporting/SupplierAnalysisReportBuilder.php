@@ -14,10 +14,9 @@ use App\Enums\Procurement\PurchaseOrderStatus;
 use App\Models\Article\ArticleSupply;
 use App\Models\Manufacturing\ManufacturingOrderMaterial;
 use App\Models\Material\MaterialUsage;
-use App\Models\Plugins\Lexoffice\{LexofficePostingCategory, LexofficeVoucher, LexofficeVoucherCategory};
 use App\Models\Procurement\{PurchaseOrder, PurchaseOrderLine};
 use App\Models\Supplier\Supplier;
-use App\Support\Billing\VoucherTypes;
+use App\Services\Billing\Contracts\ExternalPurchases;
 use App\Support\ChartBucket;
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
@@ -28,9 +27,9 @@ use Illuminate\Support\Collection;
  * offene Verbindlichkeiten, Ausgabenkonzentration (Klumpenrisiko im Einkauf)
  * und Ausgabentrend je Lieferant.
  *
- * Bewusst OHNE Lager-Modul nutzbar: die Ausgaben stammen aus dem
- * Lexoffice-Beleg-Spiegel ({@see LexofficeVoucher} mit `supplier_id`,
- * Einkaufsbeleg-Typen), damit alle Organisationen mit Buchhaltungsanbindung
+ * Bewusst OHNE Lager-Modul nutzbar: die Ausgaben stammen aus den
+ * Einkaufsbelegen der Buchhaltungsprogramme ({@see ExternalPurchases},
+ * MVP-1036), damit alle Organisationen mit Buchhaltungsanbindung
  * profitieren. Bestell-Kennzahlen (Bestellungen, offene Bestellungen) kommen
  * NUR zusätzlich mit `module.lager` hinzu — der Aufrufer signalisiert das über
  * $withProcurement. Fehlt eine Quelle, bleibt die Kennzahl `null` (nie 0).
@@ -44,18 +43,14 @@ class SupplierAnalysisReportBuilder {
 
     public const HHI_HIGH = 2500;
 
-    /** Einkaufsbeleg-Typen im Lexoffice-Spiegel (supplier_id gesetzt). */
-    private const EXPENSE_TYPES = VoucherTypes::EXPENSES;
-
-    /** Gutschriften mindern die Ausgaben (negatives Vorzeichen). */
-    private const CREDIT_TYPES = VoucherTypes::EXPENSE_CREDITS;
-
     /** Als „offen" zählende Bestellstatus (aktuell laufend). */
     private const OPEN_ORDER_STATUSES = [
         PurchaseOrderStatus::Draft->value,
         PurchaseOrderStatus::Ordered->value,
         PurchaseOrderStatus::PartiallyReceived->value,
     ];
+
+    public function __construct(private readonly ExternalPurchases $purchases) {}
 
     /**
      * @return array{
@@ -274,33 +269,15 @@ class SupplierAnalysisReportBuilder {
      */
     public function spendByCategorySeries(CarbonImmutable $from, CarbonImmutable $to, string $unit): array {
         [$granularity, $buckets] = $this->spendAxis($from, $to, $unit);
-        $vouchers = LexofficeVoucher::query()
-            ->whereNotNull('supplier_id')
-            ->where('archived', false)
-            ->whereNotNull('voucher_date')
-            ->whereBetween('voucher_date', DateRange::days($from, $to))
-            ->whereIn('voucher_type', self::EXPENSE_TYPES)
-            ->whereNotIn('voucher_status', ['draft', 'voided']);
-        $pending = (clone $vouchers)->whereNull('categories_synced_at')->count();
-
-        $names = LexofficePostingCategory::query()->pluck('name', 'external_id')->all();
+        $spend = $this->purchases->categorySpend($from, $to);
+        $pending = $spend['pending'];
         $cells = [];
         $totals = [];
-        LexofficeVoucherCategory::query()
-            ->with('voucher:id,voucher_type,voucher_date')
-            ->whereIn('voucher_id', (clone $vouchers)->select('id'))
-            ->get()
-            ->each(function (LexofficeVoucherCategory $row) use (&$cells, &$totals, $names, $granularity): void {
-                $date = $row->voucher->voucher_date;
-                if ($date === null) {
-                    return;
-                }
-                $category = (string) ($names[(string) $row->category_external_id] ?? __('reporting.supplier_category.unknown'));
-                $amount = $row->net_amount->toFloat() * (in_array($row->voucher->voucher_type, self::CREDIT_TYPES, true) ? -1 : 1);
-                $key = ChartBucket::keyLabel($granularity, CarbonImmutable::parse($date->toDateString()))[0];
-                $cells[$key][$category] = ($cells[$key][$category] ?? 0.0) + $amount;
-                $totals[$category] = ($totals[$category] ?? 0.0) + $amount;
-            });
+        foreach ($spend['rows'] as $row) {
+            $key = ChartBucket::keyLabel($granularity, $row->date)[0];
+            $cells[$key][$row->category] = ($cells[$key][$row->category] ?? 0.0) + $row->amount;
+            $totals[$row->category] = ($totals[$row->category] ?? 0.0) + $row->amount;
+        }
 
         arsort($totals);
         $top = array_slice(array_keys($totals), 0, 4);
@@ -340,23 +317,12 @@ class SupplierAnalysisReportBuilder {
         /** @var array<string, float> $sums */
         $sums = array_fill_keys(array_column($buckets, 'key'), 0.0);
 
-        LexofficeVoucher::query()
-            ->whereNotNull('supplier_id')
-            ->where('archived', false)
-            ->whereNotNull('voucher_date')
-            ->whereBetween('voucher_date', DateRange::days($from, $to))
-            ->whereIn('voucher_type', self::EXPENSE_TYPES)
-            ->whereNotIn('voucher_status', ['draft', 'voided'])
-            ->get(['voucher_type', 'voucher_date', 'total_amount'])
-            ->each(function (LexofficeVoucher $voucher) use (&$sums, $granularity): void {
-                if ($voucher->voucher_date === null) {
-                    return;
-                }
-                $key = ChartBucket::keyLabel($granularity, CarbonImmutable::parse($voucher->voucher_date->toDateString()))[0];
-                if (array_key_exists($key, $sums)) {
-                    $sums[$key] += $this->signedAmount($voucher);
-                }
-            });
+        foreach ($this->purchases->purchases($from, $to) as $purchase) {
+            $key = ChartBucket::keyLabel($granularity, $purchase->date)[0];
+            if (array_key_exists($key, $sums)) {
+                $sums[$key] += $purchase->amount;
+            }
+        }
 
         $series = [];
         foreach ($buckets as $bucket) {
@@ -377,23 +343,12 @@ class SupplierAnalysisReportBuilder {
         /** @var array<string, float> $sums */
         $sums = array_fill_keys(array_column($buckets, 'key'), 0.0);
 
-        LexofficeVoucher::query()
-            ->where('supplier_id', $supplierId)
-            ->where('archived', false)
-            ->whereNotNull('voucher_date')
-            ->whereBetween('voucher_date', DateRange::days($from, $to))
-            ->whereIn('voucher_type', self::EXPENSE_TYPES)
-            ->whereNotIn('voucher_status', ['draft', 'voided'])
-            ->get(['voucher_type', 'voucher_date', 'total_amount'])
-            ->each(function (LexofficeVoucher $voucher) use (&$sums, $granularity): void {
-                if ($voucher->voucher_date === null) {
-                    return;
-                }
-                $key = ChartBucket::keyLabel($granularity, CarbonImmutable::parse($voucher->voucher_date->toDateString()))[0];
-                if (array_key_exists($key, $sums)) {
-                    $sums[$key] += $this->signedAmount($voucher);
-                }
-            });
+        foreach ($this->purchases->purchases($from, $to, [$supplierId]) as $purchase) {
+            $key = ChartBucket::keyLabel($granularity, $purchase->date)[0];
+            if (array_key_exists($key, $sums)) {
+                $sums[$key] += $purchase->amount;
+            }
+        }
 
         $series = [];
         foreach ($buckets as $bucket) {
@@ -414,23 +369,12 @@ class SupplierAnalysisReportBuilder {
         /** @var array<string, int> $counts */
         $counts = array_fill_keys(array_column($buckets, 'key'), 0);
 
-        LexofficeVoucher::query()
-            ->where('supplier_id', $supplierId)
-            ->where('archived', false)
-            ->whereNotNull('voucher_date')
-            ->whereBetween('voucher_date', DateRange::days($from, $to))
-            ->whereIn('voucher_type', self::EXPENSE_TYPES)
-            ->whereNotIn('voucher_status', ['draft', 'voided'])
-            ->get(['voucher_date'])
-            ->each(function (LexofficeVoucher $voucher) use (&$counts, $granularity): void {
-                if ($voucher->voucher_date === null) {
-                    return;
-                }
-                $key = ChartBucket::keyLabel($granularity, CarbonImmutable::parse($voucher->voucher_date->toDateString()))[0];
-                if (array_key_exists($key, $counts)) {
-                    $counts[$key]++;
-                }
-            });
+        foreach ($this->purchases->purchases($from, $to, [$supplierId]) as $purchase) {
+            $key = ChartBucket::keyLabel($granularity, $purchase->date)[0];
+            if (array_key_exists($key, $counts)) {
+                $counts[$key]++;
+            }
+        }
 
         $series = [];
         foreach ($buckets as $bucket) {
@@ -449,34 +393,19 @@ class SupplierAnalysisReportBuilder {
         /** @var array<int, array{spend:float, open:float, count:int, last:?string}> $agg */
         $agg = [];
 
-        LexofficeVoucher::query()
-            ->whereNotNull('supplier_id')
-            ->where('archived', false)
-            ->whereNotNull('voucher_date')
-            ->whereBetween('voucher_date', DateRange::days($from, $to))
-            ->whereIn('voucher_type', self::EXPENSE_TYPES)
-            ->whereNotIn('voucher_status', ['draft', 'voided'])
-            ->get(['supplier_id', 'voucher_type', 'voucher_status', 'voucher_date', 'total_amount', 'open_amount'])
-            ->each(function (LexofficeVoucher $voucher) use (&$agg): void {
-                $sid = (int) $voucher->supplier_id;
-                $date = $voucher->voucher_date?->toDateString();
-                $agg[$sid] ??= ['spend' => 0.0, 'open' => 0.0, 'count' => 0, 'last' => null];
-                $agg[$sid]['spend'] += $this->signedAmount($voucher);
-                $agg[$sid]['open'] += $voucher->open_amount?->toFloat() ?? 0.0;
-                $agg[$sid]['count']++;
-                if ($date !== null && ($agg[$sid]['last'] === null || $date > $agg[$sid]['last'])) {
-                    $agg[$sid]['last'] = $date;
-                }
-            });
+        foreach ($this->purchases->purchases($from, $to) as $purchase) {
+            $sid = $purchase->supplierId;
+            $date = $purchase->date->toDateString();
+            $agg[$sid] ??= ['spend' => 0.0, 'open' => 0.0, 'count' => 0, 'last' => null];
+            $agg[$sid]['spend'] += $purchase->amount;
+            $agg[$sid]['open'] += $purchase->open;
+            $agg[$sid]['count']++;
+            if ($agg[$sid]['last'] === null || $date > $agg[$sid]['last']) {
+                $agg[$sid]['last'] = $date;
+            }
+        }
 
         return $agg;
-    }
-
-    /** Vorzeichenbehafteter Belegbetrag (Gutschriften negativ). */
-    private function signedAmount(LexofficeVoucher $voucher): float {
-        $sign = in_array($voucher->voucher_type, self::CREDIT_TYPES, true) ? -1.0 : 1.0;
-
-        return $sign * ($voucher->total_amount?->toFloat() ?? 0.0);
     }
 
     /**

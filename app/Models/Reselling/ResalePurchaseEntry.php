@@ -17,7 +17,7 @@ use App\Enums\Reselling\SubscriptionProvider;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Domain\DomainAccountingEntry;
 use App\Models\Platform\{Organization, User};
-use App\Services\Reselling\Purchase\{PurchaseDocument, PurchaseDocuments};
+use App\Services\Billing\Purchase\{PurchaseDocument, PurchaseDocuments};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;

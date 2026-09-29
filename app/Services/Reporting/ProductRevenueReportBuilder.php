@@ -13,8 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Reporting;
 
 use App\Models\Invoicing\{Invoice, InvoiceItem};
-use App\Models\Plugins\Lexoffice\LexofficeVoucherLine;
-use App\Plugins\Lexoffice\{LexofficeInvoiceService, LexofficePlugin};
+use App\Services\Billing\Contracts\ExternalRevenue;
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 
@@ -27,11 +26,11 @@ use Carbon\CarbonImmutable;
  *    (`invoice_items.amount` = Zeilennetto nach Positionsrabatt); Gutschriften
  *    und Stornobelege tragen negative Mengen und mindern im Monat ihrer
  *    Ausstellung (MVP-990);
- *  - **Lexoffice:** Positionen gespiegelter Rechnungen und Gutschriften
- *    (`lexoffice_voucher_lines`, MVP-760), über die Artikel-Zuordnung
- *    (`external_article_mappings`) auf den eigenen Artikelstamm gelegt.
- *    Belege, die aus einer lokalen Rechnung an Lexoffice übergeben wurden,
- *    zählen nicht ein zweites Mal. Entwürfe und stornierte Belege zählen nicht.
+ *  - **Buchhaltungsprogramm:** Positionen gespiegelter Rechnungen und
+ *    Gutschriften aus den {@see ExternalRevenue}-Quellen der Plugins (MVP-1035),
+ *    möglichst auf den eigenen Artikelstamm gelegt. Aus einer lokalen Rechnung
+ *    übergebene Belege zählen nicht ein zweites Mal; Entwürfe und stornierte
+ *    Belege zählen nicht. Herkunft je Zeile = Plugin-ID der Quelle.
  *
  * Positionen ohne Artikelbezug laufen gebündelt als „ohne Artikelbezug" mit,
  * damit die Summe zu den Abrechnungsberichten passt.
@@ -47,15 +46,7 @@ class ProductRevenueReportBuilder {
      */
     public const TYPES = [Invoice::TYPE_INVOICE, Invoice::TYPE_PARTIAL, Invoice::TYPE_FINAL, Invoice::TYPE_CREDIT_NOTE, Invoice::TYPE_CANCELLATION];
 
-    /** Gespiegelte Lexoffice-Belege mit Umsatzwirkung; Gutschriften mindern. */
-    public const VOUCHER_TYPES = ['invoice', 'creditnote'];
-
-    /** Belegstatus ohne Umsatzwirkung. */
-    public const VOUCHER_STATUSES_EXCLUDED = ['draft', 'voided'];
-
     public const SOURCE_LOCAL = 'local';
-
-    public const SOURCE_LEXOFFICE = 'lexoffice';
 
     /**
      * @return array{
@@ -63,14 +54,14 @@ class ProductRevenueReportBuilder {
      *   categories: list<array{category: ?string, net: float, share: ?float, articles: int}>,
      *   total: float,
      *   withoutArticle: float,
-     *   lexofficeNet: float,
+     *   externalNet: float,
      *   articleCount: int,
      * }
      */
     public function build(CarbonImmutable $from, CarbonImmutable $to): array {
         /** @var array<string, array{articleId: ?int, number: ?string, name: string, category: ?string, unit: ?string, quantity: float, net: float, share: ?float, invoices: int, sources: list<string>}> $rows */
         $rows = [];
-        $lexofficeNet = 0.0;
+        $externalNet = 0.0;
 
         foreach ($this->localAggregates($from, $to) as $row) {
             $articleId = $row->getAttribute('article_id') !== null ? (int) $row->getAttribute('article_id') : null;
@@ -83,39 +74,23 @@ class ProductRevenueReportBuilder {
             ], (float) $row->getAttribute('qty'), (float) $row->getAttribute('net'), (int) $row->getAttribute('document_count'), self::SOURCE_LOCAL);
         }
 
-        foreach ($this->lexofficeAggregates($from, $to) as $row) {
-            $articleId = $row->getAttribute('article_id') !== null ? (int) $row->getAttribute('article_id') : null;
-            $externalId = (string) $row->getAttribute('external_article_id');
-            $net = (float) $row->getAttribute('net');
-            $lexofficeNet += $net;
-
-            if ($articleId !== null) {
-                $key = 'a:' . $articleId;
-                $identity = [
-                    'articleId' => $articleId,
-                    'number' => (string) $row->getAttribute('article_number') ?: null,
-                    'name' => (string) $row->getAttribute('article_name'),
-                    'category' => (string) $row->getAttribute('article_category') ?: null,
-                    'unit' => (string) $row->getAttribute('article_unit') ?: null,
-                ];
-            } elseif ($externalId !== '') {
-                // Lexoffice-Artikel ohne Zuordnung zum eigenen Stamm: eigene Zeile statt Sammelposten.
-                $key = 'x:' . $externalId;
-                $identity = [
-                    'articleId' => null,
-                    'number' => (string) $row->getAttribute('lexoffice_number') ?: null,
-                    'name' => (string) ($row->getAttribute('lexoffice_name') ?: $row->getAttribute('line_name')),
-                    'category' => null,
-                    'unit' => (string) $row->getAttribute('lexoffice_unit') ?: null,
-                ];
-            } else {
-                $key = 'none';
-                $identity = ['articleId' => null, 'number' => null, 'name' => (string) __('ohne Artikelbezug'), 'category' => null, 'unit' => null];
+        foreach (app(ExternalRevenue::class)->productRevenue($from, $to) as $source => $lines) {
+            foreach ($lines as $line) {
+                $externalNet += $line->net;
+                if ($line->articleId !== null) {
+                    $key = 'a:' . $line->articleId;
+                } elseif ($line->externalKey !== null) {
+                    // Artikel des Buchhaltungsprogramms ohne Zuordnung zum eigenen Stamm: eigene Zeile statt Sammelposten.
+                    $key = 'x:' . $source . ':' . $line->externalKey;
+                } else {
+                    $key = 'none';
+                }
+                $identity = $key === 'none'
+                    ? ['articleId' => null, 'number' => null, 'name' => (string) __('ohne Artikelbezug'), 'category' => null, 'unit' => null]
+                    : ['articleId' => $line->articleId, 'number' => $line->number, 'name' => $line->name, 'category' => $line->category, 'unit' => $line->unit];
+                $this->add($rows, $key, $identity, $line->quantity, $line->net, $line->documents, $source);
             }
-
-            $this->add($rows, $key, $identity, (float) $row->getAttribute('qty'), $net, (int) $row->getAttribute('document_count'), self::SOURCE_LEXOFFICE);
         }
-
         $total = round(array_sum(array_column($rows, 'net')), 2);
         $withoutArticle = round((float) ($rows['none']['net'] ?? 0.0), 2);
 
@@ -141,7 +116,7 @@ class ProductRevenueReportBuilder {
             'categories' => $this->categories($list, $total),
             'total' => $total,
             'withoutArticle' => $withoutArticle,
-            'lexofficeNet' => round($lexofficeNet, 2),
+            'externalNet' => round($externalNet, 2),
             'articleCount' => count(array_filter($list, static fn(array $r): bool => $r['articleId'] !== null)),
         ];
     }
@@ -159,48 +134,6 @@ class ProductRevenueReportBuilder {
                 'invoice_items.article_id AS article_id, articles.number AS article_number, articles.name AS article_name,'
                 . ' articles.base_unit AS article_unit, articles.category AS article_category,'
                 . ' SUM(invoice_items.quantity) AS qty, SUM(invoice_items.amount) AS net, COUNT(DISTINCT invoice_items.invoice_id) AS document_count'
-            )
-            ->get();
-    }
-
-    /** @return \Illuminate\Support\Collection<int, LexofficeVoucherLine> */
-    private function lexofficeAggregates(CarbonImmutable $from, CarbonImmutable $to) {
-        $sign = "CASE WHEN lexoffice_vouchers.voucher_type = 'creditnote' THEN -1 ELSE 1 END";
-
-        return LexofficeVoucherLine::query()
-            ->join('lexoffice_vouchers', 'lexoffice_vouchers.id', '=', 'lexoffice_voucher_lines.voucher_id')
-            ->leftJoin('external_article_mappings', function ($join): void {
-                $join->on('external_article_mappings.external_id', '=', 'lexoffice_voucher_lines.external_article_id')
-                    ->on('external_article_mappings.organization_id', '=', 'lexoffice_voucher_lines.organization_id')
-                    ->where('external_article_mappings.plugin_id', '=', LexofficePlugin::ID);
-            })
-            ->leftJoin('articles', 'articles.id', '=', 'external_article_mappings.article_id')
-            ->leftJoin('lexoffice_articles', 'lexoffice_articles.id', '=', 'lexoffice_voucher_lines.lexoffice_article_id')
-            ->whereIn('lexoffice_vouchers.voucher_type', self::VOUCHER_TYPES)
-            ->whereBetween('lexoffice_vouchers.voucher_date', DateRange::days($from, $to))
-            ->where(static fn($q) => $q->whereNull('lexoffice_vouchers.voucher_status')->orWhereNotIn('lexoffice_vouchers.voucher_status', self::VOUCHER_STATUSES_EXCLUDED))
-            ->where(static fn($q) => $q->whereNull('lexoffice_voucher_lines.type')->orWhere('lexoffice_voucher_lines.type', '<>', 'text'))
-            // Aus einer lokalen Rechnung übergeben: zählt bereits lokal.
-            ->whereNotExists(static function ($query): void {
-                $query->selectRaw('1')
-                    ->from('external_references')
-                    ->where('external_references.plugin_id', LexofficePlugin::ID)
-                    ->where('external_references.external_type', LexofficeInvoiceService::EXT_TYPE_INVOICE)
-                    ->where('external_references.referenceable_type', (new Invoice)->getMorphClass())
-                    ->whereColumn('external_references.external_id', 'lexoffice_vouchers.external_id');
-            })
-            ->groupBy(
-                'lexoffice_voucher_lines.external_article_id', 'external_article_mappings.article_id',
-                'articles.number', 'articles.name', 'articles.base_unit', 'articles.category',
-                'lexoffice_articles.name', 'lexoffice_articles.article_number', 'lexoffice_articles.unit_name',
-            )
-            ->selectRaw(
-                'lexoffice_voucher_lines.external_article_id AS external_article_id, external_article_mappings.article_id AS article_id,'
-                . ' articles.number AS article_number, articles.name AS article_name, articles.base_unit AS article_unit, articles.category AS article_category,'
-                . ' lexoffice_articles.name AS lexoffice_name, lexoffice_articles.article_number AS lexoffice_number, lexoffice_articles.unit_name AS lexoffice_unit,'
-                . ' MIN(lexoffice_voucher_lines.name) AS line_name,'
-                . " SUM(lexoffice_voucher_lines.quantity * {$sign}) AS qty, SUM(lexoffice_voucher_lines.total_net) AS net,"
-                . ' COUNT(DISTINCT lexoffice_voucher_lines.voucher_id) AS document_count'
             )
             ->get();
     }

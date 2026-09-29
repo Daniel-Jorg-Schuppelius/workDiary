@@ -12,6 +12,7 @@ namespace App\Services\Reporting;
 
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
+use App\Services\Billing\Contracts\ExternalRevenue;
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\NumberHelper;
@@ -23,8 +24,8 @@ use CommonToolkit\Helper\Data\NumberHelper;
  * Zeitraumende, nicht „heute" — reproduzierbare Berichte.
  *
  * Quellen: lokale Rechnungen (Typen invoice/partial/final, Status ohne
- * draft/cancelled) PLUS der Lexoffice-Beleg-Spiegel (Phase-54-Nachtrag,
- * {@see LexofficeRevenueMirror::invoiceRows()}) — bei externer
+ * draft/cancelled) PLUS die Belege der Buchhaltungsprogramme (Phase-54-Nachtrag,
+ * {@see ExternalRevenue::invoiceRows()}, MVP-1034) — bei externer
  * Rechnungshoheit kämen sonst keine Zahlungsdaten zusammen. Zahldaten der
  * Spiegelbelege stammen aus der Payments-Anreicherung des Belegsyncs.
  *
@@ -35,7 +36,7 @@ use CommonToolkit\Helper\Data\NumberHelper;
 class PaymentBehaviorReportBuilder {
     private const DSO_WINDOW_DAYS = 90;
 
-    public function __construct(private readonly LexofficeRevenueMirror $externalInvoices) {}
+    public function __construct(private readonly ExternalRevenue $externalInvoices) {}
 
     /**
      * @param  list<int>  $excludedCustomerIds

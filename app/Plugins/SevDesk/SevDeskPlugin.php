@@ -29,7 +29,7 @@ use Throwable;
  *   https://my.sevdesk.de/api/v1 — verschlüsselt je Organisation in
  *   plugin_settings (Auto-Form in der Plugin-Karte, kein eigener
  *   Verbindungsfluss wie beim orgaMAX-iid-Callback nötig).
- * - Faktura-Übergabe über {@see \App\Services\Finance\Targets\SevDeskTarget}
+ * - Faktura-Übergabe über {@see \App\Plugins\SevDesk\Services\SevDeskTarget}
  *   ({@see \App\Enums\Finance\TransferTarget::SevDesk}): sevDesk führt die
  *   Rechnung (Entwurf, Status 50) — keine parallele lokale Fakturierung,
  *   `enshrine` wird nie aufgerufen.

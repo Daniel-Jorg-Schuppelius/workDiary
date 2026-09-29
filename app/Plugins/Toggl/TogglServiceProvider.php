@@ -13,7 +13,7 @@ namespace App\Plugins\Toggl;
 use App\Plugins\Support\PluginServiceProviderBase;
 use App\Plugins\Toggl\Console\{TogglBackfillReferencesCommand, TogglImportCommand, TogglPushCommand, TogglRepairEntryBillableCommand, TogglRepairEntryUsersCommand};
 use App\Plugins\Toggl\Services\TogglOutboxDispatcher;
-use App\Services\Integration\IntegrationOutboxDispatcherResolver;
+use App\Services\Integration\{InboxGroupBookerRegistry, IntegrationOutboxDispatcherResolver};
 
 /**
  * Plugin-eigener ServiceProvider. Wird vom Core-{@see \App\Providers\PluginServiceProvider}
@@ -30,6 +30,9 @@ class TogglServiceProvider extends PluginServiceProviderBase {
     }
 
     protected function bootPlugin(): void {
+        // Gruppierte Auflösung der Import-Inbox (MVP-1030).
+        $this->app->make(InboxGroupBookerRegistry::class)->register(TogglPlugin::ID, TogglGroupBooker::class);
+
         // Rückrichtung (MVP-437): lokale Korrekturen an importierten Zeiten
         // gehen über die Integrations-Outbox zurück nach Toggl.
         $this->app->make(IntegrationOutboxDispatcherResolver::class)->register(new TogglOutboxDispatcher);

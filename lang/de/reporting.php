@@ -221,4 +221,10 @@ return [
             'capacity' => 'Personal-Engpässe',
         ],
     ],
+    'product_revenue' => [
+        'external_net' => 'davon aus dem Buchhaltungsprogramm',
+        'external_net_hint' => 'Gespiegelte Rechnungen und Gutschriften; aus lokalen Rechnungen übergebene Belege zählen nur einmal.',
+        'source_local' => 'lokal',
+    ],
+    'external_share' => 'davon Buchhaltungsprogramm',
 ];

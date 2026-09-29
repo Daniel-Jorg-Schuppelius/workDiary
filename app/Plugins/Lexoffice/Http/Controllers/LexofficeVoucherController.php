@@ -10,6 +10,7 @@
 
 namespace App\Plugins\Lexoffice\Http\Controllers;
 
+use App\Enums\Billing\DocumentOrigin;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\Customer\Customer;
@@ -39,6 +40,14 @@ class LexofficeVoucherController extends Controller {
      * ({@see \App\Plugins\Lexoffice\LexofficeVoucherSync}). Manueller Gegenpart
      * zum geplanten `lexoffice:sync-vouchers`.
      */
+    /** Die eigene Belegliste ist im Belegfluss aufgegangen (MVP-549): Herkunft als Filter. */
+    public function index(Request $request): \Illuminate\Http\RedirectResponse {
+        return redirect()->route('billing.feed', array_filter([
+            'origin' => DocumentOrigin::Lexoffice->value,
+            'q' => trim((string) $request->query('q', '')) ?: null,
+        ]));
+    }
+
     public function sync(): \Illuminate\Http\RedirectResponse {
         $user = $this->user();
         abort_unless($user->can(Permission::VoucherLexofficeSync->value), 403);

@@ -20,7 +20,6 @@ use App\Models\Inventory\{StockDelivery, Warehouse};
 use App\Models\Manufacturing\{ManufacturingOrder, ManufacturingOrderMaterial, WorkCenter};
 use App\Models\Shipping\CarrierConnection;
 use App\Models\Supplier\Supplier;
-use App\Plugins\Lexoffice\{LexofficeDeliveryNoteService, LexofficeOrderConfirmationService, LexofficeQuotationService};
 use App\Services\Manufacturing\{CapacityService, DeliveryNotePdfRenderer, DeliveryService, ManufacturingInventoryService, ManufacturingOrderService, ManufacturingQualityService, ManufacturingRecordPdfRenderer, ManufacturingReportService, SubcontractService};
 use App\Support\{ErrorText, SqidEncoder};
 use Illuminate\Http\{RedirectResponse, Request};
@@ -318,68 +317,6 @@ class ManufacturingOrderController extends Controller {
         }
 
         return back()->with('success', __('manufacturing.order.flash.delivered'));
-    }
-
-    /**
-     * Übergibt eine Auslieferung als Lexoffice-Lieferschein (Feature 045/047).
-     */
-    public function pushDeliveryNote(
-        ManufacturingOrder $order,
-        StockDelivery $delivery,
-        LexofficeDeliveryNoteService $deliveryNotes,
-    ): RedirectResponse {
-        Gate::authorize('update', $order);
-        abort_unless($delivery->manufacturing_order_id === $order->id, 404);
-
-        try {
-            $deliveryNotes->push($delivery);
-        } catch (RuntimeException $e) {
-            return back()->with('error', ErrorText::for($e));
-        }
-
-        return back()->with('success', __('manufacturing.order.flash.lexoffice_pushed'));
-    }
-
-    /**
-     * Übergibt einen kundenbezogenen Fertigungsauftrag als Lexoffice-
-     * Auftragsbestätigung (Feature 045/047).
-     */
-    public function pushOrderConfirmation(
-        ManufacturingOrder $order,
-        LexofficeOrderConfirmationService $orderConfirmations,
-    ): RedirectResponse {
-        Gate::authorize('update', $order);
-
-        try {
-            $reference = $orderConfirmations->push($order);
-        } catch (RuntimeException $e) {
-            return back()->with('error', ErrorText::for($e));
-        }
-
-        return back()->with('success', __('Auftragsbestätigung in Lexoffice angelegt (ID :id).', [
-            'id' => $reference->external_id,
-        ]));
-    }
-
-    /**
-     * Übergibt einen kundenbezogenen Fertigungsauftrag als Lexoffice-Angebot
-     * (Feature 045/047).
-     */
-    public function pushQuotation(
-        ManufacturingOrder $order,
-        LexofficeQuotationService $quotations,
-    ): RedirectResponse {
-        Gate::authorize('update', $order);
-
-        try {
-            $reference = $quotations->push($order);
-        } catch (RuntimeException $e) {
-            return back()->with('error', ErrorText::for($e));
-        }
-
-        return back()->with('success', __('Angebot in Lexoffice angelegt (ID :id).', [
-            'id' => $reference->external_id,
-        ]));
     }
 
     public function cancel(ManufacturingOrder $order): RedirectResponse {

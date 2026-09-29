@@ -11,7 +11,9 @@
 namespace App\Plugins\GoogleCalendar;
 
 use App\Plugins\GoogleCalendar\Api\GoogleCalendarOAuth;
+use App\Plugins\GoogleCalendar\Services\GoogleCalendarSeriesGroupBooker;
 use App\Plugins\Support\PluginServiceProviderBase;
+use App\Services\Integration\InboxGroupBookerRegistry;
 
 /**
  * Plugin-eigener ServiceProvider (MVP-328, Bauturbo A8). Registriert
@@ -31,5 +33,10 @@ class GoogleCalendarServiceProvider extends PluginServiceProviderBase {
             Console\GoogleCalendarPublishCommand::class,
             Console\GoogleCalendarImportCommand::class,
         ]);
+    }
+
+    protected function bootPlugin(): void {
+        // Gruppierte Auflösung der Import-Inbox (MVP-1030).
+        $this->app->make(InboxGroupBookerRegistry::class)->register(GoogleCalendarPlugin::ID, GoogleCalendarSeriesGroupBooker::class);
     }
 }

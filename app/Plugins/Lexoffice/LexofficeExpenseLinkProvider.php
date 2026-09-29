@@ -18,7 +18,6 @@ use App\Models\Plugins\Lexoffice\LexofficeVoucher;
 use App\Models\Travel\Expense;
 use App\Services\Billing\Contracts\ExpenseLinkProvider;
 use App\Services\Billing\ExpenseVoucherRef;
-use App\Support\Billing\VoucherTypes;
 use App\Support\{MorphMap, Sqid};
 use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Support\{Carbon, Collection};

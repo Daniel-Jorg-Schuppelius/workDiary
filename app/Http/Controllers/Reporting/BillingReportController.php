@@ -16,7 +16,8 @@ use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportSco
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
 use App\Models\Time\TimeEntry;
-use App\Services\Reporting\{LexofficeRevenueMirror, ReportFilters};
+use App\Services\Billing\Contracts\ExternalRevenue;
+use App\Services\Reporting\ReportFilters;
 use App\Support\ChartBucket;
 use App\Support\Query\DateRange;
 use Carbon\{Carbon, CarbonImmutable};
@@ -420,11 +421,11 @@ class BillingReportController extends Controller {
         }
 
         // Bei externer Rechnungshoheit existieren die Rechnungen nur im
-        // Buchhaltungsprogramm — der Lexoffice-Beleg-Spiegel liefert sie nach.
+        // Buchhaltungsprogramm — dessen Umsatzquelle liefert sie nach (MVP-1034).
         // Bei aktivem Projektfilter ehrlich leer: externe Belege tragen keine
         // Projektzuordnung.
         $external = $filters->projectId === null
-            ? app(LexofficeRevenueMirror::class)->perCustomer($from, $to, $filters->customerId, $this->activeExcludedCustomerIds($filters))
+            ? app(ExternalRevenue::class)->perCustomer($from, $to, $filters->customerId, $this->activeExcludedCustomerIds($filters))
             : [];
         foreach ($external as $cid => $ext) {
             if (! isset($agg[$cid])) {
@@ -519,7 +520,7 @@ class BillingReportController extends Controller {
         foreach ($perCustomer as $r) {
             $rows[] = ['Kunde', $r['customer']->name, $r['count'], NumberHelper::toUSFormat($r['total'], 2)];
             if (($r['external'] ?? 0.0) != 0.0) {
-                $rows[] = ['Kunde', $r['customer']->name . ' (davon Lexoffice)', '', NumberHelper::toUSFormat($r['external'], 2)];
+                $rows[] = ['Kunde', $r['customer']->name . ' (' . __('reporting.external_share') . ')', '', NumberHelper::toUSFormat($r['external'], 2)];
             }
         }
         $rows[] = ['Unbillte Zeit', 'Einträge', $unbilled['count'], ''];

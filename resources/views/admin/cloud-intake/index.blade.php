@@ -16,23 +16,9 @@
     <x-slot:actions>
         @if ($canManage ?? false)
             <x-action-menu icon="add" tone="primary" :label="__('Neu')">
-                <form method="POST" action="{{ route('admin.cloud-intake.dropbox.oauth.start') }}" class="leading-none">
-                    @csrf
-                    <x-icon-btn icon="add" size="sm" type="submit" show-label>{{ __('cloud_intake.action.connect_dropbox') }}</x-icon-btn>
-                </form>
-                <form method="POST" action="{{ route('admin.cloud-intake.microsoft.oauth.start') }}" class="leading-none">
-                    @csrf
-                    <x-icon-btn icon="add" size="sm" type="submit" show-label>{{ __('cloud_intake.action.connect_microsoft') }}</x-icon-btn>
-                </form>
-                <form method="POST" action="{{ route('admin.cloud-intake.google.oauth.start') }}" class="leading-none">
-                    @csrf
-                    <x-icon-btn icon="add" size="sm" type="submit" show-label>{{ __('cloud_intake.action.connect_google') }}</x-icon-btn>
-                </form>
-                {{-- Nextcloud (MVP-382): Zugangsdaten-Dialog statt OAuth-Redirect. --}}
-                <x-icon-btn icon="add" size="sm"
-                            data-entry-modal-trigger
-                            :href="route('admin.cloud-intake.nextcloud.connect-form')"
-                            show-label>{{ __('cloud_intake.action.connect_nextcloud') }}</x-icon-btn>
+                @foreach ($connectActions as $action)
+                    <x-ui-action :action="$action" size="sm" show-label />
+                @endforeach
             </x-action-menu>
         @endif
     </x-slot:actions>

@@ -221,4 +221,10 @@ return [
             'capacity' => 'Manques de personnel',
         ],
     ],
+    'product_revenue' => [
+        'external_net' => 'dont issu du logiciel comptable',
+        'external_net_hint' => 'Factures et avoirs mis en miroir ; les documents transmis depuis des factures locales ne comptent qu’une fois.',
+        'source_local' => 'local',
+    ],
+    'external_share' => 'dont logiciel comptable',
 ];

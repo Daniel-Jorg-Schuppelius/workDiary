@@ -31,10 +31,10 @@
             @if ($mayImport)
                 <x-icon-btn icon="folder_zip" tone="ghost" size="sm" show-label data-entry-modal-trigger
                             :href="route('knowledge-imports.create', ['source' => 'obsidian'])">{{ __('collections.import.obsidian.action') }}</x-icon-btn>
-                @if ($oneNoteReady)
-                    <x-icon-btn icon="book" tone="ghost" size="sm" show-label data-entry-modal-trigger
-                                :href="route('knowledge-imports.create', ['source' => 'onenote'])">{{ __('collections.import.onenote.action') }}</x-icon-btn>
-                @endif
+                @foreach ($notebookSources as $notebookSource)
+                    <x-icon-btn :icon="$notebookSource->icon()" tone="ghost" size="sm" show-label data-entry-modal-trigger
+                                :href="route('knowledge-imports.create', ['source' => $notebookSource->key()])">{{ __('collections.import.' . $notebookSource->key() . '.action') }}</x-icon-btn>
+                @endforeach
             @endif
             @if ($tree !== [])
                 <x-icon-btn icon="folder_special" tone="ghost" size="sm" show-label

@@ -221,4 +221,10 @@ return [
             'capacity' => 'Falta de personal',
         ],
     ],
+    'product_revenue' => [
+        'external_net' => 'de ello del programa contable',
+        'external_net_hint' => 'Facturas y abonos reflejados; los documentos transferidos desde facturas locales cuentan solo una vez.',
+        'source_local' => 'local',
+    ],
+    'external_share' => 'de ello programa contable',
 ];

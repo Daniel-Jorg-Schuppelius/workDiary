@@ -12,7 +12,7 @@ namespace App\Plugins\Kimai;
 
 use App\Plugins\Kimai\Services\KimaiOutboxDispatcher;
 use App\Plugins\Support\PluginServiceProviderBase;
-use App\Services\Integration\IntegrationOutboxDispatcherResolver;
+use App\Services\Integration\{InboxGroupBookerRegistry, IntegrationOutboxDispatcherResolver};
 
 /**
  * Plugin-eigener ServiceProvider (geladen vom Core-PluginServiceProvider, sobald
@@ -29,6 +29,9 @@ class KimaiServiceProvider extends PluginServiceProviderBase {
     }
 
     protected function bootPlugin(): void {
+        // Gruppierte Auflösung der Import-Inbox (MVP-1030).
+        $this->app->make(InboxGroupBookerRegistry::class)->register(KimaiPlugin::ID, KimaiGroupBooker::class);
+
         $this->app->make(IntegrationOutboxDispatcherResolver::class)->register(new KimaiOutboxDispatcher);
     }
 }

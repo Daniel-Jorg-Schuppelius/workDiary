@@ -20,10 +20,10 @@ use App\Models\Article\ArticleVariant;
 use App\Models\Customer\Customer;
 use App\Models\Inventory\Warehouse;
 use App\Models\Material\MaterialCostAllocation;
-use App\Models\Plugins\Lexoffice\LexofficeVoucher;
+use App\Services\Billing\Purchase\{PurchaseDocument, PurchaseDocuments};
 use App\Services\Inventory\CustomerStockAllocationService;
 use App\Services\Licensing\FeatureFlagResolver;
-use App\Support\{ErrorText, MorphMap};
+use App\Support\ErrorText;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -31,7 +31,8 @@ use RuntimeException;
 
 /**
  * Materialkosten-Zuordnung an der Kundenakte: freie Beträge oder Anteile aus
- * Lexoffice-Einkaufsbelegen einem Kunden (optional Projekt) zuordnen — Basis der
+ * Eingangsbelegen (Einkaufsbeleg-Registry, MVP-1036) einem Kunden (optional
+ * Projekt) zuordnen — Basis der
  * Gewinndarstellung (Umsatz − Materialkosten).
  */
 class MaterialCostAllocationController extends Controller {
@@ -41,12 +42,10 @@ class MaterialCostAllocationController extends Controller {
 
         return view('customers.material._form_dialog', [
             'customer' => $customer,
-            'purchaseVouchers' => LexofficeVoucher::query()
-                ->where('voucher_type', 'purchaseinvoice')
-                ->where('archived', false)
-                ->orderByDesc('voucher_date')
-                ->limit(200)
-                ->get(),
+            // Gutschriften mindern Ausgaben und taugen nicht als Kostenquelle.
+            'purchaseDocuments' => app(PurchaseDocuments::class)->search($customer->organization()->firstOrFail(), null, null, 200)
+                ->reject(static fn (PurchaseDocument $document): bool => $document->credit)
+                ->values(),
             'projects' => $customer->projects()->orderBy('name')->get(['id', 'name']),
         ]);
     }
@@ -54,22 +53,17 @@ class MaterialCostAllocationController extends Controller {
     public function store(SaveMaterialCostAllocationRequest $request, Customer $customer): RedirectResponse {
         Gate::authorize('update', $customer);
 
-        $voucher = null;
-        $voucherId = $request->validated('voucher_id');
-        if ($voucherId !== null && $voucherId !== '') {
-            $voucher = LexofficeVoucher::query()->whereKey($voucherId)->first();
-        }
-
+        $document = $request->purchaseDocument();
         $description = trim((string) $request->validated('description', ''));
-        if ($description === '' && $voucher !== null) {
-            $description = trim(($voucher->voucher_number ? $voucher->voucher_number . ' · ' : '') . __('customer-material.source_lexoffice'));
+        if ($description === '' && $document !== null) {
+            $description = $document->reference();
         }
 
         $customer->materialCostAllocations()->create([
             'organization_id' => $customer->organization_id,
             'project_id' => $request->validated('project_id'),
-            'source_type' => $voucher !== null ? MorphMap::alias(LexofficeVoucher::class) : null,
-            'source_id' => $voucher?->getKey(),
+            'source_type' => $document?->morphClass,
+            'source_id' => $document?->morphId,
             'description' => $description !== '' ? $description : null,
             'allocated_amount' => $request->validated('allocated_amount'),
             'currency' => $customer->currency->value,

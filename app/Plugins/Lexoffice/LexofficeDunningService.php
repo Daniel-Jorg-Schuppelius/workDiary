@@ -14,7 +14,6 @@ use APIToolkit\API\Authentication\BearerAuthentication;
 use App\Models\Integration\ExternalReference;
 use App\Models\Plugins\Lexoffice\LexofficeVoucher;
 use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
-use App\Support\Billing\VoucherTypes;
 use RuntimeException;
 
 /**

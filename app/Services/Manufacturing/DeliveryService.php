@@ -74,8 +74,8 @@ class DeliveryService {
             }
 
             $target = $customer !== null
-                ? $this->targetFor($this->billingMode->effectiveFor($customer))
-                : 'workdiary';
+                ? $this->billingMode->effectiveFor($customer)->value
+                : BillingMode::Workdiary->value;
 
             $article = $variant->article;
             $baseUnit = $article instanceof Article ? $article->base_unit : 'Stk';
@@ -134,16 +134,5 @@ class DeliveryService {
         $delivery->save();
 
         return $delivery;
-    }
-
-    private function targetFor(BillingMode $mode): string {
-        return match ($mode) {
-            BillingMode::Lexoffice => 'lexoffice',
-            BillingMode::Datev => 'datev',
-            BillingMode::OrgaMax => 'orgamax',
-            BillingMode::SevDesk => 'sevdesk',
-            BillingMode::Easybill => 'easybill',
-            BillingMode::Workdiary => 'workdiary',
-        };
     }
 }

@@ -12,6 +12,7 @@ namespace App\Plugins\Fritzbox;
 
 use App\Plugins\Support\PluginServiceProviderBase;
 use App\Services\Contacts\ExternalPhoneContactDirectory;
+use App\Services\Integration\InboxGroupBookerRegistry;
 
 /**
  * Plugin-eigener ServiceProvider (geladen vom Core-PluginServiceProvider).
@@ -29,5 +30,10 @@ class FritzboxServiceProvider extends PluginServiceProviderBase {
             FritzboxImportService::class,
             fn($app): FritzboxImportService => new FritzboxImportService($app->make(ExternalPhoneContactDirectory::class)),
         );
+    }
+
+    protected function bootPlugin(): void {
+        // Gruppierte Auflösung der Import-Inbox (MVP-1030).
+        $this->app->make(InboxGroupBookerRegistry::class)->register(FritzboxPlugin::ID, FritzboxGroupBooker::class);
     }
 }

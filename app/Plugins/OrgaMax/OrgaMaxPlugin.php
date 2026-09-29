@@ -34,7 +34,7 @@ use Throwable;
  * orgaMAX-ERP-Variante wird sichtbar zurückgewiesen; keine Screen-Scraping-,
  * Datenbank- oder undokumentierten Anbindungen. Stammdaten laufen über
  * ExternalReference + Integrations-Inbox (keine Schattenstammdaten), die
- * Faktura-Übergabe über den {@see \App\Services\Finance\Targets\OrgaMaxTarget}
+ * Faktura-Übergabe über den {@see \App\Plugins\OrgaMax\Services\OrgaMaxTarget}
  * ({@see \App\Enums\Finance\TransferTarget::OrgaMax}). Wie JTL-Wawi ohne
  * eigene {@see \App\Plugins\Contracts\PluginCapability} — die Fähigkeiten
  * hängen an FacturationTarget-/Outbox-Verträgen.

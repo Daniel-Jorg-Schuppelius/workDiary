@@ -13,9 +13,10 @@ declare(strict_types=1);
 namespace App\Plugins\OrgaMax;
 
 use App\Plugins\OrgaMax\Console\OrgaMaxSyncCommand;
-use App\Plugins\OrgaMax\Services\OrgaMaxOutboxDispatcher;
+use App\Plugins\OrgaMax\Services\{OrgaMaxOutboxDispatcher, OrgaMaxTarget};
 use App\Plugins\Support\PluginServiceProviderBase;
 use App\Services\Billing\Feed\DocumentFeedSourceRegistry;
+use App\Services\Finance\Targets\FacturationTargetRegistry;
 use App\Services\Integration\IntegrationOutboxDispatcherResolver;
 
 /**
@@ -33,6 +34,9 @@ class OrgaMaxServiceProvider extends PluginServiceProviderBase {
     }
 
     protected function bootPlugin(): void {
+        // Faktura-Übergabe (MVP-1032): der Kern kennt das Ziel nur über die Registry.
+        $this->app->make(FacturationTargetRegistry::class)->register(OrgaMaxTarget::class);
+
         $this->app->make(IntegrationOutboxDispatcherResolver::class)
             ->register($this->app->make(OrgaMaxOutboxDispatcher::class));
 

@@ -51,6 +51,8 @@ return [
         'tenant_help' => 'GUID of the Entra tenant; empty = the instance app’s value (default “common”).',
         'onenote_import' => 'Allow OneNote import',
         'onenote_import_help' => 'Unlocks the read-only OneNote connection (Notes.Read). Off: no additional permission, not even in the tenant-wide consent.',
+        'oof_enabled' => 'Set Outlook automatic replies for approved vacation',
+        'oof_enabled_help' => 'Sets the automatic reply in the person\'s mailbox once a vacation is approved. Requires the MailboxSettings.ReadWrite permission in the admin consent app.',
         'tenant_invalid' => 'Tenant must be a directory GUID (or common/organizations/consumers).',
     ],
     'health' => [

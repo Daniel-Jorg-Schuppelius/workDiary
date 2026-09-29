@@ -15,12 +15,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Supplier\SaveSupplierRequest;
 use App\Models\Audit\AuditLog;
 use App\Models\Classification\Tag;
-use App\Models\Integration\ExternalReference;
-use App\Models\Plugins\Lexoffice\LexofficeVoucher;
 use App\Models\Supplier\{Supplier, SupplierQuestionnaireRequest};
-use App\Plugins\Contracts\PluginCapability;
-use App\Plugins\Lexoffice\LexofficePlugin;
-use App\Plugins\PluginManager;
+use App\Services\Billing\PartyDocumentSources;
 use App\Services\Stammdaten\{ContactMasterDataPusher, IdentifierIssueDetector};
 use App\Support\{CarbonFmt, CsvExport, Setting};
 use App\Support\MorphMap;
@@ -60,24 +56,16 @@ class SupplierController extends Controller {
         ]);
     }
 
-    public function show(Request $request, Supplier $supplier, PluginManager $plugins): View {
+    public function show(Request $request, Supplier $supplier): View {
         Gate::authorize('view', $supplier);
 
-        $lexoffice = $plugins->withCapability(PluginCapability::TimeExport)->get(LexofficePlugin::ID);
-        $lexofficeContactRef = $lexoffice
-            ? ExternalReference::query()
-            ->forPlugin($supplier->organization_id, LexofficePlugin::ID, LexofficePlugin::EXT_TYPE_CONTACT)
-            ->forReferenceable($supplier)
-            ->first()
-            : null;
-
-        // Lexoffice-Belege auf den globalen Header-Zeitraum eingrenzen (analog
+        // Belege auf den globalen Header-Zeitraum eingrenzen (analog
         // Kunde); explizite from/to-Parameter (Drilldown aus der
         // Lieferantenanalyse) haben Vorrang.
-        $lexofficeVoucherRange = $this->globalDateRange();
+        $voucherRange = $this->globalDateRange();
         if ($request->filled('from') && $request->filled('to')) {
             [$rangeFrom, $rangeTo] = $this->resolveRange($request);
-            $lexofficeVoucherRange = array_merge($lexofficeVoucherRange, [
+            $voucherRange = array_merge($voucherRange, [
                 'from' => $rangeFrom,
                 'to' => $rangeTo,
                 'label' => CarbonFmt::fdate($rangeFrom) . ' – ' . CarbonFmt::fdate($rangeTo),
@@ -110,8 +98,8 @@ class SupplierController extends Controller {
             && ($authUser->isAdmin() || $authUser->can(\App\Enums\User\Permission::ReportView->value))
         ) {
             $spendBuilder = app(\App\Services\Reporting\SupplierAnalysisReportBuilder::class);
-            $spendSeries = $spendBuilder->supplierMonthlySpendSeries((int) $supplier->id, $lexofficeVoucherRange['from'], $lexofficeVoucherRange['to'], $this->globalUnit());
-            $voucherCountSeries = $spendBuilder->supplierMonthlyVoucherCountSeries((int) $supplier->id, $lexofficeVoucherRange['from'], $lexofficeVoucherRange['to'], $this->globalUnit());
+            $spendSeries = $spendBuilder->supplierMonthlySpendSeries((int) $supplier->id, $voucherRange['from'], $voucherRange['to'], $this->globalUnit());
+            $voucherCountSeries = $spendBuilder->supplierMonthlyVoucherCountSeries((int) $supplier->id, $voucherRange['from'], $voucherRange['to'], $this->globalUnit());
         }
 
         return view('suppliers.show', [
@@ -120,25 +108,12 @@ class SupplierController extends Controller {
             'procurementStats' => $procurementStats,
             'spendSeries' => $spendSeries,
             'voucherCountSeries' => $voucherCountSeries,
-            'periodPhrase' => $this->periodPhrase($this->bucketGranularity($lexofficeVoucherRange['from'], $lexofficeVoucherRange['to'])),
-            'periodAxis' => $this->periodAxisLabel($this->bucketGranularity($lexofficeVoucherRange['from'], $lexofficeVoucherRange['to'])),
-            'lexofficePlugin' => $lexoffice,
+            'periodPhrase' => $this->periodPhrase($this->bucketGranularity($voucherRange['from'], $voucherRange['to'])),
+            'periodAxis' => $this->periodAxisLabel($this->bucketGranularity($voucherRange['from'], $voucherRange['to'])),
             // Selbstauskunft (MVP-937).
             'questionnaireRequests' => SupplierQuestionnaireRequest::query()->where('supplier_id', $supplier->id)->with('questionnaire')->orderByDesc('id')->limit(10)->get(),
-            'lexofficeContactRef' => $lexofficeContactRef,
-            'lexofficeVoucherRange' => $lexofficeVoucherRange,
-            'lexofficeVoucherCache' => $lexoffice
-                ? LexofficeVoucher::query()
-                ->where('supplier_id', $supplier->getKey())
-                ->where('archived', false)
-                ->whereBetween('voucher_date', [
-                    $lexofficeVoucherRange['from']->startOfDay(),
-                    $lexofficeVoucherRange['to']->endOfDay(),
-                ])
-                ->orderByDesc('voucher_date')
-                ->limit(500)
-                ->get()
-                : collect(),
+            'voucherRange' => $voucherRange,
+            'externalDocuments' => app(PartyDocumentSources::class)->forParty($supplier, $voucherRange['from'], $voucherRange['to']),
             'attachments' => $supplier->attachments()->get(),
             'tags' => $supplier->tags()->get(),
             'auditLogs' => AuditLog::query()
@@ -203,14 +178,14 @@ class SupplierController extends Controller {
         $supplier->save();
         $changed = array_merge($changed, $this->writeContactDetails($supplier, $contactDetails));
 
-        // Korrigierte Stammdaten zurück an Lexoffice — sonst holt der nächste
+        // Korrigierte Stammdaten zurück ans Buchhaltungsprogramm — sonst holt der nächste
         // Abgleich den alten Wert wieder.
         $pushed = app(ContactMasterDataPusher::class)->pushIfLinked($supplier, $changed);
         $supplier->syncTagsFromInput($tagIds, \App\Support\TagInput::names($newTagsRaw));
 
         return redirect()->route('suppliers.show', $supplier)
-            ->with('success', $pushed
-                ? __('Lieferant aktualisiert und an Lexoffice übertragen.')
+            ->with('success', $pushed !== []
+                ? __('Lieferant aktualisiert und an :system übertragen.', ['system' => implode(', ', $pushed)])
                 : __('Lieferant aktualisiert.'));
     }
 

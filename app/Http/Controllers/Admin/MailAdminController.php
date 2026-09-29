@@ -17,11 +17,13 @@ use App\Models\Mail\EmailConnection;
 use App\Models\Platform\{Organization, User};
 use App\Services\Communication\Mail\MailToCommunicationNote;
 use App\Services\Document\Mail\MailAttachmentsToDms;
-use App\Services\Mail\MailIntakeService;
+use App\Services\Mail\Contracts\MailboxTransport;
+use App\Services\Mail\{MailIntakeService, MailboxTransports};
 use App\Services\ServiceTicket\Mail\MailToServiceTicket;
 use App\Support\SqidEncoder;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Artisan, Auth};
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Throwable;
 
@@ -38,6 +40,7 @@ class MailAdminController extends Controller {
         $organization = $this->organization($admin);
 
         return view('admin.mail.index', [
+            'transports' => app(MailboxTransports::class)->all(),
             'connections' => EmailConnection::query()
                 ->where('organization_id', $organization->id)
                 ->orderBy('name')
@@ -60,7 +63,7 @@ class MailAdminController extends Controller {
             'name' => ['required', 'string', 'max:120'],
             // Feature 102: msgraph-Postfächer nutzen die Graph-Mail-Verbindung
             // der Organisation — IMAP-Zugangsdaten entfallen dann.
-            'transport' => ['nullable', 'in:' . EmailConnection::TRANSPORT_IMAP . ',' . EmailConnection::TRANSPORT_MSGRAPH],
+            'transport' => ['nullable', Rule::in([EmailConnection::TRANSPORT_IMAP, ...array_map(static fn (MailboxTransport $t): string => $t->key(), app(MailboxTransports::class)->all())])],
             'host' => ['required_if:transport,imap', 'nullable', 'string', 'max:190'],
             'port' => ['required_if:transport,imap', 'nullable', 'integer', 'min:1', 'max:65535'],
             'encryption' => ['required_if:transport,imap', 'nullable', 'in:ssl,tls,none'],
@@ -74,14 +77,11 @@ class MailAdminController extends Controller {
         ]);
 
         $transport = (string) ($data['transport'] ?? EmailConnection::TRANSPORT_IMAP);
-        $isMsgraph = $transport === EmailConnection::TRANSPORT_MSGRAPH;
-
-        // Graph-Postfach braucht eine aktive Graph-Mail-Verbindung der Org.
-        if ($isMsgraph) {
-            $mail = \App\Models\Plugins\Msgraph\MsgraphMailConnection::query()->where('organization_id', $organization->id)->first();
-            if (! $mail instanceof \App\Models\Plugins\Msgraph\MsgraphMailConnection || ! $mail->isActive()) {
-                return back()->with('error', __('mail.flash.msgraph_connection_required'))->withInput();
-            }
+        // Andere Transporte (z. B. Graph) nutzen die Verbindung ihres Plugins statt IMAP-Zugangsdaten.
+        $external = $transport !== EmailConnection::TRANSPORT_IMAP;
+        $unavailable = $external ? app(MailboxTransports::class)->get($transport)?->unavailableReason($organization) : null;
+        if ($unavailable !== null) {
+            return back()->with('error', $unavailable)->withInput();
         }
 
         $connection = $this->resolveConnectionForEdit($organization, $data['connection'] ?? null);
@@ -90,10 +90,10 @@ class MailAdminController extends Controller {
             'organization_id' => $organization->id,
             'name' => (string) $data['name'],
             'transport' => $transport,
-            'host' => $isMsgraph ? null : trim((string) $data['host']),
-            'port' => $isMsgraph ? 0 : (int) $data['port'],
-            'encryption' => $isMsgraph ? 'none' : (string) $data['encryption'],
-            'username' => $isMsgraph ? null : (string) $data['username'],
+            'host' => $external ? null : trim((string) $data['host']),
+            'port' => $external ? 0 : (int) $data['port'],
+            'encryption' => $external ? 'none' : (string) $data['encryption'],
+            'username' => $external ? null : (string) $data['username'],
             'folder' => trim((string) $data['folder']) ?: 'INBOX',
             'processed_folder' => filled($data['processed_folder'] ?? null) ? trim((string) $data['processed_folder']) : null,
             'active' => (bool) ($data['active'] ?? false),
@@ -103,7 +103,7 @@ class MailAdminController extends Controller {
         ];
 
         $password = trim((string) ($data['password'] ?? ''));
-        if ($isMsgraph) {
+        if ($external) {
             $attributes['password'] = null;
         } elseif ($password !== '') {
             $attributes['password'] = $password;

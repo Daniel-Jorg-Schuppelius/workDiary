@@ -14,8 +14,9 @@ namespace App\Plugins\JtlWawi;
 
 use App\Models\Platform\Organization;
 use App\Plugins\JtlWawi\Console\JtlSyncCommand;
-use App\Plugins\JtlWawi\Services\{JtlStockReader, JtlWawiInventoryProvider, JtlWawiOutboxDispatcher};
+use App\Plugins\JtlWawi\Services\{JtlStockReader, JtlVoucherPullService, JtlWawiInventoryProvider, JtlWawiOutboxDispatcher};
 use App\Plugins\Support\PluginServiceProviderBase;
+use App\Services\Finance\Accounting\Vouchers\VoucherPullerRegistry;
 use App\Services\Inventory\{ExternalInventoryDispatcherResolver, InventoryLedger, InventoryProviderResolver};
 
 /**
@@ -34,6 +35,9 @@ class JtlWawiServiceProvider extends PluginServiceProviderBase {
     }
 
     protected function bootPlugin(): void {
+        // Beleg-Rückabruf (MVP-1031): der Kern kennt die Anbindung nur über die Registry.
+        $this->app->make(VoucherPullerRegistry::class)->register(JtlVoucherPullService::class);
+
         $this->app->make(ExternalInventoryDispatcherResolver::class)
             ->register($this->app->make(JtlWawiOutboxDispatcher::class));
 

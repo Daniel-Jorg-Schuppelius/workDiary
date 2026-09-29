@@ -21,9 +21,14 @@ namespace App\Services\Reselling\Marketplace;
  * Zeichen (sonst träfe „GSR" jede Firma mit diesem Kürzel).
  */
 final class NameTokenMatcher {
-    private const GENERIC = [
+    private const LEGAL_FORMS = [
         'gmbh', 'co', 'kg', 'e', 'k', 'v', 'ug', 'ohg', 'mbb', 'ag', 'gbr', 'ltd', 'inc', 'se',
-        'und', 'and', 'haftungsbeschraenkt', 'partnerschaftsgesellschaft', 'gesellschaft',
+        'haftungsbeschraenkt', 'partnerschaftsgesellschaft',
+    ];
+
+    private const GENERIC = [
+        ...self::LEGAL_FORMS,
+        'und', 'and', 'gesellschaft',
         'service', 'services', 'berlin', 'haus', 'herr', 'frau', 'fam', 'familie',
         'dienstleistungen', 'dienstleistung', 'gruppe', 'group', 'company', 'die', 'der', 'das', 'von', 'mit',
     ];
@@ -41,6 +46,18 @@ final class NameTokenMatcher {
         }
 
         return array_values(array_unique($tokens));
+    }
+
+    /**
+     * Namensbestandteile ohne Rechtsform („Haus 24 GmbH“ → haus, 24).
+     *
+     * @return list<string>
+     */
+    public static function withoutLegalForm(string $name): array {
+        return array_values(array_filter(
+            explode(' ', MarketplaceCompany::normalizeName($name)),
+            static fn (string $token): bool => $token !== '' && ! in_array($token, self::LEGAL_FORMS, true),
+        ));
     }
 
     public static function matches(string $a, string $b): bool {

@@ -16,7 +16,6 @@ use APIToolkit\API\Authentication\BearerAuthentication;
 use App\Models\Platform\Organization;
 use App\Models\Plugins\Lexoffice\{LexofficePostingCategory, LexofficeVoucher, LexofficeVoucherCategory};
 use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
-use App\Support\Billing\VoucherTypes;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\{DB, Log};

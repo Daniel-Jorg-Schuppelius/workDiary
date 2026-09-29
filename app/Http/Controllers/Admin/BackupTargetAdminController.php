@@ -13,9 +13,10 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\Backup\BackupProvider;
 use App\Http\Controllers\Controller;
 use App\Models\Backup\{BackupGeneration, BackupTargetConnection};
-use App\Plugins\Contracts\BackupTarget;
+use App\Plugins\Contracts\{BackupTarget, BackupTargetConnector};
 use App\Plugins\PluginManager;
 use App\Services\Backup\BackupKeyring;
+use App\Support\Ui\UiAction;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -33,9 +34,22 @@ class BackupTargetAdminController extends Controller {
         Gate::authorize('viewAny', BackupTargetConnection::class);
 
         $keyring = app(BackupKeyring::class);
+        $connections = BackupTargetConnection::query()->orderBy('provider')->orderBy('id')->get();
+        // Verbinden und Neu-Verbinden liefert das Anbieter-Plugin (MVP-1041).
+        $connectors = [];
+        foreach (BackupProvider::cases() as $provider) {
+            $plugin = app(PluginManager::class)->find($provider->pluginId());
+            if ($plugin instanceof BackupTargetConnector) {
+                $connectors[$provider->value] = $plugin;
+            }
+        }
 
         return view('admin.backup-targets.index', [
-            'connections' => BackupTargetConnection::query()->orderBy('provider')->orderBy('id')->get(),
+            'connections' => $connections,
+            'connectActions' => array_values(array_map(static fn (BackupTargetConnector $c): UiAction => $c->backupConnectAction(), $connectors)),
+            'reconnectActions' => $connections->mapWithKeys(static fn (BackupTargetConnection $c): array => [
+                $c->id => ($connectors[$c->provider->value] ?? null)?->backupReconnectAction($c),
+            ])->all(),
             'generations' => BackupGeneration::query()
                 ->with('connection')
                 ->orderByDesc('started_at')

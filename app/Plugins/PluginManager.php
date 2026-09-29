@@ -11,7 +11,7 @@
 namespace App\Plugins;
 
 use App\Models\Platform\PluginState;
-use App\Plugins\Contracts\{Plugin, PluginCapability, PluginCapabilityContract, SlotRenderer};
+use App\Plugins\Contracts\{ContributesWhileInactive, Plugin, PluginCapability, PluginCapabilityContract, SlotRenderer};
 use App\Plugins\Support\PluginOrgContext;
 use Illuminate\Support\Collection;
 use RuntimeException;
@@ -77,6 +77,21 @@ class PluginManager {
     }
 
     /**
+     * Plugins, die Oberflächenbeiträge (Slots, Navigation) liefern: die aktiven
+     * und, sofern kompatibel und nicht stillgelegt, die mit
+     * {@see ContributesWhileInactive} (MVP-1039).
+     *
+     * @return Collection<string, Plugin>
+     */
+    public function contributing(): Collection {
+        $enabled = $this->enabled();
+        $disabled = $this->autoDisabledIds();
+
+        return $this->plugins->filter(fn (Plugin $p): bool => $enabled->has($p->id())
+            || ($p instanceof ContributesWhileInactive && ! in_array($p->id(), $disabled, true) && $this->isCompatible($p)));
+    }
+
+    /**
      * Invalide die memoisierten Sichten — nach Toggle/Settings-Änderungen,
      * Auto-Disable oder Reset (Aufrufer: Admin-Controller, ErrorRecorder).
      */
@@ -135,11 +150,12 @@ class PluginManager {
      * Erlaubt Plugins, in einem definierten View-Slot HTML zu rendern (z. B.
      * Buttons in invoices/show, customers/show). Plugins implementieren dafür
      * eine Methode `renderActions(string $slot, mixed $context): ?string`.
-     * Liefert die zusammengefügten Plugin-HTML-Schnipsel (oder leer).
+     * Liefert die zusammengefügten Plugin-HTML-Schnipsel (oder leer). Gefragt
+     * werden alle beitragsfähigen Plugins ({@see contributing()}).
      */
     public function renderSlot(string $slot, mixed $context = null): string {
         $out = '';
-        foreach ($this->enabled() as $plugin) {
+        foreach ($this->contributing() as $plugin) {
             if (! $plugin instanceof SlotRenderer) {
                 continue;
             }

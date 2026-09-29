@@ -38,7 +38,7 @@ class S3BackupTargetController extends Controller {
     public function connectForm(Request $request): View {
         Gate::authorize('create', BackupTargetConnection::class);
 
-        return view('admin.backup-targets._s3_connect_dialog', [
+        return view('s3::backup-targets._connect_dialog', [
             'connection' => $this->existingConnection((string) $request->query('connection', '')),
         ]);
     }

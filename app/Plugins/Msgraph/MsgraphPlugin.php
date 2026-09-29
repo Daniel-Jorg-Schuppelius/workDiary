@@ -21,6 +21,7 @@ use App\Plugins\Support\Backup\BackupAccount;
 use App\Plugins\Support\Calendar\{OrganizationEventSource, RemoteCalendarEvent, RemoteCalendarPublishService};
 use App\Plugins\Support\Intake\{IntakeAccount, IntakeChangePage, IntakeItem};
 use App\Plugins\Support\PluginOrgContext;
+use App\Support\Ui\UiAction;
 use Closure;
 use GuzzleHttp\Exception\ConnectException;
 use Psr\Http\Message\StreamInterface;
@@ -44,8 +45,11 @@ use Throwable;
  * Dokumenteingang aus OneDrive/SharePoint über eigene, von der
  * Kalender-Verbindung getrennte {@see CloudDocumentConnection}s.
  */
-class MsgraphPlugin extends AbstractPlugin implements \App\Plugins\Contracts\ContactSyncer, \App\Plugins\Contracts\DocumentIntakeSubscriptions, \App\Plugins\Contracts\SlotRenderer, \App\Plugins\Contracts\TaskSyncer, BackupTarget, CalendarPublisher, DocumentIntakeSource {
+class MsgraphPlugin extends AbstractPlugin implements \App\Plugins\Contracts\BackupTargetConnector, \App\Plugins\Contracts\ContactSyncer, \App\Plugins\Contracts\DocumentIntakeSubscriptions, \App\Plugins\Contracts\IntakeSourceConnector, \App\Plugins\Contracts\SlotRenderer, \App\Plugins\Contracts\TaskSyncer, BackupTarget, CalendarPublisher, DocumentIntakeSource {
     public const ID = 'msgraph';
+
+    /** Wert in `email_connections.transport` für Graph-Postfächer (Feature 102). */
+    public const MAIL_TRANSPORT = 'msgraph';
 
     public const SERVICE_PROVIDER = MsgraphServiceProvider::class;
 
@@ -385,6 +389,9 @@ class MsgraphPlugin extends AbstractPlugin implements \App\Plugins\Contracts\Con
             // OneNote-Übernahme (MVP-815): eigener Bereich Notes.Read, erst nach Einschalten verbindbar.
             \App\Plugins\Contracts\SettingsField::boolean('onenote_import', __('msgraph.settings.onenote_import'), false,
                 help: __('msgraph.settings.onenote_import_help'))->toArray(),
+            // Abwesenheitsnotiz (Feature-103-Delta); bis MVP-1042 in den Organisationseinstellungen.
+            \App\Plugins\Contracts\SettingsField::boolean('oof_enabled', __('msgraph.settings.oof_enabled'), false,
+                help: __('msgraph.settings.oof_enabled_help'))->toArray(),
         ];
     }
 
@@ -482,5 +489,17 @@ class MsgraphPlugin extends AbstractPlugin implements \App\Plugins\Contracts\Con
         }
 
         return __('msgraph.health.side_connections', ['intake' => $intake, 'backup' => $backup, 'mail' => $mail]);
+    }
+
+    public function backupConnectAction(): UiAction {
+        return new UiAction('add', 'Microsoft', route('admin.backup-targets.microsoft.oauth.start'), post: true);
+    }
+
+    public function backupReconnectAction(\App\Models\Backup\BackupTargetConnection $connection): UiAction {
+        return new UiAction('sync', (string) __('backup_targets.reconnect'), route('admin.backup-targets.microsoft.oauth.start', ['connection' => $connection->sqid]), post: true);
+    }
+
+    public function intakeConnectAction(): UiAction {
+        return new UiAction('add', (string) __('cloud_intake.action.connect_microsoft'), route('admin.cloud-intake.microsoft.oauth.start'), post: true);
     }
 }

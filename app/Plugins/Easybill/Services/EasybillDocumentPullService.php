@@ -20,7 +20,6 @@ use App\Models\Platform\User;
 use App\Plugins\Easybill\Api\EasybillClientFactory;
 use App\Plugins\Easybill\{EasybillConfig, EasybillPlugin};
 use App\Services\Document\DocumentService;
-use App\Services\Finance\Targets\EasybillTarget;
 use CommonToolkit\Helper\Data\CryptoHelper;
 
 /**

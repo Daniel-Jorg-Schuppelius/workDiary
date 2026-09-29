@@ -13,7 +13,9 @@ namespace Tests\Feature\Mail;
 use App\Models\Mail\EmailConnection;
 use App\Models\Platform\User;
 use App\Models\Plugins\Msgraph\MsgraphMailConnection;
-use App\Services\Mail\{GraphMailboxGateway, MailboxGateway, TransportSelectingMailboxGateway};
+use App\Plugins\Msgraph\MsgraphPlugin;
+use App\Plugins\Msgraph\Services\MsgraphMailboxGateway;
+use App\Services\Mail\{MailboxGateway, TransportSelectingMailboxGateway};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\{WithOrganization, WithPluginSecrets};
 use Tests\Support\FakePluginHttp;
@@ -21,7 +23,7 @@ use Tests\TestCase;
 
 /**
  * Mail-Eingang über Microsoft Graph (Feature 102, MS365-Plan B):
- * GraphMailboxGateway als Drop-in hinter dem MailboxGateway-Interface —
+ * MsgraphMailboxGateway als Drop-in hinter dem MailboxGateway-Interface —
  * ungelesene Nachrichten abrufen (HTML→Text, Threading-Header, Anhänge,
  * Graph-ID als externalId), Verarbeitung = gelesen + optional verschieben,
  * Transport-Weiche imap/msgraph, Admin-Formular-Leitplanken.
@@ -50,7 +52,7 @@ final class GraphMailboxGatewayTest extends TestCase {
         return EmailConnection::query()->create($attributes + [
             'organization_id' => $this->organization->id,
             'name' => 'M365-Postfach',
-            'transport' => EmailConnection::TRANSPORT_MSGRAPH,
+            'transport' => MsgraphPlugin::MAIL_TRANSPORT,
             'folder' => 'INBOX',
             'active' => true,
         ]);
@@ -87,7 +89,7 @@ final class GraphMailboxGatewayTest extends TestCase {
             ]),
         ]);
 
-        $messages = (new GraphMailboxGateway())->fetch($mailbox);
+        $messages = (new MsgraphMailboxGateway())->fetch($mailbox);
 
         $this->assertCount(1, $messages);
         $message = $messages[0];
@@ -107,7 +109,7 @@ final class GraphMailboxGatewayTest extends TestCase {
         $mailbox = $this->mailbox();
         $idle = FakePluginHttp::fake();
 
-        $this->assertSame([], (new GraphMailboxGateway())->fetch($mailbox));
+        $this->assertSame([], (new MsgraphMailboxGateway())->fetch($mailbox));
         $idle->assertNothingSent();
     }
 
@@ -133,7 +135,7 @@ final class GraphMailboxGatewayTest extends TestCase {
             receivedAt: now(),
             externalId: 'graph-id-1',
         );
-        (new GraphMailboxGateway())->markProcessed($mailbox, $message);
+        (new MsgraphMailboxGateway())->markProcessed($mailbox, $message);
 
         $fake->assertSent(fn ($request): bool => str_contains((string) $request->getUri(), '/messages/graph-id-1/move'));
     }
@@ -164,7 +166,7 @@ final class GraphMailboxGatewayTest extends TestCase {
         ])->assertSessionHas('success');
 
         $connection = EmailConnection::query()->firstOrFail();
-        $this->assertTrue($connection->isMsgraph());
+        $this->assertFalse($connection->usesImap());
         $this->assertTrue($connection->isActive());
         $this->assertNull($connection->host);
         $this->assertNull($connection->username);

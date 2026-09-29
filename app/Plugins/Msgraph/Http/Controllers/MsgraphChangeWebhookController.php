@@ -92,7 +92,7 @@ class MsgraphChangeWebhookController extends Controller {
 
         $mailbox = EmailConnection::query()
             ->withoutGlobalScopes()
-            ->where('transport', EmailConnection::TRANSPORT_MSGRAPH)
+            ->where('transport', \App\Plugins\Msgraph\MsgraphPlugin::MAIL_TRANSPORT)
             ->where('subscription_id', $subscriptionId)
             ->first();
         if ($mailbox instanceof EmailConnection

@@ -11,7 +11,9 @@
 namespace Tests\Feature\Finance;
 
 use App\Enums\Finance\TransferTarget;
-use App\Services\Finance\Targets\{FacturationTargetRegistry, FileTarget, LexofficeTarget, SevDeskTarget};
+use App\Plugins\Lexoffice\Services\LexofficeTarget;
+use App\Plugins\SevDesk\Services\SevDeskTarget;
+use App\Services\Finance\Targets\{FacturationTargetRegistry, FileTarget};
 use Tests\TestCase;
 
 /**

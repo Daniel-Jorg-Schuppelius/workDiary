@@ -11,16 +11,18 @@
 namespace App\Plugins\Lexoffice;
 
 use App\Plugins\Lexoffice\Console\{LexofficeMaterializeVoucherFilesCommand, LexofficeRepairResaleLinksCommand, LexofficeSyncArticlesCommand, LexofficeSyncContactsCommand, LexofficeSyncVoucherCategoriesCommand, LexofficeSyncVoucherLinesCommand, LexofficeSyncVouchersCommand, LexofficeWebhooksCommand};
-use App\Plugins\Lexoffice\Services\{LexofficeArticleCatalogSource, LexofficeInvoiceDraftTarget, LexofficeInvoiceMirrorSource, LexofficePurchaseDocumentSource};
+use App\Plugins\Lexoffice\Services\{LexofficeArticleCatalogSource, LexofficeInvoiceDraftTarget, LexofficeInvoiceMirrorSource, LexofficeMaterialProvider, LexofficePartyDocumentSource, LexofficePurchaseDocumentSource, LexofficeRevenueSource, LexofficeSpendSource, LexofficeTarget};
 use App\Plugins\Lexoffice\Services\Retainer\{LexofficeRetainerPublisher, LexofficeRetainerVouchers};
 use App\Plugins\Support\PluginServiceProviderBase;
-use App\Services\Billing\{BillingModeResolver, ExpenseLinkProviderResolver, RetainerChannelResolver};
+use App\Services\Billing\{BillingModeResolver, ExpenseLinkProviderResolver, ExternalPurchaseSources, ExternalRevenueSources, PartyDocumentSources, RetainerChannelResolver};
 use App\Services\Billing\Feed\DocumentFeedSourceRegistry;
+use App\Services\Billing\Purchase\PurchaseDocuments;
+use App\Services\Finance\Targets\FacturationTargetRegistry;
 use App\Services\Invoicing\TaxResolver;
+use App\Services\Material\MaterialProviderRegistry;
 use App\Services\Platform\Catalog\ArticleCatalog;
 use App\Services\Reselling\Draft\InvoiceDraftTargets;
 use App\Services\Reselling\Mirror\InvoiceMirror;
-use App\Services\Reselling\Purchase\PurchaseDocuments;
 
 /**
  * Plugin-eigener ServiceProvider. Wird vom Core-{@see \App\Providers\PluginServiceProvider}
@@ -70,6 +72,24 @@ class LexofficeServiceProvider extends PluginServiceProviderBase {
     }
 
     protected function bootPlugin(): void {
+        // Faktura-Übergabe (MVP-1032): der Kern kennt das Ziel nur über die Registry.
+        $this->app->make(FacturationTargetRegistry::class)->register(LexofficeTarget::class);
+
+        // Umsatz aus dem Beleg-Spiegel für Auswertungen (MVP-1034/1035).
+        $this->app->make(ExternalRevenueSources::class)->register(new LexofficeRevenueSource);
+        $this->app->make(ExternalPurchaseSources::class)->register(new LexofficeSpendSource);
+        // Belegliste der Kunden- und Lieferantenakte (MVP-1038).
+        $this->app->make(PartyDocumentSources::class)->register(new LexofficePartyDocumentSource);
+
+        // Material-Suche (MVP-1033) mit den Zugangsdaten der aktuellen Organisation.
+        $this->app->make(MaterialProviderRegistry::class)->register('lexoffice', static function (): ?LexofficeMaterialProvider {
+            $config = LexofficeConfig::resolve();
+
+            return is_string($config['api_key']) && $config['api_key'] !== ''
+                ? new LexofficeMaterialProvider($config['api_key'], (string) $config['base_url'])
+                : null;
+        });
+
         // Belegfluss-Quelle (Feature 105; Vollscan B9): der Kern kennt die
         // Tabelle `lexoffice_vouchers` nur noch über diese Registrierung.
         $this->app->make(DocumentFeedSourceRegistry::class)

@@ -422,4 +422,22 @@ class IntegrationInboxTest extends TestCase {
 
         $this->assertNull(ExternalReference::query()->find($ref->id));
     }
+
+    public function test_conflict_actions_come_from_the_plugin(): void {
+        $mirror = $this->item(['plugin_id' => 'webdav', 'case_type' => IntegrationInboxItem::CASE_CONFLICT,
+            'external_type' => 'document', 'external_id' => 'wd-1', 'dedupe_key' => 'mirror:wd-1', 'display_title' => 'Spiegelkonflikt']);
+        $toggl = $this->item(['case_type' => IntegrationInboxItem::CASE_CONFLICT, 'external_id' => 'tg-9', 'dedupe_key' => 'conflict:tg-9',
+            'display_title' => 'Toggl-Konflikt', 'remote_snapshot' => ['remote_missing' => true]]);
+
+        $html = $this->actingAs($this->admin)->get(route('admin.integration.inbox'))->assertOk()
+            ->assertSee(__('In :system nicht (mehr) vorhanden', ['system' => 'Toggl Track']))
+            ->getContent();
+
+        // Ablage-Spiegel: eigene Lösung statt „Remote übernehmen / Lokal behalten“ (MVP-1041).
+        $this->assertStringContainsString(route('admin.webdav.conflict.overwrite', $mirror), $html);
+        $this->assertStringNotContainsString(route('admin.integration.inbox.accept-remote', $mirror), $html);
+        // Toggl ergänzt die Standardwahl um „Fremdstand laden“.
+        $this->assertStringContainsString(route('admin.toggl.conflict.inspect', $toggl), $html);
+        $this->assertStringContainsString(route('admin.integration.inbox.accept-remote', $toggl), $html);
+    }
 }

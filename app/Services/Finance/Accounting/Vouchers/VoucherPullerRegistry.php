@@ -12,39 +12,31 @@ declare(strict_types=1);
 
 namespace App\Services\Finance\Accounting\Vouchers;
 
-use App\Plugins\Easybill\Services\EasybillVoucherPullService;
-use App\Plugins\InvoicePlane\Services\InvoicePlaneVoucherPullService;
-use App\Plugins\JtlWawi\Services\JtlVoucherPullService;
-use App\Plugins\SevDesk\Services\SevDeskVoucherPullService;
-
 /**
- * Alle Beleg-Puller in fester Reihenfolge (Feature 122, MVP-731).
- *
- * Muster der {@see \App\Services\Finance\Targets\FacturationTargetRegistry}:
- * Die Anbindungen hängen an Registries, nicht an Plugin-Capabilities — so
- * kann auch InvoicePlane mitspielen, das (mangels API) gar keine Plugin-
- * Klasse hat.
+ * Alle Beleg-Puller (Feature 122, MVP-731). Die Anbindungen tragen sich beim
+ * Booten ein (MVP-1031) — auch InvoicePlane, das mangels API
+ * keine Plugin-Klasse hat, über seinen eigenen ServiceProvider.
  */
 class VoucherPullerRegistry {
-    /** @var list<VoucherPuller> */
-    private readonly array $pullers;
+    /** @var list<class-string<VoucherPuller>> */
+    private array $classes = [];
 
-    public function __construct(
-        SevDeskVoucherPullService $sevdesk,
-        EasybillVoucherPullService $easybill,
-        InvoicePlaneVoucherPullService $invoiceplane,
-        JtlVoucherPullService $jtl,
-    ) {
-        $this->pullers = [$sevdesk, $easybill, $invoiceplane, $jtl];
+    /** @var list<VoucherPuller>|null */
+    private ?array $pullers = null;
+
+    /** @param  class-string<VoucherPuller>  $puller */
+    public function register(string $puller): void {
+        $this->classes[] = $puller;
+        $this->pullers = null;
     }
 
-    /** @return list<VoucherPuller> */
+    /** @return list<VoucherPuller> in Eintragsreihenfolge */
     public function all(): array {
-        return $this->pullers;
+        return $this->pullers ??= array_map(static fn (string $class): VoucherPuller => app($class), $this->classes);
     }
 
     public function find(string $pluginId): ?VoucherPuller {
-        foreach ($this->pullers as $puller) {
+        foreach ($this->all() as $puller) {
             if ($puller->pluginId() === $pluginId) {
                 return $puller;
             }
@@ -55,7 +47,7 @@ class VoucherPullerRegistry {
 
     /** @return list<string> */
     public function pluginIds(): array {
-        return array_map(static fn (VoucherPuller $p): string => $p->pluginId(), $this->pullers);
+        return array_map(static fn (VoucherPuller $p): string => $p->pluginId(), $this->all());
     }
 
     /**
@@ -65,7 +57,7 @@ class VoucherPullerRegistry {
      */
     public function configuredFor(int $organizationId): array {
         return array_values(array_filter(
-            $this->pullers,
+            $this->all(),
             static fn (VoucherPuller $p): bool => $p->isConfigured($organizationId),
         ));
     }

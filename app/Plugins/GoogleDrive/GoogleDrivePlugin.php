@@ -20,6 +20,7 @@ use App\Plugins\GoogleDrive\Api\{GoogleDriveBackupClient, GoogleDriveClient};
 use App\Plugins\Support\Backup\BackupAccount;
 use App\Plugins\Support\Intake\{IntakeAccount, IntakeChangePage, IntakeItem};
 use App\Plugins\Support\PluginOrgContext;
+use App\Support\Ui\UiAction;
 use Psr\Http\Message\StreamInterface;
 use Throwable;
 
@@ -30,7 +31,7 @@ use Throwable;
  * Produktiver öffentlicher Rollout bleibt bis zur Google-OAuth-Verifikation
  * blockiert (P10/Welle C).
  */
-class GoogleDrivePlugin extends AbstractPlugin implements BackupTarget, DocumentIntakeSource, DocumentIntakeSubscriptions {
+class GoogleDrivePlugin extends AbstractPlugin implements \App\Plugins\Contracts\BackupTargetConnector, \App\Plugins\Contracts\IntakeSourceConnector, BackupTarget, DocumentIntakeSource, DocumentIntakeSubscriptions {
     public const ID = 'google-drive';
 
     /** Von der Plugin-Discovery VOR der Instanziierung registriert. */
@@ -170,5 +171,17 @@ class GoogleDrivePlugin extends AbstractPlugin implements BackupTarget, Document
         } catch (Throwable $e) {
             return PluginHealth::failing(__('cloud_intake.google.health.error', ['class' => class_basename($e)]));
         }
+    }
+
+    public function backupConnectAction(): UiAction {
+        return new UiAction('add', 'Google Drive', route('admin.backup-targets.google.oauth.start'), post: true);
+    }
+
+    public function backupReconnectAction(\App\Models\Backup\BackupTargetConnection $connection): UiAction {
+        return new UiAction('sync', (string) __('backup_targets.reconnect'), route('admin.backup-targets.google.oauth.start', ['connection' => $connection->sqid]), post: true);
+    }
+
+    public function intakeConnectAction(): UiAction {
+        return new UiAction('add', (string) __('cloud_intake.action.connect_google'), route('admin.cloud-intake.google.oauth.start'), post: true);
     }
 }

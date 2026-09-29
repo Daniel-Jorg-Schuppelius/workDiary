@@ -6,32 +6,33 @@
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 
-  Übernahme aus Obsidian oder OneNote (MVP-815). Variablen: $source
-  ('obsidian'|'onenote'), $targets (Zieltypen), $connections (aktive
-  Ordner-Anbindungen), $notebooks (OneNote), $oneNoteError.
+  Übernahme aus Obsidian oder einer Notizbuch-Quelle (MVP-815, MVP-1042).
+  Variablen: $source (`obsidian` oder Schlüssel der Quelle), $notebookSource
+  (?NotebookSource), $targets (Zieltypen), $connections (aktive
+  Ordner-Anbindungen), $notebooks, $notebookError.
 --}}
 @php
-    $isOneNote = $source === 'onenote';
-    $ready = $isOneNote ? $notebooks !== [] : $connections->isNotEmpty();
+    $isNotebook = $notebookSource !== null;
+    $ready = $isNotebook ? $notebooks !== [] : $connections->isNotEmpty();
 @endphp
 <x-modal
-    :title="$isOneNote ? __('collections.import.onenote.title') : __('collections.import.obsidian.title')"
+    :title="__('collections.import.' . $source . '.title')"
     :eyebrow="__('collections.hub.title')"
-    :icon="$isOneNote ? 'book' : 'folder_zip'"
+    :icon="$isNotebook ? $notebookSource->icon() : 'folder_zip'"
     tone="primary"
-    :action="$ready ? route($isOneNote ? 'knowledge-imports.onenote' : 'knowledge-imports.obsidian') : null"
+    :action="$ready ? ($isNotebook ? route('knowledge-imports.notebook', $source) : route('knowledge-imports.obsidian')) : null"
     :submit-label="$ready ? __('collections.import.action.start') : null">
 
-    <p class="text-sm text-muted">{{ $isOneNote ? __('collections.import.onenote.intro') : __('collections.import.obsidian.intro') }}</p>
+    <p class="text-sm text-muted">{{ __('collections.import.' . $source . '.intro') }}</p>
 
     @if (! $ready)
         <x-empty-state compact icon="link_off"
-                       :title="$isOneNote ? __('collections.import.onenote.title') : __('collections.import.obsidian.title')"
-                       :message="$isOneNote ? ($oneNoteError ? __('collections.import.onenote.error') : __('collections.import.onenote.none')) : __('collections.import.obsidian.none')" />
+                       :title="__('collections.import.' . $source . '.title')"
+                       :message="__('collections.import.' . $source . '.' . ($notebookError ? 'error' : 'none'))" />
     @else
         <x-form-group :legend="__('collections.import.source')" icon="input" tone="primary">
-            @if ($isOneNote)
-                <x-select-field name="notebook" :label="__('collections.import.onenote.notebook')" required>
+            @if ($isNotebook)
+                <x-select-field name="notebook" :label="__('collections.import.' . $source . '.notebook')" required>
                     @foreach ($notebooks as $notebook)
                         <option value="{{ $notebook['id'] }}">{{ $notebook['name'] }}</option>
                     @endforeach

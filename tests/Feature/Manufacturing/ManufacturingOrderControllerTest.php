@@ -272,6 +272,28 @@ final class ManufacturingOrderControllerTest extends TestCase {
         ]);
     }
 
+    public function test_lexoffice_handover_buttons_come_from_the_active_plugin(): void {
+        $customer = \App\Models\Customer\Customer::factory()->create(['organization_id' => $this->organization->id]);
+        $order = ManufacturingOrder::factory()->create([
+            'organization_id' => $this->organization->id,
+            'article_id' => $this->product->id,
+            'warehouse_id' => $this->warehouse->id,
+            'customer_id' => $customer->id,
+            'status' => ManufacturingOrderStatus::Draft->value,
+        ]);
+
+        $this->actingAs($this->admin)->get(route('manufacturing-orders.show', $order))
+            ->assertOk()
+            ->assertDontSee(route('manufacturing-orders.quotation.lexoffice', $order), false);
+
+        $this->pluginSecret('lexoffice', ['base_url' => 'https://api.lexoffice.io/v1', 'api_key' => 'test-key']);
+        // Wie nach dem Umschalten in der Plugin-Verwaltung.
+        app(\App\Plugins\PluginManager::class)->flushRuntimeCaches();
+        $this->actingAs($this->admin)->get(route('manufacturing-orders.show', $order))
+            ->assertOk()
+            ->assertSee(route('manufacturing-orders.quotation.lexoffice', $order), false);
+    }
+
     public function test_push_quotation_to_lexoffice(): void {
         $this->pluginSecret('lexoffice', ['base_url' => 'https://api.lexoffice.io/v1', 'api_key' => 'test-key']);
 

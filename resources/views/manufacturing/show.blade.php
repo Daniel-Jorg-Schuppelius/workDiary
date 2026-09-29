@@ -44,16 +44,8 @@
                         {{-- Kommissionierliste aus den aktiven Reservierungen (Feature 048, MVP-706). --}}
                         <x-icon-btn icon="checklist" size="sm" :href="route('inventory.pick-lists.show', ['source' => 'manufacturing-order', 'sqid' => $order->sqid])" show-label>{{ __('inventory.action.pick_list') }}</x-icon-btn>
                     @endif
-                    @if ($order->customer_id && $status === 'draft')
-                        <form method="POST" action="{{ route('manufacturing-orders.quotation.lexoffice', $order) }}">@csrf
-                            <x-icon-btn icon="request_quote" size="sm" type="submit" placement="menu" show-label>{{ __('Angebot an Lexoffice') }}</x-icon-btn>
-                        </form>
-                    @endif
-                    @if ($order->customer_id && ! in_array($status, ['draft', 'cancelled'], true))
-                        <form method="POST" action="{{ route('manufacturing-orders.order-confirmation.lexoffice', $order) }}">@csrf
-                            <x-icon-btn icon="sync" size="sm" type="submit" placement="menu" show-label>{{ __('Auftragsbestätigung an Lexoffice') }}</x-icon-btn>
-                        </form>
-                    @endif
+                    {{-- Belegübergabe an das Buchhaltungsprogramm (MVP-1040). --}}
+                    {!! app(\App\Plugins\PluginManager::class)->renderSlot('manufacturing-show.actions', $order) !!}
                     @if ($isOpen)
                         <x-action-form :action="route('manufacturing-orders.cancel', $order)" :confirm="__('manufacturing.order.action.cancel').'?'">
                             <x-icon-btn placement="danger" icon="cancel" tone="error" size="sm" type="submit" :label="__('manufacturing.order.action.cancel')" />
@@ -273,7 +265,7 @@
         </x-card>
     @endif
 
-    {{-- Auslieferungen (E4/045: Lieferschein an Lexoffice) --}}
+    {{-- Auslieferungen (E4/045: Lieferschein ans Buchhaltungsprogramm über Plugin-Slot) --}}
     @if ($order->deliveries->isNotEmpty())
         <x-card padding="p-0">
             <h2 class="font-semibold p-4 pb-0">{{ __('manufacturing.order.field.deliveries') }}</h2>
@@ -315,13 +307,7 @@
                                        data-entry-modal-trigger
                                        class="btn btn-xs btn-ghost">{{ __('shipping.customs.action') }}</a>
                                 @endif
-                                @if ($canManage && $delivery->facturation_target === 'lexoffice' && in_array($delivery->facturation_status->value, ['pending', 'failed'], true))
-                                    <form method="POST" action="{{ route('manufacturing-orders.deliveries.lexoffice', [$order, $delivery]) }}">@csrf
-                                        <button type="submit" class="btn btn-xs">{{ __('manufacturing.order.action.push_lexoffice') }}</button>
-                                    </form>
-                                @elseif ($delivery->facturation_status->value === 'handed_over' && $delivery->external_id)
-                                    <span class="text-xs text-muted">Lexoffice: {{ $delivery->external_id }}</span>
-                                @endif
+                                {!! app(\App\Plugins\PluginManager::class)->renderSlot('manufacturing-delivery.actions', $delivery) !!}
 
                                 {{-- Packstücke mit Seriennummern (MVP-900) --}}
                                 @foreach ($delivery->parcels as $parcel)

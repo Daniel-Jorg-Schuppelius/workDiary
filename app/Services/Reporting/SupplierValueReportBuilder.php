@@ -10,11 +10,9 @@
 
 namespace App\Services\Reporting;
 
-use App\Models\Plugins\Lexoffice\LexofficeVoucher;
 use App\Models\Supplier\Supplier;
-use App\Support\Billing\VoucherTypes;
+use App\Services\Billing\Contracts\ExternalPurchases;
 use App\Support\ChartBucket;
-use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 
@@ -26,8 +24,9 @@ use Illuminate\Support\Collection;
  * und Risikoliste stark abhängiger A-Lieferanten (hoher Ausgabenanteil =
  * Single-Source-Klumpenrisiko).
  *
- * Ausgaben = Lexoffice-Beleg-Spiegel (Einkaufsbelege je Lieferant,
- * Gutschriften negativ) — dieselbe Quelle wie {@see SupplierAnalysisReportBuilder},
+ * Ausgaben = Einkaufsbelege der Buchhaltungsprogramme je Lieferant
+ * ({@see ExternalPurchases}, MVP-1036; Gutschriften negativ) — dieselbe Quelle
+ * wie {@see SupplierAnalysisReportBuilder},
  * ohne Lager-Modul nutzbar. Erst-/Letztbeleg werden org-weit und UNGEFILTERT
  * bestimmt (Lieferantenfakten); nur die Zeitraum-Kennzahlen folgen dem Filter.
  */
@@ -37,11 +36,7 @@ class SupplierValueReportBuilder {
 
     public const HHI_HIGH = 2500;
 
-    /** Einkaufsbeleg-Typen im Lexoffice-Spiegel (supplier_id gesetzt). */
-    private const EXPENSE_TYPES = VoucherTypes::EXPENSES;
-
-    /** Gutschriften mindern die Ausgaben (negatives Vorzeichen). */
-    private const CREDIT_TYPES = VoucherTypes::EXPENSE_CREDITS;
+    public function __construct(private readonly ExternalPurchases $purchases) {}
 
     /**
      * @return array{
@@ -169,24 +164,12 @@ class SupplierValueReportBuilder {
         }
 
         $bySupplier = array_fill_keys($supplierIds, array_fill_keys($bucketKeys, 0.0));
-        LexofficeVoucher::query()
-            ->whereIn('supplier_id', $supplierIds)
-            ->where('archived', false)
-            ->whereNotNull('voucher_date')
-            ->whereBetween('voucher_date', DateRange::days($from, $to))
-            ->whereIn('voucher_type', self::EXPENSE_TYPES)
-            ->whereNotIn('voucher_status', ['draft', 'voided'])
-            ->get(['supplier_id', 'voucher_type', 'voucher_date', 'total_amount'])
-            ->each(function (LexofficeVoucher $voucher) use (&$bySupplier, $granularity): void {
-                $sid = (int) $voucher->supplier_id;
-                if ($voucher->voucher_date === null) {
-                    return;
-                }
-                $key = ChartBucket::keyLabel($granularity, CarbonImmutable::parse($voucher->voucher_date->toDateString()))[0];
-                if (isset($bySupplier[$sid][$key])) {
-                    $bySupplier[$sid][$key] += $this->signedAmount($voucher);
-                }
-            });
+        foreach ($this->purchases->purchases($from, $to, $supplierIds) as $purchase) {
+            $key = ChartBucket::keyLabel($granularity, $purchase->date)[0];
+            if (isset($bySupplier[$purchase->supplierId][$key])) {
+                $bySupplier[$purchase->supplierId][$key] += $purchase->amount;
+            }
+        }
 
         return array_map(
             static fn(array $series): array => array_map(static fn(float $v): float => round($v, 2), array_values($series)),
@@ -209,26 +192,16 @@ class SupplierValueReportBuilder {
         /** @var array<int, string> $last */
         $last = [];
 
-        LexofficeVoucher::query()
-            ->whereNotNull('supplier_id')
-            ->where('archived', false)
-            ->whereNotNull('voucher_date')
-            ->whereBetween('voucher_date', DateRange::days($from, $to))
-            ->whereIn('voucher_type', self::EXPENSE_TYPES)
-            ->whereNotIn('voucher_status', ['draft', 'voided'])
-            ->get(['supplier_id', 'voucher_type', 'voucher_date', 'total_amount'])
-            ->each(function (LexofficeVoucher $voucher) use (&$spend, &$days, &$count, &$last): void {
-                $sid = (int) $voucher->supplier_id;
-                $date = $voucher->voucher_date?->toDateString();
-                $spend[$sid] = ($spend[$sid] ?? 0.0) + $this->signedAmount($voucher);
-                $count[$sid] = ($count[$sid] ?? 0) + 1;
-                if ($date !== null) {
-                    $days[$sid][$date] = true;
-                    if (! isset($last[$sid]) || $date > $last[$sid]) {
-                        $last[$sid] = $date;
-                    }
-                }
-            });
+        foreach ($this->purchases->purchases($from, $to) as $purchase) {
+            $sid = $purchase->supplierId;
+            $date = $purchase->date->toDateString();
+            $spend[$sid] = ($spend[$sid] ?? 0.0) + $purchase->amount;
+            $count[$sid] = ($count[$sid] ?? 0) + 1;
+            $days[$sid][$date] = true;
+            if (! isset($last[$sid]) || $date > $last[$sid]) {
+                $last[$sid] = $date;
+            }
+        }
 
         $voucherDays = array_map(static fn(array $set): int => count($set), $days);
 
@@ -236,38 +209,26 @@ class SupplierValueReportBuilder {
     }
 
     /**
-     * Erst-/Letztbeleg je Lieferant (org-weit, ungefiltert): MIN/MAX über
-     * `voucher_date` der Einkaufsbelege.
+     * Erst-/Letztbeleg je Lieferant (org-weit, ungefiltert) über das
+     * Belegdatum aller Einkaufsbelege.
      *
      * @return array{0: array<int, string>, 1: array<int, string>}
      */
     private function activityBounds(): array {
         $first = [];
         $last = [];
-
-        LexofficeVoucher::query()
-            ->whereNotNull('supplier_id')
-            ->where('archived', false)
-            ->whereNotNull('voucher_date')
-            ->whereIn('voucher_type', self::EXPENSE_TYPES)
-            ->whereNotIn('voucher_status', ['draft', 'voided'])
-            ->groupBy('supplier_id')
-            ->selectRaw('supplier_id, MIN(voucher_date) AS first_date, MAX(voucher_date) AS last_date')
-            ->get()
-            ->each(function ($row) use (&$first, &$last): void {
-                $sid = (int) $row->getAttribute('supplier_id');
-                $first[$sid] = substr((string) $row->getAttribute('first_date'), 0, 10);
-                $last[$sid] = substr((string) $row->getAttribute('last_date'), 0, 10);
-            });
+        foreach ($this->purchases->purchases(null, null) as $purchase) {
+            $sid = $purchase->supplierId;
+            $date = $purchase->date->toDateString();
+            if (! isset($first[$sid]) || $date < $first[$sid]) {
+                $first[$sid] = $date;
+            }
+            if (! isset($last[$sid]) || $date > $last[$sid]) {
+                $last[$sid] = $date;
+            }
+        }
 
         return [$first, $last];
-    }
-
-    /** Vorzeichenbehafteter Belegbetrag (Gutschriften negativ). */
-    private function signedAmount(LexofficeVoucher $voucher): float {
-        $sign = in_array($voucher->voucher_type, self::CREDIT_TYPES, true) ? -1.0 : 1.0;
-
-        return $sign * ($voucher->total_amount?->toFloat() ?? 0.0);
     }
 
     /**

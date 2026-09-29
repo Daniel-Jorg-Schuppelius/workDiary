@@ -51,6 +51,8 @@ return [
         'tenant_help' => 'GUID du tenant Entra ; vide = valeur de l’application d’instance (par défaut « common »).',
         'onenote_import' => 'Autoriser l’import OneNote',
         'onenote_import_help' => 'Active la connexion OneNote en lecture seule (Notes.Read). Désactivé : aucune autorisation supplémentaire, pas même dans le consentement à l’échelle du tenant.',
+        'oof_enabled' => 'Définir la réponse automatique Outlook pour les congés approuvés',
+        'oof_enabled_help' => 'Active la réponse automatique dans la boîte aux lettres de la personne dès qu\'un congé est approuvé. Nécessite l\'autorisation MailboxSettings.ReadWrite dans l\'application de consentement administrateur.',
         'tenant_invalid' => 'Le tenant doit être un GUID d’annuaire (ou common/organizations/consumers).',
     ],
     'health' => [

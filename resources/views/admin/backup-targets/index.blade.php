@@ -15,33 +15,9 @@
 <x-index-page :subtitle="__('backup_targets.description')">
     <x-slot:actions>
         <x-action-menu icon="add" tone="primary" :label="__('Neu')">
-            <form method="POST" action="{{ route('admin.backup-targets.dropbox.oauth.start') }}" class="leading-none">
-                @csrf
-                <x-icon-btn icon="add" size="sm" type="submit" show-label>Dropbox</x-icon-btn>
-            </form>
-            <form method="POST" action="{{ route('admin.backup-targets.microsoft.oauth.start') }}" class="leading-none">
-                @csrf
-                <x-icon-btn icon="add" size="sm" type="submit" show-label>Microsoft</x-icon-btn>
-            </form>
-            <form method="POST" action="{{ route('admin.backup-targets.google.oauth.start') }}" class="leading-none">
-                @csrf
-                <x-icon-btn icon="add" size="sm" type="submit" show-label>Google Drive</x-icon-btn>
-            </form>
-            {{-- Nextcloud (MVP-383): Zugangsdaten-Dialog statt OAuth-Redirect. --}}
-            <x-icon-btn icon="add" size="sm"
-                        data-entry-modal-trigger
-                        :href="route('admin.backup-targets.nextcloud.connect-form')"
-                        show-label>Nextcloud</x-icon-btn>
-            {{-- Generisches WebDAV (MVP-612): eigener Server statt US-Anbieter. --}}
-            <x-icon-btn icon="add" size="sm"
-                        data-entry-modal-trigger
-                        :href="route('admin.backup-targets.webdav.connect-form')"
-                        show-label>WebDAV</x-icon-btn>
-            {{-- S3-kompatibel (MVP-726): AWS S3, MinIO, Wasabi, Hetzner. --}}
-            <x-icon-btn icon="add" size="sm"
-                        data-entry-modal-trigger
-                        :href="route('admin.backup-targets.s3.connect-form')"
-                        show-label>S3</x-icon-btn>
+            @foreach ($connectActions as $action)
+                <x-ui-action :action="$action" size="sm" show-label />
+            @endforeach
         </x-action-menu>
     </x-slot:actions>
 
@@ -72,17 +48,8 @@
                     <x-status-badge size="xs" :tone="$connection->status->tone()">{{ $connection->status->label() }}</x-status-badge>
                     <span class="text-sm text-muted">{{ $connection->external_account_label ?? __('backup_targets.account') }}</span>
                     <div class="ml-auto flex items-center gap-1.5">
-                        @if ($connection->provider === \App\Enums\Backup\BackupProvider::Nextcloud)
-                            {{-- Nextcloud: Re-Auth über den Zugangsdaten-Dialog (kein OAuth-Redirect). --}}
-                            <x-icon-btn icon="sync" tone="ghost" size="xs"
-                                        data-entry-modal-trigger
-                                        :href="route('admin.backup-targets.nextcloud.connect-form', ['connection' => $connection->sqid])"
-                                        show-label>{{ __('backup_targets.reconnect') }}</x-icon-btn>
-                        @else
-                            <form method="POST" action="{{ route('admin.backup-targets.' . ($connection->provider->value === 'microsoft' ? 'microsoft' : ($connection->provider->value === 'google' ? 'google' : 'dropbox')) . '.oauth.start', ['connection' => $connection->sqid]) }}" class="leading-none">
-                                @csrf
-                                <x-icon-btn icon="sync" tone="ghost" size="xs" type="submit" show-label>{{ __('backup_targets.reconnect') }}</x-icon-btn>
-                            </form>
+                        @if ($reconnectActions[$connection->id] ?? null)
+                            <x-ui-action :action="$reconnectActions[$connection->id]" show-label />
                         @endif
                         <a href="{{ route('admin.backup-targets.cleanup.preview', $connection) }}" class="btn btn-ghost btn-xs">{{ __('backup_targets.cleanup') }}</a>
                         <x-action-form :action="route('admin.backup-targets.disconnect', $connection)"

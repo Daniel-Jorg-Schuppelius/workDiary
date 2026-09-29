@@ -13,11 +13,15 @@ declare(strict_types=1);
 namespace App\Plugins\OrgaMax;
 
 use App\Enums\Billing\{DocumentDirection, DocumentKind, DocumentOrigin};
+use App\Models\Platform\User;
+use App\Models\Plugins\OrgaMax\OrgaMaxInvoice;
 use App\Services\Billing\DocumentFeedFilters;
-use App\Services\Billing\Feed\{DocumentFeedSource, FeedProjection, SuppressesCoreInvoices};
+use App\Services\Billing\Feed\{DocumentFeedSource, FeedProjection, PresentsFeedRows, SuppressesCoreInvoices};
 use App\Support\Query\DateRange;
+use App\Support\Sqid;
+use App\Support\Ui\UiAction;
 use Illuminate\Database\Query\Builder;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\{DB, Route};
 
 /**
  * Gespiegelte orgaMAX-Rechnungen im Belegfluss (MVP-670). Gleiche Rolle wie
@@ -26,7 +30,7 @@ use Illuminate\Support\Facades\DB;
  * sind kein Beleg und bleiben draußen. Registriert über den
  * {@see OrgaMaxServiceProvider} — der Kern kennt `orgamax_invoices` nicht.
  */
-class OrgaMaxDocumentFeedSource implements DocumentFeedSource, SuppressesCoreInvoices {
+class OrgaMaxDocumentFeedSource implements DocumentFeedSource, PresentsFeedRows, SuppressesCoreInvoices {
     public function key(): string {
         return OrgaMaxPlugin::ID;
     }
@@ -95,5 +99,22 @@ class OrgaMaxDocumentFeedSource implements DocumentFeedSource, SuppressesCoreInv
                         ->orWhereColumn('orgamax_invoices.invoice_number', 'invoices.external_number');
                 });
         });
+    }
+
+    public function presents(\stdClass $row): bool {
+        return $row->source_type === 'orgamax_invoice';
+    }
+
+    public function rowLink(\stdClass $row, User $user): ?UiAction {
+        // Keine eigene Detailseite: das PDF liegt hinter der Admin-Route (MVP-670).
+        if (! $user->isAdmin() || ! Route::has('admin.orgamax.invoices.pdf')) {
+            return null;
+        }
+
+        return new UiAction('picture_as_pdf', (string) __('PDF'), route('admin.orgamax.invoices.mirror-pdf', Sqid::encode(OrgaMaxInvoice::class, (int) $row->link_id)), modal: true);
+    }
+
+    public function rowActions(\stdClass $row, User $user, bool $overdue): array {
+        return [];
     }
 }

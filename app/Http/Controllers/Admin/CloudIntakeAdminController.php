@@ -10,11 +10,11 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Enums\CloudIntake\CloudIntakeConnectionStatus;
+use App\Enums\CloudIntake\{CloudIntakeConnectionStatus, CloudIntakeProvider};
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CloudIntake\SaveCloudRouteRequest;
 use App\Models\CloudIntake\{CloudDocumentConnection, CloudDocumentItem, CloudDocumentRoute};
-use App\Plugins\Contracts\DocumentIntakeSource;
+use App\Plugins\Contracts\{DocumentIntakeSource, IntakeSourceConnector};
 use App\Plugins\PluginManager;
 use App\Services\CloudIntake\RoutePatternValidator;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -66,8 +66,18 @@ class CloudIntakeAdminController extends Controller {
             }
         }
 
+        // Verbinden liefert das Anbieter-Plugin (MVP-1041).
+        $connectActions = [];
+        foreach (CloudIntakeProvider::cases() as $provider) {
+            $plugin = app(PluginManager::class)->find($provider->pluginId());
+            if ($plugin instanceof IntakeSourceConnector) {
+                $connectActions[] = $plugin->intakeConnectAction();
+            }
+        }
+
         return view('admin.cloud-intake.index', [
             'connections' => $connections,
+            'connectActions' => $connectActions,
             'items' => $items,
             'canManage' => Gate::allows('create', CloudDocumentConnection::class),
             'canManageRoutes' => Gate::allows('create', CloudDocumentRoute::class),

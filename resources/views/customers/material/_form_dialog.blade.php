@@ -8,7 +8,7 @@
 --}}
 
 {{-- Materialkosten zuordnen (Feature: Gewinndarstellung). Erwartet:
-     $customer, $purchaseVouchers (Collection<LexofficeVoucher>), $projects. --}}
+     $customer, $purchaseDocuments (Collection<PurchaseDocument>, alle Belegquellen — MVP-1036), $projects. --}}
 
 @php
     $money = fn ($v) => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(
@@ -28,15 +28,15 @@
 
     <x-form-group :legend="__('customer-material.source')" icon="receipt_long" tone="primary" cols="1"
                   :description="__('customer-material.source_hint')">
-        <x-select-field name="voucher_id" :label="__('customer-material.voucher')"
+        <x-select-field name="document" :label="__('customer-material.voucher')"
                         :hint="__('customer-material.voucher_hint')">
             <option value="">{{ __('customer-material.manual_amount') }}</option>
-            @foreach ($purchaseVouchers as $voucher)
-                <option value="{{ $voucher->sqid }}" @selected(old('voucher_id') === $voucher->sqid)>
-                    {{ $voucher->voucher_number ?: __('customer-material.voucher') }}
-                    @if ($voucher->supplier) · {{ $voucher->supplier->name }} @endif
-                    · {{ $money($voucher->total_amount) }} {{ $voucher->currency->value }}
-                    · {{ $voucher->voucher_date?->fdate() }}
+            @foreach ($purchaseDocuments as $document)
+                <option value="{{ $document->key }}" @selected(old('document') === $document->key)>
+                    {{ $document->reference() }}
+                    @if ($document->vendorName) · {{ $document->vendorName }} @endif
+                    · {{ $money($document->net) }} {{ $document->currency->value }}
+                    @if ($document->date) · {{ $document->date->fdate() }} @endif
                 </option>
             @endforeach
         </x-select-field>

@@ -77,7 +77,7 @@ class MaterialCostAllocationTest extends TestCase {
         $this->actingAs($this->admin)
             ->from(route('customers.show', $this->customer))
             ->post(route('customers.material-costs.store', $this->customer), [
-                'voucher_id' => $voucher->sqid,
+                'document' => $voucher->sqid,
                 'allocated_amount' => '200.00',
                 'allocated_on' => now()->toDateString(),
             ])
@@ -95,7 +95,7 @@ class MaterialCostAllocationTest extends TestCase {
         $this->actingAs($this->admin)
             ->from(route('customers.show', $this->customer))
             ->post(route('customers.material-costs.store', $this->customer), [
-                'voucher_id' => $voucher->sqid,
+                'document' => $voucher->sqid,
                 'allocated_amount' => '150.00',
                 'allocated_on' => now()->toDateString(),
             ])
@@ -167,6 +167,41 @@ class MaterialCostAllocationTest extends TestCase {
             ->assertOk()
             ->assertSeeText('Materialkosten & Gewinn')
             ->assertSeeText('Materialposten X');
+    }
+
+    public function test_expense_can_be_allocated_like_any_purchase_document(): void {
+        // MVP-1036: jede Quelle der Einkaufsbeleg-Registry, nicht nur Lexoffice.
+        $expense = \App\Models\Travel\Expense::factory()->create([
+            'organization_id' => $this->organization->id, 'vendor' => 'Elektrogroßhandel', 'date' => now()->toDateString(),
+            'currency' => 'EUR', 'amount_net' => '80.00', 'tax_rate' => '19', 'status' => \App\Enums\Expense\ExpenseStatus::Approved->value,
+        ]);
+        $key = \App\Support\Sqid::encode(\App\Models\Travel\Expense::class, (int) $expense->id);
+
+        $this->actingAs($this->admin)->get(route('customers.material-costs.create', $this->customer))->assertOk()->assertSee($key);
+        $this->actingAs($this->admin)
+            ->from(route('customers.show', $this->customer))
+            ->post(route('customers.material-costs.store', $this->customer), ['document' => $key, 'allocated_amount' => '90.00', 'allocated_on' => now()->toDateString()])
+            ->assertSessionHasErrors('allocated_amount');
+        $this->actingAs($this->admin)
+            ->post(route('customers.material-costs.store', $this->customer), ['document' => $key, 'allocated_amount' => '50.00', 'allocated_on' => now()->toDateString()])
+            ->assertRedirect(route('customers.show', $this->customer));
+
+        $allocation = $this->customer->materialCostAllocations()->firstOrFail();
+        $this->assertSame((new \App\Models\Travel\Expense)->getMorphClass(), $allocation->source_type);
+        $this->assertSame($expense->id, (int) $allocation->source_id);
+        $this->assertNotNull($allocation->description, 'Beschreibung aus dem Beleg');
+    }
+
+    public function test_purchase_credit_note_is_not_a_cost_source(): void {
+        $credit = $this->purchaseVoucher(40.0);
+        $credit->update(['voucher_type' => 'purchasecreditnote', 'voucher_number' => 'GS-1']);
+
+        $this->actingAs($this->admin)->get(route('customers.material-costs.create', $this->customer))->assertOk()->assertDontSee('GS-1');
+        $this->actingAs($this->admin)
+            ->from(route('customers.show', $this->customer))
+            ->post(route('customers.material-costs.store', $this->customer), ['document' => $credit->sqid, 'allocated_amount' => '10.00', 'allocated_on' => now()->toDateString()])
+            ->assertSessionHasErrors('document');
+        $this->assertSame(0, $this->customer->materialCostAllocations()->count());
     }
 
     private function purchaseVoucher(float $total): LexofficeVoucher {

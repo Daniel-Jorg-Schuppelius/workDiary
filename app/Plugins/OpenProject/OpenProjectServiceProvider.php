@@ -13,7 +13,7 @@ namespace App\Plugins\OpenProject;
 use App\Plugins\OpenProject\Console\{OpenProjectPushCommand, OpenProjectSyncCommand};
 use App\Plugins\OpenProject\Services\{OpenProjectExportService, OpenProjectImportService, OpenProjectOutboxDispatcher, OpenProjectStructureSync};
 use App\Plugins\Support\PluginServiceProviderBase;
-use App\Services\Integration\IntegrationOutboxDispatcherResolver;
+use App\Services\Integration\{InboxGroupBookerRegistry, IntegrationOutboxDispatcherResolver};
 
 /**
  * Plugin-eigener ServiceProvider. Wird vom Core-{@see \App\Providers\PluginServiceProvider}
@@ -33,6 +33,9 @@ class OpenProjectServiceProvider extends PluginServiceProviderBase {
     }
 
     protected function bootPlugin(): void {
+        // Gruppierte Auflösung der Import-Inbox (MVP-1030).
+        $this->app->make(InboxGroupBookerRegistry::class)->register(OpenProjectPlugin::ID, OpenProjectGroupBooker::class);
+
         $this->app->make(IntegrationOutboxDispatcherResolver::class)->register(new OpenProjectOutboxDispatcher);
 
         $this->commands([

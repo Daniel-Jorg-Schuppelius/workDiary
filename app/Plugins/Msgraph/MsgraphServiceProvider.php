@@ -14,9 +14,9 @@ use App\Models\Project\Task;
 use App\Plugins\Msgraph\Api\{MsgraphMailOAuth, MsgraphOAuth};
 use App\Plugins\Msgraph\Mail\{MsgraphMailTransport, StampOrganizationMailHeader};
 use App\Plugins\Msgraph\Observers\MsgraphTodoTaskObserver;
-use App\Plugins\Msgraph\Services\MsgraphOutboxDispatcher;
+use App\Plugins\Msgraph\Services\{MsgraphOutboxDispatcher, MsgraphSeriesGroupBooker};
 use App\Plugins\Support\PluginServiceProviderBase;
-use App\Services\Integration\IntegrationOutboxDispatcherResolver;
+use App\Services\Integration\{InboxGroupBookerRegistry, IntegrationOutboxDispatcherResolver};
 use Illuminate\Mail\Events\MessageSending;
 use Illuminate\Support\Facades\{Event, Mail};
 
@@ -54,6 +54,14 @@ class MsgraphServiceProvider extends PluginServiceProviderBase {
     }
 
     protected function bootPlugin(): void {
+        // Gruppierte Auflösung der Import-Inbox (MVP-1030).
+        $this->app->make(InboxGroupBookerRegistry::class)->register(MsgraphPlugin::ID, MsgraphSeriesGroupBooker::class);
+        // Graph-Postfächer als Postfach-Transport (MVP-1042).
+        $this->app->make(\App\Services\Mail\MailboxTransports::class)->register(new \App\Plugins\Msgraph\Services\MsgraphMailboxTransport);
+        // OneNote-Übernahme in die Wissenssammlungen (MVP-1042).
+        $this->app->make(\App\Services\Collections\Import\NotebookSources::class)
+            ->register(new \App\Plugins\Msgraph\Services\OneNoteImportSource(new \App\Plugins\Msgraph\Services\OneNoteNotebookReader));
+
         Mail::extend('msgraph', fn(): MsgraphMailTransport => new MsgraphMailTransport());
         Event::listen(MessageSending::class, StampOrganizationMailHeader::class);
 
@@ -62,7 +70,7 @@ class MsgraphServiceProvider extends PluginServiceProviderBase {
         Task::observe(MsgraphTodoTaskObserver::class);
 
         // Feature-103-Delta: Outlook-Abwesenheitsnotiz bei genehmigtem Urlaub
-        // (Opt-in je Org, settings.msgraph.oof_enabled).
+        // (Opt-in je Org, Plugin-Einstellung oof_enabled).
         \App\Models\Absence\Vacation::observe(\App\Plugins\Msgraph\Observers\MsgraphVacationObserver::class);
         $this->app->make(IntegrationOutboxDispatcherResolver::class)->register(new MsgraphOutboxDispatcher());
     }

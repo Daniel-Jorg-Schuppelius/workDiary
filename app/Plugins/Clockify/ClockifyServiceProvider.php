@@ -13,7 +13,7 @@ namespace App\Plugins\Clockify;
 use App\Plugins\Clockify\Console\ClockifyPushCommand;
 use App\Plugins\Clockify\Services\ClockifyOutboxDispatcher;
 use App\Plugins\Support\PluginServiceProviderBase;
-use App\Services\Integration\IntegrationOutboxDispatcherResolver;
+use App\Services\Integration\{InboxGroupBookerRegistry, IntegrationOutboxDispatcherResolver};
 
 /**
  * Plugin-eigener ServiceProvider (geladen vom Core-PluginServiceProvider, sobald
@@ -30,6 +30,9 @@ class ClockifyServiceProvider extends PluginServiceProviderBase {
     }
 
     protected function bootPlugin(): void {
+        // Gruppierte Auflösung der Import-Inbox (MVP-1030).
+        $this->app->make(InboxGroupBookerRegistry::class)->register(ClockifyPlugin::ID, ClockifyGroupBooker::class);
+
         $this->app->make(IntegrationOutboxDispatcherResolver::class)->register(new ClockifyOutboxDispatcher);
 
         $this->commands([ClockifyPushCommand::class]);

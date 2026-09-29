@@ -13,10 +13,6 @@ declare(strict_types=1);
 namespace App\Services\Billing\Feed\Sources;
 
 use App\Enums\Billing\{DocumentDirection, DocumentKind, DocumentOrigin};
-use App\Plugins\Easybill\EasybillPlugin;
-use App\Plugins\InvoicePlane\Services\InvoicePlaneVoucherPullService;
-use App\Plugins\JtlWawi\JtlWawiPlugin;
-use App\Plugins\SevDesk\SevDeskPlugin;
 use App\Services\Billing\DocumentFeedFilters;
 use App\Services\Billing\Feed\{DocumentFeedSource, FeedProjection};
 use App\Support\Query\DateRange;
@@ -44,18 +40,21 @@ class AccountingVoucherSource implements DocumentFeedSource {
     }
 
     /**
-     * Plugin-ID je Herkunftssystem — die einzige Stelle, an der die Spiegelung
-     * weiß, welcher Anbieter hinter einer Zeile steckt.
+     * Plugin-ID je Herkunftssystem (MVP-1031): Die Beleg-Abrufe schreiben ihre
+     * Plugin-ID, und die Werte von {@see DocumentOrigin} sind die Plugin-IDs —
+     * kein Anbieter muss hier stehen.
      *
      * @return array<string, DocumentOrigin>
      */
     private function origins(): array {
-        return [
-            SevDeskPlugin::ID => DocumentOrigin::SevDesk,
-            EasybillPlugin::ID => DocumentOrigin::Easybill,
-            InvoicePlaneVoucherPullService::PLUGIN_ID => DocumentOrigin::InvoicePlane,
-            JtlWawiPlugin::ID => DocumentOrigin::JtlWawi,
-        ];
+        $origins = [];
+        foreach (DocumentOrigin::cases() as $origin) {
+            if ($origin !== DocumentOrigin::Local) {
+                $origins[$origin->value] = $origin;
+            }
+        }
+
+        return $origins;
     }
 
     public function builder(DocumentFeedFilters $f): ?Builder {

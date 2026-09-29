@@ -151,6 +151,7 @@ final class LinkProposer {
                         ->where('is_own_holding', false)
                         ->where(static fn($q) => $q->whereNotNull('customer_id')->orWhereNotNull('foreign_customer_id'))
                         ->with(['customer', 'foreignCustomer.customer'])
+                        ->orderBy('id')
                         ->get();
                     ResaleSubscription::withCatalogArticles($subscriptions);
                     $evaluated = $subscriptions->isEmpty() ? [] : $this->evaluate($organization, $subscriptions, $reference, $result);
@@ -273,6 +274,8 @@ final class LinkProposer {
             ->where('starts_on', '<', DateRange::dayAfter($reference))
             ->with('links')
             ->orderBy('starts_on')
+            // Gleicher Beginn: feste Reihenfolge, damit wiederholte Läufe gleich ausfallen.
+            ->orderBy('id')
             ->get();
         if ($periods->isEmpty()) {
             return [];
@@ -511,6 +514,9 @@ final class LinkProposer {
 
     /**
      * Je Position: Index der Periode (passendes Produkt, gleicher Empfänger), deren Beginn dem Belegdatum am nächsten liegt.
+     * Nennt die Position Endkunden, zählen nur deren Perioden; liegen ohne Nennung Perioden
+     * verschiedener Endkunden gleich nah, ist die Position mehrdeutig (null) — sonst
+     * entschiede die Reihenfolge der Perioden über den Endkunden.
      *
      * @param  list<array{period: ResalePeriod, subscription: ResaleSubscription, needed: float, covered: float}>  $states
      * @param  Collection<int, MirrorLine>  $lines
@@ -518,6 +524,13 @@ final class LinkProposer {
      * @return array<string, int|null>
      */
     private function nearestPeriods(array $states, Collection $lines, array $recipientBySubscription): array {
+        /** @var array<int, array{tokens: list<string>, squashed: list<string>}|null> $mentionKeys */
+        $mentionKeys = [];
+        foreach ($states as $state) {
+            $subscription = $state['subscription'];
+            $mentionKeys[$subscription->id] ??= $subscription->foreignCustomer !== null ? $this->mentionKeys($subscription->foreignCustomer) : null;
+        }
+
         $nearest = [];
         foreach ($lines as $line) {
             $identity = $line->identity();
@@ -527,23 +540,39 @@ final class LinkProposer {
 
                 continue;
             }
-            $best = null;
+            $text = $line->text() . ' ' . (string) $line->voucherText;
+            $matching = [];
             $containing = [];
             foreach ($states as $index => $state) {
                 if ($line->recipientCustomerId === null || ($recipientBySubscription[$state['subscription']->id] ?? null) !== $line->recipientCustomerId || ! $this->matchesProduct($state['subscription'], $line)) {
                     continue;
                 }
                 $period = $state['period'];
-                $distance = (int) abs($date->diffInDays($period->starts_on));
-                if ($best === null || $distance < $best[1]) {
-                    $best = [$index, $distance];
-                }
+                $keys = $mentionKeys[$state['subscription']->id] ?? null;
+                $matching[$index] = [
+                    'distance' => (int) abs($date->diffInDays($period->starts_on)),
+                    'mentioned' => $keys !== null && $this->mentions($keys, $text),
+                    'holder' => $state['subscription']->foreign_customer_id !== null ? 'f' . $state['subscription']->foreign_customer_id : 'c' . $state['subscription']->customer_id,
+                ];
                 if (! $date->lessThan($period->starts_on) && ! $date->greaterThan($period->ends_on)) {
                     $containing[] = $index;
                 }
             }
             $this->containing[$identity] = $containing;
-            $nearest[$identity] = $best[0] ?? null;
+
+            $mentioned = array_filter($matching, static fn (array $m): bool => $m['mentioned']);
+            $pool = $mentioned !== [] ? $mentioned : $matching;
+            $best = null;
+            $holders = [];
+            foreach ($pool as $index => $m) {
+                if ($best === null || $m['distance'] < $pool[$best]['distance']) {
+                    $best = $index;
+                    $holders = [$m['holder'] => true];
+                } elseif ($m['distance'] === $pool[$best]['distance']) {
+                    $holders[$m['holder']] = true;
+                }
+            }
+            $nearest[$identity] = count($holders) > 1 ? null : $best;
         }
 
         return $nearest;
@@ -566,7 +595,7 @@ final class LinkProposer {
             }
         }
         // Auch der Name ohne Rechtsform („Haus 24 GmbH" → „haus24").
-        $core = self::squash(implode(' ', NameTokenMatcher::significantTokens($foreign->name)));
+        $core = self::squash(implode(' ', NameTokenMatcher::withoutLegalForm($foreign->name)));
         if (mb_strlen($core) >= 4) {
             $squashed[] = $core;
         }

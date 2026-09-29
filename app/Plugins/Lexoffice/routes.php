@@ -9,7 +9,7 @@
  */
 
 use App\Plugins\Lexoffice\Http\Controllers\Admin\LexofficeConflictInboxController;
-use App\Plugins\Lexoffice\Http\Controllers\{LexofficeArticleController, LexofficeCustomerController, LexofficeInvoiceController, LexofficeVoucherController};
+use App\Plugins\Lexoffice\Http\Controllers\{LexofficeArticleController, LexofficeCustomerController, LexofficeInvoiceController, LexofficeManufacturingController, LexofficeVoucherController};
 use Illuminate\Support\Facades\Route;
 
 /**
@@ -42,6 +42,16 @@ Route::middleware(['web', 'auth', \App\Http\Middleware\EnforcePlanModules::class
     Route::get('invoices/{invoice}/lexoffice/pdf', [LexofficeInvoiceController::class, 'pdf'])
         ->name('invoices.lexoffice.pdf');
 
+    // Fertigung (Feature 045/047, MVP-1040): Angebot, Auftragsbestätigung, Lieferschein.
+    Route::middleware('access.new')->group(function (): void {
+        Route::post('manufacturing-orders/{order}/deliveries/{delivery}/lexoffice', [LexofficeManufacturingController::class, 'pushDeliveryNote'])
+            ->name('manufacturing-orders.deliveries.lexoffice');
+        Route::post('manufacturing-orders/{order}/order-confirmation/lexoffice', [LexofficeManufacturingController::class, 'pushOrderConfirmation'])
+            ->name('manufacturing-orders.order-confirmation.lexoffice');
+        Route::post('manufacturing-orders/{order}/quotation/lexoffice', [LexofficeManufacturingController::class, 'pushQuotation'])
+            ->name('manufacturing-orders.quotation.lexoffice');
+    });
+
     // Produkte & Leistungen (Lexoffice-Artikel)
     Route::get('lexoffice-articles', [LexofficeArticleController::class, 'index'])
         ->name('lexoffice.articles.index');
@@ -53,7 +63,7 @@ Route::middleware(['web', 'auth', \App\Http\Middleware\EnforcePlanModules::class
     // Belege (Lexoffice-Vouchers)
     // MVP-549: Die eigene Belegliste ist im Belegfluss aufgegangen — die
     // Herkunft ist dort ein Filter, keine eigene Seite.
-    Route::get('lexoffice-vouchers', [\App\Http\Controllers\Billing\DocumentFeedController::class, 'fromVouchers'])
+    Route::get('lexoffice-vouchers', [LexofficeVoucherController::class, 'index'])
         ->name('lexoffice.vouchers.index');
     Route::post('lexoffice-vouchers/sync', [LexofficeVoucherController::class, 'sync'])
         ->name('lexoffice.vouchers.sync');

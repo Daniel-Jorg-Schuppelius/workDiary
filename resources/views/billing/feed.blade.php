@@ -73,23 +73,23 @@
     }
 
     // Zielseite je Quelle — die Zeile führt dorthin, wo der Vorgang lebt.
-    // orgaMAX-Belege haben keine lokale Detailseite: dort führt das
-    // Fremdsystem, das PDF kommt über die Admin-Route des Plugins (MVP-670).
-    $rowLink = static function (object $row) use ($canOpenOrgaMax): ?array {
-        if ($row->source_type === 'orgamax_invoice') {
-            return $canOpenOrgaMax
-                ? [route('admin.orgamax.invoices.mirror-pdf', Sqid::encode(\App\Models\Plugins\OrgaMax\OrgaMaxInvoice::class, (int) $row->link_id)), true]
-                : null;
-        }
-
-        return match ($row->source_type) {
+    // Plugin-Zeilen stellen ihre Quellen selbst dar (MVP-1041); gespiegelte
+    // Belege ohne eigene Seite bleiben ohne Link.
+    $feedUser = auth()->user();
+    $rowLink = static function (object $row) use ($feedSources, $feedUser): ?array {
+        $core = match ($row->source_type) {
             'invoice' => [route('invoices.show', Sqid::encode(\App\Models\Invoicing\Invoice::class, (int) $row->link_id)), false],
             'quote' => [route('quotes.show', Sqid::encode(\App\Models\Sales\Quote::class, (int) $row->link_id)), false],
-            'voucher' => [route('lexoffice.vouchers.preview', Sqid::encode(\App\Models\Plugins\Lexoffice\LexofficeVoucher::class, (int) $row->link_id)), true],
             'incoming_einvoice' => [route('finance.incoming-invoices.show', Sqid::encode(\App\Models\Document\Document::class, (int) $row->link_id)), false],
             'expense' => [route('expenses.receipt', Sqid::encode(\App\Models\Travel\Expense::class, (int) $row->link_id)), true],
             default => null,
         };
+        if ($core !== null) {
+            return $core;
+        }
+        $link = $feedUser !== null ? $feedSources->presenterFor($row)?->rowLink($row, $feedUser) : null;
+
+        return $link !== null ? [$link->url, $link->modal] : null;
     };
 
     $stateTone = static fn (string $state): string => match ($state) {
@@ -341,13 +341,10 @@
                                         data-entry-modal-trigger
                                         :href="route('invoices.dun.form', Sqid::encode(\App\Models\Invoicing\Invoice::class, (int) $row->source_id))"
                                         :label="__('billing.feed.action.dun')" />
-                        @elseif ($isOverdue && $row->source_type === 'voucher' && $canDun)
-                            <x-action-form :action="route('lexoffice.vouchers.dunning', Sqid::encode(\App\Models\Plugins\Lexoffice\LexofficeVoucher::class, (int) $row->source_id))"
-                                           :confirm="__('billing.feed.action.dun_confirm')"
-                                           :confirm-label="__('billing.feed.action.dun')">
-                                <x-icon-btn icon="campaign" tone="warning" size="sm" type="submit"
-                                            :label="__('billing.feed.action.dun')" />
-                            </x-action-form>
+                        @elseif ($feedUser !== null)
+                            @foreach ($feedSources->presenterFor($row)?->rowActions($row, $feedUser, $isOverdue) ?? [] as $action)
+                                <x-ui-action :action="$action" size="sm" />
+                            @endforeach
                         @endif
                     </div>
                 </td>

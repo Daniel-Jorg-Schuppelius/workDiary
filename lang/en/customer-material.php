@@ -26,7 +26,6 @@ return [
     'project' => 'Project',
     'project_hint' => 'Optional — for finer allocation.',
     'no_project' => '— No project —',
-    'source_lexoffice' => 'Lexoffice document',
     'revenue' => 'Revenue (invoiced)',
     'material_cost' => 'Material costs',
     'profit' => 'Profit (calc.)',

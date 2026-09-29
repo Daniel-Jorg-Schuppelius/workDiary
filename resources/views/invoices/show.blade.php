@@ -176,14 +176,14 @@
             $billingInternal = ! app(\App\Services\Billing\BillingModeResolver::class)->effectiveFor($invoice->customer)->isExternal();
             // E-Rechnung (Feature 045): XRechnung nur im Pfad „WorkDiary führt" und für gestellte/bezahlte Rechnungen.
             $einvoiceVisible = in_array($invoice->status, [\App\Models\Invoicing\Invoice::STATUS_ISSUED, \App\Models\Invoicing\Invoice::STATUS_PAID], true) && $billingInternal;
-            // Lexware-Übergabe (Feature 158, MVP-833): Einzelexport, sobald eine lokale Ergänzung aktiv ist.
-            $lexwareExport = app(\App\Plugins\Lexoffice\Tariff\LexwareTariffService::class)->profile()->localFeatures !== [] && ! $isDraft && auth()->user()?->can(\App\Enums\User\Permission::InvoiceExport->value);
+            // Export-Einträge der Plugins (MVP-1039), z. B. Einzelübergabe an Lexware.
+            $pluginExports = app(\App\Plugins\PluginManager::class)->renderSlot('invoice-show.exports', $invoice);
             // Mahnsperre (Feature 127, MVP-691): nimmt die Rechnung aus Einzeldialog UND Mahnlauf; Umschalten wird auditiert.
             $dunningBlockVisible = in_array($invoice->status, [\App\Models\Invoicing\Invoice::STATUS_ISSUED, \App\Models\Invoicing\Invoice::STATUS_PARTIALLY_PAID], true) && (auth()->user()?->canManageBilling() ?? false);
         @endphp
         <x-page-toolbar :title="$invoice->documentLabel() . ' ' . $invoice->number" :badge="__('values.' . $invoice->status)" badge-tone="outline">
             <x-slot:badges>
-                @include('lexoffice::handover._badge', ['invoice' => $invoice])
+                {!! app(\App\Plugins\PluginManager::class)->renderSlot('invoice-show.badges', $invoice) !!}
                 @if ($dunningBlockVisible && $invoice->isDunningBlocked())
                     <x-status-badge tone="warning" outline :title="$invoice->dunning_block_reason">{{ __('finance.dunning.badge_blocked') }}</x-status-badge>
                 @endif
@@ -228,7 +228,7 @@
                     <x-icon-btn icon="account_balance" size="sm" :href="route('finance.payment-runs.index', ['invoice' => $invoice->sqid])"
                                 show-label>{{ __('sepa.direct_debit_from_invoice') }}</x-icon-btn>
                 @endif
-                @if ($einvoiceVisible || $lexwareExport)
+                @if ($einvoiceVisible || $pluginExports !== '')
                     <x-action-menu icon="download" :label="__('Export')">
                         @if ($einvoiceVisible)
                             <x-icon-btn icon="receipt" size="sm" :href="route('invoices.einvoice', $invoice)" show-label
@@ -239,9 +239,7 @@
                             <x-icon-btn icon="receipt_long" size="sm" :href="route('invoices.gaeb', $invoice)" show-label
                                         :title="__('invoicing.einvoice.gaeb.button_title')">{{ __('invoicing.einvoice.gaeb.button') }}</x-icon-btn>
                         @endif
-                        @if ($lexwareExport)
-                            <x-icon-btn icon="outbox" size="sm" :href="route('lexoffice.handover.export-one', $invoice)" show-label :title="__('lexware.action.export_one')">{{ __('lexware.action.export_one_short') }}</x-icon-btn>
-                        @endif
+                        {!! $pluginExports !!}
                     </x-action-menu>
                 @endif
                 @can('update', $invoice)
@@ -279,7 +277,7 @@
                     </x-action-form>
                 @endcan
                 @can('issue', $invoice)
-                    {{-- Plugin-Slot: jedes aktive Plugin kann hier eigene Aktionen (z. B. "An Lexoffice senden") einklinken --}}
+                    {{-- Plugin-Slot: Plugins klinken hier eigene Aktionen ein (z. B. Übergabe an das Buchhaltungsprogramm) --}}
                     {!! app(\App\Plugins\PluginManager::class)->renderSlot('invoice-show.actions', $invoice) !!}
                 @endcan
 

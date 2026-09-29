@@ -21,9 +21,10 @@ use App\Models\Platform\User;
 use App\Models\Sales\Quote;
 use App\Models\Travel\Expense;
 use App\Services\Billing\{DocumentFeedFilters, DocumentFeedQuery};
+use App\Services\Billing\Feed\DocumentFeedSourceRegistry;
 use App\Support\{SortableQuery, Sqid};
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{Auth, Gate, Route};
+use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 
 /**
@@ -104,14 +105,9 @@ class DocumentFeedController extends Controller {
             'sources' => $sources,
             'scopeAll' => $scopeAll,
             'mayScopeAll' => $this->maySeeAllExpenses($user),
-            // Mahnung aus der Zeile heraus (MVP-547) — beim Buchhaltungsbeleg
-            // legt sie das externe System an, deshalb dessen Sync-Recht.
-            'canDun' => $user->can(Permission::VoucherLexofficeSync->value),
             'canDunLocal' => $user->canManageBilling(),
-            // orgaMAX-Belege haben keine eigene Detailseite; das PDF liegt
-            // hinter der Admin-Route des Plugins (MVP-670). Ohne aktives
-            // Plugin existiert die Route nicht.
-            'canOpenOrgaMax' => $user->isAdmin() && Route::has('admin.orgamax.invoices.pdf'),
+            // Plugin-Zeilen: Link und Aktionen aus der jeweiligen Quelle (MVP-1041).
+            'feedSources' => app(DocumentFeedSourceRegistry::class),
             'filters' => [
                 'q' => $filters->search,
                 'origin' => $filters->origin->value ?? '',
@@ -136,13 +132,6 @@ class DocumentFeedController extends Controller {
 
     public function fromQuotes(): RedirectResponse {
         return redirect()->route('billing.feed', ['tab' => 'quotes']);
-    }
-
-    public function fromVouchers(Request $request): RedirectResponse {
-        return redirect()->route('billing.feed', array_filter([
-            'origin' => DocumentOrigin::Lexoffice->value,
-            'q' => trim((string) $request->query('q', '')) ?: null,
-        ]));
     }
 
     /**

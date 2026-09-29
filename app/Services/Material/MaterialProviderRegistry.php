@@ -11,33 +11,36 @@
 namespace App\Services\Material;
 
 use App\Models\Material\Material;
-use App\Services\Material\Provider\{LexofficeMaterialProvider, LocalMaterialProvider};
+use App\Services\Material\Provider\LocalMaterialProvider;
+use Closure;
 use Illuminate\Support\Collection;
 
 class MaterialProviderRegistry {
-    /** @var array<string, MaterialProviderInterface> */
-    protected array $providers = [];
+    /** @var array<string, Closure(): ?MaterialProviderInterface> */
+    protected array $factories = [];
 
     public function __construct() {
-        $this->register(new LocalMaterialProvider);
-
-        $key = (string) config('timesheet.providers.lexoffice.api_key', '');
-        if ($key !== '') {
-            $this->register(new LexofficeMaterialProvider($key));
-        }
+        $this->register('local', static fn (): MaterialProviderInterface => new LocalMaterialProvider);
     }
 
-    public function register(MaterialProviderInterface $provider): void {
-        $this->providers[$provider->name()] = $provider;
+    /**
+     * Plugins tragen ihre Quelle beim Booten ein (MVP-1033). Die Fabrik läuft
+     * bei jedem Zugriff im aktuellen Organisationskontext und liefert null,
+     * solange die Quelle dort nicht eingerichtet ist.
+     *
+     * @param  Closure(): ?MaterialProviderInterface  $factory
+     */
+    public function register(string $name, Closure $factory): void {
+        $this->factories[$name] = $factory;
     }
 
     public function get(string $name): ?MaterialProviderInterface {
-        return $this->providers[$name] ?? null;
+        return isset($this->factories[$name]) ? ($this->factories[$name])() : null;
     }
 
-    /** @return array<int, string> */
+    /** @return array<int, string> eingerichtete Quellen */
     public function names(): array {
-        return array_keys($this->providers);
+        return array_keys($this->providers());
     }
 
     /**
@@ -47,7 +50,7 @@ class MaterialProviderRegistry {
      */
     public function searchAll(string $query, int $limit = 20): Collection {
         $results = collect();
-        foreach ($this->providers as $provider) {
+        foreach ($this->providers() as $provider) {
             foreach ($provider->search($query, $limit) as $material) {
                 $key = $material->external_provider . ':' . ($material->external_id ?? $material->id);
                 if (! $results->has($key)) {
@@ -57,5 +60,18 @@ class MaterialProviderRegistry {
         }
 
         return $results->values();
+    }
+
+    /** @return array<string, MaterialProviderInterface> */
+    private function providers(): array {
+        $providers = [];
+        foreach ($this->factories as $name => $factory) {
+            $provider = $factory();
+            if ($provider !== null) {
+                $providers[$name] = $provider;
+            }
+        }
+
+        return $providers;
     }
 }

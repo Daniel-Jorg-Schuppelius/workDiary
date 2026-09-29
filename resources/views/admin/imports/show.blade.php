@@ -68,18 +68,8 @@
         </x-card>
     </div>
 
-    {{-- Hinweis: Fernwartungs-Sitzungen ohne Geräte-Zuordnung landen in der Inbox --}}
-    @if ($run->entity === \App\Enums\Import\ImportEntity::RemoteSessions
-        && $run->rows_skipped > 0
-        && \Illuminate\Support\Facades\Route::has('admin.remote-support.pending.index'))
-        <div class="alert alert-info">
-            <x-icon name="inbox" />
-            <span>
-                {{ __(':n Sitzungen konnten keinem Gerät zugeordnet werden und liegen in der Fernwartungs-Inbox. Ordnen Sie die Geräte-IDs einem Asset zu, um sie als Zeiteinträge zu buchen.', ['n' => $run->rows_skipped]) }}
-            </span>
-            <x-button :href="route('admin.remote-support.pending.index')" tone="primary" size="sm" icon="arrow_forward">{{ __('Zur Inbox') }}</x-button>
-        </div>
-    @endif
+    {{-- Hinweise aus Plugins zum Lauf (MVP-1041), z. B. Fernwartungs-Sitzungen ohne Gerät. --}}
+    {!! app(\App\Plugins\PluginManager::class)->renderSlot('import-run.notice', $run) !!}
 
     {{-- KI-Spaltenzuordnung (Feature 148, MVP-732): Vorschlag für Kopfzellen,
          die der HeaderMapper nicht kennt — reiner Hinweis, ändert nichts. --}}

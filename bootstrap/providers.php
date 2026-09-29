@@ -8,10 +8,13 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
+use App\Plugins\InvoicePlane\InvoicePlaneServiceProvider;
 use App\Providers\{AppServiceProvider, ContactsServiceProvider, PluginServiceProvider};
 
 return [
     AppServiceProvider::class,
     ContactsServiceProvider::class,
     PluginServiceProvider::class,
+    // InvoicePlane läuft ohne Plugin-Klasse und damit ohne Discovery (MVP-1031).
+    InvoicePlaneServiceProvider::class,
 ];

@@ -92,7 +92,7 @@
             <x-detail-grid>
                 <x-detail-grid.row :label="__('Aktiv')" :value="$supplier->active ? __('Ja') : __('Nein')" />
                 <x-detail-grid.row :label="__('USt-IdNr.')" :value="$supplier->vat_id" />
-                <x-detail-grid.row :label="__('Lieferantennr. (Lexoffice)')" :value="$supplier->vendor_number" />
+                <x-detail-grid.row :label="__('Kreditorennummer')" :value="$supplier->vendor_number" />
                 <x-detail-grid.row :label="__('Währung')" :value="$supplier->currency->value" />
                 <x-detail-grid.row :label="__('Zeitzone')" :value="$supplier->timezone" />
             </x-detail-grid>
@@ -142,35 +142,19 @@
         @endif
     </x-card>
 
-    {{-- Lexoffice --}}
-    @if ($lexofficePlugin && $lexofficePlugin->isEnabled())
-        <x-card>
-            <div class="flex flex-wrap items-center justify-between gap-2">
-                <h2 class="flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold">
-                    <x-icon name="sync" class="text-muted" /> {{ __('Lexoffice') }}
-                </h2>
-                @if ($lexofficeContactRef)
-                    <x-status-badge tone="success">{{ __('Kontakt verknüpft') }} · {{ Str::limit($lexofficeContactRef->external_id, 8, '…') }}</x-status-badge>
-                @else
-                    <x-status-badge tone="ghost">{{ __('Noch nicht verknüpft') }}</x-status-badge>
-                @endif
-            </div>
-        </x-card>
-    @endif
+    {{-- Plugin-Panels (MVP-1039), z. B. Verknüpfung mit dem Buchhaltungsprogramm. --}}
+    {!! app(\App\Plugins\PluginManager::class)->renderSlot('supplier-show.panels', $supplier) !!}
 
     {{-- Anhänge --}}
     <x-attachments-section :attachments="$attachments" upload-type="supplier"
                            :upload-id="$supplier->sqid" :can-upload="auth()->user()->can('update', $supplier)" />
 
     {{-- Rechnungen & Belege (Eingangsrechnungen/Aufträge/Angebote …), zeitraumgefiltert.
-         Lieferanten haben keine lokalen Rechnungen → nur Lexoffice-Belege. --}}
+         Lieferanten haben keine lokalen Rechnungen → nur Belege der Buchhaltungsprogramme. --}}
     @include('partials._vouchers', [
         'invoices' => collect(),
-        'vouchers' => $lexofficeVoucherCache,
-        'plugin' => $lexofficePlugin,
-        'contactRef' => $lexofficeContactRef,
-        'range' => $lexofficeVoucherRange,
-        'syncRoute' => route('suppliers.lexoffice.sync-vouchers', $supplier),
+        'external' => $externalDocuments,
+        'range' => $voucherRange,
     ])
 
     {{-- Kommunikation (MVP-1023): Absprachen, Anrufe, Zusagen zum Lieferanten. --}}

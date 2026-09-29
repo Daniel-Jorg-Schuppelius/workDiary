@@ -25,7 +25,6 @@ return [
     'project' => 'Progetto',
     'project_hint' => 'Facoltativo — per un\'assegnazione più dettagliata.',
     'no_project' => '— Nessun progetto —',
-    'source_lexoffice' => 'Documento Lexoffice',
     'revenue' => 'Ricavi (fatturati)',
     'material_cost' => 'Costi del materiale',
     'profit' => 'Utile (calc.)',

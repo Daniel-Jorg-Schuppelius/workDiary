@@ -192,8 +192,18 @@ final class LexwareSupplementsTest extends TestCase {
             'status' => 'active',
             'created_by' => $this->admin->id,
         ]);
+        \App\Models\Invoicing\InvoiceScheduleRun::query()->create([
+            'organization_id' => $this->organization->id,
+            'invoice_schedule_id' => $schedule->id,
+            'period_start' => now()->startOfMonth()->toDateString(),
+            'period_end' => now()->endOfMonth()->toDateString(),
+            'invoice_id' => $issued->id,
+        ]);
         $this->actingAs($this->admin)->get(route('invoice-schedules.index'))->assertOk()->assertSee((string) __('lexware.handover.title'));
-        $this->actingAs($this->admin)->get(route('invoice-schedules.show', $schedule))->assertOk()->assertSee((string) __('lexware.field.handover_state'));
+        // Übergabespalte kommt aus dem Plugin-Slot (MVP-1039), auch ohne API-Schlüssel.
+        $this->actingAs($this->admin)->get(route('invoice-schedules.show', $schedule))->assertOk()
+            ->assertSee((string) __('Übergabe'))
+            ->assertSee((string) __('lexware.handover.status.confirmed'));
     }
 
     public function test_rights_and_tenant_boundaries(): void {

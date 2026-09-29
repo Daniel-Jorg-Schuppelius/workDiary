@@ -58,8 +58,4 @@ class CustomerPolicy {
     public function restore(User $user, Customer $customer): bool {
         return $this->archive($user, $customer);
     }
-
-    public function pushToLexoffice(User $user, Customer $customer): bool {
-        return $user->canManageBilling();
-    }
 }

@@ -13,11 +13,11 @@ namespace App\Services\Customer;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
-use App\Models\Plugins\Lexoffice\LexofficeVoucher;
 use App\Models\Time\TimeEntry;
-use App\Support\Query\DateRange;
+use App\Services\Billing\Contracts\ExternalRevenue;
+use App\Support\Query\{DateParts, DateRange};
 use Carbon\CarbonImmutable;
-use Illuminate\Support\Facades\{DB, Gate};
+use Illuminate\Support\Facades\{Gate};
 
 /**
  * Kompakte Monats-Trends (letzte 12 Monate bis Anker) für die Kundenakte:
@@ -60,7 +60,7 @@ class CustomerTrendBuilder {
         $minutes = array_fill_keys(array_keys($months), 0);
         $billableMinutes = array_fill_keys(array_keys($months), 0);
         if ($projectIds !== []) {
-            [$yearExpr, $monthExpr] = $this->yearMonthExprs('date');
+            [$yearExpr, $monthExpr] = DateParts::yearMonth('date');
             /** @var iterable<int, object{y: int|string, m: int|string, mins: int|string, billable_mins: int|string}> $rows */
             $rows = TimeEntry::query()
                 ->whereIn('project_id', $projectIds)
@@ -83,29 +83,17 @@ class CustomerTrendBuilder {
         // Fakturierter Umsatz je Monat — gleiche Typ-/Statuslogik wie die Umsatz-KPI.
         $revenue = array_fill_keys(array_keys($months), 0.0);
 
-        [$yearExpr, $monthExpr] = $this->yearMonthExprs('voucher_date');
-        /** @var iterable<int, object{y: int|string, m: int|string, amount: float|int|string}> $voucherRows */
-        $voucherRows = LexofficeVoucher::query()
-            ->where('customer_id', $customer->getKey())
-            ->where('archived', false)
-            ->whereIn('voucher_type', self::INVOICE_TYPES)
-            ->whereNotIn('voucher_status', self::VOID_STATUSES)
-            ->whereBetween('voucher_date', [$prevStart->startOfDay(), $end->endOfDay()])
-            ->toBase()
-            ->selectRaw("{$yearExpr} as y, {$monthExpr} as m, COALESCE(SUM(total_amount), 0) as amount")
-            ->groupBy('y', 'm')
-            ->get();
-        foreach ($voucherRows as $row) {
-            $ym = sprintf('%04d-%02d', (int) $row->y, (int) $row->m);
+        // Belege aus dem Buchhaltungsprogramm (MVP-1034: über die Umsatzquellen der Plugins).
+        foreach (app(ExternalRevenue::class)->monthlyRevenue((int) $customer->getKey(), $prevStart->startOfDay(), $end->endOfDay()) as $ym => $amount) {
             if (isset($revenue[$ym])) {
-                $revenue[$ym] += (float) $row->amount;
+                $revenue[$ym] += $amount;
             } elseif (isset($prevRevenue[$ym])) {
-                $prevRevenue[$ym] += (float) $row->amount;
+                $prevRevenue[$ym] += $amount;
             }
         }
 
         if (Gate::forUser($user)->allows('viewAny', Invoice::class)) {
-            [$yearExpr, $monthExpr] = $this->yearMonthExprs('issued_on');
+            [$yearExpr, $monthExpr] = DateParts::yearMonth('issued_on');
             /** @var iterable<int, object{y: int|string, m: int|string, amount: float|int|string}> $invoiceRows */
             $invoiceRows = Invoice::query()
                 ->where('customer_id', $customer->getKey())
@@ -128,7 +116,7 @@ class CustomerTrendBuilder {
 
         // Materialkosten je Monat (nach allocated_on) für die Umsatz-Gegenüberstellung.
         $material = array_fill_keys(array_keys($months), 0.0);
-        [$yearExpr, $monthExpr] = $this->yearMonthExprs('allocated_on');
+        [$yearExpr, $monthExpr] = DateParts::yearMonth('allocated_on');
         /** @var iterable<int, object{y: int|string, m: int|string, amount: float|int|string}> $materialRows */
         $materialRows = $customer->materialCostAllocations()
             ->whereBetween('allocated_on', DateRange::days($start, $end))
@@ -177,20 +165,5 @@ class CustomerTrendBuilder {
         }
 
         return ['hours' => $hours, 'revenue' => $revenueSeries];
-    }
-
-    /**
-     * Jahr-/Monats-Ausdruck je DB-Treiber — strftime existiert nur in SQLite
-     * (Muster wie TimeAccountPostingService::rebuildBalances()).
-     *
-     * @param  literal-string  $column  fester Spaltenname (nie Nutzereingabe — selectRaw)
-     * @return array{0: literal-string, 1: literal-string}
-     */
-    private function yearMonthExprs(string $column): array {
-        $driver = DB::connection()->getDriverName();
-
-        return $driver === 'mysql'
-            ? ["YEAR({$column})", "MONTH({$column})"]
-            : ["CAST(strftime('%Y', {$column}) AS INTEGER)", "CAST(strftime('%m', {$column}) AS INTEGER)"];
     }
 }

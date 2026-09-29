@@ -16,7 +16,7 @@ use App\Enums\Reselling\{LicenseAssignmentEnd, LicenseUnitStatus};
 use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Platform\{Organization, User};
 use App\Models\Reselling\{ResaleLicenseAssignment, ResaleLicenseBatch, ResaleLicenseKey, ResaleLicenseProduct, ResaleLicenseUnit};
-use App\Services\Reselling\Purchase\PurchaseDocument;
+use App\Services\Billing\Purchase\PurchaseDocument;
 use App\Support\Crypto\BlindIndex;
 use App\Support\Toolkit\CsvFacade;
 use Carbon\CarbonImmutable;

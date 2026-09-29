@@ -1459,10 +1459,10 @@ Route::middleware('auth')->group(function () {
         Route::post('customers/{customer}/billing/statements/{statement}/reopen', [\App\Http\Controllers\Customers\BillingStatementController::class, 'reopen'])->name('customers.billing.statements.reopen');
         Route::post('customers/{customer}/billing/payments', [\App\Http\Controllers\Customers\AccountPaymentController::class, 'store'])->name('customers.billing.payments.store');
         Route::delete('customers/{customer}/billing/payments/{payment}', [\App\Http\Controllers\Customers\AccountPaymentController::class, 'destroy'])->name('customers.billing.payments.destroy');
-        // Retainer-Modus (Feature 098): Pauschale an Lexoffice senden + Spitzabrechnung.
+        // Retainer-Modus (Feature 098): Pauschale ans Buchhaltungsprogramm senden + Spitzabrechnung.
         Route::post('customers/{customer}/billing/retainer/push', [\App\Http\Controllers\Customers\RetainerBillingController::class, 'pushMonth'])->name('customers.billing.retainer.push');
         Route::post('customers/{customer}/billing/retainer/trueup', [\App\Http\Controllers\Customers\RetainerBillingController::class, 'trueUp'])->name('customers.billing.retainer.trueup');
-        // Bereits in Lexoffice geführte Pauschalrechnung von Hand an einen Monat hängen.
+        // Bereits im Buchhaltungsprogramm geführte Pauschalrechnung von Hand an einen Monat hängen.
         Route::get('customers/{customer}/billing/statements/{statement}/voucher/edit', [\App\Http\Controllers\Customers\RetainerBillingController::class, 'editVoucher'])->name('customers.billing.retainer.voucher.edit');
         Route::post('customers/{customer}/billing/statements/{statement}/voucher', [\App\Http\Controllers\Customers\RetainerBillingController::class, 'linkVoucher'])->name('customers.billing.retainer.voucher.link');
         Route::delete('customers/{customer}/billing/statements/{statement}/voucher', [\App\Http\Controllers\Customers\RetainerBillingController::class, 'unlinkVoucher'])->name('customers.billing.retainer.voucher.unlink');
@@ -1609,7 +1609,6 @@ Route::middleware('auth')->group(function () {
         Route::post('manufacturing-orders/{order}/substitutes/{substitute}/decide', [\App\Http\Controllers\Manufacturing\ManufacturingOrderController::class, 'decideSubstitute'])->name('manufacturing-orders.substitutes.decide');
         Route::get('manufacturing-orders/{order}/record.pdf', [\App\Http\Controllers\Manufacturing\ManufacturingOrderController::class, 'recordPdf'])->name('manufacturing-orders.record.pdf'); // MVP-065 Fertigungsnachweis
         Route::post('manufacturing-orders/{order}/deliver', [\App\Http\Controllers\Manufacturing\ManufacturingOrderController::class, 'deliver'])->name('manufacturing-orders.deliver');
-        Route::post('manufacturing-orders/{order}/deliveries/{delivery}/lexoffice', [\App\Http\Controllers\Manufacturing\ManufacturingOrderController::class, 'pushDeliveryNote'])->name('manufacturing-orders.deliveries.lexoffice'); // E4/045 Lieferschein an Lexoffice
         Route::get('manufacturing-orders/{order}/deliveries/{delivery}/delivery-note.pdf', [\App\Http\Controllers\Manufacturing\ManufacturingOrderController::class, 'deliveryNotePdf'])->name('manufacturing-orders.deliveries.pdf'); // MVP-074 Lieferschein-PDF
         // Zollpapiere (MVP-1007): Versandgrund im Dialog, PDF im neuen Tab.
         Route::get('manufacturing-orders/{order}/deliveries/{delivery}/customs', [\App\Http\Controllers\Shipping\DeliveryCustomsController::class, 'form'])->name('manufacturing-orders.deliveries.customs.form');
@@ -1624,8 +1623,6 @@ Route::middleware('auth')->group(function () {
         Route::get('manufacturing-orders/{order}/deliveries/{delivery}/parcels/{parcel}/edit', [\App\Http\Controllers\Shipping\ShipmentParcelController::class, 'edit'])->name('manufacturing-orders.deliveries.parcels.edit');
         Route::put('manufacturing-orders/{order}/deliveries/{delivery}/parcels/{parcel}', [\App\Http\Controllers\Shipping\ShipmentParcelController::class, 'update'])->name('manufacturing-orders.deliveries.parcels.update');
         Route::delete('manufacturing-orders/{order}/deliveries/{delivery}/parcels/{parcel}', [\App\Http\Controllers\Shipping\ShipmentParcelController::class, 'destroy'])->name('manufacturing-orders.deliveries.parcels.destroy');
-        Route::post('manufacturing-orders/{order}/order-confirmation/lexoffice', [\App\Http\Controllers\Manufacturing\ManufacturingOrderController::class, 'pushOrderConfirmation'])->name('manufacturing-orders.order-confirmation.lexoffice'); // 045 Auftragsbestätigung an Lexoffice
-        Route::post('manufacturing-orders/{order}/quotation/lexoffice', [\App\Http\Controllers\Manufacturing\ManufacturingOrderController::class, 'pushQuotation'])->name('manufacturing-orders.quotation.lexoffice'); // 045 Angebot an Lexoffice
         Route::post('manufacturing-orders/{order}/cancel', [\App\Http\Controllers\Manufacturing\ManufacturingOrderController::class, 'cancel'])->name('manufacturing-orders.cancel');
         Route::post('manufacturing-orders/{order}/subcontract', [\App\Http\Controllers\Manufacturing\ManufacturingOrderController::class, 'subcontract'])->name('manufacturing-orders.subcontract'); // E7 Fremdfertigung
 
@@ -2982,7 +2979,7 @@ Route::middleware('auth')->group(function () {
                     Route::post('verkaeufe/{assignment}/ruecknahme', [\App\Http\Controllers\Reselling\LicenseSaleController::class, 'returnStore'])->name('assignments.return.store');
                 });
             });
-            // Rechnungsentwurf aus Perioden (Lexoffice/lokal): eigenes Recht der Buchhaltung (Review 2026-09-10, A9).
+            // Rechnungsentwurf aus Perioden (Buchhaltungsprogramm/lokal): eigenes Recht der Buchhaltung (Review 2026-09-10, A9).
             Route::get('perioden/entwurf', [\App\Http\Controllers\Reselling\ResaleReportController::class, 'draftCreate'])->name('periods.draft.create')->middleware('can:reselling.invoice');
             Route::post('perioden/entwurf', [\App\Http\Controllers\Reselling\ResaleReportController::class, 'draftStore'])->name('periods.draft.store')->middleware('can:reselling.invoice');
             Route::middleware('can:reselling.view')->group(function (): void {
@@ -4156,7 +4153,8 @@ Route::middleware('auth')->group(function () {
         // Einbahn-Übernahme aus Obsidian und OneNote (MVP-815).
         Route::get('wissen/import', [\App\Http\Controllers\Knowledge\KnowledgeImportController::class, 'create'])->name('knowledge-imports.create');
         Route::post('wissen/import/obsidian', [\App\Http\Controllers\Knowledge\KnowledgeImportController::class, 'storeObsidian'])->name('knowledge-imports.obsidian');
-        Route::post('wissen/import/onenote', [\App\Http\Controllers\Knowledge\KnowledgeImportController::class, 'storeOneNote'])->name('knowledge-imports.onenote');
+        Route::post('wissen/import/notizbuch/{source}', [\App\Http\Controllers\Knowledge\KnowledgeImportController::class, 'storeNotebook'])
+            ->where('source', '[a-z0-9_-]+')->name('knowledge-imports.notebook');
         Route::get('collections', [\App\Http\Controllers\Knowledge\ContentCollectionController::class, 'index'])->name('collections.index');
         Route::get('collections/create', [\App\Http\Controllers\Knowledge\ContentCollectionController::class, 'create'])->name('collections.create');
         Route::post('collections', [\App\Http\Controllers\Knowledge\ContentCollectionController::class, 'store'])->name('collections.store');

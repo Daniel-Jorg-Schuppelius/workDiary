@@ -35,7 +35,7 @@ class WebdavBackupTargetController extends Controller {
     public function connectForm(Request $request): View {
         Gate::authorize('create', BackupTargetConnection::class);
 
-        return view('admin.backup-targets._webdav_connect_dialog', [
+        return view('webdav::backup-targets._connect_dialog', [
             'connection' => $this->existingConnection((string) $request->query('connection', '')),
         ]);
     }

@@ -33,16 +33,7 @@
             <x-icon-btn icon="upload" size="sm"
                         :href="route('admin.imports.create', ['entity' => 'customers'])"
                         show-label>{{ __('CSV-Import') }}</x-icon-btn>
-            @if ($lexofficeEnabled ?? false)
-                <x-action-form :action="route('customers.lexoffice.push-all')"
-                      :confirm="__('Alle nicht synchronisierten Kunden zu Lexoffice übertragen?')"
-                      confirm-icon="sync"
-                      confirm-tone="info"
-                      :confirm-label="__('Synchronisieren')">
-                    <x-icon-btn icon="sync" type="submit" size="sm"
-                                show-label>{{ __('Lexoffice: alle pushen') }}</x-icon-btn>
-                </x-action-form>
-            @endif
+            {!! app(\App\Plugins\PluginManager::class)->renderSlot('customer-index.actions') !!}
         @endif
         @can('create', App\Models\Customer\Customer::class)
             <x-icon-btn icon="add" tone="primary" size="sm"

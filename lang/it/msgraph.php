@@ -51,6 +51,8 @@ return [
         'tenant_help' => 'GUID del tenant Entra; vuoto = valore dell’app di istanza (predefinito «common»).',
         'onenote_import' => 'Consenti importazione OneNote',
         'onenote_import_help' => 'Abilita la connessione OneNote in sola lettura (Notes.Read). Disattivato: nessuna autorizzazione aggiuntiva, nemmeno nel consenso a livello di tenant.',
+        'oof_enabled' => 'Impostare la risposta automatica di Outlook per le ferie approvate',
+        'oof_enabled_help' => 'Attiva la risposta automatica nella casella di posta della persona non appena le ferie vengono approvate. Richiede l\'autorizzazione MailboxSettings.ReadWrite nell\'app di consenso amministratore.',
         'tenant_invalid' => 'Il tenant deve essere un GUID di directory (oppure common/organizations/consumers).',
     ],
     'health' => [

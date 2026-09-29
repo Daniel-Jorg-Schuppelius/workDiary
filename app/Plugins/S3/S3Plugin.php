@@ -18,6 +18,7 @@ use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{BackupTarget, PluginCapability};
 use App\Plugins\S3\Api\S3BackupClient;
 use App\Plugins\Support\Backup\{BackupAccount, BackupRemoteObject};
+use App\Support\Ui\UiAction;
 use Psr\Http\Message\StreamInterface;
 use Throwable;
 
@@ -31,7 +32,7 @@ use Throwable;
  * Die Verbindungen sind **systemweit** (Plattform-Admin) wie bei allen
  * Backupzielen; es gibt bewusst keine Konfiguration je Organisation.
  */
-class S3Plugin extends AbstractPlugin implements BackupTarget {
+class S3Plugin extends AbstractPlugin implements \App\Plugins\Contracts\BackupTargetConnector, BackupTarget {
     public const ID = 's3';
 
     public const SERVICE_PROVIDER = S3ServiceProvider::class;
@@ -136,5 +137,13 @@ class S3Plugin extends AbstractPlugin implements BackupTarget {
         }
 
         return PluginHealth::ok(__(':count S3-Ziel(e) erreichbar.', ['count' => $connections->count()]));
+    }
+
+    public function backupConnectAction(): UiAction {
+        return new UiAction('add', 'S3', route('admin.backup-targets.s3.connect-form'), modal: true);
+    }
+
+    public function backupReconnectAction(\App\Models\Backup\BackupTargetConnection $connection): UiAction {
+        return new UiAction('sync', (string) __('backup_targets.reconnect'), route('admin.backup-targets.s3.connect-form', ['connection' => $connection->sqid]), modal: true);
     }
 }

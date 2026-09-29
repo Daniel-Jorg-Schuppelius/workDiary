@@ -31,7 +31,7 @@
             <x-input-field name="number" :label="__('Lieferantennummer (intern)')" maxlength="64" :value="old('number', $supplier?->number)" />
             <x-input-field name="company" :label="__('Firma')" maxlength="200" :value="old('company', $supplier?->company)" />
             <x-input-field name="vat_id" :label="__('USt-IdNr.')" maxlength="64" :value="old('vat_id', $supplier?->vat_id)" />
-            <x-input-field name="vendor_number" :label="__('Lieferantennr. (Lexoffice)')" maxlength="64" :value="old('vendor_number', $supplier?->vendor_number)" />
+            <x-input-field name="vendor_number" :label="__('Kreditorennummer')" maxlength="64" :value="old('vendor_number', $supplier?->vendor_number)" />
             <x-checkbox-field name="active" :label="__('Aktiv')" :checked="old('active', $supplier?->active ?? true)" />
         </x-form-group>
 

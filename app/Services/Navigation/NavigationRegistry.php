@@ -16,6 +16,7 @@ use App\Enums\User\Permission;
 use App\Legacy\LegacyBridge;
 use App\Models\Platform\User;
 use App\Modules\ModuleRegistry;
+use App\Plugins\Contracts\NavigationContributor;
 use App\Plugins\PluginManager;
 use App\Services\Licensing\FeatureFlagResolver;
 use App\Services\Navigation\Contracts\NavigationCondition;
@@ -527,7 +528,7 @@ class NavigationRegistry {
                     'label' => __('Abrechnung'),
                     'icon' => 'request_quote',
                     'items' => [
-                        ['route' => 'billing.feed', 'label' => __('billing.feed.title'), 'icon' => 'request_quote', 'modal' => false, 'matches' => ['billing.feed', 'invoices.*', 'quotes.*', 'lexoffice.vouchers.*'], 'badge' => $this->overdueDocumentCount()],
+                        ['route' => 'billing.feed', 'label' => __('billing.feed.title'), 'icon' => 'request_quote', 'modal' => false, 'matches' => ['billing.feed', 'invoices.*', 'quotes.*', ...$this->pluginMatches('billing.feed')], 'badge' => $this->overdueDocumentCount()],
                         // Nachfass-Arbeitsliste (Feature 112, MVP-601): eigene Seite,
                         // weil der Beleg-Feed auf den globalen Zeitraum begrenzt ist
                         // und ein drei Monate altes Angebot dort herausfiele.
@@ -568,10 +569,8 @@ class NavigationRegistry {
                         ...(($user?->can(Permission::ResellingView->value) ?? false)
                             ? [['route' => 'finance.resale.index', 'label' => __('resale.title.menu'), 'icon' => 'subscriptions', 'modal' => false, 'matches' => ['finance.resale.*']]]
                             : []),
-                        ['route' => 'lexoffice.articles.index', 'label' => __('Produkte & Leistungen'), 'icon' => 'inventory_2', 'modal' => false, 'matches' => ['lexoffice.articles.*']],
-                        // Lexware-Übergabe (Feature 158): lokal ausgestellte Belege an Lexware übergeben —
-                        // Abrechnungsarbeit; Tarifprofil und Funktionsmatrix stehen im Systemmenü.
-                        ['route' => 'lexoffice.handover.index', 'label' => __('lexware.handover.title'), 'icon' => 'outbox', 'modal' => false, 'matches' => ['lexoffice.handover.*']],
+                        // Beiträge aktiver Buchhaltungs-Plugins (MVP-1037), z. B. Artikel und Übergabe.
+                        ...$this->pluginNavItems('sales-billing'),
                         ['route' => 'investments.index', 'label' => __('Investitionen'), 'icon' => 'trending_up', 'modal' => false, 'matches' => ['investments.*']],
                     ],
                 ],
@@ -1563,6 +1562,43 @@ class NavigationRegistry {
      * schaut. Gezählt wird nur, was tatsächlich noch offen ist.
      */
     /**
+     * Menüeinträge aktiver Plugins für ein Ziel (MVP-1037): Sidebar-Gruppe oder
+     * `admin`. Aufrufe laufen gekapselt — ein fehlerhaftes Plugin fehlt nur.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function pluginNavItems(string $target): array {
+        $user = Auth::user();
+        if (! $user instanceof User) {
+            return [];
+        }
+        $manager = app(PluginManager::class);
+        $items = [];
+        foreach ($manager->contributing()->filter(static fn ($p): bool => $p instanceof NavigationContributor) as $plugin) {
+            /** @var NavigationContributor&\App\Plugins\Contracts\Plugin $plugin */
+            $contributed = $manager->invoke($plugin, static fn (): array => $plugin->navigationItems($user));
+            foreach (is_array($contributed) ? ($contributed[$target] ?? []) : [] as $item) {
+                $items[] = $item;
+            }
+        }
+
+        return $items;
+    }
+
+    /** @return list<string> Treffer-Muster aktiver Plugins für einen Kern-Eintrag */
+    private function pluginMatches(string $route): array {
+        $manager = app(PluginManager::class);
+        $patterns = [];
+        foreach ($manager->contributing()->filter(static fn ($p): bool => $p instanceof NavigationContributor) as $plugin) {
+            /** @var NavigationContributor&\App\Plugins\Contracts\Plugin $plugin */
+            $matches = $manager->invoke($plugin, static fn (): array => $plugin->navigationMatches());
+            array_push($patterns, ...(is_array($matches) ? ($matches[$route] ?? []) : []));
+        }
+
+        return $patterns;
+    }
+
+    /**
      * Zähler „Nachfassen fällig" (Feature 112, MVP-601). Bewusst NUR die
      * fälligen Termine, nicht die ablaufenden Angebote: Ein Badge, das drei
      * verschiedene Dringlichkeiten zusammenzählt, sagt nichts mehr aus.
@@ -1618,14 +1654,8 @@ class NavigationRegistry {
             ->where('due_on', '<', $today)
             ->count();
 
-        $vouchers = \App\Models\Plugins\Lexoffice\LexofficeVoucher::query()
-            ->where('organization_id', $organizationId)
-            ->where('archived', false)
-            ->whereIn('voucher_type', \App\Support\Billing\VoucherTypes::REVENUE)
-            ->whereNotIn('voucher_status', ['draft', 'voided', 'paid', 'paidoff'])
-            ->whereNotNull('due_date')
-            ->where('due_date', '<', $today)
-            ->count();
+        // Überfällige Belege der Buchhaltungsprogramme (MVP-1034, über den Contract).
+        $vouchers = app(\App\Services\Billing\Contracts\ExternalRevenue::class)->overdueCount($organizationId, $today);
 
         return $invoices + $vouchers;
     }
@@ -1690,8 +1720,7 @@ class NavigationRegistry {
                 ['route' => 'billing.feed', 'label' => __('billing.feed.title'), 'icon' => 'receipt_long', 'modal' => false, 'matches' => ['billing.feed', 'invoices.*', 'quotes.*', 'lexoffice.vouchers.*'], 'badge' => $this->overdueDocumentCount()],
                 ['route' => 'finance.transfers.index', 'label' => __('finance.title.menu'), 'icon' => 'outbox', 'modal' => false, 'matches' => ['finance.transfers.*']],
                 ['route' => 'finance.reconciliation.index', 'label' => __('bank.title.menu'), 'icon' => 'account_balance', 'modal' => false, 'matches' => ['finance.reconciliation.*', 'finance.bank-accounts.*']],
-                ['route' => 'lexoffice.articles.index', 'label' => __('Produkte & Leistungen'), 'icon' => 'inventory_2', 'modal' => false, 'matches' => ['lexoffice.articles.*']],
-                ['route' => 'lexoffice.handover.index', 'label' => __('lexware.handover.title'), 'icon' => 'outbox', 'modal' => false, 'matches' => ['lexoffice.handover.*']],
+                ...$this->pluginNavItems('sales-billing'),
                 ['route' => 'events.index', 'label' => __('Veranstaltungen'), 'icon' => 'event', 'modal' => false, 'matches' => ['events.*']],
                 ['route' => 'flex.index', 'label' => __('Arbeitszeitkonto'), 'icon' => 'hourglass_top', 'modal' => false, 'matches' => ['flex.*']],
                 ['route' => 'archive.index', 'label' => __('Archiv'), 'icon' => 'inventory_2', 'modal' => false, 'matches' => ['archive.*']],
@@ -1807,8 +1836,6 @@ class NavigationRegistry {
                 }
                 if (Gate::allows(Permission::FinanceConfig->value)) {
                     $adminNavItems[] = ['route' => 'finance.bank-accounts.index', 'label' => __('bank.title.accounts'), 'icon' => 'account_balance', 'modal' => false];
-                    // Lexware-Tarifprofil und Funktionsmatrix (Feature 158): Einrichtung, keine Tagesarbeit.
-                    $adminNavItems[] = ['route' => 'lexoffice.plan.index', 'label' => __('lexware.menu'), 'icon' => 'tune', 'modal' => false, 'matches' => ['lexoffice.plan.*']];
                     $adminNavItems[] = ['route' => 'admin.text-corrections.index', 'label' => __('textcorrections.title.index'), 'icon' => 'spellcheck', 'modal' => false, 'matches' => ['admin.text-corrections.*']];
                 }
                 if (Gate::allows(Permission::FormTemplateViewAny->value)) {
@@ -1835,20 +1862,8 @@ class NavigationRegistry {
                         : 0;
                     $adminNavItems[] = ['route' => 'admin.integration.inbox', 'label' => __('Zuordnungs-Inbox'), 'icon' => 'rule', 'modal' => false, 'matches' => ['admin.integration.*'], 'badge' => $iiOpen];
                 }
-                if (Route::has('admin.remote-support.pending.index')) {
-                    $rsOrg = $user->organization_id;
-                    $rsPending = $rsOrg !== null
-                        ? (int) Cache::remember(
-                            'nav-badge:remote-pending:' . (int) $rsOrg,
-                            self::BADGE_TTL,
-                            static fn (): int => \App\Models\Auth\RemotePendingSession::query()
-                                ->where('organization_id', $rsOrg)
-                                ->where('status', \App\Models\Auth\RemotePendingSession::STATUS_OPEN)
-                                ->count(),
-                        )
-                        : 0;
-                    $adminNavItems[] = ['route' => 'admin.remote-support.pending.index', 'label' => __('Fernwartung – Inbox'), 'icon' => 'inbox', 'modal' => false, 'badge' => $rsPending];
-                }
+                // Systemmenü-Beiträge aktiver Plugins (MVP-1037), z. B. Tarifprofil, Fernwartungs-Inbox.
+                array_push($adminNavItems, ...$this->pluginNavItems('admin'));
             }
             if (! $isLegacyMode && Gate::allows('manage-access')) {
                 $adminNavItems[] = ['route' => 'admin.access.index', 'label' => __('access.title.hub'), 'icon' => 'admin_panel_settings', 'modal' => false];

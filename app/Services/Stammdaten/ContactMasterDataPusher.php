@@ -12,7 +12,6 @@ namespace App\Services\Stammdaten;
 
 use App\Models\Customer\Customer;
 use App\Models\Supplier\Supplier;
-use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\PluginManager;
 use App\Services\Stammdaten\Contracts\ContactPushTarget;
 use Throwable;
@@ -42,31 +41,31 @@ class ContactMasterDataPusher {
 
     /**
      * @param  list<string>  $changedFields
-     * @return bool true, wenn übertragen wurde
+     * @return list<string> Namen der Systeme, an die übertragen wurde
      */
-    public function pushIfLinked(Customer|Supplier $contact, array $changedFields): bool {
+    public function pushIfLinked(Customer|Supplier $contact, array $changedFields): array {
         if (array_intersect($changedFields, self::PUSHED_FIELDS) === []) {
-            return false;
+            return [];
         }
 
         // Führungsrichtung (Vollscan 2026-08-23, B6): führt die Buchhaltung
         // die Stammdaten, wird NICHT gepusht — vorher fehlte das Gate hier.
         if (! $this->pushService->pushAllowed()) {
-            return false;
+            return [];
         }
 
-        $pushed = false;
+        $pushed = [];
         foreach ($this->linkedPluginIds($contact) as $pluginId) {
             $plugin = $this->plugins->get($pluginId);
             try {
                 if ($contact instanceof Supplier) {
                     if ($plugin instanceof \App\Plugins\Contracts\SupplierContactSyncer) {
                         $this->pushService->pushSupplier($contact, $pluginId);
-                        $pushed = true;
+                        $pushed[] = $plugin->name();
                     }
                 } elseif ($plugin instanceof \App\Plugins\Contracts\ContactSyncer) {
                     $this->pushService->push($contact, $pluginId);
-                    $pushed = true;
+                    $pushed[] = $plugin->name();
                 }
             } catch (Throwable $e) {
                 // Der lokale Stand bleibt gültig; die Übertragung holt der
@@ -89,7 +88,7 @@ class ContactMasterDataPusher {
             strval(...),
             \App\Models\Integration\ExternalReference::query()
                 ->where('organization_id', $contact->organization_id)
-                ->where('external_type', LexofficePlugin::EXT_TYPE_CONTACT)
+                ->where('external_type', \App\Models\Integration\ExternalReference::TYPE_CONTACT)
                 ->forReferenceable($contact)
                 ->pluck('plugin_id')
                 ->all(),

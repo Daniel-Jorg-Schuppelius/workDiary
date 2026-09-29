@@ -13,37 +13,26 @@ declare(strict_types=1);
 namespace App\Services\Integration;
 
 use App\Modules\ModuleRegistry;
-use App\Plugins\Clockify\ClockifyGroupBooker;
-use App\Plugins\Fritzbox\FritzboxGroupBooker;
-use App\Plugins\Kimai\KimaiGroupBooker;
-use App\Plugins\OpenProject\OpenProjectGroupBooker;
-use App\Plugins\RemoteSupport\RemoteSupportGroupBooker;
-use App\Plugins\Toggl\TogglGroupBooker;
 
 /**
  * Bildet eine plugin_id auf ihren {@see InboxGroupBooker} ab (gruppierte
- * Zeit-Import-Auflösung). Weitere Plugins (OpenProject, RemoteSupport) werden
- * hier eingetragen.
+ * Zeit-Import-Auflösung). Plugins tragen ihren Bucher beim Booten ein
+ * (MVP-1030), Module über `Manifest::extensions()` (MVP-863).
  */
 class InboxGroupBookerRegistry {
-    /** @var array<string, class-string<InboxGroupBooker>> Plugin-Kennung → Bucher der Zeit-/Telefonie-Plugins */
-    private const PLUGIN_BOOKERS = [
-        'toggl' => TogglGroupBooker::class,
-        'kimai' => KimaiGroupBooker::class,
-        'clockify' => ClockifyGroupBooker::class,
-        'openproject' => OpenProjectGroupBooker::class,
-        'remote-support' => RemoteSupportGroupBooker::class,
-        'fritzbox' => FritzboxGroupBooker::class,
-        // Serien aus dem Kalender-Rückimport (MVP-977).
-        'caldav' => \App\Plugins\CalDav\Services\CalDavSeriesGroupBooker::class,
-        'google_calendar' => \App\Plugins\GoogleCalendar\Services\GoogleCalendarSeriesGroupBooker::class,
-        'msgraph' => \App\Plugins\Msgraph\Services\MsgraphSeriesGroupBooker::class,
-    ];
+    /** @var array<string, class-string<InboxGroupBooker>> Plugin-Kennung → Bucher, von den Plugins eingetragen */
+    private array $plugins = [];
 
     /** @var array<string, class-string<InboxGroupBooker>>|null */
     private ?array $map = null;
 
     public function __construct(private readonly ModuleRegistry $modules) {}
+
+    /** @param  class-string<InboxGroupBooker>  $booker */
+    public function register(string $pluginId, string $booker): void {
+        $this->plugins[$pluginId] = $booker;
+        $this->map = null;
+    }
 
     public function for(string $pluginId): ?InboxGroupBooker {
         $class = $this->map()[$pluginId] ?? null;
@@ -56,10 +45,10 @@ class InboxGroupBookerRegistry {
         return array_keys($this->map());
     }
 
-    /** @return array<string, class-string<InboxGroupBooker>> Plugins fest, Module über `Manifest::extensions()` (MVP-863) */
+    /** @return array<string, class-string<InboxGroupBooker>> */
     private function map(): array {
         if ($this->map === null) {
-            $this->map = self::PLUGIN_BOOKERS;
+            $this->map = $this->plugins;
             foreach ($this->modules->extensions(InboxGroupBooker::class) as $class) {
                 /** @var InboxGroupBooker $booker */
                 $booker = app($class);

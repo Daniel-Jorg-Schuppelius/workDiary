@@ -524,15 +524,18 @@
                                                 ['label' => __('Stammdaten'), 'icon' => 'inventory_2', 'routes' => ['admin.entry-types.index', 'admin.classifications.index', 'admin.classification-requirements.index', 'admin.branch-profiles.index', 'admin.expense-categories.index', 'admin.per-diem-rates.index']],
                                                 ['label' => __('Zeitwirtschaft'), 'icon' => 'hourglass_top', 'routes' => ['admin.time-accounts.index', 'admin.time-dimensions.index', 'admin.shift-rotations.index']],
                                                 ['label' => __('Regeln & Prozesse'), 'icon' => 'account_tree', 'routes' => ['admin.automations.index', 'admin.notification-rules.index', 'admin.webhooks.index', 'form-templates.index', 'procedures.index', 'admin.report-targets.index', 'whistleblowing.portal.edit']],
-                                                ['label' => __('Finanzen & Lohn'), 'icon' => 'payments', 'routes' => ['finance.bank-accounts.index', 'lexoffice.plan.index', 'admin.surcharge-rules.index', 'admin.cost-center-rules.index', 'admin.wage-type-mappings.index', 'admin.text-corrections.index']],
-                                                ['label' => __('Daten & Schnittstellen'), 'icon' => 'sync_alt', 'routes' => ['admin.data.index', 'admin.integration.inbox', 'admin.cloud-intake.index', 'admin.domain-provider.index', 'admin.ai.index', 'admin.remote-support.pending.index', 'admin.support.grants.index', 'admin.legacy-migration.index']],
+                                                ['key' => 'finance', 'label' => __('Finanzen & Lohn'), 'icon' => 'payments', 'routes' => ['finance.bank-accounts.index', 'admin.surcharge-rules.index', 'admin.cost-center-rules.index', 'admin.wage-type-mappings.index', 'admin.text-corrections.index']],
+                                                ['key' => 'data', 'label' => __('Daten & Schnittstellen'), 'icon' => 'sync_alt', 'routes' => ['admin.data.index', 'admin.integration.inbox', 'admin.cloud-intake.index', 'admin.domain-provider.index', 'admin.ai.index', 'admin.support.grants.index', 'admin.legacy-migration.index']],
                                                 ['label' => __('Systembetrieb'), 'icon' => 'monitor_heart', 'routes' => ['audit.index', 'admin.audit-diff.index', 'admin.license.index', 'admin.billing-profile.show', 'admin.ui-patterns.index', 'admin.metrics.index', 'admin.components.index', 'admin.security.index', 'admin.sessions.index', 'admin.integrity.index', 'admin.security-events.index', 'admin.backup.status', 'admin.backup-targets.index', 'admin.scheduler.index', 'admin.problem-reports.index', 'admin.operations.index', 'admin.maintenance-windows.index', 'admin.settings.index']],
                                                 ['label' => __('Plugins'), 'icon' => 'extension', 'routes' => ['admin.plugins.index', 'admin.plugin-errors.index']],
                                             ];
                                             $adminByRoute = collect($adminNavItems)->keyBy('route');
                                             $adminGrouped = collect();
                                             foreach ($adminGroups as $g) {
-                                                $items = collect($g['routes'])->map(fn ($r) => $adminByRoute->get($r))->filter()->values();
+                                                // Plugin-Beiträge nennen ihren Ordner selbst (MVP-1037).
+                                                $items = collect($g['routes'])->map(fn ($r) => $adminByRoute->get($r))->filter()
+                                                    ->merge(collect($adminNavItems)->where('folder', $g['key'] ?? null)->whereNotNull('folder'))
+                                                    ->values();
                                                 if ($items->isNotEmpty()) {
                                                     $adminGrouped->push(['label' => $g['label'], 'icon' => $g['icon'], 'items' => $items]);
                                                 }

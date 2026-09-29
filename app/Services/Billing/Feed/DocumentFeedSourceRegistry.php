@@ -37,6 +37,17 @@ class DocumentFeedSourceRegistry {
         return array_values($this->sources);
     }
 
+    /** Quelle, die eine Feed-Zeile selbst darstellt (null = Kern-Zeile oder ohne Darstellung). */
+    public function presenterFor(\stdClass $row): ?PresentsFeedRows {
+        foreach ($this->sources as $source) {
+            if ($source instanceof PresentsFeedRows && $source->presents($row)) {
+                return $source;
+            }
+        }
+
+        return null;
+    }
+
     /**
      * Wendet die Dubletten-Klauseln aller Quellen an, deren gespiegelte
      * Belege lokale Rechnungen verdrängen (Dublettenregel 1: extern führt).

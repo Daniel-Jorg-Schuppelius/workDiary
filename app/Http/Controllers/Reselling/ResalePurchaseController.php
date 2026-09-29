@@ -17,7 +17,7 @@ use App\Http\Controllers\Concerns\{ResolvesCurrentOrganization, ResolvesGlobalDa
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Reselling\{ResalePurchaseImportRequest, ResalePurchaseStoreRequest};
 use App\Models\Reselling\{ResalePeriod, ResalePurchaseEntry};
-use App\Services\Reselling\Purchase\{PurchaseDocument, PurchaseDocuments};
+use App\Services\Billing\Purchase\{PurchaseDocument, PurchaseDocuments};
 use App\Services\Reselling\Register\{ProviderInvoiceImport, PurchaseAllocator};
 use App\Support\Query\DateRange;
 use CommonToolkit\ValueObjects\Money;

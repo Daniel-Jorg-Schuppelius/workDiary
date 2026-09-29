@@ -149,13 +149,6 @@
                @checked($boardEnabled === '1' || $boardEnabled === 1)>
         <span class="label-text">{{ __('Anwesenheits-Board (Aktuelle Belegung) aktivieren') }}</span>
     </label>
-    @php $oofEnabled = (string) old('settings.msgraph.oof_enabled', data_get($organization?->settings, 'msgraph.oof_enabled', '0')); @endphp
-    <label class="label cursor-pointer justify-start gap-3">
-        <input type="hidden" name="settings[msgraph][oof_enabled]" value="0">
-        <input type="checkbox" name="settings[msgraph][oof_enabled]" value="1" class="checkbox checkbox-sm"
-               @checked($oofEnabled === '1' || $oofEnabled === 1)>
-        <span class="label-text">{{ __('Outlook-Abwesenheitsnotiz bei genehmigtem Urlaub setzen (M365)') }}</span>
-    </label>
 </x-form-group>
 
 <x-form-group :legend="__('Lenk- und Ruhezeiten')" icon="local_shipping" tone="warning" cols="1"

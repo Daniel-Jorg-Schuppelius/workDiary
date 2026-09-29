@@ -19,8 +19,6 @@ use App\Http\Requests\Customer\SaveCustomerRequest;
 use App\Models\Classification\Tag;
 use App\Models\Customer\Customer;
 use App\Models\Platform\{Organization, User};
-use App\Plugins\Contracts\PluginCapability;
-use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\PluginManager;
 use App\Services\Customer\CustomerDetailAssembler;
 use App\Services\Import\DirectCsvImportService;
@@ -47,9 +45,6 @@ class CustomerController extends Controller {
         ['status' => $status, 'search' => $search, 'sort' => $sort, 'dir' => $dir]
             = $this->parseIndexQuery($request, self::ALLOWED_SORTS, 'name');
 
-        // Lexoffice „alle pushen" nur bei org-aktivem Plugin anbieten (gleicher Check wie die Aktion).
-        $lexofficeEnabled = $plugins->withCapability(PluginCapability::TimeExport)->get(LexofficePlugin::ID) !== null;
-
         $customers = Customer::query()
             ->search($search)
             ->when($status === 'active', fn($q) => $q->whereNull('archived_at'))
@@ -68,7 +63,6 @@ class CustomerController extends Controller {
             'search' => $search,
             'sort' => $sort,
             'dir' => $dir,
-            'lexofficeEnabled' => $lexofficeEnabled,
             'customColumns' => app(\App\Services\Fields\CustomFieldService::class)->listColumnsFor($customers->getCollection(), Customer::class, (int) Auth::user()?->organization_id),
         ]);
     }
@@ -156,7 +150,7 @@ class CustomerController extends Controller {
         $customer->syncCustomFields($custom);
         $customer->syncClassificationDomain(\App\Enums\Classification\ClassificationDomain::CustomerGroup, $customerGroupId !== null ? [(int) $customerGroupId] : []);
 
-        // Korrigierte Stammdaten zurück an Lexoffice — sonst holt der nächste
+        // Korrigierte Stammdaten zurück ans Buchhaltungsprogramm — sonst holt der nächste
         // Abgleich den alten Wert wieder.
         $pushed = app(ContactMasterDataPusher::class)->pushIfLinked($customer, $changed);
 
@@ -166,8 +160,8 @@ class CustomerController extends Controller {
             ? app(\App\Services\Billing\TimeEntryBillableSyncService::class)->syncCustomer($customer)
             : 0;
 
-        $message = $pushed
-            ? __('Kunde aktualisiert und an Lexoffice übertragen.')
+        $message = $pushed !== []
+            ? __('Kunde aktualisiert und an :system übertragen.', ['system' => implode(', ', $pushed)])
             : __('Kunde aktualisiert.');
         if ($syncedBillable > 0) {
             $message .= ' ' . trans_choice(':count offener Zeiteintrag an die neue Abrechenbarkeit angepasst.|:count offene Zeiteinträge an die neue Abrechenbarkeit angepasst.', $syncedBillable, ['count' => $syncedBillable]);

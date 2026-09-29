@@ -10,14 +10,21 @@
 
 namespace App\Plugins\Lexoffice;
 
+use App\Enums\Lexoffice\LexwareFeature;
+use App\Enums\User\Permission;
 use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
-use App\Models\Platform\{Organization, PluginSetting};
+use App\Models\Inventory\StockDelivery;
+use App\Models\Invoicing\Invoice;
+use App\Models\Manufacturing\ManufacturingOrder;
+use App\Models\Platform\{Organization, PluginSetting, User};
 use App\Models\Supplier\Supplier;
 use App\Models\Time\TimeEntry;
-use App\Plugins\{AbstractPlugin, PluginHealth};
-use App\Plugins\Contracts\{ContactSyncer, PaymentSyncer, Plugin, PluginCapability, SlotRenderer, TimeExporter};
+use App\Plugins\{AbstractPlugin, PluginHealth, PluginManager};
+use App\Plugins\Contracts\{ContactSyncer, ContributesWhileInactive, NavigationContributor, PaymentSyncer, Plugin, PluginCapability, SlotRenderer, TimeExporter};
+use App\Plugins\Lexoffice\Tariff\LexwareTariffService;
 use App\Support\Query\DateRange;
+use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use GuzzleHttp\Exception\ConnectException;
 use Throwable;
@@ -32,7 +39,7 @@ use Throwable;
  * Mappings between local entities and Lexoffice ids are persisted in the
  * external_references table. The plugin id is "lexoffice".
  */
-class LexofficePlugin extends AbstractPlugin implements \App\Plugins\Contracts\SupplierContactSyncer, ContactSyncer, PaymentSyncer, SlotRenderer, TimeExporter {
+class LexofficePlugin extends AbstractPlugin implements \App\Plugins\Contracts\SupplierContactSyncer, ContactSyncer, ContributesWhileInactive, NavigationContributor, PaymentSyncer, SlotRenderer, TimeExporter {
     public const ID = 'lexoffice';
 
     public const SERVICE_PROVIDER = LexofficeServiceProvider::class;
@@ -254,16 +261,77 @@ class LexofficePlugin extends AbstractPlugin implements \App\Plugins\Contracts\S
         return $externalId;
     }
 
+    public function navigationItems(User $user): array {
+        $connected = app(PluginManager::class)->enabled()->has(self::ID);
+        $sales = [];
+        if ($connected) {
+            $sales[] = ['route' => 'lexoffice.articles.index', 'label' => __('Produkte & Leistungen'), 'icon' => 'inventory_2', 'modal' => false, 'matches' => ['lexoffice.articles.*']];
+        }
+        // Lexware-Ergänzungen (Feature 158) laufen auch ohne API-Schlüssel (Tarife S/M/L).
+        if ($connected || app(LexwareTariffService::class)->profile()->localFeatures !== []) {
+            $sales[] = ['route' => 'lexoffice.handover.index', 'label' => __('lexware.handover.title'), 'icon' => 'outbox', 'modal' => false, 'matches' => ['lexoffice.handover.*']];
+        }
+        $items = ['sales-billing' => $sales];
+        // Tarifprofil: Einstieg in die Ergänzungen, deshalb ohne Verbindung sichtbar.
+        if (\Illuminate\Support\Facades\Gate::forUser($user)->allows(Permission::FinanceConfig->value)) {
+            $items['admin'] = [['route' => 'lexoffice.plan.index', 'label' => __('lexware.menu'), 'icon' => 'tune', 'modal' => false, 'matches' => ['lexoffice.plan.*'], 'folder' => 'finance']];
+        }
+
+        return $items;
+    }
+
+    public function navigationMatches(): array {
+        // Belegansichten gehören zum Belegfluss.
+        return ['billing.feed' => ['lexoffice.vouchers.*']];
+    }
+
     /**
      * View-Slot-Renderer. Wird vom Core über {@see \App\Plugins\PluginManager::renderSlot()}
      * aufgerufen; das Plugin entscheidet selbst, ob und welcher Button erscheinen soll.
      */
     public function renderActions(string $slot, mixed $context = null): ?string {
-        if (! $this->isEnabled()) {
-            return null;
+        $lexware = $this->renderLexwareSlot($slot, $context);
+        if ($lexware !== null || ! app(PluginManager::class)->enabled()->has(self::ID)) {
+            return $lexware;
         }
 
-        if ($slot === 'invoice-show.actions' && $context instanceof \App\Models\Invoicing\Invoice && $context->status === \App\Models\Invoicing\Invoice::STATUS_DRAFT) {
+        if ($slot === 'customer-index.actions') {
+            return view('lexoffice::customers._push_all')->render();
+        }
+
+        if (($slot === 'customer-show.panels' && $context instanceof Customer) || ($slot === 'supplier-show.panels' && $context instanceof Supplier)) {
+            $contactRef = ExternalReference::query()
+                ->forPlugin((int) $context->organization_id, self::ID, self::EXT_TYPE_CONTACT)
+                ->forReferenceable($context)
+                ->first();
+
+            return $context instanceof Customer
+                ? view('lexoffice::customers._panel', [
+                    'customer' => $context,
+                    'contactRef' => $contactRef,
+                    'voucherRefs' => ExternalReference::query()
+                        ->forPlugin((int) $context->organization_id, self::ID, self::EXT_TYPE_VOUCHER)
+                        ->forReferenceable($context)
+                        ->orderByDesc('synced_at')
+                        ->limit(10)
+                        ->get(),
+                ])->render()
+                : view('lexoffice::suppliers._panel', ['contactRef' => $contactRef])->render();
+        }
+
+        // Fertigung (MVP-1040): Angebot/AB am Auftrag mit Kunde, Lieferschein je Auslieferung.
+        if ($slot === 'manufacturing-show.actions' && $context instanceof ManufacturingOrder) {
+            return $context->customer_id !== null ? view('lexoffice::manufacturing._actions', ['order' => $context])->render() : null;
+        }
+        if ($slot === 'manufacturing-delivery.actions' && $context instanceof StockDelivery && $context->facturation_target === self::ID) {
+            return trim(view('lexoffice::manufacturing._delivery', [
+                'delivery' => $context,
+                'orderKey' => Sqid::encode(ManufacturingOrder::class, (int) $context->manufacturing_order_id),
+                'canPush' => auth()->user()?->can(Permission::InventoryPost->value) ?? false,
+            ])->render()) ?: null;
+        }
+
+        if ($slot === 'invoice-show.actions' && $context instanceof Invoice && $context->status === Invoice::STATUS_DRAFT) {
             $url = route('invoices.lexoffice.publish', $context);
             $csrf = csrf_token();
             $label = __('An Lexoffice');
@@ -286,6 +354,26 @@ class LexofficePlugin extends AbstractPlugin implements \App\Plugins\Contracts\S
         }
 
         return null;
+    }
+
+    /** Lexware-Ergänzungen (Feature 158) gelten auch ohne API-Schlüssel. */
+    private function renderLexwareSlot(string $slot, mixed $context): ?string {
+        if (! $context instanceof Invoice && $slot !== 'invoice-schedule-index.notice') {
+            return null;
+        }
+        $profile = app(LexwareTariffService::class)->profile();
+
+        return match (true) {
+            $slot === 'invoice-show.badges', $slot === 'invoice-schedule-run.badges' => trim(view('lexoffice::handover._badge', ['invoice' => $context])->render()) ?: null,
+            $slot === 'invoice-show.exports' => $profile->localFeatures !== [] && $context instanceof Invoice && $context->status !== Invoice::STATUS_DRAFT
+                && (auth()->user()?->can(Permission::InvoiceExport->value) ?? false)
+                ? view('lexoffice::handover._export_one', ['invoice' => $context])->render()
+                : null,
+            $slot === 'invoice-schedule-index.notice' => $profile->isLocallyActive(LexwareFeature::RecurringInvoices)
+                ? view('lexoffice::handover._schedules_notice', ['plan' => $profile->effectivePlan()->label()])->render()
+                : null,
+            default => null,
+        };
     }
 
     public function exportCustomerTime(Customer $customer, CarbonImmutable $from, CarbonImmutable $to): array {

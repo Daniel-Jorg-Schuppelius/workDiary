@@ -16,6 +16,8 @@ use App\Models\Absence\Vacation;
 use App\Models\Platform\Organization;
 use App\Models\Plugins\Msgraph\MsgraphConnection;
 use App\Plugins\Msgraph\Api\MsgraphCalendarClient;
+use App\Plugins\Msgraph\MsgraphPlugin;
+use App\Plugins\Support\PluginSettingsResolver;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
@@ -23,14 +25,14 @@ use Throwable;
  * Automatische Outlook-Abwesenheitsnotiz bei genehmigtem Urlaub
  * (Feature-103-Delta, Q1 „Export nach Exchange … inkl. automatischer
  * Abwesenheitsnotiz"). Opt-in je Organisation
- * (`settings.msgraph.oof_enabled`, Default AUS); braucht in der
+ * (Plugin-Einstellung `oof_enabled`, Default AUS); braucht in der
  * Adminconsent-App die Application-Permission `MailboxSettings.ReadWrite`.
  * Fehler werden geloggt, nie in den Genehmigungsfluss propagiert.
  */
 final class MsgraphOutOfOfficeService {
     public function applyForVacation(Vacation $vacation): bool {
         $org = Organization::query()->find($vacation->organization_id);
-        if ($org === null || ! (bool) data_get($org->settings, 'msgraph.oof_enabled', false)) {
+        if ($org === null || ! PluginSettingsResolver::for(MsgraphPlugin::ID, (int) $org->getKey())->bool('oof_enabled', false)) {
             return false;
         }
 

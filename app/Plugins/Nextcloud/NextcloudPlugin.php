@@ -20,6 +20,7 @@ use App\Plugins\Nextcloud\Api\{NextcloudBackupClient, NextcloudIntakeClient};
 use App\Plugins\Support\Backup\BackupAccount;
 use App\Plugins\Support\Intake\{IntakeAccount, IntakeChangePage, IntakeItem};
 use App\Plugins\Support\PluginOrgContext;
+use App\Support\Ui\UiAction;
 use Psr\Http\Message\StreamInterface;
 use Throwable;
 
@@ -36,7 +37,7 @@ use Throwable;
  * Kein installationsweiter App-Key: angebunden wird je Verbindung mit
  * Server-URL, Nutzer und verschlüsseltem App-Passwort.
  */
-class NextcloudPlugin extends AbstractPlugin implements BackupTarget, DocumentIntakeSource {
+class NextcloudPlugin extends AbstractPlugin implements \App\Plugins\Contracts\BackupTargetConnector, \App\Plugins\Contracts\IntakeSourceConnector, BackupTarget, DocumentIntakeSource {
     public const ID = 'nextcloud';
 
     /** Von der Plugin-Discovery VOR der Instanziierung registriert. */
@@ -158,5 +159,17 @@ class NextcloudPlugin extends AbstractPlugin implements BackupTarget, DocumentIn
         } catch (Throwable $e) {
             return PluginHealth::failing(__('cloud_intake.nextcloud.health.error', ['class' => class_basename($e)]));
         }
+    }
+
+    public function backupConnectAction(): UiAction {
+        return new UiAction('add', 'Nextcloud', route('admin.backup-targets.nextcloud.connect-form'), modal: true);
+    }
+
+    public function backupReconnectAction(\App\Models\Backup\BackupTargetConnection $connection): UiAction {
+        return new UiAction('sync', (string) __('backup_targets.reconnect'), route('admin.backup-targets.nextcloud.connect-form', ['connection' => $connection->sqid]), modal: true);
+    }
+
+    public function intakeConnectAction(): UiAction {
+        return new UiAction('add', (string) __('cloud_intake.action.connect_nextcloud'), route('admin.cloud-intake.nextcloud.connect-form'), modal: true);
     }
 }

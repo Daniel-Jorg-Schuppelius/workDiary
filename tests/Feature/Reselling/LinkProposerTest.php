@@ -181,6 +181,27 @@ class LinkProposerTest extends TestCase {
         $this->assertSame('M365 Haus24', $voucher->voucherTextHint());
     }
 
+    public function test_named_line_stays_with_its_end_customer_when_periods_start_together(): void {
+        $partner = $this->customerWithContact('LDS Systems GmbH', 'c-lds');
+        $ute = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $partner->id, 'name' => 'Ute Mayershofer']);
+        $kaik = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $partner->id, 'name' => 'Steuerbüro Kaik']);
+        // Ute zuerst angelegt: ihre Periode steht bei gleichem Beginn vorn.
+        $subUte = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'foreign_customer_id' => $ute->id, 'article_ref' => 'lex:' . $this->exchange->id, 'starts_on' => '2025-10-01', 'quantity' => 3]);
+        $subKaik = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'foreign_customer_id' => $kaik->id, 'article_ref' => 'lex:' . $this->exchange->id, 'starts_on' => '2025-10-01', 'quantity' => 1]);
+
+        $this->voucher('c-lds', 'RE/2025/0945', '2025-10-26', [
+            ['article' => $this->exchange, 'name' => 'Exchange Online (Plan 1)', 'description' => 'Endkunde Steuerbüro Kaik', 'quantity' => 12, 'net' => '3.95'],
+            ['article' => $this->exchange, 'name' => 'Exchange Online (Plan 1)', 'description' => 'Ute Mayershofer, 2 Postfächer', 'quantity' => 24, 'net' => '3.95'],
+            ['article' => $this->exchange, 'name' => 'Exchange Online (Plan 1)', 'description' => '', 'quantity' => 12, 'net' => '3.95'],
+        ]);
+
+        $result = (new LinkProposer)->propose($this->organization);
+        $this->assertSame(2, $result['links']);
+        $this->assertSame(PeriodStatus::Billed, $subKaik->periods()->first()?->status, 'die Kaik-Zeile geht nie an Ute');
+        $this->assertSame(PeriodStatus::Partial, $subUte->periods()->first()?->status);
+        $this->assertSame(1, $result['lines_without_subscription'], 'ohne Nennung bei gleichem Abstand zweier Endkunden: mehrdeutig');
+    }
+
     public function test_partner_invoice_lines_need_the_end_customer_name(): void {
         $partner = $this->customerWithContact('LDS Systems GmbH', 'c-lds');
         $kaik = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $partner->id, 'name' => 'Steuerbüro Kaik']);

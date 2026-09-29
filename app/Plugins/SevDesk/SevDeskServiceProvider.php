@@ -12,13 +12,16 @@ declare(strict_types=1);
 
 namespace App\Plugins\SevDesk;
 
+use App\Plugins\SevDesk\Services\{SevDeskTarget, SevDeskVoucherPullService};
 use App\Plugins\Support\PluginServiceProviderBase;
+use App\Services\Finance\Accounting\Vouchers\VoucherPullerRegistry;
+use App\Services\Finance\Targets\FacturationTargetRegistry;
 
 /**
  * Bootet das sevDesk-Plugin (MVP-125): hängt die plugin-eigenen
  * Config-Defaults unter `plugins.sevdesk.*` ein. Keine eigenen Routen/Views —
  * Konfiguration läuft über die Auto-Form der Plugin-Karte, die Übergabe über
- * den {@see \App\Services\Finance\Targets\SevDeskTarget}.
+ * den {@see \App\Plugins\SevDesk\Services\SevDeskTarget}.
  */
 class SevDeskServiceProvider extends PluginServiceProviderBase {
     protected function pluginId(): string {
@@ -30,5 +33,13 @@ class SevDeskServiceProvider extends PluginServiceProviderBase {
         $this->commands([
             Console\SevDeskPullVouchersCommand::class,
         ]);
+    }
+
+    protected function bootPlugin(): void {
+        // Faktura-Übergabe (MVP-1032): der Kern kennt das Ziel nur über die Registry.
+        $this->app->make(FacturationTargetRegistry::class)->register(SevDeskTarget::class);
+
+        // Beleg-Rückabruf (MVP-1031): der Kern kennt die Anbindung nur über die Registry.
+        $this->app->make(VoucherPullerRegistry::class)->register(SevDeskVoucherPullService::class);
     }
 }

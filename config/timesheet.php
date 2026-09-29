@@ -77,11 +77,4 @@ return [
         // started_at/ended_at are provided on a TravelLog.
         'auto_create_time_entry' => (bool) env('TRAVEL_AUTO_TIME_ENTRY', true),
     ],
-
-    'providers' => [
-        'lexoffice' => [
-            'api_key' => env('LEXOFFICE_API_KEY', ''),
-            'base_url' => env('LEXOFFICE_BASE_URL', 'https://api.lexoffice.io/v1'),
-        ],
-    ],
 ];

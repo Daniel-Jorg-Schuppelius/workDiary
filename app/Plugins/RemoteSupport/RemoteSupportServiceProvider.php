@@ -12,6 +12,7 @@ namespace App\Plugins\RemoteSupport;
 
 use App\Plugins\RemoteSupport\Console\{RetagEntriesCommand, SyncSessionsCommand};
 use App\Plugins\Support\PluginServiceProviderBase;
+use App\Services\Integration\InboxGroupBookerRegistry;
 
 /**
  * Plugin-eigener ServiceProvider. Wird vom Core-{@see \App\Providers\PluginServiceProvider}
@@ -30,6 +31,9 @@ class RemoteSupportServiceProvider extends PluginServiceProviderBase {
     }
 
     protected function bootPlugin(): void {
+        // Gruppierte Auflösung der Import-Inbox (MVP-1030).
+        $this->app->make(InboxGroupBookerRegistry::class)->register(RemoteSupportPlugin::ID, RemoteSupportGroupBooker::class);
+
         $this->commands([
             SyncSessionsCommand::class,
             RetagEntriesCommand::class,

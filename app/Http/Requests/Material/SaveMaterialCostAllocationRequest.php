@@ -13,14 +13,15 @@ namespace App\Http\Requests\Material;
 use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Models\Customer\Customer;
-use App\Models\Plugins\Lexoffice\LexofficeVoucher;
 use App\Models\Project\Project;
 use App\Rules\ExistsInCurrentOrganization;
+use App\Services\Billing\Purchase\{PurchaseDocument, PurchaseDocuments};
 use Illuminate\Contracts\Validation\Validator;
 
 /**
  * Materialkosten-Zuordnung an einem Kunden: entweder anteilig aus einem
- * Lexoffice-Einkaufsbeleg (voucher_id) oder als freier Betrag (dann ist eine
+ * Eingangsbeleg der Einkaufsbeleg-Registry (`document`, MVP-1036: Lexoffice,
+ * Ausgaben, Eingangs-E-Rechnungen) oder als freier Betrag (dann ist eine
  * Beschreibung Pflicht). Betrag positiv, optional einem Projekt zugeordnet.
  */
 class SaveMaterialCostAllocationRequest extends BaseFormRequest {
@@ -28,14 +29,14 @@ class SaveMaterialCostAllocationRequest extends BaseFormRequest {
 
     /** @var array<string, class-string> */
     protected array $sqidFields = [
-        'voucher_id' => LexofficeVoucher::class,
         'project_id' => Project::class,
     ];
 
     /** @return array<string, mixed> */
     public function rules(): array {
         return [
-            'voucher_id' => ['nullable', 'integer', new ExistsInCurrentOrganization('lexoffice_vouchers')],
+            // Formularschlüssel eines Eingangsbelegs aus der Einkaufsbeleg-Registry (MVP-1036).
+            'document' => ['nullable', 'string', 'max:120'],
             'project_id' => ['nullable', 'integer', new ExistsInCurrentOrganization('projects')],
             'allocated_amount' => ['required', 'numeric', 'min:0.01', 'max:9999999'],
             'allocated_on' => ['required', 'date'],
@@ -53,24 +54,23 @@ class SaveMaterialCostAllocationRequest extends BaseFormRequest {
             // Sqid-Felder liegen dekodiert in den Validierungsdaten (validationData()),
             // nicht in $this->input() (dort bleibt das rohe Sqid für den Flash-Back).
             $data = $this->validationData();
-            $voucherId = $data['voucher_id'] ?? null;
+            $hasDocument = trim((string) ($data['document'] ?? '')) !== '';
             $projectId = $data['project_id'] ?? null;
             $amount = (float) ($data['allocated_amount'] ?? 0);
             $description = trim((string) ($data['description'] ?? ''));
 
             // Ohne Beleg muss eine Beschreibung den freien Betrag benennen.
-            if (($voucherId === null || $voucherId === '') && $description === '') {
+            if (! $hasDocument && $description === '') {
                 $validator->errors()->add('description', (string) __('customer-material.error_description_required'));
             }
 
-            if ($voucherId !== null && $voucherId !== '') {
-                /** @var LexofficeVoucher|null $voucher */
-                $voucher = LexofficeVoucher::query()->whereKey($voucherId)->first();
-                if ($voucher === null || $voucher->voucher_type !== 'purchaseinvoice') {
-                    $validator->errors()->add('voucher_id', (string) __('customer-material.error_voucher_not_purchase'));
-                } elseif ($voucher->total_amount !== null && $amount > $voucher->total_amount->toFloat() + 0.001) {
+            if ($hasDocument) {
+                $document = $this->purchaseDocument();
+                if ($document === null || $document->credit) {
+                    $validator->errors()->add('document', (string) __('customer-material.error_voucher_not_purchase'));
+                } elseif ($amount > $document->net->toFloat() + 0.001) {
                     // Ein Beleg lässt sich auf mehrere Kunden aufteilen, aber die
-                    // Einzelzuordnung darf den Belegbetrag nicht übersteigen.
+                    // Einzelzuordnung darf den Nettobetrag des Belegs nicht übersteigen.
                     $validator->errors()->add('allocated_amount', (string) __('customer-material.error_amount_over_voucher'));
                 }
             }
@@ -82,5 +82,14 @@ class SaveMaterialCostAllocationRequest extends BaseFormRequest {
                 }
             }
         });
+    }
+
+    /** Gewählter, zuteilbarer Eingangsbeleg der Organisation des Kunden, sonst null. */
+    public function purchaseDocument(): ?PurchaseDocument {
+        $customer = $this->route('customer');
+        $key = trim((string) $this->input('document', ''));
+        $organization = $customer instanceof Customer ? $customer->organization()->first() : null;
+
+        return $organization !== null && $key !== '' ? app(PurchaseDocuments::class)->byKey($organization, $key) : null;
     }
 }

@@ -51,6 +51,8 @@ return [
         'tenant_help' => 'GUID des Entra-Tenants; leer = Wert der Instanz-App (Default „common").',
         'onenote_import' => 'OneNote-Übernahme erlauben',
         'onenote_import_help' => 'Schaltet die lesende OneNote-Verbindung (Notes.Read) frei. Aus: kein zusätzlicher Berechtigungsbereich, auch nicht in der tenantweiten Freigabe.',
+        'oof_enabled' => 'Outlook-Abwesenheitsnotiz bei genehmigtem Urlaub setzen',
+        'oof_enabled_help' => 'Setzt die automatische Antwort im Postfach der Person, sobald ein Urlaub genehmigt ist. Braucht in der Adminconsent-App die Berechtigung MailboxSettings.ReadWrite.',
         'tenant_invalid' => 'Tenant muss eine Verzeichnis-GUID sein (oder common/organizations/consumers).',
     ],
     'health' => [

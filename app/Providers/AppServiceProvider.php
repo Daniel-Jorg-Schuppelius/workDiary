@@ -257,10 +257,10 @@ class AppServiceProvider extends ServiceProvider {
         // Eingangsbelege des Reselling-Registers (Feature 152, Review 2026-09-11,
         // Einkauf): Singleton mit den lokalen Quellen (Ausgaben, Eingangs-
         // E-Rechnungen); die Lexoffice-Quelle registriert das Plugin beim Booten.
-        $this->app->singleton(\App\Services\Reselling\Purchase\PurchaseDocuments::class, static function (): \App\Services\Reselling\Purchase\PurchaseDocuments {
-            $documents = new \App\Services\Reselling\Purchase\PurchaseDocuments;
-            $documents->register(new \App\Services\Reselling\Purchase\ExpensePurchaseDocumentSource);
-            $documents->register(new \App\Services\Reselling\Purchase\IncomingEInvoicePurchaseDocumentSource);
+        $this->app->singleton(\App\Services\Billing\Purchase\PurchaseDocuments::class, static function (): \App\Services\Billing\Purchase\PurchaseDocuments {
+            $documents = new \App\Services\Billing\Purchase\PurchaseDocuments;
+            $documents->register(new \App\Services\Billing\Purchase\ExpensePurchaseDocumentSource);
+            $documents->register(new \App\Services\Billing\Purchase\IncomingEInvoicePurchaseDocumentSource);
 
             return $documents;
         });
@@ -279,21 +279,25 @@ class AppServiceProvider extends ServiceProvider {
         // kann. Ohne Registrierung greift der NullExpenseLinkProvider.
         $this->app->singleton(\App\Services\Billing\ExpenseLinkProviderResolver::class);
         $this->app->singleton(\App\Services\Billing\RetainerChannelResolver::class);
+        $this->app->singleton(\App\Services\Integration\InboxGroupBookerRegistry::class);
+        $this->app->singleton(\App\Services\Finance\Targets\FacturationTargetRegistry::class);
+        $this->app->singleton(\App\Services\Material\MaterialProviderRegistry::class);
+        // Umsatz aus Buchhaltungsprogrammen (MVP-1034): Plugins tragen ihre Quelle ein.
+        $this->app->singleton(\App\Services\Billing\ExternalRevenueSources::class);
+        $this->app->alias(\App\Services\Billing\ExternalRevenueSources::class, \App\Services\Billing\Contracts\ExternalRevenue::class);
+        $this->app->singleton(\App\Services\Billing\ExternalPurchaseSources::class);
+        $this->app->alias(\App\Services\Billing\ExternalPurchaseSources::class, \App\Services\Billing\Contracts\ExternalPurchases::class);
+        $this->app->singleton(\App\Services\Billing\PartyDocumentSources::class);
+        $this->app->singleton(\App\Services\Collections\Import\NotebookSources::class);
+        $this->app->singleton(\App\Services\Mail\MailboxTransports::class);
 
         // Versand-Provider (Feature 059, MVP-128): Carrier-Plugins registrieren
         // ihren ShippingProvider beim Booten, der ShipmentService löst darüber auf.
         $this->app->singleton(\App\Services\Shipping\ShippingProviderRegistry::class);
 
         // Beleg-Rückabruf je Buchhaltungssystem (Feature 122, MVP-731): eine
-        // Registry statt Plugin-Capabilities — InvoicePlane hat mangels API
-        // gar keine Plugin-Klasse und muss trotzdem mitspielen können.
+        // Registry statt Plugin-Capabilities; die Anbindungen tragen sich ein (MVP-1031).
         $this->app->singleton(\App\Services\Finance\Accounting\Vouchers\VoucherPullerRegistry::class);
-        // Ohne Pilotinstanz gibt es keinen InvoicePlane-Leser — und damit
-        // keinen erfundenen Beleg (Feature 086).
-        $this->app->bind(
-            \App\Plugins\InvoicePlane\Schema\VoucherReaderFactory::class,
-            \App\Plugins\InvoicePlane\Schema\NullVoucherReaderFactory::class,
-        );
 
         // Normprofil-Registry (Feature 046): Profile aus config/isms-norms/
         // einmal pro Prozess laden + Schema validieren.

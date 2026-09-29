@@ -18,8 +18,8 @@ use App\Models\Domain\{DomainAccountingEntry, DomainProjection, DomainProviderCo
 use App\Models\Plugins\Lexoffice\LexofficeVoucher;
 use App\Models\Reselling\{ResalePurchaseEntry, ResaleSubscription};
 use App\Models\Supplier\Supplier;
+use App\Services\Billing\Purchase\{PurchaseDocument, PurchaseDocuments};
 use App\Services\Reselling\Marketplace\{ProviderInvoice, ProviderInvoiceLine, QualityHostingInvoiceReader};
-use App\Services\Reselling\Purchase\{PurchaseDocument, PurchaseDocuments};
 use App\Services\Reselling\Register\{DomainSubscriptionSync, PeriodPlanner, PurchaseAllocator};
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;

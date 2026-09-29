@@ -15,6 +15,7 @@ use App\Models\Diary\DiaryEntry;
 use App\Models\Invoicing\Invoice;
 use App\Models\Project\Project;
 use App\Models\Time\TimeEntry;
+use App\Services\Billing\Contracts\ExternalRevenue;
 use App\Support\ChartBucket;
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
@@ -41,7 +42,7 @@ class CustomerValueReportBuilder {
 
     public const HHI_HIGH = 2500;
 
-    public function __construct(private readonly LexofficeRevenueMirror $externalRevenue) {}
+    public function __construct(private readonly ExternalRevenue $externalRevenue) {}
 
     /**
      * @param  list<int>  $excludedCustomerIds

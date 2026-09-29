@@ -85,7 +85,7 @@ final class MsgraphWebhookTest extends TestCase {
         $mailbox = EmailConnection::query()->create($attributes + [
             'organization_id' => $this->organization->id,
             'name' => 'M365-Postfach',
-            'transport' => EmailConnection::TRANSPORT_MSGRAPH,
+            'transport' => \App\Plugins\Msgraph\MsgraphPlugin::MAIL_TRANSPORT,
             'folder' => 'INBOX',
             'active' => true,
         ]);

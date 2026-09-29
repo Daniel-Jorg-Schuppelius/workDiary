@@ -20,8 +20,8 @@ use App\Models\Plugins\OrgaMax\OrgaMaxInvoice;
 use App\Models\Supplier\Supplier;
 use App\Models\Travel\Expense;
 use App\Plugins\Lexoffice\{LexofficeExpenseLinkProvider, LexofficePlugin};
+use App\Plugins\Lexoffice\VoucherTypes;
 use App\Services\Billing\{DocumentFeedFilters, DocumentFeedQuery};
-use App\Support\Billing\VoucherTypes;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
@@ -507,6 +507,33 @@ final class DocumentFeedTest extends TestCase {
         $counts = $outgoing->tabCounts();
         $this->assertSame(1, $counts['outgoing:invoice'] ?? 0);
         $this->assertSame(1, $counts['incoming:invoice'] ?? 0, 'Tab-Zähler zählen über den Tab hinaus.');
+    }
+
+    /**
+     * Gespiegelte Belege anderer Buchhaltungsprogramme (sevDesk …) tragen im
+     * Feed dieselbe Zeilenart wie Lexoffice-Belege; ihr Link und ihre Mahnung
+     * dürfen nie auf einen Lexoffice-Beleg mit gleicher ID zeigen (MVP-1041).
+     */
+    public function test_mirrored_voucher_of_another_program_never_links_to_lexoffice(): void {
+        $lexoffice = $this->voucher(['external_id' => 'v-lex', 'customer_id' => $this->customer->id,
+            'voucher_type' => 'salesinvoice', 'voucher_status' => 'open', 'voucher_number' => 'RE-LEX', 'total_amount' => '10.00']);
+        $mirrored = (new \App\Models\Finance\AccountingVoucher)->forceFill([
+            'id' => $lexoffice->id,
+            'organization_id' => $this->organization->id, 'plugin_id' => DocumentOrigin::SevDesk->value, 'external_id' => 'sd-1',
+            'customer_id' => $this->customer->id, 'voucher_type' => 'invoice', 'voucher_state' => 'open', 'direction' => 'outgoing',
+            'document_kind' => 'invoice', 'voucher_number' => 'SD-OVERDUE', 'voucher_date' => '2026-02-01', 'due_date' => '2026-02-15',
+            'total_amount' => '50.00', 'open_amount' => '50.00', 'currency' => 'EUR', 'archived' => false,
+        ]);
+        // Gleiche ID in beiden Tabellen — sonst fiele der Fehler nicht auf.
+        $mirrored->save();
+
+        $response = $this->actingAs($this->admin)->withSession($this->range())->get(route('billing.feed'));
+
+        $response->assertOk()->assertSee('SD-OVERDUE')->assertSee('RE-LEX');
+        $lexKey = \App\Support\Sqid::encode(LexofficeVoucher::class, (int) $lexoffice->id);
+        // Der Lexoffice-Beleg selbst verlinkt einmal auf seine Vorschau, der sevDesk-Beleg nie.
+        $this->assertSame(1, substr_count($response->getContent(), route('lexoffice.vouchers.preview', $lexKey)));
+        $this->assertStringNotContainsString(route('lexoffice.vouchers.dunning', $lexKey), $response->getContent());
     }
 
     /** @return array<string, string> */

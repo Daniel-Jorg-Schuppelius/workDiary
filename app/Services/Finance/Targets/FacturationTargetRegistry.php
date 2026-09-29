@@ -20,14 +20,25 @@ use RuntimeException;
  * bis der DATEV-Desktop-API-Adapter existiert (eigenes Inkrement).
  */
 class FacturationTargetRegistry {
-    /** @var list<FacturationTarget> */
-    private readonly array $targets;
+    /** @var list<class-string<FacturationTarget>> */
+    private array $classes = [FileTarget::class];
 
-    public function __construct(LexofficeTarget $lexoffice, OrgaMaxTarget $orgamax, SevDeskTarget $sevdesk, EasybillTarget $easybill, FileTarget $file) {
-        $this->targets = [$lexoffice, $orgamax, $sevdesk, $easybill, $file];
+    /** @var list<FacturationTarget>|null */
+    private ?array $targets = null;
+
+    /**
+     * Anbieterziele tragen sich beim Booten ihres Plugins ein (MVP-1032);
+     * der Datei-Export (`FileTarget`) gehört dem Kern.
+     *
+     * @param  class-string<FacturationTarget>  $target
+     */
+    public function register(string $target): void {
+        array_unshift($this->classes, $target);
+        $this->targets = null;
     }
 
     public function for(TransferTarget $target): FacturationTarget {
+        $this->targets ??= array_map(static fn (string $class): FacturationTarget => app($class), $this->classes);
         foreach ($this->targets as $adapter) {
             if ($adapter->supports($target)) {
                 return $adapter;

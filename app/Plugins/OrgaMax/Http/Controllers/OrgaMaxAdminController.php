@@ -60,7 +60,7 @@ class OrgaMaxAdminController extends Controller {
             ->limit(50)
             ->get();
         $orders = ExternalReference::query()
-            ->forPlugin($organization, OrgaMaxPlugin::ID, \App\Services\Finance\Targets\OrgaMaxTarget::EXT_TYPE_ORDER)
+            ->forPlugin($organization, OrgaMaxPlugin::ID, \App\Plugins\OrgaMax\Services\OrgaMaxTarget::EXT_TYPE_ORDER)
             ->orderByDesc('synced_at')
             ->limit(50)
             ->get();

@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Mail;
 
 use App\Models\Mail\EmailConnection;
+use RuntimeException;
 
 /**
  * Transport-Weiche vor {@see MailboxGateway} (Feature 102): wählt je
@@ -22,7 +23,7 @@ use App\Models\Mail\EmailConnection;
 class TransportSelectingMailboxGateway implements MailboxGateway {
     public function __construct(
         private readonly ImapMailboxGateway $imap,
-        private readonly GraphMailboxGateway $graph,
+        private readonly MailboxTransports $transports,
     ) {}
 
     public function fetch(EmailConnection $connection): array {
@@ -34,6 +35,11 @@ class TransportSelectingMailboxGateway implements MailboxGateway {
     }
 
     private function gatewayFor(EmailConnection $connection): MailboxGateway {
-        return $connection->isMsgraph() ? $this->graph : $this->imap;
+        if ($connection->usesImap()) {
+            return $this->imap;
+        }
+
+        return $this->transports->get((string) $connection->transport)?->gateway()
+            ?? throw new RuntimeException('Postfach-Transport „' . $connection->transport . '“ ist nicht verfügbar.');
     }
 }

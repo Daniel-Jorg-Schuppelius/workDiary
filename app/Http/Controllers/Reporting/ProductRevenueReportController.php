@@ -16,6 +16,7 @@ use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, WritesReportCsv};
 use App\Models\Article\Article;
+use App\Plugins\PluginManager;
 use App\Services\Reporting\ProductRevenueReportBuilder;
 use App\Support\CarbonFmt;
 use CommonToolkit\Helper\Data\NumberHelper;
@@ -62,7 +63,8 @@ class ProductRevenueReportController extends Controller {
             'withoutArticle' => $result['withoutArticle'],
             'articleCount' => $result['articleCount'],
             'categories' => $result['categories'],
-            'lexofficeNet' => $result['lexofficeNet'],
+            'externalNet' => $result['externalNet'],
+            'sourceLabels' => $this->sourceLabels($result['rows']),
             'series' => $series,
             'topN' => $topN,
             'from' => $from,
@@ -115,7 +117,7 @@ class ProductRevenueReportController extends Controller {
     }
 
     /**
-     * @param  array{rows: list<array{articleId: ?int, number: ?string, name: string, category: ?string, unit: ?string, quantity: float, net: float, share: ?float, invoices: int, sources: list<string>}>, categories: list<array{category: ?string, net: float, share: ?float, articles: int}>, total: float, withoutArticle: float, lexofficeNet: float, articleCount: int}  $result
+     * @param  array{rows: list<array{articleId: ?int, number: ?string, name: string, category: ?string, unit: ?string, quantity: float, net: float, share: ?float, invoices: int, sources: list<string>}>, categories: list<array{category: ?string, net: float, share: ?float, articles: int}>, total: float, withoutArticle: float, externalNet: float, articleCount: int}  $result
      * @param  list<array{x: string, y: float, url: string}>  $series
      * @param  array<string, mixed>  $filters
      */
@@ -137,5 +139,22 @@ class ProductRevenueReportController extends Controller {
                 'series' => $series,
             ],
         ], $filename, 'portrait', $request, 'product-revenue', $filters);
+    }
+
+    /**
+     * Anzeigenamen der Herkünfte: lokal oder Name des Plugins (MVP-1035).
+     *
+     * @param  list<array{sources: list<string>}>  $rows
+     * @return array<string, string>
+     */
+    private function sourceLabels(array $rows): array {
+        $labels = [ProductRevenueReportBuilder::SOURCE_LOCAL => (string) __('reporting.product_revenue.source_local')];
+        foreach ($rows as $row) {
+            foreach ($row['sources'] as $source) {
+                $labels[$source] ??= app(PluginManager::class)->find($source)?->name() ?? $source;
+            }
+        }
+
+        return $labels;
     }
 }

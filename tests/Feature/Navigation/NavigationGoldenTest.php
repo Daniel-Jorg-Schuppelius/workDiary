@@ -55,6 +55,12 @@ use Tests\TestCase;
  * Neu aufgenommen 2026-09-28 (Feature 158 aufgeteilt): Sidebar und Kopfnavigation
  * führen `/lexware/uebergabe` statt `/lexware/tarif`; das Tarifprofil steht im
  * Header-Systemmenü (`enterprise_admin`, Recht Finanzkonfiguration).
+ *
+ * Angepasst 2026-09-29 (`MVP-1037`, Menübeiträge aus Plugins): Lexoffice-
+ * (`/lexoffice-articles`, `/lexware/uebergabe`) und Fernwartungs-Einträge
+ * (`/admin/remote-support/pending`) erscheinen nur noch bei aktivem Plugin
+ * bzw. aktiver Lexware-Ergänzung — in den Personas ist keines aktiv. Das
+ * Tarifprofil (`/lexware/tarif`) bleibt als Einstieg sichtbar.
  */
 class NavigationGoldenTest extends TestCase {
     use RefreshDatabase;

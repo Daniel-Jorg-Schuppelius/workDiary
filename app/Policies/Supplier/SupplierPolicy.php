@@ -54,8 +54,4 @@ class SupplierPolicy {
     public function restore(User $user, Supplier $supplier): bool {
         return $this->archive($user, $supplier);
     }
-
-    public function pushToLexoffice(User $user, Supplier $supplier): bool {
-        return $user->canManageBilling();
-    }
 }

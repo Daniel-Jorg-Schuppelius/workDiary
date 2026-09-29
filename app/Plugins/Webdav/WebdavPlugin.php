@@ -17,6 +17,7 @@ use App\Plugins\Contracts\{BackupTarget, Plugin};
 use App\Plugins\Support\Backup\{BackupAccount, BackupRemoteObject};
 use App\Plugins\Webdav\Api\WebdavBackupClient;
 use App\Plugins\Webdav\Contracts\WebdavGatewayFactory;
+use App\Support\Ui\UiAction;
 use Psr\Http\Message\StreamInterface;
 use Throwable;
 
@@ -36,7 +37,9 @@ use Throwable;
  * Bewusst ohne Sync-Capability: die Spiegelung ist ereignisgetrieben
  * (Freigabe → Outbox), kein providerneutraler Abgleicheinstieg.
  */
-class WebdavPlugin extends AbstractPlugin implements BackupTarget {
+class WebdavPlugin extends AbstractPlugin implements \App\Plugins\Contracts\BackupTargetConnector, \App\Plugins\Contracts\InboxConflictActions, BackupTarget {
+    use \App\Plugins\Support\Mirror\MirrorConflictActions;
+
     public const ID = 'webdav';
 
     public const SERVICE_PROVIDER = WebdavServiceProvider::class;
@@ -143,5 +146,13 @@ class WebdavPlugin extends AbstractPlugin implements BackupTarget {
         } catch (Throwable $e) {
             return PluginHealth::failing(__('WebDAV-Fehler (:class).', ['class' => class_basename($e)]));
         }
+    }
+
+    public function backupConnectAction(): UiAction {
+        return new UiAction('add', 'WebDAV', route('admin.backup-targets.webdav.connect-form'), modal: true);
+    }
+
+    public function backupReconnectAction(\App\Models\Backup\BackupTargetConnection $connection): UiAction {
+        return new UiAction('sync', (string) __('backup_targets.reconnect'), route('admin.backup-targets.webdav.connect-form', ['connection' => $connection->sqid]), modal: true);
     }
 }

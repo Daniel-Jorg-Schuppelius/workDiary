@@ -35,7 +35,7 @@ class NextcloudIntakeController extends Controller {
     public function connectForm(Request $request): View {
         Gate::authorize('create', CloudDocumentConnection::class);
 
-        return view('admin.cloud-intake._nextcloud_connect_dialog', [
+        return view('nextcloud::cloud-intake._connect_dialog', [
             'connection' => $this->existingConnection((string) $request->query('connection', '')),
         ]);
     }

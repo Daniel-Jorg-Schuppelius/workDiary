@@ -92,9 +92,15 @@
                     <span class="label-text">{{ __('mail.field.transport') }}</span>
                     <select name="transport" class="select select-bordered select-sm">
                         <option value="imap" @selected(old('transport', 'imap') === 'imap')>IMAP</option>
-                        <option value="msgraph" @selected(old('transport') === 'msgraph')>{{ __('mail.transport.msgraph') }}</option>
+                        @foreach ($transports as $transport)
+                            <option value="{{ $transport->key() }}" @selected(old('transport') === $transport->key())>{{ $transport->label() }}</option>
+                        @endforeach
                     </select>
-                    <span class="label-text-alt text-muted">{{ __('mail.transport.msgraph_hint') }}</span>
+                    @foreach ($transports as $transport)
+                        @if ($transport->hint())
+                            <span class="label-text-alt text-muted">{{ $transport->hint() }}</span>
+                        @endif
+                    @endforeach
                 </label>
                 <label class="form-control">
                     <span class="label-text">{{ __('mail.field.host') }}</span>

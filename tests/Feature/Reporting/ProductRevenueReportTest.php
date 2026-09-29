@@ -210,9 +210,9 @@ class ProductRevenueReportTest extends TestCase {
 
         $this->assertSame(36.0, $screw['net']);
         $this->assertSame(18.0, $screw['quantity']);
-        $this->assertSame([ProductRevenueReportBuilder::SOURCE_LOCAL, ProductRevenueReportBuilder::SOURCE_LEXOFFICE], $screw['sources']);
+        $this->assertSame([ProductRevenueReportBuilder::SOURCE_LOCAL, LexofficePlugin::ID], $screw['sources']);
         $this->assertSame(286.0, $result['total']);
-        $this->assertSame(6.0, $result['lexofficeNet']);
+        $this->assertSame(6.0, $result['externalNet']);
     }
 
     public function test_lexoffice_article_without_mapping_gets_its_own_row(): void {
@@ -231,7 +231,7 @@ class ProductRevenueReportTest extends TestCase {
 
         $this->assertNull($row['articleId']);
         $this->assertSame('LX-9', $row['number']);
-        $this->assertSame([ProductRevenueReportBuilder::SOURCE_LEXOFFICE], $row['sources']);
+        $this->assertSame([LexofficePlugin::ID], $row['sources']);
     }
 
     public function test_voucher_created_from_a_local_invoice_is_not_counted_twice(): void {

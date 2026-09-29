@@ -25836,3 +25836,4 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (936,'2027_02_28_21
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (939,'2027_02_28_217000_retainer_voucher_links_as_external_references',44);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (940,'2027_02_28_218000_accounting_numbers_in_external_references',44);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (942,'2027_02_28_219000_document_mirror_detachments',45);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (943,'2027_02_28_220000_msgraph_oof_setting_to_plugin',46);

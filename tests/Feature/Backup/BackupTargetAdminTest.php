@@ -49,6 +49,19 @@ class BackupTargetAdminTest extends TestCase {
             ->assertSee(mb_substr($generation->snapshot_uuid, 0, 13));
     }
 
+    public function test_reconnect_and_connect_come_from_the_provider_plugin(): void {
+        $webdav = BackupTargetConnection::factory()->active()->create(['provider' => \App\Enums\Backup\BackupProvider::Webdav]);
+
+        $response = $this->actingAs($this->platformAdmin)->get(route('admin.backup-targets.index'))->assertOk();
+
+        // Neu verbinden führt in den Zugangsdaten-Dialog des eigenen Anbieters, nie in fremdes OAuth (MVP-1041).
+        $response->assertSee(route('admin.backup-targets.webdav.connect-form', ['connection' => $webdav->sqid]), false)
+            ->assertDontSee(route('admin.backup-targets.dropbox.oauth.start', ['connection' => $webdav->sqid]), false);
+        foreach (['dropbox.oauth.start', 'microsoft.oauth.start', 'google.oauth.start', 'nextcloud.connect-form', 'webdav.connect-form', 's3.connect-form'] as $route) {
+            $response->assertSee(route('admin.backup-targets.' . $route), false);
+        }
+    }
+
     public function test_org_admin_cannot_touch_generations(): void {
         $generation = BackupGeneration::factory()->verified()->create();
 

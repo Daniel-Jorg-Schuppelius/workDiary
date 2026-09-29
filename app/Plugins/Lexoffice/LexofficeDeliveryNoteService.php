@@ -30,7 +30,7 @@ use RuntimeException;
  * Pull: liest den verknüpften Lexoffice-Lieferschein (GET /v1/delivery-notes/{id})
  * zurück — z. B. für Status/Belegnummer.
  *
- * HTTP läuft — analog {@see \App\Services\Finance\Targets\LexofficeTarget} —
+ * HTTP läuft — analog {@see \App\Plugins\Lexoffice\Services\LexofficeTarget} —
  * über {@see PluginApiClient} (php-api-toolkit, mit FakePluginHttp testbar),
  * nicht über das SDK.
  */

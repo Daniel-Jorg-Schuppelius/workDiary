@@ -113,18 +113,9 @@ class KnowledgeHubController extends Controller {
             'activeTagId' => $tagId,
             'activeTagName' => $activeTagName,
             'mayCollect' => Gate::allows('create', ContentCollection::class),
-            // Übernahme aus Obsidian/OneNote (MVP-815): nur Administratoren mit Sammlungsrecht.
+            // Übernahme aus Obsidian und Notizbuch-Quellen (MVP-815, MVP-1042): nur Administratoren mit Sammlungsrecht.
             'mayImport' => $user->isAdmin() && Gate::allows('create', ContentCollection::class),
-            'oneNoteReady' => $user->isAdmin() && $this->oneNoteReady((int) $user->organization_id),
+            'notebookSources' => $user->isAdmin() && $user->organization !== null ? app(\App\Services\Collections\Import\NotebookSources::class)->ready($user->organization) : [],
         ]);
-    }
-
-    private function oneNoteReady(int $organizationId): bool {
-        if (! \App\Plugins\Msgraph\MsgraphConfig::oneNoteImportEnabled($organizationId)) {
-            return false;
-        }
-        $connection = \App\Models\Plugins\Msgraph\MsgraphOneNoteConnection::query()->where('organization_id', $organizationId)->first();
-
-        return $connection !== null && $connection->isActive();
     }
 }

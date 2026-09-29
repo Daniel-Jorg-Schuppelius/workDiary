@@ -21,7 +21,7 @@ use App\Models\Plugins\Lexoffice\LexofficeVoucher;
 use App\Models\Reselling\{ResalePurchaseEntry, ResaleSubscription};
 use App\Models\Supplier\Supplier;
 use App\Models\Travel\Expense;
-use App\Services\Reselling\Purchase\{PurchaseDocument, PurchaseDocumentSource, PurchaseDocuments};
+use App\Services\Billing\Purchase\{PurchaseDocument, PurchaseDocumentSource, PurchaseDocuments};
 use App\Services\Reselling\Register\{PeriodPlanner, PurchaseAllocator};
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;

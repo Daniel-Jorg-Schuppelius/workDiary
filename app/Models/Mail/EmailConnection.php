@@ -51,9 +51,6 @@ class EmailConnection extends Model {
     /** Klassisches IMAP-Postfach (Zugangsdaten am Datensatz). */
     public const TRANSPORT_IMAP = 'imap';
 
-    /** Microsoft-Graph-Postfach (nutzt die Graph-Mail-Verbindung der Organisation). */
-    public const TRANSPORT_MSGRAPH = 'msgraph';
-
     /** Tabellenname explizit (defensiv, konsistent zur Migration). */
     protected $table = 'email_connections';
 
@@ -93,17 +90,17 @@ class EmailConnection extends Model {
         'webhook_secret' => 'encrypted',
     ];
 
-    public function isMsgraph(): bool {
-        return $this->getAttribute('transport') === self::TRANSPORT_MSGRAPH;
+    public function usesImap(): bool {
+        return in_array($this->getAttribute('transport'), [null, '', self::TRANSPORT_IMAP], true);
     }
 
     /**
      * Betriebsbereit: aktiv geschaltet und vollständig konfiguriert.
-     * Graph-Postfächer brauchen keine eigenen Zugangsdaten — sie nutzen die
-     * Graph-Mail-Verbindung der Organisation (Feature 102).
+     * Andere Transporte (z. B. Graph, Feature 102) brauchen keine eigenen
+     * Zugangsdaten — sie nutzen die Verbindung ihres Plugins.
      */
     public function isActive(): bool {
-        if ($this->isMsgraph()) {
+        if (! $this->usesImap()) {
             return $this->active;
         }
 

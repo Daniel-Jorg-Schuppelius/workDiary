@@ -116,7 +116,7 @@ class MsgraphSubscriptionService {
      * 5-Minuten-Polling (`mail:poll`).
      */
     public function ensureMailbox(EmailConnection $connection): void {
-        if (! $connection->isMsgraph() || ! $connection->isActive()) {
+        if ($connection->transport !== \App\Plugins\Msgraph\MsgraphPlugin::MAIL_TRANSPORT || ! $connection->isActive()) {
             return;
         }
 
@@ -246,7 +246,7 @@ class MsgraphSubscriptionService {
         // ── Graph-Postfächer (Feature 102, Mail-Eingang) ────────────────
         $mailboxes = EmailConnection::query()
             ->withoutGlobalScopes()
-            ->where('transport', EmailConnection::TRANSPORT_MSGRAPH);
+            ->where('transport', \App\Plugins\Msgraph\MsgraphPlugin::MAIL_TRANSPORT);
         if ($organizationId !== null) {
             $mailboxes->where('organization_id', $organizationId);
         }

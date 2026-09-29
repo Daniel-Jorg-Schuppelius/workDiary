@@ -25,7 +25,6 @@ return [
     'project' => 'Proyecto',
     'project_hint' => 'Opcional: para una asignación más detallada.',
     'no_project' => '— Sin proyecto —',
-    'source_lexoffice' => 'Documento de Lexoffice',
     'revenue' => 'Ingresos (facturados)',
     'material_cost' => 'Costes de material',
     'profit' => 'Beneficio (calc.)',
