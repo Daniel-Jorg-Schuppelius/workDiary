@@ -48,3 +48,8 @@ de la organización (ajuste «identificador de acreedor» en el registro de ajus
 **Módulo adicional:** La generación del fichero pertenece al módulo de pago
 de formatos bancarios. Sin él, la remesa y el registro de mandatos siguen
 siendo utilizables; solo falta la exportación.
+
+Una domiciliación puede referirse a una factura abierta del cliente del mandato:
+«Cobrar por domiciliación» en la factura abre el cobro con importe y concepto
+prerrellenados. Con referencia a la factura, la previsión de tesorería cuenta
+el importe una sola vez: en la remesa y no además como cuenta por cobrar.

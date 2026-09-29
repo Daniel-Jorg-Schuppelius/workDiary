@@ -49,3 +49,7 @@ en JSON, OPML, Markdown ou PDF — par exemple pour une transmission en
 dehors du système.
 
 **Commentaires sur les nœuds :** Dans le détail d’un nœud, « Commentaires » ouvre le fil de ce nœud ; le nombre à côté indique combien il y en a. Toute personne pouvant voir la carte peut commenter.
+
+Les nœuds portent des **pièces jointes** : via « Pièces jointes » dans la vue du
+nœud, les éditeurs téléversent des fichiers ; toute personne qui voit la carte
+peut les ouvrir.

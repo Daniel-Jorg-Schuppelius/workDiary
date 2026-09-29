@@ -209,4 +209,19 @@ return [
             'saved' => 'Commento su «:node» salvato.',
         ],
     ],
+    'attachments' => [
+        'title' => 'Allegati',
+        'empty' => 'Ancora nessun allegato su questo nodo.',
+        'hint' => 'Al massimo :mb MB per file.',
+        'action' => [
+            'open' => 'Allegati',
+            'add' => 'Carica',
+        ],
+        'field' => [
+            'file' => 'File',
+        ],
+        'flash' => [
+            'saved' => 'Allegato salvato su «:node».',
+        ],
+    ],
 ];

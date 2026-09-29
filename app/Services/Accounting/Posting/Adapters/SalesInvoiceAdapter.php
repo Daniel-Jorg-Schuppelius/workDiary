@@ -62,11 +62,6 @@ class SalesInvoiceAdapter extends AbstractPostingAdapter {
         $lines = [];
         $ruleVersions = [];
 
-        $foreign = $this->foreignCurrencyBlocker($organization, $source->currency);
-        if ($foreign !== null) {
-            $blockers[] = $foreign;
-        }
-
         if ($this->alreadyHandedOver($source)) {
             $blockers[] = (string) __('accounting.inbox.blocker.handed_over');
         }
@@ -133,6 +128,12 @@ class SalesInvoiceAdapter extends AbstractPostingAdapter {
             }
         }
 
+        // Fremdwährung zum Monatskurs (MVP-1012); ohne Kurs bleibt der Beleg in der Inbox.
+        $fx = $this->inBaseCurrency($organization, $source->currency, $issuedOn, $lines);
+        if ($fx['blocker'] !== null) {
+            $blockers[] = $fx['blocker'];
+        }
+
         return new PostingProposal(
             kind: $this->kind(),
             source: $source,
@@ -144,14 +145,14 @@ class SalesInvoiceAdapter extends AbstractPostingAdapter {
                 // Altbestand, kein Grund für einen leeren Buchungstext.
                 'customer' => (string) (Customer::query()->whereKey($source->customer_id)->value('name') ?? '—'),
             ]),
-            lines: $lines,
+            lines: $fx['lines'],
             blockers: array_values(array_unique($blockers)),
             documentOn: $issuedOn,
             documentReference: (string) $source->number,
             ruleVersion: implode(',', array_unique($ruleVersions)) ?: null,
             title: (string) $source->number,
             // Ohne Fälligkeit hätte der offene Posten keine Altersstruktur.
-            extra: ['due_date' => $source->due_on?->toDateString()],
+            extra: $fx['extra'] + ['due_date' => $source->due_on?->toDateString()],
         );
     }
 }

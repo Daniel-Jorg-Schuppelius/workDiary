@@ -40,6 +40,16 @@ Datenqualität dem Zufall zu überlassen.
 ![Import-Assistent mit Entitätswahl, Mustervorlage und Vorprüfung](media/administration/import-assistent.png)
 *Der Import-Assistent: Entität wählen, Mustervorlage laden, Datei hochladen — die Vorprüfung schreibt nichts.*
 
+## Eigene Spaltennamen zuordnen
+
+Kennt der Import eine Spaltenüberschrift nicht, zeigt der Lauf die Karte
+**Spaltenzuordnung**. Wählen Sie je Überschrift die Zielspalte und speichern
+Sie — die Datei wird sofort neu geprüft. Die Zuordnung gilt ab dann für jede
+weitere Datei derselben Importart, auch für den Kundenimport in der
+Kundenliste. Ein KI-Vorschlag belegt die Auswahl nur vor. Gespeicherte
+Zuordnungen finden Sie in der Importliste im Menü unter **Gespeicherte
+Spaltenzuordnungen**; dort lassen sie sich einzeln löschen.
+
 ## Beispiel aus der Praxis
 
 Beim Umstieg importiert ein Betrieb zuerst eine Testdatei mit zehn
@@ -78,3 +88,7 @@ Für Stempelungen und Projektzeiten können Sie statt einer Datei eine
 verbundene Kalenderquelle wählen (CalDAV, Google Calendar, Microsoft 365).
 Die Termine des gewählten Zeitraums werden abgerufen und wie eine iCal-Datei
 geprüft — mit Vorschau, Kategorie-Filter und Auflösung von Serien.
+
+Der Import von Anwesenheiten kennt die optionale Spalte **erfasst am**
+(Datum und Uhrzeit der ursprünglichen Aufzeichnung). Sie dient der
+MiLoG-Aufzeichnungsfrist; ohne sie bleibt die Frist für diese Zeilen ungeprüft.

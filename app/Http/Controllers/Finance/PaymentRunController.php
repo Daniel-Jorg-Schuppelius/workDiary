@@ -15,9 +15,10 @@ namespace App\Http\Controllers\Finance;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\Finance\{BankAccount, PaymentRun, PaymentRunItem, SepaMandate};
-use App\Models\Invoicing\IncomingEInvoice;
+use App\Models\Invoicing\{IncomingEInvoice, Invoice};
 use App\Services\Billing\FinancialFormatsSupport;
 use App\Services\Billing\Sepa\{PaymentProposalService, PaymentRunService};
+use App\Services\Invoicing\DunningService;
 use App\Support\{ErrorText, Sqid};
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{RedirectResponse, Request, Response};
@@ -36,10 +37,29 @@ class PaymentRunController extends Controller {
     public function __construct(
         private readonly PaymentRunService $runs,
         private readonly PaymentProposalService $proposals,
+        private readonly DunningService $dunning,
     ) {}
 
-    public function index(): View {
+    public function index(Request $request): View {
         abort_unless(Gate::allows(Permission::FinancePaymentRun->value), 403);
+        $mandates = SepaMandate::query()
+            ->with('customer')
+            ->where('status', \App\Enums\Finance\MandateStatus::Active->value)
+            ->orderBy('reference')
+            ->get()
+            ->filter(static fn (SepaMandate $mandate): bool => $mandate->isUsable())
+            ->values();
+        // Offene Rechnungen der Mandatskunden (MVP-1011): Belegbezug der Lastschrift.
+        $invoices = Invoice::query()
+            ->whereIn('customer_id', $mandates->pluck('customer_id')->filter()->unique()->all())
+            ->whereIn('status', [Invoice::STATUS_ISSUED, Invoice::STATUS_PARTIALLY_PAID])
+            ->with('customer:id,name,company')
+            ->orderByDesc('id')
+            ->limit(200)
+            ->get();
+        $preselected = $request->filled('invoice')
+            ? $invoices->firstWhere('id', Sqid::decodeOrNumeric(Invoice::class, (string) $request->query('invoice')))
+            : null;
 
         return view('finance.payment-runs.index', [
             'runs' => PaymentRun::query()
@@ -51,13 +71,10 @@ class PaymentRunController extends Controller {
             // Einstieg für den Lastschrifteinzug (MVP-795): Konten und nutzbare
             // Mandate, damit der pain.008-Weg nicht nur über Tests erreichbar ist.
             'accounts' => BankAccount::query()->where('is_active', true)->orderBy('label')->get(),
-            'mandates' => SepaMandate::query()
-                ->with('customer')
-                ->where('status', \App\Enums\Finance\MandateStatus::Active->value)
-                ->orderBy('reference')
-                ->get()
-                ->filter(static fn (SepaMandate $mandate): bool => $mandate->isUsable())
-                ->values(),
+            'mandates' => $mandates,
+            'invoices' => $invoices,
+            'preselectedInvoice' => $preselected,
+            'preselectedAmount' => $preselected instanceof Invoice ? $this->dunning->openAmount($preselected)->getAmount() : null,
         ]);
     }
 
@@ -129,6 +146,7 @@ class PaymentRunController extends Controller {
             'amount' => ['required', 'numeric', 'gt:0'],
             'reference' => ['required', 'string', 'max:140'],
             'execution_date' => ['nullable', 'date'],
+            'invoice' => ['nullable', 'string', 'max:64'],
         ]);
 
         $actor = $request->user();
@@ -136,6 +154,9 @@ class PaymentRunController extends Controller {
 
         $account = BankAccount::query()->findOrFail(Sqid::decodeOrNumeric(BankAccount::class, (string) $data['bank_account']));
         $mandate = SepaMandate::query()->findOrFail(Sqid::decodeOrNumeric(SepaMandate::class, (string) $data['mandate']));
+        $invoice = filled($data['invoice'] ?? null)
+            ? Invoice::query()->findOrFail(Sqid::decodeOrNumeric(Invoice::class, (string) $data['invoice']))
+            : null;
 
         try {
             $run = $this->runs->createDirectDebit(
@@ -145,6 +166,7 @@ class PaymentRunController extends Controller {
                 (float) $data['amount'],
                 (string) $data['reference'],
                 filled($data['execution_date'] ?? null) ? CarbonImmutable::parse((string) $data['execution_date']) : null,
+                $invoice,
             );
         } catch (RuntimeException $e) {
             return back()->with('error', ErrorText::for($e));

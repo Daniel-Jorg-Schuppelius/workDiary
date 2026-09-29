@@ -84,6 +84,26 @@
     <x-input-field name="purpose" :label="__('Zweck')" :value="old('purpose', $src?->purpose)" :span="2" />
 </x-form-group>
 
+{{-- MVP-1014: Mehrfahrerbetrieb und Fähre/Zug für die Lenk- und Ruhezeiten (VO (EG) 561/2006). --}}
+@if ($drivingRules ?? false)
+    <x-form-group :legend="__('travel.driving_time.legend')" icon="airline_seat_recline_normal" tone="info" cols="2" :description="__('travel.driving_time.hint')">
+        <x-select-field name="co_driver_user_id" :label="__('travel.driving_time.co_driver')">
+            <option value="">{{ __('travel.driving_time.co_driver_none') }}</option>
+            @foreach ($coDrivers as $coDriver)
+                <option value="{{ $coDriver->sqid }}" @selected((int) old('co_driver_user_id', $src?->co_driver_user_id) === $coDriver->id)>{{ $coDriver->name }}</option>
+            @endforeach
+        </x-select-field>
+        <div class="fieldset">
+            <label class="label cursor-pointer justify-start gap-3">
+                <input type="hidden" name="is_ferry_or_train" value="0">
+                <input type="checkbox" name="is_ferry_or_train" value="1"
+                       @checked(old('is_ferry_or_train', $src?->is_ferry_or_train)) class="checkbox checkbox-sm">
+                <span class="fieldset-label">{{ __('travel.driving_time.ferry_or_train') }}</span>
+            </label>
+        </div>
+    </x-form-group>
+@endif
+
 <x-form-group :legend="__('Optionen & Notizen')" icon="edit_note" tone="ghost" cols="2">
     <div class="fieldset">
         <label class="label cursor-pointer justify-start gap-3">

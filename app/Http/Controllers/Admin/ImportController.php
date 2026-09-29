@@ -17,10 +17,11 @@ use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Jobs\ProcessCsvImportJob;
 use App\Models\Audit\AuditLog;
-use App\Models\Integration\{ImportRun, ImportRunError};
+use App\Models\Integration\{ImportColumnMapping, ImportRun, ImportRunError};
 use App\Models\Platform\User;
+use App\Services\Ai\Suggestions\ImportMappingSuggestionService;
 use App\Services\Import\Contracts\ZipImporter;
-use App\Services\Import\CsvPreflightAnalyzer;
+use App\Services\Import\{CsvPreflightAnalyzer, ImportColumnMappingService};
 use App\Support\MorphMap;
 use App\Support\Toolkit\CsvFacade;
 use Illuminate\Contracts\View\View;
@@ -340,7 +341,72 @@ class ImportController extends Controller {
             'tagOptions' => $tagOptions,
             'userOptions' => $userOptions,
             'classificationOptions' => $classificationOptions,
+            'columnMapping' => app(ImportColumnMappingService::class)->openHeaders($import),
         ]);
+    }
+
+    /**
+     * Spaltenzuordnung speichern (MVP-1020): gilt ab jetzt für jede Datei
+     * dieser Importart; die Datei des Laufs wird damit neu geprüft.
+     */
+    public function columns(Request $request, ImportRun $import, ImportColumnMappingService $mappings, ImportMappingSuggestionService $suggestions): RedirectResponse {
+        $this->ensureOwned($import);
+        $this->authorizeImport($import->entity);
+        abort_unless(in_array($import->state, [ImportRunState::AwaitingApproval, ImportRunState::Failed], true), 409);
+
+        $data = $request->validate([
+            'columns' => ['required', 'array', 'max:100'],
+            'columns.*.header' => ['required', 'string', 'max:191'],
+            'columns.*.target' => ['nullable', 'string', 'max:64'],
+        ]);
+
+        $pairs = [];
+        foreach ($data['columns'] as $row) {
+            if (($row['target'] ?? null) !== null && $row['target'] !== '') {
+                $pairs[(string) $row['header']] = (string) $row['target'];
+            }
+        }
+        if (count($pairs) !== count(array_unique($pairs))) {
+            return redirect()->route('admin.imports.show', $import)->with('error', __('import.columns.error.duplicate'));
+        }
+
+        /** @var User $actor */
+        $actor = Auth::user();
+        ['run' => $run, 'saved' => $saved] = $mappings->saveAndReanalyze($import, $this->currentOrganization(), $pairs, $actor);
+        if ($saved === []) {
+            return redirect()->route('admin.imports.show', $import)->with('error', __('import.columns.error.none'));
+        }
+        $suggestions->settleMapping($import, $saved, $actor);
+
+        return redirect()->route('admin.imports.show', $run)
+            ->with('success', trans_choice('import.columns.flash.saved', count($saved), ['count' => count($saved)]));
+    }
+
+    /** Gespeicherte Spaltenzuordnungen der Importarten, die der Nutzer importieren darf (Dialog). */
+    public function columnMappings(): View {
+        $this->authorizeAnyImport();
+
+        $entities = array_values(array_filter(ImportEntity::cases(), fn (ImportEntity $entity): bool => $this->mayImport($entity)));
+        $mappings = ImportColumnMapping::query()
+            ->where('organization_id', $this->currentOrganization()->id)
+            ->whereIn('entity', array_map(static fn (ImportEntity $entity): string => $entity->value, $entities))
+            ->orderBy('entity')
+            ->orderBy('source_header')
+            ->get();
+
+        return view('admin.imports._column_mappings_dialog', [
+            'mappings' => $mappings->groupBy(static fn (ImportColumnMapping $mapping): string => $mapping->entity->value),
+        ]);
+    }
+
+    public function destroyColumnMapping(ImportColumnMapping $columnMapping): RedirectResponse {
+        abort_unless((int) $columnMapping->organization_id === (int) $this->currentOrganization()->id, 404);
+        $this->authorizeImport($columnMapping->entity);
+
+        $columnMapping->delete();
+
+        return redirect()->toList('admin.imports.index')
+            ->with('success', __('import.columns.flash.deleted'));
     }
 
     /**
@@ -558,10 +624,12 @@ class ImportController extends Controller {
     }
 
     private function authorizeImport(ImportEntity $entity): void {
+        abort_unless($this->mayImport($entity), 403);
+    }
+
+    private function mayImport(ImportEntity $entity): bool {
         $user = Auth::user();
-        abort_unless(
-            $user instanceof User && ($user->isAdmin() || $user->hasEffectivePermission($entity->permission())),
-            403
-        );
+
+        return $user instanceof User && ($user->isAdmin() || $user->hasEffectivePermission($entity->permission()));
     }
 }

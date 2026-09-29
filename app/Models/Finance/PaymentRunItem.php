@@ -14,7 +14,7 @@ namespace App\Models\Finance;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Customer\Customer;
-use App\Models\Invoicing\IncomingEInvoice;
+use App\Models\Invoicing\{IncomingEInvoice, Invoice};
 use App\Models\Supplier\Supplier;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -26,6 +26,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * `gross_amount` bleibt neben `amount` stehen: Skontoabzug und Kürzung sollen
  * belegbar sein, nicht aus der Differenz erschlossen werden müssen.
  *
+ * @property int|null $invoice_id
  * @property string|null $iban
  * @property string|null $bic
  */
@@ -37,7 +38,7 @@ class PaymentRunItem extends Model {
     use HasSqid;
 
     protected $fillable = [
-        'organization_id', 'payment_run_id', 'incoming_einvoice_id', 'incoming_invoice_retention_id',
+        'organization_id', 'payment_run_id', 'incoming_einvoice_id', 'incoming_invoice_retention_id', 'invoice_id',
         'supplier_id', 'customer_id', 'sepa_mandate_id',
         'party_name', 'iban', 'bic', 'amount', 'gross_amount',
         'discount_percent', 'deduction_reason', 'reference', 'end_to_end_id',
@@ -65,6 +66,11 @@ class PaymentRunItem extends Model {
     /** @return BelongsTo<IncomingInvoiceRetention, $this> Auszahlung eines freigegebenen Einbehalts (MVP-953) */
     public function retention(): BelongsTo {
         return $this->belongsTo(IncomingInvoiceRetention::class, 'incoming_invoice_retention_id');
+    }
+
+    /** @return BelongsTo<Invoice, $this> Eingezogene Ausgangsrechnung einer Lastschrift (MVP-1011) */
+    public function invoice(): BelongsTo {
+        return $this->belongsTo(Invoice::class);
     }
 
     /** @return BelongsTo<Supplier, $this> */

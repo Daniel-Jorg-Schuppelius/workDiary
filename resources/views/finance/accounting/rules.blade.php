@@ -23,6 +23,8 @@
     <x-index-page overflow="clip" :subtitle="__('accounting.rules.subtitle')">
         <x-slot:actions>
             @if ($canConfigure)
+                {{-- MVP-1012: Monatskurse für Fremdwährungsbelege. --}}
+                <x-icon-btn icon="currency_exchange" size="sm" show-label :href="route('finance.accounting.exchange-rates.index')">{{ __('accounting.exchange_rates.title') }}</x-icon-btn>
                 <x-icon-btn icon="add" size="sm" tone="primary"
                             data-entry-modal-trigger
                             :href="route('finance.accounting.rules.create')"

@@ -31,9 +31,10 @@ class MediaPresenter {
      *
      * @param  Collection<int, Attachment>|array<int, Attachment>  $attachments
      * @param  Closure(MediaRendition): string  $urlFor
+     * @param  string|null  $preferred  gewählte Stufe des Nutzers (MVP-1022), null = kleinste
      * @return array<int, array<string, mixed>>
      */
-    public function forAttachments(iterable $attachments, Closure $urlFor): array {
+    public function forAttachments(iterable $attachments, Closure $urlFor, ?string $preferred = null): array {
         $ids = [];
 
         foreach ($attachments as $attachment) {
@@ -59,6 +60,8 @@ class MediaPresenter {
             }
 
             $own = $renditions->get($attachment->id, collect());
+            $videos = $this->videoVariants($own, $urlFor);
+            $chosen = $this->choose($videos, $preferred);
 
             $out[(int) $attachment->id] = [
                 'ready' => $attachment->media_state->isPlayable(),
@@ -67,7 +70,9 @@ class MediaPresenter {
                 'error' => $attachment->media_error,
                 'duration' => $attachment->media_duration_seconds,
                 'poster' => $this->urlOf($own, MediaRenditionKind::Poster, $urlFor),
-                'video' => $this->bestVideoUrl($own, $urlFor),
+                'video' => $chosen['url'] ?? null,
+                'variant' => $chosen['variant'] ?? null,
+                'videos' => $videos,
                 'subtitles' => $own
                     ->where('kind', MediaRenditionKind::Subtitle)
                     ->map(static fn (MediaRendition $r): array => [
@@ -87,29 +92,49 @@ class MediaPresenter {
     }
 
     /**
-     * Die **kleinste** verfügbare Fassung als Vorgabe.
-     *
-     * Auf einer Baustelle über Mobilfunk ist eine 480p-Datei, die läuft,
-     * mehr wert als eine 1080p-Datei, die puffert. Wer mehr will, kann
-     * später über eine Qualitätsauswahl hochschalten.
+     * Vorhandene Fassungen, kleinste zuerst.
      *
      * @param  Collection<int, MediaRendition>  $renditions
      * @param  Closure(MediaRendition): string  $urlFor
+     * @return list<array{variant: string, url: string}>
      */
-    private function bestVideoUrl(Collection $renditions, Closure $urlFor): ?string {
-        $order = array_keys(VideoTranscodingService::VARIANTS);
-
+    private function videoVariants(Collection $renditions, Closure $urlFor): array {
         $videos = $renditions->where('kind', MediaRenditionKind::Video);
+        $out = [];
 
-        foreach ($order as $variant) {
+        foreach (array_keys(VideoTranscodingService::VARIANTS) as $variant) {
             $match = $videos->firstWhere('variant', $variant);
-
             if ($match instanceof MediaRendition) {
-                return $urlFor($match);
+                $out[] = ['variant' => $variant, 'url' => $urlFor($match)];
             }
         }
 
-        return null;
+        return $out;
+    }
+
+    /**
+     * Ohne Wahl die **kleinste** Fassung: auf einer Baustelle über Mobilfunk
+     * ist eine 480p-Datei, die läuft, mehr wert als eine 1080p-Datei, die
+     * puffert. Mit Wahl die größte Fassung bis zur gewählten Stufe; liegt
+     * jede Fassung darüber, bleibt es bei der kleinsten.
+     *
+     * @param  list<array{variant: string, url: string}>  $videos
+     * @return array{variant: string, url: string}|null
+     */
+    private function choose(array $videos, ?string $preferred): ?array {
+        $limit = VideoTranscodingService::VARIANTS[$preferred ?? ''] ?? null;
+        $chosen = $videos[0] ?? null;
+        if ($limit === null) {
+            return $chosen;
+        }
+
+        foreach ($videos as $video) {
+            if (VideoTranscodingService::VARIANTS[$video['variant']] <= $limit) {
+                $chosen = $video;
+            }
+        }
+
+        return $chosen;
     }
 
     /**

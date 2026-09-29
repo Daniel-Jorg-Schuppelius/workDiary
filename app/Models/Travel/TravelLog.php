@@ -58,6 +58,8 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $driver_signed_at
  * @property string|null $driver_signature_path
  * @property string|null $driver_signature_hash
+ * @property int|null $co_driver_user_id
+ * @property bool $is_ferry_or_train
  * @property int|null $corrects_travel_log_id
  * @property string|null $correction_reason
  * @property int|null $created_by
@@ -94,6 +96,7 @@ class TravelLog extends Model {
     protected $fillable = [
         'organization_id',
         'user_id',
+        'co_driver_user_id',
         'project_id',
         'task_id',
         'customer_id',
@@ -113,6 +116,7 @@ class TravelLog extends Model {
         'odometer_start_km',
         'odometer_end_km',
         'trip_kind',
+        'is_ferry_or_train',
         'vehicle',
         'vehicle_label',
         'purpose',
@@ -134,6 +138,7 @@ class TravelLog extends Model {
         'started_at' => 'datetime',
         'ended_at' => 'datetime',
         'duration_minutes' => 'integer',
+        'is_ferry_or_train' => 'boolean',
         'from_lat' => 'float',
         'from_lng' => 'float',
         'to_lat' => 'float',
@@ -192,6 +197,11 @@ class TravelLog extends Model {
     /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo {
         return $this->belongsTo(User::class);
+    }
+
+    /** @return BelongsTo<User, $this> Zweiter Fahrer im Mehrfahrerbetrieb (MVP-1014) */
+    public function coDriver(): BelongsTo {
+        return $this->belongsTo(User::class, 'co_driver_user_id');
     }
 
     /** @return BelongsTo<Project, $this> */

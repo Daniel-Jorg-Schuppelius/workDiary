@@ -20,3 +20,6 @@ correspondante. Vous ne consultez que les opérations rattachées à votre
 entreprise et partagées avec vous, sans pouvoir les modifier. Le menu
 donne aussi accès à la gestion de votre compte et de la sécurité à deux
 facteurs.
+
+La **Recherche** dans l'en-tête trouve factures, commandes, documents et
+tickets par numéro ou titre — uniquement dans les domaines partagés avec vous.

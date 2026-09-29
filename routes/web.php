@@ -1594,6 +1594,8 @@ Route::middleware('auth')->group(function () {
 
         // ── Fertigungsaufträge (Feature 047) ─ Gate manufacturing-orders.* → module.lager
         Route::get('manufacturing-orders', [\App\Http\Controllers\Manufacturing\ManufacturingOrderController::class, 'index'])->name('manufacturing-orders.index');
+        // Lieferscheinliste (MVP-1013): alle Auslieferungen mit PDF, Mail, Versand und Zollpapieren.
+        Route::get('auslieferungen', [\App\Http\Controllers\Manufacturing\DeliveryListController::class, 'index'])->name('deliveries.index');
         Route::get('manufacturing-orders/create', [\App\Http\Controllers\Manufacturing\ManufacturingOrderController::class, 'create'])->name('manufacturing-orders.create');
         Route::post('manufacturing-orders', [\App\Http\Controllers\Manufacturing\ManufacturingOrderController::class, 'store'])->name('manufacturing-orders.store');
         Route::get('manufacturing-orders/{order}', [\App\Http\Controllers\Manufacturing\ManufacturingOrderController::class, 'show'])->name('manufacturing-orders.show');
@@ -3166,6 +3168,16 @@ Route::middleware('auth')->group(function () {
                 Route::post('{item}/ausgleichen', [\App\Http\Controllers\Finance\OpenItemController::class, 'settle'])->name('settle');
             });
 
+            // Monatskurse für Fremdwährungsbelege (MVP-1012).
+            Route::prefix('umrechnungskurse')->name('exchange-rates.')->group(function (): void {
+                Route::get('/', [\App\Http\Controllers\Finance\ExchangeRateController::class, 'index'])->name('index');
+                Route::get('neu', [\App\Http\Controllers\Finance\ExchangeRateController::class, 'form'])->name('create');
+                Route::post('/', [\App\Http\Controllers\Finance\ExchangeRateController::class, 'store'])->name('store');
+                Route::get('{exchangeRate}/bearbeiten', [\App\Http\Controllers\Finance\ExchangeRateController::class, 'form'])->name('edit');
+                Route::get('import', [\App\Http\Controllers\Finance\ExchangeRateController::class, 'importForm'])->name('import-form');
+                Route::post('import', [\App\Http\Controllers\Finance\ExchangeRateController::class, 'import'])->name('import');
+            });
+
             // Anlagenklassen (MVP-999): Vorgaben für neue Anlagen.
             Route::prefix('anlagenklassen')->name('fixed-asset-classes.')->group(function (): void {
                 Route::get('/', [\App\Http\Controllers\Finance\FixedAssetClassController::class, 'index'])->name('index');
@@ -3979,6 +3991,8 @@ Route::middleware('auth')->group(function () {
             // Punkte, Abzeichen, Bestenliste (MVP-781) — Org-Schalter UND persönliches Opt-in.
             Route::get('bestenliste', [\App\Http\Controllers\Learning\MyLearningController::class, 'leaderboard'])->name('leaderboard');
             Route::post('bestenliste/opt-in', [\App\Http\Controllers\Learning\MyLearningController::class, 'toggleLeaderboard'])->name('leaderboard.opt-in');
+            // Videoqualität (MVP-1022): Nutzerpräferenz, gilt für jedes Video.
+            Route::post('videoqualitaet', [\App\Http\Controllers\Learning\MyLearningController::class, 'videoQuality'])->middleware('throttle:30,1')->name('video-quality');
             // Lerntutor (MVP-781): beantwortet Fragen aus dem freigegebenen Kursinhalt.
             Route::post('{enrollment}/tutor', [\App\Http\Controllers\Learning\MyLearningController::class, 'tutor'])->middleware('throttle:20,1')->name('tutor');
             // Private Lernnotizen und Frage an den Trainer (MVP-789).
@@ -4156,6 +4170,8 @@ Route::middleware('auth')->group(function () {
         Route::post('ideas/{map}/nodes/{node}/link', [\App\Http\Controllers\Ideas\IdeaNodeController::class, 'link'])->name('ideas.nodes.link');
         Route::get('ideas/{map}/nodes/{node}/comments', [\App\Http\Controllers\Ideas\IdeaNodeController::class, 'comments'])->name('ideas.nodes.comments'); // MVP-1005
         Route::post('ideas/{map}/nodes/{node}/comments', [\App\Http\Controllers\Ideas\IdeaNodeController::class, 'storeComment'])->name('ideas.nodes.comments.store');
+        Route::get('ideas/{map}/nodes/{node}/attachments', [\App\Http\Controllers\Ideas\IdeaNodeController::class, 'attachments'])->name('ideas.nodes.attachments'); // MVP-1018
+        Route::post('ideas/{map}/nodes/{node}/attachments', [\App\Http\Controllers\Ideas\IdeaNodeController::class, 'storeAttachment'])->name('ideas.nodes.attachments.store');
         Route::delete('ideas/{map}/nodes/{node}', [\App\Http\Controllers\Ideas\IdeaNodeController::class, 'destroy'])->name('ideas.nodes.destroy');
         Route::post('ideas/{mapSqid}/restore', [\App\Http\Controllers\Ideas\IdeaMapController::class, 'restore'])->name('ideas.restore'); // manuelles Sqid-Decoding (SoftDeleted bindet nicht implizit)
         Route::delete('ideas/{map}', [\App\Http\Controllers\Ideas\IdeaMapController::class, 'destroy'])->name('ideas.destroy');
@@ -5044,10 +5060,14 @@ Route::middleware('auth')->group(function () {
         // MVP-438: iCal-Beispieldatei je Zeiterfassungs-Entität.
         Route::get('admin/imports/vorlage/{entity}.ics', [ImportController::class, 'icalSample'])->name('admin.imports.icalSample');
         Route::post('admin/imports/preflight', [ImportController::class, 'preflight'])->name('admin.imports.preflight');
+        // Gespeicherte Spaltenzuordnungen (MVP-1020) — vor {import}, sonst fängt show den Pfad.
+        Route::get('admin/imports/spaltenzuordnungen', [ImportController::class, 'columnMappings'])->name('admin.imports.column-mappings');
+        Route::delete('admin/imports/spaltenzuordnungen/{columnMapping}', [ImportController::class, 'destroyColumnMapping'])->name('admin.imports.column-mappings.destroy');
         Route::get('admin/imports/{import}', [ImportController::class, 'show'])->name('admin.imports.show');
         Route::post('admin/imports/{import}/confirm', [ImportController::class, 'confirm'])->name('admin.imports.confirm');
         // Wert-Mapping unbekannter Tags/Kategorien (Rang 58).
         Route::post('admin/imports/{import}/mapping', [ImportController::class, 'mapping'])->name('admin.imports.mapping');
+        Route::post('admin/imports/{import}/spalten', [ImportController::class, 'columns'])->name('admin.imports.columns');
         Route::delete('admin/imports/{import}', [ImportController::class, 'destroy'])->name('admin.imports.destroy');
         Route::get('admin/imports/{import}/errors.csv', [ImportController::class, 'downloadErrors'])->name('admin.imports.errors');
 

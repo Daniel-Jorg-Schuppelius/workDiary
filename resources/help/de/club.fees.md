@@ -50,3 +50,11 @@ Vereinseinstellungen. Ob der Verein steuerbegünstigt ist, prüft WorkDiary
 nicht. Mitgliedsbeiträge lassen sich nur bestätigen, wenn Sie das
 einschalten; für Sport und andere Freizeitzwecke ist ihr Abzug gesetzlich
 ausgeschlossen. Bestätigte Zuwendungen sind unveränderlich.
+
+**Geschwisterstaffel.** In den Vereinseinstellungen legen Sie einen Nachlass
+für das zweite und für jedes weitere Kind fest (mit Altersgrenze, Standard
+unter 18). Er gilt für Einzelbeiträge von Kindern desselben Beitragskontos in
+derselben Periode; das älteste Kind zahlt voll. Ein Nachlass an der
+Beitragszuordnung geht vor. **Lehrgangs- und Prüfungsgebühren** tragen Sie am
+Termin bzw. am Prüfungsangebot ein; der Beitragslauf des Terminmonats
+berechnet sie je Anmeldung bzw. je zugelassenem Kandidaten.

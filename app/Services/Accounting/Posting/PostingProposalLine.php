@@ -41,6 +41,17 @@ final class PostingProposalLine {
     ) {}
 
     /**
+     * Dieselbe Zeile mit anderen Beträgen — Umrechnung in die Basiswährung (MVP-1012).
+     *
+     * @param  numeric-string  $debit
+     * @param  numeric-string  $credit
+     * @param  numeric-string|null  $taxAmount
+     */
+    public function withAmounts(string $debit, string $credit, ?string $taxAmount): self {
+        return new self($this->role, $this->account, $debit, $credit, $this->taxCodeId, $taxAmount, $this->memo, $this->counterpartyType, $this->counterpartyId, $this->ruleVersion);
+    }
+
+    /**
      * Form für {@see \App\Services\Accounting\JournalService::draft()}.
      *
      * @return array<string, mixed>

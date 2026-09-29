@@ -209,4 +209,19 @@ return [
             'saved' => 'Kommentar zu „:node“ gespeichert.',
         ],
     ],
+    'attachments' => [
+        'title' => 'Anhänge',
+        'empty' => 'Noch keine Anhänge an diesem Knoten.',
+        'hint' => 'Höchstens :mb MB je Datei.',
+        'action' => [
+            'open' => 'Anhänge',
+            'add' => 'Hochladen',
+        ],
+        'field' => [
+            'file' => 'Datei',
+        ],
+        'flash' => [
+            'saved' => 'Anhang an „:node“ gespeichert.',
+        ],
+    ],
 ];

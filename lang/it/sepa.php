@@ -23,6 +23,9 @@ return [
     'direct_debit_amount' => 'Importo',
     'direct_debit_reference' => 'Causale',
     'direct_debit_submit' => 'Crea incasso',
+    'direct_debit_invoice' => 'Fattura',
+    'direct_debit_invoice_none' => '— senza riferimento a fattura —',
+    'direct_debit_from_invoice' => 'Incassa con addebito diretto',
     'run_released' => 'Distinta di pagamento approvata.',
     'run_cancelled' => 'Distinta di pagamento annullata.',
     'item_removed' => 'Posizione rimossa.',
@@ -105,6 +108,7 @@ return [
         'mandate_unusable' => 'Il mandato è revocato o inutilizzato da oltre 36 mesi.',
         'item_without_mandate' => 'Una posizione di addebito senza mandato non può essere esportata.',
         'unavailable' => 'L’esportazione SEPA non è abilitata in questa installazione. Attivazione tramite :contact.',
+        'invoice_not_collectable' => 'La fattura non appartiene al cliente del mandato o non è più aperta.',
     ],
 
     'mandate' => [

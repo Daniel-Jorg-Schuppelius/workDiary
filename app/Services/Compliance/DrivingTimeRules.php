@@ -74,6 +74,11 @@ final class DrivingTimeRules {
     /** Art. 4 lit. h / Art. 8 Abs. 6: regelmäßige wöchentliche Ruhezeit 45 h. */
     public const WEEKLY_REST_MINUTES = 2700;
 
+    /** Mehrfahrerbetrieb: tägliche Ruhezeit von 9 h binnen 30 h (Art. 8 Abs. 5). */
+    public const MULTI_MANNING_DAILY_REST_MINUTES = 540;
+
+    public const MULTI_MANNING_WINDOW_MINUTES = 1800;
+
     /** Art. 4 lit. h: reduzierte wöchentliche Ruhezeit mindestens 24 h (Ausgleich bis Ende der dritten Folgewoche, Art. 8 Abs. 6). */
     public const WEEKLY_REST_REDUCED_MINUTES = 1440;
 

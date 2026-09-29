@@ -189,4 +189,15 @@ return [
             'consume_not_allowed' => 'Il consumo è possibile solo per ordini rilasciati o in lavorazione.',
         ],
     ],
+    'delivery_list' => [
+        'title' => 'Documenti di trasporto',
+        'subtitle' => 'Tutte le consegne con documento di trasporto, spedizione e documenti doganali.',
+        'search' => 'Articolo o cliente',
+        'empty' => 'Nessuna consegna nel periodo.',
+        'filter' => [
+            'all' => 'Tutte',
+            'open' => 'Non spedite',
+            'shipped' => 'Spedite',
+        ],
+    ],
 ];

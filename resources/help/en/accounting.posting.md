@@ -27,3 +27,12 @@ reports — when the entry is already posted.
 **Correction only by counter-entry.** A posted entry is immutable. The reversal
 creates a mirrored counter-entry with a mandatory reason; the original
 remains.
+
+**Documents in foreign currency.** Sales and purchase invoices and expenses in
+a foreign currency are converted at the monthly rate of their document month
+(Section 16(6) UStG). Maintain the rates under “Exchange rates” (next to the
+posting rules), individually or line by line, e.g. from the Ministry of Finance
+publication. Without a rate, the document stays in the inbox with a note. Rate
+and original amount are part of the posting evidence. Payments, cash and assets
+in foreign currency are still not posted; exchange differences on settlement
+are booked manually.

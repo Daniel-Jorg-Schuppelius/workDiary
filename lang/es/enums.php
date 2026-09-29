@@ -1922,6 +1922,8 @@ return [
             'family' => 'Cuota familiar',
             'surcharge' => 'Recargo de sección',
             'admission' => 'Cuota de admisión',
+            'exam' => 'Tasa de examen',
+            'course' => 'Cuota del curso',
         ],
         'fee-run-status' => [
             'draft' => 'Borrador',

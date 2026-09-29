@@ -76,7 +76,7 @@ class SaveArticleRequest extends BaseFormRequest {
             ],
             'gtin' => ['nullable', 'string', 'max:14'],
             // Zollangaben (MVP-1007): HS-Code bis TARIC-Zusatz, 6–11 Ziffern.
-            'customs_tariff_number' => ['nullable', 'string', 'regex:/^\d{6,11}$/'],
+            'customs_tariff_number' => ['nullable', 'string', 'max:11', 'regex:/^\d{6,11}$/'],
             'origin_country' => ['nullable', Rule::enum(\CommonToolkit\Enums\CountryCode::class)],
             'net_weight_kg' => ['nullable', 'numeric', 'min:0', 'max:999999'],
             // Typ-Zuordnung (produktmodell-konzept.md, MVP-370).

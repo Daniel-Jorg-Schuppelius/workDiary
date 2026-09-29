@@ -49,3 +49,11 @@ tax-privileged purpose) must be entered in the club settings. WorkDiary does
 not check whether the club is tax-privileged. Membership fees can only be
 receipted if you enable it; for sport and other leisure purposes their
 deduction is excluded by law. Receipted donations cannot be changed.
+
+**Sibling discount.** In the club settings you set a discount for the second
+and for every further child (with an age limit, by default under 18). It
+applies to individual fees of children of the same fee account in the same
+period; the oldest child pays in full. A discount on the fee assignment takes
+precedence. **Course and exam fees** are entered on the event or the exam
+offer; the fee run of the event month charges them per registration or per
+admitted candidate.

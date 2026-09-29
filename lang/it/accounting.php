@@ -197,7 +197,7 @@ return [
             'handed_over_none' => 'Nessun lotto esportato si sovrappone al periodo.',
             'sovereignty_conflict' => 'Dal :date dirige già :holder — il periodo sarebbe occupato due volte.',
             'sovereignty_ok' => 'Nessun periodo di direzione concorrente.',
-            'foreign_currency' => ':count documenti dalla data di riferimento non sono in :currency; restano visibili nella posta contabile.',
+            'foreign_currency' => ':count documenti dalla data di riferimento non sono in :currency; vengono convertiti al cambio mensile registrato, senza cambio restano nella posta contabile.',
             'base_currency_ok' => 'Tutti i documenti dalla data di riferimento sono in :currency.',
             'billing_external' => 'Le fatture le emette :program — i documenti arriveranno da lì.',
             'billing_local' => 'workDiary emette autonomamente le fatture di vendita.',
@@ -304,10 +304,11 @@ return [
             'no_amount' => 'Il documento non ha importo.',
             'no_lines' => 'La proposta non ha righe di registrazione.',
             'sovereignty' => 'In questo periodo l\'organizzazione non tiene un libro mastro locale.',
-            'foreign_currency' => 'Il documento è in :currency, la contabilità in :base — non esiste ancora una conversione documentabile.',
+            'foreign_currency' => 'L’operazione è in :currency, la contabilità in :base — pagamenti, cassa e cespiti in valuta estera non vengono registrati.',
             'unsupported_target' => 'Per questa destinazione di pagamento non esiste ancora un percorso contabile.',
             'year_closed' => 'L\'esercizio :year è chiuso.',
             'period_closed' => 'Il periodo del :date è chiuso.',
+            'no_exchange_rate' => 'Manca il cambio mensile :month per :currency (conversione in :base): lo aggiunga in Tassi di cambio.',
         ],
         'memo' => [
             'sales_invoice' => 'Fattura :number · :customer',
@@ -1336,4 +1337,34 @@ return [
         ],
     ],
 
+    'exchange_rates' => [
+        'title' => 'Tassi di cambio',
+        'subtitle' => 'Cambi mensili per documenti in valuta estera (§ 16 c. 6 UStG). Fatture attive e passive e note spese vengono convertite al cambio del loro mese.',
+        'empty' => 'Nessun cambio registrato.',
+        'action' => [
+            'add' => 'Aggiungi cambio',
+            'edit' => 'Modifica cambio',
+            'import' => 'Importa cambi',
+        ],
+        'field' => [
+            'currency' => 'Valuta',
+            'period' => 'Mese',
+            'rate' => 'Cambio per 1 unità di valuta base',
+            'source' => 'Fonte',
+            'import' => 'Righe',
+        ],
+        'hint' => [
+            'rate' => 'Come pubblicato dal Ministero delle Finanze tedesco: unità di valuta estera per un’unità di valuta base (ad es. 1 EUR = 1,0823 USD).',
+            'import' => 'Una riga per cambio: valuta;mese;cambio, ad es. USD;2026-03;1,0823 o USD;03/2026;1,0823. I mesi esistenti vengono sostituiti.',
+        ],
+        'error' => [
+            'rate' => 'Il cambio deve essere maggiore di zero.',
+            'line' => 'La riga :line non è leggibile (atteso: valuta;mese;cambio).',
+            'empty' => 'Nessun cambio trovato.',
+        ],
+        'flash' => [
+            'saved' => 'Cambio salvato.',
+            'imported' => ':count cambio importato.|:count cambi importati.',
+        ],
+    ],
 ];

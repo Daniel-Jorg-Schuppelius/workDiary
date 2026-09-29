@@ -197,7 +197,7 @@ return [
             'handed_over_none' => 'Kein exportierter Buchungsstapel überschneidet den Zeitraum.',
             'sovereignty_conflict' => 'Ab :date führt bereits :holder — der Zeitraum wäre doppelt belegt.',
             'sovereignty_ok' => 'Kein konkurrierender Führungsabschnitt.',
-            'foreign_currency' => ':count Belege ab dem Stichtag lauten nicht auf :currency; sie bleiben in der Buchungs-Inbox sichtbar.',
+            'foreign_currency' => ':count Belege ab dem Stichtag lauten nicht auf :currency; sie werden zum hinterlegten Monatskurs umgerechnet, ohne Kurs bleiben sie in der Buchungs-Inbox.',
             'base_currency_ok' => 'Alle Belege ab dem Stichtag lauten auf :currency.',
             'billing_external' => 'Die Rechnungen stellt :program — die Belege kommen dann von dort.',
             'billing_local' => 'workDiary stellt die Ausgangsrechnungen selbst.',
@@ -304,10 +304,11 @@ return [
             'no_amount' => 'Der Beleg hat keinen Betrag.',
             'no_lines' => 'Der Vorschlag hat keine Buchungszeilen.',
             'sovereignty' => 'Für diesen Zeitraum führt die Organisation kein lokales Hauptbuch.',
-            'foreign_currency' => 'Der Beleg lautet auf :currency, die Buchhaltung führt :base — eine belegbare Umrechnung gibt es noch nicht.',
+            'foreign_currency' => 'Der Vorgang lautet auf :currency, die Buchhaltung führt :base — Zahlungen, Kasse und Anlagen in Fremdwährung bucht sie nicht.',
             'unsupported_target' => 'Für dieses Zahlungsziel gibt es noch keinen Buchungsweg.',
             'year_closed' => 'Das Geschäftsjahr :year ist geschlossen.',
             'period_closed' => 'Die Periode zum :date ist geschlossen.',
+            'no_exchange_rate' => 'Für :currency fehlt der Monatskurs :month (Umrechnung in :base) — unter Umrechnungskurse nachtragen.',
         ],
         'memo' => [
             'sales_invoice' => 'Rechnung :number · :customer',
@@ -1336,4 +1337,34 @@ return [
         ],
     ],
 
+    'exchange_rates' => [
+        'title' => 'Umrechnungskurse',
+        'subtitle' => 'Monatskurse für Belege in Fremdwährung (§ 16 Abs. 6 UStG). Ausgangs- und Eingangsrechnungen sowie Auslagen werden zum Kurs ihres Belegmonats umgerechnet.',
+        'empty' => 'Noch keine Kurse hinterlegt.',
+        'action' => [
+            'add' => 'Kurs anlegen',
+            'edit' => 'Kurs ändern',
+            'import' => 'Kurse übernehmen',
+        ],
+        'field' => [
+            'currency' => 'Währung',
+            'period' => 'Monat',
+            'rate' => 'Kurs je 1 Einheit Basiswährung',
+            'source' => 'Quelle',
+            'import' => 'Zeilen',
+        ],
+        'hint' => [
+            'rate' => 'Wie vom BMF veröffentlicht: Einheiten der Fremdwährung für eine Einheit der Basiswährung (z. B. 1 EUR = 1,0823 USD).',
+            'import' => 'Eine Zeile je Kurs: Währung;Monat;Kurs, z. B. USD;2026-03;1,0823 oder USD;03/2026;1,0823. Vorhandene Monate werden ersetzt.',
+        ],
+        'error' => [
+            'rate' => 'Der Kurs muss größer als null sein.',
+            'line' => 'Zeile :line ist nicht lesbar (erwartet: Währung;Monat;Kurs).',
+            'empty' => 'Keine Kurse gefunden.',
+        ],
+        'flash' => [
+            'saved' => 'Kurs gespeichert.',
+            'imported' => ':count Kurs übernommen.|:count Kurse übernommen.',
+        ],
+    ],
 ];

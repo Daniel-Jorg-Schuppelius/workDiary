@@ -173,6 +173,14 @@ return [
     ],
 
     'attributes' => [
+
+        'columns' => 'Assegnazione delle colonne',
+
+        'columns.*.header' => 'Cella di intestazione',
+
+        'columns.*.target' => 'Colonna di destinazione',
+
+        'quality' => 'Qualità video',
         'abbreviation' => 'Abbreviazione',
         'abilities' => 'Autorizzazioni',
         'abilities.*' => 'Autorizzazione',
@@ -2636,6 +2644,14 @@ return [
         'net_weight_kg' => 'peso netto',
         'export_reason' => 'motivo della spedizione',
         'settings.shipping.eori_number' => 'numero EORI',
+        'invoice' => 'fattura',
+        'import' => 'righe',
+        'co_driver_user_id' => 'secondo conducente',
+        'is_ferry_or_train' => 'traghetto/treno',
+        'siblings' => 'Sconto fratelli',
+        'siblings.second_percent' => 'sconto secondo figlio',
+        'siblings.further_percent' => 'sconto dal terzo figlio',
+        'siblings.max_age' => 'limite di età',
     ],
 
     'values' => [

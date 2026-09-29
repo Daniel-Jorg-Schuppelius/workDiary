@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Compliance;
 
-use App\Enums\Attendance\AttendanceStatus;
+use App\Enums\Attendance\{AttendanceSource, AttendanceStatus};
 use App\Models\Fleet\Vehicle;
 use App\Models\Platform\{Organization, User};
 use App\Models\Time\Attendance;
@@ -80,8 +80,11 @@ final class ComplianceScanService {
                 'started_at' => CarbonImmutable::parse($a->started_at->toIso8601String())->setTimezone($tz),
                 'ended_at' => CarbonImmutable::parse($a->ended_at->toIso8601String())->setTimezone($tz),
                 'break_minutes' => $a->break_minutes_total,
-                // MiLoG §17 (MVP-695): Erfassungszeitpunkt = created_at.
-                'recorded_at' => $a->created_at ? CarbonImmutable::parse($a->created_at->toIso8601String())->setTimezone($tz) : null,
+                // MiLoG §17: ursprüngliche Erfassung (Stempel bzw. Quellangabe, MVP-1015); ältere
+                // Sätze fallen auf created_at zurück, Importe ohne Quellangabe bleiben ungeprüft.
+                'recorded_at' => ($recorded = $a->recorded_at ?? ($a->source === AttendanceSource::Import ? null : $a->created_at)) !== null
+                    ? CarbonImmutable::parse($recorded->toIso8601String())->setTimezone($tz)
+                    : null,
             ];
         }
 
@@ -147,7 +150,7 @@ final class ComplianceScanService {
         $loadFrom = $from->subDays(DrivingTimeComplianceChecker::LOOKBACK_DAYS);
         $tz = Tz::current();
 
-        /** @var array<int, list<array{started_at: CarbonImmutable, ended_at: CarbonImmutable}>> $tripsByUser */
+        /** @var array<int, list<array{started_at: CarbonImmutable, ended_at: CarbonImmutable, role: string, ferry: bool, multi: bool}>> $tripsByUser */
         $tripsByUser = [];
         TravelLog::query()
             ->where('organization_id', $organization->getKey())
@@ -157,16 +160,23 @@ final class ComplianceScanService {
             ->whereBetween('date', DateRange::days($loadFrom, $to))
             ->effective()
             ->orderBy('started_at')
-            ->get(['id', 'user_id', 'started_at', 'ended_at'])
+            ->get(['id', 'user_id', 'co_driver_user_id', 'is_ferry_or_train', 'started_at', 'ended_at'])
             ->each(function (TravelLog $t) use (&$tripsByUser, $tz): void {
                 if (! $t->started_at || ! $t->ended_at) {
                     return;
                 }
                 // Das Fahrtenbuch führt Ortszeit (Festschreibung, GoBD): Wandzeit behalten, Zeitzone zuordnen.
-                $tripsByUser[(int) $t->user_id][] = [
+                $trip = [
                     'started_at' => CarbonImmutable::parse($t->started_at->toIso8601String())->shiftTimezone($tz),
                     'ended_at' => CarbonImmutable::parse($t->ended_at->toIso8601String())->shiftTimezone($tz),
+                    'ferry' => (bool) $t->is_ferry_or_train,
+                    'multi' => $t->co_driver_user_id !== null,
                 ];
+                $tripsByUser[(int) $t->user_id][] = $trip + ['role' => DrivingTimeComplianceChecker::ROLE_DRIVER];
+                // Mehrfahrerbetrieb (MVP-1014): Der zweite Fahrer ist belegt, lenkt aber nicht.
+                if ($t->co_driver_user_id !== null) {
+                    $tripsByUser[(int) $t->co_driver_user_id][] = $trip + ['role' => DrivingTimeComplianceChecker::ROLE_CO_DRIVER];
+                }
             });
 
         $checker = new DrivingTimeComplianceChecker;

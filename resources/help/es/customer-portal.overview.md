@@ -20,3 +20,6 @@ un acceso directo a la vista de detalle correspondiente. En el portal
 solo puede consultar los procesos asignados a su empresa y compartidos
 con usted, sin poder modificarlos. Desde el menú accede también a la
 gestión de su acceso y de la seguridad de dos factores.
+
+Con **Búsqueda** en la cabecera encuentra facturas, pedidos, documentos y
+tickets por número o título, solo en las áreas compartidas con usted.

@@ -173,6 +173,9 @@
         'syncRoute' => route('suppliers.lexoffice.sync-vouchers', $supplier),
     ])
 
+    {{-- Kommunikation (MVP-1023): Absprachen, Anrufe, Zusagen zum Lieferanten. --}}
+    @include('communication-notes._panel', ['notable' => $supplier, 'notableKind' => 'supplier'])
+
     {{-- Änderungsverlauf (Audit) — Benennung konsistent zu Kunde/Fremdkunde --}}
     @if ($auditLogs->isNotEmpty())
     <x-card :title="__('Änderungsverlauf')" icon="history">

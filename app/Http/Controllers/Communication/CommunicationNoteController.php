@@ -57,6 +57,8 @@ class CommunicationNoteController extends Controller {
         'lead' => \App\Models\Sales\Lead::class,
         // Feature 149 (MVP-789): private Lernnotizen an der Einschreibung.
         'learning_enrollment' => \App\Models\Learning\LearningEnrollment::class,
+        // Feature 129 (MVP-1023): Absprachen mit Lieferanten.
+        'supplier' => \App\Models\Supplier\Supplier::class,
     ];
 
     public function __construct(
@@ -186,7 +188,7 @@ class CommunicationNoteController extends Controller {
 
         return view('communication-notes._form_dialog', [
             'note' => $note->load('participants'),
-            'notableKind' => array_search($note->notable_type, self::NOTABLE_MAP, true) ?: 'diary',
+            'notableKind' => array_search(MorphMap::classFor($note->notable_type), self::NOTABLE_MAP, true) ?: 'diary',
             'notableId' => Sqid::encode($note->notable_type, (int) $note->notable_id),
             'users' => $this->assignableUsers(),
             'canPublishToCustomer' => Gate::allows('publishToCustomer', CommunicationNote::class),

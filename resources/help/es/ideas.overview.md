@@ -49,3 +49,6 @@ como JSON, OPML, Markdown o PDF — por ejemplo para compartirlos fuera
 del sistema.
 
 **Comentarios en nodos:** En el detalle de un nodo, «Comentarios» abre el hilo de ese nodo; el número al lado indica cuántos hay. Puede comentar cualquier persona que pueda ver el mapa.
+
+Los nodos llevan **adjuntos**: desde «Adjuntos» en la vista del nodo, quienes
+editan suben archivos; todas las personas que ven el mapa pueden abrirlos.

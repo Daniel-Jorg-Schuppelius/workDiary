@@ -43,6 +43,11 @@ funzionano senza rilavorazioni.
 ![Elenco clienti con numeri, contatti, tariffe orarie e numero di progetti](media/kunden/kundenliste.png)
 *L’elenco clienti: anagrafica, tariffa oraria e progetti collegati per partner.*
 
+**Comunicazione:** registri chiamate, e-mail e impegni come nota di
+comunicazione sul cliente o sul fornitore. Le note compaiono nella pagina di
+dettaglio e nell’elenco centrale delle note; un riscontro di accesso ai dati
+relativo a un fornitore le elenca con numero e periodo.
+
 ## Esempio pratico
 
 Un fornitore IT crea «Müller GmbH» con indirizzo di fatturazione,

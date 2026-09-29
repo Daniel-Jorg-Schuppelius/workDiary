@@ -16,9 +16,11 @@ use App\Enums\Finance\PostingAccountRole;
 use App\Models\Accounting\{AccountingAccount, AccountingPostingRule, AccountingProfile, FixedAsset};
 use App\Models\Finance\DatevBookingSource;
 use App\Models\Platform\Organization;
+use App\Services\Accounting\ExchangeRateService;
 use App\Services\Accounting\Posting\{PostingProposalLine, PostingRuleResolver, PostingSourceAdapter};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
+use CommonToolkit\ValueObjects\Decimal;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -133,6 +135,61 @@ abstract class AbstractPostingAdapter implements PostingSourceAdapter {
             'currency' => $code,
             'base' => $base->value,
         ]);
+    }
+
+    /**
+     * Fremdwährungsbeleg zum Monatskurs des Belegdatums in die Basiswährung
+     * (§ 16 Abs. 6 UStG, MVP-1012). Die Rundungsdifferenz trägt die größte Zeile
+     * der kleineren Seite; Kurs und Originalbetrag gehen in den Nachweis.
+     *
+     * @param  list<PostingProposalLine>  $lines
+     * @return array{lines: list<PostingProposalLine>, blocker: string|null, extra: array<string, mixed>}
+     */
+    protected function inBaseCurrency(Organization $organization, mixed $currency, CarbonImmutable $on, array $lines): array {
+        $code = $currency instanceof CurrencyCode ? $currency : CurrencyCode::tryFrom(strtoupper((string) $currency));
+        $base = $this->baseCurrency($organization);
+        if ($code === null || $code === $base) {
+            return ['lines' => $lines, 'blocker' => null, 'extra' => []];
+        }
+        $rate = app(ExchangeRateService::class)->rateFor($organization, $code, $on);
+        if ($rate === null) {
+            return ['lines' => $lines, 'blocker' => (string) __('accounting.inbox.blocker.no_exchange_rate', [
+                'currency' => $code->value, 'month' => $on->format('m/Y'), 'base' => $base->value,
+            ]), 'extra' => []];
+        }
+
+        $convert = static fn (string $amount): string => Decimal::of($amount, 2)->dividedBy($rate->rate, 2)->getValue();
+        $converted = array_map(static fn (PostingProposalLine $line): PostingProposalLine => $line->withAmounts(
+            $convert($line->debit),
+            $convert($line->credit),
+            $line->taxAmount !== null ? $convert($line->taxAmount) : null,
+        ), $lines);
+
+        $sum = static fn (array $items, string $side): Decimal => array_reduce($items, static fn (Decimal $carry, PostingProposalLine $line): Decimal => $carry->plus(Decimal::of($line->{$side}, 2)), Decimal::of('0', 2));
+        $difference = $sum($converted, 'debit')->minus($sum($converted, 'credit'));
+        if (! $difference->isZero()) {
+            $side = $difference->isPositive() ? 'credit' : 'debit';
+            $index = 0;
+            foreach ($converted as $i => $candidate) {
+                if (Decimal::of($candidate->{$side}, 2)->greaterThan(Decimal::of($converted[$index]->{$side}, 2))) {
+                    $index = $i;
+                }
+            }
+            $line = $converted[$index];
+            $adjusted = Decimal::of($line->{$side}, 2)->plus($difference->abs())->getValue();
+            $converted[$index] = $side === 'credit'
+                ? $line->withAmounts($line->debit, $adjusted, $line->taxAmount)
+                : $line->withAmounts($adjusted, $line->credit, $line->taxAmount);
+        }
+
+        return ['lines' => array_values($converted), 'blocker' => null, 'extra' => ['exchange_rate' => [
+            'currency' => $code->value,
+            'base' => $base->value,
+            'period' => $rate->period->format('Y-m'),
+            'rate' => $rate->rate->getValue(),
+            'source' => $rate->source,
+            'original_total' => $sum($lines, 'debit')->getValue(),
+        ]]];
     }
 
     protected function baseCurrency(Organization $organization): CurrencyCode {

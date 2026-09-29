@@ -85,3 +85,11 @@ besoin du prix catalogue brut et de la distance domicile–travail ; vous y sais
 les autres coûts annuels (leasing, assurance, taxe), l'énergie provient des
 justificatifs de carburant et de recharge. En option, un paramètre bloque les
 nouveaux trajets tant que le contrôle obligatoire d'un véhicule est en retard.
+
+**Temps de conduite et de repos.** Si votre organisation applique les règles
+de temps de conduite, indiquez un second conducteur sur le trajet (équipage
+multiple) ou marquez les traversées où le véhicule voyage sur un ferry ou un
+train. Le second conducteur n'accumule pas de temps de conduite, mais son temps
+dans le véhicule ne compte pas comme repos ; en équipage multiple, 9 heures de
+repos en 30 heures suffisent. Une traversée en ferry ou en train n'interrompt
+pas le repos.

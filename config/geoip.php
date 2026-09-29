@@ -29,4 +29,15 @@ return [
     'database' => env('GEOIP_DATABASE'),
 
     'locale' => env('GEOIP_LOCALE', 'de'),
+
+    /*
+    | Monatliche Aktualisierung (MVP-1021, `security:geoip-update`): lädt die
+    | DB-IP-Lite-Datei des Monats ({month} = JJJJ-MM) nach `database`. Aus,
+    | solange der Betreiber die Datei selbst pflegt. DB-IP Lite steht unter
+    | CC BY 4.0 — die Quelle ist in der Oberfläche zu nennen.
+    */
+    'update' => [
+        'enabled' => (bool) env('GEOIP_AUTO_UPDATE', false),
+        'url' => env('GEOIP_UPDATE_URL', 'https://download.db-ip.com/free/dbip-city-lite-{month}.mmdb.gz'),
+    ],
 ];

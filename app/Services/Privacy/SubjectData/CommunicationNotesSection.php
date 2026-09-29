@@ -14,6 +14,7 @@ namespace App\Services\Privacy\SubjectData;
 
 use App\Models\Customer\Customer;
 use App\Models\Sales\Lead;
+use App\Models\Supplier\Supplier;
 use Illuminate\Database\Eloquent\Model;
 use InvalidArgumentException;
 
@@ -32,8 +33,8 @@ class CommunicationNotesSection extends AbstractSubjectSection {
     }
 
     public function build(Model $subject): array {
-        if (! $subject instanceof Customer && ! $subject instanceof Lead) {
-            throw new InvalidArgumentException(self::class . ' erwartet Customer oder Lead.');
+        if (! $subject instanceof Customer && ! $subject instanceof Lead && ! $subject instanceof Supplier) {
+            throw new InvalidArgumentException(self::class . ' erwartet Customer, Lead oder Supplier.');
         }
 
         return ['families' => [

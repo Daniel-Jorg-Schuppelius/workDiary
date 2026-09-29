@@ -286,6 +286,7 @@ return [
             'mode' => 'Action',
             'spontaneous' => 'Spontaneous participation — without target group and deadline check',
             'cancel_reason' => 'Reason for cancellation',
+            'fee_amount' => 'Course fee',
         ],
         'filter' => [
             'period_upcoming' => 'Upcoming',
@@ -343,6 +344,7 @@ return [
             'spontaneous' => 'Leaders and administration only; capacity still applies.',
             'cancel' => 'Registrations are kept as history; no seat is reassigned.',
             'target_list' => 'Members of the target groups on the event day — each member once, even in several groups.',
+            'fee_amount' => 'For courses: charged per registration in the fee run of the event month.',
         ],
         'flash' => [
             'created' => 'Event created.',
@@ -708,6 +710,7 @@ return [
             'eligibility' => 'Requirements',
             'result' => 'Result',
             'exception_reason' => 'Reason for the exception',
+            'fee_amount' => 'Exam fee',
         ],
         'action' => [
             'create_offer' => 'Offer exam',
@@ -752,6 +755,7 @@ return [
             'add_candidate' => 'Requirements are evaluated immediately for the exam start.',
             'exception' => 'Only if the requirement allows an exception; reason and actor are recorded.',
             'result' => 'Only “passed” awards the target grade — exactly once. Failure and no-show change neither grade nor training time.',
+            'fee_amount' => 'Charged per admitted candidate in the fee run of the exam month.',
         ],
         'confirm' => [
             'reject' => 'Reject the candidate? A taken seat is released.',
@@ -1548,6 +1552,8 @@ return [
             'total' => 'Total',
             'no_assignment' => 'No fee assignment.',
             'review_age' => 'Age :age no longer fits the tariff age limits',
+            'exam_fee' => 'Exam fee :title',
+            'course_fee' => 'Course fee :title',
         ],
         'hint' => [
             'payment' => 'Without a claim the payment is applied by due date (family bulk payment); a remainder stays as credit. The same money is never counted twice.',
@@ -1686,6 +1692,7 @@ return [
             'reason_required' => 'Enter a reason.',
             'amount_required' => 'Enter an amount.',
             'amount_invalid' => 'Invalid amount.',
+            'event_fee_without_account' => ':name has no fee assignment on the date of “:event” — fee not charged.',
         ],
         'issue' => [
             'incomplete_assignment' => 'Assignment incomplete (member, account or tariff missing).',
@@ -1742,6 +1749,14 @@ Your fee management',
             'cancelled' => 'Cancelled on :date — this document is void.',
         ],
         'overdue_count' => '{1}one overdue|[2,*]:count overdue',
+        'siblings' => [
+            'legend' => 'Sibling discount',
+            'hint' => 'Discount on individual fees of children of the same fee account: the oldest pays in full. Leave empty if no discount applies; a discount on the fee assignment takes precedence.',
+            'second_percent' => 'Second child (%)',
+            'further_percent' => 'Third child onwards (%)',
+            'max_age' => 'Under age (years)',
+            'label' => 'child :rank, sibling discount :percent %',
+        ],
     ],
     // Reiter der Termin-Sichten (MVP-969).
     'tab' => [

@@ -26,6 +26,7 @@ class SaveTravelLogRequest extends BaseFormRequest {
         'customer_id' => \App\Models\Customer\Customer::class,
         'attendance_id' => \App\Models\Time\Attendance::class,
         'vehicle_id' => \App\Models\Fleet\Vehicle::class,
+        'co_driver_user_id' => \App\Models\Platform\User::class,
         'corrects_travel_log_id' => \App\Models\Travel\TravelLog::class,
     ];
 
@@ -94,6 +95,9 @@ class SaveTravelLogRequest extends BaseFormRequest {
             'odometer_start_km' => ['nullable', 'integer', 'min:0', 'max:9999999'],
             'odometer_end_km' => ['nullable', 'integer', 'min:0', 'max:9999999', 'gte:odometer_start_km'],
             'trip_kind' => ['nullable', Rule::enum(TripKind::class)],
+            // Mehrfahrerbetrieb (MVP-1014): der zweite Fahrer ist nie der Fahrer selbst.
+            'co_driver_user_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('users'), Rule::notIn([(int) $this->user()?->getAuthIdentifier()])],
+            'is_ferry_or_train' => ['sometimes', 'boolean'],
             'corrects_travel_log_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('travel_logs')],
             'correction_reason' => ['nullable', 'string', 'max:255', 'required_with:corrects_travel_log_id'],
             'vehicle' => ['required', Rule::enum(TravelLogVehicle::class)],
@@ -118,6 +122,7 @@ class SaveTravelLogRequest extends BaseFormRequest {
     public function validated($key = null, $default = null): array {
         $data = parent::validated();
         $data['round_trip'] = (bool) ($data['round_trip'] ?? false);
+        $data['is_ferry_or_train'] = (bool) ($data['is_ferry_or_train'] ?? false);
         $data['reimbursable'] = (bool) ($data['reimbursable'] ?? true);
         $data['trip_kind'] = ($data['trip_kind'] ?? null) ?: TripKind::Business->value;
         foreach (['odometer_start_km', 'odometer_end_km'] as $field) {

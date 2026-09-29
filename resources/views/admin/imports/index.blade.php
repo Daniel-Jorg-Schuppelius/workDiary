@@ -20,6 +20,9 @@
         <x-icon-btn icon="add" tone="primary" size="sm"
                     :href="route('admin.imports.create')"
                     show-label>{{ __('Import starten') }}</x-icon-btn>
+        <x-icon-btn icon="view_column" size="sm" placement="menu" data-entry-modal-trigger
+                    :href="route('admin.imports.column-mappings')"
+                    show-label>{{ __('import.columns.saved_title') }}</x-icon-btn>
     </x-slot:actions>
 
     <x-filter-bar :action="route('admin.imports.index')" :reset="route('admin.imports.index')">

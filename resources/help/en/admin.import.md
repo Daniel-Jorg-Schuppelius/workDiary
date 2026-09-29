@@ -40,6 +40,16 @@ leaving data quality to chance.
 ![Import wizard with entity choice, sample template and preflight](media/administration/import-assistent.png)
 *The import wizard: choose the entity, download the template, upload the file — the preflight writes nothing.*
 
+## Mapping your own column names
+
+If the import does not recognise a column heading, the run shows the
+**Column mapping** card. Choose the target column for each heading and save —
+the file is checked again immediately. From then on the mapping applies to
+every further file of the same import type, including the customer import in
+the customer list. An AI suggestion only pre-fills the selection. Saved
+mappings are listed in the import list menu under **Saved column mappings**,
+where they can be deleted individually.
+
 ## Practical example
 
 During migration a business first imports a test file with ten
@@ -77,3 +87,7 @@ For attendances and project times you can choose a connected calendar
 source instead of a file (CalDAV, Google Calendar, Microsoft 365). The
 events of the chosen period are fetched and checked like an iCal file —
 with preview, category filter and resolution of series.
+
+The attendance import accepts the optional column **erfasst am** (date and
+time of the original recording). It serves the minimum wage recording
+deadline; without it, the deadline is not checked for those rows.

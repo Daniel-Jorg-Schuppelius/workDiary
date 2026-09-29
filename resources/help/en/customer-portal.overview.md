@@ -24,3 +24,6 @@ In the portal you can only view items that are assigned to your company
 and have been released to you. You can read the displayed data, but you
 cannot change it. The menu also gives you access to managing your login
 and your two-factor security.
+
+Use **Search** in the header to find invoices, orders, documents and tickets by
+number or title — only in the areas shared with you.

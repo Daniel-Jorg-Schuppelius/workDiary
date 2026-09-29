@@ -23,6 +23,9 @@ return [
     'direct_debit_amount' => 'Amount',
     'direct_debit_reference' => 'Remittance information',
     'direct_debit_submit' => 'Create collection',
+    'direct_debit_invoice' => 'Invoice',
+    'direct_debit_invoice_none' => '— no invoice reference —',
+    'direct_debit_from_invoice' => 'Collect by direct debit',
     'run_released' => 'Payment run released.',
     'run_cancelled' => 'Payment run cancelled.',
     'item_removed' => 'Position removed.',
@@ -105,6 +108,7 @@ return [
         'mandate_unusable' => 'The mandate is revoked or has been unused for more than 36 months.',
         'item_without_mandate' => 'A collection position without a mandate cannot be exported.',
         'unavailable' => 'The SEPA export is not enabled in this installation. Enable it via :contact.',
+        'invoice_not_collectable' => 'The invoice does not belong to the mandate’s customer or is no longer open.',
     ],
 
     'mandate' => [

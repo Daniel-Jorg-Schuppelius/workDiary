@@ -199,7 +199,7 @@ return [
         'recurrence' => ['generate' => 'Wiederkehrende Aufträge erzeugen'],
         'remote' => ['sync_sessions' => 'Fernwartungs-Sitzungen importieren'],
         'scheduler' => ['watchdog' => 'Scheduler-Überwachung'],
-        'security' => ['advisories_pull' => 'Sicherheitshinweise abrufen', 'integrity' => 'Quelltext-Integritätsprüfung', 'evaluate' => 'Angriffserkennung auswerten'],
+        'security' => ['advisories_pull' => 'Sicherheitshinweise abrufen', 'integrity' => 'Quelltext-Integritätsprüfung', 'evaluate' => 'Angriffserkennung auswerten', 'geoip_update' => 'IP-Geodatenbank aktualisieren'],
         'tickets' => ['scan_sla_breaches' => 'SLA-Verletzungen prüfen'],
         'retention' => ['prune_models' => 'Aufbewahrungsfristen anwenden (Zustellprotokolle, Outbox, Plugin-Fehler)'],
         'whistleblowing' => ['deadlines' => 'Hinweisgeber-Fristen prüfen', 'retention_review' => 'Hinweisgeber-Aufbewahrungsprüfung', 'scan' => 'Hinweisgeber-Anhänge scannen (Quarantäne)'],

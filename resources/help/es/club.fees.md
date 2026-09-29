@@ -50,3 +50,11 @@ comprueba si la asociación goza de beneficios fiscales. Las cuotas de socio
 solo pueden certificarse si lo activa; para el deporte y otros fines de ocio
 su deducción está excluida por ley. Los donativos certificados no pueden
 modificarse.
+
+**Descuento por hermanos.** En la configuración del club establece un descuento
+para el segundo hijo y para cada hijo adicional (con límite de edad, por
+defecto menores de 18). Se aplica a las cuotas individuales de los hijos de la
+misma cuenta en el mismo periodo; el mayor paga completo. Prevalece un
+descuento en la asignación. Las **cuotas de cursos y tasas de examen** se
+indican en la cita o en la oferta de examen; el cálculo del mes las cobra por
+inscripción o por candidato admitido.

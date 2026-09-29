@@ -41,6 +41,17 @@ estructurada, sin dejar la calidad de los datos al azar.
 ![Asistente de importación con elección de entidad, plantilla y análisis previo](media/administration/import-assistent.png)
 *El asistente de importación: elegir la entidad, descargar la plantilla, subir el archivo — el análisis no escribe nada.*
 
+## Asignar sus propios nombres de columna
+
+Si la importación no reconoce un encabezado de columna, la ejecución muestra
+la tarjeta **Asignación de columnas**. Elija la columna de destino de cada
+encabezado y guarde: el archivo se vuelve a comprobar de inmediato. A partir
+de entonces, la asignación se aplica a cada archivo del mismo tipo de
+importación, también a la importación de clientes desde la lista de clientes.
+Una propuesta de la IA solo rellena la selección. Las asignaciones guardadas
+aparecen en el menú de la lista de importaciones, en **Asignaciones de
+columnas guardadas**, donde puede eliminarlas una a una.
+
 ## Ejemplo práctico
 
 En una migración, una empresa importa primero un archivo de prueba
@@ -80,3 +91,7 @@ conectada en lugar de un archivo (CalDAV, Google Calendar, Microsoft 365).
 Los eventos del periodo elegido se obtienen y se comprueban como un
 archivo iCal, con vista previa, filtro de categorías y resolución de
 series.
+
+La importación de asistencias admite la columna opcional **erfasst am** (fecha
+y hora del registro original). Sirve para el plazo de registro de la MiLoG; sin
+ella, el plazo no se comprueba en esas líneas.

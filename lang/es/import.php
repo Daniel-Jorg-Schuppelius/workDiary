@@ -171,4 +171,25 @@ return [
         'position' => 'Traspaso del sistema anterior — factura :number',
         'note' => 'Factura antigua traspasada desde :source (partida abierta de apertura, sin asiento en el diario).',
     ],
+    'columns' => [
+        'title' => 'Asignación de columnas',
+        'hint' => 'La importación no reconoce estas columnas. Asígnelas una vez: la asignación se aplica a partir de entonces a cada archivo de este tipo de importación y el archivo se vuelve a comprobar de inmediato.',
+        'target_for' => 'Columna de destino para «:header»',
+        'skip' => '— no importar —',
+        'ai_proposed' => 'Propuesta de IA',
+        'submit' => 'Guardar asignación y volver a comprobar',
+        'saved_title' => 'Asignaciones de columnas guardadas',
+        'saved_hint' => 'Estas asignaciones se aplican a cada archivo de importación de la organización. Los valores del tipo de importación tienen prioridad.',
+        'saved_empty' => 'Todavía no hay asignaciones de columnas guardadas.',
+        'delete' => 'Eliminar asignación',
+        'confirm_delete' => '¿Eliminar la asignación para «:header»?',
+        'error' => [
+            'duplicate' => 'Cada columna de destino solo puede asignarse una vez.',
+            'none' => 'No se aplicó ninguna asignación; elija al menos una columna de destino.',
+        ],
+        'flash' => [
+            'saved' => '{1} Una asignación guardada, el archivo se volvió a comprobar.|[2,*] :count asignaciones guardadas, el archivo se volvió a comprobar.',
+            'deleted' => 'Asignación de columnas eliminada.',
+        ],
+    ],
 ];

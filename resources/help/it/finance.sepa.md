@@ -49,3 +49,9 @@ l’identificativo creditore dell’organizzazione (impostazione
 **Modulo aggiuntivo:** La generazione del file appartiene al modulo a
 pagamento dei formati bancari. Senza di esso distinta e registro dei mandati
 restano utilizzabili; manca solo l’esportazione.
+
+Un addebito diretto può riferirsi a una fattura aperta del cliente del mandato:
+«Incassa con addebito diretto» sulla fattura apre l'incasso con importo e
+causale precompilati. Con il riferimento alla fattura, la previsione di
+liquidità conta l'importo una sola volta: nel flusso di pagamento e non anche
+come credito aperto.

@@ -28,9 +28,13 @@ use CommonToolkit\Parsers\CSVDocumentParser;
 final class CsvImportSource implements ImportSource {
     private ?string $delimiter;
 
+    /**
+     * @param  array<string, string>  $savedAliases  gespeicherte Spaltenzuordnungen (MVP-1020)
+     */
     public function __construct(
         private readonly string $absolutePath,
         ?string $delimiter = null,
+        private readonly array $savedAliases = [],
     ) {
         $this->delimiter = $delimiter;
     }
@@ -44,12 +48,12 @@ final class CsvImportSource implements ImportSource {
     }
 
     public function headerIssues(EntitySpec $spec): array {
-        return HeaderMapper::issues($spec, $this->rawHeader());
+        return HeaderMapper::issues($spec, $this->rawHeader(), $this->savedAliases);
     }
 
     public function rows(EntitySpec $spec): iterable {
         // MVP-707: Kopfzeilen-Zuordnung zentral im HeaderMapper (auch Dokument-Manifest).
-        $headerMap = HeaderMapper::map($spec, $this->rawHeader());
+        $headerMap = HeaderMapper::map($spec, $this->rawHeader(), $this->savedAliases);
         $number = 0;
 
         foreach (CsvFacade::streamAssoc($this->absolutePath, $this->delimiter()) as $rawRow) {

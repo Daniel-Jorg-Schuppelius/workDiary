@@ -199,7 +199,7 @@ return [
         'recurrence' => ['generate' => 'Generare gli ordini ricorrenti'],
         'remote' => ['sync_sessions' => 'Importare le sessioni di assistenza remota'],
         'scheduler' => ['watchdog' => 'Sorveglianza dello scheduler'],
-        'security' => ['advisories_pull' => 'Recuperare gli avvisi di sicurezza', 'integrity' => 'Verifica integrità del codice sorgente', 'evaluate' => 'Valuta rilevamento attacchi'],
+        'security' => ['advisories_pull' => 'Recuperare gli avvisi di sicurezza', 'integrity' => 'Verifica integrità del codice sorgente', 'evaluate' => 'Valuta rilevamento attacchi', 'geoip_update' => 'Aggiornare il database di geolocalizzazione IP'],
         'tickets' => ['scan_sla_breaches' => 'Rilevare le violazioni SLA'],
         'retention' => ['prune_models' => 'Applicare i periodi di conservazione (log di consegna, outbox, errori plugin)'],
         'whistleblowing' => ['deadlines' => 'Verifica scadenze segnalazioni', 'retention_review' => 'Revisione conservazione segnalazioni', 'scan' => 'Scansione allegati segnalazioni (quarantena)'],

@@ -42,6 +42,17 @@ structurée, sans laisser la qualité des données au hasard.
 ![Assistant d’import avec choix d’entité, modèle et analyse préalable](media/administration/import-assistent.png)
 *L’assistant d’import : choisir l’entité, télécharger le modèle, déposer le fichier — l’analyse n’écrit rien.*
 
+## Affecter vos propres noms de colonnes
+
+Si l'import ne reconnaît pas un en-tête de colonne, le lot affiche la carte
+**Affectation des colonnes**. Choisissez la colonne cible de chaque en-tête et
+enregistrez — le fichier est aussitôt revérifié. L'affectation s'applique
+ensuite à chaque fichier du même type d'import, y compris l'import de clients
+depuis la liste des clients. Une proposition de l'IA ne fait que préremplir le
+choix. Les affectations enregistrées figurent dans le menu de la liste des
+imports sous **Affectations de colonnes enregistrées**, où vous pouvez les
+supprimer une à une.
+
 ## Exemple pratique
 
 Lors d'une migration, une entreprise importe d'abord un fichier test
@@ -81,3 +92,7 @@ de calendrier connectée au lieu d'un fichier (CalDAV, Google Agenda,
 Microsoft 365). Les événements de la période choisie sont récupérés et
 vérifiés comme un fichier iCal, avec aperçu, filtre de catégories et
 résolution des séries.
+
+L'import des présences accepte la colonne facultative **erfasst am** (date et
+heure de l'enregistrement d'origine). Elle sert au délai d'enregistrement
+MiLoG ; sans elle, le délai n'est pas contrôlé pour ces lignes.

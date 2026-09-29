@@ -55,6 +55,7 @@ class SaveExamOfferRequest extends BaseFormRequest {
             'max_participants' => ['nullable', 'integer', 'min:1', 'max:9999'],
             'registration_lead_hours' => ['nullable', 'integer', 'min:0', 'max:8760'],
             'cancellation_lead_hours' => ['nullable', 'integer', 'min:0', 'max:8760'],
+            'fee_amount' => ['nullable', 'numeric', 'decimal:0,2', 'min:0', 'max:9999999999.99'],
             'notes' => ['nullable', 'string', 'max:2000'],
         ];
     }

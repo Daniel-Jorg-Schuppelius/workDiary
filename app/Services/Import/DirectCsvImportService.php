@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Import;
 
 use App\Enums\Import\ImportEntity;
+use App\Models\Integration\ImportColumnMapping;
 use App\Models\Platform\Organization;
 use App\Plugins\Support\TimeWritebackObserver;
 use App\Support\Toolkit\CsvFacade;
@@ -55,7 +56,7 @@ class DirectCsvImportService {
             return $this->failure((string) __('errors.csv.header_missing', ['error' => $e->getMessage()]));
         }
 
-        $headerMap = HeaderMapper::map($spec, $rawHeader);
+        $headerMap = HeaderMapper::map($spec, $rawHeader, ImportColumnMapping::aliasesFor((int) $organization->id, $entity));
         foreach ($spec->requiredColumns() as $required) {
             if (! in_array($required, $headerMap, true)) {
                 return $this->failure($required === 'name'

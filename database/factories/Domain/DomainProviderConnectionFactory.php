@@ -29,7 +29,7 @@ class DomainProviderConnectionFactory extends Factory {
             'environment' => DomainProviderEnvironment::Production,
             'name' => 'DomainReselling ' . fake()->company(),
             'endpoint' => 'domainreselling',
-            'login' => 'reseller' . fake()->numberBetween(1, 999),
+            'login' => 'reseller' . fake()->unique()->numberBetween(1, 999999),
             'password' => 'secret-pw',
             'status' => DomainConnectionStatus::Active,
             'capabilities' => DomainCapabilityMatrix::default()->toArray(),

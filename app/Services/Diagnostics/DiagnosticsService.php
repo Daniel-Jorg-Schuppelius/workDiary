@@ -15,6 +15,7 @@ use App\Models\Audit\AuditLog;
 use App\Models\Platform\{BackupHeartbeat, Organization};
 use App\Models\Time\AttendanceTerminal;
 use App\Services\Licensing\{LicenseService, LicenseStatus, ModuleStatusResolver};
+use App\Services\Security\GeoDatabaseUpdater;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\JsonHelper;
 use CommonToolkit\Helper\FileSystem\{File, Folder};
@@ -58,6 +59,9 @@ class DiagnosticsService {
 
     /** Warnschwelle für das Alter der SBOM (Feature 051). */
     public const SBOM_STALE_DAYS = 30;
+
+    /** DB-IP erscheint monatlich — zwei ausgefallene Läufe sind ein Befund. */
+    public const GEOIP_STALE_DAYS = 70;
 
     /**
      * Cache-Key für den Scheduler-Heartbeat. Wird von einem geplanten Job
@@ -709,6 +713,15 @@ class DiagnosticsService {
             $messages[] = sprintf('.env ist für andere Konten lesbar (Modus %s) — `chmod 600 .env`.', (string) $envMode);
         }
 
+        // IP-Geodatenbank (Feature 085, MVP-1021): Stand der lokalen Datei; eine
+        // Warnung nur, wenn die Aktualisierung eingeschaltet ist und still ausfällt.
+        $geoBuiltAt = GeoDatabaseUpdater::buildOf((string) config('geoip.database', ''));
+        if ($geoBuiltAt !== null && (bool) config('geoip.update.enabled')
+            && $geoBuiltAt->diffInDays(CarbonImmutable::now(), true) > self::GEOIP_STALE_DAYS) {
+            $status = DiagnosticStatus::worst($status, DiagnosticStatus::Warn);
+            $messages[] = sprintf('IP-Geodatenbank älter als %d Tage — Aktualisierung prüfen (security:geoip-update).', self::GEOIP_STALE_DAYS);
+        }
+
         return new DiagnosticSection(
             code: 'security',
             status: $status,
@@ -723,6 +736,7 @@ class DiagnosticsService {
                 'sbom_generated_at' => $sbomGeneratedAt?->toIso8601String(),
                 'advisories_open' => $openAdvisories,
                 'advisories_high_or_critical' => $openHighAdvisories,
+                'geoip_built_at' => $geoBuiltAt?->toIso8601String(),
             ],
             messages: $messages,
             checkedAt: CarbonImmutable::now(),

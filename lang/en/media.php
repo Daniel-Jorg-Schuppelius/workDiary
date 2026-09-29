@@ -37,6 +37,7 @@ return [
         'awaits_review' => 'awaiting review',
         'reviewed_on' => 'reviewed on :date',
         'machine_short' => 'machine-generated',
+        'quality' => 'Video quality',
     ],
     'errors' => [
         'ffmpeg_missing' => 'No video processing is set up on this server (ffmpeg is missing).',

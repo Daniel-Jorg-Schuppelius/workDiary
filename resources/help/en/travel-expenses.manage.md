@@ -85,3 +85,10 @@ the 1% rule per vehicle and year. The vehicle needs the gross list price and the
 home–work distance; you enter other annual costs (leasing, insurance, tax) there,
 energy comes from the fuel and charging receipts. Optionally, a setting blocks new
 trips while a vehicle's mandatory inspection is overdue.
+
+**Driving and rest times.** If your organisation applies the driving time
+rules, enter a second driver on the trip (multi-manning) or mark crossings
+where the vehicle travels on a ferry or train. The second driver gets no
+driving time, but their time in the vehicle does not count as rest; in
+multi-manning 9 hours of rest within 30 hours are enough. A ferry or train
+crossing does not interrupt the rest.

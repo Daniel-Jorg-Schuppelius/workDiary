@@ -209,4 +209,19 @@ return [
             'saved' => 'Comment on “:node” saved.',
         ],
     ],
+    'attachments' => [
+        'title' => 'Attachments',
+        'empty' => 'No attachments on this node yet.',
+        'hint' => 'At most :mb MB per file.',
+        'action' => [
+            'open' => 'Attachments',
+            'add' => 'Upload',
+        ],
+        'field' => [
+            'file' => 'File',
+        ],
+        'flash' => [
+            'saved' => 'Attachment saved on “:node”.',
+        ],
+    ],
 ];

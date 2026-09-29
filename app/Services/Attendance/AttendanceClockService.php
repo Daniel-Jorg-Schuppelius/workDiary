@@ -70,6 +70,8 @@ class AttendanceClockService {
                 'ended_at' => null,
                 // 'date' wird im Model-Hook (Attendance::booted) aus started_at in der Anzeige-Zeitzone abgeleitet – nicht hier in UTC.
                 'source' => $context['source'] ?? AttendanceSource::Clock->value,
+                // MiLoG § 17 (MVP-1015): Der Stempel ist die Erfassung — auch offline nachgereicht.
+                'recorded_at' => $start,
                 'status' => AttendanceStatus::Open->value,
                 'started_lat' => $context['lat'] ?? null,
                 'started_lng' => $context['lng'] ?? null,
@@ -103,6 +105,7 @@ class AttendanceClockService {
             }
 
             $attendance->ended_at = Carbon::instance($end);
+            $attendance->recorded_at = Carbon::instance($end);
             $attendance->ended_lat = $context['lat'] ?? null;
             $attendance->ended_lng = $context['lng'] ?? null;
             $attendance->ended_device = $context['device'] ?? null;

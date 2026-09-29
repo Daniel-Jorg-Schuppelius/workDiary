@@ -11,7 +11,7 @@
 namespace App\Models\Supplier;
 
 use App\Enums\Numbering\NumberScope;
-use App\Models\Concerns\{Archivable, Auditable, BelongsToOrganization, GeneratesUniqueSlug, HasAttachments, HasContactAndBankDetails, HasPartyDisplayLabel, HasPhoneSearchKeys, HasSequentialNumber, HasSqid, HasTags, Searchable};
+use App\Models\Concerns\{Archivable, Auditable, BelongsToOrganization, GeneratesUniqueSlug, HasAttachments, HasCommunicationNotes, HasContactAndBankDetails, HasPartyDisplayLabel, HasPhoneSearchKeys, HasSequentialNumber, HasSqid, HasTags, Searchable};
 use App\Models\Contacts\ContactAddress;
 use App\Models\Contracts\ContactDetailsHolder;
 use App\Models\Integration\ExternalReference;
@@ -67,6 +67,7 @@ class Supplier extends Model implements ContactDetailsHolder {
     use BelongsToOrganization;
     use GeneratesUniqueSlug;
     use HasAttachments;
+    use HasCommunicationNotes;
 
     use HasContactAndBankDetails;
     /** @use HasFactory<Factory<static>> */

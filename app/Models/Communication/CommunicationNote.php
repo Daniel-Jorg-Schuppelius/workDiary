@@ -168,7 +168,7 @@ class CommunicationNote extends Model {
         return match (true) {
             $this->isOrganizationNote() => (string) __('communication.storage.internal'),
             MorphMap::is($this->notable_type, Customer::class) => (string) __('communication.storage.customer'),
-            default => (string) __('entity-types.' . class_basename($this->notable_type)),
+            default => (string) __('entity-types.' . class_basename(MorphMap::classFor($this->notable_type) ?? (string) $this->notable_type)),
         };
     }
 

@@ -6,7 +6,7 @@
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 
-  Kommunikations-Panel (MVP-012). Erwartet: $notable (Model), $notableKind ('diary'|'customer'|'project')
+  Kommunikations-Panel (MVP-012). Erwartet: $notable (Model), $notableKind (Schlüssel der NOTABLE_MAP im CommunicationNoteController)
 --}}
 @php
     /** @var \App\Models\Platform\User $panelUser */

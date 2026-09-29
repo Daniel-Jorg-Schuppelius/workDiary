@@ -18,6 +18,7 @@ use App\Models\Travel\ExpenseCategory;
 use App\Services\Billing\FinancialFormatsSupport;
 use App\Services\Finance\Datev\DatevBookingConfig;
 use App\Services\Finance\{DatevBookingException, DatevBookingService};
+use App\Settings\SettingsTree;
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate, Storage};
@@ -294,13 +295,11 @@ class DatevBookingController extends Controller {
         $settings = is_array($org->settings) ? $org->settings : [];
         $existing = is_array($settings['datev'] ?? null) ? $settings['datev'] : [];
 
-        $clean = $this->stripEmpty($data['datev']);
-        $next = array_replace_recursive($existing, $clean);
-        $next = $this->stripEmpty($next);
+        $next = SettingsTree::merge($existing, $data['datev']);
         // Gelöschte Mapping-Einträge nicht aus dem Bestand „wiederbeleben":
         // das Mapping wird als Ganzes ersetzt statt rekursiv gemerged.
         if (array_key_exists('expense_accounts', $data['datev'])) {
-            $cleanMapping = $this->stripEmpty(is_array($data['datev']['expense_accounts']) ? $data['datev']['expense_accounts'] : []);
+            $cleanMapping = SettingsTree::prune(is_array($data['datev']['expense_accounts']) ? $data['datev']['expense_accounts'] : []);
             if ($cleanMapping === []) {
                 unset($next['expense_accounts']);
             } else {
@@ -369,32 +368,6 @@ class DatevBookingController extends Controller {
             'total' => round($total, 2),
             'count' => $batch->sources->count(),
         ];
-    }
-
-    /**
-     * Entfernt leere Werte rekursiv (analog OrganizationController::stripEmpty).
-     *
-     * @param  array<string, mixed>  $values
-     * @return array<string, mixed>
-     */
-    private function stripEmpty(array $values): array {
-        $out = [];
-        foreach ($values as $k => $v) {
-            if (is_array($v)) {
-                $cleaned = $this->stripEmpty($v);
-                if ($cleaned !== []) {
-                    $out[$k] = $cleaned;
-                }
-
-                continue;
-            }
-            if ($v === null || $v === '') {
-                continue;
-            }
-            $out[$k] = $v;
-        }
-
-        return $out;
     }
 
     private function organization(): ?Organization {

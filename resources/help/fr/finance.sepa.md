@@ -50,3 +50,9 @@ paramètres).
 **Module complémentaire :** La production du fichier relève du module payant
 de formats bancaires. Sans lui, l’ordre de paiement et le registre des
 mandats restent utilisables ; seul l’export manque.
+
+Un prélèvement peut se rapporter à une facture ouverte du client du mandat :
+« Encaisser par prélèvement » sur la facture ouvre l'encaissement avec montant
+et libellé préremplis. Avec la référence de facture, la prévision de trésorerie
+ne compte le montant qu'une fois — dans l'ordre de paiement et non en plus
+comme créance ouverte.

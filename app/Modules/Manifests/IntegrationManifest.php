@@ -66,6 +66,7 @@ final class IntegrationManifest extends Manifest {
             'import_run_errors',
             'import_runs',
             'import_value_mappings',
+            'import_column_mappings',
             'integration_inbox_items',
             'integration_outbox',
             'jtl_connections',

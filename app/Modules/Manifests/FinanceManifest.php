@@ -91,6 +91,7 @@ final class FinanceManifest extends Manifest {
             'datev_booking_sources',
             'fixed_assets',
             'fixed_asset_classes',
+            'accounting_exchange_rates',
             'fixed_asset_special_depreciations',
             'incoming_invoice_retentions',
             'liquidity_forecast_snapshots',

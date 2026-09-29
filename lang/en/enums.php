@@ -1922,6 +1922,8 @@ return [
             'family' => 'Family fee',
             'surcharge' => 'Department surcharge',
             'admission' => 'Admission fee',
+            'exam' => 'Exam fee',
+            'course' => 'Course fee',
         ],
         'fee-run-status' => [
             'draft' => 'Draft',

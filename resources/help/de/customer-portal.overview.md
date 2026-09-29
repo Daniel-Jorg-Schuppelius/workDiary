@@ -26,3 +26,7 @@ Im Portal haben Sie ausschließlich Einsicht in Vorgänge, die Ihrem
 Unternehmen zugeordnet und für Sie freigegeben wurden. Sie können die
 angezeigten Daten einsehen, aber nicht verändern. Über das Menü erreichen
 Sie außerdem die Verwaltung Ihres Zugangs und der Zwei-Faktor-Sicherheit.
+
+Über **Suche** in der Kopfzeile finden Sie Rechnungen, Aufträge, Dokumente und
+Tickets nach Nummer oder Titel — jeweils nur in den Bereichen, die für Sie
+freigegeben sind.

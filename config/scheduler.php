@@ -320,6 +320,14 @@ return [
             'allowed' => ['dailyAt', 'weeklyOn'],
             'criticality' => 'core',
         ],
+        // IP-Geodatenbank (MVP-1021): DB-IP veröffentlicht monatlich; ohne
+        // GEOIP_AUTO_UPDATE läuft der Job leer durch.
+        'security.geoip_update' => [
+            'command' => 'security:geoip-update',
+            'cadence' => ['type' => 'monthlyOn', 'time' => '04:30', 'day' => 3],
+            'allowed' => ['monthlyOn', 'weeklyOn'],
+            'criticality' => 'housekeeping',
+        ],
         // Basiszinssatz nach § 247 BGB (MVP-879): ändert sich halbjährlich,
         // monatlicher Abgleich mit der Bundesbank-Reihe genügt.
         'invoicing.base_rate_sync' => [

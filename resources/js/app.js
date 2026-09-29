@@ -19,6 +19,7 @@ import { bindPushToggle } from "./push.js";
 import { registerServiceWorker, bindInstallPrompt } from "./pwa.js";
 import { initOfflineSync } from "./offline-sync.js";
 import { initVideoPositions } from "./video-position.js";
+import { initVideoQuality } from "./video-quality.js";
 import { initNfc } from "./nfc.js";
 import { __ } from "./i18n.js";
 import { html, setHtml, safeUrl, sameOriginPath, trustedServerHtml } from "./lib/html.js";
@@ -62,6 +63,7 @@ if (typeof window !== "undefined") {
         // Formulare nur im Offline-Fall ab und flusht bei Online/Fokus.
         initOfflineSync();
         initVideoPositions();
+        initVideoQuality();
     });
 }
 

@@ -1922,6 +1922,8 @@ return [
             'family' => 'Quota familiare',
             'surcharge' => 'Supplemento di sezione',
             'admission' => 'Quota di ammissione',
+            'exam' => 'Tassa d\'esame',
+            'course' => 'Quota del corso',
         ],
         'fee-run-status' => [
             'draft' => 'Bozza',

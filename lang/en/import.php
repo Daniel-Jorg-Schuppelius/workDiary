@@ -176,4 +176,25 @@ return [
         'position' => 'Legacy system takeover — invoice :number',
         'note' => 'Legacy invoice taken over from :source (opening open item, no journal entry).',
     ],
+    'columns' => [
+        'title' => 'Column mapping',
+        'hint' => 'The import does not recognise these columns. Map them once — the mapping then applies to every file of this import type, and the file is checked again immediately.',
+        'target_for' => 'Target column for “:header”',
+        'skip' => '— do not import —',
+        'ai_proposed' => 'AI suggestion',
+        'submit' => 'Save mapping and check again',
+        'saved_title' => 'Saved column mappings',
+        'saved_hint' => 'These mappings apply to every import file of the organisation. The import type’s own defaults take precedence.',
+        'saved_empty' => 'No column mapping saved yet.',
+        'delete' => 'Delete mapping',
+        'confirm_delete' => 'Delete the mapping for “:header”?',
+        'error' => [
+            'duplicate' => 'Each target column may be assigned only once.',
+            'none' => 'No mapping applied — please choose at least one target column.',
+        ],
+        'flash' => [
+            'saved' => '{1} One mapping saved, the file was checked again.|[2,*] :count mappings saved, the file was checked again.',
+            'deleted' => 'Column mapping deleted.',
+        ],
+    ],
 ];

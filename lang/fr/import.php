@@ -171,4 +171,25 @@ return [
         'position' => 'Reprise de l\'ancien système — facture :number',
         'note' => 'Ancienne facture reprise depuis :source (poste ouvert d\'ouverture, sans écriture au journal).',
     ],
+    'columns' => [
+        'title' => 'Affectation des colonnes',
+        'hint' => 'L\'import ne reconnaît pas ces colonnes. Affectez-les une fois — l\'affectation s\'applique ensuite à chaque fichier de ce type d\'import et le fichier est aussitôt revérifié.',
+        'target_for' => 'Colonne cible pour « :header »',
+        'skip' => '— ne pas reprendre —',
+        'ai_proposed' => 'Proposition IA',
+        'submit' => 'Enregistrer l\'affectation et revérifier',
+        'saved_title' => 'Affectations de colonnes enregistrées',
+        'saved_hint' => 'Ces affectations s\'appliquent à chaque fichier d\'import de l\'organisation. Les valeurs du type d\'import sont prioritaires.',
+        'saved_empty' => 'Aucune affectation de colonnes enregistrée.',
+        'delete' => 'Supprimer l\'affectation',
+        'confirm_delete' => 'Supprimer l\'affectation pour « :header » ?',
+        'error' => [
+            'duplicate' => 'Chaque colonne cible ne peut être attribuée qu’une seule fois.',
+            'none' => 'Aucune affectation reprise — veuillez choisir au moins une colonne cible.',
+        ],
+        'flash' => [
+            'saved' => '{1} Une affectation enregistrée, le fichier a été revérifié.|[2,*] :count affectations enregistrées, le fichier a été revérifié.',
+            'deleted' => 'Affectation de colonnes supprimée.',
+        ],
+    ],
 ];

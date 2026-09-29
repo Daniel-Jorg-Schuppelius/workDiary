@@ -1922,6 +1922,8 @@ return [
             'family' => 'Cotisation familiale',
             'surcharge' => 'Supplément de section',
             'admission' => 'Droit d\'entrée',
+            'exam' => 'Frais d\'examen',
+            'course' => 'Frais de stage',
         ],
         'fee-run-status' => [
             'draft' => 'Brouillon',

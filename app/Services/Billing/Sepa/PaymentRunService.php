@@ -17,7 +17,7 @@ use App\Enums\Finance\{PaymentRunKind, PaymentRunStatus};
 use App\Enums\Invoicing\RetentionStatus;
 use App\Models\Finance\{BankAccount, PaymentRun, PaymentRunItem, SepaMandate};
 use App\Models\Finance\IncomingInvoiceRetention;
-use App\Models\Invoicing\IncomingEInvoice;
+use App\Models\Invoicing\{IncomingEInvoice, Invoice};
 use App\Models\Platform\User;
 use App\Services\Billing\FinancialFormatsSupport;
 use App\Services\Document\DocumentService;
@@ -117,6 +117,7 @@ class PaymentRunService {
         float $amount,
         string $reference,
         ?CarbonImmutable $executionDate = null,
+        ?Invoice $invoice = null,
     ): PaymentRun {
         if (! $mandate->isUsable()) {
             throw new RuntimeException((string) __('sepa.error.mandate_unusable'));
@@ -124,8 +125,14 @@ class PaymentRunService {
         if ($amount <= 0) {
             throw new RuntimeException((string) __('sepa.error.zero_amount'));
         }
+        if ($invoice !== null && (
+            (int) $invoice->customer_id !== (int) $mandate->customer_id
+            || ! in_array($invoice->status, [Invoice::STATUS_ISSUED, Invoice::STATUS_PARTIALLY_PAID], true)
+        )) {
+            throw new RuntimeException((string) __('sepa.error.invoice_not_collectable'));
+        }
 
-        return DB::transaction(function () use ($account, $actor, $mandate, $amount, $reference, $executionDate): PaymentRun {
+        return DB::transaction(function () use ($account, $actor, $mandate, $amount, $reference, $executionDate, $invoice): PaymentRun {
             $run = PaymentRun::query()->create([
                 'organization_id' => $account->organization_id,
                 'bank_account_id' => $account->id,
@@ -140,6 +147,7 @@ class PaymentRunService {
                 'payment_run_id' => $run->id,
                 'customer_id' => $mandate->customer_id,
                 'sepa_mandate_id' => $mandate->id,
+                'invoice_id' => $invoice?->id,
                 'party_name' => mb_substr((string) ($mandate->customer->name ?? '—'), 0, 70),
                 'iban' => $mandate->iban,
                 'bic' => $mandate->bic,

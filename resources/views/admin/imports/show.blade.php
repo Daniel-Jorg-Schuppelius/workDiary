@@ -118,6 +118,36 @@
         </x-card>
     @endif
 
+    {{-- Spaltenzuordnung (MVP-1020): einmal zugeordnet, gilt sie für jede
+         weitere Datei dieser Importart; der KI-Vorschlag belegt nur vor. --}}
+    @if ($columnMapping['headers'] !== [])
+        @php($aiColumns = $aiMapping !== null ? collect(\App\Services\Ai\Suggestions\ImportMappingSuggestionService::mappingValues($aiMapping))->pluck('column', 'header')->all() : [])
+        <x-card :title="__('import.columns.title')" icon="view_column" :count="count($columnMapping['headers'])">
+            <p class="mb-3 text-sm text-muted">{{ __('import.columns.hint') }}</p>
+            <form method="POST" action="{{ route('admin.imports.columns', $run) }}" class="space-y-2">
+                @csrf
+                @foreach ($columnMapping['headers'] as $i => $header)
+                    <div class="flex flex-wrap items-center gap-2">
+                        <input type="hidden" name="columns[{{ $i }}][header]" value="{{ $header }}">
+                        <span class="badge badge-ghost badge-sm font-mono">{{ $header }}</span>
+                        <x-icon name="arrow_forward" class="text-muted" />
+                        <select name="columns[{{ $i }}][target]" class="select select-sm select-bordered"
+                                aria-label="{{ __('import.columns.target_for', ['header' => $header]) }}">
+                            <option value="">{{ __('import.columns.skip') }}</option>
+                            @foreach ($columnMapping['columns'] as $column)
+                                <option value="{{ $column }}" @selected(($aiColumns[$header] ?? null) === $column)>{{ $column }}</option>
+                            @endforeach
+                        </select>
+                        @isset($aiColumns[$header])
+                            <x-status-badge tone="info" size="xs">{{ __('import.columns.ai_proposed') }}</x-status-badge>
+                        @endisset
+                    </div>
+                @endforeach
+                <x-button type="submit" tone="primary" size="sm" icon="save">{{ __('import.columns.submit') }}</x-button>
+            </form>
+        </x-card>
+    @endif
+
     {{-- Wert-Mapping (Rang 58, A13): unbekannte Quellwerte zuordnen — Ziel je
          Spalte (user_email → Benutzer, sonst Tag/Klassifikation). --}}
     @php($pendingColumn = array_key_first((array) ($run->unresolved_values ?? [])))

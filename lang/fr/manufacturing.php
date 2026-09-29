@@ -189,4 +189,15 @@ return [
             'consume_not_allowed' => 'La consommation n\'est possible que pour les ordres libérés ou en cours.',
         ],
     ],
+    'delivery_list' => [
+        'title' => 'Bons de livraison',
+        'subtitle' => 'Toutes les livraisons avec bon de livraison, expédition et documents douaniers.',
+        'search' => 'Article ou client',
+        'empty' => 'Aucune livraison sur la période.',
+        'filter' => [
+            'all' => 'Toutes',
+            'open' => 'Non expédiées',
+            'shipped' => 'Expédiées',
+        ],
+    ],
 ];

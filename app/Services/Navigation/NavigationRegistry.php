@@ -518,6 +518,7 @@ class NavigationRegistry {
                     'icon' => 'precision_manufacturing',
                     'items' => [
                         ['route' => 'manufacturing-orders.index', 'label' => __('manufacturing.order.title'), 'icon' => 'precision_manufacturing', 'modal' => false, 'matches' => ['manufacturing-orders.*']],
+                        ['route' => 'deliveries.index', 'label' => __('manufacturing.delivery_list.title'), 'icon' => 'local_shipping', 'modal' => false, 'matches' => ['deliveries.*']],
                         ['route' => 'work-centers.index', 'label' => __('manufacturing.capacity.title'), 'icon' => 'event_available', 'modal' => false, 'matches' => ['work-centers.*']],
                     ],
                 ],
@@ -1674,6 +1675,7 @@ class NavigationRegistry {
                 ['route' => 'articles.index', 'label' => __('article.title'), 'icon' => 'inventory_2', 'modal' => false, 'matches' => ['articles.*']],
                 ['route' => 'warehouses.index', 'label' => __('inventory.title'), 'icon' => 'warehouse', 'modal' => false, 'matches' => ['warehouses.*', 'inventory.*']],
                 ['route' => 'manufacturing-orders.index', 'label' => __('manufacturing.order.title'), 'icon' => 'precision_manufacturing', 'modal' => false, 'matches' => ['manufacturing-orders.*']],
+                ['route' => 'deliveries.index', 'label' => __('manufacturing.delivery_list.title'), 'icon' => 'local_shipping', 'modal' => false, 'matches' => ['deliveries.*']],
                 ['route' => 'serials.index', 'label' => __('inventory.serial.title'), 'icon' => 'tag', 'modal' => false, 'matches' => ['serials.*']],
                 ['route' => 'purchase-orders.index', 'label' => __('procurement.title'), 'icon' => 'shopping_cart', 'modal' => false, 'matches' => ['purchase-orders.*']],
                 ['route' => 'supplier-catalogs.index', 'label' => __('procurement.catalog.title'), 'icon' => 'import_export', 'modal' => false, 'matches' => ['supplier-catalogs.*']],

@@ -207,6 +207,14 @@ return [
     */
 
     'attributes' => [
+
+        'columns' => 'Column mapping',
+
+        'columns.*.header' => 'Header cell',
+
+        'columns.*.target' => 'Target column',
+
+        'quality' => 'Video quality',
         'abbreviation' => 'Abbreviation',
         'abilities' => 'Permissions',
         'abilities.*' => 'Permission',
@@ -2670,6 +2678,14 @@ return [
         'net_weight_kg' => 'net weight',
         'export_reason' => 'reason for export',
         'settings.shipping.eori_number' => 'EORI number',
+        'invoice' => 'invoice',
+        'import' => 'lines',
+        'co_driver_user_id' => 'second driver',
+        'is_ferry_or_train' => 'ferry/train',
+        'siblings' => 'Sibling discount',
+        'siblings.second_percent' => 'discount for the second child',
+        'siblings.further_percent' => 'discount from the third child',
+        'siblings.max_age' => 'age limit',
     ],
 
     'values' => [

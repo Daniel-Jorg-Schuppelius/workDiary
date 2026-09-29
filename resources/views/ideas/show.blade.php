@@ -133,6 +133,7 @@
                 'sort_order' => (int) $n->sort_order,
                 'lock_version' => (int) $n->lock_version,
                 'comment_count' => (int) ($n->comments_count ?? 0),
+                'attachment_count' => (int) ($n->attachments_count ?? 0),
             ])->values(),
             // Karten-Kopf inkl. karten-weiter lock_version (Whole-Map-Sync des Canvas, MVP-136).
             'map' => [
@@ -167,6 +168,7 @@
                 'history' => route('ideas.maps.history', $map),
                 'convert' => route('ideas.nodes.convert', [$map, '__NODE__']),
                 'comments' => route('ideas.nodes.comments', [$map, '__NODE__']),
+                'attachments' => route('ideas.nodes.attachments', [$map, '__NODE__']),
             ],
             // Überführungsziele (MVP-109): nur anbieten, was lizenziert UND erlaubt ist.
             'convert_targets' => array_values(array_filter([
@@ -427,6 +429,12 @@
                         <x-icon name="forum" class="text-sm" />
                         {{ __('ideas.comments.action.open') }}
                         <span class="badge badge-xs" x-text="commentCount(selected)"></span>
+                    </a>
+                    {{-- Anhänge am Knoten (MVP-1018) --}}
+                    <a class="btn btn-xs btn-outline gap-1" data-entry-modal-trigger :href="urlFor('attachments', selected)">
+                        <x-icon name="attach_file" class="text-sm" />
+                        {{ __('ideas.attachments.action.open') }}
+                        <span class="badge badge-xs" x-text="attachmentCount(selected)"></span>
                     </a>
                     <template x-for="ref in selectedReferences()" :key="ref.label + ref.kind">
                         <a class="badge badge-outline badge-sm gap-1" :href="ref.url" target="_blank">

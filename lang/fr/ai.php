@@ -34,7 +34,7 @@ return [
         'structure_title' => "Proposition de structure IA",
         'structure_hint' => "Chaque champ n'est appliqué qu'au clic — via la saisie régulière.",
         'mapping_title' => "Proposition d'affectation IA",
-        'mapping_hint' => "Indication pour renommer l'en-tête — l'import et le fichier restent inchangés.",
+        'mapping_hint' => "La proposition préremplit l'affectation des colonnes ci-dessous — seul ce que vous confirmez est enregistré.",
         'field' => [
             'subject' => "Objet",
             'result' => "Résultat",

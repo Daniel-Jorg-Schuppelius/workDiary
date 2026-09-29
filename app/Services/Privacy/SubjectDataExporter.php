@@ -94,6 +94,7 @@ class SubjectDataExporter {
             DataSubjectKind::Supplier => [
                 new SupplierMasterDataSection,
                 new ContactDetailsSection,
+                new CommunicationNotesSection,
                 new SupplierDocumentsSection,
             ],
             DataSubjectKind::Lead => [

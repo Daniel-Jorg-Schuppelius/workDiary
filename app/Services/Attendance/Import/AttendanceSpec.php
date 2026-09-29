@@ -50,7 +50,7 @@ class AttendanceSpec extends AbstractEntitySpec implements HasMappableValues {
     }
 
     public function columns(): array {
-        return ['user_email', 'date', 'start_time', 'end_time', 'break_minutes', 'note', 'external_id'];
+        return ['user_email', 'date', 'start_time', 'end_time', 'break_minutes', 'note', 'external_id', 'recorded_at'];
     }
 
     public function requiredColumns(): array {
@@ -77,6 +77,11 @@ class AttendanceSpec extends AbstractEntitySpec implements HasMappableValues {
             'notiz' => 'note',
             'bemerkung' => 'note',
             'fremd-id' => 'external_id',
+            // MiLoG § 17 (MVP-1015): ursprünglicher Erfassungszeitpunkt der Quelle.
+            'erfasst am' => 'recorded_at',
+            'erfasst_am' => 'recorded_at',
+            'erfasst' => 'recorded_at',
+            'erfassungszeitpunkt' => 'recorded_at',
             'fremdschluessel' => 'external_id',
             'uid' => 'external_id',
         ];
@@ -90,6 +95,7 @@ class AttendanceSpec extends AbstractEntitySpec implements HasMappableValues {
                 'user_email' => ($v = $this->trimmedString($raw)) !== null ? mb_strtolower($v) : null,
                 'date' => $this->normalizeImportDate($this->trimmedString($raw)),
                 'start_time', 'end_time' => $this->normalizeImportTime($this->trimmedString($raw)),
+                'recorded_at' => $this->normalizeRecordedAt($this->trimmedString($raw)),
                 default => $this->trimmedString($raw),
             };
         }
@@ -118,6 +124,10 @@ class AttendanceSpec extends AbstractEntitySpec implements HasMappableValues {
             if (! empty($row[$f]) && ! preg_match('/^\d{2}:\d{2}$/', (string) $row[$f])) {
                 $issues[] = $this->formatIssue($f, (string) __('import.error.format.time'));
             }
+        }
+
+        if (($row['recorded_at'] ?? '') === false) {
+            $issues[] = $this->formatIssue('recorded_at', (string) __('import.error.format.default', ['field' => 'recorded_at', 'reason' => 'TT.MM.JJJJ HH:MM']));
         }
 
         if (! empty($row['break_minutes']) && ! ctype_digit((string) $row['break_minutes'])) {
@@ -186,6 +196,7 @@ class AttendanceSpec extends AbstractEntitySpec implements HasMappableValues {
                 'date' => $date,
                 'break_minutes_manual' => ! empty($row['break_minutes']) ? (int) $row['break_minutes'] : 0,
                 'source' => AttendanceSource::Import,
+                'recorded_at' => is_string($row['recorded_at'] ?? null) ? $this->localToUtc(substr($row['recorded_at'], 0, 10), substr($row['recorded_at'], 11, 5), $tz) : null,
                 'note' => $row['note'] ?? null,
             ];
 
@@ -217,5 +228,23 @@ class AttendanceSpec extends AbstractEntitySpec implements HasMappableValues {
         $probe->setRelation('user', $user);
 
         return $this->dayClose->attendanceEditLocked($probe);
+    }
+
+    /**
+     * „Datum Uhrzeit“ bzw. nur Datum → „Y-m-d H:i“; nicht lesbar → false
+     * (Formatfehler), leer → null (Frist bleibt ungeprüft).
+     */
+    private function normalizeRecordedAt(?string $value): string|false|null {
+        if ($value === null) {
+            return null;
+        }
+        $parts = preg_split('/[\sT]+/', $value) ?: [];
+        $date = $this->normalizeImportDate($parts[0] ?? null);
+        $time = isset($parts[1]) ? $this->normalizeImportTime($parts[1]) : '00:00';
+        if ($date === null || $time === null) {
+            return false;
+        }
+
+        return $date . ' ' . $time;
     }
 }

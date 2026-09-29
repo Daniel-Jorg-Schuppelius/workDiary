@@ -197,7 +197,7 @@ return [
             'handed_over_none' => 'Aucun lot exporté ne chevauche la période.',
             'sovereignty_conflict' => 'À partir du :date, :holder dirige déjà — la période serait occupée deux fois.',
             'sovereignty_ok' => 'Aucune période de direction concurrente.',
-            'foreign_currency' => ':count pièces à partir de la date de référence ne sont pas en :currency ; elles restent visibles dans la boîte de saisie.',
+            'foreign_currency' => ':count pièces à partir de la date de référence ne sont pas en :currency ; elles sont converties au taux mensuel enregistré, sans taux elles restent dans la boîte de saisie.',
             'base_currency_ok' => 'Toutes les pièces à partir de la date de référence sont en :currency.',
             'billing_external' => 'Les factures sont établies par :program — les pièces viendront de là.',
             'billing_local' => 'workDiary établit lui-même les factures de vente.',
@@ -304,10 +304,11 @@ return [
             'no_amount' => 'La pièce ne comporte aucun montant.',
             'no_lines' => 'La proposition n\'a aucune ligne d\'écriture.',
             'sovereignty' => 'Sur cette période, l\'organisation ne tient pas de grand livre local.',
-            'foreign_currency' => 'La pièce est en :currency, la comptabilité en :base — aucune conversion justifiable n\'existe encore.',
+            'foreign_currency' => 'L’opération est en :currency, la comptabilité en :base — les paiements, la caisse et les immobilisations en devise ne sont pas comptabilisés.',
             'unsupported_target' => 'Aucun chemin comptable n\'existe encore pour cette cible de paiement.',
             'year_closed' => 'L\'exercice :year est clôturé.',
             'period_closed' => 'La période du :date est clôturée.',
+            'no_exchange_rate' => 'Le taux mensuel :month pour :currency (conversion en :base) manque — ajoutez-le sous Taux de change.',
         ],
         'memo' => [
             'sales_invoice' => 'Facture :number · :customer',
@@ -1336,4 +1337,34 @@ return [
         ],
     ],
 
+    'exchange_rates' => [
+        'title' => 'Taux de change',
+        'subtitle' => 'Taux mensuels pour les pièces en devise (§ 16 al. 6 UStG). Les factures clients et fournisseurs ainsi que les notes de frais sont converties au taux de leur mois.',
+        'empty' => 'Aucun taux enregistré.',
+        'action' => [
+            'add' => 'Ajouter un taux',
+            'edit' => 'Modifier le taux',
+            'import' => 'Importer des taux',
+        ],
+        'field' => [
+            'currency' => 'Devise',
+            'period' => 'Mois',
+            'rate' => 'Taux pour 1 unité de devise de base',
+            'source' => 'Source',
+            'import' => 'Lignes',
+        ],
+        'hint' => [
+            'rate' => 'Tel que publié par le ministère allemand des Finances : unités de devise pour une unité de devise de base (p. ex. 1 EUR = 1,0823 USD).',
+            'import' => 'Une ligne par taux : devise;mois;taux, p. ex. USD;2026-03;1,0823 ou USD;03/2026;1,0823. Les mois existants sont remplacés.',
+        ],
+        'error' => [
+            'rate' => 'Le taux doit être supérieur à zéro.',
+            'line' => 'La ligne :line est illisible (attendu : devise;mois;taux).',
+            'empty' => 'Aucun taux trouvé.',
+        ],
+        'flash' => [
+            'saved' => 'Taux enregistré.',
+            'imported' => ':count taux importé.|:count taux importés.',
+        ],
+    ],
 ];

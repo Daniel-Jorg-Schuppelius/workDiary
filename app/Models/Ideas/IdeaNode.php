@@ -12,7 +12,7 @@ namespace App\Models\Ideas;
 
 use App\Enums\Ideas\IdeaNodeColor;
 use App\Models\Communication\Comment;
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
 use App\Models\Knowledge\ContentReference;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\{Model, SoftDeletes};
@@ -41,6 +41,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphMany};
 class IdeaNode extends Model {
     use Auditable;
     use BelongsToOrganization;
+    use HasAttachments;
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
     use HasSqid;

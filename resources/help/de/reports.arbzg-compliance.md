@@ -42,3 +42,8 @@ täglich und 40 h wöchentlich, Ruhepausen (30 min ab 4,5 h, 60 min ab 6 h),
 12 h Freizeit, keine Arbeit zwischen 20 und 6 Uhr, höchstens 5 Arbeitstage je
 Woche. Arbeit am Wochenende und Nachtarbeit ab 16 Jahren erscheinen als
 Hinweis, weil das Gesetz dafür Branchenausnahmen kennt.
+
+Die MiLoG-Aufzeichnungsfrist (sieben Tage) misst ab dem ursprünglichen
+Erfassungszeitpunkt: bei Stempeln der Stempelmoment, auch wenn ein Gerät
+offline erst später überträgt; bei Importen die Spalte „erfasst am“. Importe
+ohne diese Angabe bleiben bei der Frist ungeprüft.

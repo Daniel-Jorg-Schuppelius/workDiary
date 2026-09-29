@@ -23,9 +23,10 @@ use App\Services\Ai\Exceptions\AiException;
 use App\Services\Attachments\FileAttacher;
 use App\Services\Communication\CommunicationNoteService;
 use App\Services\Learning\{LearningAiSuggestionService, LearningAssignmentService, LearningCertificatePdfRenderer, LearningEnrollmentService, LearningEventService, LearningGamificationService, LearningQuestionService, LearningQuizService, LearningReportCardPdfRenderer, LearningTimeService, LearningTranslationService};
-use App\Services\Media\{MediaPresenter, MediaResponder};
+use App\Services\Media\{MediaPresenter, MediaResponder, VideoTranscodingService};
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request, Response, UploadedFile};
 use Illuminate\Support\Facades\{Auth, Storage};
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
@@ -39,6 +40,9 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  * Eigentümer-Prüfung.
  */
 class MyLearningController extends Controller {
+    /** Nutzerpräferenz der Videoqualität (MVP-1022): eine Stufe aus VideoTranscodingService::VARIANTS. */
+    public const VIDEO_QUALITY_PREFERENCE = 'video_quality';
+
     public function __construct(
         private readonly LearningEnrollmentService $enrollments,
         private readonly LearningTimeService $time,
@@ -316,7 +320,19 @@ class MyLearningController extends Controller {
                 'unit' => $unitOf[(int) $rendition->attachment_id]->sqid,
                 'rendition' => $rendition->sqid,
             ]),
+            $this->actor()->getPreference(self::VIDEO_QUALITY_PREFERENCE),
         );
+    }
+
+    /** Gewählte Videoqualität merken (MVP-1022) — gilt für jedes weitere Video. */
+    public function videoQuality(Request $request): JsonResponse {
+        $data = $request->validate([
+            'quality' => ['required', 'string', Rule::in(array_keys(VideoTranscodingService::VARIANTS))],
+        ]);
+
+        $this->actor()->setPreference(self::VIDEO_QUALITY_PREFERENCE, $data['quality']);
+
+        return response()->json(['quality' => $data['quality']]);
     }
 
     /** Lernzeit starten — hier greift die Zeitpolitik des Kurses. */

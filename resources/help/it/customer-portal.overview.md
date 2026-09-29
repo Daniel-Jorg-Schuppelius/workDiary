@@ -19,3 +19,6 @@ accesso rapido: con un clic passa direttamente alla relativa vista di
 dettaglio. Nel portale può solo consultare i dati assegnati e
 condivisi con la sua azienda, senza modificarli; dal menu raggiunge
 inoltre la gestione dell'accesso e della sicurezza a due fattori.
+
+Con **Ricerca** nell'intestazione trova fatture, ordini, documenti e ticket per
+numero o titolo, solo nelle aree condivise con Lei.

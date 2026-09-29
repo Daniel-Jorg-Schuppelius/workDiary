@@ -41,6 +41,11 @@ to the DATEV handover — work without rework.
 ![Customer list with numbers, contact data, hourly rates and project count](media/kunden/kundenliste.png)
 *The customer list: master data, hourly rate and linked projects per business partner.*
 
+**Communication:** Record calls, e-mails and commitments as a communication
+note on the customer or supplier. The notes appear on the detail page and in
+the central notes list; a data protection access report for a supplier lists
+them with count and period.
+
 ## Practical example
 
 An IT service provider creates "Müller GmbH", storing the billing

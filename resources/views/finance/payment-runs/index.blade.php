@@ -48,13 +48,20 @@
                     </select>
                     <select name="mandate" required aria-label="{{ __('sepa.direct_debit_mandate') }}" class="select select-bordered select-sm">
                         @foreach ($mandates as $mandate)
-                            <option value="{{ $mandate->sqid }}">{{ $mandate->reference }} · {{ $mandate->customer?->name }}</option>
+                            <option value="{{ $mandate->sqid }}" @selected($preselectedInvoice?->customer_id === $mandate->customer_id)>{{ $mandate->reference }} · {{ $mandate->customer?->name }}</option>
                         @endforeach
                     </select>
-                    <input type="number" step="0.01" min="0.01" name="amount" required
+                    {{-- MVP-1011: Belegbezug, damit die Liquiditätsvorschau die Forderung nicht doppelt zählt. --}}
+                    <select name="invoice" aria-label="{{ __('sepa.direct_debit_invoice') }}" class="select select-bordered select-sm">
+                        <option value="">{{ __('sepa.direct_debit_invoice_none') }}</option>
+                        @foreach ($invoices as $openInvoice)
+                            <option value="{{ $openInvoice->sqid }}" @selected($preselectedInvoice?->id === $openInvoice->id)>{{ $openInvoice->number }} · {{ $openInvoice->customer?->name ?: $openInvoice->customer?->company }}</option>
+                        @endforeach
+                    </select>
+                    <input type="number" step="0.01" min="0.01" name="amount" required value="{{ $preselectedAmount }}"
                            aria-label="{{ __('sepa.direct_debit_amount') }}"
                            placeholder="{{ __('sepa.direct_debit_amount') }}" class="input input-sm input-bordered">
-                    <input type="text" name="reference" required maxlength="140"
+                    <input type="text" name="reference" required maxlength="140" value="{{ $preselectedInvoice?->number }}"
                            aria-label="{{ __('sepa.direct_debit_reference') }}"
                            placeholder="{{ __('sepa.direct_debit_reference') }}" class="input input-sm input-bordered">
                     <input type="date" name="execution_date"

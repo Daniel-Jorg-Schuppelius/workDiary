@@ -37,6 +37,7 @@ return [
         'awaits_review' => 'wartet auf Durchsicht',
         'reviewed_on' => 'durchgesehen am :date',
         'machine_short' => 'maschinell',
+        'quality' => 'Videoqualität',
     ],
     'errors' => [
         'ffmpeg_missing' => 'Auf diesem Server ist keine Videoverarbeitung eingerichtet (ffmpeg fehlt).',

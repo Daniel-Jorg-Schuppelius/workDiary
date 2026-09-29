@@ -34,7 +34,7 @@ return [
         'structure_title' => 'Propuesta de estructura de IA',
         'structure_hint' => 'Cada campo se aplica solo al hacer clic, por la vía de registro habitual.',
         'mapping_title' => 'Propuesta de asignación de IA',
-        'mapping_hint' => 'Indicación para renombrar el encabezado: la importación y el archivo no se modifican.',
+        'mapping_hint' => 'La propuesta rellena la asignación de columnas de abajo; solo se guarda lo que usted confirme.',
         'field' => [
             'subject' => 'Asunto',
             'result' => 'Resultado',

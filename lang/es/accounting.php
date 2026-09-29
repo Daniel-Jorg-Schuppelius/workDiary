@@ -197,7 +197,7 @@ return [
             'handed_over_none' => 'Ningún lote exportado se solapa con el periodo.',
             'sovereignty_conflict' => 'Desde el :date ya dirige :holder — el periodo estaría ocupado dos veces.',
             'sovereignty_ok' => 'Ningún tramo de dirección en conflicto.',
-            'foreign_currency' => ':count documentos desde la fecha de referencia no están en :currency; siguen visibles en la bandeja contable.',
+            'foreign_currency' => ':count documentos desde la fecha de referencia no están en :currency; se convierten al tipo mensual registrado, sin tipo siguen en la bandeja contable.',
             'base_currency_ok' => 'Todos los documentos desde la fecha de referencia están en :currency.',
             'billing_external' => 'Las facturas las emite :program — los documentos vendrán de allí.',
             'billing_local' => 'workDiary emite por sí mismo las facturas de venta.',
@@ -304,10 +304,11 @@ return [
             'no_amount' => 'El documento no tiene importe.',
             'no_lines' => 'La propuesta no tiene líneas de asiento.',
             'sovereignty' => 'En este periodo la organización no lleva un libro mayor local.',
-            'foreign_currency' => 'El documento está en :currency, la contabilidad en :base — todavía no hay una conversión justificable.',
+            'foreign_currency' => 'La operación está en :currency, la contabilidad en :base — los pagos, la caja y los activos en moneda extranjera no se contabilizan.',
             'unsupported_target' => 'Todavía no hay vía contable para este destino de pago.',
             'year_closed' => 'El ejercicio :year está cerrado.',
             'period_closed' => 'El periodo del :date está cerrado.',
+            'no_exchange_rate' => 'Falta el tipo mensual :month para :currency (conversión a :base): añádalo en Tipos de cambio.',
         ],
         'memo' => [
             'sales_invoice' => 'Factura :number · :customer',
@@ -1336,4 +1337,34 @@ return [
         ],
     ],
 
+    'exchange_rates' => [
+        'title' => 'Tipos de cambio',
+        'subtitle' => 'Tipos mensuales para documentos en moneda extranjera (§ 16 apdo. 6 UStG). Las facturas emitidas y recibidas y los gastos se convierten al tipo de su mes.',
+        'empty' => 'Aún no hay tipos registrados.',
+        'action' => [
+            'add' => 'Añadir tipo',
+            'edit' => 'Editar tipo',
+            'import' => 'Importar tipos',
+        ],
+        'field' => [
+            'currency' => 'Moneda',
+            'period' => 'Mes',
+            'rate' => 'Tipo por 1 unidad de moneda base',
+            'source' => 'Fuente',
+            'import' => 'Líneas',
+        ],
+        'hint' => [
+            'rate' => 'Según lo publica el Ministerio de Hacienda alemán: unidades de moneda extranjera por una unidad de moneda base (p. ej. 1 EUR = 1,0823 USD).',
+            'import' => 'Una línea por tipo: moneda;mes;tipo, p. ej. USD;2026-03;1,0823 o USD;03/2026;1,0823. Los meses existentes se sustituyen.',
+        ],
+        'error' => [
+            'rate' => 'El tipo debe ser mayor que cero.',
+            'line' => 'La línea :line no se puede leer (se espera: moneda;mes;tipo).',
+            'empty' => 'No se han encontrado tipos.',
+        ],
+        'flash' => [
+            'saved' => 'Tipo guardado.',
+            'imported' => ':count tipo importado.|:count tipos importados.',
+        ],
+    ],
 ];

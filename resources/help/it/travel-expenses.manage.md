@@ -83,3 +83,10 @@ il prezzo di listino lordo e la distanza casa–lavoro; lì Lei inserisce gli al
 costi annuali (leasing, assicurazione, bollo), l'energia deriva dai giustificativi
 di rifornimento e ricarica. Facoltativamente un'impostazione blocca nuovi viaggi
 finché il controllo obbligatorio di un veicolo è scaduto.
+
+**Tempi di guida e di riposo.** Se la Sua organizzazione applica le regole sui
+tempi di guida, indichi un secondo conducente sul viaggio (multipresenza) o
+contrassegni le traversate in cui il veicolo viaggia su traghetto o treno. Il
+secondo conducente non accumula tempo di guida, ma il suo tempo nel veicolo
+non conta come riposo; in multipresenza bastano 9 ore di riposo in 30 ore. Una
+traversata in traghetto o treno non interrompe il riposo.

@@ -169,6 +169,8 @@ class SchedulerRegistrationTest extends TestCase {
         'catalog:apply-pending-prices' => ['20 2 * * *', true, true],
         'security:advisories-pull' => ['30 5 * * *', true, true],
         'invoicing:base-rate-sync' => ['10 6 2 * *', true, true],
+        // MVP-1021: monatliche Aktualisierung der IP-Geodatenbank.
+        'security:geoip-update' => ['30 4 3 * *', true, true],
         'contracts:price-index-sync' => ['20 6 20 * *', true, true],
         'platform:usage-snapshot' => ['40 3 1 * *', true, true],
         'privacy:retention-scan' => ['30 4 * * 1', true, true],

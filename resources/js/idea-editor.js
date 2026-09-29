@@ -148,6 +148,9 @@ export function registerIdeaEditor(Alpine) {
         commentCount(sqid) {
             return this.node(sqid)?.comment_count ?? 0;
         },
+        attachmentCount(sqid) {
+            return this.node(sqid)?.attachment_count ?? 0;
+        },
         openDetails(sqid) {
             this.selected = sqid;
             this.detailOpen = true;

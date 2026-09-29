@@ -224,6 +224,10 @@
                                 :href="route('invoices.dun.form', $invoice)"
                                 show-label>{{ __('Mahnen') }}</x-icon-btn>
                 @endif
+                @if ($directDebitOffer ?? false)
+                    <x-icon-btn icon="account_balance" size="sm" :href="route('finance.payment-runs.index', ['invoice' => $invoice->sqid])"
+                                show-label>{{ __('sepa.direct_debit_from_invoice') }}</x-icon-btn>
+                @endif
                 @if ($einvoiceVisible || $lexwareExport)
                     <x-action-menu icon="download" :label="__('Export')">
                         @if ($einvoiceVisible)

@@ -23,6 +23,9 @@ return [
     'direct_debit_amount' => 'Betrag',
     'direct_debit_reference' => 'Verwendungszweck',
     'direct_debit_submit' => 'Einzug anlegen',
+    'direct_debit_invoice' => 'Rechnung',
+    'direct_debit_invoice_none' => '— ohne Rechnungsbezug —',
+    'direct_debit_from_invoice' => 'Per Lastschrift einziehen',
     'run_released' => 'Zahllauf freigegeben.',
     'run_cancelled' => 'Zahllauf storniert.',
     'item_removed' => 'Position entfernt.',
@@ -105,6 +108,7 @@ return [
         'mandate_unusable' => 'Das Mandat ist widerrufen oder seit über 36 Monaten ungenutzt.',
         'item_without_mandate' => 'Eine Einzugsposition ohne Mandat kann nicht ausgegeben werden.',
         'unavailable' => 'Der SEPA-Export ist in dieser Installation nicht freigeschaltet. Freischaltung über :contact.',
+        'invoice_not_collectable' => 'Die Rechnung gehört nicht zum Kunden des Mandats oder ist nicht mehr offen.',
     ],
 
     'mandate' => [

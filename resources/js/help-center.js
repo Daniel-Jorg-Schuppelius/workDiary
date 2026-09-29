@@ -82,7 +82,7 @@ function bindHelpCenterRecent() {
         rememberHelpTopic(article.getAttribute("data-help-center-topic"), article.getAttribute("data-help-center-title"));
     }
 
-    const wrap = document.querySelector("[data-help-recent]");
+    const wrap = /** @type {HTMLElement | null} */ (document.querySelector("[data-help-recent]"));
     const list = wrap?.querySelector("[data-help-recent-list]");
     const template = wrap?.getAttribute("data-show-url") || "";
     const entries = recentHelpTopics();

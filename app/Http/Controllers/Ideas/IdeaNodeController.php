@@ -18,6 +18,7 @@ use App\Models\Ideas\{IdeaMap, IdeaNode};
 use App\Models\Knowledge\{ContentReference, KnowledgeArticle};
 use App\Models\Platform\User;
 use App\Models\Project\{Project, Task};
+use App\Services\Attachments\FileAttacher;
 use App\Services\Ideas\{IdeaMapSyncService, IdeaNodeService, NodeConversionService};
 use App\Support\{ErrorText, Setting, SqidEncoder};
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
@@ -87,7 +88,7 @@ class IdeaNodeController extends Controller {
      * @return array<string, mixed>
      */
     private function treePayload(IdeaMap $map): array {
-        $nodes = $map->nodes()->with('references.target')->withCount('comments')->orderBy('sort_order')->get();
+        $nodes = $map->nodes()->with('references.target')->withCount(['comments', 'attachments'])->orderBy('sort_order')->get();
         $encoder = app(SqidEncoder::class);
 
         return [
@@ -333,6 +334,28 @@ class IdeaNodeController extends Controller {
         ]);
     }
 
+    /** Anhänge eines Knotens als Dialog (MVP-1018): sehen mit der Karte, hochladen mit Bearbeitungsrecht. */
+    public function attachments(IdeaMap $map, IdeaNode $node): View {
+        Gate::authorize('view', $map);
+        abort_unless((int) $node->idea_map_id === (int) $map->id, 404);
+
+        return view('ideas._node_attachments_dialog', [
+            'map' => $map,
+            'node' => $node,
+            'attachments' => $node->attachments()->latest('id')->get(),
+            'canUpload' => Gate::allows('update', $map),
+        ]);
+    }
+
+    public function storeAttachment(Request $request, IdeaMap $map, IdeaNode $node, FileAttacher $attacher): RedirectResponse {
+        Gate::authorize('update', $map);
+        abort_unless((int) $node->idea_map_id === (int) $map->id, 404);
+        $data = $request->validate(['file' => ['required', ...FileAttacher::rule()]]);
+        $attacher->store($node, $data['file'], $request->user()?->id);
+
+        return redirect()->route('ideas.show', $map)->with('success', __('ideas.attachments.flash.saved', ['node' => $node->title]));
+    }
+
     public function storeComment(Request $request, IdeaMap $map, IdeaNode $node): RedirectResponse {
         Gate::authorize('view', $map);
         Gate::authorize('create', Comment::class);
@@ -360,6 +383,7 @@ class IdeaNodeController extends Controller {
             'sort_order' => (int) $node->sort_order,
             'lock_version' => (int) $node->lock_version,
             'comment_count' => (int) ($node->comments_count ?? $node->comments()->count()),
+            'attachment_count' => (int) ($node->attachments_count ?? $node->attachments()->count()),
             'references' => $node->references->map(fn (ContentReference $r): array => $this->serializeReference($r))->values()->all(),
         ];
     }

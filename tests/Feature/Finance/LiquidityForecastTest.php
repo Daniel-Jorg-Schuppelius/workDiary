@@ -10,10 +10,11 @@
 
 namespace Tests\Feature\Finance;
 
-use App\Enums\Finance\{AccountType, PostingAccountRole, PostingSourceKind, ProfitDetermination, SettlementKind};
+use App\Enums\Finance\{AccountType, MandateKind, MandateStatus, PaymentRunStatus, PostingAccountRole, PostingSourceKind, ProfitDetermination, SettlementKind};
 use App\Models\Accounting\{AccountingAccount, AccountingPostingRule};
 use App\Models\Customer\Customer;
 use App\Models\Document\Document;
+use App\Models\Finance\{BankAccount, PaymentRun, SepaMandate};
 use App\Models\Invoicing\{IncomingEInvoice, Invoice};
 use App\Models\Platform\{Organization, User};
 use App\Services\Accounting\{AccountingProfileService, ChartOfAccountsService, FiscalYearService, JournalService};
@@ -356,5 +357,39 @@ class LiquidityForecastTest extends TestCase {
 
         $member = User::factory()->create(['organization_id' => $this->org->id]);
         $this->actingAs($member)->get(route('reports.accounting.liquidity-scenarios.index'))->assertForbidden();
+    }
+
+    /** MVP-1011: Eine Lastschrift mit Rechnungsbezug mindert die Forderung statt sie zu verdoppeln. */
+    public function test_direct_debits_with_invoice_reference_are_not_counted_twice(): void {
+        $customer = Customer::factory()->create(['organization_id' => $this->org->id]);
+        $full = $this->postInvoice($customer, '2026-03-01', '2026-03-20');
+        $partial = $this->postInvoice($customer, '2026-03-01', '2026-03-20', '200.00');
+        $account = BankAccount::factory()->create(['organization_id' => $this->org->id, 'iban' => 'DE02120300000000202051', 'bic' => 'BYLADEM1001', 'account_holder' => 'Muster GmbH']);
+        $mandate = SepaMandate::query()->create([
+            'organization_id' => $this->org->id, 'customer_id' => $customer->id, 'reference' => 'MND-1011', 'kind' => MandateKind::Recurring->value,
+            'status' => MandateStatus::Active->value, 'signed_on' => '2025-01-01', 'iban' => 'DE89370400440532013000', 'bic' => 'COBADEFFXXX', 'account_holder' => 'Kunde AG',
+        ]);
+
+        $this->actingAs($this->admin)->get(route('invoices.show', $full))->assertOk()->assertSee(__('sepa.direct_debit_from_invoice'));
+        $this->actingAs($this->admin)->get(route('finance.payment-runs.index', ['invoice' => $full->sqid]))->assertOk()
+            ->assertSee('value="119.00"', false)->assertSee('value="' . $full->number . '"', false);
+
+        foreach ([[$full, '119.00'], [$partial, '50.00']] as [$invoice, $amount]) {
+            $this->actingAs($this->admin)->from(route('finance.payment-runs.index'))->post(route('finance.payment-runs.direct-debit.store'), [
+                'bank_account' => $account->sqid, 'mandate' => $mandate->sqid, 'amount' => $amount, 'reference' => $invoice->number,
+                'execution_date' => '2026-03-18', 'invoice' => $invoice->sqid,
+            ])->assertRedirectContains('/finanzen/zahllaeufe/');
+        }
+        PaymentRun::query()->update(['status' => PaymentRunStatus::Released->value]);
+
+        $data = $this->build();
+        $this->assertSame('150.00', $data['buckets'][2]['sources']['receivables']['in']);
+        $this->assertSame('169.00', $data['buckets'][2]['sources']['payment_runs']['in']);
+        $this->assertSame('1319.00', $data['totals']['closing']);
+
+        $foreignInvoice = $this->invoice(Customer::factory()->create(['organization_id' => $this->org->id]), '2026-03-01', '2026-03-20');
+        $this->actingAs($this->admin)->from(route('finance.payment-runs.index'))->post(route('finance.payment-runs.direct-debit.store'), [
+            'bank_account' => $account->sqid, 'mandate' => $mandate->sqid, 'amount' => '10.00', 'reference' => 'X', 'invoice' => $foreignInvoice->sqid,
+        ])->assertRedirect(route('finance.payment-runs.index'))->assertSessionHas('error');
     }
 }

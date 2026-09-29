@@ -48,3 +48,8 @@ identifier (setting “creditor identifier” in the settings registry).
 **Add-on module:** File generation belongs to the paid banking-format module.
 Without it the payment run and mandate register stay usable; only the export
 is missing.
+
+A direct debit can refer to an open invoice of the mandate's customer:
+“Collect by direct debit” on the invoice opens the collection with amount and
+reference prefilled. With an invoice reference, the liquidity forecast counts
+the amount only once — in the payment run instead of also as an open receivable.

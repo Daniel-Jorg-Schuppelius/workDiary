@@ -43,6 +43,11 @@ Nacharbeit funktionieren.
 ![Kundenliste mit Nummern, Kontaktdaten, Stundensätzen und Projektzahl](media/kunden/kundenliste.png)
 *Die Kundenliste: Stammdaten, Stundensatz und verknüpfte Projekte je Geschäftspartner.*
 
+**Kommunikation:** Anrufe, E-Mails und Zusagen halten Sie als
+Kommunikationsnotiz am Kunden oder Lieferanten fest. Die Notizen stehen auf
+der Detailseite und in der zentralen Notizliste; eine Datenschutzauskunft zum
+Lieferanten führt sie mit Anzahl und Zeitraum auf.
+
 ## Beispiel aus der Praxis
 
 Ein IT-Dienstleister legt die „Müller GmbH" an, hinterlegt

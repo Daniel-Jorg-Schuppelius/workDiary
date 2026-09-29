@@ -44,3 +44,6 @@ OPML files; maps can be exported as JSON, OPML, Markdown or PDF — for
 example to share them outside the system.
 
 **Comments on nodes:** In a node’s detail area, “Comments” opens the thread for that node; the number next to it shows how many there are. Anyone who may view the map can comment.
+
+Nodes carry **attachments**: via “Attachments” in the node view, editors upload
+files; everyone who can see the map can open them.

@@ -13,6 +13,10 @@ Videos in learning units are **processed** after upload: the file is converted
 into a web-ready format and provided in several resolutions. While this runs,
 the unit shows the processing state; playback is possible only afterwards.
 
+Playback starts with the **smallest resolution** — it also runs over weak
+mobile connections. Below the video you can choose a higher level; switching
+keeps the position, and your choice then applies to every further video.
+
 You can provide **subtitles** in two ways:
 
 1. **Upload your own file** (WebVTT). It applies immediately and unchanged.

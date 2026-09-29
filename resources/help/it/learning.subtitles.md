@@ -14,6 +14,11 @@ convertito in un formato adatto al web e reso disponibile in più risoluzioni.
 Nel frattempo l'unità mostra lo stato di elaborazione; la riproduzione è
 possibile solo al termine.
 
+La riproduzione inizia con la **risoluzione più piccola**, che funziona anche
+con connessioni mobili deboli. Sotto il video può scegliere un livello
+superiore; il cambio mantiene la posizione e la Sua scelta vale poi per ogni
+altro video.
+
 I **sottotitoli** si possono fornire in due modi:
 
 1. **Caricare un file proprio** (WebVTT). Vale subito e senza modifiche.

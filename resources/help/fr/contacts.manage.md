@@ -44,6 +44,12 @@ fonctionnent sans reprise.
 ![Liste des clients avec numéros, coordonnées, taux horaires et nombre de projets](media/kunden/kundenliste.png)
 *La liste des clients : données de base, taux horaire et projets liés par partenaire.*
 
+**Communication :** consignez appels, e-mails et engagements sous forme de
+note de communication sur le client ou le fournisseur. Les notes figurent sur
+la page de détail et dans la liste centrale des notes ; une réponse à une
+demande d'accès concernant un fournisseur les mentionne avec leur nombre et
+leur période.
+
 ## Exemple pratique
 
 Un prestataire informatique crée « Müller GmbH » avec adresse de

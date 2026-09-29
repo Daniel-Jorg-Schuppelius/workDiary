@@ -32,3 +32,9 @@ pauses (30 min à partir de 4,5 h, 60 min à partir de 6 h), 12 h de repos, pas
 de travail entre 20 h et 6 h, au plus 5 jours de travail par semaine. Le
 travail le week-end et le travail de nuit à partir de 16 ans apparaissent comme
 remarques, car la loi prévoit des exceptions selon le secteur.
+
+Le délai d'enregistrement MiLoG (sept jours) se mesure à partir de
+l'enregistrement d'origine : pour les pointages, le moment du pointage, même si
+un appareil hors ligne le transmet plus tard ; pour les imports, la colonne
+« erfasst am » (enregistré le). Les imports sans cette indication ne sont pas
+contrôlés pour ce délai.

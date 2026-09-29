@@ -47,3 +47,8 @@ origin and net weight on the article, and the sender's EORI number in the
 organisation settings. If any of this is missing, the dialog names it and
 creates no document. The customs documents do not replace an electronic
 export declaration.
+
+The **Delivery notes** page lists all deliveries in the selected period — with
+delivery note PDF, sending by email, customs documents and shipping status,
+without going through each manufacturing order. The filter “Not shipped” shows
+what is still waiting for a label.

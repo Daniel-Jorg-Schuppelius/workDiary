@@ -38,7 +38,8 @@ class AttendanceObserver {
             $breaks = (int) ($a->break_minutes_auto ?? 0)
                 + (int) ($a->break_minutes_manual ?? 0);
             $a->duration_minutes = max(0, $gross - $breaks);
-            if ($a->status === AttendanceStatus::Open) {
+            // Ohne gesetzten Status (Import) griff sonst die Spaltenvorgabe „open“ (MVP-1015).
+            if ($a->status === null || $a->status === AttendanceStatus::Open) {
                 $a->status = AttendanceStatus::Closed;
             }
         } else {

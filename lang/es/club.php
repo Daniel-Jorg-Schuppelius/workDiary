@@ -286,6 +286,7 @@ return [
             'mode' => 'Acción',
             'spontaneous' => 'Participación espontánea, sin comprobar grupo de destino ni plazos',
             'cancel_reason' => 'Motivo de la anulación',
+            'fee_amount' => 'Cuota del curso',
         ],
         'filter' => [
             'period_upcoming' => 'Próximas',
@@ -343,6 +344,7 @@ return [
             'spontaneous' => 'Solo para responsables y administración; el aforo sigue aplicándose.',
             'cancel' => 'Las inscripciones se conservan como historial; no se reasigna ninguna plaza.',
             'target_list' => 'Socios de los grupos de destino el día de la cita: cada socio una vez, aunque esté en varios grupos.',
+            'fee_amount' => 'Para cursos: se cobra por inscripción en el cálculo de cuotas del mes de la cita.',
         ],
         'flash' => [
             'created' => 'Cita creada.',
@@ -708,6 +710,7 @@ return [
             'eligibility' => 'Requisitos',
             'result' => 'Resultado',
             'exception_reason' => 'Motivo de la excepción',
+            'fee_amount' => 'Tasa de examen',
         ],
         'action' => [
             'create_offer' => 'Convocar examen',
@@ -752,6 +755,7 @@ return [
             'add_candidate' => 'Los requisitos se evalúan de inmediato para el inicio del examen.',
             'exception' => 'Solo si el requisito permite excepción; se registran motivo y autor.',
             'result' => 'Solo «aprobado» concede el grado objetivo, exactamente una vez. Suspenso y no presentado no cambian ni el grado ni el tiempo de entrenamiento.',
+            'fee_amount' => 'Se cobra por candidato admitido en el cálculo de cuotas del mes del examen.',
         ],
         'confirm' => [
             'reject' => '¿Rechazar al candidato? Se libera la plaza ocupada.',
@@ -1548,6 +1552,8 @@ return [
             'total' => 'Total',
             'no_assignment' => 'Sin asignación de cuota.',
             'review_age' => 'La edad :age ya no encaja en los límites de edad de la tarifa',
+            'exam_fee' => 'Tasa de examen :title',
+            'course_fee' => 'Cuota del curso :title',
         ],
         'hint' => [
             'payment' => 'Sin reclamación se asigna por vencimiento (pago conjunto familiar); el resto queda como saldo a favor. El mismo dinero nunca se cuenta dos veces.',
@@ -1686,6 +1692,7 @@ return [
             'reason_required' => 'Indique un motivo.',
             'amount_required' => 'Indique un importe.',
             'amount_invalid' => 'Importe no válido.',
+            'event_fee_without_account' => ':name no tiene asignación de cuota en la fecha de «:event»: no se cobra.',
         ],
         'issue' => [
             'incomplete_assignment' => 'Asignación incompleta (falta socio, cuenta o tarifa).',
@@ -1742,6 +1749,14 @@ La gestión de cuotas',
             'cancelled' => 'Anulado el :date; este documento no es válido.',
         ],
         'overdue_count' => '{1}una vencida|[2,*]:count vencidas',
+        'siblings' => [
+            'legend' => 'Descuento por hermanos',
+            'hint' => 'Descuento en las cuotas individuales de los hijos de la misma cuenta: el mayor paga completo. Déjelo vacío si no hay descuento; prevalece un descuento en la asignación.',
+            'second_percent' => 'Segundo hijo (%)',
+            'further_percent' => 'A partir del tercer hijo (%)',
+            'max_age' => 'Menor de (años)',
+            'label' => 'hijo :rank, descuento por hermanos :percent %',
+        ],
     ],
     // Reiter der Termin-Sichten (MVP-969).
     'tab' => [

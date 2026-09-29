@@ -25,6 +25,9 @@ enum ClubFeePositionKind: string implements HasLabel {
     case Admission = 'admission';
     // Meldegebühr eines Wettkampfs (MVP-855) als eigene Beitragsposition.
     case Entry = 'entry';
+    // Prüfungs- und Lehrgangsgebühr aus Zulassung bzw. Anmeldung (MVP-1017).
+    case Exam = 'exam';
+    case Course = 'course';
 
     public function label(): string {
         return (string) __('enums.club.fee-position-kind.' . $this->value);

@@ -189,4 +189,15 @@ return [
             'consume_not_allowed' => 'El consumo solo es posible para órdenes liberadas o en curso.',
         ],
     ],
+    'delivery_list' => [
+        'title' => 'Albaranes',
+        'subtitle' => 'Todas las entregas con albarán, envío y documentos aduaneros.',
+        'search' => 'Artículo o cliente',
+        'empty' => 'No hay entregas en el periodo.',
+        'filter' => [
+            'all' => 'Todas',
+            'open' => 'Sin envío',
+            'shipped' => 'Enviadas',
+        ],
+    ],
 ];

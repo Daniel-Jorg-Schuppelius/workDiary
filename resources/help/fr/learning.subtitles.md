@@ -14,6 +14,11 @@ converti dans un format adapté au web et proposé en plusieurs résolutions.
 Pendant ce temps, l'unité affiche l'état du traitement ; la lecture n'est
 possible qu'ensuite.
 
+La lecture commence par la **plus petite résolution** — elle fonctionne aussi
+avec une faible connexion mobile. Sous la vidéo, vous pouvez choisir un niveau
+supérieur ; le changement conserve la position et votre choix s'applique
+ensuite à chaque vidéo.
+
 Les **sous-titres** peuvent être fournis de deux manières :
 
 1. **Déposer votre propre fichier** (WebVTT). Il s'applique immédiatement, tel quel.

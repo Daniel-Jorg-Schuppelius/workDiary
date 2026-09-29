@@ -26,6 +26,13 @@
         <x-textarea-field name="fee_notice_footer" :label="__('club.fees.field.notice_footer')" rows="3" maxlength="2000" :value="old('fee_notice_footer', $feeNoticeFooter)" />
     </x-form-group>
 
+    {{-- MVP-1016: Geschwisterstaffel für Einzelbeiträge von Kindern desselben Beitragskontos. --}}
+    <x-form-group :legend="__('club.fees.siblings.legend')" icon="family_restroom" tone="primary" cols="3" :description="__('club.fees.siblings.hint')">
+        <x-input-field name="siblings[second_percent]" type="number" step="0.01" min="0" max="100" :label="__('club.fees.siblings.second_percent')" :value="old('siblings.second_percent', $siblings['second_percent'] ?? '')" />
+        <x-input-field name="siblings[further_percent]" type="number" step="0.01" min="0" max="100" :label="__('club.fees.siblings.further_percent')" :value="old('siblings.further_percent', $siblings['further_percent'] ?? '')" />
+        <x-input-field name="siblings[max_age]" type="number" min="1" max="30" :label="__('club.fees.siblings.max_age')" :value="old('siblings.max_age', $siblings['max_age'] ?? '')" placeholder="18" />
+    </x-form-group>
+
     <x-form-group :legend="__('club.donations.settings.legend')" icon="volunteer_activism" tone="primary" cols="2" :description="__('club.donations.settings.hint')">
         <x-select-field name="donations[exemption_kind]" :label="__('club.donations.settings.exemption_kind')" span="2">
             <option value="">—</option>

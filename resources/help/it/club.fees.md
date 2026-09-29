@@ -50,3 +50,11 @@ se l’associazione gode di agevolazioni fiscali. Le quote associative si
 possono attestare solo se lo attiva; per lo sport e altre finalità ricreative
 la loro detrazione è esclusa per legge. Le donazioni attestate non possono più
 essere modificate.
+
+**Sconto fratelli.** Nelle impostazioni del club stabilisce uno sconto per il
+secondo figlio e per ogni figlio successivo (con limite di età, di norma sotto
+i 18 anni). Vale per le quote individuali dei figli dello stesso conto nello
+stesso periodo; il maggiore paga intero. Prevale uno sconto sull'assegnazione.
+Le **quote dei corsi e le tasse d'esame** si inseriscono sull'appuntamento o
+sull'offerta d'esame; il calcolo del mese le addebita per iscrizione o per
+candidato ammesso.

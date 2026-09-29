@@ -23,6 +23,7 @@ use App\Services\Participation\EventSeatService;
 use App\Support\Query\DateRange;
 use App\Support\Tz;
 use Carbon\{CarbonImmutable, CarbonInterface};
+use CommonToolkit\ValueObjects\Decimal;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -546,6 +547,7 @@ class ClubEventService {
             'discipline' => $this->nullableString($data['discipline'] ?? null),
             'registration_lead_hours' => $this->nullableInt($data['registration_lead_hours'] ?? null),
             'cancellation_lead_hours' => $this->nullableInt($data['cancellation_lead_hours'] ?? null),
+            'fee_amount' => ($fee = $this->nullableString($data['fee_amount'] ?? null)) !== null ? Decimal::of($fee, 2)->getValue() : null,
         ];
     }
 

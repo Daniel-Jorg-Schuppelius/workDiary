@@ -14,6 +14,7 @@ use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Platform\Organization;
 use App\Services\UI\BrandingService;
+use App\Settings\SettingsTree;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -94,7 +95,7 @@ class BrandingController extends Controller {
         $data['branding']['legal']['iban'] = \CommonToolkit\Helper\Data\BankHelper::normalizeIBAN((string) ($data['branding']['legal']['iban'] ?? ''));
         $data['branding']['legal']['bic'] = \CommonToolkit\Helper\Data\BankHelper::normalizeBIC((string) ($data['branding']['legal']['bic'] ?? ''));
 
-        $branding = $this->stripEmpty($data['branding']);
+        $branding = SettingsTree::prune($data['branding']);
 
         $current = (array) ($organization->settings ?? []);
         $current['branding'] = $branding;
@@ -105,31 +106,5 @@ class BrandingController extends Controller {
         return redirect()
             ->route('admin.branding.edit')
             ->with('success', __('Branding aktualisiert.'));
-    }
-
-    /**
-     * Entfernt leere Strings/Null-Werte rekursiv, damit die config-Defaults greifen, sobald ein Feld geleert wird.
-     *
-     * @param  array<string, mixed>  $values
-     * @return array<string, mixed>
-     */
-    private function stripEmpty(array $values): array {
-        $out = [];
-        foreach ($values as $k => $v) {
-            if (is_array($v)) {
-                $nested = $this->stripEmpty($v);
-                if ($nested !== []) {
-                    $out[$k] = $nested;
-                }
-
-                continue;
-            }
-            if ($v === null || $v === '') {
-                continue;
-            }
-            $out[$k] = $v;
-        }
-
-        return $out;
     }
 }

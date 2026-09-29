@@ -24,3 +24,13 @@ criterios. Una cuenta por defecto adivinada solo se vería en los informes.
 
 **Corrección solo con contraasiento.** Un asiento contabilizado es inmutable;
 la anulación crea un contraasiento con motivo obligatorio.
+
+**Documentos en moneda extranjera.** Las facturas emitidas y recibidas y los
+gastos en moneda extranjera se convierten al tipo mensual de su mes
+(§ 16 apdo. 6 UStG). Gestione los tipos en «Tipos de cambio» (junto a las
+reglas de contabilización), uno a uno o por líneas, por ejemplo a partir de la
+publicación del Ministerio de Hacienda. Sin tipo, el documento permanece en la
+bandeja con una indicación. El tipo y el importe original constan en el
+justificante del asiento. Los pagos, la caja y los activos en moneda extranjera
+siguen sin contabilizarse; las diferencias de cambio en la liquidación se
+registran a mano.

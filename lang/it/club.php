@@ -286,6 +286,7 @@ return [
             'mode' => 'Azione',
             'spontaneous' => 'Partecipazione spontanea — senza verifica di gruppo di destinazione e scadenze',
             'cancel_reason' => 'Motivo della cancellazione',
+            'fee_amount' => 'Quota del corso',
         ],
         'filter' => [
             'period_upcoming' => 'Prossimi',
@@ -343,6 +344,7 @@ return [
             'spontaneous' => 'Solo per responsabili e amministrazione; la capienza vale comunque.',
             'cancel' => 'Le iscrizioni restano come storico; nessun posto viene riassegnato.',
             'target_list' => 'Soci dei gruppi di destinazione nel giorno dell\'appuntamento — ogni socio una volta, anche se in più gruppi.',
+            'fee_amount' => 'Per i corsi: addebitata per iscrizione nel calcolo delle quote del mese dell\'appuntamento.',
         ],
         'flash' => [
             'created' => 'Appuntamento creato.',
@@ -708,6 +710,7 @@ return [
             'eligibility' => 'Requisiti',
             'result' => 'Risultato',
             'exception_reason' => 'Motivo dell\'eccezione',
+            'fee_amount' => 'Tassa d\'esame',
         ],
         'action' => [
             'create_offer' => 'Proponi esame',
@@ -752,6 +755,7 @@ return [
             'add_candidate' => 'I requisiti vengono valutati subito per l\'inizio dell\'esame.',
             'exception' => 'Solo se il requisito consente un\'eccezione; motivo e autore vengono registrati.',
             'result' => 'Solo «superato» assegna il grado obiettivo — esattamente una volta. Bocciatura e assenza non cambiano né il grado né il tempo di allenamento.',
+            'fee_amount' => 'Addebitata per candidato ammesso nel calcolo delle quote del mese dell\'esame.',
         ],
         'confirm' => [
             'reject' => 'Rifiutare il candidato? Un posto occupato viene liberato.',
@@ -1548,6 +1552,8 @@ return [
             'total' => 'Totale',
             'no_assignment' => 'Nessuna assegnazione di quota.',
             'review_age' => 'L\'età :age non rientra più nei limiti di età della tariffa',
+            'exam_fee' => 'Tassa d\'esame :title',
+            'course_fee' => 'Quota del corso :title',
         ],
         'hint' => [
             'payment' => 'Senza credito l\'importo viene assegnato per scadenza (pagamento cumulativo familiare); un resto rimane come credito. Lo stesso denaro non viene mai conteggiato due volte.',
@@ -1686,6 +1692,7 @@ return [
             'reason_required' => 'Indicare un motivo.',
             'amount_required' => 'Indicare un importo.',
             'amount_invalid' => 'Importo non valido.',
+            'event_fee_without_account' => ':name non ha un’assegnazione di quota alla data di «:event»: tassa non addebitata.',
         ],
         'issue' => [
             'incomplete_assignment' => 'Assegnazione incompleta (manca socio, conto o tariffa).',
@@ -1742,6 +1749,14 @@ La gestione quote',
             'cancelled' => 'Stornato il :date — questo documento non è valido.',
         ],
         'overdue_count' => '{1}uno scaduto|[2,*]:count scaduti',
+        'siblings' => [
+            'legend' => 'Sconto fratelli',
+            'hint' => 'Sconto sulle quote individuali dei figli dello stesso conto: il maggiore paga intero. Lasci vuoto se non si applica alcuno sconto; prevale uno sconto sull\'assegnazione.',
+            'second_percent' => 'Secondo figlio (%)',
+            'further_percent' => 'Dal terzo figlio (%)',
+            'max_age' => 'Sotto i (anni)',
+            'label' => 'figlio :rank, sconto fratelli :percent %',
+        ],
     ],
     // Reiter der Termin-Sichten (MVP-969).
     'tab' => [

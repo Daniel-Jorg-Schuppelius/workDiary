@@ -59,6 +59,7 @@ final class ManufacturingManifest extends Manifest {
         return [
             'manufacturing-orders.*',
             'manufacturing-planning.*',
+            'deliveries.*',
             'work-centers.*',
         ];
     }
@@ -69,6 +70,7 @@ final class ManufacturingManifest extends Manifest {
             'sections' => [],
             'items' => [
                 'manufacturing-orders.index',
+                'deliveries.index',
                 'work-centers.index',
             ],
             'groups' => [],

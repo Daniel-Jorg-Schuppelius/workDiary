@@ -1927,6 +1927,8 @@ return [
             'family' => 'Familienbeitrag',
             'surcharge' => 'Abteilungszuschlag',
             'admission' => 'Aufnahmegebühr',
+            'exam' => 'Prüfungsgebühr',
+            'course' => 'Lehrgangsgebühr',
         ],
         'fee-run-status' => [
             'draft' => 'Entwurf',

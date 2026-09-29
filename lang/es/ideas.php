@@ -209,4 +209,19 @@ return [
             'saved' => 'Comentario sobre «:node» guardado.',
         ],
     ],
+    'attachments' => [
+        'title' => 'Adjuntos',
+        'empty' => 'Todavía no hay adjuntos en este nodo.',
+        'hint' => 'Como máximo :mb MB por archivo.',
+        'action' => [
+            'open' => 'Adjuntos',
+            'add' => 'Subir',
+        ],
+        'field' => [
+            'file' => 'Archivo',
+        ],
+        'flash' => [
+            'saved' => 'Adjunto guardado en «:node».',
+        ],
+    ],
 ];

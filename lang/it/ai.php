@@ -34,7 +34,7 @@ return [
         'structure_title' => 'Proposta di struttura IA',
         'structure_hint' => 'Ogni campo viene applicato solo con un clic — tramite la registrazione regolare.',
         'mapping_title' => 'Proposta di assegnazione IA',
-        'mapping_hint' => 'Indicazione per rinominare l’intestazione — importazione e file restano invariati.',
+        'mapping_hint' => 'La proposta precompila l’assegnazione delle colonne qui sotto — viene salvato solo ciò che Lei conferma.',
         'field' => [
             'subject' => 'Oggetto',
             'result' => 'Esito',

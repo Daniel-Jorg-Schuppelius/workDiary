@@ -206,4 +206,36 @@ class DrivingTimeComplianceTest extends TestCase {
 
         $this->assertTrue($vehicle->fresh()->subject_to_driving_time_rules);
     }
+
+    /** MVP-1014: Der zweite Fahrer lenkt nicht, seine Zeit im Fahrzeug ist aber keine Ruhe. */
+    public function test_co_driver_trips_count_for_the_co_driver_without_driving_time(): void {
+        $partner = User::factory()->user()->create(['organization_id' => $this->organization->id, 'name' => 'Beifahrer Bauer']);
+        // Montag: Frey fährt 06:00–10:30 und 11:15–15:30 mit Bauer als zweitem Fahrer, Bauer fährt 16:00–20:00 mit Frey.
+        $this->trip('2026-06-08 06:00:00', '2026-06-08 10:30:00')->update(['co_driver_user_id' => $partner->id]);
+        $this->trip('2026-06-08 11:15:00', '2026-06-08 15:30:00')->update(['co_driver_user_id' => $partner->id]);
+        $this->trip('2026-06-08 16:00:00', '2026-06-08 20:00:00', driver: $partner)->update(['co_driver_user_id' => $this->driver->id]);
+        // Dienstag 03:00: Bauer fährt wieder — nur 7 h nach dem Ende der gemeinsamen Fahrt.
+        $this->trip('2026-06-09 03:00:00', '2026-06-09 05:00:00', driver: $partner);
+
+        $findings = app(\App\Services\Compliance\ComplianceScanService::class)->drivingTimeFindingsForRange($this->organization, CarbonImmutable::parse('2026-06-01'), CarbonImmutable::parse('2026-06-10'));
+
+        $this->assertSame([], $findings[$this->driver->id] ?? []);
+        $partnerFindings = $findings[$partner->id] ?? [];
+        $this->assertSame([DrivingTimeComplianceChecker::KIND_DAILY_REST], array_values(array_unique(array_map(static fn ($f): string => $f->kind, $partnerFindings))));
+        $this->assertSame(420, $partnerFindings[0]->value);
+    }
+
+    public function test_the_form_stores_co_driver_and_ferry_flag(): void {
+        $partner = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+        $this->actingAs($this->driver)->get(route('travel-logs.create'))->assertOk()->assertSee(__('travel.driving_time.co_driver'));
+        $payload = ['date' => '2026-06-09', 'start_time' => '08:00', 'end_time' => '09:00', 'vehicle' => TravelLogVehicle::Company->value, 'vehicle_id' => $this->truck->sqid,
+            'distance_km' => '10', 'odometer_start_km' => '1000', 'odometer_end_km' => '1010', 'is_ferry_or_train' => '1'];
+        $this->actingAs($this->driver)->post(route('travel-logs.store'), $payload + ['co_driver_user_id' => $this->driver->sqid])
+            ->assertSessionHasErrors('co_driver_user_id');
+        $this->actingAs($this->driver)->post(route('travel-logs.store'), $payload + ['co_driver_user_id' => $partner->sqid])->assertSessionHasNoErrors();
+
+        $log = TravelLog::query()->where('user_id', $this->driver->id)->latest('id')->firstOrFail();
+        $this->assertSame($partner->id, $log->co_driver_user_id);
+        $this->assertTrue($log->is_ferry_or_train);
+    }
 }

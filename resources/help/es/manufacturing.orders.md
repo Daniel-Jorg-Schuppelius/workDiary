@@ -40,3 +40,8 @@ arancelario, el país de origen y el peso neto en el artículo, y el número
 EORI del remitente en la configuración de la organización. Si falta algún
 dato, el diálogo lo indica y no crea ningún documento. Los documentos
 aduaneros no sustituyen una declaración de exportación electrónica.
+
+La página **Albaranes** muestra todas las entregas del periodo elegido, con PDF
+del albarán, envío por correo electrónico, documentos aduaneros y estado del
+envío, sin pasar por cada orden de fabricación. El filtro «Sin envío» muestra lo
+que aún espera una etiqueta.

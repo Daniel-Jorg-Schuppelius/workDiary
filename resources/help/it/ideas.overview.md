@@ -51,3 +51,6 @@ OPML, Markdown o PDF — ad esempio per la condivisione al di fuori del
 sistema.
 
 **Commenti sui nodi:** Nel dettaglio di un nodo, «Commenti» apre la discussione di quel nodo; il numero accanto indica quanti ce ne sono. Può commentare chiunque possa vedere la mappa.
+
+I nodi hanno **allegati**: tramite «Allegati» nella vista del nodo, chi modifica
+carica i file; chiunque veda la mappa può aprirli.

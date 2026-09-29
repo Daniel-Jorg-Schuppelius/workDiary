@@ -21,8 +21,10 @@ class InvoiceController extends Controller {
         /** @var User $user */
         $user = Auth::guard('customer')->user();
 
+        // Entwürfe sind interne Arbeitsstände (MVP-1019) — der Kunde sieht nur Ausgestelltes.
         $invoices = Invoice::query()
             ->where('customer_id', $user->customer_id)
+            ->where('status', '!=', Invoice::STATUS_DRAFT)
             ->orderByDesc('issued_on')
             ->orderByDesc('id')
             ->paginate(25);

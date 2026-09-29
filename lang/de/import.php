@@ -176,4 +176,25 @@ return [
         'position' => 'Übernahme aus Altsystem — Rechnung :number',
         'note' => 'Altrechnung aus :source übernommen (Eröffnungs-OP, keine Journalbuchung).',
     ],
+    'columns' => [
+        'title' => 'Spaltenzuordnung',
+        'hint' => 'Diese Spalten kennt der Import nicht. Ordnen Sie sie einmal zu — die Zuordnung gilt ab dann für jede Datei dieser Importart, die Datei wird sofort neu geprüft.',
+        'target_for' => 'Zielspalte für „:header“',
+        'skip' => '— nicht übernehmen —',
+        'ai_proposed' => 'KI-Vorschlag',
+        'submit' => 'Zuordnung speichern und neu prüfen',
+        'saved_title' => 'Gespeicherte Spaltenzuordnungen',
+        'saved_hint' => 'Diese Zuordnungen gelten für jede Importdatei der Organisation. Die Vorgaben der Importart gehen vor.',
+        'saved_empty' => 'Noch keine Spaltenzuordnung gespeichert.',
+        'delete' => 'Zuordnung löschen',
+        'confirm_delete' => 'Zuordnung für „:header“ löschen?',
+        'error' => [
+            'duplicate' => 'Jede Zielspalte darf nur einmal vergeben werden.',
+            'none' => 'Keine Zuordnung übernommen — bitte mindestens eine Zielspalte wählen.',
+        ],
+        'flash' => [
+            'saved' => '{1} Eine Zuordnung gespeichert, die Datei wurde neu geprüft.|[2,*] :count Zuordnungen gespeichert, die Datei wurde neu geprüft.',
+            'deleted' => 'Spaltenzuordnung gelöscht.',
+        ],
+    ],
 ];

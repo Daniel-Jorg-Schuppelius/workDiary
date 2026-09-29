@@ -58,11 +58,6 @@ class ExpenseAdapter extends AbstractPostingAdapter {
         $lines = [];
         $ruleVersions = [];
 
-        $foreign = $this->foreignCurrencyBlocker($organization, $source->currency);
-        if ($foreign !== null) {
-            $blockers[] = $foreign;
-        }
-
         if ($this->alreadyHandedOver($source)) {
             $blockers[] = (string) __('accounting.inbox.blocker.handed_over');
         }
@@ -127,6 +122,12 @@ class ExpenseAdapter extends AbstractPostingAdapter {
             }
         }
 
+        // Fremdwährung zum Monatskurs (MVP-1012); ohne Kurs bleibt der Beleg in der Inbox.
+        $fx = $this->inBaseCurrency($organization, $source->currency, $date, $lines);
+        if ($fx['blocker'] !== null) {
+            $blockers[] = $fx['blocker'];
+        }
+
         return new PostingProposal(
             kind: $this->kind(),
             source: $source,
@@ -136,12 +137,13 @@ class ExpenseAdapter extends AbstractPostingAdapter {
                 'description' => (string) ($source->description ?? '—'),
                 'user' => (string) ($source->user instanceof User ? $source->user->name : '—'),
             ]),
-            lines: $lines,
+            lines: $fx['lines'],
             blockers: array_values(array_unique($blockers)),
             documentOn: $date,
             documentReference: $source->vendor !== null ? (string) $source->vendor : null,
             ruleVersion: implode(',', array_unique($ruleVersions)) ?: null,
             title: (string) ($source->description ?? '—'),
+            extra: $fx['extra'],
         );
     }
 }

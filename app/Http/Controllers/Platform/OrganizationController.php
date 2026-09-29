@@ -13,6 +13,7 @@ namespace App\Http\Controllers\Platform;
 use App\Http\Controllers\Controller;
 use App\Models\Platform\{Organization, User};
 use App\Services\Org\OrganizationLifecycleService;
+use App\Settings\SettingsTree;
 use App\Support\{Setting, SortableQuery};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate, Storage};
@@ -200,12 +201,10 @@ class OrganizationController extends Controller {
                 if (! is_array($values)) {
                     continue;
                 }
-                $clean = $this->stripEmpty($values);
                 $existingGroup = isset($mergedSettings[$group]) && is_array($mergedSettings[$group])
                     ? $mergedSettings[$group]
                     : [];
-                $next = array_replace_recursive($existingGroup, $clean);
-                $next = $this->stripEmpty($next);
+                $next = SettingsTree::merge($existingGroup, $values);
                 if ($next === []) {
                     unset($mergedSettings[$group]);
                 } else {
@@ -415,33 +414,5 @@ class OrganizationController extends Controller {
 
         return redirect()->toList('admin.organizations.index')
             ->with('success', __('Organisation ":name" wurde endgültig gelöscht.', ['name' => $deletedName]));
-    }
-
-    /**
-     * Entfernt leere Strings / nulls (rekursiv) aus einem Settings-Array.
-     * Verbleibende leere Sub-Arrays werden ebenfalls entfernt, damit
-     * config()-Fallbacks greifen.
-     *
-     * @param  array<string,mixed>  $values
-     * @return array<string,mixed>
-     */
-    private function stripEmpty(array $values): array {
-        $out = [];
-        foreach ($values as $k => $v) {
-            if (is_array($v)) {
-                $cleaned = $this->stripEmpty($v);
-                if ($cleaned !== []) {
-                    $out[$k] = $cleaned;
-                }
-
-                continue;
-            }
-            if ($v === null || $v === '') {
-                continue;
-            }
-            $out[$k] = $v;
-        }
-
-        return $out;
     }
 }

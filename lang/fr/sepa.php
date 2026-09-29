@@ -23,6 +23,9 @@ return [
     'direct_debit_amount' => 'Montant',
     'direct_debit_reference' => 'Motif du paiement',
     'direct_debit_submit' => 'Créer le prélèvement',
+    'direct_debit_invoice' => 'Facture',
+    'direct_debit_invoice_none' => '— sans référence de facture —',
+    'direct_debit_from_invoice' => 'Encaisser par prélèvement',
     'run_released' => 'Ordre de paiement validé.',
     'run_cancelled' => 'Ordre de paiement annulé.',
     'item_removed' => 'Position retirée.',
@@ -105,6 +108,7 @@ return [
         'mandate_unusable' => 'Le mandat est révoqué ou inutilisé depuis plus de 36 mois.',
         'item_without_mandate' => 'Une position de prélèvement sans mandat ne peut pas être exportée.',
         'unavailable' => 'L’export SEPA n’est pas activé dans cette installation. Activation via :contact.',
+        'invoice_not_collectable' => 'La facture n’appartient pas au client du mandat ou n’est plus ouverte.',
     ],
 
     'mandate' => [

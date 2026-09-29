@@ -189,4 +189,15 @@ return [
             'consume_not_allowed' => 'Consumption is only possible for released or running orders.',
         ],
     ],
+    'delivery_list' => [
+        'title' => 'Delivery notes',
+        'subtitle' => 'All deliveries with delivery note, shipping and customs documents.',
+        'search' => 'Article or customer',
+        'empty' => 'No deliveries in this period.',
+        'filter' => [
+            'all' => 'All',
+            'open' => 'Not shipped',
+            'shipped' => 'Shipped',
+        ],
+    ],
 ];

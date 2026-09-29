@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Ai\Suggestions;
 
 use App\Models\Ai\AiTextSuggestion;
-use App\Models\Integration\ImportRun;
+use App\Models\Integration\{ImportColumnMapping, ImportRun};
 use App\Models\Platform\{Organization, User};
 use App\Services\Ai\AiInvocationService;
 use App\Services\Ai\Dto\{AiClassificationResult, ClassifyRequest};
@@ -35,8 +35,8 @@ use Throwable;
  * Zuordnung — er läuft ZUERST; die KI bekommt nur die Kopfzellen, die er
  * nicht kennt, und nur die dann noch freien Spec-Spalten als Katalog.
  * In den Prompt gehen ausschließlich KOPFZELLEN, nie Datenzeilen (daher
- * `low`). Das Ergebnis ist ein Hinweis zum Umbenennen der Kopfzeile — es
- * verändert weder Lauf noch Datei (nie Auto-Apply).
+ * `low`). Das Ergebnis belegt die Spaltenzuordnung des Laufs vor (MVP-1020);
+ * gespeichert wird erst, was der Nutzer bestätigt (nie Auto-Apply).
  */
 class ImportMappingSuggestionService {
     use DecidesSuggestions;
@@ -65,7 +65,7 @@ class ImportMappingSuggestionService {
         }
 
         // Schritt 1 — deterministisch: was der HeaderMapper kennt, bleibt seins.
-        $mapped = HeaderMapper::map($spec, $header);
+        $mapped = HeaderMapper::map($spec, $header, ImportColumnMapping::aliasesFor((int) $organization->id, $run->entity));
         $taken = array_values(array_filter($mapped, static fn (?string $c): bool => $c !== null));
 
         $unknown = [];
@@ -125,6 +125,37 @@ class ImportMappingSuggestionService {
             $last,
             $user,
         );
+    }
+
+    /**
+     * Schließt den offenen Vorschlag, sobald der Nutzer eine Spaltenzuordnung
+     * speichert (MVP-1020): angenommen, wenn mindestens ein Paar so
+     * übernommen wurde, sonst verworfen.
+     *
+     * @param  array<string, string>  $saved  Kopfzelle => Spalte
+     */
+    public function settleMapping(ImportRun $run, array $saved, ?User $user): void {
+        $suggestion = AiTextSuggestion::query()
+            ->withoutGlobalScopes()
+            ->where('organization_id', $run->organization_id)
+            ->where('subject_type', $run->getMorphClass())
+            ->where('subject_id', (int) $run->id)
+            ->where('capability', self::CAPABILITY)
+            ->where('status', AiTextSuggestion::STATUS_PROPOSED)
+            ->first();
+        if ($suggestion === null) {
+            return;
+        }
+
+        $adopted = array_filter(self::mappingValues($suggestion), static fn (array $pair): bool => ($saved[$pair['header']] ?? null) === $pair['column']);
+        if ($adopted === []) {
+            $this->reject($suggestion, $user);
+
+            return;
+        }
+
+        $this->markDecided($suggestion, AiTextSuggestion::STATUS_ACCEPTED, $user);
+        $this->auditDecision($suggestion, 'accepted', $user, ['adopted' => count($adopted)]);
     }
 
     /**

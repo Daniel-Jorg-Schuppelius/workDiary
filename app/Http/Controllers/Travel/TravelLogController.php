@@ -279,6 +279,10 @@ class TravelLogController extends Controller {
             'fleetVehicles' => Vehicle::query()->active()->forUser((int) $user->id)->orderBy('label')->orderBy('license_plate')->get(),
             'tripKinds' => TripKind::cases(),
             'rates' => (array) config('timesheet.travel.rates', []),
+            // Lenk- und Ruhezeiten (MVP-1014): nur wenn die Organisation die Regeln anwendet.
+            'drivingRules' => $user->organization?->drivingTimeRulesEnabled() ?? false,
+            'coDrivers' => User::query()->where('organization_id', $user->organization_id)->whereNull('customer_id')
+                ->whereKeyNot($user->id)->orderBy('name')->get(['id', 'name']),
         ];
     }
 

@@ -50,3 +50,11 @@ WorkDiary ne vérifie pas si l’association est reconnue d’utilité publique.
 Les cotisations ne peuvent être attestées que si vous l’activez ; pour le
 sport et d’autres buts de loisirs, leur déduction est exclue par la loi. Les
 dons attestés ne peuvent plus être modifiés.
+
+**Réduction fratrie.** Dans les paramètres du club, vous fixez une réduction
+pour le deuxième enfant et pour chaque enfant suivant (avec une limite d'âge,
+par défaut moins de 18 ans). Elle s'applique aux cotisations individuelles des
+enfants d'un même compte sur la même période ; l'aîné paie le plein tarif. Une
+réduction sur l'affectation prévaut. Les **frais de stage et d'examen** se
+saisissent sur le rendez-vous ou l'offre d'examen ; le calcul du mois concerné
+les facture par inscription ou par candidat admis.

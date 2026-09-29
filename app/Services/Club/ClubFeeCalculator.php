@@ -12,12 +12,14 @@ declare(strict_types=1);
 
 namespace App\Services\Club;
 
-use App\Enums\Club\{ClubFeePositionKind, ClubFeeProration, ClubGroupMembershipStatus};
+use App\Enums\Club\{ClubEventKind, ClubExamCandidateStatus, ClubFeePositionKind, ClubFeeProration, ClubGroupMembershipStatus, ClubParticipationStatus};
 use App\Enums\Finance\RecurringInterval;
-use App\Models\Club\{ClubFeeAssignment, ClubFeeExemption, ClubFeeSurcharge, ClubFeeTariff, ClubFeeTariffRate, ClubGroupMembership, ClubMember};
+use App\Models\Calendar\Event;
+use App\Models\Club\{ClubEventDetails, ClubEventParticipation, ClubExamCandidate, ClubFeeAssignment, ClubFeeExemption, ClubFeeSurcharge, ClubFeeTariff, ClubFeeTariffRate, ClubGroupMembership, ClubMember};
 use App\Models\Platform\Organization;
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\NumberHelper;
 use CommonToolkit\ValueObjects\{Decimal, Money};
 use Illuminate\Support\Collection;
 
@@ -234,6 +236,10 @@ class ClubFeeCalculator {
                 ['event_id' => $event->id, 'discipline' => $entry->discipline_code],
             ));
         }
+        // Lehrgangs- und Prüfungsgebühren (MVP-1017): je Anmeldung bzw. Zulassung, fällig zum Termin.
+        foreach ($this->eventFeePositions($organization, $monthStart, $monthEnd, $assignments, $issues) as $position) {
+            $positions->push($position);
+        }
         foreach ($families as $key => $family) {
             $rate = $family['rate'];
             $amount = $this->prorate($rate->amount, $rate->proration, $family['days'], $family['start'], $family['end']);
@@ -255,6 +261,8 @@ class ClubFeeCalculator {
                 $this->basis($rate, $family['days'], $family['start'], $family['end'], '0'),
             ));
         }
+
+        $positions = $this->applySiblingStaffel($organization, $positions, $assignments);
 
         return ['positions' => $positions->sortBy(fn(ClubFeePosition $p): string => $p->accountId . '-' . ($p->memberId ?? 0) . '-' . $p->kind->value)->values(), 'issues' => $issues];
     }
@@ -395,5 +403,127 @@ class ClubFeeCalculator {
             'discount_percent' => $discount,
             'rate_amount' => $rate->amount->getAmount(),
         ];
+    }
+
+    /**
+     * @param  Collection<int, ClubFeeAssignment>  $assignments
+     * @param  list<array{member_id: int|null, account_id: int|null, message: string}>  $issues
+     * @return list<ClubFeePosition>
+     */
+    private function eventFeePositions(Organization $organization, CarbonImmutable $monthStart, CarbonImmutable $monthEnd, Collection $assignments, array &$issues): array {
+        $events = Event::query()
+            ->where('organization_id', $organization->id)
+            ->whereNull('cancelled_at')
+            ->where('started_at', '>=', DateRange::dayStart($monthStart))
+            ->where('started_at', '<', DateRange::dayAfter($monthEnd))
+            ->whereHas('clubDetails', fn ($q) => $q->whereNotNull('fee_amount')->whereIn('kind', [ClubEventKind::Course->value, ClubEventKind::Exam->value]))
+            ->with('clubDetails')
+            ->get();
+
+        $positions = [];
+        foreach ($events as $event) {
+            $details = $event->clubDetails;
+            if (! $details instanceof ClubEventDetails || $details->fee_amount === null || $details->fee_amount->isZero()) {
+                continue;
+            }
+            $day = CarbonImmutable::instance($event->started_at)->setTimezone(\App\Support\Tz::current())->startOfDay();
+            $isExam = $details->kind === ClubEventKind::Exam;
+            /** @var list<array{0: string, 1: ClubMember|null}> $payers */
+            $payers = $isExam
+                ? ClubExamCandidate::query()->whereHas('offer', fn ($q) => $q->where('event_id', $event->id))
+                    ->whereIn('status', [ClubExamCandidateStatus::Admitted->value, ClubExamCandidateStatus::Passed->value, ClubExamCandidateStatus::Failed->value, ClubExamCandidateStatus::NoShow->value])
+                    ->with('member')->get()->map(fn (ClubExamCandidate $c): array => ['exam:' . $c->id, $c->member])->all()
+                : ClubEventParticipation::query()->where('event_id', $event->id)->where('status', ClubParticipationStatus::Registered->value)
+                    ->with('member')->get()->map(fn (ClubEventParticipation $p): array => ['course:' . $p->id, $p->member])->all();
+            foreach ($payers as [$sourceKey, $member]) {
+                if (! $member instanceof ClubMember) {
+                    continue;
+                }
+                $assignment = $assignments->first(fn (ClubFeeAssignment $a): bool => $a->club_member_id === $member->id && ! $day->lt($a->valid_from) && ($a->valid_to === null || ! $day->gt($a->valid_to)));
+                if ($assignment === null) {
+                    $issues[] = ['member_id' => $member->id, 'account_id' => null, 'message' => (string) __('club.fees.error.event_fee_without_account', ['name' => $member->fullName(), 'event' => (string) $event->title])];
+
+                    continue;
+                }
+                $positions[] = new ClubFeePosition(
+                    $isExam ? ClubFeePositionKind::Exam : ClubFeePositionKind::Course,
+                    $sourceKey,
+                    $assignment->club_fee_account_id,
+                    $member->id,
+                    (string) __($isExam ? 'club.fees.label.exam_fee' : 'club.fees.label.course_fee', ['title' => (string) $event->title]),
+                    $day,
+                    $day,
+                    $day,
+                    $details->fee_amount,
+                    ['event_id' => $event->id],
+                );
+            }
+        }
+
+        return $positions;
+    }
+
+    /**
+     * Geschwisterstaffel (MVP-1016): Einzelbeiträge von Kindern unter der
+     * Altersgrenze im selben Beitragskonto und derselben Periode — das älteste
+     * zahlt voll, das zweite und jedes weitere mit Nachlass. Ein ausdrücklicher
+     * Nachlass an der Zuordnung geht vor.
+     *
+     * @param  Collection<int, ClubFeePosition>  $positions
+     * @param  Collection<int, ClubFeeAssignment>  $assignments
+     * @return Collection<int, ClubFeePosition>
+     */
+    private function applySiblingStaffel(Organization $organization, Collection $positions, Collection $assignments): Collection {
+        $config = (array) data_get($organization->settings, 'club.fees.siblings', []);
+        $second = trim((string) ($config['second_percent'] ?? ''));
+        $further = trim((string) ($config['further_percent'] ?? ''));
+        if ($second === '' && $further === '') {
+            return $positions;
+        }
+        $maxAge = (int) ($config['max_age'] ?? 0) > 0 ? (int) $config['max_age'] : 18;
+        /** @var Collection<int, ClubMember> $members */
+        $members = $assignments->map(fn (ClubFeeAssignment $a): ?ClubMember => $a->member)->filter()->keyBy('id');
+
+        $children = $positions->filter(function (ClubFeePosition $p) use ($members, $maxAge): bool {
+            $member = $p->memberId !== null ? $members->get($p->memberId) : null;
+
+            return $p->kind === ClubFeePositionKind::Base
+                && $member instanceof ClubMember && $member->birth_date !== null
+                && $member->birth_date->copy()->addYears($maxAge)->greaterThan($p->periodStart)
+                && Decimal::of((string) ($p->basis['discount_percent'] ?? '0'), 2)->isZero();
+        });
+
+        /** @var array<int, int> $ranks */
+        $ranks = [];
+        foreach ($children->groupBy(fn (ClubFeePosition $p): string => $p->accountId . ':' . $p->periodStart->toDateString()) as $group) {
+            $sorted = $group->sortBy(fn (ClubFeePosition $p): string => $members->get((int) $p->memberId)?->birth_date?->toDateString() . '-' . str_pad((string) $p->memberId, 12, '0', STR_PAD_LEFT))->values();
+            foreach ($sorted as $index => $p) {
+                if ($index > 0) {
+                    $ranks[spl_object_id($p)] = $index + 1;
+                }
+            }
+        }
+
+        return $positions->map(function (ClubFeePosition $p) use ($ranks, $second, $further): ClubFeePosition {
+            $rank = $ranks[spl_object_id($p)] ?? null;
+            $percent = $rank === null ? '' : ($rank === 2 || $further === '' ? $second : $further);
+            if ($percent === '' || Decimal::of($percent, 2)->isZero()) {
+                return $p;
+            }
+            $decimal = Decimal::of($percent, 2);
+
+            return new ClubFeePosition(
+                $p->kind,
+                $p->sourceKey,
+                $p->accountId,
+                $p->memberId,
+                $p->label . ' · ' . __('club.fees.siblings.label', ['rank' => $rank, 'percent' => NumberHelper::trimTrailingZeros($decimal->format(), ',')]),
+                $p->periodStart,
+                $p->periodEnd,
+                $p->dueOn,
+                $p->amount->minusPercentage(self::numeric($decimal)),
+                $p->basis + ['sibling_rank' => $rank, 'sibling_percent' => $decimal->getValue()],
+            );
+        })->values();
     }
 }

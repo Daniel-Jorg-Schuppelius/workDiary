@@ -42,3 +42,8 @@ poids net sur l’article, et le numéro EORI de l’expéditeur dans les param�
 de l’organisation. S’il manque une donnée, la boîte de dialogue l’indique et
 ne crée pas de document. Les documents douaniers ne remplacent pas une
 déclaration d’exportation électronique.
+
+La page **Bons de livraison** liste toutes les livraisons de la période choisie
+— avec PDF du bon, envoi par e-mail, documents douaniers et état d'expédition,
+sans passer par chaque ordre de fabrication. Le filtre « Non expédiées » montre
+ce qui attend encore une étiquette.

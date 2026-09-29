@@ -32,3 +32,9 @@ tutela del lavoro minorile: al massimo 8 h al giorno e 40 h a settimana, pause
 6, al massimo 5 giorni lavorativi a settimana. Il lavoro nel fine settimana e
 quello notturno dai 16 anni compaiono come avviso, perché la legge prevede
 eccezioni per settore.
+
+Il termine di registrazione MiLoG (sette giorni) si misura dalla registrazione
+originale: per le timbrature, il momento della timbratura anche se un
+dispositivo offline la trasmette più tardi; per le importazioni, la colonna
+«erfasst am» (registrato il). Le importazioni senza questo dato non vengono
+verificate rispetto al termine.

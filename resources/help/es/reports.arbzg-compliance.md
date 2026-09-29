@@ -30,3 +30,9 @@ juvenil: como máximo 8 h diarias y 40 h semanales, pausas (30 min desde 4,5 h,
 máximo 5 días laborables por semana. El trabajo en fin de semana y el nocturno
 desde los 16 años aparecen como aviso, porque la ley admite excepciones por
 sector.
+
+El plazo de registro de la MiLoG (siete días) se mide desde el registro
+original: en los fichajes, el momento del fichaje aunque un dispositivo sin
+conexión lo transmita más tarde; en las importaciones, la columna «erfasst am»
+(registrado el). Las importaciones sin este dato no se comprueban respecto al
+plazo.

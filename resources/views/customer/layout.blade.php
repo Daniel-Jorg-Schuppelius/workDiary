@@ -42,6 +42,7 @@
             @if ($portalUser)
                 <nav class="flex items-center gap-3 text-sm">
                     <a href="{{ route('customer.dashboard') }}" class="hover:underline">{{ __('Übersicht') }}</a>
+                    <a href="{{ route('customer.search') }}" class="hover:underline">{{ __('customer_search.nav') }}</a>
                     @if ($portalAllows(PortalCapability::Diary))
                         <a href="{{ route('customer.diary.index') }}" class="hover:underline">{{ __('Auftragsbuch') }}</a>
                     @endif

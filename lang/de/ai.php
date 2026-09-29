@@ -34,7 +34,7 @@ return [
         'structure_title' => 'KI-Strukturvorschlag',
         'structure_hint' => 'Jedes Feld wird erst mit Klick übernommen — die Übernahme läuft über die reguläre Erfassung.',
         'mapping_title' => 'KI-Zuordnungsvorschlag',
-        'mapping_hint' => 'Hinweis zum Umbenennen der Kopfzeile — Import und Datei bleiben unverändert.',
+        'mapping_hint' => 'Der Vorschlag belegt die Spaltenzuordnung unten vor — gespeichert wird erst, was Sie bestätigen.',
         'field' => [
             'subject' => 'Betreff',
             'result' => 'Ergebnis',

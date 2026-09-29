@@ -73,6 +73,7 @@ return [
         'finance.accounting.journal.*' => 'accounting.posting',
         'finance.accounting.inbox.*' => 'accounting.posting',
         'finance.accounting.rules.*' => 'accounting.posting',
+        'finance.accounting.exchange-rates.*' => 'accounting.posting',
         'finance.accounting.open-items.*' => 'accounting.posting',
         'finance.accounting.recurring.*' => 'accounting.posting',
         'finance.accounting.closing.*' => 'accounting.closing',
@@ -537,6 +538,7 @@ return [
 
         // Warenwirtschaft – Fertigung, Beschaffung, Seriennummern
         'manufacturing-orders.*' => 'manufacturing.orders',
+        'deliveries.*' => 'manufacturing.orders',
         'manufacturing-planning.*' => 'manufacturing.orders',
         'work-centers.*' => 'manufacturing.work-centers',
         'purchase-orders.*' => 'procurement.orders',
@@ -661,6 +663,7 @@ return [
 
         // Kundenportal (eigener customer-Guard, eigene Zielgruppe)
         'customer.dashboard' => 'customer-portal.overview',
+        'customer.search' => 'customer-portal.overview',
         'customer.diary.*' => 'customer-portal.diary',
         'customer.invoices.*' => 'customer-portal.invoices',
         'customer.billing.*' => 'customer-portal.billing',

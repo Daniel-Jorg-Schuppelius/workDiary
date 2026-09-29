@@ -33,8 +33,8 @@ use Tests\TestCase;
  * Import-Spaltenzuordnung vorschlagen.
  *
  * Beide Einsatzstellen bleiben Vorschläge: Dokument-Chips werden einzeln über
- * den regulären DocumentService übernommen, die Spaltenzuordnung ist ein
- * reiner Hinweis (der HeaderMapper bleibt die verbindliche Zuordnung).
+ * den regulären DocumentService übernommen, die Spaltenzuordnung belegt das
+ * Zuordnungsformular nur vor (MVP-1020; der HeaderMapper bleibt verbindlich).
  */
 class AiWave3AssistanceTest extends TestCase {
     use RefreshDatabase;
@@ -235,6 +235,26 @@ class AiWave3AssistanceTest extends TestCase {
             ->get(route('admin.imports.show', $run))
             ->assertOk()
             ->assertSee('Bezeichnung des Betriebs');
+    }
+
+    public function test_saving_the_column_mapping_settles_the_suggestion(): void {
+        $this->enable(ImportMappingSuggestionService::CAPABILITY);
+        $run = $this->importRun("Kundennummer;Bezeichnung des Betriebs\nK-1;Meier GmbH\n");
+        $this->fake->classificationResponse = ['name'];
+        $this->actingAs($this->admin)->from(route('admin.imports.show', $run))->post(route('ai.assist.import-mapping', $run));
+        $suggestion = AiTextSuggestion::query()->withoutGlobalScopes()->firstOrFail();
+
+        // MVP-1020: der Vorschlag belegt die Spaltenzuordnung vor.
+        $this->actingAs($this->admin)->get(route('admin.imports.show', $run))->assertOk()
+            ->assertSee(__('import.columns.ai_proposed'))->assertSee('<option value="name" selected', false);
+
+        $this->actingAs($this->admin)->post(route('admin.imports.columns', $run), ['columns' => [
+            ['header' => 'Bezeichnung des Betriebs', 'target' => 'name'],
+        ]])->assertSessionHas('success');
+
+        $this->assertSame(AiTextSuggestion::STATUS_ACCEPTED, $suggestion->fresh()?->status);
+        $this->assertTrue(\App\Models\Audit\AuditLog::query()->where('event', 'ai.suggestion_decided')->where('changes->decision', 'accepted')->exists());
+        $this->assertSame(ImportRunState::AwaitingApproval, ImportRun::query()->latest('id')->firstOrFail()->state);
     }
 
     public function test_no_suggestion_when_every_header_is_already_known(): void {

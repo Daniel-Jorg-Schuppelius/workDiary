@@ -286,6 +286,7 @@ return [
             'mode' => 'Action',
             'spontaneous' => 'Participation spontanée — sans contrôle de groupe cible ni de délai',
             'cancel_reason' => 'Motif de l\'annulation',
+            'fee_amount' => 'Frais de stage',
         ],
         'filter' => [
             'period_upcoming' => 'À venir',
@@ -343,6 +344,7 @@ return [
             'spontaneous' => 'Réservé aux responsables et à l\'administration ; la capacité s\'applique quand même.',
             'cancel' => 'Les inscriptions sont conservées comme historique ; aucune place n\'est réattribuée.',
             'target_list' => 'Membres des groupes cibles le jour du rendez-vous — chaque membre une fois, même dans plusieurs groupes.',
+            'fee_amount' => 'Pour les stages : facturés par inscription dans le calcul des cotisations du mois du rendez-vous.',
         ],
         'flash' => [
             'created' => 'Rendez-vous créé.',
@@ -708,6 +710,7 @@ return [
             'eligibility' => 'Exigences',
             'result' => 'Résultat',
             'exception_reason' => 'Motif de l\'exception',
+            'fee_amount' => 'Frais d\'examen',
         ],
         'action' => [
             'create_offer' => 'Proposer un examen',
@@ -752,6 +755,7 @@ return [
             'add_candidate' => 'Les exigences sont évaluées immédiatement pour le début de l\'examen.',
             'exception' => 'Seulement si l\'exigence autorise une exception ; motif et auteur sont consignés.',
             'result' => 'Seul « réussi » attribue le grade cible — exactement une fois. Échec et absence ne changent ni le grade ni le temps d\'entraînement.',
+            'fee_amount' => 'Facturés par candidat admis dans le calcul des cotisations du mois de l\'examen.',
         ],
         'confirm' => [
             'reject' => 'Refuser le candidat ? Une place occupée est libérée.',
@@ -1548,6 +1552,8 @@ return [
             'total' => 'Total',
             'no_assignment' => 'Aucune affectation de cotisation.',
             'review_age' => 'L\'âge :age ne correspond plus aux limites d\'âge du tarif',
+            'exam_fee' => 'Frais d\'examen :title',
+            'course_fee' => 'Frais de stage :title',
         ],
         'hint' => [
             'payment' => 'Sans créance, le paiement est imputé par échéance (paiement groupé familial) ; un reste devient un avoir. Le même argent n\'est jamais compté deux fois.',
@@ -1686,6 +1692,7 @@ return [
             'reason_required' => 'Indiquer un motif.',
             'amount_required' => 'Indiquer un montant.',
             'amount_invalid' => 'Montant invalide.',
+            'event_fee_without_account' => ':name n\'a pas d\'affectation de cotisation à la date de « :event » — frais non facturés.',
         ],
         'issue' => [
             'incomplete_assignment' => 'Affectation incomplète (membre, compte ou tarif manquant).',
@@ -1742,6 +1749,14 @@ Votre gestion des cotisations',
             'cancelled' => 'Annulé le :date — ce document est sans valeur.',
         ],
         'overdue_count' => '{1}une en retard|[2,*]:count en retard',
+        'siblings' => [
+            'legend' => 'Réduction fratrie',
+            'hint' => 'Réduction sur les cotisations individuelles des enfants d\'un même compte : l\'aîné paie le plein tarif. Laissez vide si aucune réduction ne s\'applique ; une réduction sur l\'affectation prévaut.',
+            'second_percent' => 'Deuxième enfant (%)',
+            'further_percent' => 'À partir du troisième enfant (%)',
+            'max_age' => 'Âge inférieur à (ans)',
+            'label' => ':rank. enfant, réduction fratrie :percent %',
+        ],
     ],
     // Reiter der Termin-Sichten (MVP-969).
     'tab' => [

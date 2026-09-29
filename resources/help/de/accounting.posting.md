@@ -29,3 +29,12 @@ Buchung festgeschrieben.
 **Korrektur nur über Gegenbuchung.** Eine festgeschriebene Buchung ist
 unveränderlich. Der Storno erzeugt eine gespiegelte Gegenbuchung mit
 Pflichtbegründung; das Original bleibt stehen.
+
+**Belege in Fremdwährung.** Ausgangs- und Eingangsrechnungen sowie Auslagen in
+fremder Währung werden zum Monatskurs ihres Belegmonats umgerechnet
+(§ 16 Abs. 6 UStG). Die Kurse pflegen Sie unter „Umrechnungskurse“ (bei den
+Buchungsregeln) einzeln oder zeilenweise, etwa aus der BMF-Veröffentlichung.
+Fehlt der Kurs, bleibt der Beleg mit Hinweis in der Inbox. Kurs und
+Originalbetrag stehen im Buchungsnachweis. Zahlungen, Kasse und Anlagen in
+Fremdwährung bucht die Buchhaltung weiterhin nicht; Kursdifferenzen beim
+Ausgleich buchen Sie von Hand.

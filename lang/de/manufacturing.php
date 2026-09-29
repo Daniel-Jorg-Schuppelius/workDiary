@@ -189,4 +189,15 @@ return [
             'consume_not_allowed' => 'Verbrauch ist nur bei freigegebenen oder laufenden Aufträgen möglich.',
         ],
     ],
+    'delivery_list' => [
+        'title' => 'Lieferscheine',
+        'subtitle' => 'Alle Auslieferungen mit Lieferschein, Versand und Zollpapieren.',
+        'search' => 'Artikel oder Kunde',
+        'empty' => 'Keine Auslieferungen im Zeitraum.',
+        'filter' => [
+            'all' => 'Alle',
+            'open' => 'Ohne Versand',
+            'shipped' => 'Versendet',
+        ],
+    ],
 ];

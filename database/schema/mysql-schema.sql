@@ -266,6 +266,29 @@ CREATE TABLE `accounting_events` (
   KEY `acc_event_event_idx` (`event`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `accounting_exchange_rates`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `accounting_exchange_rates` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `currency` char(3) NOT NULL,
+  `period` date NOT NULL,
+  `rate` decimal(18,6) NOT NULL,
+  `source` varchar(120) DEFAULT NULL,
+  `created_by` bigint(20) unsigned DEFAULT NULL,
+  `updated_by` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `acc_fx_org_currency_period_uq` (`organization_id`,`currency`,`period`),
+  KEY `accounting_exchange_rates_created_by_foreign` (`created_by`),
+  KEY `accounting_exchange_rates_updated_by_foreign` (`updated_by`),
+  CONSTRAINT `accounting_exchange_rates_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `accounting_exchange_rates_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `accounting_exchange_rates_updated_by_foreign` FOREIGN KEY (`updated_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `accounting_filing_obligations`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -2770,6 +2793,7 @@ CREATE TABLE `attendances` (
   `errand_minutes` int(10) unsigned NOT NULL DEFAULT 0,
   `duration_minutes` int(10) unsigned NOT NULL DEFAULT 0,
   `source` varchar(16) NOT NULL DEFAULT 'clock',
+  `recorded_at` timestamp NULL DEFAULT NULL,
   `status` varchar(16) NOT NULL DEFAULT 'open',
   `started_lat` decimal(10,7) DEFAULT NULL,
   `started_lng` decimal(10,7) DEFAULT NULL,
@@ -5399,6 +5423,8 @@ CREATE TABLE `club_event_details` (
   `discipline` varchar(60) DEFAULT NULL,
   `registration_lead_hours` smallint(5) unsigned DEFAULT NULL,
   `cancellation_lead_hours` smallint(5) unsigned DEFAULT NULL,
+  `fee_amount` decimal(12,2) DEFAULT NULL,
+  `currency` char(3) NOT NULL DEFAULT 'EUR',
   `checkin_code` varchar(40) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
@@ -11139,6 +11165,28 @@ CREATE TABLE `idea_nodes` (
   CONSTRAINT `ideanode_updater_fk` FOREIGN KEY (`updated_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `import_column_mappings`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `import_column_mappings` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `entity` varchar(40) NOT NULL,
+  `source_header` varchar(191) NOT NULL,
+  `target_column` varchar(64) NOT NULL,
+  `created_by` bigint(20) unsigned DEFAULT NULL,
+  `updated_by` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `import_col_map_org_entity_header_uq` (`organization_id`,`entity`,`source_header`),
+  KEY `import_column_mappings_created_by_foreign` (`created_by`),
+  KEY `import_column_mappings_updated_by_foreign` (`updated_by`),
+  CONSTRAINT `import_column_mappings_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `import_column_mappings_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `import_column_mappings_updated_by_foreign` FOREIGN KEY (`updated_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `import_run_errors`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -16609,6 +16657,7 @@ CREATE TABLE `payment_run_items` (
   `payment_run_id` bigint(20) unsigned NOT NULL,
   `incoming_einvoice_id` bigint(20) unsigned DEFAULT NULL,
   `incoming_invoice_retention_id` bigint(20) unsigned DEFAULT NULL,
+  `invoice_id` bigint(20) unsigned DEFAULT NULL,
   `supplier_id` bigint(20) unsigned DEFAULT NULL,
   `customer_id` bigint(20) unsigned DEFAULT NULL,
   `sepa_mandate_id` bigint(20) unsigned DEFAULT NULL,
@@ -16631,9 +16680,11 @@ CREATE TABLE `payment_run_items` (
   KEY `payment_run_items_sepa_mandate_id_foreign` (`sepa_mandate_id`),
   KEY `payment_run_item_org_run_idx` (`organization_id`,`payment_run_id`),
   KEY `payment_items_retention_fk` (`incoming_invoice_retention_id`),
+  KEY `payment_run_items_invoice_fk` (`invoice_id`),
   CONSTRAINT `payment_items_retention_fk` FOREIGN KEY (`incoming_invoice_retention_id`) REFERENCES `incoming_invoice_retentions` (`id`) ON DELETE SET NULL,
   CONSTRAINT `payment_run_items_customer_id_foreign` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE SET NULL,
   CONSTRAINT `payment_run_items_incoming_einvoice_id_foreign` FOREIGN KEY (`incoming_einvoice_id`) REFERENCES `incoming_einvoices` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `payment_run_items_invoice_fk` FOREIGN KEY (`invoice_id`) REFERENCES `invoices` (`id`) ON DELETE SET NULL,
   CONSTRAINT `payment_run_items_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
   CONSTRAINT `payment_run_items_payment_run_id_foreign` FOREIGN KEY (`payment_run_id`) REFERENCES `payment_runs` (`id`) ON DELETE CASCADE,
   CONSTRAINT `payment_run_items_sepa_mandate_id_foreign` FOREIGN KEY (`sepa_mandate_id`) REFERENCES `sepa_mandates` (`id`) ON DELETE SET NULL,
@@ -23547,6 +23598,7 @@ CREATE TABLE `travel_logs` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `organization_id` bigint(20) unsigned DEFAULT NULL,
   `user_id` bigint(20) unsigned NOT NULL,
+  `co_driver_user_id` bigint(20) unsigned DEFAULT NULL,
   `project_id` bigint(20) unsigned DEFAULT NULL,
   `task_id` bigint(20) unsigned DEFAULT NULL,
   `customer_id` bigint(20) unsigned DEFAULT NULL,
@@ -23566,6 +23618,7 @@ CREATE TABLE `travel_logs` (
   `odometer_start_km` int(10) unsigned DEFAULT NULL,
   `odometer_end_km` int(10) unsigned DEFAULT NULL,
   `trip_kind` varchar(16) NOT NULL DEFAULT 'business',
+  `is_ferry_or_train` tinyint(1) NOT NULL DEFAULT 0,
   `vehicle` varchar(32) NOT NULL DEFAULT 'private',
   `vehicle_label` varchar(64) DEFAULT NULL,
   `purpose` varchar(255) DEFAULT NULL,
@@ -23597,7 +23650,9 @@ CREATE TABLE `travel_logs` (
   KEY `travel_logs_vehicle_id_index` (`vehicle_id`),
   KEY `travel_logs_corrects_travel_log_id_foreign` (`corrects_travel_log_id`),
   KEY `travel_logs_vehicle_chain_idx` (`vehicle_id`,`date`,`odometer_end_km`),
+  KEY `travel_logs_co_driver_fk` (`co_driver_user_id`),
   CONSTRAINT `travel_logs_attendance_id_foreign` FOREIGN KEY (`attendance_id`) REFERENCES `attendances` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `travel_logs_co_driver_fk` FOREIGN KEY (`co_driver_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `travel_logs_corrects_travel_log_id_foreign` FOREIGN KEY (`corrects_travel_log_id`) REFERENCES `travel_logs` (`id`) ON DELETE SET NULL,
   CONSTRAINT `travel_logs_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `travel_logs_customer_id_foreign` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE SET NULL,
@@ -25585,3 +25640,10 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (916,'2027_02_28_20
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (917,'2027_02_28_205000_create_club_donations',37);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (918,'2027_02_28_206000_add_checkin_code_to_club_event_details',37);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (919,'2027_02_28_207000_add_customs_fields',38);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (920,'2027_02_28_208000_add_invoice_to_payment_run_items',39);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (921,'2027_02_28_209000_create_accounting_exchange_rates',39);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (922,'2027_02_28_210000_add_multi_manning_to_travel_logs',40);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (923,'2027_02_28_211000_add_recorded_at_to_attendances',40);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (924,'2027_02_28_211100_close_finished_open_attendances',40);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (925,'2027_02_28_212000_add_fee_to_club_event_details',41);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (926,'2027_02_28_213000_create_import_column_mappings',42);

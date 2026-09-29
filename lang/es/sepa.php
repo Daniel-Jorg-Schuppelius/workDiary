@@ -23,6 +23,9 @@ return [
     'direct_debit_amount' => 'Importe',
     'direct_debit_reference' => 'Concepto',
     'direct_debit_submit' => 'Crear cobro',
+    'direct_debit_invoice' => 'Factura',
+    'direct_debit_invoice_none' => '— sin referencia de factura —',
+    'direct_debit_from_invoice' => 'Cobrar por domiciliación',
     'run_released' => 'Remesa aprobada.',
     'run_cancelled' => 'Remesa anulada.',
     'item_removed' => 'Posición eliminada.',
@@ -105,6 +108,7 @@ return [
         'mandate_unusable' => 'El mandato está revocado o lleva más de 36 meses sin uso.',
         'item_without_mandate' => 'Una posición de adeudo sin mandato no puede exportarse.',
         'unavailable' => 'La exportación SEPA no está habilitada en esta instalación. Activación mediante :contact.',
+        'invoice_not_collectable' => 'La factura no pertenece al cliente del mandato o ya no está abierta.',
     ],
 
     'mandate' => [

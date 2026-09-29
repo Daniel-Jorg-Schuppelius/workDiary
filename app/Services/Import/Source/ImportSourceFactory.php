@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Import\Source;
 
 use App\Enums\Import\ImportEntity;
+use App\Models\Integration\ImportColumnMapping;
 use App\Models\Platform\Organization;
 use App\Services\Import\Source\Ical\{AttendanceIcalMapper, ProjectTimeIcalMapper};
 use App\Support\Tz;
@@ -54,7 +55,7 @@ final class ImportSourceFactory {
             );
         }
 
-        return new CsvImportSource($absolutePath, $delimiter);
+        return new CsvImportSource($absolutePath, $delimiter, ImportColumnMapping::aliasesFor((int) $organization->id, $entity));
     }
 
     /**

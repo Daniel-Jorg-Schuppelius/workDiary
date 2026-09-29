@@ -43,3 +43,8 @@ a week, rest breaks (30 min from 4.5 h, 60 min from 6 h), 12 h time off, no
 work between 8 pm and 6 am, at most 5 working days a week. Weekend work and
 night work from age 16 appear as notes, because the act allows exceptions by
 industry.
+
+The minimum wage recording deadline (seven days) is measured from the original
+recording: for clockings the moment of clocking, even if a device transmits
+later while offline; for imports the column “erfasst am” (recorded at). Imports
+without this information are not checked against the deadline.

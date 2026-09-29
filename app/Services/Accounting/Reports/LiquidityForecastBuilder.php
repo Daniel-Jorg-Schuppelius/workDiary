@@ -16,12 +16,13 @@ use App\Enums\Finance\{FilingObligationKind, FilingObligationStatus, LiquidityPl
 use App\Models\Accounting\{AccountingFilingObligation, AccountingOpenItem, AccountingRecurringRun, AccountingRecurringTemplate, AccountingVatExtension};
 use App\Models\AssetFinance\AssetFinanceRateSchedule;
 use App\Models\Customer\Customer;
-use App\Models\Finance\{LiquidityPlanItem, LiquidityScenario, PaymentRun};
+use App\Models\Finance\{LiquidityPlanItem, LiquidityScenario, PaymentRun, PaymentRunItem};
 use App\Models\Invoicing\{IncomingEInvoice, Invoice, InvoiceSchedule};
 use App\Models\Platform\Organization;
 use App\Modules\ModuleRegistry;
 use App\Services\Accounting\Contracts\LiquidityForecastSource;
 use App\Services\Accounting\Filing\{VatFilingPeriodService, VatReturnService};
+use App\Support\MorphMap;
 use App\Support\Query\DateRange;
 use Carbon\{CarbonImmutable, CarbonInterface};
 use CommonToolkit\Helper\Data\NumberHelper;
@@ -263,6 +264,17 @@ class LiquidityForecastBuilder extends AbstractAccountingReportBuilder {
      * @return list<ForecastItem>
      */
     private function receivables(Organization $organization, array $delays): array {
+        // Rechnungen in einer freigegebenen Lastschrift zählen dort (MVP-1011) —
+        // die Forderung behält nur den nicht eingezogenen Rest.
+        /** @var array<int, string> $collected */
+        $collected = PaymentRunItem::query()
+            ->whereIn('payment_run_id', $this->committedRunIds($organization))
+            ->whereNotNull('invoice_id')
+            ->get(['invoice_id', 'amount'])
+            ->groupBy('invoice_id')
+            ->map(static fn ($rows): string => NumberHelper::sumPrecise($rows->pluck('amount')->map(static fn ($amount): string => NumberHelper::normalizeDecimalString((string) $amount))->all(), 2))
+            ->all();
+
         $items = [];
         $openItems = AccountingOpenItem::query()
             ->where('organization_id', $organization->id)
@@ -276,6 +288,12 @@ class LiquidityForecastBuilder extends AbstractAccountingReportBuilder {
             $amount = $openItem->open_amount;
             if (! $amount instanceof Money || ! $amount->isPositive()) {
                 continue;
+            }
+            if (MorphMap::is($openItem->source_type, Invoice::class) && isset($collected[(int) $openItem->source_id])) {
+                $amount = $amount->minus(Money::of($collected[(int) $openItem->source_id], $amount->getCurrency()));
+                if (! $amount->isPositive()) {
+                    continue;
+                }
             }
             $delay = $delays[$openItem->counterparty_type . ':' . $openItem->counterparty_id] ?? 0;
             $base = $this->dueOf($openItem);

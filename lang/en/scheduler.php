@@ -199,7 +199,7 @@ return [
         'recurrence' => ['generate' => 'Generate recurring orders'],
         'remote' => ['sync_sessions' => 'Import remote support sessions'],
         'scheduler' => ['watchdog' => 'Scheduler watchdog'],
-        'security' => ['advisories_pull' => 'Pull security advisories', 'integrity' => 'Source code integrity check', 'evaluate' => 'Evaluate threat detection'],
+        'security' => ['advisories_pull' => 'Pull security advisories', 'integrity' => 'Source code integrity check', 'evaluate' => 'Evaluate threat detection', 'geoip_update' => 'Update IP geolocation database'],
         'tickets' => ['scan_sla_breaches' => 'Scan SLA breaches'],
         'retention' => ['prune_models' => 'Apply retention periods (delivery logs, outbox, plugin errors)'],
         'whistleblowing' => ['deadlines' => 'Check whistleblowing deadlines', 'retention_review' => 'Whistleblowing retention review', 'scan' => 'Scan whistleblowing attachments (quarantine)'],

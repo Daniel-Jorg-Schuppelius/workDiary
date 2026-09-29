@@ -286,6 +286,7 @@ return [
             'mode' => 'Aktion',
             'spontaneous' => 'Spontane Teilnahme — ohne Zielgruppen- und Fristprüfung',
             'cancel_reason' => 'Absagegrund',
+            'fee_amount' => 'Lehrgangsgebühr',
         ],
         'filter' => [
             'period_upcoming' => 'Anstehend',
@@ -343,6 +344,7 @@ return [
             'spontaneous' => 'Nur für Leitung und Verwaltung; die Kapazität gilt trotzdem.',
             'cancel' => 'Anmeldungen bleiben als Historie erhalten, kein Platz wird neu vergeben.',
             'target_list' => 'Mitglieder der Zielgruppen am Termintag — jedes Mitglied einmal, auch bei mehreren Gruppen.',
+            'fee_amount' => 'Für Lehrgänge: je Anmeldung im Beitragslauf des Terminmonats berechnet.',
         ],
         'flash' => [
             'created' => 'Termin angelegt.',
@@ -708,6 +710,7 @@ return [
             'eligibility' => 'Voraussetzungen',
             'result' => 'Ergebnis',
             'exception_reason' => 'Begründung der Ausnahme',
+            'fee_amount' => 'Prüfungsgebühr',
         ],
         'action' => [
             'create_offer' => 'Prüfung anbieten',
@@ -752,6 +755,7 @@ return [
             'add_candidate' => 'Die Voraussetzungen werden sofort zum Prüfungsbeginn bewertet.',
             'exception' => 'Nur wenn die Voraussetzung eine Ausnahme erlaubt; Grund und Akteur werden festgehalten.',
             'result' => 'Nur „bestanden“ vergibt den Zielgrad — genau einmal. Fehlversuch und Nichtantritt ändern weder Grad noch Trainingszeit.',
+            'fee_amount' => 'Je zugelassenem Kandidaten im Beitragslauf des Prüfungsmonats berechnet.',
         ],
         'confirm' => [
             'reject' => 'Kandidat ablehnen? Ein belegter Platz wird freigegeben.',
@@ -1548,6 +1552,8 @@ return [
             'total' => 'Summe',
             'no_assignment' => 'Keine Beitragszuordnung.',
             'review_age' => 'Alter :age passt nicht mehr zu den Altersgrenzen des Tarifs',
+            'exam_fee' => 'Prüfungsgebühr :title',
+            'course_fee' => 'Lehrgangsgebühr :title',
         ],
         'hint' => [
             'payment' => 'Ohne Forderung wird der Fälligkeit nach zugeordnet (Sammelzahlung); ein Rest bleibt als Guthaben. Dasselbe Geld wird nie zweimal angerechnet.',
@@ -1686,6 +1692,7 @@ return [
             'reason_required' => 'Grund angeben.',
             'amount_required' => 'Betrag angeben.',
             'amount_invalid' => 'Betrag ungültig.',
+            'event_fee_without_account' => ':name hat zum Termin „:event“ keine Beitragszuordnung — Gebühr nicht berechnet.',
         ],
         'issue' => [
             'incomplete_assignment' => 'Zuordnung unvollständig (Mitglied, Konto oder Tarif fehlt).',
@@ -1742,6 +1749,14 @@ Ihre Beitragsverwaltung',
             'cancelled' => 'Storniert am :date — dieser Beleg ist ungültig.',
         ],
         'overdue_count' => '{1}eine überfällig|[2,*]:count überfällig',
+        'siblings' => [
+            'legend' => 'Geschwisterstaffel',
+            'hint' => 'Nachlass auf Einzelbeiträge von Kindern desselben Beitragskontos: das älteste zahlt voll. Leer lassen, wenn keine Staffel gilt; ein Nachlass an der Beitragszuordnung geht vor.',
+            'second_percent' => 'Zweites Kind (%)',
+            'further_percent' => 'Ab drittem Kind (%)',
+            'max_age' => 'Unter Alter (Jahre)',
+            'label' => ':rank. Kind, Geschwisternachlass :percent %',
+        ],
     ],
     // Reiter der Termin-Sichten (MVP-969).
     'tab' => [

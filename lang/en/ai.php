@@ -34,7 +34,7 @@ return [
         'structure_title' => 'AI structure suggestion',
         'structure_hint' => 'Each field is applied only on click — through the regular editing path.',
         'mapping_title' => 'AI mapping suggestion',
-        'mapping_hint' => 'A hint for renaming the header — import run and file stay untouched.',
+        'mapping_hint' => 'The suggestion pre-fills the column mapping below — only what you confirm is saved.',
         'field' => [
             'subject' => 'Subject',
             'result' => 'Result',

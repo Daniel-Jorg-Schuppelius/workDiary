@@ -51,6 +51,10 @@ final class DrivingTimeComplianceChecker {
     /** Vorlauf in Tagen, den der Aufrufer vor `from` laden muss (Doppelwoche + Wochenruhezeit). */
     public const LOOKBACK_DAYS = 21;
 
+    public const ROLE_DRIVER = 'driver';
+
+    public const ROLE_CO_DRIVER = 'co_driver';
+
     /** @return list<string> */
     public static function kinds(): array {
         return [
@@ -64,16 +68,23 @@ final class DrivingTimeComplianceChecker {
     }
 
     /**
-     * @param  list<array{started_at: CarbonImmutable, ended_at: CarbonImmutable}>  $trips
+     * Lenkzeit zählt nur als Fahrer; Fahrten als zweiter Fahrer und Fähre/Zug
+     * unterbrechen die Ruhezeit (Beifahrer) bzw. gelten als Ruhe (Art. 9,
+     * MVP-1014). Mehrfahrerbetrieb verlangt 9 h Ruhe binnen 30 h (Art. 8 Abs. 5).
+     *
+     * @param  list<array{started_at: CarbonImmutable, ended_at: CarbonImmutable, role?: string, ferry?: bool, multi?: bool}>  $trips
      * @return list<AttendanceComplianceFinding>
      */
     public function checkUser(int $userId, array $trips): array {
         $trips = self::normalize($trips);
-        if ($trips === []) {
+        $occupied = array_values(array_filter($trips, static fn (array $t): bool => ! ($t['ferry'] ?? false)));
+        $driving = array_values(array_filter($occupied, static fn (array $t): bool => ($t['role'] ?? self::ROLE_DRIVER) === self::ROLE_DRIVER));
+        if ($driving === []) {
             return [];
         }
 
-        $days = self::aggregateDays($trips);
+        $days = self::aggregateDays($driving);
+        $restDays = self::aggregateDays($occupied);
         $findings = [];
 
         foreach ($this->checkDailyDriving($userId, $days) as $f) {
@@ -82,13 +93,13 @@ final class DrivingTimeComplianceChecker {
         foreach ($this->checkWeeklyAndFortnightDriving($userId, $days) as $f) {
             $findings[] = $f;
         }
-        foreach ($this->checkBreaks($userId, $trips) as $f) {
+        foreach ($this->checkBreaks($userId, $driving) as $f) {
             $findings[] = $f;
         }
-        foreach ($this->checkDailyRest($userId, $days) as $f) {
+        foreach ($this->checkDailyRest($userId, $restDays) as $f) {
             $findings[] = $f;
         }
-        foreach ($this->checkWeeklyRest($userId, $trips, $days) as $f) {
+        foreach ($this->checkWeeklyRest($userId, $occupied, $restDays) as $f) {
             $findings[] = $f;
         }
 
@@ -190,7 +201,10 @@ final class DrivingTimeComplianceChecker {
      * (Näherung für „zwischen zwei wöchentlichen Ruhezeiten", Art. 8 Abs. 4)
      * ebenfalls ein Verstoß.
      *
-     * @param  array<string, array{minutes:int, first_start: CarbonImmutable, last_end: CarbonImmutable}>  $days
+     * Mehrfahrerbetrieb an einem der beiden Tage: 9 h genügen, der Zeitraum
+     * reicht 30 h, Reduzierungen werden nicht gezählt (Art. 8 Abs. 5).
+     *
+     * @param  array<string, array{minutes:int, first_start: CarbonImmutable, last_end: CarbonImmutable, multi: bool}>  $days
      * @return list<AttendanceComplianceFinding>
      */
     private function checkDailyRest(int $userId, array $days): array {
@@ -207,6 +221,20 @@ final class DrivingTimeComplianceChecker {
                 continue;
             }
             $gap = (int) $prevEnd->diffInMinutes($currStart, false);
+            if ($days[$dates[$i - 1]]['multi'] || $days[$dates[$i]]['multi']) {
+                if ($gap < DrivingTimeRules::MULTI_MANNING_WINDOW_MINUTES && $gap < DrivingTimeRules::MULTI_MANNING_DAILY_REST_MINUTES) {
+                    $findings[] = new AttendanceComplianceFinding(
+                        userId: $userId,
+                        date: $dates[$i],
+                        kind: self::KIND_DAILY_REST,
+                        severity: AttendanceComplianceFinding::SEVERITY_ERROR,
+                        value: $gap,
+                        threshold: DrivingTimeRules::MULTI_MANNING_DAILY_REST_MINUTES,
+                    );
+                }
+
+                continue;
+            }
             if ($gap >= DrivingTimeRules::DAILY_WINDOW_MINUTES) {
                 continue;
             }
@@ -353,8 +381,8 @@ final class DrivingTimeComplianceChecker {
      * Lenkminuten, erste Abfahrt und letzte Ankunft je Kalendertag (Starttag
      * der Fahrt; Fahrten über Mitternacht zählen zum Starttag).
      *
-     * @param  list<array{started_at: CarbonImmutable, ended_at: CarbonImmutable}>  $trips
-     * @return array<string, array{minutes:int, first_start: CarbonImmutable, last_end: CarbonImmutable}>
+     * @param  list<array{started_at: CarbonImmutable, ended_at: CarbonImmutable, multi?: bool}>  $trips
+     * @return array<string, array{minutes:int, first_start: CarbonImmutable, last_end: CarbonImmutable, multi: bool}>
      */
     public static function aggregateDays(array $trips): array {
         $days = [];
@@ -362,8 +390,9 @@ final class DrivingTimeComplianceChecker {
             $date = $t['started_at']->toDateString();
             $minutes = max(0, (int) $t['started_at']->diffInMinutes($t['ended_at'], false));
             if (! isset($days[$date])) {
-                $days[$date] = ['minutes' => 0, 'first_start' => $t['started_at'], 'last_end' => $t['ended_at']];
+                $days[$date] = ['minutes' => 0, 'first_start' => $t['started_at'], 'last_end' => $t['ended_at'], 'multi' => false];
             }
+            $days[$date]['multi'] = $days[$date]['multi'] || ($t['multi'] ?? false);
             $days[$date]['minutes'] += $minutes;
             if ($t['started_at']->lessThan($days[$date]['first_start'])) {
                 $days[$date]['first_start'] = $t['started_at'];

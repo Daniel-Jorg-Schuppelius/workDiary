@@ -80,6 +80,7 @@ class Attendance extends Model {
         'errand_minutes',
         'duration_minutes',
         'source',
+        'recorded_at',
         'status',
         'started_lat',
         'started_lng',
@@ -113,6 +114,7 @@ class Attendance extends Model {
         'ended_lat' => 'float',
         'ended_lng' => 'float',
         'source' => AttendanceSource::class,
+        'recorded_at' => 'datetime',
         'status' => AttendanceStatus::class,
     ];
 

@@ -52,6 +52,7 @@ class SaveClubEventRequest extends BaseFormRequest {
             'max_participants' => ['nullable', 'integer', 'min:1', 'max:9999'],
             'registration_lead_hours' => ['nullable', 'integer', 'min:0', 'max:8760'],
             'cancellation_lead_hours' => ['nullable', 'integer', 'min:0', 'max:8760'],
+            'fee_amount' => ['nullable', 'numeric', 'decimal:0,2', 'min:0', 'max:9999999999.99'],
             'recurrence' => ['nullable', 'string', 'in:none,weekly,biweekly,monthly'],
             'series_until' => ['nullable', 'date', 'after:started_at'],
             'scope' => ['nullable', 'string', 'in:this,future'],

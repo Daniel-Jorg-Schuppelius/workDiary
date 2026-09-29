@@ -37,6 +37,7 @@ return [
         'awaits_review' => 'pendiente de revisión',
         'reviewed_on' => 'revisada el :date',
         'machine_short' => 'automática',
+        'quality' => 'Calidad de vídeo',
     ],
     'errors' => [
         'ffmpeg_missing' => 'En este servidor no hay procesamiento de vídeo configurado (falta ffmpeg).',

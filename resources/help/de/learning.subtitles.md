@@ -14,6 +14,11 @@ wird in ein web-taugliches Format umgewandelt und in mehreren Auflösungen
 bereitgestellt. Solange das läuft, zeigt die Lerneinheit den
 Verarbeitungsstand; die Wiedergabe ist erst danach möglich.
 
+Abgespielt wird zunächst die **kleinste Auflösung** — sie läuft auch über
+schwache Mobilfunkverbindungen. Unter dem Video können Sie eine höhere Stufe
+wählen; der Wechsel behält die Position, und Ihre Wahl gilt ab dann für jedes
+weitere Video.
+
 **Untertitel** können Sie auf zwei Wegen hinterlegen:
 
 1. **Eigene Datei hochladen** (WebVTT). Sie gilt sofort und unverändert.

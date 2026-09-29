@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Club;
 
+use App\Casts\MoneyCast;
 use App\Enums\Club\{ClubEventKind, ClubEventVisibility};
 use App\Models\Calendar\Event;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
@@ -53,6 +54,9 @@ class ClubEventDetails extends Model {
         'cancellation_lead_hours',
         // QR-Selbst-Check-in (MVP-1004).
         'checkin_code',
+        // Lehrgangs-/Prüfungsgebühr (MVP-1017).
+        'fee_amount',
+        'currency',
     ];
 
     protected $casts = [
@@ -60,6 +64,7 @@ class ClubEventDetails extends Model {
         'visibility' => ClubEventVisibility::class,
         'registration_lead_hours' => 'integer',
         'cancellation_lead_hours' => 'integer',
+        'fee_amount' => MoneyCast::class . ':currency',
     ];
 
     /** @return BelongsTo<Event, $this> */

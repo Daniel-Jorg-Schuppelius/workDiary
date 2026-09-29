@@ -10,11 +10,14 @@
 
 namespace App\Http\Controllers\Invoicing;
 
+use App\Enums\Finance\MandateStatus;
 use App\Enums\Invoicing\InvoiceDeliveryFormat;
+use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Invoicing\SaveInvoiceItemRequest;
 use App\Mail\InvoiceMail;
 use App\Models\Customer\Customer;
+use App\Models\Finance\SepaMandate;
 use App\Models\Integration\ExternalReference;
 use App\Models\Invoicing\{Invoice, InvoiceItem, InvoiceMailTemplate};
 use App\Models\Project\Project;
@@ -242,7 +245,13 @@ class InvoiceController extends Controller {
         }
         $settledByInvoice = $invoice->settledByInvoice();
 
-        return view('invoices.show', compact('invoice', 'openDownPaymentCount', 'settledByInvoice'));
+        // Lastschrift mit Belegbezug (MVP-1011): offene Rechnung, Kunde mit nutzbarem Mandat.
+        $directDebitOffer = in_array($invoice->status, [Invoice::STATUS_ISSUED, Invoice::STATUS_PARTIALLY_PAID], true)
+            && Gate::allows(Permission::FinancePaymentRun->value)
+            && SepaMandate::query()->where('customer_id', $invoice->customer_id)->where('status', MandateStatus::Active->value)->get()
+                ->contains(static fn (SepaMandate $mandate): bool => $mandate->isUsable());
+
+        return view('invoices.show', compact('invoice', 'openDownPaymentCount', 'settledByInvoice', 'directDebitOffer'));
     }
 
     /**

@@ -103,11 +103,17 @@
                         <span>{{ $media['failed'] ? ($media['error'] ?: __('media.errors.no_rendition')) : __('media.help.processing') }}</span>
                     </div>
                 @elseif ($media['video'] ?? $url)
+                    @php
+                        $videoId = 'lrn-video-' . \Illuminate\Support\Str::lower(\Illuminate\Support\Str::random(8));
+                        $variants = $media['videos'] ?? [];
+                    @endphp
                     {{-- Autoplay nur stumm (Browser-Regel und Rücksicht); die
-                         Position merkt sich der Browser je Block lokal (MVP-788). --}}
-                    <video class="w-full rounded-box border border-base-300" controls preload="metadata"
+                         Position merkt sich der Browser je Block lokal (MVP-788),
+                         geschlüsselt an der kleinsten Fassung, damit ein
+                         Qualitätswechsel sie nicht verliert. --}}
+                    <video id="{{ $videoId }}" class="w-full rounded-box border border-base-300" controls preload="metadata"
                            @if (! empty($block['autoplay'])) autoplay muted playsinline @endif
-                           @if (! empty($block['remember_position'])) data-remember-position="{{ 'lrn-video-' . md5((string) ($media['video'] ?? $url)) }}" @endif
+                           @if (! empty($block['remember_position'])) data-remember-position="{{ 'lrn-video-' . md5((string) ($variants[0]['url'] ?? $media['video'] ?? $url)) }}" @endif
                            @if ($media && $media['poster']) poster="{{ $media['poster'] }}" @endif
                            src="{{ $media['video'] ?? $url }}">
                         @foreach (($media['subtitles'] ?? []) as $track)
@@ -118,6 +124,18 @@
                                    label="{{ strtoupper($track['locale']) }}{{ ($track['machine'] ?? false) ? ' · ' . __('media.label.machine_short') : '' }}">
                         @endforeach
                     </video>
+                    @if (count($variants) > 1)
+                        {{-- Qualitätswahl (MVP-1022): wechselt ohne Neuladen und gilt als Nutzerpräferenz. --}}
+                        <div class="mt-1 flex justify-end">
+                            <select class="select select-bordered select-xs" data-video-quality="{{ $videoId }}"
+                                    data-save-url="{{ route('learning.my.video-quality') }}"
+                                    aria-label="{{ __('media.label.quality') }}">
+                                @foreach ($variants as $variant)
+                                    <option value="{{ $variant['variant'] }}" data-src="{{ $variant['url'] }}" @selected($variant['variant'] === ($media['variant'] ?? null))>{{ $variant['variant'] }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    @endif
                 @elseif (! empty($block['url']))
                     {{-- Externe Quelle: der Host steht in der frame-src-Allowlist
                          der Organisation, sonst blockt die CSP still. --}}

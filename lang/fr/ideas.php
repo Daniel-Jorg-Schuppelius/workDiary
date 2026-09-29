@@ -209,4 +209,19 @@ return [
             'saved' => 'Commentaire sur « :node » enregistré.',
         ],
     ],
+    'attachments' => [
+        'title' => 'Pièces jointes',
+        'empty' => 'Aucune pièce jointe sur ce nœud pour l\'instant.',
+        'hint' => 'Au plus :mb Mo par fichier.',
+        'action' => [
+            'open' => 'Pièces jointes',
+            'add' => 'Téléverser',
+        ],
+        'field' => [
+            'file' => 'Fichier',
+        ],
+        'flash' => [
+            'saved' => 'Pièce jointe enregistrée sur « :node ».',
+        ],
+    ],
 ];

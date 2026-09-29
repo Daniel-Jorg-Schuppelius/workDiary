@@ -29,6 +29,8 @@ declare global {
         // Layout). Bewusst `any`, da sie dynamisch aufgerufen, per `new`
         // instanziiert, gelesen und geschrieben werden.
         Alpine?: any;
+        // Web-NFC (Chrome für Android), ohne Typen in lib.dom.
+        NDEFReader?: any;
         Echo?: any;
         Pusher?: any;
         SignaturePad?: any;

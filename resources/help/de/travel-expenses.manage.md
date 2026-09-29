@@ -90,3 +90,10 @@ Bruttolistenpreis und die Entfernung Wohnung–Arbeit; sonstige Jahreskosten
 (Leasing, Versicherung, Steuer) tragen Sie dort ein, Energie kommt aus den
 Tank- und Ladebelegen. Optional sperrt eine Einstellung neue Fahrten, solange
 die Pflichtprüfung eines Fahrzeugs überfällig ist.
+
+**Lenk- und Ruhezeiten.** Wendet Ihre Organisation die Lenkzeitregeln an,
+tragen Sie an der Fahrt einen zweiten Fahrer ein (Mehrfahrerbetrieb) oder
+markieren Überfahrten, bei denen das Fahrzeug auf Fähre oder Zug mitfährt.
+Der zweite Fahrer bekommt dadurch keine Lenkzeit, seine Zeit im Fahrzeug gilt
+aber nicht als Ruhezeit; im Mehrfahrerbetrieb genügen 9 Stunden Ruhe binnen
+30 Stunden. Eine Überfahrt mit Fähre oder Zug unterbricht die Ruhezeit nicht.

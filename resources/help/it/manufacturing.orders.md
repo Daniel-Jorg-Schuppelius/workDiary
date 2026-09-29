@@ -41,3 +41,8 @@ sull’articolo e il numero EORI del mittente nelle impostazioni
 dell’organizzazione. Se manca un dato, la finestra lo indica e non crea alcun
 documento. I documenti doganali non sostituiscono una dichiarazione di
 esportazione elettronica.
+
+La pagina **Documenti di trasporto** elenca tutte le consegne del periodo scelto
+— con PDF del documento, invio per e-mail, documenti doganali e stato della
+spedizione, senza passare da ogni ordine di produzione. Il filtro «Non spedite»
+mostra ciò che attende ancora un'etichetta.

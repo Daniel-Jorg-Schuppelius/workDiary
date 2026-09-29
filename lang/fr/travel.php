@@ -25,4 +25,11 @@ return [
     ],
     'tour_leg_purpose' => 'Trajet vers :title',
     'tour_return_purpose' => 'Trajet de retour',
+    'driving_time' => [
+        'legend' => 'Temps de conduite et de repos',
+        'hint' => 'Pour les véhicules soumis aux règles de temps de conduite : second conducteur en équipage multiple et traversées où le véhicule voyage sur un ferry ou un train.',
+        'co_driver' => 'Second conducteur (équipage multiple)',
+        'co_driver_none' => '— seul à bord —',
+        'ferry_or_train' => 'Ferry/train : le véhicule est transporté, pas de temps de conduite',
+    ],
 ];

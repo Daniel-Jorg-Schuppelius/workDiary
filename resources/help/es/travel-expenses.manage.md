@@ -83,3 +83,10 @@ necesita el precio bruto de catálogo y la distancia domicilio–trabajo; allí 
 introduce otros costes anuales (leasing, seguro, impuesto) y la energía procede de
 los justificantes de repostaje y carga. Opcionalmente, un ajuste bloquea nuevos
 trayectos mientras la inspección obligatoria de un vehículo esté vencida.
+
+**Tiempos de conducción y descanso.** Si su organización aplica las normas de
+tiempos de conducción, indique un segundo conductor en el viaje (conducción en
+equipo) o marque las travesías en las que el vehículo viaja en ferry o tren.
+El segundo conductor no acumula tiempo de conducción, pero su tiempo en el
+vehículo no cuenta como descanso; en conducción en equipo bastan 9 horas de
+descanso en 30 horas. Una travesía en ferry o tren no interrumpe el descanso.

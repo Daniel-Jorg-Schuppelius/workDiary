@@ -46,3 +46,8 @@ Ursprungsland und Nettogewicht pflegen Sie am Artikel, die EORI-Nummer des
 Absenders in den Einstellungen der Organisation. Fehlt eine Angabe, nennt der
 Dialog sie und erstellt kein Dokument. Die Zollpapiere ersetzen keine
 elektronische Ausfuhranmeldung.
+
+Die Seite **Lieferscheine** listet alle Auslieferungen im gewählten Zeitraum —
+mit Lieferschein-PDF, Versand per E-Mail, Zollpapieren und Versandstand, ohne
+Umweg über den einzelnen Fertigungsauftrag. Filter „Ohne Versand“ zeigt, was
+noch auf ein Label wartet.

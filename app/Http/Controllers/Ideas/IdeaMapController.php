@@ -115,7 +115,7 @@ class IdeaMapController extends Controller {
     public function show(IdeaMap $map): View {
         Gate::authorize('view', $map);
 
-        $map->load(['owner:id,name', 'nodes' => fn ($q) => $q->withCount('comments')->orderBy('sort_order')]);
+        $map->load(['owner:id,name', 'nodes' => fn ($q) => $q->withCount(['comments', 'attachments'])->orderBy('sort_order')]);
         $canShare = Gate::allows('share', $map);
 
         return view('ideas.show', [

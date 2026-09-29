@@ -518,7 +518,7 @@ function bindForms() {
                 .then(() => {
                     form.reset();
                     // Fortlaufende Erfassung (Inventur-Scan): gleich weiter scannen.
-                    form.querySelector("[autofocus]")?.focus();
+                    /** @type {HTMLElement | null} */ (form.querySelector("[autofocus]"))?.focus();
                     updateBadge();
                 })
                 .catch(() => {

@@ -197,7 +197,7 @@ return [
             'handed_over_none' => 'No exported booking batch overlaps the period.',
             'sovereignty_conflict' => 'From :date :holder already leads — the period would be claimed twice.',
             'sovereignty_ok' => 'No competing authority section.',
-            'foreign_currency' => ':count documents from the effective date are not in :currency; they stay visible in the posting inbox.',
+            'foreign_currency' => ':count documents from the effective date are not in :currency; they are converted at the stored monthly rate, without a rate they stay in the posting inbox.',
             'base_currency_ok' => 'All documents from the effective date are in :currency.',
             'billing_external' => 'Invoices are issued by :program — documents will come from there.',
             'billing_local' => 'workDiary issues the outgoing invoices itself.',
@@ -304,10 +304,11 @@ return [
             'no_amount' => 'The document has no amount.',
             'no_lines' => 'The proposal has no entry lines.',
             'sovereignty' => 'For this period the organization does not keep a local ledger.',
-            'foreign_currency' => 'The document is in :currency, accounting is kept in :base — there is no verifiable conversion yet.',
+            'foreign_currency' => 'The transaction is in :currency, accounting is kept in :base — payments, cash and assets in foreign currency are not posted.',
             'unsupported_target' => 'There is no posting path for this payment target yet.',
             'year_closed' => 'Fiscal year :year is closed.',
             'period_closed' => 'The period covering :date is closed.',
+            'no_exchange_rate' => 'The monthly rate :month for :currency (conversion into :base) is missing — add it under exchange rates.',
         ],
         'memo' => [
             'sales_invoice' => 'Invoice :number · :customer',
@@ -1336,4 +1337,34 @@ return [
         ],
     ],
 
+    'exchange_rates' => [
+        'title' => 'Exchange rates',
+        'subtitle' => 'Monthly rates for documents in foreign currency (Section 16(6) UStG). Sales and purchase invoices and expenses are converted at the rate of their document month.',
+        'empty' => 'No rates yet.',
+        'action' => [
+            'add' => 'Add rate',
+            'edit' => 'Edit rate',
+            'import' => 'Import rates',
+        ],
+        'field' => [
+            'currency' => 'Currency',
+            'period' => 'Month',
+            'rate' => 'Rate per 1 unit of base currency',
+            'source' => 'Source',
+            'import' => 'Lines',
+        ],
+        'hint' => [
+            'rate' => 'As published by the German Ministry of Finance: units of foreign currency for one unit of base currency (e.g. 1 EUR = 1.0823 USD).',
+            'import' => 'One line per rate: currency;month;rate, e.g. USD;2026-03;1.0823 or USD;03/2026;1,0823. Existing months are replaced.',
+        ],
+        'error' => [
+            'rate' => 'The rate must be greater than zero.',
+            'line' => 'Line :line cannot be read (expected: currency;month;rate).',
+            'empty' => 'No rates found.',
+        ],
+        'flash' => [
+            'saved' => 'Rate saved.',
+            'imported' => ':count rate imported.|:count rates imported.',
+        ],
+    ],
 ];

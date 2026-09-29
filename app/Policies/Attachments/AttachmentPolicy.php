@@ -101,6 +101,8 @@ class AttachmentPolicy {
             $parent instanceof \App\Models\Rental\RentalHandoverReport => $parent->asset,
             $parent instanceof \App\Models\Rental\RentalReturnReport => $parent->asset,
             $parent instanceof \App\Models\Asset\AssetDefect => $parent->asset,
+            // Knoten der Ideenkarte (MVP-1018): Rechte der Karte.
+            $parent instanceof \App\Models\Ideas\IdeaNode => $parent->map,
             default => null,
         };
 

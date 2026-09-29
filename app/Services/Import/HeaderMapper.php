@@ -25,10 +25,11 @@ final class HeaderMapper {
      * Roh-Kopfzelle → kanonischer Code (null = unbekannte Spalte, wird ignoriert).
      *
      * @param  list<string>  $rawHeader
+     * @param  array<string, string>  $saved  gespeicherte Zuordnungen der Organisation (MVP-1020)
      * @return array<int, string|null>
      */
-    public static function map(EntitySpec $spec, array $rawHeader): array {
-        $aliases = self::aliasMap($spec);
+    public static function map(EntitySpec $spec, array $rawHeader, array $saved = []): array {
+        $aliases = self::aliasMap($spec, $saved);
         $out = [];
         foreach ($rawHeader as $i => $cell) {
             $out[$i] = $aliases[self::normKey($cell)] ?? null;
@@ -41,12 +42,13 @@ final class HeaderMapper {
      * Doppelte bzw. fehlende Pflichtspalten der Kopfzeile.
      *
      * @param  list<string>  $rawHeader
+     * @param  array<string, string>  $saved
      * @return list<ValidationIssue>
      */
-    public static function issues(EntitySpec $spec, array $rawHeader): array {
+    public static function issues(EntitySpec $spec, array $rawHeader, array $saved = []): array {
         $seen = [];
         $issues = [];
-        foreach (self::map($spec, $rawHeader) as $canonical) {
+        foreach (self::map($spec, $rawHeader, $saved) as $canonical) {
             if ($canonical === null) {
                 continue;
             }
@@ -97,15 +99,23 @@ final class HeaderMapper {
     /**
      * {alias|kanonischer Code (normalisiert) => kanonischer Code}.
      *
+     * @param  array<string, string>  $saved
      * @return array<string, string>
      */
-    private static function aliasMap(EntitySpec $spec): array {
+    private static function aliasMap(EntitySpec $spec, array $saved): array {
         $aliases = [];
         foreach ($spec->headerAliases() as $alias => $canonical) {
             $aliases[self::normKey($alias)] = $canonical;
         }
         foreach ($spec->columns() as $col) {
             $aliases[self::normKey($col)] = $col;
+        }
+        // Gespeicherte Zuordnungen ergänzen nur: die Spec geht vor, und eine
+        // Spalte, die es nicht mehr gibt, fällt still heraus.
+        foreach ($saved as $header => $column) {
+            if (in_array($column, $spec->columns(), true)) {
+                $aliases += [self::normKey($header) => $column];
+            }
         }
 
         return $aliases;

@@ -41,6 +41,17 @@ lasciare la qualità dei dati al caso.
 ![Procedura di import con scelta dell’entità, modello e analisi preliminare](media/administration/import-assistent.png)
 *La procedura di import: scegliere l’entità, scaricare il modello, caricare il file — l’analisi non scrive nulla.*
 
+## Assegnare nomi di colonna propri
+
+Se l’importazione non riconosce l’intestazione di una colonna, l’esecuzione
+mostra la scheda **Assegnazione delle colonne**. Scelga la colonna di
+destinazione per ogni intestazione e salvi: il file viene ricontrollato
+subito. Da quel momento l’assegnazione vale per ogni altro file dello stesso
+tipo di importazione, anche per l’importazione clienti dall’elenco clienti.
+Una proposta dell’IA precompila soltanto la scelta. Le assegnazioni salvate
+si trovano nel menu dell’elenco importazioni alla voce **Assegnazioni di
+colonne salvate**, dove si possono eliminare singolarmente.
+
 ## Esempio pratico
 
 Durante il passaggio un'azienda importa prima un file di prova con
@@ -78,3 +89,7 @@ Per timbrature e tempi di progetto può scegliere una fonte di calendario
 collegata invece di un file (CalDAV, Google Calendar, Microsoft 365). Gli
 eventi del periodo scelto vengono recuperati e verificati come un file
 iCal, con anteprima, filtro per categorie e risoluzione delle serie.
+
+L'importazione delle presenze accetta la colonna facoltativa **erfasst am**
+(data e ora della registrazione originale). Serve al termine di registrazione
+MiLoG; senza di essa il termine non viene verificato per quelle righe.

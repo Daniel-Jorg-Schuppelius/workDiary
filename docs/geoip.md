@@ -24,23 +24,25 @@ Die Datei gehört **nicht** ins Repository (Lizenz + Aktualität).
 
 ## Einrichtung
 
-```bash
-mkdir -p storage/app/geoip
-curl -fsSL -o storage/app/geoip/dbip-city-lite.mmdb.gz \
-  "https://download.db-ip.com/free/dbip-city-lite-$(date +%Y-%m).mmdb.gz"
-gunzip -f storage/app/geoip/dbip-city-lite.mmdb.gz
-```
-
-Dann in der `.env` (Pfad absolut):
+In der `.env` den Zielpfad setzen (absolut) und die monatliche Aktualisierung
+einschalten:
 
 ```ini
 GEOIP_DATABASE=/pfad/zur/app/storage/app/geoip/dbip-city-lite.mmdb
 GEOIP_LOCALE=de
+GEOIP_AUTO_UPDATE=true
 ```
 
-Prüfen (`config:clear` nicht vergessen, falls Config gecacht). Die Auflösung
-liegt im common-toolkit (`IpLocationHelper`), nicht in einer App-Klasse —
-nachgeführt am 2026-09-16 (`MVP-796`, Befund `P12-40`):
+Dann die Datenbank einmal holen (`config:clear` nicht vergessen, falls Config
+gecacht) — der Befehl legt das Verzeichnis an, lädt die Datei des laufenden
+Monats (sonst des Vormonats), prüft sie und legt sie ab:
+
+```bash
+php artisan security:geoip-update --force
+```
+
+Prüfen — die Auflösung liegt im common-toolkit (`IpLocationHelper`), nicht in
+einer App-Klasse (nachgeführt am 2026-09-16, `MVP-796`, Befund `P12-40`):
 
 ```bash
 php artisan tinker --execute='var_export(\CommonToolkit\Helper\Geo\IpLocationHelper::lookup("8.8.8.8"));'
@@ -50,15 +52,32 @@ php artisan tinker --execute='var_export(\CommonToolkit\Helper\Geo\IpLocationHel
 ## Monatliche Aktualisierung
 
 DB-IP veröffentlicht monatlich eine neue Lite-Ausgabe (Dateiname trägt den
-Monat). Cron-Beispiel — **innerhalb der Server-Betriebszeit** planen (auf
-Servern, die nicht 24/7 laufen, holt Cron nichts nach):
+Monat). Seit `MVP-1021` übernimmt das der Scheduler-Job
+`security.geoip_update` (Befehl `security:geoip-update`, am 3. des Monats
+04:30, verschiebbar unter Administration → Geplante Aufgaben). Er läuft nur
+mit `GEOIP_AUTO_UPDATE=true` und
+
+- lädt die Datei des laufenden Monats, bei 404 die des Vormonats — ist die
+  installierte Datei schon so aktuell, lädt er nichts;
+- entpackt im Datenstrom neben die Zieldatei, prüft sie mit dem Reader (eine
+  Probeadresse muss einen Standort liefern) und tauscht sie per `rename`
+  atomar aus;
+- lässt bei jeder Störung (HTTP-Fehler, kaputtes Archiv, keine gültige
+  Datenbank) die laufende Datei unberührt und meldet den Fehler im
+  Job-Protokoll.
+
+Die Diagnose-Seite zeigt den Stand der Datei (`geoip_built_at`) und warnt,
+wenn die Aktualisierung eingeschaltet ist, die Datei aber älter als 70 Tage
+ist. Wer die Datei lieber selbst pflegt, lässt den Schalter aus und nutzt
+einen eigenen Cron — **innerhalb der Server-Betriebszeit** (auf Servern, die
+nicht 24/7 laufen, holt Cron nichts nach):
 
 ```cron
 # /etc/cron.d/workdiary-geoip — am 3. des Monats 22:30, Download atomar
 30 22 3 * * www-data curl -fsSL -o /tmp/dbip.mmdb.gz "https://download.db-ip.com/free/dbip-city-lite-$(date +\%Y-\%m).mmdb.gz" && gunzip -f /tmp/dbip.mmdb.gz && mv /tmp/dbip.mmdb /pfad/zur/app/storage/app/geoip/dbip-city-lite.mmdb
 ```
 
-Der Reader öffnet die Datei je Prozess neu — ein `mv` (atomar) genügt,
+Der Reader öffnet die Datei je Prozess neu — ein atomarer Austausch genügt,
 Dienste müssen nicht neu gestartet werden. Ein verpasster Monat ist
 unkritisch (die Daten altern nur langsam), die Prüfung läuft mit dem
 letzten Stand weiter.

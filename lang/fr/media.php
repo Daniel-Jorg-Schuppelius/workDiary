@@ -37,6 +37,7 @@ return [
         'awaits_review' => 'en attente de relecture',
         'reviewed_on' => 'relue le :date',
         'machine_short' => 'automatique',
+        'quality' => 'Qualité vidéo',
     ],
     'errors' => [
         'ffmpeg_missing' => 'Aucun traitement vidéo n’est installé sur ce serveur (ffmpeg manquant).',

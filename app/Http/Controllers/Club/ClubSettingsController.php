@@ -40,6 +40,8 @@ class ClubSettingsController extends Controller {
             // Freistellungsdaten für Zuwendungsbestätigungen (MVP-1003).
             'exemption' => $this->donations->exemption($this->currentOrganization()),
             'feesConfirmable' => $this->donations->membershipFeesConfirmable($this->currentOrganization()),
+            // Geschwisterstaffel (MVP-1016).
+            'siblings' => (array) data_get($this->currentOrganization()->settings, 'club.fees.siblings', []),
         ]);
     }
 
@@ -57,6 +59,10 @@ class ClubSettingsController extends Controller {
             'donations.purpose' => ['nullable', 'string', 'max:500'],
             'donations.signatory' => ['nullable', 'string', 'max:120'],
             'donations.membership_fees_confirmable' => ['nullable', 'boolean'],
+            'siblings' => ['nullable', 'array'],
+            'siblings.second_percent' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'siblings.further_percent' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'siblings.max_age' => ['nullable', 'integer', 'min:1', 'max:30'],
         ]);
         $organization = $this->currentOrganization();
         $this->grading->setEnabled($organization, (bool) ($data['graduation_enabled'] ?? false));
@@ -66,6 +72,9 @@ class ClubSettingsController extends Controller {
             data_set($settings, 'club.donations.' . $key, trim((string) ($data['donations'][$key] ?? '')));
         }
         data_set($settings, 'club.donations.membership_fees_confirmable', $request->boolean('donations.membership_fees_confirmable'));
+        foreach (['second_percent', 'further_percent', 'max_age'] as $key) {
+            data_set($settings, 'club.fees.siblings.' . $key, trim((string) ($data['siblings'][$key] ?? '')));
+        }
         $organization->update(['settings' => $settings]);
 
         return redirect()->route('club.grading.index')->with('success', __('club.grading.flash.settings_saved'));

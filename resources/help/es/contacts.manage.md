@@ -42,6 +42,11 @@ del registro de tiempos a la entrega DATEV — funcionan sin retrabajo.
 ![Lista de clientes con números, datos de contacto, tarifas horarias y número de proyectos](media/kunden/kundenliste.png)
 *La lista de clientes: datos maestros, tarifa horaria y proyectos vinculados por socio.*
 
+**Comunicación:** registre llamadas, correos y compromisos como nota de
+comunicación en el cliente o proveedor. Las notas aparecen en la página de
+detalle y en la lista central de notas; una respuesta de acceso de protección
+de datos sobre un proveedor las enumera con su número y período.
+
 ## Ejemplo práctico
 
 Un proveedor de TI crea «Müller GmbH» con dirección de facturación,

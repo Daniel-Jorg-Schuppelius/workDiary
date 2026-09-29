@@ -48,4 +48,26 @@ final class IdeaNodeCommentTest extends TestCase {
             ->assertJsonFragment(['sqid' => $node->sqid, 'comment_count' => 1]);
         $this->actingAs($owner)->get(route('ideas.show', $map))->assertOk()->assertSee('"comment_count":1', false);
     }
+
+    /** MVP-1018: Anhänge am Knoten — sehen mit der Karte, hochladen nur mit Bearbeitungsrecht. */
+    public function test_node_attachments_follow_the_map_rights(): void {
+        \Illuminate\Support\Facades\Storage::fake('local');
+        $this->setUpOrganization();
+        app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
+        $maps = app(IdeaMapService::class);
+        $owner = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+        $viewer = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+        $map = $maps->create($this->organization, $owner, 'Strategie');
+        $node = app(IdeaNodeService::class)->create($map, $map->rootNode()->firstOrFail(), 'Messeauftritt', $owner);
+        $maps->shareWithUser($map, $viewer, IdeaShareRole::Viewer, $owner);
+        $file = \Illuminate\Http\UploadedFile::fake()->create('standplan.pdf', 20, 'application/pdf');
+
+        $this->actingAs($viewer)->post(route('ideas.nodes.attachments.store', [$map, $node]), ['file' => $file])->assertForbidden();
+        $this->actingAs($owner)->post(route('ideas.nodes.attachments.store', [$map, $node]), ['file' => $file])->assertRedirect(route('ideas.show', $map));
+
+        $attachment = $node->attachments()->sole();
+        $this->actingAs($viewer)->get(route('ideas.nodes.attachments', [$map, $node]))->assertOk()->assertSee('standplan.pdf')->assertDontSee(__('ideas.attachments.action.add'));
+        $this->actingAs($viewer)->get(\App\Http\Controllers\Attachments\AttachmentController::downloadUrl($attachment))->assertOk();
+        $this->actingAs($owner)->getJson(route('ideas.maps.tree', $map))->assertJsonFragment(['sqid' => $node->sqid, 'attachment_count' => 1]);
+    }
 }

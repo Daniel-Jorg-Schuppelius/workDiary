@@ -77,6 +77,17 @@ class OrganizationSettingsFormRulesTest extends TestCase {
         $this->assertRejected(['personalization' => ['date_format' => 'JJJJ-TT']], 'settings.personalization.date_format');
     }
 
+    /** MVP-1010: Leeres Feld entfernt den gespeicherten Wert, nicht übermittelte bleiben. */
+    public function test_empty_fields_clear_stored_values(): void {
+        $this->assertAccepted(['shipping' => ['eori_number' => 'DE1234567'], 'finance' => ['fixed_assets' => ['gwg_limit' => '900', 'pool_years' => '4']]]);
+        $this->assertSame('DE1234567', $this->organization->refresh()->settings['shipping']['eori_number'] ?? null);
+
+        $this->assertAccepted(['shipping' => ['eori_number' => ''], 'finance' => ['fixed_assets' => ['gwg_limit' => '']]]);
+        $settings = $this->organization->refresh()->settings;
+        $this->assertArrayNotHasKey('shipping', $settings);
+        $this->assertSame(['pool_years' => '4'], $settings['finance']['fixed_assets'] ?? null);
+    }
+
     public function test_pagination_keeps_historic_wide_bounds(): void {
         // Historisch gültig: 3 (Wildcard min:1) — darf NICHT strenger werden.
         $this->assertAccepted(['pagination' => ['customers' => '3']]);
@@ -165,12 +176,11 @@ class OrganizationSettingsFormRulesTest extends TestCase {
         $this->assertSame('30', (string) data_get($settings, 'pagination.customers'));
         $this->assertSame('40', (string) data_get($settings, 'pagination.tags'));
 
-        // Leerer Wert = „kein neuer Override": bestehende Werte bleiben
-        // unverändert (stripEmpty läuft VOR dem Merge), es landet kein
-        // ''-Müll im JSON.
+        // Leerer Wert entfernt den Override (MVP-1010), der Default greift
+        // wieder; nicht übermittelte Felder bleiben, es landet kein ''-Müll.
         $this->assertAccepted(['pagination' => ['customers' => '']]);
         $settings = $this->organization->refresh()->settings;
-        $this->assertSame('30', (string) ($settings['pagination']['customers'] ?? ''));
+        $this->assertArrayNotHasKey('customers', $settings['pagination'] ?? []);
         $this->assertSame('40', (string) ($settings['pagination']['tags'] ?? ''));
 
         // Ohne Bestand erzeugt ein leerer Wert auch keinen Eintrag; eine

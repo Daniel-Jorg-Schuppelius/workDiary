@@ -171,4 +171,25 @@ return [
         'position' => 'Ripresa dal sistema precedente — fattura :number',
         'note' => 'Fattura pregressa ripresa da :source (partita aperta di apertura, nessuna registrazione a giornale).',
     ],
+    'columns' => [
+        'title' => 'Assegnazione delle colonne',
+        'hint' => 'L’importazione non riconosce queste colonne. Le assegni una volta: l’assegnazione vale poi per ogni file di questo tipo di importazione e il file viene ricontrollato subito.',
+        'target_for' => 'Colonna di destinazione per «:header»',
+        'skip' => '— non importare —',
+        'ai_proposed' => 'Proposta IA',
+        'submit' => 'Salva assegnazione e ricontrolla',
+        'saved_title' => 'Assegnazioni di colonne salvate',
+        'saved_hint' => 'Queste assegnazioni valgono per ogni file di importazione dell’organizzazione. I valori del tipo di importazione hanno la precedenza.',
+        'saved_empty' => 'Nessuna assegnazione di colonne salvata.',
+        'delete' => 'Elimina assegnazione',
+        'confirm_delete' => 'Eliminare l’assegnazione per «:header»?',
+        'error' => [
+            'duplicate' => 'Ogni colonna di destinazione può essere assegnata una sola volta.',
+            'none' => 'Nessuna assegnazione applicata: scelga almeno una colonna di destinazione.',
+        ],
+        'flash' => [
+            'saved' => '{1} Un’assegnazione salvata, il file è stato ricontrollato.|[2,*] :count assegnazioni salvate, il file è stato ricontrollato.',
+            'deleted' => 'Assegnazione di colonne eliminata.',
+        ],
+    ],
 ];

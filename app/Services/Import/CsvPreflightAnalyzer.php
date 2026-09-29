@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Import;
 
 use App\Enums\Import\{ImportEntity, ImportErrorCode, ImportRunState};
-use App\Models\Integration\{ImportRun, ImportRunError};
+use App\Models\Integration\{ImportColumnMapping, ImportRun, ImportRunError};
 use App\Models\Platform\{Organization, User};
 use App\Services\Import\Contracts\{ProvidesZipImport, ZipImporter};
 use App\Services\Import\Source\{CsvImportSource, ImportSource, ImportSourceFactory};
@@ -119,7 +119,7 @@ class CsvPreflightAnalyzer {
                     Storage::disk(self::DISK)->put($stored, $processed);
                 }
 
-                $csv = new CsvImportSource($absolutePath);
+                $csv = new CsvImportSource($absolutePath, null, ImportColumnMapping::aliasesFor((int) $organization->id, $entity));
                 $run->delimiter = $csv->delimiter();
 
                 $headerIssues = $csv->headerIssues($spec);

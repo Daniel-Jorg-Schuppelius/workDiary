@@ -25,4 +25,11 @@ return [
     ],
     'tour_leg_purpose' => 'Etappe zu :title',
     'tour_return_purpose' => 'Rückfahrt',
+    'driving_time' => [
+        'legend' => 'Lenk- und Ruhezeiten',
+        'hint' => 'Für Fahrzeuge mit Lenkzeitregeln: zweiter Fahrer im Mehrfahrerbetrieb und Überfahrten, bei denen das Fahrzeug auf Fähre oder Zug mitfährt.',
+        'co_driver' => 'Zweiter Fahrer (Mehrfahrerbetrieb)',
+        'co_driver_none' => '— allein unterwegs —',
+        'ferry_or_train' => 'Fähre/Zug: Fahrzeug fährt mit, keine Lenkzeit',
+    ],
 ];

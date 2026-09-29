@@ -103,5 +103,7 @@
         <x-input-field name="max_participants" type="number" min="1" max="9999" :label="__('club.events.field.max_participants')" :value="old('max_participants', $event?->max_participants)" />
         <x-input-field name="registration_lead_hours" type="number" min="0" max="8760" :label="__('club.events.field.registration_lead_hours')" :value="old('registration_lead_hours', $details?->registration_lead_hours)" />
         <x-input-field name="cancellation_lead_hours" type="number" min="0" max="8760" :label="__('club.events.field.cancellation_lead_hours')" :value="old('cancellation_lead_hours', $details?->cancellation_lead_hours)" />
+        {{-- MVP-1017: Lehrgangsgebühr je Anmeldung, im nächsten Beitragslauf berechnet. --}}
+        <x-input-field name="fee_amount" type="number" step="0.01" min="0" :label="__('club.events.field.fee_amount')" :hint="__('club.events.hint.fee_amount')" :value="old('fee_amount', $details?->fee_amount?->getAmount())" />
     </x-form-group>
 </x-modal>

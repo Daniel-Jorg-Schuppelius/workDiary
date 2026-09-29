@@ -107,5 +107,7 @@
             <x-input-field name="registration_lead_hours" type="number" min="0" max="8760" :label="__('club.events.field.registration_lead_hours')" :value="old('registration_lead_hours', $details?->registration_lead_hours)" />
             <x-input-field name="cancellation_lead_hours" type="number" min="0" max="8760" :label="__('club.events.field.cancellation_lead_hours')" :value="old('cancellation_lead_hours', $details?->cancellation_lead_hours)" />
         </div>
+        {{-- MVP-1017: Prüfungsgebühr je zugelassenem Kandidaten. --}}
+        <x-input-field name="fee_amount" type="number" step="0.01" min="0" :label="__('club.exams.field.fee_amount')" :hint="__('club.exams.hint.fee_amount')" :value="old('fee_amount', $details?->fee_amount?->getAmount())" />
     </x-form-group>
 </x-modal>

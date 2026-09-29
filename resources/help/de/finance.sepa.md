@@ -50,3 +50,8 @@ Einstellungs-Registry).
 **Zusatzmodul:** Die Dateierzeugung gehört zum kostenpflichtigen
 Banking-Format-Modul. Ohne das Modul bleiben Zahllauf und Mandatsregister
 bedienbar, nur der Export fehlt.
+
+Eine Lastschrift kann sich auf eine offene Rechnung des Mandatskunden beziehen:
+„Per Lastschrift einziehen“ auf der Rechnung öffnet den Einzug mit Betrag und
+Verwendungszweck vorbelegt. Mit Rechnungsbezug zählt die Liquiditätsvorschau
+den Betrag nur einmal — im Zahllauf statt zusätzlich als offene Forderung.
