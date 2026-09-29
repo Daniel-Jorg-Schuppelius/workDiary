@@ -62,4 +62,8 @@ class FakeShippingProvider implements ShippingProvider {
     public function healthy(CarrierConnection $connection): bool {
         return true;
     }
+
+    public function requiredCredentials(): array {
+        return ['username', 'password'];
+    }
 }

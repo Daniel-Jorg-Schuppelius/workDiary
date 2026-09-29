@@ -13,9 +13,11 @@ declare(strict_types=1);
 namespace App\Services\Peppol;
 
 use App\Models\Customer\Customer;
-use App\Models\Plugins\Peppol\PeppolParticipantLookup;
-use App\Plugins\PeppolAccessPoint\PeppolAccessPointConfig;
+use App\Models\Peppol\PeppolParticipantLookup;
+use App\Plugins\Contracts\PeppolTransportProvider;
+use App\Plugins\PluginManager;
 use ERechnungToolkit\Contracts\{DnsNaptrResolverInterface, SmpHttpClientInterface};
+use ERechnungToolkit\Enums\SmlZone;
 use ERechnungToolkit\Peppol\{DocumentTypeId, ParticipantId, SmpLookup};
 use RuntimeException;
 
@@ -69,7 +71,10 @@ class PeppolParticipantService {
      * @throws RuntimeException wenn SML/SMP nicht antworten (keine Aussage, kein Eintrag).
      */
     public function lookup(int $organizationId, ParticipantId $participant, bool $refresh = false): PeppolParticipantLookup {
-        $config = PeppolAccessPointConfig::resolve($organizationId);
+        // Einstellungen des Transport-Plugins, auch wenn es gerade nicht aktiv ist (MVP-1043).
+        $transport = app(PluginManager::class)->all()->first(static fn ($plugin): bool => $plugin instanceof PeppolTransportProvider);
+        $ttlHours = $transport instanceof PeppolTransportProvider ? $transport->peppolLookupTtlHours($organizationId) : 24;
+        $smlZone = $transport instanceof PeppolTransportProvider ? $transport->peppolSmlZone($organizationId) : SmlZone::PRODUCTION;
         $canonical = $participant->canonical();
 
         $existing = PeppolParticipantLookup::query()
@@ -78,7 +83,7 @@ class PeppolParticipantService {
             ->where('participant', $canonical)
             ->first();
 
-        if ($existing instanceof PeppolParticipantLookup && ! $refresh && ! $existing->isStale($config['lookup_ttl_hours'])) {
+        if ($existing instanceof PeppolParticipantLookup && ! $refresh && ! $existing->isStale($ttlHours)) {
             return $existing;
         }
 
@@ -86,7 +91,7 @@ class PeppolParticipantService {
 
         // Wirft bei DNS-/SMP-Störungen (RuntimeException) — bewusst nicht
         // abgefangen: eine Störung ist keine Registrierungsauskunft.
-        $smpBaseUrl = $lookup->resolveSmpBaseUrl($participant, $config['sml_zone']);
+        $smpBaseUrl = $lookup->resolveSmpBaseUrl($participant, $smlZone);
 
         if ($smpBaseUrl === null || $smpBaseUrl === '') {
             // Kein SML-Eintrag heißt: der Teilnehmer ist nicht in Peppol.

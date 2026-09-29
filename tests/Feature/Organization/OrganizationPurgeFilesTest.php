@@ -12,6 +12,7 @@ namespace Tests\Feature\Organization;
 
 use App\Models\Audit\OrganizationAuditLog;
 use App\Models\Platform\Organization;
+use App\Models\Plugins\Lexoffice\LexofficeVoucher;
 use App\Services\Org\OrganizationLifecycleService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\{DB, Storage};
@@ -59,5 +60,21 @@ class OrganizationPurgeFilesTest extends TestCase {
             ->first();
         $this->assertNotNull($audit);
         $this->assertSame(1, (int) ($audit->payload['files_deleted'] ?? 0), 'Das Protokoll muss die Zahl gelöschter Dateien führen.');
+    }
+
+    public function test_purge_also_removes_files_registered_by_plugins(): void {
+        Storage::fake('local');
+        $doomed = Organization::factory()->create();
+        Storage::disk('local')->put('lexoffice/vouchers/doomed.pdf', 'weg');
+        $voucher = LexofficeVoucher::query()->create([
+            'organization_id' => $doomed->id, 'external_id' => 'v-doomed', 'voucher_type' => 'salesinvoice',
+            'voucher_status' => 'open', 'voucher_date' => '2026-06-01', 'total_amount' => '1.00', 'currency' => 'EUR', 'archived' => false,
+        ]);
+        DB::table('lexoffice_vouchers')->where('id', $voucher->id)->update(['file_path' => 'lexoffice/vouchers/doomed.pdf']);
+
+        // Die Tabelle meldet das Lexoffice-Plugin an (MVP-1044), nicht die Kernliste.
+        app(OrganizationLifecycleService::class)->purge($doomed->fresh(), null);
+
+        Storage::disk('local')->assertMissing('lexoffice/vouchers/doomed.pdf');
     }
 }

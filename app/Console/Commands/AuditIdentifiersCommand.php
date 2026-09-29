@@ -10,20 +10,12 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Article\{Article, ArticleVariant};
-use App\Models\Contacts\ContactBankAccount;
-use App\Models\Customer\Customer;
-use App\Models\Finance\BankAccount;
-use App\Models\Platform\User;
-use App\Models\Plugins\Lexoffice\LexofficeArticle;
-use App\Models\Supplier\{Supplier, SupplierCatalogItem};
-use App\Services\Stammdaten\IdentifierIssueDetector;
+use App\Services\Stammdaten\{IdentifierAuditModels, IdentifierIssueDetector};
 use App\Support\CsvExport;
 use CommonToolkit\Enums\Common\CSV\QuotingStyle;
 use CommonToolkit\Helper\Data\CSV\StringHelper;
 use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Console\Command;
-use Illuminate\Database\Eloquent\Model;
 
 /**
  * Prüflauf vor der Umstellung der Identifikatoren auf Value Objects.
@@ -41,20 +33,6 @@ class AuditIdentifiersCommand extends Command {
 
     protected $description = 'Prüft USt-IdNr., Steuernummern, Steuer-IDs, IBAN/BIC und GTIN auf Gültigkeit (vor der VO-Umstellung)';
 
-    /**
-     * Geprüfte Models — welche Spalten ein Datensatz trägt, entscheidet der
-     * {@see IdentifierIssueDetector}.
-     *
-     * @return list<class-string<Model>>
-     */
-    private function models(): array {
-        return [
-            Customer::class, Supplier::class, User::class,
-            BankAccount::class, ContactBankAccount::class,
-            Article::class, ArticleVariant::class, LexofficeArticle::class, SupplierCatalogItem::class,
-        ];
-    }
-
     public function handle(): int {
         /** @var list<array{model: string, id: int|string, field: string, value: string}> $findings */
         $findings = [];
@@ -62,7 +40,8 @@ class AuditIdentifiersCommand extends Command {
 
         $detector = app(IdentifierIssueDetector::class);
 
-        foreach ($this->models() as $class) {
+        // Welche Spalten ein Datensatz trägt, entscheidet der IdentifierIssueDetector.
+        foreach (app(IdentifierAuditModels::class)->all() as $class) {
             $class::query()->chunkById(500, function ($rows) use ($detector, &$findings, &$checked, $class): void {
                 foreach ($rows as $row) {
                     $checked++;

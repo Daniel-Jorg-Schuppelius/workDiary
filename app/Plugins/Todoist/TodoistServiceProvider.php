@@ -39,6 +39,11 @@ class TodoistServiceProvider extends PluginServiceProviderBase {
     }
 
     protected function bootPlugin(): void {
+        // Sessionloser Webhook (Feature 055, MVP-115): Bursts erlauben, Flooding deckeln;
+        // Verluste heilt der stündliche Polling-Abgleich (todoist:sync).
+        \Illuminate\Support\Facades\RateLimiter::for('todoist-webhook', fn (\Illuminate\Http\Request $request) => \Illuminate\Cache\RateLimiting\Limit::perMinute(120)->by('twh:' . $request->ip()));
+        // Ablaufprüfung der Verbindungen (MVP-1044).
+        $this->app->make(\App\Services\Operations\Expiry\ExpiryScanner::class)->extend(new \App\Plugins\Todoist\Services\TodoistExpiryProbe);
         Task::observe(TodoistTaskObserver::class);
         $this->app->make(IntegrationOutboxDispatcherResolver::class)->register(new TodoistOutboxDispatcher());
     }

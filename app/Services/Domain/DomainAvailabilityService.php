@@ -12,7 +12,6 @@ namespace App\Services\Domain;
 
 use App\Enums\Domain\DomainCapabilityArea;
 use App\Models\Domain\DomainProviderConnection;
-use App\Plugins\DomainReselling\DomainResellingConfig;
 use App\Plugins\Support\Domain\DomainRateBudgetException;
 use CommonToolkit\Helper\Data\{CryptoHelper, StringHelper};
 use Illuminate\Support\Facades\Cache;
@@ -34,8 +33,8 @@ class DomainAvailabilityService {
      * @return list<array{domain: string, available: bool, premium: bool, price: ?float, currency: ?string, class: ?string, cached: bool}>
      */
     public function check(DomainProviderConnection $connection, array $domains): array {
-        $config = DomainResellingConfig::resolve((int) $connection->organization_id);
-        $ttl = $config['check_cache_ttl'];
+        $config = $this->resolver->settings((int) $connection->organization_id);
+        $ttl = $config->checkCacheTtl;
         $results = [];
         $toQuery = [];
 
@@ -128,10 +127,10 @@ class DomainAvailabilityService {
     }
 
     private function consumeBudget(DomainProviderConnection $connection, int $units): void {
-        $config = DomainResellingConfig::resolve((int) $connection->organization_id);
+        $config = $this->resolver->settings((int) $connection->organization_id);
         $key = sprintf('domain:checkbudget:%d:%s', (int) $connection->organization_id, date('YmdH'));
         $used = (int) Cache::get($key, 0);
-        if ($used + $units > $config['check_budget_per_hour']) {
+        if ($used + $units > $config->checkBudgetPerHour) {
             throw new DomainRateBudgetException();
         }
         Cache::put($key, $used + $units, 3600);

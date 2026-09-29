@@ -238,7 +238,7 @@ class CustomerDetailAssembler {
         // Peppol-Registrierungsstand (Feature 066, MVP-734): der zuletzt
         // gespeicherte SMP-Befund, nie eine Live-Auflösung im Seitenaufbau.
         $peppolParticipant = \App\Services\Peppol\PeppolParticipantService::forCustomer($customer);
-        $peppolLookup = $peppolParticipant === null ? null : \App\Models\Plugins\Peppol\PeppolParticipantLookup::query()
+        $peppolLookup = $peppolParticipant === null ? null : \App\Models\Peppol\PeppolParticipantLookup::query()
             ->where('organization_id', $customer->organization_id)
             ->where('participant', $peppolParticipant->canonical())
             ->first();

@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\Contracts;
 
 use ERechnungToolkit\Contracts\AccessPointClientInterface;
+use ERechnungToolkit\Enums\SmlZone;
 
 /**
  * Anbindung an einen zertifizierten Peppol-Access-Point-Provider
@@ -40,4 +41,13 @@ interface PeppolTransportProvider {
      * (`<ICD>:<Kennung>`), z. B. `9930:DE123456789`. `null` = nicht gepflegt.
      */
     public function peppolSenderId(?int $organizationId = null): ?string;
+
+    /** Absenderland der SBDH-Hülle (ISO 3166-1 alpha-2). */
+    public function peppolSenderCountry(?int $organizationId = null): string;
+
+    /** SML-Zone der Teilnehmerabfrage (Test- oder Produktionsnetz). */
+    public function peppolSmlZone(?int $organizationId = null): SmlZone;
+
+    /** Gültigkeit einer gespeicherten Teilnehmerabfrage in Stunden (0 = immer neu). */
+    public function peppolLookupTtlHours(?int $organizationId = null): int;
 }

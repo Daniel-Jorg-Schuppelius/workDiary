@@ -16,7 +16,6 @@ use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Models\Document\DocumentDispatch;
 use App\Models\Invoicing\Invoice;
 use App\Plugins\Contracts\PeppolTransportProvider;
-use App\Plugins\PeppolAccessPoint\PeppolAccessPointConfig;
 use App\Plugins\PluginManager;
 use App\Services\Billing\BillingModeResolver;
 use App\Services\Invoicing\EInvoice\XRechnungGenerator;
@@ -154,8 +153,7 @@ class PeppolInvoiceDispatcher {
             ]));
         }
 
-        $config = PeppolAccessPointConfig::resolve($organizationId);
-        $sbdh = Sbdh::forUbl($ubl, $sender, $receiver, $config['sender_country']);
+        $sbdh = Sbdh::forUbl($ubl, $sender, $receiver, $plugin->peppolSenderCountry($organizationId));
         $envelope = $sbdh->envelope($ubl);
 
         try {

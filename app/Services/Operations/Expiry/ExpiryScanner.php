@@ -14,9 +14,9 @@ namespace App\Services\Operations\Expiry;
 
 use App\Enums\Operations\{OperationsTaskSeverity, OperationsTaskStatus, OperationsTaskType};
 use App\Models\Chat\ChatWebhook;
-use App\Models\Plugins\Todoist\TodoistConnection;
 use App\Models\Project\OperationsTask;
 use App\Models\Time\AttendanceTerminal;
+use App\Services\Diagnostics\ConnectionHealthModels;
 use App\Services\Licensing\{LicenseService, LicenseStatus};
 use App\Services\Operations\{OperationsAlertService, OperationsSignal};
 use App\Support\MorphMap;
@@ -97,7 +97,6 @@ class ExpiryScanner {
             fn(): array => $this->licenseSignals(),
             fn(): array => $this->licenseLimitSignals(),
             fn(): array => $this->personalAccessTokenSignals(),
-            fn(): array => $this->todoistSignals(),
             fn(): array => $this->chatWebhookSignals(),
             fn(): array => $this->terminalSignals(),
             fn(): array => $this->phpEolSignals(),
@@ -113,13 +112,7 @@ class ExpiryScanner {
      * @return list<OperationsSignal>
      */
     private function connectionHealthSignals(): array {
-        $models = [
-            'email' => \App\Models\Mail\EmailConnection::class,
-            'cti' => \App\Models\Cti\CtiConnection::class,
-            'carrier' => \App\Models\Shipping\CarrierConnection::class,
-            'caldav' => \App\Models\Plugins\CalDav\CalDavConnection::class,
-            'webdav' => \App\Models\Plugins\Webdav\WebdavConnection::class,
-        ];
+        $models = app(ConnectionHealthModels::class)->withOperationsTask();
 
         $signals = [];
         foreach ($models as $kind => $model) {
@@ -240,48 +233,6 @@ class ExpiryScanner {
             ->all();
 
         return array_values($signals);
-    }
-
-    /** @return list<OperationsSignal> */
-    private function todoistSignals(): array {
-        $leadDays = (int) Setting::get('operations.expiry.credential_days', 14);
-        $signals = [];
-
-        foreach (TodoistConnection::query()->withoutGlobalScopes()->get() as $connection) {
-            $orgId = (int) $connection->organization_id;
-            if ($connection->token_expires_at !== null
-                && $connection->token_expires_at->isFuture()
-                && $connection->token_expires_at->lte(now()->addDays($leadDays))) {
-                $signals[] = new OperationsSignal(
-                    type: OperationsTaskType::CredentialExpiring,
-                    dedupeKey: 'credential_expiring:todoist:' . $connection->id,
-                    severity: OperationsTaskSeverity::Warning,
-                    titleKey: 'operations.task.credential_expiring',
-                    params: [
-                        'kind' => 'OAuth-Token (Todoist)',
-                        'name' => (string) ($connection->todoist_user_email ?? 'Todoist'),
-                        'date' => $connection->token_expires_at->toDateString(),
-                    ],
-                    organizationId: $orgId,
-                );
-            }
-            if ((string) $connection->status !== 'active' || $connection->last_error !== null) {
-                $signals[] = new OperationsSignal(
-                    type: OperationsTaskType::ConnectionFailing,
-                    dedupeKey: 'connection_failing:todoist:' . $connection->id,
-                    severity: OperationsTaskSeverity::Warning,
-                    titleKey: 'operations.task.connection_failing',
-                    params: [
-                        'name' => (string) ($connection->todoist_user_email ?? 'Todoist'),
-                        'kind' => 'Todoist',
-                        'error' => (string) ($connection->last_error ?? $connection->status),
-                    ],
-                    organizationId: $orgId,
-                );
-            }
-        }
-
-        return $signals;
     }
 
     /**

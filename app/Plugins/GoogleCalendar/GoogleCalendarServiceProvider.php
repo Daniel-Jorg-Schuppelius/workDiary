@@ -36,6 +36,8 @@ class GoogleCalendarServiceProvider extends PluginServiceProviderBase {
     }
 
     protected function bootPlugin(): void {
+        // Verbindungszustand für Diagnose und Ablaufprüfung (MVP-1044).
+        $this->app->make(\App\Services\Diagnostics\ConnectionHealthModels::class)->register('google_calendar', \App\Models\Plugins\GoogleCalendar\GoogleCalendarConnection::class);
         // Gruppierte Auflösung der Import-Inbox (MVP-1030).
         $this->app->make(InboxGroupBookerRegistry::class)->register(GoogleCalendarPlugin::ID, GoogleCalendarSeriesGroupBooker::class);
     }

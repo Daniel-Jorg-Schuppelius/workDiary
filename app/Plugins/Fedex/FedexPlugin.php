@@ -311,4 +311,9 @@ class FedexPlugin extends AbstractPlugin implements ShippingProvider {
 
         return new TrackingEvent($occurredAt, $description, $location);
     }
+
+    /** OAuth2-Client-ID und -Secret (Felder Benutzer/Passwort). */
+    public function requiredCredentials(): array {
+        return ['username', 'password'];
+    }
 }

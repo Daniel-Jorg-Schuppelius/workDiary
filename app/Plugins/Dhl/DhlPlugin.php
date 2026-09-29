@@ -272,4 +272,9 @@ class DhlPlugin extends AbstractPlugin implements ShippingProvider {
 
         return new TrackingEvent($occurredAt, $description, $location);
     }
+
+    /** GK-Benutzer und -Passwort plus Gateway-`dhl-api-key`. */
+    public function requiredCredentials(): array {
+        return ['username', 'password', 'api_key'];
+    }
 }

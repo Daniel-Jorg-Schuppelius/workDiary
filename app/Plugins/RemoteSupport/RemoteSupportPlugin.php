@@ -16,7 +16,7 @@ use App\Models\Auth\RemotePendingSession;
 use App\Models\Integration\ImportRun;
 use App\Models\Platform\{Organization, User};
 use App\Plugins\{AbstractPlugin, PluginHealth};
-use App\Plugins\Contracts\{NavigationContributor, Plugin, PluginCapability, SlotRenderer, TimeImporter};
+use App\Plugins\Contracts\{NavigationContributor, Plugin, PluginCapability, ProvidesRemoteSessions, SlotRenderer, TimeImporter};
 use App\Plugins\RemoteSupport\Providers\{AnyDeskClient, TeamViewerClient};
 use App\Services\Navigation\NavigationRegistry;
 use Carbon\CarbonImmutable;
@@ -33,7 +33,7 @@ use Throwable;
  * Plugin-Id ist "remote-support". Pro Organisation konfigurierbar über
  * plugin_settings; ENV dient nur als Fallback.
  */
-class RemoteSupportPlugin extends AbstractPlugin implements NavigationContributor, SlotRenderer, TimeImporter {
+class RemoteSupportPlugin extends AbstractPlugin implements NavigationContributor, ProvidesRemoteSessions, SlotRenderer, TimeImporter {
     public const ID = 'remote-support';
 
     public const SERVICE_PROVIDER = RemoteSupportServiceProvider::class;

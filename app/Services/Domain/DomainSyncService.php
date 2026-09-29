@@ -13,7 +13,6 @@ namespace App\Services\Domain;
 use App\Enums\Domain\{DomainCapabilityArea, DomainRenewalMode, DomainSyncStatus};
 use App\Models\Domain\{DomainContactProjection, DomainProjection, DomainProviderConnection, DomainResellerAccount};
 use App\Plugins\Contracts\Domain\DomainProviderAdapter;
-use App\Plugins\DomainReselling\DomainResellingConfig;
 use App\Plugins\Support\Domain\DomainResponse;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
@@ -85,7 +84,7 @@ class DomainSyncService {
      */
     public function syncDomains(DomainProviderConnection $connection, string $userDepth = 'ALL', ?DomainProviderAdapter $adapter = null): int {
         $adapter ??= $this->resolver->for($connection);
-        $pageSize = DomainResellingConfig::resolve((int) $connection->organization_id)['list_page_size'];
+        $pageSize = $this->resolver->settings((int) $connection->organization_id)->listPageSize;
         $first = 0;
         $total = 0;
 
@@ -167,7 +166,7 @@ class DomainSyncService {
 
     /** Markiert Projektionen älter als das Datenalter-Budget als veraltet. */
     public function markStale(DomainProviderConnection $connection): int {
-        $threshold = Carbon::now()->subHours(DomainResellingConfig::resolve((int) $connection->organization_id)['stale_after_hours']);
+        $threshold = Carbon::now()->subHours($this->resolver->settings((int) $connection->organization_id)->staleAfterHours);
 
         return DomainProjection::query()
             ->where('connection_id', $connection->id)

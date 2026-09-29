@@ -72,12 +72,19 @@ class LexofficeServiceProvider extends PluginServiceProviderBase {
     }
 
     protected function bootPlugin(): void {
+        // Sessionloser Webhook (Audit 2026-08, Welle 1.3): Bursts erlauben, Flooding deckeln;
+        // Verluste heilt der geplante Pull-Sync.
+        \Illuminate\Support\Facades\RateLimiter::for('lexoffice-webhook', fn (\Illuminate\Http\Request $request) => \Illuminate\Cache\RateLimiting\Limit::perMinute(120)->by('lwh:' . $request->ip()));
         // Faktura-Übergabe (MVP-1032): der Kern kennt das Ziel nur über die Registry.
         $this->app->make(FacturationTargetRegistry::class)->register(LexofficeTarget::class);
 
         // Umsatz aus dem Beleg-Spiegel für Auswertungen (MVP-1034/1035).
         $this->app->make(ExternalRevenueSources::class)->register(new LexofficeRevenueSource);
         $this->app->make(ExternalPurchaseSources::class)->register(new LexofficeSpendSource);
+        // Belegbilder löscht die endgültige Löschung der Organisation mit (MVP-1044).
+        $this->app->make(\App\Services\Org\OrganizationFileTables::class)->register('lexoffice_vouchers', ['path' => 'file_path']);
+        // Gespiegelte Artikel in der Kennungsprüfung `identifiers:audit` (MVP-1044).
+        $this->app->make(\App\Services\Stammdaten\IdentifierAuditModels::class)->register(\App\Models\Plugins\Lexoffice\LexofficeArticle::class);
         // Belegliste der Kunden- und Lieferantenakte (MVP-1038).
         $this->app->make(PartyDocumentSources::class)->register(new LexofficePartyDocumentSource);
 

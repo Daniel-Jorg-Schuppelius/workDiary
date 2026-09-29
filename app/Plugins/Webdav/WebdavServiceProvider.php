@@ -41,6 +41,8 @@ class WebdavServiceProvider extends PluginServiceProviderBase {
     }
 
     protected function bootPlugin(): void {
+        // Verbindungszustand für Diagnose und Ablaufprüfung (MVP-1044).
+        $this->app->make(\App\Services\Diagnostics\ConnectionHealthModels::class)->register('webdav', \App\Models\Plugins\Webdav\WebdavConnection::class, operationsTask: true);
         $target = new WebdavMirrorTarget();
         $this->app->make(MirrorTargetRegistry::class)->register($target);
         $this->app->make(IntegrationOutboxDispatcherResolver::class)->register(new MirrorOutboxDispatcher($target));

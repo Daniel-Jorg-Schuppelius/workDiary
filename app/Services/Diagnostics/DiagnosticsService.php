@@ -32,28 +32,6 @@ use Throwable;
 class DiagnosticsService {
     public const SECTIONS = ['version', 'license', 'modules', 'queue', 'scheduler', 'mail', 'connections', 'operations', 'storage', 'backup', 'security', 'terminals'];
 
-    /**
-     * Konnektor-Registry für die connections-Sektion (Vollaudit 2026-07, M15):
-     * alle Modelle mit {@see \App\Models\Concerns\HasConnectionHealth}.
-     *
-     * @var array<string, class-string<\Illuminate\Database\Eloquent\Model>>
-     */
-    public const CONNECTION_MODELS = [
-        'email' => \App\Models\Mail\EmailConnection::class,
-        'msgraph' => \App\Models\Plugins\Msgraph\MsgraphConnection::class,
-        'sharepoint' => \App\Models\Plugins\Sharepoint\SharepointConnection::class,
-        'webdav' => \App\Models\Plugins\Webdav\WebdavConnection::class,
-        'caldav' => \App\Models\Plugins\CalDav\CalDavConnection::class,
-        'carddav' => \App\Models\Plugins\CardDav\CardDavConnection::class,
-        'google_calendar' => \App\Models\Plugins\GoogleCalendar\GoogleCalendarConnection::class,
-        'cti' => \App\Models\Cti\CtiConnection::class,
-        'carrier' => \App\Models\Shipping\CarrierConnection::class,
-        'cloud_documents' => \App\Models\CloudIntake\CloudDocumentConnection::class,
-        'domain_provider' => \App\Models\Domain\DomainProviderConnection::class,
-        'ai_provider' => \App\Models\Ai\AiProviderConnection::class,
-        'backup_target' => \App\Models\Backup\BackupTargetConnection::class,
-    ];
-
     /** Warnschwelle: aktives Terminal ohne Kontakt seit … Stunden gilt als „stale". */
     public const TERMINAL_STALE_HOURS = 24;
 
@@ -163,7 +141,7 @@ class DiagnosticsService {
         $detail = [];
         $messages = [];
 
-        foreach (self::CONNECTION_MODELS as $key => $class) {
+        foreach (app(ConnectionHealthModels::class)->all() as $key => $class) {
             try {
                 /** @var \Illuminate\Support\Collection<int, \Illuminate\Database\Eloquent\Model> $rows */
                 $rows = $class::query()->get(['id', 'last_error', 'disabled_at']);

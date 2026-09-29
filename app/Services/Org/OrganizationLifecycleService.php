@@ -431,7 +431,6 @@ class OrganizationLifecycleService {
         'learning_cmi5_packages' => ['path' => 'storage_path', 'dir' => true],
         'learning_scorm_packages' => ['path' => 'storage_path', 'dir' => true],
         'letterhead_assets' => ['path' => 'original_path', 'disk' => 'disk'],
-        'lexoffice_vouchers' => ['path' => 'file_path'],
         'media_renditions' => ['path' => 'path', 'disk' => 'disk'],
         'privacy_attachments' => ['path' => 'path'],
         'resale_imports' => ['path' => 'file_path'],
@@ -448,7 +447,8 @@ class OrganizationLifecycleService {
     private function fileTargetsFor(int $orgId): array {
         $targets = [];
 
-        foreach (self::FILE_POINTER_TABLES as $table => $spec) {
+        // Plugins melden ihre Dateitabellen selbst an (MVP-1044).
+        foreach ([...self::FILE_POINTER_TABLES, ...app(OrganizationFileTables::class)->all()] as $table => $spec) {
             if (! Schema::hasTable($table) || ! Schema::hasColumn($table, $spec['path'])) {
                 continue;
             }

@@ -14,7 +14,7 @@ use App\Enums\Domain\DomainConnectionStatus;
 use App\Models\Domain\DomainProviderConnection;
 use App\Models\Platform\Organization;
 use App\Plugins\{AbstractPlugin, PluginHealth};
-use App\Plugins\Contracts\Domain\DomainProviderAdapter;
+use App\Plugins\Contracts\Domain\{DomainProviderAdapter, DomainRegistrarSettings};
 use App\Plugins\Contracts\{DomainRegistrar, Plugin, PluginCapability, SettingsField};
 use App\Plugins\DomainReselling\Adapters\DomainResellingAdapter;
 use App\Plugins\DomainReselling\Api\DomainResellingClient;
@@ -56,6 +56,12 @@ class DomainResellingPlugin extends AbstractPlugin implements DomainRegistrar {
 
     public function domainAdapter(DomainProviderConnection $connection): DomainProviderAdapter {
         return new DomainResellingAdapter(new DomainResellingClient($connection), $connection);
+    }
+
+    public function domainSettings(int $organizationId): DomainRegistrarSettings {
+        $config = DomainResellingConfig::resolve($organizationId);
+
+        return new DomainRegistrarSettings($config['check_budget_per_hour'], $config['check_cache_ttl'], $config['list_page_size'], $config['stale_after_hours']);
     }
 
     /** Bounds der numerischen Betriebsparameter (key => [min, max]). */

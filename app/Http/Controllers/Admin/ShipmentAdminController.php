@@ -22,8 +22,7 @@ use Illuminate\View\View;
 /**
  * Admin-Verwaltung der Carrier-Anbindungen (Feature 059, MVP-128): je Carrier
  * eine Anbindung pro Organisation (unique(org, carrier)). Zugangsdaten
- * (DHL: GK-Benutzer/Passwort + dhl-api-key; UPS/FedEx: OAuth2-Client-ID/-Secret
- * in den Feldern Benutzer/Passwort) sind at-rest verschlüsselt und werden nie
+ * (Pflichtfelder nennt der Carrier über den ShippingProvider) sind at-rest verschlüsselt und werden nie
  * ausgegeben; leere Felder beim Bearbeiten lassen die gespeicherten Werte
  * unverändert. Nur registrierte Carrier (aus der {@see ShippingProviderRegistry})
  * sind wählbar.
@@ -31,17 +30,6 @@ use Illuminate\View\View;
 class ShipmentAdminController extends Controller {
     /** Zugangsdaten-Schlüssel im verschlüsselten credentials-Array. */
     private const CREDENTIAL_KEYS = ['username', 'password', 'api_key', 'returns_receiver_id'];
-
-    /**
-     * Pflicht-Zugangsdaten je Carrier bei Neuanlage: DHL braucht zusätzlich
-     * den Gateway-`dhl-api-key`; die OAuth2-Carrier (UPS/FedEx) nur
-     * Client-ID/-Secret (Felder Benutzer/Passwort).
-     */
-    private const REQUIRED_CREDENTIALS = [
-        'dhl' => ['username', 'password', 'api_key'],
-    ];
-
-    private const REQUIRED_CREDENTIALS_DEFAULT = ['username', 'password'];
 
     public function index(ShippingProviderRegistry $registry): View {
         $admin = $this->admin();
@@ -90,7 +78,8 @@ class ShipmentAdminController extends Controller {
         }
 
         if (! $connection->exists) {
-            $required = self::REQUIRED_CREDENTIALS[(string) $data['carrier']] ?? self::REQUIRED_CREDENTIALS_DEFAULT;
+            // Pflicht-Zugangsdaten nennt der Carrier selbst (MVP-1044).
+            $required = $registry->for((string) $data['carrier'])?->requiredCredentials() ?? ['username', 'password'];
             foreach ($required as $key) {
                 if (empty($credentials[$key])) {
                     return back()->with('error', __('shipping.flash.credentials_required'))->withInput();

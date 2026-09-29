@@ -14,7 +14,8 @@ namespace App\Console\Commands\Peppol;
 
 use App\Console\Concerns\IteratesOrganizations;
 use App\Models\Platform\{Organization, PluginSetting};
-use App\Plugins\PeppolAccessPoint\PeppolAccessPointPlugin;
+use App\Plugins\Contracts\PeppolTransportProvider;
+use App\Plugins\PluginManager;
 use App\Services\Peppol\PeppolInboundService;
 use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Console\Command;
@@ -47,9 +48,13 @@ class PeppolReceiveCommand extends Command {
                 $this->error(sprintf('Organisation #%d: %s — %s', $organization->id, class_basename($e), $e->getMessage()));
                 report($e);
             },
+            // Organisationen mit einem eingeschalteten Transport-Plugin (MVP-1043).
             scope: fn ($query) => $query->whereIn('id', PluginSetting::query()
                 ->withoutGlobalScopes()
-                ->where('plugin_id', PeppolAccessPointPlugin::ID)
+                ->whereIn('plugin_id', app(PluginManager::class)->all()
+                    ->filter(static fn ($plugin): bool => $plugin instanceof PeppolTransportProvider)
+                    ->map(static fn ($plugin): string => $plugin->id())
+                    ->values()->all())
                 ->where('enabled', true)
                 ->select('organization_id')),
         );

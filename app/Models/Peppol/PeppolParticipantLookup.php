@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace App\Models\Plugins\Peppol;
+namespace App\Models\Peppol;
 
 use App\Models\Concerns\BelongsToOrganization;
 use Illuminate\Database\Eloquent\Model;

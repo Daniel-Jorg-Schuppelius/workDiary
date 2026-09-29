@@ -290,6 +290,9 @@ class AppServiceProvider extends ServiceProvider {
         $this->app->singleton(\App\Services\Billing\PartyDocumentSources::class);
         $this->app->singleton(\App\Services\Collections\Import\NotebookSources::class);
         $this->app->singleton(\App\Services\Mail\MailboxTransports::class);
+        $this->app->singleton(\App\Services\Diagnostics\ConnectionHealthModels::class);
+        $this->app->singleton(\App\Services\Stammdaten\IdentifierAuditModels::class);
+        $this->app->singleton(\App\Services\Org\OrganizationFileTables::class);
 
         // Versand-Provider (Feature 059, MVP-128): Carrier-Plugins registrieren
         // ihren ShippingProvider beim Booten, der ShipmentService löst darüber auf.
@@ -905,10 +908,6 @@ class AppServiceProvider extends ServiceProvider {
             ];
         });
 
-        // Sessionloser Todoist-Webhook (Feature 055, MVP-115): großzügig gegen
-        // Bursts, aber gegen Flooding gedeckelt; Verluste heilt der stündliche
-        // Polling-Abgleich (todoist:sync).
-        RateLimiter::for('todoist-webhook', fn(Request $request) => Limit::perMinute(120)->by('twh:' . $request->ip()));
         // Zeiterfassungs-Webhooks (Feature 124, MVP-613): unauthentifizierter
         // Endpunkt, deshalb gedrosselt. Verlorene Aufrufe heilt das Polling.
         // Zusätzlich ein GLOBALES Limit (Sicherheitsscan 2026-08-23, S-57):
@@ -920,11 +919,6 @@ class AppServiceProvider extends ServiceProvider {
             Limit::perMinute(120)->by('ttwh:' . $request->ip()),
             Limit::perMinute(600)->by('ttwh:global'),
         ]);
-
-        // Sessionloser Lexoffice-Webhook (Audit 2026-08, Welle 1.3): gleiche
-        // Abwägung — Bursts erlauben, Flooding deckeln; Verluste heilt der
-        // geplante Pull-Sync.
-        RateLimiter::for('lexoffice-webhook', fn(Request $request) => Limit::perMinute(120)->by('lwh:' . $request->ip()));
 
         // Sessionlose Token-Ingest-Endpunkte (CTI-Webhook, Stempelterminal,
         // Standort-Push; Bauturbo Welle D): pro-IP großzügig (240/min ≈ 4/s) für

@@ -11,9 +11,8 @@
 namespace App\Services\Domain;
 
 use App\Models\Domain\DomainProviderConnection;
-use App\Plugins\Contracts\Domain\DomainProviderAdapter;
-use App\Plugins\Contracts\DomainRegistrar;
-use App\Plugins\DomainReselling\DomainResellingPlugin;
+use App\Plugins\Contracts\Domain\{DomainProviderAdapter, DomainRegistrarSettings};
+use App\Plugins\Contracts\{DomainRegistrar, Plugin};
 use App\Plugins\PluginManager;
 use RuntimeException;
 
@@ -28,11 +27,25 @@ class DomainProviderResolver {
     public function __construct(private readonly PluginManager $plugins) {}
 
     public function for(DomainProviderConnection $connection): DomainProviderAdapter {
-        $plugin = $this->plugins->find(DomainResellingPlugin::ID);
+        return $this->registrar()->domainAdapter($connection);
+    }
+
+    public function settings(int $organizationId): DomainRegistrarSettings {
+        return $this->registrar()->domainSettings($organizationId);
+    }
+
+    /** Plugin-ID des Registrars — Kennung der Domain-Zuordnungen in `external_references`. */
+    public function pluginId(): string {
+        return $this->registrar()->id();
+    }
+
+    /** Registrar über den Vertrag, unabhängig von der Aktivierung (MVP-1043). */
+    private function registrar(): DomainRegistrar&Plugin {
+        $plugin = $this->plugins->all()->first(static fn (Plugin $plugin): bool => $plugin instanceof DomainRegistrar);
         if (! $plugin instanceof DomainRegistrar) {
             throw new RuntimeException('Kein DomainRegistrar-Plugin verfügbar.');
         }
 
-        return $plugin->domainAdapter($connection);
+        return $plugin;
     }
 }

@@ -19,8 +19,8 @@ use App\Models\Document\Document;
 use App\Models\Knowledge\KnowledgeArticle;
 use App\Models\Platform\User;
 use App\Models\Search\SearchDocument;
+use App\Plugins\Contracts\ProvidesRemoteSessions;
 use App\Plugins\PluginManager;
-use App\Plugins\RemoteSupport\RemoteSupportPlugin;
 use App\Services\Licensing\FeatureFlagResolver;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
@@ -115,7 +115,7 @@ final class ActivitySearchVisibility {
             SearchSourceType::KnowledgeArticle => ! ($this->features->isEnabled('module.knowledge') && Gate::forUser($user)->allows('viewAny', KnowledgeArticle::class))
                 ? false
                 : ($admin || $user->can(Permission::KnowledgePublish->value) ? true : self::unrestrictedOrOwn($me)),
-            SearchSourceType::RemoteSession => $admin && $this->plugins->enabled()->has(RemoteSupportPlugin::ID),
+            SearchSourceType::RemoteSession => $admin && $this->plugins->implementing(ProvidesRemoteSessions::class)->isNotEmpty(),
             SearchSourceType::LearningCourse => ! $this->features->isEnabled('module.lms')
                 ? false
                 : ($admin || $user->can(Permission::LearningViewAny->value) ? true : self::enrolled($me)),

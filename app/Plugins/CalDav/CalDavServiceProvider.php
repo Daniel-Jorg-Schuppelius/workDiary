@@ -35,6 +35,8 @@ class CalDavServiceProvider extends PluginServiceProviderBase {
     }
 
     protected function bootPlugin(): void {
+        // Verbindungszustand für Diagnose und Ablaufprüfung (MVP-1044).
+        $this->app->make(\App\Services\Diagnostics\ConnectionHealthModels::class)->register('caldav', \App\Models\Plugins\CalDav\CalDavConnection::class, operationsTask: true);
         // Gruppierte Auflösung der Import-Inbox (MVP-1030).
         $this->app->make(InboxGroupBookerRegistry::class)->register(CalDavPlugin::ID, CalDavSeriesGroupBooker::class);
     }

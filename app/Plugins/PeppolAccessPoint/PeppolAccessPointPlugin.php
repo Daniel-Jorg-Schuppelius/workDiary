@@ -70,6 +70,18 @@ class PeppolAccessPointPlugin extends AbstractPlugin implements PeppolTransportP
         return PeppolAccessPointConfig::resolve($organizationId)['sender_participant_id'];
     }
 
+    public function peppolSenderCountry(?int $organizationId = null): string {
+        return PeppolAccessPointConfig::resolve($organizationId)['sender_country'];
+    }
+
+    public function peppolSmlZone(?int $organizationId = null): SmlZone {
+        return PeppolAccessPointConfig::resolve($organizationId)['sml_zone'];
+    }
+
+    public function peppolLookupTtlHours(?int $organizationId = null): int {
+        return PeppolAccessPointConfig::resolve($organizationId)['lookup_ttl_hours'];
+    }
+
     /** @return list<array<string, mixed>> */
     public function settingsSchema(): array {
         $zones = [];

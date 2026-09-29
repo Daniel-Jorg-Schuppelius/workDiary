@@ -14,7 +14,6 @@ use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Domain\{DomainContactProjection, DomainProjection, DomainResellerAccount};
 use App\Models\Integration\ExternalReference;
 use App\Models\Platform\User;
-use App\Plugins\DomainReselling\DomainResellingPlugin;
 
 /**
  * Kundenzuordnung von Domains und Subusern (Feature 083, MVP-386). Vorschläge
@@ -24,6 +23,8 @@ use App\Plugins\DomainReselling\DomainResellingPlugin;
  * Eine Domain darf innerhalb einer Organisation nur einem Kunden gehören.
  */
 class DomainCustomerMappingService {
+    public function __construct(private readonly DomainProviderResolver $resolver) {}
+
     /**
      * Nachvollziehbare Match-Vorschläge (Homepage/E-Mail-Domain/bestätigte
      * ExternalReference). Nur Vorschläge — nie automatisch bestätigt.
@@ -40,7 +41,7 @@ class DomainCustomerMappingService {
         //    „Provider-Domain ↔ Domain-Projektion" ab; der bestätigte Kunde
         //    liegt im payload — ein Kunde darf beliebig viele Domains halten.
         $ref = ExternalReference::query()
-            ->forPlugin($orgId, DomainResellingPlugin::ID, 'domain')
+            ->forPlugin($orgId, $this->resolver->pluginId(), 'domain')
             ->forExternalId($domain)
             ->first();
         $confirmedCustomerId = is_array($ref?->payload) ? ($ref->payload['customer_id'] ?? null) : null;
@@ -143,7 +144,7 @@ class DomainCustomerMappingService {
         // Endkunde und Urheber landen im payload.
         ExternalReference::link(
             $projection->organization_id,
-            DomainResellingPlugin::ID,
+            $this->resolver->pluginId(),
             'domain',
             $projection,
             mb_strtolower($projection->external_domain),
@@ -160,7 +161,7 @@ class DomainCustomerMappingService {
         ])->save();
 
         ExternalReference::query()
-            ->forPlugin($projection->organization_id, DomainResellingPlugin::ID, 'domain')
+            ->forPlugin($projection->organization_id, $this->resolver->pluginId(), 'domain')
             ->forExternalId(mb_strtolower($projection->external_domain))
             ->delete();
     }

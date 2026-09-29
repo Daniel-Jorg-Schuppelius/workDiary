@@ -35,4 +35,12 @@ interface ShippingProvider {
 
     /** Liveness/Auth-Check der Anbindung (für den Plugin-Health). */
     public function healthy(CarrierConnection $connection): bool;
+
+    /**
+     * Pflicht-Zugangsdaten bei Neuanlage (Schlüssel im verschlüsselten
+     * credentials-Array: `username`, `password`, `api_key` …).
+     *
+     * @return list<string>
+     */
+    public function requiredCredentials(): array;
 }

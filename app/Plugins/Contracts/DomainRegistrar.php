@@ -11,7 +11,7 @@
 namespace App\Plugins\Contracts;
 
 use App\Models\Domain\DomainProviderConnection;
-use App\Plugins\Contracts\Domain\DomainProviderAdapter;
+use App\Plugins\Contracts\Domain\{DomainProviderAdapter, DomainRegistrarSettings};
 
 /**
  * Contract der Fähigkeit {@see PluginCapability::DomainRegistrar} (Feature 083):
@@ -23,4 +23,7 @@ use App\Plugins\Contracts\Domain\DomainProviderAdapter;
 interface DomainRegistrar {
     /** Provider-Adapter für die gegebene, org-gebundene Verbindung. */
     public function domainAdapter(DomainProviderConnection $connection): DomainProviderAdapter;
+
+    /** Prüfbudget, Cache-Dauer, Seitengröße und Veraltungsgrenze der Organisation. */
+    public function domainSettings(int $organizationId): DomainRegistrarSettings;
 }
