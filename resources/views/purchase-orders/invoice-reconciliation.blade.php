@@ -28,7 +28,7 @@
 
     {{-- Gesamtergebnis --}}
     <div class="alert {{ $result['ok'] ? 'alert-success' : 'alert-warning' }}">
-        <span class="material-symbols-rounded">{{ $result['ok'] ? 'check_circle' : 'warning' }}</span>
+        <x-icon :name="$result['ok'] ? 'check_circle' : 'warning'" />
         <span>{{ $result['ok'] ? __('procurement.reconcile.ok') : __('procurement.reconcile.has_discrepancies') }}</span>
     </div>
 

@@ -17,6 +17,7 @@
 <meta name="robots" content="noindex,nofollow">
 <meta name="referrer" content="no-referrer">
 <title>{{ __('contract-signing.public.title', ['kind' => $contract?->kind->label()]) }}</title>
+@include('partials.font-bootstrap')
 @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/signature.js'])
 </head>
 <body class="min-h-screen bg-base-200">

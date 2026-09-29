@@ -909,6 +909,8 @@ body.sidebar-collapsed #app-sidebar .sidebar-cta-menu {
     font-feature-settings: "liga";
     -webkit-font-feature-settings: "liga";
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
     font-variation-settings:
         "FILL" 0,
         "wght" 400,

@@ -161,6 +161,8 @@
         </div>
 
         <img src="{{ asset('img/logo/workdiary-logo-768.png') }}" alt="WorkDiary"
+             srcset="{{ asset('img/logo/workdiary-logo-384.png') }} 1x, {{ asset('img/logo/workdiary-logo-768.png') }} 2x"
+             width="768" height="219" fetchpriority="high"
              class="mx-auto h-20 w-auto max-w-xs object-contain">
 
         <div class="mt-8 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-primary">

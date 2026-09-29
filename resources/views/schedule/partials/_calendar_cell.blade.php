@@ -166,7 +166,7 @@
                             class="schedule-staffing-suggest flex items-center justify-center rounded border border-base-300 px-1 text-[0.6rem] hover:bg-base-200"
                             title="{{ __('schedule.suggest.button') }}"
                             aria-label="{{ __('schedule.suggest.button') }}">
-                        <span class="material-symbols-rounded text-[0.85rem] leading-none">person_search</span>
+                        <x-icon name="person_search" class="text-[0.85rem]" />
                     </button>
                 @endif
             </div>

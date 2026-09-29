@@ -47,8 +47,11 @@ class RawIconRuleTest extends TestCase {
         'resources/views/ideas/show.blade.php' => 2,
     ];
 
-    /** Rohe Material-Symbol-Spans (Element, nicht Prop-String). */
-    private const RAW_SPAN = '~<span\b[^>]*\bmaterial-symbols-outlined\b~';
+    /**
+     * Rohe Material-Symbol-Spans (Element, nicht Prop-String). Alle Varianten:
+     * -rounded/-sharp sind nicht gebündelt und zeigen dauerhaft den Namen als Text.
+     */
+    private const RAW_SPAN = '~<span\b[^>]*\bmaterial-(?:symbols|icons)-~';
 
     /** Icon-Markup als Prop-String statt bloßem Namen. */
     private const ICON_PROP_MARKUP = '~\bicon\s*=\s*([\'"])\s*<~';

@@ -14,6 +14,7 @@
         {{-- Anti-Flash-Theme (ein Partial statt 17 Kopien; Vollaudit 2026-07, M51). --}}
         @include('partials.theme-bootstrap')
         <title>{{ __('Lizenz erforderlich') }} — {{ config('app.name', 'WorkDiary') }}</title>
+        @include('partials.font-bootstrap')
         @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
             @vite(['resources/css/app.css', 'resources/js/app.js'])
         @else

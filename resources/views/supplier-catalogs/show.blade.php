@@ -36,7 +36,7 @@
                     <form method="POST" action="{{ route('supplier-catalogs.fetch', $source) }}">
                         @csrf
                         <button type="submit" class="btn btn-sm btn-outline gap-1">
-                            <span class="material-symbols-rounded text-base">cloud_download</span>{{ __('procurement.catalog.remote.fetch') }}
+                            <x-icon name="cloud_download" class="text-base" />{{ __('procurement.catalog.remote.fetch') }}
                         </button>
                     </form>
                 @endif
@@ -51,7 +51,7 @@
                             </select>
                         </div>
                         <button type="submit" class="btn btn-sm btn-outline gap-1">
-                            <span class="material-symbols-rounded text-base">shopping_cart_checkout</span>{{ __('procurement.oci.punchout.action') }}
+                            <x-icon name="shopping_cart_checkout" class="text-base" />{{ __('procurement.oci.punchout.action') }}
                         </button>
                     </form>
                 @endif

@@ -11,6 +11,7 @@
 <head>
 <meta charset="utf-8">
 <title>{{ __('Vielen Dank') }}</title>
+@include('partials.font-bootstrap', ['icons' => false])
 @vite(['resources/css/app.css'])
 </head>
 <body class="grid min-h-screen place-items-center bg-base-200 p-6">

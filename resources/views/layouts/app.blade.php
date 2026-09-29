@@ -21,40 +21,7 @@
         <meta name="sync-attachment-endpoint" content="{{ route('api.internal.sync.attachments') }}">
         <meta name="geocode-url" content="{{ route('api.internal.geocode') }}">
 
-        {{-- Font-Preloads: starten den Download von IBM Plex Sans (400/600),
-             Space Grotesk (700) und Material Symbols PARALLEL zum CSS-Parsing.
-             Ohne diese Preloads sieht der Browser die @font-face-Deklarationen
-             erst, nachdem das app.css geladen und ausgewertet ist — dadurch
-             entstehen sichtbare Layout-Shifts und unrenderte Material-Symbol-
-             Ligaturen (z. B. "task_alt" als Text statt Icon). --}}
-        @php
-            $fontKeys = [
-                'node_modules/@fontsource/ibm-plex-sans/files/ibm-plex-sans-latin-400-normal.woff2',
-                'node_modules/@fontsource/ibm-plex-sans/files/ibm-plex-sans-latin-600-normal.woff2',
-                'node_modules/@fontsource/space-grotesk/files/space-grotesk-latin-700-normal.woff2',
-                'node_modules/material-symbols/material-symbols-outlined.woff2',
-            ];
-            $fontPreloads = [];
-            $hotFile = public_path('hot');
-            $manifestFile = public_path('build/manifest.json');
-            if (is_file($hotFile)) {
-                // Dev-Modus: Vite serviert die Fonts direkt aus node_modules/.
-                $devUrl = rtrim((string) @file_get_contents($hotFile), "\n\r ");
-                foreach ($fontKeys as $key) {
-                    $fontPreloads[] = $devUrl . '/' . $key;
-                }
-            } elseif (is_file($manifestFile)) {
-                $manifest = json_decode((string) @file_get_contents($manifestFile), true) ?: [];
-                foreach ($fontKeys as $key) {
-                    if (isset($manifest[$key]['file'])) {
-                        $fontPreloads[] = asset('build/' . $manifest[$key]['file']);
-                    }
-                }
-            }
-        @endphp
-        @foreach ($fontPreloads as $href)
-            <link rel="preload" as="font" type="font/woff2" href="{{ $href }}" crossorigin>
-        @endforeach
+        @include('partials.font-bootstrap')
 
         {{-- Theme + Anti-Flash: Inline-Skript läuft VOR jeglichem CSS,
              damit data-theme synchron beim ersten Paint passt. Vorher
@@ -68,30 +35,6 @@
             html[data-theme="dim"] { color-scheme: dark; background: #1d232a; color: #e7e9ea; }
             html[data-theme="corporate"] { color-scheme: light; background: #ffffff; color: #1f2937; }
             body { font-family: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
-
-            /* Anti-Layout-Shift für Material-Symbols-Ligaturen:
-               Vor dem Laden der Icon-Font würden die Ligatur-Codes wie
-               "task_alt" als reiner Text sichtbar werden und Buttons/Zellen
-               aufblähen. Mit visibility:hidden + reservierter 1em×1em-Box
-               bleibt der finale Icon-Platz erhalten, ohne dass der Text-Code
-               flackert. Sobald `document.fonts.ready` aufgelöst ist, setzt
-               das Inline-Skript die Klasse `fonts-loaded` und die Icons
-               werden sichtbar. */
-            .material-symbols-outlined {
-                visibility: hidden;
-                display: inline-block;
-                width: 1em;
-                height: 1em;
-                line-height: 1;
-                overflow: hidden;
-                vertical-align: middle;
-            }
-            html.fonts-loaded .material-symbols-outlined {
-                visibility: visible;
-                width: auto;
-                height: auto;
-                overflow: visible;
-            }
         </style>
         {{-- Theme-Seed (User-/Org-Auflösung) + Custom-Theme-Definitionen der
              Organisation. Beides MUSS vor dem Anti-Flash-Skript und vor dem
@@ -136,16 +79,6 @@
                     || (theme === 'dim' || theme === 'dark' || theme === 'business' ? 'dark' : 'light');
                 root.setAttribute('data-theme', theme);
                 root.style.colorScheme = scheme;
-
-                if (document.fonts && document.fonts.ready) {
-                    document.fonts.ready.then(function () {
-                        document.documentElement.classList.add('fonts-loaded');
-                    });
-                } else {
-                    // Browser ohne Font-Loading-API: Klasse direkt setzen,
-                    // damit Icons nicht permanent unsichtbar bleiben.
-                    document.documentElement.classList.add('fonts-loaded');
-                }
             })();
         </script>
         <title>@yield('title', isset($branding) && $branding ? $branding->appName() : config('app.name', 'WorkDiary'))</title>

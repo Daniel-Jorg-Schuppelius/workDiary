@@ -23,6 +23,7 @@
         </script>
     @endunless
     @if (is_file(public_path('build/manifest.json')))
+        @include('partials.font-bootstrap')
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     @else
         {{-- Fallback, falls die Frontend-Assets noch nicht gebaut wurden (kein npm auf dem Webspace). --}}
