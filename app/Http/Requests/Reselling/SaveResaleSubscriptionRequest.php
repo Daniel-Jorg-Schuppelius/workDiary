@@ -17,12 +17,12 @@ use App\Enums\Reselling\{BillingFrequency, RenewalMode, SubscriptionKind, Subscr
 use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Http\Requests\Finance\Concerns\ResolvesResaleHolder;
-use App\Models\Article\Article;
 use App\Models\Contract\Contract;
 use App\Models\Customer\{Customer, ForeignCustomer};
-use App\Models\Plugins\Lexoffice\LexofficeArticle;
+use App\Models\Platform\Organization;
 use App\Models\Reselling\ResaleSubscription;
 use App\Rules\ExistsInCurrentOrganization;
+use App\Services\Platform\Catalog\{ArticleCatalog, CatalogArticle};
 use Carbon\CarbonImmutable;
 use Illuminate\Validation\{Rule, Validator};
 use Illuminate\Validation\Rules\Unique;
@@ -45,8 +45,6 @@ class SaveResaleSubscriptionRequest extends BaseFormRequest {
     protected array $sqidFields = [
         'customer_id' => Customer::class,
         'foreign_customer_id' => ForeignCustomer::class,
-        'article_id' => Article::class,
-        'lexoffice_article_id' => LexofficeArticle::class,
         'contract_id' => Contract::class,
     ];
 
@@ -105,8 +103,12 @@ class SaveResaleSubscriptionRequest extends BaseFormRequest {
             'holder' => ['required', Rule::in(['customer', 'foreign', 'own', 'none'])],
             'customer_id' => ['nullable', 'integer', new ExistsInCurrentOrganization('customers')],
             'foreign_customer_id' => ['nullable', 'integer', new ExistsInCurrentOrganization('foreign_customers')],
-            'article_id' => ['nullable', 'integer', new ExistsInCurrentOrganization('articles')],
-            'lexoffice_article_id' => ['nullable', 'integer', new ExistsInCurrentOrganization('lexoffice_articles')],
+            // Katalogartikel als Formularschlüssel (`art:<sqid>`, `lex:<sqid>`, MVP-1025).
+            'article' => ['nullable', 'string', 'max:64', function (string $attribute, mixed $value, \Closure $fail): void {
+                if ($value !== null && $value !== '' && $this->catalogArticle() === null) {
+                    $fail((string) __('article.catalog.unknown'));
+                }
+            }],
             'contract_id' => ['nullable', 'integer', new ExistsInCurrentOrganization('contracts')],
             'quantity' => ['required', 'integer', 'min:1', 'max:100000'],
             'starts_on' => ['required', 'date_format:Y-m-d'],
@@ -218,8 +220,7 @@ class SaveResaleSubscriptionRequest extends BaseFormRequest {
             'customer_id' => $holder['foreign'] === null ? $holder['customer']?->id : null,
             'foreign_customer_id' => $holder['foreign']?->id,
             'is_own_holding' => $holder['own'],
-            'article_id' => isset($data['article_id']) && $data['article_id'] !== '' ? (int) $data['article_id'] : null,
-            'lexoffice_article_id' => isset($data['lexoffice_article_id']) && $data['lexoffice_article_id'] !== '' ? (int) $data['lexoffice_article_id'] : null,
+            'article_ref' => $this->catalogArticle()?->key,
             'contract_id' => isset($data['contract_id']) && $data['contract_id'] !== '' ? (int) $data['contract_id'] : null,
             'quantity' => (int) $data['quantity'],
             'starts_on' => $data['starts_on'],
@@ -241,8 +242,7 @@ class SaveResaleSubscriptionRequest extends BaseFormRequest {
                 $attributes['external_id'] = $subscription->external_id;
             }
             if ($locked['product']) {
-                $attributes['article_id'] = $source->article_id;
-                $attributes['lexoffice_article_id'] = $source->lexoffice_article_id;
+                $attributes['article_ref'] = $source->article_ref;
             }
             if ($locked['interval']) {
                 $attributes['interval'] = $source->interval;
@@ -256,5 +256,15 @@ class SaveResaleSubscriptionRequest extends BaseFormRequest {
         $value = is_string($value) ? trim($value) : $value;
 
         return $value === null || $value === '' ? null : (string) $value;
+    }
+
+    /** Katalogartikel aus dem Formularschlüssel, nur in der aktuellen Organisation. */
+    public function catalogArticle(): ?CatalogArticle {
+        $organization = app()->bound('currentOrganization') ? app('currentOrganization') : null;
+        $value = $this->input('article');
+
+        return $organization instanceof Organization && is_string($value) && $value !== ''
+            ? app(ArticleCatalog::class)->fromFormKey((int) $organization->id, $value)
+            : null;
     }
 }

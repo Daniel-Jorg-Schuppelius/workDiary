@@ -172,16 +172,18 @@ con i prezzi di vendita degli abbonamenti (minimo, mediana, massimo).
 Avvisi: «vendita sotto acquisto», «vendita sotto prezzo consigliato»,
 «contratto più caro del listino», «nessun prezzo di vendita».
 
-**Classificazione prodotti:** quali articoli Lexoffice siano prodotti in
-abbonamento il registro lo riconosce dal nome. Per articolo può forzare:
-«prodotto in abbonamento» impone il riconoscimento, «mai riga di
-abbonamento» tiene fuori da proposte, elenchi fatture e «righe senza
-abbonamento» i servizi con un nome di prodotto nel testo (manutenzione su
-Exchange). La stessa classificazione esiste per gli articoli attivi
-dell’anagrafica articoli locale (sezione *Articoli locali*): decide quali righe
-delle fatture locali lo specchio tratta come righe di licenza, e il controllo
-prezzi confronta il prezzo di vendita dell’articolo con i prezzi degli
-abbonamenti.
+**Classificazione prodotti:** l’elenco mostra tutti gli articoli del
+catalogo articoli — gli articoli attivi dell’anagrafica articoli e quelli
+dei programmi di contabilità collegati come Lexoffice, con la loro origine.
+Quali siano prodotti in abbonamento il registro lo riconosce dal nome. Per
+articolo può forzare: «prodotto in abbonamento» impone il riconoscimento,
+«mai riga di abbonamento» tiene fuori da proposte, elenchi fatture e «righe
+senza abbonamento» i servizi con un nome di prodotto nel testo (manutenzione
+su Exchange). La classificazione vale allo stesso modo per ogni origine:
+decide quali righe di fattura lo specchio tratta come righe di licenza, e il
+controllo prezzi confronta il prezzo di vendita dell’articolo con i prezzi
+degli abbonamenti (un prezzo mensile conta dodici volte per un abbonamento
+annuale).
 
 **Contratti:** un abbonamento può avere un contratto della gestione
 contratti come quadro delle scadenze (campo «Contratto» nella finestra
@@ -201,7 +203,7 @@ abbonamento «Dominio» con intervallo annuale dalla registrazione, acquisto =
 prezzo di rinnovo e titolare dalla gestione domini finché il registro non
 ne ha deciso uno. Il prezzo di vendita per estensione viene dal listino
 prezzi (fornitore rivendita domini, prodotto ad es. «.de»), l’articolo
-dall’articolo Lexoffice dell’estensione; prezzi, articoli e titolari
+dal catalogo articoli (anagrafica articoli o programma di contabilità) per l’estensione; prezzi, articoli e titolari
 inseriti a mano sopravvivono a ogni esecuzione. I domini scomparsi
 terminano al giorno di riferimento; se l’elenco domini di un’esecuzione è
 vuoto, nulla viene terminato. Gli abbonamenti di dominio e i loro

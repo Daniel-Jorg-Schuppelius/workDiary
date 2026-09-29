@@ -33,6 +33,7 @@ class RekeyEncryptedCoverageRuleTest extends TestCase {
         'app/Services/Applications/CareerFormState.php' => 'transienter Formular-Token, nicht persistiert',
         'app/Services/Shipping/CarrierTokenCache.php' => 'Cache-Eintrag — nach Rotation schlicht neu geholt',
         'app/Models/Platform/SystemSetting.php' => 'in DIRECT_USERS registriert (value, is_sensitive=1)',
+        'app/Services/Reselling/License/LicenseStockService.php' => 'CSV-Vorschau des Schlüsselimports, 30 Minuten im Cache — nach Rotation lädt der Nutzer die Datei neu',
     ];
 
     public function test_direct_crypt_users_are_registered_or_transient(): void {

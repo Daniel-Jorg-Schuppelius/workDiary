@@ -174,6 +174,28 @@ return [
 
     'attributes' => [
 
+        'invoice_reference' => 'Riferimento fattura',
+
+        'key_labels' => 'Ruoli di chiave',
+
+        'key_labels.*' => 'Ruolo di chiave',
+
+        'license_keys' => 'Chiavi di licenza',
+
+        'license_keys.*' => 'Chiave di licenza',
+
+        'purchased_on' => 'Data di acquisto',
+
+        'remove' => 'Chiavi da rimuovere',
+
+        'remove.*' => 'Chiave da rimuovere',
+
+        'reorder_level' => 'Scorta minima',
+
+        'sold_on' => 'Data di vendita',
+
+        'unit_id' => 'Licenza',
+
         'columns' => 'Assegnazione delle colonne',
 
         'columns.*.header' => 'Cella di intestazione',
@@ -1399,7 +1421,6 @@ return [
         'lessons_learned' => 'Lezioni apprese',
         'level' => 'Livello / valore',
         'lexoffice_api_key' => 'Chiave API di Lexoffice',
-        'lexoffice_article_id' => 'Articolo Lexoffice',
         'library_steps' => 'passaggi della libreria',
         'library_steps.*' => 'passaggio della libreria',
         'licences' => 'Licenze',

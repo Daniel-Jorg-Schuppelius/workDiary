@@ -21,6 +21,7 @@ return [
     // Mitarbeiter mit passender Opt-in-Durchwahl.
     'popup' => [
         'title_customer' => 'Anruf von :name',
+        'title_directory' => 'Anruf von :name (:number)',
         'title_unknown' => 'Anruf von :number',
         'message' => 'Eingehender Anruf (:number).',
         'unknown_number' => 'unbekannte Nummer',

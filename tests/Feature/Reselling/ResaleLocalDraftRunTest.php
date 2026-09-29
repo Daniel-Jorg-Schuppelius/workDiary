@@ -85,7 +85,7 @@ class ResaleLocalDraftRunTest extends TestCase {
         ]);
         // Kunde direkt (zwei fällige Perioden) …
         $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Klimpel Bäder GmbH', 'billing_mode' => BillingMode::Workdiary]);
-        $direct = $this->subscription(['customer_id' => $customer->id, 'lexoffice_article_id' => $article->id]);
+        $direct = $this->subscription(['customer_id' => $customer->id, 'article_ref' => 'lex:' . $article->id]);
         // … Partner mit Endkunde (Rechnung an den Partner) …
         $partner = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'LDS Systems GmbH', 'billing_mode' => BillingMode::Workdiary]);
         $kaik = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $partner->id, 'name' => 'Steuerbüro Kaik']);

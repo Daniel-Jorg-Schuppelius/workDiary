@@ -9,7 +9,8 @@
 
 {{-- Kundenakte-Panel „Sonderkonditionen & Abrechnungskonto" (Feature 098).
      Erwartet: $customer, $billingAgreement, $billingStatements,
-     $billingPayments, $billingStrayEntries, $billingActivityCategories.
+     $billingPayments, $billingStrayEntries, $billingActivityCategories,
+     $billingVouchers (Monats-ID → RetainerVoucherRef), $retainerSystem.
      Nur mit update-Recht eingebunden (CustomerController::show). --}}
 
 @php
@@ -57,7 +58,7 @@
         @endif
         @if ($billingAgreement?->isRetainerMode())
             <x-action-form :action="route('customers.billing.retainer.trueup', $customer)"
-                           :confirm="__('customer-billing.confirm_trueup')"
+                           :confirm="__('customer-billing.confirm_trueup', ['system' => $retainerSystem])"
                            confirm-icon="request_quote" :confirm-label="__('customer-billing.trueup')">
                 <x-icon-btn icon="request_quote" tone="primary" size="sm" type="submit" show-label>{{ __('customer-billing.trueup') }}</x-icon-btn>
             </x-action-form>
@@ -110,7 +111,7 @@
         @if ($billingAgreement->isRetainerMode())
             <div class="mx-4 mt-3 alert text-sm">
                 <x-icon name="info" />
-                <span>{{ __('customer-billing.retainer_hint') }}</span>
+                <span>{{ __('customer-billing.retainer_hint', ['system' => $retainerSystem]) }}</span>
             </div>
         @endif
 
@@ -163,11 +164,11 @@
                                     <x-status-badge :tone="$statement->retainerInvoice->status === \App\Models\Invoicing\Invoice::STATUS_PAID ? 'success' : 'ghost'">
                                         {{ __('values.' . $statement->retainerInvoice->status) }}
                                     </x-status-badge>
-                                @elseif ($statement->lexofficeVoucher)
-                                    {{-- Direkt in Lexoffice geführter Beleg (verknüpft, nicht gepusht). --}}
-                                    <span class="tabular-nums">{{ $statement->lexofficeVoucher->voucher_number ?? '—' }}</span>
-                                    <x-status-badge :tone="$statement->lexofficeVoucher->open_amount?->isPositive() ? 'ghost' : 'success'">
-                                        {{ $money($statement->lexofficeVoucher->net_amount ?? $statement->lexofficeVoucher->total_amount) }}
+                                @elseif ($linkedVoucher = $billingVouchers[$statement->id] ?? null)
+                                    {{-- Direkt im Buchhaltungsprogramm geführter Beleg (verknüpft, nicht gepusht). --}}
+                                    <span class="tabular-nums">{{ $linkedVoucher->number ?? '—' }}</span>
+                                    <x-status-badge :tone="$linkedVoucher->settled ? 'success' : 'ghost'">
+                                        {{ $money($linkedVoucher->net ?? $linkedVoucher->gross) }}
                                     </x-status-badge>
                                 @else
                                     <span class="text-muted">—</span>
@@ -183,11 +184,11 @@
                         </td>
                         <td class="text-right">
                             <div class="flex items-center justify-end gap-1">
-                                @if ($billingAgreement->isRetainerMode() && ! $statement->hasRetainerCharge() && ! $statement->locked)
+                                @if ($billingAgreement->isRetainerMode() && $statement->retainer_invoice_id === null && ! isset($billingVouchers[$statement->id]) && ! $statement->locked)
                                     {{-- Senden nur, solange kein Beleg hängt — sonst entstünde in
-                                         Lexoffice eine zweite Rechnung für denselben Monat. --}}
+                                         Buchhaltungsprogramm eine zweite Rechnung für denselben Monat. --}}
                                     <x-action-form :action="route('customers.billing.retainer.push', $customer)"
-                                                   :confirm="__('customer-billing.confirm_retainer_push', ['period' => $statement->periodLabel()])"
+                                                   :confirm="__('customer-billing.confirm_retainer_push', ['period' => $statement->periodLabel(), 'system' => $retainerSystem])"
                                                    confirm-icon="send" :confirm-label="__('customer-billing.send_retainer')">
                                         <input type="hidden" name="year" value="{{ $statement->year }}">
                                         <input type="hidden" name="month" value="{{ $statement->month }}">
@@ -196,7 +197,7 @@
                                     <x-icon-btn icon="link" data-entry-modal-trigger
                                                 :href="route('customers.billing.retainer.voucher.edit', [$customer, $statement])"
                                                 :label="__('customer-billing.link_voucher')" />
-                                @elseif ($billingAgreement->isRetainerMode() && $statement->lexoffice_voucher_id !== null && ! $statement->locked)
+                                @elseif ($billingAgreement->isRetainerMode() && isset($billingVouchers[$statement->id]) && ! $statement->locked)
                                     <x-action-form :action="route('customers.billing.retainer.voucher.unlink', [$customer, $statement])" method="DELETE"
                                                    :confirm="__('customer-billing.confirm_unlink_voucher', ['period' => $statement->periodLabel()])"
                                                    confirm-icon="link_off" confirm-tone="error" :confirm-label="__('customer-billing.unlink_voucher')">

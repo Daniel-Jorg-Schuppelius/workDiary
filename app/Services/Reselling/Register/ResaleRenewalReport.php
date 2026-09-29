@@ -43,10 +43,10 @@ final class ResaleRenewalReport {
         $today ??= ResalePeriod::today();
         $from = $from->startOfDay();
         $to = $to->startOfDay();
-        $subscriptions = ResaleSubscription::query()->planning()
-            ->with(['customer:id,name', 'foreignCustomer:id,name,customer_id', 'foreignCustomer.customer:id,name', 'article:id,number,name', 'lexofficeArticle:id,article_number,name'])
+        $subscriptions = ResaleSubscription::withCatalogArticles(ResaleSubscription::query()->planning()
+            ->with(['customer:id,name', 'foreignCustomer:id,name,customer_id', 'foreignCustomer.customer:id,name'])
             ->orderBy('label')
-            ->get();
+            ->get());
 
         $rows = [];
         $buckets = array_fill_keys(self::BUCKETS, 0);

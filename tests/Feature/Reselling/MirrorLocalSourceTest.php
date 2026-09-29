@@ -17,7 +17,7 @@ use App\Enums\Reselling\{LinkOrigin, PeriodStatus, ResaleArticleRole};
 use App\Models\Article\Article;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\{Invoice, InvoiceItem};
-use App\Models\Reselling\{ResalePeriodLink, ResaleSubscription};
+use App\Models\Reselling\{ResaleArticleClassification, ResalePeriodLink, ResaleSubscription};
 use App\Services\Reselling\Mirror\{InvoiceMirror, LocalInvoiceMirrorSource};
 use App\Services\Reselling\Register\{LinkProposer, PeriodPlanner};
 use App\Support\Sqid;
@@ -54,7 +54,7 @@ class MirrorLocalSourceTest extends TestCase {
     private function subscription(array $attributes = []): ResaleSubscription {
         $subscription = ResaleSubscription::query()->create(array_merge([
             'organization_id' => $this->organization->id, 'kind' => 'license', 'provider' => 'manual', 'label' => 'Microsoft 365 Business Premium',
-            'customer_id' => $this->customer->id, 'article_id' => $this->premium->id, 'quantity' => 1, 'starts_on' => '2025-08-05',
+            'customer_id' => $this->customer->id, 'article_ref' => 'art:' . $this->premium->id, 'quantity' => 1, 'starts_on' => '2025-08-05',
             'term_months' => 12, 'interval' => 'yearly', 'renewal' => 'auto', 'status' => 'active', 'currency' => 'EUR', 'sale_unit_price' => '247.20',
         ], $attributes));
         (new PeriodPlanner)->sync($subscription);
@@ -109,7 +109,7 @@ class MirrorLocalSourceTest extends TestCase {
     }
 
     public function test_line_without_article_matches_by_name_and_drafts_are_no_candidates(): void {
-        $subscription = $this->subscription(['article_id' => null]);
+        $subscription = $this->subscription(['article_ref' => null]);
         $period = $subscription->periods()->orderBy('starts_on')->firstOrFail();
         // Entwurf allein: kein Kandidat.
         $this->invoice('RE-2025-0001', '2025-08-06', [['article' => null, 'description' => 'Microsoft 365 Business Premium · 05.08.2025 – 04.08.2026', 'quantity' => 12, 'service_date' => '2025-08-05']], Invoice::STATUS_DRAFT);
@@ -192,7 +192,7 @@ class MirrorLocalSourceTest extends TestCase {
         $this->actingAs($admin)->get(route('finance.resale.reconcile.show', $this->customer))->assertOk()->assertSee('RE-2025-0901')->assertDontSee('RE-2025-0900');
     }
     /**
-     * Review 2026-09-11: die Einstufung des lokalen Artikels (`resale_role`)
+     * Review 2026-09-11: die Einstufung des lokalen Artikels (MVP-1025: am Katalogschlüssel)
      * entscheidet vor Abo-Artikel und Namensmatch; der Leistungszeitraum kommt
      * aus `service_from`/`service_to` der Position (Fallback Leistungsdatum).
      */
@@ -203,7 +203,7 @@ class MirrorLocalSourceTest extends TestCase {
         $this->assertNotNull($source);
 
         // Abo-Artikel als „nie Abo-Position" eingestuft: auch mit passendem Text keine Lizenzposition.
-        $this->premium->forceFill(['resale_role' => ResaleArticleRole::Excluded])->save();
+        $classification = ResaleArticleClassification::query()->create(['organization_id' => $this->organization->id, 'article_ref' => 'art:' . $this->premium->id, 'role' => ResaleArticleRole::Excluded]);
         $this->invoice('RE-2025-0810', '2025-08-06', [['article' => $this->premium, 'description' => 'Microsoft 365 Business Premium · 05.08.2025 – 04.08.2026', 'quantity' => 12, 'service_date' => '2025-08-05']]);
         (new LinkProposer)->propose($this->organization);
         $this->assertSame(PeriodStatus::Open, $period->fresh()?->status, 'ausgeschlossener Artikel deckt nichts');
@@ -211,8 +211,9 @@ class MirrorLocalSourceTest extends TestCase {
         $this->assertSame([], $source->linesFor($this->organization, [$this->customer->id])->all());
 
         // Als Abo-Produkt eingestufter Artikel ohne Abo und ohne Produktnamen: Lizenzposition — mit Zeitraum aus der Position.
-        $this->premium->forceFill(['resale_role' => null])->save();
-        $cloud = Article::factory()->create(['organization_id' => $this->organization->id, 'number' => 'CAP', 'name' => 'Cloud-Arbeitsplatz Premium', 'resale_role' => ResaleArticleRole::License]);
+        $classification->delete();
+        $cloud = Article::factory()->create(['organization_id' => $this->organization->id, 'number' => 'CAP', 'name' => 'Cloud-Arbeitsplatz Premium']);
+        ResaleArticleClassification::query()->create(['organization_id' => $this->organization->id, 'article_ref' => 'art:' . $cloud->id, 'role' => ResaleArticleRole::License]);
         $invoice = $this->invoice('RE-2025-0811', '2025-08-07', [['article' => $cloud, 'description' => 'Cloud-Arbeitsplatz Premium · Jahreslizenz', 'quantity' => 12, 'service_date' => '2025-08-05']]);
         InvoiceItem::query()->whereKey($invoice->items()->firstOrFail()->id)->update(['service_from' => '2025-08-05', 'service_to' => '2026-08-04']);
 

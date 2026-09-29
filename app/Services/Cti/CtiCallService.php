@@ -20,7 +20,7 @@ use App\Models\Integration\ExternalReference;
 use App\Models\Platform\{Organization, User};
 use App\Notifications\GenericEventNotification;
 use App\Services\Communication\CommunicationNoteService;
-use App\Services\Contacts\PhoneNumberMatcher;
+use App\Services\Contacts\{ExternalPhoneContactDirectory, PhoneNumberMatcher};
 use App\Support\Crypto\BlindIndex;
 use CommonToolkit\Helper\Data\PhoneNumberHelper;
 use Illuminate\Support\Carbon;
@@ -147,9 +147,16 @@ class CtiCallService {
         }
 
         $callerLabel = $callerNumber !== '' ? $callerNumber : (string) __('cti.popup.unknown_number');
-        $title = $customer instanceof Customer
-            ? (string) __('cti.popup.title_customer', ['name' => $this->customerLabel($customer)])
-            : (string) __('cti.popup.title_unknown', ['number' => $callerLabel]);
+        if ($customer instanceof Customer) {
+            $title = (string) __('cti.popup.title_customer', ['name' => $this->customerLabel($customer)]);
+        } else {
+            // Unbekannter Anrufer: fehlenden Namen über den Rufnummern-Aggregator
+            // (CRM-Verzeichnisse + Telefonauskunft) für das Pop-up anreichern.
+            $directoryName = $this->directoryName((int) $connection->organization_id, $callerNumber);
+            $title = $directoryName !== null
+                ? (string) __('cti.popup.title_directory', ['name' => $directoryName, 'number' => $callerLabel])
+                : (string) __('cti.popup.title_unknown', ['number' => $callerLabel]);
+        }
 
         $callee->notify(new GenericEventNotification(
             NotificationEvent::CtiIncomingCall,
@@ -174,6 +181,19 @@ class CtiCallService {
         $company = trim((string) $customer->company);
 
         return $company !== '' ? $company : (string) __('cti.popup.unknown_number');
+    }
+
+    /** Namens-Hinweis zur Rufnummer aus dem provider-neutralen Aggregat (nur Anzeige). */
+    private function directoryName(int $organizationId, string $number): ?string {
+        if (trim($number) === '') {
+            return null;
+        }
+        $organization = Organization::query()->find($organizationId);
+        if (! $organization instanceof Organization) {
+            return null;
+        }
+
+        return app(ExternalPhoneContactDirectory::class)->find($organization, $number)?->displayName;
     }
 
     private function systemActor(int $organizationId): ?User {

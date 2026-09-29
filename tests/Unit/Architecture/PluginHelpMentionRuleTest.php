@@ -56,6 +56,7 @@ class PluginHelpMentionRuleTest extends TestCase {
         'JtlWawi' => ['jtl'],
         'Msgraph' => ['microsoft graph', 'msgraph'],
         'PeppolAccessPoint' => ['peppol'],
+        'PhoneDirectory' => ['telefonauskunft', 'phone directory'],
         'RemoteSupport' => ['fernwartung', 'remote support'],
         'SevenIo' => ['seven.io'],
         'Ups' => ['ups'],

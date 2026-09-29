@@ -21,8 +21,8 @@ use App\Plugins\Webdav\Contracts\WebdavGatewayFactory;
  * Fachlogik unverändert Feature 058/MVP-127): Verbindungs-Auflösung je
  * Organisation, Gateway über die austauschbare {@see WebdavGatewayFactory}
  * (Tests binden eine Fake-Factory ohne HTTP) und die historischen Kennungen —
- * `mirror:`-Idempotenzpräfix und `webdav_mirror_detached`-Marker bleiben
- * rückwärtskompatibel zu Bestands-Outbox/-Referenzen.
+ * das `mirror:`-Idempotenzpräfix bleibt rückwärtskompatibel zu
+ * Bestands-Outbox/-Referenzen.
  */
 class WebdavMirrorTarget implements MirrorTarget {
     public function pluginId(): string {
@@ -42,10 +42,6 @@ class WebdavMirrorTarget implements MirrorTarget {
         assert($connection instanceof WebdavConnection);
 
         return app(WebdavGatewayFactory::class)->for($connection);
-    }
-
-    public function detachedAttribute(): string {
-        return 'webdav_mirror_detached';
     }
 
     /** Historisches Präfix (vor A10 plugin-los) — Bestandseinträge bleiben dedupe-wirksam. */

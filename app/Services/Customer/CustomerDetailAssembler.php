@@ -25,7 +25,7 @@ use App\Models\Time\TimeEntry;
 use App\Plugins\Contracts\PluginCapability;
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\PluginManager;
-use App\Services\Billing\CustomerAccountStatementService;
+use App\Services\Billing\{CustomerAccountStatementService, RetainerChannelResolver};
 use App\Services\Licensing\FeatureFlagResolver;
 use App\Services\Stammdaten\IdentifierIssueDetector;
 use App\Services\Timeline\DiaryEntryTimelineService;
@@ -52,6 +52,7 @@ class CustomerDetailAssembler {
         private readonly IdentifierIssueDetector $identifierIssues,
         private readonly CustomerAccountStatementService $accountStatements,
         private readonly FeatureFlagResolver $featureFlags,
+        private readonly RetainerChannelResolver $retainerChannels,
     ) {}
 
     /**
@@ -198,38 +199,53 @@ class CustomerDetailAssembler {
         // seiner Fremdkunden (Endkunden) mit der Zahl fälliger Perioden (offen,
         // Beginn erreicht, fremder Halter) — nur mit Modul und Recht.
         $customerSubscriptions = collect();
+        $customerLicenses = collect();
         $resaleModuleActive = $this->featureFlags->isEnabled('module.reselling');
         if ($resaleModuleActive && Gate::forUser($user)->allows(Permission::ResellingView->value)) {
             $today = \App\Models\Reselling\ResalePeriod::today();
             $customerSubscriptions = ResaleSubscription::query()
-                ->with(['foreignCustomer:id,name', 'article:id,number,name'])
+                ->with(['foreignCustomer:id,name'])
                 ->withCount(['periods as open_periods_count' => static fn($q) => $q->due($today)])
                 ->forCustomer($customer)
                 ->planning()
                 ->orderBy('label')
                 ->limit(200)
                 ->get();
+            // Lizenzbestand (MVP-1024): verkaufte Einzellizenzen des Kunden und seiner Fremdkunden — ohne Schlüssel.
+            $customerLicenses = \App\Models\Reselling\ResaleLicenseAssignment::query()
+                ->whereNull('ended_at')
+                ->where('customer_id', $customer->id)
+                ->with(['unit.batch.product', 'foreignCustomer:id,name'])
+                ->orderByDesc('sold_on')
+                ->limit(200)
+                ->get();
         }
 
         // Kunden-Sonderkonditionen & Abrechnungskonto (Feature 098): Panel nur
         // mit update-Recht; im saldenführenden Modus (Konto/Retainer) offene
-        // Monate frisch durchrechnen. Retainer zeigt zusätzlich die Lexoffice-
-        // Pauschalbelege je Monat.
+        // Monate frisch durchrechnen. Retainer zeigt zusätzlich die Pauschalbelege
+        // des Buchhaltungsprogramms je Monat (MVP-1027: über den Kanal).
         $canUpdate = Gate::forUser($user)->allows('update', $customer);
         $billingAgreement = null;
         $billingStatements = collect();
         $billingPayments = collect();
         $billingStrayEntries = [];
+        $billingVouchers = [];
+        $retainerSystem = null;
         if ($canUpdate) {
             $billingAgreement = $customer->billingAgreement()->with('rates.activityCategory')->first();
             if ($billingAgreement !== null && $billingAgreement->keepsLedger()) {
                 $warnings = $this->accountStatements->recalculateOpen($billingAgreement);
                 $billingStrayEntries = $warnings['stray_entries'];
                 $billingStatements = $billingAgreement->statements()
-                    ->with(['retainerInvoice', 'lexofficeVoucher'])
+                    ->with(['retainerInvoice'])
                     ->orderByDesc('year')->orderByDesc('month')
                     ->limit(13)
                     ->get();
+                if ($billingAgreement->isRetainerMode()) {
+                    $billingVouchers = $this->retainerChannels->linksFor($customer)->linkedVouchers($billingStatements);
+                    $retainerSystem = $this->retainerChannels->labelFor($customer);
+                }
                 $billingPayments = $billingAgreement->payments()
                     ->orderByDesc('paid_on')
                     ->limit(12)
@@ -273,6 +289,7 @@ class CustomerDetailAssembler {
             'customer' => $customer,
             'customerDomains' => $customerDomains,
             'customerSubscriptions' => $customerSubscriptions,
+            'customerLicenses' => $customerLicenses,
             'resaleModuleActive' => $resaleModuleActive,
             'portalUsers' => $portalUsers,
             'portalLastLogins' => $portalLastLogins,
@@ -280,6 +297,8 @@ class CustomerDetailAssembler {
             'billingStatements' => $billingStatements,
             'billingPayments' => $billingPayments,
             'billingStrayEntries' => $billingStrayEntries,
+            'billingVouchers' => $billingVouchers,
+            'retainerSystem' => $retainerSystem,
             'billingActivityCategories' => $canUpdate
                 ? ActivityCategory::query()->active()->orderBy('label')->get()
                 : collect(),

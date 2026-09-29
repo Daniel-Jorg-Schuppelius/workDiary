@@ -14,14 +14,13 @@ namespace App\Models\Reselling;
 
 use App\Casts\MoneyCast;
 use App\Enums\Reselling\{BillingFrequency, PeriodStatus, RenewalMode, SubscriptionKind, SubscriptionProvider, SubscriptionStatus};
-use App\Models\Article\Article;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Contract\Contract;
 use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Domain\DomainProjection;
 use App\Models\Platform\{Organization, User};
-use App\Models\Plugins\Lexoffice\LexofficeArticle;
 use App\Services\Billing\DocumentTotalsCalculator;
+use App\Services\Platform\Catalog\{ArticleCatalog, CatalogArticle};
 use App\Services\Reselling\Marketplace\ProductNameMatcher;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
@@ -45,8 +44,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property int|null $customer_id
  * @property int|null $foreign_customer_id
  * @property bool $is_own_holding
- * @property int|null $article_id
- * @property int|null $lexoffice_article_id
+ * @property string|null $article_ref Katalogschlüssel (`art:<id>`, `lex:<id>`, MVP-1025)
  * @property string $label
  * @property string|null $company_name
  * @property int|null $import_id
@@ -71,8 +69,6 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property int|null $created_by_user_id
  * @property-read Customer|null $customer
  * @property-read ForeignCustomer|null $foreignCustomer
- * @property-read Article|null $article
- * @property-read LexofficeArticle|null $lexofficeArticle
  * @property-read \Illuminate\Database\Eloquent\Collection<int, ResalePeriod> $periods
  * @property-read \Illuminate\Database\Eloquent\Collection<int, ResalePurchaseEntry> $purchases
  */
@@ -80,6 +76,10 @@ class ResaleSubscription extends Model {
     use Auditable;
     use BelongsToOrganization;
     use HasSqid;
+
+    private ?CatalogArticle $catalogArticle = null;
+
+    private bool $catalogArticleResolved = false;
 
     protected $table = 'resale_subscriptions';
 
@@ -103,8 +103,7 @@ class ResaleSubscription extends Model {
         'customer_id',
         'foreign_customer_id',
         'is_own_holding',
-        'article_id',
-        'lexoffice_article_id',
+        'article_ref',
         'label',
         'company_name',
         'quantity',
@@ -161,14 +160,57 @@ class ResaleSubscription extends Model {
         return $this->belongsTo(ForeignCustomer::class);
     }
 
-    /** @return BelongsTo<Article, $this> */
-    public function article(): BelongsTo {
-        return $this->belongsTo(Article::class);
+    /** Katalogartikel des Abos, einmal je Instanz aufgelöst (Listen laden gebündelt über {@see withCatalogArticles()}). */
+    public function catalogArticle(): ?CatalogArticle {
+        if (! $this->catalogArticleResolved) {
+            $this->catalogArticle = app(ArticleCatalog::class)->find((int) $this->organization_id, $this->article_ref);
+            $this->catalogArticleResolved = true;
+        }
+
+        return $this->catalogArticle;
     }
 
-    /** @return BelongsTo<LexofficeArticle, $this> */
-    public function lexofficeArticle(): BelongsTo {
-        return $this->belongsTo(LexofficeArticle::class);
+    /**
+     * Katalogartikel für viele Abos in einer Abfrage je Quelle.
+     *
+     * @template TCollection of iterable<self>
+     *
+     * @param  TCollection  $subscriptions
+     * @return TCollection
+     */
+    public static function withCatalogArticles(iterable $subscriptions): iterable {
+        self::resolveCatalogArticles($subscriptions);
+
+        return $subscriptions;
+    }
+
+    /** @param  iterable<self>  $subscriptions */
+    private static function resolveCatalogArticles(iterable $subscriptions): void {
+        $keysByOrganization = [];
+        foreach ($subscriptions as $subscription) {
+            if ($subscription->article_ref !== null) {
+                $keysByOrganization[(int) $subscription->organization_id][] = $subscription->article_ref;
+            }
+        }
+        $found = [];
+        foreach ($keysByOrganization as $organizationId => $keys) {
+            $found[$organizationId] = app(ArticleCatalog::class)->findMany($organizationId, $keys);
+        }
+        foreach ($subscriptions as $subscription) {
+            $subscription->catalogArticle = $subscription->article_ref !== null ? ($found[(int) $subscription->organization_id][$subscription->article_ref] ?? null) : null;
+            $subscription->catalogArticleResolved = true;
+        }
+    }
+
+    /** Ein neuer Katalogschlüssel verwirft den aufgelösten Artikel. */
+    public function setArticleRefAttribute(?string $value): void {
+        $this->attributes['article_ref'] = $value;
+        $this->catalogArticleResolved = false;
+    }
+
+    /** Produktname für Abgleich und Anzeige: Katalogartikel, sonst die Bezeichnung. */
+    public function productName(): string {
+        return $this->catalogArticle()->name ?? $this->label;
     }
 
     /** @return BelongsTo<ResaleImport, $this> */
@@ -398,38 +440,31 @@ class ResaleSubscription extends Model {
         return $this->is_own_holding || $this->customer_id !== null || $this->foreign_customer_id !== null;
     }
 
-    /**
-     * Produktanzeige: lokaler Artikel, sonst Lexoffice-Artikel (die Produktion
-     * hat ihre Produkte nur dort), sonst nichts.
-     */
+    /** Produktanzeige: Katalogartikel mit Quelle, sonst nichts. */
     public function productLabel(): ?string {
-        if ($this->article !== null) {
-            return ($this->article->number ? $this->article->number . ' · ' : '') . $this->article->name;
-        }
-        if ($this->lexofficeArticle !== null) {
-            return ($this->lexofficeArticle->article_number ? $this->lexofficeArticle->article_number . ' · ' : '') . $this->lexofficeArticle->name;
-        }
+        $article = $this->catalogArticle();
 
-        return null;
+        return $article?->label();
     }
 
     /**
-     * Produktschlüssel für Deckung und Sharing-Regel: der Lexoffice-Artikel
-     * (`art:{id}`), sonst der Artikel aus der Liste, dessen Name zum Abo-Namen
-     * passt, sonst der normalisierte Abo-Name (`name:…`). Eine Regel für
-     * Vorschlagslauf, Abgleich und Bericht — sonst zählt ein Produkt doppelt.
+     * Produktschlüssel für Deckung und Sharing-Regel: der Katalogartikel
+     * (`lex:{id}`, `art:{id}`), sonst der Artikel aus der Liste, dessen Name
+     * zum Abo-Namen passt, sonst der normalisierte Abo-Name (`name:…`). Eine
+     * Regel für Vorschlagslauf, Abgleich und Bericht — sonst zählt ein Produkt
+     * doppelt.
      *
-     * @param  array<int, string>|null  $articleNames  Lexoffice-Artikel-ID → Name (z. B. die Artikel der Rechnungen des Empfängers)
+     * @param  array<string, string>|null  $articleNames  Katalogschlüssel → Name (z. B. die Artikel der Rechnungen des Empfängers)
      */
     public function productKey(?array $articleNames = null): string {
-        if ($this->lexoffice_article_id !== null) {
-            return 'art:' . $this->lexoffice_article_id;
+        if ($this->article_ref !== null) {
+            return $this->article_ref;
         }
         if ($articleNames !== null && $articleNames !== []) {
             $matcher = new ProductNameMatcher;
-            foreach ($articleNames as $id => $name) {
+            foreach ($articleNames as $key => $name) {
                 if ($matcher->matches($this->label, $name)) {
-                    return 'art:' . $id;
+                    return $key;
                 }
             }
         }

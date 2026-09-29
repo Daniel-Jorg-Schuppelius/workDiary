@@ -211,6 +211,11 @@ class PermissionsSeeder extends Seeder {
                 if (str_starts_with($value, 'security.')) {
                     return false;
                 }
+                // Klartext von Lizenzschlüsseln (MVP-1024) wird einzeln vergeben,
+                // nie über die .view-Heuristik.
+                if ($p === PermissionEnum::ResellingKeysView) {
+                    return false;
+                }
                 if (str_ends_with($value, '.viewAny') || str_ends_with($value, '.view') || str_ends_with($value, '.viewOwn')) {
                     return true;
                 }

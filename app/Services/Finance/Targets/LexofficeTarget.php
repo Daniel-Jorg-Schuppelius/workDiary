@@ -16,6 +16,7 @@ use App\Models\Customer\Customer;
 use App\Models\Finance\BillingTransfer;
 use App\Models\Integration\ExternalReference;
 use App\Plugins\Lexoffice\{LexofficeConfig, LexofficeMapper, LexofficePlugin, LexofficeService};
+use App\Plugins\Lexoffice\Services\LexofficeArticleCatalogSource;
 use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
 use App\Services\Finance\BillingPositionBuilder;
 use RuntimeException;
@@ -45,6 +46,7 @@ class LexofficeTarget implements FacturationTarget {
 
     public function __construct(
         private readonly BillingPositionBuilder $positions,
+        private readonly LexofficeArticleCatalogSource $articles,
     ) {}
 
     public function supports(TransferTarget $target): bool {
@@ -182,8 +184,9 @@ class LexofficeTarget implements FacturationTarget {
                 continue;
             }
 
+            $articleId = $this->articles->externalId((int) $transfer->organization_id, $position->article_ref);
             $item = [
-                'type' => $position->article_id !== null ? 'service' : 'custom',
+                'type' => $articleId !== null ? 'service' : 'custom',
                 'name' => $position->name,
                 'quantity' => $position->quantityFloat(),
                 'unitName' => (string) ($position->unit_name ?: __('invoicing.unit_hour')),
@@ -197,8 +200,8 @@ class LexofficeTarget implements FacturationTarget {
             if (filled($position->description)) {
                 $item['description'] = (string) $position->description;
             }
-            if ($position->article_id !== null) {
-                $item['id'] = $position->article_id;
+            if ($articleId !== null) {
+                $item['id'] = $articleId;
             }
 
             $items[] = $item;

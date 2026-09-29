@@ -253,4 +253,13 @@ return [
             'saved' => 'Faktoren gespeichert.',
         ],
     ],
+    'catalog' => [
+        'field' => 'Artikel',
+        'none' => '— ohne Artikel —',
+        'source_local' => 'Artikelstamm',
+        'unknown' => 'Der gewählte Artikel ist in dieser Organisation nicht (mehr) vorhanden.',
+        'missing' => 'Artikel nicht mehr vorhanden',
+        'empty_hint' => 'Noch keine Artikel vorhanden. Legen Sie Artikel im Artikelstamm an oder rufen Sie sie aus einem angebundenen Buchhaltungsprogramm ab.',
+        'service_hint' => 'Liefert Bezeichnung, Einheit, Standardtext und — ohne gepflegten Preis — den Preis der Position.',
+    ],
 ];

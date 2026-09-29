@@ -43,10 +43,6 @@ class SharepointMirrorTarget implements MirrorTarget {
         return new SharepointDriveClient($connection);
     }
 
-    public function detachedAttribute(): string {
-        return 'sharepoint_mirror_detached';
-    }
-
     public function idempotencyKey(string $suffix): string {
         return SharepointPlugin::ID . ':mirror:' . $suffix;
     }

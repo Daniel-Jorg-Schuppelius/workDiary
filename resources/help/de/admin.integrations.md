@@ -79,7 +79,9 @@ Anbindungen nach Zweck, damit Sie nicht raten müssen, wo etwas hingehört:
   BuchhaltungsButler, InvoicePlane sowie der Peppol-Zugangspunkt für den
   Versand elektronischer Rechnungen.
 - **Telefonie und Nachrichten:** sipgate und FRITZ!Box für ein- und
-  ausgehende Anrufe, seven.io für SMS an kritische Empfänger.
+  ausgehende Anrufe, die Telefonauskunft für Namen zu unbekannten
+  Rufnummern (als Vorschlag, über einen selbst gewählten Auskunftsdienst),
+  seven.io für SMS an kritische Empfänger.
 - **Versand:** DHL, FedEx und UPS für Etiketten und Sendungsverfolgung.
 - **Dateien und Sicherungen:** Nextcloud, WebDAV, Dropbox, Google Drive,
   SharePoint und S3 als Ablage- oder Sicherungsziel.

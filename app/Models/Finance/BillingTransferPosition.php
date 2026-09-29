@@ -41,7 +41,7 @@ use Illuminate\Support\Carbon;
  * @property string $unit_price
  * @property string|null $vat_rate
  * @property string $amount
- * @property string|null $article_id
+ * @property string|null $article_ref Katalogschlüssel der Standardleistung (MVP-1026)
  * @property string|null $service_source
  * @property string|null $price_source
  * @property Carbon|null $service_from
@@ -78,7 +78,7 @@ class BillingTransferPosition extends Model implements DocumentLine {
         'unit_price',
         'vat_rate',
         'amount',
-        'article_id',
+        'article_ref',
         'service_source',
         'price_source',
         'service_from',

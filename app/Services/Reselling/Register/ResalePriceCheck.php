@@ -38,7 +38,7 @@ final class ResalePriceCheck {
      * @return array{rows: list<PriceRow>, catalog_date: CarbonImmutable|null}
      */
     public function build(CarbonImmutable $today): array {
-        $subscriptions = ResaleSubscription::query()->planning()->where('is_own_holding', false)->with(['lexofficeArticle', 'article'])->get();
+        $subscriptions = ResaleSubscription::withCatalogArticles(ResaleSubscription::query()->planning()->where('is_own_holding', false)->get());
         $catalog = ResalePriceEntry::query()->validOn($today)->where('term_months', 12)->where('interval', BillingFrequency::Yearly->value)->get();
         $matcher = new ProductNameMatcher;
         $rows = [];
@@ -51,9 +51,9 @@ final class ResalePriceCheck {
             $entry = self::catalogEntryFor($catalog, $label, $matcher);
             $listPrice = $entry?->purchase_unit_price->toFloat();
             $uvp = $entry?->list_unit_price?->toFloat();
-            // Verkaufspreis des lokalen Artikels — erster Artikel der Gruppe mit Preis in der Währung der Abos.
+            // Verkaufspreis des Katalogartikels — erster Artikel der Gruppe mit Preis in der Währung der Abos.
             $articleSale = $group
-                ->map(static fn(ResaleSubscription $s): ?Money => $s->article?->default_sale_price)
+                ->map(static fn(ResaleSubscription $s): ?Money => self::articleSalePrice($s))
                 ->first(static fn(?Money $price): bool => $price !== null && $price->getCurrency() === $first->currency)
                 ?->toFloat();
             $median = $sales->isEmpty() ? null : (float) $sales->get(intdiv($sales->count(), 2));
@@ -93,7 +93,7 @@ final class ResalePriceCheck {
         $since = now()->subDays($days);
         $matcher = new ProductNameMatcher;
         $count = 0;
-        $subscriptions = ResaleSubscription::query()->where('status', SubscriptionStatus::Active->value)->whereNotNull('purchase_unit_price')->with('lexofficeArticle')->get();
+        $subscriptions = ResaleSubscription::withCatalogArticles(ResaleSubscription::query()->where('status', SubscriptionStatus::Active->value)->whereNotNull('purchase_unit_price')->get());
         foreach ($subscriptions as $subscription) {
             $purchase = $subscription->purchase_unit_price;
             if ($purchase === null) {
@@ -112,9 +112,20 @@ final class ResalePriceCheck {
         return $count;
     }
 
-    /** Produktname des Abos: Lexoffice-Artikel, sonst die Bezeichnung. */
+    /** Produktname des Abos: Katalogartikel, sonst die Bezeichnung. */
     private static function labelOf(ResaleSubscription $subscription): string {
-        return $subscription->lexofficeArticle !== null ? $subscription->lexofficeArticle->name : $subscription->label;
+        return $subscription->productName();
+    }
+
+    /** Artikelpreis je Stück und Abo-Intervall: Einheit „Monat" × 12 bei Jahresintervall. */
+    private static function articleSalePrice(ResaleSubscription $subscription): ?Money {
+        $article = $subscription->catalogArticle();
+        $price = $article?->netPrice;
+        if ($price === null) {
+            return null;
+        }
+
+        return LicenseMonths::isMonthUnit($article->unitName) && $subscription->interval === BillingFrequency::Yearly ? $price->times(12) : $price;
     }
 
     /**

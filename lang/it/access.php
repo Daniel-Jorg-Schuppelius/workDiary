@@ -350,6 +350,7 @@ return [
         'reselling.view' => 'Vedere il registro di rivendita (abbonamenti, titolari, periodi)',
         'reselling.manage' => 'Gestire il registro di rivendita (creare/modificare abbonamenti, decidere i periodi)',
         'reselling.invoice' => 'Registro di rivendita: creare bozze di fattura dai periodi (Lexoffice/locale)',
+        'reselling.keys.view' => 'Registro di rivendita: mostrare e copiare le chiavi di licenza in chiaro',
 
         'finance.viewAny' => 'Consultare le ricevute di trasferimento',
         'finance.config' => 'Gestire la configurazione finanziaria',

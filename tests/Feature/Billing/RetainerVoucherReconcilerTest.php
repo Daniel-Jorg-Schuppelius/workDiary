@@ -18,7 +18,8 @@ use App\Models\Integration\ExternalReference;
 use App\Models\Invoicing\Invoice;
 use App\Models\Plugins\Lexoffice\LexofficeVoucher;
 use App\Plugins\Lexoffice\{LexofficeInvoiceService, LexofficePlugin};
-use App\Services\Billing\{CustomerAccountStatementService, RetainerVoucherReconciler};
+use App\Plugins\Lexoffice\Services\Retainer\LexofficeRetainerVouchers;
+use App\Services\Billing\CustomerAccountStatementService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -100,7 +101,7 @@ class RetainerVoucherReconcilerTest extends TestCase {
     public function test_paid_voucher_books_lexoffice_payment(): void {
         $this->voucher('paid', 550.00, 0.00);
 
-        $result = app(RetainerVoucherReconciler::class)->reconcile($this->organization);
+        $result = app(LexofficeRetainerVouchers::class)->reconcile($this->organization);
 
         $this->assertSame(1, $result['booked']);
         $payment = $this->agreement->payments()->firstOrFail();
@@ -112,11 +113,11 @@ class RetainerVoucherReconcilerTest extends TestCase {
 
     public function test_partial_then_full_payment_grows_idempotently(): void {
         $this->voucher('open', 550.00, 200.00); // 350 bezahlt
-        app(RetainerVoucherReconciler::class)->reconcile($this->organization);
+        app(LexofficeRetainerVouchers::class)->reconcile($this->organization);
         $this->assertSame('350.00', $this->agreement->payments()->firstOrFail()->amount?->getAmount());
 
         $this->voucher('paid', 550.00, 0.00);   // jetzt voll
-        app(RetainerVoucherReconciler::class)->reconcile($this->organization);
+        app(LexofficeRetainerVouchers::class)->reconcile($this->organization);
 
         $this->assertSame(1, $this->agreement->payments()->count());
         $this->assertSame('550.00', $this->agreement->payments()->firstOrFail()->amount?->getAmount());
@@ -124,11 +125,11 @@ class RetainerVoucherReconcilerTest extends TestCase {
 
     public function test_voided_voucher_revokes_payment(): void {
         $this->voucher('paid', 550.00, 0.00);
-        app(RetainerVoucherReconciler::class)->reconcile($this->organization);
+        app(LexofficeRetainerVouchers::class)->reconcile($this->organization);
         $this->assertSame(1, $this->agreement->payments()->count());
 
         $this->voucher('voided', 550.00, 550.00);
-        $result = app(RetainerVoucherReconciler::class)->reconcile($this->organization);
+        $result = app(LexofficeRetainerVouchers::class)->reconcile($this->organization);
 
         $this->assertSame(1, $result['revoked']);
         $this->assertSame(0, $this->agreement->payments()->count());
@@ -139,7 +140,7 @@ class RetainerVoucherReconcilerTest extends TestCase {
         // Beleg eines fremden (Nicht-Retainer-)Belegs → keine Buchung.
         $this->voucher('paid', 99.00, 0.00, 'unrelated-uuid');
 
-        $result = app(RetainerVoucherReconciler::class)->reconcile($this->organization);
+        $result = app(LexofficeRetainerVouchers::class)->reconcile($this->organization);
 
         $this->assertSame(0, $result['booked']);
         $this->assertSame(0, $this->agreement->payments()->count());
@@ -150,7 +151,7 @@ class RetainerVoucherReconcilerTest extends TestCase {
         // rechnet netto — sonst wäre jede Pauschale 19 % zu hoch verbucht.
         $this->voucher('paid', 654.50, 0.00, 'lex-voucher-uuid-1', ['net_amount' => 550.00]);
 
-        app(RetainerVoucherReconciler::class)->reconcile($this->organization);
+        app(LexofficeRetainerVouchers::class)->reconcile($this->organization);
 
         $this->assertSame('550.00', $this->agreement->payments()->firstOrFail()->amount?->getAmount());
     }
@@ -159,7 +160,7 @@ class RetainerVoucherReconcilerTest extends TestCase {
         // Halbe Bruttozahlung ⇒ halbes Netto (327,25 von 654,50 → 275,00).
         $this->voucher('open', 654.50, 327.25, 'lex-voucher-uuid-1', ['net_amount' => 550.00]);
 
-        app(RetainerVoucherReconciler::class)->reconcile($this->organization);
+        app(LexofficeRetainerVouchers::class)->reconcile($this->organization);
 
         $this->assertSame('275.00', $this->agreement->payments()->firstOrFail()->amount?->getAmount());
     }
@@ -174,10 +175,10 @@ class RetainerVoucherReconcilerTest extends TestCase {
             'net_amount' => 550.00,
         ]);
 
-        $result = app(RetainerVoucherReconciler::class)->reconcile($this->organization);
+        $result = app(LexofficeRetainerVouchers::class)->reconcile($this->organization);
 
         $this->assertSame(1, $result['linked']);
-        $this->assertSame($voucher->id, $statement->fresh()->lexoffice_voucher_id);
+        $this->assertSame($voucher->external_id, LexofficeRetainerVouchers::linkOf($statement)?->external_id);
         $this->assertSame('550.00', $this->agreement->payments()->firstOrFail()->amount?->getAmount());
     }
 
@@ -187,7 +188,7 @@ class RetainerVoucherReconcilerTest extends TestCase {
         $this->voucher('paid', 654.50, 0.00, 'lex-a', ['voucher_date' => '2026-04-10', 'net_amount' => 550.00]);
         $this->voucher('paid', 654.50, 0.00, 'lex-b', ['voucher_date' => '2026-04-20', 'net_amount' => 550.00]);
 
-        $result = app(RetainerVoucherReconciler::class)->reconcile($this->organization);
+        $result = app(LexofficeRetainerVouchers::class)->reconcile($this->organization);
 
         $this->assertSame(0, $result['linked']);
         $this->assertSame(0, $this->agreement->payments()->count());
@@ -197,7 +198,7 @@ class RetainerVoucherReconcilerTest extends TestCase {
         app(CustomerAccountStatementService::class)->ensure($this->agreement, 2026, 4);
         $this->voucher('paid', 238.00, 0.00, 'lex-other', ['voucher_date' => '2026-04-15', 'net_amount' => 200.00]);
 
-        $result = app(RetainerVoucherReconciler::class)->reconcile($this->organization);
+        $result = app(LexofficeRetainerVouchers::class)->reconcile($this->organization);
 
         $this->assertSame(0, $result['linked']);
         $this->assertSame(0, $this->agreement->payments()->count());
@@ -209,13 +210,13 @@ class RetainerVoucherReconcilerTest extends TestCase {
             'voucher_date' => '2026-04-30',
             'net_amount' => 550.00,
         ]);
-        $reconciler = app(RetainerVoucherReconciler::class);
+        $reconciler = app(LexofficeRetainerVouchers::class);
         $reconciler->reconcile($this->organization);
         $this->assertSame(1, $this->agreement->payments()->count());
 
         $reconciler->unlink($statement->fresh());
 
-        $this->assertNull($statement->fresh()->lexoffice_voucher_id);
+        $this->assertNull(LexofficeRetainerVouchers::linkOf($statement));
         $this->assertSame(0, $this->agreement->payments()->count());
     }
 
@@ -232,7 +233,7 @@ class RetainerVoucherReconcilerTest extends TestCase {
             'net_amount' => 550.00,
         ]);
 
-        app(RetainerVoucherReconciler::class)->reconcile($this->organization);
+        app(LexofficeRetainerVouchers::class)->reconcile($this->organization);
 
         $payment = $this->agreement->payments()->firstOrFail();
         $this->assertSame($april->id, $payment->customer_billing_statement_id);
@@ -253,11 +254,11 @@ class RetainerVoucherReconcilerTest extends TestCase {
             'voucher_date' => '2026-04-30',
             'net_amount' => 550.00,
         ]);
-        $reconciler = app(RetainerVoucherReconciler::class);
+        $reconciler = app(LexofficeRetainerVouchers::class);
         $reconciler->reconcile($this->organization);
         $reconciler->unlink($statement->fresh());
 
-        $reconciler->link($statement->fresh(), $voucher);
+        $reconciler->attach($statement->fresh(), $voucher);
         $reconciler->reconcile($this->organization);
 
         $this->assertSame(1, $this->agreement->payments()->count());
@@ -266,7 +267,7 @@ class RetainerVoucherReconcilerTest extends TestCase {
 
     public function test_voided_then_paid_again_revives_the_payment(): void {
         $this->voucher('paid', 550.00, 0.00);
-        $reconciler = app(RetainerVoucherReconciler::class);
+        $reconciler = app(LexofficeRetainerVouchers::class);
         $reconciler->reconcile($this->organization);
 
         $this->voucher('voided', 550.00, 550.00);

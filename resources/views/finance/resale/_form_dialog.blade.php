@@ -22,8 +22,6 @@
     $holder = (string) old('holder', $holderDefault);
     $customerSqid = (string) old('customer_id', \App\Support\Sqid::encode(\App\Models\Customer\Customer::class, $editing ? $subscription->customer_id : ($prefill['customer_id'] ?? null)));
     $foreignSqid = (string) old('foreign_customer_id', \App\Support\Sqid::encode(\App\Models\Customer\ForeignCustomer::class, $editing ? $subscription->foreign_customer_id : ($prefill['foreign_customer_id'] ?? null)));
-    $articleSqid = (string) old('article_id', \App\Support\Sqid::encode(\App\Models\Article\Article::class, $editing ? $subscription->article_id : ($prefill['article_id'] ?? null)));
-    $lexArticleSqid = (string) old('lexoffice_article_id', \App\Support\Sqid::encode(\App\Models\Plugins\Lexoffice\LexofficeArticle::class, $editing ? $subscription->lexoffice_article_id : ($prefill['lexoffice_article_id'] ?? null)));
     $contractSqid = (string) old('contract_id', \App\Support\Sqid::encode(\App\Models\Contract\Contract::class, $editing ? $subscription->contract_id : null));
     $contracts = $contracts ?? collect();
     // Vorbelegung („Abo aus Rechnungsposition anlegen") greift nur beim Anlegen.
@@ -111,22 +109,9 @@
             </x-select-field>
         @endif
 
-        @if ($articles->isNotEmpty())
-            <x-select-field name="article_id" :label="__('resale.field.article')" span="3" :hint="__('resale.dialog.article_hint')" :disabled="$locked['product']">
-                <option value="">{{ __('resale.dialog.no_article') }}</option>
-                @foreach ($articles as $article)
-                    <option value="{{ $article->sqid }}" @selected($articleSqid === $article->sqid)>{{ $article->number ? $article->number . ' · ' : '' }}{{ $article->name }}</option>
-                @endforeach
-            </x-select-field>
-        @endif
-        <x-select-field name="lexoffice_article_id" :label="__('resale.field.lexoffice_article')" :span="$articles->isNotEmpty() ? 3 : 4" :hint="__('resale.dialog.lexoffice_article_hint')" :disabled="$locked['product']">
-            <option value="">{{ __('resale.dialog.no_article') }}</option>
-            @foreach ($lexofficeArticles as $article)
-                @php $lexSqid = \App\Support\Sqid::encode(\App\Models\Plugins\Lexoffice\LexofficeArticle::class, $article->id); @endphp
-                <option value="{{ $lexSqid }}" @selected($lexArticleSqid === $lexSqid)>{{ $article->article_number ? $article->article_number . ' · ' : '' }}{{ $article->name }}{{ $article->net_unit_price ? ' — ' . $article->net_unit_price->withScale(2)->format() . ($article->unit_name ? '/' . $article->unit_name : '') : '' }}</option>
-            @endforeach
-        </x-select-field>
-        <x-input-field name="quantity" type="number" :label="__('resale.field.quantity')" :value="$value('quantity', 1)" required :span="$articles->isNotEmpty() ? 6 : 2" />
+        <x-article-catalog-select name="article" :articles="$catalogArticles" :selected="$articleFormKey" span="4"
+                                  :label="__('resale.field.article')" :hint="__('resale.dialog.article_hint')" :empty="__('resale.dialog.no_article')" :disabled="$locked['product']" />
+        <x-input-field name="quantity" type="number" :label="__('resale.field.quantity')" :value="$value('quantity', 1)" required span="2" />
 
         <div class="md:col-span-4">
             <x-date-range layout="split" from-name="starts_on" to-name="ends_on" form-control size=""

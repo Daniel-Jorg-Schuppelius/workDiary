@@ -40,4 +40,5 @@ return [
             'generic' => 'Il valore non supera la verifica.',
         ],
     ],
+    'accounting_number' => 'N. nel programma contabile',
 ];

@@ -54,7 +54,7 @@ class DocumentMirrorService {
      */
     public function mirror(MirrorTarget $target, Document $document, MirrorConnection $connection, RemoteFileGateway $gateway, bool $force = false): string {
         // Spiegelung für dieses Dokument in DIESEM Zweig getrennt (Rang 18) → nichts tun.
-        if ((bool) $document->getAttribute($target->detachedAttribute())) {
+        if ($document->isMirrorDetached($target->pluginId())) {
             return self::RESULT_SKIPPED;
         }
 

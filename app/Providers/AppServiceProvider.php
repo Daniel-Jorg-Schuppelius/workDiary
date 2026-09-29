@@ -238,6 +238,12 @@ class AppServiceProvider extends ServiceProvider {
             return $registry;
         });
 
+        // Artikelkatalog mit Quellen (Phase 125, MVP-1025): Module melden ihre
+        // Quelle im Manifest an, Buchhaltungs-Plugins registrieren sie beim Booten.
+        $this->app->singleton(\App\Services\Platform\Catalog\ArticleCatalog::class);
+        // Einstufungs-Cache je Request/Job (MVP-1025); Spiegelquellen holen ihn zur Laufzeit.
+        $this->app->scoped(\App\Services\Reselling\Register\LicenseArticleClassifier::class);
+
         // Belegspiegel des Reselling-Registers (Feature 152, Review 2026-09-10):
         // Singleton mit der lokalen Rechnungsquelle; die Lexoffice-Quelle
         // registriert das Plugin beim Booten — der Kern kennt keinen Anbieter.
@@ -272,6 +278,7 @@ class AppServiceProvider extends ServiceProvider {
         // Singleton, damit das Buchhaltungs-Plugin beim Booten registrieren
         // kann. Ohne Registrierung greift der NullExpenseLinkProvider.
         $this->app->singleton(\App\Services\Billing\ExpenseLinkProviderResolver::class);
+        $this->app->singleton(\App\Services\Billing\RetainerChannelResolver::class);
 
         // Versand-Provider (Feature 059, MVP-128): Carrier-Plugins registrieren
         // ihren ShippingProvider beim Booten, der ShipmentService löst darüber auf.

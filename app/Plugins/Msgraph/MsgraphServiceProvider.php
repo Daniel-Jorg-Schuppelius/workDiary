@@ -36,6 +36,9 @@ class MsgraphServiceProvider extends PluginServiceProviderBase {
     }
 
     protected function registerPlugin(): void {
+        $this->app->scoped(MsgraphPhoneContactSource::class);
+        $this->app->tag([MsgraphPhoneContactSource::class], 'external-phone-contact-sources');
+
         $this->app->singleton(MsgraphOAuth::class, fn(): MsgraphOAuth => new MsgraphOAuth());
         $this->app->singleton(MsgraphMailOAuth::class, fn(): MsgraphMailOAuth => new MsgraphMailOAuth());
         $this->app->singleton(Api\MsgraphContactsOAuth::class, fn(): Api\MsgraphContactsOAuth => new Api\MsgraphContactsOAuth());

@@ -13,20 +13,20 @@ namespace App\Http\Controllers\Project;
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Project\{SaveProjectBillingRuleRequest, SaveProjectBillingSettingsRequest, SaveProjectRatesRequest};
-use App\Models\Plugins\Lexoffice\LexofficeArticle;
 use App\Models\Project\{Project, ProjectBillingRule};
+use App\Services\Platform\Catalog\ArticleCatalog;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\View\View;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 class ProjectBillingRuleController extends Controller {
-    public function create(Project $project, Request $request): View {
+    public function create(Project $project, Request $request, ArticleCatalog $catalog): View {
         $this->ensureBillingManager($request);
 
         return view('projects._billing_rule_form_dialog', [
             'project' => $project,
             'rule' => new ProjectBillingRule,
-            'articles' => LexofficeArticle::active()->orderBy('name')->get(['external_id', 'name', 'unit_name', 'net_unit_price', 'vat_rate']),
+            'articles' => $catalog->active((int) $project->organization_id),
             'kinds' => TimeEntryKind::options(),
             'itemTypes' => ProjectBillingRule::itemTypeOptions(),
         ]);
@@ -35,8 +35,7 @@ class ProjectBillingRuleController extends Controller {
     public function store(Project $project, SaveProjectBillingRuleRequest $request): RedirectResponse {
         $this->ensureBillingManager($request);
 
-        $data = $request->validated();
-        $data['plugin_id'] = $data['plugin_id'] ?? 'lexoffice';
+        $data = $request->ruleAttributes();
         $data['item_type'] = $data['item_type'] ?? 'service';
         $data['priority'] = $data['priority'] ?? 0;
         $data['organization_id'] = $project->organization_id;
@@ -56,8 +55,7 @@ class ProjectBillingRuleController extends Controller {
         $this->ensureBillingManager($request);
         $this->ensureSameProject($project, $billingRule);
 
-        $data = $request->validated();
-        $data['plugin_id'] = $data['plugin_id'] ?? $billingRule->plugin_id;
+        $data = $request->ruleAttributes();
         $data['item_type'] = $data['item_type'] ?? $billingRule->item_type;
         $data['priority'] = $data['priority'] ?? $billingRule->priority;
 

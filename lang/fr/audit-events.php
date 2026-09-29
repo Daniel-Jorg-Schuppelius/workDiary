@@ -1313,4 +1313,14 @@ return [
         'completed' => 'Ordre d\'inspection terminé',
         'cancelled' => 'Ordre d\'inspection annulé',
     ],
+    'resale_license' => [
+        'keys_changed' => 'Clés de licence modifiées',
+        'keys_imported' => 'Clés de licence importées',
+        'keys_viewed' => 'Clés de licence affichées',
+        'sold' => 'Licence vendue',
+        'reassigned' => 'Vente de licence corrigée',
+        'returned' => 'Vente de licence reprise',
+        'blocked' => 'Licence bloquée',
+        'unblocked' => 'Blocage de licence levé',
+    ],
 ];

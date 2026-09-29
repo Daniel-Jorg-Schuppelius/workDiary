@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Reselling\Register;
 
 use App\Enums\Reselling\PeriodStatus;
-use App\Models\Reselling\{ResalePeriod, ResalePeriodLink};
+use App\Models\Reselling\{ResalePeriod, ResalePeriodLink, ResaleSubscription};
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
@@ -34,8 +34,9 @@ final class ResaleMarginReport {
      */
     public function build(CarbonImmutable $from, CarbonImmutable $to): array {
         $periods = $this->periods($from, $to)
-            ->with(['subscription.customer:id,name', 'subscription.foreignCustomer:id,name,customer_id', 'subscription.foreignCustomer.customer:id,name', 'subscription.article:id,number,name', 'subscription.lexofficeArticle:id,article_number,name', 'links', 'purchases'])
+            ->with(['subscription.customer:id,name', 'subscription.foreignCustomer:id,name,customer_id', 'subscription.foreignCustomer.customer:id,name', 'links', 'purchases'])
             ->get();
+        ResaleSubscription::withCatalogArticles($periods->map(static fn (ResalePeriod $period): ResaleSubscription => $period->subscription));
 
         /** @var array<string, MarginRow> $byProduct */
         $byProduct = [];

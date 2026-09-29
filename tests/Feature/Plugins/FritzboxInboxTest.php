@@ -162,7 +162,7 @@ class FritzboxInboxTest extends TestCase {
 
         $groups = $this->booker()->groups($this->organization);
         $this->assertCount(2, $groups);
-        $this->assertTrue($groups->every(fn (array $g): bool => $g['shared'] === true && $g['count'] === 1));
+        $this->assertTrue($groups->every(fn(array $g): bool => $g['shared'] === true && $g['count'] === 1));
 
         // Folgeanrufe landen einzeln in der Inbox — trotz späterer Zuordnung.
         $single = $groups->first();

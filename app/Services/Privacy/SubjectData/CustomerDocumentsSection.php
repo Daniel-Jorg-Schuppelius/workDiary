@@ -15,6 +15,7 @@ namespace App\Services\Privacy\SubjectData;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
+use App\Models\Reselling\ResaleLicenseAssignment;
 use App\Models\Sales\Quote;
 use Illuminate\Database\Eloquent\Model;
 
@@ -52,6 +53,14 @@ class CustomerDocumentsSection extends AbstractSubjectSection {
                 Quote::query()->withoutGlobalScopes()->where('organization_id', $orgId)->where('customer_id', $c->id),
                 'created_at',
                 columns: ['created_at' => __('Datum'), 'number' => __('Nummer'), 'status' => __('Status'), 'total' => __('Betrag')],
+            ),
+            // Lizenzverkäufe (MVP-1024): nur Zuordnung und Datum, nie Schlüssel.
+            $this->family(
+                'resale_license_assignments',
+                __('resale.license.dsar.family'),
+                ResaleLicenseAssignment::query()->withoutGlobalScopes()->where('organization_id', $orgId)->where('customer_id', $c->id),
+                'sold_on',
+                columns: ['sold_on' => __('resale.license.field.sold_on'), 'invoice_reference' => __('resale.license.field.invoice_reference'), 'ended_at' => __('resale.license.field.ended')],
             ),
             $this->family(
                 'portal_users',

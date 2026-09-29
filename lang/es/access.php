@@ -350,6 +350,7 @@ return [
         'reselling.view' => 'Ver el registro de reventa (suscripciones, titulares, periodos)',
         'reselling.manage' => 'Gestionar el registro de reventa (crear/editar suscripciones, decidir periodos)',
         'reselling.invoice' => 'Registro de reventa: crear borradores de factura a partir de periodos (Lexoffice/local)',
+        'reselling.keys.view' => 'Registro de reventa: mostrar y copiar las claves de licencia en texto claro',
 
         'finance.viewAny' => 'Consultar los justificantes de traspaso',
         'finance.config' => 'Gestionar la configuración financiera',

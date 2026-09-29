@@ -29,6 +29,10 @@ use Illuminate\Database\Eloquent\Model;
  *    Gesprächspartner.
  * 2. Text — der CSV-Anzeigename trifft einen Matchcode exakt bzw. einen
  *    Kunden-/Endkundennamen fuzzy (Schwelle 0.82, nur eindeutige Treffer).
+ *
+ * Der CSV-Anzeigename kann bereits aus dem Rufnummern-Aggregator stammen
+ * ({@see \App\Services\Contacts\ExternalPhoneContactDirectory}), der beim
+ * Import auch die Telefonauskunft befragt — Signal 2 greift dann automatisch.
  */
 class FritzboxSuggestionService {
     private const SUGGEST_THRESHOLD = 0.82;

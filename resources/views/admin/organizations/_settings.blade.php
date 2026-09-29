@@ -65,31 +65,22 @@
                            :value="old('settings.invoicing.time_unit', data_get($stored, 'invoicing.time_unit', ''))"
                            :placeholder="__('settings.placeholder_default', ['value' => (string) config('invoicing.time_unit')])" />
 
-            {{-- Standardleistung (MVP-486): Artikel des Faktura-Systems für
-                 Bezeichnung, Einheit, Standardtext und Preis-Rückfall.
+            {{-- Standardleistung (MVP-486): Artikel aus dem Artikelkatalog (MVP-1026)
+                 für Bezeichnung, Einheit, Standardtext und Preis-Rückfall.
                  Projekt-Abrechnungsregeln überschreiben sie. --}}
             @php
-                $serviceArticles = $organization !== null
-                    ? \App\Models\Plugins\Lexoffice\LexofficeArticle::query()
-                        ->withoutGlobalScopes()
-                        ->where('organization_id', $organization->id)
-                        ->active()
-                        ->orderBy('name')
-                        ->get(['external_id', 'name', 'unit_name', 'net_unit_price', 'currency'])
-                    : collect();
-                $selectedArticle = (string) old('settings.invoicing.default_service_article', data_get($stored, 'invoicing.default_service_article', ''));
+                $articleCatalog = app(\App\Services\Platform\Catalog\ArticleCatalog::class);
+                $serviceArticles = $organization !== null ? $articleCatalog->active((int) $organization->id) : [];
+                $selectedArticle = $organization !== null
+                    ? $articleCatalog->find((int) $organization->id, data_get($stored, 'invoicing.default_service_article'))?->formKey
+                    : null;
             @endphp
-            <x-select-field name="settings[invoicing][default_service_article]" span="2"
-                            :label="__('settings.invoicing.default_service_article')"
-                            error="settings.invoicing.default_service_article"
-                            :hint="$serviceArticles->isEmpty() ? __('settings.invoicing.default_service_empty') : __('settings.invoicing.default_service_hint')">
-                <option value="">{{ __('settings.invoicing.default_service_none') }}</option>
-                @foreach ($serviceArticles as $article)
-                    <option value="{{ $article->external_id }}" @selected($selectedArticle === (string) $article->external_id)>
-                        {{ $article->name }}@if ($article->unit_name) · {{ $article->unit_name }}@endif @if ($article->net_unit_price) · {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($article->net_unit_price->toFloat(), 2) }} {{ $article->currency->value }}@endif
-                    </option>
-                @endforeach
-            </x-select-field>
+            <x-article-catalog-select name="settings[invoicing][default_service_article]" span="2"
+                                      :articles="$serviceArticles" :selected="$selectedArticle"
+                                      :label="__('settings.invoicing.default_service_article')"
+                                      :empty="__('settings.invoicing.default_service_none')"
+                                      error="settings.invoicing.default_service_article"
+                                      :hint="$serviceArticles === [] ? __('article.catalog.empty_hint') : __('settings.invoicing.default_service_hint')" />
 
             {{-- Rechnungstexte-Vorlagen der Übergabe (MVP-491). --}}
             <x-textarea-field name="settings[invoicing][transfer_intro_text]" span="2" rows="2" maxlength="2000"

@@ -105,8 +105,8 @@ class RecipientReconcilerTest extends TestCase {
     public function test_balance_separates_unassigned_from_never_invoiced_and_without_subscription(): void {
         $customer = $this->customerWithContact('EcoTec Service GmbH', 'c-eco');
         // Ein 1er-Vertrag, sauber berechnet — und ein 5er-Vertrag über zwei Jahre, für den es nie eine Rechnung gab.
-        $single = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $customer->id, 'lexoffice_article_id' => $this->exchange->id, 'starts_on' => '2024-04-10', 'ends_on' => '2026-04-10', 'status' => 'ended']);
-        $five = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $customer->id, 'lexoffice_article_id' => $this->exchange->id, 'starts_on' => '2024-04-24', 'ends_on' => '2026-04-24', 'quantity' => 5, 'status' => 'ended']);
+        $single = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $customer->id, 'article_ref' => 'lex:' . $this->exchange->id, 'starts_on' => '2024-04-10', 'ends_on' => '2026-04-10', 'status' => 'ended']);
+        $five = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $customer->id, 'article_ref' => 'lex:' . $this->exchange->id, 'starts_on' => '2024-04-24', 'ends_on' => '2026-04-24', 'quantity' => 5, 'status' => 'ended']);
         $this->voucher('c-eco', 'RE/2024/0630', '2024-04-14', [['article' => $this->exchange, 'quantity' => 12, 'net' => '3.95']]);
         $this->voucher('c-eco', 'RE/2025/0830', '2025-04-14', [['article' => $this->exchange, 'quantity' => 1, 'unit' => 'Jahr', 'net' => '47.40']]);
         // Business Standard wurde berechnet, steht aber in keinem Abo.
@@ -144,10 +144,10 @@ class RecipientReconcilerTest extends TestCase {
     public function test_overview_lists_recipients_with_problems_first_and_contacts_without_customer(): void {
         $admin = $this->orgAdmin();
         $clean = $this->customerWithContact('Klimpel Bäder GmbH', 'c-kl');
-        $subClean = $this->subscription(['label' => 'Microsoft 365 Business Standard', 'customer_id' => $clean->id, 'lexoffice_article_id' => $this->standard->id, 'starts_on' => '2025-10-01']);
+        $subClean = $this->subscription(['label' => 'Microsoft 365 Business Standard', 'customer_id' => $clean->id, 'article_ref' => 'lex:' . $this->standard->id, 'starts_on' => '2025-10-01']);
         $this->voucher('c-kl', 'RE/2025/0900', '2025-10-01', [['article' => $this->standard, 'quantity' => 12, 'net' => '12.13']]);
         $gap = $this->customerWithContact('Ute Mayershofer', 'c-um');
-        $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $gap->id, 'lexoffice_article_id' => $this->exchange->id, 'starts_on' => '2025-10-01']);
+        $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $gap->id, 'article_ref' => 'lex:' . $this->exchange->id, 'starts_on' => '2025-10-01']);
         // Rechnung an einen Lexoffice-Kontakt, den kein Kunde kennt.
         $this->voucher('c-unknown', 'RE/2025/0950', '2025-10-05', [['article' => $this->exchange, 'quantity' => 12, 'net' => '3.95']]);
         (new LinkProposer)->propose($this->organization);
@@ -172,10 +172,10 @@ class RecipientReconcilerTest extends TestCase {
         $partner = $this->customerWithContact('LDS Systems GmbH', 'c-lds');
         $kaik = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $partner->id, 'name' => 'Steuerbüro Kaik']);
         $haus = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $partner->id, 'name' => 'Haus 24 GmbH']);
-        $subKaik = $this->subscription(['label' => 'Microsoft 365 Business Standard', 'foreign_customer_id' => $kaik->id, 'lexoffice_article_id' => $this->standard->id, 'starts_on' => '2025-09-12']);
-        $subHaus = $this->subscription(['label' => 'Microsoft 365 Business Standard', 'foreign_customer_id' => $haus->id, 'lexoffice_article_id' => $this->standard->id, 'starts_on' => '2025-09-12']);
+        $subKaik = $this->subscription(['label' => 'Microsoft 365 Business Standard', 'foreign_customer_id' => $kaik->id, 'article_ref' => 'lex:' . $this->standard->id, 'starts_on' => '2025-09-12']);
+        $subHaus = $this->subscription(['label' => 'Microsoft 365 Business Standard', 'foreign_customer_id' => $haus->id, 'article_ref' => 'lex:' . $this->standard->id, 'starts_on' => '2025-09-12']);
         $other = $this->customerWithContact('Fremde GmbH', 'c-x');
-        $subOther = $this->subscription(['label' => 'Microsoft 365 Business Standard', 'customer_id' => $other->id, 'lexoffice_article_id' => $this->standard->id, 'starts_on' => '2025-09-12']);
+        $subOther = $this->subscription(['label' => 'Microsoft 365 Business Standard', 'customer_id' => $other->id, 'article_ref' => 'lex:' . $this->standard->id, 'starts_on' => '2025-09-12']);
         // Zwei gleiche Positionen ohne Endkundennennung: der Vorschlagslauf kann sie nicht trennen.
         $voucher = $this->voucher('c-lds', 'RE/2025/1000', '2025-09-15', [
             ['article' => $this->standard, 'quantity' => 12, 'net' => '12.13'],
@@ -209,7 +209,7 @@ class RecipientReconcilerTest extends TestCase {
         $this->assertSame('laut Telefonat', $link->note);
 
         // Mehr als die Position hergibt: eine 12er-Position kann nicht noch einmal 12 an eine weitere Periode geben.
-        $second = ResaleSubscription::query()->create(array_merge($subKaik->only(['organization_id', 'kind', 'provider', 'label', 'foreign_customer_id', 'lexoffice_article_id', 'term_months', 'interval', 'renewal', 'status', 'currency']), ['quantity' => 1, 'starts_on' => '2026-09-12', 'external_id' => 'x2']));
+        $second = ResaleSubscription::query()->create(array_merge($subKaik->only(['organization_id', 'kind', 'provider', 'label', 'foreign_customer_id', 'article_ref', 'term_months', 'interval', 'renewal', 'status', 'currency']), ['quantity' => 1, 'starts_on' => '2026-09-12', 'external_id' => 'x2']));
         (new \App\Services\Reselling\Register\PeriodPlanner)->sync($second);
         // Review 2026-09-10 (C1): Feldfehler statt stillem Flash — der Dialog zeigt sie als 422.
         $this->actingAs($admin)->from(route('finance.resale.reconcile.show', $partner))->post(route('finance.resale.reconcile.assign', $partner), [
@@ -243,7 +243,7 @@ class RecipientReconcilerTest extends TestCase {
         $this->customerWithContact('Delta Allround Service GmbH', 'c-delta');
         // Der Anbieter führt den Vertrag auf EcoTec Service, berechnet wurde er an die Schwesterfirma;
         // die zweite Rechnung wurde storniert und nie neu gestellt.
-        $five = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $customer->id, 'company_name' => 'EcoTec Service GmbH', 'lexoffice_article_id' => $this->exchange->id, 'starts_on' => '2024-04-24', 'ends_on' => '2026-04-24', 'quantity' => 5, 'status' => 'ended']);
+        $five = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $customer->id, 'company_name' => 'EcoTec Service GmbH', 'article_ref' => 'lex:' . $this->exchange->id, 'starts_on' => '2024-04-24', 'ends_on' => '2026-04-24', 'quantity' => 5, 'status' => 'ended']);
         $this->voucher('c-hlsk', 'RE/2024/0171', '2024-05-11', [['article' => $this->exchange, 'quantity' => 5, 'unit' => 'Jahr', 'net' => '47.40']]);
         $this->voucher('c-hlsk', 'RE/2025/0271', '2025-05-11', [['article' => $this->exchange, 'quantity' => 5, 'unit' => 'Jahr', 'net' => '47.40']], null, 'voided');
         // Unverwandter Empfänger mit derselben Menge, aber nicht dicht am Periodenbeginn: kein Kandidat.
@@ -293,7 +293,7 @@ class RecipientReconcilerTest extends TestCase {
 
     public function test_service_period_beats_invoice_date_for_assignment(): void {
         $customer = $this->customerWithContact('Marina Vulkan Werft', 'c-mv');
-        $subscription = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $customer->id, 'lexoffice_article_id' => $this->exchange->id, 'starts_on' => '2024-12-31', 'quantity' => 2]);
+        $subscription = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $customer->id, 'article_ref' => 'lex:' . $this->exchange->id, 'starts_on' => '2024-12-31', 'quantity' => 2]);
         [$p2024, $p2025] = $subscription->periods()->get()->all();
         // Rechnung erst im März 2026 gestellt, Leistungszeitraum aber das Jahr ab 31.12.2024: gehört zur ERSTEN Periode.
         // „24 Monat" bei zwölf Monaten Leistung = zwei Lizenzen × 12.
@@ -319,7 +319,7 @@ class RecipientReconcilerTest extends TestCase {
         $admin = $this->orgAdmin();
         $customer = $this->customerWithContact('Ute Mayershofer', 'c-um');
         // Anbieter-Export kennt nur den gekündigten Vertrag bis 2024 — die Rechnungen laufen weiter.
-        $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $customer->id, 'lexoffice_article_id' => $this->exchange->id, 'starts_on' => '2023-08-07', 'ends_on' => '2024-08-12', 'quantity' => 3, 'status' => 'ended']);
+        $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $customer->id, 'article_ref' => 'lex:' . $this->exchange->id, 'starts_on' => '2023-08-07', 'ends_on' => '2024-08-12', 'quantity' => 3, 'status' => 'ended']);
         $this->voucher('c-um', 'RE/2023/0568', '2023-08-10', [['article' => $this->exchange, 'quantity' => 36, 'net' => '3.95']]);
         $this->voucher('c-um', 'RE/2024/0724', '2024-10-26', [['article' => $this->exchange, 'quantity' => 24, 'net' => '3.95']]);
         $this->voucher('c-um', 'RE/2025/0945', '2025-10-26', [['article' => $this->exchange, 'quantity' => 24, 'net' => '3.95']]);
@@ -353,7 +353,7 @@ class RecipientReconcilerTest extends TestCase {
         $ute = $this->customerWithContact('Ute Mayershofer', 'c-um');
         $delta = $this->customerWithContact('Delta Allround Service GmbH', 'c-delta');
         $this->customerWithContact('Märkische Bunker- und Service GmbH & Co. KG', 'c-mb');
-        $subscription = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $ute->id, 'lexoffice_article_id' => $this->exchange->id, 'starts_on' => '2024-08-12', 'ends_on' => '2026-08-12', 'quantity' => 3, 'status' => 'ended']);
+        $subscription = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $ute->id, 'article_ref' => 'lex:' . $this->exchange->id, 'starts_on' => '2024-08-12', 'ends_on' => '2026-08-12', 'quantity' => 3, 'status' => 'ended']);
         foreach (['RE/2024/0201' => '2024-10-16', 'RE/2025/0303' => '2025-08-12'] as $number => $date) {
             $this->voucher('c-delta', $number, $date, [
                 ['article' => $this->exchange, 'quantity' => 12, 'net' => '3.95'],
@@ -389,7 +389,7 @@ class RecipientReconcilerTest extends TestCase {
         // Ein Lexoffice-Kontakt je Kunde (Unique `extref_unique` auf Plugin/Typ/Referenz).
         $customer = $this->customerWithContact('Klimpel Bäder GmbH', 'c-kl');
         $other = $this->customerWithContact('Fremde GmbH', 'c-x');
-        $subscription = $this->subscription(['label' => 'Microsoft 365 Business Standard', 'customer_id' => $customer->id, 'lexoffice_article_id' => $this->standard->id, 'starts_on' => '2025-10-01']);
+        $subscription = $this->subscription(['label' => 'Microsoft 365 Business Standard', 'customer_id' => $customer->id, 'article_ref' => 'lex:' . $this->standard->id, 'starts_on' => '2025-10-01']);
         $period = $subscription->periods()->firstOrFail();
         $support = $this->article('art-sup', 'Business Support', '90.00');
 
@@ -440,7 +440,7 @@ class RecipientReconcilerTest extends TestCase {
         // einer Kundenzeile „nie berechnet" plus einer Kontaktzeile „ohne Abo".
         $fallback = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Fallback GmbH']);
         $this->assertSame([], \App\Plugins\Lexoffice\Services\LexofficeContactMap::forCustomer($fallback)->byCustomer($fallback->id), 'kein verknüpfter Kontakt');
-        $subscription = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $fallback->id, 'lexoffice_article_id' => $this->exchange->id, 'starts_on' => '2025-10-01']);
+        $subscription = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $fallback->id, 'article_ref' => 'lex:' . $this->exchange->id, 'starts_on' => '2025-10-01']);
         $this->voucher('c-unmapped', 'RE/2025/0960', '2025-10-03', [['article' => $this->exchange, 'quantity' => 12, 'net' => '3.95']], $fallback);
         // Ein weiterer unbekannter Kontakt ohne Kunden-ID bleibt eine eigene Kontaktzeile (Empfängername aus dem Beleg).
         $this->voucher('c-nobody', 'RE/2025/0961', '2025-10-04', [['article' => $this->standard, 'quantity' => 12, 'net' => '12.13']]);

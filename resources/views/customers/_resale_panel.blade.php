@@ -70,5 +70,50 @@
                 {{ __('resale.customer_panel.more', ['count' => $customerSubscriptions->count() - 10]) }}
             </div>
         @endif
+
+        {{-- Verkaufte Einzellizenzen (MVP-1024): Schlüssel nur über die geschützte Anzeige. --}}
+        @if (($customerLicenses ?? collect())->isNotEmpty())
+            <div class="flex items-center justify-between gap-2 border-y border-base-300 px-4 py-2">
+                <span class="text-sm font-medium">{{ trans_choice('resale.license.customer_panel.count', $customerLicenses->count(), ['count' => $customerLicenses->count()]) }}</span>
+                <x-icon-btn icon="key" tone="ghost" size="sm"
+                            :href="route('finance.resale.licenses.index', ['customer' => $customer->sqid])"
+                            show-label>{{ __('resale.license.title') }}</x-icon-btn>
+            </div>
+            <x-table bare>
+                <x-slot:head>
+                    <tr>
+                        <th>{{ __('resale.license.field.product') }}</th>
+                        <th>{{ __('resale.license.field.license') }}</th>
+                        <th>{{ __('resale.license.field.holder') }}</th>
+                        <th>{{ __('resale.license.field.sold_on') }}</th>
+                        <th>{{ __('resale.license.field.invoice_reference') }}</th>
+                        <th class="text-right"></th>
+                    </tr>
+                </x-slot:head>
+                @foreach ($customerLicenses->take(20) as $license)
+                    <tr>
+                        <td class="text-sm">{{ $license->unit->batch->product->name }}</td>
+                        <td class="whitespace-nowrap text-sm">
+                            <a href="{{ route('finance.resale.licenses.batches.show', $license->unit->batch) }}" class="link link-hover">{{ $license->unit->label() }}</a>
+                        </td>
+                        <td class="text-sm">{{ $license->foreignCustomer?->name ?? __('resale.holder.customer') }}</td>
+                        <td class="tabular-nums text-sm">{{ $license->sold_on->fdate() }}</td>
+                        <td class="text-sm">{{ $license->invoice_reference ?? '—' }}</td>
+                        <td class="text-right">
+                            @can(\App\Enums\User\Permission::ResellingKeysView->value)
+                                <x-icon-btn icon="key" size="xs" tone="ghost" data-entry-modal-trigger
+                                            :href="route('finance.resale.licenses.units.keys.show', $license->unit)"
+                                            :title="__('resale.license.action.show_keys')" />
+                            @endcan
+                        </td>
+                    </tr>
+                @endforeach
+            </x-table>
+            @if ($customerLicenses->count() > 20)
+                <div class="border-t border-base-300 px-4 py-2 text-xs text-muted">
+                    {{ __('resale.customer_panel.more', ['count' => $customerLicenses->count() - 20]) }}
+                </div>
+            @endif
+        @endif
     </x-card>
 @endif

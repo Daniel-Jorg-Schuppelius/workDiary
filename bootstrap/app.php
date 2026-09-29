@@ -333,6 +333,9 @@ return Application::configure(basePath: dirname(__DIR__))
         });
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        // Lizenzschlüssel (MVP-1024) nie als Old-Input in die Session schreiben.
+        $exceptions->dontFlash(['license_keys']);
+
         // Ungültige/fehlende API-Tokens (Feature 096, MVP-443): fail2ban-Signal
         // nur für die Token-Oberflächen — Web-Session-Redirects bleiben still.
         // return null ⇒ Standard-Rendering (401/redirect) bleibt unverändert.

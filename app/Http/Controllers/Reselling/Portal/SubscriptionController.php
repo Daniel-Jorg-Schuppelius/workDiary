@@ -40,10 +40,11 @@ class SubscriptionController extends Controller {
         $today = ResalePeriod::today();
 
         $subscriptions = $this->visible($user, $customer, $today)
-            ->with(['customer:id,name', 'foreignCustomer:id,name', 'article:id,number,name', 'lexofficeArticle:id,name,article_number', 'parent'])
+            ->with(['customer:id,name', 'foreignCustomer:id,name', 'parent'])
             ->orderBy('label')
             ->orderBy('starts_on')
             ->paginate(25);
+        ResaleSubscription::withCatalogArticles($subscriptions->getCollection());
 
         $nextPeriods = [];
         foreach ($subscriptions as $subscription) {
@@ -65,7 +66,7 @@ class SubscriptionController extends Controller {
         // Leak-Schutz: außerhalb der Kundensicht existiert das Abo für dieses Portalkonto nicht.
         abort_unless($this->visible($user, $customer, $today)->whereKey($subscription->getKey())->exists(), 404);
 
-        $subscription->load(['customer:id,name', 'foreignCustomer:id,name', 'article:id,number,name', 'lexofficeArticle:id,name,article_number', 'parent', 'periods']);
+        $subscription->load(['customer:id,name', 'foreignCustomer:id,name', 'parent', 'periods']);
 
         return view('customer.subscriptions.show', [
             'subscription' => $subscription,

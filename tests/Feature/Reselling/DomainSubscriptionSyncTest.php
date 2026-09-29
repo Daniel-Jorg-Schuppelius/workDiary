@@ -180,7 +180,7 @@ class DomainSubscriptionSyncTest extends TestCase {
 
         $de = ResaleSubscription::query()->where('external_id', 'klimpel-baeder.de')->firstOrFail();
         $this->assertSame('15.0000', $de->sale_unit_price?->getAmount(), 'UVP der Katalogzeile .de');
-        $this->assertSame($article->id, $de->lexoffice_article_id, 'Artikel „Domain .de"');
+        $this->assertSame('lex:' . $article->id, $de->article_ref, 'Artikel „Domain .de"');
         $this->assertSame('15.00', $de->periods()->first()?->expected_sale?->getAmount(), 'Perioden tragen den Verkauf');
 
         $uk = ResaleSubscription::query()->where('external_id', 'shop.example.co.uk')->firstOrFail();
@@ -188,10 +188,10 @@ class DomainSubscriptionSyncTest extends TestCase {
 
         $com = ResaleSubscription::query()->where('external_id', 'beispiel.com')->firstOrFail();
         $this->assertSame('18.0000', $com->sale_unit_price?->getAmount(), 'Katalog .com gilt erst 2027 → Artikelpreis 1,50 €/Monat × 12');
-        $this->assertNotNull($com->lexoffice_article_id, 'Artikel „.com-Domain"');
+        $this->assertNotNull($com->article_ref, 'Artikel „.com-Domain"');
 
         $net = ResaleSubscription::query()->where('external_id', 'zweideutig.net')->firstOrFail();
-        $this->assertNull($net->lexoffice_article_id, 'zwei passende Artikel → keiner');
+        $this->assertNull($net->article_ref, 'zwei passende Artikel → keiner');
         $this->assertNull($net->sale_unit_price);
 
         $manual = ResaleSubscription::query()->where('external_id', 'manuell.de')->firstOrFail();

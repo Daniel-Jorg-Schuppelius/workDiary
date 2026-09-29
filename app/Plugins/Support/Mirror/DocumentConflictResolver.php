@@ -101,7 +101,7 @@ class DocumentConflictResolver {
             ->delete();
 
         // Marker setzen; der Observer prüft ihn ZUERST und reiht nichts mehr ein.
-        $document->forceFill([$target->detachedAttribute() => true])->save();
+        $document->detachMirror($target->pluginId(), auth()->id() !== null ? (int) auth()->id() : null);
 
         $document->audit($target->pluginId() . '.mirror.detached', ['external_id' => $item->external_id]);
         $this->inbox->markResolved($item, IntegrationInboxItem::STATUS_DISMISSED, $document);

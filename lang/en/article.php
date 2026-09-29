@@ -253,4 +253,13 @@ return [
             'saved' => 'Factors saved.',
         ],
     ],
+    'catalog' => [
+        'field' => 'Article',
+        'none' => '— no article —',
+        'source_local' => 'Article master',
+        'unknown' => 'The selected article does not exist (any longer) in this organisation.',
+        'missing' => 'Article no longer available',
+        'empty_hint' => 'No articles yet. Create articles in the article master or fetch them from a connected accounting system.',
+        'service_hint' => 'Supplies name, unit, standard text and — if no price is maintained — the price of the line.',
+    ],
 ];

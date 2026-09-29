@@ -212,6 +212,7 @@ class LexofficeContactSync {
                 'referenceable_type' => $morphClass,
                 'referenceable_id' => $match->getKey(),
                 'external_id' => $externalId,
+                'external_number' => $this->extractContactNumber($remote, $kind) ?: null,
                 'payload' => $remote,
                 'synced_at' => now(),
             ]);
@@ -239,6 +240,7 @@ class LexofficeContactSync {
                     'referenceable_type' => $morphClass,
                     'referenceable_id' => $new->getKey(),
                     'external_id' => $externalId,
+                    'external_number' => $this->extractContactNumber($remote, $kind) ?: null,
                     'payload' => $remote,
                     'synced_at' => now(),
                 ]);
@@ -382,9 +384,6 @@ class LexofficeContactSync {
             return $supplier;
         }
 
-        if ($contactNumber !== '') {
-            $attributes['lexoffice_contact_number'] = $contactNumber;
-        }
         $attributes['billable'] = true;
 
         $customer = Customer::create($attributes);
@@ -401,8 +400,8 @@ class LexofficeContactSync {
      */
     private function applyRemote(Model $record, array $remote, LexofficeMatchPolicy $policy, string $externalId): bool {
         // Die offizielle Lexoffice-Kontaktnummer ist nicht nutzergepflegt und
-        // wird daher unabhängig von der Policy immer in das passende Feld
-        // übernommen (Customer: lexoffice_contact_number, Supplier: vendor_number).
+        // wird daher unabhängig von der Policy immer übernommen (Referenz:
+        // external_number, Supplier zusätzlich vendor_number; MVP-1028).
         $changed = $this->applyContactNumber($record, $remote);
 
         if ($policy === LexofficeMatchPolicy::LocalWins || $policy === LexofficeMatchPolicy::ManualReview) {
@@ -442,10 +441,9 @@ class LexofficeContactSync {
         if ($number === '') {
             return false;
         }
-        $column = $record instanceof Supplier ? 'vendor_number' : 'lexoffice_contact_number';
         $changed = false;
-        if ((string) $record->getAttribute($column) !== $number) {
-            $record->setAttribute($column, $number);
+        if ($record instanceof Supplier && (string) $record->vendor_number !== $number) {
+            $record->vendor_number = $number;
             $changed = true;
         }
 
@@ -558,6 +556,7 @@ class LexofficeContactSync {
             ->where('referenceable_type', $record->getMorphClass())
             ->forExternalId($externalId)
             ->update([
+                'external_number' => $this->extractContactNumber($remote, $record instanceof Supplier ? 'vendor' : 'customer') ?: null,
                 'payload' => $remote,
                 'synced_at' => now(),
             ]);

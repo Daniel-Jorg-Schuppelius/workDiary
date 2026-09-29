@@ -170,15 +170,17 @@ der zuletzt importierten Preisliste gegen die Verkaufspreise der Abos
 (Minimum, Median, Maximum). Hinweise: „Verkauf unter Einkauf", „Verkauf
 unter UVP", „Vertrag teurer als Katalog", „Kein Verkaufspreis".
 
-**Produkt-Einstufung:** Welche Lexoffice-Artikel Abo-Produkte sind, erkennt
-das Register am Namen. Je Artikel können Sie übersteuern: „Abo-Produkt"
-erzwingt die Erkennung, „Nie Abo-Position" hält Dienstleistungen mit einem
-Produktnamen im Text (Wartung an Exchange) aus Vorschlägen, Rechnungslisten
-und „Positionen ohne Abo" heraus. Dieselbe Einstufung gibt es für die
-aktiven Artikel des lokalen Artikelstamms (Abschnitt *Lokale Artikel*): sie
-entscheidet, welche Positionen lokaler Rechnungen der Belegspiegel als
-Lizenzpositionen führt, und die Preisprüfung vergleicht den Verkaufspreis des
-Artikels mit den Abo-Preisen.
+**Produkt-Einstufung:** Die Liste führt alle Artikel des Artikelkatalogs —
+die aktiven Artikel des Artikelstamms und die Artikel angebundener
+Buchhaltungsprogramme wie Lexoffice, mit ihrer Quelle. Welche davon
+Abo-Produkte sind, erkennt das Register am Namen. Je Artikel können Sie
+übersteuern: „Abo-Produkt" erzwingt die Erkennung, „Nie Abo-Position" hält
+Dienstleistungen mit einem Produktnamen im Text (Wartung an Exchange) aus
+Vorschlägen, Rechnungslisten und „Positionen ohne Abo" heraus. Die
+Einstufung wirkt für jede Quelle gleich: sie entscheidet, welche
+Rechnungspositionen der Belegspiegel als Lizenzpositionen führt, und die
+Preisprüfung vergleicht den Verkaufspreis des Artikels mit den Abo-Preisen
+(ein Monatspreis zählt beim Jahresabo zwölffach).
 
 **Verträge:** Ein Abo kann einen Vertrag der Vertragsverwaltung als
 Fristenrahmen tragen (Feld „Vertrag" im Abo-Dialog; nur Kundenverträge,
@@ -196,8 +198,8 @@ ihren offenen Termin.
 „Domain" mit Jahresintervall ab Registrierung, Einkauf = Verlängerungspreis
 und Halter aus der Domainverwaltung, solange das Register keinen entschieden
 hat. Der Verkaufspreis je Endung kommt aus dem Preiskatalog (Anbieter
-Domain-Reselling, Produkt z. B. „.de"), der Artikel aus dem Lexoffice-Artikel
-zur Endung; manuell gepflegte Preise, Artikel und Halter überlebt jeder
+Domain-Reselling, Produkt z. B. „.de"), der Artikel aus dem Artikelkatalog
+(Artikelstamm oder Buchhaltungsprogramm) zur Endung; manuell gepflegte Preise, Artikel und Halter überlebt jeder
 Lauf. Verschwundene Domains enden am Stichtag; bleibt die Domainliste eines
 Laufs leer, wird nichts beendet. Domain-Abos und ihre Einkaufsbelege lassen
 sich nicht von Hand anlegen — sie kommen nur über den Sync.

@@ -601,6 +601,12 @@ return [
     'AccountingFilingObligation' => 'Obligación de declaración',
     // Registro de reventa (función 152, revisión 2026-09-10 A2).
     'ResaleSubscription' => 'Suscripción de reventa',
+    'ResaleLicenseProduct' => 'Producto de licencia',
+    'ResaleLicenseBatch' => 'Paquete de licencias',
+    'ResaleLicenseUnit' => 'Licencia individual',
+    'ResaleLicenseKey' => 'Clave de licencia',
+    'ResaleLicenseAssignment' => 'Venta de licencia',
+    'ResaleArticleClassification' => 'Clasificación de suscripción de un artículo',
     'ResalePeriod' => 'Periodo de facturación de reventa',
     'ResalePeriodLink' => 'Referencia de factura de reventa',
     'ResalePurchaseEntry' => 'Asiento de compra de reventa',

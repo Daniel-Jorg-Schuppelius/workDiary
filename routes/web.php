@@ -2948,6 +2948,40 @@ Route::middleware('auth')->group(function () {
                 Route::post('einkauf/import', [\App\Http\Controllers\Reselling\ResalePurchaseController::class, 'importStore'])->name('purchases.import.store');
                 Route::delete('einkauf/{entry}', [\App\Http\Controllers\Reselling\ResalePurchaseController::class, 'destroy'])->name('purchases.destroy');
             });
+            // Lizenzbestand aus Einkaufspaketen (MVP-1024) — vor {subscription}, sonst fängt show den Pfad.
+            Route::prefix('lizenzbestand')->name('licenses.')->group(function (): void {
+                Route::middleware('can:reselling.view')->group(function (): void {
+                    Route::get('/', [\App\Http\Controllers\Reselling\LicenseStockController::class, 'index'])->name('index');
+                    Route::get('pakete/{batch}', [\App\Http\Controllers\Reselling\LicenseStockController::class, 'batchShow'])->name('batches.show');
+                });
+                // Klartext nur mit eigenem Recht, Antwort no-store.
+                Route::get('lizenzen/{unit}/schluessel/anzeigen', [\App\Http\Controllers\Reselling\LicenseSaleController::class, 'keysShow'])->name('units.keys.show')->middleware('can:reselling.keys.view');
+                Route::middleware('can:reselling.manage')->group(function (): void {
+                    Route::get('produkte/neu', [\App\Http\Controllers\Reselling\LicenseStockController::class, 'productCreate'])->name('products.create');
+                    Route::post('produkte', [\App\Http\Controllers\Reselling\LicenseStockController::class, 'productStore'])->name('products.store');
+                    Route::get('produkte/{product}/bearbeiten', [\App\Http\Controllers\Reselling\LicenseStockController::class, 'productEdit'])->name('products.edit');
+                    Route::put('produkte/{product}', [\App\Http\Controllers\Reselling\LicenseStockController::class, 'productUpdate'])->name('products.update');
+                    Route::get('pakete-neu', [\App\Http\Controllers\Reselling\LicenseStockController::class, 'batchCreate'])->name('batches.create');
+                    Route::post('pakete', [\App\Http\Controllers\Reselling\LicenseStockController::class, 'batchStore'])->name('batches.store');
+                    Route::delete('pakete/{batch}', [\App\Http\Controllers\Reselling\LicenseStockController::class, 'batchDestroy'])->name('batches.destroy');
+                    Route::get('pakete/{batch}/vorlage.csv', [\App\Http\Controllers\Reselling\LicenseStockController::class, 'template'])->name('batches.template');
+                    Route::get('pakete/{batch}/import', [\App\Http\Controllers\Reselling\LicenseStockController::class, 'importCreate'])->name('batches.import.create');
+                    Route::post('pakete/{batch}/import/vorschau', [\App\Http\Controllers\Reselling\LicenseStockController::class, 'importPreview'])->name('batches.import.preview');
+                    Route::post('pakete/{batch}/import', [\App\Http\Controllers\Reselling\LicenseStockController::class, 'importStore'])->name('batches.import.store');
+                    Route::get('lizenzen/{unit}/schluessel', [\App\Http\Controllers\Reselling\LicenseSaleController::class, 'keysEdit'])->name('units.keys.edit');
+                    Route::put('lizenzen/{unit}/schluessel', [\App\Http\Controllers\Reselling\LicenseSaleController::class, 'keysUpdate'])->name('units.keys.update');
+                    Route::get('lizenzen/{unit}/sperren', [\App\Http\Controllers\Reselling\LicenseSaleController::class, 'blockCreate'])->name('units.block.create');
+                    Route::post('lizenzen/{unit}/sperren', [\App\Http\Controllers\Reselling\LicenseSaleController::class, 'blockStore'])->name('units.block.store');
+                    Route::get('lizenzen/{unit}/freigeben', [\App\Http\Controllers\Reselling\LicenseSaleController::class, 'unblockCreate'])->name('units.unblock.create');
+                    Route::post('lizenzen/{unit}/freigeben', [\App\Http\Controllers\Reselling\LicenseSaleController::class, 'unblockStore'])->name('units.unblock.store');
+                    Route::get('verkauf', [\App\Http\Controllers\Reselling\LicenseSaleController::class, 'sellCreate'])->name('sell.create');
+                    Route::post('verkauf', [\App\Http\Controllers\Reselling\LicenseSaleController::class, 'sellStore'])->name('sell.store');
+                    Route::get('verkaeufe/{assignment}/berichtigen', [\App\Http\Controllers\Reselling\LicenseSaleController::class, 'reassignCreate'])->name('assignments.reassign.create');
+                    Route::post('verkaeufe/{assignment}/berichtigen', [\App\Http\Controllers\Reselling\LicenseSaleController::class, 'reassignStore'])->name('assignments.reassign.store');
+                    Route::get('verkaeufe/{assignment}/ruecknahme', [\App\Http\Controllers\Reselling\LicenseSaleController::class, 'returnCreate'])->name('assignments.return.create');
+                    Route::post('verkaeufe/{assignment}/ruecknahme', [\App\Http\Controllers\Reselling\LicenseSaleController::class, 'returnStore'])->name('assignments.return.store');
+                });
+            });
             // Rechnungsentwurf aus Perioden (Lexoffice/lokal): eigenes Recht der Buchhaltung (Review 2026-09-10, A9).
             Route::get('perioden/entwurf', [\App\Http\Controllers\Reselling\ResaleReportController::class, 'draftCreate'])->name('periods.draft.create')->middleware('can:reselling.invoice');
             Route::post('perioden/entwurf', [\App\Http\Controllers\Reselling\ResaleReportController::class, 'draftStore'])->name('periods.draft.store')->middleware('can:reselling.invoice');

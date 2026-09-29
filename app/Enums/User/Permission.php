@@ -270,6 +270,8 @@ enum Permission: string implements HasLabel {
     case ResellingView = 'reselling.view';
     case ResellingManage = 'reselling.manage';
     case ResellingInvoice = 'reselling.invoice';
+    /** Klartext der Lizenzschlüssel anzeigen und kopieren (MVP-1024) — keiner Rolle pauschal erteilt. */
+    case ResellingKeysView = 'reselling.keys.view';
     case FinanceConfig = 'finance.config';
 
     /** Buchhaltungswechsel planen, umschalten und abschließen (MVP-653). */

@@ -191,4 +191,8 @@ return [
         'service_from' => 'Periodo di prestazione dal',
         'service_to' => 'Periodo di prestazione al',
     ],
+    'service_rules' => [
+        'title' => 'Regole di fatturazione',
+        'hint' => 'Per ogni tipo di attività può stabilire quale articolo viene usato come prestazione nel trasferimento e nell’esportazione delle fatture — dall’anagrafica articoli o da un programma di contabilità collegato. Senza tipo di attività = regola di riserva per tutte le registrazioni. I sottoprogetti ereditano le regole dal progetto padre, ma possono sovrascriverle.',
+    ],
 ];

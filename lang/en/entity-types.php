@@ -601,6 +601,12 @@ return [
     'AccountingFilingObligation' => 'Filing obligation',
     // Resale register (feature 152, review 2026-09-10 A2).
     'ResaleSubscription' => 'Resale subscription',
+    'ResaleLicenseProduct' => 'License product',
+    'ResaleLicenseBatch' => 'License package',
+    'ResaleLicenseUnit' => 'Single license',
+    'ResaleLicenseKey' => 'License key',
+    'ResaleLicenseAssignment' => 'License sale',
+    'ResaleArticleClassification' => 'Article subscription classification',
     'ResalePeriod' => 'Resale billing period',
     'ResalePeriodLink' => 'Resale invoice reference',
     'ResalePurchaseEntry' => 'Resale purchase entry',

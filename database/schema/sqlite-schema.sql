@@ -482,6 +482,7 @@ CREATE TABLE IF NOT EXISTS "external_references"(
   "synced_at" datetime,
   "created_at" datetime,
   "updated_at" datetime,
+  "external_number" varchar,
   foreign key("organization_id") references "organizations"("id") on delete set null
 );
 CREATE INDEX "external_references_referenceable_type_referenceable_id_index" on "external_references"(
@@ -521,7 +522,6 @@ CREATE TABLE IF NOT EXISTS "lexoffice_articles"(
   "external_version" integer,
   "is_dirty" tinyint(1) not null default '0',
   "last_pushed_at" datetime,
-  "resale_role" varchar,
   foreign key("organization_id") references "organizations"("id") on delete cascade
 );
 CREATE UNIQUE INDEX "lexoffice_articles_organization_id_external_id_unique" on "lexoffice_articles"(
@@ -536,9 +536,7 @@ CREATE TABLE IF NOT EXISTS "project_billing_rules"(
   "id" integer primary key autoincrement not null,
   "organization_id" integer not null,
   "project_id" integer not null,
-  "plugin_id" varchar not null default 'lexoffice',
   "applies_to_kind" varchar,
-  "lexoffice_article_id" varchar,
   "item_type" varchar not null default 'service',
   "unit_name" varchar,
   "vat_rate" numeric,
@@ -546,13 +544,9 @@ CREATE TABLE IF NOT EXISTS "project_billing_rules"(
   "priority" integer not null default '0',
   "created_at" datetime,
   "updated_at" datetime,
+  "article_ref" varchar,
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("project_id") references "projects"("id") on delete cascade
-);
-CREATE INDEX "pbr_proj_plugin_kind_idx" on "project_billing_rules"(
-  "project_id",
-  "plugin_id",
-  "applies_to_kind"
 );
 CREATE INDEX "project_billing_rules_organization_id_index" on "project_billing_rules"(
   "organization_id"
@@ -11294,8 +11288,6 @@ CREATE TABLE IF NOT EXISTS "documents"(
   "created_at" datetime,
   "updated_at" datetime,
   "deleted_at" datetime,
-  "webdav_mirror_detached" tinyint(1) not null default('0'),
-  "sharepoint_mirror_detached" tinyint(1) not null default('0'),
   "customer_visible" tinyint(1) not null default '0',
   "customer_released_at" datetime,
   "customer_released_by" integer,
@@ -13014,46 +13006,6 @@ CREATE INDEX "plugin_errors_plugin_id_organization_id_occurred_at_index" on "plu
 CREATE UNIQUE INDEX plugin_states_global_unique ON plugin_states(
   plugin_id
 ) WHERE organization_id IS NULL;
-CREATE TABLE IF NOT EXISTS "customer_billing_statements"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer,
-  "customer_billing_agreement_id" integer not null,
-  "year" integer not null,
-  "month" integer not null,
-  "total_minutes" integer not null default('0'),
-  "gross_value" numeric not null default('0'),
-  "payments_total" numeric not null default('0'),
-  "carry_in" numeric not null default('0'),
-  "balance" numeric not null default('0'),
-  "locked" tinyint(1) not null default('0'),
-  "locked_at" datetime,
-  "locked_by_user_id" integer,
-  "totals" text,
-  "computed_at" datetime,
-  "created_at" datetime,
-  "updated_at" datetime,
-  "retainer_invoice_id" integer,
-  "lexoffice_voucher_id" integer,
-  "travel_minutes" integer not null default '0',
-  foreign key("retainer_invoice_id") references invoices("id") on delete set null on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
-  foreign key("customer_billing_agreement_id") references customer_billing_agreements("id") on delete cascade on update no action,
-  foreign key("locked_by_user_id") references users("id") on delete set null on update no action,
-  foreign key("lexoffice_voucher_id") references "lexoffice_vouchers"("id") on delete set null
-);
-CREATE INDEX "idx_cbs_org_period" on "customer_billing_statements"(
-  "organization_id",
-  "year",
-  "month"
-);
-CREATE UNIQUE INDEX "uq_cbs_period" on "customer_billing_statements"(
-  "customer_billing_agreement_id",
-  "year",
-  "month"
-);
-CREATE UNIQUE INDEX "uq_cbs_lexoffice_voucher" on "customer_billing_statements"(
-  "lexoffice_voucher_id"
-);
 CREATE TABLE IF NOT EXISTS "customer_account_payments"(
   "id" integer primary key autoincrement not null,
   "organization_id" integer,
@@ -13105,13 +13057,13 @@ CREATE TABLE IF NOT EXISTS "billing_transfer_positions"(
   "unit_price" numeric not null default '0',
   "vat_rate" numeric,
   "amount" numeric not null default '0',
-  "article_id" varchar,
   "service_source" varchar,
   "price_source" varchar,
   "service_from" date,
   "service_to" date,
   "created_at" datetime,
   "updated_at" datetime,
+  "article_ref" varchar,
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("billing_transfer_id") references "billing_transfers"("id") on delete cascade,
   foreign key("project_id") references "projects"("id") on delete set null
@@ -14051,7 +14003,6 @@ CREATE TABLE IF NOT EXISTS "articles"(
   "assembly_minutes" numeric,
   "copper_weight" numeric,
   "copper_base_price" numeric,
-  "resale_role" varchar,
   "pcf_factor_kg" numeric,
   "pcf_process_kg" numeric,
   "pcf_source" varchar,
@@ -17645,7 +17596,6 @@ CREATE TABLE IF NOT EXISTS "customers"(
   "bank_bic" text,
   "bank_name" varchar,
   "tax_number" varchar,
-  "lexoffice_contact_number" varchar,
   "number_source" varchar not null default('local'),
   "billing_increment_minutes" integer,
   "billing_grouping_gap_minutes" integer,
@@ -18002,72 +17952,6 @@ CREATE INDEX "resale_links_org_linkable_idx" on "resale_period_links"(
 CREATE INDEX "resale_links_sub_origin_idx" on "resale_period_links"(
   "subscription_id",
   "origin"
-);
-CREATE TABLE IF NOT EXISTS "resale_subscriptions"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "kind" varchar not null,
-  "provider" varchar not null,
-  "external_id" varchar,
-  "external_order_id" varchar,
-  "customer_id" integer,
-  "foreign_customer_id" integer,
-  "is_own_holding" tinyint(1) not null default('0'),
-  "article_id" integer,
-  "label" varchar not null,
-  "quantity" integer not null default('1'),
-  "starts_on" date not null,
-  "ends_on" date,
-  "term_months" integer not null default('12'),
-  "interval" varchar not null default('yearly'),
-  "renewal" varchar not null default('auto'),
-  "purchase_unit_price" numeric,
-  "sale_unit_price" numeric,
-  "currency" varchar not null default('EUR'),
-  "status" varchar not null default('active'),
-  "successor_id" integer,
-  "contract_id" integer,
-  "domain_projection_id" integer,
-  "raw_hash" varchar,
-  "sync_status" varchar,
-  "notes" text,
-  "created_by_user_id" integer,
-  "created_at" datetime,
-  "updated_at" datetime,
-  "company_name" varchar,
-  "lexoffice_article_id" integer,
-  "import_id" integer,
-  "last_seen_at" datetime,
-  "parent_id" integer,
-  foreign key("import_id") references resale_imports("id") on delete set null on update no action,
-  foreign key("lexoffice_article_id") references lexoffice_articles("id") on delete set null on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
-  foreign key("customer_id") references customers("id") on delete set null on update no action,
-  foreign key("foreign_customer_id") references foreign_customers("id") on delete set null on update no action,
-  foreign key("article_id") references articles("id") on delete set null on update no action,
-  foreign key("successor_id") references resale_subscriptions("id") on delete set null on update no action,
-  foreign key("contract_id") references contracts("id") on delete set null on update no action,
-  foreign key("domain_projection_id") references domain_projections("id") on delete set null on update no action,
-  foreign key("created_by_user_id") references users("id") on delete set null on update no action,
-  foreign key("parent_id") references "resale_subscriptions"("id") on delete set null
-);
-CREATE INDEX "resale_subs_org_customer_idx" on "resale_subscriptions"(
-  "organization_id",
-  "customer_id"
-);
-CREATE INDEX "resale_subs_org_foreign_idx" on "resale_subscriptions"(
-  "organization_id",
-  "foreign_customer_id"
-);
-CREATE UNIQUE INDEX "resale_subs_org_provider_ext_uq" on "resale_subscriptions"(
-  "organization_id",
-  "provider",
-  "external_id"
-);
-CREATE INDEX "resale_subs_org_status_kind_idx" on "resale_subscriptions"(
-  "organization_id",
-  "status",
-  "kind"
 );
 CREATE INDEX "resale_periods_org_draft_idx" on "resale_periods"(
   "organization_id",
@@ -22720,6 +22604,289 @@ CREATE UNIQUE INDEX "import_col_map_org_entity_header_uq" on "import_column_mapp
   "entity",
   "source_header"
 );
+CREATE TABLE IF NOT EXISTS "resale_license_products"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "name" varchar not null,
+  "manufacturer" varchar,
+  "key_roles" text not null,
+  "reorder_level" integer,
+  "article_ref" varchar,
+  "note" text,
+  "created_by" integer,
+  "updated_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("created_by") references "users"("id") on delete set null,
+  foreign key("updated_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "resale_lic_products_org_name_uq" on "resale_license_products"(
+  "organization_id",
+  "name"
+);
+CREATE TABLE IF NOT EXISTS "resale_license_batches"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "product_id" integer not null,
+  "reference" varchar not null,
+  "purchased_on" date not null,
+  "supplier_id" integer,
+  "supplier_name" varchar,
+  "quantity" integer not null,
+  "key_roles" text not null,
+  "key_count" integer not null,
+  "document_type" varchar,
+  "document_id" integer,
+  "document_reference" varchar,
+  "note" text,
+  "created_by" integer,
+  "updated_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("product_id") references "resale_license_products"("id") on delete restrict,
+  foreign key("supplier_id") references "suppliers"("id") on delete set null,
+  foreign key("created_by") references "users"("id") on delete set null,
+  foreign key("updated_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "resale_lic_batches_org_ref_uq" on "resale_license_batches"(
+  "organization_id",
+  "reference"
+);
+CREATE INDEX "resale_lic_batches_org_product_idx" on "resale_license_batches"(
+  "organization_id",
+  "product_id"
+);
+CREATE TABLE IF NOT EXISTS "resale_license_units"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "batch_id" integer not null,
+  "position" integer not null,
+  "blocked_at" datetime,
+  "blocked_reason" varchar,
+  "blocked_by_user_id" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("batch_id") references "resale_license_batches"("id") on delete cascade,
+  foreign key("blocked_by_user_id") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "resale_lic_units_org_batch_pos_uq" on "resale_license_units"(
+  "organization_id",
+  "batch_id",
+  "position"
+);
+CREATE TABLE IF NOT EXISTS "resale_license_keys"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "unit_id" integer not null,
+  "product_id" integer not null,
+  "role" varchar not null,
+  "value" text not null,
+  "fingerprint" varchar not null,
+  "created_by" integer,
+  "updated_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("unit_id") references "resale_license_units"("id") on delete cascade,
+  foreign key("product_id") references "resale_license_products"("id") on delete restrict,
+  foreign key("created_by") references "users"("id") on delete set null,
+  foreign key("updated_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "resale_lic_keys_unit_role_uq" on "resale_license_keys"(
+  "unit_id",
+  "role"
+);
+CREATE UNIQUE INDEX "resale_lic_keys_dup_uq" on "resale_license_keys"(
+  "organization_id",
+  "product_id",
+  "role",
+  "fingerprint"
+);
+CREATE TABLE IF NOT EXISTS "resale_license_assignments"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "unit_id" integer not null,
+  "active_unit_id" integer,
+  "customer_id" integer not null,
+  "foreign_customer_id" integer,
+  "sold_on" date not null,
+  "invoice_reference" varchar,
+  "request_token" varchar,
+  "ended_at" datetime,
+  "end_kind" varchar,
+  "end_reason" varchar,
+  "ended_by_user_id" integer,
+  "created_by" integer,
+  "updated_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("unit_id") references "resale_license_units"("id") on delete cascade,
+  foreign key("active_unit_id") references "resale_license_units"("id") on delete set null,
+  foreign key("customer_id") references "customers"("id") on delete restrict,
+  foreign key("foreign_customer_id") references "foreign_customers"("id") on delete set null,
+  foreign key("ended_by_user_id") references "users"("id") on delete set null,
+  foreign key("created_by") references "users"("id") on delete set null,
+  foreign key("updated_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "resale_lic_assign_token_uq" on "resale_license_assignments"(
+  "organization_id",
+  "request_token"
+);
+CREATE INDEX "resale_lic_assign_org_customer_idx" on "resale_license_assignments"(
+  "organization_id",
+  "customer_id"
+);
+CREATE UNIQUE INDEX "resale_lic_assign_active_uq" on "resale_license_assignments"(
+  "active_unit_id"
+);
+CREATE TABLE IF NOT EXISTS "resale_article_classifications"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "article_ref" varchar not null,
+  "role" varchar not null,
+  "created_by" integer,
+  "updated_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("created_by") references "users"("id") on delete set null,
+  foreign key("updated_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "resale_art_class_org_ref_uq" on "resale_article_classifications"(
+  "organization_id",
+  "article_ref"
+);
+CREATE TABLE IF NOT EXISTS "resale_subscriptions"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "kind" varchar not null,
+  "provider" varchar not null,
+  "external_id" varchar,
+  "external_order_id" varchar,
+  "customer_id" integer,
+  "foreign_customer_id" integer,
+  "is_own_holding" tinyint(1) not null default('0'),
+  "label" varchar not null,
+  "quantity" integer not null default('1'),
+  "starts_on" date not null,
+  "ends_on" date,
+  "term_months" integer not null default('12'),
+  "interval" varchar not null default('yearly'),
+  "renewal" varchar not null default('auto'),
+  "purchase_unit_price" numeric,
+  "sale_unit_price" numeric,
+  "currency" varchar not null default('EUR'),
+  "status" varchar not null default('active'),
+  "successor_id" integer,
+  "contract_id" integer,
+  "domain_projection_id" integer,
+  "raw_hash" varchar,
+  "sync_status" varchar,
+  "notes" text,
+  "created_by_user_id" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "company_name" varchar,
+  "import_id" integer,
+  "last_seen_at" datetime,
+  "parent_id" integer,
+  "article_ref" varchar,
+  foreign key("parent_id") references resale_subscriptions("id") on delete set null on update no action,
+  foreign key("created_by_user_id") references users("id") on delete set null on update no action,
+  foreign key("domain_projection_id") references domain_projections("id") on delete set null on update no action,
+  foreign key("contract_id") references contracts("id") on delete set null on update no action,
+  foreign key("successor_id") references resale_subscriptions("id") on delete set null on update no action,
+  foreign key("foreign_customer_id") references foreign_customers("id") on delete set null on update no action,
+  foreign key("customer_id") references customers("id") on delete set null on update no action,
+  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("import_id") references resale_imports("id") on delete set null on update no action
+);
+CREATE INDEX "resale_subs_org_article_ref_idx" on "resale_subscriptions"(
+  "organization_id",
+  "article_ref"
+);
+CREATE INDEX "resale_subs_org_customer_idx" on "resale_subscriptions"(
+  "organization_id",
+  "customer_id"
+);
+CREATE INDEX "resale_subs_org_foreign_idx" on "resale_subscriptions"(
+  "organization_id",
+  "foreign_customer_id"
+);
+CREATE UNIQUE INDEX "resale_subs_org_provider_ext_uq" on "resale_subscriptions"(
+  "organization_id",
+  "provider",
+  "external_id"
+);
+CREATE INDEX "resale_subs_org_status_kind_idx" on "resale_subscriptions"(
+  "organization_id",
+  "status",
+  "kind"
+);
+CREATE INDEX "pbr_proj_kind_idx" on "project_billing_rules"(
+  "project_id",
+  "applies_to_kind"
+);
+CREATE TABLE IF NOT EXISTS "customer_billing_statements"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer,
+  "customer_billing_agreement_id" integer not null,
+  "year" integer not null,
+  "month" integer not null,
+  "total_minutes" integer not null default('0'),
+  "gross_value" numeric not null default('0'),
+  "payments_total" numeric not null default('0'),
+  "carry_in" numeric not null default('0'),
+  "balance" numeric not null default('0'),
+  "locked" tinyint(1) not null default('0'),
+  "locked_at" datetime,
+  "locked_by_user_id" integer,
+  "totals" text,
+  "computed_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "retainer_invoice_id" integer,
+  "travel_minutes" integer not null default('0'),
+  foreign key("locked_by_user_id") references users("id") on delete set null on update no action,
+  foreign key("customer_billing_agreement_id") references customer_billing_agreements("id") on delete cascade on update no action,
+  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("retainer_invoice_id") references invoices("id") on delete set null on update no action
+);
+CREATE INDEX "idx_cbs_org_period" on "customer_billing_statements"(
+  "organization_id",
+  "year",
+  "month"
+);
+CREATE UNIQUE INDEX "uq_cbs_period" on "customer_billing_statements"(
+  "customer_billing_agreement_id",
+  "year",
+  "month"
+);
+CREATE INDEX "extref_org_number_idx" on "external_references"(
+  "organization_id",
+  "external_number"
+);
+CREATE TABLE IF NOT EXISTS "document_mirror_detachments"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "document_id" integer not null,
+  "target" varchar not null,
+  "detached_at" datetime not null,
+  "detached_by_user_id" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("document_id") references "documents"("id") on delete cascade,
+  foreign key("detached_by_user_id") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "doc_mirror_detach_doc_target_uq" on "document_mirror_detachments"(
+  "document_id",
+  "target"
+);
 
 INSERT INTO migrations VALUES(1,'0001_01_01_000000_create_users_table',1);
 INSERT INTO migrations VALUES(2,'0001_01_01_000001_create_cache_table',1);
@@ -23643,3 +23810,9 @@ INSERT INTO migrations VALUES(924,'2027_02_28_211000_add_recorded_at_to_attendan
 INSERT INTO migrations VALUES(925,'2027_02_28_211100_close_finished_open_attendances',43);
 INSERT INTO migrations VALUES(926,'2027_02_28_212000_add_fee_to_club_event_details',44);
 INSERT INTO migrations VALUES(927,'2027_02_28_213000_create_import_column_mappings',45);
+INSERT INTO migrations VALUES(933,'2027_02_28_214000_create_resale_license_stock_tables',46);
+INSERT INTO migrations VALUES(934,'2027_02_28_215000_neutral_article_refs_in_reselling',46);
+INSERT INTO migrations VALUES(935,'2027_02_28_216000_neutral_service_article_refs',46);
+INSERT INTO migrations VALUES(936,'2027_02_28_217000_retainer_voucher_links_as_external_references',47);
+INSERT INTO migrations VALUES(937,'2027_02_28_218000_accounting_numbers_in_external_references',47);
+INSERT INTO migrations VALUES(938,'2027_02_28_219000_document_mirror_detachments',48);

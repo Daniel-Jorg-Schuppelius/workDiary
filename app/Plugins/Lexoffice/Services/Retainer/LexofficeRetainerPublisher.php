@@ -3,12 +3,12 @@
  * Created on   : Thu Jul 23 2026
  * Author       : Daniel Jörg Schuppelius
  * Author Uri   : https://schuppelius.org
- * Filename     : RetainerLexofficeService.php
+ * Filename     : LexofficeRetainerPublisher.php
  * License      : AGPL-3.0-or-later
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Services\Billing;
+namespace App\Plugins\Lexoffice\Services\Retainer;
 
 use App\Models\Billing\CustomerBillingAgreement;
 use App\Models\Customer\Customer;
@@ -16,6 +16,8 @@ use App\Models\Integration\ExternalReference;
 use App\Models\Invoicing\Invoice;
 use App\Plugins\Lexoffice\{LexofficeInvoiceService, LexofficePlugin};
 use App\Plugins\PluginManager;
+use App\Services\Billing\Contracts\RetainerPublisher;
+use App\Services\Billing\CustomerAccountStatementService;
 use App\Services\Invoicing\InvoiceGenerator;
 use App\Support\Tz;
 use Carbon\CarbonInterface;
@@ -26,21 +28,31 @@ use Illuminate\Validation\ValidationException;
 use RuntimeException;
 
 /**
- * Retainer-Modus (Feature 098): erzeugt die feste Monatspauschale bzw. die
- * periodische Spitzabrechnung als NORMALE Lexoffice-Rechnung und übergibt sie
- * finalisiert an Lexoffice (Lexoffice führt Beleg + Zahlung). Der lokale
- * Leistungssaldo bleibt in {@see CustomerAccountStatementService}; der
- * Lexoffice-Zahlstatus fließt über {@see RetainerVoucherReconciler} zurück.
+ * Retainer-Modus (Feature 098) mit Lexoffice als führendem Programm: erzeugt
+ * die feste Monatspauschale bzw. die periodische Spitzabrechnung als NORMALE
+ * Lexoffice-Rechnung und übergibt sie finalisiert (Lexoffice führt Beleg +
+ * Zahlung). Der lokale Leistungssaldo bleibt in
+ * {@see CustomerAccountStatementService}; der Zahlstatus fließt über
+ * {@see LexofficeRetainerVouchers} zurück. Seit MVP-1027 im Plugin, der Kern
+ * spricht {@see RetainerPublisher}.
  *
  * Idempotenz der Pauschale: 1:1 Monat↔Beleg über
  * customer_billing_statements.retainer_invoice_id (unter Sperre gesetzt).
  */
-class RetainerLexofficeService {
+class LexofficeRetainerPublisher implements RetainerPublisher {
     public function __construct(
         private readonly InvoiceGenerator $generator,
         private readonly LexofficeInvoiceService $lexoffice,
         private readonly CustomerAccountStatementService $statements,
     ) {}
+
+    public function label(): string {
+        return 'Lexoffice';
+    }
+
+    public function isConfigured(): bool {
+        return $this->lexoffice->isConfigured();
+    }
 
     /**
      * Erzeugt + pusht die Monatspauschale eines Retainer-Agreements. Idempotent:
@@ -66,10 +78,10 @@ class RetainerLexofficeService {
             if ($locked->retainer_invoice_id !== null) {
                 return Invoice::query()->findOrFail($locked->retainer_invoice_id);
             }
-            if ($locked->lexoffice_voucher_id !== null) {
+            if (LexofficeRetainerVouchers::linkOf($locked) !== null) {
                 // Für den Monat liegt bereits eine in Lexoffice geführte
                 // Rechnung — ein Push legte dort einen zweiten Beleg an.
-                throw ValidationException::withMessages(['agreement' => __('customer-billing.retainer_voucher_already_linked')]);
+                throw ValidationException::withMessages(['agreement' => __('customer-billing.retainer_voucher_already_linked', ['system' => $this->label()])]);
             }
 
             $serviceDate = $this->monthEnd($year, $month);
@@ -140,7 +152,7 @@ class RetainerLexofficeService {
 
     private function assertConfigured(): void {
         if (! $this->lexoffice->isConfigured()) {
-            throw ValidationException::withMessages(['lexoffice' => __('customer-billing.lexoffice_not_configured')]);
+            throw ValidationException::withMessages(['agreement' => __('customer-billing.channel_not_configured', ['system' => $this->label()])]);
         }
     }
 

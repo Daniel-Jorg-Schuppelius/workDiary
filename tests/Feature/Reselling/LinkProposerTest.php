@@ -98,7 +98,7 @@ class LinkProposerTest extends TestCase {
 
     public function test_proposal_links_nearest_invoice_lines_and_sets_period_status(): void {
         $customer = $this->customerWithContact('Klimpel Bäder GmbH', 'c-kl');
-        $subscription = $this->subscription(['label' => 'Microsoft 365 Business Premium', 'customer_id' => $customer->id, 'lexoffice_article_id' => $this->premium->id, 'starts_on' => '2025-08-05', 'sale_unit_price' => '247.20']);
+        $subscription = $this->subscription(['label' => 'Microsoft 365 Business Premium', 'customer_id' => $customer->id, 'article_ref' => 'lex:' . $this->premium->id, 'starts_on' => '2025-08-05', 'sale_unit_price' => '247.20']);
         $this->assertSame(['2025-08-05', '2026-08-05'], $subscription->periods->map(static fn($p) => $p->starts_on->toDateString())->all());
 
         // 2025 wurde erst im Oktober berechnet, 2026 pünktlich — plus eine Support-Zeile, die nie zählt.
@@ -129,21 +129,22 @@ class LinkProposerTest extends TestCase {
     public function test_article_classification_override_controls_what_counts_as_a_licence_line(): void {
         $admin = $this->orgAdmin();
         $customer = $this->customerWithContact('Klimpel Bäder GmbH', 'c-kl');
-        $subscription = $this->subscription(['label' => 'Microsoft 365 Business Premium', 'customer_id' => $customer->id, 'lexoffice_article_id' => $this->premium->id, 'starts_on' => '2025-08-05']);
+        $subscription = $this->subscription(['label' => 'Microsoft 365 Business Premium', 'customer_id' => $customer->id, 'article_ref' => 'lex:' . $this->premium->id, 'starts_on' => '2025-08-05']);
         // Dienstleistung mit Microsoft im Namen: die Erkennung hielte sie für ein Produkt.
         $service = $this->article('art-pc', 'Microsoft Partner Center Verwaltung', '90.00');
         $this->voucher('c-kl', 'RE/2025/0900', '2025-08-06', [
             ['article' => $service, 'name' => 'Microsoft Partner Center Verwaltung', 'quantity' => 12, 'unit' => 'Monat', 'net' => '20.00'],
         ]);
-        $classifier = new \App\Services\Reselling\Register\LicenseArticleClassifier;
-        $this->assertTrue($classifier->isLicense($service), 'ohne Einstufung: Name trifft');
+        $org = (int) $this->organization->id;
+        $isLicense = static fn (LexofficeArticle $article): bool => (new \App\Services\Reselling\Register\LicenseArticleClassifier)->isLicense($org, 'lex:' . $article->id, $article->name);
+        $this->assertTrue($isLicense($service), 'ohne Einstufung: Name trifft');
 
         $this->actingAs($admin)->get(route('finance.resale.products'))->assertOk()->assertSee('Microsoft Partner Center Verwaltung');
         $this->actingAs($admin)->post(route('finance.resale.products.store'), [
-            'article_id' => \App\Support\Sqid::encode(LexofficeArticle::class, $service->id),
+            'article' => 'lex:' . \App\Support\Sqid::encode(LexofficeArticle::class, (int) $service->id),
             'role' => 'excluded',
         ])->assertRedirect(route('finance.resale.products'));
-        $this->assertFalse($classifier->isLicense($service->fresh()), 'Betreiber: nie Abo-Position');
+        $this->assertFalse($isLicense($service), 'Betreiber: nie Abo-Position');
 
         $result = (new LinkProposer)->propose($this->organization);
         $this->assertSame(0, $result['links'], 'ausgeschlossener Artikel wird nie zugeordnet');
@@ -153,9 +154,9 @@ class LinkProposerTest extends TestCase {
         // Umgekehrt: Artikel ohne Microsoft im Namen als Abo-Produkt erzwingen.
         $plain = $this->article('art-plain', 'Cloud-Arbeitsplatz Premium', '20.60');
         $this->voucher('c-kl', 'RE/2025/0901', '2025-08-07', [['article' => $plain, 'name' => 'Cloud-Arbeitsplatz Premium', 'quantity' => 12, 'unit' => 'Monat', 'net' => '20.60']]);
-        $this->assertFalse($classifier->isLicense($plain));
-        $plain->forceFill(['resale_role' => \App\Enums\Reselling\ResaleArticleRole::License])->save();
-        $subscription->forceFill(['lexoffice_article_id' => $plain->id, 'label' => 'Cloud-Arbeitsplatz Premium'])->save();
+        $this->assertFalse($isLicense($plain));
+        \App\Models\Reselling\ResaleArticleClassification::query()->create(['organization_id' => $org, 'article_ref' => 'lex:' . $plain->id, 'role' => \App\Enums\Reselling\ResaleArticleRole::License]);
+        $subscription->forceFill(['article_ref' => 'lex:' . $plain->id, 'label' => 'Cloud-Arbeitsplatz Premium'])->save();
         $result = (new LinkProposer)->propose($this->organization);
         $this->assertSame(1, $result['links']);
         $this->assertSame(PeriodStatus::Billed, $subscription->periods()->first()?->fresh()?->status);
@@ -165,8 +166,8 @@ class LinkProposerTest extends TestCase {
         $partner = $this->customerWithContact('LDS Systems GmbH', 'c-lds');
         $haus = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $partner->id, 'name' => 'Haus 24 GmbH', 'matchcode' => null]);
         $kaik = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $partner->id, 'name' => 'Steuerbüro Kaik', 'matchcode' => 'STBK']);
-        $subHaus = $this->subscription(['label' => 'Microsoft 365 Business Standard', 'foreign_customer_id' => $haus->id, 'lexoffice_article_id' => $this->premium->id, 'starts_on' => '2025-09-04']);
-        $subKaik = $this->subscription(['label' => 'Microsoft 365 Business Standard', 'foreign_customer_id' => $kaik->id, 'lexoffice_article_id' => $this->premium->id, 'starts_on' => '2025-09-04']);
+        $subHaus = $this->subscription(['label' => 'Microsoft 365 Business Standard', 'foreign_customer_id' => $haus->id, 'article_ref' => 'lex:' . $this->premium->id, 'starts_on' => '2025-09-04']);
+        $subKaik = $this->subscription(['label' => 'Microsoft 365 Business Standard', 'foreign_customer_id' => $kaik->id, 'article_ref' => 'lex:' . $this->premium->id, 'starts_on' => '2025-09-04']);
 
         // Gleicher Tag, gleiches Produkt — nur der Schlusstext unterscheidet die Endkunden.
         $this->voucher('c-lds', 'RE/2025/1116', '2025-09-04', [['article' => $this->premium, 'name' => 'Microsoft 365 Business Standard', 'quantity' => 12, 'net' => '12.13']], 'Rechnung Unsere Lieferungen/Leistungen stellen wir Ihnen wie folgt in Rechnung. Vielen Dank für die gute Zusammenarbeit. (M365 Haus24)');
@@ -184,8 +185,8 @@ class LinkProposerTest extends TestCase {
         $partner = $this->customerWithContact('LDS Systems GmbH', 'c-lds');
         $kaik = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $partner->id, 'name' => 'Steuerbüro Kaik']);
         $ute = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $partner->id, 'name' => 'Ute Mayershofer']);
-        $subKaik = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'foreign_customer_id' => $kaik->id, 'lexoffice_article_id' => $this->exchange->id, 'starts_on' => '2025-10-01', 'quantity' => 1]);
-        $subUte = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'foreign_customer_id' => $ute->id, 'lexoffice_article_id' => $this->exchange->id, 'starts_on' => '2025-10-01', 'quantity' => 3]);
+        $subKaik = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'foreign_customer_id' => $kaik->id, 'article_ref' => 'lex:' . $this->exchange->id, 'starts_on' => '2025-10-01', 'quantity' => 1]);
+        $subUte = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'foreign_customer_id' => $ute->id, 'article_ref' => 'lex:' . $this->exchange->id, 'starts_on' => '2025-10-01', 'quantity' => 3]);
 
         $this->voucher('c-lds', 'RE/2025/0945', '2025-10-26', [
             ['article' => $this->exchange, 'name' => 'Exchange Online (Plan 1)', 'description' => 'Endkunde Steuerbüro Kaik', 'quantity' => 12, 'net' => '3.95'],
@@ -205,7 +206,7 @@ class LinkProposerTest extends TestCase {
     public function test_confirm_waive_reopen_and_manual_link_via_ui(): void {
         $admin = $this->orgAdmin();
         $customer = $this->customerWithContact('Klimpel Bäder GmbH', 'c-kl');
-        $subscription = $this->subscription(['label' => 'Microsoft 365 Business Premium', 'customer_id' => $customer->id, 'lexoffice_article_id' => $this->premium->id, 'starts_on' => '2025-08-05']);
+        $subscription = $this->subscription(['label' => 'Microsoft 365 Business Premium', 'customer_id' => $customer->id, 'article_ref' => 'lex:' . $this->premium->id, 'starts_on' => '2025-08-05']);
         $this->voucher('c-kl', 'RE/2025/0820', '2025-10-14', [['article' => $this->premium, 'name' => 'Microsoft 365 Business Premium', 'quantity' => 12, 'net' => '20.60']]);
 
         $this->actingAs($admin)->post(route('finance.resale.periods.propose'))->assertRedirect();
@@ -280,9 +281,9 @@ class LinkProposerTest extends TestCase {
         $this->travelTo('2025-12-01');
         $customer = $this->customerWithContact('ReproBerlin GmbH', 'c-repro');
         $standard = $this->article('art-bs', 'Microsoft 365 Business Standard', '11.70');
-        $one = $this->subscription(['label' => 'Microsoft 365 Business Standard', 'customer_id' => $customer->id, 'lexoffice_article_id' => $standard->id, 'starts_on' => '2024-02-07', 'ends_on' => '2026-02-07', 'status' => 'cancelled']);
-        $two = $this->subscription(['label' => 'Microsoft 365 Business Standard', 'customer_id' => $customer->id, 'lexoffice_article_id' => $standard->id, 'starts_on' => '2024-02-25', 'ends_on' => '2026-02-25', 'status' => 'cancelled']);
-        $pair = $this->subscription(['label' => 'Microsoft 365 Business Standard', 'customer_id' => $customer->id, 'lexoffice_article_id' => $standard->id, 'starts_on' => '2024-02-25', 'ends_on' => '2026-02-25', 'quantity' => 2, 'status' => 'cancelled']);
+        $one = $this->subscription(['label' => 'Microsoft 365 Business Standard', 'customer_id' => $customer->id, 'article_ref' => 'lex:' . $standard->id, 'starts_on' => '2024-02-07', 'ends_on' => '2026-02-07', 'status' => 'cancelled']);
+        $two = $this->subscription(['label' => 'Microsoft 365 Business Standard', 'customer_id' => $customer->id, 'article_ref' => 'lex:' . $standard->id, 'starts_on' => '2024-02-25', 'ends_on' => '2026-02-25', 'status' => 'cancelled']);
+        $pair = $this->subscription(['label' => 'Microsoft 365 Business Standard', 'customer_id' => $customer->id, 'article_ref' => 'lex:' . $standard->id, 'starts_on' => '2024-02-25', 'ends_on' => '2026-02-25', 'quantity' => 2, 'status' => 'cancelled']);
         // Leistungszeitraum zwei Jahre: damit ist „24 Monat" sicher EINE Lizenz über zwei Perioden.
         $this->voucher('c-repro', 'RE/2025/0895', '2025-08-21', [['article' => $standard, 'name' => 'Microsoft 365 Business Standard', 'quantity' => 24, 'net' => '11.70']], '', '2024-02-07', '2026-02-06');
         $this->voucher('c-repro', 'RE/2025/0896', '2025-08-21', [
@@ -318,8 +319,8 @@ class LinkProposerTest extends TestCase {
         // daneben ein zweiter Vertrag ab Mai 2025 mit einer 12er-Position auf derselben Rechnung.
         $this->travelTo('2026-09-08');
         $customer = $this->customerWithContact('Marina Vulkan Werft', 'c-mv');
-        $old = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $customer->id, 'lexoffice_article_id' => $this->exchange->id, 'starts_on' => '2022-04-01', 'ends_on' => '2026-04-01', 'status' => 'cancelled']);
-        $new = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $customer->id, 'lexoffice_article_id' => $this->exchange->id, 'starts_on' => '2025-05-06', 'ends_on' => '2026-05-06', 'status' => 'cancelled']);
+        $old = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $customer->id, 'article_ref' => 'lex:' . $this->exchange->id, 'starts_on' => '2022-04-01', 'ends_on' => '2026-04-01', 'status' => 'cancelled']);
+        $new = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $customer->id, 'article_ref' => 'lex:' . $this->exchange->id, 'starts_on' => '2025-05-06', 'ends_on' => '2026-05-06', 'status' => 'cancelled']);
         $this->voucher('c-mv', 'RE/2025/0902', '2025-08-22', [['article' => $this->exchange, 'name' => 'Exchange Online (Plan 1)', 'quantity' => 48, 'net' => '3.95']]);
         $this->voucher('c-mv', 'RE/2025/0903', '2025-08-22', [['article' => $this->exchange, 'name' => 'Exchange Online (Plan 1)', 'quantity' => 12, 'net' => '3.95']]);
 
@@ -336,8 +337,8 @@ class LinkProposerTest extends TestCase {
         $this->travelTo('2026-09-08');
         $customer = $this->customerWithContact('ReproBerlin GmbH', 'c-repro');
         $standard = $this->article('art-bs', 'Microsoft 365 Business Standard', '11.70');
-        $telekom = $this->subscription(['label' => 'Microsoft 365 Business Standard', 'customer_id' => $customer->id, 'lexoffice_article_id' => $standard->id, 'starts_on' => '2024-02-25', 'ends_on' => '2026-02-25', 'status' => 'superseded']);
-        $qh = $this->subscription(['label' => 'Microsoft 365 Business Standard', 'provider' => 'qualityhosting', 'customer_id' => $customer->id, 'lexoffice_article_id' => $standard->id, 'starts_on' => '2026-02-25']);
+        $telekom = $this->subscription(['label' => 'Microsoft 365 Business Standard', 'customer_id' => $customer->id, 'article_ref' => 'lex:' . $standard->id, 'starts_on' => '2024-02-25', 'ends_on' => '2026-02-25', 'status' => 'superseded']);
+        $qh = $this->subscription(['label' => 'Microsoft 365 Business Standard', 'provider' => 'qualityhosting', 'customer_id' => $customer->id, 'article_ref' => 'lex:' . $standard->id, 'starts_on' => '2026-02-25']);
         $this->voucher('c-repro', 'RE/2026/1026', '2026-02-25', [['article' => $standard, 'name' => 'Microsoft 365 Business Standard', 'quantity' => 12, 'net' => '11.70']]);
         $this->voucher('c-repro', 'RE/2025/0896', '2025-08-21', [['article' => $standard, 'name' => 'Microsoft 365 Business Standard', 'quantity' => 24, 'net' => '11.70']]);
 
@@ -349,7 +350,7 @@ class LinkProposerTest extends TestCase {
     public function test_periods_of_subscriptions_that_lost_their_holder_fall_back_to_open_after_the_run(): void {
         // Review 2026-09-10 (B2): Vorschläge werden org-weit gelöscht, bewertet werden nur Abos mit Halter.
         $customer = $this->customerWithContact('Klimpel Bäder GmbH', 'c-kl');
-        $subscription = $this->subscription(['label' => 'Microsoft 365 Business Premium', 'customer_id' => $customer->id, 'lexoffice_article_id' => $this->premium->id, 'starts_on' => '2025-08-05']);
+        $subscription = $this->subscription(['label' => 'Microsoft 365 Business Premium', 'customer_id' => $customer->id, 'article_ref' => 'lex:' . $this->premium->id, 'starts_on' => '2025-08-05']);
         $this->voucher('c-kl', 'RE/2025/0820', '2025-08-06', [['article' => $this->premium, 'name' => 'Microsoft 365 Business Premium', 'quantity' => 12, 'net' => '20.60']]);
         (new LinkProposer)->propose($this->organization);
         $period = $subscription->periods()->firstOrFail();
@@ -374,7 +375,7 @@ class LinkProposerTest extends TestCase {
         // Review 2026-09-10 (B3): der Bezug auf eine lokale Rechnungsposition (InvoiceItem) ist ein
         // Vorschlag ohne Spiegelposition — er bleibt beim Lauf stehen und zählt als Deckung.
         $customer = $this->customerWithContact('Klimpel Bäder GmbH', 'c-kl');
-        $subscription = $this->subscription(['label' => 'Microsoft 365 Business Premium', 'customer_id' => $customer->id, 'lexoffice_article_id' => $this->premium->id, 'starts_on' => '2025-08-05']);
+        $subscription = $this->subscription(['label' => 'Microsoft 365 Business Premium', 'customer_id' => $customer->id, 'article_ref' => 'lex:' . $this->premium->id, 'starts_on' => '2025-08-05']);
         $period = $subscription->periods()->firstOrFail();
         ResalePeriodLink::query()->create([
             'organization_id' => $this->organization->id, 'period_id' => $period->id, 'subscription_id' => $subscription->id,
@@ -397,7 +398,7 @@ class LinkProposerTest extends TestCase {
         // Review 2026-09-10 (B5): 36-Monats-Rechnung vom Januar 2024, die 2024er- und 2025er-Periode bestätigt,
         // die 2026er offen — der Vorfilter nach Belegdatum (ab 90 Tage vor der ältesten offenen Periode) fand sie nie.
         $customer = $this->customerWithContact('ReproBerlin GmbH', 'c-repro');
-        $subscription = $this->subscription(['label' => 'Microsoft 365 Business Premium', 'customer_id' => $customer->id, 'lexoffice_article_id' => $this->premium->id, 'starts_on' => '2024-01-01', 'ends_on' => '2027-01-01', 'status' => 'cancelled']);
+        $subscription = $this->subscription(['label' => 'Microsoft 365 Business Premium', 'customer_id' => $customer->id, 'article_ref' => 'lex:' . $this->premium->id, 'starts_on' => '2024-01-01', 'ends_on' => '2027-01-01', 'status' => 'cancelled']);
         $this->assertSame(3, $subscription->periods()->count());
         $this->voucher('c-repro', 'RE/2024/0001', '2024-01-01', [['article' => $this->premium, 'name' => 'Microsoft 365 Business Premium', 'quantity' => 36, 'net' => '20.60']], '', '2024-01-01', '2026-12-31');
         (new LinkProposer)->propose($this->organization);
@@ -422,7 +423,7 @@ class LinkProposerTest extends TestCase {
         // Review 2026-09-10 (A3): Storno hebt den Bezug auf — die Spur bleibt (0 Monate, Hinweis), die Periode
         // wird aus der Restdeckung bewertet und ist wieder offen für den Lauf (Ersatzrechnung).
         $customer = $this->customerWithContact('EcoTec - HLSK GmbH', 'c-hlsk');
-        $subscription = $this->subscription(['label' => 'Microsoft 365 Business Premium', 'customer_id' => $customer->id, 'lexoffice_article_id' => $this->premium->id, 'starts_on' => '2025-08-05']);
+        $subscription = $this->subscription(['label' => 'Microsoft 365 Business Premium', 'customer_id' => $customer->id, 'article_ref' => 'lex:' . $this->premium->id, 'starts_on' => '2025-08-05']);
         $voucher = $this->voucher('c-hlsk', 'RE/2025/0271', '2025-08-06', [['article' => $this->premium, 'name' => 'Microsoft 365 Business Premium', 'quantity' => 12, 'net' => '20.60']]);
         (new LinkProposer)->propose($this->organization);
         $period = $subscription->periods()->firstOrFail();
@@ -466,8 +467,8 @@ class LinkProposerTest extends TestCase {
         // Review 2026-09-10 (G, Idempotenz): der Lauf löscht alle Vorschläge und baut sie neu — ohne Änderung
         // am Bestand müssen Perioden, Monate, Mengen und Beträge exakt gleich herauskommen (IDs dürfen wechseln).
         $customer = $this->customerWithContact('Klimpel Bäder GmbH', 'c-kl');
-        $premium = $this->subscription(['label' => 'Microsoft 365 Business Premium', 'customer_id' => $customer->id, 'lexoffice_article_id' => $this->premium->id, 'starts_on' => '2024-08-05', 'quantity' => 2, 'sale_unit_price' => '247.20']);
-        $exchange = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $customer->id, 'lexoffice_article_id' => $this->exchange->id, 'starts_on' => '2025-01-01', 'sale_unit_price' => '47.40']);
+        $premium = $this->subscription(['label' => 'Microsoft 365 Business Premium', 'customer_id' => $customer->id, 'article_ref' => 'lex:' . $this->premium->id, 'starts_on' => '2024-08-05', 'quantity' => 2, 'sale_unit_price' => '247.20']);
+        $exchange = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $customer->id, 'article_ref' => 'lex:' . $this->exchange->id, 'starts_on' => '2025-01-01', 'sale_unit_price' => '47.40']);
         $this->assertSame(3, $premium->periods()->count());
         $this->assertSame(2, $exchange->periods()->count());
         $this->voucher('c-kl', 'RE/2024/0810', '2024-08-06', [['article' => $this->premium, 'name' => 'Microsoft 365 Business Premium', 'quantity' => 24, 'net' => '20.60']]);
@@ -523,10 +524,10 @@ class LinkProposerTest extends TestCase {
         $partner = $this->customerWithContact('LDS Systems GmbH', 'c-lds');
         $kaik = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $partner->id, 'name' => 'Steuerbüro Kaik', 'company' => 'Steuerbüro Kaik', 'matchcode' => null]);
         $ute = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $partner->id, 'name' => 'Ute Mayershofer', 'company' => 'Ute Mayershofer', 'matchcode' => null]);
-        $subKaik = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'foreign_customer_id' => $kaik->id, 'lexoffice_article_id' => $this->exchange->id, 'starts_on' => '2025-10-01', 'quantity' => 1]);
-        $subUte = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'foreign_customer_id' => $ute->id, 'lexoffice_article_id' => null, 'starts_on' => '2025-10-01', 'quantity' => 3]);
+        $subKaik = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'foreign_customer_id' => $kaik->id, 'article_ref' => 'lex:' . $this->exchange->id, 'starts_on' => '2025-10-01', 'quantity' => 1]);
+        $subUte = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'foreign_customer_id' => $ute->id, 'article_ref' => null, 'starts_on' => '2025-10-01', 'quantity' => 3]);
         $this->assertNotSame($subKaik->productKey(), $subUte->productKey(), 'ohne Artikelnamen: art:… gegen name:…');
-        $this->assertSame($subKaik->productKey(), $subUte->productKey([$this->exchange->id => $this->exchange->name]), 'mit Artikelnamen dasselbe Produkt');
+        $this->assertSame($subKaik->productKey(), $subUte->productKey(['lex:' . $this->exchange->id => $this->exchange->name]), 'mit Artikelnamen dasselbe Produkt');
 
         $this->voucher('c-lds', 'RE/2025/0945', '2025-10-26', [
             ['article' => $this->exchange, 'name' => 'Exchange Online (Plan 1)', 'description' => 'Endkunde Steuerbüro Kaik', 'quantity' => 12, 'net' => '3.95'],
@@ -547,7 +548,7 @@ class LinkProposerTest extends TestCase {
         // Review 2026-09-10 (G, Währung ≠ EUR), Verhalten aus dem Code: Deckung zählt in Lizenzmonaten, der
         // Bezug übernimmt Währung und Betrag der Position (unit_net × Einheiten) — der Lauf vergleicht keine Währungen.
         $customer = $this->customerWithContact('Helvetia Treuhand AG', 'c-ch');
-        $chf = $this->subscription(['label' => 'Microsoft 365 Business Premium', 'customer_id' => $customer->id, 'lexoffice_article_id' => $this->premium->id, 'starts_on' => '2025-08-05', 'currency' => 'CHF', 'sale_unit_price' => '260.40']);
+        $chf = $this->subscription(['label' => 'Microsoft 365 Business Premium', 'customer_id' => $customer->id, 'article_ref' => 'lex:' . $this->premium->id, 'starts_on' => '2025-08-05', 'currency' => 'CHF', 'sale_unit_price' => '260.40']);
         $this->assertSame('CHF', $chf->periods()->first()?->currency->value);
         $this->assertSame('260.40', $chf->periods()->first()?->expected_sale?->getAmount());
 
@@ -571,7 +572,7 @@ class LinkProposerTest extends TestCase {
 
         // Abweichende Währung zwischen Abo (EUR) und Rechnung (USD): der Lauf deckt trotzdem — Monate sind
         // währungsfrei; der Bezug trägt USD, die Periode bleibt EUR. Kein Filter, kein Fehler.
-        $eur = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $customer->id, 'lexoffice_article_id' => $this->exchange->id, 'starts_on' => '2025-08-05', 'sale_unit_price' => '47.40']);
+        $eur = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $customer->id, 'article_ref' => 'lex:' . $this->exchange->id, 'starts_on' => '2025-08-05', 'sale_unit_price' => '47.40']);
         $usd = LexofficeVoucher::create([
             'organization_id' => $this->organization->id, 'external_id' => 'v-usd', 'contact_external_id' => 'c-ch', 'voucher_type' => 'invoice',
             'voucher_status' => 'paid', 'voucher_number' => 'RE/2025/0701', 'voucher_date' => '2025-08-07', 'total_amount' => 51.60, 'currency' => 'USD', 'archived' => false, 'lines_synced_at' => now(),
@@ -615,16 +616,16 @@ class LinkProposerTest extends TestCase {
         $withoutContact = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Ohne Kontakt GmbH']);
         $kaik = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $partner->id, 'name' => 'Steuerbüro Kaik']);
 
-        $viaCustomer = $this->subscription(['label' => 'Microsoft 365 Business Premium', 'customer_id' => $direct->id, 'lexoffice_article_id' => $this->premium->id, 'starts_on' => '2025-08-05']);
+        $viaCustomer = $this->subscription(['label' => 'Microsoft 365 Business Premium', 'customer_id' => $direct->id, 'article_ref' => 'lex:' . $this->premium->id, 'starts_on' => '2025-08-05']);
         $this->assertSame(['c-kl'], $this->contactsFor($viaCustomer));
 
-        $viaPartner = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'foreign_customer_id' => $kaik->id, 'lexoffice_article_id' => $this->exchange->id, 'starts_on' => '2025-10-01']);
+        $viaPartner = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'foreign_customer_id' => $kaik->id, 'article_ref' => 'lex:' . $this->exchange->id, 'starts_on' => '2025-10-01']);
         $this->assertSame(['c-lds'], $this->contactsFor($viaPartner), 'Fremdkunde → Kontakt des Partners (Rechnungsempfänger)');
         $this->assertSame(['c-lds'], $this->contactsForCustomer($partner));
 
-        $this->assertSame([], $this->contactsFor($this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $withoutContact->id, 'lexoffice_article_id' => $this->exchange->id, 'starts_on' => '2025-10-01'])), 'Kunde ohne Lexoffice-Kontakt');
-        $this->assertSame([], $this->contactsFor($this->subscription(['label' => 'Exchange Online (Plan 1)', 'is_own_holding' => true, 'lexoffice_article_id' => $this->exchange->id, 'starts_on' => '2025-10-01'])), 'eigener Bestand hat keinen Rechnungsempfänger');
-        $this->assertSame([], $this->contactsFor($this->subscription(['label' => 'Exchange Online (Plan 1)', 'lexoffice_article_id' => $this->exchange->id, 'starts_on' => '2025-10-01'])), 'ohne Halter (Inbox)');
+        $this->assertSame([], $this->contactsFor($this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $withoutContact->id, 'article_ref' => 'lex:' . $this->exchange->id, 'starts_on' => '2025-10-01'])), 'Kunde ohne Lexoffice-Kontakt');
+        $this->assertSame([], $this->contactsFor($this->subscription(['label' => 'Exchange Online (Plan 1)', 'is_own_holding' => true, 'article_ref' => 'lex:' . $this->exchange->id, 'starts_on' => '2025-10-01'])), 'eigener Bestand hat keinen Rechnungsempfänger');
+        $this->assertSame([], $this->contactsFor($this->subscription(['label' => 'Exchange Online (Plan 1)', 'article_ref' => 'lex:' . $this->exchange->id, 'starts_on' => '2025-10-01'])), 'ohne Halter (Inbox)');
 
         // Fremder Mandant mit demselben Kontaktschlüssel: jeder sieht nur seine eigene Verknüpfung.
         $otherOrg = \App\Models\Platform\Organization::factory()->create();

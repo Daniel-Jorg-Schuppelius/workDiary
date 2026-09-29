@@ -208,6 +208,28 @@ return [
 
     'attributes' => [
 
+        'invoice_reference' => 'Invoice reference',
+
+        'key_labels' => 'Key roles',
+
+        'key_labels.*' => 'Key role',
+
+        'license_keys' => 'License keys',
+
+        'license_keys.*' => 'License key',
+
+        'purchased_on' => 'Purchase date',
+
+        'remove' => 'Keys to remove',
+
+        'remove.*' => 'Key to remove',
+
+        'reorder_level' => 'Reorder level',
+
+        'sold_on' => 'Sale date',
+
+        'unit_id' => 'License',
+
         'columns' => 'Column mapping',
 
         'columns.*.header' => 'Header cell',
@@ -1433,7 +1455,6 @@ return [
         'lessons_learned' => 'Lessons learned',
         'level' => 'Level / value',
         'lexoffice_api_key' => 'Lexoffice API key',
-        'lexoffice_article_id' => 'Lexoffice article',
         'library_steps' => 'library steps',
         'library_steps.*' => 'library step',
         'licences' => 'Licences',

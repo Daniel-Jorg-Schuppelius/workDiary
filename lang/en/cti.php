@@ -21,6 +21,7 @@ return [
     // opt-in extension was dialled.
     'popup' => [
         'title_customer' => 'Call from :name',
+        'title_directory' => 'Call from :name (:number)',
         'title_unknown' => 'Call from :number',
         'message' => 'Incoming call (:number).',
         'unknown_number' => 'unknown number',

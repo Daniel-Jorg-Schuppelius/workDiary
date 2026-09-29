@@ -20,7 +20,10 @@ namespace App\Plugins\Support\Mirror;
  * ausschließlich gegen diesen Vertrag (Analogie: `Support/Calendar` aus A8).
  */
 interface MirrorTarget {
-    /** Plugin-ID (`webdav`, `sharepoint`) — zugleich Outbox-/Referenz-/Inbox-Kennung. */
+    /**
+     * Plugin-ID (`webdav`, `sharepoint`) — zugleich Outbox-/Referenz-/Inbox-Kennung
+     * und Ziel der „Spiegelung getrennt"-Markierung (`document_mirror_detachments`, MVP-1029).
+     */
     public function pluginId(): string;
 
     /** Betriebsbereite Verbindung der Organisation, sonst null. */
@@ -28,12 +31,6 @@ interface MirrorTarget {
 
     /** Transport-Gateway zur Verbindung (WebDAV-HTTP bzw. Microsoft Graph). */
     public function gatewayFor(MirrorConnection $connection): RemoteFileGateway;
-
-    /**
-     * documents-Spalte des „Spiegelung getrennt"-Markers dieses Zweigs
-     * (z. B. `webdav_mirror_detached`) — Trennung wirkt nur je Ablage-Ziel.
-     */
-    public function detachedAttribute(): string;
 
     /**
      * Outbox-Idempotenzschlüssel für ein Spiegel-Suffix. Der Unique-Index der

@@ -15,7 +15,7 @@ En la ficha del cliente se pueden definir **condiciones especiales**:
 tarifas horarias propias por actividad y tipo de día (laborable/fin de
 semana, definido mediante «días laborables por semana») y el método de
 liquidación — **cuenta de cliente** sin facturas con saldo corriente,
-**factura mensual** o **cuota fija (Lexoffice)**.
+**factura mensual** o **cuota fija** a través del programa contable (actualmente Lexoffice).
 
 Las condiciones incluyen también una **tarifa fija de desplazamiento**:
 cada registro de tiempo facturable aporta entonces x minutos
@@ -44,7 +44,9 @@ bancaria (la cuenta de cliente es un destino de asignación). Los
 registros tardíos en meses cerrados se señalan — reabra el mes o cambie
 la fecha.
 
-En **modo de cuota fija**, Lexoffice gestiona el documento y el pago. La
+En **modo de cuota fija**, el programa contable de la soberanía de
+facturación del cliente gestiona el documento y el pago — actualmente
+Lexoffice. La
 cuota mensual se indica sin IVA («anticipo mensual previsto»); el saldo
 local enfrenta horas × tarifa con la cuota pagada. Hay dos vías para el
 documento:

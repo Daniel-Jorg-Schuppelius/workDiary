@@ -21,6 +21,7 @@ return [
     // numéro direct opt-in a été composé.
     'popup' => [
         'title_customer' => 'Appel de :name',
+        'title_directory' => 'Appel de :name (:number)',
         'title_unknown' => 'Appel de :number',
         'message' => 'Appel entrant (:number).',
         'unknown_number' => 'numéro inconnu',

@@ -190,7 +190,7 @@ class FinanceTransferExecuteTest extends TestCase {
      * dem Projektnamen und ohne Beschreibung.
      */
     public function test_execute_lexoffice_sends_default_service_article_and_text(): void {
-        \App\Models\Plugins\Lexoffice\LexofficeArticle::create([
+        $article = \App\Models\Plugins\Lexoffice\LexofficeArticle::create([
             'organization_id' => $this->organization->id,
             'external_id' => 'art-42',
             'name' => 'IT-Dienstleistung',
@@ -203,7 +203,7 @@ class FinanceTransferExecuteTest extends TestCase {
         ]);
         $this->organization->update(['settings' => array_replace_recursive(
             (array) $this->organization->settings,
-            ['invoicing' => ['default_service_article' => 'art-42']],
+            ['invoicing' => ['default_service_article' => 'lex:' . $article->id]],
         )]);
         app(\App\Services\Invoicing\ServiceDefaultResolver::class)->flush();
 

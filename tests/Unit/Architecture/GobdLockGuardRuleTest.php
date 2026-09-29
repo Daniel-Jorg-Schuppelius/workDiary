@@ -92,7 +92,7 @@ class GobdLockGuardRuleTest extends TestCase {
         // nach Lexoffice-Rückmeldung als bezahlt — schreibt ausschließlich die
         // MUTABLE_AFTER_ISSUE-Whitelist (status, paid_on), identisch zum
         // ReconciliationService-Fall oben.
-        'app/Services/Billing/RetainerVoucherReconciler.php' => 'Retainer-Zahlungsabgleich aktualisiert status/paid_on ausgestellter Pauschal-Rechnungen (dokumentierte Guard-Ausnahme).',
+        'app/Plugins/Lexoffice/Services/Retainer/LexofficeRetainerVouchers.php' => 'Retainer-Zahlungsabgleich aktualisiert status/paid_on ausgestellter Pauschal-Rechnungen (dokumentierte Guard-Ausnahme).',
         // Messdatensatz des Lastprofils (MVP-683): schreibt Buchungen per
         // Sammel-Insert, weil 30.000 Einzelbuchungen über den JournalService
         // die Messung selbst zum Engpass machen würden. Das Kommando ist ein

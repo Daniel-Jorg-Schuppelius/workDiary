@@ -21,7 +21,6 @@ use App\Models\Plugins\Lexoffice\{LexofficeArticle, LexofficeVoucher, LexofficeV
 use App\Models\Reselling\{ResaleImport, ResalePeriodLink, ResalePurchaseEntry, ResaleSubscription};
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Services\Reselling\Register\{MarketplaceImporter, PeriodPlanner};
-use App\Support\Sqid;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Spatie\Permission\PermissionRegistrar;
@@ -77,7 +76,7 @@ class ResaleHttpReviewTest extends TestCase {
     private function subscription(array $attributes, ?Organization $organization = null): ResaleSubscription {
         $subscription = ResaleSubscription::query()->create(array_merge([
             'organization_id' => ($organization ?? $this->organization)->id, 'kind' => 'license', 'provider' => 'telekom_marketplace', 'label' => 'Exchange Online (Plan 1)',
-            'lexoffice_article_id' => $this->exchange->id, 'quantity' => 5, 'starts_on' => '2025-01-01', 'term_months' => 12, 'interval' => 'yearly',
+            'article_ref' => 'lex:' . $this->exchange->id, 'quantity' => 5, 'starts_on' => '2025-01-01', 'term_months' => 12, 'interval' => 'yearly',
             'renewal' => 'auto', 'status' => 'active', 'currency' => 'EUR', 'sale_unit_price' => '47.40',
         ], $attributes));
         (new PeriodPlanner)->sync($subscription);
@@ -107,7 +106,7 @@ class ResaleHttpReviewTest extends TestCase {
             'label' => $subscription->label, 'kind' => 'license', 'provider' => $subscription->provider->value, 'external_id' => $subscription->external_id,
             'holder' => $subscription->customer_id !== null ? 'customer' : 'none', 'customer_id' => $subscription->customer?->sqid,
             // Artikel mitschicken wie der Dialog — ein fehlendes Feld löscht ihn (bewusst, kein Fehler).
-            'lexoffice_article_id' => $subscription->lexoffice_article_id !== null ? Sqid::encode(LexofficeArticle::class, $subscription->lexoffice_article_id) : '',
+            'article' => app(\App\Services\Platform\Catalog\ArticleCatalog::class)->find((int) $subscription->organization_id, $subscription->article_ref)->formKey ?? '',
             'quantity' => $subscription->quantity, 'starts_on' => $subscription->starts_on->toDateString(), 'ends_on' => $subscription->ends_on?->toDateString() ?? '',
             'term_months' => 12, 'interval' => 'yearly', 'renewal' => 'auto', 'sale_unit_price' => '47.40', 'status' => 'active',
         ], $overrides);
@@ -229,13 +228,13 @@ class ResaleHttpReviewTest extends TestCase {
 
         // Gesperrte Felder der Abtretung kommen vom Vertrag, auch wenn der Client anderes schickt.
         $this->actingAs($admin)->put(route('finance.resale.update', $assignment->sqid), $this->payload($assignment, [
-            'holder' => 'customer', 'customer_id' => $maerkische->sqid, 'quantity' => 4, 'provider' => 'manual', 'interval' => 'monthly', 'lexoffice_article_id' => '',
+            'holder' => 'customer', 'customer_id' => $maerkische->sqid, 'quantity' => 4, 'provider' => 'manual', 'interval' => 'monthly', 'article' => '',
         ]))->assertRedirect(route('finance.resale.show', $assignment->sqid));
         $assignment->refresh();
         $this->assertSame(4, $assignment->quantity);
         $this->assertSame(SubscriptionProvider::TelekomMarketplace, $assignment->provider);
         $this->assertSame('yearly', $assignment->interval->value);
-        $this->assertSame($this->exchange->id, $assignment->lexoffice_article_id);
+        $this->assertSame('lex:' . $this->exchange->id, $assignment->article_ref);
 
         // „DomainReselling" ist von Hand nie wählbar (B7); Domain-Abos behalten Anbieter und Kennung.
         $this->actingAs($admin)->postJson(route('finance.resale.store'), $this->payload($contract, ['provider' => SubscriptionProvider::DomainReselling->value, 'external_id' => 'dom-1']))

@@ -15,7 +15,8 @@ use App\Models\Customer\Customer;
 use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;
-use Tests\Concerns\WithOrganization;
+use Tests\Concerns\{WithOrganization, WithPluginSecrets};
+use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
 /**
@@ -28,6 +29,7 @@ use Tests\TestCase;
 final class CtiCallerPopupTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
+    use WithPluginSecrets;
 
     private string $token;
 
@@ -109,6 +111,23 @@ final class CtiCallerPopupTest extends TestCase {
         $data = $user->notifications()->first()->data;
         $this->assertSame('cti.incomingCall', $data['event']);
         $this->assertNull($data['url']); // unbekannter Anrufer → kein Kundenlink
+    }
+
+    public function test_unknown_caller_popup_is_enriched_with_directory_name(): void {
+        // Telefonauskunft-Plugin füllt den fehlenden Namen im Pop-up (nur Anzeige, kein Kundenlink).
+        $this->pluginSecret('phonedirectory', ['endpoints' => 'https://directory.example/lookup']);
+        FakePluginHttp::fake([
+            'https://directory.example/lookup*' => FakePluginHttp::response(['name' => 'Auskunft AG']),
+        ]);
+        $user = $this->optedInUser();
+
+        $this->inbound('c-dir', '+499999999999')->assertJsonPath('status', 'unmatched');
+
+        $user->refresh();
+        /** @var array<string, mixed> $data */
+        $data = $user->notifications()->first()->data;
+        $this->assertStringContainsString('Auskunft AG', (string) $data['title']);
+        $this->assertNull($data['url']); // kein Kundenlink, reine Namensanreicherung
     }
 
     public function test_no_optin_means_no_popup(): void {

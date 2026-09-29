@@ -12,23 +12,23 @@ namespace App\Console\Commands\Billing;
 
 use App\Console\Concerns\IteratesOrganizations;
 use App\Models\Platform\Organization;
-use App\Plugins\Lexoffice\{LexofficeConfig, LexofficeInvoiceService};
 use App\Services\Billing\RetainerRunner;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
 
 /**
- * Feature 098 (Retainer-Modus): erzeugt+pusht die Vormonats-Monatspauschale
- * aller aktiven Retainer-Agreements an Lexoffice. Org-scoped, weil der
- * Lexoffice-Key je Organisation aufgelöst wird; idempotent über
- * retainer_invoice_id. Orgs ohne konfiguriertes Lexoffice werden übersprungen.
+ * Feature 098 (Retainer-Modus): erzeugt+übergibt die Vormonats-Monatspauschale
+ * aller aktiven Retainer-Agreements an das Buchhaltungsprogramm des Kunden.
+ * Org-scoped, weil Zugangsdaten je Organisation gelten; idempotent über
+ * retainer_invoice_id. Ohne eingerichtetes Programm zählt der Monat als
+ * übersprungen (MVP-1027: der Kanal entscheidet, nicht der Befehl).
  */
 class PushRetainersCommand extends Command {
     use IteratesOrganizations;
 
     protected $signature = 'customer-billing:push-retainers ' . self::ORGANIZATION_OPTION;
 
-    protected $description = 'Erzeugt die Monatspauschale (Retainer-Modus, Feature 098) und übergibt sie an Lexoffice';
+    protected $description = 'Erzeugt die Monatspauschale (Retainer-Modus, Feature 098) und übergibt sie an das Buchhaltungsprogramm';
 
     public function handle(): int {
         $lock = Cache::lock('customer-billing:push-retainers', 900);
@@ -40,17 +40,6 @@ class PushRetainersCommand extends Command {
 
         try {
             $this->forEachOrganization(function (Organization $org): void {
-                $config = LexofficeConfig::resolve($org->id);
-                if (! \is_string($config['api_key']) || $config['api_key'] === '') {
-                    $this->warn("Organisation #{$org->id} ({$org->name}): Lexoffice nicht konfiguriert — übersprungen.");
-
-                    return;
-                }
-
-                // Singleton mit org-spezifischem Key neu auflösen (currentOrganization
-                // ist im forEachOrganization-Kontext gebunden).
-                app()->forgetInstance(LexofficeInvoiceService::class);
-
                 $result = app(RetainerRunner::class)->runDueForOrganization($org);
                 $this->line("Organisation #{$org->id} ({$org->name}): erstellt {$result['created']}, übersprungen {$result['skipped']}, fehlgeschlagen {$result['failed']}");
             });

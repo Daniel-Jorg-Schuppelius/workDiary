@@ -12,16 +12,14 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Reselling;
 
-use App\Enums\Article\ArticleStatus;
 use App\Enums\Reselling\{PeriodStatus, ResaleArticleRole};
 use App\Http\Controllers\Concerns\{ResolvesCurrentOrganization, ResolvesGlobalDateRange};
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
 use App\Http\Requests\Reselling\{ResaleAutoDraftSettingsRequest, ResaleReportDraftRequest, ResaleReportProductRequest};
-use App\Models\Article\Article;
 use App\Models\Customer\Customer;
-use App\Models\Plugins\Lexoffice\LexofficeArticle;
-use App\Models\Reselling\{ResalePeriod, ResaleSubscription};
+use App\Models\Reselling\{ResaleArticleClassification, ResalePeriod, ResaleSubscription};
+use App\Services\Platform\Catalog\{ArticleCatalog, CatalogArticle};
 use App\Services\Reselling\Register\{LicenseArticleClassifier, ResaleInvoiceDraftService, ResaleLocalDraftRun, ResaleMarginReport, ResalePriceCheck, ResaleRenewalReport, ResaleUnbilledReport};
 use App\Settings\SettingScope;
 use App\Support\{CsvExport, Setting, XlsxExport};
@@ -157,38 +155,31 @@ class ResaleReportController extends Controller {
     }
 
     /**
-     * Produkt-Einstufung: welche Lexoffice-Artikel Abo-Produkte sind — erkannt
-     * über den Namen, vom Betreiber übersteuerbar (nie Abo-Position / immer).
+     * Produkt-Einstufung: welche Katalogartikel (Artikelstamm, Lexoffice, …)
+     * Abo-Produkte sind — erkannt über den Namen, vom Betreiber übersteuerbar
+     * (nie Abo-Position / immer).
      */
-    public function products(LicenseArticleClassifier $classifier, ResaleLocalDraftRun $autoDrafts): View {
-        $organization = $this->currentOrganizationOrNull();
-        $counts = ResaleSubscription::query()->whereNotNull('lexoffice_article_id')->selectRaw('lexoffice_article_id, COUNT(*) AS n')->groupBy('lexoffice_article_id')->pluck('n', 'lexoffice_article_id')->all();
-        $articles = LexofficeArticle::query()->active()->orderBy('name')->get()
-            ->map(static fn(LexofficeArticle $article): array => [
+    public function products(LicenseArticleClassifier $classifier, ResaleLocalDraftRun $autoDrafts, ArticleCatalog $catalog): View {
+        $organization = $this->currentOrganizationOrAbort(404);
+        $organizationId = (int) $organization->id;
+        $counts = ResaleSubscription::query()->whereNotNull('article_ref')->selectRaw('article_ref, COUNT(*) AS n')->groupBy('article_ref')->pluck('n', 'article_ref')->all();
+        $roles = $classifier->roles($organizationId);
+        $rows = collect($catalog->active($organizationId))
+            ->map(static fn (CatalogArticle $article): array => [
                 'article' => $article,
-                'detected' => $classifier->detected($article),
-                'effective' => $classifier->isLicense($article),
-                'subscriptions' => (int) ($counts[$article->id] ?? 0),
+                'role' => $roles[$article->key] ?? null,
+                'detected' => $classifier->detected($article->name),
+                'effective' => $classifier->isLicense($organizationId, $article->key, $article->name),
+                'subscriptions' => (int) ($counts[$article->key] ?? 0),
             ])
-            ->sortBy(static fn(array $row): string => ($row['effective'] ? '0' : '1') . mb_strtolower((string) $row['article']->name))->values();
-        // Lokale Artikel (Review 2026-09-11): dieselbe Einstufung für den Belegspiegel lokaler Rechnungen.
-        $localCounts = ResaleSubscription::query()->whereNotNull('article_id')->selectRaw('article_id, COUNT(*) AS n')->groupBy('article_id')->pluck('n', 'article_id')->all();
-        $localArticles = Article::query()->where('status', ArticleStatus::Active->value)->orderBy('name')->get()
-            ->map(static fn(Article $article): array => [
-                'article' => $article,
-                'detected' => $classifier->detected($article),
-                'effective' => $classifier->isLicense($article),
-                'subscriptions' => (int) ($localCounts[$article->id] ?? 0),
-            ])
-            ->sortBy(static fn(array $row): string => ($row['effective'] ? '0' : '1') . mb_strtolower((string) $row['article']->name))->values();
+            ->sortBy(static fn (array $row): string => ($row['effective'] ? '0' : '1') . mb_strtolower($row['article']->name))->values();
 
         return view('finance.resale.products', [
-            'rows' => $articles,
-            'localRows' => $localArticles,
+            'rows' => $rows,
             'roles' => ResaleArticleRole::cases(),
             // Serienrechnung (lokale Rechnungshoheit): Org-Schalter + Vorlauf, Lauf = resale:draft-local.
-            'autoDrafts' => $organization !== null && $autoDrafts->enabledFor($organization),
-            'autoDraftLeadDays' => $organization !== null ? $autoDrafts->leadDaysFor($organization) : 0,
+            'autoDrafts' => $autoDrafts->enabledFor($organization),
+            'autoDraftLeadDays' => $autoDrafts->leadDaysFor($organization),
         ]);
     }
 
@@ -207,9 +198,16 @@ class ResaleReportController extends Controller {
     }
 
     public function productsStore(ResaleReportProductRequest $request): RedirectResponse {
-        $article = $request->article();
+        $organization = $this->currentOrganizationOrAbort(404);
+        $article = $request->catalogArticle() ?? abort(404);
         $role = $request->role();
-        $article->forceFill(['resale_role' => $role])->save();
+        $existing = ResaleArticleClassification::query()->where('article_ref', $article->key)->first();
+        if ($role === null) {
+            $existing?->delete();
+        } else {
+            $existing ??= new ResaleArticleClassification(['organization_id' => $organization->id, 'article_ref' => $article->key, 'created_by' => $request->user()?->id]);
+            $existing->fill(['role' => $role, 'updated_by' => $request->user()?->id])->save();
+        }
 
         return redirect()->route('finance.resale.products')->with('success', __('resale.products.flash.saved', ['article' => $article->name, 'role' => $role?->label() ?? __('resale.products.role.auto')]));
     }
@@ -299,8 +297,10 @@ class ResaleReportController extends Controller {
             ->whereIn('status', [PeriodStatus::Open->value, PeriodStatus::Partial->value])
             ->where('starts_on', '<', DateRange::dayAfter($today))
             ->whereHas('subscription', static fn(Builder $s) => $s->where('is_own_holding', false))
-            ->with(['subscription.customer:id,name', 'subscription.foreignCustomer:id,name,customer_id', 'subscription.foreignCustomer.customer:id,name', 'subscription.article', 'subscription.lexofficeArticle', 'links'])
-            ->get()
+            ->with(['subscription.customer:id,name', 'subscription.foreignCustomer:id,name,customer_id', 'subscription.foreignCustomer.customer:id,name', 'links'])
+            ->get();
+        ResaleSubscription::withCatalogArticles($periods->map(static fn (ResalePeriod $period): ResaleSubscription => $period->subscription));
+        $periods = $periods
             ->sortBy([static fn(ResalePeriod $a, ResalePeriod $b): int => strcmp((string) $a->subscription->billedTo()?->name, (string) $b->subscription->billedTo()?->name) ?: $a->starts_on <=> $b->starts_on]);
 
         $header = [

@@ -51,7 +51,7 @@ class ResaleDraftAndPricesTest extends TestCase {
         $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Klimpel Bäder GmbH']);
         foreach ([['247.20', '187.92'], ['126.00', '244.76']] as [$sale, $purchase]) {
             ResaleSubscription::query()->create([
-                'organization_id' => $this->organization->id, 'kind' => 'license', 'provider' => 'qualityhosting', 'label' => 'Microsoft 365 Business Premium', 'lexoffice_article_id' => $article->id,
+                'organization_id' => $this->organization->id, 'kind' => 'license', 'provider' => 'qualityhosting', 'label' => 'Microsoft 365 Business Premium', 'article_ref' => 'lex:' . $article->id,
                 'customer_id' => $customer->id, 'quantity' => 2, 'starts_on' => '2025-08-05', 'term_months' => 12, 'interval' => 'yearly', 'renewal' => 'auto',
                 'purchase_unit_price' => $purchase, 'sale_unit_price' => $sale, 'currency' => 'EUR', 'status' => 'active',
             ]);
@@ -63,7 +63,7 @@ class ResaleDraftAndPricesTest extends TestCase {
         // Lokaler Artikel mit Verkaufspreis (Review 2026-09-11): weicht der Abo-Preis ab, meldet die Prüfung es.
         $exchange = Article::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Exchange Online (Plan 1)', 'number' => 'EXO1', 'default_sale_price' => '60.00', 'currency' => 'EUR']);
         ResaleSubscription::query()->create([
-            'organization_id' => $this->organization->id, 'kind' => 'license', 'provider' => 'manual', 'label' => 'Exchange Online (Plan 1)', 'article_id' => $exchange->id,
+            'organization_id' => $this->organization->id, 'kind' => 'license', 'provider' => 'manual', 'label' => 'Exchange Online (Plan 1)', 'article_ref' => 'art:' . $exchange->id,
             'customer_id' => $customer->id, 'quantity' => 1, 'starts_on' => '2025-08-05', 'term_months' => 12, 'interval' => 'yearly', 'renewal' => 'auto',
             'purchase_unit_price' => '40.00', 'sale_unit_price' => '47.40', 'currency' => 'EUR', 'status' => 'active',
         ]);
@@ -85,8 +85,9 @@ class ResaleDraftAndPricesTest extends TestCase {
         $this->assertSame(60.0, $row['article_sale']);
         $this->assertContains('article_price_differs', $row['flags']);
         $premium = collect($rows)->firstWhere('label', 'Microsoft 365 Business Premium');
-        $this->assertNull($premium['article_sale'] ?? null, 'ohne lokalen Artikel kein Artikelpreis');
-        $this->assertNotContains('article_price_differs', $premium['flags'] ?? []);
+        // MVP-1025: jede Katalogquelle liefert den Artikelpreis — Lexoffice 20,60 €/Monat × 12 beim Jahresabo.
+        $this->assertSame(247.2, $premium['article_sale'] ?? null);
+        $this->assertNotContains('article_price_differs', $premium['flags'] ?? [], 'Median 247,20 € = Artikelpreis');
     }
 
     public function test_local_billing_creates_a_local_invoice_draft_with_proposed_links(): void {
@@ -97,7 +98,7 @@ class ResaleDraftAndPricesTest extends TestCase {
             'type' => 'SERVICE', 'unit_name' => 'Monat', 'net_unit_price' => '20.60', 'currency' => 'EUR', 'vat_rate' => '19', 'synced_at' => now(),
         ]);
         $subscription = ResaleSubscription::query()->create([
-            'organization_id' => $this->organization->id, 'kind' => 'license', 'provider' => 'qualityhosting', 'label' => 'Microsoft 365 Business Premium', 'lexoffice_article_id' => $article->id,
+            'organization_id' => $this->organization->id, 'kind' => 'license', 'provider' => 'qualityhosting', 'label' => 'Microsoft 365 Business Premium', 'article_ref' => 'lex:' . $article->id,
             'customer_id' => $customer->id, 'quantity' => 2, 'starts_on' => '2025-08-05', 'term_months' => 12, 'interval' => 'yearly', 'renewal' => 'auto',
             'sale_unit_price' => '247.20', 'currency' => 'EUR', 'status' => 'active',
         ]);
@@ -157,7 +158,7 @@ class ResaleDraftAndPricesTest extends TestCase {
             'type' => 'SERVICE', 'unit_name' => 'Monat', 'net_unit_price' => '5.60', 'currency' => 'EUR', 'vat_rate' => '19', 'synced_at' => now(),
         ]);
         $subscription = ResaleSubscription::query()->create([
-            'organization_id' => $this->organization->id, 'kind' => 'license', 'provider' => 'qualityhosting', 'label' => 'Microsoft 365 Business Basic', 'lexoffice_article_id' => $article->id,
+            'organization_id' => $this->organization->id, 'kind' => 'license', 'provider' => 'qualityhosting', 'label' => 'Microsoft 365 Business Basic', 'article_ref' => 'lex:' . $article->id,
             'foreign_customer_id' => $kaik->id, 'quantity' => 1, 'starts_on' => '2025-04-09', 'term_months' => 12, 'interval' => 'yearly', 'renewal' => 'auto',
             'sale_unit_price' => '67.20', 'currency' => 'EUR', 'status' => 'active',
         ]);

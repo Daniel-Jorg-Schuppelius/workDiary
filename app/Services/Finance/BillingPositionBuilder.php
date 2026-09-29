@@ -146,7 +146,7 @@ class BillingPositionBuilder {
                 'unit_price' => round($price->rate, 4),
                 'vat_rate' => $service?->vatRate,
                 'amount' => DocumentTotalsCalculator::lineNet($hours, $price->rate)->withScale(2)->toFloat(),
-                'article_id' => $service?->articleId,
+                'article_ref' => $service?->articleRef,
                 'service_source' => $service?->source,
                 'price_source' => $price->source,
                 'service_from' => $from,
@@ -206,7 +206,7 @@ class BillingPositionBuilder {
                 'amount' => $item !== null && $item->amount !== null
                     ? round((float) $item->amount, 2)
                     : DocumentTotalsCalculator::lineNet($quantity, $unitPrice)->withScale(2)->toFloat(),
-                'article_id' => null,
+                'article_ref' => null,
                 'service_source' => null,
                 'price_source' => $unitPrice > 0.0 ? BlockPrice::SOURCE_ENTRY : BlockPrice::SOURCE_NONE,
                 'service_from' => $date,

@@ -213,7 +213,7 @@ class LexofficeMapper {
 
         $items = $blocks
             ->groupBy(fn(\App\Services\Invoicing\BillingBlock $b) => ($b->project->id ?? 0) . '|' . ($b->kind->value ?? ''))
-            ->map(function (Collection $group) use ($vatRate, $from, $to) {
+            ->map(function (Collection $group) use ($vatRate, $from, $to, $customer) {
                 /** @var \App\Services\Invoicing\BillingBlock $first */
                 $first = $group->first();
                 $project = $first->project;
@@ -262,8 +262,11 @@ class LexofficeMapper {
                     ],
                 ];
 
-                if ($service?->articleId !== null) {
-                    $item['id'] = $service->articleId;
+                $articleId = $service !== null
+                    ? app(Services\LexofficeArticleCatalogSource::class)->externalId((int) $customer->organization_id, $service->articleRef)
+                    : null;
+                if ($articleId !== null) {
+                    $item['id'] = $articleId;
                 }
                 if (filled($service?->standardText)) {
                     $item['description'] = (string) $service->standardText;

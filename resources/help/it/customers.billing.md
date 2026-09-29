@@ -15,7 +15,7 @@ Nella scheda cliente si possono definire **condizioni speciali**:
 tariffe orarie proprie per attività e tipo di giorno (feriale/weekend,
 definito tramite «giorni lavorativi a settimana») e la modalità di
 conteggio — **conto cliente** senza fatture con saldo corrente,
-**fattura mensile** oppure **forfait (Lexoffice)**.
+**fattura mensile** oppure **forfait** tramite il programma contabile (attualmente Lexoffice).
 
 Tra le condizioni rientra anche un **forfait di trasferta**: ogni
 registrazione fatturabile porta con sé x minuti aggiuntivi, valorizzati
@@ -43,7 +43,9 @@ riconciliazione bancaria (il conto cliente è una destinazione di
 abbinamento). Le registrazioni tardive in mesi chiusi vengono segnalate —
 riaprire il mese o cambiare la data.
 
-In **modalità forfait** Lexoffice gestisce documento e pagamento. Il
+In **modalità forfait** il programma contabile della sovranità di
+fatturazione del cliente gestisce documento e pagamento — attualmente
+Lexoffice. Il
 forfait mensile si indica al netto («acconto mensile previsto»); il
 saldo locale contrappone ore × tariffa al forfait pagato. Per il
 documento ci sono due strade:

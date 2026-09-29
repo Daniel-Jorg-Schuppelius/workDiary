@@ -13,14 +13,13 @@ declare(strict_types=1);
 namespace App\Services\Reselling\Register;
 
 use App\Enums\Domain\DomainRenewalMode;
-use App\Enums\Reselling\{BillingFrequency, RenewalMode, ResaleArticleRole, SubscriptionKind, SubscriptionProvider, SubscriptionStatus};
+use App\Enums\Reselling\{BillingFrequency, RenewalMode, SubscriptionKind, SubscriptionProvider, SubscriptionStatus};
 use App\Models\Domain\DomainProjection;
 use App\Models\Platform\Organization;
-use App\Models\Plugins\Lexoffice\LexofficeArticle;
 use App\Models\Reselling\{ResalePeriod, ResalePriceEntry, ResaleSubscription};
+use App\Services\Platform\Catalog\CatalogArticle;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper, StringHelper};
-use Illuminate\Support\Collection;
 
 /**
  * Domains als Abo-Art (Feature 152, MVP-763): jede Domain-Projektion (083)
@@ -36,7 +35,10 @@ final class DomainSubscriptionSync {
     /** Präfix in `resale_subscriptions.sync_status`: zuletzt aus der Projektion gespiegelter Halter. */
     public const MIRRORED_HOLDER_PREFIX = 'p:';
 
-    public function __construct(private readonly PeriodPlanner $planner) {}
+    public function __construct(
+        private readonly PeriodPlanner $planner,
+        private readonly ResaleArticleCandidates $candidates,
+    ) {}
 
     /**
      * @return array{domains: int, created: int, updated: int, unchanged: int, ended: int, skipped_gone: bool}
@@ -47,7 +49,7 @@ final class DomainSubscriptionSync {
         $result = ['domains' => 0, 'created' => 0, 'updated' => 0, 'unchanged' => 0, 'ended' => 0, 'skipped_gone' => false];
         $seen = [];
         $catalog = $this->catalog($organizationId, $reference);
-        $articles = LexofficeArticle::query()->withoutGlobalScopes()->where('organization_id', $organizationId)->active()->get();
+        $articles = $this->candidates->for((int) $organizationId);
 
         $projections = DomainProjection::query()->withoutGlobalScopes()
             ->where('organization_id', $organizationId)
@@ -155,20 +157,20 @@ final class DomainSubscriptionSync {
     /**
      * Verkaufspreis und Artikel je TLD — nur, solange im Register nichts
      * gepflegt ist. Katalogpreis = UVP der Zeile (sonst ihr Katalogpreis),
-     * danach der Preis des Lexoffice-Artikels (Monatspreis × 12).
+     * danach der Preis des Katalogartikels (Monatspreis × 12).
      *
      * @param  array<string, ResalePriceEntry>  $catalog  TLD → gültige Katalogzeile
-     * @param  Collection<int, LexofficeArticle>  $articles
+     * @param  list<CatalogArticle>  $articles  {@see ResaleArticleCandidates}
      */
-    private function applyPricing(ResaleSubscription $subscription, string $domain, array $catalog, Collection $articles): void {
+    private function applyPricing(ResaleSubscription $subscription, string $domain, array $catalog, array $articles): void {
         $tlds = self::tldCandidates($domain);
         if ($tlds === []) {
             return;
         }
-        if ($subscription->lexoffice_article_id === null && $subscription->article_id === null) {
+        if ($subscription->article_ref === null) {
             $article = $this->matchArticle($tlds, $articles);
             if ($article !== null) {
-                $subscription->lexoffice_article_id = $article->id;
+                $subscription->article_ref = $article->key;
             }
         }
         if ($subscription->sale_unit_price !== null) {
@@ -182,10 +184,10 @@ final class DomainSubscriptionSync {
                 return;
             }
         }
-        $article = $subscription->lexoffice_article_id !== null ? $articles->firstWhere('id', $subscription->lexoffice_article_id) : null;
-        $price = $article?->net_unit_price;
+        $article = $subscription->catalogArticle();
+        $price = $article?->netPrice;
         if ($article !== null && $price !== null) {
-            $subscription->sale_unit_price = LicenseMonths::isMonthUnit($article->unit_name) ? $price->times(12)->withScale(4) : $price->withScale(4);
+            $subscription->sale_unit_price = LicenseMonths::isMonthUnit($article->unitName) ? $price->times(12)->withScale(4) : $price->withScale(4);
         }
     }
 
@@ -210,13 +212,13 @@ final class DomainSubscriptionSync {
     }
 
     /**
-     * Genau ein Lexoffice-Artikel „Domain .de"/„.de-Domain" (auch ohne Punkt);
+     * Genau ein Katalogartikel „Domain .de"/„.de-Domain" (auch ohne Punkt);
      * mehrdeutig = keiner.
      *
      * @param  list<string>  $tlds
-     * @param  Collection<int, LexofficeArticle>  $articles
+     * @param  list<CatalogArticle>  $articles
      */
-    private function matchArticle(array $tlds, Collection $articles): ?LexofficeArticle {
+    private function matchArticle(array $tlds, array $articles): ?CatalogArticle {
         $wanted = [];
         foreach ($tlds as $tld) {
             $bare = ltrim($tld, '.');
@@ -229,10 +231,7 @@ final class DomainSubscriptionSync {
         }
         $hits = [];
         foreach ($articles as $article) {
-            if ($article->resale_role === ResaleArticleRole::Excluded) {
-                continue;
-            }
-            $name = mb_strtolower(StringHelper::normalizeWhitespace((string) $article->name, unicode: true));
+            $name = mb_strtolower(StringHelper::normalizeWhitespace($article->name, unicode: true));
             if (in_array($name, $wanted, true)) {
                 $hits[] = $article;
             }

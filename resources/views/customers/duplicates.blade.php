@@ -15,7 +15,7 @@
 
     $reasonLabels = [
         'vat_id' => __('USt-IdNr.'),
-        'lexoffice_contact_number' => __('Lexoffice-Nr.'),
+        'accounting_number' => __('stammdaten.accounting_number'),
         'email' => __('E-Mail'),
         'company_zip' => __('Firma + PLZ'),
         'name' => __('Name/Firma ähnlich'),
@@ -30,7 +30,7 @@
         'name' => __('Name'),
         'company' => __('Firma'),
         'number' => __('Kundennr.'),
-        'lexoffice_contact_number' => __('Lexoffice-Nr.'),
+        'accounting_number' => __('stammdaten.accounting_number'),
         'vat_id' => __('USt-IdNr.'),
         'email' => __('E-Mail'),
         'address_zip' => __('PLZ'),

@@ -23,7 +23,6 @@
     // übereinstimmen, sonst ignoriert der Service die Auswahl.
     $overridableFields = [
         'company' => __('Firma'),
-        'lexoffice_contact_number' => __('Lexoffice-Nr.'),
         'vat_id' => __('USt-IdNr.'),
         'tax_number' => __('Steuernr.'),
         'contact_name' => __('Ansprechpartner'),

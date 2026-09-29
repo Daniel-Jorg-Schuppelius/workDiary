@@ -16,6 +16,8 @@ use App\Console\Concerns\IteratesOrganizations;
 use App\Models\Plugins\Lexoffice\{LexofficeVoucher, LexofficeVoucherLine};
 use App\Models\Reselling\ResalePeriodLink;
 use App\Plugins\Lexoffice\LexofficeVoucherLineSync;
+use App\Plugins\Lexoffice\Services\LexofficeArticleCatalogSource;
+use App\Services\Platform\Catalog\ArticleCatalog;
 use Illuminate\Console\Command;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 
@@ -107,7 +109,8 @@ class LexofficeRepairResaleLinksCommand extends Command {
             return [null, 'Rechnung ohne Lizenzposition (Positionen fehlen? lexoffice:sync-voucher-lines)'];
         }
         if ($lines->count() > 1) {
-            $articleId = $link->subscription?->lexoffice_article_id;
+            $ref = ArticleCatalog::parse($link->subscription?->article_ref);
+            $articleId = $ref !== null && $ref[0] === LexofficeArticleCatalogSource::PREFIX ? $ref[1] : null;
             $note = mb_strtolower(trim((string) $link->note));
             $candidates = $articleId === null ? $lines : $lines->where('lexoffice_article_id', $articleId);
             if ($candidates->count() !== 1 && $note !== '') {

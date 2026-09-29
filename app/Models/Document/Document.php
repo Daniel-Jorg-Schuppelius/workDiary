@@ -80,8 +80,6 @@ class Document extends Model {
         'description',
         'created_by_user_id',
         'current_version_id',
-        'webdav_mirror_detached',
-        'sharepoint_mirror_detached',
         'customer_visible',
         'customer_released_at',
         'customer_released_by',
@@ -96,8 +94,6 @@ class Document extends Model {
         'status' => DocumentStatus::class,
         'valid_from' => 'date',
         'valid_until' => 'date',
-        'webdav_mirror_detached' => 'boolean',
-        'sharepoint_mirror_detached' => 'boolean',
         'customer_visible' => 'boolean',
         'customer_released_at' => 'datetime',
         'confidential' => 'boolean',
@@ -109,6 +105,25 @@ class Document extends Model {
     /** @return MorphTo<Model, $this> */
     public function documentable(): MorphTo {
         return $this->morphTo();
+    }
+
+    /** @return HasMany<DocumentMirrorDetachment, $this> */
+    public function mirrorDetachments(): HasMany {
+        return $this->hasMany(DocumentMirrorDetachment::class);
+    }
+
+    /** Spiegelung für dieses Ablage-Ziel getrennt (MVP-1029)? Nutzt die geladene Relation. */
+    public function isMirrorDetached(string $target): bool {
+        return $this->mirrorDetachments->contains('target', $target);
+    }
+
+    /** Trennt die Spiegelung für ein Ablage-Ziel; idempotent. */
+    public function detachMirror(string $target, ?int $userId = null): void {
+        $this->mirrorDetachments()->firstOrCreate(
+            ['target' => $target],
+            ['organization_id' => $this->organization_id, 'detached_at' => now(), 'detached_by_user_id' => $userId],
+        );
+        $this->unsetRelation('mirrorDetachments');
     }
 
     /** @return HasMany<DocumentVersion, $this> */

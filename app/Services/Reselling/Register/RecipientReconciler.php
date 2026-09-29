@@ -61,7 +61,7 @@ final class RecipientReconciler {
      */
     public function overview(Organization $organization, ?CarbonImmutable $reference = null): array {
         $reference ??= ResalePeriod::today();
-        $subscriptions = $this->subscriptions($organization)->with('periods.links')->get();
+        $subscriptions = ResaleSubscription::withCatalogArticles($this->subscriptions($organization)->with('periods.links')->get());
         /** @var array<int, Collection<int, ResaleSubscription>> $byCustomer */
         $byCustomer = [];
         foreach ($subscriptions as $subscription) {
@@ -123,7 +123,7 @@ final class RecipientReconciler {
      */
     public function forCustomer(Organization $organization, Customer $customer, ?CarbonImmutable $reference = null): array {
         $reference ??= ResalePeriod::today();
-        $all = $this->subscriptions($organization)->with(['periods.links', 'periods.subscription'])->get();
+        $all = ResaleSubscription::withCatalogArticles($this->subscriptions($organization)->with(['periods.links', 'periods.subscription'])->get());
         $subscriptions = $all->filter(static fn(ResaleSubscription $s): bool => $s->billedTo()?->id === $customer->id)->values();
         // Alle Lizenzpositionen der Organisation: eigene tragen die Bilanz, fremde
         // zeigen Rechnungen an Schwesterfirmen, stornierte den Grund einer Lücke.
@@ -282,17 +282,13 @@ final class RecipientReconciler {
      * @param  Collection<int, ResaleSubscription>  $subscriptions
      */
     private function lineProductKey(MirrorLine $line, array $productBySubscription, Collection $subscriptions): string {
-        $lexofficeArticleId = $line->lexofficeArticleId();
-        if ($lexofficeArticleId !== null) {
-            return 'art:' . $lexofficeArticleId;
-        }
         foreach ($subscriptions as $subscription) {
             if (isset($productBySubscription[$subscription->id]) && LinkProposer::matchesProductOf($subscription, $line, $this->matcher)) {
                 return $productBySubscription[$subscription->id];
             }
         }
 
-        return 'name:' . ProductNameMatcher::normalize($line->label());
+        return $line->articleKey ?? 'name:' . ProductNameMatcher::normalize($line->label());
     }
 
     /**
@@ -306,12 +302,11 @@ final class RecipientReconciler {
      * @return array{products: list<ProductRow>, periods: list<PeriodRow>, lines: list<LineRow>, open: int, partial: int, proposed: int, free: float, missing: float, surplus: float}
      */
     private function analyze(Collection $subscriptions, Collection $lines, array $linkedMonths, CarbonImmutable $reference, ?Collection $others = null, ?Collection $voided = null, array $recipientTokens = [], array $baseTokens = [], ?int $ownCustomerId = null): array {
-        /** @var array<int, string> $articleNames Lexoffice-Artikel-ID → Name */
+        /** @var array<string, string> $articleNames Katalogschlüssel → Name */
         $articleNames = [];
         foreach ($lines as $line) {
-            $lexofficeArticleId = $line->lexofficeArticleId();
-            if ($lexofficeArticleId !== null && $line->articleName !== null) {
-                $articleNames[$lexofficeArticleId] = $line->articleName;
+            if ($line->articleKey !== null && $line->articleName !== null) {
+                $articleNames[$line->articleKey] = $line->articleName;
             }
         }
         /** @var array<int, string> $productBySubscription */
@@ -321,7 +316,7 @@ final class RecipientReconciler {
         foreach ($subscriptions as $subscription) {
             $key = $subscription->productKey($articleNames);
             $productBySubscription[$subscription->id] = $key;
-            $labels[$key] ??= $subscription->lexofficeArticle !== null ? $subscription->lexofficeArticle->name : $subscription->label;
+            $labels[$key] ??= $subscription->productName();
         }
         $productOf = fn(MirrorLine $line): string => $this->lineProductKey($line, $productBySubscription, $subscriptions);
 
@@ -557,7 +552,7 @@ final class RecipientReconciler {
             ->where('organization_id', $organization->id)
             ->where('is_own_holding', false)
             ->where(static fn($q) => $q->whereNotNull('customer_id')->orWhereNotNull('foreign_customer_id'))
-            ->with(['customer:id,name', 'foreignCustomer:id,name,customer_id', 'foreignCustomer.customer:id,name', 'lexofficeArticle:id,name', 'article:id,name'])
+            ->with(['customer:id,name', 'foreignCustomer:id,name,customer_id', 'foreignCustomer.customer:id,name'])
             ->orderBy('label')->orderBy('starts_on');
     }
 }

@@ -1313,4 +1313,14 @@ return [
         'completed' => 'Prüfauftrag übernommen',
         'cancelled' => 'Prüfauftrag storniert',
     ],
+    'resale_license' => [
+        'keys_changed' => 'Lizenzschlüssel geändert',
+        'keys_imported' => 'Lizenzschlüssel importiert',
+        'keys_viewed' => 'Lizenzschlüssel angezeigt',
+        'sold' => 'Lizenz verkauft',
+        'reassigned' => 'Lizenzverkauf berichtigt',
+        'returned' => 'Lizenzverkauf zurückgenommen',
+        'blocked' => 'Lizenz gesperrt',
+        'unblocked' => 'Lizenzsperre aufgehoben',
+    ],
 ];

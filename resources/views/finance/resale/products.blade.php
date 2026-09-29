@@ -44,58 +44,12 @@
             @endif
         </x-form-group>
         <p class="text-xs text-muted mb-2">{{ __('resale.products.hint') }}</p>
-        {{-- Lokale Artikel (Review 2026-09-11): Einstufung für den Belegspiegel lokaler Rechnungen und die Preisprüfung. --}}
-        <x-form-group :legend="__('resale.products_local.title')" icon="inventory_2" cols="1" compact class="mb-3" :description="__('resale.products_local.hint')">
-            <x-table scroll="x" :zebra="true" table-sort="client">
-                <x-slot:head>
-                    <tr>
-                        <x-table.th sort type="string">{{ __('resale.field.article') }}</x-table.th>
-                        <x-table.th sort type="string">{{ __('resale.products.number') }}</x-table.th>
-                        <x-table.th>{{ __('resale.products.unit') }}</x-table.th>
-                        <x-table.th class="text-right">{{ __('resale.products_local.price') }}</x-table.th>
-                        <x-table.th class="text-right" sort type="number">{{ __('resale.products.subscriptions') }}</x-table.th>
-                        <x-table.th>{{ __('resale.products.detected') }}</x-table.th>
-                        <x-table.th>{{ __('resale.products.override') }}</x-table.th>
-                    </tr>
-                </x-slot:head>
-                @forelse ($localRows as $row)
-                    @php $article = $row['article']; @endphp
-                    <tr @class(['hover', 'opacity-70' => ! $row['effective']])>
-                        <td class="font-medium">{{ $article->name }}</td>
-                        <td class="font-mono text-xs">{{ $article->number ?? '—' }}</td>
-                        <td class="text-sm">{{ $article->base_unit ?? '—' }}</td>
-                        <td class="text-right tabular-nums whitespace-nowrap">{{ $article->default_sale_price?->withScale(2)->format() ?? '—' }}</td>
-                        <td class="text-right tabular-nums">{{ $row['subscriptions'] }}</td>
-                        <td><x-status-badge size="xs" :tone="$row['detected']->tone()" :label="$row['detected']->label()" /></td>
-                        <td>
-                            @if ($canManage)
-                                <form method="POST" action="{{ route('finance.resale.products.store') }}" class="flex items-center gap-1">
-                                    @csrf
-                                    <input type="hidden" name="article_type" value="local">
-                                    <input type="hidden" name="article_id" value="{{ $article->sqid }}">
-                                    <select name="role" class="select select-xs select-bordered w-44" aria-label="{{ __('resale.products.override') }}">
-                                        <option value="auto" @selected($article->resale_role === null)>{{ __('resale.products.role.auto') }}</option>
-                                        @foreach ($roles as $role)
-                                            <option value="{{ $role->value }}" @selected($article->resale_role === $role)>{{ $role->label() }}</option>
-                                        @endforeach
-                                    </select>
-                                    <x-icon-btn icon="save" size="xs" tone="ghost" type="submit" :title="__('resale.products.save')" />
-                                </form>
-                            @else
-                                {{ $article->resale_role?->label() ?? __('resale.products.role.auto') }}
-                            @endif
-                        </td>
-                    </tr>
-                @empty
-                    <x-table.empty :colspan="7" icon="inventory_2" :title="__('resale.products_local.empty')" compact />
-                @endforelse
-            </x-table>
-        </x-form-group>
-        <h2 class="text-sm font-semibold mb-1">{{ __('resale.products_local.lexoffice_title') }}</h2>
+        {{-- Einstufung je Katalogartikel (MVP-1025): alle Quellen in einer Liste — Artikelstamm, Lexoffice, … --}}
         <x-table scroll="flex" :zebra="true" table-sort="client">
             <x-slot:head>
                 <tr>
                     <x-table.th sort type="string">{{ __('resale.field.article') }}</x-table.th>
+                    <x-table.th sort type="string">{{ __('resale.products.source') }}</x-table.th>
                     <x-table.th sort type="string">{{ __('resale.products.number') }}</x-table.th>
                     <x-table.th>{{ __('resale.products.unit') }}</x-table.th>
                     <x-table.th class="text-right">{{ __('resale.products.price') }}</x-table.th>
@@ -108,32 +62,32 @@
                 @php $article = $row['article']; @endphp
                 <tr @class(['hover', 'opacity-70' => ! $row['effective']])>
                     <td class="font-medium">{{ $article->name }}</td>
-                    <td class="font-mono text-xs">{{ $article->article_number ?? '—' }}</td>
-                    <td class="text-sm">{{ $article->unit_name ?? '—' }}</td>
-                    <td class="text-right tabular-nums whitespace-nowrap">{{ $article->net_unit_price?->withScale(2)->format() ?? '—' }}</td>
+                    <td class="text-sm">{{ $article->sourceLabel }}</td>
+                    <td class="font-mono text-xs">{{ $article->number ?? '—' }}</td>
+                    <td class="text-sm">{{ $article->unitName ?? '—' }}</td>
+                    <td class="text-right tabular-nums whitespace-nowrap">{{ $article->netPrice?->withScale(2)->format() ?? '—' }}</td>
                     <td class="text-right tabular-nums">{{ $row['subscriptions'] }}</td>
                     <td><x-status-badge size="xs" :tone="$row['detected']->tone()" :label="$row['detected']->label()" /></td>
                     <td>
                         @if ($canManage)
                             <form method="POST" action="{{ route('finance.resale.products.store') }}" class="flex items-center gap-1">
                                 @csrf
-                                <input type="hidden" name="article_type" value="lexoffice">
-                                <input type="hidden" name="article_id" value="{{ \App\Support\Sqid::encode(\App\Models\Plugins\Lexoffice\LexofficeArticle::class, $article->id) }}">
+                                <input type="hidden" name="article" value="{{ $article->formKey }}">
                                 <select name="role" class="select select-xs select-bordered w-44" aria-label="{{ __('resale.products.override') }}">
-                                    <option value="auto" @selected($article->resale_role === null)>{{ __('resale.products.role.auto') }}</option>
+                                    <option value="auto" @selected($row['role'] === null)>{{ __('resale.products.role.auto') }}</option>
                                     @foreach ($roles as $role)
-                                        <option value="{{ $role->value }}" @selected($article->resale_role === $role)>{{ $role->label() }}</option>
+                                        <option value="{{ $role->value }}" @selected($row['role'] === $role)>{{ $role->label() }}</option>
                                     @endforeach
                                 </select>
                                 <x-icon-btn icon="save" size="xs" tone="ghost" type="submit" :title="__('resale.products.save')" />
                             </form>
                         @else
-                            {{ $article->resale_role?->label() ?? __('resale.products.role.auto') }}
+                            {{ $row['role']?->label() ?? __('resale.products.role.auto') }}
                         @endif
                     </td>
                 </tr>
             @empty
-                <x-table.empty :colspan="7" icon="inventory_2" :title="__('resale.products.empty')" compact />
+                <x-table.empty :colspan="8" icon="inventory_2" :title="__('resale.products.empty')" compact />
             @endforelse
         </x-table>
     </x-index-page>

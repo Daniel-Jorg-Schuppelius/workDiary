@@ -49,6 +49,7 @@ final class DocumentManifest extends Manifest {
     public function tables(): array {
         return [
             'document_dispatches',
+            'document_mirror_detachments',
             'document_version_texts',
             'document_versions',
             'documents',

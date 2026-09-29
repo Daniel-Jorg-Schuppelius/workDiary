@@ -6,7 +6,7 @@
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
-{{-- Tab: Abrechnung — erwartet: $project, $billingRules, $parentBillingRules, $billingArticles --}}
+{{-- Tab: Abrechnung — erwartet: $project, $billingRules, $parentBillingRules, $billingArticles (Katalogschlüssel → CatalogArticle) --}}
 @php
     $increment = $project->billing_increment_minutes;
     $gap = $project->billing_grouping_gap_minutes;
@@ -122,9 +122,9 @@
     <x-card padding="p-0">
         <header class="flex items-center justify-between gap-3 border-b border-base-300 px-4 py-3">
             <div>
-                <span class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('Abrechnungs-Regeln (Lexoffice)') }}</span>
+                <span class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('invoicing.service_rules.title') }}</span>
                 <p class="mt-0.5 text-xs text-muted">
-                    {{ __('Pro Tätigkeitsart lässt sich festlegen, welcher Lexoffice-Artikel beim Rechnungs-Export verwendet wird. Ohne Tätigkeitsart = Fallback für alle Einträge. Sub-Projekte erben Regeln vom Parent, können sie aber überschreiben.') }}
+                    {{ __('invoicing.service_rules.hint') }}
                 </p>
             </div>
             <x-icon-btn icon="add" tone="primary" size="sm"
@@ -151,7 +151,7 @@
                 <x-slot:head>
                     <tr class="text-xs text-muted">
                         <x-table.th sort type="string">{{ __('Art') }}</x-table.th>
-                        <x-table.th sort type="string">{{ __('Lexoffice-Artikel') }}</x-table.th>
+                        <x-table.th sort type="string">{{ __('article.catalog.field') }}</x-table.th>
                         <x-table.th sort type="string">{{ __('Item-Typ') }}</x-table.th>
                         <x-table.th sort type="string">{{ __('Einheit') }}</x-table.th>
                         <x-table.th sort type="number" align="right">{{ __('USt %') }}</x-table.th>
@@ -170,8 +170,8 @@
                             @endif
                         </td>
                         <td class="text-xs">
-                            @if ($rule->lexoffice_article_id)
-                                {{ $billingArticles->firstWhere('external_id', $rule->lexoffice_article_id)?->name ?? $rule->lexoffice_article_id }}
+                            @if ($rule->article_ref)
+                                {{ ($billingArticles[$rule->article_ref] ?? null)?->label() ?? __('article.catalog.missing') }}
                             @else
                                 <span class="text-muted">—</span>
                             @endif

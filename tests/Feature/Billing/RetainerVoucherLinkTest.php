@@ -15,6 +15,7 @@ use App\Models\Billing\{CustomerBillingAgreement, CustomerBillingRate, CustomerB
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
 use App\Models\Plugins\Lexoffice\LexofficeVoucher;
+use App\Plugins\Lexoffice\Services\Retainer\LexofficeRetainerVouchers;
 use App\Services\Billing\CustomerAccountStatementService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
@@ -97,7 +98,7 @@ class RetainerVoucherLinkTest extends TestCase {
             ])
             ->assertRedirect(route('customers.show', $this->customer));
 
-        $this->assertSame($voucher->id, $this->statement->fresh()->lexoffice_voucher_id);
+        $this->assertSame($voucher->external_id, LexofficeRetainerVouchers::linkOf($this->statement)?->external_id);
         // 773,50 brutto → 650,00 netto im Leistungssaldo.
         $this->assertSame('650.00', $this->agreement->payments()->firstOrFail()->amount?->getAmount());
     }
@@ -112,7 +113,7 @@ class RetainerVoucherLinkTest extends TestCase {
             ->delete(route('customers.billing.retainer.voucher.unlink', [$this->customer, $this->statement]))
             ->assertRedirect(route('customers.show', $this->customer));
 
-        $this->assertNull($this->statement->fresh()->lexoffice_voucher_id);
+        $this->assertNull(LexofficeRetainerVouchers::linkOf($this->statement));
         $this->assertSame(0, $this->agreement->payments()->count());
     }
 
@@ -125,8 +126,37 @@ class RetainerVoucherLinkTest extends TestCase {
             ->post(route('customers.billing.retainer.voucher.link', [$this->customer, $this->statement]), [
                 'voucher' => $foreign->sqid,
             ])
-            ->assertNotFound();
+            ->assertSessionHasErrors('voucher');
 
-        $this->assertNull($this->statement->fresh()->lexoffice_voucher_id);
+        $this->assertNull(LexofficeRetainerVouchers::linkOf($this->statement));
+    }
+
+    public function test_voucher_linked_to_another_month_is_rejected_and_the_panel_shows_the_link(): void {
+        $voucher = $this->voucher();
+        $may = app(CustomerAccountStatementService::class)->ensure($this->agreement, 2026, 5);
+        app(LexofficeRetainerVouchers::class)->attach($may, $voucher);
+
+        $this->actingAs($this->user)
+            ->post(route('customers.billing.retainer.voucher.link', [$this->customer, $this->statement]), ['voucher' => $voucher->sqid])
+            ->assertSessionHasErrors('voucher');
+        $this->assertNull(LexofficeRetainerVouchers::linkOf($this->statement));
+        $this->assertSame($voucher->external_id, LexofficeRetainerVouchers::linkOf($may)?->external_id);
+
+        $this->actingAs($this->user)->get(route('customers.show', $this->customer))
+            ->assertOk()
+            ->assertSee('RE-2026-0042')
+            ->assertSee(__('customer-billing.retainer_hint', ['system' => 'Lexoffice']));
+    }
+
+    public function test_customer_without_retainer_channel_gets_a_clear_message(): void {
+        $this->customer->forceFill(['billing_mode' => BillingMode::Workdiary->value])->save();
+
+        $this->actingAs($this->user)
+            ->post(route('customers.billing.retainer.push', $this->customer), ['year' => 2026, 'month' => 4])
+            ->assertSessionHas('error', __('customer-billing.retainer_no_channel'));
+        $this->actingAs($this->user)
+            ->post(route('customers.billing.retainer.voucher.link', [$this->customer, $this->statement]), ['voucher' => $this->voucher()->sqid])
+            ->assertSessionHasErrors('voucher');
+        $this->assertNull(LexofficeRetainerVouchers::linkOf($this->statement));
     }
 }

@@ -18,6 +18,7 @@ use App\Models\Customer\Customer;
 use App\Models\Invoicing\{Invoice, InvoiceItem};
 use App\Models\Platform\Organization;
 use App\Models\Reselling\{ResalePeriodLink, ResaleSubscription};
+use App\Services\Article\Catalog\LocalArticleCatalogSource;
 use App\Services\Billing\BillingModeResolver;
 use App\Services\Reselling\Marketplace\ProductNameMatcher;
 use App\Services\Reselling\Register\LicenseArticleClassifier;
@@ -33,9 +34,9 @@ use Illuminate\Support\Facades\Route;
  * Lokale Rechnungen als Spiegelquelle (Feature 152, Review 2026-09-10):
  * `invoices`/`invoice_items` bei lokaler Rechnungshoheit
  * ({@see BillingModeResolver}). Lizenzposition: die Einstufung des lokalen
- * Artikels (`articles.resale_role`, {@see LicenseArticleClassifier})
+ * Artikels (Katalogschlüssel `art:<id>`, {@see LicenseArticleClassifier})
  * entscheidet zuerst; ohne Einstufung gilt der Artikel eines Abos
- * (`resale_subscriptions.article_id`) oder der Namensmatch der Position gegen
+ * (`resale_subscriptions.article_ref`) oder der Namensmatch der Position gegen
  * die Abo-Labels der Organisation ({@see ProductNameMatcher}). Entwürfe sind
  * keine Kandidaten; Bezüge auf Entwurfspositionen (lokaler Rechnungsentwurf)
  * bleiben beim Vorschlagslauf stehen.
@@ -60,7 +61,6 @@ final class LocalInvoiceMirrorSource implements InvoiceMirrorSource {
     public function __construct(
         private readonly ProductNameMatcher $matcher = new ProductNameMatcher(),
         private readonly BillingModeResolver $billingModes = new BillingModeResolver(),
-        private readonly LicenseArticleClassifier $classifier = new LicenseArticleClassifier(),
     ) {}
 
     public function key(): string {
@@ -101,7 +101,7 @@ final class LocalInvoiceMirrorSource implements InvoiceMirrorSource {
         }
         $products = $this->products($organization);
         $invoices = $this->invoiceQuery($organization, $recipientCustomerIds, $from, null, self::KIND_INVOICE)
-            ->with(['customer:id,name', 'items.article:id,name,resale_role'])
+            ->with(['customer:id,name', 'items.article:id,name'])
             ->orderByDesc('issued_on')->orderByDesc('id')->limit($limit)->get();
 
         return $invoices->map(function (Invoice $invoice) use ($products): MirrorVoucher {
@@ -164,7 +164,7 @@ final class LocalInvoiceMirrorSource implements InvoiceMirrorSource {
         $rows = InvoiceItem::query()->withoutGlobalScopes()
             ->where('organization_id', $organization->id)
             ->whereIn('id', $ids)
-            ->with(['invoice.customer:id,name', 'article:id,name,resale_role'])
+            ->with(['invoice.customer:id,name', 'article:id,name'])
             ->get();
 
         return $this->map($rows, $this->products($organization))->keyBy(static fn(MirrorLine $line): int => $line->morphId);
@@ -279,7 +279,7 @@ final class LocalInvoiceMirrorSource implements InvoiceMirrorSource {
                         }));
                 }
             })
-            ->with(['invoice.customer:id,name', 'article:id,name,resale_role']);
+            ->with(['invoice.customer:id,name', 'article:id,name']);
     }
 
     /**
@@ -292,23 +292,28 @@ final class LocalInvoiceMirrorSource implements InvoiceMirrorSource {
         $articles = [];
         $labels = [];
         $excluded = [];
-        $rows = ResaleSubscription::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->get(['article_id', 'label']);
+        $rows = ResaleSubscription::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->get(['article_ref', 'label']);
         foreach ($rows as $subscription) {
-            if ($subscription->article_id !== null) {
-                $articles[(int) $subscription->article_id] = true;
+            $local = LocalArticleCatalogSource::idOf($subscription->article_ref);
+            if ($local !== null) {
+                $articles[$local] = true;
             }
             $label = trim($subscription->label);
             if ($label !== '') {
                 $labels[ProductNameMatcher::normalize($label)] = $label;
             }
         }
-        $classified = Article::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->whereNotNull('resale_role')->get(['id', 'resale_role']);
-        foreach ($classified as $article) {
-            if ($article->resale_role === ResaleArticleRole::License) {
-                $articles[(int) $article->id] = true;
-            } elseif ($article->resale_role === ResaleArticleRole::Excluded) {
-                $excluded[(int) $article->id] = true;
-                unset($articles[(int) $article->id]);
+        // Zur Laufzeit geholt: die Quelle lebt als Singleton, der Klassifizierer ist scoped.
+        foreach (app(LicenseArticleClassifier::class)->roles((int) $organization->id) as $ref => $role) {
+            $local = LocalArticleCatalogSource::idOf($ref);
+            if ($local === null) {
+                continue;
+            }
+            if ($role === ResaleArticleRole::License) {
+                $articles[$local] = true;
+            } elseif ($role === ResaleArticleRole::Excluded) {
+                $excluded[$local] = true;
+                unset($articles[$local]);
             }
         }
 
@@ -382,12 +387,13 @@ final class LocalInvoiceMirrorSource implements InvoiceMirrorSource {
      * @param  array{articles: array<int, true>, labels: list<string>, excluded: array<int, true>}  $products
      */
     private function isLicence(InvoiceItem $item, array $products): bool {
-        $article = $item->article;
-        if ($article !== null && $article->resale_role !== null) {
-            return $this->classifier->isLicense($article);
-        }
-        if ($item->article_id !== null && isset($products['articles'][(int) $item->article_id])) {
-            return true;
+        if ($item->article_id !== null) {
+            if (isset($products['excluded'][(int) $item->article_id])) {
+                return false;
+            }
+            if (isset($products['articles'][(int) $item->article_id])) {
+                return true;
+            }
         }
         $text = trim((string) ($item->article?->name) . ' ' . (string) $item->description);
         if ($text === '') {
@@ -418,4 +424,5 @@ final class LocalInvoiceMirrorSource implements InvoiceMirrorSource {
     private static function permalink(Invoice $invoice): ?string {
         return Route::has('invoices.show') ? route('invoices.show', $invoice) : null;
     }
+
 }

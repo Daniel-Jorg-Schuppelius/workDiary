@@ -99,4 +99,12 @@ final class InvoicingManifest extends Manifest {
             \App\Services\Invoicing\Contracts\InvoiceGaebExporter::class => \App\Services\Invoicing\Contracts\NullInvoiceGaebExporter::class,
         ];
     }
+
+    public function listeners(): array {
+        return [
+            \App\Events\Article\ArticlesMerged::class => [
+                \App\Listeners\Invoicing\RepointMergedServiceArticles::class,
+            ],
+        ];
+    }
 }

@@ -21,12 +21,19 @@ final class ExternalPhoneContactDirectory {
     /** @var list<ExternalPhoneContactSource> */
     private array $sources;
 
+    /** @var list<PhoneNumberResolver> */
+    private array $resolvers;
+
     /** @var array<int, array<string, list<ExternalPhoneContact>>> */
     private array $indexes = [];
 
-    /** @param iterable<ExternalPhoneContactSource> $sources */
-    public function __construct(iterable $sources) {
+    /**
+     * @param  iterable<ExternalPhoneContactSource>  $sources
+     * @param  iterable<PhoneNumberResolver>  $resolvers
+     */
+    public function __construct(iterable $sources, iterable $resolvers = []) {
         $this->sources = array_values([...$sources]);
+        $this->resolvers = array_values([...$resolvers]);
     }
 
     /** @return list<string> */
@@ -38,7 +45,16 @@ final class ExternalPhoneContactDirectory {
                     $labels[] = $source->label();
                 }
             } catch (\Throwable $e) {
-                $this->logFailure($source, $e);
+                $this->logFailure($source->id(), $e);
+            }
+        }
+        foreach ($this->resolvers as $resolver) {
+            try {
+                if ($resolver->isAvailable($organization)) {
+                    $labels[] = $resolver->label();
+                }
+            } catch (\Throwable $e) {
+                $this->logFailure($resolver->id(), $e);
             }
         }
 
@@ -52,6 +68,11 @@ final class ExternalPhoneContactDirectory {
         }
 
         $matches = $this->index($organization)[$e164] ?? [];
+        if ($matches === []) {
+            // Fallback: aufzählbare Verzeichnisse kennen die Nummer nicht — die
+            // Rückwärts-Auskünfte je Nummer befragen (reiner Namens-Hinweis).
+            $matches = $this->resolve($organization, $e164);
+        }
         if ($matches === []) {
             return null;
         }
@@ -69,11 +90,11 @@ final class ExternalPhoneContactDirectory {
         }
 
         $names = array_values(array_unique(array_filter(array_map(
-            static fn (ExternalPhoneContact $contact): string => trim((string) ($contact->name ?: $contact->company)),
+            static fn(ExternalPhoneContact $contact): string => trim((string) ($contact->name ?: $contact->company)),
             $matches,
         ))));
         $sources = array_values(array_unique(array_map(
-            static fn (ExternalPhoneContact $contact): string => $contact->providerLabel,
+            static fn(ExternalPhoneContact $contact): string => $contact->providerLabel,
             $matches,
         )));
         $target = $allLinked && count($targets) === 1 ? reset($targets) : null;
@@ -114,11 +135,37 @@ final class ExternalPhoneContactDirectory {
             } catch (\Throwable $e) {
                 // Ein ausgefallenes Fremdsystem darf den Anrufimport niemals
                 // blockieren; die lokale Zuordnung und übrige Quellen laufen weiter.
-                $this->logFailure($source, $e);
+                $this->logFailure($source->id(), $e);
             }
         }
 
         return $this->indexes[$organization->id] = $index;
+    }
+
+    /**
+     * Rückwärts-Auskünfte je Nummer befragen; jeder Treffer ist ein reiner
+     * Namens-Hinweis (kein verknüpftes Ziel). Ein ausgefallener Dienst darf den
+     * Abgleich nie blockieren.
+     *
+     * @return list<ExternalPhoneContact>
+     */
+    private function resolve(Organization $organization, string $e164): array {
+        $hits = [];
+        foreach ($this->resolvers as $resolver) {
+            try {
+                if (! $resolver->isAvailable($organization)) {
+                    continue;
+                }
+                $contact = $resolver->resolve($organization, $e164);
+                if ($contact instanceof ExternalPhoneContact) {
+                    $hits[] = $contact;
+                }
+            } catch (\Throwable $e) {
+                $this->logFailure($resolver->id(), $e);
+            }
+        }
+
+        return $hits;
     }
 
     private function resolveTarget(Organization $organization, ExternalPhoneContact $contact): Customer|ForeignCustomer|null {
@@ -127,10 +174,10 @@ final class ExternalPhoneContactDirectory {
             ->forExternalId($contact->externalId)
             ->with('referenceable')
             ->get()
-            ->map(static fn (ExternalReference $reference) => $reference->referenceable)
-            ->filter(static fn ($target): bool => ($target instanceof Customer || $target instanceof ForeignCustomer)
+            ->map(static fn(ExternalReference $reference) => $reference->referenceable)
+            ->filter(static fn($target): bool => ($target instanceof Customer || $target instanceof ForeignCustomer)
                 && (int) $target->organization_id === (int) $organization->id)
-            ->keyBy(static fn (Customer|ForeignCustomer $target): string => $target->getMorphClass() . ':' . $target->getKey());
+            ->keyBy(static fn(Customer|ForeignCustomer $target): string => $target->getMorphClass() . ':' . $target->getKey());
 
         $aliasTarget = ExternalReferenceAlias::resolveModel(
             $organization->id,
@@ -139,7 +186,8 @@ final class ExternalPhoneContactDirectory {
             $contact->externalId,
         );
         if (($aliasTarget instanceof Customer || $aliasTarget instanceof ForeignCustomer)
-            && (int) $aliasTarget->organization_id === (int) $organization->id) {
+            && (int) $aliasTarget->organization_id === (int) $organization->id
+        ) {
             $targets->put($aliasTarget->getMorphClass() . ':' . $aliasTarget->getKey(), $aliasTarget);
         }
 
@@ -148,10 +196,10 @@ final class ExternalPhoneContactDirectory {
         return $target instanceof Customer || $target instanceof ForeignCustomer ? $target : null;
     }
 
-    private function logFailure(ExternalPhoneContactSource $source, \Throwable $e): void {
+    private function logFailure(string $sourceId, \Throwable $e): void {
         // Keine Kontakt-/Rufnummerndaten loggen: nur Quelle und Fehlerklasse.
         Log::warning('external phone contact source failed', [
-            'source' => $source->id(),
+            'source' => $sourceId,
             'class' => class_basename($e),
         ]);
     }

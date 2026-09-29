@@ -14,61 +14,36 @@ namespace App\Http\Requests\Reselling;
 
 use App\Enums\Reselling\ResaleArticleRole;
 use App\Http\Requests\BaseFormRequest;
-use App\Http\Requests\Concerns\DecodesSqidInputs;
-use App\Models\Article\Article;
-use App\Models\Plugins\Lexoffice\LexofficeArticle;
-use App\Rules\ExistsInCurrentOrganization;
+use App\Models\Platform\Organization;
+use App\Services\Platform\Catalog\{ArticleCatalog, CatalogArticle};
 use Illuminate\Validation\Rule;
 
 /**
- * Produkt-Einstufung eines Artikels (Feature 152): `article_type` wählt
- * Lexoffice-Artikel (Default) oder lokalen Artikel, `article_id` ist die
- * Sqid des jeweiligen Modells; Rolle „auto" = Übersteuerung löschen.
+ * Produkt-Einstufung eines Katalogartikels (Feature 152, MVP-1025): `article`
+ * ist der Formularschlüssel der Katalogquelle; Rolle „auto" = Übersteuerung
+ * löschen.
  */
 class ResaleReportProductRequest extends BaseFormRequest {
-    use DecodesSqidInputs;
-
-    public const TYPE_LOCAL = 'local';
-
-    public const TYPE_LEXOFFICE = 'lexoffice';
-
-    /** @var array<string, class-string> */
-    protected array $sqidFields = [];
-
-    /** @return array<string, class-string> */
-    protected function sqidFields(): array {
-        return ['article_id' => $this->isLocal() ? Article::class : LexofficeArticle::class];
-    }
-
-    /**
-     * @return array<string, list<mixed>>
-     */
+    /** @return array<string, mixed> */
     public function rules(): array {
         return [
-            'article_type' => ['nullable', 'string', Rule::in([self::TYPE_LOCAL, self::TYPE_LEXOFFICE])],
-            'article_id' => ['required', 'integer', new ExistsInCurrentOrganization($this->isLocal() ? 'articles' : 'lexoffice_articles')],
+            // Katalogartikel als Formularschlüssel (`art:<sqid>`, `lex:<sqid>`, MVP-1025).
+            'article' => ['required', 'string', 'max:64', function (string $attribute, mixed $value, \Closure $fail): void {
+                if ($this->catalogArticle() === null) {
+                    $fail((string) __('resale.products.flash.missing'));
+                }
+            }],
             'role' => ['nullable', 'string', Rule::in(array_merge(['auto'], array_map(static fn(ResaleArticleRole $r): string => $r->value, ResaleArticleRole::cases())))],
         ];
     }
 
-    /**
-     * @return array<string, string>
-     */
-    public function messages(): array {
-        return [
-            'article_id.required' => (string) __('resale.products.flash.missing'),
-            'article_id.integer' => (string) __('resale.products.flash.missing'),
-        ];
-    }
+    public function catalogArticle(): ?CatalogArticle {
+        $organization = app()->bound('currentOrganization') ? app('currentOrganization') : null;
+        $value = $this->input('article');
 
-    public function isLocal(): bool {
-        return $this->input('article_type') === self::TYPE_LOCAL;
-    }
-
-    public function article(): LexofficeArticle|Article {
-        $id = (int) $this->validated('article_id');
-
-        return $this->isLocal() ? Article::query()->findOrFail($id) : LexofficeArticle::query()->findOrFail($id);
+        return $organization instanceof Organization && is_string($value) && $value !== ''
+            ? app(ArticleCatalog::class)->fromFormKey((int) $organization->id, $value)
+            : null;
     }
 
     public function role(): ?ResaleArticleRole {

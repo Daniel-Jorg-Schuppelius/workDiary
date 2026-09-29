@@ -39,16 +39,16 @@ class CustomerDuplicateFinder extends AbstractDuplicateFinder {
     }
 
     protected function fetchCandidates(Organization $organization): EloquentCollection {
-        return $this->profile->candidates($organization)->withCount('projects')->get();
+        return $this->profile->candidates($organization)->with('externalReferences')->withCount('projects')->get();
     }
 
     /**
-     * Ziel-Heuristik: Lexoffice-Anbindung > mehr Projekte > kleinere (ältere) ID.
+     * Ziel-Heuristik: Nummer im Buchhaltungsprogramm > mehr Projekte > kleinere (ältere) ID.
      */
     protected function score(Model $model): array {
-        $hasLex = trim((string) $model->lexoffice_contact_number) !== '' ? 1 : 0;
+        $linked = $model->getAttribute('accounting_number') !== null ? 1 : 0;
 
-        return [$hasLex, (int) ($model->projects_count ?? 0), -((int) $model->id)];
+        return [$linked, (int) ($model->projects_count ?? 0), -((int) $model->id)];
     }
 
     protected function dismissalModel(): string {

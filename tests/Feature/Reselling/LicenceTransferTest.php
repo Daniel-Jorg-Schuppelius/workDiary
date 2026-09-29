@@ -75,7 +75,7 @@ class LicenceTransferTest extends TestCase {
         $maerkische = $this->customerWithContact('Märkische Bunker- und Service GmbH & Co. KG', 'c-mb');
         $contract = ResaleSubscription::query()->create([
             'organization_id' => $this->organization->id, 'kind' => 'license', 'provider' => 'telekom_marketplace', 'external_id' => 'ent-9', 'label' => 'Exchange Online (Plan 1)',
-            'customer_id' => $schub->id, 'lexoffice_article_id' => $this->exchange->id, 'quantity' => 9, 'starts_on' => '2024-10-18', 'ends_on' => '2026-10-18',
+            'customer_id' => $schub->id, 'article_ref' => 'lex:' . $this->exchange->id, 'quantity' => 9, 'starts_on' => '2024-10-18', 'ends_on' => '2026-10-18',
             'term_months' => 12, 'interval' => 'yearly', 'renewal' => 'cancel', 'status' => 'cancelled', 'currency' => 'EUR', 'purchase_unit_price' => '43.98', 'sale_unit_price' => '47.40',
         ]);
         (new PeriodPlanner)->sync($contract);
@@ -162,7 +162,7 @@ class LicenceTransferTest extends TestCase {
         $hlsk = $this->customerWithContact('EcoTec - HLSK GmbH', 'c-hlsk');
         $contract = ResaleSubscription::query()->create([
             'organization_id' => $this->organization->id, 'kind' => 'license', 'provider' => 'telekom_marketplace', 'external_id' => 'ent-5', 'label' => 'Exchange Online (Plan 1)',
-            'customer_id' => $service->id, 'lexoffice_article_id' => $this->exchange->id, 'quantity' => 5, 'starts_on' => '2024-04-24', 'ends_on' => '2026-04-24',
+            'customer_id' => $service->id, 'article_ref' => 'lex:' . $this->exchange->id, 'quantity' => 5, 'starts_on' => '2024-04-24', 'ends_on' => '2026-04-24',
             'term_months' => 12, 'interval' => 'yearly', 'renewal' => 'cancel', 'status' => 'ended', 'currency' => 'EUR', 'sale_unit_price' => '47.40',
         ]);
         (new PeriodPlanner)->sync($contract);
@@ -204,7 +204,7 @@ class LicenceTransferTest extends TestCase {
         $maerkische = $this->customerWithContact('Märkische Bunker- und Service GmbH & Co. KG', 'c-mb');
         $contract = ResaleSubscription::query()->create([
             'organization_id' => $this->organization->id, 'kind' => 'license', 'provider' => 'telekom_marketplace', 'external_id' => 'ent-9', 'label' => 'Exchange Online (Plan 1)',
-            'customer_id' => $schub->id, 'lexoffice_article_id' => $this->exchange->id, 'quantity' => 9, 'starts_on' => '2024-10-13', 'ends_on' => '2026-10-18',
+            'customer_id' => $schub->id, 'article_ref' => 'lex:' . $this->exchange->id, 'quantity' => 9, 'starts_on' => '2024-10-13', 'ends_on' => '2026-10-18',
             'term_months' => 12, 'interval' => 'yearly', 'renewal' => 'cancel', 'status' => 'cancelled', 'currency' => 'EUR', 'sale_unit_price' => '47.40',
         ]);
         (new PeriodPlanner)->sync($contract);
@@ -240,7 +240,7 @@ class LicenceTransferTest extends TestCase {
         $maerkische = $this->customerWithContact('Märkische Bunker- und Service GmbH & Co. KG', 'c-mb');
         $contract = ResaleSubscription::query()->create([
             'organization_id' => $this->organization->id, 'kind' => 'license', 'provider' => 'telekom_marketplace', 'external_id' => 'ent-9', 'label' => 'Exchange Online (Plan 1)',
-            'customer_id' => $schub->id, 'lexoffice_article_id' => $this->exchange->id, 'quantity' => 9, 'starts_on' => '2024-10-18', 'ends_on' => '2026-10-18',
+            'customer_id' => $schub->id, 'article_ref' => 'lex:' . $this->exchange->id, 'quantity' => 9, 'starts_on' => '2024-10-18', 'ends_on' => '2026-10-18',
             'term_months' => 12, 'interval' => 'yearly', 'renewal' => 'cancel', 'status' => 'cancelled', 'currency' => 'EUR', 'purchase_unit_price' => '43.98', 'sale_unit_price' => '47.40',
         ]);
         (new PeriodPlanner)->sync($contract);

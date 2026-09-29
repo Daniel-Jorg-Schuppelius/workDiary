@@ -13,8 +13,7 @@ namespace App\Http\Controllers\Customers;
 use App\Http\Controllers\Controller;
 use App\Models\Billing\CustomerBillingStatement;
 use App\Models\Customer\Customer;
-use App\Models\Plugins\Lexoffice\LexofficeVoucher;
-use App\Services\Billing\{RetainerLexofficeService, RetainerVoucherReconciler};
+use App\Services\Billing\RetainerChannelResolver;
 use App\Support\{ErrorText, Tz};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Carbon;
@@ -24,12 +23,15 @@ use Illuminate\View\View;
 
 /**
  * Retainer-Aktionen an der Kundenakte (Feature 098): Monatspauschale sofort an
- * Lexoffice senden, Spitzabrechnung über den offenen Saldo erstellen und einen
- * bereits in Lexoffice geführten Beleg von Hand an einen Monat hängen.
- * Fehler (Lexoffice down, kein Saldo) werden als Flash zurückgegeben.
+ * das Buchhaltungsprogramm senden, Spitzabrechnung über den offenen Saldo
+ * erstellen und einen dort bereits geführten Beleg von Hand an einen Monat
+ * hängen. Welches Programm, entscheidet der {@see RetainerChannelResolver}
+ * (MVP-1027). Fehler (Programm nicht erreichbar, kein Saldo) kommen als Flash.
  */
 class RetainerBillingController extends Controller {
-    public function pushMonth(Request $request, Customer $customer, RetainerLexofficeService $service): RedirectResponse {
+    public function __construct(private readonly RetainerChannelResolver $channels) {}
+
+    public function pushMonth(Request $request, Customer $customer): RedirectResponse {
         Gate::authorize('update', $customer);
         $agreement = $customer->billingAgreement()->firstOrFail();
 
@@ -38,58 +40,55 @@ class RetainerBillingController extends Controller {
             'month' => ['required', 'integer', 'min:1', 'max:12'],
         ]);
 
+        $publisher = $this->channels->publisherFor($customer);
         try {
-            $service->pushMonthlyRetainer($agreement, (int) $data['year'], (int) $data['month']);
+            $publisher->pushMonthlyRetainer($agreement, (int) $data['year'], (int) $data['month']);
         } catch (ValidationException $e) {
             return back()->with('error', $e->validator->errors()->first());
         } catch (\Throwable $e) {
             report($e);
 
-            return back()->with('error', __('customer-billing.retainer_push_failed', ['msg' => ErrorText::for($e)]));
+            return back()->with('error', __('customer-billing.retainer_push_failed', ['system' => $publisher->label(), 'msg' => ErrorText::for($e)]));
         }
 
         return redirect()->route('customers.show', $customer)
-            ->with('status', __('customer-billing.retainer_pushed'));
+            ->with('status', __('customer-billing.retainer_pushed', ['system' => $publisher->label()]));
     }
 
-    public function trueUp(Customer $customer, RetainerLexofficeService $service): RedirectResponse {
+    public function trueUp(Customer $customer): RedirectResponse {
         Gate::authorize('update', $customer);
         $agreement = $customer->billingAgreement()->firstOrFail();
 
+        $publisher = $this->channels->publisherFor($customer);
         try {
-            $service->pushTrueUp($agreement, Carbon::now(Tz::current()));
+            $publisher->pushTrueUp($agreement, Carbon::now(Tz::current()));
         } catch (ValidationException $e) {
             return back()->with('error', $e->validator->errors()->first());
         } catch (\Throwable $e) {
             report($e);
 
-            return back()->with('error', __('customer-billing.retainer_push_failed', ['msg' => ErrorText::for($e)]));
+            return back()->with('error', __('customer-billing.retainer_push_failed', ['system' => $publisher->label(), 'msg' => ErrorText::for($e)]));
         }
 
         return redirect()->route('customers.show', $customer)
-            ->with('status', __('customer-billing.trueup_pushed'));
+            ->with('status', __('customer-billing.trueup_pushed', ['system' => $publisher->label()]));
     }
 
-    /** Modal-Fragment: bereits in Lexoffice geführten Beleg an den Monat hängen. */
-    public function editVoucher(Customer $customer, CustomerBillingStatement $statement, RetainerVoucherReconciler $reconciler): View {
+    /** Modal-Fragment: bereits im Buchhaltungsprogramm geführten Beleg an den Monat hängen. */
+    public function editVoucher(Customer $customer, CustomerBillingStatement $statement): View {
         Gate::authorize('update', $customer);
         $this->assertBelongsToCustomer($customer, $statement);
-
-        $organization = $customer->organization()->firstOrFail();
 
         return view('customers.billing._voucher_link_dialog', [
             'customer' => $customer,
             'statement' => $statement,
-            'vouchers' => $reconciler->linkableVouchers($organization, $customer->id, $statement->id),
+            'system' => $this->channels->labelFor($customer),
+            'linked' => $this->channels->linksFor($customer)->linkedVouchers([$statement])[$statement->id] ?? null,
+            'vouchers' => $this->channels->linksFor($customer)->linkableVouchers($customer, $statement),
         ]);
     }
 
-    public function linkVoucher(
-        Request $request,
-        Customer $customer,
-        CustomerBillingStatement $statement,
-        RetainerVoucherReconciler $reconciler
-    ): RedirectResponse {
+    public function linkVoucher(Request $request, Customer $customer, CustomerBillingStatement $statement): RedirectResponse {
         Gate::authorize('update', $customer);
         $this->assertBelongsToCustomer($customer, $statement);
 
@@ -97,48 +96,24 @@ class RetainerBillingController extends Controller {
             return back()->with('error', __('customer-billing.retainer_invoice_already_pushed'));
         }
 
-        $voucher = LexofficeVoucher::query()
-            ->where('organization_id', $customer->organization_id)
-            ->where('customer_id', $customer->id)
-            ->findOrFail($this->voucherIdFrom($request));
-
-        $reconciler->link($statement, $voucher);
-        $this->reconcileNow($customer, $reconciler);
+        $key = (string) $request->validate(['voucher' => ['required', 'string', 'max:64']])['voucher'];
+        $links = $this->channels->linksFor($customer);
+        $voucher = $links->link($statement, $key);
+        // Zahlung sofort nachziehen, damit der Saldo nicht bis zum Cron wartet.
+        $links->reconcile($customer->organization()->firstOrFail());
 
         return redirect()->route('customers.show', $customer)
-            ->with('status', __('customer-billing.voucher_linked', ['number' => (string) $voucher->voucher_number]));
+            ->with('status', __('customer-billing.voucher_linked', ['number' => (string) ($voucher->number ?? $voucher->externalId)]));
     }
 
-    public function unlinkVoucher(Customer $customer, CustomerBillingStatement $statement, RetainerVoucherReconciler $reconciler): RedirectResponse {
+    public function unlinkVoucher(Customer $customer, CustomerBillingStatement $statement): RedirectResponse {
         Gate::authorize('update', $customer);
         $this->assertBelongsToCustomer($customer, $statement);
 
-        $reconciler->unlink($statement);
+        $this->channels->linksFor($customer)->unlink($statement);
 
         return redirect()->route('customers.show', $customer)
             ->with('status', __('customer-billing.voucher_unlinked'));
-    }
-
-    /** Beleg-Sqid → ID; das Formular führt wie überall keine rohen IDs. */
-    private function voucherIdFrom(Request $request): int {
-        $sqid = (string) $request->validate([
-            'voucher' => ['required', 'string'],
-        ])['voucher'];
-
-        $voucher = (new LexofficeVoucher)->resolveRouteBinding($sqid);
-        if (! $voucher instanceof LexofficeVoucher) {
-            throw ValidationException::withMessages(['voucher' => __('customer-billing.voucher_not_found')]);
-        }
-
-        return $voucher->id;
-    }
-
-    /** Zahlung sofort nachziehen, damit der Saldo nicht bis zum Cron wartet. */
-    private function reconcileNow(Customer $customer, RetainerVoucherReconciler $reconciler): void {
-        $organization = $customer->organization()->first();
-        if ($organization !== null) {
-            $reconciler->reconcile($organization);
-        }
     }
 
     private function assertBelongsToCustomer(Customer $customer, CustomerBillingStatement $statement): void {

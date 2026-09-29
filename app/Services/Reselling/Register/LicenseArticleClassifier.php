@@ -13,36 +13,63 @@ declare(strict_types=1);
 namespace App\Services\Reselling\Register;
 
 use App\Enums\Reselling\ResaleArticleRole;
-use App\Models\Article\Article;
-use App\Models\Plugins\Lexoffice\LexofficeArticle;
+use App\Models\Reselling\ResaleArticleClassification;
 use App\Services\Reselling\Marketplace\ProductNameMatcher;
 
 /**
- * Ist ein Artikel ein Abo-Produkt? Gilt für Lexoffice-Artikel und lokale
- * Artikel gleichermaßen (Review 2026-09-11): die Einstufung des Betreibers
- * (`resale_role`) gewinnt; ohne Einstufung entscheidet die Produkterkennung
- * über den Artikelnamen. Einzige Stelle für diese Frage — Vorschlagslauf,
- * Import, Belegspiegel, Preisprüfung und Positionen-ohne-Abo fragen hier.
+ * Ist ein Artikel ein Abo-Produkt? Gilt für jede Katalogquelle gleichermaßen
+ * (Artikelstamm, Lexoffice, …; MVP-1025): die Einstufung des Betreibers
+ * ({@see ResaleArticleClassification}, am Katalogschlüssel) gewinnt; ohne
+ * Einstufung entscheidet die Produkterkennung über den Artikelnamen. Einzige
+ * Stelle für diese Frage — Vorschlagslauf, Import, Belegspiegel, Preisprüfung
+ * und Positionen-ohne-Abo fragen hier. Scoped gebunden: der Einstufungs-Cache
+ * lebt je Request bzw. Job, Änderungen an Einstufungen leeren ihn.
  */
 final class LicenseArticleClassifier {
+    /** @var array<int, array<string, ResaleArticleRole>> Organisation → Katalogschlüssel → Einstufung */
+    private array $roles = [];
+
     public function __construct(private readonly ProductNameMatcher $matcher = new ProductNameMatcher()) {}
 
-    public function isLicense(LexofficeArticle|Article|null $article): bool {
-        if ($article === null) {
+    public function flush(): void {
+        $this->roles = [];
+    }
+
+    /** Ohne Artikel (kein Katalogschlüssel) nie ein Abo-Produkt. */
+    public function isLicense(int $organizationId, ?string $articleKey, ?string $name): bool {
+        if ($articleKey === null) {
             return false;
-        }
-        if ($article->resale_role === ResaleArticleRole::Excluded) {
-            return false;
-        }
-        if ($article->resale_role === ResaleArticleRole::License) {
-            return true;
         }
 
-        return $this->matcher->looksLikeMicrosoftProduct((string) $article->name);
+        return match ($this->roleOf($organizationId, $articleKey)) {
+            ResaleArticleRole::Excluded => false,
+            ResaleArticleRole::License => true,
+            null => $this->matcher->looksLikeMicrosoftProduct((string) $name),
+        };
+    }
+
+    public function roleOf(int $organizationId, string $articleKey): ?ResaleArticleRole {
+        return $this->roles($organizationId)[$articleKey] ?? null;
+    }
+
+    /**
+     * Alle Einstufungen der Organisation, einmal je Instanz geladen.
+     *
+     * @return array<string, ResaleArticleRole>
+     */
+    public function roles(int $organizationId): array {
+        if (! isset($this->roles[$organizationId])) {
+            $this->roles[$organizationId] = [];
+            foreach (ResaleArticleClassification::query()->withoutGlobalScopes()->where('organization_id', $organizationId)->get(['article_ref', 'role']) as $row) {
+                $this->roles[$organizationId][$row->article_ref] = $row->role;
+            }
+        }
+
+        return $this->roles[$organizationId];
     }
 
     /** Automatische Einstufung ohne Betreiber-Override (für die Anzeige). */
-    public function detected(LexofficeArticle|Article $article): ResaleArticleRole {
-        return $this->matcher->looksLikeMicrosoftProduct((string) $article->name) ? ResaleArticleRole::License : ResaleArticleRole::Excluded;
+    public function detected(string $name): ResaleArticleRole {
+        return $this->matcher->looksLikeMicrosoftProduct($name) ? ResaleArticleRole::License : ResaleArticleRole::Excluded;
     }
 }

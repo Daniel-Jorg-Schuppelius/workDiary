@@ -14,8 +14,8 @@ namespace App\Services\Reselling\Register;
 
 use App\Enums\Reselling\{BillingFrequency, ImportStatus, RenewalMode, SubscriptionKind, SubscriptionProvider, SubscriptionStatus};
 use App\Models\Platform\{Organization, User};
-use App\Models\Plugins\Lexoffice\LexofficeArticle;
 use App\Models\Reselling\{CompanyMapping, ResaleImport, ResalePeriod, ResalePriceEntry, ResaleSubscription};
+use App\Services\Platform\Catalog\CatalogArticle;
 use App\Services\Reselling\Marketplace\{GenericSubscriptionReader, MarketplaceEntitlement, MarketplacePurchasesReader, ProductNameMatcher, PurchasesImport, PurchasesImportMerger, QualityHostingContractsReader, QualityHostingPriceListReader, UnitPriceCatalog};
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
@@ -42,6 +42,7 @@ final class MarketplaceImporter {
         private readonly PurchasesImportMerger $merger,
         private readonly HolderResolver $holders,
         private readonly PeriodPlanner $planner,
+        private readonly ResaleArticleCandidates $candidates,
         private readonly ProductNameMatcher $matcher = new ProductNameMatcher(),
     ) {}
 
@@ -120,7 +121,7 @@ final class MarketplaceImporter {
     private function upsertEntitlements(Organization $organization, PurchasesImport $import, CarbonImmutable $reference, array $records): array {
         $catalog = UnitPriceCatalog::fromEntitlements($import->entitlements);
         $stored = CompanyMapping::targetsFor($organization);
-        $articles = LexofficeArticle::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->active()->get();
+        $articles = $this->candidates->for((int) $organization->id);
         $successorOf = [];
         foreach ($import->links as $link) {
             $successorOf[$this->externalKey($link->predecessor)] = $this->externalKey($link->successor);
@@ -201,11 +202,11 @@ final class MarketplaceImporter {
                 if ($subscription->sale_unit_price === null && $entitlement->salePrice !== null) {
                     $subscription->sale_unit_price = $entitlement->salePrice->withScale(4);
                 }
-                // Produkt und Verkaufspreis aus dem Lexoffice-Artikel, solange nichts gepflegt ist.
-                if ($subscription->lexoffice_article_id === null && $subscription->article_id === null) {
+                // Produkt und Verkaufspreis aus dem Katalogartikel, solange nichts gepflegt ist.
+                if ($subscription->article_ref === null) {
                     $article = $this->matchArticle($entitlement->edition, $articles);
                     if ($article !== null) {
-                        $subscription->lexoffice_article_id = $article->id;
+                        $subscription->article_ref = $article->key;
                         if ($subscription->sale_unit_price === null) {
                             $subscription->sale_unit_price = $this->salePrice($article, $subscription->interval);
                         }
@@ -308,8 +309,7 @@ final class MarketplaceImporter {
                         'customer_id' => $assignment->customer_id,
                         'foreign_customer_id' => $assignment->foreign_customer_id,
                         'is_own_holding' => false,
-                        'article_id' => $successor->article_id,
-                        'lexoffice_article_id' => $successor->lexoffice_article_id,
+                        'article_ref' => $successor->article_ref,
                         'quantity' => $assignment->quantity,
                         'starts_on' => $handover->toDateString(),
                         'ends_on' => $successor->ends_on?->toDateString(),
@@ -439,22 +439,19 @@ final class MarketplaceImporter {
     }
 
     /**
-     * Lexoffice-Artikel zur Edition: exakter Name zuerst, sonst der einzige
+     * Katalogartikel zur Edition: exakter Name zuerst, sonst der einzige
      * Artikel, dessen Name die Edition trifft.
      *
-     * @param  \Illuminate\Support\Collection<int, LexofficeArticle>  $articles
+     * @param  list<CatalogArticle>  $articles  {@see ResaleArticleCandidates}
      */
-    private function matchArticle(string $edition, $articles): ?LexofficeArticle {
+    private function matchArticle(string $edition, array $articles): ?CatalogArticle {
         $wanted = ProductNameMatcher::normalize($edition);
         $hits = [];
         foreach ($articles as $article) {
-            if ($article->resale_role === \App\Enums\Reselling\ResaleArticleRole::Excluded) {
-                continue; // Betreiber: nie Abo-Position
-            }
-            if (ProductNameMatcher::normalize((string) $article->name) === $wanted) {
+            if (ProductNameMatcher::normalize($article->name) === $wanted) {
                 return $article;
             }
-            if ($this->matcher->matches($edition, (string) $article->name)) {
+            if ($this->matcher->matches($edition, $article->name)) {
                 $hits[] = $article;
             }
         }
@@ -463,12 +460,12 @@ final class MarketplaceImporter {
     }
 
     /** Artikelpreis je Stück und Intervall: Einheit „Monat" × 12 bei Jahresintervall. */
-    private function salePrice(LexofficeArticle $article, BillingFrequency $interval): ?Money {
-        $price = $article->net_unit_price;
+    private function salePrice(CatalogArticle $article, BillingFrequency $interval): ?Money {
+        $price = $article->netPrice;
         if ($price === null) {
             return null;
         }
-        if (LicenseMonths::isMonthUnit($article->unit_name) && $interval === BillingFrequency::Yearly) {
+        if (LicenseMonths::isMonthUnit($article->unitName) && $interval === BillingFrequency::Yearly) {
             return $price->times(12);
         }
 

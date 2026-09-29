@@ -131,7 +131,7 @@ class MarketplaceImporterTest extends TestCase {
         $this->assertSame(1, $qh->rows_unassigned);
 
         // Lexoffice-Artikel liefert Produkt und Verkaufspreis (20,60 € × 12).
-        $this->assertNotNull($new->lexoffice_article_id);
+        $this->assertStringStartsWith('lex:', (string) $new->article_ref);
         $this->assertSame('247.2000', $new->sale_unit_price?->getAmount());
         $this->assertSame('Microsoft 365 Business Premium', $new->productLabel() ? explode(' · ', $new->productLabel())[1] : null);
         $this->assertGreaterThan(0, $new->periods()->count(), 'Perioden geplant');

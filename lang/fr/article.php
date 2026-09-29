@@ -253,4 +253,13 @@ return [
             'saved' => 'Facteurs enregistrés.',
         ],
     ],
+    'catalog' => [
+        'field' => 'Article',
+        'none' => '— sans article —',
+        'source_local' => 'Fichier articles',
+        'unknown' => 'L’article sélectionné n’existe pas (ou plus) dans cette organisation.',
+        'missing' => 'Article plus disponible',
+        'empty_hint' => 'Aucun article pour le moment. Créez des articles dans le fichier articles ou récupérez-les depuis un logiciel comptable connecté.',
+        'service_hint' => 'Fournit la désignation, l’unité, le texte standard et — sans prix renseigné — le prix de la ligne.',
+    ],
 ];

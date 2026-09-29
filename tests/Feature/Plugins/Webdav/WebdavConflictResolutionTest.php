@@ -159,13 +159,22 @@ final class WebdavConflictResolutionTest extends TestCase {
             ->assertRedirect();
 
         $this->assertSame(0, ExternalReference::query()->where('plugin_id', WebdavPlugin::ID)->count());
-        $this->assertTrue($document->fresh()->webdav_mirror_detached);
+        $this->assertTrue($document->fresh()?->isMirrorDetached(WebdavPlugin::ID));
         $this->assertSame(IntegrationInboxItem::STATUS_DISMISSED, $item->fresh()->status);
         $this->assertTrue($this->auditExists($item, 'webdav.mirror.detached'));
 
         // Nach dem Trennen spiegelt der Service nichts mehr (auch nicht per Command).
         $result = (new DocumentMirrorService())->mirror(new WebdavMirrorTarget(), $document->fresh(), $connection, new RecordingWebdavGateway());
         $this->assertSame(DocumentMirrorService::RESULT_SKIPPED, $result);
+
+        // Und der Observer reiht beim nächsten Speichern nichts mehr ein (MVP-1029: Markierung je Ziel in eigener Tabelle).
+        $queued = \App\Models\Integration\IntegrationOutboxEntry::query()->where('plugin_id', WebdavPlugin::ID)->count();
+        $fresh = $document->fresh();
+        $this->assertNotNull($fresh);
+        $fresh->forceFill(['description' => 'geändert nach dem Trennen'])->save();
+        $this->assertSame($queued, \App\Models\Integration\IntegrationOutboxEntry::query()->where('plugin_id', WebdavPlugin::ID)->count());
+        $fresh->detachMirror(WebdavPlugin::ID);
+        $this->assertSame(1, $fresh->mirrorDetachments()->count(), 'Trennen ist idempotent');
     }
 
     public function test_non_admin_cannot_resolve(): void {

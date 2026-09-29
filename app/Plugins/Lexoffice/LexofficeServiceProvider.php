@@ -11,11 +11,13 @@
 namespace App\Plugins\Lexoffice;
 
 use App\Plugins\Lexoffice\Console\{LexofficeMaterializeVoucherFilesCommand, LexofficeRepairResaleLinksCommand, LexofficeSyncArticlesCommand, LexofficeSyncContactsCommand, LexofficeSyncVoucherCategoriesCommand, LexofficeSyncVoucherLinesCommand, LexofficeSyncVouchersCommand, LexofficeWebhooksCommand};
-use App\Plugins\Lexoffice\Services\{LexofficeInvoiceDraftTarget, LexofficeInvoiceMirrorSource, LexofficePurchaseDocumentSource};
+use App\Plugins\Lexoffice\Services\{LexofficeArticleCatalogSource, LexofficeInvoiceDraftTarget, LexofficeInvoiceMirrorSource, LexofficePurchaseDocumentSource};
+use App\Plugins\Lexoffice\Services\Retainer\{LexofficeRetainerPublisher, LexofficeRetainerVouchers};
 use App\Plugins\Support\PluginServiceProviderBase;
-use App\Services\Billing\{BillingModeResolver, ExpenseLinkProviderResolver};
+use App\Services\Billing\{BillingModeResolver, ExpenseLinkProviderResolver, RetainerChannelResolver};
 use App\Services\Billing\Feed\DocumentFeedSourceRegistry;
 use App\Services\Invoicing\TaxResolver;
+use App\Services\Platform\Catalog\ArticleCatalog;
 use App\Services\Reselling\Draft\InvoiceDraftTargets;
 use App\Services\Reselling\Mirror\InvoiceMirror;
 use App\Services\Reselling\Purchase\PurchaseDocuments;
@@ -37,6 +39,9 @@ class LexofficeServiceProvider extends PluginServiceProviderBase {
     }
 
     protected function registerPlugin(): void {
+        $this->app->scoped(LexofficePhoneContactSource::class);
+        $this->app->tag([LexofficePhoneContactSource::class], 'external-phone-contact-sources');
+
         $this->app->singleton(LexofficeService::class, function (): LexofficeService {
             $config = LexofficeConfig::resolve();
 
@@ -74,12 +79,29 @@ class LexofficeServiceProvider extends PluginServiceProviderBase {
         // aktive Push bleibt Lexoffice-only) — der Kern spricht nur noch das
         // ExpenseLinkProvider-Interface.
         $this->app->make(ExpenseLinkProviderResolver::class)
-            ->register(LexofficePlugin::ID, fn (): LexofficeExpenseLinkProvider => new LexofficeExpenseLinkProvider);
+            ->register(LexofficePlugin::ID, fn(): LexofficeExpenseLinkProvider => new LexofficeExpenseLinkProvider);
 
         // Belegspiegel des Reselling-Registers (Feature 152, Review 2026-09-10):
         // der Kern liest Lexoffice-Positionen nur noch über diese Quelle.
         $this->app->make(InvoiceMirror::class)
             ->register(new LexofficeInvoiceMirrorSource);
+
+        // Artikelkatalog (Phase 125, MVP-1025): Lexoffice-Artikel erreichen den Kern nur über diese Quelle.
+        $this->app->make(ArticleCatalog::class)
+            ->register(new LexofficeArticleCatalogSource);
+
+        // Pauschalen des Retainer-Modus (MVP-1027): Push und Belegabgleich im Plugin.
+        $this->app->make(RetainerChannelResolver::class)->register(
+            LexofficePlugin::ID,
+            'Lexoffice',
+            function (): LexofficeRetainerPublisher {
+                // Zugangsdaten gelten je Organisation; der Monatslauf wechselt sie.
+                $this->app->forgetInstance(LexofficeInvoiceService::class);
+
+                return $this->app->make(LexofficeRetainerPublisher::class);
+            },
+            fn (): LexofficeRetainerVouchers => $this->app->make(LexofficeRetainerVouchers::class),
+        );
 
         // Eingangsbelege des Reselling-Registers (Review 2026-09-11, Einkauf):
         // Lexoffice-Eingangsbelege erreichen den Kern nur über diese Quelle.

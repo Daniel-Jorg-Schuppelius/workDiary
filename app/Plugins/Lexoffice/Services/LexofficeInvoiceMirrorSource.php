@@ -16,6 +16,7 @@ use App\Enums\User\Permission;
 use App\Models\Customer\Customer;
 use App\Models\Platform\Organization;
 use App\Models\Plugins\Lexoffice\{LexofficeVoucher, LexofficeVoucherLine};
+use App\Services\Platform\Catalog\ArticleCatalog;
 use App\Services\Reselling\Mirror\{InvoiceMirrorSource, MirrorLine, MirrorVoucher};
 use App\Services\Reselling\Register\LicenseArticleClassifier;
 use App\Support\Sqid;
@@ -36,14 +37,12 @@ use Illuminate\Support\Facades\{Gate, Route};
 final class LexofficeInvoiceMirrorSource implements InvoiceMirrorSource {
     public const KEY = 'lexoffice';
 
-    public function __construct(private readonly LicenseArticleClassifier $classifier = new LicenseArticleClassifier()) {}
-
     /**
      * Leseseite je Aufruf neu: die Quelle lebt im Singleton-Spiegel, der
      * Artikel-Cache der Leseseite darf keinen Aufruf überdauern.
      */
     private function reader(): LexofficeRecipientInvoiceLines {
-        return new LexofficeRecipientInvoiceLines($this->classifier);
+        return new LexofficeRecipientInvoiceLines;
     }
 
     public function key(): string {
@@ -115,7 +114,7 @@ final class LexofficeInvoiceMirrorSource implements InvoiceMirrorSource {
         $query = $this->reader()->unlinkedQuery($organization);
         $total = (clone $query)->count();
         $rows = $query
-            ->with(['voucher:id,external_id,contact_external_id,customer_id,voucher_type,voucher_number,voucher_date,voucher_status,service_starts_on,service_ends_on,voucher_text,recipient_name', 'article:id,name,unit_name,resale_role'])
+            ->with(['voucher:id,external_id,contact_external_id,customer_id,voucher_type,voucher_number,voucher_date,voucher_status,service_starts_on,service_ends_on,voucher_text,recipient_name', 'article:id,name,unit_name'])
             ->orderByDesc(LexofficeVoucher::query()->withoutGlobalScopes()->select('voucher_date')->whereColumn('lexoffice_vouchers.id', 'lexoffice_voucher_lines.voucher_id'))
             ->orderByDesc('id')
             ->limit($limit)
@@ -131,7 +130,7 @@ final class LexofficeInvoiceMirrorSource implements InvoiceMirrorSource {
         $rows = LexofficeVoucherLine::query()->withoutGlobalScopes()
             ->where('organization_id', $organization->id)
             ->whereIn('id', $ids)
-            ->with(['voucher', 'article:id,name,unit_name,resale_role'])
+            ->with(['voucher', 'article:id,name,unit_name'])
             ->get();
 
         return $this->map($organization, $rows, LexofficeContactMap::forOrganization($organization))->keyBy(static fn(MirrorLine $line): int => $line->morphId);
@@ -171,6 +170,7 @@ final class LexofficeInvoiceMirrorSource implements InvoiceMirrorSource {
         $voucher = $line->voucher;
         $customerId = $this->customerIdOf($voucher, $map);
         $article = $line->lexoffice_article_id !== null ? $line->article : null;
+        $articleKey = $line->lexoffice_article_id !== null ? ArticleCatalog::key(LexofficeArticleCatalogSource::PREFIX, (int) $line->lexoffice_article_id) : null;
 
         return new MirrorLine(
             sourceKey: self::KEY,
@@ -186,9 +186,9 @@ final class LexofficeInvoiceMirrorSource implements InvoiceMirrorSource {
             recipientCustomerId: $customerId,
             recipientKey: 'contact:' . (string) $voucher->contact_external_id,
             recipientName: self::recipientName($voucher, $customerId, $customerNames),
-            articleKey: $line->lexoffice_article_id !== null ? 'lex:' . $line->lexoffice_article_id : null,
+            articleKey: $articleKey,
             articleName: $article?->name,
-            articleIsLicence: $line->getAttribute('is_license') !== null ? (bool) $line->getAttribute('is_license') : $this->classifier->isLicense($article),
+            articleIsLicence: $line->getAttribute('is_license') !== null ? (bool) $line->getAttribute('is_license') : app(LicenseArticleClassifier::class)->isLicense((int) $line->organization_id, $articleKey, $article?->name),
             name: $line->name,
             description: $line->description,
             quantity: (float) $line->quantity,

@@ -191,4 +191,8 @@ return [
         'service_from' => 'Période de prestation du',
         'service_to' => 'Période de prestation au',
     ],
+    'service_rules' => [
+        'title' => 'Règles de facturation',
+        'hint' => 'Pour chaque type d’activité, vous pouvez définir l’article utilisé comme prestation lors du transfert et de l’export des factures — issu du fichier articles ou d’un logiciel comptable connecté. Sans type d’activité = règle par défaut pour toutes les saisies. Les sous-projets héritent des règles du projet parent mais peuvent les remplacer.',
+    ],
 ];

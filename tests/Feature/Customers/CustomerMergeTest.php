@@ -36,6 +36,21 @@ class CustomerMergeTest extends TestCase {
         $this->admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
     }
 
+    /** Kontakt-Referenz mit Nummer im Buchhaltungsprogramm (MVP-1028). */
+    private function linkAccounting(Customer $customer, string $number, string $pluginId = 'lexoffice'): Customer {
+        ExternalReference::create([
+            'organization_id' => $this->organization->id,
+            'plugin_id' => $pluginId,
+            'external_type' => 'contact',
+            'referenceable_type' => $customer->getMorphClass(),
+            'referenceable_id' => $customer->id,
+            'external_id' => 'uuid-' . $number,
+            'external_number' => $number,
+        ]);
+
+        return $customer;
+    }
+
     private function customer(array $attributes = []): Customer {
         return Customer::factory()->create(array_merge(['organization_id' => $this->organization->id], $attributes));
     }
@@ -141,8 +156,8 @@ class CustomerMergeTest extends TestCase {
     }
 
     public function test_finder_detects_exact_match_by_vat_id(): void {
-        // Ziel hat Lexoffice-Anbindung → bleibt bestehen.
-        $withLex = $this->customer(['name' => 'Thieme Transporte', 'vat_id' => 'DE822222222', 'lexoffice_contact_number' => 'C-1']);
+        // Ziel hat eine Nummer im Buchhaltungsprogramm → bleibt bestehen.
+        $withLex = $this->linkAccounting($this->customer(['name' => 'Thieme Transporte', 'vat_id' => 'DE822222222']), 'C-1');
         $togglOnly = $this->customer(['name' => 'Thieme Transporte GmbH', 'vat_id' => 'DE822222222']);
 
         $candidates = app(CustomerDuplicateFinder::class)->candidates($this->organization, CustomerDuplicateFinder::CONF_EXACT);
@@ -156,7 +171,7 @@ class CustomerMergeTest extends TestCase {
     }
 
     public function test_command_auto_merges_exact_pairs(): void {
-        $this->customer(['name' => 'A GmbH', 'vat_id' => 'DE833333333', 'lexoffice_contact_number' => 'C-9']);
+        $this->linkAccounting($this->customer(['name' => 'A GmbH', 'vat_id' => 'DE833333333']), 'C-9');
         $this->customer(['name' => 'A GmbH alt', 'vat_id' => 'DE833333333']);
 
         $this->artisan('customer:merge-duplicates', ['--organization' => $this->organization->id, '--apply' => true])
@@ -292,4 +307,15 @@ class CustomerMergeTest extends TestCase {
         app(CustomerMergeService::class)->merge($source, $target);
     }
 
+    public function test_finder_matches_by_number_in_accounting_system_across_plugins(): void {
+        $lex = $this->linkAccounting($this->customer(['name' => 'Bäckerei Nord']), '10042');
+        $other = $this->linkAccounting($this->customer(['name' => 'Baeckerei Nord KG']), '10042', 'sevdesk');
+
+        $pair = app(CustomerDuplicateFinder::class)->candidates($this->organization, CustomerDuplicateFinder::CONF_EXACT)->first();
+
+        $this->assertNotNull($pair);
+        $this->assertContains('accounting_number', $pair['reasons']);
+        $this->assertEqualsCanonicalizing([$lex->id, $other->id], [$pair['target']->id, $pair['source']->id]);
+        $this->assertSame('10042', $lex->fresh()?->accounting_number);
+    }
 }

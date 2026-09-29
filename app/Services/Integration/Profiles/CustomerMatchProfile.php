@@ -14,13 +14,13 @@ namespace App\Services\Integration\Profiles;
 
 use App\Models\Customer\Customer;
 use App\Models\Platform\Organization;
-use App\Services\Integration\Match\{AbstractMatchProfile, CompositeField, ExactField, FuzzyField, MatchStrategy};
+use App\Services\Integration\Match\{AbstractMatchProfile, CompositeField, ExactField, ExternalNumberField, FuzzyField, MatchStrategy};
 use App\Services\Stammdaten\ContactDetailsWriter;
 use Illuminate\Database\Eloquent\{Builder, Model};
 
 /**
  * Abgleich-Profil für Kunden. Bildet die Match-Reihenfolge des bisherigen
- * Lexoffice-/Toggl-Abgleichs ab: USt-IdNr. → Lexoffice-Nr. (exact) → E-Mail →
+ * Lexoffice-/Toggl-Abgleichs ab: USt-IdNr. → Nr. im Buchhaltungsprogramm (exact) → E-Mail →
  * Firma+PLZ (likely) → Name/Firma-Ähnlichkeit (fuzzy).
  *
  * @extends AbstractMatchProfile<Customer>
@@ -40,7 +40,7 @@ class CustomerMatchProfile extends AbstractMatchProfile {
     public function strategies(): array {
         return [
             new ExactField('vat_id', MatchStrategy::EXACT, 'vat_id'),
-            new ExactField('lexoffice_contact_number', MatchStrategy::EXACT, 'lexoffice_contact_number'),
+            new ExternalNumberField('accounting_number', MatchStrategy::EXACT, 'accounting_number'),
             new ExactField('email', MatchStrategy::LIKELY, 'email'),
             new CompositeField(['company', 'address_zip'], MatchStrategy::LIKELY, 'company_zip'),
             new FuzzyField(['name', 'company'], self::FUZZY_THRESHOLD, 'name'),

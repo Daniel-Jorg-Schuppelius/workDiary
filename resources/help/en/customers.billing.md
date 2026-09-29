@@ -14,8 +14,8 @@ related:
 On the customer file you can configure **special terms**: custom hourly
 rates per activity and day type (weekday/weekend, defined via "working
 days per week") plus the billing method — an invoice-less **customer
-account** with a running balance, a **monthly invoice** or a **retainer
-(Lexoffice)**.
+account** with a running balance, a **monthly invoice** or a **retainer**
+via the accounting system (currently Lexoffice).
 
 The terms also cover a **travel flat rate**: every billable time entry
 then carries an extra x minutes, valued at the entry's rate — optionally
@@ -42,7 +42,8 @@ reconciliation (the customer account is an allocation target). Late
 entries in closed months are flagged — reopen the month or re-date the
 entry.
 
-In **retainer mode** Lexoffice owns the document and the payment. The
+In **retainer mode** the accounting system of the customer's billing
+authority owns the document and the payment — currently Lexoffice. The
 monthly retainer is stored net ("expected monthly amount"); the local
 balance puts hours × rate against the retainer paid. There are two ways
 to get the document:

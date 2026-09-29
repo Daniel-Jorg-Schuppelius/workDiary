@@ -17,14 +17,14 @@ use App\Enums\Reselling\{BillingFrequency, CompanyMappingMode, ImportStatus};
 use App\Enums\Reselling\{PeriodStatus, RenewalMode, SubscriptionKind, SubscriptionProvider, SubscriptionStatus};
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Reselling\Concerns\ProvidesHolderPicker;
 use App\Http\Requests\Reselling\{AssignResaleHolderRequest, ImportResaleFilesRequest, SaveResaleSubscriptionRequest, TransferResaleSubscriptionRequest};
-use App\Models\Article\Article;
 use App\Models\Contract\Contract;
 use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Platform\Organization;
-use App\Models\Plugins\Lexoffice\LexofficeArticle;
 use App\Models\Reselling\{CompanyMapping, ResaleImport, ResalePeriod, ResaleSubscription};
 use App\Services\Licensing\FeatureFlagResolver;
+use App\Services\Platform\Catalog\ArticleCatalog;
 use App\Services\Reselling\Marketplace\MarketplaceCompany;
 use App\Services\Reselling\Mirror\{InvoiceMirror, MirrorLine, MirrorVoucher};
 use App\Services\Reselling\Register\{HolderResolver, LicenseMonths, LinkProposer, MarketplaceImporter, PeriodLinker, PeriodPlanner};
@@ -43,6 +43,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  * Preisen und den daraus geplanten Abrechnungsperioden.
  */
 class ResaleSubscriptionController extends Controller {
+    use ProvidesHolderPicker;
     use ResolvesCurrentOrganization;
 
     private const PER_PAGE = 50;
@@ -62,7 +63,7 @@ class ResaleSubscriptionController extends Controller {
 
         // Fällig = offen, Beginn erreicht, fremder Halter — eigener Bestand wird nie berechnet (B14).
         $query = ResaleSubscription::query()
-            ->with(['customer:id,name', 'foreignCustomer:id,name,customer_id', 'foreignCustomer.customer:id,name', 'article:id,number,name', 'lexofficeArticle:id,article_number,name'])
+            ->with(['customer:id,name', 'foreignCustomer:id,name,customer_id', 'foreignCustomer.customer:id,name'])
             ->withCount(['periods as open_periods_count' => static fn($q) => $q->due($today)]);
 
         if ($filters['q'] !== '') {
@@ -95,6 +96,7 @@ class ResaleSubscriptionController extends Controller {
         }
 
         $subscriptions = $query->orderBy('label')->orderBy('starts_on')->paginate(self::PER_PAGE)->withQueryString();
+        ResaleSubscription::withCatalogArticles($subscriptions->getCollection());
 
         $summary = [
             'active' => ResaleSubscription::query()->planning()->count(),
@@ -114,7 +116,7 @@ class ResaleSubscriptionController extends Controller {
     }
 
     public function show(ResaleSubscription $subscription): View {
-        $subscription->load(['customer', 'foreignCustomer.customer', 'article', 'lexofficeArticle', 'contract', 'successor', 'predecessors', 'parent.customer', 'parent.foreignCustomer', 'assignments.customer', 'assignments.foreignCustomer', 'periods.decidedBy', 'periods.links', 'creator']);
+        $subscription->load(['customer', 'foreignCustomer.customer', 'contract', 'successor', 'predecessors', 'parent.customer', 'parent.foreignCustomer', 'assignments.customer', 'assignments.foreignCustomer', 'periods.decidedBy', 'periods.links', 'creator']);
         $organization = $this->currentOrganizationOrAbort(404);
         $this->mirror->preload($organization, $subscription->periods->flatMap(static fn(ResalePeriod $p) => $p->links));
         $today = ResalePeriod::today();
@@ -221,8 +223,7 @@ class ResaleSubscriptionController extends Controller {
             $provider = SubscriptionProvider::tryFrom((string) $request->query('provider', '')) ?? SubscriptionProvider::Manual;
             $prefill += [
                 'label' => $line->label(),
-                'lexoffice_article_id' => $line->lexofficeArticleId(),
-                'article_id' => $line->localArticleId(),
+                'article' => app(ArticleCatalog::class)->find((int) $organization->id, $line->articleKey)?->formKey,
                 'quantity' => (int) round($split['licences']),
                 'starts_on' => $start?->toDateString(),
                 'provider' => $provider === SubscriptionProvider::DomainReselling ? SubscriptionProvider::Manual->value : $provider->value,
@@ -331,8 +332,7 @@ class ResaleSubscriptionController extends Controller {
                 'customer_id' => $holder['foreign'] === null ? $holder['customer']->id : null,
                 'foreign_customer_id' => $holder['foreign']?->id,
                 'is_own_holding' => false,
-                'article_id' => $subscription->article_id,
-                'lexoffice_article_id' => $subscription->lexoffice_article_id,
+                'article_ref' => $subscription->article_ref,
                 'quantity' => $quantity,
                 'starts_on' => (string) $request->validated('starts_on'),
                 'ends_on' => $request->validated('ends_on') ?: $subscription->ends_on?->toDateString(),
@@ -522,24 +522,6 @@ class ResaleSubscriptionController extends Controller {
         return $date !== null && $date->toDateString() === $value ? $date : null;
     }
 
-    /**
-     * Halterwahl für die Dialoge: Kunden und ihre nicht archivierten Fremdkunden
-     * (Sqids) — der Fremdkunden-Schritt erscheint nur bei Kunden, die welche haben.
-     *
-     * @return array{customers: \Illuminate\Database\Eloquent\Collection<int, Customer>, foreignByCustomer: array<string, list<array{sqid: string, name: string}>>}
-     */
-    private function holderPicker(): array {
-        $foreignByCustomer = [];
-        foreach (ForeignCustomer::query()->whereNull('archived_at')->orderBy('name')->get(['id', 'name', 'customer_id']) as $foreign) {
-            $foreignByCustomer[Sqid::encode(Customer::class, (int) $foreign->customer_id)][] = ['sqid' => $foreign->sqid, 'name' => (string) $foreign->name];
-        }
-
-        return [
-            'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
-            'foreignByCustomer' => $foreignByCustomer,
-        ];
-    }
-
     private function contractsEnabled(): bool {
         return app(FeatureFlagResolver::class)->isEnabled('module.contracts');
     }
@@ -575,14 +557,17 @@ class ResaleSubscriptionController extends Controller {
      */
     private function dialog(?ResaleSubscription $subscription, array $prefill): View {
         $subscription?->loadMissing('parent');
+        $organizationId = $this->currentOrganizationOrNull()?->id;
 
         return view('finance.resale._form_dialog', [
             'subscription' => $subscription,
             'prefill' => $prefill,
             'locked' => SaveResaleSubscriptionRequest::lockedFieldsFor($subscription),
             'contracts' => $this->contractOptions($subscription),
-            'articles' => Article::query()->where('sellable', true)->orderBy('name')->get(['id', 'number', 'name']),
-            'lexofficeArticles' => LexofficeArticle::query()->active()->orderBy('name')->get(['id', 'article_number', 'name', 'unit_name', 'net_unit_price', 'currency']),
+            'catalogArticles' => $organizationId !== null ? app(ArticleCatalog::class)->active($organizationId) : [],
+            'articleFormKey' => $subscription !== null
+                ? ($organizationId !== null ? app(ArticleCatalog::class)->find($organizationId, $subscription->article_ref)?->formKey : null)
+                : ($prefill['article'] ?? null),
             'kinds' => SubscriptionKind::cases(),
             // Domains führt der Domain-Sync; von Hand ist der Anbieter nie wählbar (B7).
             'providers' => array_values(array_filter(SubscriptionProvider::cases(), static fn(SubscriptionProvider $p): bool => $p !== SubscriptionProvider::DomainReselling)),

@@ -166,15 +166,17 @@ RRP from the last imported price list against the sale prices of the
 subscriptions (minimum, median, maximum). Flags: "sale below purchase",
 "sale below RRP", "contract above catalogue", "no sale price".
 
-**Product classification:** Which Lexoffice articles are subscription
-products, the register detects by name. Per article you can override:
-"subscription product" forces detection, "never a subscription line" keeps
-services with a product name in the text (maintenance on Exchange) out of
-proposals, invoice lists and "lines without subscription". The same
-classification exists for the active articles of the local article master
-(section *Local articles*): it decides which lines of local invoices the
-mirror treats as licence lines, and the price check compares the article's
-sale price with the subscription prices.
+**Product classification:** The list shows every article of the article
+catalogue — the active articles of the article master and the articles of
+connected accounting systems such as Lexoffice, with their source. Which of
+them are subscription products, the register detects by name. Per article
+you can override: "subscription product" forces detection, "never a
+subscription line" keeps services with a product name in the text
+(maintenance on Exchange) out of proposals, invoice lists and "lines without
+subscription". The classification works the same for every source: it
+decides which invoice lines the mirror treats as licence lines, and the
+price check compares the article's sale price with the subscription prices
+(a monthly price counts twelve times for a yearly subscription).
 
 **Contracts:** A subscription can carry a contract from contract management
 as its deadline frame ("Contract" field in the subscription dialog; only
@@ -193,7 +195,7 @@ subscription daily, with a yearly interval from registration, purchase =
 renewal price and the holder from domain management as long as the register
 has not decided one. The sale price per TLD comes from the price catalogue
 (provider domain reselling, product e.g. ".de"), the article from the
-Lexoffice article for the TLD; manually maintained prices, articles and
+article catalogue (article master or accounting system) for the TLD; manually maintained prices, articles and
 holders survive every run. Vanished domains end on the reference day; if a
 run's domain list is empty, nothing is ended. Domain subscriptions and their
 purchase entries cannot be created by hand — they only come in through the

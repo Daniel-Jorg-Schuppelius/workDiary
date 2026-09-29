@@ -601,6 +601,12 @@ return [
     'AccountingFilingObligation' => 'Meldepflicht',
     // Reselling-Register (Feature 152, Review 2026-09-10 A2).
     'ResaleSubscription' => 'Reselling-Abo',
+    'ResaleLicenseProduct' => 'Lizenzprodukt',
+    'ResaleLicenseBatch' => 'Lizenzpaket',
+    'ResaleLicenseUnit' => 'Einzellizenz',
+    'ResaleLicenseKey' => 'Lizenzschlüssel',
+    'ResaleLicenseAssignment' => 'Lizenzverkauf',
+    'ResaleArticleClassification' => 'Abo-Einstufung eines Artikels',
     'ResalePeriod' => 'Reselling-Abrechnungsperiode',
     'ResalePeriodLink' => 'Reselling-Rechnungsbezug',
     'ResalePurchaseEntry' => 'Reselling-Einkaufsbeleg',

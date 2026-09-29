@@ -20,19 +20,20 @@ use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
 
 /**
- * Monatslauf des Retainer-Modus (Feature 098): erzeugt+pusht je aktivem
- * Retainer-Agreement einer Organisation die Vormonats-Pauschale an Lexoffice.
+ * Monatslauf des Retainer-Modus (Feature 098): erzeugt+übergibt je aktivem
+ * Retainer-Agreement einer Organisation die Vormonats-Pauschale an das
+ * Buchhaltungsprogramm des Kunden ({@see RetainerChannelResolver}, MVP-1027).
  * Idempotent über customer_billing_statements.retainer_invoice_id.
  */
 class RetainerRunner {
-    public function __construct(private readonly RetainerLexofficeService $service) {}
+    public function __construct(private readonly RetainerChannelResolver $channels) {}
 
     public function runFor(CustomerBillingAgreement $agreement, int $year, int $month): ?Invoice {
         if (! $agreement->isRetainerMode()) {
             return null;
         }
 
-        return $this->service->pushMonthlyRetainer($agreement, $year, $month);
+        return $this->channels->publisherFor($agreement->customer()->firstOrFail())->pushMonthlyRetainer($agreement, $year, $month);
     }
 
     /** @return array{created: int, skipped: int, failed: int} */
@@ -46,6 +47,7 @@ class RetainerRunner {
             ->where('organization_id', $organization->id)
             ->where('active', true)
             ->where('mode', BillingAgreementMode::Retainer->value)
+            ->with('customer')
             ->get();
 
         foreach ($agreements as $agreement) {
@@ -60,14 +62,21 @@ class RetainerRunner {
                 continue;
             }
 
+            $customer = $agreement->customer;
+            if ($customer === null) {
+                $result['skipped']++;
+
+                continue;
+            }
+
             try {
-                $this->service->pushMonthlyRetainer($agreement, $previous->year, $previous->month);
+                $this->channels->publisherFor($customer)->pushMonthlyRetainer($agreement, $previous->year, $previous->month);
                 $result['created']++;
             } catch (ValidationException) {
-                // z. B. fehlender Pauschalbetrag — nicht fatal, nächster Lauf/Button.
+                // z. B. fehlender Pauschalbetrag oder kein Programm eingerichtet — nicht fatal, nächster Lauf/Button.
                 $result['skipped']++;
             } catch (\Throwable) {
-                // Lexoffice down/5xx/429/Contact — Marker bleibt NULL, Retry möglich.
+                // Programm nicht erreichbar/5xx/429/Kontakt — Marker bleibt NULL, Retry möglich.
                 $result['failed']++;
             }
         }

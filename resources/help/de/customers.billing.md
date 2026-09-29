@@ -15,7 +15,7 @@ An der Kundenakte lassen sich **Sonderkonditionen** hinterlegen: eigene
 Stundensätze je Tätigkeit und Tagtyp (Werktag/Wochenende, Definition über
 „Arbeitstage pro Woche") sowie der Abrechnungsweg — rechnungsloses
 **Kundenkonto** mit laufendem Saldo, **monatliche Rechnung** oder
-**Pauschale (Lexoffice)**.
+**Pauschale** über das Buchhaltungsprogramm (derzeit Lexoffice).
 
 Zu den Konditionen gehört auch eine **Anfahrtspauschale**: Jeder
 abrechenbare Zeiteintrag bringt dann zusätzlich x Minuten mit, bewertet
@@ -43,7 +43,8 @@ Bankumsätze (Kundenkonto als Zuordnungsziel). Nachträge in abgeschlossenen
 Monaten werden als Warnung angezeigt — Monat wiedereröffnen oder den
 Eintrag umdatieren.
 
-Im **Pauschal-Modus** führt Lexoffice Beleg und Zahlung. Die
+Im **Pauschal-Modus** führt das Buchhaltungsprogramm aus der
+Rechnungshoheit des Kunden Beleg und Zahlung — derzeit Lexoffice. Die
 Monatspauschale wird netto hinterlegt („Erwarteter Monatsabschlag"); der
 lokale Saldo stellt Stunden × Satz gegen die gezahlte Pauschale. Für den
 Beleg gibt es zwei Wege:

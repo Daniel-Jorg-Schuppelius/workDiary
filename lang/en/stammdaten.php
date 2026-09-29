@@ -40,4 +40,5 @@ return [
             'generic' => 'The value fails validation.',
         ],
     ],
+    'accounting_number' => 'No. in accounting system',
 ];

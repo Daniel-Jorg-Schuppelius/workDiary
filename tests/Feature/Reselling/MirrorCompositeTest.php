@@ -67,8 +67,8 @@ class MirrorCompositeTest extends TestCase {
             'organization_id' => $this->organization->id, 'kind' => 'license', 'provider' => 'manual', 'label' => 'Microsoft 365 Business Premium',
             'quantity' => 1, 'starts_on' => '2025-08-05', 'term_months' => 12, 'interval' => 'yearly', 'renewal' => 'auto', 'status' => 'active', 'currency' => 'EUR', 'sale_unit_price' => '247.20',
         ];
-        $this->localSubscription = ResaleSubscription::query()->create($base + ['customer_id' => $this->local->id, 'article_id' => $article->id]);
-        $this->lexofficeSubscription = ResaleSubscription::query()->create($base + ['customer_id' => $this->lexoffice->id, 'lexoffice_article_id' => $lexArticle->id]);
+        $this->localSubscription = ResaleSubscription::query()->create($base + ['customer_id' => $this->local->id, 'article_ref' => 'art:' . $article->id]);
+        $this->lexofficeSubscription = ResaleSubscription::query()->create($base + ['customer_id' => $this->lexoffice->id, 'article_ref' => 'lex:' . $lexArticle->id]);
         (new PeriodPlanner)->sync($this->localSubscription);
         (new PeriodPlanner)->sync($this->lexofficeSubscription);
 

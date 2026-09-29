@@ -47,7 +47,13 @@ final class ResellingManifest extends Manifest {
     /** @return list<string> */
     public function tables(): array {
         return [
+            'resale_article_classifications',
             'resale_imports',
+            'resale_license_assignments',
+            'resale_license_batches',
+            'resale_license_keys',
+            'resale_license_products',
+            'resale_license_units',
             'resale_period_links',
             'resale_periods',
             'resale_price_catalog',
@@ -72,6 +78,15 @@ final class ResellingManifest extends Manifest {
                 'finance.resale.index',
             ],
             'groups' => [],
+        ];
+    }
+
+    /** @return array<class-string, list<class-string>> */
+    public function listeners(): array {
+        return [
+            \App\Events\Article\ArticlesMerged::class => [
+                \App\Listeners\Reselling\RepointMergedArticleRefs::class,
+            ],
         ];
     }
 

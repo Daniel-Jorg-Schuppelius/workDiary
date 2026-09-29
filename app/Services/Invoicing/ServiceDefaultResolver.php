@@ -13,29 +13,31 @@ declare(strict_types=1);
 namespace App\Services\Invoicing;
 
 use App\Models\Platform\Organization;
-use App\Models\Plugins\Lexoffice\LexofficeArticle;
 use App\Models\Project\{Project, ProjectBillingRule};
 use App\Plugins\Support\PluginOrgContext;
+use App\Services\Platform\Catalog\{ArticleCatalog, CatalogArticle};
 
 /**
  * Löst die Standardleistung einer Position auf (MVP-486):
  * Projekt-Abrechnungsregel (je Tätigkeitsart, rekursiv über Parent) →
  * Organisations-Standardleistung → keine.
  *
- * Fehlende Angaben der Regel werden aus dem lokalen Artikel-Cache
- * ({@see LexofficeArticle}) ergänzt: Bezeichnung, Einheit, Standardtext,
- * MwSt und Nettopreis. Der Preis ist nur ein Rückfall — die Preisfindung
- * selbst steckt im {@see BlockPriceResolver}.
+ * Fehlende Angaben der Regel ergänzt der Artikel aus dem Artikelkatalog
+ * (MVP-1026, Artikelstamm oder Plugin-Quelle): Bezeichnung, Einheit,
+ * Standardtext, MwSt und Nettopreis. Der Preis ist nur ein Rückfall — die
+ * Preisfindung selbst steckt im {@see BlockPriceResolver}.
  *
- * Als `scoped` gebunden: der Cache lebt pro Request/Job, damit ein
- * Übergabe-Lauf mit vielen Positionen nicht je Position nachlädt.
+ * Der Cache lebt so lange wie die Instanz, damit ein Übergabe-Lauf mit
+ * vielen Positionen nicht je Position nachlädt.
  */
 class ServiceDefaultResolver {
     /** @var array<string, ResolvedService|null> Cache je "orgId|projectId|kind". */
     private array $cache = [];
 
-    /** @var array<string, LexofficeArticle|null> Artikel-Cache je "orgId|externalId". */
+    /** @var array<string, CatalogArticle|null> Artikel-Cache je "orgId|Katalogschlüssel". */
     private array $articles = [];
+
+    public function __construct(private readonly ArticleCatalog $catalog) {}
 
     public function flush(): void {
         $this->cache = [];
@@ -68,20 +70,18 @@ class ServiceDefaultResolver {
     }
 
     private function fromRule(int $organizationId, ProjectBillingRule $rule): ResolvedService {
-        $article = $rule->lexoffice_article_id !== null
-            ? $this->article($organizationId, (string) $rule->lexoffice_article_id)
-            : null;
+        $article = $this->article($organizationId, $rule->article_ref);
 
         return new ResolvedService(
-            articleId: $rule->lexoffice_article_id !== null ? (string) $rule->lexoffice_article_id : null,
+            articleRef: $rule->article_ref,
             name: $article?->name,
-            unitName: $rule->unit_name ?: $article?->unit_name,
-            netPrice: $rule->net_unit_price?->toFloat() ?? $article?->net_unit_price?->toFloat(),
+            unitName: $rule->unit_name ?: $article?->unitName,
+            netPrice: $rule->net_unit_price?->toFloat() ?? $article?->netPrice?->toFloat(),
             vatRate: $rule->vat_rate !== null
                 ? (float) $rule->vat_rate->getNumericValue()
-                : ($article?->vat_rate !== null ? (float) $article->vat_rate->getNumericValue() : null),
+                : ($article?->vatRate !== null ? (float) $article->vatRate->getNumericValue() : null),
             standardText: $article?->description,
-            itemType: (string) ($rule->item_type ?: ($article?->type ?: 'service')),
+            itemType: (string) ($rule->item_type ?: ($article->itemType ?? 'service')),
             source: ResolvedService::SOURCE_PROJECT_RULE,
             priceIsExplicit: ($rule->net_unit_price?->toFloat() ?? 0.0) > 0.0,
         );
@@ -93,48 +93,35 @@ class ServiceDefaultResolver {
             return null;
         }
 
-        $settings = $organization->invoicingSettings();
-        $externalId = trim((string) ($settings['default_service_article'] ?? ''));
-        if ($externalId === '') {
+        $articleRef = trim((string) ($organization->invoicingSettings()['default_service_article'] ?? ''));
+        if ($articleRef === '') {
             return null;
         }
 
-        $article = $this->article($organizationId, $externalId);
-        if (! $article instanceof LexofficeArticle) {
-            // Artikel (noch) nicht synchronisiert: der Bezug bleibt trotzdem
-            // erhalten, damit das Zielsystem ihn auflösen kann.
-            return new ResolvedService(
-                articleId: $externalId,
-                name: null,
-                unitName: null,
-                netPrice: null,
-                vatRate: null,
-                standardText: null,
-                itemType: 'service',
-                source: ResolvedService::SOURCE_ORGANIZATION,
-            );
-        }
+        // Ein nicht (mehr) auffindbarer Artikel lässt den Bezug stehen; das
+        // Zielsystem entscheidet, ob es ihn auflösen kann.
+        $article = $this->article($organizationId, $articleRef);
 
         return new ResolvedService(
-            articleId: (string) $article->external_id,
-            name: $article->name,
-            unitName: $article->unit_name,
-            netPrice: $article->net_unit_price?->toFloat(),
-            vatRate: $article->vat_rate !== null ? (float) $article->vat_rate->getNumericValue() : null,
-            standardText: $article->description,
-            itemType: $article->type ?: 'service',
+            articleRef: $articleRef,
+            name: $article?->name,
+            unitName: $article?->unitName,
+            netPrice: $article?->netPrice?->toFloat(),
+            vatRate: $article?->vatRate !== null ? (float) $article->vatRate->getNumericValue() : null,
+            standardText: $article?->description,
+            itemType: $article->itemType ?? 'service',
             source: ResolvedService::SOURCE_ORGANIZATION,
         );
     }
 
-    private function article(int $organizationId, string $externalId): ?LexofficeArticle {
-        $key = $organizationId . '|' . $externalId;
+    private function article(int $organizationId, ?string $articleRef): ?CatalogArticle {
+        if ($articleRef === null || $articleRef === '') {
+            return null;
+        }
+
+        $key = $organizationId . '|' . $articleRef;
         if (! array_key_exists($key, $this->articles)) {
-            $this->articles[$key] = LexofficeArticle::query()
-                ->withoutGlobalScopes()
-                ->where('organization_id', $organizationId)
-                ->where('external_id', $externalId)
-                ->first();
+            $this->articles[$key] = $this->catalog->find($organizationId, $articleRef);
         }
 
         return $this->articles[$key];

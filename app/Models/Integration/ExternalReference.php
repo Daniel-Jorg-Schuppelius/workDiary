@@ -26,6 +26,7 @@ use Illuminate\Support\Carbon;
  * @property string $referenceable_type
  * @property int $referenceable_id
  * @property string $external_id
+ * @property string|null $external_number Nummer im Fremdsystem, z. B. Kundennummer im Buchhaltungsprogramm (MVP-1028)
  * @property array<string, mixed>|null $payload
  * @property Carbon|null $synced_at
  */
@@ -43,6 +44,7 @@ class ExternalReference extends Model {
         'referenceable_type',
         'referenceable_id',
         'external_id',
+        'external_number',
         'payload',
         'synced_at',
     ];

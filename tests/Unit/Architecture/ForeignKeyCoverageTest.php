@@ -49,6 +49,8 @@ class ForeignKeyCoverageTest extends TestCase {
         // — Quellen registrieren sich zur Laufzeit, ein FK auf eine Tabelle ist
         // nicht möglich; Auflösung über `PurchaseDocuments`.
         'resale_purchase_entries.document_id',
+        // MVP-1024: derselbe Beleg-Morph am Lizenzpaket (optionaler Einkaufsbeleg).
+        'resale_license_batches.document_id',
         // Feature 149 (MVP-743): `statement_id` ist die UUID, die der Inhalt
         // dem xAPI-Statement selbst gibt — eine Fremdkennung, kein Verweis
         // auf eine eigene Tabelle. Sie dient der Dublettenerkennung.
@@ -110,7 +112,6 @@ class ForeignKeyCoverageTest extends TestCase {
         'billing_transfer_events.actor_user_id',
         'billing_transfer_events.billing_transfer_id',
         'billing_transfer_events.organization_id',
-        'billing_transfer_positions.article_id',
         'claim_actions.follow_up_id',
         'cloud_document_connections.container_id',
         'cloud_document_connections.root_folder_id',
@@ -172,7 +173,6 @@ class ForeignKeyCoverageTest extends TestCase {
         'procedure_backup_proofs.attachment_id',
         'procedure_step_runs.deviation_id',
         'procedure_step_runs.proof_attachment_id',
-        'project_billing_rules.lexoffice_article_id',
         'project_merge_dismissals.project_high_id',
         'project_merge_dismissals.project_low_id',
         'rental_accessory_items.report_id',

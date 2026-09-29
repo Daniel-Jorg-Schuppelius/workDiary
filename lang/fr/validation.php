@@ -174,6 +174,28 @@ return [
 
     'attributes' => [
 
+        'invoice_reference' => 'Référence de facture',
+
+        'key_labels' => 'Rôles de clé',
+
+        'key_labels.*' => 'Rôle de clé',
+
+        'license_keys' => 'Clés de licence',
+
+        'license_keys.*' => 'Clé de licence',
+
+        'purchased_on' => 'Date d’achat',
+
+        'remove' => 'Clés à supprimer',
+
+        'remove.*' => 'Clé à supprimer',
+
+        'reorder_level' => 'Seuil de réapprovisionnement',
+
+        'sold_on' => 'Date de vente',
+
+        'unit_id' => 'Licence',
+
         'columns' => 'Affectation des colonnes',
 
         'columns.*.header' => 'Cellule d’en-tête',
@@ -1399,7 +1421,6 @@ return [
         'lessons_learned' => 'Enseignements tirés',
         'level' => 'Niveau / valeur',
         'lexoffice_api_key' => 'Clé API Lexoffice',
-        'lexoffice_article_id' => 'Article Lexoffice',
         'library_steps' => 'étapes de bibliothèque',
         'library_steps.*' => 'étape de bibliothèque',
         'licences' => 'Licences',

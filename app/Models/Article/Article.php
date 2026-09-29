@@ -39,7 +39,6 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property ArticleType $type
  * @property string $base_unit
  * @property ArticleStatus $status
- * @property \App\Enums\Reselling\ResaleArticleRole|null $resale_role  Einstufung fürs Reselling-Register (null = automatisch)
  * @property \CommonToolkit\ValueObjects\Money|null $default_purchase_price
  * @property numeric-string|null $pcf_factor_kg
  * @property numeric-string|null $pcf_process_kg
@@ -87,7 +86,6 @@ class Article extends Model implements CustomFieldSubject {
         'valuation_method',
         'serial_scheme',
         'status',
-        'resale_role',
         'default_procedure_template_version_id',
         'default_purchase_price',
         'pcf_factor_kg',
@@ -107,7 +105,6 @@ class Article extends Model implements CustomFieldSubject {
         'net_weight_kg' => DecimalCast::class . ':4',
         'type' => ArticleType::class,
         'status' => ArticleStatus::class,
-        'resale_role' => \App\Enums\Reselling\ResaleArticleRole::class,
         'stockable' => 'boolean',
         'purchasable' => 'boolean',
         'sellable' => 'boolean',

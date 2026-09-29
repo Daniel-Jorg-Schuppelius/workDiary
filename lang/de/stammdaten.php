@@ -40,4 +40,5 @@ return [
             'generic' => 'Der Wert hält der Prüfung nicht stand.',
         ],
     ],
+    'accounting_number' => 'Nr. im Buchhaltungsprogramm',
 ];

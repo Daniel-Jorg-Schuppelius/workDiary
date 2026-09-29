@@ -54,7 +54,7 @@ final readonly class MirrorLine {
         /** Empfängerschlüssel der Quelle (`contact:<id>`, `customer:<id>`) für Gruppierungen ohne Kunden. */
         public string $recipientKey,
         public ?string $recipientName,
-        /** `lex:<id>` (Lexoffice-Artikel), `art:<id>` (lokaler Artikel) oder null. */
+        /** Katalogschlüssel ({@see \App\Services\Platform\Catalog\ArticleCatalog}: `art:<id>`, `lex:<id>`, …) oder null. */
         public ?string $articleKey,
         public ?string $articleName,
         /** Abo-Produkt laut Quelle (Einstufung/Namensmatch) — entscheidet, ob die Position eine Lizenzposition ist. */
@@ -119,13 +119,4 @@ final readonly class MirrorLine {
         return $this->serviceTo === null ? $label : $label . ' – ' . $this->serviceTo->format('d.m.Y');
     }
 
-    /** Lokale Artikel-ID aus `art:<id>`, sonst null. */
-    public function localArticleId(): ?int {
-        return $this->articleKey !== null && str_starts_with($this->articleKey, 'art:') ? (int) substr($this->articleKey, 4) : null;
-    }
-
-    /** Lexoffice-Artikel-ID aus `lex:<id>`, sonst null. */
-    public function lexofficeArticleId(): ?int {
-        return $this->articleKey !== null && str_starts_with($this->articleKey, 'lex:') ? (int) substr($this->articleKey, 4) : null;
-    }
 }

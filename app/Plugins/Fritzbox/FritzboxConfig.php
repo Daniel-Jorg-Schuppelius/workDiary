@@ -28,7 +28,7 @@ class FritzboxConfig {
         $allowlist = array_values(array_filter(array_map(
             trim(...),
             explode(',', (string) $r->string('own_number_allowlist', '')),
-        ), static fn (string $number): bool => $number !== ''));
+        ), static fn(string $number): bool => $number !== ''));
 
         return [
             'enabled' => $r->enabled(),

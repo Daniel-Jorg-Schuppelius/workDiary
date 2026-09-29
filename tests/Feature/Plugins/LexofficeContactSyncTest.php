@@ -310,7 +310,7 @@ class LexofficeContactSyncTest extends TestCase {
         $this->assertSame('+49 170 999', $customer->mobile);
         $this->assertSame('+49 30 999', $customer->fax);
         $this->assertSame('Wichtiger Kunde', $customer->comment);
-        $this->assertSame('10042', (string) $customer->lexoffice_contact_number);
+        $this->assertSame('10042', $customer->accounting_number, 'Nummer an der Kontakt-Referenz (MVP-1028)');
 
         // city ist at-rest verschlüsselt → über das Model (entschlüsselt) prüfen,
         // nicht per assertDatabaseHas gegen den Ciphertext.
@@ -345,7 +345,7 @@ class LexofficeContactSyncTest extends TestCase {
         );
 
         $customer->refresh();
-        $this->assertSame('20055', (string) $customer->lexoffice_contact_number);
+        $this->assertSame('20055', $customer->accounting_number);
         $this->assertSame('20055', (string) $customer->number);
     }
 

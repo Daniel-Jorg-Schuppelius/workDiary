@@ -595,6 +595,7 @@ return [
         'finance.open-times.*' => 'finance.open-times',
         'finance.transfers.*' => 'finance.transfers',
         'finance.reconciliation.*' => 'finance.reconciliation',
+        'finance.resale.licenses.*' => 'finance.license-stock',
         'finance.resale.*' => 'finance.resale',
         'finance.bank-accounts.*' => 'finance.reconciliation',
         'finance.datev.*' => 'finance.datev-bookings',

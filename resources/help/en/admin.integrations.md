@@ -74,7 +74,9 @@ purpose, so you do not have to guess where something belongs:
   BuchhaltungsButler, InvoicePlane, and the Peppol access point for sending
   electronic invoices.
 - **Telephony and messaging:** sipgate and FRITZ!Box for incoming and outgoing
-  calls, seven.io for text messages to critical recipients.
+  calls, the phone directory for names behind unknown numbers (as a
+  suggestion, via a lookup service of your choice), seven.io for text messages
+  to critical recipients.
 - **Shipping:** DHL, FedEx and UPS for labels and tracking.
 - **Files and backups:** Nextcloud, WebDAV, Dropbox, Google Drive, SharePoint
   and S3 as storage or backup targets.

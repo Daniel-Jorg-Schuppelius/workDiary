@@ -21,6 +21,7 @@ return [
     // cuya extensión de opt-in fue marcada.
     'popup' => [
         'title_customer' => 'Llamada de :name',
+        'title_directory' => 'Llamada de :name (:number)',
         'title_unknown' => 'Llamada de :number',
         'message' => 'Llamada entrante (:number).',
         'unknown_number' => 'número desconocido',

@@ -56,8 +56,9 @@ class SaveBillingAgreementRequest extends BaseFormRequest {
     }
 
     /**
-     * Retainer-Modus (Feature 098) setzt Lexoffice-Rechnungshoheit voraus und
-     * braucht einen echten Pauschalbetrag — sonst gäbe es „doppelte Hoheit"
+     * Retainer-Modus (Feature 098) setzt eine Rechnungshoheit voraus, deren
+     * Buchhaltungsprogramm Pauschalen führt (MVP-1027: registrierter Kanal),
+     * und braucht einen echten Pauschalbetrag — sonst gäbe es „doppelte Hoheit"
      * (lokaler Saldo ohne führendes Buchhaltungsprogramm).
      */
     public function withValidator(\Illuminate\Contracts\Validation\Validator $validator): void {
@@ -69,8 +70,9 @@ class SaveBillingAgreementRequest extends BaseFormRequest {
             $customer = $this->route('customer');
             if ($customer instanceof \App\Models\Customer\Customer) {
                 $mode = app(\App\Services\Billing\BillingModeResolver::class)->effectiveFor($customer);
-                if ($mode !== \App\Enums\Finance\BillingMode::Lexoffice) {
-                    $validator->errors()->add('mode', (string) __('customer-billing.retainer_requires_lexoffice'));
+                $channels = app(\App\Services\Billing\RetainerChannelResolver::class);
+                if (! $channels->supports($mode)) {
+                    $validator->errors()->add('mode', (string) __('customer-billing.retainer_requires_channel', ['systems' => implode(', ', $channels->labels()) ?: '—']));
                 }
             }
 

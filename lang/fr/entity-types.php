@@ -601,6 +601,12 @@ return [
     'AccountingFilingObligation' => 'Obligation déclarative',
     // Registre de revente (fonctionnalité 152, revue 2026-09-10 A2).
     'ResaleSubscription' => 'Abonnement de revente',
+    'ResaleLicenseProduct' => 'Produit de licence',
+    'ResaleLicenseBatch' => 'Lot de licences',
+    'ResaleLicenseUnit' => 'Licence unitaire',
+    'ResaleLicenseKey' => 'Clé de licence',
+    'ResaleLicenseAssignment' => 'Vente de licence',
+    'ResaleArticleClassification' => 'Classement d’abonnement d’un article',
     'ResalePeriod' => 'Période de facturation de revente',
     'ResalePeriodLink' => 'Référence de facture de revente',
     'ResalePurchaseEntry' => 'Écriture d’achat de revente',

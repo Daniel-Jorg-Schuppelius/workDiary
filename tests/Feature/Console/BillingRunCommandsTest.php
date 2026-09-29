@@ -56,9 +56,9 @@ class BillingRunCommandsTest extends TestCase {
 
     // ── customer-billing:push-retainers ──────────────────────────────────
 
-    public function test_retainer_push_skips_organizations_without_lexoffice(): void {
+    public function test_retainer_push_reports_organizations_without_retainers(): void {
         $this->artisan('customer-billing:push-retainers')
-            ->expectsOutputToContain('Lexoffice nicht konfiguriert — übersprungen.')
+            ->expectsOutputToContain('erstellt 0, übersprungen 0, fehlgeschlagen 0')
             ->assertExitCode(0);
     }
 

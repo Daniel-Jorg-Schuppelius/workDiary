@@ -1313,4 +1313,14 @@ return [
         'completed' => 'Ordine di verifica completato',
         'cancelled' => 'Ordine di verifica annullato',
     ],
+    'resale_license' => [
+        'keys_changed' => 'Chiavi di licenza modificate',
+        'keys_imported' => 'Chiavi di licenza importate',
+        'keys_viewed' => 'Chiavi di licenza mostrate',
+        'sold' => 'Licenza venduta',
+        'reassigned' => 'Vendita di licenza corretta',
+        'returned' => 'Vendita di licenza ritirata',
+        'blocked' => 'Licenza bloccata',
+        'unblocked' => 'Blocco della licenza rimosso',
+    ],
 ];

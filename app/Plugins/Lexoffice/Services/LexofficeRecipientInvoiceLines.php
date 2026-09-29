@@ -15,6 +15,7 @@ namespace App\Plugins\Lexoffice\Services;
 use App\Models\Platform\Organization;
 use App\Models\Plugins\Lexoffice\{LexofficeArticle, LexofficeVoucher, LexofficeVoucherLine};
 use App\Models\Reselling\ResalePeriod;
+use App\Services\Platform\Catalog\ArticleCatalog;
 use App\Services\Reselling\Register\{LicenseArticleClassifier, LinkProposer, PeriodLinker};
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
@@ -43,7 +44,7 @@ final class LexofficeRecipientInvoiceLines {
 
     private readonly PeriodLinker $linker;
 
-    public function __construct(private readonly LicenseArticleClassifier $classifier = new LicenseArticleClassifier(), ?PeriodLinker $linker = null) {
+    public function __construct(?PeriodLinker $linker = null) {
         $this->linker = $linker ?? new PeriodLinker;
     }
 
@@ -91,7 +92,7 @@ final class LexofficeRecipientInvoiceLines {
      * @return Collection<int, LexofficeVoucherLine>
      */
     public function forPeriod(Organization $organization, array $contactIds, ResalePeriod $period): Collection {
-        $source = new LexofficeInvoiceMirrorSource($this->classifier);
+        $source = new LexofficeInvoiceMirrorSource;
 
         return $this->for($organization, $contactIds, $period->starts_on->subDays(LinkProposer::WINDOW_BEFORE))
             ->filter(static fn(LexofficeVoucherLine $line): bool => LinkProposer::inWindow($period, $source->toLine($line, canPreview: false)))
@@ -113,12 +114,13 @@ final class LexofficeRecipientInvoiceLines {
             return collect();
         }
         $vouchers = $this->voucherQuery($organization, $contactIds, $from)->whereNotNull('lines_synced_at')
-            ->with(['lines.article:id,name,unit_name,resale_role'])
+            ->with(['lines.article:id,name,unit_name'])
             ->orderByDesc('voucher_date')->orderByDesc('id')->limit($limit)->get();
+        $classifier = app(LicenseArticleClassifier::class);
         foreach ($vouchers as $voucher) {
             foreach ($voucher->lines as $line) {
                 $line->setRelation('voucher', $voucher);
-                $line->setAttribute('is_license', $this->classifier->isLicense($line->article));
+                $line->setAttribute('is_license', $classifier->isLicense((int) $line->organization_id, self::articleKey($line->lexoffice_article_id), $line->article?->name));
             }
         }
 
@@ -187,7 +189,7 @@ final class LexofficeRecipientInvoiceLines {
             ->where('organization_id', $organization->id)
             ->whereIn('lexoffice_article_id', $articleIds)
             ->whereIn('voucher_id', $this->voucherQuery($organization, $contactIds, $from, $to, $kind)->select('id'))
-            ->with(['voucher:id,external_id,contact_external_id,customer_id,voucher_type,voucher_number,voucher_date,voucher_status,service_starts_on,service_ends_on,voucher_text,recipient_name', 'article:id,name,unit_name,resale_role'])
+            ->with(['voucher:id,external_id,contact_external_id,customer_id,voucher_type,voucher_number,voucher_date,voucher_status,service_starts_on,service_ends_on,voucher_text,recipient_name', 'article:id,name,unit_name'])
             ->orderBy('id')
             ->get();
     }
@@ -228,9 +230,10 @@ final class LexofficeRecipientInvoiceLines {
      */
     private function licenseArticleIds(Organization $organization): array {
         if (! isset($this->licenseArticleIds[$organization->id])) {
+            $classifier = app(LicenseArticleClassifier::class);
             $ids = [];
-            foreach (LexofficeArticle::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->get(['id', 'name', 'resale_role']) as $article) {
-                if ($this->classifier->isLicense($article)) {
+            foreach (LexofficeArticle::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->get(['id', 'name']) as $article) {
+                if ($classifier->isLicense((int) $organization->id, self::articleKey((int) $article->id), $article->name)) {
                     $ids[] = (int) $article->id;
                 }
             }
@@ -238,5 +241,9 @@ final class LexofficeRecipientInvoiceLines {
         }
 
         return $this->licenseArticleIds[$organization->id];
+    }
+
+    private static function articleKey(?int $lexofficeArticleId): ?string {
+        return $lexofficeArticleId !== null ? ArticleCatalog::key(LexofficeArticleCatalogSource::PREFIX, $lexofficeArticleId) : null;
     }
 }

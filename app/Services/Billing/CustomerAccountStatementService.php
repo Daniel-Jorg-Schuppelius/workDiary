@@ -221,14 +221,15 @@ class CustomerAccountStatementService {
     }
 
     /**
-     * Idempotente Verbuchung einer Lexoffice-Zahlung (Retainer-Modus,
-     * Feature 098) in den Leistungssaldo — Dedup über die Voucher-UUID
-     * (source_reference). Anders als bookPayment wirft ein gesperrter
-     * Zielmonat NICHT, sondern der Betrag wandert in den ersten offenen Monat
-     * (der Lexoffice-Sync darf nie abbrechen). Betrag ≤ 0 ⇒ keine Buchung.
+     * Idempotente Verbuchung einer Zahlung aus dem Buchhaltungsprogramm
+     * (Retainer-Modus, Feature 098) in den Leistungssaldo — Dedup über Quelle
+     * und Beleg-ID (source_reference). Anders als bookPayment wirft ein
+     * gesperrter Zielmonat NICHT, sondern der Betrag wandert in den ersten
+     * offenen Monat (der Beleg-Sync darf nie abbrechen). Betrag ≤ 0 ⇒ keine Buchung.
      */
-    public function bookLexofficePayment(
+    public function bookExternalPayment(
         CustomerBillingAgreement $agreement,
+        AccountPaymentSource $source,
         string $sourceReference,
         Money $amount,
         CarbonInterface $paidOn,
@@ -262,14 +263,14 @@ class CustomerAccountStatementService {
         // Zeilen mitsuchen und wiederbeleben statt neu anzulegen.
         $payment = CustomerAccountPayment::withTrashed()
             ->where('customer_billing_agreement_id', $agreement->id)
-            ->where('source', AccountPaymentSource::Lexoffice)
+            ->where('source', $source)
             ->where('source_reference', $sourceReference)
             ->first();
 
         if ($payment === null) {
             $payment = CustomerAccountPayment::create($values + [
                 'customer_billing_agreement_id' => $agreement->id,
-                'source' => AccountPaymentSource::Lexoffice,
+                'source' => $source,
                 'source_reference' => $sourceReference,
             ]);
         } else {
@@ -288,10 +289,10 @@ class CustomerAccountStatementService {
         return $payment;
     }
 
-    /** Storniert eine zuvor gebuchte Lexoffice-Zahlung (Void/Gutschrift). */
-    public function revokeLexofficePayment(CustomerBillingAgreement $agreement, string $sourceReference): void {
+    /** Storniert eine zuvor gebuchte Zahlung aus dem Buchhaltungsprogramm (Void/Gutschrift). */
+    public function revokeExternalPayment(CustomerBillingAgreement $agreement, AccountPaymentSource $source, string $sourceReference): void {
         $payment = $agreement->payments()
-            ->where('source', AccountPaymentSource::Lexoffice->value)
+            ->where('source', $source->value)
             ->where('source_reference', $sourceReference)
             ->first();
 
@@ -500,7 +501,7 @@ class CustomerAccountStatementService {
 
     /** @return Collection<int, CustomerAccountPayment> */
     /**
-     * Zahlungen des Monats: fest zugeordnete (Beleg-Monat, s. bookLexofficePayment)
+     * Zahlungen des Monats: fest zugeordnete (Beleg-Monat, s. bookExternalPayment)
      * plus alle nicht zugeordneten mit Zahldatum im Monat — Bank-, Hand- und
      * Import-Zahlungen zählen weiterhin nach Datum.
      *

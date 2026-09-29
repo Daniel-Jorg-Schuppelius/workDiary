@@ -191,4 +191,8 @@ return [
         'service_from' => 'Leistungszeitraum von',
         'service_to' => 'Leistungszeitraum bis',
     ],
+    'service_rules' => [
+        'title' => 'Abrechnungs-Regeln',
+        'hint' => 'Pro Tätigkeitsart lässt sich festlegen, welcher Artikel bei Übergabe und Rechnungs-Export als Leistung verwendet wird — aus dem Artikelstamm oder einem angebundenen Buchhaltungsprogramm. Ohne Tätigkeitsart = Rückfall für alle Einträge. Unterprojekte erben Regeln vom übergeordneten Projekt, können sie aber überschreiben.',
+    ],
 ];

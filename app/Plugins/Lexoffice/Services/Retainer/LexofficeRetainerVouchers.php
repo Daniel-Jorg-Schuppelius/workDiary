@@ -3,24 +3,29 @@
  * Created on   : Thu Jul 23 2026
  * Author       : Daniel Jörg Schuppelius
  * Author Uri   : https://schuppelius.org
- * Filename     : RetainerVoucherReconciler.php
+ * Filename     : LexofficeRetainerVouchers.php
  * License      : AGPL-3.0-or-later
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Services\Billing;
+namespace App\Plugins\Lexoffice\Services\Retainer;
 
-use App\Enums\Billing\BillingAgreementMode;
+use App\Enums\Billing\{AccountPaymentSource, BillingAgreementMode};
 use App\Models\Billing\{CustomerBillingAgreement, CustomerBillingStatement};
+use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\Organization;
 use App\Models\Plugins\Lexoffice\LexofficeVoucher;
 use App\Plugins\Lexoffice\{LexofficeInvoiceService, LexofficePlugin, LexofficeVoucherNetAmount};
+use App\Services\Billing\Contracts\RetainerVoucherLinks;
+use App\Services\Billing\{CustomerAccountStatementService, RetainerVoucherRef};
 use App\Support\Billing\VoucherTypes;
 use App\Support\Tz;
 use CommonToolkit\ValueObjects\Money;
-use Illuminate\Support\Carbon;
+use Illuminate\Support\{Carbon, Collection};
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 /**
  * Retainer-Zahlstatus-Rücksync (Feature 098): spiegelt den Lexoffice-Beleg-
@@ -30,15 +35,17 @@ use Illuminate\Support\Carbon;
  *
  * Zwei Zuordnungswege, weil die Pauschale aus beiden Richtungen entstehen kann:
  *   1. workDiary hat gepusht → ExternalReference → lokale TYPE_RETAINER-Invoice
- *   2. Beleg wurde direkt in Lexoffice erstellt → customer_billing_statements
- *      .lexoffice_voucher_id (per {@see autoLink()} oder manuell verknüpft)
+ *   2. Beleg wurde direkt in Lexoffice erstellt → ExternalReference Monat →
+ *      Beleg-ID (Typ {@see EXT_TYPE}, per {@see autoLink()} oder manuell; MVP-1027)
  *
  * Gebucht wird NETTO: die voucherlist liefert Brutto, der Leistungssaldo
  * rechnet mit Nettosätzen — ohne Umrechnung wäre jede Zahlung um die USt zu hoch.
  */
-class RetainerVoucherReconciler {
+class LexofficeRetainerVouchers implements RetainerVoucherLinks {
     /** Belegarten, die als Kundenrechnung für eine Pauschale in Frage kommen. */
     private const INVOICE_TYPES = VoucherTypes::SALES_INVOICES;
+
+    public const EXT_TYPE = 'retainer_voucher';
 
     public function __construct(
         private readonly CustomerAccountStatementService $statements,
@@ -63,7 +70,7 @@ class RetainerVoucherReconciler {
             $invoice = $invoiceByExternalId[$voucher->external_id] ?? null;
             // Monat des Belegs — egal ob selbst gepusht (Invoice) oder in
             // Lexoffice erstellt und verknüpft (Voucher).
-            $statement = $statementByVoucherId[$voucher->id]
+            $statement = $statementByVoucherId[$voucher->external_id]
                 ?? ($invoice !== null ? $statementByInvoiceId[$invoice->id] ?? null : null);
             $agreement = $invoice !== null
                 ? $this->retainerAgreementFor((int) $invoice->customer_id)
@@ -77,7 +84,7 @@ class RetainerVoucherReconciler {
 
             $status = (string) $voucher->voucher_status;
             if ($status === 'voided') {
-                $this->statements->revokeLexofficePayment($agreement, $voucher->external_id);
+                $this->statements->revokeExternalPayment($agreement, AccountPaymentSource::Lexoffice, $voucher->external_id);
                 if ($invoice !== null) {
                     $this->markInvoice($invoice, Invoice::STATUS_CANCELLED);
                 }
@@ -101,12 +108,13 @@ class RetainerVoucherReconciler {
                 ? Carbon::parse($paidOn, Tz::current())
                 : Carbon::now(Tz::current());
 
-            $this->statements->bookLexofficePayment(
+            $this->statements->bookExternalPayment(
                 $agreement,
+                AccountPaymentSource::Lexoffice,
                 $voucher->external_id,
                 $this->netAmounts->paidNet($voucher, $paidGross, $total),
                 $paidOn,
-                (string) __('customer-billing.lexoffice_payment_note', ['number' => (string) $voucher->voucher_number]),
+                (string) __('customer-billing.channel_payment_note', ['number' => (string) $voucher->voucher_number, 'system' => 'Lexoffice']),
                 $statement,
             );
 
@@ -135,23 +143,24 @@ class RetainerVoucherReconciler {
                 continue;
             }
 
+            $linkedIds = array_keys($this->linkedExternalIds($organization));
             $open = $agreement->statements()
                 ->whereNull('retainer_invoice_id')
-                ->whereNull('lexoffice_voucher_id')
+                ->when($linkedIds !== [], fn ($q) => $q->whereNotIn('id', $linkedIds))
                 ->orderBy('year')->orderBy('month')
                 ->get();
             if ($open->isEmpty()) {
                 continue;
             }
 
-            $candidates = $this->linkableVouchers($organization, (int) $agreement->customer_id);
+            $candidates = $this->candidates($organization, (int) $agreement->customer_id);
             foreach ($open as $statement) {
                 $match = $this->matchFor($statement, $candidates, $expected);
                 if ($match === null) {
                     continue;
                 }
 
-                $statement->update(['lexoffice_voucher_id' => $match->id]);
+                $this->attach($statement, $match);
                 $candidates = $candidates->reject(fn (LexofficeVoucher $v): bool => $v->id === $match->id);
                 $linked++;
             }
@@ -161,37 +170,121 @@ class RetainerVoucherReconciler {
     }
 
     /**
+     * Bestehende Verknüpfung eines Monats (MVP-1027: Referenz statt Spalte).
+     */
+    public static function linkOf(CustomerBillingStatement $statement): ?ExternalReference {
+        return ExternalReference::query()
+            ->forPlugin((int) $statement->organization_id, LexofficePlugin::ID, self::EXT_TYPE)
+            ->forReferenceable($statement)
+            ->first();
+    }
+
+    public function linkedVouchers(iterable $statements): array {
+        $ids = [];
+        $organizationId = null;
+        foreach ($statements as $statement) {
+            $ids[] = (int) $statement->id;
+            $organizationId ??= (int) $statement->organization_id;
+        }
+        if ($ids === []) {
+            return [];
+        }
+
+        $refs = ExternalReference::query()
+            ->forPlugin($organizationId, LexofficePlugin::ID, self::EXT_TYPE)
+            ->where('referenceable_type', (new CustomerBillingStatement)->getMorphClass())
+            ->whereIn('referenceable_id', $ids)
+            ->get(['referenceable_id', 'external_id']);
+        $vouchers = LexofficeVoucher::query()
+            ->where('organization_id', $organizationId)
+            ->whereIn('external_id', $refs->pluck('external_id'))
+            ->get()
+            ->keyBy('external_id');
+
+        $linked = [];
+        foreach ($refs as $ref) {
+            $voucher = $vouchers->get($ref->external_id);
+            $linked[(int) $ref->referenceable_id] = $voucher instanceof LexofficeVoucher
+                ? $this->toRef($voucher)
+                : new RetainerVoucherRef(externalId: (string) $ref->external_id, key: '');
+        }
+
+        return $linked;
+    }
+
+    public function linkableVouchers(Customer $customer, CustomerBillingStatement $statement): array {
+        $organization = $customer->organization()->firstOrFail();
+
+        $refs = [];
+        foreach ($this->candidates($organization, (int) $customer->id, (int) $statement->id) as $voucher) {
+            $refs[] = $this->toRef($voucher);
+        }
+
+        return $refs;
+    }
+
+    /**
      * Manuelle Zuordnung eines Belegs zu einem Monat (Gegenstück zum Auto-Match).
      * Der bisherige Beleg des Monats wird gelöst; die Zahlung selbst zieht der
      * nächste Reconcile-Lauf nach.
      */
-    public function link(CustomerBillingStatement $statement, LexofficeVoucher $voucher): void {
-        $statement->update(['lexoffice_voucher_id' => $voucher->id]);
+    public function link(CustomerBillingStatement $statement, string $key): RetainerVoucherRef {
+        $voucher = (new LexofficeVoucher)->resolveRouteBinding($key);
+        $organization = Organization::query()->find($statement->organization_id);
+        $customerId = (int) $statement->agreement()->value('customer_id');
+        $allowed = $voucher instanceof LexofficeVoucher && $organization !== null
+            && $this->candidates($organization, $customerId, (int) $statement->id)->contains('id', $voucher->id);
+        if (! $allowed) {
+            throw ValidationException::withMessages(['voucher' => __('customer-billing.voucher_not_found')]);
+        }
+
+        $this->attach($statement, $voucher);
+
+        return $this->toRef($voucher);
     }
 
     /** Löst die Verknüpfung und nimmt die daraus gebuchte Zahlung zurück. */
     public function unlink(CustomerBillingStatement $statement): void {
-        $voucher = $statement->lexofficeVoucher()->first();
-        $statement->update(['lexoffice_voucher_id' => null]);
+        $ref = self::linkOf($statement);
+        if ($ref === null) {
+            return;
+        }
+        $ref->delete();
 
         $agreement = $statement->agreement()->first();
-        if ($voucher !== null && $agreement !== null) {
-            $this->statements->revokeLexofficePayment($agreement, $voucher->external_id);
+        if ($agreement !== null) {
+            $this->statements->revokeExternalPayment($agreement, AccountPaymentSource::Lexoffice, (string) $ref->external_id);
         }
+    }
+
+    /**
+     * Hängt den Beleg an den Monat. Ein Monat trägt höchstens einen Beleg
+     * (Index `extref_unique`), ein Beleg höchstens einen Monat (Schlüssel der
+     * Referenz ist die Beleg-ID).
+     */
+    public function attach(CustomerBillingStatement $statement, LexofficeVoucher $voucher): void {
+        DB::transaction(function () use ($statement, $voucher): void {
+            ExternalReference::query()
+                ->forPlugin((int) $statement->organization_id, LexofficePlugin::ID, self::EXT_TYPE)
+                ->forReferenceable($statement)
+                ->where('external_id', '!=', $voucher->external_id)
+                ->delete();
+            ExternalReference::link((int) $statement->organization_id, LexofficePlugin::ID, self::EXT_TYPE, $statement, (string) $voucher->external_id);
+        });
     }
 
     /**
      * Zuordenbare Belege eines Kunden: Kundenrechnungen, die weder Entwurf noch
      * storniert sind und noch an keinem Monat hängen.
      *
-     * @return \Illuminate\Support\Collection<int, LexofficeVoucher>
+     * @return Collection<int, LexofficeVoucher>
      */
-    public function linkableVouchers(Organization $organization, int $customerId, ?int $keepStatementId = null): \Illuminate\Support\Collection {
-        $taken = CustomerBillingStatement::query()
-            ->whereNotNull('lexoffice_voucher_id')
-            ->when($keepStatementId !== null, fn ($q) => $q->where('id', '!=', $keepStatementId))
-            ->pluck('lexoffice_voucher_id')
-            ->all();
+    private function candidates(Organization $organization, int $customerId, ?int $keepStatementId = null): Collection {
+        $taken = array_values(array_filter(
+            $this->linkedExternalIds($organization),
+            static fn (int $statementId): bool => $statementId !== $keepStatementId,
+            ARRAY_FILTER_USE_KEY,
+        ));
 
         return LexofficeVoucher::query()
             ->where('organization_id', $organization->id)
@@ -199,9 +292,21 @@ class RetainerVoucherReconciler {
             ->where('archived', false)
             ->whereIn('voucher_type', self::INVOICE_TYPES)
             ->whereNotIn('voucher_status', ['draft', 'voided'])
-            ->when($taken !== [], fn ($q) => $q->whereNotIn('id', $taken))
+            ->when($taken !== [], fn ($q) => $q->whereNotIn('external_id', $taken))
             ->orderByDesc('voucher_date')
             ->get();
+    }
+
+    private function toRef(LexofficeVoucher $voucher): RetainerVoucherRef {
+        return new RetainerVoucherRef(
+            externalId: (string) $voucher->external_id,
+            key: (string) $voucher->sqid,
+            number: $voucher->voucher_number,
+            date: $voucher->voucher_date,
+            net: $voucher->net_amount,
+            gross: $voucher->total_amount,
+            settled: ! ($voucher->open_amount?->isPositive() ?? true),
+        );
     }
 
     /**
@@ -253,14 +358,28 @@ class RetainerVoucherReconciler {
     }
 
     /**
-     * @return array<int, CustomerBillingStatement> Voucher-ID → verknüpfter Monat.
+     * @return array<string, CustomerBillingStatement> Beleg-ID in Lexoffice → verknüpfter Monat.
      */
     private function linkedStatementMap(Organization $organization): array {
-        return CustomerBillingStatement::query()
-            ->where('organization_id', $organization->id)
-            ->whereNotNull('lexoffice_voucher_id')
-            ->get()
-            ->keyBy('lexoffice_voucher_id')
+        $links = $this->linkedExternalIds($organization);
+        if ($links === []) {
+            return [];
+        }
+        $map = [];
+        foreach (CustomerBillingStatement::query()->where('organization_id', $organization->id)->whereKey(array_keys($links))->get() as $statement) {
+            $map[$links[(int) $statement->id]] = $statement;
+        }
+
+        return $map;
+    }
+
+    /** @return array<int, string> Monats-ID → Beleg-ID in Lexoffice */
+    private function linkedExternalIds(Organization $organization): array {
+        return ExternalReference::query()
+            ->forPlugin($organization, LexofficePlugin::ID, self::EXT_TYPE)
+            ->where('referenceable_type', (new CustomerBillingStatement)->getMorphClass())
+            ->pluck('external_id', 'referenceable_id')
+            ->mapWithKeys(static fn ($externalId, $statementId): array => [(int) $statementId => (string) $externalId])
             ->all();
     }
 

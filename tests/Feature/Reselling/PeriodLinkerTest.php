@@ -48,7 +48,7 @@ class PeriodLinkerTest extends TestCase {
         $this->customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Klimpel Bäder GmbH']);
         $this->subscription = ResaleSubscription::query()->create([
             'organization_id' => $this->organization->id, 'kind' => 'license', 'provider' => 'qualityhosting', 'label' => 'Microsoft 365 Business Premium',
-            'customer_id' => $this->customer->id, 'lexoffice_article_id' => $this->premium->id, 'quantity' => 1, 'starts_on' => '2024-08-05',
+            'customer_id' => $this->customer->id, 'article_ref' => 'lex:' . $this->premium->id, 'quantity' => 1, 'starts_on' => '2024-08-05',
             'term_months' => 12, 'interval' => 'yearly', 'renewal' => 'auto', 'sale_unit_price' => '247.20', 'currency' => 'EUR', 'status' => 'active',
         ]);
         (new PeriodPlanner)->sync($this->subscription);

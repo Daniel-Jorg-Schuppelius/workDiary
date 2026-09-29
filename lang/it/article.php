@@ -253,4 +253,13 @@ return [
             'saved' => 'Fattori salvati.',
         ],
     ],
+    'catalog' => [
+        'field' => 'Articolo',
+        'none' => '— senza articolo —',
+        'source_local' => 'Anagrafica articoli',
+        'unknown' => 'L’articolo selezionato non esiste (più) in questa organizzazione.',
+        'missing' => 'Articolo non più disponibile',
+        'empty_hint' => 'Nessun articolo ancora. Crei articoli nell’anagrafica articoli o li importi da un programma di contabilità collegato.',
+        'service_hint' => 'Fornisce denominazione, unità, testo standard e — in assenza di un prezzo impostato — il prezzo della riga.',
+    ],
 ];

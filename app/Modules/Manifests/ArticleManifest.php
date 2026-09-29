@@ -65,6 +65,9 @@ final class ArticleManifest extends Manifest {
             \App\Services\Import\EntitySpec::class => [
                 \App\Services\Article\Import\ArticleSpec::class,
             ],
+            \App\Services\Platform\Catalog\ArticleCatalogSource::class => [
+                \App\Services\Article\Catalog\LocalArticleCatalogSource::class,
+            ],
         ];
     }
 }

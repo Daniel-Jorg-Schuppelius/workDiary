@@ -56,7 +56,7 @@ class CreditNoteLinkTest extends TestCase {
     private function subscription(): ResaleSubscription {
         $subscription = ResaleSubscription::query()->create([
             'organization_id' => $this->organization->id, 'kind' => 'license', 'provider' => 'qualityhosting', 'label' => 'Microsoft 365 Business Premium',
-            'customer_id' => $this->customer->id, 'lexoffice_article_id' => $this->premium->id, 'quantity' => 1, 'starts_on' => '2025-08-05',
+            'customer_id' => $this->customer->id, 'article_ref' => 'lex:' . $this->premium->id, 'quantity' => 1, 'starts_on' => '2025-08-05',
             'term_months' => 12, 'interval' => 'yearly', 'renewal' => 'auto', 'status' => 'active', 'currency' => 'EUR', 'sale_unit_price' => '247.20',
         ]);
         (new PeriodPlanner)->sync($subscription);

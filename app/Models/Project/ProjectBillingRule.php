@@ -12,7 +12,6 @@ namespace App\Models\Project;
 
 use App\Casts\{MoneyCast, PercentageCast};
 use App\Models\Concerns\BelongsToOrganization;
-use App\Models\Plugins\Lexoffice\LexofficeArticle;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -26,9 +25,8 @@ class ProjectBillingRule extends Model {
     protected $fillable = [
         'organization_id',
         'project_id',
-        'plugin_id',
         'applies_to_kind',
-        'lexoffice_article_id',
+        'article_ref',
         'item_type',
         'unit_name',
         'vat_rate',
@@ -59,11 +57,6 @@ class ProjectBillingRule extends Model {
     /** @return BelongsTo<Project, $this> */
     public function project(): BelongsTo {
         return $this->belongsTo(Project::class);
-    }
-
-    /** @return BelongsTo<LexofficeArticle, $this> */
-    public function lexofficeArticle(): BelongsTo {
-        return $this->belongsTo(LexofficeArticle::class, 'lexoffice_article_id', 'external_id');
     }
 
     /**

@@ -15,7 +15,7 @@ namespace App\Services\Reselling\Register;
 use App\Enums\Reselling\{LinkOrigin, PeriodStatus};
 use App\Models\Customer\Customer;
 use App\Models\Platform\{Organization, User};
-use App\Models\Reselling\{ResalePeriod, ResalePeriodLink};
+use App\Models\Reselling\{ResalePeriod, ResalePeriodLink, ResaleSubscription};
 use App\Services\Billing\BillingModeResolver;
 use App\Services\Reselling\Draft\{DraftResult, InvoiceDraftTarget, InvoiceDraftTargets, LocalInvoiceDraftTarget};
 use App\Support\Query\DateRange;
@@ -53,7 +53,7 @@ final class ResaleInvoiceDraftService {
      * @return Collection<int, ResalePeriod>
      */
     public function openPeriodsFor(Customer $recipient, ?CarbonImmutable $reference = null): Collection {
-        return $this->pendingPeriodsFor($recipient, $reference)->whereNull('draft_reference')->get();
+        return $this->withCatalogArticles($this->pendingPeriodsFor($recipient, $reference)->whereNull('draft_reference')->get());
     }
 
     /**
@@ -63,7 +63,7 @@ final class ResaleInvoiceDraftService {
      * @return Collection<int, ResalePeriod>
      */
     public function draftedPeriodsFor(Customer $recipient, ?CarbonImmutable $reference = null): Collection {
-        return $this->pendingPeriodsFor($recipient, $reference)->whereNotNull('draft_reference')->get();
+        return $this->withCatalogArticles($this->pendingPeriodsFor($recipient, $reference)->whereNotNull('draft_reference')->get());
     }
 
     /**
@@ -77,7 +77,7 @@ final class ResaleInvoiceDraftService {
             ->where('starts_on', '<', DateRange::dayAfter($reference))
             ->whereHas('subscription', static fn($s) => $s->where('is_own_holding', false)->where(static fn($w) => $w->where('customer_id', $recipient->id)
                 ->orWhereIn('foreign_customer_id', \App\Models\Customer\ForeignCustomer::query()->where('customer_id', $recipient->id)->select('id'))))
-            ->with(['subscription.foreignCustomer', 'subscription.lexofficeArticle', 'subscription.article', 'links'])
+            ->with(['subscription.foreignCustomer', 'links'])
             ->orderBy('starts_on');
     }
 
@@ -251,15 +251,26 @@ final class ResaleInvoiceDraftService {
             return null;
         }
         $termMonths = $period->termMonths();
-        $monthly = $subscription->lexofficeArticle !== null && LicenseMonths::isMonthUnit($subscription->lexofficeArticle->unit_name);
+        $article = $subscription->catalogArticle();
+        $monthly = $article !== null && LicenseMonths::isMonthUnit($article->unitName);
         $holder = $subscription->foreignCustomer !== null ? (string) __('resale.draft.end_customer', ['name' => $subscription->foreignCustomer->name]) . ' · ' : '';
 
         return [
-            'name' => $subscription->lexofficeArticle !== null ? $subscription->lexofficeArticle->name : $subscription->label,
+            'name' => $subscription->productName(),
             'description' => $holder . $period->label() . ($period->quantity > 1 ? ' · ' . $period->quantity . ' × ' : ''),
             'quantity' => $monthly ? round($openMonths, 2) : round($openMonths / $termMonths, 3),
             'unit_name' => $monthly ? 'Monat' : (string) __('resale.draft.unit_piece'),
             'unit_net' => $monthly ? round($sale->toFloat() / $termMonths, 4) : round($sale->toFloat(), 2),
         ];
+    }
+
+    /**
+     * @param  Collection<int, ResalePeriod>  $periods
+     * @return Collection<int, ResalePeriod>
+     */
+    private function withCatalogArticles(Collection $periods): Collection {
+        ResaleSubscription::withCatalogArticles($periods->map(static fn (ResalePeriod $period): ResaleSubscription => $period->subscription));
+
+        return $periods;
     }
 }

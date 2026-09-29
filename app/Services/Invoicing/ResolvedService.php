@@ -15,6 +15,8 @@ namespace App\Services\Invoicing;
 /**
  * Aufgelöste Standardleistung (MVP-486): Artikelbezug, Bezeichnung, Einheit,
  * Standardtext und — als Rückfall für die Preisfindung — der Nettopreis.
+ * Der Artikelbezug ist ein Katalogschlüssel (`art:12`, `lex:34`, MVP-1026);
+ * die Übersetzung in eine Artikel-ID des Zielsystems macht dessen Plugin.
  * Herkunft bleibt sichtbar, damit die Vorschau erklären kann, woher eine
  * Position ihre Werte hat.
  */
@@ -24,7 +26,7 @@ final class ResolvedService {
     public const SOURCE_ORGANIZATION = 'organization';
 
     public function __construct(
-        public readonly ?string $articleId,
+        public readonly ?string $articleRef,
         public readonly ?string $name,
         public readonly ?string $unitName,
         public readonly ?float $netPrice,

@@ -315,8 +315,9 @@ final class SharepointMirrorTest extends TestCase {
             ->assertRedirect();
 
         $document->refresh();
-        $this->assertTrue($document->sharepoint_mirror_detached);
-        $this->assertFalse((bool) $document->webdav_mirror_detached); // nur DIESER Zweig getrennt
+        $this->assertTrue($document->isMirrorDetached(SharepointPlugin::ID));
+        $this->assertFalse($document->isMirrorDetached('webdav')); // nur DIESER Zweig getrennt
+        $this->assertSame($admin->id, $document->mirrorDetachments->first()?->detached_by_user_id);
         $this->assertSame(0, ExternalReference::query()->where('plugin_id', SharepointPlugin::ID)->count());
         $this->assertSame(IntegrationInboxItem::STATUS_DISMISSED, $item->fresh()->status);
 

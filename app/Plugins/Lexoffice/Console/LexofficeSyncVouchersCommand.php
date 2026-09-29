@@ -12,7 +12,7 @@ namespace App\Plugins\Lexoffice\Console;
 
 use App\Console\Concerns\IteratesOrganizations;
 use App\Plugins\Lexoffice\{LexofficeConfig, LexofficeInvoiceService, LexofficeVoucherSync};
-use App\Services\Billing\RetainerVoucherReconciler;
+use App\Plugins\Lexoffice\Services\Retainer\LexofficeRetainerVouchers;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Support\Facades\Cache;
@@ -80,7 +80,7 @@ class LexofficeSyncVouchersCommand extends Command {
                 $retainer = $this->withOrganizationContext($org, function () use ($org): array {
                     app()->forgetInstance(LexofficeInvoiceService::class);
 
-                    return app(RetainerVoucherReconciler::class)->reconcile($org);
+                    return app(LexofficeRetainerVouchers::class)->reconcile($org);
                 });
                 $this->line("  Retainer: gebucht {$retainer['booked']}, storniert {$retainer['revoked']}, neu verknüpft {$retainer['linked']}");
             } catch (\Throwable $e) {

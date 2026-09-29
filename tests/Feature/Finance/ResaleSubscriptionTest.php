@@ -100,14 +100,14 @@ class ResaleSubscriptionTest extends TestCase {
         $response = $this->actingAs($admin)->post(route('finance.resale.store'), $this->payload([
             'holder' => 'customer',
             'customer_id' => $customer->sqid,
-            'article_id' => $article->sqid,
+            'article' => 'art:' . $article->sqid,
         ]));
 
         $subscription = ResaleSubscription::query()->firstOrFail();
         $response->assertRedirect(route('finance.resale.show', $subscription->sqid));
         $this->assertSame($customer->id, $subscription->customer_id);
         $this->assertNull($subscription->foreign_customer_id);
-        $this->assertSame($article->id, $subscription->article_id);
+        $this->assertSame('art:' . $article->id, $subscription->article_ref);
         $this->assertSame('247.2000', $subscription->sale_unit_price?->getAmount());
         $this->assertSame(['2025-08-05', '2026-08-05'], $subscription->periods->map(static fn(ResalePeriod $p): string => $p->starts_on->toDateString())->all());
         $this->assertSame('494.40', $subscription->periods->first()?->expected_sale?->getAmount());

@@ -40,4 +40,5 @@ return [
             'generic' => 'La valeur échoue à la validation.',
         ],
     ],
+    'accounting_number' => 'N° dans le logiciel comptable',
 ];

@@ -21,6 +21,7 @@ return [
     // interno opt-in è stato chiamato.
     'popup' => [
         'title_customer' => 'Chiamata da :name',
+        'title_directory' => 'Chiamata da :name (:number)',
         'title_unknown' => 'Chiamata da :number',
         'message' => 'Chiamata in arrivo (:number).',
         'unknown_number' => 'numero sconosciuto',

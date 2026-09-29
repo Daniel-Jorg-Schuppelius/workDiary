@@ -17,6 +17,7 @@ use App\Models\Customer\Customer;
 use App\Models\Invoicing\{Invoice, InvoiceItem};
 use App\Models\Platform\{Organization, User};
 use App\Models\Reselling\ResalePeriod;
+use App\Services\Article\Catalog\LocalArticleCatalogSource;
 use App\Services\Billing\BillingModeResolver;
 use App\Services\Invoicing\TaxResolver;
 use App\Services\Numbering\NumberSequenceService;
@@ -92,7 +93,8 @@ final class LocalInvoiceDraftTarget implements InvoiceDraftTarget {
                     'unit_price' => (string) $line['unit_net'],
                     'tax_category' => $tax['category'],
                     'position' => $position,
-                    'article_id' => $period->subscription->article_id,
+                    // Lokale Rechnungen kennen nur den Artikelstamm; Artikel anderer Quellen bleiben ohne Bezug.
+                    'article_id' => LocalArticleCatalogSource::idOf($period->subscription->article_ref),
                 ]);
                 $morphIds[(int) $period->id] = (int) $item->id;
                 $net += $line['quantity'] * $line['unit_net'];
@@ -112,4 +114,5 @@ final class LocalInvoiceDraftTarget implements InvoiceDraftTarget {
             );
         });
     }
+
 }

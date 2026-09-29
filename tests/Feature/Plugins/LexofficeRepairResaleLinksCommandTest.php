@@ -71,7 +71,7 @@ class LexofficeRepairResaleLinksCommandTest extends TestCase {
     private function orphanLink(string $voucherNumber, ?int $articleId = null, ?string $note = null): ResalePeriodLink {
         $subscription = ResaleSubscription::query()->create([
             'organization_id' => $this->organization->id, 'kind' => 'license', 'provider' => 'qualityhosting', 'label' => 'Lizenz ' . $voucherNumber,
-            'lexoffice_article_id' => $articleId, 'quantity' => 1, 'starts_on' => '2025-08-05', 'term_months' => 12, 'interval' => 'yearly', 'renewal' => 'auto', 'status' => 'active', 'currency' => 'EUR',
+            'article_ref' => $articleId !== null ? 'lex:' . $articleId : null, 'quantity' => 1, 'starts_on' => '2025-08-05', 'term_months' => 12, 'interval' => 'yearly', 'renewal' => 'auto', 'status' => 'active', 'currency' => 'EUR',
         ]);
         $period = ResalePeriod::query()->create([
             'organization_id' => $this->organization->id, 'subscription_id' => $subscription->id, 'starts_on' => '2025-08-05', 'ends_on' => '2026-08-04', 'quantity' => 1, 'currency' => 'EUR', 'status' => 'billed',

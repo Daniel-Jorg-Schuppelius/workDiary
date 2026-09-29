@@ -15,7 +15,7 @@ Dans la fiche client, vous pouvez définir des **conditions
 particulières** : taux horaires propres par activité et type de jour
 (semaine/week-end, définis via « jours ouvrés par semaine ») ainsi que le
 mode de facturation — **compte client** sans factures avec solde courant,
-**facture mensuelle** ou **forfait (Lexoffice)**.
+**facture mensuelle** ou **forfait** via le logiciel comptable (actuellement Lexoffice).
 
 Les conditions comprennent aussi un **forfait de déplacement** : chaque
 saisie de temps facturable apporte alors x minutes supplémentaires,
@@ -44,7 +44,9 @@ rapprochement bancaire (le compte client est une cible d'affectation).
 Les saisies tardives dans des mois clôturés sont signalées — rouvrez le
 mois ou changez la date.
 
-En **mode forfait**, Lexoffice gère le document et le paiement. Le
+En **mode forfait**, le logiciel comptable de la souveraineté de
+facturation du client gère le document et le paiement — actuellement
+Lexoffice. Le
 forfait mensuel est saisi hors taxes (« acompte mensuel attendu ») ; le
 solde local oppose heures × taux au forfait payé. Deux voies pour le
 document :

@@ -20,7 +20,8 @@ use App\Models\Platform\User;
 use App\Models\Project\Project;
 use App\Models\Time\TimeEntry;
 use App\Plugins\Lexoffice\LexofficePlugin;
-use App\Services\Billing\{RetainerLexofficeService, RetainerRunner};
+use App\Plugins\Lexoffice\Services\Retainer\{LexofficeRetainerPublisher, LexofficeRetainerVouchers};
+use App\Services\Billing\RetainerRunner;
 use App\Services\Invoicing\InvoiceGenerator;
 use App\Support\Tz;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -121,7 +122,7 @@ class RetainerLexofficeTest extends TestCase {
     public function test_push_monthly_retainer_creates_lexoffice_invoice_and_links_statement(): void {
         $this->fakeInvoiceApi();
 
-        $invoice = app(RetainerLexofficeService::class)->pushMonthlyRetainer($this->agreement, 2026, 3);
+        $invoice = app(LexofficeRetainerPublisher::class)->pushMonthlyRetainer($this->agreement, 2026, 3);
 
         $this->assertNotNull($invoice);
         $this->assertSame(Invoice::TYPE_RETAINER, $invoice->type);
@@ -143,8 +144,8 @@ class RetainerLexofficeTest extends TestCase {
     public function test_push_is_idempotent(): void {
         $this->fakeInvoiceApi();
 
-        $first = app(RetainerLexofficeService::class)->pushMonthlyRetainer($this->agreement, 2026, 3);
-        $second = app(RetainerLexofficeService::class)->pushMonthlyRetainer($this->agreement, 2026, 3);
+        $first = app(LexofficeRetainerPublisher::class)->pushMonthlyRetainer($this->agreement, 2026, 3);
+        $second = app(LexofficeRetainerPublisher::class)->pushMonthlyRetainer($this->agreement, 2026, 3);
 
         $this->assertSame($first->id, $second->id);
         $this->assertSame(1, Invoice::query()->where('type', Invoice::TYPE_RETAINER)->count());
@@ -167,12 +168,13 @@ class RetainerLexofficeTest extends TestCase {
             'currency' => 'EUR',
             'archived' => false,
         ]);
-        app(\App\Services\Billing\CustomerAccountStatementService::class)
-            ->ensure($this->agreement, 2026, 3)
-            ->update(['lexoffice_voucher_id' => $voucher->id]);
+        app(LexofficeRetainerVouchers::class)->attach(
+            app(\App\Services\Billing\CustomerAccountStatementService::class)->ensure($this->agreement, 2026, 3),
+            $voucher,
+        );
 
         $this->expectException(ValidationException::class);
-        app(RetainerLexofficeService::class)->pushMonthlyRetainer($this->agreement, 2026, 3);
+        app(LexofficeRetainerPublisher::class)->pushMonthlyRetainer($this->agreement, 2026, 3);
     }
 
     public function test_runner_pushes_previous_month_once(): void {
@@ -197,7 +199,7 @@ class RetainerLexofficeTest extends TestCase {
         app(\App\Services\Billing\CustomerAccountStatementService::class)->recalculateOpen($this->agreement);
         $fake = $this->fakeInvoiceApi('lex-trueup-1', 'RE-2025-0009');
 
-        $invoice = app(RetainerLexofficeService::class)->pushTrueUp($this->agreement);
+        $invoice = app(LexofficeRetainerPublisher::class)->pushTrueUp($this->agreement);
 
         $this->assertSame(Invoice::TYPE_RETAINER, $invoice->type);
         $this->assertSame('165.0000', $invoice->items()->firstOrFail()->unit_price?->getAmount());
@@ -208,7 +210,7 @@ class RetainerLexofficeTest extends TestCase {
         $this->fakeInvoiceApi();
 
         $this->expectException(ValidationException::class);
-        app(RetainerLexofficeService::class)->pushTrueUp($this->agreement);
+        app(LexofficeRetainerPublisher::class)->pushTrueUp($this->agreement);
     }
 
     public function test_time_invoice_run_stays_blocked_for_retainer(): void {

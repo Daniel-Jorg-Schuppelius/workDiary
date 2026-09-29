@@ -180,16 +180,18 @@ aux prix de vente des abonnements (minimum, médiane, maximum). Indications :
 « vente sous l’achat », « vente sous le prix conseillé », « contrat plus
 cher que le catalogue », « pas de prix de vente ».
 
-**Classification des produits :** le registre reconnaît au nom quels
-articles Lexoffice sont des produits d’abonnement. Par article, vous pouvez
-forcer : « produit d’abonnement » impose la reconnaissance, « jamais une
-ligne d’abonnement » écarte les prestations dont le texte contient un nom de
-produit (maintenance sur Exchange) des propositions, listes de factures et
-« lignes sans abonnement ». La même classification existe pour les articles
-actifs du fichier articles local (section *Articles locaux*) : elle décide
-quelles lignes des factures locales le miroir traite comme lignes de licence,
-et le contrôle des prix compare le prix de vente de l’article aux prix des
-abonnements.
+**Classification des produits :** la liste présente tous les articles du
+catalogue d’articles — les articles actifs du fichier articles et ceux des
+logiciels comptables connectés comme Lexoffice, avec leur source. Le
+registre reconnaît au nom lesquels sont des produits d’abonnement. Par
+article, vous pouvez forcer : « produit d’abonnement » impose la
+reconnaissance, « jamais une ligne d’abonnement » écarte les prestations
+dont le texte contient un nom de produit (maintenance sur Exchange) des
+propositions, listes de factures et « lignes sans abonnement ». La
+classification agit de la même façon pour chaque source : elle décide
+quelles lignes de facture le miroir traite comme lignes de licence, et le
+contrôle des prix compare le prix de vente de l’article aux prix des
+abonnements (un prix mensuel compte douze fois pour un abonnement annuel).
 
 **Contrats :** un abonnement peut porter un contrat de la gestion des
 contrats comme cadre d’échéances (champ « Contrat » du dialogue
@@ -209,8 +211,8 @@ quotidiennement un abonnement « Domaine » avec intervalle annuel depuis
 l’enregistrement, achat = prix de renouvellement et titulaire issu de la
 gestion des domaines tant que le registre n’en a pas décidé un. Le prix de
 vente par extension vient du catalogue de prix (fournisseur revente de
-domaines, produit p. ex. « .de »), l’article de l’article Lexoffice de
-l’extension ; les prix, articles et titulaires saisis à la main survivent à
+domaines, produit p. ex. « .de »), l’article du catalogue d’articles
+(fichier articles ou logiciel comptable) pour l’extension ; les prix, articles et titulaires saisis à la main survivent à
 chaque exécution. Les domaines disparus prennent fin au jour de référence ;
 si la liste des domaines d’une exécution est vide, rien n’est terminé. Les
 abonnements de domaines et leurs pièces d’achat ne se créent pas à la main —

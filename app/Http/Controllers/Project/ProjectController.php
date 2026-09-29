@@ -16,7 +16,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Project\SaveProjectRequest;
 use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\{Team, User};
-use App\Models\Plugins\Lexoffice\LexofficeArticle;
 use App\Models\Project\{Project, RecurrenceRule, Task};
 use App\Support\SortableQuery;
 use Carbon\CarbonImmutable;
@@ -226,12 +225,11 @@ class ProjectController extends Controller {
         // Abrechnung (Tab 8, nur für Billing-Manager sichtbar)
         $billingRules = collect();
         $parentBillingRules = collect();
-        $billingArticles = collect();
+        $billingArticles = [];
         if ($viewer->canManageBilling()) {
             $billingRules = $project->billingRules()->orderByDesc('priority')->orderBy('id')->get();
-            $billingArticles = LexofficeArticle::active()
-                ->orderBy('name')
-                ->get(['external_id', 'name', 'unit_name', 'net_unit_price', 'vat_rate']);
+            $billingArticles = app(\App\Services\Platform\Catalog\ArticleCatalog::class)
+                ->findMany((int) $project->organization_id, $billingRules->pluck('article_ref'));
             for ($cursor = $project->parent; $cursor !== null; $cursor = $cursor->parent) {
                 $parentBillingRules = $parentBillingRules->merge($cursor->billingRules);
             }

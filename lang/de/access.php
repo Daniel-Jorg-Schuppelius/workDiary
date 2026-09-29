@@ -377,6 +377,7 @@ return [
         'reselling.view' => 'Reselling-Register sehen (Abos, Halter, Perioden)',
         'reselling.manage' => 'Reselling-Register pflegen (Abos anlegen, ändern, Perioden entscheiden)',
         'reselling.invoice' => 'Reselling-Register: Rechnungsentwürfe aus Perioden erzeugen (Lexoffice/lokal)',
+        'reselling.keys.view' => 'Reselling-Register: Lizenzschlüssel im Klartext anzeigen und kopieren',
 
         'finance.viewAny' => 'Übergabenachweise einsehen',
         'finance.config' => 'Finanzkonfiguration verwalten',

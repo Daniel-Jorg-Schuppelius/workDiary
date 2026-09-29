@@ -174,6 +174,28 @@ return [
 
     'attributes' => [
 
+        'invoice_reference' => 'Rechnungsreferenz',
+
+        'key_labels' => 'Schlüsselrollen',
+
+        'key_labels.*' => 'Schlüsselrolle',
+
+        'license_keys' => 'Lizenzschlüssel',
+
+        'license_keys.*' => 'Lizenzschlüssel',
+
+        'purchased_on' => 'Kaufdatum',
+
+        'remove' => 'Zu entfernende Schlüssel',
+
+        'remove.*' => 'Zu entfernender Schlüssel',
+
+        'reorder_level' => 'Meldebestand',
+
+        'sold_on' => 'Verkaufsdatum',
+
+        'unit_id' => 'Lizenz',
+
         'columns' => 'Spaltenzuordnung',
 
         'columns.*.header' => 'Kopfzelle',
@@ -1399,7 +1421,6 @@ return [
         'lessons_learned' => 'Lessons Learned',
         'level' => 'Stufe / Wert',
         'lexoffice_api_key' => 'Lexoffice API-Schlüssel',
-        'lexoffice_article_id' => 'Lexoffice-Artikel',
         'library_steps' => 'Bibliotheksschritte',
         'library_steps.*' => 'Bibliotheksschritt',
         'licences' => 'Lizenzen',

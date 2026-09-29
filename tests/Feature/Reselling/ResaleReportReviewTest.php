@@ -19,7 +19,7 @@ use App\Models\Article\Article;
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
 use App\Models\Plugins\Lexoffice\{LexofficeVoucher, LexofficeVoucherLine};
-use App\Models\Reselling\{ResalePeriodLink, ResalePurchaseEntry, ResaleSubscription};
+use App\Models\Reselling\{ResaleArticleClassification, ResalePeriodLink, ResalePurchaseEntry, ResaleSubscription};
 use App\Models\Supplier\Supplier;
 use App\Services\Reselling\Marketplace\{ProviderInvoice, QualityHostingInvoiceReader};
 use App\Services\Reselling\Register\{LicenseArticleClassifier, PeriodPlanner, ProviderInvoiceImport, PurchaseAllocator};
@@ -315,7 +315,7 @@ TXT;
         $this->actingAs($viewer)->get(route('finance.resale.report.margin.export', ['format' => 'csv']))->assertOk();
         $this->actingAs($viewer)->get(route('finance.resale.purchases.index'))->assertDontSee(route('finance.resale.purchases.destroy', $entry->sqid), false);
 
-        $this->actingAs($viewer)->post(route('finance.resale.products.store'), ['article_id' => 'x', 'role' => 'license'])->assertForbidden();
+        $this->actingAs($viewer)->post(route('finance.resale.products.store'), ['article' => 'x', 'role' => 'license'])->assertForbidden();
         $this->actingAs($viewer)->post(route('finance.resale.purchases.store'), ['document' => 'x', 'provider' => 'qualityhosting', 'net_amount' => '1', 'month' => '2026-03'])->assertForbidden();
         $this->actingAs($viewer)->post(route('finance.resale.purchases.import.store'), [])->assertForbidden();
         $this->actingAs($viewer)->delete(route('finance.resale.purchases.destroy', $entry->sqid))->assertForbidden();
@@ -323,40 +323,41 @@ TXT;
         $this->assertSame(1, ResalePurchaseEntry::query()->count());
     }
     /**
-     * Review 2026-09-11: die Produktseite führt auch die aktiven lokalen
-     * Artikel und speichert deren Einstufung (`article_type=local`, Sqid des
-     * Artikels); ohne `article_type` bleibt Lexoffice der Default.
+     * MVP-1025: die Produktseite führt alle Katalogquellen in einer Liste
+     * (aktive Stammartikel, Lexoffice, …) und speichert die Einstufung am
+     * Katalogschlüssel; das Formular trägt den Formularschlüssel `quelle:sqid`.
      */
-    public function test_products_page_lists_active_local_articles_and_saves_their_role(): void {
+    public function test_products_page_lists_catalog_articles_and_saves_their_role(): void {
         $admin = $this->orgAdmin();
-        $cloud = Article::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Cloud-Arbeitsplatz Premium', 'number' => 'CAP', 'default_sale_price' => '20.60', 'currency' => 'EUR']);
-        Article::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Altes Produkt', 'status' => ArticleStatus::Retired->value]);
-        $classifier = new LicenseArticleClassifier;
-        $this->assertFalse($classifier->isLicense($cloud), 'ohne Einstufung: Name verrät kein Produkt');
+        $org = (int) $this->organization->id;
+        $cloud = Article::factory()->create(['organization_id' => $org, 'name' => 'Cloud-Arbeitsplatz Premium', 'number' => 'CAP', 'default_sale_price' => '20.60', 'currency' => 'EUR']);
+        Article::factory()->create(['organization_id' => $org, 'name' => 'Altes Produkt', 'status' => ArticleStatus::Retired->value]);
+        $isLicense = static fn (): bool => (new LicenseArticleClassifier)->isLicense($org, 'art:' . $cloud->id, $cloud->name);
+        $role = static fn (): ?ResaleArticleRole => ResaleArticleClassification::query()->where('article_ref', 'art:' . $cloud->id)->first()?->role;
+        $this->assertFalse($isLicense(), 'ohne Einstufung: Name verrät kein Produkt');
 
         $this->actingAs($admin)->get(route('finance.resale.products'))
             ->assertOk()
-            ->assertSee(__('resale.products_local.title'))
+            ->assertSee(__('article.catalog.source_local'))
             ->assertSee('Cloud-Arbeitsplatz Premium')
-            ->assertSee('name="article_type" value="local"', false)
+            ->assertSee('value="art:' . $cloud->sqid . '"', false)
             ->assertDontSee('Altes Produkt');
 
-        $this->actingAs($admin)->post(route('finance.resale.products.store'), ['article_type' => 'local', 'article_id' => $cloud->sqid, 'role' => 'license'])
+        $this->actingAs($admin)->post(route('finance.resale.products.store'), ['article' => 'art:' . $cloud->sqid, 'role' => 'license'])
             ->assertRedirect(route('finance.resale.products'))
             ->assertSessionHas('success');
-        $cloud->refresh();
-        $this->assertSame(ResaleArticleRole::License, $cloud->resale_role);
-        $this->assertTrue($classifier->isLicense($cloud), 'Betreiber-Einstufung gewinnt');
+        $this->assertSame(ResaleArticleRole::License, $role());
+        $this->assertTrue($isLicense(), 'Betreiber-Einstufung gewinnt');
 
-        $this->actingAs($admin)->post(route('finance.resale.products.store'), ['article_type' => 'local', 'article_id' => $cloud->sqid, 'role' => 'auto'])
+        $this->actingAs($admin)->post(route('finance.resale.products.store'), ['article' => 'art:' . $cloud->sqid, 'role' => 'auto'])
             ->assertRedirect(route('finance.resale.products'));
-        $this->assertNull($cloud->fresh()?->resale_role, '„auto" löscht die Übersteuerung');
+        $this->assertNull($role(), '„auto" löscht die Übersteuerung');
 
-        // Unbekannte Art: Validierungsfehler, nichts gespeichert.
-        $this->actingAs($admin)->from(route('finance.resale.products'))->post(route('finance.resale.products.store'), ['article_type' => 'other', 'article_id' => $cloud->sqid, 'role' => 'license'])
-            ->assertSessionHasErrors('article_type');
-        $this->assertNull($cloud->fresh()?->resale_role);
-        // Nur sehen: 403 auch für lokale Artikel.
-        $this->actingAs($this->viewer())->post(route('finance.resale.products.store'), ['article_type' => 'local', 'article_id' => $cloud->sqid, 'role' => 'license'])->assertForbidden();
+        // Unbekannte Quelle: Validierungsfehler, nichts gespeichert.
+        $this->actingAs($admin)->from(route('finance.resale.products'))->post(route('finance.resale.products.store'), ['article' => 'xyz:' . $cloud->sqid, 'role' => 'license'])
+            ->assertSessionHasErrors('article');
+        $this->assertNull($role());
+        // Nur sehen: 403.
+        $this->actingAs($this->viewer())->post(route('finance.resale.products.store'), ['article' => 'art:' . $cloud->sqid, 'role' => 'license'])->assertForbidden();
     }
 }

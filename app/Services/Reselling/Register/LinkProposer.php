@@ -16,6 +16,7 @@ use App\Enums\Reselling\{LinkOrigin, PeriodStatus};
 use App\Models\Customer\ForeignCustomer;
 use App\Models\Platform\Organization;
 use App\Models\Reselling\{ResalePeriod, ResalePeriodLink, ResaleSubscription};
+use App\Services\Platform\Catalog\ArticleCatalog;
 use App\Services\Reselling\Marketplace\{MarketplaceCompany, NameTokenMatcher, ProductNameMatcher};
 use App\Services\Reselling\Mirror\{InvoiceMirror, MirrorLine};
 use App\Support\Query\DateRange;
@@ -149,8 +150,9 @@ final class LinkProposer {
                         ->where('organization_id', $organization->id)
                         ->where('is_own_holding', false)
                         ->where(static fn($q) => $q->whereNotNull('customer_id')->orWhereNotNull('foreign_customer_id'))
-                        ->with(['customer', 'foreignCustomer.customer', 'lexofficeArticle', 'article'])
+                        ->with(['customer', 'foreignCustomer.customer'])
                         ->get();
+                    ResaleSubscription::withCatalogArticles($subscriptions);
                     $evaluated = $subscriptions->isEmpty() ? [] : $this->evaluate($organization, $subscriptions, $reference, $result);
                     $this->resettle($organization, array_values(array_diff($affected, $evaluated)));
                 });
@@ -285,13 +287,12 @@ final class LinkProposer {
         $lines = $this->mirror->linesFor($organization, $recipientIds, $from, $to);
         /** @var array<string, float> $remaining Position → restliche Lizenzmonate */
         $remaining = [];
-        /** @var array<int, string> $articleNames Lexoffice-Artikel-ID → Name: Abos ohne Artikel bekommen denselben Produktschlüssel wie die Positionen */
+        /** @var array<string, string> $articleNames Katalogschlüssel → Name: Abos ohne Artikel bekommen denselben Produktschlüssel wie die Positionen */
         $articleNames = [];
         foreach ($lines as $line) {
             $remaining[$line->identity()] = LicenseMonths::ofLine($line);
-            $lexofficeArticleId = $line->lexofficeArticleId();
-            if ($lexofficeArticleId !== null && $line->articleName !== null) {
-                $articleNames[$lexofficeArticleId] = $line->articleName;
+            if ($line->articleKey !== null && $line->articleName !== null) {
+                $articleNames[$line->articleKey] = $line->articleName;
             }
         }
         // Produktschlüssel einmal je Abo — sonst zählt die Sharing-Regel „art:…" und
@@ -612,28 +613,25 @@ final class LinkProposer {
     }
 
     /**
-     * Produkt der Position = Produkt des Abos? Tragen beide denselben
-     * Artikelbezug (Lexoffice-Artikel bzw. lokaler Artikel), entscheidet der;
-     * sonst muss die Position laut Quelle eine Lizenzposition sein und ihr
-     * Text zum Abo-Namen bzw. Artikelnamen passen.
+     * Produkt der Position = Produkt des Abos? Tragen beide einen Artikel
+     * derselben Katalogquelle, entscheidet der Schlüssel; sonst muss die
+     * Position laut Quelle eine Lizenzposition sein und ihr Text zum
+     * Abo-Namen bzw. Artikelnamen passen.
      */
     public static function matchesProductOf(ResaleSubscription $subscription, MirrorLine $line, ProductNameMatcher $matcher): bool {
-        $lexofficeArticleId = $line->lexofficeArticleId();
-        if ($subscription->lexoffice_article_id !== null && $lexofficeArticleId !== null) {
-            return (int) $subscription->lexoffice_article_id === $lexofficeArticleId;
-        }
-        $localArticleId = $line->localArticleId();
-        if ($subscription->article_id !== null && $localArticleId !== null) {
-            return (int) $subscription->article_id === $localArticleId;
+        $own = ArticleCatalog::parse($subscription->article_ref);
+        $theirs = ArticleCatalog::parse($line->articleKey);
+        if ($own !== null && $theirs !== null && $own[0] === $theirs[0]) {
+            return $own[1] === $theirs[1];
         }
         if (! $line->articleIsLicence) {
             return false;
         }
         $text = trim((string) $line->articleName . ' ' . $line->text());
+        $article = $subscription->catalogArticle();
 
         return $matcher->matches($subscription->label, $text)
-            || ($subscription->lexofficeArticle !== null && $matcher->matches($subscription->lexofficeArticle->name, $text))
-            || ($subscription->article !== null && $matcher->matches((string) $subscription->article->name, $text));
+            || ($article !== null && $matcher->matches($article->name, $text));
     }
 
     private function matchesProduct(ResaleSubscription $subscription, MirrorLine $line): bool {

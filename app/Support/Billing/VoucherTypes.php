@@ -18,7 +18,7 @@ use App\Enums\Billing\{DocumentDirection, DocumentKind, DocumentOrigin};
  *
  * Vor dieser Klasse lag dieselbe Klassifikation in fünf Kopien verstreut
  * (LexofficeRevenueMirror, Supplier{Analysis,Value}ReportBuilder,
- * RetainerVoucherReconciler, LexofficeDunningService). Die Mengen-Konstanten
+ * LexofficeRetainerVouchers, LexofficeDunningService). Die Mengen-Konstanten
  * unten sind deshalb **verhaltensgleich** zu den abgelösten Listen — die
  * feinere Einordnung über {@see self::classify()} ist zusätzlich, nicht
  * ersetzend.

@@ -46,6 +46,7 @@ final class CtiManifest extends Manifest {
         return [
             'sipgate',
             'fritzbox',
+            'phonedirectory',
         ];
     }
 

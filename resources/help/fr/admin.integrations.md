@@ -83,7 +83,9 @@ usage, pour que vous n'ayez pas à deviner où va quoi :
   BuchhaltungsButler, InvoicePlane et le point d'accès Peppol pour l'envoi de
   factures électroniques.
 - **Téléphonie et messages :** sipgate et FRITZ!Box pour les appels entrants et
-  sortants, seven.io pour les SMS aux destinataires critiques.
+  sortants, l'annuaire téléphonique pour les noms derrière des numéros inconnus
+  (à titre de suggestion, via un service de recherche de votre choix), seven.io
+  pour les SMS aux destinataires critiques.
 - **Expédition :** DHL, FedEx et UPS pour les étiquettes et le suivi.
 - **Fichiers et sauvegardes :** Nextcloud, WebDAV, Dropbox, Google Drive,
   SharePoint et S3 comme cible de stockage ou de sauvegarde.

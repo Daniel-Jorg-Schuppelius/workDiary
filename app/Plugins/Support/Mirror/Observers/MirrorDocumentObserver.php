@@ -40,7 +40,7 @@ class MirrorDocumentObserver {
         foreach ($this->targets->all() as $target) {
             // Für dieses Dokument wurde die Spiegelung DIESES Ziels bewusst
             // getrennt (Rang 18) → nie wieder automatisch einreihen.
-            if ((bool) $document->getAttribute($target->detachedAttribute())) {
+            if ($document->isMirrorDetached($target->pluginId())) {
                 continue;
             }
             if ($target->activeConnection((int) $document->organization_id) === null) {

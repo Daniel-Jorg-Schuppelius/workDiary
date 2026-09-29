@@ -114,10 +114,10 @@ class TransferPositionBuildTest extends TestCase {
         app(OrganizationDefaultRateResolver::class)->flush();
     }
 
-    private function setOrgDefaultService(string $externalId): void {
+    private function setOrgDefaultService(string $articleRef): void {
         $this->organization->update(['settings' => array_replace_recursive(
             (array) $this->organization->settings,
-            ['invoicing' => ['default_service_article' => $externalId]],
+            ['invoicing' => ['default_service_article' => $articleRef]],
         )]);
         app(ServiceDefaultResolver::class)->flush();
     }
@@ -147,14 +147,14 @@ class TransferPositionBuildTest extends TestCase {
 
     public function test_standardleistung_liefert_bezeichnung_einheit_text_und_preis(): void {
         $this->entry();
-        $this->article();
-        $this->setOrgDefaultService('art-1');
+        $article = $this->article();
+        $this->setOrgDefaultService('lex:' . $article->id);
 
         $position = app(BillingPositionBuilder::class)->build($this->draft())->first();
 
         $this->assertSame('IT-Dienstleistung', $position->name);
         $this->assertSame('Stunde', $position->unit_name);
-        $this->assertSame('art-1', $position->article_id);
+        $this->assertSame('lex:' . $article->id, $position->article_ref);
         $this->assertSame(120.0, $position->unitPriceFloat());
         $this->assertSame(BlockPrice::SOURCE_SERVICE, $position->price_source);
         $this->assertStringContainsString('Betreuung der IT-Systeme', (string) $position->description);
@@ -165,29 +165,28 @@ class TransferPositionBuildTest extends TestCase {
     public function test_gepflegter_satz_schlaegt_den_leistungspreis(): void {
         $this->customer->update(['hourly_rate' => '95.00']);
         $this->entry();
-        $this->article();
-        $this->setOrgDefaultService('art-1');
+        $article = $this->article();
+        $this->setOrgDefaultService('lex:' . $article->id);
 
         $position = app(BillingPositionBuilder::class)->build($this->draft())->first();
 
         $this->assertSame(95.0, $position->unitPriceFloat());
         $this->assertSame(BlockPrice::SOURCE_SNAPSHOT, $position->price_source);
         // Bezeichnung/Artikel kommen weiter aus der Leistung.
-        $this->assertSame('art-1', $position->article_id);
+        $this->assertSame('lex:' . $article->id, $position->article_ref);
     }
 
     public function test_projektregel_schlaegt_die_org_standardleistung(): void {
         $this->entry();
-        $this->article();
-        $this->article(['external_id' => 'art-2', 'name' => 'Projektpauschale', 'unit_name' => 'Stunde', 'net_unit_price' => '150.0000']);
-        $this->setOrgDefaultService('art-1');
+        $article = $this->article();
+        $flat = $this->article(['external_id' => 'art-2', 'name' => 'Projektpauschale', 'unit_name' => 'Stunde', 'net_unit_price' => '150.0000']);
+        $this->setOrgDefaultService('lex:' . $article->id);
 
         ProjectBillingRule::create([
             'organization_id' => $this->organization->id,
             'project_id' => $this->project->id,
-            'plugin_id' => 'lexoffice',
             'applies_to_kind' => null,
-            'lexoffice_article_id' => 'art-2',
+            'article_ref' => 'lex:' . $flat->id,
             'item_type' => 'service',
             'priority' => 0,
         ]);
@@ -195,7 +194,7 @@ class TransferPositionBuildTest extends TestCase {
 
         $position = app(BillingPositionBuilder::class)->build($this->draft())->first();
 
-        $this->assertSame('art-2', $position->article_id);
+        $this->assertSame('lex:' . $flat->id, $position->article_ref);
         $this->assertSame(150.0, $position->unitPriceFloat());
     }
 
@@ -204,14 +203,13 @@ class TransferPositionBuildTest extends TestCase {
         // für dieses Projekt — er gewinnt auch gegen den Kundensatz.
         $this->customer->update(['hourly_rate' => '95.00']);
         $this->entry();
-        $this->article();
+        $article = $this->article();
 
         ProjectBillingRule::create([
             'organization_id' => $this->organization->id,
             'project_id' => $this->project->id,
-            'plugin_id' => 'lexoffice',
             'applies_to_kind' => null,
-            'lexoffice_article_id' => 'art-1',
+            'article_ref' => 'lex:' . $article->id,
             'item_type' => 'service',
             'net_unit_price' => 123.45,
             'priority' => 0,

@@ -601,6 +601,12 @@ return [
     'AccountingFilingObligation' => 'Obbligo dichiarativo',
     // Registro rivendita (funzionalità 152, revisione 2026-09-10 A2).
     'ResaleSubscription' => 'Abbonamento in rivendita',
+    'ResaleLicenseProduct' => 'Prodotto di licenza',
+    'ResaleLicenseBatch' => 'Pacchetto di licenze',
+    'ResaleLicenseUnit' => 'Licenza singola',
+    'ResaleLicenseKey' => 'Chiave di licenza',
+    'ResaleLicenseAssignment' => 'Vendita di licenza',
+    'ResaleArticleClassification' => 'Classificazione abbonamento di un articolo',
     'ResalePeriod' => 'Periodo di fatturazione (rivendita)',
     'ResalePeriodLink' => 'Riferimento fattura (rivendita)',
     'ResalePurchaseEntry' => 'Registrazione d’acquisto (rivendita)',

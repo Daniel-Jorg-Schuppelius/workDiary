@@ -12,7 +12,7 @@ namespace App\Plugins\Lexoffice\Jobs;
 
 use App\Models\Platform\Organization;
 use App\Plugins\Lexoffice\{LexofficeConfig, LexofficeInvoiceService};
-use App\Services\Billing\RetainerVoucherReconciler;
+use App\Plugins\Lexoffice\Services\Retainer\LexofficeRetainerVouchers;
 use App\Support\OrganizationContext;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\{ShouldBeUnique, ShouldQueue};
@@ -57,7 +57,7 @@ class ReconcileRetainersJob implements ShouldBeUnique, ShouldQueue {
             // Singleton mit org-spezifischem Key neu auflösen — der Netto-
             // Nachschlag ruft sonst mit dem Key einer fremden Organisation an.
             app()->forgetInstance(LexofficeInvoiceService::class);
-            app(RetainerVoucherReconciler::class)->reconcile($organization);
+            app(LexofficeRetainerVouchers::class)->reconcile($organization);
         });
     }
 }

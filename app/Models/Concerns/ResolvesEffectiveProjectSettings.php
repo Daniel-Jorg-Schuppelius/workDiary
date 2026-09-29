@@ -127,15 +127,14 @@ trait ResolvesEffectiveProjectSettings {
      * Liefert die passendste Billing-Regel für ein Kind (kind-Match vor Fallback,
      * höchste priority). Fällt rekursiv auf Parent-Projekt zurück.
      */
-    public function resolveBillingRule(?string $kind, string $plugin = 'lexoffice'): ?ProjectBillingRule {
+    public function resolveBillingRule(?string $kind): ?ProjectBillingRule {
         $rule = $this->billingRules()
-            ->where('plugin_id', $plugin)
             ->forKind($kind)
             ->first();
         if ($rule !== null) {
             return $rule;
         }
 
-        return $this->parent?->resolveBillingRule($kind, $plugin);
+        return $this->parent?->resolveBillingRule($kind);
     }
 }

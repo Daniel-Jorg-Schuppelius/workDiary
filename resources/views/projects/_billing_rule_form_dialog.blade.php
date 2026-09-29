@@ -6,7 +6,7 @@
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
-{{-- Dialog wrapper for a new Project Billing Rule (Lexoffice) --}}
+{{-- Dialog wrapper for a new Project Billing Rule; Artikel aus dem Artikelkatalog (MVP-1026) --}}
 <x-modal
     :title="__('Neue Abrechnungs-Regel')"
     :eyebrow="$project->name"
@@ -29,22 +29,8 @@
                 <option value="{{ $value }}">{{ $label }}</option>
             @endforeach
         </x-select-field>
-        <div class="fieldset md:col-span-2">
-            <label for="lexoffice_article_id" class="fieldset-label">{{ __('Lexoffice-Artikel') }}</label>
-            <select id="lexoffice_article_id" name="lexoffice_article_id" class="select select-bordered w-full">
-                <option value="">{{ __('— ohne Artikel —') }}</option>
-                @foreach ($articles as $art)
-                    <option value="{{ $art->external_id }}">
-                        {{ $art->name }}@if ($art->net_unit_price !== null) — {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($art->net_unit_price?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} €@endif
-                    </option>
-                @endforeach
-            </select>
-            @if ($articles->isEmpty())
-                <p class="text-xs text-muted mt-1">
-                    {{ __('Noch keine Artikel synchronisiert. Führe :cmd aus.', ['cmd' => 'php artisan lexoffice:sync-articles']) }}
-                </p>
-            @endif
-        </div>
+        <x-article-catalog-select :articles="$articles" span="2"
+                                  :hint="$articles === [] ? __('article.catalog.empty_hint') : __('article.catalog.service_hint')" />
     </x-form-group>
 
     <x-form-group :legend="__('Preis & Priorität')" icon="payments" tone="info" cols="2">

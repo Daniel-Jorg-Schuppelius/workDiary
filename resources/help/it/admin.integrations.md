@@ -81,7 +81,9 @@ scopo, così non deve indovinare dove va cosa:
   BuchhaltungsButler, InvoicePlane e il punto di accesso Peppol per l'invio di
   fatture elettroniche.
 - **Telefonia e messaggi:** sipgate e FRITZ!Box per chiamate in entrata e in
-  uscita, seven.io per SMS a destinatari critici.
+  uscita, l'elenco telefonico per i nomi dietro numeri sconosciuti (come
+  suggerimento, tramite un servizio di consultazione a Sua scelta), seven.io
+  per SMS a destinatari critici.
 - **Spedizioni:** DHL, FedEx e UPS per etichette e tracciabilità.
 - **File e backup:** Nextcloud, WebDAV, Dropbox, Google Drive, SharePoint e S3
   come destinazione di archiviazione o backup.

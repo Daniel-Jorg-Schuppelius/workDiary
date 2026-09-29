@@ -14,6 +14,7 @@ namespace App\Services\Stammdaten;
 
 use App\Enums\Inventory\StockCountStatus;
 use App\Enums\Manufacturing\ManufacturingOrderStatus;
+use App\Events\Article\ArticlesMerged;
 use App\Models\Article\Article;
 use Illuminate\Support\Facades\{DB, Schema};
 use InvalidArgumentException;
@@ -112,6 +113,8 @@ class ArticleMergeService extends AbstractEntityMergeService {
             $this->repointMorphTables($morph, $sourceId, $targetId);
             $this->repointTaggables($morph, $sourceId, $targetId);
             $this->mergeFields($source, $target, $fieldOverrides);
+            // Katalogschlüssel (`art:<id>`) haben keinen Fremdschlüssel — ihre Module hängen selbst um.
+            ArticlesMerged::dispatch((int) $source->organization_id, $sourceId, $targetId);
 
             $this->auditMerge($source, $target);
 

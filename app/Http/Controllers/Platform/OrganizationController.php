@@ -13,10 +13,12 @@ namespace App\Http\Controllers\Platform;
 use App\Http\Controllers\Controller;
 use App\Models\Platform\{Organization, User};
 use App\Services\Org\OrganizationLifecycleService;
+use App\Services\Platform\Catalog\ArticleCatalog;
 use App\Settings\SettingsTree;
 use App\Support\{Setting, SortableQuery};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate, Storage};
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
@@ -170,6 +172,15 @@ class OrganizationController extends Controller {
         ]);
 
         $data['is_active'] = $request->boolean('is_active', true);
+
+        // Standardleistung (MVP-1026): das Formular trägt den Formularschlüssel
+        // des Artikelkatalogs, gespeichert wird der Katalogschlüssel.
+        $serviceArticle = data_get($data, 'settings.invoicing.default_service_article');
+        if (is_string($serviceArticle) && $serviceArticle !== '') {
+            $data['settings']['invoicing']['default_service_article'] = app(ArticleCatalog::class)
+                ->fromFormKey((int) $organization->id, $serviceArticle)->key
+                ?? throw ValidationException::withMessages(['settings.invoicing.default_service_article' => __('article.catalog.unknown')]);
+        }
 
         // Eingehende Override-Gruppen rekursiv mit Bestand mergen; leere Werte
         // werden entfernt, damit der systemweite config()-Default greift.

@@ -253,4 +253,13 @@ return [
             'saved' => 'Factores guardados.',
         ],
     ],
+    'catalog' => [
+        'field' => 'Artículo',
+        'none' => '— sin artículo —',
+        'source_local' => 'Maestro de artículos',
+        'unknown' => 'El artículo seleccionado no existe (o ya no existe) en esta organización.',
+        'missing' => 'El artículo ya no está disponible',
+        'empty_hint' => 'Aún no hay artículos. Cree artículos en el maestro de artículos u obténgalos de un programa de contabilidad conectado.',
+        'service_hint' => 'Aporta denominación, unidad, texto estándar y — si no hay precio definido — el precio de la línea.',
+    ],
 ];

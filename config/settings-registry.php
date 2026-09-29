@@ -113,8 +113,8 @@ return [
     // Standardleistung (MVP-486): Artikel des Faktura-Systems, aus dem
     // Bezeichnung, Einheit, Standardtext, MwSt und — als Rückfall — der Preis
     // kommen. Projekt-Abrechnungsregeln überschreiben sie.
-    'invoicing.default_service_article' => ['type' => 'string', 'scopes' => ['organization'], 'rules' => 'nullable|max:64'],
-    'invoicing.default_service_plugin' => ['type' => 'string', 'scopes' => ['organization'], 'rules' => 'nullable|max:32'],
+    // Katalogschlüssel der Standardleistung (`art:12`, `lex:34`, MVP-1026); nur je Organisation.
+    'invoicing.default_service_article' => ['type' => 'string', 'scopes' => ['organization'], 'rules' => 'nullable|max:80'],
     // Rechnungstexte der Übergabe (MVP-491): Vorlage für Einleitung und
     // Schlussbemerkung; Platzhalter :customer, :from, :to, :channel.
     // Girocode auf Rechnungs-PDFs (Feature 111, MVP-600).

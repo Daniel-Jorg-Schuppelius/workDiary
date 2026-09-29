@@ -177,16 +177,18 @@ importada frente a los precios de venta de las suscripciones (mínimo,
 mediana, máximo). Avisos: «venta por debajo de compra», «venta por debajo
 del PVP», «contrato más caro que el catálogo», «sin precio de venta».
 
-**Clasificación de productos:** qué artículos de Lexoffice son productos de
-suscripción lo reconoce el registro por el nombre. Por artículo puede
-forzar: «producto de suscripción» impone el reconocimiento, «nunca posición
-de suscripción» mantiene fuera de propuestas, listas de facturas y
-«posiciones sin suscripción» los servicios con un nombre de producto en el
-texto (mantenimiento en Exchange). La misma clasificación existe para los
-artículos activos del maestro de artículos local (sección *Artículos locales*):
-decide qué posiciones de facturas locales trata el espejo como posiciones de
-licencia, y la comprobación de precios compara el precio de venta del artículo
-con los precios de las suscripciones.
+**Clasificación de productos:** la lista muestra todos los artículos del
+catálogo de artículos — los artículos activos del maestro de artículos y los
+de programas de contabilidad conectados como Lexoffice, con su origen.
+Cuáles son productos de suscripción lo reconoce el registro por el nombre.
+Por artículo puede forzar: «producto de suscripción» impone el
+reconocimiento, «nunca posición de suscripción» mantiene fuera de
+propuestas, listas de facturas y «posiciones sin suscripción» los servicios
+con un nombre de producto en el texto (mantenimiento en Exchange). La
+clasificación actúa igual para cada origen: decide qué posiciones de factura
+trata el espejo como posiciones de licencia, y la comprobación de precios
+compara el precio de venta del artículo con los precios de las suscripciones
+(un precio mensual cuenta doce veces en una suscripción anual).
 
 **Contratos:** una suscripción puede llevar un contrato de la gestión de
 contratos como marco de plazos (campo «Contrato» en el diálogo de la
@@ -207,7 +209,7 @@ en una suscripción «Dominio» con intervalo anual desde el registro, compra
 = precio de renovación y titular de la gestión de dominios mientras el
 registro no haya decidido uno. El precio de venta por extensión viene del
 catálogo de precios (proveedor reventa de dominios, producto p. ej. «.de»),
-el artículo del artículo de Lexoffice de la extensión; los precios,
+el artículo del catálogo de artículos (maestro de artículos o programa de contabilidad) para la extensión; los precios,
 artículos y titulares mantenidos a mano sobreviven a cada ejecución. Los
 dominios desaparecidos terminan en el día de referencia; si la lista de
 dominios de una ejecución está vacía, no se termina nada. Las suscripciones
