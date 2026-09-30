@@ -10,8 +10,8 @@
 
 namespace App\Models\Plugins\Msgraph;
 
-use App\Enums\Integration\OAuthConnectionStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasConnectionHealth};
+use App\Plugins\Support\OAuthConnectionStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 

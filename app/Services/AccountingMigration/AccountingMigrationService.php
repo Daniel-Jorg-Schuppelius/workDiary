@@ -298,17 +298,8 @@ class AccountingMigrationService {
             $blockers[] = (string) __(':n offene Altbelege sind im Quellsystem noch nicht ausgeglichen.', ['n' => $open]);
         }
 
-        // MVP-690 (G3): Lexoffice-Belegbilder MÜSSEN vor dem Abschluss lokal
-        // gesichert sein — nach Vertragsende ist die API weg (GoBD).
-        if ($run->source() === \App\Enums\Migration\MigrationProvider::Lexoffice) {
-            $unmaterialized = \App\Models\Plugins\Lexoffice\LexofficeVoucher::query()
-                ->where('organization_id', $run->organization_id)
-                ->whereNull('file_materialized_at')
-                ->count();
-            if ($unmaterialized > 0) {
-                $blockers[] = (string) __(':n Lexoffice-Belegbilder sind noch nicht lokal gesichert (lexoffice:materialize-voucher-files).', ['n' => $unmaterialized]);
-            }
-        }
+        // Hindernisse des Quellsystems, z. B. ungesicherte Belegbilder (MVP-690, MVP-1048).
+        array_push($blockers, ...app(MigrationSources::class)->for($run->source())->completionBlockers((int) $run->organization_id));
 
         return $blockers;
     }

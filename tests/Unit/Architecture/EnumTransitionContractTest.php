@@ -26,7 +26,7 @@ use Tests\Unit\Architecture\Concerns\ScansSourceTree;
  * 2. Kein Service prüft `allowedTransitions()` inline — der Guard-Trait ist
  *    die eine Stelle für Meldung und Semantik.
  * 3. Übergangstabellen und -prüfer stehen nur im Enum (MVP-872): außerhalb
- *    `app/Enums` und der Guard-Traits keine Methode `canTransition`,
+ *    `app/Enums`, `app/Plugins/<Plugin>/Enums` und der Guard-Traits keine Methode `canTransition`,
  *    `transitionTo`, `assertTransition`, `isTransitionAllowed`,
  *    `allowedTransitions` und keine Konstante `*TRANSITIONS`.
  */
@@ -35,7 +35,9 @@ class EnumTransitionContractTest extends TestCase {
 
     public function test_enums_with_transitions_implement_the_contract(): void {
         $violations = [];
-        foreach ($this->phpFiles('app/Enums') as $file) {
+        // Plugin-Enums liegen im Plugin (MVP-1049) und gelten gleich.
+        $pluginEnums = array_filter($this->phpFiles('app/Plugins'), fn (string $file): bool => preg_match('#^app/Plugins/[^/]+/Enums/#', $this->relativePath($file)) === 1);
+        foreach ([...$this->phpFiles('app/Enums'), ...$pluginEnums] as $file) {
             $source = (string) file_get_contents($file);
             if (preg_match('/^enum\s+(\w+)/m', $source, $m) !== 1 || ! str_contains($source, 'function allowedTransitions(')) {
                 continue;
@@ -74,7 +76,7 @@ class EnumTransitionContractTest extends TestCase {
         $violations = [];
         foreach ($this->phpFiles('app') as $file) {
             $relative = $this->relativePath($file);
-            if (str_starts_with($relative, 'app/Enums/') || str_starts_with($relative, 'app/Services/Concerns/')) {
+            if (str_starts_with($relative, 'app/Enums/') || str_starts_with($relative, 'app/Services/Concerns/') || preg_match('#^app/Plugins/[^/]+/Enums/#', $relative) === 1) {
                 continue;
             }
             $source = $this->stripComments((string) file_get_contents($file));

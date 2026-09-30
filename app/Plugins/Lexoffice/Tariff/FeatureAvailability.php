@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Lexoffice\Tariff;
 
-use App\Enums\Lexoffice\{LexwareCoverage, LexwareFeature};
+use App\Plugins\Lexoffice\Enums\{LexwareCoverage, LexwareFeature};
 
 /**
  * Auflösung einer Funktion für die Übersicht „Ergänzungen zu Ihrem

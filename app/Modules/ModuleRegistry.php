@@ -32,6 +32,9 @@ final class ModuleRegistry {
     /** @var array<string, string>|null Routenmuster → Lizenzcode, spezifischste zuerst */
     private ?array $routeMap = null;
 
+    /** @var array<class-string, list<class-string>> Erweiterungspunkt → Beiträge der Plugins */
+    private array $contributions = [];
+
     public function __construct(
         private readonly string $manifestDirectory,
         private readonly string $cacheFile,
@@ -239,7 +242,8 @@ final class ModuleRegistry {
 
     /**
      * Implementierungen eines Erweiterungspunkts über alle Manifeste (MVP-863),
-     * Reihenfolge: Modulcode, dann Deklarationsreihenfolge im Manifest.
+     * Reihenfolge: Modulcode, dann Deklarationsreihenfolge im Manifest; danach
+     * die Beiträge der Plugins in Boot-Reihenfolge (MVP-1045).
      *
      * @template T of object
      * @param  class-string<T>  $interface
@@ -252,9 +256,28 @@ final class ModuleRegistry {
                 $out[] = $class;
             }
         }
+        foreach ($this->contributions[$interface] ?? [] as $class) {
+            $out[] = $class;
+        }
 
         /** @var list<class-string<T>> $out */
         return $out;
+    }
+
+    /**
+     * Beitrag eines Plugins zu einem Erweiterungspunkt — Plugins haben kein
+     * Manifest und tragen sich beim Booten ein (MVP-1045). Nicht gecacht.
+     *
+     * @param  class-string  $interface
+     * @param  class-string  $class
+     */
+    public function contribute(string $interface, string $class): void {
+        if (! is_subclass_of($class, $interface)) {
+            throw new InvalidArgumentException("{$class} erfüllt den Erweiterungspunkt {$interface} nicht.");
+        }
+        if (! in_array($class, $this->contributions[$interface] ?? [], true)) {
+            $this->contributions[$interface][] = $class;
+        }
     }
 
     /** @return array<class-string, class-string> Contract → Null-Implementierung (definierende Module) */

@@ -15,7 +15,7 @@
 @section('nav-title', __('lexware.menu'))
 
 @php
-    use App\Enums\Lexoffice\LexwarePlan;
+    use App\Plugins\Lexoffice\Enums\LexwarePlan;
     use App\Plugins\Lexoffice\Tariff\LexwareTariffService;
 @endphp
 

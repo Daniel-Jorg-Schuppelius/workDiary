@@ -14,9 +14,10 @@ use App\Enums\OpenIssue\OpenIssueStatus;
 use App\Enums\Protocol\ProtocolType;
 use App\Models\Asset\Asset;
 use App\Models\Diary\{DiaryEntry, OpenIssue};
-use App\Models\Integration\ExternalReference;
 use App\Models\Protocol\Protocol;
 use App\Models\Time\TimeEntry;
+use App\Plugins\Contracts\ProvidesRemoteSessions;
+use App\Plugins\PluginManager;
 use App\Support\MorphMap;
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
@@ -253,11 +254,10 @@ class AssetAnalysisReportBuilder {
     }
 
     /**
-     * Fernwartungs-Kennzahlen je Asset im Zeitraum aus dem RemoteSupport-Plugin.
-     * Jede gebuchte Sitzung trägt eine ExternalReference (plugin `remote-support`,
-     * Typ `session`) auf ihren TimeEntry; das Asset steht im `payload.asset_id`.
-     * Je TimeEntry existiert genau EINE primäre Session-Referenz — Minuten werden
-     * daher nicht doppelt gezählt. Ohne aktives Plugin bleibt alles 0.
+     * Fernwartungs-Kennzahlen je Asset im Zeitraum aus den Plugins mit
+     * {@see ProvidesRemoteSessions}: sie ordnen Zeiteinträge aus Sitzungen einem
+     * Asset zu (je Zeiteintrag genau eine Sitzung — Minuten zählen nicht doppelt).
+     * Ohne solches Plugin bleibt alles 0.
      *
      * @param  list<int>  $assetIds
      * @return array<int, array{sessions:int, minutes:int}>
@@ -267,23 +267,14 @@ class AssetAnalysisReportBuilder {
             return [];
         }
 
-        $assetSet = array_fill_keys($assetIds, true);
-        $timeEntryMorph = (new TimeEntry())->getMorphClass();
-
-        // TimeEntry-ID → Asset-ID aus den Session-Referenzen (payload.asset_id).
-        /** @var array<int, int> $entryToAsset */
+        // Sitzungen der Fernwartungs-Plugins, auch wenn eines inzwischen abgeschaltet ist (MVP-1046).
+        /** @var array<int, int> $entryToAsset TimeEntry-ID → Asset-ID */
         $entryToAsset = [];
-        ExternalReference::query()
-            ->where('plugin_id', 'remote-support')
-            ->where('external_type', 'session')
-            ->where('referenceable_type', $timeEntryMorph)
-            ->get(['referenceable_id', 'payload'])
-            ->each(function (ExternalReference $ref) use (&$entryToAsset, $assetSet): void {
-                $assetId = (int) ($ref->payload['asset_id'] ?? 0);
-                if ($assetId > 0 && isset($assetSet[$assetId])) {
-                    $entryToAsset[(int) $ref->referenceable_id] = $assetId;
-                }
-            });
+        foreach (app(PluginManager::class)->all() as $plugin) {
+            if ($plugin instanceof ProvidesRemoteSessions) {
+                $entryToAsset += $plugin->remoteSessionAssets($assetIds);
+            }
+        }
 
         if ($entryToAsset === []) {
             return [];

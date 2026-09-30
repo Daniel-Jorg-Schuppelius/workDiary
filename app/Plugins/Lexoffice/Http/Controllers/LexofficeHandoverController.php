@@ -12,12 +12,12 @@ declare(strict_types=1);
 
 namespace App\Plugins\Lexoffice\Http\Controllers;
 
-use App\Enums\Lexoffice\LexofficeHandoverStatus;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Article\ArticleExportController;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Models\Invoicing\Invoice;
+use App\Plugins\Lexoffice\Enums\LexofficeHandoverStatus;
 use App\Plugins\Lexoffice\Handover\LexofficeInvoiceHandoverService;
 use App\Plugins\Lexoffice\Tariff\LexwareTariffService;
 use App\Support\{ErrorText, Sqid};

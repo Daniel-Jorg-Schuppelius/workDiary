@@ -293,6 +293,7 @@ class AppServiceProvider extends ServiceProvider {
         $this->app->singleton(\App\Services\Diagnostics\ConnectionHealthModels::class);
         $this->app->singleton(\App\Services\Stammdaten\IdentifierAuditModels::class);
         $this->app->singleton(\App\Services\Org\OrganizationFileTables::class);
+        $this->app->singleton(\App\Services\AccountingMigration\MigrationSources::class);
 
         // Versand-Provider (Feature 059, MVP-128): Carrier-Plugins registrieren
         // ihren ShippingProvider beim Booten, der ShipmentService löst darüber auf.

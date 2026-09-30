@@ -89,6 +89,6 @@ class BillbeeOrder extends Model {
      * (Vollaudit 2026-07, M53); unbekannte Werte weiterhin als '#<int>'.
      */
     public function stateLabel(): string {
-        return \App\Enums\Billbee\BillbeeOrderState::tryFrom($this->state)?->label() ?? ('#' . $this->state);
+        return \App\Plugins\Billbee\Enums\BillbeeOrderState::tryFrom($this->state)?->label() ?? ('#' . $this->state);
     }
 }

@@ -13,8 +13,9 @@ namespace App\Plugins\RemoteSupport;
 use App\Enums\Import\ImportEntity;
 use App\Models\Asset\Asset;
 use App\Models\Auth\RemotePendingSession;
-use App\Models\Integration\ImportRun;
+use App\Models\Integration\{ExternalReference, ImportRun};
 use App\Models\Platform\{Organization, User};
+use App\Models\Time\TimeEntry;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{NavigationContributor, Plugin, PluginCapability, ProvidesRemoteSessions, SlotRenderer, TimeImporter};
 use App\Plugins\RemoteSupport\Providers\{AnyDeskClient, TeamViewerClient};
@@ -180,5 +181,28 @@ class RemoteSupportPlugin extends AbstractPlugin implements NavigationContributo
                 ->orderBy('name')
                 ->get(['id', 'name', 'asset_no']),
         ])->render();
+    }
+
+    public function remoteSessionsUrl(): string {
+        return route('admin.remote-support.pending.index');
+    }
+
+    /** Zuordnung aus den Sitzungsreferenzen (`payload.asset_id`). */
+    public function remoteSessionAssets(array $assetIds): array {
+        $assetSet = array_fill_keys($assetIds, true);
+        $entryToAsset = [];
+        ExternalReference::query()
+            ->where('plugin_id', self::ID)
+            ->where('external_type', 'session')
+            ->where('referenceable_type', (new TimeEntry)->getMorphClass())
+            ->get(['referenceable_id', 'payload'])
+            ->each(function (ExternalReference $ref) use (&$entryToAsset, $assetSet): void {
+                $assetId = (int) ($ref->payload['asset_id'] ?? 0);
+                if ($assetId > 0 && isset($assetSet[$assetId])) {
+                    $entryToAsset[(int) $ref->referenceable_id] = $assetId;
+                }
+            });
+
+        return $entryToAsset;
     }
 }

@@ -13,4 +13,15 @@ declare(strict_types=1);
 namespace App\Plugins\Contracts;
 
 /** Plugin liefert Fernwartungssitzungen (`remote_pending_sessions`); die Suche zeigt sie nur bei aktivem Lieferanten (MVP-1044). */
-interface ProvidesRemoteSessions {}
+interface ProvidesRemoteSessions {
+    /** Ziel eines Suchtreffers auf eine Sitzung (MVP-1046). */
+    public function remoteSessionsUrl(): string;
+
+    /**
+     * Zeiteinträge aus Sitzungen je Asset, für die Wartungszeit der Asset-Auswertung.
+     *
+     * @param  list<int>  $assetIds
+     * @return array<int, int> Zeiteintrag-ID → Asset-ID
+     */
+    public function remoteSessionAssets(array $assetIds): array;
+}

@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace App\Enums\Lexoffice;
+namespace App\Plugins\Lexoffice\Enums;
 
 use App\Enums\Concerns\HasOptions;
 use App\Enums\Contracts\HasLabel;

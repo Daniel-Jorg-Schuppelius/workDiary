@@ -10,7 +10,7 @@
 
 declare(strict_types=1);
 
-namespace App\Enums\Integration;
+namespace App\Plugins\Support;
 
 use App\Enums\Concerns\HasOptions;
 use App\Enums\Contracts\HasLabel;

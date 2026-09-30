@@ -17,8 +17,6 @@ use App\Models\Article\Article;
 use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
 use App\Models\Migration\{AccountingMigrationItem, AccountingMigrationRun};
-use App\Models\Plugins\Lexoffice\LexofficeVoucher;
-use App\Models\Plugins\OrgaMax\OrgaMaxInvoice;
 use App\Models\Supplier\Supplier;
 use Illuminate\Database\Eloquent\Model;
 
@@ -153,51 +151,14 @@ class MigrationAnalyzer {
     }
 
     /**
-     * Beleghistorie des QUELLSYSTEMS — richtungsabhängig: Lexoffice führt
-     * einen eigenen Belegspiegel (`lexoffice_vouchers`), orgaMAX legt seine
-     * Belegprojektion als {@see ExternalReference}-Payload ab.
+     * Beleghistorie des QUELLSYSTEMS aus dessen Plugin (MVP-1048).
      *
      * @return iterable<int, array{external_id: string, number: ?string, status: ?string, date: ?string, open_amount: ?float, is_open: bool}>
      */
     private function sourceDocuments(AccountingMigrationRun $run): iterable {
         $provider = $run->source();
-        $settled = $provider->settledDocumentStates();
 
-        if ($provider === MigrationProvider::Lexoffice) {
-            foreach (LexofficeVoucher::query()
-                ->withoutGlobalScopes()
-                ->where('organization_id', $run->organization_id)
-                ->orderBy('id')
-                ->cursor() as $voucher) {
-                $status = (string) $voucher->voucher_status;
-                yield [
-                    'external_id' => (string) $voucher->external_id,
-                    'number' => $voucher->voucher_number,
-                    'status' => $status,
-                    'date' => $voucher->voucher_date?->toDateString(),
-                    'open_amount' => $voucher->open_amount?->toFloat(),
-                    'is_open' => ! (bool) $voucher->archived && ! in_array($status, $settled, true),
-                ];
-            }
-
-            return;
-        }
-
-        foreach (OrgaMaxInvoice::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $run->organization_id)
-            ->orderBy('id')
-            ->cursor() as $invoice) {
-            $status = (string) $invoice->invoice_status;
-            yield [
-                'external_id' => (string) $invoice->external_id,
-                'number' => $invoice->invoice_number,
-                'status' => $status,
-                'date' => $invoice->invoice_date?->toDateString(),
-                'open_amount' => $invoice->outstanding_amount?->toFloat(),
-                'is_open' => ! in_array($status, $settled, true),
-            ];
-        }
+        return app(MigrationSources::class)->for($provider)->documents((int) $run->organization_id, $provider->settledDocumentStates());
     }
 
     /**
@@ -255,11 +216,8 @@ class MigrationAnalyzer {
             MigrationDataArea::Customers => (new Customer)->getMorphClass(),
             MigrationDataArea::Suppliers => (new Supplier)->getMorphClass(),
             MigrationDataArea::Articles => (new Article)->getMorphClass(),
-            // Belege laufen nie über analyzeMasterData(); der Spiegel ist
-            // richtungsabhängig (siehe sourceDocuments()).
-            MigrationDataArea::Documents => $provider === MigrationProvider::Lexoffice
-                ? (new LexofficeVoucher)->getMorphClass()
-                : (new OrgaMaxInvoice)->getMorphClass(),
+            // Belege laufen nie über analyzeMasterData(); den Spiegel nennt das Quellsystem.
+            MigrationDataArea::Documents => app(MigrationSources::class)->for($provider)->documentMorphClass(),
         };
     }
 

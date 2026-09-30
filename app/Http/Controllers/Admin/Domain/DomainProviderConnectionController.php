@@ -15,6 +15,7 @@ use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Domain\DomainProviderConnection;
 use App\Services\Domain\{DomainConnectionService, DomainSyncService};
+use App\Services\Domain\DomainProviderResolver;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
@@ -51,15 +52,17 @@ class DomainProviderConnectionController extends Controller {
         ]);
     }
 
-    public function store(Request $request, DomainConnectionService $service): RedirectResponse {
+    public function store(Request $request, DomainConnectionService $service, DomainProviderResolver $registrar): RedirectResponse {
         Gate::authorize('create', DomainProviderConnection::class);
+        // Endpunkt = Plugin-ID des Registrars (MVP-1047).
+        $endpoint = $registrar->pluginId();
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:190'],
             'environment' => ['required', 'string', 'in:ote,production'],
             // Unique-Index dpc_org_endpoint_login_uq — ohne Regel endete ein doppelt verbundenes Konto in 500.
             'login' => ['required', 'string', 'max:190', Rule::unique('domain_provider_connections', 'login')
-                ->where('organization_id', $this->currentOrganizationId())->where('endpoint', 'domainreselling')],
+                ->where('organization_id', $this->currentOrganizationId())->where('endpoint', $endpoint)],
             'password' => ['required', 'string', 'max:512'],
             'default_user' => ['nullable', 'string', 'max:190'],
         ]);
@@ -67,7 +70,7 @@ class DomainProviderConnectionController extends Controller {
         $connection = DomainProviderConnection::create([
             'name' => $data['name'],
             'environment' => DomainProviderEnvironment::from($data['environment']),
-            'endpoint' => 'domainreselling',
+            'endpoint' => $endpoint,
             'login' => $data['login'],
             'password' => $data['password'],
             'default_user' => $data['default_user'] ?? null,

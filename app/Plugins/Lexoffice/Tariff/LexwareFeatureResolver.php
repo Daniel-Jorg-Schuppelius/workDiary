@@ -13,9 +13,9 @@ declare(strict_types=1);
 namespace App\Plugins\Lexoffice\Tariff;
 
 use App\Enums\Finance\BillingMode;
-use App\Enums\Lexoffice\{LexwareCoverage, LexwareFeature};
 use App\Enums\User\Permission;
 use App\Models\Platform\{Organization, User};
+use App\Plugins\Lexoffice\Enums\{LexwareCoverage, LexwareFeature};
 use App\Services\Licensing\FeatureFlagResolver;
 
 /**
@@ -57,7 +57,7 @@ class LexwareFeatureResolver {
         return $mode === null || ! $mode->isExternal();
     }
 
-    private function resolveFeature(Organization $organization, User $user, LexwareFeature $feature, LexwareTariffProfile $profile, \App\Enums\Lexoffice\LexwarePlan $plan): FeatureAvailability {
+    private function resolveFeature(Organization $organization, User $user, LexwareFeature $feature, LexwareTariffProfile $profile, \App\Plugins\Lexoffice\Enums\LexwarePlan $plan): FeatureAvailability {
         $coverage = $this->matrix->coverage($plan, $feature);
         $moduleOn = $this->featureFlags->isEnabled('module.vertrieb');
         $billsLocally = $this->organizationBillsLocally($organization);

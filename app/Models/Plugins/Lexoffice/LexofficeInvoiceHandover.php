@@ -12,10 +12,10 @@ declare(strict_types=1);
 
 namespace App\Models\Plugins\Lexoffice;
 
-use App\Enums\Lexoffice\LexofficeHandoverStatus;
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
+use App\Plugins\Lexoffice\Enums\LexofficeHandoverStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 

@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace App\Plugins\Lexoffice\Http\Controllers;
 
-use App\Enums\Lexoffice\{LexwareFeature, LexwarePlan};
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
+use App\Plugins\Lexoffice\Enums\{LexwareFeature, LexwarePlan};
 use App\Plugins\Lexoffice\Tariff\{LexwareFeatureResolver, LexwarePlanMatrix, LexwareTariffService};
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};

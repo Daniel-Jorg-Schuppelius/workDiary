@@ -21,6 +21,8 @@ use App\Models\Protocol\Protocol;
 use App\Models\Search\SearchDocument;
 use App\Models\ServiceTicket\ServiceTicket;
 use App\Models\Time\{TimeEntry, Timesheet};
+use App\Plugins\Contracts\ProvidesRemoteSessions;
+use App\Plugins\PluginManager;
 use App\Support\{EntityUrl, Sqid};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
@@ -59,7 +61,7 @@ final class SearchResultLinker {
                 SearchSourceType::ServiceTicket => route('service-tickets.show', Sqid::encode(ServiceTicket::class, $id)),
                 SearchSourceType::Protocol => route('protocols.show', Sqid::encode(Protocol::class, $id)),
                 SearchSourceType::KnowledgeArticle => route('knowledge.show', Sqid::encode(KnowledgeArticle::class, $id)),
-                SearchSourceType::RemoteSession => route('admin.remote-support.pending.index'),
+                SearchSourceType::RemoteSession => $this->remoteSessionsUrl(),
                 SearchSourceType::OpenIssue => isset($issues[$id])
                     ? self::withAnchor(EntityUrl::byType($issues[$id]->subject_type, (int) $issues[$id]->subject_id), '#open-issues')
                     : null,
@@ -70,6 +72,13 @@ final class SearchResultLinker {
         }
 
         return $urls;
+    }
+
+    /** Sitzungsliste des aktiven Fernwartungs-Plugins (MVP-1046). */
+    private function remoteSessionsUrl(): ?string {
+        $provider = app(PluginManager::class)->implementing(ProvidesRemoteSessions::class)->first();
+
+        return $provider instanceof ProvidesRemoteSessions ? $provider->remoteSessionsUrl() : null;
     }
 
     /** @param  \Illuminate\Support\Collection<int, int>  $enrollments  Einschreibungs-ID je Kurs-ID */

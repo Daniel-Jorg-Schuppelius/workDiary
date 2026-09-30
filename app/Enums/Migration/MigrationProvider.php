@@ -90,7 +90,7 @@ enum MigrationProvider: string implements HasLabel {
      * Belegstatus, die als „ausgeglichen/abgeschlossen" gelten — offene
      * Altbelege blockieren bis dahin den Abschluss des Wechsels.
      *
-     * @return array<int, string>
+     * @return list<string>
      */
     public function settledDocumentStates(): array {
         return match ($this) {

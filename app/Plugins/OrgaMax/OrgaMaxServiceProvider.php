@@ -34,6 +34,8 @@ class OrgaMaxServiceProvider extends PluginServiceProviderBase {
     }
 
     protected function bootPlugin(): void {
+        // Quelle eines Buchhaltungswechsels (MVP-1048).
+        $this->app->make(\App\Services\AccountingMigration\MigrationSources::class)->register(new \App\Plugins\OrgaMax\Services\OrgaMaxMigrationSource);
         // Faktura-Übergabe (MVP-1032): der Kern kennt das Ziel nur über die Registry.
         $this->app->make(FacturationTargetRegistry::class)->register(OrgaMaxTarget::class);
 

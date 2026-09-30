@@ -131,7 +131,8 @@ class StatusEnumCastRuleTest extends TestCase {
                     continue;
                 }
                 $cast = (string) ($casts[$column] ?? '');
-                if (str_starts_with($cast, 'App\\Enums\\')) {
+                // Kern-Enums unter app/Enums, Plugin-Enums im Plugin (MVP-1049).
+                if ($cast !== '' && enum_exists($cast)) {
                     $resolved[] = $class;
                     continue;
                 }
@@ -143,7 +144,7 @@ class StatusEnumCastRuleTest extends TestCase {
 
         sort($violations);
         $this->assertSame([], $violations, "status-/state-Spalte ohne Enum-Cast (Memory: Enum-Cast nie gegen ->value vergleichen; MariaDB-Strict).\n"
-            . "Enum unter app/Enums anlegen und casten.\n\n" . implode("\n", $violations));
+            . "Enum anlegen (Kern: app/Enums, Plugin: app/Plugins/<Plugin>/Enums) und casten.\n\n" . implode("\n", $violations));
 
         $stale = array_values(array_intersect(self::BASELINE, $resolved));
         $this->assertSame([], $stale, "Aus der BASELINE streichen (inzwischen gecastet):\n" . implode("\n", $stale));

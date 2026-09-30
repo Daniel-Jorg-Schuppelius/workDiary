@@ -72,5 +72,29 @@ class PluginContributionsTest extends TestCase {
         app(PluginManager::class)->flushRuntimeCaches();
 
         $this->assertContains(SearchSourceType::RemoteSession, $visibility->types($admin));
+
+        // Treffer führt in die Sitzungsliste des Plugins (MVP-1046).
+        $document = (new \App\Models\Search\SearchDocument)->forceFill(['source_type' => SearchSourceType::RemoteSession, 'source_id' => 1]);
+        $urls = app(\App\Services\Search\SearchResultLinker::class)->urls(collect([$document]));
+        $this->assertSame(route('admin.remote-support.pending.index'), $urls[SearchSourceType::RemoteSession->value . ':1'] ?? null);
+    }
+
+    public function test_plugins_contribute_to_module_extension_points(): void {
+        $modules = app(\App\Modules\ModuleRegistry::class);
+
+        $this->assertSame([
+            \App\Plugins\CalDav\Services\CalDavImportFeed::class,
+            \App\Plugins\GoogleCalendar\Services\GoogleCalendarImportFeed::class,
+            \App\Plugins\Msgraph\Services\MsgraphCalendarImportFeed::class,
+        ], array_values(array_intersect($modules->extensions(\App\Services\Import\Contracts\CalendarImportFeed::class), [
+            \App\Plugins\CalDav\Services\CalDavImportFeed::class,
+            \App\Plugins\GoogleCalendar\Services\GoogleCalendarImportFeed::class,
+            \App\Plugins\Msgraph\Services\MsgraphCalendarImportFeed::class,
+        ])));
+        $this->assertContains(\App\Plugins\RemoteSupport\Import\RemoteSessionSpec::class, $modules->extensions(\App\Services\Import\EntitySpec::class));
+        $this->assertContains(\App\Plugins\Fritzbox\FritzboxCallReportMailHandler::class, $modules->extensions(\App\Services\Mail\Contracts\MailIntakeHandler::class));
+
+        $this->expectException(\InvalidArgumentException::class);
+        $modules->contribute(\App\Services\Import\EntitySpec::class, self::class);
     }
 }

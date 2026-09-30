@@ -8,7 +8,7 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-namespace App\Enums\Billbee;
+namespace App\Plugins\Billbee\Enums;
 
 use App\Enums\Concerns\HasOptions;
 use App\Enums\Contracts\HasLabel;

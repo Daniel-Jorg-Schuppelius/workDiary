@@ -31,6 +31,8 @@ class RemoteSupportServiceProvider extends PluginServiceProviderBase {
     }
 
     protected function bootPlugin(): void {
+        // Erweiterungspunkt des Moduls (MVP-1045): CSV-Import der Sitzungen.
+        $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Import\EntitySpec::class, \App\Plugins\RemoteSupport\Import\RemoteSessionSpec::class);
         // Gruppierte Auflösung der Import-Inbox (MVP-1030).
         $this->app->make(InboxGroupBookerRegistry::class)->register(RemoteSupportPlugin::ID, RemoteSupportGroupBooker::class);
 

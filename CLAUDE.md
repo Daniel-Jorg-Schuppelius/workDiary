@@ -123,7 +123,8 @@ Domänenordnern, die das Manifest des Moduls in `folders()` nennt
 (`app/Models/Time/TimeEntry.php`, `app/Policies/Time/TimeEntryPolicy.php`,
 `database/factories/Time/TimeEntryFactory.php`). Einzige Wurzeldateien sind
 die Basisklassen `Controller`, `BaseFormRequest` und `PermissionPolicy`.
-Gate `DomainFolderRuleTest`; Plugin-Modelle unter `app/Models/Plugins/<Name>`.
+Gate `DomainFolderRuleTest`; Plugin-Modelle unter `app/Models/Plugins/<Name>`,
+Plugin-Enums im Plugin unter `app/Plugins/<Name>/Enums` (MVP-1049).
 Wer eine Klasse verschiebt: `use`-Zeilen und Nachbarn im alten Namespace
 nachziehen, `morph-map:generate` laufen lassen (Legacy-Schlüssel bleiben,
 Werte wandern), Views bleiben wo sie sind.
@@ -153,7 +154,9 @@ Welle 4 leer; ein neuer Verstoß wird gelöst, nicht eingetragen.
   `MirrorPdfRenderer`, `RuleAction`, `RuleTrigger` (Automationsregeln), `EarlyWarningSource`,
   `PortalNoticeSource` (Hinweise im Kundenportal). Neue Scans, Specs, Quellen,
   Demo-Blöcke, Löschbereiche usw. **nie** in eine feste Liste, sondern ins
-  Manifest des Moduls.
+  Manifest des Moduls. Plugins haben kein Manifest und tragen sich beim Booten
+  über `ModuleRegistry::contribute(Interface, Klasse)` ein (MVP-1045) — nie
+  Plugin-Klassen in ein Manifest schreiben.
 - **Contract mit Null-Bindung** — der Aufrufer braucht eine Antwort:
   Interface im aufrufenden Modul unter `Services/<Modul>/Contracts`,
   Null-Implementierung daneben, `contracts()` im definierenden und

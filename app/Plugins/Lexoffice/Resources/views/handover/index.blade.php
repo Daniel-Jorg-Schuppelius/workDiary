@@ -15,7 +15,7 @@
 @section('nav-title', __('lexware.handover.title'))
 
 @php
-    use App\Enums\Lexoffice\LexofficeHandoverStatus;
+    use App\Plugins\Lexoffice\Enums\LexofficeHandoverStatus;
 @endphp
 
 @section('content')

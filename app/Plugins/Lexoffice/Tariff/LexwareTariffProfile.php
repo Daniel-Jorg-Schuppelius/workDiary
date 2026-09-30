@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Lexoffice\Tariff;
 
-use App\Enums\Lexoffice\{LexwareFeature, LexwarePlan};
+use App\Plugins\Lexoffice\Enums\{LexwareFeature, LexwarePlan};
 use Carbon\CarbonImmutable;
 
 /**

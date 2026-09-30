@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Lexoffice\Tariff;
 
-use App\Enums\Lexoffice\{LexwareCoverage, LexwareFeature, LexwarePlan};
+use App\Plugins\Lexoffice\Enums\{LexwareCoverage, LexwareFeature, LexwarePlan};
 
 /**
  * Versionierte Funktionsmatrix der Lexware-Office-Tarife (Feature 158,

@@ -22,7 +22,7 @@
         @if ($lexwareState)
             <x-status-badge size="xs" :tone="$lexwareState->status->tone()" :label="$lexwareState->status->label()" />
         @else
-            <x-status-badge size="xs" tone="ghost" :label="\App\Enums\Lexoffice\LexofficeHandoverStatus::Pending->label()" />
+            <x-status-badge size="xs" tone="ghost" :label="\App\Plugins\Lexoffice\Enums\LexofficeHandoverStatus::Pending->label()" />
         @endif
     </span>
 @endif

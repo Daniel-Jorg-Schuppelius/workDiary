@@ -72,6 +72,8 @@ class LexofficeServiceProvider extends PluginServiceProviderBase {
     }
 
     protected function bootPlugin(): void {
+        // Quelle eines Buchhaltungswechsels (MVP-1048).
+        $this->app->make(\App\Services\AccountingMigration\MigrationSources::class)->register(new \App\Plugins\Lexoffice\Services\LexofficeMigrationSource);
         // Sessionloser Webhook (Audit 2026-08, Welle 1.3): Bursts erlauben, Flooding deckeln;
         // Verluste heilt der geplante Pull-Sync.
         \Illuminate\Support\Facades\RateLimiter::for('lexoffice-webhook', fn (\Illuminate\Http\Request $request) => \Illuminate\Cache\RateLimiting\Limit::perMinute(120)->by('lwh:' . $request->ip()));

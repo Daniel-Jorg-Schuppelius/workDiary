@@ -10,7 +10,6 @@
 
 namespace App\Plugins\Lexoffice;
 
-use App\Enums\Lexoffice\LexwareFeature;
 use App\Enums\User\Permission;
 use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
@@ -22,6 +21,7 @@ use App\Models\Supplier\Supplier;
 use App\Models\Time\TimeEntry;
 use App\Plugins\{AbstractPlugin, PluginHealth, PluginManager};
 use App\Plugins\Contracts\{ContactSyncer, ContributesWhileInactive, NavigationContributor, PaymentSyncer, Plugin, PluginCapability, SlotRenderer, TimeExporter};
+use App\Plugins\Lexoffice\Enums\LexwareFeature;
 use App\Plugins\Lexoffice\Tariff\LexwareTariffService;
 use App\Support\Query\DateRange;
 use App\Support\Sqid;
