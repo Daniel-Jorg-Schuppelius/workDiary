@@ -65,7 +65,7 @@ test.beforeAll(() => {
     invoicePath = createDraftInvoice();
 });
 
-for (const width of [1600, 1280, 1024, 390]) {
+for (const width of [1600, 1280, 1024, 390, 360]) {
     test(`Rechnung im Entwurf bei ${width} px: einzeilig, Stellen sichtbar, Löschen im Menü`, async ({ page }) => {
         await page.setViewportSize({ width, height: 900 });
         await page.goto(invoicePath);
@@ -80,6 +80,10 @@ for (const width of [1600, 1280, 1024, 390]) {
 
         await page.locator(`${MORE} summary`).click();
         await expect(page.locator(`${MORE} [data-toolbar-menu-danger]`).getByRole("button", { name: "Löschen" })).toBeVisible();
+
+        const menu = await page.locator(`${MORE} .wd-toolbar-menu`).boundingBox();
+        expect(menu?.x).toBeGreaterThanOrEqual(0);
+        expect((menu?.x ?? 0) + (menu?.width ?? 0)).toBeLessThanOrEqual(width);
     });
 }
 

@@ -53,7 +53,7 @@
                         @if ($icon)
                             <x-icon :name="$icon" class="text-muted" />
                         @endif
-                        <span class="truncate">{{ $title }}</span>
+                        <span class="min-w-0 truncate">{{ $title }}</span>
                         @if ($count !== null)
                             <span class="font-normal text-muted">({{ $count }})</span>
                         @endif

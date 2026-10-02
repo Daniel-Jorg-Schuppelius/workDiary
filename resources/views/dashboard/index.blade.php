@@ -56,7 +56,7 @@
         @elseif ($grouped !== null)
             {{-- Kacheln ohne Bereich: stehen über der Leiste, also in jedem Bereich. --}}
             @if ($always->isNotEmpty())
-                <div class="grid gap-4 lg:grid-cols-2">
+                <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
                     @foreach ($always as $tile)
                         <div class="{{ $tile->width->columnClass() }} [&>*]:h-full">
                             {{ $tile->widget->render($dashboardUser) }}
@@ -93,7 +93,7 @@
                                            :title="__('Bereich ohne Kacheln')"
                                            :message="__('Diesem Bereich ist noch keine Kachel zugeordnet.')" />
                         @else
-                            <div class="grid gap-4 lg:grid-cols-2">
+                            <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
                                 @foreach ($tabTiles as $tile)
                                     <div class="{{ $tile->width->columnClass() }} [&>*]:h-full">
                                         {{ $tile->widget->render($dashboardUser) }}
@@ -105,7 +105,7 @@
                 @endforeach
             </div>
         @else
-            <div class="grid gap-4 lg:grid-cols-2">
+            <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
                 @foreach ($tiles as $tile)
                     {{-- [&>*]:h-full: Grid-Items sind gleich hoch, die Kachel darin soll mitziehen. --}}
                     <div class="{{ $tile->width->columnClass() }} [&>*]:h-full">

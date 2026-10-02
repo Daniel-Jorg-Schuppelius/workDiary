@@ -28,7 +28,8 @@
         ));
     @endphp
 
-    <section class="rounded-box border {{ $allDone ? 'border-success/40 bg-success/5' : 'border-primary/40 bg-primary/5' }} p-6 shadow-xs">
+    {{-- Tönung deckend auf base-100 gemischt: mobil fehlt das weiße Main-Panel darunter. --}}
+    <section class="rounded-box border {{ $allDone ? 'border-success/40 bg-[color-mix(in_oklab,var(--color-success)_5%,var(--color-base-100))]' : 'border-primary/40 bg-[color-mix(in_oklab,var(--color-primary)_5%,var(--color-base-100))]' }} p-6 shadow-xs">
         <header class="flex flex-wrap items-start justify-between gap-3">
             <div class="min-w-0">
                 <h2 class="font-['Space_Grotesk'] text-lg font-semibold text-base-content">

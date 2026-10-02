@@ -94,7 +94,9 @@
     @isset($actions)
         <div class="ms-auto flex min-w-0 flex-wrap items-center gap-2 max-md:basis-full md:justify-end" data-toolbar-actions>
             {{ $actions }}
-            <details class="dropdown dropdown-end" data-toolbar-more data-menu hidden>
+            {{-- max-md:ms-auto: in der vollbreiten Aktionszeile ans Ende, sonst klappt das
+                 rechtsbündige Menü hinter einer kurzen Aktion links aus dem Bild. --}}
+            <details class="dropdown dropdown-end max-md:ms-auto" data-toolbar-more data-menu hidden>
                 <summary class="btn btn-ghost btn-sm btn-square" title="{{ __('Weitere Aktionen') }}"
                          aria-label="{{ __('Weitere Aktionen') }}"><x-icon name="more_horiz" /></summary>
                 <div class="dropdown-content wd-toolbar-menu mt-1 flex max-h-[min(70vh,32rem)] w-64 max-w-[calc(100vw-2rem)] flex-col overflow-y-auto rounded-box border border-base-300 bg-base-100 p-1.5 shadow-lg">

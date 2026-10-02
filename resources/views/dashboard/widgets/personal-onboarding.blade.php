@@ -8,7 +8,7 @@
 --}}
 {{-- Kachel „Mein Einstieg“ (MVP-911): Fortschritt und die nächsten offenen Schritte. --}}
 @php $open = array_slice(array_values(array_filter($checklist['steps'], static fn (array $s): bool => ! $s['done'])), 0, 3); @endphp
-<section class="rounded-box border border-primary/40 bg-primary/5 p-5 shadow-xs">
+<section class="rounded-box border border-primary/40 bg-[color-mix(in_oklab,var(--color-primary)_5%,var(--color-base-100))] p-5 shadow-xs">
     <header class="flex flex-wrap items-start justify-between gap-3">
         <div>
             <h2 class="font-semibold">{{ __('onboarding.personal.title') }}</h2>
