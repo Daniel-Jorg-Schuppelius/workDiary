@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Models\Sales;
 
 use App\Casts\MoneyCast;
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, DisclosesLabourCosts, HasSqid};
 use App\Models\Contracts\{AuditsChanges, HasDocumentLines};
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
@@ -48,10 +48,12 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property Money|null $total
  * @property int|null $previous_version_id
  * @property int|null $created_by
+ * @property bool|null $is_labour_cost_disclosed
  */
 class Quote extends Model implements AuditsChanges, HasDocumentLines {
     use Auditable;
     use BelongsToOrganization;
+    use DisclosesLabourCosts;
     /** @use HasFactory<\Database\Factories\Sales\QuoteFactory> */
     use HasFactory;
     use HasSqid;
@@ -64,12 +66,13 @@ class Quote extends Model implements AuditsChanges, HasDocumentLines {
         // Nachfassen (Feature 112, MVP-601) — Vertriebstermin, nicht Rechtsfrist.
         'follow_up_at', 'follow_up_user_id', 'followed_up_at',
         'subtotal', 'tax_amount', 'total', 'acceptance_token_hash',
-        'decided_at', 'decision_snapshot', 'created_by',
+        'decided_at', 'decision_snapshot', 'created_by', 'is_labour_cost_disclosed',
     ];
 
     /** @var array<string, string> */
     protected $casts = [
         'valid_until' => 'date',
+        'is_labour_cost_disclosed' => 'boolean',
         'follow_up_at' => 'date',
         'followed_up_at' => 'datetime',
         'decided_at' => 'datetime',
@@ -143,15 +146,49 @@ class Quote extends Model implements AuditsChanges, HasDocumentLines {
      * Kleinunternehmer-Org falsche Bruttopreise.
      */
     public function documentTotals(): array {
-        $counted = $this->items->filter(fn (QuoteItem $item): bool => $item->accepted ?? ! $item->optional)->values();
+        [$counted, $context] = $this->countedLinesAndContext();
+
+        return app(DocumentTotalsCalculator::class)->totals($counted, $context);
+    }
+
+    /**
+     * Arbeitskosten nach § 35a EStG (MVP-1053) über dieselben Positionen wie die Summe.
+     *
+     * @return array{net: Money, tax: Money, gross: Money, undetermined: int}|null
+     */
+    public function labourCosts(): ?array {
+        [$counted, $context] = $this->countedLinesAndContext();
+
+        return app(DocumentTotalsCalculator::class)->labourCosts($counted, $context);
+    }
+
+    /**
+     * Deckungsbeitrag (MVP-1055) über die zählenden Positionen mit Einzelkosten;
+     * Positionen ohne Kalkulation bleiben draußen und werden gezählt.
+     *
+     * @return array{cost: Money, net: Money, margin: Money, ratio: ?float, lines: int}|null
+     */
+    public function contribution(): ?array {
+        $lines = $this->items->filter(fn (QuoteItem $item): bool => $item->countsInTotal() && $item->unit_cost_amount !== null);
+        if ($lines->isEmpty()) {
+            return null;
+        }
+        $currency = $this->documentCurrency();
+        $cost = Money::sum($lines->map(fn (QuoteItem $item): Money => ($item->unit_cost_amount ?? Money::zero($currency, 4))->times(NumberHelper::normalizeDecimalString((string) $item->quantity)))->all(), $currency, 4)->withScale(2);
+        $net = Money::sum($lines->map(fn (QuoteItem $item): Money => $item->netAmount()->withScale(2))->all(), $currency, 2);
+        $margin = $net->minus($cost);
+
+        return ['cost' => $cost, 'net' => $net, 'margin' => $margin, 'ratio' => $net->isZero() ? null : $margin->toFloat() / $net->toFloat() * 100, 'lines' => $lines->count()];
+    }
+
+    /** @return array{0: \Illuminate\Support\Collection<int, QuoteItem>, 1: DocumentTotalsContext} */
+    private function countedLinesAndContext(): array {
+        $counted = $this->items->filter(fn (QuoteItem $item): bool => $item->countsInTotal())->values();
         $fallback = $counted->contains(fn (QuoteItem $item): bool => $item->taxRate() === null)
             ? Percentage::of(NumberHelper::toUSFormat($this->defaultTaxRate(), 2))
             : null;
 
-        return app(DocumentTotalsCalculator::class)->totals(
-            $counted,
-            new DocumentTotalsContext(currency: $this->documentCurrency(), fallbackTaxRate: $fallback),
-        );
+        return [$counted, new DocumentTotalsContext(currency: $this->documentCurrency(), fallbackTaxRate: $fallback)];
     }
 
     /**

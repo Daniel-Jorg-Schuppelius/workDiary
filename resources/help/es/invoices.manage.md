@@ -1,7 +1,7 @@
 ---
 title: "Facturas & documentos"
 topic: invoices.manage
-version: 6
+version: 7
 audience: []
 modules:
     - module.vertrieb
@@ -108,3 +108,23 @@ facturada, quitar la posición, descartar el borrador o una anulación completa
 la liberan de nuevo, y el origen sigue visible en el documento. Los abonos
 parciales no liberan nada; las existencias no cambian con ninguna operación de
 factura.
+
+## Pago en línea
+
+Si hay un proveedor de pagos (Stripe, Mollie o SumUp) configurado como
+plugin, las facturas emitidas llevan un enlace de pago con código QR; la
+misma dirección aparece en el correo mediante el marcador {{payment_link}}
+y en el portal del cliente. El enlace pasa siempre por workDiary: la
+página de pago del proveedor solo se crea al abrirlo, por el importe
+pendiente en ese momento, de modo que un código impreso sigue siendo
+correcto tras pagos parciales.
+
+Cuando el proveedor confirma el pago, la factura se considera pagada o
+pagada parcialmente, igual que con un movimiento bancario asignado; un
+reembolso lo revierte. Con la contabilidad local, el pago aparece en la
+bandeja de contabilización (dinero en tránsito contra el crédito, la
+comisión del proveedor como gastos bancarios y de pago); el abono
+posterior del proveedor se contabiliza contra la cuenta de dinero en
+tránsito. El enlace en la factura y en el correo se desactiva en la
+configuración de la organización, en «Pago en línea»; en el portal del
+cliente se mantiene.

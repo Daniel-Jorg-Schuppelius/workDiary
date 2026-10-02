@@ -144,10 +144,27 @@
     <x-card :title="__('Positionen')" padding="p-0">
         @can('update', $quote)
             <x-slot:actions>
-                <x-icon-btn icon="add" tone="primary" size="sm"
-                            data-entry-modal-trigger
-                            :href="route('quotes.items.create', $quote)"
-                            show-label>{{ __('Position hinzufügen') }}</x-icon-btn>
+                <x-action-menu icon="add" tone="primary" :label="__('Hinzufügen')">
+                    <x-icon-btn icon="add" size="sm" data-entry-modal-trigger
+                                :href="route('quotes.items.create', $quote)"
+                                show-label>{{ __('Position hinzufügen') }}</x-icon-btn>
+                    {{-- MVP-1054: Gliederung und Wahlpositionen --}}
+                    <x-icon-btn icon="alt_route" size="sm" data-entry-modal-trigger
+                                :href="route('quotes.items.create', [$quote, 'kind' => 'alternative'])"
+                                show-label>{{ __('invoicing.line_kind.add_alternative') }}</x-icon-btn>
+                    <x-icon-btn icon="title" size="sm" data-entry-modal-trigger
+                                :href="route('quotes.items.create', [$quote, 'kind' => 'title'])"
+                                show-label>{{ __('invoicing.line_kind.add_title') }}</x-icon-btn>
+                    <x-icon-btn icon="notes" size="sm" data-entry-modal-trigger
+                                :href="route('quotes.items.create', [$quote, 'kind' => 'text'])"
+                                show-label>{{ __('invoicing.line_kind.add_text') }}</x-icon-btn>
+                    @if ($quote->status === 'draft')
+                        {{-- MVP-1055: Zuschlag verteilen --}}
+                        <x-icon-btn icon="percent" size="sm" data-entry-modal-trigger
+                                    :href="route('quotes.markup.form', $quote)"
+                                    show-label>{{ __('article.calculation.markup_title') }}</x-icon-btn>
+                    @endif
+                </x-action-menu>
             </x-slot:actions>
         @endcan
         <x-table bare>
@@ -167,17 +184,63 @@
                 <tr><td colspan="4" class="text-right">{{ __('Zwischensumme') }}</td><td class="text-right" colspan="3">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($quote->subtotal?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} EUR</td></tr>
                 <tr><td colspan="4" class="text-right">{{ __('USt.') }}</td><td class="text-right" colspan="3">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($quote->tax_amount?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} EUR</td></tr>
                 <tr><td colspan="4" class="text-right font-bold">{{ __('Gesamt') }}</td><td class="text-right font-bold" colspan="3">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($quote->total?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} EUR</td></tr>
+                @php
+                    $labourCosts = $quote->disclosedLabourCosts();
+                    // MVP-1055: Deckungsbeitrag nur intern.
+                    $contribution = $quote->contribution();
+                @endphp
+                @if ($contribution !== null)
+                    @can('update', $quote)
+                        <tr><td colspan="7" class="text-right text-xs text-muted">
+                            {{ __('article.calculation.contribution', [
+                                'cost' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($contribution['cost']->toFloat(), 2, withThousandsSeparator: true),
+                                'margin' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($contribution['margin']->toFloat(), 2, withThousandsSeparator: true),
+                                'ratio' => $contribution['ratio'] === null ? '—' : \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($contribution['ratio'], 1),
+                                'lines' => $contribution['lines'],
+                            ]) }}
+                        </td></tr>
+                    @endcan
+                @endif
+                @if ($labourCosts !== null)
+                    <tr><td colspan="7" class="text-right text-xs text-muted">
+                        {{ __('invoicing.labour_costs.pdf_line_quote', [
+                            'gross' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($labourCosts['gross']->toFloat(), 2, withThousandsSeparator: true),
+                            'tax' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($labourCosts['tax']->toFloat(), 2, withThousandsSeparator: true),
+                            'currency' => 'EUR',
+                        ]) }}@if ($labourCosts['undetermined'] > 0) — {{ trans_choice('invoicing.labour_costs.undetermined', $labourCosts['undetermined'], ['count' => $labourCosts['undetermined']]) }}@endif
+                    </td></tr>
+                @endif
             </x-slot:foot>
-            @forelse ($quote->items as $item)
+            @php
+                // MVP-1054: Gliederung; Titelsummen zählen wie die Angebotssumme.
+                $decidedCols = $quote->decided_at !== null ? 1 : 0;
+            @endphp
+            @forelse (\App\Services\Billing\DocumentOutline::rows($quote->items, fn ($line): bool => $line->countsInTotal()) as $outlineRow)
+                @if ($outlineRow['type'] === 'subtotal')
+                    <tr class="bg-base-200/40">
+                        <td></td>
+                        <td colspan="{{ 5 + $decidedCols }}" class="text-right text-sm">{{ __('invoicing.line_kind.subtotal', ['number' => $outlineRow['number'], 'title' => $outlineRow['title']->description]) }}: <span class="font-semibold">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($outlineRow['amount']->toFloat(), 2, withThousandsSeparator: true) }} EUR</span></td>
+                        @can('update', $quote)<td></td>@endcan
+                    </tr>
+                    @continue
+                @endif
+                @php
+                    $item = $outlineRow['line'];
+                    $kind = $item->lineKind();
+                @endphp
                 <tr>
-                    <td>{{ $item->position }}</td>
+                    <td>{{ $outlineRow['number'] }}</td>
+                    @if (! $kind->isPriced())
+                        <td colspan="{{ 5 + $decidedCols }}" class="{{ $kind === \App\Enums\Billing\DocumentLineKind::Title ? 'font-semibold' : 'italic text-base-content/80 whitespace-pre-line' }}">{{ $item->description }}</td>
+                    @else
                     <td>{{ $item->description }}@if ($item->article) <span class="badge badge-ghost badge-xs" title="{{ __('Artikel') }}">{{ $item->article->number ?: $item->article->name }}</span>@endif</td>
                     <td class="text-right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $item->quantity, 2, withThousandsSeparator: true) }} {{ $item->unit }}</td>
                     <td class="text-right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($item->unit_price?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} EUR</td>
                     <td class="text-right">{{ $item->tax_rate !== null ? rtrim(rtrim($item->tax_rate?->getNumericValue() ?? '0', '0'), '.') : '—' }}</td>
-                    <td>{{ $item->optional ? __('Option') : __('Pflicht') }}</td>
+                    <td>{{ $kind === \App\Enums\Billing\DocumentLineKind::Alternative ? $kind->label() : ($item->optional ? __('Option') : __('Pflicht')) }}</td>
                     @if ($quote->decided_at !== null)
                         <td>{{ $item->accepted === null ? '—' : ($item->accepted ? __('angenommen') : __('nicht angenommen')) }}</td>
+                    @endif
                     @endif
                     @can('update', $quote)
                         <td class="text-right whitespace-nowrap">
@@ -271,11 +334,17 @@
                 <form method="POST" action="{{ route('quotes.decide', $quote) }}" class="space-y-3">
                     @csrf
                     <div class="space-y-1">
-                        @foreach ($quote->items as $item)
-                            <label class="label cursor-pointer justify-start gap-2">
-                                <input type="checkbox" name="item_ids[]" value="{{ $item->sqid }}" class="checkbox checkbox-sm" @checked(! $item->optional)>
-                                <span class="label-text">{{ $item->position }}. {{ $item->description }} @if ($item->optional)<span class="text-xs text-muted">({{ __('Option') }})</span>@endif</span>
-                            </label>
+                        @foreach (\App\Services\Billing\DocumentOutline::rows($quote->items) as $outlineRow)
+                            @if ($outlineRow['type'] === 'line' && $outlineRow['line']->lineKind()->isPriced())
+                                @php
+                                    $item = $outlineRow['line'];
+                                    $isChoice = $item->optional || $item->lineKind() === \App\Enums\Billing\DocumentLineKind::Alternative;
+                                @endphp
+                                <label class="label cursor-pointer justify-start gap-2">
+                                    <input type="checkbox" name="item_ids[]" value="{{ $item->sqid }}" class="checkbox checkbox-sm" @checked(! $isChoice)>
+                                    <span class="label-text">{{ $outlineRow['number'] }}. {{ $item->description }} @if ($isChoice)<span class="text-xs text-muted">({{ $item->lineKind() === \App\Enums\Billing\DocumentLineKind::Alternative ? $item->lineKind()->label() : __('Option') }})</span>@endif</span>
+                                </label>
+                            @endif
                         @endforeach
                     </div>
                     <input aria-label="{{ __('Grund (bei Ablehnung)') }}" name="reason" maxlength="1000" class="input input-sm input-bordered w-full" placeholder="{{ __('Grund (bei Ablehnung)') }}">

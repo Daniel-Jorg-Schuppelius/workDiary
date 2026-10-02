@@ -1,0 +1,8 @@
+{
+    "Aus dem Stripe-Dashboard unter „Entwickler“ → „API-Schlüssel“ (sk_live_… bzw. sk_test_…). Als Webhook-Endpunkt mit den Ereignissen „checkout.session.*“ eintragen: :url": "From the Stripe dashboard under “Developers” → “API keys” (sk_live_… or sk_test_…). Register as webhook endpoint with the events “checkout.session.*”: :url",
+    "Geheimer Schlüssel": "Secret key",
+    "Kein geheimer Schlüssel hinterlegt.": "No secret key stored.",
+    "Online-Zahlung von Rechnungen über Stripe Checkout (Karte, Apple Pay, Google Pay, SEPA und weitere).": "Online payment of invoices via Stripe Checkout (card, Apple Pay, Google Pay, SEPA and more).",
+    "Stripe lehnt den Schlüssel ab.": "Stripe rejects the key.",
+    "Verbunden — Stripe erreichbar.": "Connected — Stripe reachable."
+}

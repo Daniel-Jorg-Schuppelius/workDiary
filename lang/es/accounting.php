@@ -318,6 +318,7 @@ return [
             'payment' => 'Pago (:kind) · :target',
             'depreciation' => 'Amortización :year · :no :name',
             'asset_disposal' => 'Baja :no :name',
+            'online_payment' => 'Pago en línea (:provider) · :invoice',
         ],
         'reversal_reason' => [
             'unmatched' => 'Asignación de pago anulada — contraasiento.',

@@ -318,6 +318,7 @@ return [
             'payment' => 'Payment (:kind) · :target',
             'depreciation' => 'Depreciation :year · :no :name',
             'asset_disposal' => 'Disposal :no :name',
+            'online_payment' => 'Online payment (:provider) · :invoice',
         ],
         'reversal_reason' => [
             'unmatched' => 'Payment allocation removed — counter-entry.',

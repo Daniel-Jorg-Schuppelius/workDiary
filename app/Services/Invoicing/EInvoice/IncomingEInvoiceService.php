@@ -225,14 +225,16 @@ class IncomingEInvoiceService {
         }
 
         $parsed = $this->parse($contents, $mime, $path);
-        if ($parsed === null) {
+        // MVP-1066: ohne E-Rechnungsdaten die Erkennung aus PDF/Bild — nur als Vorschlag.
+        $summary = $parsed !== null
+            ? $this->summary($parsed)
+            : $this->unstructuredSummary($actor, $contents, $mime, $path, $originalName ?? $file?->getClientOriginalName());
+        if ($summary === null) {
             return ['status' => 'unreadable', 'incoming' => null, 'document' => null];
         }
 
-        $summary = $this->summary($parsed);
-
         // Eingangs-Validierung (MVP-166): getrennt vom Original abgelegt.
-        $extractedXml = $this->extractXml($contents, $mime, $path);
+        $extractedXml = $parsed !== null ? $this->extractXml($contents, $mime, $path) : null;
         $summary['validation'] = $extractedXml !== null ? $this->validateXml($extractedXml) : null;
 
         // Zuordnungs-VORSCHLÄGE + Abweichungen (MVP-167): nur Hinweise für
@@ -241,7 +243,7 @@ class IncomingEInvoiceService {
         $summary['deviations'] = $this->deviations($organizationId, $summary);
 
         $attributes = [
-            'title' => (string) __('E-Rechnung :number — :seller', [
+            'title' => (string) __(($summary['unstructured'] ?? false) ? 'Eingangsrechnung :number — :seller' : 'E-Rechnung :number — :seller', [
                 'number' => $summary['number'],
                 'seller' => $summary['seller'] ?? '—',
             ]),
@@ -331,7 +333,22 @@ class IncomingEInvoiceService {
             }
         }
 
+        // MVP-1066: Bestell- und Projektnummern, die im Belegtext vorkommen.
+        $tokens = array_values(array_filter((array) ($summary['reference_tokens'] ?? []), 'is_string'));
+        if ($tokens !== []) {
+            foreach (\App\Models\Procurement\PurchaseOrder::query()->withoutGlobalScopes()->where('organization_id', $organizationId)->whereIn('number', $tokens)->limit(3)->get() as $po) {
+                if (! in_array((int) $po->id, array_column($purchaseOrders, 'id'), true)) {
+                    $purchaseOrders[] = ['id' => (int) $po->id, 'label' => (string) $po->number, 'reasons' => [(string) __('Bestellnummer im Belegtext')]];
+                }
+            }
+        }
+
         $projects = [];
+        if ($tokens !== []) {
+            foreach (\App\Models\Project\Project::query()->withoutGlobalScopes()->where('organization_id', $organizationId)->whereIn('number', $tokens)->limit(3)->get() as $project) {
+                $projects[] = ['id' => (int) $project->id, 'label' => (string) $project->name, 'reasons' => [(string) __('Projektnummer im Belegtext')]];
+            }
+        }
         $projectRef = trim((string) ($summary['project_reference'] ?? ($summary['buyer_reference'] ?? '')));
         if ($projectRef !== '') {
             foreach (\App\Models\Project\Project::query()->withoutGlobalScopes()->where('organization_id', $organizationId)->whereLikeEscaped('name', $projectRef)->limit(3)->get() as $project) {
@@ -356,6 +373,9 @@ class IncomingEInvoiceService {
      */
     public function deviations(int $organizationId, array $summary): array {
         $deviations = [];
+        if ($summary['unstructured'] ?? false) {
+            $deviations[] = (string) __('Ohne E-Rechnungsdaten aus PDF bzw. Bild erkannt — alle Werte am Original prüfen.');
+        }
 
         $number = trim((string) ($summary['number'] ?? ''));
         if ($number !== '') {
@@ -386,6 +406,75 @@ class IncomingEInvoiceService {
         }
 
         return $deviations;
+    }
+
+    /**
+     * Rechnung ohne eingebettete XML (MVP-1066): die vorhandene Erkennung aus
+     * Text, Tabellen, OCR und KI-Rückfall ({@see \App\Services\Invoicing\InvoicePdfImportService}).
+     * Ohne erkannte Rechnungsnummer und Bruttobetrag ist es keine Rechnung —
+     * dann bleibt es bei „nicht lesbar“. Der Aussteller wird über die
+     * USt-IdNr. im Text gesucht; die eigene zählt nicht.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function unstructuredSummary(\App\Models\Platform\User $actor, string $contents, ?string $mime, ?string $path, ?string $originalName): ?array {
+        $extension = match (true) {
+            str_contains((string) $mime, 'pdf') || str_ends_with(mb_strtolower((string) $originalName), '.pdf') => 'pdf',
+            str_contains((string) $mime, 'png') => 'png',
+            str_contains((string) $mime, 'jpeg') || str_contains((string) $mime, 'jpg') => 'jpg',
+            str_contains((string) $mime, 'tif') => 'tif',
+            default => null,
+        };
+        $organization = $actor->organization;
+        if ($extension === null || $organization === null) {
+            return null;
+        }
+        $extract = static fn (string $file): array => app(\App\Services\Invoicing\InvoicePdfImportService::class)->extract($file, $extension, $mime, $organization);
+        try {
+            $result = $path !== null && File::isFile($path) ? $extract($path) : File::withTemp($contents, $extract, 'incoming-invoice-', $extension);
+        } catch (FileNotWrittenException) {
+            return null;
+        }
+        if (($result['number'] ?? null) === null || ($result['gross'] ?? null) === null) {
+            return null;
+        }
+
+        $ownVat = \CommonToolkit\Helper\Data\VatNumberHelper::normalize(app(XRechnungGenerator::class)->sellerDataFor($organization)['vat_id']);
+        $vatIds = array_values(array_filter(
+            [...(array) ($result['vat_ids'] ?? []), ...(isset($result['seller_vat']) ? [(string) $result['seller_vat']] : [])],
+            static fn (string $vat): bool => $vat !== '' && $vat !== $ownVat,
+        ));
+        $supplier = $vatIds === [] ? null : \App\Models\Supplier\Supplier::query()->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)->whereIn('vat_id', $vatIds)->first();
+
+        return [
+            'number' => $result['number'],
+            'issue_date' => $result['issued_on'] ?? null,
+            'due_date' => $result['due_on'] ?? null,
+            'seller' => $supplier?->displayLabel(),
+            'seller_vat' => $supplier->vat_id ?? ($vatIds[0] ?? null),
+            'currency' => $result['currency'] ?? 'EUR',
+            'net' => $result['net'] ?? null,
+            'tax' => $result['tax'] ?? null,
+            'gross' => $result['gross'],
+            'profile' => (string) __('PDF/Bild (erkannt)'),
+            'lines' => count((array) ($result['lines'] ?? [])),
+            'order_reference' => null,
+            'buyer_reference' => $result['buyer_reference'] ?? null,
+            'project_reference' => null,
+            'creditor_iban' => $result['payment']['iban'] ?? null,
+            'creditor_bic' => $result['payment']['bic'] ?? null,
+            'discount_percent' => $result['skonto']['percent'] ?? null,
+            'discount_days' => $result['skonto']['days'] ?? null,
+            'unstructured' => true,
+            'extraction' => [
+                'reader' => $result['reader'] ?? null,
+                'ocr_used' => (bool) ($result['ocr_used'] ?? false),
+                'confidence' => $result['confidence'] ?? null,
+                'warnings' => (array) ($result['warnings'] ?? []),
+            ],
+            'reference_tokens' => array_values((array) ($result['reference_tokens'] ?? [])),
+        ];
     }
 
     private function parsePdf(string $contents, ?string $path): ?EInvoiceDocument {

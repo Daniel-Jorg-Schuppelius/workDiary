@@ -15,7 +15,9 @@ return [
     'label' => 'Maschinenbau und Anlagenwartung',
     'description' => 'Maschinenbau und Anlagenwartung: Wartungsverträge, Störungen, Inspektionen, Kalibrierung und Ersatzteile mit SLA und Prüfintervallen.',
     // v2: Default-Eintragstypen (Struktur-Typen) ans Profil gekoppelt.
-    'version' => 2,
+    'version' => 3,
+    // MVP-1053: Arbeitskosten nach § 35a EStG bei Privatkunden ausweisen; eigene Einstellungen bleiben.
+    'settings' => ['invoicing.labour_cost_disclosure' => 'private_customers'],
     // Default-Struktur-Typen (EntryTypeSeeder::profiles()) — nicht die
     // Classification-Domäne entry_type.
     'entry_type_defaults' => ['general', 'service', 'hvac_job'],

@@ -115,6 +115,9 @@ return [
         'communication' => [
             'note_structure' => 'Kommunikation: Notiz strukturieren',
         ],
+        'dictation' => [
+            'structure' => 'Diktat: in Formularfelder gliedern',
+        ],
         'case' => [
             'timeline_narrative' => 'Fallakte: Verlauf zusammenfassen',
         ],

@@ -51,20 +51,40 @@ return [
 
     'oci' => [
         'punchout' => [
-            'legend' => 'Punchout OCI (accesso al negozio)',
-            'url' => 'URL di accesso al negozio (OCI)',
-            'hint' => 'Con un URL di accesso configurato, gli acquisti passano direttamente al negozio del fornitore; il carrello torna come bozza d\'ordine tramite un URL di ritorno firmato.',
+            'legend' => 'Accesso al negozio (OCI, IDS-Connect)',
+            'url' => 'Indirizzo del negozio (OCI/IDS)',
+            'hint' => 'Con un indirizzo del negozio configurato, gli acquisti passano direttamente al negozio del fornitore (OCI o IDS-Connect); il carrello torna come bozza d\'ordine.',
             'action' => 'Apri negozio (punchout)',
             'title' => 'Reindirizzamento al negozio',
             'redirecting' => 'Sta per essere reindirizzato al negozio ":shop" …',
             'continue' => 'Continua verso il negozio',
+            'protocol' => 'Protocollo',
         ],
         'note' => 'Importato dal carrello OCI',
+        'protocol' => [
+            'oci' => 'OCI',
+            'ids' => 'IDS-Connect',
+        ],
         'flash' => [
             'missing_context' => 'Manca il fornitore o il magazzino del carrello.',
             'empty_cart' => 'Il carrello non contiene articoli.',
             'no_punchout' => 'Nessun punchout configurato per questa fonte.',
             'imported' => 'Carrello importato: :matched articoli, :unmatched non associati.',
+        ],
+    ],
+
+    'ids' => [
+        'customer_number' => 'Numero cliente presso il grossista',
+        'customer_number_hint' => 'Obbligatorio per IDS-Connect; si trova nei dati di accesso del grossista.',
+        'note' => 'Ripreso dal carrello IDS',
+        'action' => [
+            'open_in_shop' => 'Apri nel negozio',
+        ],
+        'flash' => [
+            'hook_too_long' => 'L\'indirizzo di ritorno è troppo lungo per IDS-Connect (max. 256 caratteri). Utilizzi un indirizzo dell\'applicazione più breve.',
+            'unreadable' => 'Il carrello del negozio non è leggibile.',
+            'ordered_in_shop' => 'Il negozio segnala il carrello come già ordinato: non lo ordini una seconda volta.',
+            'not_ordered' => ':count posizioni alternative o facoltative non sono state riprese.',
         ],
     ],
 

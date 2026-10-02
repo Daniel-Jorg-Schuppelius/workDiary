@@ -115,6 +115,9 @@ return [
         'communication' => [
             'note_structure' => 'Communication: structure note',
         ],
+        'dictation' => [
+            'structure' => 'Dictation: split into form fields',
+        ],
         'case' => [
             'timeline_narrative' => 'Case file: summarise history',
         ],

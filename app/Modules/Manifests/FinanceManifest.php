@@ -158,6 +158,7 @@ final class FinanceManifest extends Manifest {
     /** @return list<string> */
     public function plugins(): array {
         return [
+            'datev-online',
             'lexoffice',
             'sevdesk',
             'easybill',

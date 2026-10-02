@@ -101,6 +101,7 @@ return [
             'account-invoices' => 'Generare le fatture mensili a condizioni speciali',
             'push-retainers' => 'Trasmettere i forfait retainer a Lexoffice',
         ],
+        'datev-online' => ['sync' => 'DATEV Online: trasferire immagini dei giustificativi e verificare le importazioni'],
         'calendly' => ['backfill' => 'Sincronizzazione appuntamenti Calendly'],
         'ai' => ['maintenance' => 'Manutenzione IA (stato dei provider, pulizia dei suggerimenti)'],
         'archive' => ['run' => 'Esecuzione archiviazione'],
@@ -151,7 +152,7 @@ return [
         'accounting' => ['recurring' => 'Attese di documenti e bozze di registrazione ricorrenti', 'filings' => 'Allinea le scadenze fiscali e invia promemoria', 'liquidity_snapshot' => 'Registrare la previsione di liquidità settimanale'],
         'platform' => ['usage_snapshot' => 'Registrare l’utilizzo per cliente'],
         'contracts' => ['price_index_sync' => 'Sincronizzare l’indice dei prezzi al consumo dalla Bundesbank'],
-        'invoicing' => ['recurring' => 'Generare bozze di fatture ricorrenti', 'base_rate_sync' => 'Sincronizzare il tasso base dalla Bundesbank'],
+        'invoicing' => ['recurring' => 'Generare bozze di fatture ricorrenti', 'base_rate_sync' => 'Sincronizzare il tasso base dalla Bundesbank', 'online_payments_refresh' => 'Riconciliare i pagamenti online con il fornitore di pagamento'],
         'jtl' => ['sync' => 'Sincronizzazione JTL Wawi'],
         'resale' => [
             'sync_domains' => 'Abbonamenti in rivendita: acquisire i domini dalla gestione domini',

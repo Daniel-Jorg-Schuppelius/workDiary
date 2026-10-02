@@ -53,6 +53,14 @@ enum DemoIndustry: string implements HasLabel {
     case Veranstaltungstechnik = 'veranstaltungstechnik';
     // Musterbranche 20 (MVP-848): Sportverein mit Vereinsverwaltung.
     case Verein = 'verein';
+    // Musterbranchen 21–27 (MVP-1062): Gewerke.
+    case Maler = 'maler';
+    case Dachdecker = 'dachdecker';
+    case HolzbauTischler = 'holzbau-tischler';
+    case Metallbau = 'metallbau';
+    case FliesenBodenleger = 'fliesen-bodenleger';
+    case PhotovoltaikEnergieberatung = 'photovoltaik-energieberatung';
+    case Hausmeister = 'hausmeister';
 
     /** Branchenprofil-Code für den BranchProfileInstaller (database/data/branchprofiles/*.php). */
     public function branchProfileCode(): string {
@@ -77,6 +85,13 @@ enum DemoIndustry: string implements HasLabel {
             self::Veranstalter => 'veranstalter',
             self::Veranstaltungstechnik => 'veranstaltungstechnik',
             self::Verein => 'verein',
+            self::Maler => 'maler',
+            self::Dachdecker => 'dachdecker',
+            self::HolzbauTischler => 'holzbau-tischler',
+            self::Metallbau => 'metallbau',
+            self::FliesenBodenleger => 'fliesen-bodenleger',
+            self::PhotovoltaikEnergieberatung => 'photovoltaik-energieberatung',
+            self::Hausmeister => 'hausmeister',
         };
     }
 
@@ -103,6 +118,13 @@ enum DemoIndustry: string implements HasLabel {
             self::Veranstalter => 'Veranstalter & Event-Organisation',
             self::Veranstaltungstechnik => 'Veranstaltungstechnik',
             self::Verein => 'Sportverein',
+            self::Maler => 'Maler & Lackierer',
+            self::Dachdecker => 'Dachdecker',
+            self::HolzbauTischler => 'Holzbau & Tischlerei',
+            self::Metallbau => 'Metallbau',
+            self::FliesenBodenleger => 'Fliesen- & Bodenleger',
+            self::PhotovoltaikEnergieberatung => 'Photovoltaik & Energieberatung',
+            self::Hausmeister => 'Hausmeisterdienst',
         };
     }
 
@@ -129,6 +151,13 @@ enum DemoIndustry: string implements HasLabel {
             self::Veranstalter => 'Muster Events GmbH',
             self::Veranstaltungstechnik => 'Muster Veranstaltungstechnik GmbH',
             self::Verein => 'TSV Musterstadt e. V.',
+            self::Maler => 'Muster Malerbetrieb GmbH',
+            self::Dachdecker => 'Muster Bedachungen GmbH',
+            self::HolzbauTischler => 'Muster Holzbau & Tischlerei GmbH',
+            self::Metallbau => 'Muster Metallbau GmbH',
+            self::FliesenBodenleger => 'Muster Fliesen & Boden GmbH',
+            self::PhotovoltaikEnergieberatung => 'Muster Solar & Energie GmbH',
+            self::Hausmeister => 'Muster Hausmeisterservice GmbH',
         };
     }
 

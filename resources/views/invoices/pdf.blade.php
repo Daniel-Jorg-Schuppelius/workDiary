@@ -114,9 +114,24 @@
         </tr>
     </thead>
     <tbody>
-    @foreach ($invoice->items as $item)
+    @php
+        // MVP-1054: Gliederung mit Ordnungszahlen und Titelsummen.
+        $outlineCols = $showServiceDates ? 5 : 4;
+    @endphp
+    @foreach (\App\Services\Billing\DocumentOutline::rows($invoice->items) as $outlineRow)
+        @if ($outlineRow['type'] === 'subtotal')
+            <tr><td></td><td colspan="{{ $outlineCols - 1 }}" class="num" style="font-size: 8pt;">{{ __('invoicing.line_kind.subtotal', ['number' => $outlineRow['number'], 'title' => $outlineRow['title']->description]) }}</td><td class="num" style="font-weight: bold;">{{ \App\Support\DocumentNumber::decimal($outlineRow['amount']->toFloat(), 2) }} {{ $invoice->currency->value }}</td></tr>
+            @continue
+        @endif
+        @php
+            $item = $outlineRow['line'];
+        @endphp
+        @if (! $item->lineKind()->isPriced())
+            <tr><td>{{ $outlineRow['number'] }}</td><td colspan="{{ $outlineCols }}" style="{{ $item->lineKind() === \App\Enums\Billing\DocumentLineKind::Title ? 'font-weight: bold;' : 'font-style: italic; white-space: pre-line;' }}">{{ $item->description }}</td></tr>
+            @continue
+        @endif
         <tr>
-            <td>{{ $item->position }}</td>
+            <td>{{ $outlineRow['number'] }}</td>
             <td>{{ $item->description }}@if ($item->article_number_snapshot) <span style="font-size: 8pt; color: #6b7280;">({{ $item->article_number_snapshot }})</span>@endif @if ($item->service_from !== null)<br><span style="font-size: 8pt; color: #6b7280;">{{ __('invoicing.item.service_period') }}: {{ $item->servicePeriodLabel() }}</span>@endif</td>
             @if ($showServiceDates)<td>{{ optional($item->service_date)->fdate() ?: '—' }}</td>@endif
             {{-- 3./4. NK nur zeigen, wenn signifikant: die Rechnung muss aus Menge × Preis nachrechenbar sein --}}
@@ -192,6 +207,19 @@
                 {{ __(':percent % Skonto bei Zahlung innerhalb von :days Tagen', ['percent' => $fmtRate($invoice->skonto_percent), 'days' => (int) $invoice->skonto_days]) }}@if ($invoice->skontoDeadline() !== null) — {{ __('bis :date', ['date' => $invoice->skontoDeadline()->fdate()]) }}: {{ \App\Support\DocumentNumber::decimal(($invoice->total?->toFloat() ?? 0.0) - $invoice->skontoAmount()->toFloat(), 2) }} {{ $invoice->currency->value }}@endif
             </td></tr>
         @endif
+        @php
+            $labourCosts = $invoice->disclosedLabourCosts();
+        @endphp
+        @if ($labourCosts !== null && ! $labourCosts['gross']->isZero())
+            {{-- MVP-1053: Arbeitskosten nach § 35a EStG für die Steuererklärung des Kunden. --}}
+            <tr><td colspan="{{ $footColspan + 1 }}" class="num" style="font-size: 8pt; color: #6b7280;">
+                {{ __($invoice->type === \App\Models\Invoicing\Invoice::TYPE_FINAL ? 'invoicing.labour_costs.pdf_line_final' : 'invoicing.labour_costs.pdf_line', [
+                    'gross' => \App\Support\DocumentNumber::decimal($labourCosts['gross']->toFloat(), 2),
+                    'tax' => \App\Support\DocumentNumber::decimal($labourCosts['tax']->toFloat(), 2),
+                    'currency' => $invoice->currency->value,
+                ]) }}
+            </td></tr>
+        @endif
     </tfoot>
 </table>
 
@@ -240,6 +268,25 @@
                         <span>{{ __('invoicing.girocode.hint') }}</span>
                     </td>
                 @endif
+            </tr>
+        </table>
+    </div>
+@endif
+
+{{-- Online-Zahlung (MVP-1067): stabiler Link auf workDiary, der Betrag gilt beim Aufruf. --}}
+@php($paymentLink = app(\App\Services\Invoicing\OnlinePayment\InvoicePaymentLinkService::class)->documentLink($invoice))
+@if ($paymentLink !== null)
+    <div class="bank-block">
+        <table>
+            <tr>
+                <td style="padding: 0;">
+                    <strong>{{ __('payments.pdf.title') }}</strong><br>
+                    {{ __('payments.pdf.hint') }}<br>
+                    <span style="word-break: break-all;">{{ $paymentLink['url'] }}</span>
+                </td>
+                <td class="giro">
+                    <img src="{{ $paymentLink['qr'] }}" alt="{{ __('payments.pdf.title') }}">
+                </td>
             </tr>
         </table>
     </div>

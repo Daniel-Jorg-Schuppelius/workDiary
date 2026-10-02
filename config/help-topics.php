@@ -38,6 +38,10 @@ return [
         'interview-offers.show',
         // Komponenten-Vorschau (MVP-958): Entwicklungswerkzeug des Betreibers, keine Fachfunktion.
         'admin.ui-patterns.*',
+        // Diktat-Ergebnis (MVP-1060): JSON-Abfrage des Diktatknopfs, keine Seite.
+        'dictations.show',
+        // Zahlungslink (MVP-1067): öffentliche Weiterleitung zum Zahlungsanbieter ohne App-Layout.
+        'payments.show',
         // Entfernt am 2026-09-17 (MVP-797, Befund P8-35): Hier standen
         // 'b2b-catalog.index'/'.show' mit der Begründung "tokengesicherte
         // Public-Routen". Das sind aber die ADMIN-Routen (admin/b2b-katalog);
@@ -115,6 +119,8 @@ return [
         // Plugin-Admin-Seiten ohne eigenes Topic → generische Integrationen.
         // Eigenes Topic seit MVP-797 (Befund P8-22) — zuvor generisch.
         'admin.calendly.*' => 'admin.calendly',
+        // DATEV-Online (MVP-122): Anmeldung, Mandant, Buchungsstapel, Belegbilder.
+        'admin.datev-online.*' => 'admin.datev-online',
         'admin.fritzbox.*' => 'admin.integrations',
         // Globale Suche
         'search.*' => 'search.overview',
@@ -285,6 +291,8 @@ return [
         'diary.show' => 'diary-entries.edit',
         'diary.edit' => 'diary-entries.edit',
         'diary.case-file' => 'diary-entries.edit',
+        // Aufmaßblatt (MVP-1058/1059)
+        'takeoffs.*' => 'takeoffs',
 
         // Leitstelle (Feature 029): Dispatch-Board + Karten-Sicht. Vor dem
         // breiten dispatch.*-Muster, weil eigenes Topic.

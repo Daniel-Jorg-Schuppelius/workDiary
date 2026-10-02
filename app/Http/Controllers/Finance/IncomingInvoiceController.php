@@ -21,7 +21,7 @@ use App\Services\Invoicing\EInvoice\IncomingEInvoiceService;
 use App\Support\CarbonFmt;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use CommonToolkit\Helper\FileSystem\File;
-use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Http\{RedirectResponse, Request, UploadedFile};
 use Illuminate\Support\Facades\{Auth, Gate, Storage};
 use Illuminate\View\View;
 
@@ -53,27 +53,40 @@ class IncomingInvoiceController extends Controller {
     public function store(Request $request): RedirectResponse {
         Gate::authorize('create', Document::class);
 
+        // MVP-1066: auch PDF ohne E-Rechnungsdaten und Fotos, mehrere auf einmal.
+        $types = 'mimetypes:application/xml,text/xml,text/plain,application/pdf,image/jpeg,image/png,image/tiff';
         $request->validate([
-            'file' => ['required', 'file', 'max:20480', 'mimetypes:application/xml,text/xml,text/plain,application/pdf'],
+            'files' => ['required_without:file', 'array', 'max:20'],
+            'files.*' => ['file', 'max:20480', $types],
+            'file' => ['required_without:files', 'file', 'max:20480', $types],
         ]);
-
-        $file = $request->file('file');
-        $contents = File::read((string) $file->getRealPath());
+        /** @var list<UploadedFile> $files */
+        $files = array_values(array_filter((array) ($request->file('files') ?? [$request->file('file')]), static fn ($f): bool => $f instanceof UploadedFile));
 
         /** @var User $actor */
         $actor = Auth::user();
-
         // Zentrale Eingangsverarbeitung (MVP-165/167): Hash-Dedup, Parse,
         // Validierung, Vorschläge/Abweichungen, DMS-Ablage — kanalneutral.
-        $result = $this->eInvoices->storeIncoming(
+        $results = array_map(fn (UploadedFile $file): array => $this->eInvoices->storeIncoming(
             $actor,
-            $contents,
+            File::read((string) $file->getRealPath()),
             $file->getMimeType(),
             $file->getRealPath(),
             'upload',
             $file,
-        );
+        ), $files);
 
+        if (count($results) > 1) {
+            $count = static fn (string $status): int => count(array_filter($results, static fn (array $r): bool => $r['status'] === $status));
+
+            return redirect()->route('finance.incoming-invoices.index')->with('success', __(':created Rechnungen erfasst, :duplicates Dubletten, :failed nicht lesbar oder abgewiesen.', [
+                'created' => $count('created'),
+                'duplicates' => $count('duplicate'),
+                'failed' => $count('unreadable') + $count('infected'),
+            ]));
+        }
+
+        $result = $results[0];
         $incoming = $result['incoming'];
         if ($result['status'] === 'duplicate' && $incoming !== null) {
             return redirect()->route('finance.incoming-invoices.show', $incoming->document_id)
@@ -86,11 +99,11 @@ class IncomingInvoiceController extends Controller {
                 return back()->with('error', __('Die Datei wurde von der Sicherheitsprüfung abgewiesen und nicht abgelegt.'));
             }
 
-            return back()->with('error', __('Die Datei ist keine lesbare E-Rechnung (XRechnung/ZUGFeRD).'));
+            return back()->with('error', __('Die Datei ist keine lesbare Rechnung (XRechnung, ZUGFeRD oder PDF/Bild mit erkennbarer Nummer und Summe).'));
         }
 
         return redirect()->route('finance.incoming-invoices.show', $result['document'])
-            ->with('success', __('E-Rechnung :number erfasst und im DMS abgelegt.', [
+            ->with('success', __((bool) data_get($incoming->summary, 'unstructured') ? 'Rechnung :number aus PDF bzw. Bild erkannt — bitte die Werte prüfen.' : 'E-Rechnung :number erfasst und im DMS abgelegt.', [
                 'number' => (string) data_get($incoming->summary, 'number'),
             ]));
     }

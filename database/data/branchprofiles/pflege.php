@@ -26,7 +26,9 @@ return [
     'label' => 'Ambulante Pflege',
     'description' => 'Ambulante Pflege: Grund- und Behandlungspflege, Hauswirtschaft, Betreuung, Beratungsbesuche und Pflegevisiten mit 5-R-Regel und Vier-Augen-Prinzip bei BtM.',
     // v2: Default-Eintragstypen (Struktur-Typen) ans Profil gekoppelt.
-    'version' => 4,
+    'version' => 5,
+    // MVP-1053: Arbeitskosten nach § 35a EStG bei Privatkunden ausweisen; eigene Einstellungen bleiben.
+    'settings' => ['invoicing.labour_cost_disclosure' => 'private_customers'],
     // Default-Struktur-Typen (EntryTypeSeeder::profiles()) — nicht die
     // Classification-Domäne entry_type.
     'entry_type_defaults' => ['general', 'care_visit'],

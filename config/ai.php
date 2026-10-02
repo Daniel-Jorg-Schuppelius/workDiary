@@ -162,6 +162,16 @@ return [
             'memory_scopes' => [],
             'prompt_version' => 1,
         ],
+        // MVP-1060: Diktat (Whisper-Transkript) in Formularfelder gliedern —
+        // Vorschlag zum Übernehmen, Kundennamen maskiert. Arbeitsbericht ohne
+        // Gesprächsinhalte → mittel.
+        'dictation.structure' => [
+            'verb' => 'extract',
+            'sensitivity' => 'medium',
+            'data_classes' => ['arbeitsbericht'],
+            'memory_scopes' => [],
+            'prompt_version' => 1,
+        ],
         // Auftragsverlauf (Fallakte/Timeline) → Kurznarrativ. Der Verlauf
         // enthält interne Ereignisse quer über alle Quellen → hoch.
         'case.timeline_narrative' => [

@@ -604,6 +604,7 @@ class InvoiceGenerator {
                 'currency' => $original->currency,
                 'tax_rate' => $original->tax_rate,
                 'is_reverse_charge' => (bool) $original->is_reverse_charge,
+                'is_labour_cost_disclosed' => $original->is_labour_cost_disclosed,
                 // MVP-416: Belegrabatt spiegeln (Prozent skaliert selbst, fester Betrag negiert) — sonst negiert die Summe nicht exakt.
                 'discount_percent' => $original->discount_percent,
                 'discount_amount' => $original->discount_amount?->negated(),
@@ -617,6 +618,7 @@ class InvoiceGenerator {
             $position = 0;
             foreach ($original->items as $item) {
                 $cancellation->items()->create([
+                    ...$item->carriedLineAttributes(),
                     'organization_id' => $original->organization_id,
                     'article_id' => $item->article_id,
                     // Feature 160: Varianten-, Nummern- und Herkunftsbezug wandern mit (Herkunftsnachweis bleibt).
@@ -906,6 +908,7 @@ class InvoiceGenerator {
                 // MVP-162/172: Steuerkontext des ORIGINALS übernehmen — sonst
                 // droht unrichtiger Steuerausweis in der Korrektur (§ 14c).
                 'is_reverse_charge' => (bool) $original->is_reverse_charge,
+                'is_labour_cost_disclosed' => $original->is_labour_cost_disclosed,
                 // MVP-416: Belegrabatt spiegeln (Prozent skaliert selbst, fester Betrag negiert).
                 'discount_percent' => $original->discount_percent,
                 'discount_amount' => $original->discount_amount?->negated(),
@@ -919,6 +922,7 @@ class InvoiceGenerator {
             $position = 0;
             foreach ($original->items as $item) {
                 $credit->items()->create([
+                    ...$item->carriedLineAttributes(),
                     'organization_id' => $original->organization_id,
                     'article_id' => $item->article_id,
                     'article_variant_id' => $item->article_variant_id,

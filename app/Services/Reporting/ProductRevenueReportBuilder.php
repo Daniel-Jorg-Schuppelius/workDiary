@@ -129,6 +129,7 @@ class ProductRevenueReportBuilder {
             ->whereBetween('invoices.issued_on', DateRange::days($from, $to))
             ->whereIn('invoices.status', self::STATUSES)
             ->whereIn('invoices.type', self::TYPES)
+            ->where('invoice_items.line_kind', \App\Enums\Billing\DocumentLineKind::Item->value)
             ->groupBy('invoice_items.article_id', 'articles.number', 'articles.name', 'articles.base_unit', 'articles.category')
             ->selectRaw(
                 'invoice_items.article_id AS article_id, articles.number AS article_number, articles.name AS article_name,'

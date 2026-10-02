@@ -1,7 +1,7 @@
 ---
 title: "Managing integrations"
 topic: admin.integrations
-version: 2
+version: 3
 audience:
     - admin
 related:
@@ -73,6 +73,11 @@ purpose, so you do not have to guess where something belongs:
 - **Accounting and invoicing:** lexoffice, orgaMAX, sevDesk, easybill,
   BuchhaltungsButler, InvoicePlane, and the Peppol access point for sending
   electronic invoices.
+- **DATEV Online:** booking batches via EXTF import and document images
+  directly to DATEV Unternehmen online; you sign in with DATEV.
+- **Online payment:** Stripe, Mollie and SumUp for the payment link on
+  invoices, in emails and in the customer portal; you choose the provider
+  in the organization settings.
 - **Telephony and messaging:** sipgate and FRITZ!Box for incoming and outgoing
   calls, the phone directory for names behind unknown numbers (as a
   suggestion, via a lookup service of your choice), seven.io for text messages

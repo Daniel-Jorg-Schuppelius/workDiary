@@ -10,14 +10,14 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\Form;
+namespace App\Http\Controllers\Integration;
 
 use App\Enums\Sync\SyncCommandStatus;
 use App\Http\Controllers\Controller;
-use App\Models\Form\FormSubmission;
 use App\Models\Integration\SyncCommand;
 use App\Services\Attachments\FileAttacher;
-use App\Services\Form\FormService;
+use App\Services\Sync\Contracts\SyncAttachmentTarget;
+use App\Services\Sync\SyncCommandService;
 use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Http\UploadedFile;
 
@@ -27,13 +27,13 @@ use Illuminate\Http\UploadedFile;
  * als Multipart nach, sobald das Gerät wieder online ist.
  *
  * Die Zuordnung läuft über die `client_uuid` des bereits angewendeten
- * `form.submission`-Befehls: nur wer den Befehl selbst abgesetzt hat, kennt
- * sie, und der Sync-Eintrag ist bereits auf den Nutzer festgeschrieben. Ein
- * fremder Anhang an einer fremden Abgabe ist damit nicht konstruierbar, ohne
- * dass zusätzlich eine Abgabe-ID erraten werden müsste.
+ * Befehls: nur wer den Befehl selbst abgesetzt hat, kennt sie, und der
+ * Sync-Eintrag ist bereits auf den Nutzer festgeschrieben. Die Datei nimmt der
+ * Handler des Befehlstyps an, sofern er {@see SyncAttachmentTarget} ist
+ * (Formularabgabe, Aufmaßzeile — MVP-1059).
  */
 class SyncAttachmentController extends Controller {
-    public function __invoke(Request $request, FormService $forms): JsonResponse {
+    public function __invoke(Request $request, SyncCommandService $sync): JsonResponse {
         $user = $request->user();
         abort_unless($user !== null, 401);
 
@@ -46,25 +46,24 @@ class SyncAttachmentController extends Controller {
         $command = SyncCommand::query()
             ->where('user_id', $user->id)
             ->where('client_uuid', $data['client_uuid'])
-            ->where('type', 'form.submission')
             ->first();
+        $target = $command !== null ? $sync->handlerFor((string) $command->type) : null;
+        if (! $target instanceof SyncAttachmentTarget) {
+            return response()->json(['status' => 'pending'], 409);
+        }
 
-        if ($command === null || $command->result_status !== SyncCommandStatus::Applied) {
+        if ($command->result_status !== SyncCommandStatus::Applied) {
             // Noch nicht angewendet (oder abgelehnt): der Client darf es
             // später erneut versuchen bzw. das Foto verwerfen.
             return response()->json(['status' => 'pending'], 409);
         }
 
-        $submissionId = (int) str_replace('form_submissions:', '', (string) $command->result_ref);
-        $submission = FormSubmission::query()->find($submissionId);
-        if ($submission === null) {
-            return response()->json(['status' => 'gone'], 410);
-        }
-
         $file = $request->file('file');
         abort_unless($file instanceof UploadedFile, 422);
 
-        $forms->attachDeferred($submission, (string) $data['field'], $file, $user);
+        if (! $target->attach($user, (string) $command->type, (string) $command->result_ref, (string) $data['field'], $file)) {
+            return response()->json(['status' => 'gone'], 410);
+        }
 
         return response()->json(['status' => 'stored']);
     }

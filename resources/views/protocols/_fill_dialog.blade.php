@@ -31,5 +31,6 @@
             <option value="{{ $result->value }}" @selected(old('result', $item->result?->value) === $result->value)>{{ $result->label() }}</option>
         @endforeach
     </x-select-field>
-    <x-textarea-field name="note" :label="__('protocol.dialog.note')" :value="old('note', $item->note)" rows="2" />
+    <div class="flex justify-end"><x-dictation-button target="#protocol-fill-note" context="protocol" /></div>
+    <x-textarea-field name="note" id="protocol-fill-note" :label="__('protocol.dialog.note')" :value="old('note', $item->note)" rows="2" />
 </x-modal>

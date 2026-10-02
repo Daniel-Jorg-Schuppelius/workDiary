@@ -47,6 +47,11 @@ enum BoqItemType: string implements HasLabel {
      * Die Zuschlagsposition nicht: sie trägt einen Prozentsatz auf
      * Bezugspositionen und führt weder Menge noch Einheit.
      */
+    /** Trägt im Angebot einen Einheitspreis (MVP-1056); Bedarfs- und Wahlpositionen ja, Hinweis und Zuschlag nein. */
+    public function isPriceable(): bool {
+        return $this !== self::Note && $this !== self::Markup;
+    }
+
     public function isBillable(): bool {
         return match ($this) {
             self::Note, self::Optional, self::Alternative, self::Markup => false,

@@ -1,7 +1,7 @@
 ---
 title: "Rechnungen & Belege"
 topic: invoices.manage
-version: 6
+version: 7
 audience: []
 modules:
     - module.vertrieb
@@ -107,3 +107,21 @@ kennzeichnet sie als abgerechnet, Entfernen der Position, Verwerfen des
 Entwurfs oder ein Vollstorno geben sie wieder frei, die Herkunft bleibt am
 Beleg sichtbar. Teilgutschriften geben nichts frei; der Lagerbestand bleibt bei
 allen Rechnungsvorgängen unverändert.
+
+## Online-Zahlung
+
+Ist ein Zahlungsanbieter (Stripe, Mollie oder SumUp) als Plugin
+eingerichtet, tragen ausgestellte Rechnungen einen Zahlungslink mit
+QR-Code; dieselbe Adresse steht über den Platzhalter {{payment_link}} in
+der Mail und im Kundenportal. Der Link führt immer über workDiary: Erst
+beim Aufruf entsteht beim Anbieter die Bezahlseite über den dann offenen
+Betrag, ein gedruckter Code bleibt also nach Teilzahlungen richtig.
+
+Bestätigt der Anbieter die Zahlung, gilt die Rechnung als bezahlt oder
+teilbezahlt — wie bei einem zugeordneten Bankumsatz; eine Erstattung nimmt
+das zurück. Mit der lokalen Buchhaltung erscheint die Zahlung im
+Buchungseingang (Geldtransit an Forderung, die Gebühr des Anbieters als
+Nebenkosten des Geldverkehrs); die spätere Auszahlung des Anbieters buchen
+Sie gegen das Geldtransit-Konto. Den Link auf Rechnung und Mail schalten
+Sie in den Organisationseinstellungen unter „Online-Zahlung“ ab; im
+Kundenportal bleibt er.

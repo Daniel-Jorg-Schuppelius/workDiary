@@ -63,6 +63,14 @@ final class DemoIndustriesTest extends TestCase {
             'veranstaltungstechnik' => [DemoIndustry::Veranstaltungstechnik, 'veranstaltungstechnik', 'aufbau', 'VT_SOUNDCHECK', '#ton', 'Konferenz', 'Line-Array'],
             // Musterbranche 20 (MVP-848).
             'verein' => [DemoIndustry::Verein, 'verein', 'veranstaltung', 'VE_SPORTFEST', '#sportfest', 'Sportfest', 'Vereinsbus'],
+            // Musterbranchen 21–27 (MVP-1062): Gewerke.
+            'maler' => [DemoIndustry::Maler, 'maler', 'innenanstrich', 'MA_ANSTRICH', '#innen', 'Renovierung', 'Fassadengerüst'],
+            'dachdecker' => [DemoIndustry::Dachdecker, 'dachdecker', 'sturmschaden', 'DD_DACHPRUEFUNG', '#sturm', 'Sturmschaden', 'Schrägaufzug'],
+            'holzbau-tischler' => [DemoIndustry::HolzbauTischler, 'holzbau-tischler', 'fenster', 'HT_MONTAGE', '#fenster', 'Fenstertausch', 'Formatkreissäge'],
+            'metallbau' => [DemoIndustry::Metallbau, 'metallbau', 'tor', 'MB_TORPRUEFUNG', '#tor', 'Schiebetor', 'Schiebetor'],
+            'fliesen-bodenleger' => [DemoIndustry::FliesenBodenleger, 'fliesen-bodenleger', 'bad', 'FB_VERLEGUNG', '#bad', 'Badsanierung', 'Fliesenschneidmaschine'],
+            'photovoltaik-energieberatung' => [DemoIndustry::PhotovoltaikEnergieberatung, 'photovoltaik-energieberatung', 'inbetriebnahme', 'PV_INBETRIEBNAHME', '#pv', 'Inbetriebnahme', 'PV-Anlage'],
+            'hausmeister' => [DemoIndustry::Hausmeister, 'hausmeister', 'kontrollgang', 'HM_KONTROLLGANG', '#kontrollgang', 'Kontrollgang', 'Kleintraktor'],
         ];
     }
 
@@ -77,7 +85,7 @@ final class DemoIndustriesTest extends TestCase {
             $this->assertNotSame('', $industry->label());
             $this->assertStringContainsString('Muster', $industry->companyName());
         }
-        $this->assertCount(20, DemoIndustry::all());
+        $this->assertCount(27, DemoIndustry::all());
     }
 
     /**

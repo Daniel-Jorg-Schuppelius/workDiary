@@ -408,6 +408,29 @@ test("buildPayload: form.submission kündigt gefüllte Dateifelder als pending_f
     assert.deepEqual(payload.pending_files, ["foto"]);
 });
 
+test("buildPayload: takeoff.line nimmt Blatt, Formel, Werte und angekündigtes Foto mit (MVP-1059)", () => {
+    const fields = { formula: "04", factor: "-1", label: "Tür" };
+    const photo = { files: [{}] };
+    const form = {
+        dataset: { syncPayloadTakeoff: "sqt1" },
+        querySelector(sel) {
+            if (sel === 'input[type="file"][name="files[photo]"]') return photo;
+            const m = sel.match(/^\[name="(.+)"\]$/);
+            return m && fields[m[1]] !== undefined ? { value: fields[m[1]] } : null;
+        },
+        querySelectorAll: (sel) =>
+            sel === '[name^="values["]' ? [{ value: "0,88" }, { value: "2,01" }, { value: "" }] : [],
+    };
+    assert.deepEqual(buildPayload("takeoff.line", form), {
+        takeoff: "sqt1",
+        formula: "04",
+        values: ["0,88", "2,01", ""],
+        factor: "-1",
+        label: "Tür",
+        pending_files: ["photo"],
+    });
+});
+
 /* ------------------------------------------------------------------ */
 /* Outbox-Verwaltung                                                   */
 /* ------------------------------------------------------------------ */

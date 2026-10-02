@@ -46,6 +46,7 @@ class FieldSchemaRuleTest extends TestCase {
         'App\Models\Procedure\ProcedureStepRun::value_json' => '{value}/{values} für SPC; Feld über ProcedureStepFields.',
         'App\Models\Print\LabelTemplate::fields' => 'Layoutfelder eines Etiketts (Druckposition), keine Erfassung.',
         'App\Models\Audit\AuditRedaction::fields' => 'Liste geschwärzter Spaltennamen, keine Erfassung.',
+        'App\Models\Takeoff\TakeoffLine::values' => 'Messwerte bzw. Ausdruck einer REB-Formel (MVP-1058), keine Erfassungsfelder.',
     ];
 
     private const SCHEMA_COLUMNS = ['fields', 'fields_snapshot', 'checklist', 'value_json', 'values', 'schema'];

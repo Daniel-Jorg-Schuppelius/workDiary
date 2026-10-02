@@ -1,7 +1,7 @@
 ---
 title: "Catalogues fournisseurs"
 topic: supplier-catalogs.overview
-version: 1
+version: 2
 audience: []
 modules:
     - module.lager
@@ -57,11 +57,19 @@ l'opérateur la reprend expressément ; en mode quatre yeux, une demande de
 validation est créée à la place, qu'une seconde personne doit approuver
 ou refuser.
 
-**OCI-Punchout :** Les sources avec un accès boutique enregistré
-permettent de basculer directement vers la boutique en ligne du
-fournisseur. Le panier qui y est constitué revient via un retour signé et
-limité dans le temps, et est affecté à l'entrepôt cible choisi — comme
-base pour la suite de l'approvisionnement.
+**Accès boutique (OCI ou IDS-Connect) :** Les sources avec un accès
+boutique enregistré permettent de basculer directement vers la boutique
+en ligne du fournisseur. Vous choisissez le protocole sur la source ;
+IDS-Connect, proposé par les grossistes en électricité et en
+sanitaire-chauffage, nécessite en plus votre numéro client chez le
+grossiste. Le panier qui y est constitué revient sous forme de brouillon
+de commande pour l'entrepôt cible choisi. Sont reprises les positions
+dont la référence fournisseur est associée à un article ; les
+indications de la boutique (délais de livraison ou articles bloqués, par
+exemple) s'affichent comme message. Si la boutique signale le panier
+comme déjà commandé, ne le commandez pas une seconde fois. Pour les
+sources IDS, le symbole de boutique dans la liste des articles ouvre la
+page de l'article directement dans la boutique.
 
 La lecture est possible avec des droits de lecture du stock ; la
 création, l'import et la liaison exigent des droits d'écriture du stock.

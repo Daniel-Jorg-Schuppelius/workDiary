@@ -35,6 +35,9 @@ enum PostingSourceKind: string implements HasLabel {
     /** Restbuchwert beim Anlagenabgang (Feature 133, MVP-891). */
     case AssetDisposal = 'asset_disposal';
 
+    /** Online-Zahlung einer Rechnung über einen Zahlungsanbieter (MVP-1067). */
+    case OnlinePayment = 'online_payment';
+
     public function label(): string {
         return (string) __('enums.finance.posting-source-kind.' . $this->value);
     }
@@ -48,6 +51,7 @@ enum PostingSourceKind: string implements HasLabel {
             self::Payment => 'primary',
             self::Depreciation => 'accent',
             self::AssetDisposal => 'neutral',
+            self::OnlinePayment => 'primary',
         };
     }
 
@@ -60,6 +64,7 @@ enum PostingSourceKind: string implements HasLabel {
             self::Payment => 'account_balance',
             self::Depreciation => 'trending_down',
             self::AssetDisposal => 'logout',
+            self::OnlinePayment => 'credit_card',
         };
     }
 
@@ -73,6 +78,7 @@ enum PostingSourceKind: string implements HasLabel {
             self::Payment => 'payment',
             self::Depreciation => 'depreciation',
             self::AssetDisposal => 'asset_disposal',
+            self::OnlinePayment => 'online_payment',
         };
     }
 }

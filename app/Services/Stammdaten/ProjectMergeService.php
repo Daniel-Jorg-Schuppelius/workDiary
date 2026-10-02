@@ -127,6 +127,7 @@ class ProjectMergeService extends AbstractEntityMergeService {
             $this->repointExternalReferences($morph, $sourceId, $targetId);
             $this->repointAliases($morph, $sourceId, $targetId);
             $this->repointMorphTables($morph, $sourceId, $targetId);
+            $this->repointSubjectChannel($morph, $sourceId, $targetId);
             $this->repointTaggables($morph, $sourceId, $targetId);
             $this->mergeFields($source, $target, $fieldOverrides);
 
@@ -135,6 +136,19 @@ class ProjectMergeService extends AbstractEntityMergeService {
             // Hartes Löschen (Kinder/Refs bereits umgehängt). Über das Modell, damit der Audit-Log „deleted" festhält.
             $source->delete();
         });
+    }
+
+    /**
+     * Projektchat (MVP-1061): höchstens ein Kanal je Projekt. Hat das Ziel
+     * keinen, übernimmt es den der Quelle; sonst bleibt der Quellkanal als
+     * Gruppenkanal ohne Träger erhalten — der Verlauf geht nicht verloren.
+     */
+    private function repointSubjectChannel(string $morph, int $sourceId, int $targetId): void {
+        $targetHasChannel = DB::table('chat_channels')->where('subject_type', $morph)->where('subject_id', $targetId)->exists();
+        DB::table('chat_channels')
+            ->where('subject_type', $morph)
+            ->where('subject_id', $sourceId)
+            ->update($targetHasChannel ? ['subject_type' => null, 'subject_id' => null] : ['subject_id' => $targetId]);
     }
 
     /**

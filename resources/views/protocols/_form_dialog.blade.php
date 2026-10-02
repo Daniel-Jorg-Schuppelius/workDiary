@@ -38,6 +38,7 @@
             <option value="{{ $visibility->value }}" @selected(old('visibility', \App\Enums\Protocol\ProtocolVisibility::Internal->value) === $visibility->value)>{{ $visibility->label() }}</option>
         @endforeach
     </x-select-field>
-    <x-textarea-field name="description" :label="__('protocol.field.description')" :value="old('description')" rows="3" />
+    <div class="flex justify-end"><x-dictation-button target="#protocol-description" context="protocol" /></div>
+    <x-textarea-field name="description" id="protocol-description" :label="__('protocol.field.description')" :value="old('description')" rows="3" />
     <x-textarea-field name="state_initial" :label="__('protocol.field.state_initial')" :value="old('state_initial')" rows="2" />
 </x-modal>

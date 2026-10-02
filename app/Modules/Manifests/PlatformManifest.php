@@ -123,6 +123,7 @@ final class PlatformManifest extends Manifest {
             ],
             \App\Services\Classification\Contracts\ProfileInstallStep::class => [
                 \App\Services\Fields\Install\CustomFieldInstallStep::class,
+                \App\Services\Org\Install\SettingDefaultsInstallStep::class,
             ],
         ];
     }

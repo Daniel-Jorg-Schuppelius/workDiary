@@ -10,7 +10,7 @@
 
 namespace App\Http\Controllers\Procurement;
 
-use App\Enums\Procurement\{CatalogItemStatus, CatalogSourceFormat};
+use App\Enums\Procurement\{CatalogItemStatus, CatalogSourceFormat, PunchoutProtocol};
 use App\Enums\User\Permission as P;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
@@ -19,12 +19,15 @@ use App\Models\Article\{Article, ArticleVariant, PricingChangeAlert};
 use App\Models\Inventory\Warehouse;
 use App\Models\Supplier\{Supplier, SupplierCatalogImport, SupplierCatalogItem, SupplierCatalogSource};
 use App\Services\Article\PriceSuggestionService;
-use App\Services\Procurement\{CatalogArticleAdopter, CatalogFetchService, CatalogImportDispatcher, CatalogLinkService, ShopinfoParser};
+use App\Services\Procurement\{CatalogArticleAdopter, CatalogFetchService, CatalogImportDispatcher, CatalogLinkService, PunchoutHandoff, ShopinfoParser};
 use App\Support\{ErrorText, SqidEncoder};
 use CommonToolkit\Helper\FileSystem\File;
+use ERechnungToolkit\Enums\IdsConnectAction;
+use ERechnungToolkit\Helper\IdsConnect\IdsConnectRequest;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
+use InvalidArgumentException;
 use RuntimeException;
 
 /**
@@ -120,6 +123,8 @@ class SupplierCatalogController extends Controller {
             'punchout_url' => $data['punchout_url'] ?? null,
             'punchout_username' => $data['punchout_username'] ?? null,
             'punchout_password' => ($data['punchout_password'] ?? '') !== '' ? $data['punchout_password'] : null,
+            'punchout_protocol' => $data['punchout_protocol'] ?? PunchoutProtocol::Oci->value,
+            'punchout_customer_number' => ($data['punchout_customer_number'] ?? '') !== '' ? $data['punchout_customer_number'] : null,
         ]);
 
         return redirect()->route('supplier-catalogs.show', $source)
@@ -162,6 +167,8 @@ class SupplierCatalogController extends Controller {
             'fetch_interval_minutes' => $data['fetch_interval_minutes'] ?? null,
             'punchout_url' => $data['punchout_url'] ?? null,
             'punchout_username' => $data['punchout_username'] ?? null,
+            'punchout_protocol' => $data['punchout_protocol'] ?? PunchoutProtocol::Oci->value,
+            'punchout_customer_number' => ($data['punchout_customer_number'] ?? '') !== '' ? $data['punchout_customer_number'] : null,
         ]);
         // Passwörter nur ersetzen, wenn neue angegeben wurden (sonst bestehende behalten).
         if (($data['remote_password'] ?? '') !== '') {
@@ -447,14 +454,14 @@ class SupplierCatalogController extends Controller {
     }
 
     /**
-     * Aktiver OCI-Punchout-Absprung in den Lieferanten-Shop (MVP-096): rendert
-     * eine selbst absendende POST-Form an die Shop-Login-URL mit den
-     * OCI-Setup-Feldern. Die HOOK_URL für den Warenkorb-Rücksprung ist eine
-     * zeitlich begrenzte signierte URL — sie trägt Quelle, Ziel-Lager und den
-     * absprungberechtigten Nutzer, da der Cross-Site-POST des Shops keine
-     * Session mitbringt.
+     * Aktiver Absprung in den Lieferanten-Shop: rendert eine selbst absendende
+     * POST-Form an die Shop-Adresse. OCI (MVP-096) bekommt eine zeitlich
+     * begrenzte signierte HOOK_URL mit Quelle, Ziel-Lager und Nutzer, da der
+     * Cross-Site-POST des Shops keine Session mitbringt. IDS-Connect (MVP-1071)
+     * erlaubt nur 256 Zeichen — dort trägt die Rücksprungadresse ein
+     * Einmal-Token, der Kontext liegt serverseitig ({@see PunchoutHandoff}).
      */
-    public function punchout(Request $request, SupplierCatalogSource $supplierCatalog): \Illuminate\Contracts\View\View|RedirectResponse {
+    public function punchout(Request $request, SupplierCatalogSource $supplierCatalog, PunchoutHandoff $handoff): \Illuminate\Contracts\View\View|RedirectResponse {
         $this->canManage();
         $this->assertSourceOrg($supplierCatalog);
 
@@ -471,6 +478,22 @@ class SupplierCatalogController extends Controller {
         /** @var \App\Models\Platform\User $user */
         $user = Auth::user();
 
+        if ($supplierCatalog->punchout_protocol === PunchoutProtocol::Ids) {
+            try {
+                $fields = IdsConnectRequest::formFields(
+                    IdsConnectAction::ReceiveCart,
+                    hookUrl: route('oci-carts.ids-return', $handoff->issueHook($supplierCatalog, $warehouse, $user)),
+                    customerNumber: $supplierCatalog->punchout_customer_number,
+                    userName: $supplierCatalog->punchout_username,
+                    password: $supplierCatalog->punchout_password,
+                );
+            } catch (InvalidArgumentException) {
+                return redirect()->route('supplier-catalogs.show', $supplierCatalog)->with('error', __('procurement.ids.flash.hook_too_long'));
+            }
+
+            return view('supplier-catalogs.punchout', ['source' => $supplierCatalog, 'fields' => $fields, 'multipart' => true]);
+        }
+
         // Quelle als ID (kein Sqid am Modell): die HMAC-Signatur der URL
         // verhindert Manipulation/Enumeration.
         $hookUrl = \Illuminate\Support\Facades\URL::temporarySignedRoute('oci-carts.return', now()->addHours(2), [
@@ -481,7 +504,37 @@ class SupplierCatalogController extends Controller {
 
         return view('supplier-catalogs.punchout', [
             'source' => $supplierCatalog,
-            'hookUrl' => $hookUrl,
+            'fields' => [
+                'USERNAME' => (string) $supplierCatalog->punchout_username,
+                'PASSWORD' => (string) $supplierCatalog->punchout_password,
+                'HOOK_URL' => $hookUrl,
+                'OCI_VERSION' => '4.0',
+                'RETURNTARGET' => '_top',
+            ],
+            'multipart' => false,
+        ]);
+    }
+
+    /**
+     * Artikelseite im IDS-Shop öffnen (Aktion ADL, MVP-1071) — ohne
+     * Rücksprung; bestellt wird über den Warenkorb-Absprung.
+     */
+    public function shopDeepLink(SupplierCatalogItem $catalogItem): \Illuminate\Contracts\View\View {
+        $this->canManage();
+        $this->assertOrg($catalogItem);
+        $source = SupplierCatalogSource::query()->find($catalogItem->supplier_catalog_source_id);
+        abort_unless($source instanceof SupplierCatalogSource && $source->hasPunchout() && $source->punchout_protocol === PunchoutProtocol::Ids, 404);
+
+        return view('supplier-catalogs.punchout', [
+            'source' => $source,
+            'fields' => IdsConnectRequest::formFields(
+                IdsConnectAction::ArticleDeepLink,
+                customerNumber: $source->punchout_customer_number,
+                userName: $source->punchout_username,
+                password: $source->punchout_password,
+                articleNumber: (string) $catalogItem->external_no,
+            ),
+            'multipart' => true,
         ]);
     }
 

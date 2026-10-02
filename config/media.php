@@ -32,5 +32,8 @@ return [
         'model' => (string) env('WHISPER_MODEL', 'base'),
         'model_dir' => (string) env('WHISPER_MODEL_DIR', ''),
         'device' => (string) env('WHISPER_DEVICE', 'cpu'),
+        // Diktat (MVP-1060): Obergrenzen je Aufnahme.
+        'dictation_timeout' => (int) env('DICTATION_TIMEOUT', 300),
+        'dictation_max_kb' => (int) env('DICTATION_MAX_KB', 20480),
     ],
 ];

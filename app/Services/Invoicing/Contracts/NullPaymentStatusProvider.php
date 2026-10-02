@@ -12,11 +12,11 @@ declare(strict_types=1);
 
 namespace App\Services\Invoicing\Contracts;
 
-use App\Models\Invoicing\Invoice;
+use App\Models\Invoicing\{Invoice, OnlinePayment};
 
 /** Ohne Finanzmodul gibt es keine Bankzuordnung. */
 final class NullPaymentStatusProvider implements PaymentStatusProvider {
     public function allocatedSum(Invoice $invoice): float {
-        return 0.0;
+        return OnlinePayment::settledSumFor($invoice);
     }
 }

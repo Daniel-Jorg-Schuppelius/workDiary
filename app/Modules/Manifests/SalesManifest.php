@@ -102,6 +102,14 @@ final class SalesManifest extends Manifest {
     /** @return array<class-string, list<class-string>> */
     public function extensions(): array {
         return [
+            \App\Services\Mcp\Contracts\McpTool::class => [
+                \App\Services\Sales\Mcp\QuotesTool::class,
+                \App\Services\Sales\Mcp\CreateQuoteDraftTool::class,
+            ],
+            \App\Services\Billing\Contracts\DocumentChainSource::class => [
+                \App\Services\Sales\Chain\AcceptedQuotesWithoutInvoice::class,
+                \App\Services\Sales\Chain\QuotesToFollowUp::class,
+            ],
             \App\Services\Notification\DeadlineScans\DeadlineScan::class => [
                 \App\Services\Sales\DeadlineScans\QuoteFollowUpScan::class,
             ],
@@ -110,6 +118,9 @@ final class SalesManifest extends Manifest {
             ],
             \App\Services\Retention\Contracts\RetentionPolicyProvider::class => [
                 \App\Services\Sales\Retention\SalesRetentionPolicies::class,
+            ],
+            \App\Services\Reporting\Contracts\ProjectEconomicsDimension::class => [
+                \App\Services\Sales\Reporting\QuoteCalculationEconomicsDimension::class,
             ],
         ];
     }

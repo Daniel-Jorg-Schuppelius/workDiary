@@ -200,13 +200,6 @@ Route::get('branding/logo/{logo}', BrandingLogoController::class)
     ->middleware(['signed', 'throttle:240,1'])
     ->name('branding.logo');
 
-// OCI-Punchout-Rücksprung (Feature 050, MVP-096): Der Shop POSTet den Warenkorb
-// cross-site ohne Session-Cookie — Autorisierung über die beim Absprung erzeugte,
-// zeitlich begrenzte signierte HOOK_URL (CSRF-Ausnahme in bootstrap/app.php).
-Route::post('oci-carts/return', [\App\Http\Controllers\B2bCatalog\OciCartController::class, 'hookReturn'])
-    ->middleware(['signed', 'throttle:12,1'])
-    ->name('oci-carts.return');
-
 Route::get('sign/timesheet/{token}', [PublicSignatureController::class, 'show'])
     ->middleware('throttle:30,1')
     ->name('timesheets.public-sign');
@@ -495,7 +488,8 @@ Route::middleware('auth')->group(function () {
 
     // Alle folgenden Routen gehören zum neuen System und sind nur für
     // dort freigeschaltete User (is_new_system=true) bzw. Admins erreichbar.
-    Route::middleware(['access.new', \App\Http\Middleware\EnforcePlanModules::class])->group(function () {
+    // AllowMicrophone (MVP-1060): Diktat-Dialoge öffnen auf beliebigen Seiten der App.
+    Route::middleware(['access.new', \App\Http\Middleware\EnforcePlanModules::class, \App\Http\Middleware\AllowMicrophone::class])->group(function () {
         Route::get('dashboard', [DashboardController::class, '__invoke'])->name('dashboard');
         // Ziel nach dem Login (MVP-799): persönliche Wahl → Vorgabe je Rolle → Arbeitsliste.
         Route::get('start', \App\Http\Controllers\Platform\StartPageController::class)->name('start');
@@ -1139,6 +1133,26 @@ Route::middleware('auth')->group(function () {
         // Einträge — Unterschied zum kundensichtbaren Portal-PDF).
         Route::get('diary/{diary}/case-file.pdf', [DiaryCaseFileController::class, 'pdf'])->name('diary.case-file.pdf');
 
+        // Sprachdiktat (MVP-1060): Aufnahme annehmen, Ergebnis abholen (nur die eigene Person).
+        Route::post('diktat', [\App\Http\Controllers\Media\DictationController::class, 'store'])->middleware('throttle:20,1')->name('dictations.store');
+        Route::get('diktat/{dictation}', [\App\Http\Controllers\Media\DictationController::class, 'show'])->name('dictations.show');
+
+        // Aufmaß (MVP-1058/1059): Blätter am Auftrag, Projekt oder LV.
+        Route::get('aufmass/neu', [\App\Http\Controllers\Takeoff\TakeoffController::class, 'create'])->name('takeoffs.create');
+        Route::post('aufmass', [\App\Http\Controllers\Takeoff\TakeoffController::class, 'store'])->name('takeoffs.store');
+        Route::get('aufmass/{takeoff}', [\App\Http\Controllers\Takeoff\TakeoffController::class, 'show'])->name('takeoffs.show');
+        Route::get('aufmass/{takeoff}/bearbeiten', [\App\Http\Controllers\Takeoff\TakeoffController::class, 'edit'])->name('takeoffs.edit');
+        Route::put('aufmass/{takeoff}', [\App\Http\Controllers\Takeoff\TakeoffController::class, 'update'])->name('takeoffs.update');
+        Route::delete('aufmass/{takeoff}', [\App\Http\Controllers\Takeoff\TakeoffController::class, 'destroy'])->name('takeoffs.destroy');
+        Route::post('aufmass/{takeoff}/status', [\App\Http\Controllers\Takeoff\TakeoffController::class, 'transition'])->name('takeoffs.transition');
+        Route::post('aufmass/{takeoff}/uebernahme', [\App\Http\Controllers\Takeoff\TakeoffController::class, 'transfer'])->name('takeoffs.transfer');
+        Route::get('aufmass/{takeoff}/pdf', [\App\Http\Controllers\Takeoff\TakeoffController::class, 'pdf'])->name('takeoffs.pdf');
+        Route::get('aufmass/{takeoff}/zeilen/neu', [\App\Http\Controllers\Takeoff\TakeoffController::class, 'lineForm'])->name('takeoffs.lines.create');
+        Route::post('aufmass/{takeoff}/zeilen', [\App\Http\Controllers\Takeoff\TakeoffController::class, 'storeLine'])->name('takeoffs.lines.store');
+        Route::get('aufmass/{takeoff}/zeilen/{line}/bearbeiten', [\App\Http\Controllers\Takeoff\TakeoffController::class, 'lineForm'])->name('takeoffs.lines.edit');
+        Route::put('aufmass/{takeoff}/zeilen/{line}', [\App\Http\Controllers\Takeoff\TakeoffController::class, 'updateLine'])->name('takeoffs.lines.update');
+        Route::delete('aufmass/{takeoff}/zeilen/{line}', [\App\Http\Controllers\Takeoff\TakeoffController::class, 'destroyLine'])->name('takeoffs.lines.destroy');
+
         // Disposition / Einsatzplanung (Feature 028): Konfliktvorschau + Status.
         // Terminanfragen-Inbox + buchbare Leistungsarten (Feature 087,
         // MVP-666–668): zweiphasig — der Kunde fragt an, hier wird entschieden.
@@ -1522,10 +1536,26 @@ Route::middleware('auth')->group(function () {
         Route::post('articles/duplicates/merge', [\App\Http\Controllers\Article\ArticleMergeController::class, 'merge'])->name('articles.duplicates.merge');
         Route::post('articles/duplicates/bulk-merge', [\App\Http\Controllers\Article\ArticleMergeController::class, 'bulkMerge'])->name('articles.duplicates.bulk-merge');
         Route::post('articles/duplicates/dismiss', [\App\Http\Controllers\Article\ArticleMergeController::class, 'dismiss'])->name('articles.duplicates.dismiss');
+        // MVP-1055: Kalkulationsschema und Lohngruppen — vor der Resource (Kollision mit articles/{article}).
+        Route::get('articles/kalkulation', [\App\Http\Controllers\Article\CalculationSchemeController::class, 'edit'])->name('articles.calculation-scheme.edit');
+        Route::put('articles/kalkulation', [\App\Http\Controllers\Article\CalculationSchemeController::class, 'update'])->name('articles.calculation-scheme.update');
+        Route::get('articles/kalkulation/lohngruppen/neu', [\App\Http\Controllers\Article\CalculationSchemeController::class, 'wageGroupForm'])->name('articles.wage-groups.create');
+        Route::post('articles/kalkulation/lohngruppen', [\App\Http\Controllers\Article\CalculationSchemeController::class, 'storeWageGroup'])->name('articles.wage-groups.store');
+        Route::get('articles/kalkulation/lohngruppen/{wageGroup}/bearbeiten', [\App\Http\Controllers\Article\CalculationSchemeController::class, 'wageGroupForm'])->name('articles.wage-groups.edit');
+        Route::put('articles/kalkulation/lohngruppen/{wageGroup}', [\App\Http\Controllers\Article\CalculationSchemeController::class, 'updateWageGroup'])->name('articles.wage-groups.update');
+        Route::delete('articles/kalkulation/lohngruppen/{wageGroup}', [\App\Http\Controllers\Article\CalculationSchemeController::class, 'destroyWageGroup'])->name('articles.wage-groups.destroy');
         Route::resource('articles', \App\Http\Controllers\Article\ArticleController::class);
         Route::post('articles/{article}/retire', [\App\Http\Controllers\Article\ArticleController::class, 'retire'])->name('articles.retire');
         // Nachkalkulation je Artikel (Feature 047, MVP-715): Reiter der Detailseite, CSV via ?export=csv.
         Route::get('articles/{article}/nachkalkulation', [\App\Http\Controllers\Manufacturing\ArticleCostingController::class, 'index'])->name('articles.costing');
+        // MVP-1055: Vorkalkulation einer Leistung.
+        Route::get('articles/{article}/kalkulation', [\App\Http\Controllers\Article\ArticleCalculationController::class, 'show'])->name('articles.calculation');
+        Route::post('articles/{article}/kalkulation/preis', [\App\Http\Controllers\Article\ArticleCalculationController::class, 'adoptPrice'])->name('articles.calculation.adopt-price');
+        Route::get('articles/{article}/kalkulation/ansaetze/neu', [\App\Http\Controllers\Article\ArticleCalculationController::class, 'approachForm'])->name('articles.cost-approaches.create');
+        Route::post('articles/{article}/kalkulation/ansaetze', [\App\Http\Controllers\Article\ArticleCalculationController::class, 'storeApproach'])->name('articles.cost-approaches.store');
+        Route::get('articles/{article}/kalkulation/ansaetze/{approach}/bearbeiten', [\App\Http\Controllers\Article\ArticleCalculationController::class, 'approachForm'])->name('articles.cost-approaches.edit');
+        Route::put('articles/{article}/kalkulation/ansaetze/{approach}', [\App\Http\Controllers\Article\ArticleCalculationController::class, 'updateApproach'])->name('articles.cost-approaches.update');
+        Route::delete('articles/{article}/kalkulation/ansaetze/{approach}', [\App\Http\Controllers\Article\ArticleCalculationController::class, 'destroyApproach'])->name('articles.cost-approaches.destroy');
         // CO₂-Fußabdruck je Stück (MVP-960).
         Route::get('articles/{article}/co2-fussabdruck', [\App\Http\Controllers\Manufacturing\ArticleFootprintController::class, 'show'])->name('articles.footprint');
         Route::put('articles/{article}/co2-fussabdruck', [\App\Http\Controllers\Manufacturing\ArticleFootprintController::class, 'update'])->name('articles.footprint.update');
@@ -1710,6 +1740,7 @@ Route::middleware('auth')->group(function () {
         Route::post('supplier-catalogs/{supplierCatalog}/adopt', [\App\Http\Controllers\Procurement\SupplierCatalogController::class, 'adopt'])->name('supplier-catalogs.adopt');
         Route::post('supplier-catalogs/items/{catalogItem}/adopt', [\App\Http\Controllers\Procurement\SupplierCatalogController::class, 'adoptItem'])->name('supplier-catalogs.items.adopt');
         Route::get('supplier-catalogs/{supplierCatalog}/punchout', [\App\Http\Controllers\Procurement\SupplierCatalogController::class, 'punchout'])->name('supplier-catalogs.punchout'); // MVP-096 aktiver Punchout-Absprung
+        Route::get('supplier-catalogs/items/{catalogItem}/shop', [\App\Http\Controllers\Procurement\SupplierCatalogController::class, 'shopDeepLink'])->name('supplier-catalogs.items.shop'); // MVP-1071 IDS-Artikeldeeplink
 
         // ── Margenregeln (Feature 050, MVP-095) ─ Gate pricing-margin-rules.* → module.lager
         Route::get('pricing-margin-rules', [\App\Http\Controllers\Article\PricingMarginRuleController::class, 'index'])->name('pricing-margin-rules.index');
@@ -1723,6 +1754,9 @@ Route::middleware('auth')->group(function () {
 
         // ── OCI-/IDS-Warenkorb-Hook (Feature 050, MVP-096) ─ Gate oci-carts.* → module.lager
         Route::post('oci-carts/import', [\App\Http\Controllers\B2bCatalog\OciCartController::class, 'import'])->name('oci-carts.import');
+        // Meldungen des sitzungslosen Shop-Rücksprungs (routes/punchout.php) abholen.
+        Route::get('oci-carts/result/{key}', [\App\Http\Controllers\B2bCatalog\OciCartController::class, 'result'])
+            ->where('key', '[A-Za-z0-9]{40}')->name('oci-carts.result');
 
         // ── GAEB-Leistungsverzeichnisse (Feature 049, MVP-081/082) ─ Gate bill-of-quantities.* → module.bau
         Route::get('bill-of-quantities', [\App\Http\Controllers\Gaeb\BillOfQuantityController::class, 'index'])->name('bill-of-quantities.index');
@@ -1769,6 +1803,10 @@ Route::middleware('auth')->group(function () {
         Route::get('zuordnungsregeln/{rule}/bearbeiten', [\App\Http\Controllers\Gaeb\CatalogRuleController::class, 'edit'])->name('catalog-rules.edit');
         Route::put('zuordnungsregeln/{rule}', [\App\Http\Controllers\Gaeb\CatalogRuleController::class, 'update'])->name('catalog-rules.update');
         Route::delete('zuordnungsregeln/{rule}', [\App\Http\Controllers\Gaeb\CatalogRuleController::class, 'destroy'])->name('catalog-rules.destroy');
+        // MVP-1056: LV bepreisen (EP und EP-Aufgliederung) und EFB-Preisblätter 221/223.
+        Route::get('bill-of-quantities/{billOfQuantity}/bepreisen', [\App\Http\Controllers\Gaeb\BoqPricingController::class, 'edit'])->name('bill-of-quantities.pricing');
+        Route::put('bill-of-quantities/{billOfQuantity}/bepreisen', [\App\Http\Controllers\Gaeb\BoqPricingController::class, 'update'])->name('bill-of-quantities.pricing.update');
+        Route::get('bill-of-quantities/{billOfQuantity}/efb/{form}', [\App\Http\Controllers\Gaeb\BoqPricingController::class, 'efb'])->whereIn('form', ['221', '223'])->name('bill-of-quantities.efb');
         Route::get('bill-of-quantities/{billOfQuantity}/export', [\App\Http\Controllers\Gaeb\BillOfQuantityController::class, 'export'])->name('bill-of-quantities.export');
         Route::post('bill-of-quantities/{billOfQuantity}/transition', [\App\Http\Controllers\Gaeb\BillOfQuantityController::class, 'transition'])->name('bill-of-quantities.transition');
         Route::post('bill-of-quantities/{billOfQuantity}/addenda', [\App\Http\Controllers\Gaeb\BillOfQuantityController::class, 'addAddendum'])->name('bill-of-quantities.addenda.add');
@@ -1993,6 +2031,8 @@ Route::middleware('auth')->group(function () {
         // Eine Liste über Angebote, Rechnungen, Belege, Eingangsrechnungen und
         // Auslagen; die früheren drei Seiten sind Filterzustände davon.
         Route::get('finanzen/belege', [\App\Http\Controllers\Billing\DocumentFeedController::class, 'index'])->name('billing.feed');
+        // MVP-1057: Belegkette — abzurechnen und nachzufassen.
+        Route::get('finanzen/belegkette', [\App\Http\Controllers\Billing\DocumentChainController::class, 'index'])->name('billing.chain');
 
         // ── Rechnungen / Invoicing ────────────────────────────────────
         // MVP-549: Bestandsroute → Feed mit vorgesetztem Tab.
@@ -2825,6 +2865,9 @@ Route::middleware('auth')->group(function () {
             Route::get('{quote}/positionen/{item}/bearbeiten', [\App\Http\Controllers\Sales\QuoteController::class, 'itemForm'])->name('items.edit');
             Route::put('{quote}/positionen/{item}', [\App\Http\Controllers\Sales\QuoteController::class, 'updateItem'])->name('items.update');
             Route::delete('{quote}/positionen/{item}', [\App\Http\Controllers\Sales\QuoteController::class, 'removeItem'])->name('items.destroy');
+            // MVP-1055: Zuschlag auf Einzelpreise verteilen (nur Entwurf).
+            Route::get('{quote}/zuschlag', [\App\Http\Controllers\Sales\QuoteController::class, 'markupForm'])->name('markup.form');
+            Route::post('{quote}/zuschlag', [\App\Http\Controllers\Sales\QuoteController::class, 'applyMarkup'])->name('markup');
         });
 
         // ── Faktura-Übergabe (Feature 045, Teil B) ──────────────────────────────
@@ -4651,7 +4694,7 @@ Route::middleware('auth')->group(function () {
             ->name('api.internal.sync.commands');
         // Foto-Queue (Audit 2026-08, W4.1): Bild-/Dateiinhalte kommen einzeln
         // als Multipart nach, zugeordnet über die client_uuid des Befehls.
-        Route::post('api/internal/sync/attachments', \App\Http\Controllers\Form\SyncAttachmentController::class)
+        Route::post('api/internal/sync/attachments', \App\Http\Controllers\Integration\SyncAttachmentController::class)
             ->middleware('throttle:60,1')
             ->name('api.internal.sync.attachments');
         // Phase 3 (MVP-367): Geräte-lokale Liste der Outbox-/abgelehnten
@@ -5295,6 +5338,8 @@ Route::middleware('auth')->group(function () {
             Route::get('search', [\App\Http\Controllers\Chat\MessageController::class, 'search'])->name('search');
             Route::get('unread-count', [\App\Http\Controllers\Chat\ChannelController::class, 'unreadCount'])->name('unread');
             Route::get('channel-list', [\App\Http\Controllers\Chat\ChannelController::class, 'channelList'])->name('channel-list');
+            // Projekt- und Auftragschat (MVP-1061): legt den Kanal beim ersten Öffnen an.
+            Route::post('thema/{type}/{id}', [\App\Http\Controllers\Chat\SubjectChatController::class, 'open'])->whereIn('type', ['project', 'diary'])->name('subject.open');
 
             // Nachrichten-/Poll-Aktionen auf einzelnen Nachrichten (literal vor {channel}).
             Route::put('messages/{message}', [\App\Http\Controllers\Chat\MessageController::class, 'update'])->name('messages.update');
@@ -5411,6 +5456,9 @@ Route::middleware('auth')->group(function () {
 
         Route::get('profile/api-tokens', [ApiTokenController::class, 'index'])->name('profile.api-tokens.index');
         Route::get('profile/api-tokens/create', [ApiTokenController::class, 'create'])->middleware('reauth')->name('profile.api-tokens.create');
+        // MCP-Zustimmung (MVP-1065): wie ein neuer Token nur nach frischer Anmeldung.
+        Route::get('oauth/authorize', [\App\Http\Controllers\Mcp\McpOAuthController::class, 'authorize'])->middleware('reauth')->name('mcp.oauth.authorize');
+        Route::post('oauth/authorize', [\App\Http\Controllers\Mcp\McpOAuthController::class, 'approve'])->middleware('reauth')->name('mcp.oauth.approve');
         Route::post('profile/api-tokens', [ApiTokenController::class, 'store'])->middleware('reauth')->name('profile.api-tokens.store');
         Route::delete('profile/api-tokens/{id}', [ApiTokenController::class, 'destroy'])
             ->where('id', '[A-Za-z0-9]+')

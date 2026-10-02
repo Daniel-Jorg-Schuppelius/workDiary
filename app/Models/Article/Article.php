@@ -177,6 +177,11 @@ class Article extends Model implements CustomFieldSubject {
         return $this->hasMany(ArticlePriceTier::class)->orderBy('min_qty');
     }
 
+    /** @return HasMany<ArticleCostApproach, $this> Kostenansätze einer Leistung (MVP-1055) */
+    public function costApproaches(): HasMany {
+        return $this->hasMany(ArticleCostApproach::class)->orderBy('position')->orderBy('id');
+    }
+
     /**
      * Typ-Ebene Hersteller-Modell (produktmodell-konzept.md, MVP-369).
      *

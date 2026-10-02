@@ -73,6 +73,6 @@ class CostEstimateItem extends Model implements DocumentLine {
 
     /** @return array<string, string|null> */
     protected static function lineColumns(): array {
-        return ['tax_rate' => null, 'discount_percent' => null, 'discount_amount' => null, 'net_amount' => 'amount'];
+        return ['tax_rate' => null, 'discount_percent' => null, 'discount_amount' => null, 'net_amount' => 'amount', 'labour_share_percent' => null, 'line_kind' => null];
     }
 }

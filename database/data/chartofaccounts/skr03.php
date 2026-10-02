@@ -137,6 +137,11 @@ return [
         ['source_kind' => 'payment', 'role' => 'employee_payable', 'account' => '1740'],
         ['source_kind' => 'payment', 'role' => 'discount', 'account' => '8736'],
 
+        // Online-Zahlung (MVP-1067): Geldtransit bis zur Auszahlung, Gebühr als Nebenkosten des Geldverkehrs.
+        ['source_kind' => 'online_payment', 'role' => 'payment_transit', 'account' => '1360'],
+        ['source_kind' => 'online_payment', 'role' => 'receivable', 'account' => '1400'],
+        ['source_kind' => 'online_payment', 'role' => 'payment_fees', 'account' => '4970'],
+
         // Jahres-AfA (Feature 133): direkte Methode, BGA als Auffangkonto —
         // Fuhrpark/Software werden je Anlage überschrieben.
         ['source_kind' => 'depreciation', 'role' => 'fixed_asset', 'account' => '0410'],

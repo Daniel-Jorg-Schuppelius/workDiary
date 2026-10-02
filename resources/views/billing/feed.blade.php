@@ -112,6 +112,8 @@
 @endphp
 <x-index-page overflow="clip" :subtitle="__('billing.feed.subtitle', ['range' => $rangeLabel ?? ''])">
     <x-slot:actions>
+        {{-- MVP-1057: Belegkette --}}
+        <x-icon-btn icon="conversion_path" size="sm" :href="route('billing.chain')" show-label>{{ __('invoicing.chain.title') }}</x-icon-btn>
         @if ($_canDesign)
             <x-icon-btn icon="design_services" size="sm" :href="route('admin.document-design.index')"
                         :label="__('document_design.link.feed_title')" show-label>

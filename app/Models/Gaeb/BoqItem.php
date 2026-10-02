@@ -141,7 +141,7 @@ class BoqItem extends Model implements DocumentLine {
      * @return array<string, string|null>
      */
     protected static function lineColumns(): array {
-        return ['tax_rate' => 'vat_rate', 'discount_amount' => null, 'net_amount' => 'total_price'];
+        return ['tax_rate' => 'vat_rate', 'discount_amount' => null, 'net_amount' => 'total_price', 'labour_share_percent' => null, 'line_kind' => null];
     }
 
     /** @return BelongsTo<BoqSection, $this> */

@@ -16,7 +16,9 @@ return [
     'description' => 'Elektrohandwerk: Installation, E-Check, Messung, Wallbox und PV-Anschluss mit DGUV-V3-Prüfplänen und Qualifikationen.',
     // v2 (Feature 100): Entsorgungs-Modul empfohlen + AVV-Presets für
     // Kabel/Batterien (Altgeräte-Mitnahme von der Baustelle/beim Kunden).
-    'version' => 3,
+    'version' => 4,
+    // MVP-1053: Arbeitskosten nach § 35a EStG bei Privatkunden ausweisen; eigene Einstellungen bleiben.
+    'settings' => ['invoicing.labour_cost_disclosure' => 'private_customers'],
     // Feature 081 (MVP-373): empfohlener Funktionsumfang — als vorausgewählte
     // Checkliste auf der Seite „Funktionsumfang“, nie still angewendet.
     'modules_recommended' => [

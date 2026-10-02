@@ -82,19 +82,29 @@
         </tr>
     </thead>
     <tbody>
-    @foreach ($quote->items as $item)
+    @foreach (\App\Services\Billing\DocumentOutline::rows($quote->items, fn ($line): bool => $line->countsInTotal()) as $outlineRow)
+        @if ($outlineRow['type'] === 'subtotal')
+            <tr><td></td><td colspan="5" class="num" style="font-size: 9px;">{{ __('invoicing.line_kind.subtotal', ['number' => $outlineRow['number'], 'title' => $outlineRow['title']->description]) }}</td><td class="num" style="font-weight: bold;">{{ $fmt($outlineRow['amount']->toFloat()) }} EUR</td></tr>
+            @continue
+        @endif
         @php
-            // Spiegel von Quote::recalculate(): zählt die Position in der Summe?
-            $counts = $item->accepted ?? ! $item->optional;
+            $item = $outlineRow['line'];
+            $kind = $item->lineKind();
             $marker = null;
-            if ($decided && $item->accepted === false) {
+            if ($kind->isPriced() && $decided && $item->accepted === false) {
                 $marker = __('nicht angenommen');
+            } elseif (! $decided && $kind === \App\Enums\Billing\DocumentLineKind::Alternative) {
+                $marker = __('invoicing.line_kind.alternative_marker');
             } elseif (! $decided && $item->optional) {
                 $marker = __('Option — nicht in der Gesamtsumme enthalten');
             }
         @endphp
+        @if (! $kind->isPriced())
+            <tr><td>{{ $outlineRow['number'] }}</td><td colspan="6" style="{{ $kind === \App\Enums\Billing\DocumentLineKind::Title ? 'font-weight: bold;' : 'font-style: italic; white-space: pre-line;' }}">{{ $item->description }}</td></tr>
+            @continue
+        @endif
         <tr>
-            <td>{{ $item->position }}</td>
+            <td>{{ $outlineRow['number'] }}</td>
             <td>
                 {{ $item->description }}
                 @if ($marker !== null)<br><span class="muted" style="font-size: 9px;">{{ $marker }}</span>@endif
@@ -121,6 +131,19 @@
             <tr><td colspan="6" class="num">{{ __('USt.') }} {{ $fmtRate($row['rate']) }}% ({{ $fmt($row['net']) }} EUR)</td><td class="num">{{ $fmt($row['tax']) }} EUR</td></tr>
         @endforeach
         <tr><td colspan="6" class="num">{{ __('Gesamt') }}</td><td class="num">{{ $fmt($quote->total?->toFloat() ?? 0.0) }} EUR</td></tr>
+        @php
+            $labourCosts = $quote->disclosedLabourCosts();
+        @endphp
+        @if ($labourCosts !== null && ! $labourCosts['gross']->isZero())
+            {{-- MVP-1053: voraussichtliche Arbeitskosten nach § 35a EStG. --}}
+            <tr><td colspan="7" class="num" style="font-size: 8pt; color: #6b7280; font-weight: normal;">
+                {{ __('invoicing.labour_costs.pdf_line_quote', [
+                    'gross' => $fmt($labourCosts['gross']->toFloat()),
+                    'tax' => $fmt($labourCosts['tax']->toFloat()),
+                    'currency' => 'EUR',
+                ]) }}
+            </td></tr>
+        @endif
     </tfoot>
 </table>
 

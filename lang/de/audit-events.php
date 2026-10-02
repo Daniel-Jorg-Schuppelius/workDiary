@@ -760,6 +760,7 @@ return [
         'mailed' => 'Lieferschein per E-Mail versendet',
     ],
     'quote' => [
+        'markup_applied' => 'Zuschlag auf Einzelpreise verteilt',
         'mailed' => 'Angebot per E-Mail versendet',
         'followed_up' => 'Angebot nachgefasst',
         'accepted' => 'Angebot angenommen',
@@ -1322,5 +1323,14 @@ return [
         'returned' => 'Lizenzverkauf zurückgenommen',
         'blocked' => 'Lizenz gesperrt',
         'unblocked' => 'Lizenzsperre aufgehoben',
+    ],
+    'takeoff' => [
+        'completed' => 'Aufmaß abgeschlossen',
+        'reopened' => 'Aufmaß wieder geöffnet',
+        'transferred' => 'Aufmaß übernommen',
+    ],
+    'mcp' => [
+        'authorized' => 'KI-Assistent (MCP) autorisiert',
+        'write' => 'Über KI-Assistent (MCP) angelegt bzw. geändert',
     ],
 ];

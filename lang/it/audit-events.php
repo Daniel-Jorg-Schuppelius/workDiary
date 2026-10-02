@@ -760,6 +760,7 @@ return [
         'mailed' => 'Bolla di consegna inviata via e-mail',
     ],
     'quote' => [
+        'markup_applied' => 'Maggiorazione distribuita sui prezzi unitari',
         'mailed' => 'Preventivo inviato via e-mail',
         'followed_up' => 'Preventivo sollecitato',
         'accepted' => 'Preventivo accettato',
@@ -1322,5 +1323,14 @@ return [
         'returned' => 'Vendita di licenza ritirata',
         'blocked' => 'Licenza bloccata',
         'unblocked' => 'Blocco della licenza rimosso',
+    ],
+    'takeoff' => [
+        'completed' => 'Misurazione chiusa',
+        'reopened' => 'Misurazione riaperta',
+        'transferred' => 'Misurazione trasferita',
+    ],
+    'mcp' => [
+        'authorized' => 'Assistente IA (MCP) autorizzato',
+        'write' => 'Creato o modificato tramite assistente IA (MCP)',
     ],
 ];

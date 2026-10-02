@@ -107,7 +107,7 @@ final class LocalInvoiceMirrorSource implements InvoiceMirrorSource {
         return $invoices->map(function (Invoice $invoice) use ($products): MirrorVoucher {
             $lines = [];
             $serviceTo = null;
-            foreach ($invoice->items as $item) {
+            foreach ($invoice->pricedItems() as $item) {
                 $item->setRelation('invoice', $invoice); // Währung der Positionsbeträge kommt vom Beleg (MoneyCast)
                 $lines[] = $this->toLine($item, $invoice, $products);
                 $to = self::date($item->service_to);
@@ -259,6 +259,7 @@ final class LocalInvoiceMirrorSource implements InvoiceMirrorSource {
         $labels = $products['labels'];
         $query = InvoiceItem::query()->withoutGlobalScopes()
             ->where('organization_id', $organization->id)
+            ->where('line_kind', \App\Enums\Billing\DocumentLineKind::Item->value)
             ->whereIn('invoice_id', $invoices->select('id'));
         if ($products['excluded'] !== []) {
             $query->where(static fn(Builder $w) => $w->whereNull('article_id')->orWhereNotIn('article_id', array_keys($products['excluded'])));

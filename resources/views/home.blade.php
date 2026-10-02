@@ -97,6 +97,13 @@
         ['icon' => 'celebration',             'label' => __('Veranstalter')],
         ['icon' => 'speaker',                 'label' => __('Veranstaltungstechnik')],
         ['icon' => 'sports_soccer',           'label' => __('Sportverein')],
+        ['icon' => 'format_paint',           'label' => __('Maler & Lackierer')],
+        ['icon' => 'roofing',                'label' => __('Dachdecker')],
+        ['icon' => 'carpenter',              'label' => __('Holzbau & Tischlerei')],
+        ['icon' => 'hardware',               'label' => __('Metallbau')],
+        ['icon' => 'grid_view',              'label' => __('Fliesen- & Bodenleger')],
+        ['icon' => 'solar_power',            'label' => __('Photovoltaik & Energieberatung')],
+        ['icon' => 'home_repair_service',    'label' => __('Hausmeisterdienst')],
     ];
 
     // Produktnamen der angebundenen Systeme – bewusst unübersetzt.

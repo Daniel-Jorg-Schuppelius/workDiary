@@ -14,7 +14,7 @@ use App\Models\Concerns\{BelongsToOrganization, HasSqid};
 use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany, HasMany};
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany, HasMany, MorphTo};
 
 /**
  * Chat-Kanal: benannter Kanal (public/private), Gruppe oder Direktnachricht.
@@ -37,6 +37,7 @@ class Channel extends Model {
     protected $fillable = [
         'organization_id', 'name', 'slug', 'description',
         'type', 'visibility', 'is_archived', 'created_by',
+        'subject_type', 'subject_id',
     ];
 
     protected $casts = [
@@ -54,6 +55,11 @@ class Channel extends Model {
     /** @return HasMany<Message, $this> */
     public function messages(): HasMany {
         return $this->hasMany(Message::class, 'channel_id');
+    }
+
+    /** @return MorphTo<Model, $this> Projekt oder Auftrag des Kanals (MVP-1061) */
+    public function subject(): MorphTo {
+        return $this->morphTo();
     }
 
     /** @return BelongsToMany<User, $this> */

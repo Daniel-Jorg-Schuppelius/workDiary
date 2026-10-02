@@ -1,7 +1,7 @@
 ---
 title: "Meine Rechnungen"
 topic: customer-portal.invoices
-version: 1
+version: 2
 audience: []
 related:
     - customer-portal.overview
@@ -21,3 +21,8 @@ in welchem Bearbeitungsstand sich eine Rechnung befindet.
 Bei mehreren Seiten blättern Sie über die Seitennummerierung am unteren
 Rand. Die Ansicht dient Ihrer Einsicht und Nachvollziehbarkeit; die
 Rechnungsstellung selbst erfolgt durch das beauftragte Unternehmen.
+
+Offene Rechnungen können Sie, sofern der Rechnungssteller es anbietet,
+über **Online bezahlen** direkt beim Zahlungsanbieter begleichen; die
+Zahlung erscheint nach der Bestätigung des Anbieters im Status der
+Rechnung.

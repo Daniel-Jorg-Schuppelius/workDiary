@@ -760,6 +760,7 @@ return [
         'mailed' => 'Albarán enviado por correo electrónico',
     ],
     'quote' => [
+        'markup_applied' => 'Recargo repartido en los precios unitarios',
         'mailed' => 'Presupuesto enviado por correo electrónico',
         'followed_up' => 'Seguimiento del presupuesto realizado',
         'accepted' => 'Presupuesto aceptado',
@@ -1322,5 +1323,14 @@ return [
         'returned' => 'Venta de licencia anulada',
         'blocked' => 'Licencia bloqueada',
         'unblocked' => 'Bloqueo de licencia levantado',
+    ],
+    'takeoff' => [
+        'completed' => 'Medición cerrada',
+        'reopened' => 'Medición reabierta',
+        'transferred' => 'Medición traspasada',
+    ],
+    'mcp' => [
+        'authorized' => 'Asistente de IA (MCP) autorizado',
+        'write' => 'Creado o modificado mediante asistente de IA (MCP)',
     ],
 ];

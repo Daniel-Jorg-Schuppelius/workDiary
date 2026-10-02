@@ -100,6 +100,21 @@ return [
         'block_trips' => 'No new trip if a mandatory inspection is overdue',
         'block_trips_hint' => 'If the MOT, accident-prevention check or another mandatory inspection of the assigned asset is overdue or blocked, no trip can be recorded from today. Past trips remain recordable.',
     ],
+    'payments' => [
+        'heading' => 'Online payment',
+        'description' => 'Payment link and QR code on the invoice, in the email and in the customer portal. Activate the payment provider (Stripe, Mollie or SumUp) as a plugin with its own credentials.',
+        'provider' => 'Payment provider',
+        'provider_auto' => 'Automatic (first active provider)',
+        'provider_hint' => 'Only needed if several providers are active.',
+        'on_documents' => 'Payment link on the invoice and in the email',
+        'on_documents_hint' => 'When switched off, online payment remains available in the customer portal.',
+    ],
+    'mcp' => [
+        'heading' => 'AI assistants (MCP)',
+        'description' => 'AI assistants such as Claude or ChatGPT can connect with the consent of individual users and read or create drafts with their permissions.',
+        'enabled' => 'Allow AI assistants via MCP',
+        'enabled_hint' => 'When switched off, no new connection is possible; existing connections get no tools and cannot be renewed.',
+    ],
     'rental_terms' => [
         'heading' => 'Rental terms in equipment rental',
         'description' => 'Rental terms are kept as the customer agreement “Rental terms (equipment rental)” with version and signature.',

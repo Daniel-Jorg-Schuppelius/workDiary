@@ -51,20 +51,40 @@ return [
 
     'oci' => [
         'punchout' => [
-            'legend' => 'OCI-Punchout (Shop-Absprung)',
-            'url' => 'Shop-Login-URL (OCI)',
-            'hint' => 'Mit konfigurierter Login-URL springt der Einkauf direkt in den Lieferanten-Shop; der Warenkorb kommt über eine signierte Rücksprung-URL als Bestellentwurf zurück.',
+            'legend' => 'Shop-Absprung (OCI, IDS-Connect)',
+            'url' => 'Shop-Adresse (OCI/IDS)',
+            'hint' => 'Mit konfigurierter Shop-Adresse springt der Einkauf direkt in den Lieferanten-Shop (OCI oder IDS-Connect); der Warenkorb kommt als Bestellentwurf zurück.',
             'action' => 'Zum Shop (Punchout)',
             'title' => 'Weiterleitung zum Shop',
             'redirecting' => 'Sie werden zum Shop „:shop“ weitergeleitet …',
             'continue' => 'Weiter zum Shop',
+            'protocol' => 'Protokoll',
         ],
         'note' => 'Aus OCI-Warenkorb übernommen',
+        'protocol' => [
+            'oci' => 'OCI',
+            'ids' => 'IDS-Connect',
+        ],
         'flash' => [
             'missing_context' => 'Lieferant oder Lagerort des Warenkorbs fehlt.',
             'empty_cart' => 'Der Warenkorb enthält keine Positionen.',
             'no_punchout' => 'Für diese Quelle ist kein Punchout konfiguriert.',
             'imported' => 'Warenkorb übernommen: :matched Positionen, :unmatched ohne Zuordnung.',
+        ],
+    ],
+
+    'ids' => [
+        'customer_number' => 'Kundennummer beim Großhändler',
+        'customer_number_hint' => 'Pflicht bei IDS-Connect; steht in den Zugangsdaten des Großhändlers.',
+        'note' => 'Aus IDS-Warenkorb übernommen',
+        'action' => [
+            'open_in_shop' => 'Im Shop öffnen',
+        ],
+        'flash' => [
+            'hook_too_long' => 'Die Rücksprungadresse ist für IDS-Connect zu lang (höchstens 256 Zeichen). Bitte eine kürzere Anwendungsadresse verwenden.',
+            'unreadable' => 'Der Warenkorb des Shops war nicht lesbar.',
+            'ordered_in_shop' => 'Der Shop meldet den Warenkorb als bereits bestellt — bitte nicht ein zweites Mal bestellen.',
+            'not_ordered' => ':count Alternativ- oder Bedarfspositionen wurden nicht übernommen.',
         ],
     ],
 

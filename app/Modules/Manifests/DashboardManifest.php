@@ -40,4 +40,13 @@ final class DashboardManifest extends Manifest {
     public function tables(): array {
         return [];
     }
+
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Services\Mcp\Contracts\McpTool::class => [
+                \App\Services\Dashboard\Mcp\KeyFiguresTool::class,
+            ],
+        ];
+    }
 }

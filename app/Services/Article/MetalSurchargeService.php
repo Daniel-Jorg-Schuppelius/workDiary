@@ -100,7 +100,9 @@ class MetalSurchargeService {
      * Gesamtbetrag (Menge 1) angelegt — ein Stückzuschlag von 0,0215 € fiele sonst
      * auf 0,02 € und verfälschte die Summe.
      *
-     * @return array{description: string, quantity: string, unit: ?string, unit_price: string}|null
+     * Der Zuschlag ist Materialpreis: Arbeitsanteil 0 % (MVP-1053).
+     *
+     * @return array{description: string, quantity: string, unit: ?string, unit_price: string, labour_share_percent: string}|null
      */
     public function salesSurchargeItem(?int $articleId, string $quantity, ?string $unit, bool $lumpSum = false): ?array {
         $article = $articleId !== null ? \App\Models\Article\Article::query()->find($articleId) : null;
@@ -119,6 +121,7 @@ class MetalSurchargeService {
                 'quantity' => '1',
                 'unit' => null,
                 'unit_price' => $surcharge->times((float) $quantity)->withScale(2)->getAmount(),
+                'labour_share_percent' => '0',
             ];
         }
 
@@ -127,6 +130,7 @@ class MetalSurchargeService {
             'quantity' => $quantity,
             'unit' => $unit,
             'unit_price' => $surcharge->getAmount(),
+            'labour_share_percent' => '0',
         ];
     }
 

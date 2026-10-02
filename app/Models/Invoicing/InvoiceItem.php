@@ -32,6 +32,9 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany};
  * @property int|null $expense_id
  * @property int|null $material_usage_id
  * @property int|null $tour_id
+ * @property int|null $stock_delivery_id
+ * @property int|null $rental_charge_id
+ * @property int|null $settled_invoice_id
  * @property int|null $article_id
  * @property \Illuminate\Support\Carbon|null $service_date
  * @property \Illuminate\Support\Carbon|null $service_from  Leistungszeitraum (Feature 152: Abo-Periode), sonst null
@@ -41,6 +44,9 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany};
  * @property string $unit
  * @property \CommonToolkit\ValueObjects\Money|null $unit_price
  * @property \CommonToolkit\ValueObjects\Percentage|null $discount_percent
+ * @property \CommonToolkit\ValueObjects\Percentage|null $labour_share_percent
+ * @property \App\Enums\Billing\DocumentLineKind $line_kind
+ * @property \CommonToolkit\ValueObjects\Money|null $unit_cost_amount
  * @property \CommonToolkit\ValueObjects\Money|null $discount_amount
  * @property \CommonToolkit\ValueObjects\Money|null $amount
  * @property \CommonToolkit\ValueObjects\Percentage|null $tax_rate
@@ -73,6 +79,16 @@ class InvoiceItem extends Model implements DocumentLine {
 
         static::updating($assertMutable);
         static::deleting($assertMutable);
+        // MVP-1055: Einzelkosten kalkulierter Leistungen für den Deckungsbeitrag.
+        static::creating(static function (self $item): void {
+            if ($item->unit_cost_amount === null && $item->article_id !== null && $item->lineKind()->isPriced()) {
+                $article = \App\Models\Article\Article::query()->find($item->article_id);
+                $calculation = $article !== null ? app(\App\Services\Article\ServiceCalculationService::class)->calculate($article) : null;
+                if ($calculation !== null) {
+                    $item->unit_cost_amount = $calculation->cost;
+                }
+            }
+        });
     }
 
     use Auditable;
@@ -110,7 +126,13 @@ class InvoiceItem extends Model implements DocumentLine {
         'discount_amount',
         'amount',
         'position',
+        'labour_share_percent',
+        'line_kind',
+        'unit_cost_amount',
     ];
+
+    /** @var array<string, mixed> */
+    protected $attributes = ['line_kind' => 'item'];
 
     /** @var array<string, string> */
     protected $casts = [
@@ -123,6 +145,9 @@ class InvoiceItem extends Model implements DocumentLine {
         // Einzelpreis mit 4 NK (Migration widen_invoice_item_precision).
         'unit_price' => MoneyCast::class . ':invoice.currency,4',
         'discount_percent' => PercentageCast::class . ':2',
+        'labour_share_percent' => PercentageCast::class . ':2',
+        'line_kind' => \App\Enums\Billing\DocumentLineKind::class,
+        'unit_cost_amount' => MoneyCast::class . ':invoice.currency,4',
         'discount_amount' => MoneyCast::class . ':invoice.currency',
         'amount' => MoneyCast::class . ':invoice.currency',
         'tax_rate' => PercentageCast::class . ':2',
@@ -136,6 +161,17 @@ class InvoiceItem extends Model implements DocumentLine {
     /** @return BelongsTo<Invoice, $this> */
     public function lineDocument(): BelongsTo {
         return $this->invoice();
+    }
+
+    /** Zeit, Fahrt und Gerät sind Arbeits-, Fahrt- bzw. Maschinenkosten, Material und Auslieferung nicht; Abschlagsabzüge zählen nie. */
+    /** @return int|numeric-string|null */
+    public function defaultLabourShare(): int|string|null {
+        return match (true) {
+            $this->settled_invoice_id !== null => null,
+            $this->time_entry_id !== null, $this->tour_id !== null, $this->rental_charge_id !== null => 100,
+            $this->material_usage_id !== null, $this->stock_delivery_id !== null => 0,
+            default => $this->articleLabourShare(),
+        };
     }
 
     /** @return array<string, string|null> */

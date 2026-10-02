@@ -1343,6 +1343,7 @@ return [
             'payment' => 'Payment',
             'depreciation' => 'Depreciation',
             'asset_disposal' => 'Asset disposal',
+            'online_payment' => 'Online payment',
         ],
         'posting-account-role' => [
             'receivable' => 'Receivable',
@@ -1359,6 +1360,8 @@ return [
             'depreciation' => 'Depreciation expense',
             'disposal_loss' => 'Disposal residual value (loss)',
             'disposal_gain' => 'Disposal residual value (gain)',
+            'payment_transit' => 'Cash in transit (payment provider)',
+            'payment_fees' => 'Bank and payment charges',
         ],
         // Buchungskern (Feature 125, MVP-672).
         'balance-side' => [
@@ -1796,6 +1799,11 @@ return [
             'manual' => 'manual',
             'machine' => 'machine-generated',
         ],
+        'dictation-status' => [
+            'pending' => 'Pending',
+            'done' => 'Done',
+            'failed' => 'Failed',
+        ],
     ],
     // Vereinsverwaltung (Feature 159, MVP-842)
     'club' => [
@@ -2023,6 +2031,22 @@ return [
         'donation-receipt-kind' => [
             'single' => 'Single receipt',
             'collective' => 'Collective receipt',
+        ],
+    ],
+    'takeoff' => [
+        'status' => [
+            'draft' => 'Open',
+            'completed' => 'Completed',
+        ],
+    ],
+    'invoicing' => [
+        'online-payment-status' => [
+            'open' => 'Open',
+            'paid' => 'Paid',
+            'failed' => 'Failed',
+            'canceled' => 'Canceled',
+            'expired' => 'Expired',
+            'refunded' => 'Refunded',
         ],
     ],
 ];

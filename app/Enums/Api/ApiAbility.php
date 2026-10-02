@@ -76,6 +76,9 @@ enum ApiAbility: string implements HasLabel {
     // Lernplattform (Feature 149, MVP-791): lesen + Selbsteinschreibung.
     case LearningRead = 'learning:read';
     case LearningWrite = 'learning:write';
+    // MCP-Server für KI-Assistenten (MVP-1063/1064): lesen bzw. Entwürfe anlegen.
+    case McpRead = 'mcp:read';
+    case McpWrite = 'mcp:write';
 
     public function label(): string {
         return match ($this) {
@@ -120,6 +123,8 @@ enum ApiAbility: string implements HasLabel {
             self::VehiclesRead => (string) __('Fahrzeuge lesen'),
             self::LearningRead => (string) __('Lernplattform lesen'),
             self::LearningWrite => (string) __('Lernplattform: selbst einschreiben'),
+            self::McpRead => (string) __('KI-Assistent (MCP): lesen'),
+            self::McpWrite => (string) __('KI-Assistent (MCP): Entwürfe anlegen'),
         };
     }
 }

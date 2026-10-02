@@ -14,7 +14,31 @@
         : route('invoices.items.store', $invoice);
     $method = $isEdit ? 'PUT' : 'POST';
     $title = $isEdit ? __('Position bearbeiten') : __('Position hinzufügen');
+    // MVP-1054: Titel und Text fragen nur Bezeichnung und Position ab.
+    $lineKind = $item->lineKind();
 @endphp
+@if (! $lineKind->isPriced())
+<x-modal
+    :title="$lineKind->label()"
+    :eyebrow="$invoice->number"
+    :icon="$lineKind === \App\Enums\Billing\DocumentLineKind::Title ? 'title' : 'notes'"
+    tone="primary"
+    :action="$action"
+    :method="$method"
+    :submit-label="__('Speichern')"
+    size="md">
+    <input type="hidden" name="line_kind" value="{{ $lineKind->value }}">
+    <x-form-group :legend="$lineKind->label()" icon="receipt_long" tone="primary" cols="2">
+        @if ($lineKind === \App\Enums\Billing\DocumentLineKind::Title)
+            <x-input-field name="description" :label="__('invoicing.line_kind.title')" required maxlength="1000" span="2" :value="old('description', $item->description ?? '')" />
+        @else
+            <x-textarea-field name="description" :label="__('invoicing.line_kind.text')" required rows="4" maxlength="1000" span="2">{{ old('description', $item->description ?? '') }}</x-textarea-field>
+        @endif
+        <x-input-field name="position" type="number" :label="__('Position')" min="0" step="1" :value="old('position', (string) ($item->position ?? ''))" :hint="__('invoicing.line_kind.position_hint')" />
+    </x-form-group>
+    <x-validation-errors />
+</x-modal>
+@else
 <x-modal
     :title="$title"
     :eyebrow="$invoice->number"
@@ -57,5 +81,10 @@
                 <option value="{{ $code }}" @selected(old('tax_category', $item->tax_category ?? '') === $code)>{{ $label }}</option>
             @endforeach
         </x-select-field>
+        @if ($invoice->is_labour_cost_disclosed ?? \App\Models\Invoicing\Invoice::labourCostDisclosureRule($invoice->organization) !== \App\Enums\Invoicing\LabourCostDisclosure::Off)
+            <x-input-field name="labour_share_percent" type="number" :label="__('invoicing.labour_costs.share')" min="0" max="100" step="0.01"
+                           :value="old('labour_share_percent', $item->labour_share_percent?->getNumericValue() ?? '')" :hint="__('invoicing.labour_costs.share_hint')" />
+        @endif
     </x-form-group>
 </x-modal>
+@endif

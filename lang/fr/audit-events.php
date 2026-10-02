@@ -760,6 +760,7 @@ return [
         'mailed' => 'Bon de livraison envoyé par e-mail',
     ],
     'quote' => [
+        'markup_applied' => 'Majoration répartie sur les prix unitaires',
         'mailed' => 'Devis envoyé par e-mail',
         'followed_up' => 'Devis relancé',
         'accepted' => 'Devis accepté',
@@ -1322,5 +1323,14 @@ return [
         'returned' => 'Vente de licence reprise',
         'blocked' => 'Licence bloquée',
         'unblocked' => 'Blocage de licence levé',
+    ],
+    'takeoff' => [
+        'completed' => 'Métré clôturé',
+        'reopened' => 'Métré rouvert',
+        'transferred' => 'Métré reporté',
+    ],
+    'mcp' => [
+        'authorized' => 'Assistant IA (MCP) autorisé',
+        'write' => 'Créé ou modifié via l’assistant IA (MCP)',
     ],
 ];

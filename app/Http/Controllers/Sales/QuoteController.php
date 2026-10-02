@@ -56,6 +56,8 @@ class QuoteController extends Controller {
             'project_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('projects')],
             'valid_until' => ['nullable', 'date', 'after:today'],
             'terms' => ['nullable', 'string', 'max:5000'],
+            // MVP-1053: leer = Regel der Organisation.
+            'labour_cost_disclosure' => ['nullable', 'in:0,1'],
         ]);
 
         /** @var User $actor */
@@ -65,6 +67,7 @@ class QuoteController extends Controller {
             'project_id' => $data['project_id'] ?? null,
             'valid_until' => $data['valid_until'] ?? null,
             'terms' => $data['terms'] ?? null,
+            'is_labour_cost_disclosed' => isset($data['labour_cost_disclosure']) ? $data['labour_cost_disclosure'] === '1' : null,
         ], [], $actor);
 
         return redirect()->route('quotes.show', $quote)->with('status', __('Angebot :nr angelegt — Positionen hinzufügen und freigeben.', ['nr' => $quote->number]));
@@ -120,9 +123,9 @@ class QuoteController extends Controller {
 
     // ── Positionen (nur Entwurf) ─────────────────────────────────────────
 
-    public function itemForm(Quote $quote, ?QuoteItem $item = null): View {
+    public function itemForm(Request $request, Quote $quote, ?QuoteItem $item = null): View {
         Gate::authorize('update', $quote);
-        $item ??= new QuoteItem();
+        $item ??= new QuoteItem(['line_kind' => in_array($request->query('kind'), ['title', 'text', 'alternative'], true) ? $request->query('kind') : 'item']);
 
         return view('quotes._item_form_dialog', [
             'quote' => $quote,
@@ -134,6 +137,18 @@ class QuoteController extends Controller {
     public function addItem(Request $request, Quote $quote): RedirectResponse {
         Gate::authorize('update', $quote);
         $data = $this->validateItem($request);
+        if (in_array($data['line_kind'] ?? 'item', ['title', 'text'], true)) {
+            $quote->items()->create([
+                'organization_id' => $quote->organization_id,
+                'position' => (int) $quote->items()->max('position') + 1,
+                'line_kind' => $data['line_kind'],
+                'description' => $data['description'],
+                'quantity' => '0',
+                'unit_price' => '0',
+            ]);
+
+            return redirect()->route('quotes.show', $quote)->with('status', __('Position hinzugefügt.'));
+        }
 
         $quote->items()->create([
             'organization_id' => $quote->organization_id,
@@ -161,7 +176,8 @@ class QuoteController extends Controller {
         Gate::authorize('update', $quote);
         abort_unless($item->quote_id === $quote->id, 404);
 
-        $item->update($this->validateItem($request));
+        $data = $this->validateItem($request);
+        $item->update($item->lineKind()->isPriced() ? $data : ['description' => $data['description']]);
         $this->refreshTotals($quote);
 
         return redirect()->route('quotes.show', $quote)->with('status', __('Position aktualisiert.'));
@@ -175,6 +191,51 @@ class QuoteController extends Controller {
         $this->refreshTotals($quote);
 
         return redirect()->route('quotes.show', $quote)->with('status', __('Position entfernt.'));
+    }
+
+    // ── Zuschlag verteilen (MVP-1055) ────────────────────────────────────
+
+    public function markupForm(Quote $quote): View {
+        Gate::authorize('update', $quote);
+
+        return view('quotes._markup_dialog', [
+            'quote' => $quote,
+            'titles' => $quote->items->filter(fn (QuoteItem $item): bool => $item->lineKind() === \App\Enums\Billing\DocumentLineKind::Title)->values(),
+        ]);
+    }
+
+    /**
+     * Verteilt einen Zuschlag (oder Nachlass) auf die Einzelpreise aller
+     * Positionen bzw. der Positionen eines Titels. Der Kunde sieht nur den
+     * neuen Einzelpreis; der Satz steht im Audit-Log.
+     */
+    public function applyMarkup(Request $request, Quote $quote): RedirectResponse {
+        Gate::authorize('update', $quote);
+        $data = $request->validate([
+            'markup_percent' => ['required', 'numeric', 'min:-99', 'max:500'],
+            'title_id' => ['nullable', 'string'],
+        ]);
+        $titleId = isset($data['title_id']) ? \App\Support\Sqid::decode(QuoteItem::class, $data['title_id']) : null;
+        $percent = \CommonToolkit\ValueObjects\Percentage::of(\CommonToolkit\Helper\Data\NumberHelper::toUSFormat((float) $data['markup_percent'], 2));
+
+        $changed = 0;
+        $currentTitle = null;
+        foreach ($quote->items as $item) {
+            if ($item->lineKind() === \App\Enums\Billing\DocumentLineKind::Title) {
+                $currentTitle = (int) $item->id;
+
+                continue;
+            }
+            if (! $item->lineKind()->isPriced() || $item->unit_price === null || ($titleId !== null && $currentTitle !== $titleId)) {
+                continue;
+            }
+            $item->update(['unit_price' => $percent->addTo($item->unit_price)->withScale(2)->getAmount()]);
+            $changed++;
+        }
+        $this->refreshTotals($quote);
+        $quote->audit('quote.markup_applied', ['percent' => $percent->getNumericValue(), 'title_id' => $titleId, 'lines' => $changed]);
+
+        return redirect()->route('quotes.show', $quote)->with('status', trans_choice('article.calculation.flash.markup_applied', $changed, ['count' => $changed]));
     }
 
     // ── Lifecycle ────────────────────────────────────────────────────────
@@ -329,15 +390,19 @@ class QuoteController extends Controller {
 
         return $request->validate([
             'article_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('articles')],
-            'description' => ['required', 'string', 'max:1000'],
-            'quantity' => ['required', 'numeric', 'min:0.001', 'max:9999999'],
+            'description' => ['required', 'string', 'max:500'],
+            // MVP-1054: Titel und Text ohne Menge und Preis; Alternative = Wahlposition.
+            'line_kind' => ['nullable', 'in:item,title,text,alternative'],
+            'quantity' => ['exclude_if:line_kind,title,text', 'required', 'numeric', 'min:0.001', 'max:9999999'],
             'unit' => ['nullable', 'string', 'max:20'],
-            'unit_price' => ['required', 'numeric', 'min:-9999999', 'max:9999999'],
+            'unit_price' => ['exclude_if:line_kind,title,text', 'required', 'numeric', 'min:-9999999', 'max:9999999'],
             // MVP-416: Positionsrabatt — Prozent XOR fester Betrag.
             'discount_percent' => ['nullable', 'numeric', 'min:0', 'max:100', 'prohibits:discount_amount'],
             'discount_amount' => ['nullable', 'numeric', 'min:0', 'max:99999999.99'],
             'tax_rate' => ['nullable', 'numeric', 'min:0', 'max:99'],
             'optional' => ['nullable', 'boolean'],
+            // MVP-1053: Arbeitsanteil nach § 35a EStG.
+            'labour_share_percent' => ['nullable', 'numeric', 'min:0', 'max:100'],
         ]);
     }
 

@@ -119,6 +119,11 @@ class SyncCommandService {
         return $handler->handle($user, $type, $payload);
     }
 
+    /** Handler eines Befehlstyps — der Anhangsweg sucht darüber sein Ziel (MVP-1059). */
+    public function handlerFor(string $type): ?SyncCommandHandler {
+        return $this->handlers()[$type] ?? null;
+    }
+
     /** @return array<string, SyncCommandHandler> */
     private function handlers(): array {
         if ($this->handlers === null) {

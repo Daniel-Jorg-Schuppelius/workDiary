@@ -33,5 +33,17 @@
                        :hint="__('Wird auf PDF und E-Rechnung ausgewiesen und beim Zahlungsabgleich berücksichtigt.')" />
     </x-form-group>
 
+    @php
+        $labourRule = \App\Models\Invoicing\Invoice::labourCostDisclosureRule($invoice->organization);
+        $labourValue = old('labour_cost_disclosure', $invoice->is_labour_cost_disclosed === null ? '' : ($invoice->is_labour_cost_disclosed ? '1' : '0'));
+    @endphp
+    <x-form-group :legend="__('invoicing.labour_costs.override')" icon="construction" tone="ghost" cols="1">
+        <x-select-field name="labour_cost_disclosure" :label="__('invoicing.labour_costs.override')" :hint="__('invoicing.labour_costs.override_hint')">
+            <option value="" @selected($labourValue === '')>{{ __('invoicing.labour_costs.override_default', ['rule' => $labourRule->label()]) }}</option>
+            <option value="1" @selected($labourValue === '1')>{{ __('invoicing.labour_costs.override_on') }}</option>
+            <option value="0" @selected($labourValue === '0')>{{ __('invoicing.labour_costs.override_off') }}</option>
+        </x-select-field>
+    </x-form-group>
+
     <x-validation-errors />
 </x-modal>

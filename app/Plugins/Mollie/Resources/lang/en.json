@@ -1,0 +1,8 @@
+{
+    "API-Schlüssel": "API key",
+    "Aus dem Mollie-Dashboard unter „Entwickler“ → „API-Schlüssel“ (live_… bzw. test_…).": "From the Mollie dashboard under “Developers” → “API keys” (live_… or test_…).",
+    "Kein API-Schlüssel hinterlegt.": "No API key stored.",
+    "Mollie lehnt den API-Schlüssel ab.": "Mollie rejects the API key.",
+    "Online-Zahlung von Rechnungen über Mollie (Karte, PayPal, SEPA-Überweisung, Klarna und weitere).": "Online payment of invoices via Mollie (card, PayPal, SEPA bank transfer, Klarna and more).",
+    "Verbunden — Mollie erreichbar.": "Connected — Mollie reachable."
+}

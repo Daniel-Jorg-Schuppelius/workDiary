@@ -10,7 +10,7 @@
 
 namespace App\Models\Supplier;
 
-use App\Enums\Procurement\CatalogSourceFormat;
+use App\Enums\Procurement\{CatalogSourceFormat, PunchoutProtocol};
 use App\Models\Concerns\BelongsToOrganization;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
@@ -51,6 +51,11 @@ class SupplierCatalogSource extends Model {
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
 
+    /** @var array<string, mixed> */
+    protected $attributes = [
+        'punchout_protocol' => 'oci',
+    ];
+
     protected $fillable = [
         'organization_id',
         'supplier_id',
@@ -76,6 +81,8 @@ class SupplierCatalogSource extends Model {
         'punchout_url',
         'punchout_username',
         'punchout_password',
+        'punchout_protocol',
+        'punchout_customer_number',
         'mapping',
         'fetch_interval_minutes',
         'next_fetch_at',
@@ -90,6 +97,7 @@ class SupplierCatalogSource extends Model {
         'remote_port' => 'integer',
         'remote_password' => 'encrypted', // verschlüsselt at-rest (APP_KEY)
         'punchout_password' => 'encrypted', // verschlüsselt at-rest (APP_KEY)
+        'punchout_protocol' => PunchoutProtocol::class,
         'mapping' => 'array',
         'fetch_interval_minutes' => 'integer',
         'next_fetch_at' => 'datetime',
@@ -100,7 +108,7 @@ class SupplierCatalogSource extends Model {
         return in_array($this->source_type, ['http', 'ftp', 'sftp'], true);
     }
 
-    /** Ist ein aktiver OCI-Punchout-Absprung konfiguriert (MVP-096)? */
+    /** Ist ein aktiver Shop-Absprung (OCI, IDS-Connect) konfiguriert (MVP-096, MVP-1071)? */
     public function hasPunchout(): bool {
         return trim((string) $this->punchout_url) !== '';
     }

@@ -47,6 +47,7 @@ class PluginHelpMentionRuleTest extends TestCase {
         'BuchhaltungsButler' => ['buchhaltungsbutler'],
         'CalDav' => ['caldav'],
         'CardDav' => ['carddav'],
+        'DatevOnline' => ['datev-online', 'datev online'],
         'Dhl' => ['dhl'],
         'DomainReselling' => ['domain'],
         'Fedex' => ['fedex'],

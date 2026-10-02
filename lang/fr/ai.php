@@ -115,6 +115,9 @@ return [
         'communication' => [
             'note_structure' => "Communication : structurer la note",
         ],
+        'dictation' => [
+            'structure' => 'Dictée : répartir dans les champs du formulaire',
+        ],
         'case' => [
             'timeline_narrative' => "Dossier : résumer l'historique",
         ],

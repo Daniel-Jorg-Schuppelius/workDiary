@@ -318,6 +318,7 @@ return [
             'payment' => 'Paiement (:kind) · :target',
             'depreciation' => 'Amortissement :year · :no :name',
             'asset_disposal' => 'Sortie :no :name',
+            'online_payment' => 'Paiement en ligne (:provider) · :invoice',
         ],
         'reversal_reason' => [
             'unmatched' => 'Affectation de paiement annulée — contre-écriture.',

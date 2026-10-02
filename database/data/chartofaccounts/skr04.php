@@ -89,6 +89,7 @@ return [
         ['number' => '6830', 'name' => 'Buchführungskosten', 'type' => 'expense', 'euer_category' => 'expense'],
 
         // Vortrag
+        ['number' => '6855', 'name' => 'Nebenkosten des Geldverkehrs', 'type' => 'expense', 'euer_category' => 'expense'],
         ['number' => '6895', 'name' => 'Anlagenabgänge Sachanlagen (Restbuchwert bei Buchverlust)', 'type' => 'expense', 'euer_category' => 'expense'],
         ['number' => '9000', 'name' => 'Saldenvorträge, Sachkonten', 'type' => 'equity'],
     ],
@@ -126,6 +127,11 @@ return [
         ['source_kind' => 'payment', 'role' => 'receivable', 'account' => '1200'],
         ['source_kind' => 'payment', 'role' => 'employee_payable', 'account' => '3720'],
         ['source_kind' => 'payment', 'role' => 'discount', 'account' => '4736'],
+
+        // Online-Zahlung (MVP-1067): Geldtransit bis zur Auszahlung, Gebühr als Nebenkosten des Geldverkehrs.
+        ['source_kind' => 'online_payment', 'role' => 'payment_transit', 'account' => '1460'],
+        ['source_kind' => 'online_payment', 'role' => 'receivable', 'account' => '1200'],
+        ['source_kind' => 'online_payment', 'role' => 'payment_fees', 'account' => '6855'],
 
         // Jahres-AfA (Feature 133): direkte Methode, BGA als Auffangkonto —
         // Pkw/Software werden je Anlage überschrieben.

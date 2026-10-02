@@ -103,6 +103,21 @@ return [
         'block_trips' => 'Keine neue Fahrt bei überfälliger Pflichtprüfung',
         'block_trips_hint' => 'Ist die HU, UVV oder eine andere Pflichtprüfung des zugeordneten Assets überfällig oder gesperrt, lässt sich ab heute keine Fahrt mehr erfassen. Vergangene Fahrten bleiben dokumentierbar.',
     ],
+    'payments' => [
+        'heading' => 'Online-Zahlung',
+        'description' => 'Zahlungslink und QR-Code auf Rechnung, Mail und im Kundenportal. Den Zahlungsanbieter (Stripe, Mollie oder SumUp) aktivieren Sie als Plugin mit eigenen Zugangsdaten.',
+        'provider' => 'Zahlungsanbieter',
+        'provider_auto' => 'Automatisch (erster aktiver Anbieter)',
+        'provider_hint' => 'Nur nötig, wenn mehrere Anbieter aktiv sind.',
+        'on_documents' => 'Zahlungslink auf Rechnung und in der Mail',
+        'on_documents_hint' => 'Ausgeschaltet bleibt die Online-Zahlung im Kundenportal möglich.',
+    ],
+    'mcp' => [
+        'heading' => 'KI-Assistenten (MCP)',
+        'description' => 'KI-Assistenten wie Claude oder ChatGPT können sich mit Zustimmung einzelner Nutzer anbinden und mit deren Rechten lesen bzw. Entwürfe anlegen.',
+        'enabled' => 'KI-Assistenten über MCP zulassen',
+        'enabled_hint' => 'Ausgeschaltet gibt es keine neue Anbindung, bestehende Zugänge liefern keine Werkzeuge und lassen sich nicht erneuern.',
+    ],
     'rental_terms' => [
         'heading' => 'Mietbedingungen im Geräteverleih',
         'description' => 'Die Mietbedingungen führen Sie als Kundenvereinbarung „Mietbedingungen (Geräteverleih)“ mit Fassung und Unterschrift.',

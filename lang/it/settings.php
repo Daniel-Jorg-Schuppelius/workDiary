@@ -100,6 +100,21 @@ return [
         'block_trips' => 'Nessun nuovo viaggio se un controllo obbligatorio è scaduto',
         'block_trips_hint' => 'Se la revisione, il controllo antinfortunistico o un altro controllo obbligatorio del cespite associato è scaduto o bloccato, da oggi non si possono registrare viaggi. I viaggi passati restano documentabili.',
     ],
+    'payments' => [
+        'heading' => 'Pagamento online',
+        'description' => 'Link di pagamento e codice QR sulla fattura, nell\'e-mail e nel portale clienti. Attivi il fornitore di pagamento (Stripe, Mollie o SumUp) come plugin con le proprie credenziali.',
+        'provider' => 'Fornitore di pagamento',
+        'provider_auto' => 'Automatico (primo fornitore attivo)',
+        'provider_hint' => 'Necessario solo se sono attivi più fornitori.',
+        'on_documents' => 'Link di pagamento sulla fattura e nell\'e-mail',
+        'on_documents_hint' => 'Se disattivato, il pagamento online resta possibile nel portale clienti.',
+    ],
+    'mcp' => [
+        'heading' => 'Assistenti IA (MCP)',
+        'description' => 'Gli assistenti IA come Claude o ChatGPT possono collegarsi con il consenso dei singoli utenti e leggere o creare bozze con i loro permessi.',
+        'enabled' => 'Consenti assistenti IA tramite MCP',
+        'enabled_hint' => 'Se disattivato non è possibile un nuovo collegamento; quelli esistenti non ricevono strumenti e non possono essere rinnovati.',
+    ],
     'rental_terms' => [
         'heading' => 'Condizioni di noleggio attrezzature',
         'description' => 'Le condizioni di noleggio si gestiscono come accordo cliente «Condizioni di noleggio (noleggio attrezzature)» con versione e firma.',

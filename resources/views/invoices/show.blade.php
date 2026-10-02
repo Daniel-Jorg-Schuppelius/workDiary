@@ -397,6 +397,13 @@
                                     data-entry-modal-trigger
                                     :href="route('invoices.items.create', $invoice)"
                                     show-label>{{ __('Position hinzufügen') }}</x-icon-btn>
+                        {{-- MVP-1054: Gliederung --}}
+                        <x-icon-btn icon="title" size="sm" data-entry-modal-trigger
+                                    :href="route('invoices.items.create', [$invoice, 'kind' => 'title'])"
+                                    show-label>{{ __('invoicing.line_kind.add_title') }}</x-icon-btn>
+                        <x-icon-btn icon="notes" size="sm" data-entry-modal-trigger
+                                    :href="route('invoices.items.create', [$invoice, 'kind' => 'text'])"
+                                    show-label>{{ __('invoicing.line_kind.add_text') }}</x-icon-btn>
                         {{-- Feature 160 (MVP-858): Fertigungsauslieferungen übernehmen — nur mit Lagermodul und Leserecht. --}}
                         @feature('module.lager')
                             @if (in_array($invoice->type, [\App\Models\Invoicing\Invoice::TYPE_INVOICE, \App\Models\Invoicing\Invoice::TYPE_PARTIAL, \App\Models\Invoicing\Invoice::TYPE_FINAL], true))
@@ -416,7 +423,13 @@
                 @endif
             </x-slot:actions>
         @endif
-        <x-table table-sort="client" bare>
+        @php
+            // MVP-1054: Gliederung (Ordnungszahlen, Titelsummen); mit Titeln ergibt Umsortieren keinen Sinn.
+            $outlineRows = \App\Services\Billing\DocumentOutline::rows($invoice->items);
+            $hasStructure = $invoice->items->contains(fn ($line): bool => ! $line->lineKind()->isPriced());
+            $canEditItems = auth()->user()?->can('update', $invoice) && $invoice->status === \App\Models\Invoicing\Invoice::STATUS_DRAFT;
+        @endphp
+        <x-table :table-sort="$hasStructure ? 'none' : 'client'" bare>
             <x-slot:head>
                 <tr>
                     <th>#</th>
@@ -474,10 +487,51 @@
                         {{ __(':percent % Skonto bei Zahlung innerhalb von :days Tagen', ['percent' => rtrim(rtrim($invoice->skonto_percent?->getNumericValue() ?? '0', '0'), '.'), 'days' => (int) $invoice->skonto_days]) }}@if ($invoice->skontoDeadline() !== null) ({{ __('bis :date', ['date' => $invoice->skontoDeadline()->fdate()]) }} = {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($invoice->total?->toFloat() ?? 0.0) - $invoice->skontoAmount()->toFloat(), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }})@endif
                     </td></tr>
                 @endif
+                @php
+                    $labourCosts = $invoice->disclosedLabourCosts();
+                @endphp
+                @if ($labourCosts !== null)
+                    {{-- MVP-1053: Ausweis wie im PDF; offene Positionen ohne Anteil werden genannt. --}}
+                    <tr><td colspan="{{ $footColspan + 1 }}" class="text-right text-xs text-muted">
+                        {{ __('invoicing.labour_costs.pdf_line', [
+                            'gross' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($labourCosts['gross']->toFloat(), 2, withThousandsSeparator: true),
+                            'tax' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($labourCosts['tax']->toFloat(), 2, withThousandsSeparator: true),
+                            'currency' => $invoice->currency->value,
+                        ]) }}@if ($labourCosts['undetermined'] > 0) — {{ trans_choice('invoicing.labour_costs.undetermined', $labourCosts['undetermined'], ['count' => $labourCosts['undetermined']]) }}@endif
+                    </td></tr>
+                @endif
             </x-slot:foot>
-            @forelse ($invoice->items as $item)
+            @forelse ($outlineRows as $outlineRow)
+                @if ($outlineRow['type'] === 'subtotal')
+                    <tr class="bg-base-200/40">
+                        <td></td>
+                        <td colspan="{{ $footColspan - 1 }}" class="text-right text-sm">{{ __('invoicing.line_kind.subtotal', ['number' => $outlineRow['number'], 'title' => $outlineRow['title']->description]) }}</td>
+                        <td class="text-right text-sm font-semibold">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($outlineRow['amount']->toFloat(), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td>
+                        @if ($canEditItems)<td></td>@endif
+                    </tr>
+                    @continue
+                @endif
+                @php
+                    $item = $outlineRow['line'];
+                @endphp
+                @if (! $item->lineKind()->isPriced())
+                    <tr>
+                        <td>{{ $outlineRow['number'] }}</td>
+                        <td colspan="{{ $footColspan }}" class="{{ $item->lineKind() === \App\Enums\Billing\DocumentLineKind::Title ? 'font-semibold' : 'italic text-base-content/80 whitespace-pre-line' }}">{{ $item->description }}</td>
+                        @if ($canEditItems)
+                            <td class="text-right whitespace-nowrap">
+                                <x-icon-btn icon="edit" size="xs" tone="ghost" data-entry-modal-trigger :href="route('invoices.items.edit', [$invoice, $item])" :title="__('Bearbeiten')" />
+                                <x-action-form :action="route('invoices.items.destroy', [$invoice, $item])" method="DELETE"
+                                      :confirm="__('Position wirklich entfernen?')" confirm-icon="delete" confirm-tone="error" :confirm-label="__('Entfernen')">
+                                    <x-icon-btn icon="delete" size="xs" tone="error" type="submit" :title="__('Entfernen')" />
+                                </x-action-form>
+                            </td>
+                        @endif
+                    </tr>
+                    @continue
+                @endif
                 <tr>
-                    <td>{{ $item->position }}</td>
+                    <td>{{ $outlineRow['number'] }}</td>
                     <td>{{ $item->description }}@if ($item->article_number_snapshot) <span class="badge badge-ghost badge-xs" title="{{ __('Artikel') }}">{{ $item->article_number_snapshot }}</span>@elseif ($item->article) <span class="badge badge-ghost badge-xs" title="{{ __('Artikel') }}">{{ $item->article->number ?: $item->article->name }}</span>@endif
                         @if ($item->service_from !== null)<div class="text-xs text-muted">{{ __('invoicing.item.service_period') }}: {{ $item->servicePeriodLabel() }}</div>@endif</td>
                     @if ($showServiceDates)<td data-sort-value="{{ optional($item->service_date)->toDateString() }}">{{ optional($item->service_date)->fdate() ?: '—' }}</td>@endif

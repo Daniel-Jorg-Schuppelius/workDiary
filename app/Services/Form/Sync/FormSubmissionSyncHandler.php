@@ -16,15 +16,16 @@ use App\Http\Controllers\Form\FormSubmissionController;
 use App\Models\Form\{FormSubmission, FormTemplate};
 use App\Models\Platform\User;
 use App\Services\Form\FormService;
-use App\Services\Sync\Contracts\SyncCommandHandler;
+use App\Services\Sync\Contracts\{SyncAttachmentTarget, SyncCommandHandler};
 use App\Support\Sqid;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\{Gate, Validator};
 use Illuminate\Validation\Rule;
 use RuntimeException;
 
 /** Formular offline ausfüllen (Phase 3, MVP-367) inkl. angekündigter Foto-/Dateifelder (W4.1). */
-final class FormSubmissionSyncHandler implements SyncCommandHandler {
+final class FormSubmissionSyncHandler implements SyncAttachmentTarget, SyncCommandHandler {
     public function __construct(private readonly FormService $forms) {}
 
     /** @return list<string> */
@@ -37,6 +38,17 @@ final class FormSubmissionSyncHandler implements SyncCommandHandler {
             'form.submission' => $this->formSubmission($user, $payload),
             default => throw new RuntimeException('Unbekannter Sync-Befehlstyp: ' . $type),
         };
+    }
+
+    /** Nachgereichte Datei eines angekündigten Feldes (W4.1). */
+    public function attach(User $user, string $type, string $resultRef, string $field, UploadedFile $file): bool {
+        $submission = FormSubmission::query()->find((int) str_replace('form_submissions:', '', $resultRef));
+        if ($submission === null) {
+            return false;
+        }
+        $this->forms->attachDeferred($submission, $field, $file, $user);
+
+        return true;
     }
 
     /**

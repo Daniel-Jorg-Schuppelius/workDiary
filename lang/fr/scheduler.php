@@ -101,6 +101,7 @@ return [
             'account-invoices' => 'Générer les factures mensuelles à conditions spéciales',
             'push-retainers' => 'Transmettre les forfaits de retainer à Lexoffice',
         ],
+        'datev-online' => ['sync' => 'DATEV Online : transférer les images de pièces et vérifier les imports'],
         'calendly' => ['backfill' => 'Synchronisation des rendez-vous Calendly'],
         'ai' => ['maintenance' => 'Maintenance IA (santé des fournisseurs, nettoyage des suggestions)'],
         'archive' => ['run' => 'Exécution de l\'archivage'],
@@ -151,7 +152,7 @@ return [
         "accounting" => ["recurring" => "Attentes de pièces et brouillons d'écriture récurrents", "filings" => "Synchroniser les échéances fiscales et rappeler", "liquidity_snapshot" => "Enregistrer la prévision de trésorerie hebdomadaire"],
         'platform' => ['usage_snapshot' => 'Enregistrer l’utilisation par client'],
         'contracts' => ['price_index_sync' => 'Synchroniser l’indice des prix à la consommation depuis la Bundesbank'],
-        'invoicing' => ['recurring' => 'Générer les brouillons de factures récurrentes', 'base_rate_sync' => 'Synchroniser le taux de base de la Bundesbank'],
+        'invoicing' => ['recurring' => 'Générer les brouillons de factures récurrentes', 'base_rate_sync' => 'Synchroniser le taux de base de la Bundesbank', 'online_payments_refresh' => 'Rapprocher les paiements en ligne avec le prestataire de paiement'],
         'jtl' => ['sync' => 'Synchronisation JTL Wawi'],
         'resale' => [
             'sync_domains' => 'Abonnements de revente : reprendre les domaines de la gestion des domaines',

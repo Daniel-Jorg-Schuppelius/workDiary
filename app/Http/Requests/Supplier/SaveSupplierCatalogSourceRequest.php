@@ -10,6 +10,7 @@
 
 namespace App\Http\Requests\Supplier;
 
+use App\Enums\Procurement\PunchoutProtocol;
 use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Rules\ExistsInCurrentOrganization;
@@ -73,6 +74,12 @@ class SaveSupplierCatalogSourceRequest extends BaseFormRequest {
             }],
             'punchout_username' => ['nullable', 'string', 'max:191'],
             'punchout_password' => ['nullable', 'string', 'max:512'],
+            'punchout_protocol' => ['nullable', Rule::enum(PunchoutProtocol::class)],
+            // IDS-Connect meldet sich mit der Kundennummer beim Großhändler an (MVP-1071).
+            'punchout_customer_number' => [
+                Rule::requiredIf(fn (): bool => $this->input('punchout_protocol') === PunchoutProtocol::Ids->value && trim((string) $this->input('punchout_url')) !== ''),
+                'nullable', 'string', 'max:50',
+            ],
         ];
     }
 }

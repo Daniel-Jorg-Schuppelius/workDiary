@@ -32,6 +32,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property \CommonToolkit\ValueObjects\Percentage|null $tax_rate
  * @property \CommonToolkit\ValueObjects\Money|null $unit_price
  * @property \CommonToolkit\ValueObjects\Percentage|null $discount_percent
+ * @property \CommonToolkit\ValueObjects\Percentage|null $labour_share_percent
+ * @property \App\Enums\Billing\DocumentLineKind $line_kind
+ * @property \CommonToolkit\ValueObjects\Money|null $unit_cost_amount
+ * @property array<string, mixed>|null $calculation
  * @property \CommonToolkit\ValueObjects\Money|null $discount_amount
  */
 class QuoteItem extends Model implements DocumentLine {
@@ -45,8 +49,28 @@ class QuoteItem extends Model implements DocumentLine {
     protected $fillable = [
         'organization_id', 'quote_id', 'article_id', 'position', 'description',
         'quantity', 'unit', 'unit_price', 'discount_percent', 'discount_amount',
-        'tax_rate', 'tax_category', 'optional', 'accepted',
+        'tax_rate', 'tax_category', 'optional', 'accepted', 'labour_share_percent',
+        'line_kind',
     ];
+
+    /** @var array<string, mixed> */
+    protected $attributes = ['line_kind' => 'item'];
+
+    /** MVP-1055: Kalkulation einer Leistung als Schnappschuss — spätere Änderungen am Artikel ändern das Angebot nicht. */
+    protected static function booted(): void {
+        static::creating(static function (self $item): void {
+            if ($item->calculation !== null || $item->article_id === null || ! $item->lineKind()->isPriced()) {
+                return;
+            }
+            $article = \App\Models\Article\Article::query()->find($item->article_id);
+            $calculation = $article !== null ? app(\App\Services\Article\ServiceCalculationService::class)->calculate($article) : null;
+            if ($calculation === null) {
+                return;
+            }
+            $item->calculation = $calculation->toSnapshot();
+            $item->unit_cost_amount ??= $calculation->cost;
+        });
+    }
 
     /** @var array<string, string> */
     protected $casts = [
@@ -55,6 +79,10 @@ class QuoteItem extends Model implements DocumentLine {
         // Angebote rechnen in Euro (s. Quote::recalculate()).
         'unit_price' => MoneyCast::class,
         'discount_percent' => PercentageCast::class . ':2',
+        'labour_share_percent' => PercentageCast::class . ':2',
+        'line_kind' => \App\Enums\Billing\DocumentLineKind::class,
+        'unit_cost_amount' => MoneyCast::class . ':currency,4',
+        'calculation' => 'array',
         'discount_amount' => MoneyCast::class,
         'tax_rate' => PercentageCast::class . ':2',
     ];
@@ -67,6 +95,20 @@ class QuoteItem extends Model implements DocumentLine {
     /** @return BelongsTo<Quote, $this> */
     public function lineDocument(): BelongsTo {
         return $this->quote();
+    }
+
+    /**
+     * Zählt zur Angebotssumme (MVP-1054): vor der Entscheidung nur feste
+     * Positionen, danach nur Angenommenes; Titel und Text nie, eine
+     * Alternative erst, wenn sie gewählt ist.
+     */
+    public function countsInTotal(): bool {
+        $kind = $this->lineKind();
+        if (! $kind->isPriced()) {
+            return false;
+        }
+
+        return $this->accepted ?? ($kind === \App\Enums\Billing\DocumentLineKind::Item && ! $this->optional);
     }
 
     /**

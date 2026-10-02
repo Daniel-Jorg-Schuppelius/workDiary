@@ -74,6 +74,8 @@ class AttachmentController extends Controller {
         // Arbeitsschutz (MVP-1002): Nachweise an GBU und Unterweisung.
         'hazard-assessment' => \App\Models\Safety\HazardAssessment::class,
         'safety-instruction' => \App\Models\Safety\SafetyInstruction::class,
+        // Aufmaß (MVP-1058): Fotos und Skizzen zum Blatt.
+        'takeoff' => \App\Models\Takeoff\Takeoff::class,
     ];
 
     /**

@@ -63,6 +63,9 @@ enum PluginCapability: string implements HasLabel, PluginCapabilityContract {
     /** Kann Kurznachrichten (SMS) über ein Gateway versenden (Feature 147, z. B. seven.io, sipgate). */
     case SmsGateway = 'sms_gateway';
 
+    /** Kann Rechnungen online kassieren: Bezahlseite und Zahlungsstand (MVP-1067, z. B. Stripe, Mollie, SumUp). */
+    case OnlinePayment = 'online_payment';
+
     /**
      * Kann Belege über einen zertifizierten Peppol-Access-Point-Provider
      * senden und empfangen (Feature 066, MVP-734). WorkDiary betreibt selbst
@@ -103,6 +106,7 @@ enum PluginCapability: string implements HasLabel, PluginCapabilityContract {
             self::DomainRegistrar => __('Domain-Registrar'),
             self::AppointmentSync => __('Terminsynchronisation'),
             self::SmsGateway => __('SMS-Gateway'),
+            self::OnlinePayment => __('Online-Zahlung'),
             self::PeppolTransport => __('Peppol-Transport'),
             self::FareMeter => __('Taxameter-Import'),
             self::PassengerDispatch => __('Fahrtvermittlung'),
@@ -129,6 +133,7 @@ enum PluginCapability: string implements HasLabel, PluginCapabilityContract {
             self::DomainRegistrar => DomainRegistrar::class,
             self::AppointmentSync => AppointmentSyncer::class,
             self::SmsGateway => SmsProvider::class,
+            self::OnlinePayment => OnlinePaymentProvider::class,
             self::PeppolTransport => PeppolTransportProvider::class,
             self::FareMeter => FareMeterProvider::class,
             self::PassengerDispatch => PassengerDispatchProvider::class,

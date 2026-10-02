@@ -1,7 +1,7 @@
 ---
 title: "Le mie fatture"
 topic: customer-portal.invoices
-version: 1
+version: 2
 audience: []
 related:
     - customer-portal.overview
@@ -16,3 +16,7 @@ recente in alto; per ogni voce vede **numero**, **data**, **stato** e
 elaborazione. Con più pagine sfogli tramite la numerazione in basso;
 la vista serve alla consultazione, mentre la fatturazione vera e propria
 è a carico dell'azienda incaricata.
+
+Se l'emittente lo offre, può saldare le fatture aperte direttamente presso
+il fornitore di pagamento tramite **Paga online**; una volta confermato
+dal fornitore, il pagamento compare nello stato della fattura.

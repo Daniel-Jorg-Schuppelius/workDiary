@@ -47,11 +47,13 @@ final class InvoicingManifest extends Manifest {
             'invoice_item_time_entries',
             'invoice_items',
             'invoice_mail_templates',
+            'invoice_payment_links',
             'invoice_retentions',
             'invoice_schedule_items',
             'invoice_schedule_runs',
             'invoice_schedules',
             'invoices',
+            'online_payments',
             'peppol_participant_lookups',
             'text_corrections',
         ];
@@ -67,13 +69,25 @@ final class InvoicingManifest extends Manifest {
     /** @return list<string> */
     public function plugins(): array {
         return [
+            'mollie',
             'peppol-access-point',
+            'stripe',
+            'sumup',
         ];
     }
 
     /** @return array<class-string, list<class-string>> */
     public function extensions(): array {
         return [
+            \App\Services\Mcp\Contracts\McpTool::class => [
+                \App\Services\Invoicing\Mcp\InvoicesTool::class,
+                \App\Services\Invoicing\Mcp\OpenItemsTool::class,
+                \App\Services\Invoicing\Mcp\CreateInvoiceDraftTool::class,
+                \App\Services\Invoicing\Mcp\DunningProposalTool::class,
+            ],
+            \App\Services\Billing\Contracts\DocumentChainSource::class => [
+                \App\Services\Invoicing\Chain\OverdueInvoices::class,
+            ],
             \App\Services\Demo\Contracts\DemoBlock::class => [
                 \App\Services\Invoicing\Demo\InvoicingDemoBlock::class,
             ],

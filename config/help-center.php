@@ -59,7 +59,7 @@ return [
             'icon' => 'assignment',
             'patterns' => [
                 'diary-entries.*', 'protocols.*', 'procedures.*', 'forms.*',
-                'agile.*', 'open-issues*', 'construction-notices*', 'boq.*',
+                'agile.*', 'open-issues*', 'construction-notices*', 'boq.*', 'takeoffs',
                 'permits.*', 'recipes.*', 'manufacturing.*', 'print.*',
                 'patrols.*', 'helpdesk.*', 'sla.*', 'support.*', 'ideas.*',
                 'claims.*', 'passenger.*', 'damage-cases.*',

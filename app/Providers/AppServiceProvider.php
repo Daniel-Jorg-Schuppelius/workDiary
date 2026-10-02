@@ -569,6 +569,7 @@ class AppServiceProvider extends ServiceProvider {
         // Agiles Projektmanagement (Feature 064).
         Gate::policy(\App\Models\Agile\AgileBoard::class, \App\Policies\Agile\AgileBoardPolicy::class);
         Gate::policy(\App\Models\Agile\AgileWorkItem::class, \App\Policies\Agile\AgileWorkItemPolicy::class);
+        Gate::policy(\App\Models\Takeoff\Takeoff::class, \App\Policies\Takeoff\TakeoffPolicy::class);
         Gate::policy(\App\Models\Audit\GobdExport::class, \App\Policies\Audit\GobdExportPolicy::class);
         Gate::policy(\App\Models\Finance\ProcedureDocumentation::class, \App\Policies\Finance\ProcedureDocumentationPolicy::class);
         // Feature 068: Bewerbungs-/Ausschreibungsmodul (getrennte Rechtebereiche).
@@ -1152,6 +1153,7 @@ class AppServiceProvider extends ServiceProvider {
             // Finanzen
             \App\Dashboard\Widgets\FinanceWidget::class,
             \App\Dashboard\Widgets\VacationFlexWidget::class,
+            \App\Dashboard\Widgets\DocumentChainWidget::class,
             \App\Dashboard\Widgets\OpenTimesWidget::class,
             \App\Dashboard\Widgets\OpenItemsWidget::class,
             \App\Dashboard\Widgets\ResalePeriodsWidget::class,

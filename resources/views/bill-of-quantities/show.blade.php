@@ -14,7 +14,13 @@
 <x-index-page :subtitle="$bill->project?->name ?: __('gaeb.title')"
               back-route="bill-of-quantities.index" :back-label="__('gaeb.show.back')">
     <x-slot:actions>
+        @can(\App\Enums\User\Permission::ProjectUpdate->value)
+            <x-icon-btn icon="price_change" tone="primary" size="sm" :href="route('bill-of-quantities.pricing', $bill)" show-label>{{ __('gaeb.pricing.button') }}</x-icon-btn>
+        @endcan
         <x-icon-btn icon="download" size="sm" :href="route('bill-of-quantities.export', $bill)" show-label>{{ __('gaeb.export.button') }}</x-icon-btn>
+        {{-- MVP-1056: EFB-Preisblätter für öffentliche Auftraggeber --}}
+        <x-icon-btn icon="picture_as_pdf" size="sm" :href="route('bill-of-quantities.efb', [$bill, '221'])" show-label>{{ __('gaeb.efb.221.button') }}</x-icon-btn>
+        <x-icon-btn icon="picture_as_pdf" size="sm" :href="route('bill-of-quantities.efb', [$bill, '223'])" show-label>{{ __('gaeb.efb.223.button') }}</x-icon-btn>
     </x-slot:actions>
 
     @include('bill-of-quantities._tabs')
@@ -98,6 +104,8 @@
             @endforeach
         </x-table>
     </x-card>
+
+    @include('takeoffs._carrier_panel', ['carrierType' => 'boq', 'carrier' => $bill, 'class' => 'mt-4'])
 
     {{-- Nachtrag anlegen (MVP-084) --}}
     @if ($canManage)

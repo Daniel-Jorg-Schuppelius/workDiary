@@ -99,6 +99,7 @@ final class AiManifest extends Manifest {
             \App\Services\Ai\Contracts\CoveringTextSuggester::class => \App\Services\Ai\Suggestions\CoveringTextSuggestionService::class,
             \App\Services\Ai\Contracts\PortalQuerySuggester::class => \App\Services\Ai\Suggestions\PortalQuerySuggestionService::class,
             \App\Services\Ai\Contracts\AiMemory::class => \App\Services\Ai\AiMemoryService::class,
+            \App\Services\Media\Contracts\DictationStructurer::class => \App\Services\Ai\Suggestions\DictationStructureService::class,
         ];
     }
 }

@@ -36,6 +36,7 @@ final class DiaryManifest extends Manifest {
             'Diary',
             'OpenIssue',
             'Recurrence',
+            'Takeoff',
         ];
     }
 
@@ -53,6 +54,9 @@ final class DiaryManifest extends Manifest {
             'open_issue_follow_ups',
             'open_issues',
             'recurrence_rules',
+            'takeoff_lines',
+            'takeoff_transfers',
+            'takeoffs',
             'tours',
         ];
     }
@@ -68,6 +72,10 @@ final class DiaryManifest extends Manifest {
     /** @return array<class-string, list<class-string>> */
     public function extensions(): array {
         return [
+            \App\Services\Mcp\Contracts\McpTool::class => [
+                \App\Services\Diary\Mcp\OrdersTool::class,
+                \App\Services\Diary\Mcp\ScheduleTool::class,
+            ],
             \App\Services\Notification\DeadlineScans\DeadlineScan::class => [
                 \App\Services\Diary\DeadlineScans\OpenIssueDeadlineScan::class,
             ],
@@ -77,6 +85,10 @@ final class DiaryManifest extends Manifest {
             ],
             \App\Services\Sync\Contracts\SyncCommandHandler::class => [
                 \App\Services\Diary\Sync\DiaryCommentSyncHandler::class,
+                \App\Services\Takeoff\Sync\TakeoffLineSyncHandler::class,
+            ],
+            \App\Services\Billing\Contracts\DocumentChainSource::class => [
+                \App\Services\Takeoff\Chain\TakeoffsWithoutTransfer::class,
             ],
             \App\Automation\Actions\RuleAction::class => [
                 \App\Services\Diary\Automation\CreateFollowUpOrderAction::class,
@@ -84,6 +96,13 @@ final class DiaryManifest extends Manifest {
             \App\Automation\Triggers\RuleTrigger::class => [
                 \App\Services\OpenIssue\Automation\OpenIssueCreatedTrigger::class,
             ],
+        ];
+    }
+
+    /** @return array<class-string, class-string> */
+    public function contracts(): array {
+        return [
+            \App\Services\Takeoff\Contracts\TakeoffProgressRecorder::class => \App\Services\Takeoff\Contracts\NullTakeoffProgressRecorder::class,
         ];
     }
 

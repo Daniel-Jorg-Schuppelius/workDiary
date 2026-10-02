@@ -13,7 +13,7 @@ namespace App\Models\Invoicing;
 use App\Casts\{MoneyCast, PercentageCast};
 use App\Enums\Invoicing\InvoiceDeliveryFormat;
 use App\Models\Classification\Tag;
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, DisclosesLabourCosts, HasSqid};
 use App\Models\Contracts\HasDocumentLines;
 use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Document\{Document, DocumentDispatch};
@@ -38,6 +38,7 @@ use Illuminate\Support\Carbon;
  * @property int $customer_id
  * @property int|null $project_id
  * @property int|null $bill_of_quantity_id
+ * @property bool|null $is_labour_cost_disclosed
  * @property int|null $foreign_customer_id
  * @property string $number
  * @property string|null $external_number
@@ -88,6 +89,7 @@ use Illuminate\Support\Carbon;
 class Invoice extends Model implements HasDocumentLines {
     use Auditable;
     use BelongsToOrganization;
+    use DisclosesLabourCosts;
 
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
@@ -199,6 +201,7 @@ class Invoice extends Model implements HasDocumentLines {
         'discount_amount',
         'tax_rate',
         'is_reverse_charge',
+        'is_labour_cost_disclosed',
         'tax_amount',
         'total',
         'tax_context',
@@ -229,6 +232,7 @@ class Invoice extends Model implements HasDocumentLines {
         'delivery_format' => InvoiceDeliveryFormat::class,
         'import_metadata' => 'array',
         'is_reverse_charge' => 'boolean',
+        'is_labour_cost_disclosed' => 'boolean',
         'party_snapshot' => 'array',
         'tax_breakdown' => 'array',
         'approved_at' => 'datetime',
@@ -294,6 +298,16 @@ class Invoice extends Model implements HasDocumentLines {
     /** @return HasMany<InvoiceItem, $this> */
     public function lines(): HasMany {
         return $this->items();
+    }
+
+    /**
+     * Positionen mit Betrag, ohne Titel und Text (MVP-1054) — für alles, was
+     * Zeilen einzeln weitergibt (E-Rechnung, Übergaben, Leerprüfung).
+     *
+     * @return Collection<int, InvoiceItem>
+     */
+    public function pricedItems(): Collection {
+        return $this->items->filter(fn (InvoiceItem $item): bool => $item->lineKind()->isPriced())->values();
     }
 
     /** @return BelongsTo<Invoice, $this> */
@@ -389,6 +403,17 @@ class Invoice extends Model implements HasDocumentLines {
         }
 
         return \CommonToolkit\Helper\Data\CreditorReferenceHelper::create(\App\Services\Finance\Banking\ReferenceExtractor::normalize((string) $this->number));
+    }
+
+    /**
+     * Arbeitskosten nach § 35a EStG (MVP-1053) über die eigene Leistung: wie
+     * beim Einbehalt ohne die Absetzungen angerechneter Abschläge — die
+     * Schlussrechnung weist die Gesamtleistung aus.
+     *
+     * @return array{net: Money, tax: Money, gross: Money, undetermined: int}|null
+     */
+    public function labourCosts(): ?array {
+        return app(DocumentTotalsCalculator::class)->labourCosts($this->items->whereNull('settled_invoice_id'), $this->totalsContext());
     }
 
     /** Abschlags- und Teilrechnungen tragen keinen Einbehalt; er entsteht erst in der Schlussrechnung (MVP-979). */

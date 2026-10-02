@@ -82,7 +82,7 @@ class BillingTransferItem extends Model implements DocumentLine {
 
     /** @return array<string, string|null> */
     protected static function lineColumns(): array {
-        return ['position' => null, 'discount_percent' => null, 'discount_amount' => null, 'net_amount' => 'amount'];
+        return ['position' => null, 'discount_percent' => null, 'discount_amount' => null, 'net_amount' => 'amount', 'labour_share_percent' => null, 'line_kind' => null];
     }
 
     /** @return MorphTo<Model, $this> */

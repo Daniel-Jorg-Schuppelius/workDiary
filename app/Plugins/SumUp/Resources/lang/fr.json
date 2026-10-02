@@ -1,0 +1,10 @@
+{
+    "API-Schlüssel": "Clé API",
+    "API-Schlüssel oder Händlercode fehlt.": "Clé API ou code marchand manquant.",
+    "Aus dem SumUp-Konto unter „Entwickler“ → „API-Schlüssel“ (sup_sk_…).": "Depuis votre compte SumUp sous « Développeurs » → « Clés API » (sup_sk_…).",
+    "Händlercode": "Code marchand",
+    "Online-Zahlung von Rechnungen über den gehosteten Checkout von SumUp (Karte, Apple Pay, Google Pay).": "Paiement en ligne des factures via le checkout hébergé de SumUp (carte, Apple Pay, Google Pay).",
+    "Steht im SumUp-Konto unter „Profil“ (beginnt meist mit „M“).": "Figure dans votre compte SumUp sous « Profil » (commence généralement par « M »).",
+    "SumUp lehnt den API-Schlüssel ab.": "SumUp refuse la clé API.",
+    "Verbunden — SumUp erreichbar.": "Connecté — SumUp joignable."
+}

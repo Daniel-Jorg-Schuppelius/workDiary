@@ -424,6 +424,22 @@ function buildPayload(type, form) {
         };
     }
 
+    if (type === "takeoff.line") {
+        // Aufmaßzeile (MVP-1059): gerechnet wird beim Abgleich auf dem Server,
+        // das Foto wandert als angekündigte Datei in die Warteschlange.
+        const field = (name) => form.querySelector(`[name="${name}"]`)?.value || "";
+        const payload = {
+            takeoff: form.dataset.syncPayloadTakeoff || "",
+            formula: field("formula"),
+            values: [...form.querySelectorAll('[name^="values["]')].map((input) => input.value),
+            factor: field("factor"),
+            label: field("label"),
+        };
+        const photo = form.querySelector('input[type="file"][name="files[photo]"]');
+        if (photo?.files?.length) payload.pending_files = ["photo"];
+        return payload;
+    }
+
     if (type === "form.submission") {
         // Werte exakt wie der normale Submit serialisieren (FormData respektiert
         // checked-Zustände); Dateien/Unterschriften bleiben dem Online-Weg

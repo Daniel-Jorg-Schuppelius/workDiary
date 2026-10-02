@@ -115,6 +115,9 @@ return [
         'communication' => [
             'note_structure' => 'Comunicazione: strutturare la nota',
         ],
+        'dictation' => [
+            'structure' => 'Dettatura: suddividere nei campi del modulo',
+        ],
         'case' => [
             'timeline_narrative' => 'Fascicolo: riassumere lo storico',
         ],

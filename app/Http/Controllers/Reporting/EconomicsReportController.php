@@ -88,6 +88,8 @@ class EconomicsReportController extends Controller {
         // Dimension `boq` (Baumodul, {@see ProjectEconomicsDimension}): Vertrag der Struktur ist die View reports/economics.
         /** @var array{hasBoq: bool, positions: list<array<string, mixed>>, unassigned: array<string, int|float>, hasCalculation: bool, calculationImported: bool}|null $boqDimension */
         $boqDimension = $projectId !== null ? $this->dimension('boq')?->build($from, $to, $projectId) : null;
+        // MVP-1055: Nachkalkulation gegen die Angebotskalkulation (Vertriebsmodul).
+        $quoteCalculation = $projectId !== null ? $this->dimension('quote_calculation')?->build($from, $to, $projectId) : null;
 
         $exportContext = $filters->toAuditArray();
 
@@ -140,6 +142,7 @@ class EconomicsReportController extends Controller {
 
         return view('reports.economics', [
             'boqDimension' => $boqDimension,
+            'quoteCalculation' => $quoteCalculation,
             'marginTarget' => $marginTarget,
             'actualMargin' => $actualMargin,
             'customerMarginTargets' => $customerMarginTargets,

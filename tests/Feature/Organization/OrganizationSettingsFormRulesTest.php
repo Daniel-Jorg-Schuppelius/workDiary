@@ -11,6 +11,8 @@
 namespace Tests\Feature\Organization;
 
 use App\Models\Platform\{Organization, User};
+use App\Services\Mcp\OAuth\McpAuthorizationServer;
+use App\Settings\SettingsRegistry;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
@@ -167,6 +169,25 @@ class OrganizationSettingsFormRulesTest extends TestCase {
         $this->assertAccepted(['maintenance' => ['enabled' => '1', 'message' => 'Kurz weg.', 'until' => '2026-08-01 10:00']]);
         $this->assertRejected(['maintenance' => ['until' => 'kein-datum']], 'settings.maintenance.until');
         $this->assertRejected(['maintenance' => ['message' => str_repeat('x', 301)]], 'settings.maintenance.message');
+    }
+
+    public function test_mcp_opt_in_is_off_by_default_and_switchable(): void {
+        $registry = app(SettingsRegistry::class);
+        $this->assertFalse((bool) $registry->effective('mcp.enabled', $this->organization)->value, 'KI-Assistenten sind ab Werk aus.');
+
+        $this->assertAccepted(['mcp' => ['enabled' => '1']]);
+        $this->assertTrue(app(McpAuthorizationServer::class)->enabledFor($this->organization->refresh()));
+        $this->assertRejected(['mcp' => ['enabled' => 'vielleicht']], 'settings.mcp.enabled');
+    }
+
+    public function test_online_payment_settings(): void {
+        $registry = app(SettingsRegistry::class);
+        $this->assertTrue((bool) $registry->effective('payments.online.on_documents', $this->organization)->value, 'Zahlungslink auf Belegen ist ab Werk an.');
+
+        $this->assertAccepted(['payments' => ['online' => ['provider' => 'mollie', 'on_documents' => '0']]]);
+        $this->assertSame('mollie', $registry->effective('payments.online.provider', $this->organization->refresh())->value);
+        $this->assertFalse((bool) $registry->effective('payments.online.on_documents', $this->organization)->value);
+        $this->assertRejected(['payments' => ['online' => ['provider' => 'Stripe Inc.']]], 'settings.payments.online.provider');
     }
 
     public function test_merge_semantics_of_empty_values(): void {

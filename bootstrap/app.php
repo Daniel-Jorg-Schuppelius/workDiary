@@ -64,6 +64,12 @@ return Application::configure(basePath: dirname(__DIR__))
             // Oeffentlicher OCI-Punchout-Katalog (Feature 099, MVP-457):
             // sessionloser Public-Stack ohne Cookies/CSRF (Token-basiert).
             Route::middleware('b2b-catalog')->group(__DIR__ . '/../routes/b2b-catalog.php');
+            // Shop-Rücksprünge des Einkaufs (MVP-096, MVP-1071): sitzungslos,
+            // Begründung in routes/punchout.php.
+            Route::middleware('punchout-return')->group(__DIR__ . '/../routes/punchout.php');
+            // Online-Zahlung (MVP-1067): Zahlungslink und Webhook ohne Sitzung,
+            // Begründung in routes/payments.php.
+            Route::middleware('online-payment')->group(__DIR__ . '/../routes/payments.php');
         },
     )
     // Legacy-Commands liegen ausserhalb des Auto-Discovery-Pfads
@@ -252,6 +258,16 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\B2bCatalog\B2bCatalogSecurityHeaders::class,
         ]);
 
+        $middleware->group('punchout-return', [
+            HandleDatabaseUnavailable::class,
+            SecurityHeaders::class,
+        ]);
+
+        $middleware->group('online-payment', [
+            HandleDatabaseUnavailable::class,
+            SecurityHeaders::class,
+        ]);
+
         // SetOrganizationContext MUSS vor SubstituteBindings laufen, damit
         // der OrganizationScope beim Route-Model-Binding bereits greift —
         // sonst lädt Laravel {attachment} & Co. aus fremden Organisationen,
@@ -306,11 +322,8 @@ return Application::configure(basePath: dirname(__DIR__))
             // Browser eines angemeldeten Einkäufers Bestellentwürfe anlegen
             // konnte. Mit dem Standard `lax` trägt der Cross-Site-POST ohnehin
             // kein Session-Cookie, die Ausnahme war also wirkungslos, solange
-            // sie ungefährlich war. Externe Shops binden über den signierten
-            // Rücksprung 'oci-carts/return' an.
-            // Aktiver Punchout-Rücksprung (MVP-096): sessionloser Cross-Site-POST,
-            // Autorisierung über die signierte HOOK_URL ('signed'-Middleware).
-            'oci-carts/return',
+            // sie ungefährlich war. Externe Shops binden über die sitzungslosen
+            // Rücksprünge in routes/punchout.php an (ohne CSRF-Stack).
             // SAML-ACS (Feature 057, MVP-121): der IdP POSTet die Response
             // cross-site ohne CSRF-Token. Schutz kommt aus der SAML-Signatur,
             // dem InResponseTo-Abgleich (Session) und dem Replay-Cache.

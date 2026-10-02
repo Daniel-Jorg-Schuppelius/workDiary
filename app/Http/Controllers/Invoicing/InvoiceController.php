@@ -672,9 +672,9 @@ class InvoiceController extends Controller {
         ]);
     }
 
-    public function itemForm(Invoice $invoice, ?InvoiceItem $item = null): View {
+    public function itemForm(Request $request, Invoice $invoice, ?InvoiceItem $item = null): View {
         Gate::authorize('update', $invoice);
-        $item ??= new InvoiceItem();
+        $item ??= new InvoiceItem(['line_kind' => in_array($request->query('kind'), ['title', 'text'], true) ? $request->query('kind') : 'item']);
 
         return view('invoices._item_form_dialog', [
             'invoice' => $invoice,
@@ -689,6 +689,14 @@ class InvoiceController extends Controller {
     public function addItem(SaveInvoiceItemRequest $request, Invoice $invoice): RedirectResponse {
         Gate::authorize('update', $invoice);
         $data = $request->validated();
+        if (($data['line_kind'] ?? 'item') !== 'item') {
+            $invoice->items()->create($this->structureLine($data) + [
+                'organization_id' => $invoice->organization_id,
+                'position' => $data['position'] ?? ((int) $invoice->items()->max('position') + 1),
+            ]);
+
+            return redirect()->route('invoices.show', $invoice)->with('status', __('Position hinzugefügt.'));
+        }
         $variantId = $this->resolveVariant($data);
 
         $item = $invoice->items()->create([
@@ -707,6 +715,7 @@ class InvoiceController extends Controller {
             'discount_amount' => $data['discount_amount'] ?? null,
             'tax_rate' => $data['tax_rate'] ?? null,
             'tax_category' => $data['tax_category'] ?? null,
+            'labour_share_percent' => $data['labour_share_percent'] ?? null,
             'position' => $data['position'] ?? ((int) $invoice->items()->max('position') + 1),
         ]);
 
@@ -733,6 +742,11 @@ class InvoiceController extends Controller {
         Gate::authorize('update', $invoice);
         abort_unless($item->invoice_id === $invoice->id, 404);
         $data = $request->validated();
+        if (! $item->lineKind()->isPriced()) {
+            $item->update(['description' => $data['description'], 'position' => $data['position'] ?? $item->position]);
+
+            return redirect()->route('invoices.show', $invoice)->with('status', __('Position aktualisiert.'));
+        }
 
         $oldDescription = (string) $item->description;
         $variantId = $this->resolveVariant($data);
@@ -752,6 +766,7 @@ class InvoiceController extends Controller {
             'discount_amount' => $data['discount_amount'] ?? null,
             'tax_rate' => array_key_exists('tax_rate', $data) ? $data['tax_rate'] : $item->tax_rate,
             'tax_category' => array_key_exists('tax_category', $data) ? $data['tax_category'] : $item->tax_category,
+            'labour_share_percent' => array_key_exists('labour_share_percent', $data) ? $data['labour_share_percent'] : $item->labour_share_percent,
             'position' => $data['position'] ?? $item->position,
         ]);
 
@@ -765,6 +780,22 @@ class InvoiceController extends Controller {
         $this->refreshTotals($invoice);
 
         return redirect()->route('invoices.show', $invoice)->with('status', __('Position aktualisiert.'));
+    }
+
+    /**
+     * Titel- oder Textzeile (MVP-1054): nur Bezeichnung, kein Betrag.
+     *
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    private function structureLine(array $data): array {
+        return [
+            'line_kind' => (string) $data['line_kind'],
+            'description' => (string) $data['description'],
+            'quantity' => '0',
+            'unit' => '',
+            'unit_price' => '0',
+        ];
     }
 
     public function removeItem(Invoice $invoice, InvoiceItem $item): RedirectResponse {
@@ -872,6 +903,8 @@ class InvoiceController extends Controller {
             'discount_amount' => ['nullable', 'numeric', 'min:0', 'max:99999999.99'],
             'skonto_percent' => ['nullable', 'numeric', 'min:0.01', 'max:100', 'required_with:skonto_days'],
             'skonto_days' => ['nullable', 'integer', 'min:1', 'max:365', 'required_with:skonto_percent'],
+            // MVP-1053: leer = Regel der Organisation.
+            'labour_cost_disclosure' => ['nullable', 'in:0,1'],
         ]);
 
         $invoice->fill([
@@ -879,6 +912,7 @@ class InvoiceController extends Controller {
             'discount_amount' => $data['discount_amount'] ?? null,
             'skonto_percent' => $data['skonto_percent'] ?? null,
             'skonto_days' => $data['skonto_days'] ?? null,
+            'is_labour_cost_disclosed' => isset($data['labour_cost_disclosure']) ? $data['labour_cost_disclosure'] === '1' : null,
         ]);
         $invoice->load('items');
         $invoice->recalculate();

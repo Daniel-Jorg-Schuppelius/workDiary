@@ -98,17 +98,24 @@ final class OciPunchoutTest extends TestCase {
         $article = $this->articleWithSupply('X-100');
 
         // Kein actingAs: Der Shop POSTet cross-site ohne Session-Cookie.
-        $this->post($this->hookUrl(), [
+        $response = $this->post($this->hookUrl(), [
             'NEW_ITEM-VENDORMAT' => [1 => 'X-100'],
             'NEW_ITEM-DESCRIPTION' => [1 => 'Kabelkanal'],
             'NEW_ITEM-QUANTITY' => [1 => '4'],
             'NEW_ITEM-PRICE' => [1 => '2.50'],
-        ])->assertRedirect();
+        ]);
+        $response->assertRedirect();
+        // Ohne Sitzung: ein neues Sitzungscookie in der Antwort ersetzte die Anmeldung des Einkäufers.
+        $this->assertSame([], $response->headers->getCookies());
 
         $order = PurchaseOrder::query()->where('supplier_id', $this->supplier->id)->latest('id')->firstOrFail();
         $this->assertSame($this->admin->id, (int) $order->created_by);
         $this->assertSame(1, $order->lines()->count());
         $this->assertSame($article->id, (int) $order->lines()->firstOrFail()->article_id);
+
+        $this->actingAs($this->admin)->get((string) $response->headers->get('Location'))
+            ->assertRedirect(route('purchase-orders.show', $order))
+            ->assertSessionHas('success');
     }
 
     public function test_hook_return_rejects_missing_or_invalid_signature(): void {

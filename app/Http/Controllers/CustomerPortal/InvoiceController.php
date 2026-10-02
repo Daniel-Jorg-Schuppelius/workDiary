@@ -13,6 +13,7 @@ namespace App\Http\Controllers\CustomerPortal;
 use App\Http\Controllers\Controller;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
+use App\Services\Invoicing\OnlinePayment\InvoicePaymentLinkService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
@@ -29,6 +30,12 @@ class InvoiceController extends Controller {
             ->orderByDesc('id')
             ->paginate(25);
 
-        return view('customer.invoices.index', ['invoices' => $invoices]);
+        // Online-Zahlung (MVP-1067): im Portal unabhängig vom Schalter für PDF und Mail.
+        $links = app(InvoicePaymentLinkService::class);
+        $payLinks = $invoices->getCollection()
+            ->mapWithKeys(static fn (Invoice $invoice): array => [$invoice->id => $links->urlFor($invoice, onDocuments: false)])
+            ->filter();
+
+        return view('customer.invoices.index', ['invoices' => $invoices, 'payLinks' => $payLinks]);
     }
 }

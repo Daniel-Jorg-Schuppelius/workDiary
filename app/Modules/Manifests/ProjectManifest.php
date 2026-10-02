@@ -68,6 +68,9 @@ final class ProjectManifest extends Manifest {
     /** @return array<class-string, list<class-string>> */
     public function extensions(): array {
         return [
+            \App\Services\Mcp\Contracts\McpTool::class => [
+                \App\Services\Project\Mcp\ProjectsTool::class,
+            ],
             \App\Services\Import\EntitySpec::class => [
                 \App\Services\Project\Import\ProjectSpec::class,
             ],

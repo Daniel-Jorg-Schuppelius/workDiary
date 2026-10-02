@@ -51,20 +51,40 @@ return [
 
     'oci' => [
         'punchout' => [
-            'legend' => 'OCI punchout (shop hand-off)',
-            'url' => 'Shop login URL (OCI)',
-            'hint' => 'With a configured login URL, purchasing jumps straight into the supplier shop; the cart returns as a purchase order draft via a signed return URL.',
+            'legend' => 'Shop hand-off (OCI, IDS-Connect)',
+            'url' => 'Shop address (OCI/IDS)',
+            'hint' => 'With a shop address configured, purchasing jumps straight into the supplier shop (OCI or IDS-Connect); the cart comes back as a draft purchase order.',
             'action' => 'Open shop (punchout)',
             'title' => 'Redirecting to shop',
             'redirecting' => 'You are being redirected to the shop ":shop" …',
             'continue' => 'Continue to shop',
+            'protocol' => 'Protocol',
         ],
         'note' => 'Imported from OCI cart',
+        'protocol' => [
+            'oci' => 'OCI',
+            'ids' => 'IDS-Connect',
+        ],
         'flash' => [
             'missing_context' => 'Supplier or warehouse of the cart is missing.',
             'empty_cart' => 'The cart contains no items.',
             'no_punchout' => 'No punchout is configured for this source.',
             'imported' => 'Cart imported: :matched items, :unmatched unmatched.',
+        ],
+    ],
+
+    'ids' => [
+        'customer_number' => 'Customer number at the wholesaler',
+        'customer_number_hint' => 'Required for IDS-Connect; found in the wholesaler\'s access details.',
+        'note' => 'Taken from IDS cart',
+        'action' => [
+            'open_in_shop' => 'Open in shop',
+        ],
+        'flash' => [
+            'hook_too_long' => 'The return address is too long for IDS-Connect (max. 256 characters). Please use a shorter application address.',
+            'unreadable' => 'The shop cart could not be read.',
+            'ordered_in_shop' => 'The shop reports the cart as already ordered — please do not order it a second time.',
+            'not_ordered' => ':count alternative or optional items were not taken over.',
         ],
     ],
 

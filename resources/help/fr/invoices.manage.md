@@ -1,7 +1,7 @@
 ---
 title: "Factures & pièces"
 topic: invoices.manage
-version: 6
+version: 7
 audience: []
 modules:
     - module.vertrieb
@@ -109,3 +109,23 @@ fois ; l'émission la marque facturée, retirer la ligne, abandonner le brouillo
 ou une annulation totale la libèrent, et l'origine reste visible sur le
 document. Les avoirs partiels ne libèrent rien ; le stock reste inchangé pour
 toutes les opérations de facturation.
+
+## Paiement en ligne
+
+Si un prestataire de paiement (Stripe, Mollie ou SumUp) est configuré
+comme plugin, les factures émises portent un lien de paiement avec un QR
+code ; la même adresse figure dans l'e-mail via l'espace réservé
+{{payment_link}} et dans le portail client. Le lien passe toujours par
+workDiary : la page de paiement du prestataire n'est créée qu'à
+l'ouverture, pour le montant alors restant dû, si bien qu'un code imprimé
+reste juste après des paiements partiels.
+
+Dès que le prestataire confirme le paiement, la facture est considérée
+comme payée ou partiellement payée — comme avec une opération bancaire
+affectée ; un remboursement l'annule. Avec la comptabilité locale, le
+paiement apparaît dans la boîte de comptabilisation (fonds en transit
+contre la créance, la commission du prestataire en frais bancaires et de
+paiement) ; vous comptabilisez le versement ultérieur du prestataire sur
+le compte de fonds en transit. Vous désactivez le lien sur la facture et
+dans l'e-mail dans les paramètres de l'organisation, sous « Paiement en
+ligne » ; il reste dans le portail client.

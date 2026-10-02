@@ -70,7 +70,8 @@ final class KioskAndCheckinTest extends TestCase {
             ->assertOk()
             ->assertSee('Halle 3')
             ->assertSee('name="action" value="in"', false)
-            ->assertHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=()');
+            // Ortung bleibt ohne Umkreis gesperrt; das Mikrofon gibt die interne App für Diktate frei (MVP-1060).
+            ->assertHeader('Permissions-Policy', 'camera=(), microphone=(self), geolocation=(), payment=()');
 
         $this->actingAs($user)->post(route('checkin.stamp', $checkpoint->token), ['action' => 'in'])
             ->assertRedirect(route('checkin.show', $checkpoint->token));

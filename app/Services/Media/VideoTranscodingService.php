@@ -19,7 +19,7 @@ use App\Models\Platform\User;
 use App\Services\Licensing\LimitGuard;
 use CommonToolkit\Helper\FileSystem\{File, Folder};
 use CommonToolkit\Helper\Media\MediaHelper;
-use Illuminate\Support\{Carbon, Str};
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use RuntimeException;
@@ -74,6 +74,7 @@ class VideoTranscodingService {
 
     public function __construct(
         private readonly LimitGuard $limits,
+        private readonly SpeechTranscriber $transcriber,
     ) {}
 
     /** Ist Transcoding auf diesem Server überhaupt möglich? */
@@ -225,7 +226,7 @@ class VideoTranscodingService {
 
     /** Ist maschinelle Spracherkennung auf diesem Server eingerichtet? */
     public function isTranscriptionAvailable(): bool {
-        return MediaHelper::isWhisperAvailable();
+        return $this->transcriber->isAvailable();
     }
 
     /**
@@ -257,33 +258,7 @@ class VideoTranscodingService {
             ]));
         }
 
-        // Der Toolkit-Helfer legt nur das Zielverzeichnis selbst an, nicht
-        // dessen Elternpfad — auf einer frischen Installation gibt es
-        // storage/app/tmp noch nicht.
-        Folder::create(storage_path('app/tmp'), 0775, true);
-
-        $workDir = storage_path('app/tmp/whisper-' . $attachment->id . '-' . Str::random(8));
-
-        try {
-            $vtt = MediaHelper::transcribeWhisper(
-                $source,
-                $workDir,
-                (string) config('media.transcription.model', 'base'),
-                (string) config('media.transcription.model_dir', ''),
-                $locale,
-                'transcribe',
-                (string) config('media.transcription.device', 'cpu'),
-                'vtt',
-            );
-        } finally {
-            // Die Rohausgabe ist ein Zwischenprodukt; sie hat im Dauerspeicher
-            // nichts verloren. Die Prüfung muss sein: Folder::delete wirft auf
-            // ein fehlendes Verzeichnis — im finally-Zweig würde diese
-            // Ausnahme den eigentlichen Fehler verdecken.
-            if (Folder::exists($workDir)) {
-                Folder::delete($workDir, true);
-            }
-        }
+        $vtt = $this->transcriber->transcribe($source, $locale, 'vtt');
 
         // Kommt hier kein WebVTT an, liegt fast immer eine zu alte
         // Toolkit-Fassung ohne wählbares Ausgabeformat darunter — dann

@@ -1,7 +1,7 @@
 ---
 title: "Catálogos de proveedores"
 topic: supplier-catalogs.overview
-version: 1
+version: 2
 audience: []
 modules:
     - module.lager
@@ -57,11 +57,18 @@ automática: en el modo directo la realiza el tramitador de forma
 expresa; en el modo de cuatro ojos se genera en su lugar una solicitud
 de aprobación que una segunda persona debe aprobar o rechazar.
 
-**OCI-Punchout:** Las fuentes con acceso de tienda registrado permiten
-el salto directo a la tienda web del proveedor. El carrito llenado allí
-regresa mediante un retorno firmado y limitado en el tiempo, y se asigna
-al almacén de destino elegido — como base para la adquisición
-posterior.
+**Salto a la tienda (OCI o IDS-Connect):** Las fuentes con acceso de
+tienda registrado permiten el salto directo a la tienda web del
+proveedor. El protocolo se elige en la fuente; IDS-Connect, como lo
+ofrecen los mayoristas de electricidad y fontanería, requiere además su
+número de cliente en el mayorista. El carrito llenado allí regresa como
+borrador de pedido para el almacén de destino elegido. Se toman las
+posiciones cuyo número de artículo del proveedor está asignado a un
+artículo; las indicaciones de la tienda (como plazos de entrega o
+artículos bloqueados) aparecen como aviso. Si la tienda indica que el
+carrito ya se ha pedido, no lo pida una segunda vez. En las fuentes IDS,
+el símbolo de tienda en la lista de artículos abre la página del
+artículo directamente en la tienda.
 
 La lectura es posible con permisos de lectura de almacén; crear,
 importar y vincular requieren permisos de contabilización de almacén.

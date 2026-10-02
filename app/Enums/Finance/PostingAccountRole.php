@@ -63,6 +63,12 @@ enum PostingAccountRole: string implements HasLabel {
     /** Anlagenabgang, Restbuchwert bei Buchgewinn (SKR03 2315, SKR04 4855 — MVP-891). */
     case DisposalGain = 'disposal_gain';
 
+    /** Geldtransit beim Zahlungsanbieter bis zur Auszahlung (SKR03 1360, SKR04 1460 — MVP-1067). */
+    case PaymentTransit = 'payment_transit';
+
+    /** Gebühren des Zahlungsanbieters (SKR03 4970, SKR04 6855 — MVP-1067). */
+    case PaymentFees = 'payment_fees';
+
     public function label(): string {
         return (string) __('enums.finance.posting-account-role.' . $this->value);
     }
@@ -71,10 +77,10 @@ enum PostingAccountRole: string implements HasLabel {
         return match ($this) {
             self::Receivable, self::Payable, self::EmployeePayable => 'info',
             self::Revenue => 'success',
-            self::Expense, self::Depreciation, self::DisposalLoss => 'error',
+            self::Expense, self::Depreciation, self::DisposalLoss, self::PaymentFees => 'error',
             self::DisposalGain => 'success',
             self::TaxOutput, self::TaxInput => 'warning',
-            self::Cash, self::Bank, self::FixedAsset => 'secondary',
+            self::Cash, self::Bank, self::FixedAsset, self::PaymentTransit => 'secondary',
             self::Discount => 'accent',
         };
     }

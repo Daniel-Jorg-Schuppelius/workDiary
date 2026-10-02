@@ -124,6 +124,18 @@ return [
     'invoicing.girocode_enabled' => ['type' => 'boolean', 'scopes' => ['organization'], 'fallback' => false],
     // RF-Gläubigerreferenz (ISO 11649, MVP-978) aus der Rechnungsnummer im Girocode und Zahlungshinweis.
     'invoicing.creditor_reference' => ['type' => 'boolean', 'scopes' => ['organization'], 'fallback' => false],
+    // Arbeitskosten nach § 35a EStG (MVP-1053); Branchenprofile des Handwerks setzen „private_customers“.
+    'invoicing.labour_cost_disclosure' => ['type' => 'enum', 'scopes' => ['organization'], 'options' => ['off', 'private_customers', 'always'], 'fallback' => 'off'],
+    // KI-Assistenten über MCP (MVP-1063/1065): Opt-in je Organisation, ab Werk aus —
+    // ohne Freigabe keine Zustimmung, keine Tokenausgabe und keine Werkzeuge.
+    'mcp.enabled' => ['type' => 'boolean', 'scopes' => ['organization'], 'fallback' => false],
+    // Online-Zahlung (MVP-1067): Anbieter, wenn mehrere Plugins aktiv sind (leer = erster
+    // aktiver), und ob der Zahlungslink auf Rechnung und Mail steht (Portal immer).
+    'payments.online.provider' => ['type' => 'string', 'scopes' => ['organization'], 'rules' => 'nullable|string|max:40|regex:/^[a-z0-9_-]+$/'],
+    'payments.online.on_documents' => ['type' => 'boolean', 'scopes' => ['organization'], 'fallback' => true],
+    // Aufmaß (MVP-1058): Formelvorlagen des Gewerks als Schnellwahl im Blatt —
+    // Liste aus {label, formula (REB-Nummer), unit, factor}; setzt das Branchenprofil.
+    'takeoff.presets' => ['type' => 'json', 'scopes' => ['organization'], 'rules' => 'nullable', 'fallback' => []],
     // Lexware-Office-Tarifergänzungen (Feature 158, MVP-831): Tarifprofil je
     // Organisation — Orientierung, keine Berechtigung. Übergabewege entscheidet
     // die geprüfte Verfügbarkeit; `api` bleibt bis Paket A (MVP-834) an XL gebunden.

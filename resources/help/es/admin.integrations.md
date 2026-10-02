@@ -1,7 +1,7 @@
 ---
 title: "Gestionar integraciones"
 topic: admin.integrations
-version: 2
+version: 3
 audience:
     - admin
 related:
@@ -79,6 +79,12 @@ finalidad, para que no tenga que adivinar dónde encaja cada cosa:
 - **Contabilidad y facturación:** lexoffice, orgaMAX, sevDesk, easybill,
   BuchhaltungsButler, InvoicePlane y el punto de acceso Peppol para enviar
   facturas electrónicas.
+- **DATEV Online:** lotes contables por importación EXTF e imágenes de
+  justificantes directamente a DATEV Unternehmen online; el inicio de
+  sesión se hace con DATEV.
+- **Pago en línea:** Stripe, Mollie y SumUp para el enlace de pago en la
+  factura, en el correo y en el portal del cliente; el proveedor se elige
+  en la configuración de la organización.
 - **Telefonía y mensajes:** sipgate y FRITZ!Box para llamadas entrantes y
   salientes, la guía telefónica para nombres de números desconocidos (como
   sugerencia, mediante un servicio de consulta de su elección), seven.io para

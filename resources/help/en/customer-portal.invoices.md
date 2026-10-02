@@ -1,7 +1,7 @@
 ---
 title: "My Invoices"
 topic: customer-portal.invoices
-version: 1
+version: 2
 audience: []
 related:
     - customer-portal.overview
@@ -21,3 +21,7 @@ stage an invoice is currently in.
 When there are several pages, use the page navigation at the bottom to
 browse. This view is provided for your reference and traceability; the
 invoicing itself is handled by the company you commissioned.
+
+If the issuer offers it, you can settle open invoices directly with the
+payment provider via **Pay online**; once the provider confirms the
+payment, it shows in the invoice status.

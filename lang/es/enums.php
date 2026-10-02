@@ -1343,6 +1343,7 @@ return [
             'payment' => 'Pago',
             'depreciation' => 'Amortización',
             'asset_disposal' => 'Baja de inmovilizado',
+            'online_payment' => 'Pago en línea',
         ],
         'posting-account-role' => [
             'receivable' => 'Cliente',
@@ -1359,6 +1360,8 @@ return [
             'depreciation' => 'Gasto por amortización',
             'disposal_loss' => 'Baja valor residual (pérdida)',
             'disposal_gain' => 'Baja valor residual (beneficio)',
+            'payment_transit' => 'Dinero en tránsito (proveedor de pagos)',
+            'payment_fees' => 'Gastos bancarios y de pago',
         ],
         // Buchungskern (Feature 125, MVP-672).
         'balance-side' => [
@@ -1796,6 +1799,11 @@ return [
             'manual' => 'manual',
             'machine' => 'automática',
         ],
+        'dictation-status' => [
+            'pending' => 'Pendiente',
+            'done' => 'Listo',
+            'failed' => 'Fallido',
+        ],
     ],
     // Vereinsverwaltung (Feature 159, MVP-842)
     'club' => [
@@ -2023,6 +2031,22 @@ return [
         'donation-receipt-kind' => [
             'single' => 'Certificado individual',
             'collective' => 'Certificado conjunto',
+        ],
+    ],
+    'takeoff' => [
+        'status' => [
+            'draft' => 'Abierta',
+            'completed' => 'Cerrada',
+        ],
+    ],
+    'invoicing' => [
+        'online-payment-status' => [
+            'open' => 'Abierto',
+            'paid' => 'Pagado',
+            'failed' => 'Fallido',
+            'canceled' => 'Cancelado',
+            'expired' => 'Caducado',
+            'refunded' => 'Reembolsado',
         ],
     ],
 ];

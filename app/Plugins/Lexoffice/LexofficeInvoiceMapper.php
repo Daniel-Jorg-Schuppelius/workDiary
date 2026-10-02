@@ -74,6 +74,10 @@ class LexofficeInvoiceMapper {
      * @return array<string, mixed>
      */
     private function mapItem(InvoiceItem $item, string $currency, float $taxRate): array {
+        // Titel und Text der Gliederung (MVP-1054) sind in Lexware Office Textzeilen ohne Betrag.
+        if (! $item->lineKind()->isPriced()) {
+            return ['type' => 'text', 'name' => $item->description ?: __('Position')];
+        }
         $type = $item->expense_id !== null ? 'custom' : 'service';
 
         return array_filter([

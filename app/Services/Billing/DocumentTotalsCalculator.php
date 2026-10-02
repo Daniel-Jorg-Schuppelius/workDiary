@@ -33,6 +33,9 @@ use CommonToolkit\ValueObjects\{Money, Percentage};
  * @phpstan-type Totals array{line_net_sum: Money, document_discount: Money, by_rate: array<string, RateGroup>, subtotal: Money, tax_amount: Money, total: Money}
  */
 class DocumentTotalsCalculator {
+    /** Zwischenskala für Anteile, damit erst die Gruppensumme auf Cent rundet. */
+    private const SHARE_SCALE = 8;
+
     public static function lineNet(
         string|int|float $quantity,
         Money|string|float|int|null $unitPrice,
@@ -65,6 +68,10 @@ class DocumentTotalsCalculator {
         /** @var array<string, Money> $byRate */
         $byRate = [];
         foreach ($lines as $line) {
+            // Titel und Text gliedern nur (MVP-1054) — sie öffnen keine Satzgruppe.
+            if (! $line->lineKind()->isPriced()) {
+                continue;
+            }
             $rate = $line->taxRate() ?? $context->fallbackTaxRate;
             $key = self::rateKey($rate);
             // Zeilenbeträge gehen in Währungspräzision in die Summe — auch
@@ -104,6 +111,59 @@ class DocumentTotalsCalculator {
             'tax_amount' => $tax,
             'total' => $subtotal->plus($tax),
         ];
+    }
+
+    /**
+     * Arbeitskosten nach § 35a EStG (MVP-1053): je Steuersatz die Zeilennettos
+     * mal Arbeitsanteil, der Belegrabatt der Satzgruppe im selben Verhältnis
+     * abgezogen, Steuer auf die rabattierte Basis. Zeilen ohne bestimmten
+     * Anteil zählen nicht und werden gemeldet. `null`, wenn keine Zeile einen
+     * Anteil trägt.
+     *
+     * @param  iterable<DocumentLine>  $lines
+     * @return array{net: Money, tax: Money, gross: Money, undetermined: int}|null
+     */
+    public function labourCosts(iterable $lines, DocumentTotalsContext $context): ?array {
+        $lines = is_array($lines) ? $lines : iterator_to_array($lines, false);
+        $totals = $this->totals($lines, $context);
+        $currency = $context->currency;
+        $scale = $currency->getDefaultFractionDigits();
+
+        /** @var array<string, Money> $labourByRate */
+        $labourByRate = [];
+        $undetermined = 0;
+        foreach ($lines as $line) {
+            if (! $line->lineKind()->isPriced()) {
+                continue;
+            }
+            $net = $line->netAmount()->withScale($scale);
+            $share = $line->labourShare();
+            if ($share === null) {
+                $undetermined += $net->isZero() ? 0 : 1;
+
+                continue;
+            }
+            $key = self::rateKey($line->taxRate() ?? $context->fallbackTaxRate);
+            $part = $share->amountOf($net->withScale(self::SHARE_SCALE));
+            $labourByRate[$key] = isset($labourByRate[$key]) ? $labourByRate[$key]->plus($part) : $part;
+        }
+        if ($labourByRate === []) {
+            return null;
+        }
+
+        $net = Money::zero($currency);
+        $tax = Money::zero($currency);
+        foreach ($labourByRate as $key => $labour) {
+            $group = $totals['by_rate'][$key];
+            $allowance = $group['net']->isZero()
+                ? Money::zero($currency, self::SHARE_SCALE)
+                : $group['allowance']->withScale(self::SHARE_SCALE)->times($labour->getAmount())->dividedBy($group['net']->getAmount());
+            $taxable = $labour->minus($allowance)->withScale($scale);
+            $net = $net->plus($taxable);
+            $tax = $tax->plus($context->reverseCharge ? Money::zero($currency) : $taxable->percentage((float) $key));
+        }
+
+        return ['net' => $net, 'tax' => $tax, 'gross' => $net->plus($tax), 'undetermined' => $undetermined];
     }
 
     /** Belegrabatt: Prozent vom Zeilennetto, sonst Betrag gekappt auf die Positionssumme (vorzeichentreu). */

@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Contracts;
 
+use App\Enums\Billing\DocumentLineKind;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\{Money, Percentage};
 use Illuminate\Database\Eloquent\Model;
@@ -57,4 +58,18 @@ interface DocumentLine {
     public function taxAmount(): Money;
 
     public function grossAmount(): Money;
+
+    /** Zeilenart (MVP-1054); Modelle ohne Gliederung führen nur Positionen. */
+    public function lineKind(): DocumentLineKind;
+
+    /** Anteil der Arbeits-, Maschinen- und Fahrtkosten (§ 35a EStG); `null` = nicht bestimmt. */
+    public function labourShare(): ?Percentage;
+
+    /**
+     * Felder, die beim Kopieren der Position in einen Folgebeleg mitwandern
+     * (Vertragsfeld → Wert), z. B. der Arbeitsanteil.
+     *
+     * @return array<string, mixed>
+     */
+    public function carriedLineAttributes(): array;
 }

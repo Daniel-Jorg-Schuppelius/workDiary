@@ -277,6 +277,34 @@
                            :hint="__('settings.shipping.eori_number_hint')" />
         </x-form-group>
 
+        {{-- ONLINE-ZAHLUNG (MVP-1067): Anbieter sind Plugins mit eigenen Zugangsdaten. --}}
+        @php($paymentProviders = app(\App\Plugins\PluginManager::class)->all()->filter(fn ($plugin): bool => $plugin instanceof \App\Plugins\Contracts\OnlinePaymentProvider))
+        <x-form-group :legend="__('settings.payments.heading')" icon="credit_card" tone="info" cols="2" compact
+                      :description="__('settings.payments.description')">
+            <x-select-field name="settings[payments][online][provider]" :label="__('settings.payments.provider')"
+                            error="settings.payments.online.provider" :hint="__('settings.payments.provider_hint')">
+                <option value="">{{ __('settings.payments.provider_auto') }}</option>
+                @foreach ($paymentProviders as $provider)
+                    <option value="{{ $provider->onlinePaymentProviderId() }}" @selected(old('settings.payments.online.provider', data_get($stored, 'payments.online.provider', '')) === $provider->onlinePaymentProviderId())>{{ $provider->name() }}</option>
+                @endforeach
+            </x-select-field>
+            <x-checkbox-field name="settings[payments][online][on_documents]" tone="info"
+                              :label="__('settings.payments.on_documents')"
+                              :hint="__('settings.payments.on_documents_hint')"
+                              error="settings.payments.online.on_documents"
+                              :checked="(string) old('settings.payments.online.on_documents', data_get($stored, 'payments.online.on_documents', true) ? '1' : '0') === '1'" />
+        </x-form-group>
+
+        {{-- KI-ASSISTENTEN (MVP-1063/1065): MCP-Zugriff ist Opt-in je Organisation. --}}
+        <x-form-group :legend="__('settings.mcp.heading')" icon="smart_toy" tone="warning" cols="1" compact
+                      :description="__('settings.mcp.description')">
+            <x-checkbox-field name="settings[mcp][enabled]" tone="warning"
+                              :label="__('settings.mcp.enabled')"
+                              :hint="__('settings.mcp.enabled_hint')"
+                              error="settings.mcp.enabled"
+                              :checked="(string) old('settings.mcp.enabled', data_get($stored, 'mcp.enabled') ? '1' : '0') === '1'" />
+        </x-form-group>
+
         {{-- MIETBEDINGUNGEN (MVP-895): Übergabe nur mit unterschriebener Fassung. --}}
         <x-form-group :legend="__('settings.rental_terms.heading')" icon="handshake" tone="info" cols="1" compact
                       :description="__('settings.rental_terms.description')">

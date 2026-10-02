@@ -29,6 +29,14 @@
             data-depends-on="customer_id" :data-parent="true" />
         <x-input-field name="valid_until" type="date" :label="__('Bindefrist (gültig bis)')" :value="old('valid_until')" />
         <x-textarea-field name="terms" :label="__('Bedingungen / Leistungsumfang (optional)')" rows="3" span="2">{{ old('terms') }}</x-textarea-field>
+        @php
+            $labourRule = \App\Models\Sales\Quote::labourCostDisclosureRule(auth()->user()?->organization);
+        @endphp
+        <x-select-field name="labour_cost_disclosure" :label="__('invoicing.labour_costs.override')" span="2" :hint="__('invoicing.labour_costs.override_hint')">
+            <option value="">{{ __('invoicing.labour_costs.override_default', ['rule' => $labourRule->label()]) }}</option>
+            <option value="1" @selected(old('labour_cost_disclosure') === '1')>{{ __('invoicing.labour_costs.override_on') }}</option>
+            <option value="0" @selected(old('labour_cost_disclosure') === '0')>{{ __('invoicing.labour_costs.override_off') }}</option>
+        </x-select-field>
     </x-form-group>
 
     <x-validation-errors />

@@ -1,7 +1,7 @@
 ---
 title: "Cataloghi fornitori"
 topic: supplier-catalogs.overview
-version: 1
+version: 2
 audience: []
 modules:
     - module.lager
@@ -57,11 +57,18 @@ automaticamente: in modalità diretta l'operatore la esegue
 espressamente, in modalità a quattro occhi nasce invece una richiesta
 di approvazione che una seconda persona deve approvare o rifiutare.
 
-**OCI-Punchout:** le fonti con accesso al negozio memorizzato
-consentono il passaggio diretto al webshop del fornitore. Il carrello
-riempito lì ritorna tramite un rientro firmato e a tempo limitato e
-viene assegnato al magazzino di destinazione scelto — come base per il
-successivo approvvigionamento.
+**Accesso al negozio (OCI o IDS-Connect):** le fonti con accesso al
+negozio memorizzato consentono il passaggio diretto al webshop del
+fornitore. Il protocollo si sceglie sulla fonte; IDS-Connect, offerto
+dai grossisti di materiale elettrico e termoidraulico, richiede inoltre
+il Suo numero cliente presso il grossista. Il carrello riempito lì
+ritorna come bozza d'ordine per il magazzino di destinazione scelto.
+Vengono riprese le posizioni il cui codice articolo del fornitore è
+associato a un articolo; le indicazioni del negozio (ad esempio tempi di
+consegna o articoli bloccati) compaiono come messaggio. Se il negozio
+segnala il carrello come già ordinato, non lo ordini una seconda volta.
+Per le fonti IDS, il simbolo del negozio nell'elenco articoli apre la
+pagina dell'articolo direttamente nel negozio.
 
 La lettura è possibile con permessi di lettura del magazzino; la
 creazione, l'importazione e il collegamento richiedono permessi di

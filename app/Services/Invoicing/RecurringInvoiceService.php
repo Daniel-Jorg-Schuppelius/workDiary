@@ -188,6 +188,7 @@ class RecurringInvoiceService {
         $position = 0;
         foreach ($schedule->items as $item) {
             $invoice->items()->create([
+                ...$item->carriedLineAttributes(),
                 'organization_id' => $schedule->organization_id,
                 'service_date' => $periodEnd->toDateString(),
                 'description' => $this->replacePlaceholders((string) $item->description, $periodStart, $periodEnd),

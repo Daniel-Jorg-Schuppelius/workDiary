@@ -21,6 +21,6 @@ use App\Models\Invoicing\Invoice;
  * = Rechnungsbetrag abzüglich Kassenzahlungen.
  */
 interface PaymentStatusProvider {
-    /** Summe der bestätigten Bankzuordnungen auf die Rechnung. */
+    /** Summe der bestätigten Bankzuordnungen und Online-Zahlungen (MVP-1067) auf die Rechnung. */
     public function allocatedSum(Invoice $invoice): float;
 }

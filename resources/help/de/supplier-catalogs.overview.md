@@ -1,7 +1,7 @@
 ---
 title: "Lieferantenkataloge"
 topic: supplier-catalogs.overview
-version: 1
+version: 2
 audience: []
 modules:
     - module.lager
@@ -52,11 +52,17 @@ Artikel erfolgt nie automatisch: Im Direktmodus übernimmt sie der
 Bearbeiter ausdrücklich, im Vier-Augen-Modus entsteht stattdessen ein
 Freigabe-Antrag, den eine zweite Person genehmigen oder ablehnen muss.
 
-**OCI-Punchout:** Quellen mit hinterlegtem Shop-Zugang erlauben den
-direkten Absprung in den Lieferanten-Webshop. Der dort gefüllte
-Warenkorb kommt über einen zeitlich begrenzten, signierten Rücksprung
-zurück und wird dem gewählten Ziel-Lager zugeordnet — als Grundlage für
-die weitere Beschaffung.
+**Shop-Absprung (OCI oder IDS-Connect):** Quellen mit hinterlegtem
+Shop-Zugang erlauben den direkten Absprung in den Lieferanten-Webshop.
+Das Protokoll wählen Sie an der Quelle; IDS-Connect, wie es der Elektro-
+und SHK-Großhandel anbietet, braucht zusätzlich Ihre Kundennummer beim
+Großhändler. Der dort gefüllte Warenkorb kommt als Bestellentwurf für
+das gewählte Ziel-Lager zurück. Übernommen werden Positionen, deren
+Lieferanten-Artikelnummer einem Artikel zugeordnet ist; Hinweise des
+Shops (etwa Lieferzeiten oder gesperrte Artikel) erscheinen als Meldung.
+Meldet der Shop den Warenkorb als bereits bestellt, bestellen Sie ihn
+nicht ein zweites Mal. Bei IDS-Quellen öffnet das Shop-Symbol in der
+Artikelliste die Artikelseite direkt im Shop.
 
 Lesen ist mit Lager-Leserechten möglich; Anlegen, Importieren und
 Verknüpfen erfordern Lager-Buchungsrechte.

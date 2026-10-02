@@ -28,6 +28,8 @@
                 @include('diary._dispatch_panel')
                 @include('external-participants._panel', ['subject' => $diary, 'externalType' => 'diary'])
                 @includeWhen(isset($procedureRuns), 'diary._procedure_panel')
+                @include('takeoffs._carrier_panel', ['carrierType' => 'diary', 'carrier' => $diary])
+                @include('chat._subject_panel', ['subjectType' => 'diary', 'subject' => $diary])
                 @include('diary._timeline_panel')
                 @include('diary._service_tickets_panel')
                 <div class="text-center">

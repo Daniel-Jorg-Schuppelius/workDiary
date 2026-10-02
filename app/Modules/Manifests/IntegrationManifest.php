@@ -35,6 +35,7 @@ final class IntegrationManifest extends Manifest {
             'Integration',
             'Import',
             'Export',
+            'Mcp',
             'Sync',
         ];
     }
@@ -45,6 +46,8 @@ final class IntegrationManifest extends Manifest {
             'billbee_orders',
             'caldav_connections',
             'calendly_connections',
+            'datev_online_connections',
+            'datev_online_transfers',
             'calendly_webhook_deliveries',
             'calendly_webhook_subscriptions',
             'carddav_cards',
@@ -78,6 +81,9 @@ final class IntegrationManifest extends Manifest {
             'lexoffice_voucher_lines',
             'lexoffice_vouchers',
             'lexoffice_webhook_deliveries',
+            'mcp_oauth_clients',
+            'mcp_oauth_codes',
+            'mcp_oauth_refresh_tokens',
             'msgraph_connections',
             'msgraph_contact_connections',
             'msgraph_mail_connections',

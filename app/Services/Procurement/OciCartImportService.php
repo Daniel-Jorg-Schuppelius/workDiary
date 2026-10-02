@@ -35,10 +35,10 @@ class OciCartImportService {
      * @param  list<array{vendormat: ?string, description: ?string, quantity: ?string, price: ?string}>  $cartLines
      * @return array{order: PurchaseOrder, matched: int, unmatched: int, unmatched_items: list<string>}
      */
-    public function import(Organization $organization, Supplier $supplier, Warehouse $warehouse, array $cartLines, ?int $createdBy = null): array {
-        return DB::transaction(function () use ($organization, $supplier, $warehouse, $cartLines, $createdBy): array {
+    public function import(Organization $organization, Supplier $supplier, Warehouse $warehouse, array $cartLines, ?int $createdBy = null, ?string $note = null): array {
+        return DB::transaction(function () use ($organization, $supplier, $warehouse, $cartLines, $createdBy, $note): array {
             $order = $this->orders->createDraft($organization, $supplier, $warehouse, [
-                'note' => __('procurement.oci.note'),
+                'note' => $note ?? __('procurement.oci.note'),
                 'created_by' => $createdBy,
             ]);
 

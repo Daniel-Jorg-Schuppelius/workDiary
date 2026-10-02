@@ -318,6 +318,7 @@ return [
             'payment' => 'Zahlung (:kind) · :target',
             'depreciation' => 'AfA :year · :no :name',
             'asset_disposal' => 'Abgang :no :name',
+            'online_payment' => 'Online-Zahlung (:provider) · :invoice',
         ],
         'reversal_reason' => [
             'unmatched' => 'Zahlungszuordnung aufgehoben — Gegenbuchung.',

@@ -1,7 +1,7 @@
 ---
 title: "Invoices & documents"
 topic: invoices.manage
-version: 6
+version: 7
 audience: []
 modules:
     - module.vertrieb
@@ -102,3 +102,21 @@ only sit in one draft at a time; issuing marks it invoiced, removing the line
 item, discarding the draft or a full cancellation release it again, and the
 origin stays visible on the document. Partial credit notes release nothing;
 stock stays untouched by all invoice operations.
+
+## Online payment
+
+If a payment provider (Stripe, Mollie or SumUp) is set up as a plugin,
+issued invoices carry a payment link with a QR code; the same address
+appears in the email via the placeholder {{payment_link}} and in the
+customer portal. The link always goes through workDiary: the provider's
+payment page is created only when it is opened, for the amount open at
+that moment, so a printed code stays correct after partial payments.
+
+Once the provider confirms the payment, the invoice counts as paid or
+partially paid — just like with an allocated bank transaction; a refund
+reverses this. With local accounting, the payment appears in the posting
+inbox (cash in transit against receivable, the provider's fee as bank and
+payment charges); you book the provider's later payout against the
+cash-in-transit account. You can switch off the link on invoices and
+emails in the organization settings under “Online payment”; it remains in
+the customer portal.

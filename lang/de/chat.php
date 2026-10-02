@@ -59,4 +59,17 @@ return [
         'title' => 'WorkDiary-Testnachricht',
         'message' => 'Dieser Kanal ist korrekt verbunden. ✅',
     ],
+    // Projekt- und Auftragschat (MVP-1061).
+    'subject' => [
+        'title' => 'Chat',
+        'start' => 'Chat starten',
+        'open' => 'Chat öffnen',
+        'hint' => 'Ein Kanal für alle Eingeteilten — Fotos und Dateien daraus erscheinen hier.',
+        'no_files' => 'Noch keine Dateien im Chat.',
+        'files' => 'Dateien aus dem Chat',
+        'project' => 'Projekt: :name',
+        'diary' => 'Auftrag: :name',
+        'other' => 'Thema',
+        'description' => 'Kanal zum Projekt bzw. Auftrag — Mitglieder sind die Eingeteilten.',
+    ],
 ];

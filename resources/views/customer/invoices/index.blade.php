@@ -17,6 +17,7 @@
                 <x-table.th>{{ __('Datum') }}</x-table.th>
                 <x-table.th>{{ __('Status') }}</x-table.th>
                 <x-table.th class="text-right">{{ __('Betrag') }}</x-table.th>
+                <x-table.th class="text-right"><span class="sr-only">{{ __('Aktionen') }}</span></x-table.th>
             </tr>
         </x-slot:head>
         @forelse ($invoices as $invoice)
@@ -25,9 +26,14 @@
                 <td class="whitespace-nowrap">{{ optional($invoice->issued_on)->fdate() }}</td>
                 <td>{{ __('values.' . $invoice->status) }}</td>
                 <td class="text-right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($invoice->total?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td>
+                <td class="text-right">
+                    @if ($payLinks->has($invoice->id))
+                        <a href="{{ $payLinks->get($invoice->id) }}" class="btn btn-sm btn-primary">{{ __('payments.portal.pay') }}</a>
+                    @endif
+                </td>
             </tr>
         @empty
-            <x-table.empty :colspan="4" :title="__('Keine Rechnungen vorhanden.')" />
+            <x-table.empty :colspan="5" :title="__('Keine Rechnungen vorhanden.')" />
         @endforelse
     </x-table>
     <x-pagination :paginator="$invoices" standing />

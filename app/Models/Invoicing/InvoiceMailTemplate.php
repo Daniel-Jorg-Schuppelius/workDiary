@@ -13,6 +13,7 @@ namespace App\Models\Invoicing;
 use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Models\Concerns\{BelongsToOrganization, HasSqid, Searchable};
 use App\Models\Customer\Customer;
+use App\Services\Invoicing\OnlinePayment\InvoicePaymentLinkService;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Support\Carbon;
@@ -210,6 +211,8 @@ class InvoiceMailTemplate extends Model {
             'company_name' => $companyName,
             'document_label' => $invoice->documentLabel(),
             'custom_text' => (string) ($customText ?? ''),
+            // Online-Zahlung (MVP-1067): leer, wenn kein Anbieter aktiv oder nichts offen ist.
+            'payment_link' => (string) app(InvoicePaymentLinkService::class)->urlFor($invoice),
         ];
     }
 
@@ -258,6 +261,7 @@ class InvoiceMailTemplate extends Model {
                 'company_name' => __('Firmenname'),
                 'document_label' => __('Dokumenttyp (Rechnung/Gutschrift)'),
                 'custom_text' => __('Individueller Begleittext'),
+                'payment_link' => __('Zahlungslink (Online-Zahlung)'),
             ],
             RenderDocumentKind::Quote, RenderDocumentKind::OrderConfirmation => $common + [
                 'customer_name' => __('Kunden-Name'),
@@ -298,6 +302,7 @@ class InvoiceMailTemplate extends Model {
                 'currency' => __('Währung'),
                 'company_name' => __('Firmenname'),
                 'custom_text' => __('Individueller Begleittext'),
+                'payment_link' => __('Zahlungslink (Online-Zahlung)'),
             ],
             default => $common,
         };

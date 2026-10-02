@@ -100,6 +100,21 @@ return [
         'block_trips' => 'Ningún trayecto nuevo si una inspección obligatoria está vencida',
         'block_trips_hint' => 'Si la ITV, la revisión de prevención u otra inspección obligatoria del activo asignado está vencida o bloqueada, no se puede registrar ningún trayecto a partir de hoy. Los trayectos pasados siguen pudiéndose documentar.',
     ],
+    'payments' => [
+        'heading' => 'Pago en línea',
+        'description' => 'Enlace de pago y código QR en la factura, en el correo y en el portal del cliente. Active el proveedor de pagos (Stripe, Mollie o SumUp) como plugin con sus propias credenciales.',
+        'provider' => 'Proveedor de pagos',
+        'provider_auto' => 'Automático (primer proveedor activo)',
+        'provider_hint' => 'Solo es necesario si hay varios proveedores activos.',
+        'on_documents' => 'Enlace de pago en la factura y en el correo',
+        'on_documents_hint' => 'Si se desactiva, el pago en línea sigue disponible en el portal del cliente.',
+    ],
+    'mcp' => [
+        'heading' => 'Asistentes de IA (MCP)',
+        'description' => 'Los asistentes de IA como Claude o ChatGPT pueden conectarse con el consentimiento de cada usuario y leer o crear borradores con sus permisos.',
+        'enabled' => 'Permitir asistentes de IA mediante MCP',
+        'enabled_hint' => 'Desactivado, no es posible una nueva conexión; las existentes no obtienen herramientas y no pueden renovarse.',
+    ],
     'rental_terms' => [
         'heading' => 'Condiciones de alquiler de equipos',
         'description' => 'Las condiciones de alquiler se gestionan como acuerdo con el cliente «Condiciones de alquiler (alquiler de equipos)» con versión y firma.',

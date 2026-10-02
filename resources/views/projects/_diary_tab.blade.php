@@ -59,6 +59,8 @@
     </ul>
 </x-card>
 
+@include('takeoffs._carrier_panel', ['carrierType' => 'project', 'carrier' => $project, 'class' => 'mt-4'])
+
 {{-- Stehendes Pagination-Panel, nur im Aufträge-Tab sichtbar. --}}
 <x-pagination :paginator="$entries" standing data-tab-footer="diary"
               :hidden="request('tab', 'overview') !== 'diary'" />

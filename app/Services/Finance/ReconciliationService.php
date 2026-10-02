@@ -18,7 +18,7 @@ use App\Events\Invoicing\{InvoicePaymentReceived, InvoicePaymentReverted};
 use App\Models\Billing\{CustomerAccountPayment, CustomerBillingAgreement};
 use App\Models\Club\ClubFeeClaim;
 use App\Models\Finance\{BankTransaction, PaymentAllocation, PaymentReconciliationEvent};
-use App\Models\Invoicing\Invoice;
+use App\Models\Invoicing\{Invoice, OnlinePayment};
 use App\Models\Platform\User;
 use App\Models\Travel\Expense;
 use App\Modules\ModuleRegistry;
@@ -487,6 +487,10 @@ class ReconciliationService implements PaymentStatusProvider {
         if (is_string($legacyPaid) || is_numeric($legacyPaid)) {
             $allocated += (float) $legacyPaid;
         }
+
+        // MVP-1067: Online-Zahlungen decken ohne Bankumsatz — die Auszahlung des
+        // Anbieters läuft gegen Geldtransit, nicht gegen die Rechnung.
+        $allocated += OnlinePayment::settledSumFor($invoice);
 
         return round($allocated, 2);
     }

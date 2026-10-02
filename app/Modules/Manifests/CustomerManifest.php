@@ -63,6 +63,10 @@ final class CustomerManifest extends Manifest {
     /** @return array<class-string, list<class-string>> */
     public function extensions(): array {
         return [
+            \App\Services\Mcp\Contracts\McpTool::class => [
+                \App\Services\Customer\Mcp\CustomersTool::class,
+                \App\Services\Customer\Mcp\CreateCustomerTool::class,
+            ],
             \App\Services\Import\EntitySpec::class => [
                 \App\Services\Customer\Import\ContactPersonSpec::class,
                 \App\Services\Customer\Import\CustomerSpec::class,

@@ -1,7 +1,7 @@
 ---
 title: "Fatture & documenti"
 topic: invoices.manage
-version: 6
+version: 7
 audience: []
 modules:
     - module.vertrieb
@@ -111,3 +111,22 @@ la segna come fatturata, rimuovere la riga, scartare la bozza o uno storno
 totale la liberano di nuovo e l'origine resta visibile sul documento. Le note
 di credito parziali non liberano nulla; il magazzino resta invariato in tutte
 le operazioni di fattura.
+
+## Pagamento online
+
+Se un fornitore di pagamento (Stripe, Mollie o SumUp) è configurato come
+plugin, le fatture emesse riportano un link di pagamento con codice QR; lo
+stesso indirizzo compare nell'e-mail tramite il segnaposto
+{{payment_link}} e nel portale clienti. Il link passa sempre da workDiary:
+la pagina di pagamento del fornitore viene creata solo all'apertura, per
+l'importo in quel momento ancora aperto, così un codice stampato resta
+corretto dopo pagamenti parziali.
+
+Quando il fornitore conferma il pagamento, la fattura risulta pagata o
+pagata in parte, come con un movimento bancario assegnato; un rimborso lo
+annulla. Con la contabilità locale il pagamento compare nella casella
+delle registrazioni (denaro in transito contro il credito, la commissione
+del fornitore come spese bancarie e di pagamento); il successivo accredito
+del fornitore lo registri sul conto del denaro in transito. Il link su
+fattura ed e-mail si disattiva nelle impostazioni dell'organizzazione,
+alla voce «Pagamento online»; nel portale clienti rimane.

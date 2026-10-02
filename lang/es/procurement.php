@@ -51,20 +51,40 @@ return [
 
     'oci' => [
         'punchout' => [
-            'legend' => 'Punchout OCI (salto a la tienda)',
-            'url' => 'URL de acceso a la tienda (OCI)',
-            'hint' => 'Con una URL de acceso configurada, compras salta directamente a la tienda del proveedor; el carrito vuelve como borrador de pedido mediante una URL de retorno firmada.',
+            'legend' => 'Salto a la tienda (OCI, IDS-Connect)',
+            'url' => 'Dirección de la tienda (OCI/IDS)',
+            'hint' => 'Con una dirección de tienda configurada, compras accede directamente a la tienda del proveedor (OCI o IDS-Connect); el carrito vuelve como borrador de pedido.',
             'action' => 'Abrir tienda (punchout)',
             'title' => 'Redirigiendo a la tienda',
             'redirecting' => 'Está siendo redirigido a la tienda «:shop» …',
             'continue' => 'Continuar a la tienda',
+            'protocol' => 'Protocolo',
         ],
         'note' => 'Importado del carrito OCI',
+        'protocol' => [
+            'oci' => 'OCI',
+            'ids' => 'IDS-Connect',
+        ],
         'flash' => [
             'missing_context' => 'Falta el proveedor o el almacén del carrito.',
             'empty_cart' => 'El carrito no contiene artículos.',
             'no_punchout' => 'No hay punchout configurado para esta fuente.',
             'imported' => 'Carrito importado: :matched artículos, :unmatched sin asignar.',
+        ],
+    ],
+
+    'ids' => [
+        'customer_number' => 'Número de cliente en el mayorista',
+        'customer_number_hint' => 'Obligatorio para IDS-Connect; figura en los datos de acceso del mayorista.',
+        'note' => 'Tomado del carrito IDS',
+        'action' => [
+            'open_in_shop' => 'Abrir en la tienda',
+        ],
+        'flash' => [
+            'hook_too_long' => 'La dirección de retorno es demasiado larga para IDS-Connect (máx. 256 caracteres). Utilice una dirección de aplicación más corta.',
+            'unreadable' => 'No se pudo leer el carrito de la tienda.',
+            'ordered_in_shop' => 'La tienda indica que el carrito ya se ha pedido; no lo pida una segunda vez.',
+            'not_ordered' => 'No se han tomado :count posiciones alternativas u opcionales.',
         ],
     ],
 

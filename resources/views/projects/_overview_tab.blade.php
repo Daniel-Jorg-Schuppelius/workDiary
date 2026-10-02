@@ -182,6 +182,8 @@
         </x-card>
     @endif
 
+    @include('chat._subject_panel', ['subjectType' => 'project', 'subject' => $project])
+
     {{-- Rückverweise (MVP-811): Wissensartikel und Ideenknoten, die auf das Projekt zeigen. --}}
     <x-content-references :subject="$project" />
 </div>

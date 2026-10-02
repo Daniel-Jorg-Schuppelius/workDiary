@@ -98,6 +98,13 @@ return [
             'years' => ['DE' => 1, 'AT' => 1, 'CH' => 1],
             'basis' => ['DE' => 'Art. 17 DSGVO (Löschkonzept)', 'AT' => 'Art. 17 DSGVO', 'CH' => 'DSG'],
         ],
+        // Sprachdiktate (MVP-1060): Audio ist nach der Transkription schon
+        // gelöscht; das Transkript dient nur dem Ausfüllen des Formulars.
+        'dictations' => [
+            'label' => 'Sprachdiktate (Transkripte)',
+            'years' => ['DE' => 1, 'AT' => 1, 'CH' => 1],
+            'basis' => ['DE' => 'Art. 5 Abs. 1 lit. e DSGVO (Speicherbegrenzung)', 'AT' => 'Art. 5 Abs. 1 lit. e DSGVO', 'CH' => 'DSG (Zweckbindung)'],
+        ],
 
         // Fehlerberichte mit Seitenkontext-PII (Vollaudit 2026-07, N15).
         'problem_reports' => [

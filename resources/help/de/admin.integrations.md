@@ -1,7 +1,7 @@
 ---
 title: "Integrationen verwalten"
 topic: admin.integrations
-version: 2
+version: 3
 audience:
     - admin
 related:
@@ -78,6 +78,11 @@ Anbindungen nach Zweck, damit Sie nicht raten müssen, wo etwas hingehört:
 - **Buchhaltung und Faktura:** lexoffice, orgaMAX, sevDesk, easybill,
   BuchhaltungsButler, InvoicePlane sowie der Peppol-Zugangspunkt für den
   Versand elektronischer Rechnungen.
+- **DATEV-Online:** Buchungsstapel per EXTF-Import und Belegbilder direkt
+  an DATEV Unternehmen online; die Anmeldung erfolgt mit DATEV.
+- **Online-Zahlung:** Stripe, Mollie und SumUp für den Zahlungslink auf
+  Rechnung, Mail und im Kundenportal; welcher Anbieter gilt, legen Sie in
+  den Organisationseinstellungen fest.
 - **Telefonie und Nachrichten:** sipgate und FRITZ!Box für ein- und
   ausgehende Anrufe, die Telefonauskunft für Namen zu unbekannten
   Rufnummern (als Vorschlag, über einen selbst gewählten Auskunftsdienst),

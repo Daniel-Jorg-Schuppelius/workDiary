@@ -46,7 +46,8 @@ final class InvoiceIssueService {
             throw new InvoiceIssueException(InvoiceIssueException::REASON_PROFORMA, (string) __('Eine Pro-forma-Rechnung wird nicht gestellt — wandeln Sie sie in eine echte Rechnung um.'));
         }
         // Feature 160 (MVP-856): ein leerer Entwurf verlässt das Haus auf keinem Weg.
-        if ($invoice->items()->doesntExist()) {
+        // Titel und Text allein machen keinen Beleg (MVP-1054).
+        if ($invoice->items()->where('line_kind', \App\Enums\Billing\DocumentLineKind::Item->value)->doesntExist()) {
             throw new InvoiceIssueException(InvoiceIssueException::REASON_EMPTY, (string) __('invoicing.free.error.empty'));
         }
 
@@ -79,7 +80,7 @@ final class InvoiceIssueService {
         }
 
         $invoice->loadMissing(['items', 'customer', 'organization']);
-        if ($invoice->items->isEmpty()) {
+        if ($invoice->pricedItems()->isEmpty()) {
             throw new InvoiceIssueException(InvoiceIssueException::REASON_EMPTY, (string) __('invoicing.free.error.empty'));
         }
         $organization = $invoice->organization;

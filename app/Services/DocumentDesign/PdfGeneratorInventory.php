@@ -50,10 +50,13 @@ final class PdfGeneratorInventory {
         'app/Services/Inventory/PickListPdfRenderer.php' => ['report'],
         // Meldebogen eines Rückrufs (MVP-945).
         'app/Services/Inventory/RecallAuthorityReportPdfRenderer.php' => ['report'],
+        // EFB-Preisblätter 221/223 eines LV (MVP-1056).
+        'app/Services/Gaeb/EfbPriceSheetPdfRenderer.php' => ['report'],
         // BCM-Auswertung (MVP-944).
         'app/Http/Controllers/Crisis/CrisisBcmReportController.php' => ['report'],
         // Leistung/Nachweis
         'app/Services/Protocol/ProtocolPdfRenderer.php' => ['protocol'],
+        'app/Services/Takeoff/TakeoffPdfRenderer.php' => ['protocol'],
         'app/Services/Disposal/DisposalRecordPdfRenderer.php' => ['protocol'],
         'app/Services/Safety/SafetyEvidencePdfRenderer.php' => ['protocol'],
         'app/Services/Manufacturing/ManufacturingRecordPdfRenderer.php' => ['manufacturing_record'],

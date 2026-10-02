@@ -41,6 +41,11 @@ enum ArticleType: string implements HasLabel {
         };
     }
 
+    /** Vorbelegung des Arbeitsanteils nach § 35a EStG in Prozent (MVP-1053): Leistung ganz, Ware gar nicht. */
+    public function defaultLabourShare(): int {
+        return $this === self::Service ? 100 : 0;
+    }
+
     /** Leistungen sind grundsätzlich nicht lagerfähig. */
     public function defaultStockable(): bool {
         return $this !== self::Service;

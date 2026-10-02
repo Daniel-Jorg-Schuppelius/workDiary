@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Models\Concerns;
 
-use App\Models\Contracts\HasDocumentLines;
+use App\Enums\Billing\DocumentLineKind;
+use App\Models\Contracts\{DocumentLine, HasDocumentLines};
 use App\Services\Billing\DocumentTotalsCalculator;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\Helper\Data\NumberHelper;
@@ -32,7 +33,8 @@ trait IsDocumentLine {
     /**
      * Vertragsfeld → Spaltenname; null = Feld gibt es an diesem Modell nicht.
      * Vertragsfelder: position, quantity, unit, unit_price, discount_percent,
-     * discount_amount, tax_rate, net_amount, currency.
+     * discount_amount, tax_rate, net_amount, currency, labour_share_percent,
+     * line_kind.
      *
      * @return array<string, string|null>
      */
@@ -131,6 +133,74 @@ trait IsDocumentLine {
 
     public function grossAmount(): Money {
         return $this->netAmount()->plus($this->taxAmount());
+    }
+
+    /** Vorbelegung des Arbeitsanteils beim Anlegen (MVP-1053), nur wo das Modell die Spalte führt. */
+    public static function bootIsDocumentLine(): void {
+        static::creating(static function (DocumentLine&Model $line): void {
+            $column = static::lineColumn('labour_share_percent');
+            if ($column === null || $line->getAttribute($column) !== null || ! method_exists($line, 'defaultLabourShare')
+                || ! $line->lineKind()->isPriced()) {
+                return;
+            }
+            $share = $line->defaultLabourShare();
+            if ($share !== null) {
+                $line->setAttribute($column, (string) $share);
+            }
+        });
+    }
+
+    /**
+     * Arbeitsanteil in Prozent, den eine neue Position ohne eigene Angabe erhält; Modelle mit Quellbezug überschreiben.
+     *
+     * @return int|numeric-string|null
+     */
+    public function defaultLabourShare(): int|string|null {
+        return $this->articleLabourShare();
+    }
+
+    /**
+     * Kalkulierte Leistung (MVP-1055): Anteil aus der Kalkulation, sonst nach Artikelart.
+     *
+     * @return int|numeric-string|null
+     */
+    protected function articleLabourShare(): int|string|null {
+        if ($this->getAttribute('article_id') === null || ! method_exists($this, 'article')) {
+            return null;
+        }
+        $article = $this->article()->first();
+        if (! $article instanceof \App\Models\Article\Article) {
+            return null;
+        }
+        $calculated = app(\App\Services\Article\ServiceCalculationService::class)->calculate($article)?->labourShare;
+        if ($calculated !== null) {
+            return $calculated->getNumericValue();
+        }
+
+        return $article->type->defaultLabourShare();
+    }
+
+    public function lineKind(): DocumentLineKind {
+        $value = $this->lineValue('line_kind');
+
+        return $value instanceof DocumentLineKind ? $value : (DocumentLineKind::tryFrom((string) $value) ?? DocumentLineKind::Item);
+    }
+
+    public function labourShare(): ?Percentage {
+        return DocumentTotalsCalculator::percent($this->lineValue('labour_share_percent'));
+    }
+
+    /** @return array<string, mixed> */
+    public function carriedLineAttributes(): array {
+        $carried = [];
+        foreach (['labour_share_percent', 'line_kind', 'unit_cost_amount'] as $field) {
+            $column = static::lineColumn($field);
+            if ($column !== null && array_key_exists($column, $this->getAttributes())) {
+                $carried[$field] = $this->getAttribute($column);
+            }
+        }
+
+        return $carried;
     }
 
     private function lineValue(string $field): mixed {

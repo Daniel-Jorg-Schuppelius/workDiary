@@ -14,6 +14,7 @@ namespace App\Services\Gaeb;
 
 use App\Enums\Gaeb\{BoqItemStatus, BoqProgressSource};
 use App\Models\Gaeb\{BoqItem, BoqItemProgress};
+use App\Services\Takeoff\Contracts\TakeoffProgressRecorder;
 use Illuminate\Support\Carbon;
 
 /**
@@ -21,7 +22,16 @@ use Illuminate\Support\Carbon;
  * sind additiv; sobald eine Position Fortschritt hat und noch nicht
  * abgeschlossen ist, wird sie auf „in Arbeit" gehoben.
  */
-class BoqProgressService {
+class BoqProgressService implements TakeoffProgressRecorder {
+    public function recordMeasured(BoqItem $item, string $quantity, ?int $diaryEntryId, string $note, ?int $actorId): void {
+        $this->record($item, $quantity, [
+            'source' => BoqProgressSource::Measurement,
+            'diary_entry_id' => $diaryEntryId,
+            'note' => $note,
+            'created_by' => $actorId,
+        ]);
+    }
+
     /**
      * @param array{source?: BoqProgressSource, diary_entry_id?: int|null, material_usage_id?: int|null, note?: string|null, created_by?: int|null, captured_at?: Carbon|null} $options
      */

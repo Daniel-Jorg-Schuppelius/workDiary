@@ -760,6 +760,7 @@ return [
         'mailed' => 'Delivery note sent by email',
     ],
     'quote' => [
+        'markup_applied' => 'Markup distributed to unit prices',
         'mailed' => 'Quote sent by email',
         'followed_up' => 'Quote followed up',
         'accepted' => 'Quote accepted',
@@ -1322,5 +1323,14 @@ return [
         'returned' => 'License sale taken back',
         'blocked' => 'License blocked',
         'unblocked' => 'License block lifted',
+    ],
+    'takeoff' => [
+        'completed' => 'Takeoff completed',
+        'reopened' => 'Takeoff reopened',
+        'transferred' => 'Takeoff transferred',
+    ],
+    'mcp' => [
+        'authorized' => 'AI assistant (MCP) authorized',
+        'write' => 'Created or changed via AI assistant (MCP)',
     ],
 ];

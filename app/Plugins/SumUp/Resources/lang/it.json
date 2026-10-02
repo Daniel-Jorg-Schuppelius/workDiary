@@ -1,0 +1,10 @@
+{
+    "API-Schlüssel": "Chiave API",
+    "API-Schlüssel oder Händlercode fehlt.": "Manca la chiave API o il codice esercente.",
+    "Aus dem SumUp-Konto unter „Entwickler“ → „API-Schlüssel“ (sup_sk_…).": "Dal Suo account SumUp in «Sviluppatori» → «Chiavi API» (sup_sk_…).",
+    "Händlercode": "Codice esercente",
+    "Online-Zahlung von Rechnungen über den gehosteten Checkout von SumUp (Karte, Apple Pay, Google Pay).": "Pagamento online delle fatture tramite il checkout ospitato di SumUp (carta, Apple Pay, Google Pay).",
+    "Steht im SumUp-Konto unter „Profil“ (beginnt meist mit „M“).": "Si trova nel Suo account SumUp in «Profilo» (di solito inizia con «M»).",
+    "SumUp lehnt den API-Schlüssel ab.": "SumUp rifiuta la chiave API.",
+    "Verbunden — SumUp erreichbar.": "Connesso: SumUp raggiungibile."
+}

@@ -59,4 +59,17 @@ return [
         'title' => 'Mensaje de prueba de WorkDiary',
         'message' => 'Este canal está conectado correctamente. ✅',
     ],
+    // Projekt- und Auftragschat (MVP-1061).
+    'subject' => [
+        'title' => 'Chat',
+        'start' => 'Iniciar chat',
+        'open' => 'Abrir chat',
+        'hint' => 'Un canal para todas las personas asignadas — sus fotos y archivos aparecen aquí.',
+        'no_files' => 'Todavía no hay archivos en el chat.',
+        'files' => 'Archivos del chat',
+        'project' => 'Proyecto: :name',
+        'diary' => 'Pedido: :name',
+        'other' => 'Tema',
+        'description' => 'Canal del proyecto o pedido — los miembros son las personas asignadas.',
+    ],
 ];

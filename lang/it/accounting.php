@@ -318,6 +318,7 @@ return [
             'payment' => 'Pagamento (:kind) · :target',
             'depreciation' => 'Ammortamento :year · :no :name',
             'asset_disposal' => 'Dismissione :no :name',
+            'online_payment' => 'Pagamento online (:provider) · :invoice',
         ],
         'reversal_reason' => [
             'unmatched' => 'Assegnazione del pagamento annullata — contro-registrazione.',

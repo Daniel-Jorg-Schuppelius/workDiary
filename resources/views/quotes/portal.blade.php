@@ -54,13 +54,25 @@
         <x-slot:foot>
                 <tr><td colspan="3" class="text-right font-bold">{{ __('Gesamt (netto zzgl. USt.)') }}</td><td class="text-right font-bold" colspan="2">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($quote->subtotal?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} EUR</td></tr>
         </x-slot:foot>
-                @foreach ($quote->items as $item)
+                @foreach (\App\Services\Billing\DocumentOutline::rows($quote->items, fn ($line): bool => $line->countsInTotal()) as $outlineRow)
+                    @if ($outlineRow['type'] === 'subtotal')
+                        <tr><td></td><td colspan="4" class="text-right text-sm">{{ __('invoicing.line_kind.subtotal', ['number' => $outlineRow['number'], 'title' => $outlineRow['title']->description]) }}: <span class="font-semibold">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($outlineRow['amount']->toFloat(), 2, withThousandsSeparator: true) }} EUR</span></td></tr>
+                        @continue
+                    @endif
+                    @php
+                        $item = $outlineRow['line'];
+                        $kind = $item->lineKind();
+                    @endphp
                     <tr>
-                        <td>{{ $item->position }}</td>
-                        <td>{{ $item->description }}</td>
-                        <td class="text-right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $item->quantity, 2, withThousandsSeparator: true) }} {{ $item->unit }}</td>
-                        <td class="text-right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($item->unit_price?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} EUR</td>
-                        <td>{{ $item->optional ? __('Option') : __('Pflicht') }}</td>
+                        <td>{{ $outlineRow['number'] }}</td>
+                        @if (! $kind->isPriced())
+                            <td colspan="4" class="{{ $kind === \App\Enums\Billing\DocumentLineKind::Title ? 'font-semibold' : 'italic whitespace-pre-line' }}">{{ $item->description }}</td>
+                        @else
+                            <td>{{ $item->description }}</td>
+                            <td class="text-right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $item->quantity, 2, withThousandsSeparator: true) }} {{ $item->unit }}</td>
+                            <td class="text-right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($item->unit_price?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} EUR</td>
+                            <td>{{ $kind === \App\Enums\Billing\DocumentLineKind::Alternative ? $kind->label() : ($item->optional ? __('Option') : __('Pflicht')) }}</td>
+                        @endif
                     </tr>
                 @endforeach
     </x-table>
@@ -84,11 +96,17 @@
             <input type="hidden" name="token" value="{{ $token }}">
             <h2 class="text-sm font-semibold">{{ __('Ihre Entscheidung') }}</h2>
             <div class="space-y-1">
-                @foreach ($quote->items as $item)
-                    <label class="label cursor-pointer justify-start gap-2">
-                        <input type="checkbox" name="item_ids[]" value="{{ $item->sqid }}" class="checkbox checkbox-sm" @checked(! $item->optional)>
-                        <span class="label-text">{{ $item->position }}. {{ $item->description }} @if ($item->optional)<span class="text-xs text-muted">({{ __('Option') }})</span>@endif</span>
-                    </label>
+                @foreach (\App\Services\Billing\DocumentOutline::rows($quote->items) as $outlineRow)
+                    @if ($outlineRow['type'] === 'line' && $outlineRow['line']->lineKind()->isPriced())
+                        @php
+                            $item = $outlineRow['line'];
+                            $isChoice = $item->optional || $item->lineKind() === \App\Enums\Billing\DocumentLineKind::Alternative;
+                        @endphp
+                        <label class="label cursor-pointer justify-start gap-2">
+                            <input type="checkbox" name="item_ids[]" value="{{ $item->sqid }}" class="checkbox checkbox-sm" @checked(! $isChoice)>
+                            <span class="label-text">{{ $outlineRow['number'] }}. {{ $item->description }} @if ($isChoice)<span class="text-xs text-muted">({{ $item->lineKind() === \App\Enums\Billing\DocumentLineKind::Alternative ? $item->lineKind()->label() : __('Option') }})</span>@endif</span>
+                        </label>
+                    @endif
                 @endforeach
             </div>
             <div class="flex flex-wrap gap-2">

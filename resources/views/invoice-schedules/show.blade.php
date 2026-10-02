@@ -92,10 +92,18 @@
     <x-card :title="__('Positionsvorlage')">
         @can(\App\Enums\User\Permission::InvoiceUpdate->value)
             <x-slot:actions>
-                <x-icon-btn icon="add" tone="primary" size="sm"
-                            data-entry-modal-trigger
-                            :href="route('invoice-schedules.items.create', $schedule) . '?dialog=1'"
-                            show-label>{{ __('Position hinzufügen') }}</x-icon-btn>
+                <x-action-menu icon="add" tone="primary" :label="__('Hinzufügen')">
+                    <x-icon-btn icon="add" size="sm" data-entry-modal-trigger
+                                :href="route('invoice-schedules.items.create', $schedule) . '?dialog=1'"
+                                show-label>{{ __('Position hinzufügen') }}</x-icon-btn>
+                    {{-- MVP-1054: Gliederung --}}
+                    <x-icon-btn icon="title" size="sm" data-entry-modal-trigger
+                                :href="route('invoice-schedules.items.create', [$schedule, 'kind' => 'title', 'dialog' => 1])"
+                                show-label>{{ __('invoicing.line_kind.add_title') }}</x-icon-btn>
+                    <x-icon-btn icon="notes" size="sm" data-entry-modal-trigger
+                                :href="route('invoice-schedules.items.create', [$schedule, 'kind' => 'text', 'dialog' => 1])"
+                                show-label>{{ __('invoicing.line_kind.add_text') }}</x-icon-btn>
+                </x-action-menu>
             </x-slot:actions>
         @endcan
         <p class="text-xs text-muted">{{ __('Platzhalter :von und :bis werden je Lauf durch den Abrechnungszeitraum ersetzt.', ['von' => '{zeitraum_von}', 'bis' => '{zeitraum_bis}']) }}</p>
@@ -111,9 +119,19 @@
                     <th class="w-px"></th>
                 </tr>
             </x-slot:head>
-            @forelse ($schedule->items as $item)
+            @forelse (\App\Services\Billing\DocumentOutline::rows($schedule->items) as $outlineRow)
+                @if ($outlineRow['type'] === 'subtotal')
+                    @continue
+                @endif
+                @php
+                    $item = $outlineRow['line'];
+                    $kind = $item->lineKind();
+                @endphp
                 <tr>
-                    <td>{{ $item->position }}</td>
+                    <td>{{ $outlineRow['number'] }}</td>
+                    @if (! $kind->isPriced())
+                    <td colspan="5" class="{{ $kind === \App\Enums\Billing\DocumentLineKind::Title ? 'font-semibold' : 'italic whitespace-pre-line' }}">{{ $item->description }}</td>
+                    @else
                     <td>{{ $item->description }}</td>
                     <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $item->quantity, 2, withThousandsSeparator: true) }} {{ $item->unit }}</td>
                     <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($item->unit_price?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }}</td>
@@ -127,6 +145,7 @@
                         @endif
                     </td>
                     <td class="text-right tabular-nums">{{ $item->tax_rate !== null ? rtrim(rtrim($item->tax_rate?->getNumericValue() ?? '0', '0'), '.') . ' %' : __('Standard') }}</td>
+                    @endif
                     <td class="text-right">
                         @can(\App\Enums\User\Permission::InvoiceUpdate->value)
                             <div class="flex items-center justify-end gap-1">

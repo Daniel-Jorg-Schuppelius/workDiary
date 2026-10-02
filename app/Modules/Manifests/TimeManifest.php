@@ -100,6 +100,12 @@ final class TimeManifest extends Manifest {
     /** @return array<class-string, list<class-string>> */
     public function extensions(): array {
         return [
+            \App\Services\Mcp\Contracts\McpTool::class => [
+                \App\Services\Time\Mcp\UnbilledTimeTool::class,
+            ],
+            \App\Services\Billing\Contracts\DocumentChainSource::class => [
+                \App\Services\Time\Chain\UnbilledTimeByCustomer::class,
+            ],
             \App\Services\Import\EntitySpec::class => [
                 \App\Services\Attendance\Import\AttendanceSpec::class,
                 \App\Services\Timekeeping\Import\ProjectTimeSpec::class,

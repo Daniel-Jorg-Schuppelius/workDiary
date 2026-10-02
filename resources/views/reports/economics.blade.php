@@ -398,5 +398,52 @@
             @endif
         </x-card>
     @endif
+
+    {{-- MVP-1055: Nachkalkulation gegen die Angebotskalkulation — nur mit Projektfilter und angenommenen Angeboten. --}}
+    @if($quoteCalculation !== null && $quoteCalculation['calculatedLines'] > 0)
+        @php
+            $qcEur = static fn (float $v): string => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($v, 2, withThousandsSeparator: true) . ' €';
+            $qcHours = static fn (float $minutes): string => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($minutes / 60, 1) . ' h';
+            $qcPlan = $quoteCalculation['planned'];
+            $qcActual = $quoteCalculation['actual'];
+        @endphp
+        <x-card :title="__('article.calculation.economics.title')" padding="p-0">
+            <x-table bare>
+                <x-slot:head>
+                    <tr>
+                        <th></th>
+                        <th class="text-right">{{ __('article.calculation.economics.planned') }}</th>
+                        <th class="text-right">{{ __('article.calculation.economics.actual') }}</th>
+                    </tr>
+                </x-slot:head>
+                <tr>
+                    <td>{{ __('article.calculation.economics.hours') }}</td>
+                    <td class="text-right tabular-nums">{{ $qcHours($qcPlan['minutes']) }}</td>
+                    <td class="text-right tabular-nums">{{ $qcActual !== null ? $qcHours((float) $qcActual['minutes']) : '—' }}</td>
+                </tr>
+                <tr>
+                    <td>{{ __('article.calculation.kind.labour') }}</td>
+                    <td class="text-right tabular-nums">{{ $qcEur($qcPlan['costs']['labour'] ?? 0.0) }}</td>
+                    <td class="text-right tabular-nums">{{ $qcActual !== null ? $qcEur($qcActual['costTime']) : '—' }}</td>
+                </tr>
+                <tr>
+                    <td>{{ __('article.calculation.kind.material') }}</td>
+                    <td class="text-right tabular-nums">{{ $qcEur($qcPlan['costs']['material'] ?? 0.0) }}</td>
+                    <td class="text-right tabular-nums">{{ $qcActual !== null ? $qcEur($qcActual['costMaterial']) : '—' }}</td>
+                </tr>
+                <tr class="font-semibold">
+                    <td>{{ __('article.calculation.economics.cost') }}</td>
+                    <td class="text-right tabular-nums">{{ $qcEur($qcPlan['cost']) }}</td>
+                    <td class="text-right tabular-nums">{{ $qcActual !== null ? $qcEur($qcActual['cost']) : '—' }}</td>
+                </tr>
+                <tr>
+                    <td>{{ __('article.calculation.economics.revenue') }}</td>
+                    <td class="text-right tabular-nums">{{ $qcEur($qcPlan['revenue']) }}</td>
+                    <td class="text-right tabular-nums">{{ $qcActual !== null ? $qcEur($qcActual['revenue']) : '—' }}</td>
+                </tr>
+            </x-table>
+            <p class="px-4 py-2 text-xs text-muted">{{ __('article.calculation.economics.note', ['quotes' => $quoteCalculation['quotes'], 'lines' => $quoteCalculation['calculatedLines']]) }}</p>
+        </x-card>
+    @endif
 </x-page-shell>
 @endsection

@@ -1,7 +1,7 @@
 ---
 title: "Mis facturas"
 topic: customer-portal.invoices
-version: 1
+version: 2
 audience: []
 related:
     - customer-portal.overview
@@ -16,3 +16,7 @@ muestra por entrada el **número**, la **fecha**, el **estado** y el
 se encuentra cada factura. Con varias páginas puede navegar mediante la
 paginación al pie. La vista sirve para su consulta y trazabilidad; la
 facturación la realiza la empresa contratada.
+
+Si el emisor lo ofrece, puede saldar las facturas pendientes directamente
+con el proveedor de pagos mediante **Pagar en línea**; una vez que el
+proveedor confirma el pago, se refleja en el estado de la factura.

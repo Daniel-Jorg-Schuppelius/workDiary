@@ -100,6 +100,21 @@ return [
         'block_trips' => 'Aucun nouveau trajet si un contrôle obligatoire est en retard',
         'block_trips_hint' => 'Si le contrôle technique, la vérification de sécurité ou un autre contrôle obligatoire de l’actif associé est en retard ou bloqué, aucun trajet ne peut être saisi à partir d’aujourd’hui. Les trajets passés restent enregistrables.',
     ],
+    'payments' => [
+        'heading' => 'Paiement en ligne',
+        'description' => 'Lien de paiement et QR code sur la facture, dans l\'e-mail et dans le portail client. Activez le prestataire de paiement (Stripe, Mollie ou SumUp) comme plugin avec ses propres identifiants.',
+        'provider' => 'Prestataire de paiement',
+        'provider_auto' => 'Automatique (premier prestataire actif)',
+        'provider_hint' => 'Nécessaire uniquement si plusieurs prestataires sont actifs.',
+        'on_documents' => 'Lien de paiement sur la facture et dans l\'e-mail',
+        'on_documents_hint' => 'Désactivé, le paiement en ligne reste possible dans le portail client.',
+    ],
+    'mcp' => [
+        'heading' => 'Assistants IA (MCP)',
+        'description' => 'Les assistants IA comme Claude ou ChatGPT peuvent se connecter avec l’accord de chaque utilisateur et lire ou créer des brouillons avec ses droits.',
+        'enabled' => 'Autoriser les assistants IA via MCP',
+        'enabled_hint' => 'Désactivé, aucune nouvelle connexion n’est possible ; les connexions existantes n’obtiennent aucun outil et ne peuvent pas être renouvelées.',
+    ],
     'rental_terms' => [
         'heading' => 'Conditions de location du matériel',
         'description' => 'Les conditions de location sont gérées comme accord client « Conditions de location (location de matériel) » avec version et signature.',

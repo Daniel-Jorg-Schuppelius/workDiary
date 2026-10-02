@@ -12,7 +12,30 @@
     $action = $isEdit
         ? route('quotes.items.update', [$quote, $item])
         : route('quotes.items.store', $quote);
+    // MVP-1054: Titel und Text fragen nur die Bezeichnung ab; die Alternative ist eine Wahlposition.
+    $lineKind = $item->lineKind();
 @endphp
+@if (! $lineKind->isPriced())
+<x-modal
+    :title="$lineKind->label()"
+    :eyebrow="$quote->number"
+    :icon="$lineKind === \App\Enums\Billing\DocumentLineKind::Title ? 'title' : 'notes'"
+    tone="primary"
+    :action="$action"
+    :method="$isEdit ? 'PUT' : 'POST'"
+    :submit-label="__('Speichern')"
+    size="md">
+    <input type="hidden" name="line_kind" value="{{ $lineKind->value }}">
+    <x-form-group :legend="$lineKind->label()" icon="request_quote" tone="primary" cols="2">
+        @if ($lineKind === \App\Enums\Billing\DocumentLineKind::Title)
+            <x-input-field name="description" :label="__('invoicing.line_kind.title')" required maxlength="500" span="2" :value="old('description', $item->description ?? '')" />
+        @else
+            <x-textarea-field name="description" :label="__('invoicing.line_kind.text')" required rows="4" maxlength="500" span="2">{{ old('description', $item->description ?? '') }}</x-textarea-field>
+        @endif
+    </x-form-group>
+    <x-validation-errors />
+</x-modal>
+@else
 <x-modal
     :title="$isEdit ? __('Position bearbeiten') : __('Position hinzufügen')"
     :eyebrow="$quote->number"
@@ -23,7 +46,11 @@
     :submit-label="__('Speichern')"
     size="md">
 
-    <x-form-group :legend="__('Position')" icon="request_quote" tone="primary" cols="2">
+    <input type="hidden" name="line_kind" value="{{ $lineKind->value }}">
+    <x-form-group :legend="$lineKind === \App\Enums\Billing\DocumentLineKind::Alternative ? $lineKind->label() : __('Position')" icon="request_quote" tone="primary" cols="2">
+        @if ($lineKind === \App\Enums\Billing\DocumentLineKind::Alternative)
+            <p class="md:col-span-2 text-xs text-muted">{{ __('invoicing.line_kind.alternative_hint') }}</p>
+        @endif
         <x-article-picker :articles="$articles ?? collect()" :selected="$item->article_id ?? null" />
         {{-- Kupferzuschlag zum Tagespreis als eigene Position (MVP-804) — nur beim Anlegen. --}}
         @unless ($item->exists)
@@ -31,7 +58,7 @@
                               :label="__('Kupferzuschlag (Tagespreis) als eigene Position anfügen')"
                               :hint="__('Nur bei Artikeln mit Kupfergewicht und -basis und einer gepflegten DEL-Notierung; sonst entsteht keine Position.')" />
         @endunless
-        <x-input-field name="description" :label="__('Beschreibung')" required maxlength="1000" span="2" :value="old('description', $item->description ?? '')" />
+        <x-input-field name="description" :label="__('Beschreibung')" required maxlength="500" span="2" :value="old('description', $item->description ?? '')" />
         <x-input-field name="quantity" type="number" :label="__('Menge')" required min="0.001" step="0.001" :value="old('quantity', (string) ($item->quantity ?? '1.00'))" />
         <x-input-field name="unit" :label="__('Einheit')" maxlength="20" :value="old('unit', $item->unit ?? __('invoicing.unit_hour'))" />
         <x-input-field name="unit_price" type="number" :label="__('Einzelpreis (EUR)')" required step="0.01" :value="old('unit_price', ($item->unit_price?->getAmount() ?? '0.00'))" />
@@ -39,10 +66,17 @@
         <x-input-field name="discount_percent" type="number" :label="__('Rabatt %')" min="0" max="100" step="0.01" :value="old('discount_percent', $item->discount_percent?->getNumericValue() ?? '')" :hint="__('Prozent oder Betrag — nicht beides.')" />
         <x-input-field name="discount_amount" type="number" :label="__('Rabatt (Betrag)')" min="0" step="0.01" :value="old('discount_amount', $item->discount_amount?->getAmount() ?? '')" />
         <x-input-field name="tax_rate" type="number" :label="__('USt-Satz % (leer = Standard)')" min="0" max="99" step="0.01" :value="old('tax_rate', $item->tax_rate?->getNumericValue() ?? '')" />
+        @if ($quote->is_labour_cost_disclosed ?? \App\Models\Sales\Quote::labourCostDisclosureRule($quote->organization) !== \App\Enums\Invoicing\LabourCostDisclosure::Off)
+            <x-input-field name="labour_share_percent" type="number" :label="__('invoicing.labour_costs.share')" min="0" max="100" step="0.01"
+                           :value="old('labour_share_percent', $item->labour_share_percent?->getNumericValue() ?? '')" :hint="__('invoicing.labour_costs.share_hint')" />
+        @endif
+        @if ($lineKind !== \App\Enums\Billing\DocumentLineKind::Alternative)
         <label class="label cursor-pointer justify-start gap-2" style="grid-column: span 2;">
             <input type="hidden" name="optional" value="0">
             <input type="checkbox" name="optional" value="1" class="checkbox checkbox-sm" @checked(old('optional', (bool) ($item->optional ?? false)))>
             <span class="label-text">{{ __('Eventualposition (Option) — zählt erst nach Annahme') }}</span>
         </label>
+        @endif
     </x-form-group>
 </x-modal>
+@endif

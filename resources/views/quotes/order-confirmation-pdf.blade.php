@@ -82,9 +82,20 @@
         </tr>
     </thead>
     <tbody>
-    @foreach ($acceptedItems as $item)
+    @foreach (\App\Services\Billing\DocumentOutline::rows($acceptedItems, fn ($line): bool => $line->countsInTotal()) as $outlineRow)
+        @if ($outlineRow['type'] === 'subtotal')
+            <tr><td></td><td colspan="4" class="num" style="font-size: 9px;">{{ __('invoicing.line_kind.subtotal', ['number' => $outlineRow['number'], 'title' => $outlineRow['title']->description]) }}</td><td class="num" style="font-weight: bold;">{{ $fmt($outlineRow['amount']->toFloat()) }} EUR</td></tr>
+            @continue
+        @endif
+        @php
+            $item = $outlineRow['line'];
+        @endphp
+        @if (! $item->lineKind()->isPriced())
+            <tr><td>{{ $outlineRow['number'] }}</td><td colspan="5" style="{{ $item->lineKind() === \App\Enums\Billing\DocumentLineKind::Title ? 'font-weight: bold;' : 'font-style: italic; white-space: pre-line;' }}">{{ $item->description }}</td></tr>
+            @continue
+        @endif
         <tr>
-            <td>{{ $item->position }}</td>
+            <td>{{ $outlineRow['number'] }}</td>
             <td>{{ $item->description }}</td>
             <td class="num">{{ \App\Support\DocumentNumber::decimal((float) $item->quantity, ((int) round((float) $item->quantity * 1000)) % 10 !== 0 ? 3 : 2) }} {{ $item->unit }}</td>
             <td class="num">{{ $fmt($item->unit_price?->toFloat() ?? 0.0) }} EUR</td>

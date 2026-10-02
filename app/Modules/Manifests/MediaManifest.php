@@ -39,7 +39,24 @@ final class MediaManifest extends Manifest {
     /** @return list<string> */
     public function tables(): array {
         return [
+            'dictations',
             'media_renditions',
+        ];
+    }
+
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Services\Retention\Contracts\RetentionPolicyProvider::class => [
+                \App\Services\Media\Retention\MediaRetentionPolicies::class,
+            ],
+        ];
+    }
+
+    /** @return array<class-string, class-string> */
+    public function contracts(): array {
+        return [
+            \App\Services\Media\Contracts\DictationStructurer::class => \App\Services\Media\Contracts\NullDictationStructurer::class,
         ];
     }
 }

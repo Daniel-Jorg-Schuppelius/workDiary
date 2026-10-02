@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Accounting\Posting;
 
 use App\Enums\Finance\PostingSourceKind;
-use App\Services\Accounting\Posting\Adapters\{AssetDisposalAdapter, CashEntryAdapter, DepreciationAdapter, ExpenseAdapter, IncomingInvoiceAdapter, PaymentAdapter, SalesInvoiceAdapter};
+use App\Services\Accounting\Posting\Adapters\{AssetDisposalAdapter, CashEntryAdapter, DepreciationAdapter, ExpenseAdapter, IncomingInvoiceAdapter, OnlinePaymentAdapter, PaymentAdapter, SalesInvoiceAdapter};
 
 /**
  * Registry der Quellenadapter (Feature 125, MVP-673).
@@ -33,6 +33,7 @@ class PostingSourceRegistry {
         private readonly PaymentAdapter $payments,
         private readonly DepreciationAdapter $depreciation,
         private readonly AssetDisposalAdapter $assetDisposals,
+        private readonly OnlinePaymentAdapter $onlinePayments,
     ) {}
 
     /** @return array<string, PostingSourceAdapter> */
@@ -45,6 +46,7 @@ class PostingSourceRegistry {
             PostingSourceKind::Payment->value => $this->payments,
             PostingSourceKind::Depreciation->value => $this->depreciation,
             PostingSourceKind::AssetDisposal->value => $this->assetDisposals,
+            PostingSourceKind::OnlinePayment->value => $this->onlinePayments,
         ];
     }
 

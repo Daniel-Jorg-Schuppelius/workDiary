@@ -30,6 +30,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string|null $unit
  * @property \CommonToolkit\ValueObjects\Money|null $unit_price
  * @property \CommonToolkit\ValueObjects\Percentage|null $discount_percent
+ * @property \CommonToolkit\ValueObjects\Percentage|null $labour_share_percent
+ * @property \App\Enums\Billing\DocumentLineKind $line_kind
  * @property \CommonToolkit\ValueObjects\Money|null $discount_amount
  * @property \CommonToolkit\ValueObjects\Percentage|null $tax_rate
  * @property string|null $tax_category
@@ -54,7 +56,12 @@ class InvoiceScheduleItem extends Model implements DocumentLine {
         'discount_amount',
         'tax_rate',
         'tax_category',
+        'labour_share_percent',
+        'line_kind',
     ];
+
+    /** @var array<string, mixed> */
+    protected $attributes = ['line_kind' => 'item'];
 
     /** @var array<string, string> */
     protected $casts = [
@@ -63,6 +70,8 @@ class InvoiceScheduleItem extends Model implements DocumentLine {
         // Rechnungspläne führen keine Währungsspalte — Euro wie beim Angebot.
         'unit_price' => MoneyCast::class . ':currency,4',
         'discount_percent' => PercentageCast::class . ':2',
+        'labour_share_percent' => PercentageCast::class . ':2',
+        'line_kind' => \App\Enums\Billing\DocumentLineKind::class,
         'discount_amount' => MoneyCast::class . ':currency',
         'tax_rate' => PercentageCast::class . ':2',
     ];

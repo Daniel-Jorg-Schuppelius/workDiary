@@ -23,11 +23,12 @@
         @if ($canUpload)
             <form method="POST" action="{{ route('finance.incoming-invoices.store') }}" enctype="multipart/form-data" class="flex items-center gap-2">
                 @csrf
-                <input type="file" name="file" accept=".xml,.pdf,application/xml,text/xml,application/pdf"
+                {{-- MVP-1066: auch PDF ohne E-Rechnungsdaten und Fotos, mehrere Dateien auf einmal. --}}
+                <input type="file" name="files[]" multiple accept=".xml,.pdf,.jpg,.jpeg,.png,.tif,.tiff,application/xml,text/xml,application/pdf,image/jpeg,image/png,image/tiff"
                        class="file-input file-input-bordered file-input-sm max-w-64" required
-                       aria-label="{{ __('E-Rechnung (XML oder PDF)') }}">
+                       aria-label="{{ __('Rechnungen (XML, PDF oder Foto)') }}">
                 <x-icon-btn icon="upload_file" tone="primary" size="sm" type="submit"
-                            show-label>{{ __('E-Rechnung hochladen') }}</x-icon-btn>
+                            show-label>{{ __('Rechnungen hochladen') }}</x-icon-btn>
             </form>
         @endif
     </x-slot:actions>

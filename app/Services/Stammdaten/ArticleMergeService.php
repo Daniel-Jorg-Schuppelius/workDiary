@@ -105,6 +105,8 @@ class ArticleMergeService extends AbstractEntityMergeService {
             // Varianten als Ganzes umhängen — Bestand/Bewertung/Serien folgen
             // implizit über article_variant_id, der Ledger bleibt unberührt.
             DB::table('article_variants')->where('article_id', $sourceId)->update(['article_id' => $targetId]);
+            // Materialkomponente der Kalkulation (MVP-1055): eigene Spalte, nicht `article_id` — der Schemaweg sieht sie nicht.
+            DB::table('article_cost_approaches')->where('component_article_id', $sourceId)->update(['component_article_id' => $targetId]);
 
             $this->repointPivots($sourceId, $targetId);
             $this->repointScalarTables($sourceId, $targetId);

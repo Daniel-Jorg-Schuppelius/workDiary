@@ -14,6 +14,7 @@ namespace App\Services\Gaeb;
 
 use App\Enums\Gaeb\GaebPhase;
 use App\Models\Gaeb\{BillOfQuantity, BoqCatalogAssignment, BoqItem, BoqSection};
+use App\Services\Takeoff\TakeoffService;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;
 use ERechnungToolkit\Entities\Gaeb\{GaebBoq, GaebCatalog, GaebCatalogAssignment, GaebChangeOrder, GaebCostApproach, GaebCostType, GaebItem, GaebQuantitySplit, GaebSection, GaebSubDescription, GaebTextComplement, GaebTotals, GaebUpComponent};
@@ -28,6 +29,8 @@ class BoqDocumentFactory {
     /** Beträge mit der Skala der Modelle: GAEB-Einheitspreise tragen 1/10 Cent. */
     private const PRICE_SCALE = 4;
 
+    public function __construct(private readonly TakeoffService $takeoffs) {}
+
     public function fromModel(BillOfQuantity $boq, GaebPhase $phase): GaebBoq {
         $boq->loadMissing(['sections', 'items', 'changeOrders']);
 
@@ -38,7 +41,7 @@ class BoqDocumentFactory {
 
         $items = [];
         foreach ($boq->items->sortBy('position') as $item) {
-            $items[] = $this->item($item, $boq);
+            $items[] = $this->item($item, $boq, $phase);
         }
 
         $components = [];
@@ -82,7 +85,7 @@ class BoqDocumentFactory {
         );
     }
 
-    private function item(BoqItem $item, BillOfQuantity $boq): GaebItem {
+    private function item(BoqItem $item, BillOfQuantity $boq, GaebPhase $phase): GaebItem {
         $section = $item->boq_section_id !== null
             ? $boq->sections->firstWhere('id', $item->boq_section_id)
             : null;
@@ -143,6 +146,8 @@ class BoqDocumentFactory {
             catalogAssignments: $this->assignments($item->catalogAssignments),
             quantitySplits: $this->splits($item),
             costApproaches: $this->costApproaches($item),
+            // MVP-1058: Aufmaß nach REB 23.003 nur in der Mengenermittlung (X31).
+            takeoffLines: $phase === GaebPhase::QuantitySurvey ? $this->takeoffs->gaebLinesFor($item) : [],
         );
     }
 

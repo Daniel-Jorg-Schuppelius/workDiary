@@ -336,6 +336,14 @@ return [
             'allowed' => ['monthlyOn', 'weeklyOn', 'dailyAt'],
             'criticality' => 'core',
         ],
+        // Online-Zahlung (MVP-1067): verlorene Webhooks und Erstattungen nachziehen.
+        'invoicing.online_payments_refresh' => [
+            'command' => 'invoicing:online-payments-refresh',
+            'cadence' => ['type' => 'dailyAt', 'time' => '04:50'],
+            'allowed' => ['hourly', 'dailyAt'],
+            'criticality' => 'core',
+            'expected_runtime_minutes' => 5,
+        ],
         // Verbraucherpreisindex (MVP-952): Destatis veröffentlicht monatlich,
         // neue Werte warten auf Freigabe.
         // Nutzungsabrechnung je Mandant (MVP-956): Stand des Vormonats.
@@ -660,6 +668,16 @@ return [
             'allowed' => ['everyFifteenMinutes', 'everyThirtyMinutes', 'hourly', 'dailyAt'],
             'criticality' => 'integration',
             'expected_runtime_minutes' => 5,
+        ],
+
+        // --- DATEV-Online (MVP-122): Belegbilder übertragen, EXTF-Importe abfragen ---
+        'datev-online.sync' => [
+            'command' => 'datev-online:sync',
+            'plugin' => 'datev-online',
+            'cadence' => ['type' => 'dailyAt', 'time' => '02:40'],
+            'allowed' => ['hourly', 'dailyAt'],
+            'criticality' => 'integration',
+            'expected_runtime_minutes' => 15,
         ],
 
         // --- Calendly-Terminbuchung (Feature 095) ---

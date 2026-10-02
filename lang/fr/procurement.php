@@ -51,20 +51,40 @@ return [
 
     'oci' => [
         'punchout' => [
-            'legend' => 'Punchout OCI (accès boutique)',
-            'url' => 'URL de connexion boutique (OCI)',
-            'hint' => 'Avec une URL de connexion configurée, les achats accèdent directement à la boutique du fournisseur ; le panier revient comme brouillon de commande via une URL de retour signée.',
+            'legend' => 'Accès boutique (OCI, IDS-Connect)',
+            'url' => 'Adresse de la boutique (OCI/IDS)',
+            'hint' => 'Avec une adresse de boutique configurée, les achats accèdent directement à la boutique du fournisseur (OCI ou IDS-Connect) ; le panier revient sous forme de brouillon de commande.',
             'action' => 'Ouvrir la boutique (punchout)',
             'title' => 'Redirection vers la boutique',
             'redirecting' => 'Vous êtes redirigé vers la boutique « :shop » …',
             'continue' => 'Continuer vers la boutique',
+            'protocol' => 'Protocole',
         ],
         'note' => 'Importé du panier OCI',
+        'protocol' => [
+            'oci' => 'OCI',
+            'ids' => 'IDS-Connect',
+        ],
         'flash' => [
             'missing_context' => 'Le fournisseur ou l\'entrepôt du panier est manquant.',
             'empty_cart' => 'Le panier ne contient aucun article.',
             'no_punchout' => 'Aucun punchout n\'est configuré pour cette source.',
             'imported' => 'Panier importé : :matched articles, :unmatched non associés.',
+        ],
+    ],
+
+    'ids' => [
+        'customer_number' => 'Numéro client chez le grossiste',
+        'customer_number_hint' => 'Obligatoire pour IDS-Connect ; figure dans les accès du grossiste.',
+        'note' => 'Repris du panier IDS',
+        'action' => [
+            'open_in_shop' => 'Ouvrir dans la boutique',
+        ],
+        'flash' => [
+            'hook_too_long' => 'L\'adresse de retour est trop longue pour IDS-Connect (256 caractères max.). Veuillez utiliser une adresse d\'application plus courte.',
+            'unreadable' => 'Le panier de la boutique est illisible.',
+            'ordered_in_shop' => 'La boutique signale le panier comme déjà commandé — ne le commandez pas une seconde fois.',
+            'not_ordered' => ':count positions alternatives ou optionnelles n\'ont pas été reprises.',
         ],
     ],
 

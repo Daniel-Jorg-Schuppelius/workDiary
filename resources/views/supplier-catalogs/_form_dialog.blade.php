@@ -83,7 +83,15 @@
     </x-form-group>
     <p class="text-xs opacity-60">{{ __('procurement.catalog.remote.hint') }}</p>
 
+    @php($protocol = old('punchout_protocol', $editing ? $source->punchout_protocol->value : \App\Enums\Procurement\PunchoutProtocol::Oci->value))
     <x-form-group :legend="__('procurement.oci.punchout.legend')" icon="shopping_cart_checkout" tone="primary" cols="2">
+        <x-select-field name="punchout_protocol" :label="__('procurement.oci.punchout.protocol')">
+            @foreach (\App\Enums\Procurement\PunchoutProtocol::cases() as $case)
+                <option value="{{ $case->value }}" @selected($protocol === $case->value)>{{ $case->label() }}</option>
+            @endforeach
+        </x-select-field>
+        <x-input-field name="punchout_customer_number" :label="__('procurement.ids.customer_number')" maxlength="50"
+                       :value="$val('punchout_customer_number')" :hint="__('procurement.ids.customer_number_hint')" />
         <x-input-field name="punchout_url" type="url" :label="__('procurement.oci.punchout.url')" :value="$val('punchout_url')" />
         <x-input-field name="punchout_username" :label="__('procurement.catalog.remote.username')" :value="$val('punchout_username')" autocomplete="off" />
         <x-input-field name="punchout_password" type="password" :label="__('procurement.catalog.remote.password')"

@@ -101,6 +101,7 @@ return [
             'account-invoices' => 'Monatsrechnungen aus Sonderkonditionen erzeugen',
             'push-retainers' => 'Retainer-Pauschalen an Lexoffice übergeben',
         ],
+        'datev-online' => ['sync' => 'DATEV-Online: Belegbilder übertragen und Importe abfragen'],
         'calendly' => ['backfill' => 'Calendly-Terminabgleich'],
         'ai' => ['maintenance' => 'KI-Wartungslauf (Provider-Health, Vorschlags-Bereinigung)'],
         'archive' => ['run' => 'Archivierungslauf'],
@@ -151,7 +152,7 @@ return [
         'accounting' => ['recurring' => 'Wiederkehrende Belegerwartungen und Buchungsentwürfe', 'filings' => 'Steuertermine abgleichen und an Fristen erinnern', 'liquidity_snapshot' => 'Wochenstand der Liquiditätsvorschau festhalten'],
         'platform' => ['usage_snapshot' => 'Nutzungsstand je Mandant festhalten'],
         'contracts' => ['price_index_sync' => 'Verbraucherpreisindex von der Bundesbank abgleichen'],
-        'invoicing' => ['recurring' => 'Wiederkehrende Rechnungsentwürfe erzeugen', 'base_rate_sync' => 'Basiszinssatz von der Bundesbank abgleichen'],
+        'invoicing' => ['recurring' => 'Wiederkehrende Rechnungsentwürfe erzeugen', 'base_rate_sync' => 'Basiszinssatz von der Bundesbank abgleichen', 'online_payments_refresh' => 'Online-Zahlungen mit dem Zahlungsanbieter abgleichen'],
         'jtl' => ['sync' => 'JTL-Wawi-Abgleich'],
         'resale' => [
             'sync_domains' => 'Reselling-Abos: Domains aus der Domainverwaltung übernehmen',

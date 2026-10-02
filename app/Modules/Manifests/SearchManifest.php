@@ -51,4 +51,13 @@ final class SearchManifest extends Manifest {
             \App\Services\Search\Contracts\CollectionScope::class => \App\Services\Search\Contracts\NullCollectionScope::class,
         ];
     }
+
+    /** @return array<class-string, list<class-string>> */
+    public function extensions(): array {
+        return [
+            \App\Services\Mcp\Contracts\McpTool::class => [
+                \App\Services\Search\Mcp\SearchTool::class,
+            ],
+        ];
+    }
 }

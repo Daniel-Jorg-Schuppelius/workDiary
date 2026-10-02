@@ -99,6 +99,9 @@ final class ScheduleManifest extends Manifest {
     /** @return array<class-string, list<class-string>> */
     public function extensions(): array {
         return [
+            \App\Services\Mcp\Contracts\McpTool::class => [
+                \App\Services\Dispatch\Mcp\RescheduleOrderTool::class,
+            ],
             \App\Services\Notification\DeadlineScans\DeadlineScan::class => [
                 \App\Services\Schedule\DeadlineScans\ShiftExchangeReminderScan::class,
             ],

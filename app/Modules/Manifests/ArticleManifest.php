@@ -40,6 +40,7 @@ final class ArticleManifest extends Manifest {
     /** @return list<string> */
     public function tables(): array {
         return [
+            'article_cost_approaches',
             'article_merge_dismissals',
             'article_option_definitions',
             'article_option_values',
@@ -51,11 +52,14 @@ final class ArticleManifest extends Manifest {
             'article_variant_option_values',
             'article_variants',
             'articles',
+            'calculation_scheme_markups',
+            'calculation_schemes',
             'metal_quotations',
             'price_change_requests',
             'pricing_change_alerts',
             'pricing_margin_rules',
             'products',
+            'wage_groups',
         ];
     }
 

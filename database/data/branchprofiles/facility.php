@@ -16,7 +16,9 @@ return [
     'description' => 'Facility Management und Hausmeisterdienste: Objektkontrolle, Mängel, Kleinreparaturen, Wartungsrunden, Winterdienst und Zählerstände.',
     // v2 (Feature 100): Entsorgungs-Modul empfohlen + AVV-Presets für
     // Leuchtmittel/Batterien/Verpackungen (Objekt-Räumungen).
-    'version' => 2,
+    'version' => 3,
+    // MVP-1053: Arbeitskosten nach § 35a EStG bei Privatkunden ausweisen; eigene Einstellungen bleiben.
+    'settings' => ['invoicing.labour_cost_disclosure' => 'private_customers'],
     // Feature 082 (MVP-379): vorgeschlagener Start-Arbeitsbereich. Nur ein
     // Default-Vorschlag (D16), greift solange die Org keinen eigenen Default
     // setzt und der Nutzer keine eigene Wahl getroffen hat.

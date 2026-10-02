@@ -1,7 +1,7 @@
 ---
 title: "Supplier catalogues"
 topic: supplier-catalogs.overview
-version: 1
+version: 2
 audience: []
 modules:
     - module.lager
@@ -49,10 +49,17 @@ the article never happens automatically: in direct mode the editor
 applies it explicitly, in four-eyes mode an approval request is created
 instead that a second person must approve or reject.
 
-**OCI punchout:** Sources with configured shop access allow jumping
-directly into the supplier's web shop. The basket filled there returns
-via a time-limited, signed return link and is assigned to the selected
-target warehouse — as the basis for further procurement.
+**Shop hand-off (OCI or IDS-Connect):** Sources with configured shop
+access allow jumping directly into the supplier's web shop. You choose
+the protocol on the source; IDS-Connect, as offered by electrical and
+plumbing wholesalers, also needs your customer number at the wholesaler.
+The basket filled there returns as a draft purchase order for the
+selected target warehouse. Items whose supplier article number is linked
+to an article are taken over; notes from the shop (such as delivery
+times or blocked items) appear as a message. If the shop reports the
+basket as already ordered, do not order it a second time. For IDS
+sources, the shop icon in the item list opens the article page directly
+in the shop.
 
 Reading requires inventory view permissions; creating, importing and
 linking require inventory posting permissions.

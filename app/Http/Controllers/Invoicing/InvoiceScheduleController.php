@@ -138,9 +138,9 @@ class InvoiceScheduleController extends Controller {
 
     // ── Positionsvorlagen ────────────────────────────────────────────────────
 
-    public function itemForm(InvoiceSchedule $invoiceSchedule, ?InvoiceScheduleItem $item = null): View {
+    public function itemForm(Request $request, InvoiceSchedule $invoiceSchedule, ?InvoiceScheduleItem $item = null): View {
         Gate::authorize(Permission::InvoiceUpdate->value);
-        $item ??= new InvoiceScheduleItem();
+        $item ??= new InvoiceScheduleItem(['line_kind' => in_array($request->query('kind'), ['title', 'text'], true) ? $request->query('kind') : 'item']);
 
         return view('invoice-schedules._item_form_dialog', [
             'schedule' => $invoiceSchedule,
@@ -151,6 +151,9 @@ class InvoiceScheduleController extends Controller {
     public function addItem(Request $request, InvoiceSchedule $invoiceSchedule): RedirectResponse {
         Gate::authorize(Permission::InvoiceUpdate->value);
         $data = $this->validateItem($request);
+        if (($data['line_kind'] ?? 'item') !== 'item') {
+            $data = ['line_kind' => $data['line_kind'], 'description' => $data['description'], 'position' => $data['position'] ?? null, 'quantity' => '0', 'unit_price' => '0'];
+        }
 
         $invoiceSchedule->items()->create([
             ...$data,
@@ -165,7 +168,8 @@ class InvoiceScheduleController extends Controller {
         Gate::authorize(Permission::InvoiceUpdate->value);
         abort_unless($item->invoice_schedule_id === $invoiceSchedule->id, 404);
 
-        $item->update($this->validateItem($request));
+        $data = $this->validateItem($request);
+        $item->update($item->lineKind()->isPriced() ? $data : ['description' => $data['description'], 'position' => $data['position'] ?? $item->position]);
 
         return redirect()->route('invoice-schedules.show', $invoiceSchedule)->with('status', __('Position aktualisiert.'));
     }
@@ -212,14 +216,18 @@ class InvoiceScheduleController extends Controller {
     private function validateItem(Request $request): array {
         return $request->validate([
             'description' => ['required', 'string', 'max:1000'],
-            'quantity' => ['required', 'numeric', 'min:0.001', 'max:9999999'],
+            // MVP-1054: Titel und Text ohne Menge und Preis.
+            'line_kind' => ['nullable', 'in:item,title,text'],
+            'quantity' => ['exclude_if:line_kind,title,text', 'required', 'numeric', 'min:0.001', 'max:9999999'],
             'unit' => ['nullable', 'string', 'max:32'],
-            'unit_price' => ['required', 'numeric', 'min:0', 'max:9999999'],
+            'unit_price' => ['exclude_if:line_kind,title,text', 'required', 'numeric', 'min:0', 'max:9999999'],
             'discount_percent' => ['nullable', 'numeric', 'min:0', 'max:100', 'prohibits:discount_amount'],
             'discount_amount' => ['nullable', 'numeric', 'min:0', 'max:99999999.99'],
             'tax_rate' => ['nullable', 'numeric', 'min:0', 'max:99.99'],
             'tax_category' => ['nullable', 'in:S,AE,Z,E,G,K,O'],
             'position' => ['nullable', 'integer', 'min:0'],
+            // MVP-1053: Arbeitsanteil nach § 35a EStG, wandert in die erzeugten Rechnungen.
+            'labour_share_percent' => ['nullable', 'numeric', 'min:0', 'max:100'],
         ]);
     }
 

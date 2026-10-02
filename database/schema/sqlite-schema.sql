@@ -4491,6 +4491,8 @@ CREATE TABLE IF NOT EXISTS "supplier_catalog_sources"(
   "sheet_name" varchar,
   "expected_customer_no" varchar,
   "remote_host_fingerprint" varchar,
+  "punchout_protocol" varchar not null default 'oci',
+  "punchout_customer_number" varchar,
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("supplier_id") references "suppliers"("id") on delete cascade
 );
@@ -5946,6 +5948,8 @@ CREATE TABLE IF NOT EXISTS "chat_channels"(
   "created_by" integer,
   "created_at" datetime,
   "updated_at" datetime,
+  "subject_type" varchar,
+  "subject_id" integer,
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("created_by") references "users"("id") on delete set null
 );
@@ -12145,6 +12149,8 @@ CREATE TABLE IF NOT EXISTS "invoice_schedule_items"(
   "tax_category" varchar,
   "created_at" datetime,
   "updated_at" datetime,
+  "labour_share_percent" numeric,
+  "line_kind" varchar not null default 'item',
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("invoice_schedule_id") references "invoice_schedules"("id") on delete cascade
 );
@@ -15004,6 +15010,7 @@ CREATE TABLE IF NOT EXISTS "quotes"(
   "follow_up_at" date,
   "follow_up_user_id" integer,
   "followed_up_at" datetime,
+  "is_labour_cost_disclosed" tinyint(1),
   foreign key("created_by") references users("id") on delete set null on update no action,
   foreign key("previous_version_id") references quotes("id") on delete set null on update no action,
   foreign key("project_id") references projects("id") on delete set null on update no action,
@@ -16214,6 +16221,10 @@ CREATE TABLE IF NOT EXISTS "quote_items"(
   "discount_percent" numeric,
   "discount_amount" numeric,
   "article_id" integer,
+  "labour_share_percent" numeric,
+  "line_kind" varchar not null default 'item',
+  "unit_cost_amount" numeric,
+  "calculation" text,
   foreign key("quote_id") references quotes("id") on delete cascade on update no action,
   foreign key("organization_id") references organizations("id") on delete cascade on update no action,
   foreign key("article_id") references "articles"("id") on delete set null
@@ -20439,6 +20450,9 @@ CREATE TABLE IF NOT EXISTS "invoice_items"(
   "article_variant_id" integer,
   "article_number_snapshot" varchar,
   "stock_delivery_id" integer,
+  "labour_share_percent" numeric,
+  "line_kind" varchar not null default 'item',
+  "unit_cost_amount" numeric,
   foreign key("settled_invoice_id") references invoices("id") on delete set null on update no action,
   foreign key("material_usage_id") references material_usages("id") on delete set null on update no action,
   foreign key("expense_id") references expenses("id") on delete set null on update no action,
@@ -22130,6 +22144,7 @@ CREATE TABLE IF NOT EXISTS "invoices"(
   "dunning_block_reason" varchar,
   "bill_of_quantity_id" integer,
   "sales_agent_id" integer,
+  "is_labour_cost_disclosed" tinyint(1),
   foreign key("bill_of_quantity_id") references bill_of_quantities("id") on delete set null on update no action,
   foreign key("quote_id") references quotes("id") on delete set null on update no action,
   foreign key("foreign_customer_id") references foreign_customers("id") on delete set null on update no action,
@@ -22886,6 +22901,336 @@ CREATE TABLE IF NOT EXISTS "document_mirror_detachments"(
 CREATE UNIQUE INDEX "doc_mirror_detach_doc_target_uq" on "document_mirror_detachments"(
   "document_id",
   "target"
+);
+CREATE TABLE IF NOT EXISTS "wage_groups"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "name" varchar not null,
+  "hourly_wage_amount" numeric not null,
+  "currency" varchar not null default 'EUR',
+  "headcount" integer not null default '1',
+  "is_active" tinyint(1) not null default '1',
+  "position" integer not null default '0',
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("created_by") references "users"("id") on delete set null
+);
+CREATE INDEX "wage_groups_organization_id_is_active_index" on "wage_groups"(
+  "organization_id",
+  "is_active"
+);
+CREATE TABLE IF NOT EXISTS "calculation_schemes"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "average_wage_amount" numeric,
+  "wage_related_percent" numeric not null default '0',
+  "wage_ancillary_amount" numeric not null default '0',
+  "currency" varchar not null default 'EUR',
+  "updated_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("updated_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "calculation_schemes_organization_id_unique" on "calculation_schemes"(
+  "organization_id"
+);
+CREATE TABLE IF NOT EXISTS "calculation_scheme_markups"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "calculation_scheme_id" integer not null,
+  "cost_kind" varchar not null,
+  "site_overhead_percent" numeric not null default '0',
+  "general_overhead_percent" numeric not null default '0',
+  "risk_profit_percent" numeric not null default '0',
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("calculation_scheme_id") references "calculation_schemes"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "calc_scheme_markups_scheme_kind_unique" on "calculation_scheme_markups"(
+  "calculation_scheme_id",
+  "cost_kind"
+);
+CREATE TABLE IF NOT EXISTS "article_cost_approaches"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "article_id" integer not null,
+  "cost_kind" varchar not null,
+  "description" varchar,
+  "component_article_id" integer,
+  "wage_group_id" integer,
+  "quantity" numeric not null default '1',
+  "unit" varchar,
+  "minutes" numeric,
+  "unit_cost_amount" numeric,
+  "currency" varchar not null default 'EUR',
+  "position" integer not null default '0',
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("article_id") references "articles"("id") on delete cascade,
+  foreign key("component_article_id") references "articles"("id") on delete set null,
+  foreign key("wage_group_id") references "wage_groups"("id") on delete set null
+);
+CREATE INDEX "article_cost_approaches_article_id_position_index" on "article_cost_approaches"(
+  "article_id",
+  "position"
+);
+CREATE TABLE IF NOT EXISTS "takeoffs"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "diary_entry_id" integer,
+  "project_id" integer,
+  "bill_of_quantity_id" integer,
+  "title" varchar not null,
+  "measured_on" date,
+  "status" varchar not null default 'draft',
+  "note" text,
+  "created_by" integer,
+  "updated_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("diary_entry_id") references "diary_entries"("id") on delete set null,
+  foreign key("project_id") references "projects"("id") on delete set null,
+  foreign key("bill_of_quantity_id") references "bill_of_quantities"("id") on delete set null,
+  foreign key("created_by") references "users"("id") on delete set null,
+  foreign key("updated_by") references "users"("id") on delete set null
+);
+CREATE INDEX "takeoffs_organization_id_status_index" on "takeoffs"(
+  "organization_id",
+  "status"
+);
+CREATE TABLE IF NOT EXISTS "takeoff_lines"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "takeoff_id" integer not null,
+  "position" integer not null default '0',
+  "label" varchar,
+  "description" varchar,
+  "formula" varchar not null,
+  "values" text not null,
+  "factor" numeric not null default '1',
+  "quantity" numeric,
+  "unit" varchar,
+  "boq_item_id" integer,
+  "article_id" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("takeoff_id") references "takeoffs"("id") on delete cascade,
+  foreign key("boq_item_id") references "boq_items"("id") on delete set null,
+  foreign key("article_id") references "articles"("id") on delete set null
+);
+CREATE INDEX "takeoff_lines_takeoff_id_position_index" on "takeoff_lines"(
+  "takeoff_id",
+  "position"
+);
+CREATE TABLE IF NOT EXISTS "takeoff_transfers"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "takeoff_id" integer not null,
+  "kind" varchar not null,
+  "target_type" varchar,
+  "target_id" integer,
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("takeoff_id") references "takeoffs"("id") on delete cascade,
+  foreign key("created_by") references "users"("id") on delete set null
+);
+CREATE INDEX "takeoff_transfers_target_type_target_id_index" on "takeoff_transfers"(
+  "target_type",
+  "target_id"
+);
+CREATE UNIQUE INDEX "takeoff_transfers_takeoff_id_kind_unique" on "takeoff_transfers"(
+  "takeoff_id",
+  "kind"
+);
+CREATE TABLE IF NOT EXISTS "dictations"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "created_by" integer,
+  "context" varchar not null,
+  "status" varchar not null default 'pending',
+  "locale" varchar not null default 'de',
+  "audio_disk" varchar,
+  "audio_path" varchar,
+  "transcript" text,
+  "structured" text,
+  "failure" varchar,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("created_by") references "users"("id") on delete set null
+);
+CREATE INDEX "dictations_organization_id_created_at_index" on "dictations"(
+  "organization_id",
+  "created_at"
+);
+CREATE UNIQUE INDEX "chat_channels_subject_unique" on "chat_channels"(
+  "organization_id",
+  "subject_type",
+  "subject_id"
+);
+CREATE TABLE IF NOT EXISTS "mcp_oauth_clients"(
+  "id" integer primary key autoincrement not null,
+  "client_key" varchar not null,
+  "name" varchar not null,
+  "redirect_uris" text not null,
+  "last_used_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime
+);
+CREATE UNIQUE INDEX "mcp_oauth_clients_client_key_unique" on "mcp_oauth_clients"(
+  "client_key"
+);
+CREATE TABLE IF NOT EXISTS "mcp_oauth_codes"(
+  "id" integer primary key autoincrement not null,
+  "mcp_oauth_client_id" integer not null,
+  "user_id" integer not null,
+  "code_hash" varchar not null,
+  "redirect_uri" text not null,
+  "code_challenge" varchar not null,
+  "scopes" text not null,
+  "expires_at" datetime not null,
+  "used_at" datetime,
+  "family" varchar,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("mcp_oauth_client_id") references "mcp_oauth_clients"("id") on delete cascade,
+  foreign key("user_id") references "users"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "mcp_oauth_codes_code_hash_unique" on "mcp_oauth_codes"(
+  "code_hash"
+);
+CREATE TABLE IF NOT EXISTS "mcp_oauth_refresh_tokens"(
+  "id" integer primary key autoincrement not null,
+  "mcp_oauth_client_id" integer not null,
+  "user_id" integer not null,
+  "personal_access_token_id" integer,
+  "family" varchar not null,
+  "token_hash" varchar not null,
+  "scopes" text not null,
+  "expires_at" datetime not null,
+  "rotated_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("mcp_oauth_client_id") references "mcp_oauth_clients"("id") on delete cascade,
+  foreign key("user_id") references "users"("id") on delete cascade,
+  foreign key("personal_access_token_id") references "personal_access_tokens"("id") on delete set null
+);
+CREATE INDEX "mcp_oauth_refresh_tokens_family_index" on "mcp_oauth_refresh_tokens"(
+  "family"
+);
+CREATE UNIQUE INDEX "mcp_oauth_refresh_tokens_token_hash_unique" on "mcp_oauth_refresh_tokens"(
+  "token_hash"
+);
+CREATE TABLE IF NOT EXISTS "invoice_payment_links"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "invoice_id" integer not null,
+  "token" text not null,
+  "token_hash" varchar not null,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("invoice_id") references "invoices"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "invoice_payment_links_invoice_id_unique" on "invoice_payment_links"(
+  "invoice_id"
+);
+CREATE UNIQUE INDEX "invoice_payment_links_token_hash_unique" on "invoice_payment_links"(
+  "token_hash"
+);
+CREATE TABLE IF NOT EXISTS "online_payments"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "invoice_id" integer not null,
+  "provider" varchar not null,
+  "provider_reference" varchar,
+  "status" varchar not null default 'open',
+  "gross_amount" numeric not null,
+  "fee_amount" numeric,
+  "refunded_amount" numeric not null default '0',
+  "currency" varchar not null,
+  "method" varchar,
+  "checkout_url" varchar,
+  "checkout_expires_at" datetime,
+  "paid_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("invoice_id") references "invoices"("id") on delete restrict
+);
+CREATE UNIQUE INDEX "online_payments_provider_provider_reference_unique" on "online_payments"(
+  "provider",
+  "provider_reference"
+);
+CREATE INDEX "online_payments_invoice_id_status_index" on "online_payments"(
+  "invoice_id",
+  "status"
+);
+CREATE TABLE IF NOT EXISTS "datev_online_connections"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "access_token" text,
+  "refresh_token" text,
+  "token_expires_at" datetime,
+  "scopes" varchar,
+  "status" varchar not null default 'active',
+  "datev_client_number" varchar,
+  "datev_client_name" varchar,
+  "is_documents_enabled" tinyint(1) not null default '0',
+  "documents_since" date,
+  "last_synced_at" datetime,
+  "last_error" varchar,
+  "last_error_at" datetime,
+  "consecutive_failures" integer not null default '0',
+  "disabled_at" datetime,
+  "connected_by" integer,
+  "connected_at" datetime,
+  "disconnected_by" integer,
+  "disconnected_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("connected_by") references "users"("id") on delete set null,
+  foreign key("disconnected_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "dvoc_org_unique" on "datev_online_connections"(
+  "organization_id"
+);
+CREATE TABLE IF NOT EXISTS "datev_online_transfers"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "kind" varchar not null,
+  "source_type" varchar not null,
+  "source_id" integer not null,
+  "datev_client_number" varchar not null,
+  "datev_reference" varchar,
+  "status" varchar not null default 'pending',
+  "error" varchar,
+  "attempts" integer not null default '0',
+  "transferred_at" datetime,
+  "checked_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "dvot_source_unique" on "datev_online_transfers"(
+  "organization_id",
+  "kind",
+  "source_type",
+  "source_id"
+);
+CREATE INDEX "dvot_org_status_idx" on "datev_online_transfers"(
+  "organization_id",
+  "status"
 );
 
 INSERT INTO migrations VALUES(1,'0001_01_01_000000_create_users_table',1);
@@ -23817,3 +24162,14 @@ INSERT INTO migrations VALUES(936,'2027_02_28_217000_retainer_voucher_links_as_e
 INSERT INTO migrations VALUES(937,'2027_02_28_218000_accounting_numbers_in_external_references',47);
 INSERT INTO migrations VALUES(938,'2027_02_28_219000_document_mirror_detachments',48);
 INSERT INTO migrations VALUES(939,'2027_02_28_220000_msgraph_oof_setting_to_plugin',49);
+INSERT INTO migrations VALUES(940,'2027_03_01_100000_add_labour_share_to_document_lines',50);
+INSERT INTO migrations VALUES(941,'2027_03_02_100000_add_line_kind_to_document_lines',50);
+INSERT INTO migrations VALUES(942,'2027_03_03_100000_create_service_calculation_tables',50);
+INSERT INTO migrations VALUES(943,'2027_03_04_100000_create_takeoffs_tables',51);
+INSERT INTO migrations VALUES(944,'2027_03_05_100000_create_takeoff_transfers_table',51);
+INSERT INTO migrations VALUES(945,'2027_03_06_100000_create_dictations_table',51);
+INSERT INTO migrations VALUES(946,'2027_03_07_100000_add_subject_to_chat_channels',51);
+INSERT INTO migrations VALUES(947,'2027_03_08_100000_create_mcp_oauth_tables',52);
+INSERT INTO migrations VALUES(948,'2027_03_09_100000_add_ids_connect_to_supplier_catalog_sources',53);
+INSERT INTO migrations VALUES(949,'2027_03_09_110000_create_online_payment_tables',54);
+INSERT INTO migrations VALUES(950,'2027_03_09_120000_create_datev_online_tables',55);

@@ -413,6 +413,12 @@ class TenantTraitCoverageTest extends TestCase {
         // der Instanz — Aussteller ist die Anwendung, nicht die Organisation.
         \App\Models\Learning\LearningLtiKey::class,
         \App\Models\Learning\LearningLtiNonce::class,
+        // MVP-1065: OAuth des MCP-Servers — Clients sind installationsweit
+        // (dynamische Registrierung), Codes und Refresh-Token hängen am Nutzer;
+        // das ausgegebene Sanctum-Token trägt die Organisation über den Nutzer.
+        \App\Models\Mcp\McpOAuthClient::class,
+        \App\Models\Mcp\McpOAuthCode::class,
+        \App\Models\Mcp\McpOAuthRefreshToken::class,
     ];
 
     public function test_every_model_uses_tenant_trait_or_is_allow_listed(): void {

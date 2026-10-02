@@ -1,0 +1,8 @@
+{
+    "API-Schlüssel": "Chiave API",
+    "Aus dem Mollie-Dashboard unter „Entwickler“ → „API-Schlüssel“ (live_… bzw. test_…).": "Dalla dashboard di Mollie in «Sviluppatori» → «Chiavi API» (live_… o test_…).",
+    "Kein API-Schlüssel hinterlegt.": "Nessuna chiave API memorizzata.",
+    "Mollie lehnt den API-Schlüssel ab.": "Mollie rifiuta la chiave API.",
+    "Online-Zahlung von Rechnungen über Mollie (Karte, PayPal, SEPA-Überweisung, Klarna und weitere).": "Pagamento online delle fatture tramite Mollie (carta, PayPal, bonifico SEPA, Klarna e altri).",
+    "Verbunden — Mollie erreichbar.": "Connesso: Mollie raggiungibile."
+}

@@ -86,7 +86,7 @@ class XRechnungGenerator {
             $errors[] = (string) __('invoicing.einvoice.error.status');
         }
 
-        if ($invoice->items->isEmpty()) {
+        if ($invoice->pricedItems()->isEmpty()) {
             $errors[] = (string) __('invoicing.einvoice.error.no_items');
         }
 
@@ -133,10 +133,10 @@ class XRechnungGenerator {
         // Belegrabatt-Zuordnung je Satz, Steuer PRO SATZ gerundet — dieselbe
         // Rechenstelle wie Invoice::recalculate() und der XML-Aufbau
         // (Toleranz 0,5 ct).
-        if ($invoice->items->isNotEmpty()) {
+        if ($invoice->pricedItems()->isNotEmpty()) {
             $totals = $invoice->documentTotals();
             $documentCurrency = $invoice->documentCurrency();
-            $builderLineSum = Money::sum($invoice->items->map(
+            $builderLineSum = Money::sum($invoice->pricedItems()->map(
                 fn (InvoiceItem $i): Money => DocumentTotalsCalculator::lineNet(
                     $i->lineQuantity(),
                     $i->unitPrice(),
@@ -344,8 +344,25 @@ class XRechnungGenerator {
             $builder->withBuyerReference($buyerReference);
         }
 
-        $lineNo = 0;
+        // BT-22: Arbeitskosten nach § 35a EStG (MVP-1053), wie auf dem PDF.
+        $labourCosts = $invoice->disclosedLabourCosts();
+        if ($labourCosts !== null && ! $labourCosts['gross']->isZero()) {
+            $builder->addNote((string) __('invoicing.labour_costs.einvoice_note', [
+                'gross' => NumberHelper::toGermanFormat($labourCosts['gross']->toFloat(), 2),
+                'tax' => NumberHelper::toGermanFormat($labourCosts['tax']->toFloat(), 2),
+                'currency' => $invoice->documentCurrency()->value,
+            ]));
+        }
+
+        // Textzeilen der Gliederung (MVP-1054) gehen als Hinweis mit; Titel nicht.
         foreach ($invoice->items as $item) {
+            if ($item->lineKind() === \App\Enums\Billing\DocumentLineKind::Text && trim((string) $item->description) !== '') {
+                $builder->addNote(trim((string) $item->description));
+            }
+        }
+
+        $lineNo = 0;
+        foreach ($invoice->pricedItems() as $item) {
             // BT-153 (Name) ist Pflicht; lange Beschreibungen wandern
             // zusätzlich in BT-154 (Description).
             $description = trim((string) $item->description);
@@ -391,7 +408,7 @@ class XRechnungGenerator {
         $totals = $invoice->documentTotals();
         if ($totals['document_discount']->isPositive()) {
             $categoriesByRate = [];
-            foreach ($invoice->items as $item) {
+            foreach ($invoice->pricedItems() as $item) {
                 $rateKey = NumberHelper::toUSFormat($item->tax_rate !== null ? (float) $item->tax_rate->getNumericValue() : $taxRate, 2);
                 $categoriesByRate[$rateKey] ??= $this->itemTaxCategory($item, $category);
             }

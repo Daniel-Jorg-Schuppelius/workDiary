@@ -73,6 +73,7 @@ class InvoicePdfImportService {
         $result['source_format'] = $extension;
         $this->augmentWithLines($result, $rows, $alignedText);
         $this->augmentWithPaymentData($result, $text);
+        $this->augmentWithReferences($result, $text);
         if ($organization !== null) {
             $this->augmentWithAiFallback($result, $text, $organization);
         }
@@ -206,6 +207,39 @@ class InvoicePdfImportService {
             $result['net'] = NumberHelper::toUSFormat($sum, 2);
             $result['warnings'] = array_values(array_diff($result['warnings'], ['missing_net']));
         }
+    }
+
+    /**
+     * Zuordnungskandidaten für Eingangsbelege (MVP-1066): alle gültigen
+     * USt-IdNr. und Zeichenfolgen mit Ziffern, die eine Projekt- oder
+     * Bestellnummer sein können — abgeglichen wird im Eingang, übernommen nie.
+     *
+     * @param  array<string, mixed>  $result
+     */
+    private function augmentWithReferences(array &$result, string $text): void {
+        $vatIds = [];
+        if (preg_match_all('/\b[A-Z]{2}\s?[0-9A-Z][0-9A-Z ]{6,13}\b/', $text, $matches) > 0) {
+            foreach ($matches[0] as $candidate) {
+                $vat = \CommonToolkit\Helper\Data\VatNumberHelper::normalize($candidate);
+                if (\CommonToolkit\Helper\Data\VatNumberHelper::isVatId($vat)) {
+                    $vatIds[$vat] = true;
+                }
+            }
+        }
+        $result['vat_ids'] = array_keys($vatIds);
+
+        $tokens = [];
+        if (preg_match_all('/[\p{L}\d][\p{L}\d\-\/._]{2,38}[\p{L}\d]/u', $text, $matches) > 0) {
+            foreach ($matches[0] as $token) {
+                if (preg_match('/\d/', $token) === 1) {
+                    $tokens[$token] = true;
+                }
+                if (count($tokens) >= 200) {
+                    break;
+                }
+            }
+        }
+        $result['reference_tokens'] = array_keys($tokens);
     }
 
     /**

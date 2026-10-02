@@ -202,6 +202,7 @@
                     <th>{{ __('procurement.catalog.col.status') }}</th>
                     @if ($canManage)<th class="text-right">{{ __('procurement.catalog.col.actions') }}</th>@endif
                 </x-slot:head>
+                @php($idsShop = $source->hasPunchout() && $source->punchout_protocol === \App\Enums\Procurement\PunchoutProtocol::Ids)
                 @foreach ($items as $item)
                     @php($tone = match ($item->status) {
                         \App\Enums\Procurement\CatalogItemStatus::Linked => 'success',
@@ -261,6 +262,10 @@
                         @if ($canManage)
                             <td class="text-right">
                                 <div class="flex justify-end gap-1">
+                                    @if ($idsShop)
+                                        <x-icon-btn icon="storefront" size="xs" :href="route('supplier-catalogs.items.shop', $item)"
+                                                    target="_blank" rel="noopener" :label="__('procurement.ids.action.open_in_shop')" />
+                                    @endif
                                     @if ($item->article_id)
                                         @if ($sug)
                                             <form method="POST" action="{{ route('supplier-catalogs.items.apply-price', $item) }}">@csrf

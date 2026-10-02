@@ -1346,6 +1346,7 @@ return [
             'payment' => 'Zahlung',
             'depreciation' => 'Abschreibung (AfA)',
             'asset_disposal' => 'Anlagenabgang',
+            'online_payment' => 'Online-Zahlung',
         ],
         'posting-account-role' => [
             'receivable' => 'Forderung',
@@ -1362,6 +1363,8 @@ return [
             'depreciation' => 'AfA-Aufwand',
             'disposal_loss' => 'Abgang Restbuchwert (Buchverlust)',
             'disposal_gain' => 'Abgang Restbuchwert (Buchgewinn)',
+            'payment_transit' => 'Geldtransit (Zahlungsanbieter)',
+            'payment_fees' => 'Nebenkosten des Geldverkehrs',
         ],
         // Buchungskern (Feature 125, MVP-672).
         'balance-side' => [
@@ -1801,6 +1804,11 @@ return [
             'manual' => 'von Hand',
             'machine' => 'maschinell',
         ],
+        'dictation-status' => [
+            'pending' => 'Wartet',
+            'done' => 'Fertig',
+            'failed' => 'Fehlgeschlagen',
+        ],
     ],
     // Vereinsverwaltung (Feature 159, MVP-842)
     'club' => [
@@ -2028,6 +2036,22 @@ return [
         'donation-receipt-kind' => [
             'single' => 'Einzelbestätigung',
             'collective' => 'Sammelbestätigung',
+        ],
+    ],
+    'takeoff' => [
+        'status' => [
+            'draft' => 'Offen',
+            'completed' => 'Abgeschlossen',
+        ],
+    ],
+    'invoicing' => [
+        'online-payment-status' => [
+            'open' => 'Offen',
+            'paid' => 'Bezahlt',
+            'failed' => 'Fehlgeschlagen',
+            'canceled' => 'Abgebrochen',
+            'expired' => 'Abgelaufen',
+            'refunded' => 'Erstattet',
         ],
     ],
 ];

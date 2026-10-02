@@ -111,7 +111,7 @@ class BillingTransferPosition extends Model implements DocumentLine {
 
     /** @return array<string, string|null> */
     protected static function lineColumns(): array {
-        return ['unit' => 'unit_name', 'tax_rate' => 'vat_rate', 'discount_percent' => null, 'discount_amount' => null, 'net_amount' => 'amount'];
+        return ['unit' => 'unit_name', 'tax_rate' => 'vat_rate', 'discount_percent' => null, 'discount_amount' => null, 'net_amount' => 'amount', 'labour_share_percent' => null, 'line_kind' => null];
     }
 
     /** @return BelongsTo<Project, $this> */

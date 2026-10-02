@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Invoicing;
 
+use App\Enums\Billing\DocumentLineKind;
 use App\Enums\Numbering\NumberScope;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
@@ -165,11 +166,16 @@ class QuoteService {
         return DB::transaction(function () use ($quote, $acceptedItemIds): Quote {
             $partial = false;
             foreach ($quote->items as $item) {
-                $accepted = $acceptedItemIds === null
-                    ? ! $item->optional // Vollannahme: Optionen bleiben draußen
-                    : in_array((int) $item->id, $acceptedItemIds, true);
+                $kind = $item->lineKind();
+                // Titel und Text tragen die Gliederung immer mit (MVP-1054);
+                // Optionen und Alternativen zählen nur, wenn ausdrücklich gewählt.
+                $accepted = match (true) {
+                    ! $kind->isPriced() => true,
+                    $acceptedItemIds === null => $kind === DocumentLineKind::Item && ! $item->optional,
+                    default => in_array((int) $item->id, $acceptedItemIds, true),
+                };
                 $item->update(['accepted' => $accepted]);
-                if (! $accepted && ! $item->optional) {
+                if (! $accepted && $kind === DocumentLineKind::Item && ! $item->optional) {
                     $partial = true;
                 }
             }
@@ -189,6 +195,9 @@ class QuoteService {
                     'discount_percent' => $item->discount_percent !== null ? (float) $item->discount_percent->getNumericValue() : null,
                     'discount_amount' => $item->discount_amount?->toFloat(),
                     'tax_rate' => $item->tax_rate?->getNumericValue(),
+                    'labour_share_percent' => $item->labour_share_percent?->getNumericValue(),
+                    'line_kind' => $item->lineKind()->value,
+                    'unit_cost_amount' => $item->unit_cost_amount?->getAmount(),
                     'accepted' => (bool) $item->accepted,
                 ])->all(),
                 'total' => $quote->total?->toFloat(),
@@ -246,6 +255,7 @@ class QuoteService {
                 'type' => Invoice::TYPE_INVOICE,
                 'tax_rate' => $tax['rate'],
                 'is_reverse_charge' => $tax['reverse_charge'],
+                'is_labour_cost_disclosed' => $quote->is_labour_cost_disclosed,
                 'notes' => $notes,
                 'created_by' => $actor->id,
             ]);
@@ -267,6 +277,12 @@ class QuoteService {
                     'discount_percent' => $item['discount_percent'] ?? null,
                     'discount_amount' => $item['discount_amount'] ?? null,
                     'tax_rate' => $suppressItemRates ? null : $item['tax_rate'],
+                    'labour_share_percent' => $item['labour_share_percent'] ?? null,
+                    'unit_cost_amount' => $item['unit_cost_amount'] ?? null,
+                    // Eine gewählte Alternative ist in der Rechnung eine gewöhnliche Position.
+                    'line_kind' => (DocumentLineKind::tryFrom((string) ($item['line_kind'] ?? '')) ?? DocumentLineKind::Item) === DocumentLineKind::Alternative
+                        ? DocumentLineKind::Item->value
+                        : (string) ($item['line_kind'] ?? DocumentLineKind::Item->value),
                     'position' => ++$position,
                 ];
                 if (($item['unit'] ?? null) !== null) {
@@ -306,6 +322,7 @@ class QuoteService {
                 'type' => Invoice::TYPE_INVOICE,
                 'tax_rate' => $proforma->tax_rate,
                 'is_reverse_charge' => (bool) $proforma->is_reverse_charge,
+                'is_labour_cost_disclosed' => $proforma->is_labour_cost_disclosed,
                 'notes' => (string) __('Aus Pro-forma :number', ['number' => $proforma->number]),
                 'created_by' => $actor->id,
             ]);
@@ -313,6 +330,7 @@ class QuoteService {
             $position = 0;
             foreach ($proforma->items as $item) {
                 $invoice->items()->create([
+                    ...$item->carriedLineAttributes(),
                     'organization_id' => $proforma->organization_id,
                     'article_id' => $item->article_id,
                     'description' => $item->description,
