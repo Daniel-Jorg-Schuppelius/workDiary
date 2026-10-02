@@ -359,6 +359,8 @@ return [
         'domain_reseller_accounts' => \App\Models\Domain\DomainResellerAccount::class,
         'driver_license_checks' => \App\Models\Fleet\DriverLicenseCheck::class,
         'duty_plans' => \App\Models\Schedule\DutyPlan::class,
+        'ebics_connection_events' => \App\Models\Finance\EbicsConnectionEvent::class,
+        'ebics_connections' => \App\Models\Finance\EbicsConnection::class,
         'email_connections' => \App\Models\Mail\EmailConnection::class,
         'emergency_assignments' => \App\Models\Diary\EmergencyAssignment::class,
         'employee_drafts' => \App\Models\Applications\EmployeeDraft::class,

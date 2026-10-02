@@ -4,7 +4,7 @@
 # Feature 015). Betreiber-Handbuch: docs/on-premise-docker.md.
 #
 # Stages:
-#   base    php:8.4-fpm-bookworm + PHP-Extensions + System-Binaries der
+#   base    php:8.5-fpm-bookworm + PHP-Extensions + System-Binaries der
 #           Toolkits (ConfigToolkit\CommandBuilder-Konfiguration, s. u.)
 #   vendor  composer install --no-dev (Scripts laufen erst im Runtime-Stage)
 #   assets  npm ci && npm run build (Vite; ALPINE_CSP_BUILD als Build-Arg)
@@ -16,7 +16,7 @@
 # Private Composer-Pakete (composer.local.json ist ausgeschlossen): Build mit
 #   --secret id=composer_auth,src=$HOME/.composer/auth.json
 
-ARG PHP_VERSION=8.4
+ARG PHP_VERSION=8.5
 ARG NODE_VERSION=22
 
 # ---------------------------------------------------------------------------

@@ -23232,6 +23232,47 @@ CREATE INDEX "dvot_org_status_idx" on "datev_online_transfers"(
   "organization_id",
   "status"
 );
+CREATE TABLE IF NOT EXISTS "ebics_connections"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "bank_account_id" integer not null,
+  "host_url" varchar not null,
+  "ebics_host" varchar not null,
+  "ebics_partner" varchar not null,
+  "ebics_user" varchar not null,
+  "status" varchar not null default 'draft',
+  "keyring" text,
+  "keyring_secret" text,
+  "keys_created_at" datetime,
+  "initialized_at" datetime,
+  "activated_at" datetime,
+  "statements_until" date,
+  "last_fetched_at" datetime,
+  "last_error" varchar,
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("bank_account_id") references "bank_accounts"("id") on delete cascade,
+  foreign key("created_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "ebc_account_unique" on "ebics_connections"(
+  "bank_account_id"
+);
+CREATE TABLE IF NOT EXISTS "ebics_connection_events"(
+  "id" integer primary key autoincrement not null,
+  "ebics_connection_id" integer not null,
+  "event" varchar not null,
+  "actor_user_id" integer,
+  "payload" text,
+  "occurred_at" datetime not null default CURRENT_TIMESTAMP,
+  foreign key("ebics_connection_id") references "ebics_connections"("id") on delete cascade,
+  foreign key("actor_user_id") references "users"("id") on delete set null
+);
+CREATE INDEX "ebce_chrono_idx" on "ebics_connection_events"(
+  "ebics_connection_id",
+  "occurred_at"
+);
 
 INSERT INTO migrations VALUES(1,'0001_01_01_000000_create_users_table',1);
 INSERT INTO migrations VALUES(2,'0001_01_01_000001_create_cache_table',1);
@@ -24173,3 +24214,4 @@ INSERT INTO migrations VALUES(947,'2027_03_08_100000_create_mcp_oauth_tables',52
 INSERT INTO migrations VALUES(948,'2027_03_09_100000_add_ids_connect_to_supplier_catalog_sources',53);
 INSERT INTO migrations VALUES(949,'2027_03_09_110000_create_online_payment_tables',54);
 INSERT INTO migrations VALUES(950,'2027_03_09_120000_create_datev_online_tables',55);
+INSERT INTO migrations VALUES(951,'2027_03_09_130000_create_ebics_tables',56);

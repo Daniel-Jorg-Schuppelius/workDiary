@@ -67,7 +67,7 @@ note() { echo "  $*"; }
 detect_php() {
   if [[ -n "${PHP_BIN:-}" ]]; then printf '%s' "$PHP_BIN"; return; fi
   local candidate
-  for candidate in php php8.4 /usr/bin/php /usr/bin/php8.4; do
+  for candidate in php php8.5 /usr/bin/php /usr/bin/php8.5; do
     if command -v "$candidate" >/dev/null 2>&1; then command -v "$candidate"; return; fi
   done
   fail "kein PHP-Binary gefunden — PHP_BIN=/pfad/zu/php setzen."

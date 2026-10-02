@@ -271,6 +271,7 @@ return [
     'InvoiceMailTemplate' => 'Modèle d\'e-mail de facture',
     'InvoiceRetention' => 'Retenue de garantie',
     'OnlinePayment' => 'Paiement en ligne',
+    'EbicsConnection' => 'Accès bancaire EBICS',
     'DatevOnlineConnection' => 'Connexion DATEV Online',
     'InvoiceSchedule' => 'Échéancier de facturation',
     'InvoiceScheduleItem' => 'Ligne de l’échéancier',

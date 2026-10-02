@@ -40,6 +40,7 @@ return [
         'released' => 'Legal hold released',
     ],
     'paymentRun' => [
+        'ebicsSubmitted' => 'Submitted via EBICS',
         'created' => 'Payment run created',
         'settled' => 'Payment run receipt booked',
         'released' => 'Payment run released',

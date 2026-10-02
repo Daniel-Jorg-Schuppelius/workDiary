@@ -31,7 +31,7 @@ jobs:
       - name: Set up PHP
         uses: shivammathur/setup-php@2.37.2
         with:
-          php-version: "8.4"
+          php-version: "8.5"
           extensions: bcmath, curl, dom, fileinfo, gd, intl, mbstring, openssl, pcntl, pdo_sqlite, sodium, sqlite3, tokenizer, xml, xmlwriter, zip
           coverage: none
           tools: composer:v2
@@ -40,9 +40,9 @@ jobs:
         uses: actions/cache@v6
         with:
           path: ~/.cache/composer/files
-          key: composer-${{ runner.os }}-php-8.4-${{ hashFiles('composer.lock') }}
+          key: composer-${{ runner.os }}-php-8.5-${{ hashFiles('composer.lock') }}
           restore-keys: |
-            composer-${{ runner.os }}-php-8.4-
+            composer-${{ runner.os }}-php-8.5-
 
       - name: Install Composer dependencies
         run: composer install --no-interaction --no-progress --prefer-dist
@@ -102,7 +102,7 @@ jobs:
       - name: Set up PHP
         uses: shivammathur/setup-php@2.37.2
         with:
-          php-version: "8.4"
+          php-version: "8.5"
           extensions: bcmath, curl, dom, fileinfo, gd, intl, mbstring, openssl, pcntl, pdo_sqlite, sodium, sqlite3, tokenizer, xml, xmlwriter, zip
           coverage: none
           tools: composer:v2
@@ -197,7 +197,7 @@ jobs:
       - name: Set up PHP
         uses: shivammathur/setup-php@2.37.2
         with:
-          php-version: "8.4"
+          php-version: "8.5"
           extensions: bcmath, curl, dom, fileinfo, gd, intl, mbstring, openssl, pcntl, pdo_sqlite, sodium, sqlite3, tokenizer, xml, xmlwriter, zip
           coverage: none
           tools: composer:v2
@@ -206,9 +206,9 @@ jobs:
         uses: actions/cache@v6
         with:
           path: ~/.cache/composer/files
-          key: composer-${{ runner.os }}-php-8.4-${{ hashFiles('composer.lock') }}
+          key: composer-${{ runner.os }}-php-8.5-${{ hashFiles('composer.lock') }}
           restore-keys: |
-            composer-${{ runner.os }}-php-8.4-
+            composer-${{ runner.os }}-php-8.5-
 
       - name: Install Composer dependencies
         run: composer install --no-interaction --no-progress --prefer-dist
@@ -276,7 +276,7 @@ jobs:
         if: steps.token.outputs.present == 'true'
         uses: shivammathur/setup-php@2.37.2
         with:
-          php-version: "8.4"
+          php-version: "8.5"
           extensions: bcmath, curl, dom, fileinfo, gd, intl, mbstring, openssl, pcntl, pdo_sqlite, sodium, sqlite3, tokenizer, xml, xmlwriter, zip
           coverage: none
           tools: composer:v2
@@ -374,7 +374,7 @@ jobs:
       - name: Set up PHP
         uses: shivammathur/setup-php@2.37.2
         with:
-          php-version: "8.4"
+          php-version: "8.5"
           extensions: bcmath, curl, dom, fileinfo, gd, intl, mbstring, openssl, pcntl, pdo_sqlite, sodium, sqlite3, tokenizer, xml, xmlwriter, zip
           coverage: none
           tools: composer:v2
@@ -465,7 +465,7 @@ jobs:
       - name: Set up PHP
         uses: shivammathur/setup-php@2.37.2
         with:
-          php-version: "8.4"
+          php-version: "8.5"
           extensions: bcmath, curl, dom, fileinfo, gd, intl, mbstring, openssl, pcntl, pdo_sqlite, sodium, sqlite3, tokenizer, xml, xmlwriter, zip
           coverage: none
           tools: composer:v2

@@ -32,7 +32,7 @@ unverändert und ist in [systemdienste.md](systemdienste.md) beschrieben.
 
 ## 2. Was im Image steckt
 
-PHP 8.4 (php-fpm, Debian bookworm) mit den Extensions aus `composer.json`
+PHP 8.5 (php-fpm, Debian bookworm) mit den Extensions aus `composer.json`
 der Toolkits und dem Laravel-Standard: `pdo_mysql`, `pdo_pgsql`, `pdo_sqlite`,
 `intl`, `gd`, `zip`, `bcmath`, `sodium`, `opcache`, `pcntl`, `exif`, `redis`.
 `ext-inotify` (Realtime-Integritätswächter) ist optional (`WD_WITH_INOTIFY=1`).
@@ -61,7 +61,7 @@ abhängige Funktion — die App startet trotzdem.
 | `libreoffice-writer/-calc/-impress`              | `office_executables.json` (Office → PDF)                            | `WD_WITH_LIBREOFFICE=1` |
 | `WD_WITH_FFMPEG=1` (ffmpeg) / sonst nicht enthalten | `media_executables.json` (ffmpeg fuer Video-Transcoding, Feature 150; whisper, piper, espeak-ng bleiben aussen vor), wkhtmltopdf (PDF-Writer-Fallback; Dompdf/TCPDF sind reine PHP), ClamAV (`WHISTLEBLOWING_SCANNER`) | `WD_WITH_FFMPEG=1` |
 
-Build-Argumente: `PHP_VERSION` (8.4), `NODE_VERSION` (22), `ALPINE_CSP_BUILD`
+Build-Argumente: `PHP_VERSION` (8.5), `NODE_VERSION` (22), `ALPINE_CSP_BUILD`
 (true; muss zum Laufzeit-Flag passen), `WD_WITH_LIBREOFFICE`, `WD_WITH_JAVA`,
 `WD_WITH_INOTIFY`, `WD_VERSION` (wird `APP_VERSION`).
 

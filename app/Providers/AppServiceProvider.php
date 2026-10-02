@@ -100,6 +100,7 @@ class AppServiceProvider extends ServiceProvider {
         // Transport-Weiche (Feature 102): IMAP bleibt Default, msgraph-Postfächer
         // laufen über die Graph-Mail-Verbindung der Organisation.
         $this->app->singleton(\App\Services\Mail\MailboxGateway::class, \App\Services\Mail\TransportSelectingMailboxGateway::class);
+        $this->app->bind(\App\Services\Finance\Ebics\Contracts\EbicsGateway::class, \App\Services\Finance\Ebics\LibraryEbicsGateway::class);
 
         // Settings-Registry (Feature 067, MVP-173): Definitionen werden je
         // Prozess einmal aus config/settings-registry.php hydriert.

@@ -9876,6 +9876,55 @@ CREATE TABLE `duty_plans` (
   CONSTRAINT `duty_plans_updated_by_foreign` FOREIGN KEY (`updated_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `ebics_connection_events`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `ebics_connection_events` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `ebics_connection_id` bigint(20) unsigned NOT NULL,
+  `event` varchar(40) NOT NULL,
+  `actor_user_id` bigint(20) unsigned DEFAULT NULL,
+  `payload` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`payload`)),
+  `occurred_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `ebce_actor_fk` (`actor_user_id`),
+  KEY `ebce_chrono_idx` (`ebics_connection_id`,`occurred_at`),
+  CONSTRAINT `ebce_actor_fk` FOREIGN KEY (`actor_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `ebce_conn_fk` FOREIGN KEY (`ebics_connection_id`) REFERENCES `ebics_connections` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `ebics_connections`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `ebics_connections` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `bank_account_id` bigint(20) unsigned NOT NULL,
+  `host_url` varchar(255) NOT NULL,
+  `ebics_host` varchar(35) NOT NULL,
+  `ebics_partner` varchar(35) NOT NULL,
+  `ebics_user` varchar(35) NOT NULL,
+  `status` varchar(20) NOT NULL DEFAULT 'draft',
+  `keyring` longtext DEFAULT NULL,
+  `keyring_secret` text DEFAULT NULL,
+  `keys_created_at` timestamp NULL DEFAULT NULL,
+  `initialized_at` timestamp NULL DEFAULT NULL,
+  `activated_at` timestamp NULL DEFAULT NULL,
+  `statements_until` date DEFAULT NULL,
+  `last_fetched_at` timestamp NULL DEFAULT NULL,
+  `last_error` varchar(300) DEFAULT NULL,
+  `created_by` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `ebc_account_unique` (`bank_account_id`),
+  KEY `ebc_org_fk` (`organization_id`),
+  KEY `ebc_created_by_fk` (`created_by`),
+  CONSTRAINT `ebc_account_fk` FOREIGN KEY (`bank_account_id`) REFERENCES `bank_accounts` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `ebc_created_by_fk` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `ebc_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `email_connections`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -26236,3 +26285,4 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (951,'2027_03_08_10
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (952,'2027_03_09_100000_add_ids_connect_to_supplier_catalog_sources',50);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (953,'2027_03_09_110000_create_online_payment_tables',51);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (954,'2027_03_09_120000_create_datev_online_tables',52);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (955,'2027_03_09_130000_create_ebics_tables',53);

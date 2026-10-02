@@ -88,7 +88,7 @@ fi
 detect_php() {
   if [[ -n "${PHP_BIN:-}" ]]; then printf '%s' "$PHP_BIN"; return; fi
   local candidate
-  for candidate in php php8.4 /usr/bin/php /usr/bin/php8.4; do
+  for candidate in php php8.5 /usr/bin/php /usr/bin/php8.5; do
     if command -v "$candidate" >/dev/null 2>&1; then
       command -v "$candidate"; return
     fi
@@ -298,7 +298,7 @@ install() {
 
   # Wächter nur mit ext-inotify (sonst Restart-Schleife im Unit).
   if [[ $WITH_WATCH -eq 1 ]] && ! "$PHP_BIN" -m 2>/dev/null | grep -qx inotify; then
-    fail "--with-integrity-watch braucht ext-inotify ($PHP_BIN meldet sie nicht). Ubuntu/Debian: apt install php8.4-inotify"
+    fail "--with-integrity-watch braucht ext-inotify ($PHP_BIN meldet sie nicht). Ubuntu/Debian: apt install php8.5-inotify"
   fi
 
   # 1) Cron (Herzschlag + optional Backup) + Backup-Konfiguration + Token

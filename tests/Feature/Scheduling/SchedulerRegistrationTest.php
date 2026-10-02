@@ -173,6 +173,8 @@ class SchedulerRegistrationTest extends TestCase {
         'invoicing:base-rate-sync' => ['10 6 2 * *', true, true],
         // Neu mit MVP-1067: Online-Zahlungen mit dem Anbieter abgleichen.
         'invoicing:online-payments-refresh' => ['50 4 * * *', true, true],
+        // Neu mit MVP-124: Tagesauszüge per EBICS.
+        'finance:ebics-statements' => ['30 6 * * *', true, true],
         // MVP-1021: monatliche Aktualisierung der IP-Geodatenbank.
         'security:geoip-update' => ['30 4 3 * *', true, true],
         'contracts:price-index-sync' => ['20 6 20 * *', true, true],

@@ -40,6 +40,7 @@ return [
         'released' => 'Blocco legale revocato',
     ],
     'paymentRun' => [
+        'ebicsSubmitted' => 'Inviato tramite EBICS',
         'created' => 'Lotto di pagamento creato',
         'settled' => 'Incasso del lotto registrato',
         'released' => 'Distinta di pagamento approvata',

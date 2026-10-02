@@ -147,7 +147,7 @@ return [
         'google-calendar' => ['publish' => 'Google Calendar publish reconciliation', 'import' => 'Google Calendar reimport'],
         'google-drive' => ['subscriptions' => 'Renew Google Drive push channels'],
         'integration' => ['purge_inbox' => 'Purge integration inbox'],
-        'finance' => ['open_times_digest' => 'Open-times digest for accounting'],
+        'finance' => ['open_times_digest' => 'Open-times digest for accounting', 'ebics_statements' => 'Fetch daily statements via EBICS'],
         'inventory' => ['cycle_counts' => 'Trigger cycle counts', 'expiring_lots' => 'Best-before monitoring (expiring lots)'],
         'accounting' => ['recurring' => 'Recurring document expectations and posting drafts', 'filings' => 'Sync tax deadlines and send reminders', 'liquidity_snapshot' => 'Record the weekly liquidity forecast'],
         'platform' => ['usage_snapshot' => 'Record usage per tenant'],

@@ -1335,6 +1335,13 @@ return [
             'reversal' => 'Storno',
         ],
         // Quellenadapter und Buchungsregeln (Feature 125, MVP-673).
+        'ebics-connection-status' => [
+            'draft' => 'Bozza',
+            'keys_created' => 'Chiavi generate',
+            'initialized' => 'Inviato alla banca',
+            'active' => 'Attivato',
+            'suspended' => 'Bloccato',
+        ],
         'posting-source-kind' => [
             'sales_invoice' => 'Fattura di vendita',
             'incoming_invoice' => 'Fattura di acquisto',

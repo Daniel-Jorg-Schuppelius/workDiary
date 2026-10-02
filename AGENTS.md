@@ -13,7 +13,7 @@ verweist auf dieses Dokument; beide werden von VS Code automatisch geladen.
 
 ## 1. Stack-Grundlagen
 
-- **Backend:** Laravel 13 / PHP 8.4, `CarbonImmutable` für Datum/Zeit.
+- **Backend:** Laravel 13 / PHP 8.5, `CarbonImmutable` für Datum/Zeit.
 - **Frontend:** Tailwind v4 + DaisyUI v5 + Material Symbols Outlined (lokal via npm/Vite gebündelt, keine CDN-Fonts).
 - **Autorisierung:** Spatie Permissions.
 - **IDs in URLs:** Sqid-kodiert (Validierung dual: `Sqid::decode(...)` **plus** `is_numeric(...)`-Fallback für Legacy-Links).

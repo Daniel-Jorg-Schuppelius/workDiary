@@ -54,7 +54,17 @@ class BankImportService {
      * @throws BankImportException
      */
     public function import(UploadedFile $file, int $organizationId, ?BankAccount $bankAccount = null, ?User $actor = null): array {
-        $content = (string) $file->get();
+        return $this->importContent((string) $file->get(), $file->getClientOriginalName(), $organizationId, $bankAccount, $actor);
+    }
+
+    /**
+     * Importiert Dateiinhalt ohne Upload — etwa einen per EBICS abgerufenen Auszug (MVP-124).
+     *
+     * @return list<BankStatement>
+     *
+     * @throws BankImportException
+     */
+    public function importContent(string $content, string $filename, int $organizationId, ?BankAccount $bankAccount = null, ?User $actor = null): array {
         if (trim($content) === '') {
             throw new BankImportException('emptyFile', (string) __('bank.import.error.empty_file'), []);
         }
@@ -76,7 +86,7 @@ class BankImportService {
         $format = BankStatementParser::detectFormat($content);
         $normalizedStatements = $this->parser->parse($content, $format);
 
-        $filePath = $this->storeFile($file, $organizationId, $fileHash);
+        $filePath = $this->storeFile($content, $filename, $organizationId, $fileHash);
         $actorId = $this->resolveActorId($actor);
 
         $created = [];
@@ -317,8 +327,8 @@ class BankImportService {
             ->first();
     }
 
-    private function storeFile(UploadedFile $file, int $organizationId, string $fileHash): string {
-        $extension = $file->getClientOriginalExtension() ?: 'dat';
+    private function storeFile(string $content, string $filename, int $organizationId, string $fileHash): string {
+        $extension = pathinfo($filename, PATHINFO_EXTENSION) ?: 'dat';
         $path = sprintf(
             '%s/%d/%s/%s.%s',
             self::BASE_PATH,
@@ -328,7 +338,7 @@ class BankImportService {
             $extension,
         );
 
-        Storage::disk(self::STORAGE_DISK)->put($path, (string) $file->get());
+        Storage::disk(self::STORAGE_DISK)->put($path, $content);
 
         return $path;
     }

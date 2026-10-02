@@ -51,6 +51,8 @@ final class FinanceManifest extends Manifest {
     /** @return list<string> */
     public function tables(): array {
         return [
+            'ebics_connection_events',
+            'ebics_connections',
             'accounting_accounts',
             'accounting_budget_releases',
             'accounting_budgets',

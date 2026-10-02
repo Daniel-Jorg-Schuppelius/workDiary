@@ -15,6 +15,15 @@ declare(strict_types=1);
 // (`order.created` → ['order' => ['created' => …]]).
 return [
     'finance' => [
+        'ebics_setup_saved' => 'Datos de acceso EBICS guardados',
+        'ebics_keys_created' => 'Claves EBICS generadas',
+        'ebics_initialized' => 'Claves EBICS enviadas al banco',
+        'ebics_letter_printed' => 'Carta de inicialización EBICS creada',
+        'ebics_activated' => 'Acceso EBICS activado',
+        'ebics_suspended' => 'Acceso EBICS bloqueado',
+        'ebics_statements_fetched' => 'Extractos recuperados por EBICS',
+        'ebics_payment_submitted' => 'Remesa enviada por EBICS',
+        'ebics_failed' => 'Paso EBICS fallido',
         'analyzed' => 'Analizado',
         'blocked' => 'Bloqueado',
         'cancelled' => 'Cancelado',

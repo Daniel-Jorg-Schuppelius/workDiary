@@ -1338,6 +1338,13 @@ return [
             'reversal' => 'Rückbuchung',
         ],
         // Quellenadapter und Buchungsregeln (Feature 125, MVP-673).
+        'ebics-connection-status' => [
+            'draft' => 'Entwurf',
+            'keys_created' => 'Schlüssel erzeugt',
+            'initialized' => 'an Bank gesendet',
+            'active' => 'freigeschaltet',
+            'suspended' => 'gesperrt',
+        ],
         'posting-source-kind' => [
             'sales_invoice' => 'Ausgangsrechnung',
             'incoming_invoice' => 'Eingangsrechnung',

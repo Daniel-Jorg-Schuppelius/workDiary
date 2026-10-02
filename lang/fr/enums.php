@@ -1335,6 +1335,13 @@ return [
             'reversal' => 'Contre-passation',
         ],
         // Quellenadapter und Buchungsregeln (Feature 125, MVP-673).
+        'ebics-connection-status' => [
+            'draft' => 'Brouillon',
+            'keys_created' => 'Clés générées',
+            'initialized' => 'Envoyé à la banque',
+            'active' => 'Activé',
+            'suspended' => 'Bloqué',
+        ],
         'posting-source-kind' => [
             'sales_invoice' => 'Facture de vente',
             'incoming_invoice' => 'Facture d\'achat',

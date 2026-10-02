@@ -9,7 +9,7 @@
     ],
     "license": "AGPL-3.0-or-later",
     "require": {
-        "php": "^8.4",
+        "php": "^8.5",
         "azuyalabs/yasumi": "^2.11",
         "bacon/bacon-qr-code": "^3.1",
         "daniel-jorg-schuppelius/datev-php-sdk": "^1.1",
@@ -22,6 +22,7 @@
         "darkaonline/l5-swagger": "^11.0",
         "dschuppelius/php-common-toolkit": "^2.5",
         "dschuppelius/php-translation-toolkit": "^0.6",
+        "ebics-api/ebics-client-php": "^3.2",
         "laravel/framework": "^13.0",
         "laravel/mcp": "^1.0",
         "laravel/reverb": "^1.10",
@@ -142,7 +143,7 @@
     },
     "suggest": {
         "daniel-jorg-schuppelius/php-financial-formats": "Optionale DATEV-/Banking-Formate (CAMT, MT940, PAIN, SWIFT, OFX/QIF) — privat; Einbindung via composer.local.json, siehe AGENTS.md §9.1",
-        "ext-inotify": "Optionaler Realtime-Integritätswächter (Feature 095, MVP-453: integrity:watch). Ohne die Extension läuft der periodische Scan (integrity:verify) unverändert weiter; nur der inotify-Daemon braucht sie. Installation: apt install php8.4-inotify"
+        "ext-inotify": "Optionaler Realtime-Integritätswächter (Feature 095, MVP-453: integrity:watch). Ohne die Extension läuft der periodische Scan (integrity:verify) unverändert weiter; nur der inotify-Daemon braucht sie. Installation: apt install php8.5-inotify"
     },
     "extra": {
         "laravel": {

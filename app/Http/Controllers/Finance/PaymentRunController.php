@@ -18,6 +18,7 @@ use App\Models\Finance\{BankAccount, PaymentRun, PaymentRunItem, SepaMandate};
 use App\Models\Invoicing\{IncomingEInvoice, Invoice};
 use App\Services\Billing\FinancialFormatsSupport;
 use App\Services\Billing\Sepa\{PaymentProposalService, PaymentRunService};
+use App\Services\Finance\Ebics\EbicsPaymentSubmission;
 use App\Services\Invoicing\DunningService;
 use App\Support\{ErrorText, Sqid};
 use Carbon\CarbonImmutable;
@@ -206,10 +207,16 @@ class PaymentRunController extends Controller {
     public function show(PaymentRun $run): View {
         abort_unless(Gate::allows(Permission::FinancePaymentRun->value), 403);
 
+        $ebics = app(EbicsPaymentSubmission::class);
+        $connection = $ebics->connectionFor($run);
+
         return view('finance.payment-runs.show', [
             'run' => $run->load(['items.incomingEInvoice', 'items.mandate', 'bankAccount', 'releasedBy']),
             'canRelease' => Gate::allows(Permission::FinancePaymentRelease->value),
             'formatsAvailable' => FinancialFormatsSupport::isAvailable(),
+            // EBICS (MVP-124): einreichbar, wenn das Konto einen freigeschalteten Zugang hat.
+            'ebicsSubmission' => $connection !== null ? $connection->journal->first(static fn ($entry): bool => $entry->eventKey() === 'ebics_payment_submitted' && (int) ($entry->payloadData()['payment_run_id'] ?? 0) === (int) $run->id) : null,
+            'ebicsAvailable' => $connection !== null,
         ]);
     }
 

@@ -147,7 +147,7 @@ return [
         'google-calendar' => ['publish' => 'Google-Kalender-Publish-Abgleich', 'import' => 'Google-Kalender-Rückimport'],
         'google-drive' => ['subscriptions' => 'Google-Drive-Push-Kanäle erneuern'],
         'integration' => ['purge_inbox' => 'Integrations-Inbox bereinigen'],
-        'finance' => ['open_times_digest' => 'Offene-Zeiten-Digest an die Buchhaltung'],
+        'finance' => ['open_times_digest' => 'Offene-Zeiten-Digest an die Buchhaltung', 'ebics_statements' => 'Tagesauszüge per EBICS abrufen'],
         'inventory' => ['cycle_counts' => 'Zyklische Inventur anstoßen', 'expiring_lots' => 'MHD-Überwachung (ablaufende Chargen)'],
         'accounting' => ['recurring' => 'Wiederkehrende Belegerwartungen und Buchungsentwürfe', 'filings' => 'Steuertermine abgleichen und an Fristen erinnern', 'liquidity_snapshot' => 'Wochenstand der Liquiditätsvorschau festhalten'],
         'platform' => ['usage_snapshot' => 'Nutzungsstand je Mandant festhalten'],

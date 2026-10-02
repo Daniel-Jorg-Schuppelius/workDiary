@@ -271,6 +271,7 @@ return [
     'InvoiceMailTemplate' => 'Plantilla de correo de factura',
     'InvoiceRetention' => 'Retención de garantía',
     'OnlinePayment' => 'Pago en línea',
+    'EbicsConnection' => 'Acceso bancario EBICS',
     'DatevOnlineConnection' => 'Conexión DATEV Online',
     'InvoiceSchedule' => 'Plan de facturación',
     'InvoiceScheduleItem' => 'Línea del plan de facturación',

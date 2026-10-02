@@ -3048,6 +3048,15 @@ Route::middleware('auth')->group(function () {
             Route::get('{bankAccount}/bearbeiten', [\App\Http\Controllers\Finance\BankAccountController::class, 'edit'])->name('edit');
             Route::put('{bankAccount}', [\App\Http\Controllers\Finance\BankAccountController::class, 'update'])->name('update');
             Route::delete('{bankAccount}', [\App\Http\Controllers\Finance\BankAccountController::class, 'destroy'])->name('destroy');
+            // EBICS-Bankzugang (MVP-124): Einrichtung, Brief, Auszugsabruf.
+            Route::get('{bankAccount}/ebics', [\App\Http\Controllers\Finance\EbicsConnectionController::class, 'show'])->name('ebics.show');
+            Route::put('{bankAccount}/ebics', [\App\Http\Controllers\Finance\EbicsConnectionController::class, 'update'])->name('ebics.update');
+            Route::post('{bankAccount}/ebics/schluessel', [\App\Http\Controllers\Finance\EbicsConnectionController::class, 'keys'])->middleware('throttle:6,1')->name('ebics.keys');
+            Route::post('{bankAccount}/ebics/initialisieren', [\App\Http\Controllers\Finance\EbicsConnectionController::class, 'initialize'])->middleware('throttle:6,1')->name('ebics.initialize');
+            Route::get('{bankAccount}/ebics/brief', [\App\Http\Controllers\Finance\EbicsConnectionController::class, 'letter'])->name('ebics.letter');
+            Route::post('{bankAccount}/ebics/freischalten', [\App\Http\Controllers\Finance\EbicsConnectionController::class, 'activate'])->middleware('throttle:6,1')->name('ebics.activate');
+            Route::post('{bankAccount}/ebics/sperren', [\App\Http\Controllers\Finance\EbicsConnectionController::class, 'suspend'])->middleware('throttle:6,1')->name('ebics.suspend');
+            Route::post('{bankAccount}/ebics/abrufen', [\App\Http\Controllers\Finance\EbicsConnectionController::class, 'fetch'])->middleware('throttle:6,1')->name('ebics.fetch');
         });
 
         // ── DATEV-Buchungsstapel (Feature 045, Priorität 2 / Phase 3) ───────────
@@ -3100,6 +3109,7 @@ Route::middleware('auth')->group(function () {
             Route::get('{run}', [\App\Http\Controllers\Finance\PaymentRunController::class, 'show'])->name('show');
             Route::post('{run}/freigeben', [\App\Http\Controllers\Finance\PaymentRunController::class, 'release'])->name('release');
             Route::post('{run}/export', [\App\Http\Controllers\Finance\PaymentRunController::class, 'export'])->name('export');
+            Route::post('{run}/ebics', [\App\Http\Controllers\Finance\EbicsConnectionController::class, 'submit'])->middleware('throttle:6,1')->name('ebics');
             Route::post('{run}/storno', [\App\Http\Controllers\Finance\PaymentRunController::class, 'cancel'])->name('cancel');
             Route::get('{run}/positionen/{item}/kuerzen', [\App\Http\Controllers\Finance\PaymentRunController::class, 'adjustForm'])->name('items.adjust-form');
             Route::post('{run}/positionen/{item}/kuerzen', [\App\Http\Controllers\Finance\PaymentRunController::class, 'adjust'])->name('items.adjust');

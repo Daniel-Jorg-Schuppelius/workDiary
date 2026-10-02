@@ -30,6 +30,12 @@
                                 show-label>{{ __('sepa.action.export') }}</x-icon-btn>
                 </x-action-form>
             @endif
+            @if ($ebicsAvailable && $canRelease && $formatsAvailable && ($run->isReleased() || $run->isExported()) && $ebicsSubmission === null)
+                <x-action-form :action="route('finance.payment-runs.ebics', $run)" :confirm="__('ebics.confirm.submit')">
+                    <x-icon-btn icon="send" tone="primary" size="sm" type="submit"
+                                show-label>{{ __('ebics.action.submit') }}</x-icon-btn>
+                </x-action-form>
+            @endif
             @if (! $run->isExported())
                 <x-action-form :action="route('finance.payment-runs.cancel', $run)" :confirm="__('sepa.confirm_cancel')">
                     <x-icon-btn placement="danger" icon="cancel" tone="ghost" size="sm" type="submit"
@@ -44,6 +50,9 @@
                 <div><dt class="text-muted">{{ __('sepa.column.account') }}</dt><dd>{{ $run->bankAccount?->label ?? '—' }}</dd></div>
                 <div><dt class="text-muted">{{ __('sepa.column.execution_date') }}</dt><dd>{{ optional($run->execution_date)->fdate() ?? '—' }}</dd></div>
                 <div><dt class="text-muted">{{ __('sepa.column.total') }}</dt><dd class="font-medium tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $run->total, 2, withThousandsSeparator: true) }}</dd></div>
+                @if ($ebicsSubmission)
+                    <div><dt class="text-muted">EBICS</dt><dd>{{ __('ebics.run.submitted', ['date' => $ebicsSubmission->occurredAt()?->fdatetime(), 'order' => $ebicsSubmission->payloadData()['order_id'] ?? '—']) }}</dd></div>
+                @endif
                 @if ($run->released_at)
                     <div><dt class="text-muted">{{ __('sepa.released_by') }}</dt><dd>{{ $run->releasedBy?->name ?? '—' }} · {{ $run->released_at->fdatetime() }}</dd></div>
                 @endif

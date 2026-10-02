@@ -147,7 +147,7 @@ return [
         'google-calendar' => ['publish' => 'Rapprochement de publication du calendrier Google', 'import' => 'Réimport de Google Agenda'],
         'google-drive' => ['subscriptions' => 'Renouveler les canaux push Google Drive'],
         'integration' => ['purge_inbox' => 'Purger la boîte de réception d\'intégration'],
-        'finance' => ['open_times_digest' => 'Digest des temps ouverts pour la comptabilité'],
+        'finance' => ['open_times_digest' => 'Digest des temps ouverts pour la comptabilité', 'ebics_statements' => 'Récupérer les relevés quotidiens par EBICS'],
         'inventory' => ['cycle_counts' => 'Lancer l\'inventaire tournant', 'expiring_lots' => 'Surveillance DLUO (lots expirants)'],
         "accounting" => ["recurring" => "Attentes de pièces et brouillons d'écriture récurrents", "filings" => "Synchroniser les échéances fiscales et rappeler", "liquidity_snapshot" => "Enregistrer la prévision de trésorerie hebdomadaire"],
         'platform' => ['usage_snapshot' => 'Enregistrer l’utilisation par client'],

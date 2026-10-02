@@ -271,6 +271,7 @@ return [
     'InvoiceMailTemplate' => 'Modello e-mail fattura',
     'InvoiceRetention' => 'Ritenuta a garanzia',
     'OnlinePayment' => 'Pagamento online',
+    'EbicsConnection' => 'Accesso bancario EBICS',
     'DatevOnlineConnection' => 'Connessione DATEV Online',
     'InvoiceSchedule' => 'Piano di fatturazione',
     'InvoiceScheduleItem' => 'Riga del piano di fatturazione',

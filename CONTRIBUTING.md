@@ -10,7 +10,7 @@ Für alle Beiträge gilt der
 
 ## Voraussetzungen
 
-- PHP 8.4 oder neuer mit den in der [README](README.md#voraussetzungen)
+- PHP 8.5 oder neuer mit den in der [README](README.md#voraussetzungen)
   aufgeführten Erweiterungen
 - Composer
 - Node.js mit npm

@@ -57,6 +57,7 @@ final class PdfGeneratorInventory {
         // Leistung/Nachweis
         'app/Services/Protocol/ProtocolPdfRenderer.php' => ['protocol'],
         'app/Services/Takeoff/TakeoffPdfRenderer.php' => ['protocol'],
+        'app/Services/Finance/Ebics/EbicsLetterPdfRenderer.php' => ['report'],
         'app/Services/Disposal/DisposalRecordPdfRenderer.php' => ['protocol'],
         'app/Services/Safety/SafetyEvidencePdfRenderer.php' => ['protocol'],
         'app/Services/Manufacturing/ManufacturingRecordPdfRenderer.php' => ['manufacturing_record'],

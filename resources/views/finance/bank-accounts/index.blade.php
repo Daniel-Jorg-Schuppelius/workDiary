@@ -47,6 +47,10 @@
                         @endif
                     </td>
                     <td class="text-right">
+                        @can(\App\Enums\User\Permission::FinanceConfig->value)
+                            <x-icon-btn icon="account_balance" size="xs" tone="ghost" :label="__('ebics.title')"
+                                        :href="route('finance.bank-accounts.ebics.show', $account->sqid)" />
+                        @endcan
                         @can('update', $account)
                             <x-icon-btn icon="edit" size="xs" tone="ghost"
                                         data-entry-modal-trigger

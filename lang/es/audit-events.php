@@ -40,6 +40,7 @@ return [
         'released' => 'Retención legal levantada',
     ],
     'paymentRun' => [
+        'ebicsSubmitted' => 'Enviado por EBICS',
         'created' => 'Lote de pago creado',
         'settled' => 'Abono del lote registrado',
         'released' => 'Remesa aprobada',

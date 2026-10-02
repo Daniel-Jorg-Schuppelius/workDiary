@@ -7,7 +7,7 @@
 
 ## Schnellüberblick (Details in AGENTS.md)
 
-- **Stack:** Laravel 13 / PHP 8.4 / CarbonImmutable · Tailwind v4 + DaisyUI v5 + Material Symbols Outlined · Spatie Permissions · Sqid-IDs in URLs · UI **nur Deutsch**: inline `__('Deutsch')` (= Übersetzungsschlüssel) **plus** Spiegelung in `lang/{en,fr,it,es}.json` mit Übersetzung (AGENTS.md §12).
+- **Stack:** Laravel 13 / PHP 8.5 / CarbonImmutable · Tailwind v4 + DaisyUI v5 + Material Symbols Outlined · Spatie Permissions · Sqid-IDs in URLs · UI **nur Deutsch**: inline `__('Deutsch')` (= Übersetzungsschlüssel) **plus** Spiegelung in `lang/{en,fr,it,es}.json` mit Übersetzung (AGENTS.md §12).
 - **Gates:** `composer test` · `vendor/bin/phpstan analyse` · `vendor/bin/pint`.
 
 ## Qualitätsvertrag — Definition of Done (VOR jedem Vorschlag/Commit erfüllen)

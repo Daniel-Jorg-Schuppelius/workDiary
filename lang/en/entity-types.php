@@ -271,6 +271,7 @@ return [
     'InvoiceMailTemplate' => 'Invoice mail template',
     'InvoiceRetention' => 'Retention',
     'OnlinePayment' => 'Online payment',
+    'EbicsConnection' => 'EBICS bank access',
     'DatevOnlineConnection' => 'DATEV Online connection',
     'InvoiceSchedule' => 'Invoice schedule',
     'InvoiceScheduleItem' => 'Invoice schedule line',

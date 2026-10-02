@@ -40,6 +40,7 @@ return [
         'released' => 'Legal Hold aufgehoben',
     ],
     'paymentRun' => [
+        'ebicsSubmitted' => 'Per EBICS eingereicht',
         'created' => 'Zahllauf angelegt',
         'settled' => 'Zahlungseingang des Zahllaufs gebucht',
         'released' => 'Zahllauf freigegeben',

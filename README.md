@@ -8,7 +8,7 @@ Installationen.
 
 ## Aktueller Stand
 
-- Laravel 13, PHP 8.4, Vite 8, Tailwind CSS 4 und DaisyUI 5.
+- Laravel 13, PHP 8.5, Vite 8, Tailwind CSS 4 und DaisyUI 5.
 - Mandanten, Organisationen, Rollen, Gruppen und Berechtigungen auf Basis von
   `spatie/laravel-permission`.
 - Tagebuch, Kommentare, Anhaenge, Tags, Archiv, Wochenansicht, Kalender,
@@ -67,7 +67,7 @@ AGPL-Ausgabe erhalten.
 
 ## Voraussetzungen
 
-- PHP 8.4 oder neuer
+- PHP 8.5 oder neuer
 - Composer
 - Node.js mit npm
 - SQLite fuer lokale Entwicklung oder eine externe Datenbank
@@ -115,9 +115,9 @@ das Repository auszuchecken und Abhaengigkeiten zu installieren – `APP_KEY`,
 Datenbank, Migrationen sowie der erste Mandant und Admin-Benutzer werden vom
 Installer erzeugt.
 
-> **Wichtig:** Es wird PHP 8.4 oder neuer benoetigt. Mit aelteren Versionen
-> (z. B. PHP 8.2/8.3) bricht `composer install` ab, weil Abhaengigkeiten wie
-> Symfony 8 und `simshaun/recurr` mindestens PHP 8.4 verlangen. Bei vielen
+> **Wichtig:** Es wird PHP 8.5 oder neuer benoetigt. Mit aelteren Versionen
+> bricht `composer install` ab, weil Abhaengigkeiten wie die EBICS-Bibliothek
+> `ebics-api/ebics-client-php` (ab 3.1) PHP 8.5 verlangen. Bei vielen
 > Hostern laesst sich die PHP-Version im Hosting-Panel oder per `.htaccess`
 > umstellen.
 
@@ -212,7 +212,7 @@ bash scripts/install-webspace.sh --url=https://example.com --skip-assets
 ```
 
 Wenn Composer auf dem Webspace ebenfalls nicht verfuegbar ist, `vendor/` lokal
-mit PHP 8.4-kompatibler Umgebung bauen und hochladen:
+mit PHP 8.5-kompatibler Umgebung bauen und hochladen:
 
 ```bash
 composer install --no-dev --prefer-dist --optimize-autoloader

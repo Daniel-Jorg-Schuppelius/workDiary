@@ -40,6 +40,7 @@ return [
         'released' => 'Gel juridique levé',
     ],
     'paymentRun' => [
+        'ebicsSubmitted' => 'Envoyé par EBICS',
         'created' => 'Lot de paiement créé',
         'settled' => 'Encaissement du lot enregistré',
         'released' => 'Ordre de paiement validé',

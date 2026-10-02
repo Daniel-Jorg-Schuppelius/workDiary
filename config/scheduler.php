@@ -336,6 +336,14 @@ return [
             'allowed' => ['monthlyOn', 'weeklyOn', 'dailyAt'],
             'criticality' => 'core',
         ],
+        // EBICS (MVP-124): Tagesauszüge abrufen und in den Bankimport übernehmen.
+        'finance.ebics_statements' => [
+            'command' => 'finance:ebics-statements',
+            'cadence' => ['type' => 'dailyAt', 'time' => '06:30'],
+            'allowed' => ['hourly', 'dailyAt'],
+            'criticality' => 'core',
+            'expected_runtime_minutes' => 10,
+        ],
         // Online-Zahlung (MVP-1067): verlorene Webhooks und Erstattungen nachziehen.
         'invoicing.online_payments_refresh' => [
             'command' => 'invoicing:online-payments-refresh',

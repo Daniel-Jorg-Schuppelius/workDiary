@@ -271,6 +271,7 @@ return [
     'InvoiceMailTemplate' => 'Rechnungs-Mail-Vorlage',
     'InvoiceRetention' => 'Sicherheitseinbehalt',
     'OnlinePayment' => 'Online-Zahlung',
+    'EbicsConnection' => 'EBICS-Bankzugang',
     'DatevOnlineConnection' => 'DATEV-Online-Verbindung',
     'InvoiceSchedule' => 'Rechnungsplan',
     'InvoiceScheduleItem' => 'Rechnungsplan-Position',

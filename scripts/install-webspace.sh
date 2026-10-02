@@ -81,11 +81,11 @@ require_command() {
 
 require_php_version() {
     local min_major=8
-    local min_minor=4
+    local min_minor=5
     local current
     current="$(php -r 'echo PHP_VERSION;')"
 
-    if ! php -r 'exit(version_compare(PHP_VERSION, "8.4.0", ">=") ? 0 : 1);'; then
+    if ! php -r 'exit(version_compare(PHP_VERSION, "8.5.0", ">=") ? 0 : 1);'; then
         echo "PHP ${min_major}.${min_minor} oder neuer wird benoetigt, gefunden: ${current}." >&2
         echo "Bitte auf dem Webspace ein PHP-${min_major}.${min_minor}-CLI auswaehlen (z. B. ueber das Hosting-Panel)." >&2
         exit 1

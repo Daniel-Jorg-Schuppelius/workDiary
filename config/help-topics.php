@@ -121,6 +121,8 @@ return [
         'admin.calendly.*' => 'admin.calendly',
         // DATEV-Online (MVP-122): Anmeldung, Mandant, Buchungsstapel, Belegbilder.
         'admin.datev-online.*' => 'admin.datev-online',
+        // EBICS-Bankzugang (MVP-124).
+        'finance.bank-accounts.ebics.*' => 'finance.ebics',
         'admin.fritzbox.*' => 'admin.integrations',
         // Globale Suche
         'search.*' => 'search.overview',
