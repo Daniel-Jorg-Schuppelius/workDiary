@@ -82,16 +82,14 @@ abstract class AbstractEntityMergeService {
 
     /**
      * Alle Tabellen des Schemas, die eine Spalte dieses Namens führen.
+     * Nur das eigene Schema: ohne Angabe liefert getTables() auf MySQL die
+     * Tabellen aller sichtbaren Datenbanken.
      *
      * @return list<string>
      */
     public static function tablesWithColumn(string $column): array {
         $tables = [];
-        foreach (Schema::getTables() as $table) {
-            $name = is_array($table) ? ($table['name'] ?? '') : (string) $table;
-            if ($name === '') {
-                continue;
-            }
+        foreach (Schema::getTableListing(Schema::getCurrentSchemaListing(), false) as $name) {
             foreach (Schema::getColumns($name) as $col) {
                 if (($col['name'] ?? null) === $column) {
                     $tables[] = $name;

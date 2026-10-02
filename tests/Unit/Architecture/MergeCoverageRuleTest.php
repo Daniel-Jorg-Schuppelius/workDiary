@@ -49,6 +49,14 @@ class MergeCoverageRuleTest extends TestCase {
         ];
     }
 
+    public function test_tabellenliste_nennt_jede_tabelle_des_eigenen_schemas_einmal(): void {
+        // Ohne Schema lieferte getTables() auf MySQL jede Tabelle einmal je sichtbarer Datenbank.
+        $tables = AbstractEntityMergeService::tablesWithColumn('customer_id');
+
+        $this->assertNotEmpty($tables);
+        $this->assertSame(array_values(array_unique($tables)), $tables);
+    }
+
     /**
      * @param  class-string<AbstractEntityMergeService>  $serviceClass
      */

@@ -380,10 +380,9 @@ class OrganizationLifecycleService {
      */
     private function organizationTables(): array {
         $out = [];
-        foreach (Schema::getTables() as $tableInfo) {
-            // Laravel 11+ gibt Arrays mit 'name' zurück.
-            $name = is_array($tableInfo) ? (string) ($tableInfo['name'] ?? '') : (string) $tableInfo;
-            if ($name === '' || in_array($name, self::PURGE_EXCLUDE_TABLES, true)) {
+        // Nur das eigene Schema — sonst kämen auf MySQL fremde Datenbanken mit.
+        foreach (Schema::getTableListing(Schema::getCurrentSchemaListing(), false) as $name) {
+            if (in_array($name, self::PURGE_EXCLUDE_TABLES, true)) {
                 continue;
             }
             if (Schema::hasColumn($name, 'organization_id')) {

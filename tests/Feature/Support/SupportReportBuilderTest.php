@@ -87,6 +87,8 @@ class SupportReportBuilderTest extends TestCase {
         $this->assertIsArray($bundle['table_row_counts']);
         $this->assertArrayHasKey('users', $bundle['table_row_counts']);
         $this->assertIsInt($bundle['table_row_counts']['users']);
+        // Nur Tabellen der eigenen Datenbank — fremde wären nicht zählbar (-1).
+        $this->assertSame([], array_keys(array_filter($bundle['table_row_counts'], static fn (int $count): bool => $count < 0)));
 
         // Operations-Block liefert reine Counts/Metadaten.
         $this->assertArrayHasKey('queue', $bundle['operations']);

@@ -401,16 +401,14 @@ class SupportReportBuilder {
     private function tableRowCounts(): array {
         $out = [];
         try {
-            $tables = DB::getSchemaBuilder()->getTables();
+            // Nur das eigene Schema: der Bericht darf keine fremden Datenbanken nennen.
+            $schema = DB::getSchemaBuilder();
+            $tables = $schema->getTableListing($schema->getCurrentSchemaListing(), false);
         } catch (Throwable) {
             return $out;
         }
 
-        foreach ($tables as $table) {
-            $name = $table['name'];
-            if ($name === '') {
-                continue;
-            }
+        foreach ($tables as $name) {
             try {
                 $out[$name] = (int) DB::table($name)->count();
             } catch (Throwable) {
