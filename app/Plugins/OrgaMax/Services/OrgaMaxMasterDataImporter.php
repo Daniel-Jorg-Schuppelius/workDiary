@@ -15,7 +15,7 @@ namespace App\Plugins\OrgaMax\Services;
 use APIToolkit\Contracts\Abstracts\NamedEntity;
 use App\Enums\Integration\{ConflictFieldPolicy, ImportMatchPolicy};
 use App\Models\Platform\Organization;
-use App\Models\Plugins\OrgaMax\OrgaMaxConnection;
+use App\Plugins\OrgaMax\Models\OrgaMaxConnection;
 use App\Plugins\OrgaMax\OrgaMaxPlugin;
 use App\Services\Integration\IntegrationResolver;
 use App\Services\Integration\Match\MatchProfile;

@@ -1,0 +1,15 @@
+{
+    "Fine-grained Personal Access Token mit Lesezugriff auf die Issues des Repositories.": "Fine-grained personal access token with read access to the repository's issues.",
+    "GitHub ist nicht konfiguriert (Repository oder API-Token fehlt).": "GitHub is not configured (repository or API token missing).",
+    "GitHub lehnt den API-Token ab (:status) — Fine-grained PAT prüfen.": "GitHub rejects the API token (:status) — please check the fine-grained PAT.",
+    "GitHub-API antwortet mit Fehlerstatus :status.": "GitHub API responds with error status :status.",
+    "GitHub-API nicht erreichbar.": "GitHub API unreachable.",
+    "GitHub-Benutzer oder -Organisation, z. B. „acme\".": "GitHub user or organisation, e.g. \"acme\".",
+    "Importiert GitHub-Issues eines Repositories als Aufgaben (idempotent je Issue, Pull Requests werden gefiltert): Zeiterfassung und Abrechnung in WorkDiary, GitHub bleibt führend. Polling mit since-Aufholpunkt, Webhook-Anstoß optional.": "Imports GitHub issues of a repository as tasks (idempotent per issue, pull requests are filtered): time tracking and billing in WorkDiary, GitHub stays in the lead. Polling with a since checkpoint, webhook trigger optional.",
+    "Nur die Issues dieses Repositories werden importiert.": "Only the issues of this repository are imported.",
+    "Optional: Shared-Secret des GitHub-Webhooks (issues-Events, X-Hub-Signature-256). Ohne Secret bleibt der Webhook-Endpunkt deaktiviert; das Polling holt alles nach.": "Optional: shared secret of the GitHub webhook (issues events, X-Hub-Signature-256). Without a secret the webhook endpoint stays disabled; polling catches up on everything.",
+    "Repository-Besitzer (Owner)": "Repository owner",
+    "Repository-Name": "Repository name",
+    "Schließt das verknüpfte Issue (mit Notiz), wenn die Aufgabe in workDiary erledigt wird, und öffnet es beim Wiedereröffnen. Titel und Beschreibung bleiben quellsystem-geführt. Der Token braucht Schreibzugriff auf Issues.": "Closes the linked issue (with a note) when the task is completed in workDiary and reopens it when the task is reopened. Title and description remain owned by the source system. The token needs write access to issues.",
+    "Verbunden mit GitHub als :login.": "Connected to GitHub as :login."
+}

@@ -72,7 +72,7 @@ class LexwarePlanController extends Controller {
         // der Kanal ist wählbar, aber ohne XL-Zugang nicht freischaltbar.
         $plan = LexwarePlan::from((string) $data['plan']);
         if ($data['handover_channel'] === LexwareTariffService::CHANNEL_API && ! $this->matrix->allowsOwnApiKey($plan)) {
-            return back()->withErrors(['handover_channel' => (string) __('lexware.error.api_channel_needs_xl')])->withInput();
+            return back()->withErrors(['handover_channel' => (string) __('lexoffice::lexware.error.api_channel_needs_xl')])->withInput();
         }
 
         $this->tariffs->save($organization, $user, [
@@ -85,6 +85,6 @@ class LexwarePlanController extends Controller {
             'local_features' => array_values(array_map('strval', (array) ($data['local_features'] ?? []))),
         ]);
 
-        return redirect()->route('lexoffice.plan.index')->with('status', __('lexware.flash.saved'));
+        return redirect()->route('lexoffice.plan.index')->with('status', __('lexoffice::lexware.flash.saved'));
     }
 }

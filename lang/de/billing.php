@@ -18,7 +18,6 @@ return [
         'dunning_level' => 'Mahnstufe :level',
         'action' => [
             'dun' => 'Mahnen',
-            'dun_confirm' => 'Mahnung in der Buchhaltung anlegen?',
         ],
         'tab' => [
             'all' => 'Alle',

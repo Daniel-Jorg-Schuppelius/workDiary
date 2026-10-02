@@ -11,10 +11,10 @@
 namespace App\Plugins\Zammad;
 
 use App\Models\Platform\Organization;
-use App\Models\Plugins\Zammad\ZammadConnection;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{Plugin, PluginCapability, TaskSyncer};
 use App\Plugins\Zammad\Contracts\ZammadGatewayFactory;
+use App\Plugins\Zammad\Models\ZammadConnection;
 use App\Plugins\Zammad\Services\ZammadTicketImporter;
 use Throwable;
 

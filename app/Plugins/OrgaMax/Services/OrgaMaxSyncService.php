@@ -13,8 +13,8 @@ declare(strict_types=1);
 namespace App\Plugins\OrgaMax\Services;
 
 use APIToolkit\Exceptions\ApiException;
-use App\Models\Plugins\OrgaMax\OrgaMaxConnection;
 use App\Plugins\OrgaMax\Api\OrgaMaxClientFactory;
+use App\Plugins\OrgaMax\Models\OrgaMaxConnection;
 use Illuminate\Support\Carbon;
 use Throwable;
 

@@ -11,7 +11,7 @@
 namespace App\Plugins\Lexoffice;
 
 use APIToolkit\API\Authentication\BearerAuthentication;
-use App\Models\Plugins\Lexoffice\LexofficeVoucher;
+use App\Plugins\Lexoffice\Models\LexofficeVoucher;
 use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
 use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Http\Client\Response;

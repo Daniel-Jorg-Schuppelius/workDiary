@@ -172,6 +172,9 @@ final class PersistedTestDatabase {
         foreach (['schema', 'migrations', 'seeders', 'factories'] as $dir) {
             self::hashDirectory("{$root}/database/{$dir}", $parts);
         }
+        foreach (glob("{$root}/app/Plugins/*/Database/Migrations", GLOB_ONLYDIR) ?: [] as $dir) {
+            self::hashDirectory($dir, $parts);
+        }
 
         return self::$fingerprint = hash('sha256', implode("\n", $parts));
     }

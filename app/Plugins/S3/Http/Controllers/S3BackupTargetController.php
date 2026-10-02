@@ -81,7 +81,7 @@ class S3BackupTargetController extends Controller {
             // Nur die Fehlerklasse — nie Endpoint, Schlüssel oder Signaturkopf.
             $connection->recordConnectionFailure(class_basename($e));
 
-            return back()->with('error', __('backup_targets.s3.flash.selftest_failed', ['class' => class_basename($e)]));
+            return back()->with('error', __('s3::backup_targets.s3.flash.selftest_failed', ['class' => class_basename($e)]));
         }
 
         $connection->audit('backupTarget.connected', ['by_user_id' => (int) $admin->id, 'provider' => BackupProvider::S3->value]);
@@ -114,12 +114,12 @@ class S3BackupTargetController extends Controller {
                     return;
                 }
                 if (! str_starts_with(strtolower($url), 'https://')) {
-                    $fail((string) __('backup_targets.s3.validation.https_required'));
+                    $fail((string) __('s3::backup_targets.s3.validation.https_required'));
 
                     return;
                 }
                 if (! $allowPrivate && ! UrlSafety::isAcceptableExternalHttpUrl($url)) {
-                    $fail((string) __('backup_targets.s3.validation.unsafe_url'));
+                    $fail((string) __('s3::backup_targets.s3.validation.unsafe_url'));
                 }
             }],
             'region' => ['required', 'string', 'max:64', 'regex:/^[a-z0-9-]+$/'],

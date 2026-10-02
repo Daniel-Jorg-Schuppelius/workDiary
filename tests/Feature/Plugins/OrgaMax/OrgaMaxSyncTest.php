@@ -13,7 +13,7 @@ namespace Tests\Feature\Plugins\OrgaMax;
 use App\Models\Customer\Customer;
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use App\Models\Platform\User;
-use App\Models\Plugins\OrgaMax\{OrgaMaxConnection, OrgaMaxInvoice};
+use App\Plugins\OrgaMax\Models\{OrgaMaxConnection, OrgaMaxInvoice};
 use App\Plugins\OrgaMax\OrgaMaxPlugin;
 use App\Plugins\OrgaMax\Services\{OrgaMaxInvoiceProjector, OrgaMaxSyncService};
 use Illuminate\Foundation\Testing\RefreshDatabase;

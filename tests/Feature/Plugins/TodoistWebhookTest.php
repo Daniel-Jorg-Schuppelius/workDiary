@@ -10,9 +10,9 @@
 
 namespace Tests\Feature\Plugins;
 
-use App\Models\Plugins\Todoist\{TodoistConnection, TodoistProjectLink, TodoistWebhookDelivery};
 use App\Models\Project\Task;
 use App\Plugins\Todoist\Jobs\TodoistWebhookSyncJob;
+use App\Plugins\Todoist\Models\{TodoistConnection, TodoistProjectLink, TodoistWebhookDelivery};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Testing\TestResponse;

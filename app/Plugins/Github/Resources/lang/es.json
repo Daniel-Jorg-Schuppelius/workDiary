@@ -1,0 +1,15 @@
+{
+    "Fine-grained Personal Access Token mit Lesezugriff auf die Issues des Repositories.": "Personal access token fine-grained con acceso de lectura a las issues del repositorio.",
+    "GitHub ist nicht konfiguriert (Repository oder API-Token fehlt).": "GitHub no está configurado (falta el repositorio o el token de API).",
+    "GitHub lehnt den API-Token ab (:status) — Fine-grained PAT prüfen.": "GitHub rechaza el token de API (:status) — compruebe el PAT fine-grained.",
+    "GitHub-API antwortet mit Fehlerstatus :status.": "La API de GitHub responde con el estado de error :status.",
+    "GitHub-API nicht erreichbar.": "API de GitHub no accesible.",
+    "GitHub-Benutzer oder -Organisation, z. B. „acme\".": "Usuario u organización de GitHub, p. ej. \"acme\".",
+    "Importiert GitHub-Issues eines Repositories als Aufgaben (idempotent je Issue, Pull Requests werden gefiltert): Zeiterfassung und Abrechnung in WorkDiary, GitHub bleibt führend. Polling mit since-Aufholpunkt, Webhook-Anstoß optional.": "Importa las issues de GitHub de un repositorio como tareas (idempotente por issue, las pull requests se filtran): registro de tiempos y facturación en WorkDiary, GitHub sigue siendo el sistema principal. Sondeo con punto de control since, activación por webhook opcional.",
+    "Nur die Issues dieses Repositories werden importiert.": "Solo se importan las issues de este repositorio.",
+    "Optional: Shared-Secret des GitHub-Webhooks (issues-Events, X-Hub-Signature-256). Ohne Secret bleibt der Webhook-Endpunkt deaktiviert; das Polling holt alles nach.": "Opcional: secreto compartido del webhook de GitHub (eventos issues, X-Hub-Signature-256). Sin secreto, el endpoint del webhook permanece desactivado; el sondeo lo recupera todo.",
+    "Repository-Besitzer (Owner)": "Propietario del repositorio (owner)",
+    "Repository-Name": "Nombre del repositorio",
+    "Schließt das verknüpfte Issue (mit Notiz), wenn die Aufgabe in workDiary erledigt wird, und öffnet es beim Wiedereröffnen. Titel und Beschreibung bleiben quellsystem-geführt. Der Token braucht Schreibzugriff auf Issues.": "Cierra la incidencia vinculada (con una nota) cuando la tarea se completa en workDiary y la reabre si se reabre la tarea. El título y la descripción siguen gestionados por el sistema de origen. El token necesita acceso de escritura a las incidencias.",
+    "Verbunden mit GitHub als :login.": "Conectado a GitHub como :login."
+}

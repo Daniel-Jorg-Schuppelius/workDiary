@@ -13,9 +13,9 @@ declare(strict_types=1);
 namespace App\Plugins\Calendly\Services;
 
 use App\Models\Platform\Organization;
-use App\Models\Plugins\Calendly\CalendlyConnection;
 use App\Plugins\Calendly\Api\CalendlyClient;
 use App\Plugins\Calendly\CalendlyConfig;
+use App\Plugins\Calendly\Models\CalendlyConnection;
 use Carbon\CarbonImmutable;
 
 /**

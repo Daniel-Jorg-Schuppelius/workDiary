@@ -134,12 +134,6 @@ return [
         'total' => 'Total',
     ],
 
-    'easybill' => [
-        'introduction' => 'We invoice the goods and services provided in the period :from – :to as follows.',
-        'unit_hour' => 'hrs',
-        'unit_piece' => 'pcs',
-    ],
-
     'position' => [
         'service_date' => '(service date :date)',
         'service_period' => '(service period :from – :to)',
@@ -155,16 +149,6 @@ return [
         'service' => 'default service price',
         'org_default' => 'default hourly rate',
         'none' => 'no rate found',
-    ],
-
-    'sevdesk' => [
-        'introduction' => 'We invoice the goods and services provided in the period :from – :to as follows.',
-        'tax_text' => 'VAT :rate%',
-    ],
-
-    'lexoffice' => [
-        'introduction' => 'We invoice the goods and services provided as follows.',
-        'delivery_title' => 'Delivery note',
     ],
 
     'flash' => [
@@ -191,19 +175,6 @@ return [
         'target_not_allowed' => 'This target is not allowed for the billing channel ":mode".',
         'correction_only_transferred' => 'A correction is only possible for a transfer that has already been handed over.',
         'merge_needs_two' => 'Select at least two positions to merge.',
-        'lexoffice_not_configured' => 'Lexoffice is not configured for this organisation (API key missing).',
-        'sevdesk_not_configured' => 'sevDesk is not configured for this organisation (API token missing).',
-        'sevdesk_outcome_unclear' => 'Outcome of the sevDesk handover unclear (timeout after sending) — do not retry blindly; the next run reconciles via the source marker.',
-        'easybill_not_configured' => 'easybill is not configured for this organisation (API key missing).',
-        'easybill_outcome_unclear' => 'Outcome of the easybill transfer unclear (timeout after sending) — do not blindly retry; the next run reconciles via the source marker.',
-        'lexoffice_contact_missing' => 'No Lexoffice contact for the customer — please sync the contact first.',
-        'lexoffice_delivery_no_customer' => 'A delivery without a customer cannot be handed over as a delivery note.',
-        'lexoffice_delivery_not_linked' => 'No Lexoffice delivery note is linked to this delivery.',
-        'lexoffice_oc_no_customer' => 'A manufacturing order without a customer cannot be handed over as an order confirmation.',
-        'lexoffice_oc_not_linked' => 'No Lexoffice order confirmation is linked to this manufacturing order.',
-        'lexoffice_quote_no_customer' => 'A manufacturing order without a customer cannot be handed over as a quotation.',
-        'lexoffice_quote_not_linked' => 'No Lexoffice quotation is linked to this manufacturing order.',
-        'lexoffice_dunning_not_invoice' => 'A dunning can only be created for an invoice.',
         'sources_missing' => 'The sources of this transfer receipt are no longer fully available.',
     ],
 

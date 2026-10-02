@@ -12,7 +12,7 @@ namespace App\Plugins\Lexoffice;
 
 use APIToolkit\API\Authentication\BearerAuthentication;
 use App\Models\Integration\ExternalReference;
-use App\Models\Plugins\Lexoffice\LexofficeVoucher;
+use App\Plugins\Lexoffice\Models\LexofficeVoucher;
 use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
 use RuntimeException;
 
@@ -41,11 +41,11 @@ class LexofficeDunningService {
     public function push(LexofficeVoucher $voucher): ExternalReference {
         $config = LexofficeConfig::resolve($voucher->organization_id);
         if (empty($config['api_key'])) {
-            throw new RuntimeException((string) __('finance.error.lexoffice_not_configured'));
+            throw new RuntimeException((string) __('lexoffice::finance.error.lexoffice_not_configured'));
         }
 
         if (! in_array((string) $voucher->voucher_type, self::INVOICE_TYPES, true)) {
-            throw new RuntimeException((string) __('finance.error.lexoffice_dunning_not_invoice'));
+            throw new RuntimeException((string) __('lexoffice::finance.error.lexoffice_dunning_not_invoice'));
         }
 
         $precedingId = (string) $voucher->external_id;

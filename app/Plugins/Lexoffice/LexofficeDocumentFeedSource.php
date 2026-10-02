@@ -15,7 +15,7 @@ namespace App\Plugins\Lexoffice;
 use App\Enums\Billing\{DocumentDirection, DocumentKind, DocumentOrigin};
 use App\Enums\User\Permission;
 use App\Models\Platform\User;
-use App\Models\Plugins\Lexoffice\LexofficeVoucher;
+use App\Plugins\Lexoffice\Models\LexofficeVoucher;
 use App\Services\Billing\DocumentFeedFilters;
 use App\Services\Billing\Feed\{DocumentFeedSource, FeedProjection, MarksLinkedExpenses, PresentsFeedRows, SuppressesCoreInvoices};
 use App\Support\Query\DateRange;
@@ -150,6 +150,6 @@ class LexofficeDocumentFeedSource implements DocumentFeedSource, MarksLinkedExpe
         }
 
         return [new UiAction('campaign', (string) __('billing.feed.action.dun'), route('lexoffice.vouchers.dunning', Sqid::encode(LexofficeVoucher::class, (int) $row->source_id)),
-            post: true, tone: 'warning', confirm: (string) __('billing.feed.action.dun_confirm'))];
+            post: true, tone: 'warning', confirm: (string) __('lexoffice::billing.feed.action.dun_confirm'))];
     }
 }

@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Plugins\Sharepoint;
 
-use App\Models\Plugins\Sharepoint\SharepointConnection;
 use App\Plugins\Sharepoint\Api\SharepointDriveClient;
+use App\Plugins\Sharepoint\Models\SharepointConnection;
 use App\Plugins\Support\Mirror\{MirrorConnection, MirrorTarget, RemoteFileGateway};
 
 /**

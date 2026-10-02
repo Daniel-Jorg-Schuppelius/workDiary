@@ -17,9 +17,9 @@ use App\Enums\Reselling\PeriodStatus;
 use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
 use App\Models\Invoicing\{Invoice, InvoiceItem};
-use App\Models\Plugins\Lexoffice\LexofficeVoucher;
 use App\Models\Reselling\{ResalePeriodLink, ResaleSubscription};
 use App\Plugins\Lexoffice\LexofficePlugin;
+use App\Plugins\Lexoffice\Models\LexofficeVoucher;
 use App\Plugins\Lexoffice\Services\LexofficeInvoiceDraftTarget;
 use App\Services\Reselling\Draft\{InvoiceDraftTargets, LocalInvoiceDraftTarget};
 use App\Services\Reselling\Register\{PeriodPlanner, ResaleInvoiceDraftService};
@@ -183,7 +183,7 @@ class DraftTargetTest extends TestCase {
             app(ResaleInvoiceDraftService::class)->draft($this->organization, $partner, $admin);
             $this->fail('Plugin inaktiv');
         } catch (\RuntimeException $e) {
-            $this->assertSame((string) __('resale.draft.error.lexoffice'), $e->getMessage());
+            $this->assertSame((string) __('lexoffice::resale.draft.error.lexoffice'), $e->getMessage());
         }
     }
 }

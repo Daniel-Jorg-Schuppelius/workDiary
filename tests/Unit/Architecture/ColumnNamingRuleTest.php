@@ -44,7 +44,7 @@ class ColumnNamingRuleTest extends TestCase {
 
     public function test_new_migrations_follow_the_column_conventions(): void {
         $violations = [];
-        foreach ($this->phpFiles('database/migrations') as $file) {
+        foreach ($this->migrationFiles() as $file) {
             $name = basename($file, '.php');
             if (strcmp(substr($name, 0, strlen(self::CUTOFF)), self::CUTOFF) <= 0) {
                 continue;

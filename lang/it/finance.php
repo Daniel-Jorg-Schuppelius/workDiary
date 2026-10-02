@@ -134,12 +134,6 @@ return [
         'total' => 'Totale',
     ],
 
-    'easybill' => [
-        'introduction' => 'Vi fatturiamo come segue le nostre forniture e prestazioni per il periodo :from – :to.',
-        'unit_hour' => 'ore',
-        'unit_piece' => 'pz.',
-    ],
-
     'position' => [
         'service_date' => '(data della prestazione :date)',
         'service_period' => '(periodo della prestazione :from – :to)',
@@ -155,16 +149,6 @@ return [
         'service' => 'prezzo della prestazione predefinita',
         'org_default' => 'tariffa oraria predefinita',
         'none' => 'nessuna tariffa trovata',
-    ],
-
-    'sevdesk' => [
-        'introduction' => 'Vi fatturiamo come segue le nostre forniture e prestazioni per il periodo :from – :to.',
-        'tax_text' => 'IVA :rate%',
-    ],
-
-    'lexoffice' => [
-        'introduction' => 'Vi fatturiamo come segue le nostre forniture e prestazioni.',
-        'delivery_title' => 'Documento di trasporto',
     ],
 
     'flash' => [
@@ -191,19 +175,6 @@ return [
         'target_not_allowed' => 'Questa destinazione non è consentita per il canale di fatturazione «:mode».',
         'correction_only_transferred' => 'Una correzione è possibile solo per un trasferimento già consegnato.',
         'merge_needs_two' => 'Selezionare almeno due posizioni da unire.',
-        'lexoffice_not_configured' => 'Lexoffice non è configurato per questa organizzazione (chiave API mancante).',
-        'sevdesk_not_configured' => 'sevDesk non è configurato per questa organizzazione (token API mancante).',
-        'sevdesk_outcome_unclear' => 'Esito della consegna a sevDesk incerto (timeout dopo l\'invio) — non ripetere alla cieca; la prossima esecuzione riconcilia tramite il marcatore di origine.',
-        'easybill_not_configured' => 'easybill non è configurato per questa organizzazione (chiave API mancante).',
-        'easybill_outcome_unclear' => 'Esito del trasferimento easybill incerto (timeout dopo l\'invio) — non ripetere alla cieca; la prossima esecuzione riconcilia tramite il marcatore di origine.',
-        'lexoffice_contact_missing' => 'Nessun contatto Lexoffice per il cliente — sincronizzare prima il contatto.',
-        'lexoffice_delivery_no_customer' => 'Una consegna senza cliente non può essere trasmessa come documento di trasporto.',
-        'lexoffice_delivery_not_linked' => 'Nessun documento di trasporto Lexoffice è collegato a questa consegna.',
-        'lexoffice_oc_no_customer' => 'Un ordine di produzione senza cliente non può essere trasmesso come conferma d\'ordine.',
-        'lexoffice_oc_not_linked' => 'Nessuna conferma d\'ordine Lexoffice è collegata a questo ordine di produzione.',
-        'lexoffice_quote_no_customer' => 'Un ordine di produzione senza cliente non può essere trasmesso come offerta.',
-        'lexoffice_quote_not_linked' => 'Nessuna offerta Lexoffice è collegata a questo ordine di produzione.',
-        'lexoffice_dunning_not_invoice' => 'Un sollecito può essere creato solo per una fattura.',
         'sources_missing' => 'Le fonti di questa ricevuta di trasferimento non sono più completamente disponibili.',
     ],
 

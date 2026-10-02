@@ -830,72 +830,6 @@ return [
                 'title' => 'Management report (BWA)',
                 'text' => 'Short-term income statement with previous year, previous month, monthly grid and budget.',
             ],
-            'liquidity_plan' => [
-                'title' => 'Plan items',
-                'subtitle' => 'Your own receipts and payments for the 13-week forecast, one-off or monthly.',
-                'actual_title' => 'Liquidity plan vs. actual',
-                'actual_subtitle' => 'Recorded weekly forecast compared with the actual account movements.',
-                'empty' => 'No plan items yet.',
-                'no_snapshot' => 'No weekly state recorded yet — automatically every Monday or via “Record current state”.',
-                'action' => [
-                    'add' => 'Add plan item',
-                    'snapshot' => 'Record current state',
-                ],
-                'field' => [
-                    'label' => 'Description',
-                    'direction' => 'Direction',
-                    'planned_amount' => 'Amount',
-                    'starts_on' => 'Due on (first due date)',
-                    'recurrence' => 'Recurrence',
-                    'ends_on' => 'Last due date',
-                    'snapshot' => 'Recorded on',
-                ],
-                'hint' => [
-                    'ends_on' => 'Only for monthly recurrence; empty = open-ended.',
-                ],
-                'column' => [
-                    'planned_net' => 'Plan (net)',
-                    'actual_in' => 'Actual receipts',
-                    'actual_out' => 'Actual payments',
-                    'actual_net' => 'Actual (net)',
-                    'deviation' => 'Deviation',
-                ],
-                'confirm' => [
-                    'remove' => 'Remove the plan item?',
-                ],
-                'flash' => [
-                    'saved' => 'Plan item saved.',
-                    'removed' => 'Plan item removed.',
-                    'snapshot' => 'Weekly state recorded.',
-                ],
-            ],
-            'allocation' => [
-                'title' => 'Allocation keys',
-                'subtitle' => 'Distribution of the service cost centres in fiscal year :year',
-                'hint' => 'A service cost centre passes shares of its expenses on to final cost centres. The management report of a cost centre shows the distribution with “After allocation”; postings remain unchanged.',
-                'total' => 'Distributed: :percent %',
-                'empty' => 'No allocation keys for this year yet.',
-                'action' => [
-                    'add' => 'Add allocation key',
-                ],
-                'field' => [
-                    'source' => 'Service cost centre',
-                    'target' => 'Receiving cost centre',
-                    'share_percent' => 'Share (%)',
-                ],
-                'confirm' => [
-                    'remove' => 'Remove the allocation key?',
-                ],
-                'flash' => [
-                    'saved' => 'Allocation key saved.',
-                    'removed' => 'Allocation key removed.',
-                ],
-                'error' => [
-                    'same' => 'The service cost centre and the receiving cost centre must differ.',
-                    'share' => 'The share must be greater than 0 and at most 100 %.',
-                    'total' => 'The shares of a service cost centre must not exceed 100 % in total (free: :rest %).',
-                ],
-            ],
             'budget' => [
                 'title' => 'Budget',
                 'text' => 'Planned values per account and fiscal year — as an annual value or monthly values.',
@@ -908,6 +842,73 @@ return [
                 'title' => 'Open items',
                 'text' => 'Receivables and payables with aging.',
             ],
+        ],
+    ],
+
+    'liquidity_plan' => [
+        'title' => 'Plan items',
+        'subtitle' => 'Your own receipts and payments for the 13-week forecast, one-off or monthly.',
+        'actual_title' => 'Liquidity plan vs. actual',
+        'actual_subtitle' => 'Recorded weekly forecast compared with the actual account movements.',
+        'empty' => 'No plan items yet.',
+        'no_snapshot' => 'No weekly state recorded yet — automatically every Monday or via “Record current state”.',
+        'action' => [
+            'add' => 'Add plan item',
+            'snapshot' => 'Record current state',
+        ],
+        'field' => [
+            'label' => 'Description',
+            'direction' => 'Direction',
+            'planned_amount' => 'Amount',
+            'starts_on' => 'Due on (first due date)',
+            'recurrence' => 'Recurrence',
+            'ends_on' => 'Last due date',
+            'snapshot' => 'Recorded on',
+        ],
+        'hint' => [
+            'ends_on' => 'Only for monthly recurrence; empty = open-ended.',
+        ],
+        'column' => [
+            'planned_net' => 'Plan (net)',
+            'actual_in' => 'Actual receipts',
+            'actual_out' => 'Actual payments',
+            'actual_net' => 'Actual (net)',
+            'deviation' => 'Deviation',
+        ],
+        'confirm' => [
+            'remove' => 'Remove the plan item?',
+        ],
+        'flash' => [
+            'saved' => 'Plan item saved.',
+            'removed' => 'Plan item removed.',
+            'snapshot' => 'Weekly state recorded.',
+        ],
+    ],
+    'allocation' => [
+        'title' => 'Allocation keys',
+        'subtitle' => 'Distribution of the service cost centres in fiscal year :year',
+        'hint' => 'A service cost centre passes shares of its expenses on to final cost centres. The management report of a cost centre shows the distribution with “After allocation”; postings remain unchanged.',
+        'total' => 'Distributed: :percent %',
+        'empty' => 'No allocation keys for this year yet.',
+        'action' => [
+            'add' => 'Add allocation key',
+        ],
+        'field' => [
+            'source' => 'Service cost centre',
+            'target' => 'Receiving cost centre',
+            'share_percent' => 'Share (%)',
+        ],
+        'confirm' => [
+            'remove' => 'Remove the allocation key?',
+        ],
+        'flash' => [
+            'saved' => 'Allocation key saved.',
+            'removed' => 'Allocation key removed.',
+        ],
+        'error' => [
+            'same' => 'The service cost centre and the receiving cost centre must differ.',
+            'share' => 'The share must be greater than 0 and at most 100 %.',
+            'total' => 'The shares of a service cost centre must not exceed 100 % in total (free: :rest %).',
         ],
     ],
 

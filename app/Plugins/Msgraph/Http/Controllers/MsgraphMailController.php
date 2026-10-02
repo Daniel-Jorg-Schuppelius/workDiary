@@ -11,9 +11,9 @@
 namespace App\Plugins\Msgraph\Http\Controllers;
 
 use App\Models\Platform\User;
-use App\Models\Plugins\Msgraph\MsgraphMailConnection;
 use App\Plugins\Msgraph\Api\{MsgraphMailClient, MsgraphMailOAuth};
-use App\Plugins\Msgraph\MsgraphConfig;
+use App\Plugins\Msgraph\Models\MsgraphMailConnection;
+use App\Plugins\Msgraph\{MsgraphConfig, MsgraphPlugin};
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
 use App\Plugins\Support\{ConnectionOAuthController, PluginOAuthGrant};
 use App\Support\ErrorText;
@@ -55,6 +55,10 @@ class MsgraphMailController extends ConnectionOAuthController {
         return 'msgraph_mail';
     }
 
+    protected function pluginId(): string {
+        return MsgraphPlugin::ID;
+    }
+
     protected function connectedStatus(): string {
         return MsgraphMailConnection::STATUS_ACTIVE;
     }
@@ -82,7 +86,7 @@ class MsgraphMailController extends ConnectionOAuthController {
 
         $connection = MsgraphMailConnection::query()->where('organization_id', $organization->id)->first();
         if (! $connection instanceof MsgraphMailConnection) {
-            return back()->with('error', __('msgraph_mail.flash.no_connection'));
+            return back()->with('error', __('msgraph::msgraph_mail.flash.no_connection'));
         }
 
         $data = $request->validate([
@@ -100,7 +104,7 @@ class MsgraphMailController extends ConnectionOAuthController {
             'save_to_sent_items' => $connection->save_to_sent_items,
         ]);
 
-        return back()->with('success', __('msgraph_mail.flash.settings_saved'));
+        return back()->with('success', __('msgraph::msgraph_mail.flash.settings_saved'));
     }
 
     /**
@@ -115,7 +119,7 @@ class MsgraphMailController extends ConnectionOAuthController {
 
         $connection = MsgraphMailConnection::query()->where('organization_id', $organization->id)->first();
         if (! $connection instanceof MsgraphMailConnection) {
-            return back()->with('error', __('msgraph_mail.flash.no_connection'));
+            return back()->with('error', __('msgraph::msgraph_mail.flash.no_connection'));
         }
 
         $data = $request->validate([
@@ -128,12 +132,12 @@ class MsgraphMailController extends ConnectionOAuthController {
             $to = preg_match('/<([^>]+)>/', (string) $connection->account_label, $m) === 1 ? trim($m[1]) : '';
         }
         if ($to === '') {
-            return back()->with('error', __('msgraph_mail.flash.test_no_recipient'));
+            return back()->with('error', __('msgraph::msgraph_mail.flash.test_no_recipient'));
         }
 
         $message = [
-            'subject' => __('msgraph_mail.test.subject', ['app' => config('app.name')]),
-            'body' => ['contentType' => 'HTML', 'content' => __('msgraph_mail.test.body', ['app' => config('app.name')])],
+            'subject' => __('msgraph::msgraph_mail.test.subject', ['app' => config('app.name')]),
+            'body' => ['contentType' => 'HTML', 'content' => __('msgraph::msgraph_mail.test.body', ['app' => config('app.name')])],
             'toRecipients' => [['emailAddress' => ['address' => $to]]],
         ];
         $from = trim((string) $connection->from_address);
@@ -144,11 +148,11 @@ class MsgraphMailController extends ConnectionOAuthController {
         try {
             (new MsgraphMailClient($connection))->sendMail($message, (bool) $connection->save_to_sent_items);
         } catch (Throwable $e) {
-            return back()->with('error', __('msgraph_mail.flash.test_failed', ['error' => ErrorText::for($e)]));
+            return back()->with('error', __('msgraph::msgraph_mail.flash.test_failed', ['error' => ErrorText::for($e)]));
         }
 
         $connection->audit('msgraph_mail.test_sent', ['by_user_id' => (int) $admin->id, 'to' => $to]);
 
-        return back()->with('success', __('msgraph_mail.flash.test_sent', ['to' => $to]));
+        return back()->with('success', __('msgraph::msgraph_mail.flash.test_sent', ['to' => $to]));
     }
 }

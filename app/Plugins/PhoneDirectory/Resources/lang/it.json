@@ -1,0 +1,13 @@
+{
+    "Telefonauskunft": "Elenco telefonico",
+    "Auskunfts-Endpunkte": "Endpoint dell'elenco",
+    "Löst unbekannte Rufnummern über selbst gestellte HTTP-Auskunftsdienste in Namen auf und füllt die fehlenden Kontaktdaten an den passenden Stellen (Anruf-Import, CTI, Stammdaten) — als Vorschlag, nie automatisch.": "Risolve i numeri sconosciuti in nomi tramite servizi di elenco HTTP self-hosted e completa i dati di contatto mancanti dove servono (import chiamate, CTI, anagrafiche) — come suggerimento, mai automaticamente.",
+    "Ein Dienst je Zeile: HTTPS-URL, optional gefolgt von „|Token\" (Bearer). Die Rufnummer wird in E.164 gesendet — über den Platzhalter {number} in der URL oder als Query-Parameter number. Erwartete Antwort: JSON {\"name\": \"…\"}; leer = kein Treffer. Nur einsetzen, wenn der Versand der Anrufernummer an diese Dienste datenschutzrechtlich gedeckt ist.": "Un servizio per riga: un URL HTTPS, facoltativamente seguito da «|token» (Bearer). Il numero viene inviato in E.164 — tramite il segnaposto {number} nell'URL o come parametro di query number. Risposta attesa: JSON {\"name\": \"…\"}; vuoto = nessun risultato. Da usare solo se l'invio del numero del chiamante a questi servizi è consentito dalla normativa sulla protezione dei dati.",
+    "Kein Auskunfts-Endpunkt hinterlegt.": "Nessun endpoint dell'elenco configurato.",
+    ":count Auskunfts-Endpunkt(e) konfiguriert.": ":count endpoint dell'elenco configurato/i.",
+    "Aus Telefonauskunft füllen": "Compila dall'elenco telefonico",
+    "Für die Telefonauskunft ist keine Rufnummer hinterlegt.": "Nessun numero registrato per la consultazione dell'elenco.",
+    "Die Telefonauskunft hat keinen Namen zu dieser Rufnummer geliefert.": "L'elenco telefonico non ha restituito alcun nome per questo numero.",
+    "Name und Firma sind bereits gefüllt — nichts zu übernehmen.": "Nome e azienda sono già compilati — niente da applicare.",
+    "Aus der Telefonauskunft übernommen: :name": "Ripreso dall'elenco telefonico: :name"
+}

@@ -1,0 +1,9 @@
+{
+    "Benutzergebundener API-Token aus dem sevDesk-Account (Einstellungen → Benutzer).": "User-bound API token from the sevDesk account (Settings → Users).",
+    "sevDesk ist nicht konfiguriert (API-Token fehlt).": "sevDesk is not configured (API token missing).",
+    "sevDesk lehnt den API-Token ab (401) — Token prüfen.": "sevDesk rejects the API token (401) — please check the token.",
+    "sevDesk-API antwortet mit Fehlerstatus :status.": "sevDesk API responds with error status :status.",
+    "sevDesk-API erreichbar (Buchhaltung :version).": "sevDesk API reachable (bookkeeping :version).",
+    "sevDesk-API nicht erreichbar.": "sevDesk API unreachable.",
+    "Übergibt bestätigte Abrechnungspositionen als Rechnungsentwurf an sevDesk (API-Token gegen my.sevdesk.de): Kontakt-Projektion, idempotente Übergabe mit Quellmarker, Erkennung der Buchhaltungs-Version 1.0/2.0 je Mandant.": "Hands over confirmed billing positions to sevDesk as an invoice draft (API token against my.sevdesk.de): contact projection, idempotent handover with source marker, detection of bookkeeping version 1.0/2.0 per tenant."
+}

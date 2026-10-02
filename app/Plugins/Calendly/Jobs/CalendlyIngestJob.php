@@ -14,8 +14,8 @@ namespace App\Plugins\Calendly\Jobs;
 
 use App\Jobs\Concerns\RetriesTransientFailures;
 use App\Models\Platform\Organization;
-use App\Models\Plugins\Calendly\CalendlyWebhookDelivery;
 use App\Plugins\Calendly\CalendlyPlugin;
+use App\Plugins\Calendly\Models\CalendlyWebhookDelivery;
 use App\Plugins\Calendly\Services\CalendlyIngestService;
 use App\Support\OrganizationContext;
 use Illuminate\Bus\Queueable;

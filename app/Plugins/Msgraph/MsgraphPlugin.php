@@ -13,10 +13,10 @@ namespace App\Plugins\Msgraph;
 use App\Models\Backup\BackupTargetConnection;
 use App\Models\CloudIntake\CloudDocumentConnection;
 use App\Models\Platform\Organization;
-use App\Models\Plugins\Msgraph\MsgraphConnection;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{BackupTarget, CalendarPublisher, DocumentIntakeSource, PluginCapability};
 use App\Plugins\Msgraph\Api\{MsgraphBackupClient, MsgraphCalendarClient, MsgraphIntakeClient};
+use App\Plugins\Msgraph\Models\MsgraphConnection;
 use App\Plugins\Support\Backup\BackupAccount;
 use App\Plugins\Support\Calendar\{OrganizationEventSource, RemoteCalendarEvent, RemoteCalendarPublishService};
 use App\Plugins\Support\Intake\{IntakeAccount, IntakeChangePage, IntakeItem};
@@ -68,7 +68,7 @@ class MsgraphPlugin extends AbstractPlugin implements \App\Plugins\Contracts\Bac
     }
 
     public function description(): string {
-        return __('msgraph.plugin_description');
+        return __('msgraph::msgraph.plugin_description');
     }
 
     public function capabilities(): array {
@@ -114,12 +114,12 @@ class MsgraphPlugin extends AbstractPlugin implements \App\Plugins\Contracts\Bac
      * (404) ⇒ Neuanlage; sonst POST mit Immutable-ID. Keine Dubletten.
      */
     public function pushContact(\App\Models\Customer\Customer $customer): string {
-        $connection = \App\Models\Plugins\Msgraph\MsgraphContactConnection::query()
+        $connection = \App\Plugins\Msgraph\Models\MsgraphContactConnection::query()
             ->withoutGlobalScopes()
             ->where('organization_id', $customer->organization_id)
             ->first();
-        if (! $connection instanceof \App\Models\Plugins\Msgraph\MsgraphContactConnection || ! $connection->isActive()) {
-            throw new \RuntimeException((string) __('msgraph_contacts.flash.no_connection'));
+        if (! $connection instanceof \App\Plugins\Msgraph\Models\MsgraphContactConnection || ! $connection->isActive()) {
+            throw new \RuntimeException((string) __('msgraph::msgraph_contacts.flash.no_connection'));
         }
 
         $client = new \App\Plugins\Msgraph\Api\MsgraphContactsClient($connection);
@@ -255,16 +255,16 @@ class MsgraphPlugin extends AbstractPlugin implements \App\Plugins\Contracts\Bac
             return null;
         }
 
-        $connection = \App\Models\Plugins\Msgraph\MsgraphContactConnection::query()
+        $connection = \App\Plugins\Msgraph\Models\MsgraphContactConnection::query()
             ->where('organization_id', $context->organization_id)
             ->first();
-        if (! $connection instanceof \App\Models\Plugins\Msgraph\MsgraphContactConnection || ! $connection->isActive()) {
+        if (! $connection instanceof \App\Plugins\Msgraph\Models\MsgraphContactConnection || ! $connection->isActive()) {
             return null;
         }
 
         $url = route('customers.msgraph.contact.push', $context);
         $csrf = csrf_token();
-        $label = e((string) __('msgraph_contacts.push_button'));
+        $label = e((string) __('msgraph::msgraph_contacts.push_button'));
 
         return <<<HTML
             <form method="POST" action="{$url}" class="inline">
@@ -365,7 +365,7 @@ class MsgraphPlugin extends AbstractPlugin implements \App\Plugins\Contracts\Bac
     public function adminPanel(): ?array {
         return [
             'route' => 'admin.msgraph.index',
-            'label' => __('msgraph.title'),
+            'label' => __('msgraph::msgraph.title'),
             'icon' => 'event',
         ];
     }
@@ -380,18 +380,18 @@ class MsgraphPlugin extends AbstractPlugin implements \App\Plugins\Contracts\Bac
      */
     public function settingsSchema(): array {
         return [
-            \App\Plugins\Contracts\SettingsField::text('client_id', __('msgraph.settings.client_id'),
-                help: __('msgraph.settings.client_id_help'))->toArray(),
-            \App\Plugins\Contracts\SettingsField::password('client_secret', __('msgraph.settings.client_secret'),
-                help: __('msgraph.settings.client_secret_help'))->toArray(),
-            \App\Plugins\Contracts\SettingsField::text('tenant', __('msgraph.settings.tenant'),
-                help: __('msgraph.settings.tenant_help'))->toArray(),
+            \App\Plugins\Contracts\SettingsField::text('client_id', __('msgraph::msgraph.settings.client_id'),
+                help: __('msgraph::msgraph.settings.client_id_help'))->toArray(),
+            \App\Plugins\Contracts\SettingsField::password('client_secret', __('msgraph::msgraph.settings.client_secret'),
+                help: __('msgraph::msgraph.settings.client_secret_help'))->toArray(),
+            \App\Plugins\Contracts\SettingsField::text('tenant', __('msgraph::msgraph.settings.tenant'),
+                help: __('msgraph::msgraph.settings.tenant_help'))->toArray(),
             // OneNote-Übernahme (MVP-815): eigener Bereich Notes.Read, erst nach Einschalten verbindbar.
-            \App\Plugins\Contracts\SettingsField::boolean('onenote_import', __('msgraph.settings.onenote_import'), false,
-                help: __('msgraph.settings.onenote_import_help'))->toArray(),
+            \App\Plugins\Contracts\SettingsField::boolean('onenote_import', __('msgraph::msgraph.settings.onenote_import'), false,
+                help: __('msgraph::msgraph.settings.onenote_import_help'))->toArray(),
             // Abwesenheitsnotiz (Feature-103-Delta); bis MVP-1042 in den Organisationseinstellungen.
-            \App\Plugins\Contracts\SettingsField::boolean('oof_enabled', __('msgraph.settings.oof_enabled'), false,
-                help: __('msgraph.settings.oof_enabled_help'))->toArray(),
+            \App\Plugins\Contracts\SettingsField::boolean('oof_enabled', __('msgraph::msgraph.settings.oof_enabled'), false,
+                help: __('msgraph::msgraph.settings.oof_enabled_help'))->toArray(),
         ];
     }
 
@@ -408,7 +408,7 @@ class MsgraphPlugin extends AbstractPlugin implements \App\Plugins\Contracts\Bac
             && ! in_array(strtolower($tenant), ['common', 'organizations', 'consumers'], true)
             && preg_match('/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/', $tenant) !== 1
         ) {
-            return ['tenant' => (string) __('msgraph.settings.tenant_invalid')];
+            return ['tenant' => (string) __('msgraph::msgraph.settings.tenant_invalid')];
         }
 
         return [];
@@ -421,39 +421,39 @@ class MsgraphPlugin extends AbstractPlugin implements \App\Plugins\Contracts\Bac
      */
     public function healthCheck(): PluginHealth {
         if (! MsgraphConfig::isConfigured()) {
-            return PluginHealth::degraded(__('msgraph.health.not_configured'));
+            return PluginHealth::degraded(__('msgraph::msgraph.health.not_configured'));
         }
 
         $org = PluginOrgContext::currentOrNull();
         if (! $org instanceof Organization) {
-            return PluginHealth::ok(__('msgraph.health.no_org_context'));
+            return PluginHealth::ok(__('msgraph::msgraph.health.no_org_context'));
         }
 
         $sideNotice = $this->blockedSideConnectionsNotice($org);
 
         $connection = MsgraphConnection::query()->where('organization_id', $org->id)->first();
         if (! $connection instanceof MsgraphConnection || $connection->status === MsgraphConnection::STATUS_DISCONNECTED) {
-            return PluginHealth::degraded($sideNotice ?? __('msgraph.health.no_connection'));
+            return PluginHealth::degraded($sideNotice ?? __('msgraph::msgraph.health.no_connection'));
         }
         if (! $connection->isActive()) {
-            return PluginHealth::degraded($sideNotice ?? __('msgraph.health.inactive'));
+            return PluginHealth::degraded($sideNotice ?? __('msgraph::msgraph.health.inactive'));
         }
 
         try {
             if (! (new MsgraphCalendarClient($connection))->ping()) {
-                return PluginHealth::failing(__('msgraph.health.failing'), 'unreachable');
+                return PluginHealth::failing(__('msgraph::msgraph.health.failing'), 'unreachable');
             }
         } catch (ConnectException) {
             // Netzwerk-/DNS-Ausfall ist transient → degraded statt failing,
             // zählt also nicht Richtung Auto-Disable (analog Lexoffice).
-            return PluginHealth::degraded(__('msgraph.health.unreachable'), 'network');
+            return PluginHealth::degraded(__('msgraph::msgraph.health.unreachable'), 'network');
         } catch (Throwable $e) {
-            return PluginHealth::failing(__('msgraph.health.error', ['class' => class_basename($e)]));
+            return PluginHealth::failing(__('msgraph::msgraph.health.error', ['class' => class_basename($e)]));
         }
 
         return $sideNotice !== null
             ? PluginHealth::degraded($sideNotice)
-            : PluginHealth::ok(__('msgraph.health.ok'));
+            : PluginHealth::ok(__('msgraph::msgraph.health.ok'));
     }
 
     /**
@@ -479,7 +479,7 @@ class MsgraphPlugin extends AbstractPlugin implements \App\Plugins\Contracts\Bac
             ])->count();
 
         // Mail-Verbindung (Feature 102): auto-disabled = Versand steht.
-        $mail = \App\Models\Plugins\Msgraph\MsgraphMailConnection::query()
+        $mail = \App\Plugins\Msgraph\Models\MsgraphMailConnection::query()
             ->where('organization_id', $org->id)
             ->whereNotNull('disabled_at')
             ->count();
@@ -488,7 +488,7 @@ class MsgraphPlugin extends AbstractPlugin implements \App\Plugins\Contracts\Bac
             return null;
         }
 
-        return __('msgraph.health.side_connections', ['intake' => $intake, 'backup' => $backup, 'mail' => $mail]);
+        return __('msgraph::msgraph.health.side_connections', ['intake' => $intake, 'backup' => $backup, 'mail' => $mail]);
     }
 
     public function backupConnectAction(): UiAction {
@@ -500,6 +500,6 @@ class MsgraphPlugin extends AbstractPlugin implements \App\Plugins\Contracts\Bac
     }
 
     public function intakeConnectAction(): UiAction {
-        return new UiAction('add', (string) __('cloud_intake.action.connect_microsoft'), route('admin.cloud-intake.microsoft.oauth.start'), post: true);
+        return new UiAction('add', (string) __('msgraph::cloud_intake.action.connect_microsoft'), route('admin.cloud-intake.microsoft.oauth.start'), post: true);
     }
 }

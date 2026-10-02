@@ -23,7 +23,6 @@ return [
     ],
     'field' => [
         'provider' => 'Provider',
-        'name' => 'Nome',
         'account' => 'Account',
         'root_folder' => 'Cartella radice',
         'routes' => 'Regole',
@@ -39,10 +38,6 @@ return [
         'load_failed' => 'Impossibile caricare i contenitori — inserire l’ID manualmente.',
     ],
     'action' => [
-        'connect_dropbox' => 'Collega Dropbox',
-        'connect_microsoft' => 'Collega Microsoft 365',
-        'connect_google' => 'Collega Google Drive',
-        'connect_nextcloud' => 'Collega Nextcloud',
         'preview' => 'Anteprima',
         'save_folder' => 'Applica cartella',
         'disconnect' => 'Scollega',
@@ -62,52 +57,6 @@ return [
         'disconnected' => 'Connessione rimossa — prove e documenti importati restano.',
         'route_saved' => 'Regola di cartella salvata.',
         'route_deleted' => 'Regola di cartella eliminata.',
-    ],
-    'dropbox' => [
-        'description' => 'Legge i documenti dalle cartelle Dropbox monitorate (ingresso documenti cloud) — con regole di cartella, prova di trasferimento e inbox per i casi dubbi.',
-        'health' => [
-            'not_configured' => 'Chiavi app Dropbox non configurate.',
-            'no_org_context' => 'Nessun contesto organizzazione (esecuzione di sistema).',
-            'attention' => 'Almeno una connessione Dropbox richiede attenzione (riautenticazione/bloccata).',
-            'backup_attention' => 'La destinazione di backup Dropbox richiede attenzione (riautenticazione/bloccata) — riguarda tutte le organizzazioni.',
-            'ok' => 'Connessioni Dropbox in ordine.',
-            'error' => 'Controllo stato non riuscito (:class).',
-        ],
-    ],
-    'google' => [
-        'description' => 'Legge i documenti dalle cartelle Google Drive monitorate (ingresso documenti cloud) — Il mio Drive e Drive condivisi; rollout bloccato fino alla verifica OAuth di Google.',
-        'health' => [
-            'not_configured' => 'Chiavi client Google Drive non configurate.',
-            'no_org_context' => 'Nessun contesto organizzazione (esecuzione di sistema).',
-            'attention' => 'Almeno una connessione Google Drive richiede attenzione (riautenticazione/bloccata).',
-            'backup_attention' => 'La destinazione di backup Google Drive richiede attenzione (riautenticazione/bloccata) — riguarda tutte le organizzazioni.',
-            'ok' => 'Connessioni Google Drive in ordine.',
-            'error' => 'Controllo stato non riuscito (:class).',
-        ],
-    ],
-    'nextcloud' => [
-        'description' => 'Acquisisce documenti dalle cartelle Nextcloud monitorate (WebDAV) — con regole di cartella, prova di consegna e posta in arrivo per i casi ambigui.',
-        'health' => [
-            'no_org_context' => 'Nessun contesto organizzazione (esecuzione di sistema).',
-            'attention' => 'Almeno una connessione Nextcloud richiede attenzione (ri-autenticazione/bloccata).',
-            'backup_attention' => 'La destinazione di backup Nextcloud richiede attenzione (riautenticazione/bloccata) — riguarda tutte le organizzazioni.',
-            'ok' => 'Connessioni Nextcloud in ordine.',
-            'error' => 'Controllo di integrità non riuscito (:class).',
-        ],
-        'connect_title' => 'Collega Nextcloud',
-        'connect_legend' => 'Credenziali',
-        'connect_submit' => 'Collega',
-        'field' => [
-            'server_url' => 'URL del server',
-            'server_url_help' => 'Solo HTTPS. Esempio: https://cloud.example.com',
-            'username' => 'Nome utente',
-            'app_password' => 'Password app',
-            'app_password_help' => 'Una password app revocabile (Impostazioni › Sicurezza), mai la password normale dell’account.',
-        ],
-        'validation' => [
-            'https_required' => 'L’URL del server deve iniziare con https://.',
-            'unsafe_url' => 'L’URL del server deve essere raggiungibile pubblicamente (nessuna destinazione interna/privata).',
-        ],
     ],
     'route' => [
         'heading' => 'Regole di cartella',

@@ -11,7 +11,7 @@
 --}}
 @if ($canPush && in_array($delivery->facturation_status->value, ['pending', 'failed'], true))
     <form method="POST" action="{{ route('manufacturing-orders.deliveries.lexoffice', [$orderKey, $delivery]) }}">@csrf
-        <button type="submit" class="btn btn-xs">{{ __('manufacturing.order.action.push_lexoffice') }}</button>
+        <button type="submit" class="btn btn-xs">{{ __('lexoffice::manufacturing.order.action.push_lexoffice') }}</button>
     </form>
 @elseif ($delivery->facturation_status->value === 'handed_over' && $delivery->external_id)
     <span class="text-xs text-muted">Lexoffice: {{ $delivery->external_id }}</span>

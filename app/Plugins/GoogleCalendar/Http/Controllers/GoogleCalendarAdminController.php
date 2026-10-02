@@ -10,9 +10,9 @@
 
 namespace App\Plugins\GoogleCalendar\Http\Controllers;
 
-use App\Models\Plugins\GoogleCalendar\GoogleCalendarConnection;
 use App\Plugins\GoogleCalendar\Api\{GoogleCalendarClient, GoogleCalendarOAuth};
-use App\Plugins\GoogleCalendar\GoogleCalendarConfig;
+use App\Plugins\GoogleCalendar\{GoogleCalendarConfig, GoogleCalendarPlugin};
+use App\Plugins\GoogleCalendar\Models\GoogleCalendarConnection;
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
 use App\Plugins\Support\{ConnectionOAuthController, PluginOAuthGrant};
 use Illuminate\Http\{RedirectResponse, Request};
@@ -83,6 +83,10 @@ class GoogleCalendarAdminController extends ConnectionOAuthController {
         return 'google_calendar';
     }
 
+    protected function pluginId(): string {
+        return GoogleCalendarPlugin::ID;
+    }
+
     protected function connectedStatus(): string {
         return GoogleCalendarConnection::STATUS_ACTIVE;
     }
@@ -115,7 +119,7 @@ class GoogleCalendarAdminController extends ConnectionOAuthController {
 
         $connection = GoogleCalendarConnection::query()->where('organization_id', $organization->id)->first();
         if (! $connection instanceof GoogleCalendarConnection || ! $connection->isActive()) {
-            return back()->with('error', __('google_calendar.flash.no_connection'));
+            return back()->with('error', __('google_calendar::google_calendar.flash.no_connection'));
         }
 
         $data = $request->validate([
@@ -133,7 +137,7 @@ class GoogleCalendarAdminController extends ConnectionOAuthController {
                 $match = null;
             }
             if (! is_array($match)) {
-                return back()->with('error', __('google_calendar.flash.calendar_invalid'));
+                return back()->with('error', __('google_calendar::google_calendar.flash.calendar_invalid'));
             }
             $calendarName = (string) $match['name'];
         }
@@ -149,7 +153,7 @@ class GoogleCalendarAdminController extends ConnectionOAuthController {
         ])->save();
         $connection->audit('google_calendar.calendar_selected', ['calendar_name' => $calendarName ?? 'primary', 'two_way' => $twoWay]);
 
-        return back()->with('success', __('google_calendar.flash.calendar_saved'));
+        return back()->with('success', __('google_calendar::google_calendar.flash.calendar_saved'));
     }
 
     /** Manuelles Publish (auditierter Admin-Vorgang; CalDAV-Muster). */
@@ -159,7 +163,7 @@ class GoogleCalendarAdminController extends ConnectionOAuthController {
 
         $connection = GoogleCalendarConnection::query()->where('organization_id', $organization->id)->first();
         if (! $connection instanceof GoogleCalendarConnection || ! $connection->isActive()) {
-            return back()->with('error', __('google_calendar.flash.no_connection'));
+            return back()->with('error', __('google_calendar::google_calendar.flash.no_connection'));
         }
 
         // Queue statt Request (Vollscan 2026-08-23, J17): ein Voll-Sync im Web-
@@ -167,6 +171,6 @@ class GoogleCalendarAdminController extends ConnectionOAuthController {
         Artisan::queue('google-calendar:publish', ['--organization' => (string) $organization->id]);
         $connection->audit('google_calendar.publish_manual', ['by_user_id' => (int) $admin->id]);
 
-        return back()->with('success', __('google_calendar.flash.publish_done'));
+        return back()->with('success', __('google_calendar::google_calendar.flash.publish_done'));
     }
 }

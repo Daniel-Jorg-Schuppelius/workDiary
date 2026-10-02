@@ -9,4 +9,4 @@
   Einzelexport an Lexware im Export-Menü der Rechnung (Slot
   `invoice-show.exports`, MVP-1039). Erwartet: $invoice.
 --}}
-<x-icon-btn icon="outbox" size="sm" :href="route('lexoffice.handover.export-one', $invoice)" show-label :title="__('lexware.action.export_one')">{{ __('lexware.action.export_one_short') }}</x-icon-btn>
+<x-icon-btn icon="outbox" size="sm" :href="route('lexoffice.handover.export-one', $invoice)" show-label :title="__('lexoffice::lexware.action.export_one')">{{ __('lexoffice::lexware.action.export_one_short') }}</x-icon-btn>

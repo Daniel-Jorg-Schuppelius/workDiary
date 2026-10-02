@@ -830,72 +830,6 @@ return [
                 'title' => 'Analisi gestionale (BWA)',
                 'text' => 'Conto economico a breve termine con anno precedente, mese precedente, griglia mensile e budget.',
             ],
-            'liquidity_plan' => [
-                'title' => 'Voci pianificate',
-                'subtitle' => 'Incassi e pagamenti propri per la previsione a 13 settimane, una tantum o mensili.',
-                'actual_title' => 'Liquidità piano/consuntivo',
-                'actual_subtitle' => 'Stato settimanale registrato della previsione confrontato con i movimenti effettivi dei conti.',
-                'empty' => 'Ancora nessuna voce pianificata.',
-                'no_snapshot' => 'Ancora nessuno stato settimanale registrato: automaticamente ogni lunedì o con «Registra lo stato attuale».',
-                'action' => [
-                    'add' => 'Aggiungi voce pianificata',
-                    'snapshot' => 'Registra lo stato attuale',
-                ],
-                'field' => [
-                    'label' => 'Descrizione',
-                    'direction' => 'Direzione',
-                    'planned_amount' => 'Importo',
-                    'starts_on' => 'Scadenza (prima)',
-                    'recurrence' => 'Ripetizione',
-                    'ends_on' => 'Ultima scadenza',
-                    'snapshot' => 'Registrato il',
-                ],
-                'hint' => [
-                    'ends_on' => 'Solo con ripetizione mensile; vuoto = senza scadenza.',
-                ],
-                'column' => [
-                    'planned_net' => 'Piano (netto)',
-                    'actual_in' => 'Incassi effettivi',
-                    'actual_out' => 'Pagamenti effettivi',
-                    'actual_net' => 'Consuntivo (netto)',
-                    'deviation' => 'Scostamento',
-                ],
-                'confirm' => [
-                    'remove' => 'Rimuovere la voce pianificata?',
-                ],
-                'flash' => [
-                    'saved' => 'Voce pianificata salvata.',
-                    'removed' => 'Voce pianificata rimossa.',
-                    'snapshot' => 'Stato settimanale registrato.',
-                ],
-            ],
-            'allocation' => [
-                'title' => 'Chiavi di ribaltamento',
-                'subtitle' => 'Ripartizione dei centri ausiliari nell\'esercizio :year',
-                'hint' => 'Un centro ausiliario cede quote dei suoi costi ai centri finali. Il report di un centro di costo mostra la ripartizione con «Dopo il ribaltamento»; le registrazioni restano invariate.',
-                'total' => 'Ripartito: :percent %',
-                'empty' => 'Ancora nessuna chiave di ribaltamento per quest\'anno.',
-                'action' => [
-                    'add' => 'Aggiungi chiave di ribaltamento',
-                ],
-                'field' => [
-                    'source' => 'Centro ausiliario',
-                    'target' => 'Centro ricevente',
-                    'share_percent' => 'Quota (%)',
-                ],
-                'confirm' => [
-                    'remove' => 'Rimuovere la chiave di ribaltamento?',
-                ],
-                'flash' => [
-                    'saved' => 'Chiave di ribaltamento salvata.',
-                    'removed' => 'Chiave di ribaltamento rimossa.',
-                ],
-                'error' => [
-                    'same' => 'Il centro ausiliario e il centro ricevente devono essere diversi.',
-                    'share' => 'La quota deve essere maggiore di 0 e al massimo del 100 %.',
-                    'total' => 'Le quote di un centro ausiliario non possono superare il 100 % in totale (libero: :rest %).',
-                ],
-            ],
             'budget' => [
                 'title' => 'Budget',
                 'text' => 'Valori pianificati per conto ed esercizio — valore annuo o valori mensili.',
@@ -908,6 +842,73 @@ return [
                 'title' => 'Partite aperte',
                 'text' => 'Crediti e debiti con scadenzario.',
             ],
+        ],
+    ],
+
+    'liquidity_plan' => [
+        'title' => 'Voci pianificate',
+        'subtitle' => 'Incassi e pagamenti propri per la previsione a 13 settimane, una tantum o mensili.',
+        'actual_title' => 'Liquidità piano/consuntivo',
+        'actual_subtitle' => 'Stato settimanale registrato della previsione confrontato con i movimenti effettivi dei conti.',
+        'empty' => 'Ancora nessuna voce pianificata.',
+        'no_snapshot' => 'Ancora nessuno stato settimanale registrato: automaticamente ogni lunedì o con «Registra lo stato attuale».',
+        'action' => [
+            'add' => 'Aggiungi voce pianificata',
+            'snapshot' => 'Registra lo stato attuale',
+        ],
+        'field' => [
+            'label' => 'Descrizione',
+            'direction' => 'Direzione',
+            'planned_amount' => 'Importo',
+            'starts_on' => 'Scadenza (prima)',
+            'recurrence' => 'Ripetizione',
+            'ends_on' => 'Ultima scadenza',
+            'snapshot' => 'Registrato il',
+        ],
+        'hint' => [
+            'ends_on' => 'Solo con ripetizione mensile; vuoto = senza scadenza.',
+        ],
+        'column' => [
+            'planned_net' => 'Piano (netto)',
+            'actual_in' => 'Incassi effettivi',
+            'actual_out' => 'Pagamenti effettivi',
+            'actual_net' => 'Consuntivo (netto)',
+            'deviation' => 'Scostamento',
+        ],
+        'confirm' => [
+            'remove' => 'Rimuovere la voce pianificata?',
+        ],
+        'flash' => [
+            'saved' => 'Voce pianificata salvata.',
+            'removed' => 'Voce pianificata rimossa.',
+            'snapshot' => 'Stato settimanale registrato.',
+        ],
+    ],
+    'allocation' => [
+        'title' => 'Chiavi di ribaltamento',
+        'subtitle' => 'Ripartizione dei centri ausiliari nell\'esercizio :year',
+        'hint' => 'Un centro ausiliario cede quote dei suoi costi ai centri finali. Il report di un centro di costo mostra la ripartizione con «Dopo il ribaltamento»; le registrazioni restano invariate.',
+        'total' => 'Ripartito: :percent %',
+        'empty' => 'Ancora nessuna chiave di ribaltamento per quest\'anno.',
+        'action' => [
+            'add' => 'Aggiungi chiave di ribaltamento',
+        ],
+        'field' => [
+            'source' => 'Centro ausiliario',
+            'target' => 'Centro ricevente',
+            'share_percent' => 'Quota (%)',
+        ],
+        'confirm' => [
+            'remove' => 'Rimuovere la chiave di ribaltamento?',
+        ],
+        'flash' => [
+            'saved' => 'Chiave di ribaltamento salvata.',
+            'removed' => 'Chiave di ribaltamento rimossa.',
+        ],
+        'error' => [
+            'same' => 'Il centro ausiliario e il centro ricevente devono essere diversi.',
+            'share' => 'La quota deve essere maggiore di 0 e al massimo del 100 %.',
+            'total' => 'Le quote di un centro ausiliario non possono superare il 100 % in totale (libero: :rest %).',
         ],
     ],
 

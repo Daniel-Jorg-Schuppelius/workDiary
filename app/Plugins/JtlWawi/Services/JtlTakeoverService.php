@@ -17,8 +17,8 @@ use App\Models\Article\ArticleVariant;
 use App\Models\Integration\ExternalArticleMapping;
 use App\Models\Inventory\Warehouse;
 use App\Models\Platform\Organization;
-use App\Models\Plugins\JtlWawi\JtlWarehouseMapping;
 use App\Plugins\JtlWawi\JtlWawiPlugin;
+use App\Plugins\JtlWawi\Models\JtlWarehouseMapping;
 use App\Services\Inventory\InventoryLedger;
 
 /**

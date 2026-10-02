@@ -48,7 +48,7 @@ class PeppolAccessPointPlugin extends AbstractPlugin implements PeppolTransportP
     }
 
     public function description(): string {
-        return (string) __('peppol.plugin.description');
+        return (string) __('peppol-access-point::peppol.plugin.description');
     }
 
     public function capabilities(): array {
@@ -90,32 +90,32 @@ class PeppolAccessPointPlugin extends AbstractPlugin implements PeppolTransportP
         }
 
         return [
-            SettingsField::url('base_url', (string) __('peppol.settings.base_url'), required: true,
-                help: (string) __('peppol.settings.base_url_help'))->toArray(),
-            SettingsField::password('api_key', (string) __('peppol.settings.api_key'), required: true,
-                help: (string) __('peppol.settings.api_key_help'))->toArray(),
-            SettingsField::text('auth_header', (string) __('peppol.settings.auth_header'), default: 'Authorization',
-                help: (string) __('peppol.settings.auth_header_help'))->toArray(),
-            SettingsField::text('auth_scheme', (string) __('peppol.settings.auth_scheme'), default: 'Bearer',
-                help: (string) __('peppol.settings.auth_scheme_help'))->toArray(),
-            SettingsField::text('send_path', (string) __('peppol.settings.send_path'), default: '/outbox')->toArray(),
-            SettingsField::text('receive_path', (string) __('peppol.settings.receive_path'), default: '/inbox')->toArray(),
-            SettingsField::text('ack_path', (string) __('peppol.settings.ack_path'), default: '/inbox/{messageId}/acknowledge',
-                help: (string) __('peppol.settings.ack_path_help'))->toArray(),
-            SettingsField::text('health_path', (string) __('peppol.settings.health_path'), default: '/status')->toArray(),
-            SettingsField::text('payload_field', (string) __('peppol.settings.payload_field'), default: 'document',
-                help: (string) __('peppol.settings.payload_field_help'))->toArray(),
-            SettingsField::text('message_id_field', (string) __('peppol.settings.message_id_field'), default: 'messageId')->toArray(),
-            SettingsField::text('status_field', (string) __('peppol.settings.status_field'), default: 'status')->toArray(),
-            SettingsField::text('items_field', (string) __('peppol.settings.items_field'), default: 'documents')->toArray(),
-            SettingsField::text('sender_participant_id', (string) __('peppol.settings.sender_participant_id'), required: true,
-                help: (string) __('peppol.settings.sender_participant_id_help'))->toArray(),
-            SettingsField::text('sender_country', (string) __('peppol.settings.sender_country'), default: 'DE',
-                help: (string) __('peppol.settings.sender_country_help'))->toArray(),
-            SettingsField::select('sml_zone', (string) __('peppol.settings.sml_zone'), $zones, default: SmlZone::PRODUCTION->value,
-                help: (string) __('peppol.settings.sml_zone_help'))->toArray(),
-            SettingsField::number('lookup_ttl_hours', (string) __('peppol.settings.lookup_ttl_hours'), default: 24,
-                help: (string) __('peppol.settings.lookup_ttl_hours_help'))->toArray(),
+            SettingsField::url('base_url', (string) __('peppol-access-point::peppol.settings.base_url'), required: true,
+                help: (string) __('peppol-access-point::peppol.settings.base_url_help'))->toArray(),
+            SettingsField::password('api_key', (string) __('peppol-access-point::peppol.settings.api_key'), required: true,
+                help: (string) __('peppol-access-point::peppol.settings.api_key_help'))->toArray(),
+            SettingsField::text('auth_header', (string) __('peppol-access-point::peppol.settings.auth_header'), default: 'Authorization',
+                help: (string) __('peppol-access-point::peppol.settings.auth_header_help'))->toArray(),
+            SettingsField::text('auth_scheme', (string) __('peppol-access-point::peppol.settings.auth_scheme'), default: 'Bearer',
+                help: (string) __('peppol-access-point::peppol.settings.auth_scheme_help'))->toArray(),
+            SettingsField::text('send_path', (string) __('peppol-access-point::peppol.settings.send_path'), default: '/outbox')->toArray(),
+            SettingsField::text('receive_path', (string) __('peppol-access-point::peppol.settings.receive_path'), default: '/inbox')->toArray(),
+            SettingsField::text('ack_path', (string) __('peppol-access-point::peppol.settings.ack_path'), default: '/inbox/{messageId}/acknowledge',
+                help: (string) __('peppol-access-point::peppol.settings.ack_path_help'))->toArray(),
+            SettingsField::text('health_path', (string) __('peppol-access-point::peppol.settings.health_path'), default: '/status')->toArray(),
+            SettingsField::text('payload_field', (string) __('peppol-access-point::peppol.settings.payload_field'), default: 'document',
+                help: (string) __('peppol-access-point::peppol.settings.payload_field_help'))->toArray(),
+            SettingsField::text('message_id_field', (string) __('peppol-access-point::peppol.settings.message_id_field'), default: 'messageId')->toArray(),
+            SettingsField::text('status_field', (string) __('peppol-access-point::peppol.settings.status_field'), default: 'status')->toArray(),
+            SettingsField::text('items_field', (string) __('peppol-access-point::peppol.settings.items_field'), default: 'documents')->toArray(),
+            SettingsField::text('sender_participant_id', (string) __('peppol-access-point::peppol.settings.sender_participant_id'), required: true,
+                help: (string) __('peppol-access-point::peppol.settings.sender_participant_id_help'))->toArray(),
+            SettingsField::text('sender_country', (string) __('peppol-access-point::peppol.settings.sender_country'), default: 'DE',
+                help: (string) __('peppol-access-point::peppol.settings.sender_country_help'))->toArray(),
+            SettingsField::select('sml_zone', (string) __('peppol-access-point::peppol.settings.sml_zone'), $zones, default: SmlZone::PRODUCTION->value,
+                help: (string) __('peppol-access-point::peppol.settings.sml_zone_help'))->toArray(),
+            SettingsField::number('lookup_ttl_hours', (string) __('peppol-access-point::peppol.settings.lookup_ttl_hours'), default: 24,
+                help: (string) __('peppol-access-point::peppol.settings.lookup_ttl_hours_help'))->toArray(),
         ];
     }
 
@@ -131,19 +131,19 @@ class PeppolAccessPointPlugin extends AbstractPlugin implements PeppolTransportP
 
         $config = PeppolAccessPointConfig::resolve((int) $organization->id);
         if ($config['base_url'] === '' || $config['api_key'] === '') {
-            return PluginHealth::degraded(__('peppol.health.not_configured'), code: 'not_configured');
+            return PluginHealth::degraded(__('peppol-access-point::peppol.health.not_configured'), code: 'not_configured');
         }
 
         if (PeppolParticipantService::parse($config['sender_participant_id']) === null) {
-            return PluginHealth::degraded(__('peppol.health.sender_invalid'), code: 'sender_invalid');
+            return PluginHealth::degraded(__('peppol-access-point::peppol.health.sender_invalid'), code: 'sender_invalid');
         }
 
         $client = new RestAccessPointClient($config);
 
         return PluginHealth::pingHealth(
             ping: static fn (): bool => $client->isAvailable(),
-            unreachableMessage: (string) __('peppol.health.unreachable'),
-            okMessage: (string) __('peppol.health.ok', ['url' => $config['base_url']]),
+            unreachableMessage: (string) __('peppol-access-point::peppol.health.unreachable'),
+            okMessage: (string) __('peppol-access-point::peppol.health.ok', ['url' => $config['base_url']]),
             errorStatus: PluginHealth::STATUS_FAILING,
         );
     }

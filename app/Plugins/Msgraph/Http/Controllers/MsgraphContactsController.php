@@ -12,8 +12,8 @@ namespace App\Plugins\Msgraph\Http\Controllers;
 
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
-use App\Models\Plugins\Msgraph\MsgraphContactConnection;
 use App\Plugins\Msgraph\Api\{MsgraphContactsClient, MsgraphContactsOAuth};
+use App\Plugins\Msgraph\Models\MsgraphContactConnection;
 use App\Plugins\Msgraph\{MsgraphConfig, MsgraphPlugin};
 use App\Plugins\PluginManager;
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
@@ -57,6 +57,10 @@ class MsgraphContactsController extends ConnectionOAuthController {
         return 'msgraph_contacts';
     }
 
+    protected function pluginId(): string {
+        return MsgraphPlugin::ID;
+    }
+
     protected function connectedStatus(): string {
         return MsgraphContactConnection::STATUS_ACTIVE;
     }
@@ -83,18 +87,18 @@ class MsgraphContactsController extends ConnectionOAuthController {
 
         $plugin = app(PluginManager::class)->find(MsgraphPlugin::ID);
         if (! $plugin instanceof MsgraphPlugin || ! $plugin->isEnabled()) {
-            return back()->with('error', __('msgraph_contacts.flash.plugin_disabled'));
+            return back()->with('error', __('msgraph::msgraph_contacts.flash.plugin_disabled'));
         }
 
         try {
             $externalId = $plugin->pushContact($customer);
 
-            return back()->with('success', __('msgraph_contacts.flash.pushed', ['id' => $externalId]));
+            return back()->with('success', __('msgraph::msgraph_contacts.flash.pushed', ['id' => $externalId]));
         } catch (Throwable $e) {
             // Nur Klasse/Kunde loggen — nie Payload/Token.
             Log::error('msgraph contact push failed', ['customer' => $customer->id, 'class' => class_basename($e)]);
 
-            return back()->with('error', __('msgraph_contacts.flash.push_failed', ['class' => class_basename($e)]));
+            return back()->with('error', __('msgraph::msgraph_contacts.flash.push_failed', ['class' => class_basename($e)]));
         }
     }
 }

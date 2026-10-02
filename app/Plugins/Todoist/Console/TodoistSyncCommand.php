@@ -14,8 +14,8 @@ namespace App\Plugins\Todoist\Console;
 
 use App\Console\Concerns\IteratesOrganizations;
 use App\Models\Platform\Organization;
-use App\Models\Plugins\Todoist\{TodoistConnection, TodoistProjectLink};
 use App\Plugins\Todoist\Api\TodoistApiClient;
+use App\Plugins\Todoist\Models\{TodoistConnection, TodoistProjectLink};
 use App\Plugins\Todoist\Services\{TodoistImportService, TodoistSyncService};
 use App\Plugins\Todoist\TodoistConfig;
 use Illuminate\Console\Command;

@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\OrgaMax\Services;
 
 use App\Enums\Migration\MigrationProvider;
-use App\Models\Plugins\OrgaMax\OrgaMaxInvoice;
+use App\Plugins\OrgaMax\Models\OrgaMaxInvoice;
 use App\Services\AccountingMigration\Contracts\MigrationSource;
 
 /** orgaMAX als Quelle eines Buchhaltungswechsels: Rechnungsprojektion `orgamax_invoices`. */

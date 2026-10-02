@@ -14,9 +14,9 @@ namespace App\Plugins\CalDav\Services;
 
 use App\Models\Calendar\Event;
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
-use App\Models\Plugins\CalDav\CalDavConnection;
 use App\Plugins\CalDav\CalDavPlugin;
 use App\Plugins\CalDav\Contracts\CalDavGatewayFactory;
+use App\Plugins\CalDav\Models\CalDavConnection;
 use App\Plugins\Support\Calendar\{CalendarSeriesStager, RemoteCalendarPublishService};
 use CommonToolkit\Entities\ICalendar\{Document, Event as CalendarEvent};
 use CommonToolkit\Parsers\ICalendarParser;
@@ -178,8 +178,8 @@ class CalDavCalendarImportService {
             $connection,
             'calendar-deleted:' . $objectName,
             IntegrationInboxItem::CASE_UNMATCHED,
-            ['remote_id' => $objectName, 'subject' => (string) __('caldav.import.deleted_title')],
-            (string) __('caldav.import.deleted_title'),
+            ['remote_id' => $objectName, 'subject' => (string) __('caldav::caldav.import.deleted_title')],
+            (string) __('caldav::caldav.import.deleted_title'),
             $reference,
         )) {
             $counters['deleted']++;

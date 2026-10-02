@@ -12,9 +12,9 @@ namespace App\Plugins\CardDav\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Platform\PluginState;
-use App\Models\Plugins\CardDav\{CardDavCard, CardDavConnection};
 use App\Plugins\CardDav\CardDavPlugin;
 use App\Plugins\CardDav\Contracts\CardDavGatewayFactory;
+use App\Plugins\CardDav\Models\{CardDavCard, CardDavConnection};
 use App\Plugins\CardDav\Services\CardDavAddressbook;
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
 use App\Support\{ErrorText, UrlSafety};
@@ -73,12 +73,12 @@ class CardDavAdminController extends Controller {
         $baseUrl = rtrim(trim((string) $data['base_url']), '/');
         $allowPrivate = (bool) ($data['allow_private_network'] ?? false);
         if (! str_starts_with($baseUrl, 'http://') && ! str_starts_with($baseUrl, 'https://')) {
-            return back()->with('error', __('carddav.flash.invalid_url'))->withInput();
+            return back()->with('error', __('carddav::carddav.flash.invalid_url'))->withInput();
         }
         // Konfigurationszeit-Prüfung ohne DNS (Whitebox 2026-07); die
         // verbindliche Laufzeitprüfung macht CardDavUrlGuard vor jedem Sync.
         if (! $allowPrivate && ! UrlSafety::isAcceptableExternalHttpUrl($baseUrl)) {
-            return back()->with('error', __('carddav.flash.private_url_blocked'))->withInput();
+            return back()->with('error', __('carddav::carddav.flash.private_url_blocked'))->withInput();
         }
 
         /** @var CardDavConnection $connection */
@@ -98,7 +98,7 @@ class CardDavAdminController extends Controller {
         if ($password !== '') {
             $attributes['app_password'] = $password;
         } elseif (! $connection->exists) {
-            return back()->with('error', __('carddav.flash.password_required'))->withInput();
+            return back()->with('error', __('carddav::carddav.flash.password_required'))->withInput();
         }
 
         // Server-Wechsel: gewähltes Adressbuch, Sync-Stand und Spiegel verwerfen.
@@ -116,7 +116,7 @@ class CardDavAdminController extends Controller {
             'allow_private_network' => $connection->allow_private_network,
         ]);
 
-        return back()->with('success', __('carddav.flash.saved'));
+        return back()->with('success', __('carddav::carddav.flash.saved'));
     }
 
     /** RFC-6764-Discovery: Adressbücher auflisten und zur Wahl stellen. */
@@ -126,17 +126,17 @@ class CardDavAdminController extends Controller {
 
         $connection = CardDavConnection::query()->where('organization_id', $organization->id)->first();
         if (! $connection instanceof CardDavConnection || ! $connection->isActive()) {
-            return back()->with('error', __('carddav.flash.no_connection'));
+            return back()->with('error', __('carddav::carddav.flash.no_connection'));
         }
 
         try {
             $books = app(CardDavGatewayFactory::class)->for($connection)->discoverAddressbooks();
         } catch (Throwable) {
-            return back()->with('error', __('carddav.flash.discovery_failed'));
+            return back()->with('error', __('carddav::carddav.flash.discovery_failed'));
         }
 
         if ($books === []) {
-            return back()->with('error', __('carddav.flash.no_addressbooks'));
+            return back()->with('error', __('carddav::carddav.flash.no_addressbooks'));
         }
 
         session()->put(self::SESSION_BOOKS, array_map(
@@ -144,7 +144,7 @@ class CardDavAdminController extends Controller {
             $books,
         ));
 
-        return back()->with('success', __('carddav.flash.discovered', ['count' => count($books)]));
+        return back()->with('success', __('carddav::carddav.flash.discovered', ['count' => count($books)]));
     }
 
     /** Übernimmt ein Adressbuch aus dem letzten Discovery-Ergebnis als Sync-Quelle. */
@@ -154,7 +154,7 @@ class CardDavAdminController extends Controller {
 
         $connection = CardDavConnection::query()->where('organization_id', $organization->id)->first();
         if (! $connection instanceof CardDavConnection) {
-            return back()->with('error', __('carddav.flash.no_connection'));
+            return back()->with('error', __('carddav::carddav.flash.no_connection'));
         }
 
         $data = $request->validate([
@@ -167,7 +167,7 @@ class CardDavAdminController extends Controller {
             static fn(array $book): bool => ($book['url'] ?? null) === $data['addressbook_url'],
         );
         if ($chosen === null) {
-            return back()->with('error', __('carddav.flash.addressbook_not_discovered'));
+            return back()->with('error', __('carddav::carddav.flash.addressbook_not_discovered'));
         }
 
         // Die Discovery-Liste kommt vom Server: das gewählte Adressbuch muss
@@ -198,7 +198,7 @@ class CardDavAdminController extends Controller {
         ]);
         session()->forget(self::SESSION_BOOKS);
 
-        return back()->with('success', __('carddav.flash.addressbook_saved'));
+        return back()->with('success', __('carddav::carddav.flash.addressbook_saved'));
     }
 
     /** Manueller Sync (Scheduler-Äquivalent, auditiert). */
@@ -208,7 +208,7 @@ class CardDavAdminController extends Controller {
 
         $connection = CardDavConnection::query()->where('organization_id', $organization->id)->first();
         if (! $connection instanceof CardDavConnection || ! $connection->isSyncable()) {
-            return back()->with('error', __('carddav.flash.not_syncable'));
+            return back()->with('error', __('carddav::carddav.flash.not_syncable'));
         }
 
         // Queue statt Request (Vollscan 2026-08-23, J17): ein Voll-Sync im Web-
@@ -216,7 +216,7 @@ class CardDavAdminController extends Controller {
         Artisan::queue('carddav:sync', ['--organization' => (string) $organization->id]);
         $connection->audit('carddav.sync_manual', ['by_user_id' => (int) $admin->id]);
 
-        return back()->with('success', __('carddav.flash.sync_done'));
+        return back()->with('success', __('carddav::carddav.flash.sync_done'));
     }
 
     /** Deaktiviert die Anbindung; bereits eingespeiste Inbox-Vorschläge bleiben erhalten. */
@@ -230,6 +230,6 @@ class CardDavAdminController extends Controller {
             $connection->audit('carddav.disconnected', ['by_user_id' => (int) $admin->id]);
         }
 
-        return back()->with('success', __('carddav.flash.disconnected'));
+        return back()->with('success', __('carddav::carddav.flash.disconnected'));
     }
 }

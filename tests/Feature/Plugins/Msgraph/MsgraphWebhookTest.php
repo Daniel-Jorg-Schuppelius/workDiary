@@ -11,9 +11,9 @@
 namespace Tests\Feature\Plugins\Msgraph;
 
 use App\Models\Mail\EmailConnection;
-use App\Models\Plugins\Msgraph\{MsgraphConnection, MsgraphMailConnection, MsgraphTaskConnection, MsgraphTaskListLink};
 use App\Models\Project\Project;
 use App\Plugins\Msgraph\Jobs\{MsgraphCalendarWakeJob, MsgraphMailWakeJob, MsgraphTodoWakeJob};
+use App\Plugins\Msgraph\Models\{MsgraphConnection, MsgraphMailConnection, MsgraphTaskConnection, MsgraphTaskListLink};
 use App\Plugins\Msgraph\Services\MsgraphSubscriptionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;

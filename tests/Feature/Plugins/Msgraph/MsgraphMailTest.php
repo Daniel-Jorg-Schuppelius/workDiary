@@ -11,8 +11,8 @@
 namespace Tests\Feature\Plugins\Msgraph;
 
 use App\Models\Platform\{Organization, User};
-use App\Models\Plugins\Msgraph\MsgraphMailConnection;
 use App\Plugins\Msgraph\Api\MsgraphMailOAuth;
+use App\Plugins\Msgraph\Models\MsgraphMailConnection;
 use GuzzleHttp\{Client as GuzzleClient, HandlerStack};
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\Psr7\Response as Psr7Response;

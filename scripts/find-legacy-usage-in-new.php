@@ -20,6 +20,7 @@ $scanDirs = [
     'app/Http/Controllers',
     'app/Http/Middleware',
     'app/Models',
+    'app/Plugins',
     'app/Services',
     'app/Listeners',
     'app/Observers',

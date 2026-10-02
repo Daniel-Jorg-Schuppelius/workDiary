@@ -12,8 +12,8 @@ namespace Tests\Feature\Plugins;
 
 use App\Models\Integration\ExternalReference;
 use App\Models\Platform\User;
-use App\Models\Plugins\Todoist\{TodoistConnection, TodoistProjectLink};
 use App\Models\Project\Project;
+use App\Plugins\Todoist\Models\{TodoistConnection, TodoistProjectLink};
 use App\Plugins\Todoist\Services\TodoistPreflightService;
 use App\Plugins\Todoist\TodoistPlugin;
 use Illuminate\Foundation\Testing\RefreshDatabase;

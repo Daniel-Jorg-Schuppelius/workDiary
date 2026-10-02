@@ -49,8 +49,11 @@ abstract class ConnectionOAuthController extends Controller {
     /** Routen-Name der Admin-Übersicht (Redirect-Ziel des Flows). */
     abstract protected function overviewRouteName(): string;
 
-    /** Plugin-Schlüssel für Audit-Events (`<key>.connected`) und Flash-Lang-Keys (`<key>.flash.*`). */
+    /** Plugin-Schlüssel für Audit-Events (`<key>.connected`) und Flash-Lang-Keys (`<id>::<key>.flash.*`). */
     abstract protected function pluginKey(): string;
+
+    /** Plugin-ID = Text-Namespace der Flash-Lang-Keys. */
+    abstract protected function pluginId(): string;
 
     /** Status-Wert nach erfolgreichem Verbinden (Modell-Konstante). */
     abstract protected function connectedStatus(): string;
@@ -93,12 +96,12 @@ abstract class ConnectionOAuthController extends Controller {
     }
 
     /**
-     * Flash-Text je Ereignis; Default: Lang-Keys `<pluginKey>.flash.<name>`.
+     * Flash-Text je Ereignis; Default: Lang-Keys `<pluginId>::<pluginKey>.flash.<name>`.
      *
      * @param  array<string, string>  $replace
      */
     protected function flashMessage(string $name, array $replace = []): string {
-        $message = __($this->pluginKey() . '.flash.' . $name, $replace);
+        $message = __($this->pluginId() . '::' . $this->pluginKey() . '.flash.' . $name, $replace);
 
         return is_string($message) ? $message : $name;
     }

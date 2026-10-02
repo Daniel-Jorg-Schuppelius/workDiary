@@ -1,0 +1,9 @@
+{
+    "Benutzergebundener API-Token aus dem sevDesk-Account (Einstellungen → Benutzer).": "Jeton API lié à l'utilisateur depuis le compte sevDesk (Paramètres → Utilisateurs).",
+    "sevDesk ist nicht konfiguriert (API-Token fehlt).": "sevDesk n'est pas configuré (jeton API manquant).",
+    "sevDesk lehnt den API-Token ab (401) — Token prüfen.": "sevDesk rejette le jeton API (401) — veuillez vérifier le jeton.",
+    "sevDesk-API antwortet mit Fehlerstatus :status.": "L'API sevDesk répond avec le statut d'erreur :status.",
+    "sevDesk-API erreichbar (Buchhaltung :version).": "API sevDesk accessible (comptabilité :version).",
+    "sevDesk-API nicht erreichbar.": "API sevDesk inaccessible.",
+    "Übergibt bestätigte Abrechnungspositionen als Rechnungsentwurf an sevDesk (API-Token gegen my.sevdesk.de): Kontakt-Projektion, idempotente Übergabe mit Quellmarker, Erkennung der Buchhaltungs-Version 1.0/2.0 je Mandant.": "Transmet les positions de facturation confirmées à sevDesk sous forme de brouillon de facture (jeton API vers my.sevdesk.de) : projection des contacts, remise idempotente avec marqueur source, détection de la version de comptabilité 1.0/2.0 par mandant."
+}

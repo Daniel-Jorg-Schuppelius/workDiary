@@ -1,0 +1,16 @@
+{
+    "GitLab ist nicht konfiguriert (Projekt-ID oder API-Token fehlt).": "GitLab is not configured (project ID or API token missing).",
+    "GitLab lehnt den API-Token ab (:status) — Token prüfen.": "GitLab rejects the API token (:status) — please check the token.",
+    "GitLab-API antwortet mit Fehlerstatus :status.": "GitLab API responds with error status :status.",
+    "GitLab-API nicht erreichbar.": "GitLab API unreachable.",
+    "GitLab-Instanz, z. B. https://gitlab.com oder die eigene On-Premise-Adresse.": "GitLab instance, e.g. https://gitlab.com or your own on-premise address.",
+    "Importiert GitLab-Issues eines Projekts als Aufgaben (idempotent über iid + Projekt-ID, self-hosted Instanzen unterstützt): Zeiterfassung und Abrechnung in WorkDiary, GitLab bleibt führend. Polling mit updated_after-Aufholpunkt, Webhook-Anstoß optional.": "Imports GitLab issues of a project as tasks (idempotent via iid + project ID, self-hosted instances supported): time tracking and billing in WorkDiary, GitLab stays in the lead. Polling with an updated_after checkpoint, webhook trigger optional.",
+    "Numerische GitLab-Projekt-ID (Projektseite → Einstellungen → Allgemein).": "Numeric GitLab project ID (project page → Settings → General).",
+    "Nur für On-Premise-Instanzen im eigenen Netz: erlaubt eine Instanz-URL mit privater/interner Adresse.": "Only for on-premise instances on your own network: allows an instance URL with a private/internal address.",
+    "Optional: Secret Token des GitLab-Webhooks (Issue-Events, X-Gitlab-Token). Ohne Token bleibt der Webhook-Endpunkt deaktiviert; das Polling holt alles nach.": "Optional: secret token of the GitLab webhook (issue events, X-Gitlab-Token). Without a token the webhook endpoint stays disabled; polling catches up on everything.",
+    "Private Adressen erlauben": "Allow private addresses",
+    "Project Access Token (empfohlen) oder Personal Access Token mit read_api-Scope.": "Project access token (recommended) or personal access token with the read_api scope.",
+    "Schließt das verknüpfte Issue (mit Notiz), wenn die Aufgabe in workDiary erledigt wird, und öffnet es beim Wiedereröffnen. Titel und Beschreibung bleiben quellsystem-geführt. Der Token braucht Schreibzugriff auf Issues (api-Scope).": "Closes the linked issue (with a note) when the task is completed in workDiary and reopens it when the task is reopened. Title and description remain owned by the source system. The token needs write access to issues (api scope).",
+    "Verbunden mit GitLab als :login.": "Connected to GitLab as :login.",
+    "Webhook-Token": "Webhook token"
+}

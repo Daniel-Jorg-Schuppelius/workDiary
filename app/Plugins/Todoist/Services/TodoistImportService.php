@@ -14,10 +14,10 @@ namespace App\Plugins\Todoist\Services;
 
 use App\Enums\Task\{TaskPriority, TaskStatus};
 use App\Models\Integration\ExternalReference;
-use App\Models\Plugins\Todoist\{TodoistConnection, TodoistProjectLink};
 use App\Models\Project\Task;
 use App\Plugins\Support\TaskSync\{AbstractTaskSyncService, TaskSyncLink};
 use App\Plugins\Todoist\Api\TodoistApiClient;
+use App\Plugins\Todoist\Models\{TodoistConnection, TodoistProjectLink};
 use App\Plugins\Todoist\Observers\TodoistTaskObserver;
 use App\Plugins\Todoist\TodoistPlugin;
 use Illuminate\Support\Collection;

@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Plugins\CardDav\Services;
 
-use App\Models\Plugins\CardDav\CardDavConnection;
 use App\Plugins\CardDav\Contracts\{CardDavGateway, CardDavGatewayFactory};
+use App\Plugins\CardDav\Models\CardDavConnection;
 
 /**
  * Standard-Factory (Bauturbo A9): baut je Anbindung ein {@see LibCardDavGateway}.

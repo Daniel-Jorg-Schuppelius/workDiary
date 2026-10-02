@@ -20,6 +20,8 @@ declare(strict_types=1);
 const ROOT = __DIR__ . '/..';
 const REPORT = ROOT . '/storage/reports/translations-coverage.md';
 
+require __DIR__ . '/lib/lang-catalogs.php';
+
 @mkdir(dirname(REPORT), 0775, true);
 
 // ---------- Helpers ----------
@@ -58,9 +60,12 @@ function flatten(array $arr, string $prefix = ''): array {
 
 // JSON-Catalog: DE-Strings sind die Keys (Source-Convention). Wir lesen
 // lang/en.json — der Keyspace ist über alle Locales identisch.
+$catalogs = langCatalogs(ROOT);
+
 $definedJson = [];
-$path = ROOT . '/lang/en.json';
-if (is_file($path)) {
+foreach ($catalogs as $catalogDir) {
+    $path = $catalogDir . '/en.json';
+    if (! is_file($path)) { continue; }
     $data = json_decode((string) file_get_contents($path), true);
     if (is_array($data)) {
         foreach (array_keys($data) as $k) { $definedJson[$k] = true; }
@@ -69,21 +74,23 @@ if (is_file($path)) {
 
 $definedPhp = [];
 $definedPhpPrefix = []; // parent paths returning arrays (allow `trans('access.permission')` which returns array)
-foreach (['de', 'en'] as $locale) {
-    $dir = ROOT . '/lang/' . $locale;
-    if (! is_dir($dir)) { continue; }
-    foreach (glob($dir . '/*.php') as $file) {
-        $data = require $file;
-        if (! is_array($data)) { continue; }
-        $module = basename($file, '.php');
-        $definedPhpPrefix[$module] = true;
-        foreach (flatten($data) as $path) {
-            $full = $module . '.' . $path;
-            $definedPhp[$full] = true;
-            // record every parent prefix
-            $parts = explode('.', $full);
-            for ($i = 1; $i < count($parts); $i++) {
-                $definedPhpPrefix[implode('.', array_slice($parts, 0, $i))] = true;
+foreach ($catalogs as $ns => $catalogDir) {
+    foreach (['de', 'en'] as $locale) {
+        $dir = $catalogDir . '/' . $locale;
+        if (! is_dir($dir)) { continue; }
+        foreach (glob($dir . '/*.php') as $file) {
+            $data = require $file;
+            if (! is_array($data)) { continue; }
+            $module = ($ns === '' ? '' : $ns . '::') . basename($file, '.php');
+            $definedPhpPrefix[$module] = true;
+            foreach (flatten($data) as $path) {
+                $full = $module . '.' . $path;
+                $definedPhp[$full] = true;
+                // record every parent prefix
+                $parts = explode('.', $full);
+                for ($i = 1; $i < count($parts); $i++) {
+                    $definedPhpPrefix[implode('.', array_slice($parts, 0, $i))] = true;
+                }
             }
         }
     }
@@ -130,11 +137,11 @@ foreach ($lookDirs as $dir) {
 $missing = []; // key => occurrences
 foreach ($usedKeys as $key => $occ) {
     // Dotted key with leading module-like segment "alpha[._]" -> check PHP catalog
-    $isDotted = (bool) preg_match('/^[a-z][a-z0-9_-]*(?:\.[a-zA-Z0-9_-]+)+$/', $key);
+    $isDotted = (bool) preg_match('/^(?:[a-z0-9_-]+::)?[a-z][a-z0-9_-]*(?:\.[a-zA-Z0-9_-]+)+$/', $key);
     // Concat prefix with trailing dot ("'scheduler.cadence.' . $x") — fällt
     // sonst durch die isDotted-Regex in den JSON-Zweig; als Prefix prüfen.
     if (! $isDotted
-        && preg_match('/^[a-z][a-z0-9_-]*(?:\.[a-zA-Z0-9_-]+)*\.$/', $key)
+        && preg_match('/^(?:[a-z0-9_-]+::)?[a-z][a-z0-9_-]*(?:\.[a-zA-Z0-9_-]+)*\.$/', $key)
         && array_filter($occ, static fn ($o) => ! empty($o['concat']))) {
         $resolves = false;
         foreach ($definedPhp as $defined => $_) {
@@ -181,8 +188,13 @@ $hardcoded = []; // file => [ [line, snippet], ... ]
 
 $bladeKeywords = ['extends', 'section', 'endsection', 'include', 'if', 'else', 'elseif', 'endif', 'foreach', 'endforeach', 'forelse', 'endforelse', 'for', 'endfor', 'isset', 'endisset', 'empty', 'endempty', 'php', 'endphp', 'yield', 'stack', 'endstack', 'push', 'endpush', 'slot', 'endslot', 'props', 'use', 'endsection', 'can', 'endcan', 'cannot', 'endcannot', 'endwhile', 'while', 'switch', 'case', 'endswitch', 'env', 'json', 'dd', 'dump', 'class', 'endcomponent', 'component', 'livewire'];
 
-foreach (walk(ROOT . '/resources/views', ['.blade.php']) as $file) {
+// Bewusst unübersetzt: das amtliche Zuwendungsmuster gilt nur deutsch (MVP-1003).
+$verbatimViews = ['resources/views/club/pdf/donation_receipt.blade.php'];
+
+$bladeFiles = [...walk(ROOT . '/resources/views', ['.blade.php']), ...walk(ROOT . '/app/Plugins', ['.blade.php'])];
+foreach ($bladeFiles as $file) {
     $rel = str_replace(ROOT . '/', '', $file->getPathname());
+    if (in_array($rel, $verbatimViews, true)) { continue; }
     $content = (string) file_get_contents($file->getPathname());
 
     // Mask translation calls so their contents are ignored.
@@ -245,6 +257,8 @@ foreach (walk(ROOT . '/resources/views', ['.blade.php']) as $file) {
             // skip mehrwortige Markennamen (Eigennamen, wie die Geschwister-Buttons
             // Dropbox/Microsoft/Nextcloud einzeilig — nie zu übersetzen).
             if (in_array($raw, ['Google Drive'], true)) { continue; }
+            // Von Etsy wörtlich vorgeschriebener Markenhinweis (API-Bedingungen).
+            if (str_starts_with($raw, 'The term “Etsy” is a trademark of Etsy, Inc.')) { continue; }
             // keyword filter
             $low = mb_strtolower($raw);
             $isGerman = (bool) preg_match('/[äöüÄÖÜß]/u', $raw)

@@ -13,8 +13,8 @@ declare(strict_types=1);
 namespace App\Plugins\CalDav\Services;
 
 use App\Models\Platform\Organization;
-use App\Models\Plugins\CalDav\CalDavConnection;
 use App\Plugins\CalDav\Contracts\CalDavGatewayFactory;
+use App\Plugins\CalDav\Models\CalDavConnection;
 use App\Plugins\Support\Calendar\CalendarImportDocument;
 use App\Services\Import\Contracts\CalendarImportFeed;
 use App\Support\Sqid;

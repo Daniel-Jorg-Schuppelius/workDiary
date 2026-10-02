@@ -14,9 +14,9 @@ namespace App\Plugins\Etsy\Http\Controllers;
 
 use App\Models\Integration\IntegrationInboxItem;
 use App\Models\Platform\User;
-use App\Models\Plugins\Etsy\{EtsyConnection, EtsyReceipt};
 use App\Plugins\Etsy\Api\{EtsyClientFactory, EtsyOAuthGrant};
 use App\Plugins\Etsy\{EtsyConfig, EtsyPlugin};
+use App\Plugins\Etsy\Models\{EtsyConnection, EtsyReceipt};
 use App\Plugins\Etsy\Services\{EtsyLedgerImportService, EtsyReceiptImportService};
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
 use App\Plugins\Support\{ConnectionOAuthController, PluginOAuthGrant};
@@ -70,7 +70,7 @@ class EtsyAdminController extends ConnectionOAuthController {
 
         // Ledger-Summen je Art (90 Tage) — amount ist Etsy-roh in kleinster
         // Währungseinheit (MVP-498), die Anzeige teilt durch 100.
-        $ledgerSums = \App\Models\Plugins\Etsy\EtsyLedgerEntry::query()
+        $ledgerSums = \App\Plugins\Etsy\Models\EtsyLedgerEntry::query()
             ->where('organization_id', $organization->id)
             ->where('posted_at', '>=', now()->subDays(90))
             ->selectRaw('ledger_type, currency, SUM(amount) as amount_sum, COUNT(*) as entries')
@@ -100,14 +100,14 @@ class EtsyAdminController extends ConnectionOAuthController {
         try {
             $counters = $receipts->import($organization) + ['ledger' => $ledger->import($organization)];
 
-            return back()->with('success', (string) __('etsy.flash.synced', [
+            return back()->with('success', (string) __('etsy::etsy.flash.synced', [
                 'imported' => $counters['imported'],
                 'staged' => $counters['staged'],
             ]));
         } catch (Throwable $e) {
             report($e);
 
-            return back()->with('error', (string) __('etsy.flash.sync_failed'));
+            return back()->with('error', (string) __('etsy::etsy.flash.sync_failed'));
         }
     }
 
@@ -127,7 +127,7 @@ class EtsyAdminController extends ConnectionOAuthController {
         ]);
 
         if ($etsyReceipt->shipped_pushed_at !== null || $etsyReceipt->was_shipped) {
-            return back()->with('success', (string) __('etsy.flash.already_shipped'));
+            return back()->with('success', (string) __('etsy::etsy.flash.already_shipped'));
         }
 
         $outbox->enqueue(
@@ -142,7 +142,7 @@ class EtsyAdminController extends ConnectionOAuthController {
             $etsyReceipt,
         );
 
-        return back()->with('success', (string) __('etsy.flash.ship_queued'));
+        return back()->with('success', (string) __('etsy::etsy.flash.ship_queued'));
     }
 
     // ── OAuth-Flow: Hooks der gemeinsamen Basis ──
@@ -169,6 +169,10 @@ class EtsyAdminController extends ConnectionOAuthController {
 
     protected function pluginKey(): string {
         return 'etsy';
+    }
+
+    protected function pluginId(): string {
+        return EtsyPlugin::ID;
     }
 
     protected function connectedStatus(): string {

@@ -136,9 +136,6 @@ return [
             'tooLarge' => 'El archivo «:file» supera el límite de :max MB.',
             'noActor' => 'Ejecución de importación sin usuario — los documentos necesitan un creador.',
         ],
-        'persist' => [
-            'noBookingUser' => 'No se encontró ningún usuario imputable en la organización.',
-        ],
         // MVP-438: bloqueo GoBD — sin sobrescritura silenciosa de periodos revisados.
         'periodLocked' => [
             'attendance' => 'El día :date está bloqueado por el cierre diario o la aprobación mensual — fila omitida.',

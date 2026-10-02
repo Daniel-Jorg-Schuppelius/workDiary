@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace App\Plugins\CalDav\Services;
 
-use App\Models\Plugins\CalDav\CalDavConnection;
 use App\Plugins\CalDav\CalDavPlugin;
 use App\Plugins\CalDav\Contracts\{CalDavGateway, CalDavGatewayFactory};
+use App\Plugins\CalDav\Models\CalDavConnection;
 use App\Plugins\PluginHealthService;
 use App\Plugins\Support\PluginHttpFactory;
 

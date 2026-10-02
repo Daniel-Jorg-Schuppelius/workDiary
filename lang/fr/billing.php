@@ -18,7 +18,6 @@ return [
         'dunning_level' => 'Niveau de relance :level',
         'action' => [
             'dun' => 'Relancer',
-            'dun_confirm' => 'Créer une relance dans la comptabilité ?',
         ],
         'tab' => [
             'all' => 'Tous',

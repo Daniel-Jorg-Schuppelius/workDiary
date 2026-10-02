@@ -13,8 +13,8 @@ declare(strict_types=1);
 namespace App\Plugins\Lexoffice\Services;
 
 use App\Models\Integration\ExternalArticleMapping;
-use App\Models\Plugins\Lexoffice\LexofficeArticle;
 use App\Plugins\Lexoffice\LexofficePlugin;
+use App\Plugins\Lexoffice\Models\LexofficeArticle;
 use App\Services\Article\Catalog\LocalArticleCatalogSource;
 use App\Services\Platform\Catalog\{ArticleCatalog, ArticleCatalogSource, CatalogArticle};
 use App\Support\Sqid;

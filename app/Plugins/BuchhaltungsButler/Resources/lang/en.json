@@ -1,0 +1,16 @@
+{
+    "API-Client": "API client",
+    "API-Key (Mandant)": "API key (tenant)",
+    "API-Secret": "API secret",
+    "Ausgestellte Rechnungen als Beleg pushen": "Push issued invoices as receipts",
+    "BuchhaltungsButler ist für diese Organisation nicht konfiguriert (API-Client/-Secret/-Key fehlen).": "BuchhaltungsButler is not configured for this organisation (API client/secret/key missing).",
+    "BuchhaltungsButler ist nicht konfiguriert (API-Client/-Secret/-Key fehlen).": "BuchhaltungsButler is not configured (API client/secret/key missing).",
+    "BuchhaltungsButler lehnt die Zugangsdaten ab (401) — API-Client/-Secret prüfen.": "BuchhaltungsButler rejects the credentials (401) — check API client/secret.",
+    "BuchhaltungsButler → Einstellungen → Schnittstellen & API-Zugang.": "BuchhaltungsButler → Settings → Interfaces & API access.",
+    "BuchhaltungsButler-API antwortet mit Fehlerstatus :status.": "BuchhaltungsButler API responds with error status :status.",
+    "BuchhaltungsButler-API erreichbar.": "BuchhaltungsButler API reachable.",
+    "BuchhaltungsButler-API nicht erreichbar.": "BuchhaltungsButler API not reachable.",
+    "Die BuchhaltungsButler-API ist für diesen Account nicht freigeschaltet (kostenpflichtiges Add-on) — im BHB-Tarif buchen.": "The BuchhaltungsButler API is not enabled for this account (paid add-on) — book it in your BHB plan.",
+    "Wird als Formfeld api_key in jedem Request mitgesendet (BHB-Vertrag).": "Sent as form field api_key in every request (BHB contract).",
+    "Übergibt ausgestellte lokale Rechnungen als Belege an BuchhaltungsButler (Basic Auth + api_key): idempotenter Push über die Integrations-Outbox mit sha256-Nachweis; die Rechnungshoheit bleibt bei WorkDiary, die Buchführung bei BuchhaltungsButler.": "Pushes issued local invoices as receipts to BuchhaltungsButler (basic auth + api_key): idempotent push via the integration outbox with sha256 proof; invoicing authority stays with WorkDiary, bookkeeping with BuchhaltungsButler."
+}

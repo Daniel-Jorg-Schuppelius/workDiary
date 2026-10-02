@@ -1,0 +1,18 @@
+{
+    "API-Limit (Requests/Minute)": "API limit (requests/minute)",
+    "Automatischer Rückabruf aus easybill (Übergabe #:id).": "Automatic retrieval from easybill (transfer #:id).",
+    "E-Rechnungs-Format": "E-invoice format",
+    "Fertiggestellte Belege ins DMS zurückholen": "Retrieve finished documents into the DMS",
+    "Kein E-Rechnungs-Format (Standard-PDF)": "No e-invoice format (standard PDF)",
+    "Tarifabhängig: PLUS 10, BUSINESS 60. Zu hohe Werte führen zu 429-Antworten.": "Plan-dependent: PLUS 10, BUSINESS 60. Values set too high lead to 429 responses.",
+    "easybill drosselt (429) — Request-Limit im Setting prüfen.": "easybill is throttling (429) — check the request limit setting.",
+    "easybill ist nicht konfiguriert (API-Key fehlt).": "easybill is not configured (API key missing).",
+    "easybill lehnt den API-Key ab (401) — Key prüfen.": "easybill rejects the API key (401) — check the key.",
+    "easybill-API antwortet mit Fehlerstatus :status.": "easybill API responds with error status :status.",
+    "easybill-API erreichbar.": "easybill API reachable.",
+    "easybill-API nicht erreichbar.": "easybill API not reachable.",
+    "easybill-API-Key (easybill → Einstellungen → API).": "easybill API key (easybill → Settings → API).",
+    "easybill-Rechnung :number": "easybill invoice :number",
+    "file_format_config des easybill-Belegs; bestimmt das Format des Rückabrufs.": "file_format_config of the easybill document; determines the retrieval format.",
+    "Übergibt bestätigte Abrechnungspositionen als Rechnungsentwurf an easybill (Bearer-API-Key gegen api.easybill.de): Kunden-Projektion, idempotente Übergabe mit Quellmarker, optionaler Rückabruf fertiggestellter Belege (PDF/E-Rechnung) ins DMS.": "Transfers confirmed billing items as an invoice draft to easybill (bearer API key against api.easybill.de): customer projection, idempotent transfer with source marker, optional retrieval of finished documents (PDF/e-invoice) into the DMS."
+}

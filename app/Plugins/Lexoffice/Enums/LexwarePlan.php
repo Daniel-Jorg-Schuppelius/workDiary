@@ -30,7 +30,7 @@ enum LexwarePlan: string implements HasLabel {
     case XL = 'xl';
 
     public function label(): string {
-        return (string) __('lexware.plan.' . $this->value);
+        return (string) __('lexoffice::lexware.plan.' . $this->value);
     }
 
     public function isKnown(): bool {

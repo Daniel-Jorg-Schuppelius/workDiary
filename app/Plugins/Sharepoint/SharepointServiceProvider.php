@@ -41,7 +41,7 @@ class SharepointServiceProvider extends PluginServiceProviderBase {
 
     protected function bootPlugin(): void {
         // Verbindungszustand für Diagnose und Ablaufprüfung (MVP-1044).
-        $this->app->make(\App\Services\Diagnostics\ConnectionHealthModels::class)->register('sharepoint', \App\Models\Plugins\Sharepoint\SharepointConnection::class);
+        $this->app->make(\App\Services\Diagnostics\ConnectionHealthModels::class)->register('sharepoint', \App\Plugins\Sharepoint\Models\SharepointConnection::class);
         $target = new SharepointMirrorTarget();
         $this->app->make(MirrorTargetRegistry::class)->register($target);
         $this->app->make(IntegrationOutboxDispatcherResolver::class)->register(new MirrorOutboxDispatcher($target));

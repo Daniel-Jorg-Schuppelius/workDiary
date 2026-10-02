@@ -11,9 +11,9 @@
 namespace App\Plugins\CalDav;
 
 use App\Models\Platform\Organization;
-use App\Models\Plugins\CalDav\CalDavConnection;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\CalDav\Contracts\{CalDavGatewayFactory, CalendarSource};
+use App\Plugins\CalDav\Models\CalDavConnection;
 use App\Plugins\CalDav\Services\{CalDavRemoteCalendarGateway, CalendarPublishItem, EventCalendarSource, ScheduleCalendarSource};
 use App\Plugins\Contracts\{CalendarPublisher, PluginCapability};
 use App\Plugins\Support\Calendar\{RemoteCalendarEvent, RemoteCalendarPublishService};

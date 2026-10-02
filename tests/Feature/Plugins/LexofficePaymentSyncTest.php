@@ -11,9 +11,9 @@
 namespace Tests\Feature\Plugins;
 
 use App\Models\Platform\PluginSetting;
-use App\Models\Plugins\Lexoffice\LexofficeVoucher;
 use App\Plugins\Contracts\{PaymentSyncer, PluginCapability};
 use App\Plugins\Lexoffice\LexofficePlugin;
+use App\Plugins\Lexoffice\Models\LexofficeVoucher;
 use App\Plugins\PluginManager;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

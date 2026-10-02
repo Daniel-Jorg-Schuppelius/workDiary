@@ -62,7 +62,7 @@ class EasybillTarget implements FacturationTarget {
     public function transfer(BillingTransfer $transfer): TargetResult {
         $config = EasybillConfig::resolve((int) $transfer->organization_id);
         if (empty($config['api_key'])) {
-            throw new RuntimeException((string) __('finance.error.easybill_not_configured'));
+            throw new RuntimeException((string) __('easybill::finance.error.easybill_not_configured'));
         }
 
         // (1) Bereits übergeben? (harte Idempotenz je Transfer)
@@ -93,7 +93,7 @@ class EasybillTarget implements FacturationTarget {
         // Rechnungstexte des Nachweises (MVP-491), sonst der Standardtext.
         $intro = filled($transfer->intro_text)
             ? (string) $transfer->intro_text
-            : (string) __('finance.easybill.introduction', [
+            : (string) __('easybill::finance.easybill.introduction', [
                 'channel' => $transfer->channel->label(),
                 'from' => $transfer->period_from?->format('d.m.Y') ?? '—',
                 'to' => $transfer->period_to?->format('d.m.Y') ?? '—',
@@ -124,7 +124,7 @@ class EasybillTarget implements FacturationTarget {
         } catch (ConnectException) {
             // Timeout/Netzabriss NACH dem Senden: Ausgang unklar — kein
             // blindes Retry; der nächste Lauf reconciled über external_id.
-            throw new RuntimeException((string) __('finance.error.easybill_outcome_unclear'));
+            throw new RuntimeException((string) __('easybill::finance.error.easybill_outcome_unclear'));
         }
 
         $externalId = (string) ($created['id'] ?? '');
@@ -212,7 +212,7 @@ class EasybillTarget implements FacturationTarget {
             } catch (ConnectException) {
                 // Ausgang unklar — nächster Lauf findet den Kunden über die
                 // Nummer wieder, statt ihn doppelt anzulegen.
-                throw new RuntimeException((string) __('finance.error.easybill_outcome_unclear'));
+                throw new RuntimeException((string) __('easybill::finance.error.easybill_outcome_unclear'));
             }
         }
 
@@ -267,7 +267,7 @@ class EasybillTarget implements FacturationTarget {
                 // easybill-Vertrag: Preise in Cents (150 = 1,50 €).
                 'single_price_net' => round($position->unitPriceFloat() * 100, 2),
                 'vat_percent' => $position->vat_rate !== null ? (float) $position->vat_rate : $vatRate,
-                'unit' => (string) ($position->unit_name ?: __('finance.easybill.unit_hour')),
+                'unit' => (string) ($position->unit_name ?: __('easybill::finance.easybill.unit_hour')),
             ];
         }
 

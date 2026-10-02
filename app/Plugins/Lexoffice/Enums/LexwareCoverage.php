@@ -29,7 +29,7 @@ enum LexwareCoverage: string implements HasLabel {
     case Unknown = 'unknown';
 
     public function label(): string {
-        return (string) __('lexware.coverage.' . $this->value);
+        return (string) __('lexoffice::lexware.coverage.' . $this->value);
     }
 
     public function tone(): string {

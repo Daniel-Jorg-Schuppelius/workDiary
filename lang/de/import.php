@@ -141,9 +141,6 @@ return [
             'tooLarge' => 'Datei „:file" überschreitet das Größenlimit von :max MB.',
             'noActor' => 'Import-Lauf ohne auslösenden Benutzer — Dokumente brauchen einen Ersteller.',
         ],
-        'persist' => [
-            'noBookingUser' => 'Kein buchbarer Benutzer in der Organisation gefunden.',
-        ],
         // MVP-438: GoBD-Sperre — kein stilles Überschreiben geprüfter Zeiträume.
         'periodLocked' => [
             'attendance' => 'Tag :date ist durch Tagesabschluss oder Monatsfreigabe gesperrt — Zeile übersprungen.',

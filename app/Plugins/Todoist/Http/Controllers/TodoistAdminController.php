@@ -12,11 +12,11 @@ namespace App\Plugins\Todoist\Http\Controllers;
 
 use App\Models\Integration\ExternalReference;
 use App\Models\Platform\User;
-use App\Models\Plugins\Todoist\{TodoistConnection, TodoistProjectLink};
 use App\Models\Project\Project;
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
 use App\Plugins\Support\{ConnectionOAuthController, PluginOAuthGrant};
 use App\Plugins\Todoist\Api\{TodoistApiClient, TodoistOAuth};
+use App\Plugins\Todoist\Models\{TodoistConnection, TodoistProjectLink};
 use App\Plugins\Todoist\Services\TodoistPreflightService;
 use App\Plugins\Todoist\{TodoistConfig, TodoistPlugin};
 use App\Support\SqidEncoder;
@@ -88,6 +88,10 @@ class TodoistAdminController extends ConnectionOAuthController {
         return 'todoist';
     }
 
+    protected function pluginId(): string {
+        return TodoistPlugin::ID;
+    }
+
     protected function connectedStatus(): string {
         return TodoistConnection::STATUS_ACTIVE;
     }
@@ -142,7 +146,7 @@ class TodoistAdminController extends ConnectionOAuthController {
             $decoded = ! empty($data['project']) ? app(SqidEncoder::class)->decode(Project::class, (string) $data['project']) : null;
             $project = $decoded !== null ? Project::query()->find($decoded) : null;
             if (! $project instanceof Project) {
-                return back()->with('error', __('todoist.flash.link_project_required'));
+                return back()->with('error', __('todoist::todoist.flash.link_project_required'));
             }
             $projectId = (int) $project->id;
         }
@@ -160,7 +164,7 @@ class TodoistAdminController extends ConnectionOAuthController {
         ])->save();
         $link->audit('todoist.link_saved', ['todoist_project_id' => $link->todoist_project_id, 'sync_mode' => $link->sync_mode]);
 
-        return back()->with('success', __('todoist.flash.link_saved'));
+        return back()->with('success', __('todoist::todoist.flash.link_saved'));
     }
 
     /** Preflight (MVP-112): Kennzahlen + Kollaborator-Zuordnung VOR der Aktivierung. */
@@ -171,13 +175,13 @@ class TodoistAdminController extends ConnectionOAuthController {
 
         $connection = TodoistConnection::query()->where('organization_id', $organization->id)->first();
         if (! $connection instanceof TodoistConnection || ! $connection->isActive()) {
-            return back()->with('error', __('todoist.flash.no_connection'));
+            return back()->with('error', __('todoist::todoist.flash.no_connection'));
         }
 
         try {
             $result = $preflights->forProject($organization, $connection, $link->todoist_project_id);
         } catch (Throwable $e) {
-            return back()->with('error', __('todoist.flash.preflight_failed', ['class' => class_basename($e)]));
+            return back()->with('error', __('todoist::todoist.flash.preflight_failed', ['class' => class_basename($e)]));
         }
 
         // Abschnitte für die Status-Zuordnung gleich mitladen.
@@ -206,7 +210,7 @@ class TodoistAdminController extends ConnectionOAuthController {
         $link->forceFill(['status' => $status])->save();
         $link->audit('todoist.link_status', ['status' => $status]);
 
-        return back()->with('success', __('todoist.flash.link_saved'));
+        return back()->with('success', __('todoist::todoist.flash.link_saved'));
     }
 
     public function destroyLink(TodoistProjectLink $link): RedirectResponse {
@@ -217,7 +221,7 @@ class TodoistAdminController extends ConnectionOAuthController {
         $link->sectionLinks()->delete();
         $link->delete(); // Auditable loggt 'deleted' automatisch
 
-        return redirect()->route('admin.todoist.index')->with('success', __('todoist.flash.link_removed'));
+        return redirect()->route('admin.todoist.index')->with('success', __('todoist::todoist.flash.link_removed'));
     }
 
     /** Speichert Abschnitts→Status-Zuordnungen (nicht zugeordnet = Status unangetastet). */
@@ -246,7 +250,7 @@ class TodoistAdminController extends ConnectionOAuthController {
         }
         $link->audit('todoist.sections_saved', ['count' => $link->sectionLinks()->count()]);
 
-        return back()->with('success', __('todoist.flash.sections_saved'));
+        return back()->with('success', __('todoist::todoist.flash.sections_saved'));
     }
 
     /** Ordnet einen Todoist-Kollaborator einem Org-Benutzer zu (oder löst die Zuordnung). */
@@ -270,7 +274,7 @@ class TodoistAdminController extends ConnectionOAuthController {
             $reference?->delete();
             $connection?->audit('todoist.collaborator_unassigned', ['collaborator_id' => (string) $data['collaborator_id']]);
 
-            return back()->with('success', __('todoist.flash.collaborator_unassigned'));
+            return back()->with('success', __('todoist::todoist.flash.collaborator_unassigned'));
         }
 
         $userId = app(SqidEncoder::class)->decode(User::class, (string) $data['user']);
@@ -278,7 +282,7 @@ class TodoistAdminController extends ConnectionOAuthController {
             ? User::query()->where('organization_id', $organization->id)->find($userId)
             : null;
         if (! $user instanceof User) {
-            return back()->with('error', __('todoist.flash.collaborator_invalid'));
+            return back()->with('error', __('todoist::todoist.flash.collaborator_invalid'));
         }
 
         ExternalReference::link($organization, TodoistPlugin::ID, TodoistPlugin::EXT_TYPE_COLLABORATOR, $user, (string) $data['collaborator_id']);
@@ -287,7 +291,7 @@ class TodoistAdminController extends ConnectionOAuthController {
             'user_id' => (int) $user->getKey(),
         ]);
 
-        return back()->with('success', __('todoist.flash.collaborator_assigned'));
+        return back()->with('success', __('todoist::todoist.flash.collaborator_assigned'));
     }
 
     /** Manueller Vollabgleich (MVP-116): auditierter Admin-Vorgang. */
@@ -297,7 +301,7 @@ class TodoistAdminController extends ConnectionOAuthController {
 
         $connection = TodoistConnection::query()->where('organization_id', $organization->id)->first();
         if (! $connection instanceof TodoistConnection || ! $connection->isActive()) {
-            return back()->with('error', __('todoist.flash.no_connection'));
+            return back()->with('error', __('todoist::todoist.flash.no_connection'));
         }
 
         // Queue statt Request (Vollscan 2026-08-23, J17): ein Voll-Sync im Web-
@@ -305,6 +309,6 @@ class TodoistAdminController extends ConnectionOAuthController {
         Artisan::queue('todoist:sync', ['--organization' => (string) $organization->id, '--full' => true]);
         $connection->audit('todoist.sync_manual', ['by_user_id' => (int) $admin->id]);
 
-        return back()->with('success', __('todoist.flash.sync_done'));
+        return back()->with('success', __('todoist::todoist.flash.sync_done'));
     }
 }

@@ -1,7 +1,8 @@
 <?php
 
 /**
- * Compare key parity across lang/de, lang/en, lang/fr, lang/it (PHP files).
+ * Compare key parity across de, en, fr, it, es (PHP files) — core catalog
+ * lang/ and every plugin catalog app/Plugins/<Name>/Resources/lang.
  *
  * Exit code:
  *   0 — all locales contain the same keys (per file).
@@ -10,7 +11,7 @@
  * Stub files (lang/fr|it/*.php that just `return require __DIR__ . '/../en/...';`)
  * are treated as exact mirrors of EN, which is the intended baseline.
  *
- * Also compares JSON catalogs (lang/<locale>.json) against lang/en.json.
+ * Also compares JSON catalogs (<catalog>/<locale>.json) against <catalog>/en.json.
  * Note: no lang/de.json exists — DE is the source language for JSON catalogs,
  * so DE strings appear as JSON keys (e.g. __('Speichern')) and fall back to
  * the key when no translation is registered.
@@ -20,7 +21,10 @@
 
 declare(strict_types=1);
 
+require __DIR__ . '/lib/lang-catalogs.php';
+
 $base = dirname(__DIR__);
+$catalogs = langCatalogs($base);
 $locales = ['de', 'en', 'fr', 'it', 'es'];
 $reference = 'de'; // German is the source language for the PHP catalogs.
 
@@ -39,21 +43,23 @@ function flatten(array $a, string $prefix = ''): array {
 
 $exit = 0;
 
-// --- PHP catalogs ---------------------------------------------------------
+// --- PHP catalogs (Kern + Plugins) ----------------------------------------
 $allFiles = [];
-foreach ($locales as $loc) {
-    foreach (glob($base . "/lang/$loc/*.php") ?: [] as $f) {
-        $allFiles[basename($f)] = true;
+foreach ($catalogs as $ns => $dir) {
+    foreach ($locales as $loc) {
+        foreach (glob("$dir/$loc/*.php") ?: [] as $f) {
+            $allFiles[($ns === '' ? '' : "$ns::") . basename($f)] = [$ns, basename($f)];
+        }
     }
 }
 ksort($allFiles);
 
-foreach (array_keys($allFiles) as $file) {
+foreach ($allFiles as $file => [$ns, $name]) {
     $keysPerLocale = [];
     foreach ($locales as $loc) {
-        $path = $base . "/lang/$loc/$file";
+        $path = $catalogs[$ns] . "/$loc/$name";
         if (! is_file($path)) {
-            echo "[MISSING FILE] lang/$loc/$file\n";
+            echo '[MISSING FILE] ' . substr($path, strlen($base) + 1) . "\n";
             $exit = 1;
             continue;
         }
@@ -99,20 +105,26 @@ foreach (array_keys($allFiles) as $file) {
 // JSON catalogs use DE strings as keys (e.g. {{ __('Speichern') }}). DE itself
 // therefore needs no JSON file (Laravel falls back to the key). EN/FR/IT must
 // each provide a translation file with the same key set as lang/en.json.
-$enJsonPath = $base . '/lang/en.json';
-if (is_file($enJsonPath)) {
+$enSet = [];
+foreach ($catalogs as $dir) {
+    $enJsonPath = "$dir/en.json";
+    if (! is_file($enJsonPath)) {
+        continue;
+    }
     $en = array_keys(json_decode((string) file_get_contents($enJsonPath), true) ?? []);
+    $enSet += array_fill_keys($en, true);
     foreach (['fr', 'it', 'es'] as $loc) {
-        $path = $base . "/lang/$loc.json";
+        $path = "$dir/$loc.json";
+        $rel = substr($path, strlen($base) + 1);
         if (! is_file($path)) {
-            echo "[MISSING FILE] lang/$loc.json\n";
+            echo "[MISSING FILE] $rel\n";
             $exit = 1;
             continue;
         }
         $other = array_keys(json_decode((string) file_get_contents($path), true) ?? []);
         $missing = array_values(array_diff($en, $other));
         if ($missing) {
-            echo "=== lang/$loc.json ===\n";
+            echo "=== $rel ===\n";
             echo "  missing in $loc (" . count($missing) . ") vs en.json:\n";
             foreach ($missing as $k) { echo "    - $k\n"; }
             $exit = 1;
@@ -147,6 +159,9 @@ foreach ($dirs as $dir) {
             if ($k === '' || str_contains($k, '$') || str_contains($k, '{')) {
                 continue; // dynamic/interpolated
             }
+            if (preg_match('/^[a-z0-9_-]+::/', $k) === 1) {
+                continue; // plugin namespace (Resources/lang/<locale>/<file>.php)
+            }
             if (! str_contains($k, ' ')) {
                 if (str_contains($k, '.') && isset($namespaces[explode('.', $k, 2)[0]])) {
                     continue; // namespace key (lang/de/<file>.php)
@@ -163,12 +178,11 @@ foreach ($dirs as $dir) {
     }
 }
 
-if (is_file($enJsonPath)) {
-    $enSet = array_fill_keys(array_keys(json_decode((string) file_get_contents($enJsonPath), true) ?? []), true);
+if ($enSet !== []) {
     $sourceMissing = array_keys(array_diff_key($sourceKeys, $enSet));
     sort($sourceMissing);
     if ($sourceMissing) {
-        echo "=== source scan (views + app vs en.json) ===\n";
+        echo "=== source scan (views + app vs en.json of all catalogs) ===\n";
         echo '  used in source but missing in en.json (' . count($sourceMissing) . ") — shown as German everywhere:\n";
         foreach ($sourceMissing as $k) { echo "    - $k\n"; }
         $exit = 1;

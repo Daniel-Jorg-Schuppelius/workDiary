@@ -107,10 +107,14 @@ class OrgScopedExistsRuleTest extends TestCase {
         $tables[] = 'users';
         $tables[] = 'classifications';
 
-        $modelsDir = (string) realpath(__DIR__ . '/../../../app/Models');
-        foreach ($this->phpFiles($modelsDir) as $file) {
-            $class = 'App\\Models\\' . str_replace(
-                [$modelsDir . DIRECTORY_SEPARATOR, '.php', DIRECTORY_SEPARATOR],
+        $appDir = (string) realpath(__DIR__ . '/../../../app');
+        $files = $this->phpFiles($appDir . '/Models');
+        foreach (glob($appDir . '/Plugins/*/Models', GLOB_ONLYDIR) ?: [] as $pluginModels) {
+            $files = [...$files, ...$this->phpFiles($pluginModels)];
+        }
+        foreach ($files as $file) {
+            $class = 'App\\' . str_replace(
+                [$appDir . DIRECTORY_SEPARATOR, '.php', DIRECTORY_SEPARATOR],
                 ['', '', '\\'],
                 $file,
             );

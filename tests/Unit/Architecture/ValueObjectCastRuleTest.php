@@ -148,7 +148,13 @@ class ValueObjectCastRuleTest extends TestCase {
      * @return array<int, string>
      */
     private function modelFiles(): array {
-        return $this->phpFiles((string) realpath(__DIR__ . '/../../../app/Models'));
+        $appDir = (string) realpath(__DIR__ . '/../../../app');
+        $files = $this->phpFiles($appDir . '/Models');
+        foreach (glob($appDir . '/Plugins/*/Models', GLOB_ONLYDIR) ?: [] as $pluginModels) {
+            $files = [...$files, ...$this->phpFiles($pluginModels)];
+        }
+
+        return $files;
     }
 
     /**

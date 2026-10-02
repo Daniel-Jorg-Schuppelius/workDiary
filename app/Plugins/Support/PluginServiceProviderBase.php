@@ -20,8 +20,13 @@ use RuntimeException;
 /**
  * Gemeinsame Basis aller Plugin-ServiceProvider (W3c). Übernimmt die
  * Layout-Konventionen des Plugin-Systems: `config.php` wird im register()
- * unter `plugins.<id>` gemergt; `routes.php` und `Resources/views` werden im
- * boot() geladen, sofern vorhanden (View-Namespace = Plugin-ID).
+ * unter `plugins.<id>` gemergt; `routes.php`, `Resources/views` und
+ * `Resources/lang` werden im boot() geladen, sofern vorhanden (View- und
+ * Text-Namespace = Plugin-ID, z. B. `__('lexoffice::lexware.handover.title')`;
+ * `<sprache>.json` ergänzt die Kern-JSON-Texte, der Kern gewinnt bei Gleichstand).
+ * `Database/Migrations` läuft mit dem normalen `migrate` (Tabellen bestehen
+ * unabhängig von der Aktivierung); `Plugin::migrationsPath()` bleibt dem
+ * eigenen Schema-Lebenszyklus externer Plugins vorbehalten.
  * Individuelles (Bindings, Observer, Commands, Registry-Anmeldungen, …)
  * gehört in die Hooks {@see registerPlugin()} / {@see bootPlugin()}.
  */
@@ -29,7 +34,7 @@ abstract class PluginServiceProviderBase extends ServiceProvider {
     /** Verzeichnis der konkreten Provider-Klasse (= Plugin-Verzeichnis), lazy ermittelt. */
     private ?string $pluginDir = null;
 
-    /** Plugin-ID — Config-Schlüssel `plugins.<id>` und View-Namespace (Konvention: `XxxPlugin::ID`). */
+    /** Plugin-ID — Config-Schlüssel `plugins.<id>`, View- und Text-Namespace (Konvention: `XxxPlugin::ID`). */
     abstract protected function pluginId(): string;
 
     final public function register(): void {
@@ -47,6 +52,17 @@ abstract class PluginServiceProviderBase extends ServiceProvider {
         $views = $this->pluginDir() . '/Resources/views';
         if (Folder::isDirectory($views)) {
             $this->loadViewsFrom($views, $this->pluginId());
+        }
+
+        $lang = $this->pluginDir() . '/Resources/lang';
+        if (Folder::isDirectory($lang)) {
+            $this->loadTranslationsFrom($lang, $this->pluginId());
+            $this->loadJsonTranslationsFrom($lang);
+        }
+
+        $migrations = $this->pluginDir() . '/Database/Migrations';
+        if (Folder::isDirectory($migrations)) {
+            $this->loadMigrationsFrom($migrations);
         }
 
         $this->bootPlugin();

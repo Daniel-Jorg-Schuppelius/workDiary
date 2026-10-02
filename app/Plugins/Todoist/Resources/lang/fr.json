@@ -1,0 +1,10 @@
+{
+    "Keine Todoist-Verbindung hergestellt.": "Aucune connexion Todoist établie.",
+    "Konfiguriert (keine Organisation im Kontext).": "Configuré (aucune organisation dans le contexte).",
+    "Synchronisiert Aufgaben mit Todoist (OAuth, API v1): explizit zugeordnete Projekte, Integrations-Inbox für Konflikte, keine Löschweitergabe.": "Synchronise les tâches avec Todoist (OAuth, API v1) : projets explicitement associés, boîte de réception d’intégration pour les conflits, aucune propagation des suppressions.",
+    "Todoist": "Todoist",
+    "Todoist ist nicht konfiguriert: keine eigene App in den Plugin-Einstellungen und keine TODOIST_CLIENT_ID/SECRET der Installation.": "Todoist n’est pas configuré : aucune application propre dans les réglages du plugin ni TODOIST_CLIENT_ID/SECRET pour l’installation.",
+    "Todoist-API nicht erreichbar (:class).": "API Todoist inaccessible (:class).",
+    "Verbindung pausiert — bitte neu verbinden.": "Connexion en pause — veuillez vous reconnecter.",
+    "Verbunden als :email.": "Connecté en tant que :email."
+}

@@ -1,0 +1,13 @@
+{
+    "Telefonauskunft": "Annuaire téléphonique",
+    "Auskunfts-Endpunkte": "Points de terminaison d'annuaire",
+    "Löst unbekannte Rufnummern über selbst gestellte HTTP-Auskunftsdienste in Namen auf und füllt die fehlenden Kontaktdaten an den passenden Stellen (Anruf-Import, CTI, Stammdaten) — als Vorschlag, nie automatisch.": "Résout les numéros inconnus en noms via des services d'annuaire HTTP auto-hébergés et complète les données de contact manquantes là où il faut (import d'appels, CTI, données de base) — comme suggestion, jamais automatiquement.",
+    "Ein Dienst je Zeile: HTTPS-URL, optional gefolgt von „|Token\" (Bearer). Die Rufnummer wird in E.164 gesendet — über den Platzhalter {number} in der URL oder als Query-Parameter number. Erwartete Antwort: JSON {\"name\": \"…\"}; leer = kein Treffer. Nur einsetzen, wenn der Versand der Anrufernummer an diese Dienste datenschutzrechtlich gedeckt ist.": "Un service par ligne : une URL HTTPS, éventuellement suivie de « |token » (Bearer). Le numéro est envoyé au format E.164 — via l'espace réservé {number} dans l'URL ou comme paramètre de requête number. Réponse attendue : JSON {\"name\": \"…\"} ; vide = aucun résultat. À n'utiliser que si l'envoi du numéro de l'appelant à ces services est couvert par le droit de la protection des données.",
+    "Kein Auskunfts-Endpunkt hinterlegt.": "Aucun point de terminaison d'annuaire configuré.",
+    ":count Auskunfts-Endpunkt(e) konfiguriert.": ":count point(s) de terminaison d'annuaire configuré(s).",
+    "Aus Telefonauskunft füllen": "Remplir depuis l'annuaire téléphonique",
+    "Für die Telefonauskunft ist keine Rufnummer hinterlegt.": "Aucun numéro n'est enregistré pour la consultation d'annuaire.",
+    "Die Telefonauskunft hat keinen Namen zu dieser Rufnummer geliefert.": "L'annuaire téléphonique n'a renvoyé aucun nom pour ce numéro.",
+    "Name und Firma sind bereits gefüllt — nichts zu übernehmen.": "Le nom et la société sont déjà renseignés — rien à appliquer.",
+    "Aus der Telefonauskunft übernommen: :name": "Repris de l'annuaire téléphonique : :name"
+}

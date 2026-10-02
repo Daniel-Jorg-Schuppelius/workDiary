@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Plugins;
 
-use App\Models\Plugins\Lexoffice\{LexofficePostingCategory, LexofficeVoucher, LexofficeVoucherCategory};
 use App\Models\Supplier\Supplier;
 use App\Plugins\Lexoffice\{LexofficePlugin, LexofficeVoucherCategorySync};
+use App\Plugins\Lexoffice\Models\{LexofficePostingCategory, LexofficeVoucher, LexofficeVoucherCategory};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\{WithGlobalDateRange, WithOrganization};
 use Tests\Support\{FakePluginHttp, InteractsWithPlugins};

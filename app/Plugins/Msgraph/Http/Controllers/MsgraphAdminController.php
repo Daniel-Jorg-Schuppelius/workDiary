@@ -10,9 +10,9 @@
 
 namespace App\Plugins\Msgraph\Http\Controllers;
 
-use App\Models\Plugins\Msgraph\MsgraphConnection;
 use App\Plugins\Msgraph\Api\{MsgraphCalendarClient, MsgraphOAuth};
-use App\Plugins\Msgraph\MsgraphConfig;
+use App\Plugins\Msgraph\Models\MsgraphConnection;
+use App\Plugins\Msgraph\{MsgraphConfig, MsgraphPlugin};
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
 use App\Plugins\Support\{ConnectionOAuthController, OAuthStateHandshake, PluginOAuthGrant};
 use Illuminate\Http\{RedirectResponse, Request};
@@ -50,22 +50,22 @@ class MsgraphAdminController extends ConnectionOAuthController {
         }
 
         // Graph-Mail-Verbindung (Feature 102): eigener Grant, eigene Sektion.
-        $mailConnection = \App\Models\Plugins\Msgraph\MsgraphMailConnection::query()->where('organization_id', $organization->id)->first();
+        $mailConnection = \App\Plugins\Msgraph\Models\MsgraphMailConnection::query()->where('organization_id', $organization->id)->first();
 
         // Kontakt-Verbindung (Feature 102, Schnitt D): fünfter Grant.
-        $contactConnection = \App\Models\Plugins\Msgraph\MsgraphContactConnection::query()->where('organization_id', $organization->id)->first();
+        $contactConnection = \App\Plugins\Msgraph\Models\MsgraphContactConnection::query()->where('organization_id', $organization->id)->first();
 
         // To-Do-Sync (Feature 102, Schnitt E): sechster Grant + Listen-Zuordnungen.
-        $taskConnection = \App\Models\Plugins\Msgraph\MsgraphTaskConnection::query()->where('organization_id', $organization->id)->first();
+        $taskConnection = \App\Plugins\Msgraph\Models\MsgraphTaskConnection::query()->where('organization_id', $organization->id)->first();
         $todoLists = [];
-        if ($taskConnection instanceof \App\Models\Plugins\Msgraph\MsgraphTaskConnection && $taskConnection->isActive()) {
+        if ($taskConnection instanceof \App\Plugins\Msgraph\Models\MsgraphTaskConnection && $taskConnection->isActive()) {
             try {
                 $todoLists = (new \App\Plugins\Msgraph\Api\MsgraphTodoClient($taskConnection))->lists();
             } catch (Throwable) {
                 $todoLists = [];
             }
         }
-        $taskLinks = \App\Models\Plugins\Msgraph\MsgraphTaskListLink::query()
+        $taskLinks = \App\Plugins\Msgraph\Models\MsgraphTaskListLink::query()
             ->where('organization_id', $organization->id)
             ->orderBy('todo_list_name')
             ->get();
@@ -88,7 +88,7 @@ class MsgraphAdminController extends ConnectionOAuthController {
             'projects' => $projects,
             // OneNote-Übernahme (MVP-815): abschaltbar, eigener Grant.
             'oneNoteEnabled' => MsgraphConfig::oneNoteImportEnabled((int) $organization->id),
-            'oneNoteConnection' => \App\Models\Plugins\Msgraph\MsgraphOneNoteConnection::query()->where('organization_id', $organization->id)->first(),
+            'oneNoteConnection' => \App\Plugins\Msgraph\Models\MsgraphOneNoteConnection::query()->where('organization_id', $organization->id)->first(),
         ]);
     }
 
@@ -118,6 +118,10 @@ class MsgraphAdminController extends ConnectionOAuthController {
         return 'msgraph';
     }
 
+    protected function pluginId(): string {
+        return MsgraphPlugin::ID;
+    }
+
     protected function connectedStatus(): string {
         return MsgraphConnection::STATUS_ACTIVE;
     }
@@ -139,7 +143,7 @@ class MsgraphAdminController extends ConnectionOAuthController {
         $organization = $this->organization($admin);
 
         if (! MsgraphConfig::isConfigured()) {
-            return back()->with('error', __('msgraph.flash.not_configured'));
+            return back()->with('error', __('msgraph::msgraph.flash.not_configured'));
         }
 
         ['state' => $state] = $this->adminConsentHandshake()
@@ -156,19 +160,19 @@ class MsgraphAdminController extends ConnectionOAuthController {
         $payload = $this->adminConsentHandshake()
             ->redeem((string) $request->query('state', ''), (int) $organization->id, (int) $admin->id);
         if ($payload === null) {
-            return $this->backToOverview()->with('error', __('msgraph.flash.state_invalid'));
+            return $this->backToOverview()->with('error', __('msgraph::msgraph.flash.state_invalid'));
         }
 
         // Auch Fehlerantworten tragen admin_consent=True — error zuerst; nur
         // der Fehlercode, nie error_description (enthält Trace-/Correlation-IDs).
         $error = (string) $request->query('error', '');
         if ($error !== '' || (string) $request->query('admin_consent', '') !== 'True') {
-            return $this->backToOverview()->with('error', __('msgraph.flash.admin_consent_failed', ['error' => $error !== '' ? $error : 'declined']));
+            return $this->backToOverview()->with('error', __('msgraph::msgraph.flash.admin_consent_failed', ['error' => $error !== '' ? $error : 'declined']));
         }
 
         $organization->audit('msgraph.admin_consent_granted', ['by_user_id' => (int) $admin->id]);
 
-        return $this->backToOverview()->with('success', __('msgraph.flash.admin_consent_granted'));
+        return $this->backToOverview()->with('success', __('msgraph::msgraph.flash.admin_consent_granted'));
     }
 
     private function adminConsentHandshake(): OAuthStateHandshake {
@@ -182,7 +186,7 @@ class MsgraphAdminController extends ConnectionOAuthController {
 
         $connection = MsgraphConnection::query()->where('organization_id', $organization->id)->first();
         if (! $connection instanceof MsgraphConnection || ! $connection->isActive()) {
-            return back()->with('error', __('msgraph.flash.no_connection'));
+            return back()->with('error', __('msgraph::msgraph.flash.no_connection'));
         }
 
         $data = $request->validate([
@@ -201,7 +205,7 @@ class MsgraphAdminController extends ConnectionOAuthController {
                 $match = null;
             }
             if (! is_array($match)) {
-                return back()->with('error', __('msgraph.flash.calendar_invalid'));
+                return back()->with('error', __('msgraph::msgraph.flash.calendar_invalid'));
             }
             $calendarName = (string) $match['name'];
         }
@@ -220,7 +224,7 @@ class MsgraphAdminController extends ConnectionOAuthController {
         ])->save();
         $connection->audit('msgraph.calendar_selected', ['calendar_name' => $calendarName ?? 'default', 'teams_meetings' => $connection->teams_meetings, 'two_way' => $connection->two_way]);
 
-        return back()->with('success', __('msgraph.flash.calendar_saved'));
+        return back()->with('success', __('msgraph::msgraph.flash.calendar_saved'));
     }
 
     /** Manuelles Publish (auditierter Admin-Vorgang; CalDAV-Muster). */
@@ -230,7 +234,7 @@ class MsgraphAdminController extends ConnectionOAuthController {
 
         $connection = MsgraphConnection::query()->where('organization_id', $organization->id)->first();
         if (! $connection instanceof MsgraphConnection || ! $connection->isActive()) {
-            return back()->with('error', __('msgraph.flash.no_connection'));
+            return back()->with('error', __('msgraph::msgraph.flash.no_connection'));
         }
 
         // Queue statt Request (Vollscan 2026-08-23, J17): ein Voll-Sync im Web-
@@ -238,6 +242,6 @@ class MsgraphAdminController extends ConnectionOAuthController {
         Artisan::queue('msgraph:publish', ['--organization' => (string) $organization->id]);
         $connection->audit('msgraph.publish_manual', ['by_user_id' => (int) $admin->id]);
 
-        return back()->with('success', __('msgraph.flash.publish_done'));
+        return back()->with('success', __('msgraph::msgraph.flash.publish_done'));
     }
 }

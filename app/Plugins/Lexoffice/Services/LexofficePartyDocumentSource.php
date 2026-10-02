@@ -14,9 +14,9 @@ namespace App\Plugins\Lexoffice\Services;
 
 use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
-use App\Models\Plugins\Lexoffice\LexofficeVoucher;
 use App\Models\Supplier\Supplier;
 use App\Plugins\Lexoffice\LexofficePlugin;
+use App\Plugins\Lexoffice\Models\LexofficeVoucher;
 use App\Plugins\PluginManager;
 use App\Services\Billing\Contracts\PartyDocumentSource;
 use App\Services\Billing\Dto\{PartyDocument, PartyDocumentList};

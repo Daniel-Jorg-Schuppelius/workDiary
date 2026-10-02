@@ -1,0 +1,15 @@
+{
+    "API-Passwort": "Password API",
+    "Billbee": "Billbee",
+    "Billbee drosselt (429) — 2 Requests/Sekunde nicht überschreiten.": "Billbee sta limitando (429) — non superare 2 richieste/secondo.",
+    "Billbee ist für diese Organisation nicht konfiguriert (API-Key/Benutzer/API-Passwort fehlen).": "Billbee non è configurato per questa organizzazione (chiave API/utente/password API mancanti).",
+    "Billbee ist nicht konfiguriert (API-Key/Benutzer/API-Passwort fehlen).": "Billbee non è configurato (chiave API/utente/password API mancanti).",
+    "Billbee lehnt die Zugangsdaten ab (401/403) — API-Key und API-Passwort prüfen.": "Billbee rifiuta le credenziali (401/403) — verificare chiave e password API.",
+    "Billbee → Einstellungen → API; die Freischaltung erfolgt durch den Billbee-Support.": "Billbee → Impostazioni → API; l'attivazione avviene tramite il supporto Billbee.",
+    "Billbee-API antwortet mit Fehlerstatus :status.": "L'API Billbee risponde con lo stato di errore :status.",
+    "Billbee-API erreichbar.": "API Billbee raggiungibile.",
+    "Billbee-API nicht erreichbar.": "API Billbee non raggiungibile.",
+    "Billbee-Benutzername": "Nome utente Billbee",
+    "Das separate API-Passwort des Billbee-Nutzers (nicht das Login-Passwort).": "La password API separata dell'utente Billbee (non quella di accesso).",
+    "Importiert Multichannel-Bestellungen (Amazon, eBay, Otto, Kaufland, Shopify …) aus Billbee Inbox-First mit Kanalherkunft und meldet Bestände als Absolut-Updates zurück — ohne eigene Marktplatz-Zulassungen.": "Importa ordini multicanale (Amazon, eBay, Otto, Kaufland, Shopify …) da Billbee in modalità inbox-first con origine del canale e restituisce le giacenze come aggiornamenti assoluti — senza autorizzazioni marketplace proprie."
+}

@@ -12,9 +12,9 @@ namespace Tests\Feature\Helpdesk;
 
 use App\Models\Integration\ExternalReference;
 use App\Models\Platform\{Organization, User};
-use App\Models\Plugins\Zammad\ZammadConnection;
 use App\Models\ServiceTicket\{ServiceQueue, ServiceTicket};
 use App\Plugins\Zammad\Contracts\ZammadGateway;
+use App\Plugins\Zammad\Models\ZammadConnection;
 use App\Plugins\Zammad\Services\{ZammadOutboxDispatcher, ZammadTicketImporter};
 use App\Plugins\Zammad\ZammadPlugin;
 use App\Services\Integration\IntegrationOutboxService;

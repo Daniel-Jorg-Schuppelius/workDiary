@@ -1,0 +1,8 @@
+{
+    "Erzeugt UPS-Versandlabels (Shipping API, OAuth2 Client-Credentials), storniert Sendungen und verfolgt sie. Pro Organisation mit Client-ID/Secret und Shipper-Nummer konfiguriert; Label als GIF.": "Crea etiquetas de envío UPS (Shipping API, OAuth2 client credentials), cancela envíos y realiza su seguimiento. Configurado por organización con ID/secreto de cliente y número de shipper; etiqueta en GIF.",
+    "Keine UPS-Anbindung hinterlegt.": "No hay ninguna conexión UPS configurada.",
+    "UPS-API nicht erreichbar oder Zugangsdaten ungültig.": "API de UPS inaccesible o credenciales no válidas.",
+    "UPS-API-Fehler (:class).": "Error de la API de UPS (:class).",
+    "UPS-Anbindung ist deaktiviert.": "La conexión UPS está desactivada.",
+    "Verbunden mit der UPS-API.": "Conectado a la API de UPS."
+}

@@ -12,7 +12,7 @@ namespace Tests\Feature\Integration;
 
 use App\Enums\Integration\IntegrationOutboxStatus;
 use App\Models\Integration\IntegrationOutboxEntry;
-use App\Models\Plugins\Todoist\TodoistWebhookDelivery;
+use App\Plugins\Todoist\Models\TodoistWebhookDelivery;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;

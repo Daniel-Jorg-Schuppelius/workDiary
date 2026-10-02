@@ -11,7 +11,7 @@
 namespace Tests\Feature\Plugins\Msgraph;
 
 use App\Models\Platform\User;
-use App\Models\Plugins\Msgraph\MsgraphConnection;
+use App\Plugins\Msgraph\Models\MsgraphConnection;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\{WithOrganization, WithPluginSecrets};

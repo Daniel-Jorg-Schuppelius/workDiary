@@ -134,12 +134,6 @@ return [
         'total' => 'Total',
     ],
 
-    'easybill' => [
-        'introduction' => 'Nous vous facturons comme suit nos livraisons et prestations pour la période du :from au :to.',
-        'unit_hour' => 'h',
-        'unit_piece' => 'pcs',
-    ],
-
     'position' => [
         'service_date' => '(date de prestation :date)',
         'service_period' => '(période de prestation :from – :to)',
@@ -155,16 +149,6 @@ return [
         'service' => 'prix de la prestation par défaut',
         'org_default' => 'taux horaire par défaut',
         'none' => 'aucun taux trouvé',
-    ],
-
-    'sevdesk' => [
-        'introduction' => 'Nous vous facturons comme suit nos livraisons et prestations pour la période du :from au :to.',
-        'tax_text' => 'TVA :rate %',
-    ],
-
-    'lexoffice' => [
-        'introduction' => 'Nous vous facturons nos livraisons et prestations comme suit.',
-        'delivery_title' => 'Bon de livraison',
     ],
 
     'flash' => [
@@ -191,19 +175,6 @@ return [
         'target_not_allowed' => 'Cette cible n\'est pas autorisée pour le canal de facturation « :mode ».',
         'correction_only_transferred' => 'Une correction n’est possible que pour un transfert déjà remis.',
         'merge_needs_two' => 'Sélectionnez au moins deux positions à fusionner.',
-        'lexoffice_not_configured' => 'Lexoffice n\'est pas configuré pour cette organisation (clé API manquante).',
-        'sevdesk_not_configured' => 'sevDesk n\'est pas configuré pour cette organisation (jeton API manquant).',
-        'sevdesk_outcome_unclear' => 'Résultat de la remise sevDesk incertain (délai dépassé après l\'envoi) — ne pas réessayer aveuglément ; le prochain passage rapproche via le marqueur source.',
-        'easybill_not_configured' => 'easybill n\'est pas configuré pour cette organisation (clé API manquante).',
-        'easybill_outcome_unclear' => 'Résultat du transfert easybill incertain (délai dépassé après l\'envoi) — ne pas réessayer à l\'aveugle ; la prochaine exécution réconcilie via le marqueur source.',
-        'lexoffice_contact_missing' => 'Aucun contact Lexoffice pour le client — veuillez d\'abord synchroniser le contact.',
-        'lexoffice_delivery_no_customer' => 'Une livraison sans client ne peut pas être transmise comme bon de livraison.',
-        'lexoffice_delivery_not_linked' => 'Aucun bon de livraison Lexoffice n\'est lié à cette livraison.',
-        'lexoffice_oc_no_customer' => 'Un ordre de fabrication sans client ne peut pas être transmis comme confirmation de commande.',
-        'lexoffice_oc_not_linked' => 'Aucune confirmation de commande Lexoffice n\'est liée à cet ordre de fabrication.',
-        'lexoffice_quote_no_customer' => 'Un ordre de fabrication sans client ne peut pas être transmis comme devis.',
-        'lexoffice_quote_not_linked' => 'Aucun devis Lexoffice n\'est lié à cet ordre de fabrication.',
-        'lexoffice_dunning_not_invoice' => 'Une relance ne peut être créée que pour une facture.',
         'sources_missing' => 'Les sources de ce justificatif de transfert ne sont plus toutes disponibles.',
     ],
     'datev' => [

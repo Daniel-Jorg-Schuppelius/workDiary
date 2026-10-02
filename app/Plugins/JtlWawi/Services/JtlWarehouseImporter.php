@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace App\Plugins\JtlWawi\Services;
 
-use App\Models\Plugins\JtlWawi\{JtlConnection, JtlWarehouseMapping};
 use App\Plugins\JtlWawi\Api\JtlGatewayFactory;
 use App\Plugins\JtlWawi\JtlWawiPlugin;
+use App\Plugins\JtlWawi\Models\{JtlConnection, JtlWarehouseMapping};
 
 /**
  * Projiziert die JTL-Lagerstätten nach `jtl_warehouse_mappings`

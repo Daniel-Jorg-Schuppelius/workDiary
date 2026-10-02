@@ -36,7 +36,7 @@ class JournalContractRuleTest extends TestCase {
 
     public function test_event_models_on_event_tables_extend_the_journal_entry(): void {
         $violations = [];
-        foreach ($this->phpFiles('app/Models') as $file) {
+        foreach ($this->modelFiles() as $file) {
             $relative = $this->relativePath($file);
             if (! str_ends_with($relative, 'Event.php')) {
                 continue;
@@ -64,7 +64,7 @@ class JournalContractRuleTest extends TestCase {
 
     public function test_journals_are_written_only_through_record_or_log(): void {
         $journals = [];
-        foreach ($this->phpFiles('app/Models') as $file) {
+        foreach ($this->modelFiles() as $file) {
             $class = 'App\\' . str_replace('/', '\\', substr($this->relativePath($file), 4, -4));
             if (class_exists($class) && is_subclass_of($class, JournalEntry::class) && ! (new \ReflectionClass($class))->isAbstract()) {
                 $journals[] = class_basename($class);

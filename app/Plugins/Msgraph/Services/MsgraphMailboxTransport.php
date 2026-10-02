@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\Msgraph\Services;
 
 use App\Models\Platform\Organization;
-use App\Models\Plugins\Msgraph\MsgraphMailConnection;
+use App\Plugins\Msgraph\Models\MsgraphMailConnection;
 use App\Plugins\Msgraph\MsgraphPlugin;
 use App\Services\Mail\Contracts\MailboxTransport;
 use App\Services\Mail\MailboxGateway;
@@ -25,11 +25,11 @@ final class MsgraphMailboxTransport implements MailboxTransport {
     }
 
     public function label(): string {
-        return (string) __('mail.transport.msgraph');
+        return (string) __('msgraph::mail.transport.msgraph');
     }
 
     public function hint(): string {
-        return (string) __('mail.transport.msgraph_hint');
+        return (string) __('msgraph::mail.transport.msgraph_hint');
     }
 
     public function gateway(): MailboxGateway {
@@ -39,6 +39,6 @@ final class MsgraphMailboxTransport implements MailboxTransport {
     public function unavailableReason(Organization $organization): ?string {
         $mail = MsgraphMailConnection::query()->where('organization_id', $organization->id)->first();
 
-        return $mail instanceof MsgraphMailConnection && $mail->isActive() ? null : (string) __('mail.flash.msgraph_connection_required');
+        return $mail instanceof MsgraphMailConnection && $mail->isActive() ? null : (string) __('msgraph::mail.flash.msgraph_connection_required');
     }
 }

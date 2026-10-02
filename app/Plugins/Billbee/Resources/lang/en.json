@@ -1,0 +1,15 @@
+{
+    "API-Passwort": "API password",
+    "Billbee": "Billbee",
+    "Billbee drosselt (429) — 2 Requests/Sekunde nicht überschreiten.": "Billbee is throttling (429) — do not exceed 2 requests/second.",
+    "Billbee ist für diese Organisation nicht konfiguriert (API-Key/Benutzer/API-Passwort fehlen).": "Billbee is not configured for this organisation (API key/user/API password missing).",
+    "Billbee ist nicht konfiguriert (API-Key/Benutzer/API-Passwort fehlen).": "Billbee is not configured (API key/user/API password missing).",
+    "Billbee lehnt die Zugangsdaten ab (401/403) — API-Key und API-Passwort prüfen.": "Billbee rejects the credentials (401/403) — check API key and API password.",
+    "Billbee → Einstellungen → API; die Freischaltung erfolgt durch den Billbee-Support.": "Billbee → Settings → API; activation is done by Billbee support.",
+    "Billbee-API antwortet mit Fehlerstatus :status.": "Billbee API responds with error status :status.",
+    "Billbee-API erreichbar.": "Billbee API reachable.",
+    "Billbee-API nicht erreichbar.": "Billbee API not reachable.",
+    "Billbee-Benutzername": "Billbee username",
+    "Das separate API-Passwort des Billbee-Nutzers (nicht das Login-Passwort).": "The Billbee user's separate API password (not the login password).",
+    "Importiert Multichannel-Bestellungen (Amazon, eBay, Otto, Kaufland, Shopify …) aus Billbee Inbox-First mit Kanalherkunft und meldet Bestände als Absolut-Updates zurück — ohne eigene Marktplatz-Zulassungen.": "Imports multichannel orders (Amazon, eBay, Otto, Kaufland, Shopify …) from Billbee inbox-first with channel origin and reports stock back as absolute updates — without own marketplace approvals."
+}

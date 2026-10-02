@@ -11,9 +11,9 @@
 namespace App\Plugins\Calendly;
 
 use App\Models\Platform\Organization;
-use App\Models\Plugins\Calendly\CalendlyConnection;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Calendly\Api\CalendlyClient;
+use App\Plugins\Calendly\Models\CalendlyConnection;
 use App\Plugins\Calendly\Services\CalendlyBackfillService;
 use App\Plugins\Contracts\{AppointmentSyncer, Plugin, PluginCapability};
 use App\Plugins\Support\PluginOrgContext;

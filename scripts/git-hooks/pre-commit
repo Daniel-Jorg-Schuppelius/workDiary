@@ -27,9 +27,13 @@ fi
 # beim Neuaufbau eine andere Reihenfolge als beim Deploy. Regel: jede neu
 # gestagte Migration sortiert lexikografisch über der höchsten bereits
 # committeten, und ihr Zeitstempel-Präfix ist eindeutig.
-staged_migrations=$(git diff --cached --name-only --diff-filter=A | grep '^database/migrations/.*\.php$' || true)
+# Plugin-Migrationen (app/Plugins/<Name>/Database/Migrations) laufen im selben
+# Migrator und zählen mit (MVP-1051).
+migration_path_re='^(database/migrations|app/Plugins/[^/]+/Database/Migrations)/[^/]+\.php$'
+committed_migrations=$(git ls-tree -r --name-only HEAD database/migrations app/Plugins 2>/dev/null | grep -E "$migration_path_re" | sed 's|.*/||' || true)
+staged_migrations=$(git diff --cached --name-only --diff-filter=A | grep -E "$migration_path_re" || true)
 if [ -n "$staged_migrations" ]; then
-    highest=$(git ls-tree --name-only HEAD database/migrations/ 2>/dev/null | sed 's|.*/||' | sort | tail -n 1)
+    highest=$(printf '%s\n' "$committed_migrations" | sort | tail -n 1)
     for path in $staged_migrations; do
         name=$(basename "$path")
         prefix=$(printf '%s' "$name" | cut -d_ -f1-4)
@@ -37,7 +41,7 @@ if [ -n "$staged_migrations" ]; then
             echo "ABBRUCH: Migration $name sortiert vor der letzten committeten ($highest) — Zeitstempel hinter die letzte legen." >&2
             exit 1
         fi
-        if git ls-tree --name-only HEAD database/migrations/ 2>/dev/null | grep -q "/${prefix}_"; then
+        if printf '%s\n' "$committed_migrations" | grep -q "^${prefix}_"; then
             echo "ABBRUCH: Zeitstempel-Präfix $prefix ist bereits vergeben — eindeutigen Zeitstempel wählen." >&2
             exit 1
         fi

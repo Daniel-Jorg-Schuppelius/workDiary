@@ -141,9 +141,6 @@ return [
             'tooLarge' => 'File ":file" exceeds the size limit of :max MB.',
             'noActor' => 'Import run without triggering user — documents need a creator.',
         ],
-        'persist' => [
-            'noBookingUser' => 'No bookable user found in the organisation.',
-        ],
         // MVP-438: GoBD lock — no silent overwrite of reviewed periods.
         'periodLocked' => [
             'attendance' => 'Day :date is locked by day-close or month approval — row skipped.',

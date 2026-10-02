@@ -1,0 +1,15 @@
+{
+    "Fine-grained Personal Access Token mit Lesezugriff auf die Issues des Repositories.": "Personal access token fine-grained con accesso in lettura alle issue del repository.",
+    "GitHub ist nicht konfiguriert (Repository oder API-Token fehlt).": "GitHub non è configurato (repository o token API mancante).",
+    "GitHub lehnt den API-Token ab (:status) — Fine-grained PAT prüfen.": "GitHub rifiuta il token API (:status) — verificare il PAT fine-grained.",
+    "GitHub-API antwortet mit Fehlerstatus :status.": "L'API GitHub risponde con lo stato di errore :status.",
+    "GitHub-API nicht erreichbar.": "API GitHub non raggiungibile.",
+    "GitHub-Benutzer oder -Organisation, z. B. „acme\".": "Utente o organizzazione GitHub, ad es. \"acme\".",
+    "Importiert GitHub-Issues eines Repositories als Aufgaben (idempotent je Issue, Pull Requests werden gefiltert): Zeiterfassung und Abrechnung in WorkDiary, GitHub bleibt führend. Polling mit since-Aufholpunkt, Webhook-Anstoß optional.": "Importa le issue GitHub di un repository come attività (idempotente per issue, le pull request vengono filtrate): rilevamento tempi e fatturazione in WorkDiary, GitHub resta il sistema guida. Polling con checkpoint since, attivazione via webhook opzionale.",
+    "Nur die Issues dieses Repositories werden importiert.": "Vengono importate solo le issue di questo repository.",
+    "Optional: Shared-Secret des GitHub-Webhooks (issues-Events, X-Hub-Signature-256). Ohne Secret bleibt der Webhook-Endpunkt deaktiviert; das Polling holt alles nach.": "Opzionale: shared secret del webhook GitHub (eventi issues, X-Hub-Signature-256). Senza segreto l'endpoint webhook resta disattivato; il polling recupera tutto.",
+    "Repository-Besitzer (Owner)": "Proprietario del repository (owner)",
+    "Repository-Name": "Nome del repository",
+    "Schließt das verknüpfte Issue (mit Notiz), wenn die Aufgabe in workDiary erledigt wird, und öffnet es beim Wiedereröffnen. Titel und Beschreibung bleiben quellsystem-geführt. Der Token braucht Schreibzugriff auf Issues.": "Chiude l’issue collegata (con una nota) quando l’attività viene completata in workDiary e la riapre in caso di riapertura. Titolo e descrizione restano gestiti dal sistema di origine. Il token richiede accesso in scrittura alle issue.",
+    "Verbunden mit GitHub als :login.": "Connesso a GitHub come :login."
+}

@@ -16,9 +16,9 @@ use App\Enums\Finance\BillingMode;
 use App\Models\Integration\ExternalReference;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\{Organization, User};
-use App\Models\Plugins\Lexoffice\LexofficeInvoiceHandover;
 use App\Plugins\Lexoffice\Enums\LexofficeHandoverStatus;
 use App\Plugins\Lexoffice\{LexofficeInvoiceService, LexofficePlugin};
+use App\Plugins\Lexoffice\Models\LexofficeInvoiceHandover;
 use App\Plugins\Lexoffice\Tariff\LexwareTariffService;
 use App\Services\Invoicing\InvoicePdfRenderer;
 use App\Support\CsvExport;
@@ -104,14 +104,14 @@ class LexofficeInvoiceHandoverService {
      */
     public function export(Organization $organization, Collection $invoices, User $actor): array {
         if ($invoices->isEmpty()) {
-            throw new RuntimeException((string) __('lexware.error.nothing_selected'));
+            throw new RuntimeException((string) __('lexoffice::lexware.error.nothing_selected'));
         }
 
         $files = [];
         $rows = [];
         foreach ($invoices as $invoice) {
             if ((int) $invoice->organization_id !== (int) $organization->id || $invoice->status === Invoice::STATUS_DRAFT) {
-                throw new RuntimeException((string) __('lexware.error.not_exportable', ['number' => (string) $invoice->number]));
+                throw new RuntimeException((string) __('lexoffice::lexware.error.not_exportable', ['number' => (string) $invoice->number]));
             }
             $bytes = $this->pdf->output($invoice);
             $hash = (string) CryptoHelper::hash($bytes);
@@ -156,10 +156,10 @@ class LexofficeInvoiceHandoverService {
 
         $files['zuordnungsliste.csv'] = CsvExport::toString(
             [
-                (string) __('lexware.csv.number'), (string) __('lexware.csv.issued_on'), (string) __('lexware.csv.due_on'),
-                (string) __('lexware.csv.customer'), (string) __('lexware.csv.customer_number'), (string) __('lexware.csv.status'),
-                (string) __('lexware.csv.currency'), (string) __('lexware.csv.net'), (string) __('lexware.csv.tax'), (string) __('lexware.csv.gross'),
-                (string) __('lexware.csv.file'), 'SHA-256', (string) __('lexware.csv.handover'),
+                (string) __('lexoffice::lexware.csv.number'), (string) __('lexoffice::lexware.csv.issued_on'), (string) __('lexoffice::lexware.csv.due_on'),
+                (string) __('lexoffice::lexware.csv.customer'), (string) __('lexoffice::lexware.csv.customer_number'), (string) __('lexoffice::lexware.csv.status'),
+                (string) __('lexoffice::lexware.csv.currency'), (string) __('lexoffice::lexware.csv.net'), (string) __('lexoffice::lexware.csv.tax'), (string) __('lexoffice::lexware.csv.gross'),
+                (string) __('lexoffice::lexware.csv.file'), 'SHA-256', (string) __('lexoffice::lexware.csv.handover'),
             ],
             $rows,
         );
@@ -170,14 +170,14 @@ class LexofficeInvoiceHandoverService {
     /** Manuelle Bestätigung — braucht Benutzer und Zeitpunkt, ersetzt keine technische Empfangsbestätigung. */
     public function confirm(Invoice $invoice, User $actor, ?string $note): LexofficeInvoiceHandover {
         if ($invoice->status === Invoice::STATUS_DRAFT) {
-            throw new RuntimeException((string) __('lexware.error.not_exportable', ['number' => (string) $invoice->number]));
+            throw new RuntimeException((string) __('lexoffice::lexware.error.not_exportable', ['number' => (string) $invoice->number]));
         }
 
         return DB::transaction(function () use ($invoice, $actor, $note): LexofficeInvoiceHandover {
             /** @var LexofficeInvoiceHandover $handover */
             $handover = LexofficeInvoiceHandover::query()->firstOrNew(['invoice_id' => $invoice->id]);
             if ($handover->exists && $handover->status === LexofficeHandoverStatus::Transferred) {
-                throw new RuntimeException((string) __('lexware.error.already_transferred'));
+                throw new RuntimeException((string) __('lexoffice::lexware.error.already_transferred'));
             }
             $handover->organization_id = (int) $invoice->organization_id;
             $handover->channel = $handover->channel ?: LexwareTariffService::CHANNEL_MANUAL;

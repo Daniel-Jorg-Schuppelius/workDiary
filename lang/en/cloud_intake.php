@@ -23,7 +23,6 @@ return [
     ],
     'field' => [
         'provider' => 'Provider',
-        'name' => 'Name',
         'account' => 'Account',
         'root_folder' => 'Root folder',
         'routes' => 'Rules',
@@ -39,10 +38,6 @@ return [
         'load_failed' => 'Containers could not be loaded — please enter the ID manually.',
     ],
     'action' => [
-        'connect_dropbox' => 'Connect Dropbox',
-        'connect_microsoft' => 'Connect Microsoft 365',
-        'connect_google' => 'Connect Google Drive',
-        'connect_nextcloud' => 'Connect Nextcloud',
         'preview' => 'Preview',
         'save_folder' => 'Apply folder',
         'disconnect' => 'Disconnect',
@@ -62,52 +57,6 @@ return [
         'disconnected' => 'Connection removed — evidence and imported documents remain.',
         'route_saved' => 'Folder rule saved.',
         'route_deleted' => 'Folder rule deleted.',
-    ],
-    'dropbox' => [
-        'description' => 'Reads documents from monitored Dropbox folders (cloud document intake) — with folder rules, transfer evidence and an inbox for unclear cases.',
-        'health' => [
-            'not_configured' => 'Dropbox app keys not configured.',
-            'no_org_context' => 'No organisation context (system run).',
-            'attention' => 'At least one Dropbox connection needs attention (re-auth/blocked).',
-            'backup_attention' => 'The Dropbox backup target needs attention (re-auth/blocked) — affects all organizations.',
-            'ok' => 'Dropbox connections healthy.',
-            'error' => 'Health check failed (:class).',
-        ],
-    ],
-    'google' => [
-        'description' => 'Reads documents from monitored Google Drive folders (cloud document intake) — My Drive and shared drives; rollout blocked until Google OAuth verification.',
-        'health' => [
-            'not_configured' => 'Google Drive client keys not configured.',
-            'no_org_context' => 'No organisation context (system run).',
-            'attention' => 'At least one Google Drive connection needs attention (re-auth/blocked).',
-            'backup_attention' => 'The Google Drive backup target needs attention (re-auth/blocked) — affects all organizations.',
-            'ok' => 'Google Drive connections healthy.',
-            'error' => 'Health check failed (:class).',
-        ],
-    ],
-    'nextcloud' => [
-        'description' => 'Reads documents from watched Nextcloud folders (WebDAV) — with folder rules, handover proof and an inbox for ambiguous cases.',
-        'health' => [
-            'no_org_context' => 'No organization context (system run).',
-            'attention' => 'At least one Nextcloud connection needs attention (re-auth/blocked).',
-            'backup_attention' => 'The Nextcloud backup target needs attention (re-auth/blocked) — affects all organizations.',
-            'ok' => 'Nextcloud connections are healthy.',
-            'error' => 'Health check failed (:class).',
-        ],
-        'connect_title' => 'Connect Nextcloud',
-        'connect_legend' => 'Credentials',
-        'connect_submit' => 'Connect',
-        'field' => [
-            'server_url' => 'Server URL',
-            'server_url_help' => 'HTTPS only. Example: https://cloud.example.com',
-            'username' => 'Username',
-            'app_password' => 'App password',
-            'app_password_help' => 'A revocable app password (Settings › Security), never the regular account password.',
-        ],
-        'validation' => [
-            'https_required' => 'The server URL must start with https://.',
-            'unsafe_url' => 'The server URL must be publicly reachable (no internal/private target).',
-        ],
     ],
     'route' => [
         'heading' => 'Folder rules',

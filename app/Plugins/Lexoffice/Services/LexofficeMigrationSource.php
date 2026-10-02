@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\Lexoffice\Services;
 
 use App\Enums\Migration\MigrationProvider;
-use App\Models\Plugins\Lexoffice\LexofficeVoucher;
+use App\Plugins\Lexoffice\Models\LexofficeVoucher;
 use App\Services\AccountingMigration\Contracts\MigrationSource;
 
 /** Lexoffice als Quelle eines Buchhaltungswechsels: eigener Belegspiegel `lexoffice_vouchers`. */

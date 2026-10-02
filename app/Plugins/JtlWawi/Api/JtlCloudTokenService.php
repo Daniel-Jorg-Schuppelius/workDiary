@@ -13,8 +13,8 @@ declare(strict_types=1);
 namespace App\Plugins\JtlWawi\Api;
 
 use APIToolkit\API\Authentication\OAuth2\{OAuth2ClientCredentialsAuthentication, OAuth2ClientCredentialsGrant};
-use App\Models\Plugins\JtlWawi\JtlConnection;
 use App\Plugins\JtlWawi\JtlWawiPlugin;
+use App\Plugins\JtlWawi\Models\JtlConnection;
 use App\Plugins\Support\PluginHttpFactory;
 
 /**

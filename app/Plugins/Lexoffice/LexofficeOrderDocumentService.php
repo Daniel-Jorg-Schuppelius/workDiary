@@ -53,7 +53,7 @@ abstract class LexofficeOrderDocumentService {
     public function push(ManufacturingOrder $order): ExternalReference {
         $config = LexofficeConfig::resolve($order->organization_id);
         if (empty($config['api_key'])) {
-            throw new RuntimeException((string) __('finance.error.lexoffice_not_configured'));
+            throw new RuntimeException((string) __('lexoffice::finance.error.lexoffice_not_configured'));
         }
 
         $order->loadMissing(['customer', 'article', 'variant']);
@@ -102,7 +102,7 @@ abstract class LexofficeOrderDocumentService {
     public function pull(ManufacturingOrder $order): array {
         $config = LexofficeConfig::resolve($order->organization_id);
         if (empty($config['api_key'])) {
-            throw new RuntimeException((string) __('finance.error.lexoffice_not_configured'));
+            throw new RuntimeException((string) __('lexoffice::finance.error.lexoffice_not_configured'));
         }
 
         $reference = $this->reference($order);
@@ -208,7 +208,7 @@ abstract class LexofficeOrderDocumentService {
             }
         }
 
-        throw new RuntimeException((string) __('finance.error.lexoffice_contact_missing'));
+        throw new RuntimeException((string) __('lexoffice::finance.error.lexoffice_contact_missing'));
     }
 
     /** @param  array{api_key: ?string, base_url: string}  $config */

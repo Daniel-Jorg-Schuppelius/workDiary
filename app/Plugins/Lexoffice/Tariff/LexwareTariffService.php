@@ -14,8 +14,8 @@ namespace App\Plugins\Lexoffice\Tariff;
 
 use App\Models\Invoicing\InvoiceSchedule;
 use App\Models\Platform\{Organization, User};
-use App\Models\Plugins\Lexoffice\LexofficeInvoiceHandover;
 use App\Plugins\Lexoffice\Enums\{LexofficeHandoverStatus, LexwareFeature, LexwarePlan};
+use App\Plugins\Lexoffice\Models\LexofficeInvoiceHandover;
 use App\Settings\SettingScope;
 use App\Support\Setting;
 use Carbon\CarbonImmutable;

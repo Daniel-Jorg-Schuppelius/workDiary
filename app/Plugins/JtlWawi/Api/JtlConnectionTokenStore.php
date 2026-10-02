@@ -14,7 +14,7 @@ namespace App\Plugins\JtlWawi\Api;
 
 use APIToolkit\API\Authentication\OAuth2\OAuth2Token;
 use APIToolkit\Contracts\Interfaces\API\OAuth2TokenStoreInterface;
-use App\Models\Plugins\JtlWawi\JtlConnection;
+use App\Plugins\JtlWawi\Models\JtlConnection;
 use DateTimeImmutable;
 
 /**

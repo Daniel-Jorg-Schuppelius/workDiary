@@ -14,7 +14,7 @@ use App\Enums\Finance\BillingMode;
 use App\Models\Billing\{CustomerBillingAgreement, CustomerBillingRate, CustomerBillingStatement};
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
-use App\Models\Plugins\Lexoffice\LexofficeVoucher;
+use App\Plugins\Lexoffice\Models\LexofficeVoucher;
 use App\Plugins\Lexoffice\Services\Retainer\LexofficeRetainerVouchers;
 use App\Services\Billing\CustomerAccountStatementService;
 use Illuminate\Foundation\Testing\RefreshDatabase;

@@ -50,7 +50,7 @@ final class CardDavUrlGuard {
         // Fail-closed: ohne bestimmbaren Ursprung gilt die Adresse als fremd.
         $origin = WebLinkHelper::origin(trim($url));
         if ($origin === null || $origin !== WebLinkHelper::origin(trim($baseUrl))) {
-            throw new \RuntimeException((string) __('carddav.flash.foreign_origin'));
+            throw new \RuntimeException((string) __('carddav::carddav.flash.foreign_origin'));
         }
     }
 }

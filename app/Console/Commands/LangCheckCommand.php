@@ -16,8 +16,8 @@ use Illuminate\Console\Command;
 
 /**
  * Prüft die Vollständigkeit aller Übersetzungen (JSON + PHP-Namespaces) gegen
- * die Referenz (en.json bzw. lang/de/). Meldet fehlende/überzählige Keys je
- * Sprache und liefert Exitcode ≠ 0 bei Lücken (CI-Gate).
+ * die Referenz (en.json bzw. de/) — Kern und Plugin-Kataloge. Meldet
+ * fehlende/überzählige Keys je Sprache und liefert Exitcode ≠ 0 bei Lücken (CI-Gate).
  */
 class LangCheckCommand extends Command {
     protected $signature = 'lang:check';
@@ -26,23 +26,27 @@ class LangCheckCommand extends Command {
 
     public function handle(): int {
         $gaps = 0;
-        $refJson = Translations::jsonReferenceKeys();
-        $refSet = array_fill_keys($refJson, true);
 
-        foreach (Translations::jsonLocales() as $code) {
-            $keys = array_keys(Translations::loadJson($code));
-            $have = array_fill_keys($keys, true);
-            $missing = array_values(array_filter($refJson, static fn(string $k): bool => ! isset($have[$k])));
-            $extra = array_values(array_filter($keys, static fn(string $k): bool => ! isset($refSet[$k])));
+        foreach (array_keys(Translations::catalogs()) as $namespace) {
+            $refJson = Translations::jsonReferenceKeys($namespace);
+            $refSet = array_fill_keys($refJson, true);
+            $label = $namespace === '' ? '' : $namespace . '::';
 
-            if ($missing !== []) {
-                $gaps++;
-                $this->warn(sprintf('%s.json: %d fehlend', $code, count($missing)));
-                $this->sample('  fehlt', $missing);
-            }
-            if ($extra !== []) {
-                // Zusätzliche, sprachspezifische Keys sind erlaubt — nur Hinweis.
-                $this->line(sprintf('%s.json: %d zusätzliche Keys (ok)', $code, count($extra)));
+            foreach (Translations::jsonLocales() as $code) {
+                $keys = array_keys(Translations::loadJson($code, $namespace));
+                $have = array_fill_keys($keys, true);
+                $missing = array_values(array_filter($refJson, static fn(string $k): bool => ! isset($have[$k])));
+                $extra = array_values(array_filter($keys, static fn(string $k): bool => ! isset($refSet[$k])));
+
+                if ($missing !== []) {
+                    $gaps++;
+                    $this->warn(sprintf('%s%s.json: %d fehlend', $label, $code, count($missing)));
+                    $this->sample('  fehlt', $missing);
+                }
+                if ($extra !== []) {
+                    // Zusätzliche, sprachspezifische Keys sind erlaubt — nur Hinweis.
+                    $this->line(sprintf('%s%s.json: %d zusätzliche Keys (ok)', $label, $code, count($extra)));
+                }
             }
         }
 
@@ -54,7 +58,7 @@ class LangCheckCommand extends Command {
                 if ($code === 'en') {
                     continue;
                 }
-                if (! File::isFile(Translations::langPath($code) . '/' . $file)) {
+                if (! File::isFile(Translations::phpPath($code, $file))) {
                     $gaps++;
                     $this->warn(sprintf('%s/%s: Datei fehlt', $code, $file));
 
@@ -72,6 +76,7 @@ class LangCheckCommand extends Command {
 
         // Quell-Scan: in Views/app verwendete JSON-Keys, die in en.json fehlen und
         // deshalb überall auf den deutschen Quelltext zurückfallen (Parität oben sieht das nicht).
+        $refSet = Translations::runtimeJson('en');
         $sourceMissing = array_values(array_filter(
             Translations::sourceJsonKeys(),
             static fn(string $k): bool => ! isset($refSet[$k]),
@@ -82,9 +87,24 @@ class LangCheckCommand extends Command {
             $this->sample('  fehlt', $sourceMissing);
         }
 
+        // Plugin-Schlüssel: falscher Namespace oder fehlender Eintrag zeigt den rohen Schlüssel.
+        $namespacedMissing = [];
+        foreach (Translations::sourceNamespacedKeys() as $key) {
+            foreach (Locales::enabledCodes() as $code) {
+                if (! app('translator')->has($key, $code, false)) {
+                    $namespacedMissing[] = $code . ': ' . $key;
+                }
+            }
+        }
+        if ($namespacedMissing !== []) {
+            $gaps++;
+            $this->warn(sprintf('Plugin-Schlüssel: %d nicht auflösbar', count($namespacedMissing)));
+            $this->sample('  fehlt', $namespacedMissing);
+        }
+
         // Pluralschlüssel: ohne de.json-Eintrag fällt trans_choice auf die
         // Fallback-Sprache zurück, ohne en.json-Eintrag bleibt er überall deutsch.
-        $deSet = array_fill_keys(array_keys(Translations::loadJson('de')), true);
+        $deSet = Translations::runtimeJson('de');
         $pluralMissing = array_values(array_filter(
             Translations::sourcePluralKeys(),
             static fn(string $k): bool => ! isset($deSet[$k]) || ! isset($refSet[$k]),

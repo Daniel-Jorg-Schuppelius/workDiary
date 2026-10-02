@@ -15,7 +15,7 @@ use App\Jobs\Inventory\InventoryOutboxDeliveryJob;
 use App\Models\Article\{Article, ArticleVariant};
 use App\Models\Integration\ExternalArticleMapping;
 use App\Models\Inventory\Warehouse;
-use App\Models\Plugins\JtlWawi\{JtlConnection, JtlStockSnapshot, JtlWarehouseMapping};
+use App\Plugins\JtlWawi\Models\{JtlConnection, JtlStockSnapshot, JtlWarehouseMapping};
 use App\Plugins\JtlWawi\Services\{JtlWawiInventoryProvider, JtlWawiOutboxDispatcher};
 use App\Services\Inventory\{InventoryLedger, InventoryOutboxService, InventoryProviderResolver, ReadOnlyInventoryProvider};
 use Illuminate\Foundation\Testing\RefreshDatabase;

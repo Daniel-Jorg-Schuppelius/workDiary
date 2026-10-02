@@ -12,8 +12,8 @@ namespace Tests\Feature\Plugins;
 
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem, IntegrationOutboxEntry};
 use App\Models\Platform\User;
-use App\Models\Plugins\Todoist\{TodoistConnection, TodoistProjectLink};
 use App\Models\Project\Task;
+use App\Plugins\Todoist\Models\{TodoistConnection, TodoistProjectLink};
 use App\Plugins\Todoist\Services\TodoistImportService;
 use App\Plugins\Todoist\TodoistPlugin;
 use App\Services\Integration\InboxActionService;

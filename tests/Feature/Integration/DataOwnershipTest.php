@@ -58,7 +58,7 @@ final class DataOwnershipTest extends TestCase {
         app()->instance('currentOrganization', $org);
         app(DataOwnershipResolver::class)->setOwner($org, DataDomain::Tasks, 'openproject');
 
-        $connection = \App\Models\Plugins\Zammad\ZammadConnection::query()->create([
+        $connection = \App\Plugins\Zammad\Models\ZammadConnection::query()->create([
             'organization_id' => $org->id,
             'name' => 'Support',
             'base_url' => 'https://support.example.com',

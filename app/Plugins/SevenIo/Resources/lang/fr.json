@@ -1,0 +1,8 @@
+{
+    "Absenderkennung": "Identifiant d’expéditeur",
+    "Alphanumerisch bis 11 Zeichen (keine Antwort möglich) oder eigene Rufnummer in E.164.": "Alphanumérique, jusqu’à 11 caractères (aucune réponse possible) ou votre propre numéro au format E.164.",
+    "Aus dem seven.io-Konto unter „Entwickler“ → „API-Keys“.": "Depuis votre compte seven.io sous « Développeur » → « Clés API ».",
+    "Kein API-Key hinterlegt.": "Aucune clé API enregistrée.",
+    "Versendet Alarm-SMS über das deutsche Gateway seven.io (EU-Hosting, AVV nach Art. 28 DSGVO).": "Envoie des SMS d’alerte via la passerelle allemande seven.io (hébergement UE, contrat de sous-traitance selon l’art. 28 RGPD).",
+    "seven.io lehnt den API-Key ab.": "seven.io rejette la clé API."
+}

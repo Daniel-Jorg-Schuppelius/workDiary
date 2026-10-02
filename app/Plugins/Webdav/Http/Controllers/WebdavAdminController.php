@@ -13,8 +13,8 @@ namespace App\Plugins\Webdav\Http\Controllers;
 use App\Enums\Document\DocumentType;
 use App\Http\Controllers\Controller;
 use App\Models\Platform\PluginState;
-use App\Models\Plugins\Webdav\WebdavConnection;
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
+use App\Plugins\Webdav\Models\WebdavConnection;
 use App\Plugins\Webdav\WebdavPlugin;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Artisan;
@@ -66,7 +66,7 @@ class WebdavAdminController extends Controller {
 
         $baseUrl = trim((string) $data['base_url']);
         if (! str_starts_with($baseUrl, 'http://') && ! str_starts_with($baseUrl, 'https://')) {
-            return back()->with('error', __('webdav.flash.invalid_url'))->withInput();
+            return back()->with('error', __('webdav::webdav.flash.invalid_url'))->withInput();
         }
 
         /** @var WebdavConnection $connection */
@@ -88,13 +88,13 @@ class WebdavAdminController extends Controller {
         if ($password !== '') {
             $attributes['app_password'] = $password;
         } elseif (! $connection->exists) {
-            return back()->with('error', __('webdav.flash.password_required'))->withInput();
+            return back()->with('error', __('webdav::webdav.flash.password_required'))->withInput();
         }
 
         $connection->forceFill($attributes)->save();
         $connection->audit('webdav.connection_saved', ['by_user_id' => (int) $admin->id, 'active' => $connection->active]);
 
-        return back()->with('success', __('webdav.flash.saved'));
+        return back()->with('success', __('webdav::webdav.flash.saved'));
     }
 
     /** Manueller Voll-Spiegellauf (auditiert). */
@@ -104,13 +104,13 @@ class WebdavAdminController extends Controller {
 
         $connection = WebdavConnection::query()->where('organization_id', $organization->id)->first();
         if (! $connection instanceof WebdavConnection || ! $connection->isActive()) {
-            return back()->with('error', __('webdav.flash.no_connection'));
+            return back()->with('error', __('webdav::webdav.flash.no_connection'));
         }
 
         Artisan::call('webdav:mirror', ['--organization' => (string) $organization->id]);
         $connection->audit('webdav.mirror_manual', ['by_user_id' => (int) $admin->id]);
 
-        return back()->with('success', __('webdav.flash.mirror_done'));
+        return back()->with('success', __('webdav::webdav.flash.mirror_done'));
     }
 
     /** Deaktiviert die Ablage; bereits gespiegelte Dateien bleiben extern erhalten. */
@@ -124,7 +124,7 @@ class WebdavAdminController extends Controller {
             $connection->audit('webdav.disconnected', ['by_user_id' => (int) $admin->id]);
         }
 
-        return back()->with('success', __('webdav.flash.disconnected'));
+        return back()->with('success', __('webdav::webdav.flash.disconnected'));
     }
 
     /**

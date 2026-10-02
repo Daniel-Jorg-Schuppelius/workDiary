@@ -152,7 +152,6 @@ return [
         'note' => 'Importi netti dei documenti di acquisto per categoria contabile Lexoffice; le note di credito riducono.',
         'pending' => ':count documenti del periodo non hanno ancora categorie (caricate alla prossima sincronizzazione).',
         'rest' => 'Altri',
-        'unknown' => 'senza categoria',
     ],
     'supplier_material' => [
         'title' => 'Consumo di materiale per fornitore',

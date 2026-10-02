@@ -136,9 +136,6 @@ return [
             'tooLarge' => 'Le fichier « :file » dépasse la limite de :max Mo.',
             'noActor' => 'Exécution d\'import sans utilisateur déclencheur — les documents ont besoin d\'un créateur.',
         ],
-        'persist' => [
-            'noBookingUser' => 'Aucun utilisateur imputable trouvé dans l\'organisation.',
-        ],
         // MVP-438 : verrou GoBD — pas d\'écrasement silencieux des périodes vérifiées.
         'periodLocked' => [
             'attendance' => 'Le jour :date est verrouillé par la clôture journalière ou l\'approbation mensuelle — ligne ignorée.',

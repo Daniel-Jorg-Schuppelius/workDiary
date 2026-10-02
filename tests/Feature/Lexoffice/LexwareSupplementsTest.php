@@ -17,9 +17,9 @@ use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
 use App\Models\Invoicing\{Invoice, InvoiceSchedule};
 use App\Models\Platform\{Organization, User};
-use App\Models\Plugins\Lexoffice\LexofficeInvoiceHandover;
 use App\Plugins\Lexoffice\Enums\{LexofficeHandoverStatus, LexwareCoverage, LexwareFeature, LexwarePlan};
 use App\Plugins\Lexoffice\{LexofficeInvoiceService, LexofficePlugin};
+use App\Plugins\Lexoffice\Models\LexofficeInvoiceHandover;
 use App\Plugins\Lexoffice\Tariff\{FeatureAvailability, LexwareFeatureResolver, LexwarePlanMatrix};
 use App\Settings\SettingScope;
 use App\Support\Setting;
@@ -67,8 +67,8 @@ final class LexwareSupplementsTest extends TestCase {
     public function test_plan_page_saves_profile_and_resolves_states(): void {
         $this->actingAs($this->admin)->get(route('lexoffice.plan.index'))
             ->assertOk()
-            ->assertSee((string) __('lexware.plan_page.matrix_title'))
-            ->assertSee((string) __('lexware.state.check_availability'));
+            ->assertSee((string) __('lexoffice::lexware.plan_page.matrix_title'))
+            ->assertSee((string) __('lexoffice::lexware.state.check_availability'));
 
         $this->actingAs($this->admin)->post(route('lexoffice.plan.update'), [
             'plan' => 's', 'plan_source' => 'user', 'handover_channel' => 'manual',
@@ -82,13 +82,13 @@ final class LexwareSupplementsTest extends TestCase {
         $states = collect(app(LexwareFeatureResolver::class)->resolve($this->organization->fresh(), $this->admin))->keyBy(fn ($a) => $a->feature->value);
         $this->assertSame(FeatureAvailability::STATE_AVAILABLE, $states['invoices']->state);
         $this->assertSame(FeatureAvailability::STATE_SETUP_REQUIRED, $states['quotes']->state);
-        $this->assertSame('lexware.reason.not_activated', $states['quotes']->reasonKey);
+        $this->assertSame('lexoffice::lexware.reason.not_activated', $states['quotes']->reasonKey);
         $this->assertSame(FeatureAvailability::STATE_PLANNED, $states['accounting']->state);
 
         $this->actingAs($this->admin)->get(route('lexoffice.plan.index'))
             ->assertOk()
-            ->assertSee((string) __('lexware.state.available'))
-            ->assertSee((string) __('lexware.reason.not_activated'));
+            ->assertSee((string) __('lexoffice::lexware.state.available'))
+            ->assertSee((string) __('lexoffice::lexware.reason.not_activated'));
 
         // Kanal „automatisch" ohne XL: abgewiesen, Profil unverändert.
         $this->actingAs($this->admin)->post(route('lexoffice.plan.update'), [
@@ -119,7 +119,7 @@ final class LexwareSupplementsTest extends TestCase {
 
         $states = collect(app(LexwareFeatureResolver::class)->resolve($this->organization->fresh(), $this->admin))->keyBy(fn ($a) => $a->feature->value);
         $this->assertSame(FeatureAvailability::STATE_SETUP_REQUIRED, $states['invoices']->state);
-        $this->assertSame('lexware.reason.billing_external', $states['invoices']->reasonKey);
+        $this->assertSame('lexoffice::lexware.reason.billing_external', $states['invoices']->reasonKey);
 
         // Abgelaufener Testzugang: der bestätigte Folgetarif gilt.
         Setting::set('lexware.plan', 'xl', SettingScope::Organization, $this->organization, $this->admin->id);
@@ -151,7 +151,7 @@ final class LexwareSupplementsTest extends TestCase {
             ->assertSee('R2026-0100')
             ->assertDontSee('R2026-0101')
             ->assertDontSee('R2026-0102')
-            ->assertSee((string) __('lexware.handover.status.pending'));
+            ->assertSee((string) __('lexoffice::lexware.handover.status.pending'));
 
         $response = $this->actingAs($this->admin)->post(route('lexoffice.handover.export'), ['invoices' => [$issued->sqid]]);
         $response->assertOk()->assertHeader('Content-Type', 'application/zip');
@@ -180,7 +180,7 @@ final class LexwareSupplementsTest extends TestCase {
         $this->actingAs($this->admin)->get(route('lexoffice.handover.index', ['status' => 'pending']))->assertOk()->assertDontSee('R2026-0100');
 
         // Rechnungsseite und Abrechnungsplan zeigen den Übergabestand.
-        $this->actingAs($this->admin)->get(route('invoices.show', $issued))->assertOk()->assertSee((string) __('lexware.handover.status.confirmed'));
+        $this->actingAs($this->admin)->get(route('invoices.show', $issued))->assertOk()->assertSee((string) __('lexoffice::lexware.handover.status.confirmed'));
         $schedule = InvoiceSchedule::query()->create([
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
@@ -199,11 +199,11 @@ final class LexwareSupplementsTest extends TestCase {
             'period_end' => now()->endOfMonth()->toDateString(),
             'invoice_id' => $issued->id,
         ]);
-        $this->actingAs($this->admin)->get(route('invoice-schedules.index'))->assertOk()->assertSee((string) __('lexware.handover.title'));
+        $this->actingAs($this->admin)->get(route('invoice-schedules.index'))->assertOk()->assertSee((string) __('lexoffice::lexware.handover.title'));
         // Übergabespalte kommt aus dem Plugin-Slot (MVP-1039), auch ohne API-Schlüssel.
         $this->actingAs($this->admin)->get(route('invoice-schedules.show', $schedule))->assertOk()
             ->assertSee((string) __('Übergabe'))
-            ->assertSee((string) __('lexware.handover.status.confirmed'));
+            ->assertSee((string) __('lexoffice::lexware.handover.status.confirmed'));
     }
 
     public function test_rights_and_tenant_boundaries(): void {
@@ -219,7 +219,7 @@ final class LexwareSupplementsTest extends TestCase {
         $this->actingAs($reader)->post(route('lexoffice.handover.export'), ['invoices' => [$issued->sqid]])->assertForbidden();
         $this->actingAs($reader)->post(route('lexoffice.handover.confirm', $issued))->assertForbidden();
         $this->actingAs($reader)->post(route('lexoffice.plan.update'), ['plan' => 's', 'plan_source' => 'user', 'handover_channel' => 'manual'])->assertForbidden();
-        $this->actingAs($reader)->get(route('lexoffice.plan.index'))->assertOk()->assertSee((string) __('lexware.plan_page.read_only'));
+        $this->actingAs($reader)->get(route('lexoffice.plan.index'))->assertOk()->assertSee((string) __('lexoffice::lexware.plan_page.read_only'));
 
         $otherOrg = Organization::factory()->create();
         $stranger = User::factory()->admin()->create(['organization_id' => $otherOrg->id]);

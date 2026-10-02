@@ -13,8 +13,8 @@ declare(strict_types=1);
 namespace App\Plugins\Msgraph\Services;
 
 use App\Models\Platform\Organization;
-use App\Models\Plugins\Msgraph\MsgraphOneNoteConnection;
 use App\Plugins\Msgraph\Api\MsgraphOneNoteClient;
+use App\Plugins\Msgraph\Models\MsgraphOneNoteConnection;
 use App\Plugins\Msgraph\{MsgraphConfig, MsgraphPlugin};
 use App\Services\Collections\Import\Contracts\NotebookSource;
 use RuntimeException;

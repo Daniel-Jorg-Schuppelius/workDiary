@@ -152,7 +152,6 @@ return [
         'note' => 'Montants nets des pièces d\'achat par catégorie comptable Lexoffice ; les avoirs réduisent.',
         'pending' => ':count pièces de la période n\'ont pas encore de catégories (chargées lors de la prochaine synchronisation).',
         'rest' => 'Autres',
-        'unknown' => 'sans catégorie',
     ],
     'supplier_material' => [
         'title' => 'Consommation de matériaux par fournisseur',

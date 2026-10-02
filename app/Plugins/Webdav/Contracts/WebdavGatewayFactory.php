@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Plugins\Webdav\Contracts;
 
-use App\Models\Plugins\Webdav\WebdavConnection;
 use App\Plugins\Support\Mirror\RemoteFileGateway;
+use App\Plugins\Webdav\Models\WebdavConnection;
 
 /**
  * Erzeugt je Anbindung ein {@see RemoteFileGateway} über WebDAV (Feature 058;

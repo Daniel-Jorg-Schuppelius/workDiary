@@ -10,5 +10,5 @@
   Aufgabendialog (Slot `task-dialog.links`, MVP-1041). Erwartet: $url.
 --}}
 <a href="{{ $url }}" target="_blank" rel="noopener noreferrer" class="link link-primary text-sm inline-flex items-center gap-1">
-    <x-icon name="open_in_new" class="text-base" />{{ __('todoist.task_link') }}
+    <x-icon name="open_in_new" class="text-base" />{{ __('todoist::todoist.task_link') }}
 </a>

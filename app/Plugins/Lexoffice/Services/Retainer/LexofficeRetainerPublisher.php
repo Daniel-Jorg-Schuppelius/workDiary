@@ -81,11 +81,11 @@ class LexofficeRetainerPublisher implements RetainerPublisher {
             if (LexofficeRetainerVouchers::linkOf($locked) !== null) {
                 // Für den Monat liegt bereits eine in Lexoffice geführte
                 // Rechnung — ein Push legte dort einen zweiten Beleg an.
-                throw ValidationException::withMessages(['agreement' => __('customer-billing.retainer_voucher_already_linked', ['system' => $this->label()])]);
+                throw ValidationException::withMessages(['agreement' => __('lexoffice::customer-billing.retainer_voucher_already_linked', ['system' => $this->label()])]);
             }
 
             $serviceDate = $this->monthEnd($year, $month);
-            $description = (string) __('customer-billing.retainer_line', ['period' => $locked->periodLabel()]);
+            $description = (string) __('lexoffice::customer-billing.retainer_line', ['period' => $locked->periodLabel()]);
             $placeholder = \sprintf('LEX-R-%d-%04d%02d', $agreement->id, $year, $month);
 
             $invoice = $this->generator->retainerChargeFor(
@@ -114,24 +114,24 @@ class LexofficeRetainerPublisher implements RetainerPublisher {
      */
     public function pushTrueUp(CustomerBillingAgreement $agreement, ?CarbonInterface $cutoff = null): Invoice {
         if (! $agreement->isRetainerMode()) {
-            throw ValidationException::withMessages(['agreement' => __('customer-billing.retainer_only')]);
+            throw ValidationException::withMessages(['agreement' => __('lexoffice::customer-billing.retainer_only')]);
         }
         $this->assertConfigured();
 
         $this->statements->recalculateOpen($agreement);
         $balance = $this->openBalance($agreement);
         if (! $balance->isPositive()) {
-            throw ValidationException::withMessages(['agreement' => __('customer-billing.trueup_no_open_balance')]);
+            throw ValidationException::withMessages(['agreement' => __('lexoffice::customer-billing.trueup_no_open_balance')]);
         }
 
         if ($this->hasOpenTrueUp($agreement)) {
-            throw ValidationException::withMessages(['agreement' => __('customer-billing.trueup_already_open')]);
+            throw ValidationException::withMessages(['agreement' => __('lexoffice::customer-billing.trueup_already_open')]);
         }
 
         $customer = $agreement->customer()->firstOrFail();
         $now = $cutoff !== null ? Carbon::parse($cutoff) : Carbon::now(Tz::current());
         $placeholder = \sprintf('LEX-TU-%d-%s', $agreement->id, $now->format('YmdHis'));
-        $description = (string) __('customer-billing.trueup_line', ['date' => $now->translatedFormat('d.m.Y')]);
+        $description = (string) __('lexoffice::customer-billing.trueup_line', ['date' => $now->translatedFormat('d.m.Y')]);
 
         return DB::transaction(function () use ($customer, $balance, $placeholder, $description, $now): Invoice {
             // TYPE_RETAINER wie die Pauschale: beide sind extern (Lexoffice)
@@ -152,7 +152,7 @@ class LexofficeRetainerPublisher implements RetainerPublisher {
 
     private function assertConfigured(): void {
         if (! $this->lexoffice->isConfigured()) {
-            throw ValidationException::withMessages(['agreement' => __('customer-billing.channel_not_configured', ['system' => $this->label()])]);
+            throw ValidationException::withMessages(['agreement' => __('lexoffice::customer-billing.channel_not_configured', ['system' => $this->label()])]);
         }
     }
 

@@ -12,9 +12,9 @@ namespace Tests\Feature\Plugins;
 
 use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
-use App\Models\Plugins\Lexoffice\LexofficeVoucher;
 use App\Models\Supplier\Supplier;
 use App\Plugins\Lexoffice\{LexofficePlugin, LexofficeVoucherSync};
+use App\Plugins\Lexoffice\Models\LexofficeVoucher;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Psr\Http\Message\RequestInterface;

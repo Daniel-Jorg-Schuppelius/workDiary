@@ -13,9 +13,9 @@ declare(strict_types=1);
 namespace App\Plugins\Todoist\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\Plugins\Todoist\{TodoistConnection, TodoistWebhookDelivery};
 use App\Plugins\Support\{RecordsWebhookDeliveries, WebhookSignature};
 use App\Plugins\Todoist\Jobs\TodoistWebhookSyncJob;
+use App\Plugins\Todoist\Models\{TodoistConnection, TodoistWebhookDelivery};
 use App\Plugins\Todoist\TodoistConfig;
 use Illuminate\Http\{JsonResponse, Request};
 

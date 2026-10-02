@@ -12,9 +12,9 @@ namespace App\Plugins\Calendly\Http\Controllers;
 
 use App\Models\Calendar\AppointmentRequest;
 use App\Models\Platform\User;
-use App\Models\Plugins\Calendly\{CalendlyConnection, CalendlyWebhookSubscription};
 use App\Plugins\Calendly\Api\{CalendlyClient, CalendlyOAuth};
-use App\Plugins\Calendly\CalendlyConfig;
+use App\Plugins\Calendly\{CalendlyConfig, CalendlyPlugin};
+use App\Plugins\Calendly\Models\{CalendlyConnection, CalendlyWebhookSubscription};
 use App\Plugins\Calendly\Services\{CalendlyBackfillService, CalendlyConfirmService, CalendlyOutboundService, CalendlySubscriptionManager};
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
 use App\Plugins\Support\{ConnectionOAuthController, PluginOAuthGrant};
@@ -83,6 +83,10 @@ class CalendlyAdminController extends ConnectionOAuthController {
 
     protected function pluginKey(): string {
         return 'calendly';
+    }
+
+    protected function pluginId(): string {
+        return CalendlyPlugin::ID;
     }
 
     protected function connectedStatus(): string {

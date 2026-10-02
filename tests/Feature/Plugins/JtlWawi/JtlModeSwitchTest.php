@@ -14,7 +14,7 @@ use App\Models\Article\{Article, ArticleVariant};
 use App\Models\Integration\ExternalArticleMapping;
 use App\Models\Inventory\{StockMovement, Warehouse};
 use App\Models\Platform\User;
-use App\Models\Plugins\JtlWawi\{JtlConnection, JtlWarehouseMapping};
+use App\Plugins\JtlWawi\Models\{JtlConnection, JtlWarehouseMapping};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Permission as SpatiePermission;
 use Spatie\Permission\PermissionRegistrar;

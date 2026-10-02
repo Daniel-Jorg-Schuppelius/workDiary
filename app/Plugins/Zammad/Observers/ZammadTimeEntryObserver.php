@@ -13,9 +13,9 @@ declare(strict_types=1);
 namespace App\Plugins\Zammad\Observers;
 
 use App\Models\Integration\ExternalReference;
-use App\Models\Plugins\Zammad\ZammadConnection;
 use App\Models\Project\Task;
 use App\Models\Time\TimeEntry;
+use App\Plugins\Zammad\Models\ZammadConnection;
 use App\Plugins\Zammad\Services\ZammadOutboxDispatcher;
 use App\Plugins\Zammad\ZammadPlugin;
 use App\Services\Integration\IntegrationOutboxService;

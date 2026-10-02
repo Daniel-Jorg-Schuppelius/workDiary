@@ -155,7 +155,7 @@ class RetainerLexofficeTest extends TestCase {
         $this->fakeInvoiceApi();
         // Für den Monat liegt die Rechnung schon in Lexoffice — ein Push legte
         // dort einen zweiten Beleg für dieselbe Pauschale an.
-        $voucher = \App\Models\Plugins\Lexoffice\LexofficeVoucher::create([
+        $voucher = \App\Plugins\Lexoffice\Models\LexofficeVoucher::create([
             'organization_id' => $this->organization->id,
             'external_id' => 'lex-existing-1',
             'customer_id' => $this->customer->id,

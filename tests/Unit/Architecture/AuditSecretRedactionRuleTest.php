@@ -94,16 +94,19 @@ class AuditSecretRedactionRuleTest extends TestCase {
     /** @return list<class-string> */
     private function auditableModels(): array {
         $classes = [];
-        $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator(app_path('Models')));
+        $files = [];
+        foreach ([app_path('Models'), ...(glob(app_path('Plugins/*/Models'), GLOB_ONLYDIR) ?: [])] as $directory) {
+            $files = [...$files, ...iterator_to_array(new RecursiveIteratorIterator(new RecursiveDirectoryIterator($directory)), false)];
+        }
 
         /** @var SplFileInfo $file */
-        foreach ($iterator as $file) {
+        foreach ($files as $file) {
             if ($file->getExtension() !== 'php') {
                 continue;
             }
 
-            $relative = str_replace([app_path('Models') . '/', '/', '.php'], ['', '\\', ''], $file->getPathname());
-            $class = 'App\\Models\\' . $relative;
+            $relative = str_replace([app_path() . '/', '/', '.php'], ['', '\\', ''], $file->getPathname());
+            $class = 'App\\' . $relative;
 
             if (! class_exists($class)) {
                 continue;

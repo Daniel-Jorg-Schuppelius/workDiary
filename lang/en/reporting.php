@@ -152,7 +152,6 @@ return [
         'note' => 'Net amounts of purchase vouchers per Lexoffice posting category; credit notes reduce.',
         'pending' => ':count vouchers in the period have no categories yet (loaded with the next sync).',
         'rest' => 'Others',
-        'unknown' => 'no category',
     ],
     'supplier_material' => [
         'title' => 'Material consumption by supplier',

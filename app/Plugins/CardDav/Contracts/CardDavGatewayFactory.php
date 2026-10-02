@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\CardDav\Contracts;
 
-use App\Models\Plugins\CardDav\CardDavConnection;
+use App\Plugins\CardDav\Models\CardDavConnection;
 
 /**
  * Baut je Anbindung ein {@see CardDavGateway}. Im Test durch eine

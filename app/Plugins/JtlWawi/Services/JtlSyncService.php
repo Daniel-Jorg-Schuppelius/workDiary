@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\JtlWawi\Services;
 
-use App\Models\Plugins\JtlWawi\JtlConnection;
+use App\Plugins\JtlWawi\Models\JtlConnection;
 use Throwable;
 
 /**

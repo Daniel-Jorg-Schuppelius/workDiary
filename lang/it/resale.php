@@ -230,7 +230,6 @@ return [
         'proposed_hint' => 'Proposta — da confermare',
         'voucher_only' => 'Documento (senza riga)',
         'needed' => 'aperto: :amount',
-        'no_contacts' => 'Il destinatario della fattura non ha un contatto Lexoffice collegato.',
         'note_voided' => 'Fattura annullata — copriva :months', // Review 2026-09-10
         'no_lines' => 'Nessuna riga di fattura specchiata nella finestra intorno all’inizio del periodo.',
         'line' => 'Riga di fattura',
@@ -328,18 +327,14 @@ return [
         'dialog_title' => 'Creare una bozza di fattura in Lexoffice',
         'submit' => 'Crea bozza',
         'hint' => 'Tutti i periodi aperti del destinatario diventano righe di una bozza Lexoffice: una riga per abbonamento e periodo, cliente finale nella descrizione, quantità in mesi. Nulla viene finalizzato — verifichi e completi in Lexoffice.',
-        'title' => 'Fattura',
-        'introduction' => 'Licenze e abbonamenti, :count righe — periodi e clienti finali per riga.',
         'end_customer' => 'Cliente finale :name',
         'unit_piece' => 'pezzo',
-        'note' => 'Bozza Lexoffice :id del :date (:user)',
         'local_note' => 'Bozza di fattura locale :number',
         'flash' => [
             'created' => 'Bozza per :customer creata: :lines righe, :net € netto (id Lexoffice :id). Verifichi e completi in Lexoffice.',
             'created_local' => 'Bozza :id per :customer creata: :lines righe, :net € netto. I periodi sono collegati come proposta — confermi all’emissione.',
         ],
         'error' => [
-            'lexoffice' => 'Lexoffice non è attivo per questa organizzazione o senza chiave API.',
             'nothing_open' => 'Nessun periodo aperto con prezzo di vendita per questo destinatario.',
         ],
         'already_drafted' => 'Per questo destinatario è già in sospeso una bozza (:reference del :date). Completarla prima in Lexoffice o localmente, oppure decidere il periodo.', // Review 2026-09-10

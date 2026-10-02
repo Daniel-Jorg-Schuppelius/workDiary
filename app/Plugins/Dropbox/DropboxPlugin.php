@@ -47,7 +47,7 @@ class DropboxPlugin extends AbstractPlugin implements \App\Plugins\Contracts\Bac
     }
 
     public function description(): string {
-        return __('cloud_intake.dropbox.description');
+        return __('dropbox::cloud_intake.dropbox.description');
     }
 
     public function capabilities(): array {
@@ -120,12 +120,12 @@ class DropboxPlugin extends AbstractPlugin implements \App\Plugins\Contracts\Bac
     /** Health je Organisation: Konfiguration + Verbindungszustand (keine API-Probe). */
     public function healthCheck(): PluginHealth {
         if (! DropboxConfig::isConfigured()) {
-            return PluginHealth::degraded(__('cloud_intake.dropbox.health.not_configured'));
+            return PluginHealth::degraded(__('dropbox::cloud_intake.dropbox.health.not_configured'));
         }
 
         $org = PluginOrgContext::currentOrNull();
         if (! $org instanceof Organization) {
-            return PluginHealth::ok(__('cloud_intake.dropbox.health.no_org_context'));
+            return PluginHealth::ok(__('dropbox::cloud_intake.dropbox.health.no_org_context'));
         }
 
         try {
@@ -139,7 +139,7 @@ class DropboxPlugin extends AbstractPlugin implements \App\Plugins\Contracts\Bac
                 ->exists();
 
             if ($failing) {
-                return PluginHealth::degraded(__('cloud_intake.dropbox.health.attention'));
+                return PluginHealth::degraded(__('dropbox::cloud_intake.dropbox.health.attention'));
             }
 
             // Backupziele sind PLATTFORMWEIT (bewusst ohne organization_id) —
@@ -152,10 +152,10 @@ class DropboxPlugin extends AbstractPlugin implements \App\Plugins\Contracts\Bac
                 ])->exists();
 
             return $backupAttention
-                ? PluginHealth::degraded(__('cloud_intake.dropbox.health.backup_attention'), 'backup_grant')
-                : PluginHealth::ok(__('cloud_intake.dropbox.health.ok'));
+                ? PluginHealth::degraded(__('dropbox::cloud_intake.dropbox.health.backup_attention'), 'backup_grant')
+                : PluginHealth::ok(__('dropbox::cloud_intake.dropbox.health.ok'));
         } catch (Throwable $e) {
-            return PluginHealth::failing(__('cloud_intake.dropbox.health.error', ['class' => class_basename($e)]));
+            return PluginHealth::failing(__('dropbox::cloud_intake.dropbox.health.error', ['class' => class_basename($e)]));
         }
     }
 
@@ -168,6 +168,6 @@ class DropboxPlugin extends AbstractPlugin implements \App\Plugins\Contracts\Bac
     }
 
     public function intakeConnectAction(): UiAction {
-        return new UiAction('add', (string) __('cloud_intake.action.connect_dropbox'), route('admin.cloud-intake.dropbox.oauth.start'), post: true);
+        return new UiAction('add', (string) __('dropbox::cloud_intake.action.connect_dropbox'), route('admin.cloud-intake.dropbox.oauth.start'), post: true);
     }
 }

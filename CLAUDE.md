@@ -123,11 +123,21 @@ Domänenordnern, die das Manifest des Moduls in `folders()` nennt
 (`app/Models/Time/TimeEntry.php`, `app/Policies/Time/TimeEntryPolicy.php`,
 `database/factories/Time/TimeEntryFactory.php`). Einzige Wurzeldateien sind
 die Basisklassen `Controller`, `BaseFormRequest` und `PermissionPolicy`.
-Gate `DomainFolderRuleTest`; Plugin-Modelle unter `app/Models/Plugins/<Name>`,
-Plugin-Enums im Plugin unter `app/Plugins/<Name>/Enums` (MVP-1049).
+Gate `DomainFolderRuleTest`.
 Wer eine Klasse verschiebt: `use`-Zeilen und Nachbarn im alten Namespace
-nachziehen, `morph-map:generate` laufen lassen (Legacy-Schlüssel bleiben,
-Werte wandern), Views bleiben wo sie sind.
+nachziehen, `composer dump-autoload` und `morph-map:generate` laufen lassen
+(Legacy-Schlüssel bleiben, Werte wandern), Views bleiben wo sie sind.
+
+**Plugins sind geschlossene Pakete (MVP-1049–1052)** — alles eines Plugins liegt
+unter `app/Plugins/<Name>/`: Modelle in `Models`, Enums in `Enums`, Views in
+`Resources/views` (`<plugin-id>::…`), Texte in `Resources/lang`
+(`__('<plugin-id>::<gruppe>.…')`; deutsche JSON-Texte, die nur das Plugin
+nutzt, in `Resources/lang/<sprache>.json`, Aufruf unverändert), Migrationen in
+`Database/Migrations` (laufen mit dem normalen `migrate`; neue ebenfalls hinter
+die letzte Migration von Kern und Plugins). Kerngruppen und `lang/*.json`
+behalten nur, was Kern, Plugin-Plattform oder mehrere Plugins nutzen (Gate
+`PluginTextsRuleTest`). Gemischte Migrationen (Kern- und Plugin-Tabellen)
+bleiben in `database/migrations`.
 
 ## Modulgrenzen: Contracts, Events, Erweiterungspunkte (MVP-863)
 

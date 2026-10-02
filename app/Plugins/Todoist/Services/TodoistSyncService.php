@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\Todoist\Services;
 
 use App\Models\Platform\Organization;
-use App\Models\Plugins\Todoist\{TodoistConnection, TodoistProjectLink};
+use App\Plugins\Todoist\Models\{TodoistConnection, TodoistProjectLink};
 use Throwable;
 
 /**

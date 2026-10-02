@@ -14,7 +14,7 @@ namespace App\Plugins\Todoist\Jobs;
 
 use App\Jobs\Concerns\RetriesTransientFailures;
 use App\Models\Platform\Organization;
-use App\Models\Plugins\Todoist\{TodoistConnection, TodoistProjectLink, TodoistWebhookDelivery};
+use App\Plugins\Todoist\Models\{TodoistConnection, TodoistProjectLink, TodoistWebhookDelivery};
 use App\Plugins\Todoist\Services\TodoistImportService;
 use App\Plugins\Todoist\TodoistPlugin;
 use Illuminate\Bus\Queueable;

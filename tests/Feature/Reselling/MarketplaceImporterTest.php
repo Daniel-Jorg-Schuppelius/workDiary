@@ -14,8 +14,8 @@ namespace Tests\Feature\Reselling;
 
 use App\Enums\Reselling\{CompanyMappingMode, SubscriptionProvider, SubscriptionStatus};
 use App\Models\Customer\{Customer, ForeignCustomer};
-use App\Models\Plugins\Lexoffice\LexofficeArticle;
 use App\Models\Reselling\{CompanyMapping, ResaleImport, ResalePriceEntry, ResaleSubscription};
+use App\Plugins\Lexoffice\Models\LexofficeArticle;
 use App\Services\Reselling\Register\MarketplaceImporter;
 use App\Support\XlsxExport;
 use Illuminate\Foundation\Testing\RefreshDatabase;

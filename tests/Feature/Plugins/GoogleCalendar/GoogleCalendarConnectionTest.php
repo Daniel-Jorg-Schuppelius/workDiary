@@ -11,10 +11,10 @@
 namespace Tests\Feature\Plugins\GoogleCalendar;
 
 use App\Models\Platform\User;
-use App\Models\Plugins\GoogleCalendar\GoogleCalendarConnection;
 use App\Plugins\Contracts\{CalendarPublisher, PluginCapability};
 use App\Plugins\GoogleCalendar\Api\{GoogleCalendarClient, GoogleCalendarOAuth};
 use App\Plugins\GoogleCalendar\GoogleCalendarPlugin;
+use App\Plugins\GoogleCalendar\Models\GoogleCalendarConnection;
 use App\Plugins\{PluginDiscovery, PluginHealth};
 use App\Support\MorphMap;
 use GuzzleHttp\{Client as GuzzleClient, HandlerStack};

@@ -11,6 +11,6 @@
   Erwartet: $plan (Tarifname).
 --}}
 <div role="status" class="alert alert-info text-sm">
-    <span>{{ __('lexware.schedules.hint', ['plan' => $plan]) }}</span>
-    <a href="{{ route('lexoffice.handover.index') }}" class="link">{{ __('lexware.handover.title') }}</a>
+    <span>{{ __('lexoffice::lexware.schedules.hint', ['plan' => $plan]) }}</span>
+    <a href="{{ route('lexoffice.handover.index') }}" class="link">{{ __('lexoffice::lexware.handover.title') }}</a>
 </div>

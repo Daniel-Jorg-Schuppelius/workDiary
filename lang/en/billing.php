@@ -18,7 +18,6 @@ return [
         'dunning_level' => 'Dunning level :level',
         'action' => [
             'dun' => 'Send reminder',
-            'dun_confirm' => 'Create a dunning notice in the accounting system?',
         ],
         'tab' => [
             'all' => 'All',

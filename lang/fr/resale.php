@@ -230,7 +230,6 @@ return [
         'proposed_hint' => 'Proposition — à confirmer',
         'voucher_only' => 'Pièce (sans ligne)',
         'needed' => 'ouvert : :amount',
-        'no_contacts' => 'Le destinataire de la facture n’a pas de contact Lexoffice lié.',
         'note_voided' => 'Facture annulée — couvrait :months', // Review 2026-09-10
         'no_lines' => 'Aucune ligne de facture miroir dans la fenêtre autour du début de période.',
         'line' => 'Ligne de facture',
@@ -328,18 +327,14 @@ return [
         'dialog_title' => 'Créer un brouillon de facture dans Lexoffice',
         'submit' => 'Créer le brouillon',
         'hint' => 'Toutes les périodes ouvertes du destinataire deviennent des lignes d’un brouillon Lexoffice : une ligne par abonnement et période, client final dans la description, quantité en mois. Rien n’est finalisé — vérifiez et terminez dans Lexoffice.',
-        'title' => 'Facture',
-        'introduction' => 'Licences et abonnements, :count lignes — périodes et clients finaux par ligne.',
         'end_customer' => 'Client final :name',
         'unit_piece' => 'pièce',
-        'note' => 'Brouillon Lexoffice :id du :date (:user)',
         'local_note' => 'Brouillon de facture local :number',
         'flash' => [
             'created' => 'Brouillon pour :customer créé : :lines lignes, :net € HT (id Lexoffice :id). Vérifiez et finalisez dans Lexoffice.',
             'created_local' => 'Brouillon :id pour :customer créé : :lines lignes, :net € HT. Les périodes sont rattachées en proposition — confirmez à l’émission.',
         ],
         'error' => [
-            'lexoffice' => 'Lexoffice n’est pas activé pour cette organisation ou sans clé API.',
             'nothing_open' => 'Aucune période ouverte avec prix de vente pour ce destinataire.',
         ],
         'already_drafted' => 'Un brouillon est déjà en attente pour ce destinataire (:reference du :date). Finalisez-le d’abord dans Lexoffice ou localement, ou décidez la période.', // Review 2026-09-10

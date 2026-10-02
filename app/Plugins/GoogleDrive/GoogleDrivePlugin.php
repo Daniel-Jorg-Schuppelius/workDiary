@@ -46,7 +46,7 @@ class GoogleDrivePlugin extends AbstractPlugin implements \App\Plugins\Contracts
     }
 
     public function description(): string {
-        return __('cloud_intake.google.description');
+        return __('google-drive::cloud_intake.google.description');
     }
 
     public function capabilities(): array {
@@ -134,12 +134,12 @@ class GoogleDrivePlugin extends AbstractPlugin implements \App\Plugins\Contracts
     /** Health je Organisation: Konfiguration + Verbindungszustand (keine API-Probe). */
     public function healthCheck(): PluginHealth {
         if (! GoogleDriveConfig::isConfigured()) {
-            return PluginHealth::degraded(__('cloud_intake.google.health.not_configured'));
+            return PluginHealth::degraded(__('google-drive::cloud_intake.google.health.not_configured'));
         }
 
         $org = PluginOrgContext::currentOrNull();
         if (! $org instanceof Organization) {
-            return PluginHealth::ok(__('cloud_intake.google.health.no_org_context'));
+            return PluginHealth::ok(__('google-drive::cloud_intake.google.health.no_org_context'));
         }
 
         try {
@@ -153,7 +153,7 @@ class GoogleDrivePlugin extends AbstractPlugin implements \App\Plugins\Contracts
                 ->exists();
 
             if ($failing) {
-                return PluginHealth::degraded(__('cloud_intake.google.health.attention'));
+                return PluginHealth::degraded(__('google-drive::cloud_intake.google.health.attention'));
             }
 
             // Backupziele sind PLATTFORMWEIT (bewusst ohne organization_id) —
@@ -166,10 +166,10 @@ class GoogleDrivePlugin extends AbstractPlugin implements \App\Plugins\Contracts
                 ])->exists();
 
             return $backupAttention
-                ? PluginHealth::degraded(__('cloud_intake.google.health.backup_attention'), 'backup_grant')
-                : PluginHealth::ok(__('cloud_intake.google.health.ok'));
+                ? PluginHealth::degraded(__('google-drive::cloud_intake.google.health.backup_attention'), 'backup_grant')
+                : PluginHealth::ok(__('google-drive::cloud_intake.google.health.ok'));
         } catch (Throwable $e) {
-            return PluginHealth::failing(__('cloud_intake.google.health.error', ['class' => class_basename($e)]));
+            return PluginHealth::failing(__('google-drive::cloud_intake.google.health.error', ['class' => class_basename($e)]));
         }
     }
 
@@ -182,6 +182,6 @@ class GoogleDrivePlugin extends AbstractPlugin implements \App\Plugins\Contracts
     }
 
     public function intakeConnectAction(): UiAction {
-        return new UiAction('add', (string) __('cloud_intake.action.connect_google'), route('admin.cloud-intake.google.oauth.start'), post: true);
+        return new UiAction('add', (string) __('google-drive::cloud_intake.action.connect_google'), route('admin.cloud-intake.google.oauth.start'), post: true);
     }
 }

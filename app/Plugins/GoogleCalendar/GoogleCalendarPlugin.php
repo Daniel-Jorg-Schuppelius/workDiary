@@ -11,10 +11,10 @@
 namespace App\Plugins\GoogleCalendar;
 
 use App\Models\Platform\Organization;
-use App\Models\Plugins\GoogleCalendar\GoogleCalendarConnection;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{CalendarPublisher, PluginCapability};
 use App\Plugins\GoogleCalendar\Api\GoogleCalendarClient;
+use App\Plugins\GoogleCalendar\Models\GoogleCalendarConnection;
 use App\Plugins\Support\Calendar\{OrganizationEventSource, RemoteCalendarEvent, RemoteCalendarPublishService};
 use App\Plugins\Support\PluginOrgContext;
 use Closure;
@@ -50,7 +50,7 @@ class GoogleCalendarPlugin extends AbstractPlugin implements CalendarPublisher {
     }
 
     public function description(): string {
-        return __('google_calendar.plugin_description');
+        return __('google_calendar::google_calendar.plugin_description');
     }
 
     public function capabilities(): array {
@@ -107,7 +107,7 @@ class GoogleCalendarPlugin extends AbstractPlugin implements CalendarPublisher {
     public function adminPanel(): ?array {
         return [
             'route' => 'admin.google-calendar.index',
-            'label' => __('google_calendar.title'),
+            'label' => __('google_calendar::google_calendar.title'),
             'icon' => 'event',
         ];
     }
@@ -115,38 +115,38 @@ class GoogleCalendarPlugin extends AbstractPlugin implements CalendarPublisher {
     /** Eigene Google-Cloud-App je Organisation; leer = Instanz-App der Installation. */
     public function settingsSchema(): array {
         return [
-            \App\Plugins\Contracts\SettingsField::text('client_id', __('google_calendar.settings.client_id'),
-                help: __('google_calendar.settings.client_id_help'))->toArray(),
-            \App\Plugins\Contracts\SettingsField::password('client_secret', __('google_calendar.settings.client_secret'),
-                help: __('google_calendar.settings.client_secret_help'))->toArray(),
+            \App\Plugins\Contracts\SettingsField::text('client_id', __('google_calendar::google_calendar.settings.client_id'),
+                help: __('google_calendar::google_calendar.settings.client_id_help'))->toArray(),
+            \App\Plugins\Contracts\SettingsField::password('client_secret', __('google_calendar::google_calendar.settings.client_secret'),
+                help: __('google_calendar::google_calendar.settings.client_secret_help'))->toArray(),
         ];
     }
 
     /** Health-Check je Organisation: billige Probe über die Kalenderliste. */
     public function healthCheck(): PluginHealth {
         if (! GoogleCalendarConfig::isConfigured()) {
-            return PluginHealth::degraded(__('google_calendar.health.not_configured'));
+            return PluginHealth::degraded(__('google_calendar::google_calendar.health.not_configured'));
         }
 
         $org = PluginOrgContext::currentOrNull();
         if (! $org instanceof Organization) {
-            return PluginHealth::ok(__('google_calendar.health.no_org_context'));
+            return PluginHealth::ok(__('google_calendar::google_calendar.health.no_org_context'));
         }
 
         $connection = GoogleCalendarConnection::query()->where('organization_id', $org->id)->first();
         if (! $connection instanceof GoogleCalendarConnection || $connection->status === GoogleCalendarConnection::STATUS_DISCONNECTED) {
-            return PluginHealth::degraded(__('google_calendar.health.no_connection'));
+            return PluginHealth::degraded(__('google_calendar::google_calendar.health.no_connection'));
         }
         if (! $connection->isActive()) {
-            return PluginHealth::degraded(__('google_calendar.health.inactive'));
+            return PluginHealth::degraded(__('google_calendar::google_calendar.health.inactive'));
         }
 
         try {
             return (new GoogleCalendarClient($connection))->ping()
-                ? PluginHealth::ok(__('google_calendar.health.ok'))
-                : PluginHealth::failing(__('google_calendar.health.failing'), 'unreachable');
+                ? PluginHealth::ok(__('google_calendar::google_calendar.health.ok'))
+                : PluginHealth::failing(__('google_calendar::google_calendar.health.failing'), 'unreachable');
         } catch (Throwable $e) {
-            return PluginHealth::failing(__('google_calendar.health.error', ['class' => class_basename($e)]));
+            return PluginHealth::failing(__('google_calendar::google_calendar.health.error', ['class' => class_basename($e)]));
         }
     }
 }

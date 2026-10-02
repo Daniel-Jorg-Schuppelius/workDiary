@@ -1,0 +1,9 @@
+{
+    "Aus dem sipgate-Konto unter „Personal Access Token“ (Scope sessions:sms:write).": "Dal suo account sipgate in «Personal Access Token» (scope sessions:sms:write).",
+    "Kein Personal Access Token hinterlegt.": "Nessun personal access token memorizzato.",
+    "Kennung der SMS-Erweiterung des Kontos, üblicherweise „s0“.": "Identificativo dell’estensione SMS dell’account, di norma «s0».",
+    "SMS-Erweiterung": "Estensione SMS",
+    "Token-ID": "ID del token",
+    "Versendet Alarm-SMS über die sipgate-REST-API (EU-Hosting, Personal Access Token).": "Invia SMS di allarme tramite l’API REST di sipgate (hosting UE, personal access token).",
+    "sipgate lehnt den Token ab.": "sipgate rifiuta il token."
+}

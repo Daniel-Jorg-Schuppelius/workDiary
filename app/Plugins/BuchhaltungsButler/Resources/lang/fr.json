@@ -1,0 +1,16 @@
+{
+    "API-Client": "Client API",
+    "API-Key (Mandant)": "Clé API (mandant)",
+    "API-Secret": "Secret API",
+    "Ausgestellte Rechnungen als Beleg pushen": "Pousser les factures émises comme justificatifs",
+    "BuchhaltungsButler ist für diese Organisation nicht konfiguriert (API-Client/-Secret/-Key fehlen).": "BuchhaltungsButler n'est pas configuré pour cette organisation (client/secret/clé API manquants).",
+    "BuchhaltungsButler ist nicht konfiguriert (API-Client/-Secret/-Key fehlen).": "BuchhaltungsButler n'est pas configuré (client/secret/clé API manquants).",
+    "BuchhaltungsButler lehnt die Zugangsdaten ab (401) — API-Client/-Secret prüfen.": "BuchhaltungsButler refuse les identifiants (401) — vérifier client/secret API.",
+    "BuchhaltungsButler → Einstellungen → Schnittstellen & API-Zugang.": "BuchhaltungsButler → Paramètres → Interfaces et accès API.",
+    "BuchhaltungsButler-API antwortet mit Fehlerstatus :status.": "L'API BuchhaltungsButler répond avec le statut d'erreur :status.",
+    "BuchhaltungsButler-API erreichbar.": "API BuchhaltungsButler joignable.",
+    "BuchhaltungsButler-API nicht erreichbar.": "API BuchhaltungsButler injoignable.",
+    "Die BuchhaltungsButler-API ist für diesen Account nicht freigeschaltet (kostenpflichtiges Add-on) — im BHB-Tarif buchen.": "L'API BuchhaltungsButler n'est pas activée pour ce compte (module payant) — à réserver dans votre forfait BHB.",
+    "Wird als Formfeld api_key in jedem Request mitgesendet (BHB-Vertrag).": "Envoyé comme champ de formulaire api_key dans chaque requête (contrat BHB).",
+    "Übergibt ausgestellte lokale Rechnungen als Belege an BuchhaltungsButler (Basic Auth + api_key): idempotenter Push über die Integrations-Outbox mit sha256-Nachweis; die Rechnungshoheit bleibt bei WorkDiary, die Buchführung bei BuchhaltungsButler.": "Transmet les factures locales émises comme justificatifs à BuchhaltungsButler (basic auth + api_key) : envoi idempotent via l'outbox d'intégration avec preuve sha256 ; la souveraineté de facturation reste à WorkDiary, la comptabilité à BuchhaltungsButler."
+}

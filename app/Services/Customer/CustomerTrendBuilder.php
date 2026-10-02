@@ -17,7 +17,7 @@ use App\Models\Time\TimeEntry;
 use App\Services\Billing\Contracts\ExternalRevenue;
 use App\Support\Query\{DateParts, DateRange};
 use Carbon\CarbonImmutable;
-use Illuminate\Support\Facades\{Gate};
+use Illuminate\Support\Facades\Gate;
 
 /**
  * Kompakte Monats-Trends (letzte 12 Monate bis Anker) für die Kundenakte:

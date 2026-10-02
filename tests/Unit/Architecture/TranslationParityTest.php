@@ -14,7 +14,8 @@ use App\Support\{Locales, Translations};
 use Tests\TestCase;
 
 /**
- * Architektur-Gate für Übersetzungs-Parität (vgl. {@see TenantTraitCoverageTest}):
+ * Architektur-Gate für Übersetzungs-Parität (vgl. {@see TenantTraitCoverageTest}),
+ * für den Kern und jeden Plugin-Katalog:
  *  - Jede JSON-Sprachdatei hat exakt denselben Key-Bestand (Referenz = en + Extras).
  *  - Jede auswählbare Sprache besitzt jede Namespace-Datei (echte Übersetzung oder
  *    en-Fallback-Stub) — fehlende Dateien würden stumm auf Deutsch/Schlüssel zeigen.
@@ -27,13 +28,15 @@ class TranslationParityTest extends TestCase {
         // abdecken — sonst zeigt die UI den rohen Schlüssel. Zusätzliche,
         // sprachspezifische Keys sind erlaubt (z. B. noch nicht überall
         // propagierte Enum-Keys) und werden hier bewusst nicht beanstandet.
-        $reference = Translations::jsonReferenceKeys();
+        foreach (array_keys(Translations::catalogs()) as $namespace) {
+            $reference = Translations::jsonReferenceKeys($namespace);
 
-        foreach (Translations::jsonLocales() as $code) {
-            $have = array_fill_keys(array_keys(Translations::loadJson($code)), true);
-            $missing = array_values(array_filter($reference, static fn(string $k): bool => ! isset($have[$k])));
+            foreach (Translations::jsonLocales() as $code) {
+                $have = array_fill_keys(array_keys(Translations::loadJson($code, $namespace)), true);
+                $missing = array_values(array_filter($reference, static fn(string $k): bool => ! isset($have[$k])));
 
-            $this->assertSame([], $missing, "lang/$code.json fehlen Keys (lang:sync --locale=$code --fill).");
+                $this->assertSame([], $missing, Translations::jsonPath($code, $namespace) . " fehlen Keys (lang:sync --locale=$code --fill).");
+            }
         }
     }
 
@@ -42,7 +45,7 @@ class TranslationParityTest extends TestCase {
         // fällt in ALLEN Sprachen auf den deutschen Quelltext zurück — die
         // Katalog-Parität (en ↔ fr/it/es) ist dafür blind. Genau so blieben
         // die Verleih-/Leasing-/Prüfmittel-Views unübersetzt (2026-07).
-        $reference = array_fill_keys(Translations::jsonReferenceKeys(), true);
+        $reference = Translations::runtimeJson('en');
         $missing = array_values(array_filter(
             Translations::sourceJsonKeys(),
             static fn(string $k): bool => ! isset($reference[$k]),
@@ -51,11 +54,26 @@ class TranslationParityTest extends TestCase {
         $this->assertSame([], $missing, 'Im Quellcode verwendete Keys fehlen in en.json (und damit überall).');
     }
 
+    public function test_every_source_plugin_key_resolves_in_every_locale(): void {
+        // Plugin-Texte liegen unter `<plugin-id>::<gruppe>` (Resources/lang des
+        // Plugins); ein falscher Namespace zeigt überall den rohen Schlüssel.
+        $offenders = [];
+        foreach (Translations::sourceNamespacedKeys() as $key) {
+            foreach (Locales::enabledCodes() as $code) {
+                if (! app('translator')->has($key, $code, false)) {
+                    $offenders[] = "$code: $key";
+                }
+            }
+        }
+
+        $this->assertSame([], $offenders, 'Plugin-Schlüssel nicht auflösbar: ' . implode(', ', array_slice($offenders, 0, 10)));
+    }
+
     public function test_every_source_plural_key_has_a_german_entry(): void {
         // trans_choice wählt über Translator::localeForChoice die Fallback-
         // Sprache, sobald der Schlüssel für die aktive Sprache fehlt — ohne
         // Identitätseintrag in de.json zeigte die deutsche UI „16 articles“.
-        $have = array_fill_keys(array_keys(Translations::loadJson('de')), true);
+        $have = Translations::runtimeJson('de');
         $missing = array_values(array_filter(
             Translations::sourcePluralKeys(),
             static fn(string $k): bool => ! isset($have[$k]),
@@ -67,7 +85,7 @@ class TranslationParityTest extends TestCase {
     public function test_every_source_plural_key_exists_in_the_reference_catalog(): void {
         // Der Quell-Scan oben erfasst nur __()/trans(); ein trans_choice-Key
         // ohne en.json-Eintrag bliebe in allen Sprachen deutsch.
-        $reference = array_fill_keys(Translations::jsonReferenceKeys(), true);
+        $reference = Translations::runtimeJson('en');
         $missing = array_values(array_filter(
             Translations::sourcePluralKeys(),
             static fn(string $k): bool => ! isset($reference[$k]),
@@ -80,7 +98,7 @@ class TranslationParityTest extends TestCase {
         $missing = [];
         foreach (Translations::namespaceFiles() as $file) {
             foreach (Locales::enabledCodes() as $code) {
-                if (! is_file(Translations::langPath($code) . '/' . $file)) {
+                if (! is_file(Translations::phpPath($code, $file))) {
                     $missing[] = "$code/$file";
                 }
             }

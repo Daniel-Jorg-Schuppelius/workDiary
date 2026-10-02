@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\OrgaMax\Api;
 
 use APIToolkit\Exceptions\{ApiException, UnauthorizedException};
-use App\Models\Plugins\OrgaMax\OrgaMaxConnection;
+use App\Plugins\OrgaMax\Models\OrgaMaxConnection;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Support\Carbon;
 use Orgamax\API\Endpoints\AuthEndpoint;

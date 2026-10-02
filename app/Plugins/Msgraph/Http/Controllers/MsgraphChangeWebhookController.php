@@ -14,8 +14,8 @@ namespace App\Plugins\Msgraph\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Mail\EmailConnection;
-use App\Models\Plugins\Msgraph\{MsgraphConnection, MsgraphTaskListLink};
 use App\Plugins\Msgraph\Jobs\{MsgraphCalendarWakeJob, MsgraphMailWakeJob, MsgraphTodoWakeJob};
+use App\Plugins\Msgraph\Models\{MsgraphConnection, MsgraphTaskListLink};
 use App\Plugins\Support\WebhookSignature;
 use Illuminate\Http\{Request, Response};
 use Illuminate\Support\Facades\Cache;

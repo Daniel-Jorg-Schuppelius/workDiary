@@ -17,7 +17,7 @@ use App\Models\Diary\OpenIssue;
 use App\Models\Integration\ExternalReference;
 use App\Models\Notification\NotificationRule;
 use App\Models\Platform\{Organization, User};
-use App\Models\Plugins\Msgraph\MsgraphConnection;
+use App\Plugins\Msgraph\Models\MsgraphConnection;
 use App\Plugins\Msgraph\MsgraphPlugin;
 use App\Plugins\Support\Calendar\RemoteCalendarPublishService;
 use App\Services\Notification\NotificationDispatcher;

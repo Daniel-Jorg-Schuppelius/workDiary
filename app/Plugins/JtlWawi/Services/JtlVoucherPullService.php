@@ -13,9 +13,9 @@ declare(strict_types=1);
 namespace App\Plugins\JtlWawi\Services;
 
 use App\Enums\Billing\{DocumentDirection, DocumentKind};
-use App\Models\Plugins\JtlWawi\JtlConnection;
 use App\Plugins\JtlWawi\Api\{JtlApiException, JtlGatewayFactory};
 use App\Plugins\JtlWawi\JtlWawiPlugin;
+use App\Plugins\JtlWawi\Models\JtlConnection;
 use App\Services\Finance\Accounting\Vouchers\{MirroredVoucher, VoucherMirror, VoucherPuller};
 
 /**

@@ -12,9 +12,9 @@ namespace Tests\Feature\Plugins\Zammad;
 
 use App\Models\Integration\ExternalReference;
 use App\Models\Platform\Organization;
-use App\Models\Plugins\Zammad\ZammadConnection;
 use App\Models\Project\{Project, Task};
 use App\Plugins\Zammad\Contracts\ZammadGateway;
+use App\Plugins\Zammad\Models\ZammadConnection;
 use App\Plugins\Zammad\Services\ZammadTicketImporter;
 use App\Plugins\Zammad\ZammadPlugin;
 use Illuminate\Foundation\Testing\RefreshDatabase;

@@ -15,9 +15,9 @@ namespace App\Plugins\JtlWawi\Services;
 use App\Enums\Inventory\StockState;
 use App\Models\Article\ArticleVariant;
 use App\Models\Inventory\Warehouse;
-use App\Models\Plugins\JtlWawi\JtlStockSnapshot;
 use App\Plugins\JtlWawi\Api\JtlGatewayFactory;
 use App\Plugins\JtlWawi\JtlWawiPlugin;
+use App\Plugins\JtlWawi\Models\JtlStockSnapshot;
 use CommonToolkit\Helper\Data\NumberHelper;
 
 /**

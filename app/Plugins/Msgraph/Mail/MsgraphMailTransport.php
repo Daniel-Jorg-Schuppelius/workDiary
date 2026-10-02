@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Plugins\Msgraph\Mail;
 
-use App\Models\Plugins\Msgraph\MsgraphMailConnection;
 use App\Plugins\Msgraph\Api\MsgraphMailClient;
+use App\Plugins\Msgraph\Models\MsgraphMailConnection;
 use Symfony\Component\Mailer\Exception\TransportException;
 use Symfony\Component\Mailer\SentMessage;
 use Symfony\Component\Mailer\Transport\AbstractTransport;

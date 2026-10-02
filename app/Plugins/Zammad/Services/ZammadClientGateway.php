@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Plugins\Zammad\Services;
 
-use App\Models\Plugins\Zammad\ZammadConnection;
 use App\Plugins\Zammad\Contracts\ZammadGateway;
+use App\Plugins\Zammad\Models\ZammadConnection;
 use App\Support\UrlSafety;
 use RuntimeException;
 use Throwable;

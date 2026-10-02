@@ -14,7 +14,7 @@ use App\Enums\Document\{DocumentStatus, DocumentType};
 use App\Models\Document\{Document, DocumentVersion};
 use App\Models\Integration\IntegrationOutboxEntry;
 use App\Models\Platform\User;
-use App\Models\Plugins\Webdav\WebdavConnection;
+use App\Plugins\Webdav\Models\WebdavConnection;
 use App\Plugins\Webdav\WebdavPlugin;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\{Queue, Storage};

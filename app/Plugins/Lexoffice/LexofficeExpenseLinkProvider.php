@@ -14,8 +14,8 @@ namespace App\Plugins\Lexoffice;
 
 use App\Enums\Expense\ExpenseStatus;
 use App\Models\Integration\ExternalReference;
-use App\Models\Plugins\Lexoffice\LexofficeVoucher;
 use App\Models\Travel\Expense;
+use App\Plugins\Lexoffice\Models\LexofficeVoucher;
 use App\Services\Billing\Contracts\ExpenseLinkProvider;
 use App\Services\Billing\ExpenseVoucherRef;
 use App\Support\{MorphMap, Sqid};

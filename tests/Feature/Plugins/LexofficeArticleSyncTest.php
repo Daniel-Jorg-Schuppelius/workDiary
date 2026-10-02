@@ -10,8 +10,8 @@
 
 namespace Tests\Feature\Plugins;
 
-use App\Models\Plugins\Lexoffice\LexofficeArticle;
 use App\Plugins\Lexoffice\LexofficeArticleSync;
+use App\Plugins\Lexoffice\Models\LexofficeArticle;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Psr\Http\Message\RequestInterface;
 use Tests\Concerns\WithOrganization;

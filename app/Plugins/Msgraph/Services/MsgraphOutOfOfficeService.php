@@ -14,8 +14,8 @@ namespace App\Plugins\Msgraph\Services;
 
 use App\Models\Absence\Vacation;
 use App\Models\Platform\Organization;
-use App\Models\Plugins\Msgraph\MsgraphConnection;
 use App\Plugins\Msgraph\Api\MsgraphCalendarClient;
+use App\Plugins\Msgraph\Models\MsgraphConnection;
 use App\Plugins\Msgraph\MsgraphPlugin;
 use App\Plugins\Support\PluginSettingsResolver;
 use Illuminate\Support\Facades\Log;

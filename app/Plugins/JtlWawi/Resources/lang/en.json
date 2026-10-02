@@ -1,0 +1,14 @@
+{
+    "API drosselt Anfragen (Rate-Limit).": "API is throttling requests (rate limit).",
+    "API lehnt die Anmeldung ab — Verbindung/Scopes erneuern.": "API rejects the login — renew connection/scopes.",
+    "API nicht erreichbar (:class).": "API unreachable (:class).",
+    "API-Fehler (HTTP :status).": "API error (HTTP :status).",
+    "App-Registrierung wartet auf Freigabe in JTL-Wawi.": "App registration is waiting for approval in JTL-Wawi.",
+    "Bindet JTL-Wawi als führende Warenwirtschaft an: Artikel- und Lagerprojektion, Bestände lesen und Bestandsbuchungen idempotent übergeben (OnPremise und Cloud, API im Beta-Status).": "Connects JTL-Wawi as the leading merchandise management system: article and warehouse projection, read stock levels and hand over stock postings idempotently (on-premise and cloud, API in beta status).",
+    "JTL-Wawi": "JTL-Wawi",
+    "Keine JTL-Wawi-Verbindung hinterlegt.": "No JTL-Wawi connection configured.",
+    "Unbekannter JTL-Artikel mit Bestandsänderung": "Unknown JTL article with stock change",
+    "Verbindung blockiert (:reason) — Details im JTL-Admin.": "Connection blocked (:reason) — details in the JTL admin.",
+    "Verbunden (:mode, Wawi :version).": "Connected (:mode, Wawi :version).",
+    "unbekannt": "unknown"
+}

@@ -12,8 +12,8 @@ namespace App\Plugins\Sharepoint\Http\Controllers;
 
 use App\Enums\Document\DocumentType;
 use App\Models\Platform\PluginState;
-use App\Models\Plugins\Sharepoint\SharepointConnection;
 use App\Plugins\Sharepoint\Api\{SharepointDriveClient, SharepointOAuth};
+use App\Plugins\Sharepoint\Models\SharepointConnection;
 use App\Plugins\Sharepoint\{SharepointConfig, SharepointPlugin};
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
 use App\Plugins\Support\{ConnectionOAuthController, PluginOAuthGrant};
@@ -102,6 +102,10 @@ class SharepointAdminController extends ConnectionOAuthController {
         return 'sharepoint';
     }
 
+    protected function pluginId(): string {
+        return SharepointPlugin::ID;
+    }
+
     protected function connectedStatus(): string {
         return SharepointConnection::STATUS_ACTIVE;
     }
@@ -117,7 +121,7 @@ class SharepointAdminController extends ConnectionOAuthController {
 
         $connection = SharepointConnection::query()->where('organization_id', $organization->id)->first();
         if (! $connection instanceof SharepointConnection || trim((string) $connection->access_token) === '') {
-            return back()->with('error', __('sharepoint.flash.no_connection'));
+            return back()->with('error', __('sharepoint::sharepoint.flash.no_connection'));
         }
 
         $data = $request->validate([
@@ -128,7 +132,7 @@ class SharepointAdminController extends ConnectionOAuthController {
         $client = new SharepointDriveClient($connection);
         $site = $client->getSite((string) $data['site_id']);
         if ($site === null) {
-            return back()->with('error', __('sharepoint.flash.site_invalid'));
+            return back()->with('error', __('sharepoint::sharepoint.flash.site_invalid'));
         }
 
         try {
@@ -137,7 +141,7 @@ class SharepointAdminController extends ConnectionOAuthController {
             $drive = null;
         }
         if (! is_array($drive)) {
-            return back()->with('error', __('sharepoint.flash.drive_invalid'));
+            return back()->with('error', __('sharepoint::sharepoint.flash.drive_invalid'));
         }
 
         $connection->forceFill([
@@ -148,7 +152,7 @@ class SharepointAdminController extends ConnectionOAuthController {
         ])->save();
         $connection->audit('sharepoint.target_selected', ['site_name' => $site['name'], 'drive_name' => (string) $drive['name']]);
 
-        return redirect()->route('admin.sharepoint.index')->with('success', __('sharepoint.flash.target_saved'));
+        return redirect()->route('admin.sharepoint.index')->with('success', __('sharepoint::sharepoint.flash.target_saved'));
     }
 
     /** Speichert Ordnerregeln/Quellen/Aktiv-Schalter (WebDAV-Muster). */
@@ -158,7 +162,7 @@ class SharepointAdminController extends ConnectionOAuthController {
 
         $connection = SharepointConnection::query()->where('organization_id', $organization->id)->first();
         if (! $connection instanceof SharepointConnection) {
-            return back()->with('error', __('sharepoint.flash.no_connection'));
+            return back()->with('error', __('sharepoint::sharepoint.flash.no_connection'));
         }
 
         $data = $request->validate([
@@ -181,7 +185,7 @@ class SharepointAdminController extends ConnectionOAuthController {
         ])->save();
         $connection->audit('sharepoint.settings_saved', ['by_user_id' => (int) $admin->id, 'active' => $connection->active]);
 
-        return back()->with('success', __('sharepoint.flash.saved'));
+        return back()->with('success', __('sharepoint::sharepoint.flash.saved'));
     }
 
     /** Manueller Voll-Spiegellauf (auditiert). */
@@ -191,13 +195,13 @@ class SharepointAdminController extends ConnectionOAuthController {
 
         $connection = SharepointConnection::query()->where('organization_id', $organization->id)->first();
         if (! $connection instanceof SharepointConnection || ! $connection->isActive()) {
-            return back()->with('error', __('sharepoint.flash.no_connection'));
+            return back()->with('error', __('sharepoint::sharepoint.flash.no_connection'));
         }
 
         Artisan::call('sharepoint:mirror', ['--organization' => (string) $organization->id]);
         $connection->audit('sharepoint.mirror_manual', ['by_user_id' => (int) $admin->id]);
 
-        return back()->with('success', __('sharepoint.flash.mirror_done'));
+        return back()->with('success', __('sharepoint::sharepoint.flash.mirror_done'));
     }
 
     /**

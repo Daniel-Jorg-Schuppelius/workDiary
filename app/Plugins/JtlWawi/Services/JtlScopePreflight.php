@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\JtlWawi\Services;
 
-use App\Models\Plugins\JtlWawi\JtlConnection;
+use App\Plugins\JtlWawi\Models\JtlConnection;
 
 /**
  * Scope-Preflight (Feature 078, MVP-317): prüft die gewährten Scopes gegen

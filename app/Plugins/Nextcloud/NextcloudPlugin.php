@@ -52,7 +52,7 @@ class NextcloudPlugin extends AbstractPlugin implements \App\Plugins\Contracts\B
     }
 
     public function description(): string {
-        return __('cloud_intake.nextcloud.description');
+        return __('nextcloud::cloud_intake.nextcloud.description');
     }
 
     public function capabilities(): array {
@@ -127,7 +127,7 @@ class NextcloudPlugin extends AbstractPlugin implements \App\Plugins\Contracts\B
     public function healthCheck(): PluginHealth {
         $org = PluginOrgContext::currentOrNull();
         if (! $org instanceof Organization) {
-            return PluginHealth::ok(__('cloud_intake.nextcloud.health.no_org_context'));
+            return PluginHealth::ok(__('nextcloud::cloud_intake.nextcloud.health.no_org_context'));
         }
 
         try {
@@ -141,7 +141,7 @@ class NextcloudPlugin extends AbstractPlugin implements \App\Plugins\Contracts\B
                 ->exists();
 
             if ($failing) {
-                return PluginHealth::degraded(__('cloud_intake.nextcloud.health.attention'));
+                return PluginHealth::degraded(__('nextcloud::cloud_intake.nextcloud.health.attention'));
             }
 
             // Backupziele sind PLATTFORMWEIT (bewusst ohne organization_id) —
@@ -154,10 +154,10 @@ class NextcloudPlugin extends AbstractPlugin implements \App\Plugins\Contracts\B
                 ])->exists();
 
             return $backupAttention
-                ? PluginHealth::degraded(__('cloud_intake.nextcloud.health.backup_attention'), 'backup_grant')
-                : PluginHealth::ok(__('cloud_intake.nextcloud.health.ok'));
+                ? PluginHealth::degraded(__('nextcloud::cloud_intake.nextcloud.health.backup_attention'), 'backup_grant')
+                : PluginHealth::ok(__('nextcloud::cloud_intake.nextcloud.health.ok'));
         } catch (Throwable $e) {
-            return PluginHealth::failing(__('cloud_intake.nextcloud.health.error', ['class' => class_basename($e)]));
+            return PluginHealth::failing(__('nextcloud::cloud_intake.nextcloud.health.error', ['class' => class_basename($e)]));
         }
     }
 
@@ -170,6 +170,6 @@ class NextcloudPlugin extends AbstractPlugin implements \App\Plugins\Contracts\B
     }
 
     public function intakeConnectAction(): UiAction {
-        return new UiAction('add', (string) __('cloud_intake.action.connect_nextcloud'), route('admin.cloud-intake.nextcloud.connect-form'), modal: true);
+        return new UiAction('add', (string) __('nextcloud::cloud_intake.action.connect_nextcloud'), route('admin.cloud-intake.nextcloud.connect-form'), modal: true);
     }
 }

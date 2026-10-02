@@ -1,0 +1,15 @@
+{
+    "API-Passwort": "Mot de passe API",
+    "Billbee": "Billbee",
+    "Billbee drosselt (429) — 2 Requests/Sekunde nicht überschreiten.": "Billbee limite le débit (429) — ne pas dépasser 2 requêtes/seconde.",
+    "Billbee ist für diese Organisation nicht konfiguriert (API-Key/Benutzer/API-Passwort fehlen).": "Billbee n'est pas configuré pour cette organisation (clé API/utilisateur/mot de passe API manquants).",
+    "Billbee ist nicht konfiguriert (API-Key/Benutzer/API-Passwort fehlen).": "Billbee n'est pas configuré (clé API/utilisateur/mot de passe API manquants).",
+    "Billbee lehnt die Zugangsdaten ab (401/403) — API-Key und API-Passwort prüfen.": "Billbee refuse les identifiants (401/403) — vérifier la clé et le mot de passe API.",
+    "Billbee → Einstellungen → API; die Freischaltung erfolgt durch den Billbee-Support.": "Billbee → Paramètres → API ; l'activation est effectuée par le support Billbee.",
+    "Billbee-API antwortet mit Fehlerstatus :status.": "L'API Billbee répond avec le statut d'erreur :status.",
+    "Billbee-API erreichbar.": "API Billbee joignable.",
+    "Billbee-API nicht erreichbar.": "API Billbee injoignable.",
+    "Billbee-Benutzername": "Nom d'utilisateur Billbee",
+    "Das separate API-Passwort des Billbee-Nutzers (nicht das Login-Passwort).": "Le mot de passe API distinct de l'utilisateur Billbee (pas celui de connexion).",
+    "Importiert Multichannel-Bestellungen (Amazon, eBay, Otto, Kaufland, Shopify …) aus Billbee Inbox-First mit Kanalherkunft und meldet Bestände als Absolut-Updates zurück — ohne eigene Marktplatz-Zulassungen.": "Importe les commandes multicanales (Amazon, eBay, Otto, Kaufland, Shopify …) depuis Billbee en mode inbox-first avec origine du canal et renvoie les stocks en mises à jour absolues — sans agréments marketplace propres."
+}

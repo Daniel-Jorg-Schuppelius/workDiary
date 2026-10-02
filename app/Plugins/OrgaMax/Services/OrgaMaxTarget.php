@@ -15,8 +15,8 @@ namespace App\Plugins\OrgaMax\Services;
 use App\Enums\Finance\{TransferChannel, TransferTarget};
 use App\Models\Finance\BillingTransfer;
 use App\Models\Integration\ExternalReference;
-use App\Models\Plugins\OrgaMax\OrgaMaxConnection;
 use App\Plugins\OrgaMax\Api\OrgaMaxClientFactory;
+use App\Plugins\OrgaMax\Models\OrgaMaxConnection;
 use App\Plugins\OrgaMax\OrgaMaxPlugin;
 use App\Services\Finance\BillingPositionBuilder;
 use App\Services\Finance\Targets\Concerns\{LoadsBillingSources, ReconcilesByMarker};
@@ -65,10 +65,10 @@ class OrgaMaxTarget implements FacturationTarget {
             ->where('organization_id', $transfer->organization_id)
             ->first();
         if (! $connection instanceof OrgaMaxConnection || ! $connection->isActive()) {
-            throw new RuntimeException((string) __('orgamax.error.not_connected'));
+            throw new RuntimeException((string) __('orgamax::orgamax.error.not_connected'));
         }
         if (! $connection->capabilityEnabled('billing') || $connection->capabilityLeader('billing') !== 'orgamax') {
-            throw new RuntimeException((string) __('orgamax.error.billing_capability_disabled'));
+            throw new RuntimeException((string) __('orgamax::orgamax.error.billing_capability_disabled'));
         }
 
         // (1) Bereits übergeben? (harte Idempotenz je Transfer)
@@ -99,7 +99,7 @@ class OrgaMaxTarget implements FacturationTarget {
             'customerId' => (int) $customerRef->external_id,
             // Quellmarker in der Auftragsnotiz — Grundlage der Reconciliation
             // und des Übergabenachweises.
-            'notes' => (string) __('orgamax.order.internal_note', [
+            'notes' => (string) __('orgamax::orgamax.order.internal_note', [
                 'channel' => $transfer->channel->label(),
                 'from' => $transfer->period_from?->format('d.m.Y') ?? '—',
                 'to' => $transfer->period_to?->format('d.m.Y') ?? '—',
@@ -112,7 +112,7 @@ class OrgaMaxTarget implements FacturationTarget {
         } catch (ConnectException) {
             // Timeout/Netzabriss NACH dem Senden: Ausgang unklar — kein
             // blindes Retry; der nächste Lauf reconciled über den Marker.
-            throw new RuntimeException((string) __('orgamax.error.outcome_unclear'));
+            throw new RuntimeException((string) __('orgamax::orgamax.error.outcome_unclear'));
         }
 
         $externalId = (string) ($created?->getId() ?? '');
@@ -169,7 +169,7 @@ class OrgaMaxTarget implements FacturationTarget {
             ->forReferenceable($customer)
             ->first();
         if (! $reference instanceof ExternalReference) {
-            throw new RuntimeException((string) __('orgamax.error.customer_unmapped', ['customer' => $customer->name]));
+            throw new RuntimeException((string) __('orgamax::orgamax.error.customer_unmapped', ['customer' => $customer->name]));
         }
 
         return $reference;

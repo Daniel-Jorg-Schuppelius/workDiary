@@ -152,7 +152,6 @@ return [
         'note' => 'Nettobeträge der Einkaufsbelege je Lexoffice-Buchungskategorie; Gutschriften mindern.',
         'pending' => ':count Belege im Zeitraum haben noch keine Kategorien (werden beim nächsten Sync geladen).',
         'rest' => 'Übrige',
-        'unknown' => 'ohne Kategorie',
     ],
     'supplier_material' => [
         'title' => 'Materialverbrauch je Lieferant',

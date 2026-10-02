@@ -11,10 +11,10 @@
 namespace App\Plugins\Sharepoint;
 
 use App\Models\Platform\Organization;
-use App\Models\Plugins\Sharepoint\SharepointConnection;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\Plugin;
 use App\Plugins\Sharepoint\Api\SharepointDriveClient;
+use App\Plugins\Sharepoint\Models\SharepointConnection;
 use App\Plugins\Support\PluginOrgContext;
 use Throwable;
 
@@ -54,7 +54,7 @@ class SharepointPlugin extends AbstractPlugin implements \App\Plugins\Contracts\
     }
 
     public function description(): string {
-        return __('sharepoint.plugin_description');
+        return __('sharepoint::sharepoint.plugin_description');
     }
 
     /** Ereignisgetriebenes Sink-Plugin ohne providerneutrale Sync-Capability. */
@@ -71,7 +71,7 @@ class SharepointPlugin extends AbstractPlugin implements \App\Plugins\Contracts\
     public function adminPanel(): ?array {
         return [
             'route' => 'admin.sharepoint.index',
-            'label' => __('sharepoint.title'),
+            'label' => __('sharepoint::sharepoint.title'),
             'icon' => 'cloud_upload',
         ];
     }
@@ -84,28 +84,28 @@ class SharepointPlugin extends AbstractPlugin implements \App\Plugins\Contracts\
     /** Health-Check je Organisation: billige Probe auf die gewählte Bibliothek. */
     public function healthCheck(): PluginHealth {
         if (! SharepointConfig::isConfigured()) {
-            return PluginHealth::degraded(__('sharepoint.health.not_configured'));
+            return PluginHealth::degraded(__('sharepoint::sharepoint.health.not_configured'));
         }
 
         $org = PluginOrgContext::currentOrNull();
         if (! $org instanceof Organization) {
-            return PluginHealth::ok(__('sharepoint.health.no_org_context'));
+            return PluginHealth::ok(__('sharepoint::sharepoint.health.no_org_context'));
         }
 
         $connection = SharepointConnection::query()->where('organization_id', $org->id)->first();
         if (! $connection instanceof SharepointConnection || $connection->status === SharepointConnection::STATUS_DISCONNECTED) {
-            return PluginHealth::degraded(__('sharepoint.health.no_connection'));
+            return PluginHealth::degraded(__('sharepoint::sharepoint.health.no_connection'));
         }
         if (! $connection->isActive()) {
-            return PluginHealth::degraded(__('sharepoint.health.inactive'));
+            return PluginHealth::degraded(__('sharepoint::sharepoint.health.inactive'));
         }
 
         try {
             return (new SharepointDriveClient($connection))->ping()
-                ? PluginHealth::ok(__('sharepoint.health.ok'))
-                : PluginHealth::failing(__('sharepoint.health.failing'), 'unreachable');
+                ? PluginHealth::ok(__('sharepoint::sharepoint.health.ok'))
+                : PluginHealth::failing(__('sharepoint::sharepoint.health.failing'), 'unreachable');
         } catch (Throwable $e) {
-            return PluginHealth::failing(__('sharepoint.health.error', ['class' => class_basename($e)]));
+            return PluginHealth::failing(__('sharepoint::sharepoint.health.error', ['class' => class_basename($e)]));
         }
     }
 }

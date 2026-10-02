@@ -16,21 +16,21 @@
     $options = (array) ($connection->options ?? []);
 @endphp
 <x-modal
-    :title="__('backup_targets.s3.connect_title')"
+    :title="__('s3::backup_targets.s3.connect_title')"
     icon="cloud_upload"
     tone="primary"
     :action="route('admin.backup-targets.s3.connect')"
     method="POST"
     :form-data="['data-entry-form' => '']"
-    :submit-label="__('backup_targets.s3.connect_submit')"
+    :submit-label="__('s3::backup_targets.s3.connect_submit')"
 >
     @if ($connection !== null)
         <input type="hidden" name="connection" value="{{ $connection->sqid }}">
     @endif
 
-    <x-form-group :legend="__('backup_targets.s3.connect_legend')" icon="cloud_upload" tone="primary" cols="1">
+    <x-form-group :legend="__('s3::backup_targets.s3.connect_legend')" icon="cloud_upload" tone="primary" cols="1">
         <div class="fieldset">
-            <label class="fieldset-label" for="s3-name">{{ __('backup_targets.s3.field.name') }}</label>
+            <label class="fieldset-label" for="s3-name">{{ __('s3::backup_targets.s3.field.name') }}</label>
             <input id="s3-name" type="text" name="name" required maxlength="190"
                    value="{{ old('name', $connection->name ?? 'S3') }}"
                    class="input input-bordered w-full">
@@ -38,26 +38,26 @@
         </div>
 
         <div class="fieldset">
-            <label class="fieldset-label" for="s3-endpoint">{{ __('backup_targets.s3.field.endpoint') }}</label>
+            <label class="fieldset-label" for="s3-endpoint">{{ __('s3::backup_targets.s3.field.endpoint') }}</label>
             <input id="s3-endpoint" type="url" name="endpoint" maxlength="512"
                    value="{{ old('endpoint', $connection->server_url ?? '') }}"
                    class="input input-bordered w-full font-mono"
                    placeholder="https://s3.example.com">
-            <p class="text-xs text-muted">{{ __('backup_targets.s3.field.endpoint_help') }}</p>
+            <p class="text-xs text-muted">{{ __('s3::backup_targets.s3.field.endpoint_help') }}</p>
             @error('endpoint')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
         </div>
 
         <div class="fieldset">
-            <label class="fieldset-label" for="s3-region">{{ __('backup_targets.s3.field.region') }}</label>
+            <label class="fieldset-label" for="s3-region">{{ __('s3::backup_targets.s3.field.region') }}</label>
             <input id="s3-region" type="text" name="region" required maxlength="64"
                    value="{{ old('region', $options['region'] ?? 'us-east-1') }}"
                    class="input input-bordered w-full font-mono" placeholder="eu-central-1">
-            <p class="text-xs text-muted">{{ __('backup_targets.s3.field.region_help') }}</p>
+            <p class="text-xs text-muted">{{ __('s3::backup_targets.s3.field.region_help') }}</p>
             @error('region')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
         </div>
 
         <div class="fieldset">
-            <label class="fieldset-label" for="s3-bucket">{{ __('backup_targets.s3.field.bucket') }}</label>
+            <label class="fieldset-label" for="s3-bucket">{{ __('s3::backup_targets.s3.field.bucket') }}</label>
             <input id="s3-bucket" type="text" name="bucket" required maxlength="255"
                    value="{{ old('bucket', $options['bucket'] ?? '') }}"
                    class="input input-bordered w-full font-mono" placeholder="workdiary-backup">
@@ -65,7 +65,7 @@
         </div>
 
         <div class="fieldset">
-            <label class="fieldset-label" for="s3-key">{{ __('backup_targets.s3.field.access_key') }}</label>
+            <label class="fieldset-label" for="s3-key">{{ __('s3::backup_targets.s3.field.access_key') }}</label>
             <input id="s3-key" type="text" name="access_key" required maxlength="190" autocomplete="off"
                    value="{{ old('access_key', $connection->username ?? '') }}"
                    class="input input-bordered w-full font-mono">
@@ -73,19 +73,19 @@
         </div>
 
         <div class="fieldset">
-            <label class="fieldset-label" for="s3-secret">{{ __('backup_targets.s3.field.secret_key') }}</label>
+            <label class="fieldset-label" for="s3-secret">{{ __('s3::backup_targets.s3.field.secret_key') }}</label>
             <input id="s3-secret" type="password" name="secret_key" required maxlength="512" autocomplete="new-password"
                    class="input input-bordered w-full font-mono" placeholder="••••••••">
-            <p class="text-xs text-muted">{{ __('backup_targets.s3.field.secret_key_help') }}</p>
+            <p class="text-xs text-muted">{{ __('s3::backup_targets.s3.field.secret_key_help') }}</p>
             @error('secret_key')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
         </div>
 
         <div class="fieldset">
-            <label class="fieldset-label" for="s3-prefix">{{ __('backup_targets.s3.field.prefix') }}</label>
+            <label class="fieldset-label" for="s3-prefix">{{ __('s3::backup_targets.s3.field.prefix') }}</label>
             <input id="s3-prefix" type="text" name="prefix" maxlength="255"
                    value="{{ old('prefix', '') }}"
                    class="input input-bordered w-full font-mono" placeholder="workdiary">
-            <p class="text-xs text-muted">{{ __('backup_targets.s3.field.prefix_help') }}</p>
+            <p class="text-xs text-muted">{{ __('s3::backup_targets.s3.field.prefix_help') }}</p>
             @error('prefix')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
         </div>
 
@@ -94,11 +94,11 @@
                 <input type="hidden" name="path_style" value="0">
                 <input type="checkbox" name="path_style" value="1" class="checkbox checkbox-sm"
                        @checked(old('path_style', $options['path_style'] ?? false))>
-                <span>{{ __('backup_targets.s3.field.path_style') }}</span>
+                <span>{{ __('s3::backup_targets.s3.field.path_style') }}</span>
             </label>
-            <p class="text-xs text-muted">{{ __('backup_targets.s3.field.path_style_help') }}</p>
+            <p class="text-xs text-muted">{{ __('s3::backup_targets.s3.field.path_style_help') }}</p>
         </div>
     </x-form-group>
 
-    <p class="text-xs text-base-content/70">{{ __('backup_targets.s3.selftest_hint') }}</p>
+    <p class="text-xs text-base-content/70">{{ __('s3::backup_targets.s3.selftest_hint') }}</p>
 </x-modal>

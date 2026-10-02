@@ -14,7 +14,7 @@ namespace App\Plugins\OrgaMax\Services;
 
 use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
-use App\Models\Plugins\OrgaMax\{OrgaMaxConnection, OrgaMaxInvoice};
+use App\Plugins\OrgaMax\Models\{OrgaMaxConnection, OrgaMaxInvoice};
 use App\Plugins\OrgaMax\OrgaMaxPlugin;
 use Orgamax\API\Client;
 use Orgamax\API\Endpoints\InvoicesEndpoint;

@@ -31,15 +31,11 @@ use PHPUnit\Framework\TestCase;
 class MigrationPortabilityTest extends TestCase {
     private const IDENTIFIER_LIMIT = 64;
 
-    /** Pfad zum Migrationsverzeichnis. */
-    private function migrationDir(): string {
-        return dirname(__DIR__, 3) . '/database/migrations';
-    }
-
-    /** @return list<string> alle Migrationsdateien, sortiert nach Dateiname (= Ausführungsreihenfolge). */
+    /** @return list<string> alle Migrationsdateien (Kern und Plugins), sortiert nach Dateiname (= Ausführungsreihenfolge). */
     private function migrationFiles(): array {
-        $files = glob($this->migrationDir() . '/*.php') ?: [];
-        sort($files);
+        $root = dirname(__DIR__, 3);
+        $files = [...(glob($root . '/database/migrations/*.php') ?: []), ...(glob($root . '/app/Plugins/*/Database/Migrations/*.php') ?: [])];
+        usort($files, static fn (string $a, string $b): int => strcmp(basename($a), basename($b)));
 
         return $files;
     }

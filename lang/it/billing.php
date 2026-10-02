@@ -18,7 +18,6 @@ return [
         'dunning_level' => 'Livello sollecito :level',
         'action' => [
             'dun' => 'Sollecita',
-            'dun_confirm' => 'Creare un sollecito in contabilità?',
         ],
         'tab' => [
             'all' => 'Tutti',

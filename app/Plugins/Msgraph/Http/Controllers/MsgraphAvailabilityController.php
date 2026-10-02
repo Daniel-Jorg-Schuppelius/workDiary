@@ -12,8 +12,8 @@ namespace App\Plugins\Msgraph\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
-use App\Models\Plugins\Msgraph\MsgraphConnection;
 use App\Plugins\Msgraph\Api\MsgraphCalendarClient;
+use App\Plugins\Msgraph\Models\MsgraphConnection;
 use App\Support\Sqid;
 use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Carbon;
@@ -41,7 +41,7 @@ class MsgraphAvailabilityController extends Controller {
             ->where('organization_id', $user->organization_id)
             ->first();
         if (! $connection instanceof MsgraphConnection || ! $connection->isActive()) {
-            return response()->json(['message' => __('msgraph.availability.no_connection')], 409);
+            return response()->json(['message' => __('msgraph::msgraph.availability.no_connection')], 409);
         }
 
         /** @var list<string> $userSqids */
@@ -66,7 +66,7 @@ class MsgraphAvailabilityController extends Controller {
                 Carbon::parse((string) $data['end'])->utc(),
             );
         } catch (Throwable) {
-            return response()->json(['message' => __('msgraph.availability.failed')], 502);
+            return response()->json(['message' => __('msgraph::msgraph.availability.failed')], 502);
         }
 
         $results = [];

@@ -102,7 +102,7 @@ class LexofficeHandoverController extends Controller {
             return back()->withErrors(['confirmation_note' => ErrorText::for($e)]);
         }
 
-        return back()->with('status', __('lexware.flash.confirmed', ['number' => (string) $invoice->number]));
+        return back()->with('status', __('lexoffice::lexware.flash.confirmed', ['number' => (string) $invoice->number]));
     }
 
     /** @param \Illuminate\Database\Eloquent\Collection<int, Invoice> $invoices */

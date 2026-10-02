@@ -830,72 +830,6 @@ return [
                 'title' => 'Análisis de gestión (BWA)',
                 'text' => 'Cuenta de resultados a corto plazo con año anterior, mes anterior, cuadrícula mensual y presupuesto.',
             ],
-            'liquidity_plan' => [
-                'title' => 'Partidas planificadas',
-                'subtitle' => 'Cobros y pagos propios para la previsión de 13 semanas, únicos o mensuales.',
-                'actual_title' => 'Liquidez plan/real',
-                'actual_subtitle' => 'Estado semanal guardado de la previsión frente a los movimientos reales de las cuentas.',
-                'empty' => 'Todavía no hay partidas planificadas.',
-                'no_snapshot' => 'Todavía no hay estados semanales — automáticamente cada lunes o mediante «Guardar estado actual».',
-                'action' => [
-                    'add' => 'Añadir partida planificada',
-                    'snapshot' => 'Guardar estado actual',
-                ],
-                'field' => [
-                    'label' => 'Descripción',
-                    'direction' => 'Sentido',
-                    'planned_amount' => 'Importe',
-                    'starts_on' => 'Vence el (primer vencimiento)',
-                    'recurrence' => 'Repetición',
-                    'ends_on' => 'Último vencimiento',
-                    'snapshot' => 'Guardado el',
-                ],
-                'hint' => [
-                    'ends_on' => 'Solo con repetición mensual; vacío = indefinido.',
-                ],
-                'column' => [
-                    'planned_net' => 'Plan (neto)',
-                    'actual_in' => 'Cobros reales',
-                    'actual_out' => 'Pagos reales',
-                    'actual_net' => 'Real (neto)',
-                    'deviation' => 'Desviación',
-                ],
-                'confirm' => [
-                    'remove' => '¿Eliminar la partida planificada?',
-                ],
-                'flash' => [
-                    'saved' => 'Partida planificada guardada.',
-                    'removed' => 'Partida planificada eliminada.',
-                    'snapshot' => 'Estado semanal guardado.',
-                ],
-            ],
-            'allocation' => [
-                'title' => 'Claves de reparto',
-                'subtitle' => 'Reparto de los centros auxiliares en el ejercicio :year',
-                'hint' => 'Un centro auxiliar traslada partes de sus gastos a centros finales. El informe de un centro de coste muestra el reparto con «Tras el reparto»; los asientos no cambian.',
-                'total' => 'Repartido: :percent %',
-                'empty' => 'Todavía no hay claves de reparto para este año.',
-                'action' => [
-                    'add' => 'Añadir clave de reparto',
-                ],
-                'field' => [
-                    'source' => 'Centro auxiliar',
-                    'target' => 'Centro receptor',
-                    'share_percent' => 'Parte (%)',
-                ],
-                'confirm' => [
-                    'remove' => '¿Eliminar la clave de reparto?',
-                ],
-                'flash' => [
-                    'saved' => 'Clave de reparto guardada.',
-                    'removed' => 'Clave de reparto eliminada.',
-                ],
-                'error' => [
-                    'same' => 'El centro auxiliar y el centro receptor deben ser distintos.',
-                    'share' => 'La parte debe ser mayor que 0 y como máximo del 100 %.',
-                    'total' => 'Las partes de un centro auxiliar no pueden superar el 100 % en total (libre: :rest %).',
-                ],
-            ],
             'budget' => [
                 'title' => 'Presupuesto',
                 'text' => 'Valores planificados por cuenta y ejercicio — valor anual o valores mensuales.',
@@ -908,6 +842,73 @@ return [
                 'title' => 'Partidas abiertas',
                 'text' => 'Cobros y pagos pendientes con antigüedad.',
             ],
+        ],
+    ],
+
+    'liquidity_plan' => [
+        'title' => 'Partidas planificadas',
+        'subtitle' => 'Cobros y pagos propios para la previsión de 13 semanas, únicos o mensuales.',
+        'actual_title' => 'Liquidez plan/real',
+        'actual_subtitle' => 'Estado semanal guardado de la previsión frente a los movimientos reales de las cuentas.',
+        'empty' => 'Todavía no hay partidas planificadas.',
+        'no_snapshot' => 'Todavía no hay estados semanales — automáticamente cada lunes o mediante «Guardar estado actual».',
+        'action' => [
+            'add' => 'Añadir partida planificada',
+            'snapshot' => 'Guardar estado actual',
+        ],
+        'field' => [
+            'label' => 'Descripción',
+            'direction' => 'Sentido',
+            'planned_amount' => 'Importe',
+            'starts_on' => 'Vence el (primer vencimiento)',
+            'recurrence' => 'Repetición',
+            'ends_on' => 'Último vencimiento',
+            'snapshot' => 'Guardado el',
+        ],
+        'hint' => [
+            'ends_on' => 'Solo con repetición mensual; vacío = indefinido.',
+        ],
+        'column' => [
+            'planned_net' => 'Plan (neto)',
+            'actual_in' => 'Cobros reales',
+            'actual_out' => 'Pagos reales',
+            'actual_net' => 'Real (neto)',
+            'deviation' => 'Desviación',
+        ],
+        'confirm' => [
+            'remove' => '¿Eliminar la partida planificada?',
+        ],
+        'flash' => [
+            'saved' => 'Partida planificada guardada.',
+            'removed' => 'Partida planificada eliminada.',
+            'snapshot' => 'Estado semanal guardado.',
+        ],
+    ],
+    'allocation' => [
+        'title' => 'Claves de reparto',
+        'subtitle' => 'Reparto de los centros auxiliares en el ejercicio :year',
+        'hint' => 'Un centro auxiliar traslada partes de sus gastos a centros finales. El informe de un centro de coste muestra el reparto con «Tras el reparto»; los asientos no cambian.',
+        'total' => 'Repartido: :percent %',
+        'empty' => 'Todavía no hay claves de reparto para este año.',
+        'action' => [
+            'add' => 'Añadir clave de reparto',
+        ],
+        'field' => [
+            'source' => 'Centro auxiliar',
+            'target' => 'Centro receptor',
+            'share_percent' => 'Parte (%)',
+        ],
+        'confirm' => [
+            'remove' => '¿Eliminar la clave de reparto?',
+        ],
+        'flash' => [
+            'saved' => 'Clave de reparto guardada.',
+            'removed' => 'Clave de reparto eliminada.',
+        ],
+        'error' => [
+            'same' => 'El centro auxiliar y el centro receptor deben ser distintos.',
+            'share' => 'La parte debe ser mayor que 0 y como máximo del 100 %.',
+            'total' => 'Las partes de un centro auxiliar no pueden superar el 100 % en total (libre: :rest %).',
         ],
     ],
 

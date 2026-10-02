@@ -187,7 +187,7 @@ class DocumentMirrorService {
                 'local_snapshot' => ['sha256' => $localSha, 'remote_path' => $path],
                 'remote_snapshot' => ['recorded_sig' => $recordedSig, 'current_sig' => $currentSig],
                 'display_title' => $displayTitle,
-                'display_subtitle' => __($pluginId . '.conflict.subtitle'),
+                'display_subtitle' => __($pluginId . '::' . $pluginId . '.conflict.subtitle'),
                 'occurred_at' => Carbon::now(),
             ],
         );

@@ -12,8 +12,8 @@ namespace Tests\Feature\Lexoffice;
 
 use App\Models\Customer\Customer;
 use App\Models\Platform\{PluginSetting, User};
-use App\Models\Plugins\Lexoffice\LexofficeVoucher;
 use App\Plugins\Lexoffice\LexofficePlugin;
+use App\Plugins\Lexoffice\Models\LexofficeVoucher;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;

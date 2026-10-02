@@ -1,0 +1,10 @@
+{
+    "Bindet orgaMAX Buchhaltung über die offizielle OpenAPI an: Kunden-/Lieferanten-/Artikelprojektion, Faktura-Übergabe als orgaMAX-Auftrag sowie Rechnungs-, Zahlungs- und PDF-Projektion. Nicht für orgaMAX ERP.": "Conecta orgaMAX Buchhaltung a través de la OpenAPI oficial: proyección de clientes/proveedores/artículos, traspaso de la facturación como pedido de orgaMAX, así como proyección de facturas, pagos y PDF. No para orgaMAX ERP.",
+    "Keine orgaMAX-Verbindung hinterlegt.": "No hay conexión orgaMAX registrada.",
+    "Token abgelaufen oder Scopes entzogen — Verbindung erneuern.": "Token caducado o scopes revocados — renueve la conexión.",
+    "Verbindung blockiert (:reason) — Details im orgaMAX-Admin.": "Conexión bloqueada (:reason) — detalles en el admin de orgaMAX.",
+    "Verbindung wartet auf Callback bzw. Kontobestätigung.": "La conexión espera el callback o la confirmación de la cuenta.",
+    "orgaMAX-API antwortet mit Fehlerstatus :status.": "La API de orgaMAX responde con estado de error :status.",
+    "orgaMAX-API erreichbar.": "API de orgaMAX accesible.",
+    "orgaMAX-API nicht erreichbar.": "API de orgaMAX no accesible."
+}

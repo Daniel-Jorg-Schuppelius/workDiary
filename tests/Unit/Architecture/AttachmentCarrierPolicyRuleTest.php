@@ -46,14 +46,15 @@ class AttachmentCarrierPolicyRuleTest extends TestCase {
         $policySource = (string) file_get_contents($this->repoRoot() . '/app/Policies/Attachments/AttachmentPolicy.php');
         $missing = [];
 
-        foreach ($this->phpFiles('app/Models') as $file) {
+        // Plugin-Träger landen ohne eigene Regel immer bei $missing (Policy liegt im Kern).
+        foreach ($this->modelFiles() as $file) {
             $source = (string) file_get_contents($file);
             if (! str_contains($source, 'use HasAttachments;')) {
                 continue;
             }
 
             $relative = $this->relativePath($file);
-            $short = str_replace(['app/Models/', '.php'], '', $relative);
+            $short = str_replace(['app/Models/', 'app/', '.php'], '', $relative);
             $class = str_replace('/', '\\', $short);
 
             if (array_key_exists($short, self::ORG_WIDE)) {

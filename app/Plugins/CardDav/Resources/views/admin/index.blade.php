@@ -20,18 +20,18 @@
         {{-- Status + Aktionen --}}
         <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
             <div class="mb-1 flex flex-wrap items-center justify-between gap-2">
-                <h1 class="font-['Space_Grotesk'] text-lg font-semibold">{{ __('carddav.title') }}</h1>
+                <h1 class="font-['Space_Grotesk'] text-lg font-semibold">{{ __('carddav::carddav.title') }}</h1>
                 @if ($connection && $connection->isActive())
                     <x-plugin-health :plugin-id="\App\Plugins\CardDav\CardDavPlugin::ID" :state="$healthState" />
                 @elseif ($connection)
-                    <span class="badge badge-ghost badge-sm">{{ __('carddav.health.inactive') }}</span>
+                    <span class="badge badge-ghost badge-sm">{{ __('carddav::carddav.health.inactive') }}</span>
                 @endif
             </div>
-            <p class="mb-4 text-sm text-muted">{{ __('carddav.intro') }}</p>
+            <p class="mb-4 text-sm text-muted">{{ __('carddav::carddav.intro') }}</p>
 
             @if ($connection && $connection->hasConnectionError())
                 <div class="alert alert-warning mb-4 text-sm">
-                    {{ __('carddav.health.last_error', ['error' => $connection->last_error ?? '—']) }}
+                    {{ __('carddav::carddav.health.last_error', ['error' => $connection->last_error ?? '—']) }}
                 </div>
             @endif
 
@@ -39,22 +39,22 @@
                 <div class="flex flex-wrap gap-2">
                     <form method="POST" action="{{ route('admin.carddav.discover') }}">
                         @csrf
-                        <button type="submit" class="btn btn-sm btn-secondary">{{ __('carddav.action.discover') }}</button>
+                        <button type="submit" class="btn btn-sm btn-secondary">{{ __('carddav::carddav.action.discover') }}</button>
                     </form>
                     @if ($connection->isSyncable())
                         <form method="POST" action="{{ route('admin.carddav.sync') }}">
                             @csrf
-                            <button type="submit" class="btn btn-sm btn-primary">{{ __('carddav.action.sync') }}</button>
+                            <button type="submit" class="btn btn-sm btn-primary">{{ __('carddav::carddav.action.sync') }}</button>
                         </form>
                     @endif
                     <form method="POST" action="{{ route('admin.carddav.disconnect') }}">
                         @csrf
-                        <button type="submit" class="btn btn-sm btn-ghost">{{ __('carddav.action.disconnect') }}</button>
+                        <button type="submit" class="btn btn-sm btn-ghost">{{ __('carddav::carddav.action.disconnect') }}</button>
                     </form>
                 </div>
                 @if ($connection->last_synced_at)
                     <p class="mt-2 text-xs text-muted">
-                        {{ __('carddav.status.last_synced', ['at' => $connection->last_synced_at->diffForHumans()]) }}
+                        {{ __('carddav::carddav.status.last_synced', ['at' => $connection->last_synced_at->diffForHumans()]) }}
                     </p>
                 @endif
             @endif
@@ -63,11 +63,11 @@
         {{-- Adressbuch-Wahl (Ergebnis der letzten Discovery) --}}
         @if ($connection && ($addressbooks !== [] || $connection->addressbook_url))
             <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs space-y-3">
-                <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('carddav.addressbook.heading') }}</h2>
+                <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('carddav::carddav.addressbook.heading') }}</h2>
 
                 @if ($connection->addressbook_url)
                     <p class="text-sm text-base-content/70">
-                        {{ __('carddav.addressbook.current', ['name' => $connection->addressbook_name ?: $connection->addressbook_url]) }}
+                        {{ __('carddav::carddav.addressbook.current', ['name' => $connection->addressbook_name ?: $connection->addressbook_url]) }}
                     </p>
                 @endif
 
@@ -83,11 +83,11 @@
                             </label>
                         @endforeach
                         <div class="flex justify-end">
-                            <button type="submit" class="btn btn-sm btn-primary">{{ __('carddav.action.choose_addressbook') }}</button>
+                            <button type="submit" class="btn btn-sm btn-primary">{{ __('carddav::carddav.action.choose_addressbook') }}</button>
                         </div>
                     </form>
                 @else
-                    <p class="text-xs text-muted">{{ __('carddav.addressbook.hint') }}</p>
+                    <p class="text-xs text-muted">{{ __('carddav::carddav.addressbook.hint') }}</p>
                 @endif
             </div>
         @endif
@@ -96,53 +96,53 @@
         <form method="POST" action="{{ route('admin.carddav.connection.store') }}"
               class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs space-y-3">
             @csrf
-            <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('carddav.connection.heading') }}</h2>
+            <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('carddav::carddav.connection.heading') }}</h2>
 
             <div class="grid gap-3 md:grid-cols-2">
                 <label class="form-control">
-                    <span class="label-text">{{ __('carddav.field.name') }}</span>
+                    <span class="label-text">{{ __('carddav::carddav.field.name') }}</span>
                     <input type="text" name="name" value="{{ old('name', $connection->name ?? '') }}"
                            class="input input-bordered input-sm" required>
                 </label>
                 <label class="form-control">
-                    <span class="label-text">{{ __('carddav.field.base_url') }}</span>
+                    <span class="label-text">{{ __('carddav::carddav.field.base_url') }}</span>
                     <input type="url" name="base_url" value="{{ old('base_url', $connection->base_url ?? '') }}"
                            placeholder="https://cloud.example.com/remote.php/dav" class="input input-bordered input-sm" required>
-                    <span class="label-text-alt text-muted">{{ __('carddav.field.base_url_help') }}</span>
+                    <span class="label-text-alt text-muted">{{ __('carddav::carddav.field.base_url_help') }}</span>
                 </label>
                 <label class="form-control">
-                    <span class="label-text">{{ __('carddav.field.username') }}</span>
+                    <span class="label-text">{{ __('carddav::carddav.field.username') }}</span>
                     <input type="text" name="username" value="{{ old('username', $connection->username ?? '') }}"
                            autocomplete="off" class="input input-bordered input-sm" required>
                 </label>
                 <label class="form-control">
-                    <span class="label-text">{{ __('carddav.field.app_password') }}</span>
+                    <span class="label-text">{{ __('carddav::carddav.field.app_password') }}</span>
                     <input type="password" name="app_password" autocomplete="new-password"
-                           placeholder="{{ $connection ? __('carddav.field.password_keep') : '' }}"
+                           placeholder="{{ $connection ? __('carddav::carddav.field.password_keep') : '' }}"
                            class="input input-bordered input-sm" @required(! $connection)>
-                    <span class="label-text-alt text-muted">{{ __('carddav.field.password_help') }}</span>
+                    <span class="label-text-alt text-muted">{{ __('carddav::carddav.field.password_help') }}</span>
                 </label>
                 <label class="form-control justify-end">
                     <span class="label cursor-pointer justify-start gap-2">
                         <input type="hidden" name="allow_private_network" value="0">
                         <input type="checkbox" name="allow_private_network" value="1" class="toggle toggle-sm toggle-warning"
                                @checked(old('allow_private_network', $connection->allow_private_network ?? false))>
-                        <span class="label-text">{{ __('carddav.field.allow_private_network') }}</span>
+                        <span class="label-text">{{ __('carddav::carddav.field.allow_private_network') }}</span>
                     </span>
-                    <span class="label-text-alt text-muted">{{ __('carddav.field.allow_private_network_help') }}</span>
+                    <span class="label-text-alt text-muted">{{ __('carddav::carddav.field.allow_private_network_help') }}</span>
                 </label>
                 <label class="form-control justify-end">
                     <span class="label cursor-pointer justify-start gap-2">
                         <input type="hidden" name="active" value="0">
                         <input type="checkbox" name="active" value="1" class="toggle toggle-sm toggle-primary"
                                @checked(old('active', $connection->active ?? true))>
-                        <span class="label-text">{{ __('carddav.field.active') }}</span>
+                        <span class="label-text">{{ __('carddav::carddav.field.active') }}</span>
                     </span>
                 </label>
             </div>
 
             <div class="flex justify-end">
-                <button type="submit" class="btn btn-sm btn-primary">{{ __('carddav.action.save') }}</button>
+                <button type="submit" class="btn btn-sm btn-primary">{{ __('carddav::carddav.action.save') }}</button>
             </div>
         </form>
     </div>

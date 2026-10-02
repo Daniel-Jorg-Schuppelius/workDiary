@@ -512,13 +512,13 @@ class CustomerControllerTest extends TestCase {
             'external_id' => 'lex-contact-1', 'synced_at' => now(),
         ]);
 
-        \App\Models\Plugins\Lexoffice\LexofficeVoucher::query()->create([
+        \App\Plugins\Lexoffice\Models\LexofficeVoucher::query()->create([
             'organization_id' => $this->organization->id, 'external_id' => 'voucher-in',
             'customer_id' => $customer->id, 'voucher_type' => 'salesinvoice', 'voucher_status' => 'open',
             'voucher_number' => 'RE-IN-RANGE', 'voucher_date' => '2026-06-15',
             'total_amount' => '100.00', 'currency' => 'EUR', 'archived' => false,
         ]);
-        \App\Models\Plugins\Lexoffice\LexofficeVoucher::query()->create([
+        \App\Plugins\Lexoffice\Models\LexofficeVoucher::query()->create([
             'organization_id' => $this->organization->id, 'external_id' => 'voucher-out',
             'customer_id' => $customer->id, 'voucher_type' => 'orderconfirmation', 'voucher_status' => 'open',
             'voucher_number' => 'AB-OUT-RANGE', 'voucher_date' => '2026-01-15',

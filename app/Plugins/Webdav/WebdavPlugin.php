@@ -11,12 +11,12 @@
 namespace App\Plugins\Webdav;
 
 use App\Models\Backup\BackupTargetConnection;
-use App\Models\Plugins\Webdav\WebdavConnection;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{BackupTarget, Plugin};
 use App\Plugins\Support\Backup\{BackupAccount, BackupRemoteObject};
 use App\Plugins\Webdav\Api\WebdavBackupClient;
 use App\Plugins\Webdav\Contracts\WebdavGatewayFactory;
+use App\Plugins\Webdav\Models\WebdavConnection;
 use App\Support\Ui\UiAction;
 use Psr\Http\Message\StreamInterface;
 use Throwable;

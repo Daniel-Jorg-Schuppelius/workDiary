@@ -830,72 +830,6 @@ return [
                 'title' => 'Analyse de gestion (BWA)',
                 'text' => 'Compte de résultat à court terme avec année précédente, mois précédent, grille mensuelle et budget.',
             ],
-            'liquidity_plan' => [
-                'title' => 'Postes planifiés',
-                'subtitle' => 'Vos propres encaissements et décaissements pour la prévision sur 13 semaines, ponctuels ou mensuels.',
-                'actual_title' => 'Trésorerie prévu/réel',
-                'actual_subtitle' => 'État hebdomadaire enregistré de la prévision comparé aux mouvements réels des comptes.',
-                'empty' => 'Aucun poste planifié pour l\'instant.',
-                'no_snapshot' => 'Aucun état hebdomadaire enregistré — automatiquement chaque lundi ou via « Enregistrer l\'état actuel ».',
-                'action' => [
-                    'add' => 'Ajouter un poste planifié',
-                    'snapshot' => 'Enregistrer l\'état actuel',
-                ],
-                'field' => [
-                    'label' => 'Libellé',
-                    'direction' => 'Sens',
-                    'planned_amount' => 'Montant',
-                    'starts_on' => 'Échéance (première)',
-                    'recurrence' => 'Répétition',
-                    'ends_on' => 'Dernière échéance',
-                    'snapshot' => 'Enregistré le',
-                ],
-                'hint' => [
-                    'ends_on' => 'Uniquement en répétition mensuelle ; vide = sans limite.',
-                ],
-                'column' => [
-                    'planned_net' => 'Prévu (net)',
-                    'actual_in' => 'Encaissements réels',
-                    'actual_out' => 'Décaissements réels',
-                    'actual_net' => 'Réel (net)',
-                    'deviation' => 'Écart',
-                ],
-                'confirm' => [
-                    'remove' => 'Supprimer le poste planifié ?',
-                ],
-                'flash' => [
-                    'saved' => 'Poste planifié enregistré.',
-                    'removed' => 'Poste planifié supprimé.',
-                    'snapshot' => 'État hebdomadaire enregistré.',
-                ],
-            ],
-            'allocation' => [
-                'title' => 'Clés de répartition',
-                'subtitle' => 'Répartition des centres auxiliaires sur l\'exercice :year',
-                'hint' => 'Un centre auxiliaire transmet une part de ses charges aux centres principaux. Le tableau de bord d\'un centre de coûts affiche la répartition avec « Après répartition » ; les écritures restent inchangées.',
-                'total' => 'Réparti : :percent %',
-                'empty' => 'Aucune clé de répartition pour cette année.',
-                'action' => [
-                    'add' => 'Ajouter une clé de répartition',
-                ],
-                'field' => [
-                    'source' => 'Centre auxiliaire',
-                    'target' => 'Centre bénéficiaire',
-                    'share_percent' => 'Part (%)',
-                ],
-                'confirm' => [
-                    'remove' => 'Supprimer la clé de répartition ?',
-                ],
-                'flash' => [
-                    'saved' => 'Clé de répartition enregistrée.',
-                    'removed' => 'Clé de répartition supprimée.',
-                ],
-                'error' => [
-                    'same' => 'Le centre auxiliaire et le centre bénéficiaire doivent être différents.',
-                    'share' => 'La part doit être supérieure à 0 et au plus de 100 %.',
-                    'total' => 'Les parts d\'un centre auxiliaire ne doivent pas dépasser 100 % au total (disponible : :rest %).',
-                ],
-            ],
             'budget' => [
                 'title' => 'Budget',
                 'text' => 'Valeurs planifiées par compte et exercice — valeur annuelle ou valeurs mensuelles.',
@@ -908,6 +842,73 @@ return [
                 'title' => 'Postes ouverts',
                 'text' => 'Créances et dettes avec balance âgée.',
             ],
+        ],
+    ],
+
+    'liquidity_plan' => [
+        'title' => 'Postes planifiés',
+        'subtitle' => 'Vos propres encaissements et décaissements pour la prévision sur 13 semaines, ponctuels ou mensuels.',
+        'actual_title' => 'Trésorerie prévu/réel',
+        'actual_subtitle' => 'État hebdomadaire enregistré de la prévision comparé aux mouvements réels des comptes.',
+        'empty' => 'Aucun poste planifié pour l\'instant.',
+        'no_snapshot' => 'Aucun état hebdomadaire enregistré — automatiquement chaque lundi ou via « Enregistrer l\'état actuel ».',
+        'action' => [
+            'add' => 'Ajouter un poste planifié',
+            'snapshot' => 'Enregistrer l\'état actuel',
+        ],
+        'field' => [
+            'label' => 'Libellé',
+            'direction' => 'Sens',
+            'planned_amount' => 'Montant',
+            'starts_on' => 'Échéance (première)',
+            'recurrence' => 'Répétition',
+            'ends_on' => 'Dernière échéance',
+            'snapshot' => 'Enregistré le',
+        ],
+        'hint' => [
+            'ends_on' => 'Uniquement en répétition mensuelle ; vide = sans limite.',
+        ],
+        'column' => [
+            'planned_net' => 'Prévu (net)',
+            'actual_in' => 'Encaissements réels',
+            'actual_out' => 'Décaissements réels',
+            'actual_net' => 'Réel (net)',
+            'deviation' => 'Écart',
+        ],
+        'confirm' => [
+            'remove' => 'Supprimer le poste planifié ?',
+        ],
+        'flash' => [
+            'saved' => 'Poste planifié enregistré.',
+            'removed' => 'Poste planifié supprimé.',
+            'snapshot' => 'État hebdomadaire enregistré.',
+        ],
+    ],
+    'allocation' => [
+        'title' => 'Clés de répartition',
+        'subtitle' => 'Répartition des centres auxiliaires sur l\'exercice :year',
+        'hint' => 'Un centre auxiliaire transmet une part de ses charges aux centres principaux. Le tableau de bord d\'un centre de coûts affiche la répartition avec « Après répartition » ; les écritures restent inchangées.',
+        'total' => 'Réparti : :percent %',
+        'empty' => 'Aucune clé de répartition pour cette année.',
+        'action' => [
+            'add' => 'Ajouter une clé de répartition',
+        ],
+        'field' => [
+            'source' => 'Centre auxiliaire',
+            'target' => 'Centre bénéficiaire',
+            'share_percent' => 'Part (%)',
+        ],
+        'confirm' => [
+            'remove' => 'Supprimer la clé de répartition ?',
+        ],
+        'flash' => [
+            'saved' => 'Clé de répartition enregistrée.',
+            'removed' => 'Clé de répartition supprimée.',
+        ],
+        'error' => [
+            'same' => 'Le centre auxiliaire et le centre bénéficiaire doivent être différents.',
+            'share' => 'La part doit être supérieure à 0 et au plus de 100 %.',
+            'total' => 'Les parts d\'un centre auxiliaire ne doivent pas dépasser 100 % au total (disponible : :rest %).',
         ],
     ],
 

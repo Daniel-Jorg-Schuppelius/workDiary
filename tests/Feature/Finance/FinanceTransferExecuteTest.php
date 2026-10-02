@@ -191,7 +191,7 @@ class FinanceTransferExecuteTest extends TestCase {
      * dem Projektnamen und ohne Beschreibung.
      */
     public function test_execute_lexoffice_sends_default_service_article_and_text(): void {
-        $article = \App\Models\Plugins\Lexoffice\LexofficeArticle::create([
+        $article = \App\Plugins\Lexoffice\Models\LexofficeArticle::create([
             'organization_id' => $this->organization->id,
             'external_id' => 'art-42',
             'name' => 'IT-Dienstleistung',

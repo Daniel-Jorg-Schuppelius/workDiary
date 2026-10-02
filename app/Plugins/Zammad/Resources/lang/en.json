@@ -1,0 +1,11 @@
+{
+    ":count offene Zuordnungskonflikte — bitte zuerst auflösen.": "A decision is pending for :count assignment conflicts — please resolve them first.",
+    "Der ServiceTicket-Modus braucht eine Ziel-Queue.": "Service ticket mode requires a target queue.",
+    "Importiert Zammad-Tickets als Aufgaben (idempotent, Queue→Projekt-Zuordnung): Zeiterfassung und Abrechnung in WorkDiary, das Ticketsystem bleibt führend. Polling mit Webhook-Anstoß.": "Imports Zammad tickets as tasks (idempotent, queue→project mapping): time tracking and billing in WorkDiary, the ticket system remains the leading system. Polling with webhook trigger.",
+    "Keine Zammad-Anbindung hinterlegt.": "No Zammad connection configured.",
+    "Queue gehört zu einer anderen Organisation.": "The queue belongs to a different organisation.",
+    "Zammad": "Zammad",
+    "Zammad-API nicht erreichbar oder Token ungültig.": "Zammad API unreachable or token invalid.",
+    "Zammad-API-Fehler (:class).": "Zammad API error (:class).",
+    "Zammad-Anbindung ist deaktiviert oder unvollständig.": "Zammad integration is disabled or incomplete."
+}

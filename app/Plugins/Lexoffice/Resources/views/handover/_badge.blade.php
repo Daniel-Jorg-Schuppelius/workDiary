@@ -17,7 +17,7 @@
     $lexwareActive = $lexwareProfile->localFeatures !== [];
 @endphp
 @if ($lexwareActive && $invoice->status !== \App\Models\Invoicing\Invoice::STATUS_DRAFT)
-    <span class="inline-flex items-center gap-1 text-xs" title="{{ __('lexware.handover.title') }}">
+    <span class="inline-flex items-center gap-1 text-xs" title="{{ __('lexoffice::lexware.handover.title') }}">
         <x-icon name="outbox" size="1em" class="text-muted" />
         @if ($lexwareState)
             <x-status-badge size="xs" :tone="$lexwareState->status->tone()" :label="$lexwareState->status->label()" />

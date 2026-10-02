@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Zammad\Contracts;
 
-use App\Models\Plugins\Zammad\ZammadConnection;
+use App\Plugins\Zammad\Models\ZammadConnection;
 
 /**
  * Erzeugt je Anbindung ein {@see ZammadGateway} (Feature 060, MVP-129). Über

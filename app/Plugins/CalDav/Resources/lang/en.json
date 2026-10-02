@@ -1,0 +1,8 @@
+{
+    "CalDAV": "CalDAV",
+    "CalDAV-Anbindung ist deaktiviert oder unvollständig.": "CalDAV connection is disabled or incomplete.",
+    "CalDAV-Fehler (:class).": "CalDAV error (:class).",
+    "CalDAV-Server nicht erreichbar oder Zugangsdaten ungültig.": "CalDAV server unreachable or credentials invalid.",
+    "Keine CalDAV-Anbindung hinterlegt.": "No CalDAV connection configured.",
+    "Publiziert Termine idempotent in einen externen CalDAV-Kalender (Nextcloud/ownCloud, RFC 4791) — On-Premise, ohne Microsoft-/Google-Konto.": "Publishes appointments idempotently to an external CalDAV calendar (Nextcloud/ownCloud, RFC 4791) — on-premise, without a Microsoft/Google account."
+}

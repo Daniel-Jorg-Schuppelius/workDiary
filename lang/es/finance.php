@@ -134,12 +134,6 @@ return [
         'total' => 'Total',
     ],
 
-    'easybill' => [
-        'introduction' => 'Les facturamos como sigue nuestras entregas y servicios del periodo :from – :to.',
-        'unit_hour' => 'h',
-        'unit_piece' => 'uds.',
-    ],
-
     'position' => [
         'service_date' => '(fecha de servicio :date)',
         'service_period' => '(periodo de servicio :from – :to)',
@@ -155,16 +149,6 @@ return [
         'service' => 'precio del servicio estándar',
         'org_default' => 'tarifa horaria estándar',
         'none' => 'no se encontró tarifa',
-    ],
-
-    'sevdesk' => [
-        'introduction' => 'Les facturamos como sigue nuestras entregas y servicios del período :from – :to.',
-        'tax_text' => 'IVA :rate %',
-    ],
-
-    'lexoffice' => [
-        'introduction' => 'Les facturamos como sigue nuestras entregas y servicios.',
-        'delivery_title' => 'Albarán',
     ],
 
     'flash' => [
@@ -191,19 +175,6 @@ return [
         'target_not_allowed' => 'Este destino no está permitido para el canal de facturación «:mode».',
         'correction_only_transferred' => 'Una corrección solo es posible en un traspaso ya entregado.',
         'merge_needs_two' => 'Seleccione al menos dos posiciones para unir.',
-        'lexoffice_not_configured' => 'Lexoffice no está configurado para esta organización (falta la clave API).',
-        'sevdesk_not_configured' => 'sevDesk no está configurado para esta organización (falta el token de API).',
-        'sevdesk_outcome_unclear' => 'Resultado de la entrega a sevDesk incierto (tiempo de espera agotado tras el envío): no reintentar a ciegas; la próxima ejecución concilia mediante el marcador de origen.',
-        'easybill_not_configured' => 'easybill no está configurado para esta organización (falta la clave de API).',
-        'easybill_outcome_unclear' => 'Resultado de la transferencia a easybill incierto (tiempo de espera tras el envío): no reintentar a ciegas; la siguiente ejecución concilia mediante el marcador de origen.',
-        'lexoffice_contact_missing' => 'No hay contacto de Lexoffice para el cliente — sincronice primero el contacto.',
-        'lexoffice_delivery_no_customer' => 'Una entrega sin cliente no puede transferirse como albarán.',
-        'lexoffice_delivery_not_linked' => 'No hay ningún albarán de Lexoffice vinculado a esta entrega.',
-        'lexoffice_oc_no_customer' => 'Una orden de fabricación sin cliente no puede transferirse como confirmación de pedido.',
-        'lexoffice_oc_not_linked' => 'No hay ninguna confirmación de pedido de Lexoffice vinculada a esta orden de fabricación.',
-        'lexoffice_quote_no_customer' => 'Una orden de fabricación sin cliente no puede transferirse como oferta.',
-        'lexoffice_quote_not_linked' => 'No hay ninguna oferta de Lexoffice vinculada a esta orden de fabricación.',
-        'lexoffice_dunning_not_invoice' => 'Solo se puede crear un aviso de pago para una factura.',
         'sources_missing' => 'Las fuentes de este justificante de traspaso ya no están completamente disponibles.',
     ],
     'datev' => [

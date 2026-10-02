@@ -152,7 +152,6 @@ return [
         'note' => 'Importes netos de los comprobantes de compra por categoría contable de Lexoffice; los abonos restan.',
         'pending' => ':count comprobantes del periodo aún no tienen categorías (se cargan en la próxima sincronización).',
         'rest' => 'Otros',
-        'unknown' => 'sin categoría',
     ],
     'supplier_material' => [
         'title' => 'Consumo de material por proveedor',

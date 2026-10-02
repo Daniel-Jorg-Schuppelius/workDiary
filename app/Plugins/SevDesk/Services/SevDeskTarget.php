@@ -64,7 +64,7 @@ class SevDeskTarget implements FacturationTarget {
     public function transfer(BillingTransfer $transfer): TargetResult {
         $config = SevDeskConfig::resolve($transfer->organization_id);
         if (empty($config['api_key'])) {
-            throw new RuntimeException((string) __('finance.error.sevdesk_not_configured'));
+            throw new RuntimeException((string) __('sevdesk::finance.error.sevdesk_not_configured'));
         }
 
         // (1) Bereits übergeben? (harte Idempotenz je Transfer)
@@ -104,7 +104,7 @@ class SevDeskTarget implements FacturationTarget {
         // Rechnungstexte des Nachweises (MVP-491), sonst der Standardtext.
         $intro = filled($transfer->intro_text)
             ? (string) $transfer->intro_text
-            : (string) __('finance.sevdesk.introduction', [
+            : (string) __('sevdesk::finance.sevdesk.introduction', [
                 'channel' => $transfer->channel->label(),
                 'from' => $transfer->period_from?->format('d.m.Y') ?? '—',
                 'to' => $transfer->period_to?->format('d.m.Y') ?? '—',
@@ -134,7 +134,7 @@ class SevDeskTarget implements FacturationTarget {
         } else {
             $invoice['taxType'] = 'default';
             $invoice['taxRate'] = $vatRate;
-            $invoice['taxText'] = (string) __('finance.sevdesk.tax_text', ['rate' => NumberHelper::toUSFormat($vatRate, 2, trimTrailingZeros: true)]);
+            $invoice['taxText'] = (string) __('sevdesk::finance.sevdesk.tax_text', ['rate' => NumberHelper::toUSFormat($vatRate, 2, trimTrailingZeros: true)]);
         }
 
         try {
@@ -146,7 +146,7 @@ class SevDeskTarget implements FacturationTarget {
         } catch (ConnectException) {
             // Timeout/Netzabriss NACH dem Senden: Ausgang unklar — kein
             // blindes Retry; der nächste Lauf reconciled über den Marker.
-            throw new RuntimeException((string) __('finance.error.sevdesk_outcome_unclear'));
+            throw new RuntimeException((string) __('sevdesk::finance.error.sevdesk_outcome_unclear'));
         }
 
         $created = is_array($body['invoice'] ?? null) ? $body['invoice'] : $body;
@@ -248,7 +248,7 @@ class SevDeskTarget implements FacturationTarget {
             } catch (ConnectException) {
                 // Ausgang unklar — nächster Lauf findet den Kontakt über die
                 // Kundennummer wieder, statt ihn doppelt anzulegen.
-                throw new RuntimeException((string) __('finance.error.sevdesk_outcome_unclear'));
+                throw new RuntimeException((string) __('sevdesk::finance.error.sevdesk_outcome_unclear'));
             }
         }
 

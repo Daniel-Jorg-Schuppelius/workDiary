@@ -96,12 +96,12 @@ class NextcloudBackupTargetController extends Controller {
             'server_url' => ['required', 'string', 'max:512', function (string $attribute, mixed $value, callable $fail) use ($allowPrivate): void {
                 $url = trim((string) $value);
                 if (! str_starts_with(strtolower($url), 'https://')) {
-                    $fail((string) __('backup_targets.nextcloud.validation.https_required'));
+                    $fail((string) __('nextcloud::backup_targets.nextcloud.validation.https_required'));
 
                     return;
                 }
                 if (! $allowPrivate && ! UrlSafety::isAcceptableExternalHttpUrl($url)) {
-                    $fail((string) __('backup_targets.nextcloud.validation.unsafe_url'));
+                    $fail((string) __('nextcloud::backup_targets.nextcloud.validation.unsafe_url'));
                 }
             }],
             'username' => ['required', 'string', 'max:190'],

@@ -1,0 +1,6 @@
+{
+    ":count S3-Ziel(e) erreichbar.": ":count destino(s) S3 accesible(s).",
+    "Kein S3-Backupziel eingerichtet.": "No hay ningún destino de copia S3 configurado.",
+    "S3-Ziel \":name\" nicht erreichbar (:class).": "Destino S3 \":name\" no accesible (:class).",
+    "Verschlüsselte Offsite-Backups in einen S3-kompatiblen Objektspeicher (AWS S3, MinIO, Wasabi, Hetzner).": "Copias de seguridad cifradas externas en almacenamiento de objetos compatible con S3 (AWS S3, MinIO, Wasabi, Hetzner)."
+}

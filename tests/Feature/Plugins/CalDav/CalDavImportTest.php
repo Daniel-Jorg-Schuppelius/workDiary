@@ -12,9 +12,9 @@ namespace Tests\Feature\Plugins\CalDav;
 
 use App\Models\Calendar\Event;
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
-use App\Models\Plugins\CalDav\CalDavConnection;
 use App\Plugins\CalDav\CalDavPlugin;
 use App\Plugins\CalDav\Contracts\{CalDavGateway, CalDavGatewayFactory};
+use App\Plugins\CalDav\Models\CalDavConnection;
 use App\Plugins\CalDav\Services\{CalDavCalendarImportService, CalDavEventChange, CalDavSyncPage};
 use App\Plugins\Support\Calendar\RemoteCalendarPublishService;
 use Illuminate\Foundation\Testing\RefreshDatabase;

@@ -60,11 +60,11 @@ final class LexofficeInvoiceDraftTarget implements InvoiceDraftTarget {
     private function contactFor(Organization $organization, Customer $recipient): string {
         $config = LexofficeConfig::resolve($organization->id);
         if ($config['enabled'] !== true || ! is_string($config['api_key']) || $config['api_key'] === '') {
-            throw new RuntimeException((string) __('resale.draft.error.lexoffice'));
+            throw new RuntimeException((string) __('lexoffice::resale.draft.error.lexoffice'));
         }
         $contacts = LexofficeContactMap::forCustomer($recipient)->byCustomer($recipient->id);
         if ($contacts === []) {
-            throw new RuntimeException((string) __('resale.link.no_contacts'));
+            throw new RuntimeException((string) __('lexoffice::resale.link.no_contacts'));
         }
 
         return $contacts[0];
@@ -85,8 +85,8 @@ final class LexofficeInvoiceDraftTarget implements InvoiceDraftTarget {
         $draftId = $service->createDraft(
             $contact,
             $items,
-            (string) __('resale.draft.title'),
-            (string) __('resale.draft.introduction', ['count' => count($items)]),
+            (string) __('lexoffice::resale.draft.title'),
+            (string) __('lexoffice::resale.draft.introduction', ['count' => count($items)]),
             (string) ($tax['note'] ?? ''),
             (float) $tax['rate'],
             $recipient->currency->value,
@@ -95,7 +95,7 @@ final class LexofficeInvoiceDraftTarget implements InvoiceDraftTarget {
 
         return new DraftResult(
             reference: $draftId,
-            label: trim((string) __('resale.draft.note', ['id' => $draftId, 'date' => Tz::now()->format('d.m.Y'), 'user' => $user !== null ? $user->name : ''])),
+            label: trim((string) __('lexoffice::resale.draft.note', ['id' => $draftId, 'date' => Tz::now()->format('d.m.Y'), 'user' => $user !== null ? $user->name : ''])),
             url: null,
             morphClass: null,
             morphIds: [],

@@ -14,8 +14,8 @@ namespace App\Plugins\Todoist\Services;
 
 use App\Models\Integration\ExternalReference;
 use App\Models\Platform\{Organization, User};
-use App\Models\Plugins\Todoist\TodoistConnection;
 use App\Plugins\Todoist\Api\TodoistApiClient;
+use App\Plugins\Todoist\Models\TodoistConnection;
 use App\Plugins\Todoist\TodoistPlugin;
 use CommonToolkit\Helper\Data\EmailHelper;
 

@@ -11,7 +11,7 @@
 namespace Tests\Feature\Plugins\OrgaMax;
 
 use App\Models\Platform\User;
-use App\Models\Plugins\OrgaMax\OrgaMaxConnection;
+use App\Plugins\OrgaMax\Models\OrgaMaxConnection;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

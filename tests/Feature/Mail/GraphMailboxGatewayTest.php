@@ -12,7 +12,7 @@ namespace Tests\Feature\Mail;
 
 use App\Models\Mail\EmailConnection;
 use App\Models\Platform\User;
-use App\Models\Plugins\Msgraph\MsgraphMailConnection;
+use App\Plugins\Msgraph\Models\MsgraphMailConnection;
 use App\Plugins\Msgraph\MsgraphPlugin;
 use App\Plugins\Msgraph\Services\MsgraphMailboxGateway;
 use App\Services\Mail\{MailboxGateway, TransportSelectingMailboxGateway};

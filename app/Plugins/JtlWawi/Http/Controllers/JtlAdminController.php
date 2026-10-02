@@ -19,9 +19,9 @@ use App\Models\Audit\AuditLog;
 use App\Models\Integration\IntegrationInboxItem;
 use App\Models\Inventory\Warehouse;
 use App\Models\Platform\{Organization, User};
-use App\Models\Plugins\JtlWawi\{JtlConnection, JtlWarehouseMapping};
 use App\Plugins\JtlWawi\Api\JtlUrlGuard;
 use App\Plugins\JtlWawi\JtlWawiPlugin;
+use App\Plugins\JtlWawi\Models\{JtlConnection, JtlWarehouseMapping};
 use App\Plugins\JtlWawi\Services\{JtlRegistrationService, JtlScopePreflight, JtlSyncService, JtlTakeoverService};
 use App\Services\Inventory\InventoryProviderResolver;
 use App\Support\{ErrorText, MorphMap};
@@ -138,15 +138,15 @@ class JtlAdminController extends Controller {
                 app(\App\Plugins\JtlWawi\Api\JtlCloudTokenService::class)->ensureToken($connection);
                 $registration->applyScopePreflight($connection);
 
-                return back()->with('success', __('jtl_wawi.flash.cloud_connected'));
+                return back()->with('success', __('jtl_wawi::jtl_wawi.flash.cloud_connected'));
             } catch (Throwable $e) {
                 $connection->forceFill(['last_error' => mb_substr(class_basename($e), 0, 191)])->save();
 
-                return back()->with('error', __('jtl_wawi.flash.cloud_failed'));
+                return back()->with('error', __('jtl_wawi::jtl_wawi.flash.cloud_failed'));
             }
         }
 
-        return back()->with('success', __('jtl_wawi.flash.saved'));
+        return back()->with('success', __('jtl_wawi::jtl_wawi.flash.saved'));
     }
 
     /** OnPremise: App-Registrierung anstoßen (Schritt „in Wawi bestätigen“). */
@@ -157,10 +157,10 @@ class JtlAdminController extends Controller {
         try {
             $registration->start($connection);
         } catch (Throwable $e) {
-            return back()->with('error', $e instanceof RuntimeException ? ErrorText::for($e) : __('jtl_wawi.flash.registration_failed'));
+            return back()->with('error', $e instanceof RuntimeException ? ErrorText::for($e) : __('jtl_wawi::jtl_wawi.flash.registration_failed'));
         }
 
-        return back()->with('success', __('jtl_wawi.flash.registration_started'));
+        return back()->with('success', __('jtl_wawi::jtl_wawi.flash.registration_started'));
     }
 
     /** OnPremise: Registrierungsstatus prüfen und ggf. API-Key übernehmen. */
@@ -171,13 +171,13 @@ class JtlAdminController extends Controller {
         try {
             $status = $registration->check($connection);
         } catch (Throwable $e) {
-            return back()->with('error', $e instanceof RuntimeException ? ErrorText::for($e) : __('jtl_wawi.flash.registration_failed'));
+            return back()->with('error', $e instanceof RuntimeException ? ErrorText::for($e) : __('jtl_wawi::jtl_wawi.flash.registration_failed'));
         }
 
         return match ($status) {
-            JtlConnection::REGISTRATION_ACCEPTED => back()->with('success', __('jtl_wawi.flash.registration_accepted')),
-            JtlConnection::REGISTRATION_REJECTED => back()->with('error', __('jtl_wawi.flash.registration_rejected')),
-            default => back()->with('success', __('jtl_wawi.flash.registration_pending')),
+            JtlConnection::REGISTRATION_ACCEPTED => back()->with('success', __('jtl_wawi::jtl_wawi.flash.registration_accepted')),
+            JtlConnection::REGISTRATION_REJECTED => back()->with('error', __('jtl_wawi::jtl_wawi.flash.registration_rejected')),
+            default => back()->with('success', __('jtl_wawi::jtl_wawi.flash.registration_pending')),
         };
     }
 
@@ -187,7 +187,7 @@ class JtlAdminController extends Controller {
         $connection = $this->requireConnection($organization);
 
         if ($resolver->modeFor($organization) !== InventoryMode::Local) {
-            return back()->with('error', __('jtl_wawi.flash.disconnect_blocked'));
+            return back()->with('error', __('jtl_wawi::jtl_wawi.flash.disconnect_blocked'));
         }
 
         $connection->forceFill([
@@ -204,7 +204,7 @@ class JtlAdminController extends Controller {
             'blocked_reason' => null,
         ])->save();
 
-        return back()->with('success', __('jtl_wawi.flash.disconnected'));
+        return back()->with('success', __('jtl_wawi::jtl_wawi.flash.disconnected'));
     }
 
     /** „Jetzt synchronisieren“ — derselbe Pfad wie der Scheduler-Lauf. */
@@ -213,16 +213,16 @@ class JtlAdminController extends Controller {
         $connection = $this->requireConnection($organization);
 
         if (! $connection->isActive()) {
-            return back()->with('error', __('jtl_wawi.flash.not_active'));
+            return back()->with('error', __('jtl_wawi::jtl_wawi.flash.not_active'));
         }
 
         try {
             $sync->run($connection);
         } catch (Throwable $e) {
-            return back()->with('error', __('jtl_wawi.flash.sync_failed', ['reason' => class_basename($e)]));
+            return back()->with('error', __('jtl_wawi::jtl_wawi.flash.sync_failed', ['reason' => class_basename($e)]));
         }
 
-        return back()->with('success', __('jtl_wawi.flash.sync_done'));
+        return back()->with('success', __('jtl_wawi::jtl_wawi.flash.sync_done'));
     }
 
     /** JTL-Lager ↔ WorkDiary-Lager zuordnen (leer = Zuordnung lösen). */
@@ -241,7 +241,7 @@ class JtlAdminController extends Controller {
 
         $mapping->forceFill(['warehouse_id' => $warehouseId])->save();
 
-        return back()->with('success', __('jtl_wawi.flash.warehouse_mapped'));
+        return back()->with('success', __('jtl_wawi::jtl_wawi.flash.warehouse_mapped'));
     }
 
     /** Bestandsführungs-Modus wechseln (MVP-324) — verlangt inventory.configure. */
@@ -256,20 +256,20 @@ class JtlAdminController extends Controller {
         $currentMode = $resolver->modeFor($organization);
 
         if ($targetMode === $currentMode) {
-            return back()->with('success', __('jtl_wawi.flash.mode_unchanged'));
+            return back()->with('success', __('jtl_wawi::jtl_wawi.flash.mode_unchanged'));
         }
 
         if ($targetMode !== InventoryMode::Local) {
             $connection = JtlConnection::query()->where('organization_id', $organization->id)->first();
             if (! $connection instanceof JtlConnection || ! $connection->isActive()) {
-                return back()->with('error', __('jtl_wawi.flash.mode_needs_connection'));
+                return back()->with('error', __('jtl_wawi::jtl_wawi.flash.mode_needs_connection'));
             }
             $mappedWarehouses = JtlWarehouseMapping::query()
                 ->where('organization_id', $organization->id)
                 ->whereNotNull('warehouse_id')
                 ->count();
             if ($mappedWarehouses === 0) {
-                return back()->with('error', __('jtl_wawi.flash.mode_needs_mapping'));
+                return back()->with('error', __('jtl_wawi::jtl_wawi.flash.mode_needs_mapping'));
             }
         }
 
@@ -297,13 +297,13 @@ class JtlAdminController extends Controller {
             try {
                 $result = $takeover->importOpeningStock($organization, $user->id);
 
-                return back()->with('success', __('jtl_wawi.flash.mode_changed_with_takeover', ['booked' => $result['booked']]));
+                return back()->with('success', __('jtl_wawi::jtl_wawi.flash.mode_changed_with_takeover', ['booked' => $result['booked']]));
             } catch (Throwable $e) {
-                return back()->with('error', __('jtl_wawi.flash.takeover_failed', ['reason' => class_basename($e)]));
+                return back()->with('error', __('jtl_wawi::jtl_wawi.flash.takeover_failed', ['reason' => class_basename($e)]));
             }
         }
 
-        return back()->with('success', __('jtl_wawi.flash.mode_changed'));
+        return back()->with('success', __('jtl_wawi::jtl_wawi.flash.mode_changed'));
     }
 
     /** Übernahme-Inventur manuell wiederholen (idempotent je Tag). */
@@ -314,10 +314,10 @@ class JtlAdminController extends Controller {
         try {
             $result = $takeover->importOpeningStock($organization, $user->id);
         } catch (Throwable $e) {
-            return back()->with('error', __('jtl_wawi.flash.takeover_failed', ['reason' => class_basename($e)]));
+            return back()->with('error', __('jtl_wawi::jtl_wawi.flash.takeover_failed', ['reason' => class_basename($e)]));
         }
 
-        return back()->with('success', __('jtl_wawi.flash.takeover_done', ['booked' => $result['booked'], 'pairs' => $result['pairs']]));
+        return back()->with('success', __('jtl_wawi::jtl_wawi.flash.takeover_done', ['booked' => $result['booked'], 'pairs' => $result['pairs']]));
     }
 
     /** @return array{0: User, 1: Organization} */

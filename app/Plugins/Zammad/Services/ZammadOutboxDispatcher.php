@@ -14,9 +14,9 @@ namespace App\Plugins\Zammad\Services;
 
 use App\Contracts\Integration\IntegrationOutboxDispatcher;
 use App\Models\Integration\{ExternalReference, IntegrationOutboxEntry};
-use App\Models\Plugins\Zammad\ZammadConnection;
 use App\Models\Time\TimeEntry;
 use App\Plugins\Zammad\Contracts\ZammadGatewayFactory;
+use App\Plugins\Zammad\Models\ZammadConnection;
 use App\Plugins\Zammad\ZammadPlugin;
 use RuntimeException;
 
@@ -71,7 +71,7 @@ class ZammadOutboxDispatcher implements IntegrationOutboxDispatcher {
         return $gateway->updateTicketState(
             $ticketId,
             $connection->resolved_state,
-            (string) __('zammad.resolution.note'),
+            (string) __('zammad::zammad.resolution.note'),
         );
     }
 

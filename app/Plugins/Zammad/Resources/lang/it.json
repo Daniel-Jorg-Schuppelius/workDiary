@@ -1,0 +1,11 @@
+{
+    ":count offene Zuordnungskonflikte — bitte zuerst auflösen.": ":count conflitti di assegnazione aperti — risolverli prima.",
+    "Der ServiceTicket-Modus braucht eine Ziel-Queue.": "La modalità service ticket richiede una coda di destinazione.",
+    "Importiert Zammad-Tickets als Aufgaben (idempotent, Queue→Projekt-Zuordnung): Zeiterfassung und Abrechnung in WorkDiary, das Ticketsystem bleibt führend. Polling mit Webhook-Anstoß.": "Importa i ticket Zammad come attività (idempotente, assegnazione coda→progetto): rilevazione dei tempi e fatturazione in WorkDiary, il sistema di ticket resta il sistema principale. Polling con attivazione via webhook.",
+    "Keine Zammad-Anbindung hinterlegt.": "Nessuna connessione Zammad registrata.",
+    "Queue gehört zu einer anderen Organisation.": "La coda appartiene a un'altra organizzazione.",
+    "Zammad": "Zammad",
+    "Zammad-API nicht erreichbar oder Token ungültig.": "API Zammad non raggiungibile o token non valido.",
+    "Zammad-API-Fehler (:class).": "Errore API Zammad (:class).",
+    "Zammad-Anbindung ist deaktiviert oder unvollständig.": "L'integrazione Zammad è disattivata o incompleta."
+}

@@ -11,9 +11,9 @@
 namespace Tests\Feature\Plugins\Etsy;
 
 use App\Models\Platform\{Organization, PluginSetting, User};
-use App\Models\Plugins\Etsy\EtsyConnection;
 use App\Plugins\Etsy\Api\EtsyOAuthGrant;
 use App\Plugins\Etsy\EtsyPlugin;
+use App\Plugins\Etsy\Models\EtsyConnection;
 use GuzzleHttp\{Client as GuzzleClient, HandlerStack};
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\Psr7\Response as Psr7Response;

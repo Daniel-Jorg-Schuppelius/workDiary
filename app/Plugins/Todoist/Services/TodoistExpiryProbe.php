@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\Todoist\Services;
 
 use App\Enums\Operations\{OperationsTaskSeverity, OperationsTaskType};
-use App\Models\Plugins\Todoist\TodoistConnection;
+use App\Plugins\Todoist\Models\TodoistConnection;
 use App\Services\Operations\Expiry\ExpiryProbe;
 use App\Services\Operations\OperationsSignal;
 use App\Support\Setting;

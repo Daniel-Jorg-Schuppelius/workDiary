@@ -13,7 +13,7 @@ namespace Tests\Feature\Platform;
 use App\Enums\Article\{ArticleStatus, ArticleType};
 use App\Models\Article\Article;
 use App\Models\Platform\{Organization, User};
-use App\Models\Plugins\Lexoffice\LexofficeArticle;
+use App\Plugins\Lexoffice\Models\LexofficeArticle;
 use App\Services\Platform\Catalog\ArticleCatalog;
 use App\Support\Sqid;
 use Illuminate\Foundation\Testing\RefreshDatabase;

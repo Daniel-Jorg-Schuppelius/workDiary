@@ -14,7 +14,7 @@ namespace App\Plugins\OrgaMax;
 
 use App\Enums\Billing\{DocumentDirection, DocumentKind, DocumentOrigin};
 use App\Models\Platform\User;
-use App\Models\Plugins\OrgaMax\OrgaMaxInvoice;
+use App\Plugins\OrgaMax\Models\OrgaMaxInvoice;
 use App\Services\Billing\DocumentFeedFilters;
 use App\Services\Billing\Feed\{DocumentFeedSource, FeedProjection, PresentsFeedRows, SuppressesCoreInvoices};
 use App\Support\Query\DateRange;

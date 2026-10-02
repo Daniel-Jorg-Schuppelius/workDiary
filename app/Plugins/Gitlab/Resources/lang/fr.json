@@ -1,0 +1,16 @@
+{
+    "GitLab ist nicht konfiguriert (Projekt-ID oder API-Token fehlt).": "GitLab n'est pas configuré (ID de projet ou jeton API manquant).",
+    "GitLab lehnt den API-Token ab (:status) — Token prüfen.": "GitLab rejette le jeton API (:status) — vérifier le jeton.",
+    "GitLab-API antwortet mit Fehlerstatus :status.": "L'API GitLab répond avec le statut d'erreur :status.",
+    "GitLab-API nicht erreichbar.": "API GitLab injoignable.",
+    "GitLab-Instanz, z. B. https://gitlab.com oder die eigene On-Premise-Adresse.": "Instance GitLab, p. ex. https://gitlab.com ou votre propre adresse on-premise.",
+    "Importiert GitLab-Issues eines Projekts als Aufgaben (idempotent über iid + Projekt-ID, self-hosted Instanzen unterstützt): Zeiterfassung und Abrechnung in WorkDiary, GitLab bleibt führend. Polling mit updated_after-Aufholpunkt, Webhook-Anstoß optional.": "Importe les issues GitLab d'un projet comme tâches (idempotent via iid + ID de projet, instances auto-hébergées prises en charge) : saisie des temps et facturation dans WorkDiary, GitLab reste maître. Interrogation avec point de reprise updated_after, déclenchement par webhook optionnel.",
+    "Numerische GitLab-Projekt-ID (Projektseite → Einstellungen → Allgemein).": "ID numérique du projet GitLab (page du projet → Paramètres → Général).",
+    "Nur für On-Premise-Instanzen im eigenen Netz: erlaubt eine Instanz-URL mit privater/interner Adresse.": "Uniquement pour les instances on-premise dans votre propre réseau : autorise une URL d'instance avec une adresse privée/interne.",
+    "Optional: Secret Token des GitLab-Webhooks (Issue-Events, X-Gitlab-Token). Ohne Token bleibt der Webhook-Endpunkt deaktiviert; das Polling holt alles nach.": "Optionnel : jeton secret du webhook GitLab (événements issue, X-Gitlab-Token). Sans jeton, le point de terminaison webhook reste désactivé ; l'interrogation rattrape tout.",
+    "Private Adressen erlauben": "Autoriser les adresses privées",
+    "Project Access Token (empfohlen) oder Personal Access Token mit read_api-Scope.": "Project Access Token (recommandé) ou Personal Access Token avec le scope read_api.",
+    "Schließt das verknüpfte Issue (mit Notiz), wenn die Aufgabe in workDiary erledigt wird, und öffnet es beim Wiedereröffnen. Titel und Beschreibung bleiben quellsystem-geführt. Der Token braucht Schreibzugriff auf Issues (api-Scope).": "Ferme l’issue liée (avec une note) lorsque la tâche est terminée dans workDiary et la rouvre en cas de réouverture. Le titre et la description restent gérés par le système source. Le jeton nécessite un accès en écriture aux issues (scope api).",
+    "Verbunden mit GitLab als :login.": "Connecté à GitLab en tant que :login.",
+    "Webhook-Token": "Jeton du webhook"
+}

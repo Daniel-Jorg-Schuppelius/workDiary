@@ -10,10 +10,10 @@
 
 namespace Tests\Feature\Plugins\Zammad;
 
-use App\Models\Plugins\Zammad\ZammadConnection;
 use App\Plugins\Contracts\{PluginCapability, TaskSyncer};
 use App\Plugins\{PluginDiscovery, PluginHealth};
 use App\Plugins\Zammad\Contracts\{ZammadGateway, ZammadGatewayFactory};
+use App\Plugins\Zammad\Models\ZammadConnection;
 use App\Plugins\Zammad\ZammadPlugin;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

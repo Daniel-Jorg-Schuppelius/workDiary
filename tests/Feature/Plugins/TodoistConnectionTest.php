@@ -11,8 +11,8 @@
 namespace Tests\Feature\Plugins;
 
 use App\Models\Platform\User;
-use App\Models\Plugins\Todoist\TodoistConnection;
 use App\Plugins\Todoist\Api\TodoistOAuth;
+use App\Plugins\Todoist\Models\TodoistConnection;
 use App\Support\MorphMap;
 use GuzzleHttp\{Client as GuzzleClient, HandlerStack};
 use GuzzleHttp\Handler\MockHandler;

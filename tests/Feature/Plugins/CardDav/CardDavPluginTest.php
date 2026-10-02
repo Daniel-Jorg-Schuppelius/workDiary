@@ -10,9 +10,9 @@
 
 namespace Tests\Feature\Plugins\CardDav;
 
-use App\Models\Plugins\CardDav\CardDavConnection;
 use App\Plugins\CardDav\CardDavPlugin;
 use App\Plugins\CardDav\Contracts\{CardDavGateway, CardDavGatewayFactory};
+use App\Plugins\CardDav\Models\CardDavConnection;
 use App\Plugins\{PluginDiscovery, PluginHealth};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

@@ -14,9 +14,9 @@ namespace App\Plugins\JtlWawi\Services;
 
 use App\Models\Article\{Article, ArticleVariant};
 use App\Models\Integration\{ExternalArticleMapping, IntegrationInboxItem};
-use App\Models\Plugins\JtlWawi\JtlConnection;
 use App\Plugins\JtlWawi\Api\{JtlApiException, JtlGatewayFactory};
 use App\Plugins\JtlWawi\JtlWawiPlugin;
+use App\Plugins\JtlWawi\Models\JtlConnection;
 use App\Support\MorphMap;
 
 /**

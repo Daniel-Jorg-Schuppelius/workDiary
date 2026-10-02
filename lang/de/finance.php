@@ -136,12 +136,6 @@ return [
         'total' => 'Summe',
     ],
 
-    'easybill' => [
-        'introduction' => 'Unsere Lieferungen/Leistungen im Zeitraum :from – :to stellen wir Ihnen wie folgt in Rechnung.',
-        'unit_hour' => 'Std.',
-        'unit_piece' => 'Stk.',
-    ],
-
     // Positionsaufbau der Übergabe (MVP-485–488).
     'position' => [
         'service_date' => '(Leistungsdatum :date)',
@@ -158,16 +152,6 @@ return [
         'service' => 'Preis der Standardleistung',
         'org_default' => 'Standard-Stundensatz',
         'none' => 'kein Satz gefunden',
-    ],
-
-    'sevdesk' => [
-        'introduction' => 'Unsere Lieferungen/Leistungen im Zeitraum :from – :to stellen wir Ihnen wie folgt in Rechnung.',
-        'tax_text' => 'Umsatzsteuer :rate%',
-    ],
-
-    'lexoffice' => [
-        'introduction' => 'Unsere Lieferungen/Leistungen stellen wir Ihnen wie folgt in Rechnung.',
-        'delivery_title' => 'Lieferschein',
     ],
 
     'flash' => [
@@ -194,19 +178,6 @@ return [
         'target_not_allowed' => 'Dieses Ziel ist für den Fakturierungsweg „:mode" nicht zulässig.',
         'correction_only_transferred' => 'Eine Korrektur ist nur zu einer bereits übergebenen Übergabe möglich.',
         'merge_needs_two' => 'Zum Zusammenfassen mindestens zwei Positionen auswählen.',
-        'lexoffice_not_configured' => 'Lexoffice ist für diese Organisation nicht konfiguriert (API-Key fehlt).',
-        'sevdesk_not_configured' => 'sevDesk ist für diese Organisation nicht konfiguriert (API-Token fehlt).',
-        'sevdesk_outcome_unclear' => 'Ausgang der sevDesk-Übergabe unklar (Zeitüberschreitung nach dem Senden) — nicht blind wiederholen; der nächste Lauf gleicht über den Quellmarker ab.',
-        'easybill_not_configured' => 'easybill ist für diese Organisation nicht konfiguriert (API-Key fehlt).',
-        'easybill_outcome_unclear' => 'Ausgang der easybill-Übergabe unklar (Zeitüberschreitung nach dem Senden) — nicht blind wiederholen; der nächste Lauf gleicht über den Quellmarker ab.',
-        'lexoffice_contact_missing' => 'Kein Lexoffice-Kontakt für den Kunden — bitte zuerst den Kontakt synchronisieren.',
-        'lexoffice_delivery_no_customer' => 'Auslieferung ohne Kunde kann nicht als Lieferschein übergeben werden.',
-        'lexoffice_delivery_not_linked' => 'Mit dieser Auslieferung ist kein Lexoffice-Lieferschein verknüpft.',
-        'lexoffice_oc_no_customer' => 'Fertigungsauftrag ohne Kunde kann nicht als Auftragsbestätigung übergeben werden.',
-        'lexoffice_oc_not_linked' => 'Mit diesem Fertigungsauftrag ist keine Lexoffice-Auftragsbestätigung verknüpft.',
-        'lexoffice_quote_no_customer' => 'Fertigungsauftrag ohne Kunde kann nicht als Angebot übergeben werden.',
-        'lexoffice_quote_not_linked' => 'Mit diesem Fertigungsauftrag ist kein Lexoffice-Angebot verknüpft.',
-        'lexoffice_dunning_not_invoice' => 'Eine Mahnung kann nur zu einer Rechnung erstellt werden.',
         'sources_missing' => 'Quellen des Übergabenachweises sind nicht mehr vollständig vorhanden.',
     ],
 

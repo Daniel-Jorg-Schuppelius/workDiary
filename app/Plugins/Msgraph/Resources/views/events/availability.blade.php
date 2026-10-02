@@ -13,9 +13,9 @@
     <div class="flex items-center gap-2">
         <button type="button" class="btn btn-sm btn-ghost" data-availability-check>
             <x-icon name="event_available" />
-            <span>{{ __('msgraph.availability.check') }}</span>
+            <span>{{ __('msgraph::msgraph.availability.check') }}</span>
         </button>
-        <span class="text-sm text-muted">{{ __('msgraph.availability.hint') }}</span>
+        <span class="text-sm text-muted">{{ __('msgraph::msgraph.availability.hint') }}</span>
     </div>
     <ul class="hidden space-y-1 text-sm" data-availability-results></ul>
     <p class="hidden text-sm text-error" data-availability-error></p>
@@ -43,7 +43,7 @@
             if (el.value) users.add(el.value);
         });
         if (!start || !end || users.size === 0) {
-            error.textContent = @json(__('msgraph.availability.missing_input'));
+            error.textContent = @json(__('msgraph::msgraph.availability.missing_input'));
             error.classList.remove('hidden');
             return;
         }
@@ -57,11 +57,11 @@
             });
             const data = await res.json().catch(() => ({}));
             if (!res.ok) {
-                error.textContent = data.message || @json(__('msgraph.availability.failed'));
+                error.textContent = data.message || @json(__('msgraph::msgraph.availability.failed'));
                 error.classList.remove('hidden');
                 return;
             }
-            const labels = { free: @json(__('msgraph.availability.free')), busy: @json(__('msgraph.availability.busy')), unknown: @json(__('msgraph.availability.unknown')) };
+            const labels = { free: @json(__('msgraph::msgraph.availability.free')), busy: @json(__('msgraph::msgraph.availability.busy')), unknown: @json(__('msgraph::msgraph.availability.unknown')) };
             const tones = { free: 'text-success', busy: 'text-error', unknown: 'text-muted' };
             results.innerHTML = '';
             (data.results || []).forEach(function (row) {
@@ -78,7 +78,7 @@
             });
             results.classList.remove('hidden');
         } catch (e) {
-            error.textContent = @json(__('msgraph.availability.failed'));
+            error.textContent = @json(__('msgraph::msgraph.availability.failed'));
             error.classList.remove('hidden');
         } finally {
             btn.disabled = false;

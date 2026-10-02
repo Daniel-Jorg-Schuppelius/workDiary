@@ -11,10 +11,10 @@
 namespace App\Plugins\Msgraph\Http\Controllers;
 
 use App\Models\Platform\User;
-use App\Models\Plugins\Msgraph\{MsgraphTaskConnection, MsgraphTaskListLink};
 use App\Models\Project\Project;
 use App\Plugins\Msgraph\Api\{MsgraphTasksOAuth, MsgraphTodoClient};
-use App\Plugins\Msgraph\MsgraphConfig;
+use App\Plugins\Msgraph\Models\{MsgraphTaskConnection, MsgraphTaskListLink};
+use App\Plugins\Msgraph\{MsgraphConfig, MsgraphPlugin};
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
 use App\Plugins\Support\{ConnectionOAuthController, PluginOAuthGrant};
 use Illuminate\Database\Eloquent\Model;
@@ -55,6 +55,10 @@ class MsgraphTasksController extends ConnectionOAuthController {
         return 'msgraph_tasks';
     }
 
+    protected function pluginId(): string {
+        return MsgraphPlugin::ID;
+    }
+
     protected function connectedStatus(): string {
         return MsgraphTaskConnection::STATUS_ACTIVE;
     }
@@ -82,7 +86,7 @@ class MsgraphTasksController extends ConnectionOAuthController {
 
         $connection = MsgraphTaskConnection::query()->where('organization_id', $organization->id)->first();
         if (! $connection instanceof MsgraphTaskConnection || ! $connection->isActive()) {
-            return back()->with('error', __('msgraph_tasks.flash.no_connection'));
+            return back()->with('error', __('msgraph::msgraph_tasks.flash.no_connection'));
         }
 
         $data = $request->validate([
@@ -104,14 +108,14 @@ class MsgraphTasksController extends ConnectionOAuthController {
             $list = null;
         }
         if (! is_array($list)) {
-            return back()->with('error', __('msgraph_tasks.flash.list_invalid'));
+            return back()->with('error', __('msgraph::msgraph_tasks.flash.list_invalid'));
         }
 
         $projectId = null;
         if ($data['target_kind'] === MsgraphTaskListLink::KIND_PROJECT) {
             $project = Project::query()->where('organization_id', $organization->id)->find((int) $data['project_id']);
             if ($project === null) {
-                return back()->with('error', __('msgraph_tasks.flash.project_invalid'));
+                return back()->with('error', __('msgraph::msgraph_tasks.flash.project_invalid'));
             }
             $projectId = (int) $project->id;
         }
@@ -128,7 +132,7 @@ class MsgraphTasksController extends ConnectionOAuthController {
         );
         $link->audit('msgraph_tasks.link_saved', ['list' => $list['name'], 'mode' => $link->sync_mode]);
 
-        return back()->with('success', __('msgraph_tasks.flash.link_saved'));
+        return back()->with('success', __('msgraph::msgraph_tasks.flash.link_saved'));
     }
 
     /** Zuordnung entfernen — Referenzen/Aufgaben bleiben unangetastet. */
@@ -140,6 +144,6 @@ class MsgraphTasksController extends ConnectionOAuthController {
         $link->audit('msgraph_tasks.link_removed', ['list' => $link->todo_list_name ?? $link->todo_list_id]);
         $link->delete();
 
-        return back()->with('success', __('msgraph_tasks.flash.link_removed'));
+        return back()->with('success', __('msgraph::msgraph_tasks.flash.link_removed'));
     }
 }

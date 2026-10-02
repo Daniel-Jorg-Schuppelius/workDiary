@@ -11,8 +11,8 @@
 namespace Tests\Feature\Plugins\Etsy;
 
 use App\Models\Platform\PluginSetting;
-use App\Models\Plugins\Etsy\{EtsyConnection, EtsyLedgerEntry};
 use App\Plugins\Etsy\EtsyPlugin;
+use App\Plugins\Etsy\Models\{EtsyConnection, EtsyLedgerEntry};
 use App\Plugins\Etsy\Services\EtsyLedgerImportService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Psr\Http\Message\RequestInterface;

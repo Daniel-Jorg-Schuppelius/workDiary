@@ -269,12 +269,12 @@ class LexofficePlugin extends AbstractPlugin implements \App\Plugins\Contracts\S
         }
         // Lexware-Ergänzungen (Feature 158) laufen auch ohne API-Schlüssel (Tarife S/M/L).
         if ($connected || app(LexwareTariffService::class)->profile()->localFeatures !== []) {
-            $sales[] = ['route' => 'lexoffice.handover.index', 'label' => __('lexware.handover.title'), 'icon' => 'outbox', 'modal' => false, 'matches' => ['lexoffice.handover.*']];
+            $sales[] = ['route' => 'lexoffice.handover.index', 'label' => __('lexoffice::lexware.handover.title'), 'icon' => 'outbox', 'modal' => false, 'matches' => ['lexoffice.handover.*']];
         }
         $items = ['sales-billing' => $sales];
         // Tarifprofil: Einstieg in die Ergänzungen, deshalb ohne Verbindung sichtbar.
         if (\Illuminate\Support\Facades\Gate::forUser($user)->allows(Permission::FinanceConfig->value)) {
-            $items['admin'] = [['route' => 'lexoffice.plan.index', 'label' => __('lexware.menu'), 'icon' => 'tune', 'modal' => false, 'matches' => ['lexoffice.plan.*'], 'folder' => 'finance']];
+            $items['admin'] = [['route' => 'lexoffice.plan.index', 'label' => __('lexoffice::lexware.menu'), 'icon' => 'tune', 'modal' => false, 'matches' => ['lexoffice.plan.*'], 'folder' => 'finance']];
         }
 
         return $items;

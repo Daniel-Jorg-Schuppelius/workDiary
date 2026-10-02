@@ -12,8 +12,8 @@ namespace App\Plugins\CalDav\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Platform\PluginState;
-use App\Models\Plugins\CalDav\CalDavConnection;
 use App\Plugins\CalDav\CalDavPlugin;
+use App\Plugins\CalDav\Models\CalDavConnection;
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Artisan;
@@ -61,7 +61,7 @@ class CalDavAdminController extends Controller {
 
         $baseUrl = trim((string) $data['base_url']);
         if (! str_starts_with($baseUrl, 'http://') && ! str_starts_with($baseUrl, 'https://')) {
-            return back()->with('error', __('caldav.flash.invalid_url'))->withInput();
+            return back()->with('error', __('caldav::caldav.flash.invalid_url'))->withInput();
         }
 
         // Nextclouds „Link kopieren" liefert die volle Kalender-URL; hinter die Basis-URL
@@ -70,7 +70,7 @@ class CalDavAdminController extends Controller {
         if (preg_match('#^https?://#i', $calendarPath) === 1) {
             $prefix = rtrim($baseUrl, '/') . '/';
             if (! str_starts_with(strtolower($calendarPath), strtolower($prefix))) {
-                return back()->withErrors(['calendar_path' => __('caldav.flash.path_outside_base')])->withInput();
+                return back()->withErrors(['calendar_path' => __('caldav::caldav.flash.path_outside_base')])->withInput();
             }
             $calendarPath = substr($calendarPath, strlen($prefix));
         }
@@ -95,13 +95,13 @@ class CalDavAdminController extends Controller {
         if ($password !== '') {
             $attributes['app_password'] = $password;
         } elseif (! $connection->exists) {
-            return back()->with('error', __('caldav.flash.password_required'))->withInput();
+            return back()->with('error', __('caldav::caldav.flash.password_required'))->withInput();
         }
 
         $connection->forceFill($attributes)->save();
         $connection->audit('caldav.connection_saved', ['by_user_id' => (int) $admin->id, 'active' => $connection->active]);
 
-        return back()->with('success', __('caldav.flash.saved'));
+        return back()->with('success', __('caldav::caldav.flash.saved'));
     }
 
     /** Manuelles Publish (Scheduler-Äquivalent, auditiert). */
@@ -111,7 +111,7 @@ class CalDavAdminController extends Controller {
 
         $connection = CalDavConnection::query()->where('organization_id', $organization->id)->first();
         if (! $connection instanceof CalDavConnection || ! $connection->isActive()) {
-            return back()->with('error', __('caldav.flash.no_connection'));
+            return back()->with('error', __('caldav::caldav.flash.no_connection'));
         }
 
         // Queue statt Request (Vollscan 2026-08-23, J17): ein Voll-Sync im Web-
@@ -119,7 +119,7 @@ class CalDavAdminController extends Controller {
         Artisan::queue('caldav:publish', ['--organization' => (string) $organization->id]);
         $connection->audit('caldav.publish_manual', ['by_user_id' => (int) $admin->id]);
 
-        return back()->with('success', __('caldav.flash.publish_done'));
+        return back()->with('success', __('caldav::caldav.flash.publish_done'));
     }
 
     /** Deaktiviert die Anbindung; publizierte Termine bleiben extern erhalten. */
@@ -133,6 +133,6 @@ class CalDavAdminController extends Controller {
             $connection->audit('caldav.disconnected', ['by_user_id' => (int) $admin->id]);
         }
 
-        return back()->with('success', __('caldav.flash.disconnected'));
+        return back()->with('success', __('caldav::caldav.flash.disconnected'));
     }
 }

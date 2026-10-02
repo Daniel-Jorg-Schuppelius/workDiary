@@ -13,8 +13,8 @@ declare(strict_types=1);
 namespace App\Plugins\Msgraph\Services;
 
 use App\Models\Platform\{Organization, User};
-use App\Models\Plugins\Msgraph\MsgraphConnection;
 use App\Plugins\Msgraph\Api\MsgraphCalendarClient;
+use App\Plugins\Msgraph\Models\MsgraphConnection;
 use CommonToolkit\Helper\Data\EmailHelper;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;

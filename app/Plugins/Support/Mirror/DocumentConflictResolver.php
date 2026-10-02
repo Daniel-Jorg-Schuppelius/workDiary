@@ -62,7 +62,7 @@ class DocumentConflictResolver {
         $name = $current instanceof DocumentVersion && $current->original_name !== '' ? $current->original_name : basename($path);
         $mime = $current instanceof DocumentVersion ? $current->mime : null;
 
-        $version = app(DocumentVersionImporter::class)->addVersionFromContents($document, $this->actor(), $content, $name, $mime, __($target->pluginId() . '.conflict.import_note'));
+        $version = app(DocumentVersionImporter::class)->addVersionFromContents($document, $this->actor(), $content, $name, $mime, __($target->pluginId() . '::' . $target->pluginId() . '.conflict.import_note'));
 
         // Referenz auf den importierten (= externen) Stand nachziehen, damit der
         // nächste Spiegellauf nicht sofort denselben Konflikt neu meldet.

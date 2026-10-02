@@ -26,7 +26,7 @@ class EasybillClientFactory {
     public function for(int $organizationId): EasybillClient {
         $config = EasybillConfig::resolve($organizationId);
         if (empty($config['api_key'])) {
-            throw new RuntimeException((string) __('finance.error.easybill_not_configured'));
+            throw new RuntimeException((string) __('easybill::finance.error.easybill_not_configured'));
         }
 
         return new EasybillClient(

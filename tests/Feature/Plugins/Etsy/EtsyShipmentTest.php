@@ -12,8 +12,8 @@ namespace Tests\Feature\Plugins\Etsy;
 
 use App\Models\Integration\IntegrationOutboxEntry;
 use App\Models\Platform\{PluginSetting, User};
-use App\Models\Plugins\Etsy\{EtsyConnection, EtsyReceipt};
 use App\Plugins\Etsy\EtsyPlugin;
+use App\Plugins\Etsy\Models\{EtsyConnection, EtsyReceipt};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Psr\Http\Message\RequestInterface;
 use Tests\Concerns\WithOrganization;
@@ -97,7 +97,7 @@ final class EtsyShipmentTest extends TestCase {
 
         $this->post(route('admin.etsy.receipts.ship', $this->receipt), ['tracking_code' => 'T-1', 'carrier_name' => 'dhl']);
         $this->post(route('admin.etsy.receipts.ship', $this->receipt), ['tracking_code' => 'T-1', 'carrier_name' => 'dhl'])
-            ->assertSessionHas('success', __('etsy.flash.already_shipped'));
+            ->assertSessionHas('success', __('etsy::etsy.flash.already_shipped'));
 
         // Genau EIN Tracking-Call, genau EIN Outbox-Eintrag.
         $fake->assertSentCount(1);

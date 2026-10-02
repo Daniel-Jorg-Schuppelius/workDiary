@@ -15,8 +15,8 @@ namespace App\Plugins\Billbee\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Integration\IntegrationInboxItem;
 use App\Models\Platform\{Organization, User};
-use App\Models\Plugins\Billbee\BillbeeOrder;
 use App\Plugins\Billbee\BillbeePlugin;
+use App\Plugins\Billbee\Models\BillbeeOrder;
 use App\Plugins\Billbee\Services\{BillbeeArticleMappingService, BillbeeOrderImportService};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\View\View;
@@ -71,14 +71,14 @@ class BillbeeAdminController extends Controller {
         try {
             $counters = $orders->import($organization) + ['mapping' => $mappings->import($organization)];
 
-            return back()->with('success', (string) __('billbee.flash.synced', [
+            return back()->with('success', (string) __('billbee::billbee.flash.synced', [
                 'imported' => $counters['imported'],
                 'staged' => $counters['staged'],
             ]));
         } catch (Throwable $e) {
             report($e);
 
-            return back()->with('error', (string) __('billbee.flash.sync_failed'));
+            return back()->with('error', (string) __('billbee::billbee.flash.sync_failed'));
         }
     }
 

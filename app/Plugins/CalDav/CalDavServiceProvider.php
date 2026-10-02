@@ -38,7 +38,7 @@ class CalDavServiceProvider extends PluginServiceProviderBase {
         // Erweiterungspunkt des Moduls (MVP-1045): Termine als Zeitimport-Feed.
         $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Import\Contracts\CalendarImportFeed::class, \App\Plugins\CalDav\Services\CalDavImportFeed::class);
         // Verbindungszustand für Diagnose und Ablaufprüfung (MVP-1044).
-        $this->app->make(\App\Services\Diagnostics\ConnectionHealthModels::class)->register('caldav', \App\Models\Plugins\CalDav\CalDavConnection::class, operationsTask: true);
+        $this->app->make(\App\Services\Diagnostics\ConnectionHealthModels::class)->register('caldav', \App\Plugins\CalDav\Models\CalDavConnection::class, operationsTask: true);
         // Gruppierte Auflösung der Import-Inbox (MVP-1030).
         $this->app->make(InboxGroupBookerRegistry::class)->register(CalDavPlugin::ID, CalDavSeriesGroupBooker::class);
     }

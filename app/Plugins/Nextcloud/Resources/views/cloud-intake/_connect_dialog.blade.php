@@ -13,6 +13,6 @@
     :action="route('admin.cloud-intake.nextcloud.connect')"
     icon="cloud"
     id-prefix="nc"
-    lang-prefix="cloud_intake.nextcloud"
-    name-key="cloud_intake.field.name"
+    lang-prefix="nextcloud::cloud_intake.nextcloud"
+    name-key="nextcloud::cloud_intake.field.name"
 />

@@ -12,9 +12,9 @@ namespace App\Plugins\Zammad\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Platform\{Organization, PluginState};
-use App\Models\Plugins\Zammad\ZammadConnection;
 use App\Models\Project\Project;
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
+use App\Plugins\Zammad\Models\ZammadConnection;
 use App\Plugins\Zammad\ZammadPlugin;
 use App\Support\SqidEncoder;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -83,7 +83,7 @@ class ZammadAdminController extends Controller {
 
         $baseUrl = trim((string) $data['base_url']);
         if (! str_starts_with($baseUrl, 'http://') && ! str_starts_with($baseUrl, 'https://')) {
-            return back()->with('error', __('zammad.flash.invalid_url'))->withInput();
+            return back()->with('error', __('zammad::zammad.flash.invalid_url'))->withInput();
         }
 
         /** @var ZammadConnection $connection */
@@ -105,7 +105,7 @@ class ZammadAdminController extends Controller {
         if ($token !== '') {
             $attributes['api_token'] = $token;
         } elseif (! $connection->exists) {
-            return back()->with('error', __('zammad.flash.token_required'))->withInput();
+            return back()->with('error', __('zammad::zammad.flash.token_required'))->withInput();
         }
 
         $secret = trim((string) ($data['webhook_secret'] ?? ''));
@@ -114,7 +114,7 @@ class ZammadAdminController extends Controller {
         $connection->forceFill($attributes)->save();
         $connection->audit('zammad.connection_saved', ['by_user_id' => (int) $admin->id, 'active' => $connection->active]);
 
-        return back()->with('success', __('zammad.flash.saved'));
+        return back()->with('success', __('zammad::zammad.flash.saved'));
     }
 
     /** Manueller Ticket-Import (Polling-Äquivalent, auditiert). */
@@ -124,7 +124,7 @@ class ZammadAdminController extends Controller {
 
         $connection = ZammadConnection::query()->where('organization_id', $organization->id)->first();
         if (! $connection instanceof ZammadConnection || ! $connection->isActive()) {
-            return back()->with('error', __('zammad.flash.no_connection'));
+            return back()->with('error', __('zammad::zammad.flash.no_connection'));
         }
 
         // Queue statt Request (Vollscan 2026-08-23, J17): ein Voll-Sync im Web-
@@ -132,7 +132,7 @@ class ZammadAdminController extends Controller {
         Artisan::queue('zammad:sync', ['--organization' => (string) $organization->id]);
         $connection->audit('zammad.sync_manual', ['by_user_id' => (int) $admin->id]);
 
-        return back()->with('success', __('zammad.flash.sync_done'));
+        return back()->with('success', __('zammad::zammad.flash.sync_done'));
     }
 
     /** Deaktiviert die Anbindung; Aufgaben und Referenzen bleiben erhalten (DoD). */
@@ -146,7 +146,7 @@ class ZammadAdminController extends Controller {
             $connection->audit('zammad.disconnected', ['by_user_id' => (int) $admin->id]);
         }
 
-        return back()->with('success', __('zammad.flash.disconnected'));
+        return back()->with('success', __('zammad::zammad.flash.disconnected'));
     }
 
     /**

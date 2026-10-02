@@ -49,6 +49,30 @@ trait ScansSourceTree {
         return $this->filesUnder($directory, '/\.php$/');
     }
 
+    /**
+     * Modelldateien des Kerns (`app/Models`) und der Plugins (`app/Plugins/<Name>/Models`).
+     *
+     * @return list<string>
+     */
+    protected function modelFiles(): array {
+        $plugins = array_filter($this->phpFiles('app/Plugins'), fn (string $file): bool => preg_match('~^app/Plugins/[^/]+/Models/~', $this->relativePath($file)) === 1);
+
+        return [...$this->phpFiles('app/Models'), ...array_values($plugins)];
+    }
+
+    /**
+     * Migrationen des Kerns und der Plugins (`app/Plugins/<Name>/Database/Migrations`),
+     * nach Dateiname sortiert = Ausführungsreihenfolge des Migrators.
+     *
+     * @return list<string>
+     */
+    protected function migrationFiles(): array {
+        $files = [...$this->phpFiles('database/migrations'), ...(glob($this->repoRoot() . '/app/Plugins/*/Database/Migrations/*.php') ?: [])];
+        usort($files, static fn (string $a, string $b): int => strcmp(basename($a), basename($b)));
+
+        return $files;
+    }
+
     /** @return list<string> */
     protected function bladeFiles(string $directory = 'resources/views'): array {
         return $this->filesUnder($directory, '/\.blade\.php$/');

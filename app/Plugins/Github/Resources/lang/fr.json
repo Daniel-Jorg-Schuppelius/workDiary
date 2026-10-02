@@ -1,0 +1,15 @@
+{
+    "Fine-grained Personal Access Token mit Lesezugriff auf die Issues des Repositories.": "Personal Access Token « fine-grained » avec accès en lecture aux issues du dépôt.",
+    "GitHub ist nicht konfiguriert (Repository oder API-Token fehlt).": "GitHub n'est pas configuré (dépôt ou jeton API manquant).",
+    "GitHub lehnt den API-Token ab (:status) — Fine-grained PAT prüfen.": "GitHub rejette le jeton API (:status) — vérifier le PAT fine-grained.",
+    "GitHub-API antwortet mit Fehlerstatus :status.": "L'API GitHub répond avec le statut d'erreur :status.",
+    "GitHub-API nicht erreichbar.": "API GitHub injoignable.",
+    "GitHub-Benutzer oder -Organisation, z. B. „acme\".": "Utilisateur ou organisation GitHub, p. ex. « acme ».",
+    "Importiert GitHub-Issues eines Repositories als Aufgaben (idempotent je Issue, Pull Requests werden gefiltert): Zeiterfassung und Abrechnung in WorkDiary, GitHub bleibt führend. Polling mit since-Aufholpunkt, Webhook-Anstoß optional.": "Importe les issues GitHub d'un dépôt comme tâches (idempotent par issue, les pull requests sont filtrées) : saisie des temps et facturation dans WorkDiary, GitHub reste maître. Interrogation avec point de reprise since, déclenchement par webhook optionnel.",
+    "Nur die Issues dieses Repositories werden importiert.": "Seules les issues de ce dépôt sont importées.",
+    "Optional: Shared-Secret des GitHub-Webhooks (issues-Events, X-Hub-Signature-256). Ohne Secret bleibt der Webhook-Endpunkt deaktiviert; das Polling holt alles nach.": "Optionnel : secret partagé du webhook GitHub (événements issues, X-Hub-Signature-256). Sans secret, le point de terminaison webhook reste désactivé ; l'interrogation rattrape tout.",
+    "Repository-Besitzer (Owner)": "Propriétaire du dépôt (owner)",
+    "Repository-Name": "Nom du dépôt",
+    "Schließt das verknüpfte Issue (mit Notiz), wenn die Aufgabe in workDiary erledigt wird, und öffnet es beim Wiedereröffnen. Titel und Beschreibung bleiben quellsystem-geführt. Der Token braucht Schreibzugriff auf Issues.": "Ferme l’issue liée (avec une note) lorsque la tâche est terminée dans workDiary et la rouvre en cas de réouverture. Le titre et la description restent gérés par le système source. Le jeton nécessite un accès en écriture aux issues.",
+    "Verbunden mit GitHub als :login.": "Connecté à GitHub en tant que :login."
+}

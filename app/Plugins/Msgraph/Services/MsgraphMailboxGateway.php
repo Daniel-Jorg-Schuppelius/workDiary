@@ -13,8 +13,8 @@ declare(strict_types=1);
 namespace App\Plugins\Msgraph\Services;
 
 use App\Models\Mail\EmailConnection;
-use App\Models\Plugins\Msgraph\MsgraphMailConnection;
 use App\Plugins\Msgraph\Api\MsgraphMailClient;
+use App\Plugins\Msgraph\Models\MsgraphMailConnection;
 use App\Services\Mail\{MailAttachment, MailboxGateway, ParsedMessage};
 use CommonToolkit\Helper\Data\EmailHelper;
 use Illuminate\Support\Carbon;

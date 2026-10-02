@@ -1,0 +1,8 @@
+{
+    "Absenderkennung": "Identificativo mittente",
+    "Alphanumerisch bis 11 Zeichen (keine Antwort möglich) oder eigene Rufnummer in E.164.": "Alfanumerico, fino a 11 caratteri (nessuna risposta possibile) oppure un numero proprio in formato E.164.",
+    "Aus dem seven.io-Konto unter „Entwickler“ → „API-Keys“.": "Dal suo account seven.io in «Sviluppatore» → «Chiavi API».",
+    "Kein API-Key hinterlegt.": "Nessuna chiave API memorizzata.",
+    "Versendet Alarm-SMS über das deutsche Gateway seven.io (EU-Hosting, AVV nach Art. 28 DSGVO).": "Invia SMS di allarme tramite il gateway tedesco seven.io (hosting UE, accordo di trattamento ai sensi dell’art. 28 GDPR).",
+    "seven.io lehnt den API-Key ab.": "seven.io rifiuta la chiave API."
+}

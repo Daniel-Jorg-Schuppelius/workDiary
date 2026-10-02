@@ -86,7 +86,7 @@ class LexofficeServiceProvider extends PluginServiceProviderBase {
         // Belegbilder löscht die endgültige Löschung der Organisation mit (MVP-1044).
         $this->app->make(\App\Services\Org\OrganizationFileTables::class)->register('lexoffice_vouchers', ['path' => 'file_path']);
         // Gespiegelte Artikel in der Kennungsprüfung `identifiers:audit` (MVP-1044).
-        $this->app->make(\App\Services\Stammdaten\IdentifierAuditModels::class)->register(\App\Models\Plugins\Lexoffice\LexofficeArticle::class);
+        $this->app->make(\App\Services\Stammdaten\IdentifierAuditModels::class)->register(\App\Plugins\Lexoffice\Models\LexofficeArticle::class);
         // Belegliste der Kunden- und Lieferantenakte (MVP-1038).
         $this->app->make(PartyDocumentSources::class)->register(new LexofficePartyDocumentSource);
 

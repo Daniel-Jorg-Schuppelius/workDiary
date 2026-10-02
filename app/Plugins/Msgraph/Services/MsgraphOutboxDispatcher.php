@@ -14,8 +14,8 @@ namespace App\Plugins\Msgraph\Services;
 
 use App\Contracts\Integration\IntegrationOutboxDispatcher;
 use App\Models\Integration\IntegrationOutboxEntry;
-use App\Models\Plugins\Msgraph\{MsgraphTaskConnection, MsgraphTaskListLink};
 use App\Models\Project\Task;
+use App\Plugins\Msgraph\Models\{MsgraphTaskConnection, MsgraphTaskListLink};
 use RuntimeException;
 
 /**

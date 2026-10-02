@@ -129,7 +129,7 @@ class LexofficeTarget implements FacturationTarget {
             // Standardtext, damit nie ein leerer Beleg rausgeht.
             'introduction' => filled($transfer->intro_text)
                 ? (string) $transfer->intro_text
-                : (string) __('finance.lexoffice.introduction', [
+                : (string) __('lexoffice::finance.lexoffice.introduction', [
                     'channel' => $transfer->channel->label(),
                     'from' => $from ?? '—',
                     'to' => $to ?? '—',
@@ -149,7 +149,7 @@ class LexofficeTarget implements FacturationTarget {
     private function config(BillingTransfer $transfer): array {
         $config = LexofficeConfig::resolve($transfer->organization_id);
         if (empty($config['api_key'])) {
-            throw new RuntimeException((string) __('finance.error.lexoffice_not_configured'));
+            throw new RuntimeException((string) __('lexoffice::finance.error.lexoffice_not_configured'));
         }
 
         return $config;

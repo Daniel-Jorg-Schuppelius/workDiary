@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Plugins\Lexoffice\Services;
 
-use App\Models\Plugins\Lexoffice\{LexofficePostingCategory, LexofficeVoucher, LexofficeVoucherCategory};
 use App\Plugins\Lexoffice\{LexofficePlugin, VoucherTypes};
+use App\Plugins\Lexoffice\Models\{LexofficePostingCategory, LexofficeVoucher, LexofficeVoucherCategory};
 use App\Services\Billing\Contracts\ExternalPurchaseSource;
 use App\Services\Billing\Dto\{ExternalCategorySpend, ExternalPurchase};
 use App\Support\Query\DateRange;
@@ -66,7 +66,7 @@ final class LexofficeSpendSource implements ExternalPurchaseSource {
                     return;
                 }
                 $rows[] = new ExternalCategorySpend(
-                    category: (string) ($names[(string) $row->category_external_id] ?? __('reporting.supplier_category.unknown')),
+                    category: (string) ($names[(string) $row->category_external_id] ?? __('lexoffice::reporting.supplier_category.unknown')),
                     date: CarbonImmutable::parse($date->toDateString()),
                     amount: $row->net_amount->toFloat() * $this->sign($row->voucher->voucher_type),
                 );

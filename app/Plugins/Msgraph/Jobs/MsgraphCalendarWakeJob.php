@@ -14,7 +14,7 @@ namespace App\Plugins\Msgraph\Jobs;
 
 use App\Jobs\Concerns\RetriesTransientFailures;
 use App\Models\Platform\Organization;
-use App\Models\Plugins\Msgraph\MsgraphConnection;
+use App\Plugins\Msgraph\Models\MsgraphConnection;
 use App\Plugins\Msgraph\MsgraphPlugin;
 use App\Plugins\Msgraph\Services\MsgraphCalendarImportService;
 use Illuminate\Bus\Queueable;

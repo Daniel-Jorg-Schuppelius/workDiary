@@ -1,0 +1,8 @@
+{
+    "DHL-API nicht erreichbar oder Zugangsdaten ungültig.": "API de DHL inaccesible o credenciales no válidas.",
+    "DHL-API-Fehler (:class).": "Error de la API de DHL (:class).",
+    "DHL-Anbindung ist deaktiviert.": "La conexión DHL está desactivada.",
+    "Erzeugt DHL-Versandlabels, storniert sie und verfolgt Sendungen (Parcel DE Shipping v2 + Shipment Tracking). Pro Organisation mit GK-Zugang und dhl-api-key konfiguriert.": "Crea etiquetas de envío DHL, las cancela y realiza el seguimiento de los envíos (Parcel DE Shipping v2 + Shipment Tracking). Configurado por organización con cuenta comercial y dhl-api-key.",
+    "Keine DHL-Anbindung hinterlegt.": "No hay ninguna conexión DHL configurada.",
+    "Verbunden mit der DHL-API.": "Conectado a la API de DHL."
+}

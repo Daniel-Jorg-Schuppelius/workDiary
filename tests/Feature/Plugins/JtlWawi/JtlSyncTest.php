@@ -13,7 +13,7 @@ namespace Tests\Feature\Plugins\JtlWawi;
 use App\Models\Article\{Article, ArticleVariant};
 use App\Models\Integration\{ExternalArticleMapping, IntegrationInboxItem};
 use App\Models\Inventory\Warehouse;
-use App\Models\Plugins\JtlWawi\{JtlConnection, JtlStockSnapshot, JtlWarehouseMapping};
+use App\Plugins\JtlWawi\Models\{JtlConnection, JtlStockSnapshot, JtlWarehouseMapping};
 use App\Plugins\JtlWawi\Services\{JtlArticleImporter, JtlStockChangePoller, JtlWarehouseImporter};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

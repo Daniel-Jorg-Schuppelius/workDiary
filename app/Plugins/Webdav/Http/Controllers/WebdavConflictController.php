@@ -33,15 +33,15 @@ class WebdavConflictController extends Controller {
     public function __construct(private readonly DocumentConflictResolver $resolver) {}
 
     public function overwrite(IntegrationInboxItem $item): RedirectResponse {
-        return $this->run($item, fn () => $this->resolver->overwrite(new WebdavMirrorTarget(), $item), __('webdav.conflict.flash.overwritten'));
+        return $this->run($item, fn () => $this->resolver->overwrite(new WebdavMirrorTarget(), $item), __('webdav::webdav.conflict.flash.overwritten'));
     }
 
     public function import(IntegrationInboxItem $item): RedirectResponse {
-        return $this->run($item, fn () => $this->resolver->importAsVersion(new WebdavMirrorTarget(), $item), __('webdav.conflict.flash.imported'));
+        return $this->run($item, fn () => $this->resolver->importAsVersion(new WebdavMirrorTarget(), $item), __('webdav::webdav.conflict.flash.imported'));
     }
 
     public function detach(IntegrationInboxItem $item): RedirectResponse {
-        return $this->run($item, fn () => $this->resolver->detach(new WebdavMirrorTarget(), $item), __('webdav.conflict.flash.detached'));
+        return $this->run($item, fn () => $this->resolver->detach(new WebdavMirrorTarget(), $item), __('webdav::webdav.conflict.flash.detached'));
     }
 
     private function run(IntegrationInboxItem $item, callable $action, string $success): RedirectResponse {
@@ -50,7 +50,7 @@ class WebdavConflictController extends Controller {
         try {
             $action();
         } catch (Throwable $e) {
-            return back()->with('error', __('webdav.conflict.flash.failed', ['reason' => ErrorText::for($e)]));
+            return back()->with('error', __('webdav::webdav.conflict.flash.failed', ['reason' => ErrorText::for($e)]));
         }
 
         return back()->with('success', $success);

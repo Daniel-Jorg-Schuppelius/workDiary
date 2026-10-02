@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Plugins\Zammad\Services;
 
-use App\Models\Plugins\Zammad\ZammadConnection;
 use App\Plugins\Zammad\Contracts\{ZammadGateway, ZammadGatewayFactory};
+use App\Plugins\Zammad\Models\ZammadConnection;
 
 /**
  * Standard-Factory (Feature 060): baut je Anbindung einen echten

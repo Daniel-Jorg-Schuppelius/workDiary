@@ -14,9 +14,9 @@ namespace App\Plugins\Billbee\Services;
 
 use App\Models\Customer\Customer;
 use App\Models\Platform\Organization;
-use App\Models\Plugins\Billbee\BillbeeOrder;
 use App\Plugins\Billbee\Api\BillbeeClientFactory;
 use App\Plugins\Billbee\BillbeePlugin;
+use App\Plugins\Billbee\Models\BillbeeOrder;
 use App\Services\Integration\{IntegrationResolver, MatchProfileRegistry};
 use App\Services\Integration\Match\MatchProfile;
 use Carbon\CarbonImmutable;

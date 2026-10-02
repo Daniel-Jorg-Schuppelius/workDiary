@@ -13,9 +13,9 @@ declare(strict_types=1);
 namespace App\Plugins\Etsy\Services;
 
 use App\Models\Platform\Organization;
-use App\Models\Plugins\Etsy\{EtsyConnection, EtsyLedgerEntry};
 use App\Plugins\Etsy\Api\EtsyClientFactory;
 use App\Plugins\Etsy\EtsyConfig;
+use App\Plugins\Etsy\Models\{EtsyConnection, EtsyLedgerEntry};
 use Carbon\CarbonImmutable;
 
 /**

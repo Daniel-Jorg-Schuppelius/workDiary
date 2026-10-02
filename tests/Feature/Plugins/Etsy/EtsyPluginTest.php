@@ -11,8 +11,8 @@
 namespace Tests\Feature\Plugins\Etsy;
 
 use App\Models\Platform\PluginSetting;
-use App\Models\Plugins\Etsy\EtsyConnection;
 use App\Plugins\Etsy\EtsyPlugin;
+use App\Plugins\Etsy\Models\EtsyConnection;
 use App\Plugins\PluginHealth;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;

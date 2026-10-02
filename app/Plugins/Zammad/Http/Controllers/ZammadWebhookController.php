@@ -14,9 +14,9 @@ namespace App\Plugins\Zammad\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Platform\Organization;
-use App\Models\Plugins\Zammad\ZammadConnection;
 use App\Plugins\Support\WebhookSignature;
 use App\Plugins\Zammad\Contracts\ZammadGatewayFactory;
+use App\Plugins\Zammad\Models\ZammadConnection;
 use App\Plugins\Zammad\Services\ZammadTicketImporter;
 use Illuminate\Http\{JsonResponse, Request};
 use Throwable;

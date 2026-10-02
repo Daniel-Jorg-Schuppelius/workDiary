@@ -230,7 +230,6 @@ return [
         'proposed_hint' => 'Vorschlag — bitte bestätigen',
         'voucher_only' => 'Beleg (ohne Position)',
         'needed' => 'offen: :amount',
-        'no_contacts' => 'Der Rechnungsempfänger hat keinen verknüpften Lexoffice-Kontakt.',
         'note_voided' => 'Rechnung storniert — deckte :months', // Review 2026-09-10
         'no_lines' => 'Keine gespiegelten Rechnungspositionen im Fenster um den Periodenbeginn.',
         'line' => 'Rechnungsposition',
@@ -328,18 +327,14 @@ return [
         'dialog_title' => 'Rechnungsentwurf in Lexoffice anlegen',
         'submit' => 'Entwurf anlegen',
         'hint' => 'Alle offenen Perioden des Empfängers werden Positionen eines Lexoffice-Entwurfs: eine Position je Abo und Zeitraum, Endkunde in der Beschreibung, Menge in Monaten. Nichts wird festgeschrieben — Sie prüfen und schließen in Lexoffice ab.',
-        'title' => 'Rechnung',
-        'introduction' => 'Lizenzen und Abos, :count Positionen — Zeiträume und Endkunden je Position.',
         'end_customer' => 'Endkunde :name',
         'unit_piece' => 'Stück',
-        'note' => 'Lexoffice-Entwurf :id vom :date (:user)',
         'local_note' => 'Lokaler Rechnungsentwurf :number',
         'flash' => [
             'created' => 'Entwurf für :customer angelegt: :lines Positionen, :net € netto (Lexoffice-ID :id). Bitte in Lexoffice prüfen und abschließen.',
             'created_local' => 'Rechnungsentwurf :id für :customer angelegt: :lines Positionen, :net € netto. Perioden sind als Vorschlag verknüpft — beim Ausstellen bestätigen.',
         ],
         'error' => [
-            'lexoffice' => 'Lexoffice ist für diese Organisation nicht aktiv oder ohne API-Schlüssel.',
             'nothing_open' => 'Keine offenen Perioden mit Verkaufspreis für diesen Empfänger.',
         ],
         'already_drafted' => 'Für diesen Empfänger steht bereits ein Entwurf aus (:reference vom :date). Erst in Lexoffice bzw. lokal abschließen oder die Periode entscheiden.', // Review 2026-09-10

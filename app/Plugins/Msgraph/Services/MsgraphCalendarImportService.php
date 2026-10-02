@@ -13,8 +13,8 @@ declare(strict_types=1);
 namespace App\Plugins\Msgraph\Services;
 
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
-use App\Models\Plugins\Msgraph\MsgraphConnection;
 use App\Plugins\Msgraph\Api\MsgraphCalendarClient;
+use App\Plugins\Msgraph\Models\MsgraphConnection;
 use App\Plugins\Msgraph\MsgraphPlugin;
 use App\Plugins\Support\Calendar\{CalendarSeriesStager, RemoteCalendarPublishService};
 use App\Services\CloudIntake\StaleCheckpointException;
@@ -105,7 +105,7 @@ class MsgraphCalendarImportService {
             $this->series->dismissByRemoteId($connection->organization_id, MsgraphPlugin::ID, $remoteId);
             if ($reference instanceof ExternalReference && $this->stage($connection, 'calendar-deleted:' . $remoteId, IntegrationInboxItem::CASE_UNMATCHED, [
                 'remote_id' => $remoteId,
-            ], (string) __('msgraph.import.deleted_title'), $reference)) {
+            ], (string) __('msgraph::msgraph.import.deleted_title'), $reference)) {
                 $counters['deleted']++;
             }
 
@@ -236,7 +236,7 @@ class MsgraphCalendarImportService {
             'remote_snapshot' => $snapshot,
             'mapped_snapshot' => $mapped,
             'display_title' => $title !== '' ? $title : '—',
-            'display_subtitle' => (string) ($connection->calendar_name ?? __('msgraph.calendar.default')),
+            'display_subtitle' => (string) ($connection->calendar_name ?? __('msgraph::msgraph.calendar.default')),
             'occurred_at' => now(),
         ]);
 

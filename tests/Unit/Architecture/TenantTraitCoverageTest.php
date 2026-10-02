@@ -170,7 +170,7 @@ class TenantTraitCoverageTest extends TestCase {
         // todoist_user_id); nullable organization_id, ein Global-Scope würde
         // signierte, aber unzuordenbare Zustellungen ausblenden. Siehe
         // Allow-List im Audit-Doc.
-        \App\Models\Plugins\Todoist\TodoistWebhookDelivery::class,
+        \App\Plugins\Todoist\Models\TodoistWebhookDelivery::class,
         // Lexoffice-Webhook-Dedup (Audit 2026-08, W1.3): Betriebsprotokoll im
         // sessionlosen Webhook-Kontext, angelegt VOR der Verarbeitung
         // (persist-before-process). Die Organisation steckt im URL-Token und
@@ -178,17 +178,17 @@ class TenantTraitCoverageTest extends TestCase {
         // nichts, würde aber die Dedup-Abfrage vom Request-Kontext abhängig
         // machen. Mandantentrennung ist über den Token-Vergleich abgesichert
         // (WebhookTenantTest).
-        \App\Models\Plugins\Lexoffice\LexofficeWebhookDelivery::class,
+        \App\Plugins\Lexoffice\Models\LexofficeWebhookDelivery::class,
         // Calendly-Webhook-Dedup (Feature 095): analog TodoistWebhookDelivery ein
         // Betriebsprotokoll, das VOR der Org-Zuordnung entsteht (Token→Org+
         // signing_key, dann Signaturprüfung); nullable organization_id, kein
         // Global-Scope. Siehe Allow-List im Audit-Doc.
-        \App\Models\Plugins\Calendly\CalendlyWebhookDelivery::class,
+        \App\Plugins\Calendly\Models\CalendlyWebhookDelivery::class,
         // Etsy-Webhook-Dedup (Feature 101, MVP-496): analog Todoist/Calendly ein
         // Betriebsprotokoll, das VOR der Org-Zuordnung entsteht (webhook_token→
         // Connection, dann Svix-Signaturprüfung); nullable organization_id,
         // kein Global-Scope. Siehe Allow-List im Audit-Doc.
-        \App\Models\Plugins\Etsy\EtsyWebhookDelivery::class,
+        \App\Plugins\Etsy\Models\EtsyWebhookDelivery::class,
         // Zeiterfassungs-Webhook-Dedup (Feature 124, MVP-613): analog
         // Todoist/Calendly ein Betriebsprotokoll, das VOR der Org-Zuordnung
         // entsteht (Workspace→Org, dann Signaturprüfung); nullable
@@ -416,13 +416,17 @@ class TenantTraitCoverageTest extends TestCase {
     ];
 
     public function test_every_model_uses_tenant_trait_or_is_allow_listed(): void {
-        $modelsDir = realpath(__DIR__ . '/../../../app/Models');
-        $this->assertNotFalse($modelsDir, 'app/Models darf nicht fehlen');
+        $appDir = realpath(__DIR__ . '/../../../app');
+        $this->assertNotFalse($appDir, 'app darf nicht fehlen');
+        $files = [];
+        foreach ([$appDir . '/Models', ...(glob($appDir . '/Plugins/*/Models', GLOB_ONLYDIR) ?: [])] as $modelsDir) {
+            $files = [...$files, ...iterator_to_array($this->iterateModelFiles($modelsDir), false)];
+        }
 
         $offenders = [];
 
-        foreach ($this->iterateModelFiles($modelsDir) as $file) {
-            $class = $this->classFromFile($file, $modelsDir);
+        foreach ($files as $file) {
+            $class = $this->classFromFile($file, $appDir);
             if ($class === null) {
                 continue;
             }
@@ -495,13 +499,13 @@ class TenantTraitCoverageTest extends TestCase {
         }
     }
 
-    private function classFromFile(string $file, string $modelsDir): ?string {
-        $relative = ltrim(str_replace($modelsDir, '', $file), DIRECTORY_SEPARATOR);
+    private function classFromFile(string $file, string $appDir): ?string {
+        $relative = ltrim(str_replace($appDir, '', $file), DIRECTORY_SEPARATOR);
         $withoutExt = preg_replace('/\.php$/', '', $relative);
         if ($withoutExt === null) {
             return null;
         }
-        $class = 'App\\Models\\' . str_replace(DIRECTORY_SEPARATOR, '\\', $withoutExt);
+        $class = 'App\\' . str_replace(DIRECTORY_SEPARATOR, '\\', $withoutExt);
 
         return $class;
     }

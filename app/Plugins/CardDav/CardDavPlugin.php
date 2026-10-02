@@ -10,9 +10,9 @@
 
 namespace App\Plugins\CardDav;
 
-use App\Models\Plugins\CardDav\CardDavConnection;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\CardDav\Contracts\CardDavGatewayFactory;
+use App\Plugins\CardDav\Models\CardDavConnection;
 use App\Plugins\Contracts\Plugin;
 use Throwable;
 
@@ -24,7 +24,7 @@ use Throwable;
  * - **Inbox-First** (MVP-103): Kontakte werden über den IntegrationResolver
  *   als Zuordnungsvorschläge zu Kunden eingespeist — kein Auto-Merge, kein
  *   Direkt-Schreiben, keine Neuanlage.
- * - **Idempotent** über UID+ETag ({@see \App\Models\Plugins\CardDav\CardDavCard}-Spiegel);
+ * - **Idempotent** über UID+ETag ({@see \App\Plugins\CardDav\Models\CardDavCard}-Spiegel);
  *   Delta-Sync per RFC-6578-sync-collection mit ETag-Fallback.
  *
  * Bewusst KEINE Capability: {@see \App\Plugins\Contracts\ContactSyncer} ist
@@ -44,7 +44,7 @@ class CardDavPlugin extends AbstractPlugin {
     }
 
     public function description(): string {
-        return (string) __('carddav.description');
+        return (string) __('carddav::carddav.description');
     }
 
     public function capabilities(): array {
@@ -73,18 +73,18 @@ class CardDavPlugin extends AbstractPlugin {
 
         $connection = CardDavConnection::query()->where('organization_id', $org->id)->first();
         if (! $connection instanceof CardDavConnection) {
-            return PluginHealth::degraded(__('carddav.health.no_connection'));
+            return PluginHealth::degraded(__('carddav::carddav.health.no_connection'));
         }
         if (! $connection->isActive()) {
-            return PluginHealth::degraded(__('carddav.health.inactive_or_incomplete'));
+            return PluginHealth::degraded(__('carddav::carddav.health.inactive_or_incomplete'));
         }
 
         try {
             return app(CardDavGatewayFactory::class)->for($connection)->ping()
                 ? PluginHealth::ok(__('Verbunden mit :url.', ['url' => $connection->base_url]))
-                : PluginHealth::failing(__('carddav.health.unreachable'), 'unreachable');
+                : PluginHealth::failing(__('carddav::carddav.health.unreachable'), 'unreachable');
         } catch (Throwable $e) {
-            return PluginHealth::failing(__('carddav.health.error', ['class' => class_basename($e)]));
+            return PluginHealth::failing(__('carddav::carddav.health.error', ['class' => class_basename($e)]));
         }
     }
 }

@@ -12,7 +12,7 @@ namespace Tests\Feature\Plugins\Msgraph;
 
 use App\Models\Absence\Vacation;
 use App\Models\Platform\User;
-use App\Models\Plugins\Msgraph\MsgraphConnection;
+use App\Plugins\Msgraph\Models\MsgraphConnection;
 use App\Plugins\Msgraph\Services\MsgraphOutOfOfficeService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\{WithOrganization, WithPluginSecrets};

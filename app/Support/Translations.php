@@ -31,6 +31,26 @@ class Translations {
     }
 
     /**
+     * Übersetzungskataloge: Kern (`''` → lang/) und je Plugin dessen
+     * `Resources/lang` (Namespace = Plugin-ID), so wie der Translator sie lädt.
+     *
+     * @return array<string, string>
+     */
+    public static function catalogs(): array {
+        $catalogs = ['' => self::langPath()];
+        $plugins = app_path('Plugins') . DIRECTORY_SEPARATOR;
+        $hints = app('translator')->getLoader()->namespaces();
+        ksort($hints);
+        foreach ($hints as $namespace => $path) {
+            if (str_starts_with($path, $plugins)) {
+                $catalogs[$namespace] = $path;
+            }
+        }
+
+        return $catalogs;
+    }
+
+    /**
      * Sprachen mit flacher JSON-Datei = alle auswählbaren außer der Quellsprache `de`.
      *
      * @return list<string>
@@ -39,13 +59,13 @@ class Translations {
         return array_values(array_filter(Locales::enabledCodes(), static fn(string $c): bool => $c !== 'de'));
     }
 
-    public static function jsonPath(string $code): string {
-        return self::langPath($code . '.json');
+    public static function jsonPath(string $code, string $namespace = ''): string {
+        return self::catalogs()[$namespace] . '/' . $code . '.json';
     }
 
     /** @return array<string, string> */
-    public static function loadJson(string $code): array {
-        $path = self::jsonPath($code);
+    public static function loadJson(string $code, string $namespace = ''): array {
+        $path = self::jsonPath($code, $namespace);
         if (! File::isFile($path)) {
             return [];
         }
@@ -57,32 +77,60 @@ class Translations {
     }
 
     /**
-     * Kanonische JSON-Referenz = en.json (fallback_locale). Jede Sprache MUSS
-     * diese Keys abdecken (sonst zeigt die UI den rohen Schlüssel). Zusätzliche,
-     * sprachspezifische Keys (z. B. noch nicht überall propagierte Enum-Keys)
-     * sind erlaubt und werden separat nur informativ gemeldet.
+     * JSON-Texte einer Sprache über alle Kataloge — was der Translator zur
+     * Laufzeit sieht (Grundlage der Quell-Scans).
      *
-     * @return list<string>
+     * @return array<string, string>
      */
-    public static function jsonReferenceKeys(): array {
-        return array_keys(self::loadJson('en'));
+    public static function runtimeJson(string $code): array {
+        $merged = [];
+        foreach (array_keys(self::catalogs()) as $namespace) {
+            $merged = [...$merged, ...self::loadJson($code, $namespace)];
+        }
+
+        return $merged;
     }
 
     /**
-     * Namespace-Dateinamen aus dem de-Referenzverzeichnis (z. B. "user.php").
+     * Kanonische JSON-Referenz eines Katalogs = en.json (fallback_locale). Jede
+     * Sprache MUSS diese Keys abdecken (sonst zeigt die UI den rohen Schlüssel).
+     * Zusätzliche, sprachspezifische Keys (z. B. noch nicht überall propagierte
+     * Enum-Keys) sind erlaubt und werden separat nur informativ gemeldet.
+     *
+     * @return list<string>
+     */
+    public static function jsonReferenceKeys(string $namespace = ''): array {
+        return array_keys(self::loadJson('en', $namespace));
+    }
+
+    /**
+     * Namespace-Dateien aus den de-Referenzverzeichnissen: Kern als `user.php`,
+     * Plugins als `lexoffice::lexware.php`.
      *
      * @return list<string>
      */
     public static function namespaceFiles(): array {
-        $directory = self::langPath('de');
-        $files = Folder::exists($directory) ? Folder::findByPattern($directory, '*.php') : [];
+        $out = [];
+        foreach (self::catalogs() as $namespace => $path) {
+            $directory = $path . '/de';
+            foreach (Folder::exists($directory) ? Folder::findByPattern($directory, '*.php') : [] as $file) {
+                $out[] = ($namespace === '' ? '' : $namespace . '::') . basename($file);
+            }
+        }
 
-        return array_values(array_map('basename', $files));
+        return $out;
+    }
+
+    /** Pfad einer Namespace-Datei (`user.php` bzw. `lexoffice::lexware.php`) in einer Sprache. */
+    public static function phpPath(string $code, string $file): string {
+        [$namespace, $name] = str_contains($file, '::') ? explode('::', $file, 2) : ['', $file];
+
+        return self::catalogs()[$namespace] . '/' . $code . '/' . $name;
     }
 
     /** @return array<string, mixed> */
     public static function loadPhp(string $code, string $file): array {
-        $path = self::langPath($code) . '/' . $file;
+        $path = self::phpPath($code, $file);
         if (! File::isFile($path)) {
             return [];
         }
@@ -105,9 +153,9 @@ class Translations {
      *
      * @param  array<string, string>  $data
      */
-    public static function writeJson(string $code, array $data): void {
+    public static function writeJson(string $code, array $data, string $namespace = ''): void {
         $json = JsonHelper::encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
-        File::write(self::jsonPath($code), $json . "\n");
+        File::write(self::jsonPath($code, $namespace), $json . "\n");
     }
 
     /**
@@ -116,11 +164,11 @@ class Translations {
      * @param  array<string, mixed>  $data
      */
     public static function writePhp(string $code, string $file, array $data): void {
-        $dir = self::langPath($code);
-        Folder::create($dir, 0775, true);
-        $header = "<?php\n/*\n * Übersetzungen ($code) — gepflegt via `php artisan lang:sync`.\n * Referenzstruktur: lang/de/$file\n */\n\n";
+        $path = self::phpPath($code, $file);
+        Folder::create(dirname($path), 0775, true);
+        $header = "<?php\n/*\n * Übersetzungen ($code) — gepflegt via `php artisan lang:sync`.\n * Referenzstruktur: de/" . basename($path) . "\n */\n\n";
         $body = $header . 'return ' . self::exportArray($data, 1) . ";\n";
-        File::write($dir . '/' . $file, $body);
+        File::write($path, $body);
     }
 
     /**
@@ -130,12 +178,12 @@ class Translations {
      * Array ersetzt.
      */
     public static function writeRequireStub(string $code, string $file): void {
-        $dir = self::langPath($code);
-        Folder::create($dir, 0775, true);
+        $path = self::phpPath($code, $file);
+        Folder::create(dirname($path), 0775, true);
         $body = "<?php\n/*\n * Übersetzungen ($code) — Fallback auf Englisch, bis übersetzt.\n"
             . " * Für echte Übersetzungen dieses require durch ein Array ersetzen.\n */\n\n"
-            . "return require __DIR__ . '/../en/$file';\n";
-        File::write($dir . '/' . $file, $body);
+            . "return require __DIR__ . '/../en/" . basename($path) . "';\n";
+        File::write($path, $body);
     }
 
     /**
@@ -153,17 +201,12 @@ class Translations {
      */
     public static function sourceJsonKeys(): array {
         $namespaces = array_fill_keys(
-            array_map(static fn(string $f): string => substr($f, 0, -4), self::namespaceFiles()),
+            array_map(static fn(string $f): string => substr($f, 0, -4), array_filter(self::namespaceFiles(), static fn(string $f): bool => ! str_contains($f, '::'))),
             true,
         );
 
-        $files = [];
-        foreach ([base_path('resources/views'), base_path('app')] as $dir) {
-            $files = [...$files, ...Files::get($dir, true, ['php'])];
-        }
-
         $keys = [];
-        foreach ($files as $path) {
+        foreach (self::sourceFiles() as $path) {
             $src = File::read($path);
             if (! preg_match_all('~(?<![A-Za-z0-9_])(?:__|trans)\(\s*([\'"])((?:\\\\.|(?!\1).)*)\1\s*[,)]~s', $src, $m)) {
                 continue;
@@ -172,6 +215,9 @@ class Translations {
                 $k = stripcslashes($raw);
                 if ($k === '' || str_contains($k, '$') || str_contains($k, '{')) {
                     continue; // dynamisch/interpoliert
+                }
+                if (preg_match('/^[a-z0-9_-]+::/', $k) === 1) {
+                    continue; // Plugin-Namespace, siehe sourceNamespacedKeys()
                 }
                 if (! str_contains($k, ' ')) {
                     if (str_contains($k, '.') && isset($namespaces[explode('.', $k, 2)[0]])) {
@@ -202,13 +248,8 @@ class Translations {
      * @return list<string>
      */
     public static function sourcePluralKeys(): array {
-        $files = [];
-        foreach ([base_path('resources/views'), base_path('app')] as $dir) {
-            $files = [...$files, ...Files::get($dir, true, ['php'])];
-        }
-
         $keys = [];
-        foreach ($files as $path) {
+        foreach (self::sourceFiles() as $path) {
             $src = File::read($path);
             if (! preg_match_all('~(?<![A-Za-z0-9_])trans_choice\(\s*([\'"])((?:\\\\.|(?!\1).)*)\1\s*,~s', $src, $m)) {
                 continue;
@@ -225,6 +266,35 @@ class Translations {
         sort($out);
 
         return $out;
+    }
+
+    /**
+     * Vollständige Plugin-Schlüssel (`lexoffice::lexware.title`) aus Views/app;
+     * Konkatenations-Präfixe und interpolierte Schlüssel bleiben außen vor.
+     *
+     * @return list<string>
+     */
+    public static function sourceNamespacedKeys(): array {
+        $keys = [];
+        foreach (self::sourceFiles() as $path) {
+            if (preg_match_all('~(?<![A-Za-z0-9_])(?:__|trans|trans_choice|@lang)\(\s*([\'"])([a-z0-9_-]+::[A-Za-z0-9_.-]+)\1\s*[,)]~', File::read($path), $m)) {
+                foreach ($m[2] as $k) {
+                    if (! str_ends_with($k, '.')) {
+                        $keys[$k] = true;
+                    }
+                }
+            }
+        }
+
+        $out = array_keys($keys);
+        sort($out);
+
+        return $out;
+    }
+
+    /** @return list<string> */
+    private static function sourceFiles(): array {
+        return [...Files::get(base_path('resources/views'), true, ['php']), ...Files::get(base_path('app'), true, ['php'])];
     }
 
     /**

@@ -46,7 +46,7 @@ class DomainResellingPlugin extends AbstractPlugin implements DomainRegistrar {
     }
 
     public function description(): string {
-        return __('domain.plugin.description');
+        return __('domainreselling::domain.plugin.description');
     }
 
     /** @return array<int, PluginCapability> */
@@ -86,21 +86,21 @@ class DomainResellingPlugin extends AbstractPlugin implements DomainRegistrar {
      */
     public function settingsSchema(): array {
         return [
-            SettingsField::number('timeout', __('domain.settings.timeout'),
+            SettingsField::number('timeout', __('domainreselling::domain.settings.timeout'),
                 default: (string) config('plugins.domainreselling.timeout', 20),
-                help: __('domain.settings.timeout_help'))->toArray(),
-            SettingsField::number('check_budget_per_hour', __('domain.settings.check_budget_per_hour'),
+                help: __('domainreselling::domain.settings.timeout_help'))->toArray(),
+            SettingsField::number('check_budget_per_hour', __('domainreselling::domain.settings.check_budget_per_hour'),
                 default: (string) config('plugins.domainreselling.check_budget_per_hour', 300),
-                help: __('domain.settings.check_budget_per_hour_help'))->toArray(),
-            SettingsField::number('check_cache_ttl', __('domain.settings.check_cache_ttl'),
+                help: __('domainreselling::domain.settings.check_budget_per_hour_help'))->toArray(),
+            SettingsField::number('check_cache_ttl', __('domainreselling::domain.settings.check_cache_ttl'),
                 default: (string) config('plugins.domainreselling.check_cache_ttl', 300),
-                help: __('domain.settings.check_cache_ttl_help'))->toArray(),
-            SettingsField::number('list_page_size', __('domain.settings.list_page_size'),
+                help: __('domainreselling::domain.settings.check_cache_ttl_help'))->toArray(),
+            SettingsField::number('list_page_size', __('domainreselling::domain.settings.list_page_size'),
                 default: (string) config('plugins.domainreselling.list_page_size', 100),
-                help: __('domain.settings.list_page_size_help'))->toArray(),
-            SettingsField::number('stale_after_hours', __('domain.settings.stale_after_hours'),
+                help: __('domainreselling::domain.settings.list_page_size_help'))->toArray(),
+            SettingsField::number('stale_after_hours', __('domainreselling::domain.settings.stale_after_hours'),
                 default: (string) config('plugins.domainreselling.stale_after_hours', 24),
-                help: __('domain.settings.stale_after_hours_help'))->toArray(),
+                help: __('domainreselling::domain.settings.stale_after_hours_help'))->toArray(),
         ];
     }
 
@@ -119,7 +119,7 @@ class DomainResellingPlugin extends AbstractPlugin implements DomainRegistrar {
             }
             $value = filter_var($settings[$key], FILTER_VALIDATE_INT);
             if ($value === false || $value < $min || $value > $max) {
-                $errors[$key] = __('domain.settings.range_error', ['min' => $min, 'max' => $max]);
+                $errors[$key] = __('domainreselling::domain.settings.range_error', ['min' => $min, 'max' => $max]);
             }
         }
 
@@ -128,14 +128,14 @@ class DomainResellingPlugin extends AbstractPlugin implements DomainRegistrar {
 
     /** Eigenes Partial: Zugangsdaten-Hinweis + Standard-Felder. */
     public function settingsView(): ?string {
-        return 'admin.plugins.domainreselling._settings';
+        return 'domainreselling::settings';
     }
 
     /** Health je Organisation: Zustand der DomainReselling-Verbindungen. */
     public function healthCheck(): PluginHealth {
         $org = PluginOrgContext::currentOrNull();
         if (! $org instanceof Organization) {
-            return PluginHealth::ok(__('domain.health.no_org_context'));
+            return PluginHealth::ok(__('domainreselling::domain.health.no_org_context'));
         }
 
         try {
@@ -156,10 +156,10 @@ class DomainResellingPlugin extends AbstractPlugin implements DomainRegistrar {
                 ->exists();
 
             return $pilotOpen
-                ? PluginHealth::degraded(__('domain.health.pilot_open'))
-                : PluginHealth::ok(__('domain.health.ok'));
+                ? PluginHealth::degraded(__('domainreselling::domain.health.pilot_open'))
+                : PluginHealth::ok(__('domainreselling::domain.health.ok'));
         } catch (Throwable $e) {
-            return PluginHealth::failing(__('domain.health.error', ['class' => class_basename($e)]));
+            return PluginHealth::failing(__('domainreselling::domain.health.error', ['class' => class_basename($e)]));
         }
     }
 }

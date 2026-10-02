@@ -49,13 +49,13 @@ class LexofficeDeliveryNoteService {
     public function push(StockDelivery $delivery): ExternalReference {
         $config = LexofficeConfig::resolve($delivery->organization_id);
         if (empty($config['api_key'])) {
-            throw new RuntimeException((string) __('finance.error.lexoffice_not_configured'));
+            throw new RuntimeException((string) __('lexoffice::finance.error.lexoffice_not_configured'));
         }
 
         $delivery->loadMissing('customer');
         $customer = $delivery->customer;
         if (! $customer instanceof Customer) {
-            throw new RuntimeException((string) __('finance.error.lexoffice_delivery_no_customer'));
+            throw new RuntimeException((string) __('lexoffice::finance.error.lexoffice_delivery_no_customer'));
         }
 
         $contactId = $this->resolveContactId($customer, $config);
@@ -102,12 +102,12 @@ class LexofficeDeliveryNoteService {
     public function pull(StockDelivery $delivery): array {
         $config = LexofficeConfig::resolve($delivery->organization_id);
         if (empty($config['api_key'])) {
-            throw new RuntimeException((string) __('finance.error.lexoffice_not_configured'));
+            throw new RuntimeException((string) __('lexoffice::finance.error.lexoffice_not_configured'));
         }
 
         $reference = $this->reference($delivery);
         if ($reference === null) {
-            throw new RuntimeException((string) __('finance.error.lexoffice_delivery_not_linked'));
+            throw new RuntimeException((string) __('lexoffice::finance.error.lexoffice_delivery_not_linked'));
         }
 
         $response = $this->api($config)->getResponse($config['base_url'] . '/delivery-notes/' . $reference->external_id);
@@ -150,7 +150,7 @@ class LexofficeDeliveryNoteService {
                 'unitName' => trim((string) $delivery->unit) ?: (string) __('invoicing.unit_piece'),
             ]],
             'deliveryConditions' => ['deliveryDate' => $deliveredAt->format('Y-m-d\TH:i:s.vP')],
-            'title' => (string) __('finance.lexoffice.delivery_title'),
+            'title' => (string) __('lexoffice::finance.lexoffice.delivery_title'),
         ];
     }
 
@@ -198,7 +198,7 @@ class LexofficeDeliveryNoteService {
             }
         }
 
-        throw new RuntimeException((string) __('finance.error.lexoffice_contact_missing'));
+        throw new RuntimeException((string) __('lexoffice::finance.error.lexoffice_contact_missing'));
     }
 
     /** @param  array{api_key: ?string, base_url: string}  $config */

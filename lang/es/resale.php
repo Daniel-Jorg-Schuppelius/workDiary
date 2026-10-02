@@ -230,7 +230,6 @@ return [
         'proposed_hint' => 'Propuesta — por confirmar',
         'voucher_only' => 'Documento (sin línea)',
         'needed' => 'abierto: :amount',
-        'no_contacts' => 'El destinatario de la factura no tiene contacto de Lexoffice vinculado.',
         'note_voided' => 'Factura anulada — cubría :months', // Review 2026-09-10
         'no_lines' => 'No hay líneas de factura reflejadas en la ventana alrededor del inicio del periodo.',
         'line' => 'Línea de factura',
@@ -328,18 +327,14 @@ return [
         'dialog_title' => 'Crear borrador de factura en Lexoffice',
         'submit' => 'Crear borrador',
         'hint' => 'Todos los periodos abiertos del destinatario se convierten en líneas de un borrador de Lexoffice: una línea por suscripción y periodo, cliente final en la descripción, cantidad en meses. Nada se finaliza — revise y termine en Lexoffice.',
-        'title' => 'Factura',
-        'introduction' => 'Licencias y suscripciones, :count líneas — periodos y clientes finales por línea.',
         'end_customer' => 'Cliente final :name',
         'unit_piece' => 'unidad',
-        'note' => 'Borrador Lexoffice :id del :date (:user)',
         'local_note' => 'Borrador de factura local :number',
         'flash' => [
             'created' => 'Borrador para :customer creado: :lines líneas, :net € neto (id Lexoffice :id). Revise y finalice en Lexoffice.',
             'created_local' => 'Borrador :id para :customer creado: :lines líneas, :net € neto. Los periodos quedan vinculados como propuesta — confirme al emitir.',
         ],
         'error' => [
-            'lexoffice' => 'Lexoffice no está activo para esta organización o no tiene clave API.',
             'nothing_open' => 'No hay periodos abiertos con precio de venta para este destinatario.',
         ],
         'already_drafted' => 'Ya hay un borrador pendiente para este destinatario (:reference del :date). Termínelo primero en Lexoffice o localmente, o decida el periodo.', // Review 2026-09-10

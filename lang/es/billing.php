@@ -18,7 +18,6 @@ return [
         'dunning_level' => 'Nivel de reclamación :level',
         'action' => [
             'dun' => 'Reclamar',
-            'dun_confirm' => '¿Crear un aviso de pago en la contabilidad?',
         ],
         'tab' => [
             'all' => 'Todos',

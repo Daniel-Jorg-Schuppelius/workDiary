@@ -13,5 +13,5 @@
     :action="route('admin.backup-targets.nextcloud.connect')"
     icon="cloud_upload"
     id-prefix="ncb"
-    lang-prefix="backup_targets.nextcloud"
+    lang-prefix="nextcloud::backup_targets.nextcloud"
 />

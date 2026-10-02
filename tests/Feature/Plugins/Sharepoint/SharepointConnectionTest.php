@@ -11,9 +11,9 @@
 namespace Tests\Feature\Plugins\Sharepoint;
 
 use App\Models\Platform\User;
-use App\Models\Plugins\Sharepoint\SharepointConnection;
 use App\Plugins\{PluginDiscovery, PluginHealth};
 use App\Plugins\Sharepoint\Api\{SharepointDriveClient, SharepointOAuth};
+use App\Plugins\Sharepoint\Models\SharepointConnection;
 use App\Plugins\Sharepoint\SharepointPlugin;
 use GuzzleHttp\{Client as GuzzleClient, HandlerStack};
 use GuzzleHttp\Handler\MockHandler;

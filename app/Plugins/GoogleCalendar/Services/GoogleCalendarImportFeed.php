@@ -13,8 +13,8 @@ declare(strict_types=1);
 namespace App\Plugins\GoogleCalendar\Services;
 
 use App\Models\Platform\Organization;
-use App\Models\Plugins\GoogleCalendar\GoogleCalendarConnection;
 use App\Plugins\GoogleCalendar\Api\GoogleCalendarClient;
+use App\Plugins\GoogleCalendar\Models\GoogleCalendarConnection;
 use App\Plugins\Support\Calendar\CalendarImportDocument;
 use App\Services\Import\Contracts\CalendarImportFeed;
 use App\Support\Sqid;
@@ -44,7 +44,7 @@ final class GoogleCalendarImportFeed implements CalendarImportFeed {
             return [];
         }
 
-        return [['id' => Sqid::encode(GoogleCalendarConnection::class, $connection->id), 'label' => (string) ($connection->calendar_name ?? __('google_calendar.calendar.default'))]];
+        return [['id' => Sqid::encode(GoogleCalendarConnection::class, $connection->id), 'label' => (string) ($connection->calendar_name ?? __('google_calendar::google_calendar.calendar.default'))]];
     }
 
     public function fetch(Organization $organization, string $connectionId, DateTimeImmutable $from, DateTimeImmutable $until): string {

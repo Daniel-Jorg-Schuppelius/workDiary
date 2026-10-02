@@ -11,8 +11,8 @@
 namespace Tests\Feature\Plugins\CardDav;
 
 use App\Models\Platform\{Organization, User};
-use App\Models\Plugins\CardDav\{CardDavCard, CardDavConnection};
 use App\Plugins\CardDav\Contracts\{CardDavGateway, CardDavGatewayFactory};
+use App\Plugins\CardDav\Models\{CardDavCard, CardDavConnection};
 use App\Plugins\CardDav\Services\CardDavAddressbook;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Crypt;

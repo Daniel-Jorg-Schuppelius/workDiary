@@ -12,7 +12,7 @@ namespace Tests\Feature\Plugins;
 
 use App\Enums\Search\SearchSourceType;
 use App\Models\Platform\{PluginSetting, User};
-use App\Models\Plugins\Lexoffice\LexofficeArticle;
+use App\Plugins\Lexoffice\Models\LexofficeArticle;
 use App\Plugins\PluginManager;
 use App\Plugins\RemoteSupport\RemoteSupportPlugin;
 use App\Services\Diagnostics\ConnectionHealthModels;

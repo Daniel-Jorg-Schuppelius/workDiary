@@ -18,8 +18,8 @@ use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use App\Models\Platform\{Organization, User};
-use App\Models\Plugins\OrgaMax\{OrgaMaxConnection, OrgaMaxInvoice};
 use App\Plugins\OrgaMax\Api\OrgaMaxClientFactory;
+use App\Plugins\OrgaMax\Models\{OrgaMaxConnection, OrgaMaxInvoice};
 use App\Plugins\OrgaMax\OrgaMaxPlugin;
 use App\Plugins\OrgaMax\Services\{OrgaMaxConnectionService, OrgaMaxScopePreflight, OrgaMaxSyncService};
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
@@ -104,7 +104,7 @@ class OrgaMaxAdminController extends Controller {
 
         // Die Callback-URL (inkl. State) wird in orgaMAX als Erweiterungs-URL
         // hinterlegt; orgaMAX hängt beim Öffnen `iid` an.
-        return back()->with('success', __('orgamax.connect.intent_started'))
+        return back()->with('success', __('orgamax::orgamax.connect.intent_started'))
             ->with('orgamax_callback_url', route('admin.orgamax.callback', ['state' => $state]));
     }
 
@@ -116,19 +116,19 @@ class OrgaMaxAdminController extends Controller {
         $iid = trim((string) $request->query('iid', ''));
         $state = trim((string) $request->query('state', ''));
         if ($iid === '' || $state === '') {
-            return redirect()->route('admin.orgamax.index')->with('error', __('orgamax.error.intent_invalid'));
+            return redirect()->route('admin.orgamax.index')->with('error', __('orgamax::orgamax.error.intent_invalid'));
         }
 
         try {
             $this->connections->handleCallback($organization, $iid, $state);
         } catch (ApiException $e) {
             return redirect()->route('admin.orgamax.index')
-                ->with('error', __('orgamax.error.token_exchange_failed', ['status' => $e->getCode()]));
+                ->with('error', __('orgamax::orgamax.error.token_exchange_failed', ['status' => $e->getCode()]));
         } catch (RuntimeException $e) {
             return redirect()->route('admin.orgamax.index')->with('error', ErrorText::for($e));
         }
 
-        return redirect()->route('admin.orgamax.index')->with('success', __('orgamax.connect.confirm_account'));
+        return redirect()->route('admin.orgamax.index')->with('success', __('orgamax::orgamax.connect.confirm_account'));
     }
 
     /** Ausdrückliche Kontobestätigung (MVP-306). */
@@ -146,8 +146,8 @@ class OrgaMaxAdminController extends Controller {
         return back()->with(
             $connection->isActive() ? 'success' : 'error',
             $connection->isActive()
-                ? __('orgamax.connect.active')
-                : __('orgamax.connect.blocked', ['reason' => (string) $connection->blocked_reason]),
+                ? __('orgamax::orgamax.connect.active')
+                : __('orgamax::orgamax.connect.blocked', ['reason' => (string) $connection->blocked_reason]),
         );
     }
 
@@ -165,7 +165,7 @@ class OrgaMaxAdminController extends Controller {
 
         $this->connections->updateCapabilities($connection, (array) $data['capabilities']);
 
-        return back()->with('success', __('orgamax.capabilities.saved'));
+        return back()->with('success', __('orgamax::orgamax.capabilities.saved'));
     }
 
     /** „Jetzt synchronisieren" — respektiert dieselben Budgets wie der Scheduler. */
@@ -175,16 +175,16 @@ class OrgaMaxAdminController extends Controller {
         $connection = $this->connection($organization);
 
         if (! $connection->isActive()) {
-            return back()->with('error', __('orgamax.error.not_connected'));
+            return back()->with('error', __('orgamax::orgamax.error.not_connected'));
         }
 
         try {
             $counters = app(OrgaMaxSyncService::class)->run($connection);
         } catch (Throwable) {
-            return back()->with('error', __('orgamax.sync.failed'));
+            return back()->with('error', __('orgamax::orgamax.sync.failed'));
         }
 
-        return back()->with('success', __('orgamax.sync.done', ['counters' => JsonHelper::encode($counters)]));
+        return back()->with('success', __('orgamax::orgamax.sync.done', ['counters' => JsonHelper::encode($counters)]));
     }
 
     public function disconnect(): RedirectResponse {
@@ -194,7 +194,7 @@ class OrgaMaxAdminController extends Controller {
 
         $this->connections->disconnect($connection);
 
-        return back()->with('success', __('orgamax.connect.disconnected'));
+        return back()->with('success', __('orgamax::orgamax.connect.disconnected'));
     }
 
     // ── Getrennte Faktura-Aktionen (MVP-310) ────────────────────────────
@@ -217,7 +217,7 @@ class OrgaMaxAdminController extends Controller {
         );
         $connection->audit('orgamax_invoice_convert_requested', ['order_id' => $orderId, 'by' => $user->id]);
 
-        return back()->with('success', __('orgamax.invoice.convert_enqueued'));
+        return back()->with('success', __('orgamax::orgamax.invoice.convert_enqueued'));
     }
 
     /**
@@ -232,11 +232,11 @@ class OrgaMaxAdminController extends Controller {
         try {
             (new InvoicesEndpoint($this->clients->for($connection)))->lock(new ID($externalId));
         } catch (ApiException $e) {
-            return back()->with('error', __('orgamax.invoice.lock_failed', ['status' => $e->getCode()]));
+            return back()->with('error', __('orgamax::orgamax.invoice.lock_failed', ['status' => $e->getCode()]));
         }
         $connection->audit('orgamax_invoice_locked', ['invoice_id' => $externalId, 'by' => $user->id]);
 
-        return back()->with('success', __('orgamax.invoice.locked'));
+        return back()->with('success', __('orgamax::orgamax.invoice.locked'));
     }
 
     /** Versand mit Empfängervorschau + separater Bestätigung (MVP-310). */
@@ -262,7 +262,7 @@ class OrgaMaxAdminController extends Controller {
                     'recipients' => [(string) $data['recipient']],
                     'subject' => trim((string) ($data['subject'] ?? '')) !== ''
                         ? (string) $data['subject']
-                        : (string) __('orgamax.invoice.send_subject_default', ['number' => $externalId]),
+                        : (string) __('orgamax::orgamax.invoice.send_subject_default', ['number' => $externalId]),
                 ],
             ],
             'orgamax:send:' . $organization->id . ':' . $externalId,
@@ -270,7 +270,7 @@ class OrgaMaxAdminController extends Controller {
         );
         $connection->audit('orgamax_invoice_send_requested', ['invoice_id' => $externalId, 'recipient' => (string) $data['recipient'], 'by' => $user->id]);
 
-        return back()->with('success', __('orgamax.invoice.send_enqueued'));
+        return back()->with('success', __('orgamax::orgamax.invoice.send_enqueued'));
     }
 
     /** Zahlung melden — nur bei WorkDiary-geführtem Zahlungseingang, mit Dublettenprüfung. */
@@ -295,7 +295,7 @@ class OrgaMaxAdminController extends Controller {
         );
         $connection->audit('orgamax_payment_requested', ['invoice_id' => $externalId, 'amount' => (string) $data['amount'], 'by' => $user->id]);
 
-        return back()->with('success', __('orgamax.invoice.payment_enqueued'));
+        return back()->with('success', __('orgamax::orgamax.invoice.payment_enqueued'));
     }
 
     /** Rechnungs-PDF-Projektion (Herkunft orgaMAX, Hash im Audit). */
@@ -308,7 +308,7 @@ class OrgaMaxAdminController extends Controller {
             // GET /invoice/document/{id} — die ältere /download-Route ist deprecated.
             $pdf = (new InvoicesEndpoint($this->clients->for($connection)))->document(new ID($externalId));
         } catch (ApiException) {
-            abort(502, (string) __('orgamax.invoice.pdf_failed'));
+            abort(502, (string) __('orgamax::orgamax.invoice.pdf_failed'));
         }
         $connection->audit('orgamax_invoice_pdf_fetched', ['invoice_id' => $externalId, 'sha256' => CryptoHelper::hash($pdf)]);
 

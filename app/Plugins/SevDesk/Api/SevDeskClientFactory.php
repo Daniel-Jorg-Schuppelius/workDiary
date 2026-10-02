@@ -26,7 +26,7 @@ class SevDeskClientFactory {
     public function for(int $organizationId): SevDeskClient {
         $config = SevDeskConfig::resolve($organizationId);
         if (empty($config['api_key'])) {
-            throw new RuntimeException((string) __('finance.error.sevdesk_not_configured'));
+            throw new RuntimeException((string) __('sevdesk::finance.error.sevdesk_not_configured'));
         }
 
         return new SevDeskClient(

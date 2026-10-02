@@ -16,9 +16,9 @@ use App\Enums\Reselling\PeriodStatus;
 use App\Models\Article\Article;
 use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Integration\ExternalReference;
-use App\Models\Plugins\Lexoffice\LexofficeArticle;
 use App\Models\Reselling\{ResalePriceEntry, ResaleSubscription};
 use App\Plugins\Lexoffice\LexofficePlugin;
+use App\Plugins\Lexoffice\Models\LexofficeArticle;
 use App\Services\Reselling\Register\PeriodPlanner;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -232,11 +232,11 @@ class ResaleDraftAndPricesTest extends TestCase {
         $second = $subscription->periods()->orderBy('starts_on')->get()[1];
         $this->actingAs($admin)->post(route('finance.resale.periods.waive', $second->sqid), ['decision' => 'waived', 'reason' => 'Kulanz'])->assertRedirect();
         $this->assertSame('draft-42', $second->fresh()?->draft_reference);
-        $voucher = \App\Models\Plugins\Lexoffice\LexofficeVoucher::create([
+        $voucher = \App\Plugins\Lexoffice\Models\LexofficeVoucher::create([
             'organization_id' => $this->organization->id, 'external_id' => 'draft-42', 'contact_external_id' => 'c-lds', 'voucher_type' => 'invoice',
             'voucher_status' => 'open', 'voucher_number' => 'RE/2026/0900', 'voucher_date' => '2026-09-04', 'total_amount' => 100, 'currency' => 'EUR', 'archived' => false, 'lines_synced_at' => now(),
         ]);
-        $line = \App\Models\Plugins\Lexoffice\LexofficeVoucherLine::create([
+        $line = \App\Plugins\Lexoffice\Models\LexofficeVoucherLine::create([
             'organization_id' => $this->organization->id, 'voucher_id' => $voucher->id, 'position' => 1, 'type' => 'service', 'external_article_id' => 'art-bb', 'lexoffice_article_id' => $article->id,
             'name' => 'Microsoft 365 Business Basic', 'quantity' => 12, 'unit_name' => 'Monat', 'unit_net' => '5.60', 'total_net' => '67.20', 'tax_rate' => 19, 'currency' => 'EUR',
         ]);
@@ -249,7 +249,7 @@ class ResaleDraftAndPricesTest extends TestCase {
         $other = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Ohne Kontakt', 'billing_mode' => \App\Enums\Finance\BillingMode::Lexoffice]);
         $this->actingAs($admin)->postJson(route('finance.resale.periods.draft.store'), ['customer_id' => $other->sqid])
             ->assertStatus(422)
-            ->assertJsonPath('errors.customer_id.0', __('resale.link.no_contacts'));
+            ->assertJsonPath('errors.customer_id.0', __('lexoffice::resale.link.no_contacts'));
         // Unbekannter oder fremder Empfänger: Sqid-Decode + Org-Prüfung im FormRequest.
         $this->actingAs($admin)->postJson(route('finance.resale.periods.draft.store'), ['customer_id' => 'nope'])
             ->assertStatus(422)

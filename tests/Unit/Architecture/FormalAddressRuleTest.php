@@ -18,8 +18,8 @@ use Tests\Unit\Architecture\Concerns\ScansSourceTree;
  * „Sie", Französisch „vous", Spanisch „usted", Italienisch „Lei".
  *
  * Deutsch: Pronomen, Du-Verbformen und informelle Imperative am Satzanfang in
- * allen Quelltexten (JSON-Schlüssel), lang/de/*.php, lang/de.json, den
- * Hilfethemen und Rohtext der Views. FR/ES/IT: eindeutige Du-Pronomen in
+ * allen Quelltexten (JSON-Schlüssel), de/*.php und de.json der Kern- und
+ * Plugin-Kataloge, den Hilfethemen und Rohtext der Views. FR/ES/IT: eindeutige Du-Pronomen in
  * Übersetzungen und Hilfe — Imperative sind dort mit der 3. Person gleichlautend
  * („Añade" = „füge hinzu" oder „fügt hinzu") und bleiben der Durchsicht vorbehalten.
  *
@@ -96,7 +96,7 @@ class FormalAddressRuleTest extends TestCase {
             yield 'Quelltext „' . mb_substr($source, 0, 40) . '…"' => (string) $source;
         }
         foreach ($this->json('de') as $key => $value) {
-            yield "lang/de.json [{$key}]" => (string) $value;
+            yield "de.json [{$key}]" => (string) $value;
         }
         foreach ($this->phpTranslations('de') as $where => $value) {
             yield $where => $value;
@@ -120,7 +120,7 @@ class FormalAddressRuleTest extends TestCase {
     /** @return iterable<string, string> */
     private function translations(string $locale): iterable {
         foreach ($this->json($locale) as $key => $value) {
-            yield "lang/{$locale}.json [" . mb_substr((string) $key, 0, 40) . ']' => (string) $value;
+            yield "{$locale}.json [" . mb_substr((string) $key, 0, 40) . ']' => (string) $value;
         }
         foreach ($this->phpTranslations($locale) as $where => $value) {
             yield $where => $value;
@@ -130,24 +130,37 @@ class FormalAddressRuleTest extends TestCase {
         }
     }
 
+    /** Kern- und Plugin-Kataloge (`app/Plugins/<Name>/Resources/lang`). @return list<string> */
+    private function catalogDirs(): array {
+        return [$this->repoRoot() . '/lang', ...(glob($this->repoRoot() . '/app/Plugins/*/Resources/lang', GLOB_ONLYDIR) ?: [])];
+    }
+
     /** @return array<string, mixed> */
     private function json(string $locale): array {
-        $path = $this->repoRoot() . "/lang/{$locale}.json";
+        $merged = [];
+        foreach ($this->catalogDirs() as $dir) {
+            $path = "{$dir}/{$locale}.json";
+            if (is_file($path)) {
+                $merged = [...$merged, ...(array) json_decode((string) file_get_contents($path), true)];
+            }
+        }
 
-        return is_file($path) ? (array) json_decode((string) file_get_contents($path), true) : [];
+        return $merged;
     }
 
     /** @return iterable<string, string> */
     private function phpTranslations(string $locale): iterable {
-        foreach (glob($this->repoRoot() . "/lang/{$locale}/*.php") ?: [] as $file) {
-            $group = basename($file, '.php');
-            // validation.attributes sind Feldnamen, keine Anrede.
-            $data = (array) require $file;
-            if ($group === 'validation') {
-                unset($data['attributes']);
-            }
-            foreach ($this->flatten($data) as $key => $value) {
-                yield "lang/{$locale}/{$group}.php [{$key}]" => $value;
+        foreach ($this->catalogDirs() as $dir) {
+            foreach (glob("{$dir}/{$locale}/*.php") ?: [] as $file) {
+                $group = basename($file, '.php');
+                // validation.attributes sind Feldnamen, keine Anrede.
+                $data = (array) require $file;
+                if ($group === 'validation') {
+                    unset($data['attributes']);
+                }
+                foreach ($this->flatten($data) as $key => $value) {
+                    yield $this->relativePath($file) . " [{$key}]" => $value;
+                }
             }
         }
     }

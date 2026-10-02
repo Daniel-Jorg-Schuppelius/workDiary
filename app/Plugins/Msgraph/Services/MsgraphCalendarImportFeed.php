@@ -13,8 +13,8 @@ declare(strict_types=1);
 namespace App\Plugins\Msgraph\Services;
 
 use App\Models\Platform\Organization;
-use App\Models\Plugins\Msgraph\MsgraphConnection;
 use App\Plugins\Msgraph\Api\MsgraphCalendarClient;
+use App\Plugins\Msgraph\Models\MsgraphConnection;
 use App\Plugins\Support\Calendar\CalendarImportDocument;
 use App\Services\Import\Contracts\CalendarImportFeed;
 use App\Support\Sqid;

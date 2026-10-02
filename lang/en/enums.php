@@ -9,25 +9,6 @@
  */
 
 return [
-    'billbee' => [
-        'order_state' => [
-            1 => 'Ordered',
-            2 => 'Confirmed',
-            3 => 'Paid',
-            4 => 'Shipped',
-            5 => 'Complaint',
-            6 => 'Deleted',
-            7 => 'Completed',
-            8 => 'Canceled',
-            9 => 'Archived',
-            11 => '1st reminder',
-            12 => '2nd reminder',
-            13 => 'Packed',
-            14 => 'Offered',
-            15 => 'Payment reminder',
-            16 => 'In fulfillment',
-        ],
-    ],
     'ai' => [
         'family' => ['llm' => 'Language model (LLM)', 'translation' => 'Translation'],
         'verb' => ['formulate' => 'Formulate', 'summarize' => 'Summarize', 'classify' => 'Classify', 'explain' => 'Explain', 'find' => 'Find', 'translate' => 'Translate', 'extract' => 'Extract'],

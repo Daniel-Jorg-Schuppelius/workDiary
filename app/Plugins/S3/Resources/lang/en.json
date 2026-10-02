@@ -1,0 +1,6 @@
+{
+    ":count S3-Ziel(e) erreichbar.": ":count S3 target(s) reachable.",
+    "Kein S3-Backupziel eingerichtet.": "No S3 backup target configured.",
+    "S3-Ziel \":name\" nicht erreichbar (:class).": "S3 target \":name\" is unreachable (:class).",
+    "Verschlüsselte Offsite-Backups in einen S3-kompatiblen Objektspeicher (AWS S3, MinIO, Wasabi, Hetzner).": "Encrypted offsite backups to S3-compatible object storage (AWS S3, MinIO, Wasabi, Hetzner)."
+}

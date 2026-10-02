@@ -11,11 +11,11 @@
 namespace App\Plugins\Todoist;
 
 use App\Models\Platform\Organization;
-use App\Models\Plugins\Todoist\TodoistConnection;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{Plugin, PluginCapability, TaskSyncer};
 use App\Plugins\Support\PluginOrgContext;
 use App\Plugins\Todoist\Api\TodoistApiClient;
+use App\Plugins\Todoist\Models\TodoistConnection;
 use Throwable;
 
 /**
@@ -91,10 +91,10 @@ class TodoistPlugin extends AbstractPlugin implements \App\Plugins\Contracts\Slo
     /** Eigene Todoist-App je Organisation; leer = Instanz-App der Installation. */
     public function settingsSchema(): array {
         return [
-            \App\Plugins\Contracts\SettingsField::text('client_id', __('todoist.settings.client_id'),
-                help: __('todoist.settings.client_id_help'))->toArray(),
-            \App\Plugins\Contracts\SettingsField::password('client_secret', __('todoist.settings.client_secret'),
-                help: __('todoist.settings.client_secret_help'))->toArray(),
+            \App\Plugins\Contracts\SettingsField::text('client_id', __('todoist::todoist.settings.client_id'),
+                help: __('todoist::todoist.settings.client_id_help'))->toArray(),
+            \App\Plugins\Contracts\SettingsField::password('client_secret', __('todoist::todoist.settings.client_secret'),
+                help: __('todoist::todoist.settings.client_secret_help'))->toArray(),
         ];
     }
 

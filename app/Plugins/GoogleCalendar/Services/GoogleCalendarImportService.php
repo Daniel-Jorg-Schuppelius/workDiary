@@ -14,9 +14,9 @@ namespace App\Plugins\GoogleCalendar\Services;
 
 use App\Models\Calendar\Event;
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
-use App\Models\Plugins\GoogleCalendar\GoogleCalendarConnection;
 use App\Plugins\GoogleCalendar\Api\GoogleCalendarClient;
 use App\Plugins\GoogleCalendar\GoogleCalendarPlugin;
+use App\Plugins\GoogleCalendar\Models\GoogleCalendarConnection;
 use App\Plugins\Support\Calendar\{CalendarSeriesStager, RemoteCalendarPublishService};
 use App\Services\CloudIntake\StaleCheckpointException;
 use CommonToolkit\Entities\ICalendar\Document;
@@ -106,7 +106,7 @@ class GoogleCalendarImportService {
         }
         $reference = $references->get($remoteId);
         $status = (string) ($item['status'] ?? 'confirmed');
-        $subtitle = (string) ($connection->calendar_name ?? __('google_calendar.calendar.default'));
+        $subtitle = (string) ($connection->calendar_name ?? __('google_calendar::google_calendar.calendar.default'));
 
         // Abweichender oder abgesagter Einzeltermin einer Serie (MVP-977).
         $seriesId = $item['recurringEventId'] ?? null;
@@ -133,7 +133,7 @@ class GoogleCalendarImportService {
                 'calendar-deleted:' . $remoteId,
                 IntegrationInboxItem::CASE_UNMATCHED,
                 ['remote_id' => $remoteId],
-                (string) __('google_calendar.import.deleted_title'),
+                (string) __('google_calendar::google_calendar.import.deleted_title'),
                 $reference,
             )) {
                 $counters['deleted']++;
@@ -360,7 +360,7 @@ class GoogleCalendarImportService {
             'remote_snapshot' => $snapshot,
             'mapped_snapshot' => $mapped,
             'display_title' => $title !== '' ? $title : '—',
-            'display_subtitle' => (string) ($connection->calendar_name ?? __('google_calendar.calendar.default')),
+            'display_subtitle' => (string) ($connection->calendar_name ?? __('google_calendar::google_calendar.calendar.default')),
             'occurred_at' => now(),
         ]);
 

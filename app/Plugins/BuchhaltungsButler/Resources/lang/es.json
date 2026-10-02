@@ -1,0 +1,16 @@
+{
+    "API-Client": "Cliente de API",
+    "API-Key (Mandant)": "Clave de API (cliente)",
+    "API-Secret": "Secreto de API",
+    "Ausgestellte Rechnungen als Beleg pushen": "Enviar facturas emitidas como comprobantes",
+    "BuchhaltungsButler ist für diese Organisation nicht konfiguriert (API-Client/-Secret/-Key fehlen).": "BuchhaltungsButler no está configurado para esta organización (faltan cliente/secreto/clave de API).",
+    "BuchhaltungsButler ist nicht konfiguriert (API-Client/-Secret/-Key fehlen).": "BuchhaltungsButler no está configurado (faltan cliente/secreto/clave de API).",
+    "BuchhaltungsButler lehnt die Zugangsdaten ab (401) — API-Client/-Secret prüfen.": "BuchhaltungsButler rechaza las credenciales (401): compruebe cliente/secreto de API.",
+    "BuchhaltungsButler → Einstellungen → Schnittstellen & API-Zugang.": "BuchhaltungsButler → Configuración → Interfaces y acceso API.",
+    "BuchhaltungsButler-API antwortet mit Fehlerstatus :status.": "La API de BuchhaltungsButler responde con el estado de error :status.",
+    "BuchhaltungsButler-API erreichbar.": "API de BuchhaltungsButler accesible.",
+    "BuchhaltungsButler-API nicht erreichbar.": "API de BuchhaltungsButler no accesible.",
+    "Die BuchhaltungsButler-API ist für diesen Account nicht freigeschaltet (kostenpflichtiges Add-on) — im BHB-Tarif buchen.": "La API de BuchhaltungsButler no está habilitada para esta cuenta (complemento de pago): contrátela en su tarifa de BHB.",
+    "Wird als Formfeld api_key in jedem Request mitgesendet (BHB-Vertrag).": "Se envía como campo de formulario api_key en cada solicitud (contrato de BHB).",
+    "Übergibt ausgestellte lokale Rechnungen als Belege an BuchhaltungsButler (Basic Auth + api_key): idempotenter Push über die Integrations-Outbox mit sha256-Nachweis; die Rechnungshoheit bleibt bei WorkDiary, die Buchführung bei BuchhaltungsButler.": "Envía las facturas locales emitidas como comprobantes a BuchhaltungsButler (basic auth + api_key): envío idempotente por la outbox de integración con prueba sha256; la autoridad de facturación queda en WorkDiary, la contabilidad en BuchhaltungsButler."
+}

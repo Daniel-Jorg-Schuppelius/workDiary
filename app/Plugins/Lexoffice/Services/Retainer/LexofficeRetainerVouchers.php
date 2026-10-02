@@ -16,8 +16,8 @@ use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\Organization;
-use App\Models\Plugins\Lexoffice\LexofficeVoucher;
 use App\Plugins\Lexoffice\{LexofficeInvoiceService, LexofficePlugin, LexofficeVoucherNetAmount};
+use App\Plugins\Lexoffice\Models\LexofficeVoucher;
 use App\Plugins\Lexoffice\VoucherTypes;
 use App\Services\Billing\Contracts\RetainerVoucherLinks;
 use App\Services\Billing\{CustomerAccountStatementService, RetainerVoucherRef};
@@ -114,7 +114,7 @@ class LexofficeRetainerVouchers implements RetainerVoucherLinks {
                 $voucher->external_id,
                 $this->netAmounts->paidNet($voucher, $paidGross, $total),
                 $paidOn,
-                (string) __('customer-billing.channel_payment_note', ['number' => (string) $voucher->voucher_number, 'system' => 'Lexoffice']),
+                (string) __('lexoffice::customer-billing.channel_payment_note', ['number' => (string) $voucher->voucher_number, 'system' => 'Lexoffice']),
                 $statement,
             );
 
@@ -235,7 +235,7 @@ class LexofficeRetainerVouchers implements RetainerVoucherLinks {
         $allowed = $voucher instanceof LexofficeVoucher && $organization !== null
             && $this->candidates($organization, $customerId, (int) $statement->id)->contains('id', $voucher->id);
         if (! $allowed) {
-            throw ValidationException::withMessages(['voucher' => __('customer-billing.voucher_not_found')]);
+            throw ValidationException::withMessages(['voucher' => __('lexoffice::customer-billing.voucher_not_found')]);
         }
 
         $this->attach($statement, $voucher);

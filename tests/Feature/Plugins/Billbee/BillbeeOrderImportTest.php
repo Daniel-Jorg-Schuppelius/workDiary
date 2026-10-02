@@ -13,8 +13,8 @@ namespace Tests\Feature\Plugins\Billbee;
 use App\Models\Customer\Customer;
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use App\Models\Platform\{Organization, PluginSetting, User};
-use App\Models\Plugins\Billbee\BillbeeOrder;
 use App\Plugins\Billbee\BillbeePlugin;
+use App\Plugins\Billbee\Models\BillbeeOrder;
 use App\Plugins\Billbee\Services\BillbeeOrderImportService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Psr\Http\Message\RequestInterface;
@@ -167,7 +167,7 @@ class BillbeeOrderImportTest extends TestCase {
         $response->assertOk();
         $response->assertSee('ORD-1001');
         $response->assertSee('Amazon');
-        $response->assertSee(__('billbee.status.open_assignment'));
+        $response->assertSee(__('billbee::billbee.status.open_assignment'));
     }
 
     public function test_admin_page_denied_for_non_admin(): void {

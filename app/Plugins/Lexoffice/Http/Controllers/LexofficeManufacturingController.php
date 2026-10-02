@@ -35,7 +35,7 @@ class LexofficeManufacturingController extends Controller {
             return back()->with('error', ErrorText::for($e));
         }
 
-        return back()->with('success', __('manufacturing.order.flash.lexoffice_pushed'));
+        return back()->with('success', __('lexoffice::manufacturing.order.flash.lexoffice_pushed'));
     }
 
     public function pushOrderConfirmation(

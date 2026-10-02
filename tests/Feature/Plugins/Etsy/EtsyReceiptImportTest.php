@@ -13,8 +13,8 @@ namespace Tests\Feature\Plugins\Etsy;
 use App\Models\Customer\Customer;
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use App\Models\Platform\{Organization, PluginSetting, User};
-use App\Models\Plugins\Etsy\{EtsyConnection, EtsyReceipt};
 use App\Plugins\Etsy\EtsyPlugin;
+use App\Plugins\Etsy\Models\{EtsyConnection, EtsyReceipt};
 use App\Plugins\Etsy\Services\EtsyReceiptImportService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Psr\Http\Message\RequestInterface;
@@ -271,7 +271,7 @@ class EtsyReceiptImportTest extends TestCase {
         $response->assertOk();
         $response->assertSee('900');
         $response->assertSee('Max Muster');
-        $response->assertSee(__('etsy.status.open_assignment'));
+        $response->assertSee(__('etsy::etsy.status.open_assignment'));
     }
 
     public function test_admin_page_denied_for_non_admin(): void {

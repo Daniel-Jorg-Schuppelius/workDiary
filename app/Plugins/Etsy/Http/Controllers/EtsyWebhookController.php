@@ -13,9 +13,9 @@ declare(strict_types=1);
 namespace App\Plugins\Etsy\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\Plugins\Etsy\{EtsyConnection, EtsyWebhookDelivery};
 use App\Plugins\Etsy\EtsyConfig;
 use App\Plugins\Etsy\Jobs\EtsyWebhookIngestJob;
+use App\Plugins\Etsy\Models\{EtsyConnection, EtsyWebhookDelivery};
 use App\Plugins\Support\{RecordsWebhookDeliveries, SvixWebhookSignature};
 use Illuminate\Http\{JsonResponse, Request};
 

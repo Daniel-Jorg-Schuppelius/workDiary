@@ -33,7 +33,7 @@ enum LexofficeHandoverStatus: string implements HasLabel {
     case Failed = 'failed';
 
     public function label(): string {
-        return (string) __('lexware.handover.status.' . $this->value);
+        return (string) __('lexoffice::lexware.handover.status.' . $this->value);
     }
 
     public function tone(): string {

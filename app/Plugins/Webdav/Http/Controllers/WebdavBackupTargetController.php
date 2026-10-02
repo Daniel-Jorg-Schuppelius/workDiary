@@ -78,7 +78,7 @@ class WebdavBackupTargetController extends Controller {
             // Nur die Fehlerklasse — nie Server-URL/Passwort.
             $connection->recordConnectionFailure(class_basename($e));
 
-            return back()->with('error', __('backup_targets.webdav.flash.selftest_failed', ['class' => class_basename($e)]));
+            return back()->with('error', __('webdav::backup_targets.webdav.flash.selftest_failed', ['class' => class_basename($e)]));
         }
 
         $connection->audit('backupTarget.connected', ['by_user_id' => (int) $admin->id, 'provider' => BackupProvider::Webdav->value]);
@@ -106,12 +106,12 @@ class WebdavBackupTargetController extends Controller {
             'server_url' => ['required', 'string', 'max:512', function (string $attribute, mixed $value, callable $fail) use ($allowPrivate): void {
                 $url = trim((string) $value);
                 if (! str_starts_with(strtolower($url), 'https://')) {
-                    $fail((string) __('backup_targets.webdav.validation.https_required'));
+                    $fail((string) __('webdav::backup_targets.webdav.validation.https_required'));
 
                     return;
                 }
                 if (! $allowPrivate && ! UrlSafety::isAcceptableExternalHttpUrl($url)) {
-                    $fail((string) __('backup_targets.webdav.validation.unsafe_url'));
+                    $fail((string) __('webdav::backup_targets.webdav.validation.unsafe_url'));
                 }
             }],
             'username' => ['required', 'string', 'max:190'],

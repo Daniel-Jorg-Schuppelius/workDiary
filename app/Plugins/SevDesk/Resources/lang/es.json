@@ -1,0 +1,9 @@
+{
+    "Benutzergebundener API-Token aus dem sevDesk-Account (Einstellungen → Benutzer).": "Token de API vinculado al usuario desde la cuenta de sevDesk (Configuración → Usuarios).",
+    "sevDesk ist nicht konfiguriert (API-Token fehlt).": "sevDesk no está configurado (falta el token de API).",
+    "sevDesk lehnt den API-Token ab (401) — Token prüfen.": "sevDesk rechaza el token de API (401): compruebe el token.",
+    "sevDesk-API antwortet mit Fehlerstatus :status.": "La API de sevDesk responde con el estado de error :status.",
+    "sevDesk-API erreichbar (Buchhaltung :version).": "API de sevDesk accesible (contabilidad :version).",
+    "sevDesk-API nicht erreichbar.": "API de sevDesk no accesible.",
+    "Übergibt bestätigte Abrechnungspositionen als Rechnungsentwurf an sevDesk (API-Token gegen my.sevdesk.de): Kontakt-Projektion, idempotente Übergabe mit Quellmarker, Erkennung der Buchhaltungs-Version 1.0/2.0 je Mandant.": "Transfiere las posiciones de facturación confirmadas a sevDesk como borrador de factura (token de API contra my.sevdesk.de): proyección de contactos, entrega idempotente con marcador de origen, detección de la versión de contabilidad 1.0/2.0 por mandante."
+}

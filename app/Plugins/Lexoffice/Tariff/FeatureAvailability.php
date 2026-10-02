@@ -48,7 +48,7 @@ final class FeatureAvailability {
     ) {}
 
     public function stateLabel(): string {
-        return (string) __('lexware.state.' . $this->state);
+        return (string) __('lexoffice::lexware.state.' . $this->state);
     }
 
     public function stateTone(): string {

@@ -31,7 +31,7 @@ class SchemaDumpFreshnessTest extends TestCase {
     public function test_schema_dumps_contain_the_latest_migrations(): void {
         $migrations = array_map(
             fn (string $path): string => basename($path, '.php'),
-            $this->filesUnder('database/migrations', '/\.php$/'),
+            $this->migrationFiles(),
         );
         sort($migrations);
         $this->assertNotEmpty($migrations);

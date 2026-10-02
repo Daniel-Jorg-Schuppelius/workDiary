@@ -34,15 +34,15 @@ class SharepointConflictController extends Controller {
     public function __construct(private readonly DocumentConflictResolver $resolver) {}
 
     public function overwrite(IntegrationInboxItem $item): RedirectResponse {
-        return $this->run($item, fn () => $this->resolver->overwrite(new SharepointMirrorTarget(), $item), __('sharepoint.conflict.flash.overwritten'));
+        return $this->run($item, fn () => $this->resolver->overwrite(new SharepointMirrorTarget(), $item), __('sharepoint::sharepoint.conflict.flash.overwritten'));
     }
 
     public function import(IntegrationInboxItem $item): RedirectResponse {
-        return $this->run($item, fn () => $this->resolver->importAsVersion(new SharepointMirrorTarget(), $item), __('sharepoint.conflict.flash.imported'));
+        return $this->run($item, fn () => $this->resolver->importAsVersion(new SharepointMirrorTarget(), $item), __('sharepoint::sharepoint.conflict.flash.imported'));
     }
 
     public function detach(IntegrationInboxItem $item): RedirectResponse {
-        return $this->run($item, fn () => $this->resolver->detach(new SharepointMirrorTarget(), $item), __('sharepoint.conflict.flash.detached'));
+        return $this->run($item, fn () => $this->resolver->detach(new SharepointMirrorTarget(), $item), __('sharepoint::sharepoint.conflict.flash.detached'));
     }
 
     private function run(IntegrationInboxItem $item, callable $action, string $success): RedirectResponse {
@@ -51,7 +51,7 @@ class SharepointConflictController extends Controller {
         try {
             $action();
         } catch (Throwable $e) {
-            return back()->with('error', __('sharepoint.conflict.flash.failed', ['reason' => ErrorText::for($e)]));
+            return back()->with('error', __('sharepoint::sharepoint.conflict.flash.failed', ['reason' => ErrorText::for($e)]));
         }
 
         return back()->with('success', $success);

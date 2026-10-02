@@ -1,0 +1,13 @@
+{
+    "Telefonauskunft": "Guía telefónica",
+    "Auskunfts-Endpunkte": "Puntos de conexión de la guía",
+    "Löst unbekannte Rufnummern über selbst gestellte HTTP-Auskunftsdienste in Namen auf und füllt die fehlenden Kontaktdaten an den passenden Stellen (Anruf-Import, CTI, Stammdaten) — als Vorschlag, nie automatisch.": "Resuelve números desconocidos en nombres mediante servicios de guía HTTP propios y rellena los datos de contacto que faltan donde corresponde (importación de llamadas, CTI, datos maestros) — como sugerencia, nunca automáticamente.",
+    "Ein Dienst je Zeile: HTTPS-URL, optional gefolgt von „|Token\" (Bearer). Die Rufnummer wird in E.164 gesendet — über den Platzhalter {number} in der URL oder als Query-Parameter number. Erwartete Antwort: JSON {\"name\": \"…\"}; leer = kein Treffer. Nur einsetzen, wenn der Versand der Anrufernummer an diese Dienste datenschutzrechtlich gedeckt ist.": "Un servicio por línea: una URL HTTPS, opcionalmente seguida de «|token» (Bearer). El número se envía en E.164 — mediante el marcador {number} en la URL o como parámetro de consulta number. Respuesta esperada: JSON {\"name\": \"…\"}; vacío = sin resultado. Úsalo solo si el envío del número del llamante a estos servicios está amparado por la normativa de protección de datos.",
+    "Kein Auskunfts-Endpunkt hinterlegt.": "No hay ningún punto de conexión de guía configurado.",
+    ":count Auskunfts-Endpunkt(e) konfiguriert.": ":count punto(s) de conexión de guía configurado(s).",
+    "Aus Telefonauskunft füllen": "Rellenar desde la guía telefónica",
+    "Für die Telefonauskunft ist keine Rufnummer hinterlegt.": "No hay ningún número registrado para la consulta de la guía.",
+    "Die Telefonauskunft hat keinen Namen zu dieser Rufnummer geliefert.": "La guía telefónica no devolvió ningún nombre para este número.",
+    "Name und Firma sind bereits gefüllt — nichts zu übernehmen.": "El nombre y la empresa ya están rellenos — nada que aplicar.",
+    "Aus der Telefonauskunft übernommen: :name": "Aplicado desde la guía telefónica: :name"
+}

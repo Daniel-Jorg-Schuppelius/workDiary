@@ -1,0 +1,8 @@
+{
+    "Erzeugt FedEx-Versandlabels (Ship API, OAuth2 Client-Credentials), storniert Sendungen und verfolgt sie. Pro Organisation mit Client-ID/Secret und Account-Nummer konfiguriert; Label als PDF.": "Crea etiquetas de envío FedEx (Ship API, OAuth2 client credentials), cancela envíos y realiza su seguimiento. Configurado por organización con ID/secreto de cliente y número de cuenta; etiqueta en PDF.",
+    "FedEx-API nicht erreichbar oder Zugangsdaten ungültig.": "API de FedEx inaccesible o credenciales no válidas.",
+    "FedEx-API-Fehler (:class).": "Error de la API de FedEx (:class).",
+    "FedEx-Anbindung ist deaktiviert.": "La conexión FedEx está desactivada.",
+    "Keine FedEx-Anbindung hinterlegt.": "No hay ninguna conexión FedEx configurada.",
+    "Verbunden mit der FedEx-API.": "Conectado a la API de FedEx."
+}

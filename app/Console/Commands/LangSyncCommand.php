@@ -47,7 +47,9 @@ class LangSyncCommand extends Command {
 
                 continue;
             }
-            $this->syncJson($code, $fill, $prune);
+            foreach (array_keys(Translations::catalogs()) as $namespace) {
+                $this->syncJson($code, $namespace, $fill, $prune);
+            }
             $this->syncNamespaces($code, $fill);
         }
 
@@ -56,9 +58,12 @@ class LangSyncCommand extends Command {
         return self::SUCCESS;
     }
 
-    private function syncJson(string $code, bool $fill, bool $prune): void {
-        $ref = Translations::jsonReferenceKeys();
-        $existing = Translations::loadJson($code);
+    private function syncJson(string $code, string $namespace, bool $fill, bool $prune): void {
+        $ref = Translations::jsonReferenceKeys($namespace);
+        if ($ref === [] && $namespace !== '') {
+            return;
+        }
+        $existing = Translations::loadJson($code, $namespace);
         $out = [];
         $added = 0;
         foreach ($ref as $key) {
@@ -81,8 +86,8 @@ class LangSyncCommand extends Command {
             $pruned = count(array_diff_key($existing, array_fill_keys($ref, true)));
         }
 
-        Translations::writeJson($code, $out);
-        $this->line(sprintf('%s.json: +%d gefüllt, -%d entfernt (gesamt %d)', $code, $added, $pruned, count($out)));
+        Translations::writeJson($code, $out, $namespace);
+        $this->line(sprintf('%s%s.json: +%d gefüllt, -%d entfernt (gesamt %d)', $namespace === '' ? '' : $namespace . '::', $code, $added, $pruned, count($out)));
     }
 
     private function syncNamespaces(string $code, bool $fill): void {
@@ -93,7 +98,7 @@ class LangSyncCommand extends Command {
         // bestehende Dateien NIE anfassen (handformatierte Übersetzungen bleiben erhalten).
         $created = 0;
         foreach (Translations::namespaceFiles() as $file) {
-            if (File::isFile(Translations::langPath($code) . '/' . $file)) {
+            if (File::isFile(Translations::phpPath($code, $file))) {
                 continue;
             }
             Translations::writeRequireStub($code, $file);

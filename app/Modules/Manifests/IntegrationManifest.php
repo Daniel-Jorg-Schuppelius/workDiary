@@ -33,7 +33,6 @@ final class IntegrationManifest extends Manifest {
     public function folders(): array {
         return [
             'Integration',
-            'Plugins',
             'Import',
             'Export',
             'Sync',

@@ -12,7 +12,7 @@ namespace Tests\Feature\Organization;
 
 use App\Models\Audit\OrganizationAuditLog;
 use App\Models\Platform\Organization;
-use App\Models\Plugins\Lexoffice\LexofficeVoucher;
+use App\Plugins\Lexoffice\Models\LexofficeVoucher;
 use App\Services\Org\OrganizationLifecycleService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\{DB, Storage};

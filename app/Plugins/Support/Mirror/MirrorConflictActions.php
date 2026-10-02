@@ -17,16 +17,17 @@ use App\Support\Ui\UiAction;
 
 /**
  * Ablage-Spiegelkonflikt (Feature 058 Rang 18 / MVP-330): Datei-Divergenz,
- * kein Feld-Diff. Routen `admin.<id>.conflict.*`, Texte `<id>.conflict.*`.
+ * kein Feld-Diff. Routen `admin.<id>.conflict.*`, Texte `<id>::<id>.conflict.*`.
  */
 trait MirrorConflictActions {
     public function inboxConflictActions(IntegrationInboxItem $item): array {
         $id = static::ID;
+        $text = $id . '::' . $id . '.conflict.';
 
         return [
-            new UiAction('upload', (string) __($id . '.conflict.action.overwrite'), route('admin.' . $id . '.conflict.overwrite', $item), post: true, tone: 'primary', confirm: (string) __($id . '.conflict.confirm.overwrite')),
-            new UiAction('download', (string) __($id . '.conflict.action.import'), route('admin.' . $id . '.conflict.import', $item), post: true, tone: 'outline', confirm: (string) __($id . '.conflict.confirm.import')),
-            new UiAction('link_off', (string) __($id . '.conflict.action.detach'), route('admin.' . $id . '.conflict.detach', $item), post: true, confirm: (string) __($id . '.conflict.confirm.detach')),
+            new UiAction('upload', (string) __($text . 'action.overwrite'), route('admin.' . $id . '.conflict.overwrite', $item), post: true, tone: 'primary', confirm: (string) __($text . 'confirm.overwrite')),
+            new UiAction('download', (string) __($text . 'action.import'), route('admin.' . $id . '.conflict.import', $item), post: true, tone: 'outline', confirm: (string) __($text . 'confirm.import')),
+            new UiAction('link_off', (string) __($text . 'action.detach'), route('admin.' . $id . '.conflict.detach', $item), post: true, confirm: (string) __($text . 'confirm.detach')),
         ];
     }
 

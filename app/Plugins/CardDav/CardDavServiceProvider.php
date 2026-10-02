@@ -34,6 +34,6 @@ class CardDavServiceProvider extends PluginServiceProviderBase {
 
     protected function bootPlugin(): void {
         // Verbindungszustand für Diagnose und Ablaufprüfung (MVP-1044).
-        $this->app->make(\App\Services\Diagnostics\ConnectionHealthModels::class)->register('carddav', \App\Models\Plugins\CardDav\CardDavConnection::class);
+        $this->app->make(\App\Services\Diagnostics\ConnectionHealthModels::class)->register('carddav', \App\Plugins\CardDav\Models\CardDavConnection::class);
     }
 }

@@ -11,9 +11,9 @@
 namespace Tests\Feature\Plugins\Etsy;
 
 use App\Models\Platform\PluginSetting;
-use App\Models\Plugins\Etsy\{EtsyConnection, EtsyReceipt, EtsyWebhookDelivery};
 use App\Plugins\Etsy\EtsyPlugin;
 use App\Plugins\Etsy\Jobs\EtsyWebhookIngestJob;
+use App\Plugins\Etsy\Models\{EtsyConnection, EtsyReceipt, EtsyWebhookDelivery};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Testing\TestResponse;

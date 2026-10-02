@@ -23,7 +23,6 @@ return [
     ],
     'field' => [
         'provider' => 'Provider',
-        'name' => 'Name',
         'account' => 'Konto',
         'root_folder' => 'Stammordner',
         'routes' => 'Regeln',
@@ -39,10 +38,6 @@ return [
         'load_failed' => 'Container konnten nicht geladen werden — bitte ID manuell eintragen.',
     ],
     'action' => [
-        'connect_dropbox' => 'Dropbox verbinden',
-        'connect_microsoft' => 'Microsoft 365 verbinden',
-        'connect_google' => 'Google Drive verbinden',
-        'connect_nextcloud' => 'Nextcloud verbinden',
         'preview' => 'Vorschau',
         'save_folder' => 'Ordner übernehmen',
         'disconnect' => 'Trennen',
@@ -62,52 +57,6 @@ return [
         'disconnected' => 'Verbindung getrennt — Nachweise und importierte Dokumente bleiben erhalten.',
         'route_saved' => 'Ordnerregel gespeichert.',
         'route_deleted' => 'Ordnerregel gelöscht.',
-    ],
-    'dropbox' => [
-        'description' => 'Übernimmt Dokumente lesend aus überwachten Dropbox-Ordnern (Cloud-Dokumenteingang) — mit Ordnerregeln, Übergabenachweis und Inbox für unklare Fälle.',
-        'health' => [
-            'not_configured' => 'Dropbox-App-Schlüssel nicht konfiguriert.',
-            'no_org_context' => 'Kein Organisationskontext (Systemlauf).',
-            'attention' => 'Mindestens eine Dropbox-Verbindung braucht Aufmerksamkeit (Re-Auth/blockiert).',
-            'backup_attention' => 'Das Dropbox-Backupziel braucht Aufmerksamkeit (Re-Auth/blockiert) — betrifft alle Organisationen.',
-            'ok' => 'Dropbox-Verbindungen in Ordnung.',
-            'error' => 'Health-Prüfung fehlgeschlagen (:class).',
-        ],
-    ],
-    'google' => [
-        'description' => 'Übernimmt Dokumente lesend aus überwachten Google-Drive-Ordnern (Cloud-Dokumenteingang) — Meine Ablage und Shared Drives; Rollout bis zur Google-OAuth-Verifikation blockiert.',
-        'health' => [
-            'not_configured' => 'Google-Drive-Client-Schlüssel nicht konfiguriert.',
-            'no_org_context' => 'Kein Organisationskontext (Systemlauf).',
-            'attention' => 'Mindestens eine Google-Drive-Verbindung braucht Aufmerksamkeit (Re-Auth/blockiert).',
-            'backup_attention' => 'Das Google-Drive-Backupziel braucht Aufmerksamkeit (Re-Auth/blockiert) — betrifft alle Organisationen.',
-            'ok' => 'Google-Drive-Verbindungen in Ordnung.',
-            'error' => 'Health-Prüfung fehlgeschlagen (:class).',
-        ],
-    ],
-    'nextcloud' => [
-        'description' => 'Übernimmt Dokumente lesend aus überwachten Nextcloud-Ordnern (WebDAV) — mit Ordnerregeln, Übergabenachweis und Inbox für unklare Fälle.',
-        'health' => [
-            'no_org_context' => 'Kein Organisationskontext (Systemlauf).',
-            'attention' => 'Mindestens eine Nextcloud-Verbindung braucht Aufmerksamkeit (Re-Auth/blockiert).',
-            'backup_attention' => 'Das Nextcloud-Backupziel braucht Aufmerksamkeit (Re-Auth/blockiert) — betrifft alle Organisationen.',
-            'ok' => 'Nextcloud-Verbindungen in Ordnung.',
-            'error' => 'Health-Prüfung fehlgeschlagen (:class).',
-        ],
-        'connect_title' => 'Nextcloud verbinden',
-        'connect_legend' => 'Zugangsdaten',
-        'connect_submit' => 'Verbinden',
-        'field' => [
-            'server_url' => 'Server-URL',
-            'server_url_help' => 'Nur HTTPS. Beispiel: https://cloud.example.com',
-            'username' => 'Benutzername',
-            'app_password' => 'App-Passwort',
-            'app_password_help' => 'Ein widerrufbares App-Passwort (Einstellungen › Sicherheit), nie das reguläre Kontopasswort.',
-        ],
-        'validation' => [
-            'https_required' => 'Die Server-URL muss mit https:// beginnen.',
-            'unsafe_url' => 'Die Server-URL muss öffentlich erreichbar sein (kein internes/privates Ziel).',
-        ],
     ],
     'route' => [
         'heading' => 'Ordnerregeln',

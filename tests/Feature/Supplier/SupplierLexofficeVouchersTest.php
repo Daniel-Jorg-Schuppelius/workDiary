@@ -12,9 +12,9 @@ namespace Tests\Feature\Supplier;
 
 use App\Models\Integration\ExternalReference;
 use App\Models\Platform\{PluginSetting, User};
-use App\Models\Plugins\Lexoffice\LexofficeVoucher;
 use App\Models\Supplier\Supplier;
 use App\Plugins\Lexoffice\LexofficePlugin;
+use App\Plugins\Lexoffice\Models\LexofficeVoucher;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;

@@ -13,8 +13,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Plugins;
 
 use App\Models\Platform\Organization;
-use App\Models\Plugins\Lexoffice\LexofficeVoucher;
 use App\Plugins\Lexoffice\{LexofficeVoucherFileMissingException, LexofficeVoucherFileService, LexofficeVoucherSync};
+use App\Plugins\Lexoffice\Models\LexofficeVoucher;
 use App\Plugins\Support\PluginApiClient;
 use GuzzleHttp\{Client, HandlerStack};
 use GuzzleHttp\Handler\MockHandler;

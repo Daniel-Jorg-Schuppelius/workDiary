@@ -1,0 +1,8 @@
+{
+    "Keine WebDAV-Ablage hinterlegt.": "Nessun archivio WebDAV registrato.",
+    "Spiegelt freigegebene Dokumente in eine externe WebDAV-Ablage (Nextcloud/ownCloud) — mit Übergabenachweis und Konfliktanzeige, ohne Rückkanal.": "Replica i documenti approvati in un archivio WebDAV esterno (Nextcloud/ownCloud) — con prova di consegna e segnalazione dei conflitti, senza canale di ritorno.",
+    "WebDAV": "WebDAV",
+    "WebDAV-Ablage ist deaktiviert oder unvollständig.": "L'archivio WebDAV è disattivato o incompleto.",
+    "WebDAV-Ablage nicht erreichbar oder Zugangsdaten ungültig.": "Archivio WebDAV non raggiungibile o credenziali non valide.",
+    "WebDAV-Fehler (:class).": "Errore WebDAV (:class)."
+}

@@ -32,10 +32,10 @@ class LexofficeOrderConfirmationService extends LexofficeOrderDocumentService {
     }
 
     protected function noCustomerErrorKey(): string {
-        return 'finance.error.lexoffice_oc_no_customer';
+        return 'lexoffice::finance.error.lexoffice_oc_no_customer';
     }
 
     protected function notLinkedErrorKey(): string {
-        return 'finance.error.lexoffice_oc_not_linked';
+        return 'lexoffice::finance.error.lexoffice_oc_not_linked';
     }
 }

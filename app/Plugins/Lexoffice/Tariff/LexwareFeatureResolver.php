@@ -69,15 +69,15 @@ class LexwareFeatureResolver {
             : [LexwareTariffService::CHANNEL_MANUAL];
 
         [$state, $reason] = match (true) {
-            $coverage === LexwareCoverage::Lexware => [FeatureAvailability::STATE_LEXWARE, 'lexware.reason.included'],
-            $coverage === LexwareCoverage::Expansion => [FeatureAvailability::STATE_PLANNED, 'lexware.reason.planned'],
-            $coverage === LexwareCoverage::Unknown && $localAvailable && $localActive => [FeatureAvailability::STATE_AVAILABLE, 'lexware.reason.unknown_plan_local'],
-            $coverage === LexwareCoverage::Unknown => [FeatureAvailability::STATE_CHECK_AVAILABILITY, 'lexware.reason.unknown_plan'],
-            ! $feature->isLocalMvp() => [FeatureAvailability::STATE_PLANNED, 'lexware.reason.planned'],
-            ! $moduleOn => [FeatureAvailability::STATE_SETUP_REQUIRED, 'lexware.reason.module_missing'],
-            ! $billsLocally => [FeatureAvailability::STATE_SETUP_REQUIRED, 'lexware.reason.billing_external'],
-            ! $hasRight => [FeatureAvailability::STATE_SETUP_REQUIRED, 'lexware.reason.right_missing'],
-            ! $localActive => [FeatureAvailability::STATE_SETUP_REQUIRED, 'lexware.reason.not_activated'],
+            $coverage === LexwareCoverage::Lexware => [FeatureAvailability::STATE_LEXWARE, 'lexoffice::lexware.reason.included'],
+            $coverage === LexwareCoverage::Expansion => [FeatureAvailability::STATE_PLANNED, 'lexoffice::lexware.reason.planned'],
+            $coverage === LexwareCoverage::Unknown && $localAvailable && $localActive => [FeatureAvailability::STATE_AVAILABLE, 'lexoffice::lexware.reason.unknown_plan_local'],
+            $coverage === LexwareCoverage::Unknown => [FeatureAvailability::STATE_CHECK_AVAILABILITY, 'lexoffice::lexware.reason.unknown_plan'],
+            ! $feature->isLocalMvp() => [FeatureAvailability::STATE_PLANNED, 'lexoffice::lexware.reason.planned'],
+            ! $moduleOn => [FeatureAvailability::STATE_SETUP_REQUIRED, 'lexoffice::lexware.reason.module_missing'],
+            ! $billsLocally => [FeatureAvailability::STATE_SETUP_REQUIRED, 'lexoffice::lexware.reason.billing_external'],
+            ! $hasRight => [FeatureAvailability::STATE_SETUP_REQUIRED, 'lexoffice::lexware.reason.right_missing'],
+            ! $localActive => [FeatureAvailability::STATE_SETUP_REQUIRED, 'lexoffice::lexware.reason.not_activated'],
             default => [FeatureAvailability::STATE_AVAILABLE, null],
         };
 

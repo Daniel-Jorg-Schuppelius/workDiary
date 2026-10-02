@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Plugins\CardDav\Services;
 
-use App\Models\Plugins\CardDav\CardDavConnection;
 use App\Plugins\CardDav\Contracts\CardDavGateway;
+use App\Plugins\CardDav\Models\CardDavConnection;
 use MStilkerich\CardDavClient\{Account, AddressbookCollection, Config};
 use MStilkerich\CardDavClient\Services\{Discovery, Sync};
 use Throwable;

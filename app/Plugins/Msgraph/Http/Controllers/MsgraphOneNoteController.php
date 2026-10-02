@@ -11,9 +11,9 @@
 namespace App\Plugins\Msgraph\Http\Controllers;
 
 use App\Models\Platform\User;
-use App\Models\Plugins\Msgraph\MsgraphOneNoteConnection;
 use App\Plugins\Msgraph\Api\{MsgraphOneNoteClient, MsgraphOneNoteOAuth};
-use App\Plugins\Msgraph\MsgraphConfig;
+use App\Plugins\Msgraph\Models\MsgraphOneNoteConnection;
+use App\Plugins\Msgraph\{MsgraphConfig, MsgraphPlugin};
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
 use App\Plugins\Support\{ConnectionOAuthController, PluginOAuthGrant};
 use Illuminate\Database\Eloquent\Model;
@@ -51,6 +51,10 @@ class MsgraphOneNoteController extends ConnectionOAuthController {
 
     protected function pluginKey(): string {
         return 'msgraph_onenote';
+    }
+
+    protected function pluginId(): string {
+        return MsgraphPlugin::ID;
     }
 
     protected function connectedStatus(): string {

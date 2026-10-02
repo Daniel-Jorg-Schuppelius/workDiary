@@ -1,0 +1,13 @@
+{
+    "Telefonauskunft": "Phone directory",
+    "Auskunfts-Endpunkte": "Directory endpoints",
+    "Löst unbekannte Rufnummern über selbst gestellte HTTP-Auskunftsdienste in Namen auf und füllt die fehlenden Kontaktdaten an den passenden Stellen (Anruf-Import, CTI, Stammdaten) — als Vorschlag, nie automatisch.": "Resolves unknown phone numbers into names via self-hosted HTTP directory services and fills the missing contact data where it belongs (call import, CTI, master data) — as a suggestion, never automatically.",
+    "Ein Dienst je Zeile: HTTPS-URL, optional gefolgt von „|Token\" (Bearer). Die Rufnummer wird in E.164 gesendet — über den Platzhalter {number} in der URL oder als Query-Parameter number. Erwartete Antwort: JSON {\"name\": \"…\"}; leer = kein Treffer. Nur einsetzen, wenn der Versand der Anrufernummer an diese Dienste datenschutzrechtlich gedeckt ist.": "One service per line: an HTTPS URL, optionally followed by „|token\" (Bearer). The phone number is sent in E.164 — via the {number} placeholder in the URL or as the number query parameter. Expected response: JSON {\"name\": \"…\"}; empty = no match. Only use this if sending the caller's number to these services is covered by data protection law.",
+    "Kein Auskunfts-Endpunkt hinterlegt.": "No directory endpoint configured.",
+    ":count Auskunfts-Endpunkt(e) konfiguriert.": ":count directory endpoint(s) configured.",
+    "Aus Telefonauskunft füllen": "Fill from phone directory",
+    "Für die Telefonauskunft ist keine Rufnummer hinterlegt.": "No phone number stored for the directory lookup.",
+    "Die Telefonauskunft hat keinen Namen zu dieser Rufnummer geliefert.": "The phone directory returned no name for this number.",
+    "Name und Firma sind bereits gefüllt — nichts zu übernehmen.": "Name and company are already filled — nothing to apply.",
+    "Aus der Telefonauskunft übernommen: :name": "Applied from the phone directory: :name"
+}

@@ -11,8 +11,8 @@
 namespace App\Plugins\Lexoffice\Services;
 
 use App\Models\Invoicing\Invoice;
-use App\Models\Plugins\Lexoffice\{LexofficeVoucher, LexofficeVoucherLine};
 use App\Plugins\Lexoffice\{LexofficeInvoiceService, LexofficePlugin};
+use App\Plugins\Lexoffice\Models\{LexofficeVoucher, LexofficeVoucherLine};
 use App\Plugins\Lexoffice\VoucherTypes;
 use App\Services\Billing\Contracts\ExternalRevenueSource;
 use App\Services\Billing\Dto\ExternalProductRevenue;

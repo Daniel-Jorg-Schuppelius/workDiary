@@ -121,7 +121,7 @@ class RemoteSessionSpec extends AbstractEntitySpec {
     public function upsert(array $row, Organization $organization): array {
         $userId = $this->bookingUserId($organization);
         if ($userId === null) {
-            return [ImportOutcome::Failed, new ValidationIssue(ImportErrorCode::Persist, null, (string) __('import.error.persist.noBookingUser'))];
+            return [ImportOutcome::Failed, new ValidationIssue(ImportErrorCode::Persist, null, (string) __('remote-support::import.error.persist.noBookingUser'))];
         }
 
         $start = $row['started_at'];

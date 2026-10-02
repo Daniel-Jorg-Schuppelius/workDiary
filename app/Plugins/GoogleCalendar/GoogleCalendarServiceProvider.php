@@ -39,7 +39,7 @@ class GoogleCalendarServiceProvider extends PluginServiceProviderBase {
         // Erweiterungspunkt des Moduls (MVP-1045): Termine als Zeitimport-Feed.
         $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Import\Contracts\CalendarImportFeed::class, \App\Plugins\GoogleCalendar\Services\GoogleCalendarImportFeed::class);
         // Verbindungszustand für Diagnose und Ablaufprüfung (MVP-1044).
-        $this->app->make(\App\Services\Diagnostics\ConnectionHealthModels::class)->register('google_calendar', \App\Models\Plugins\GoogleCalendar\GoogleCalendarConnection::class);
+        $this->app->make(\App\Services\Diagnostics\ConnectionHealthModels::class)->register('google_calendar', \App\Plugins\GoogleCalendar\Models\GoogleCalendarConnection::class);
         // Gruppierte Auflösung der Import-Inbox (MVP-1030).
         $this->app->make(InboxGroupBookerRegistry::class)->register(GoogleCalendarPlugin::ID, GoogleCalendarSeriesGroupBooker::class);
     }

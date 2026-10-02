@@ -230,7 +230,6 @@ return [
         'proposed_hint' => 'Proposal — please confirm',
         'voucher_only' => 'Voucher (no line item)',
         'needed' => 'open: :amount',
-        'no_contacts' => 'The invoice recipient has no linked Lexoffice contact.',
         'note_voided' => 'Invoice voided — covered :months', // Review 2026-09-10
         'no_lines' => 'No mirrored invoice line items in the window around the period start.',
         'line' => 'Invoice line item',
@@ -328,18 +327,14 @@ return [
         'dialog_title' => 'Create invoice draft in Lexoffice',
         'submit' => 'Create draft',
         'hint' => 'All open periods of the recipient become line items of a Lexoffice draft: one line per subscription and period, end customer in the description, quantity in months. Nothing is finalized — review and finish in Lexoffice.',
-        'title' => 'Invoice',
-        'introduction' => 'Licences and subscriptions, :count line items — periods and end customers per line.',
         'end_customer' => 'End customer :name',
         'unit_piece' => 'piece',
-        'note' => 'Lexoffice draft :id of :date (:user)',
         'local_note' => 'Local invoice draft :number',
         'flash' => [
             'created' => 'Draft for :customer created: :lines line items, :net € net (Lexoffice id :id). Please review and finalize in Lexoffice.',
             'created_local' => 'Invoice draft :id for :customer created: :lines line items, :net € net. Periods are linked as proposals — confirm when issuing.',
         ],
         'error' => [
-            'lexoffice' => 'Lexoffice is not enabled for this organization or has no API key.',
             'nothing_open' => 'No open periods with a sale price for this recipient.',
         ],
         'already_drafted' => 'A draft is already pending for this recipient (:reference from :date). Finish it in Lexoffice or locally first, or decide the period.', // Review 2026-09-10

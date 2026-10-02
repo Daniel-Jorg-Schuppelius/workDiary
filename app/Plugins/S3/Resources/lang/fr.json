@@ -1,0 +1,6 @@
+{
+    ":count S3-Ziel(e) erreichbar.": ":count cible(s) S3 joignable(s).",
+    "Kein S3-Backupziel eingerichtet.": "Aucune cible de sauvegarde S3 configurée.",
+    "S3-Ziel \":name\" nicht erreichbar (:class).": "Cible S3 « :name » injoignable (:class).",
+    "Verschlüsselte Offsite-Backups in einen S3-kompatiblen Objektspeicher (AWS S3, MinIO, Wasabi, Hetzner).": "Sauvegardes chiffrées hors site vers un stockage objet compatible S3 (AWS S3, MinIO, Wasabi, Hetzner)."
+}

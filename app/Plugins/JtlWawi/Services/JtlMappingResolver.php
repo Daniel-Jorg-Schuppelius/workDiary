@@ -15,8 +15,8 @@ namespace App\Plugins\JtlWawi\Services;
 use App\Models\Article\ArticleVariant;
 use App\Models\Integration\ExternalArticleMapping;
 use App\Models\Inventory\Warehouse;
-use App\Models\Plugins\JtlWawi\{JtlConnection, JtlWarehouseMapping};
 use App\Plugins\JtlWawi\JtlWawiPlugin;
+use App\Plugins\JtlWawi\Models\{JtlConnection, JtlWarehouseMapping};
 use RuntimeException;
 
 /**

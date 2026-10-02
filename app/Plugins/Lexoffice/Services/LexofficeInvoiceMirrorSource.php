@@ -15,7 +15,7 @@ namespace App\Plugins\Lexoffice\Services;
 use App\Enums\User\Permission;
 use App\Models\Customer\Customer;
 use App\Models\Platform\Organization;
-use App\Models\Plugins\Lexoffice\{LexofficeVoucher, LexofficeVoucherLine};
+use App\Plugins\Lexoffice\Models\{LexofficeVoucher, LexofficeVoucherLine};
 use App\Services\Platform\Catalog\ArticleCatalog;
 use App\Services\Reselling\Mirror\{InvoiceMirrorSource, MirrorLine, MirrorVoucher};
 use App\Services\Reselling\Register\LicenseArticleClassifier;

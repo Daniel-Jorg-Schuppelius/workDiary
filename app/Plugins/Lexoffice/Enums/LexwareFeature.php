@@ -33,11 +33,11 @@ enum LexwareFeature: string implements HasLabel {
     case TaxFilings = 'tax_filings';
 
     public function label(): string {
-        return (string) __('lexware.feature.' . $this->value . '.label');
+        return (string) __('lexoffice::lexware.feature.' . $this->value . '.label');
     }
 
     public function description(): string {
-        return (string) __('lexware.feature.' . $this->value . '.description');
+        return (string) __('lexoffice::lexware.feature.' . $this->value . '.description');
     }
 
     /** Lokale Ergänzung aus dem Bestand — Teil des ersten MVP. */

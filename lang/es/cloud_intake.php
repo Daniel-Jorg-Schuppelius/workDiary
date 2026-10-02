@@ -23,7 +23,6 @@ return [
     ],
     'field' => [
         'provider' => 'Proveedor',
-        'name' => 'Nombre',
         'account' => 'Cuenta',
         'root_folder' => 'Carpeta raíz',
         'routes' => 'Reglas',
@@ -39,10 +38,6 @@ return [
         'load_failed' => 'No se pudieron cargar los contenedores — introduzca el ID manualmente.',
     ],
     'action' => [
-        'connect_dropbox' => 'Conectar Dropbox',
-        'connect_microsoft' => 'Conectar Microsoft 365',
-        'connect_google' => 'Conectar Google Drive',
-        'connect_nextcloud' => 'Conectar Nextcloud',
         'preview' => 'Vista previa',
         'save_folder' => 'Aplicar carpeta',
         'disconnect' => 'Desconectar',
@@ -62,52 +57,6 @@ return [
         'disconnected' => 'Conexión eliminada — comprobantes y documentos importados permanecen.',
         'route_saved' => 'Regla de carpeta guardada.',
         'route_deleted' => 'Regla de carpeta eliminada.',
-    ],
-    'dropbox' => [
-        'description' => 'Lee documentos de carpetas de Dropbox supervisadas (entrada de documentos en la nube) — con reglas de carpetas, comprobante de transferencia y bandeja para casos dudosos.',
-        'health' => [
-            'not_configured' => 'Claves de la aplicación de Dropbox sin configurar.',
-            'no_org_context' => 'Sin contexto de organización (ejecución del sistema).',
-            'attention' => 'Al menos una conexión de Dropbox necesita atención (reautenticación/bloqueada).',
-            'backup_attention' => 'El destino de copia de seguridad de Dropbox necesita atención (reautenticación/bloqueado) — afecta a todas las organizaciones.',
-            'ok' => 'Conexiones de Dropbox correctas.',
-            'error' => 'La comprobación de estado falló (:class).',
-        ],
-    ],
-    'google' => [
-        'description' => 'Lee documentos de carpetas de Google Drive supervisadas (entrada de documentos en la nube) — Mi unidad y unidades compartidas; despliegue bloqueado hasta la verificación OAuth de Google.',
-        'health' => [
-            'not_configured' => 'Claves de cliente de Google Drive sin configurar.',
-            'no_org_context' => 'Sin contexto de organización (ejecución del sistema).',
-            'attention' => 'Al menos una conexión de Google Drive necesita atención (reautenticación/bloqueada).',
-            'backup_attention' => 'El destino de copia de seguridad de Google Drive necesita atención (reautenticación/bloqueado) — afecta a todas las organizaciones.',
-            'ok' => 'Conexiones de Google Drive correctas.',
-            'error' => 'La comprobación de estado falló (:class).',
-        ],
-    ],
-    'nextcloud' => [
-        'description' => 'Incorpora documentos de carpetas de Nextcloud supervisadas (WebDAV) — con reglas de carpeta, comprobante de entrega y bandeja de entrada para casos ambiguos.',
-        'health' => [
-            'no_org_context' => 'Sin contexto de organización (ejecución del sistema).',
-            'attention' => 'Al menos una conexión de Nextcloud requiere atención (reautenticación/bloqueada).',
-            'backup_attention' => 'El destino de copia de seguridad de Nextcloud necesita atención (reautenticación/bloqueado) — afecta a todas las organizaciones.',
-            'ok' => 'Conexiones de Nextcloud en orden.',
-            'error' => 'La comprobación de estado falló (:class).',
-        ],
-        'connect_title' => 'Conectar Nextcloud',
-        'connect_legend' => 'Credenciales',
-        'connect_submit' => 'Conectar',
-        'field' => [
-            'server_url' => 'URL del servidor',
-            'server_url_help' => 'Solo HTTPS. Ejemplo: https://cloud.example.com',
-            'username' => 'Nombre de usuario',
-            'app_password' => 'Contraseña de aplicación',
-            'app_password_help' => 'Una contraseña de aplicación revocable (Ajustes › Seguridad), nunca la contraseña normal de la cuenta.',
-        ],
-        'validation' => [
-            'https_required' => 'La URL del servidor debe comenzar con https://.',
-            'unsafe_url' => 'La URL del servidor debe ser accesible públicamente (sin destino interno/privado).',
-        ],
     ],
     'route' => [
         'heading' => 'Reglas de carpetas',

@@ -13,8 +13,8 @@ declare(strict_types=1);
 namespace App\Plugins\OrgaMax\Services;
 
 use App\Models\Platform\{Organization, User};
-use App\Models\Plugins\OrgaMax\OrgaMaxConnection;
 use App\Plugins\OrgaMax\Api\{OrgaMaxClientFactory, OrgaMaxTokenService};
+use App\Plugins\OrgaMax\Models\OrgaMaxConnection;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Support\Str;
 use Orgamax\API\Endpoints\Settings\AccountSettingEndpoint;
@@ -49,10 +49,10 @@ class OrgaMaxConnectionService {
      */
     public function startIntent(Organization $organization, User $admin, string $mode, ?string $apiKey, ?string $apiSecret): string {
         if ($mode === OrgaMaxConnection::MODE_PRIVATE && ($apiKey === null || $apiKey === '' || $apiSecret === null || $apiSecret === '')) {
-            throw new RuntimeException((string) __('orgamax.error.credentials_required'));
+            throw new RuntimeException((string) __('orgamax::orgamax.error.credentials_required'));
         }
         if ($mode === OrgaMaxConnection::MODE_MARKETPLACE && (string) config('plugins.orgamax.operator_api_key', '') === '') {
-            throw new RuntimeException((string) __('orgamax.error.operator_secret_missing'));
+            throw new RuntimeException((string) __('orgamax::orgamax.error.operator_secret_missing'));
         }
 
         $intent = Str::random(40);
@@ -98,7 +98,7 @@ class OrgaMaxConnectionService {
             && $connection->intent_expires_at !== null
             && $connection->intent_expires_at->isFuture();
         if (! $intentValid) {
-            throw new RuntimeException((string) __('orgamax.error.intent_invalid'));
+            throw new RuntimeException((string) __('orgamax::orgamax.error.intent_invalid'));
         }
 
         // Token-Bezug über die ownershipId des Callbacks; der TokenService
@@ -127,7 +127,7 @@ class OrgaMaxConnectionService {
     /** Ausdrückliche Kontobestätigung durch den Admin → Scope-Preflight → aktiv. */
     public function confirm(OrgaMaxConnection $connection, User $admin): OrgaMaxConnection {
         if ($connection->status !== OrgaMaxConnection::STATUS_PENDING_CONFIRMATION) {
-            throw new RuntimeException((string) __('orgamax.error.nothing_to_confirm'));
+            throw new RuntimeException((string) __('orgamax::orgamax.error.nothing_to_confirm'));
         }
 
         $missing = $this->preflight->missing($connection);

@@ -11,7 +11,7 @@
 namespace Tests\Feature\Plugins\JtlWawi;
 
 use App\Models\Platform\User;
-use App\Models\Plugins\JtlWawi\JtlConnection;
+use App\Plugins\JtlWawi\Models\JtlConnection;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Psr\Http\Message\RequestInterface;
