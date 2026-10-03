@@ -2,16 +2,7 @@
 title: "Notice of hindrance and notice of concern (VOB/B)"
 topic: construction-notices
 version: 1
-audience:
-    - admin
-    - geschaeftsfuehrung
-    - personalverwaltung
-    - teamleitung
-    - buchhaltung
-    - user
-    - aussendienst
-    - callcenter
-    - support
+audience: []
 modules:
     - module.bau
 related:

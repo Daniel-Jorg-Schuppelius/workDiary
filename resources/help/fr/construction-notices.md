@@ -2,16 +2,7 @@
 title: "Avis d’entrave et réserves (VOB/B)"
 topic: construction-notices
 version: 1
-audience:
-    - admin
-    - geschaeftsfuehrung
-    - personalverwaltung
-    - teamleitung
-    - buchhaltung
-    - user
-    - aussendienst
-    - callcenter
-    - support
+audience: []
 modules:
     - module.bau
 related:

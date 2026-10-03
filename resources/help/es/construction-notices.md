@@ -2,16 +2,7 @@
 title: "Aviso de impedimento y de reparos (VOB/B)"
 topic: construction-notices
 version: 1
-audience:
-    - admin
-    - geschaeftsfuehrung
-    - personalverwaltung
-    - teamleitung
-    - buchhaltung
-    - user
-    - aussendienst
-    - callcenter
-    - support
+audience: []
 modules:
     - module.bau
 related:

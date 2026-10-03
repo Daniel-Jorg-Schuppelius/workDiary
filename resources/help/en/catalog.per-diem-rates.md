@@ -2,16 +2,7 @@
 title: "Per Diem Rates"
 topic: catalog.per-diem-rates
 version: 1
-audience:
-    - admin
-    - geschaeftsfuehrung
-    - personalverwaltung
-    - teamleitung
-    - buchhaltung
-    - user
-    - aussendienst
-    - callcenter
-    - support
+audience: []
 related:
     - travel-expenses.manage
     - catalog.expense-categories

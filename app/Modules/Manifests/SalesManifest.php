@@ -68,6 +68,7 @@ final class SalesManifest extends Manifest {
             'commissions.*',
             'commission-rules.*',
             'commission-runs.*',
+            'commission-agents.*',
             'surveys.*',
             'suppliers.*',
             'api.suppliers.*',
