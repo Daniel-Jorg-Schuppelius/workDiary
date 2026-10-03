@@ -10841,5 +10841,17 @@
     "Die Datei ist keine lesbare Rechnung (XRechnung, ZUGFeRD oder PDF/Bild mit erkennbarer Nummer und Summe).": "El archivo no es una factura legible (XRechnung, ZUGFeRD o PDF/imagen con número e importe reconocibles).",
     "Rechnung :number aus PDF bzw. Bild erkannt — bitte die Werte prüfen.": "Factura :number reconocida desde PDF o imagen: compruebe los valores.",
     "Rechnungen (XML, PDF oder Foto)": "Facturas (XML, PDF o foto)",
-    "Rechnungen hochladen": "Subir facturas"
+    "Rechnungen hochladen": "Subir facturas",
+    "Zeiteinträge aller Projekte im gewählten Zeitraum.": "Registros de tiempo de todos los proyectos en el periodo seleccionado.",
+    "Projekt, Aufgabe oder Beschreibung …": "Proyecto, tarea o descripción …",
+    "Alle Tags": "Todas las etiquetas",
+    "Abrechenbar und nicht abrechenbar": "Facturable y no facturable",
+    "Nur abrechenbar": "Solo facturable",
+    "Nur nicht abrechenbar": "Solo no facturable",
+    "gesamt": "en total",
+    "Projekte mit Zeiten": "Proyectos con tiempos",
+    "Gruppieren nach": "Agrupar por",
+    "Alle Gruppen ein- oder ausklappen": "Contraer o expandir todos los grupos",
+    "Einträge von :name ein- oder ausklappen": "Contraer o expandir los registros de :name",
+    "nur eigene Zeiten": "solo los tiempos propios"
 }

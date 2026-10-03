@@ -153,7 +153,7 @@ class TimeEntryController extends Controller {
         // Voll-ersetzend (leere Auswahl leert) — Semantik der manuellen Bearbeitung.
         $timeEntry->syncTagsFromInput($tagIds, $newTags);
 
-        $redirect = redirect()->route('projects.show', ['project' => $project, '#' => 'time'])
+        $redirect = $this->redirectAfterChange($request, $project)
             ->with('success', __('Zeiteintrag aktualisiert.'));
 
         if (($warning = $this->coreTimeWarning($timeEntry->fresh())) !== null) {
@@ -179,13 +179,24 @@ class TimeEntryController extends Controller {
         return $violations === [] ? null : implode(' ', $violations);
     }
 
-    public function destroy(Project $project, TimeEntry $timeEntry): RedirectResponse {
+    public function destroy(Request $request, Project $project, TimeEntry $timeEntry): RedirectResponse {
         Gate::authorize('delete', $timeEntry);
 
         $timeEntry->delete();
 
-        return redirect()->route('projects.show', ['project' => $project, '#' => 'time'])
+        return $this->redirectAfterChange($request, $project)
             ->with('success', __('Zeiteintrag gelöscht.'));
+    }
+
+    /**
+     * Rücksprung nach Bearbeiten oder Löschen: aus der Zeitenübersicht
+     * (`return_to=times`, MVP-1073) dorthin zurück, sonst in den Zeiten-Reiter
+     * des Projekts.
+     */
+    private function redirectAfterChange(Request $request, Project $project): RedirectResponse {
+        return $request->input('return_to') === 'times'
+            ? redirect()->toList('projects.times')
+            : redirect()->route('projects.show', ['project' => $project, '#' => 'time']);
     }
 
     /**

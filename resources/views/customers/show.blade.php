@@ -71,16 +71,18 @@
         $timeTotal = \App\Support\Formats::duration($totalMinutes, 'clock');
         $fmtMoney = fn (float $v) => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($v, 2, withThousandsSeparator: true) . ' ' . $cur;
         $margin = $invoicedRange > 0.0 ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($profitRange / $invoicedRange * 100, 1) . ' %' : null;
+        // Ohne Sicht auf alle Zeiten zählen die Zeitwerte nur die eigenen Einträge.
+        $ownTimesHint = $seesAllTimes ? '' : ' · ' . __('nur eigene Zeiten');
     @endphp
     <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <x-kpi-tile :label="__('Projekte')" :value="$projects->count()" tone="neutral" />
         <x-kpi-tile :label="__('Erfasste Zeit')" :value="$timeRange" tone="neutral"
-                    :hint="$statsRangeLabel . ' · ' . __('gesamt :value', ['value' => $timeTotal])" />
+                    :hint="$statsRangeLabel . ' · ' . __('gesamt :value', ['value' => $timeTotal]) . $ownTimesHint" />
         {{-- Umsatz = tatsächlich fakturiert (Belege des Buchhaltungsprogramms + lokale
              Rechnungen); der kalkulatorische Wert aus erfassten Zeiten × Satz nur
              als kleiner Zusatz — er ist ohne gepflegte Stundensätze wenig aussagekräftig. --}}
         <x-kpi-tile :label="__('Umsatz')" :value="$fmtMoney($invoicedRange)" tone="neutral"
-                    :hint="$statsRangeLabel . ' · ' . __('kalk. :value', ['value' => $fmtMoney($rangeRate)])" />
+                    :hint="$seesAllTimes ? $statsRangeLabel . ' · ' . __('kalk. :value', ['value' => $fmtMoney($rangeRate)]) : $statsRangeLabel" />
         {{-- Gewinn = fakturierter Umsatz − zugeordnete Materialkosten im Zeitraum. --}}
         <x-kpi-tile :label="__('Gewinn (kalk.)')" :value="$fmtMoney($profitRange)"
                     :tone="$profitRange >= 0.0 ? 'success' : 'error'"
@@ -98,7 +100,7 @@
                               ]"
                               :x-label="__('Monat')"
                               :compare-label="__('Vorjahr')"
-                              :note="__('Erfasste Stunden der letzten 12 Monate; gestrichelt = Vorjahres-Gesamt.')" />
+                              :note="__('Erfasste Stunden der letzten 12 Monate; gestrichelt = Vorjahres-Gesamt.') . ($seesAllTimes ? '' : ' (' . __('nur eigene Zeiten') . ')')" />
         <x-charts.bar :title="__('Umsatz je Monat (fakturiert)')" unit="€"
                       :series="$chartRevenue"
                       :x-label="__('Monat')" y-label="{{ __('Umsatz') }}" :y2-label="__('Materialkosten')"
@@ -312,6 +314,9 @@
             <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
                 <h2 class="flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold">
                     <x-icon name="analytics" class="text-muted" /> {{ __('Auswertung') }}
+                    @if (! $seesAllTimes)
+                        <span class="text-xs font-normal text-muted">{{ __('nur eigene Zeiten') }}</span>
+                    @endif
                 </h2>
                 <div role="tablist" class="tabs tabs-box tabs-sm">
                     {{-- Zeitraum-Tab folgt dem global gewählten Header-Zeitraum. --}}

@@ -64,6 +64,7 @@ class CustomerTrendBuilder {
             /** @var iterable<int, object{y: int|string, m: int|string, mins: int|string, billable_mins: int|string}> $rows */
             $rows = TimeEntry::query()
                 ->whereIn('project_id', $projectIds)
+                ->visibleTo($user)
                 ->whereBetween('date', DateRange::days($prevStart, $end))
                 ->toBase()
                 ->selectRaw("{$yearExpr} as y, {$monthExpr} as m, COALESCE(SUM(minutes), 0) as mins, COALESCE(SUM(CASE WHEN billable = 1 THEN minutes ELSE 0 END), 0) as billable_mins")

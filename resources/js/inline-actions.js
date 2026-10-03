@@ -19,6 +19,9 @@ import { sameOriginPath } from "./lib/html.js";
  *   data-copy-text/-target     click  → Clipboard (+ optional data-copy-feedback)
  *   data-check-all="<sel>"     change → Checkboxen im Scope setzen
  *   data-toggle-hidden="<id>"  click  → classList.toggle('hidden')
+ *   data-toggle-rows="<key>"   click  → Zeilen data-row-group="<key>" ein-/ausklappen
+ *                              (aria-expanded am Schalter); data-toggle-rows-all="<id>"
+ *                              schaltet alle Gruppen im Element <id>
  *   data-color-preview         change → Vorschau-Swatch (previousElementSibling)
  *   data-submit-on-enter       keydown Enter (ohne Shift) → form.requestSubmit()
  *   data-submit-form="<id>"    click  → <form id>.submit()
@@ -26,6 +29,22 @@ import { sameOriginPath } from "./lib/html.js";
  * Schließen von Dialogen: bestehendes data-entry-modal-close (app.js);
  * Bestätigungs-Abfragen: bestehendes data-confirm-dialog (layout.js).
  */
+
+/**
+ * @param {Element} toggler Schalter mit data-toggle-rows
+ * @param {boolean} open
+ */
+function setRowGroup(toggler, open) {
+    const key = toggler.getAttribute("data-toggle-rows");
+    toggler.setAttribute("aria-expanded", open ? "true" : "false");
+    (toggler.closest("table") ?? document)
+        .querySelectorAll("[data-row-group]")
+        .forEach((row) => {
+            if (row.getAttribute("data-row-group") === key) {
+                row.classList.toggle("hidden", !open);
+            }
+        });
+}
 
 document.addEventListener("change", (event) => {
     const el = event.target instanceof Element ? event.target : null;
@@ -125,6 +144,28 @@ document.addEventListener("click", (event) => {
         document
             .getElementById(toggler.getAttribute("data-toggle-hidden"))
             ?.classList.toggle("hidden");
+        return;
+    }
+
+    // Zeilengruppe einer Tabelle ein-/ausklappen (Gruppenkopf).
+    const rowToggler = target.closest("[data-toggle-rows]");
+    if (rowToggler) {
+        setRowGroup(
+            rowToggler,
+            rowToggler.getAttribute("aria-expanded") !== "true",
+        );
+        return;
+    }
+
+    // Alle Zeilengruppen im Zielelement auf einmal umschalten.
+    const allToggler = target.closest("[data-toggle-rows-all]");
+    if (allToggler) {
+        const open = allToggler.getAttribute("aria-expanded") !== "true";
+        allToggler.setAttribute("aria-expanded", open ? "true" : "false");
+        document
+            .getElementById(allToggler.getAttribute("data-toggle-rows-all"))
+            ?.querySelectorAll("[data-toggle-rows]")
+            .forEach((toggler) => setRowGroup(toggler, open));
         return;
     }
 

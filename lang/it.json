@@ -10841,5 +10841,17 @@
     "Die Datei ist keine lesbare Rechnung (XRechnung, ZUGFeRD oder PDF/Bild mit erkennbarer Nummer und Summe).": "Il file non è una fattura leggibile (XRechnung, ZUGFeRD o PDF/immagine con numero e importo riconoscibili).",
     "Rechnung :number aus PDF bzw. Bild erkannt — bitte die Werte prüfen.": "Fattura :number riconosciuta da PDF o immagine: verificare i valori.",
     "Rechnungen (XML, PDF oder Foto)": "Fatture (XML, PDF o foto)",
-    "Rechnungen hochladen": "Carica fatture"
+    "Rechnungen hochladen": "Carica fatture",
+    "Zeiteinträge aller Projekte im gewählten Zeitraum.": "Registrazioni ore di tutti i progetti nel periodo selezionato.",
+    "Projekt, Aufgabe oder Beschreibung …": "Progetto, attività o descrizione …",
+    "Alle Tags": "Tutte le etichette",
+    "Abrechenbar und nicht abrechenbar": "Fatturabile e non fatturabile",
+    "Nur abrechenbar": "Solo fatturabile",
+    "Nur nicht abrechenbar": "Solo non fatturabile",
+    "gesamt": "in totale",
+    "Projekte mit Zeiten": "Progetti con ore registrate",
+    "Gruppieren nach": "Raggruppa per",
+    "Alle Gruppen ein- oder ausklappen": "Comprimi o espandi tutti i gruppi",
+    "Einträge von :name ein- oder ausklappen": "Comprimi o espandi le registrazioni di :name",
+    "nur eigene Zeiten": "solo le proprie ore"
 }

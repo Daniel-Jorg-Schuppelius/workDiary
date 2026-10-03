@@ -11,6 +11,7 @@
 namespace App\Services\Customer;
 
 use App\Models\Customer\Customer;
+use App\Models\Platform\User;
 use App\Models\Time\TimeEntry;
 use App\Support\Query\DateRange;
 use Carbon\CarbonInterface;
@@ -29,13 +30,13 @@ class CustomerStatsService {
      *     by_project: array<int, array{project_id: int, name: string, is_default: bool, foreign_customer: ?string, minutes: int, billable_minutes: int}>
      * }
      */
-    public function forCustomer(Customer $customer, ?CarbonInterface $from = null, ?CarbonInterface $to = null): array {
+    public function forCustomer(Customer $customer, User $viewer, ?CarbonInterface $from = null, ?CarbonInterface $to = null): array {
         $projectIds = $customer->projects()->pluck('id')->all();
         if ($projectIds === []) {
             return ['total_minutes' => 0, 'billable_minutes' => 0, 'by_project' => []];
         }
 
-        $query = TimeEntry::query()->whereIn('project_id', $projectIds);
+        $query = TimeEntry::query()->whereIn('project_id', $projectIds)->visibleTo($viewer);
         if ($from instanceof CarbonInterface) {
             $query->where('date', '>=', $from->toDateString());
         }

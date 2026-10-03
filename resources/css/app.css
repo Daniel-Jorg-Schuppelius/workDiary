@@ -353,6 +353,13 @@
        die Zelle direkt adressiert. thead/tfoot bleiben unberührt. */
     font-size: 0.75rem;
 }
+/* Gruppenkopf mit data-toggle-rows: Pfeil zeigt bei eingeklappter Gruppe nach rechts. */
+[data-toggle-rows] .material-symbols-outlined {
+    transition: transform 0.15s ease;
+}
+[data-toggle-rows][aria-expanded="false"] .material-symbols-outlined {
+    transform: rotate(-90deg);
+}
 
 /* ------------------------------------------------------------------ */
 /* Chart-Kacheln in Grids (MVP-469): Grid-Zellen werden per Default auf */

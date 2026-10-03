@@ -6,7 +6,7 @@
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
-{{-- Tab: Zeiterfassung — erwartet: $project, $timeEntries, $totalMinutes, $rangeMinutes, $rangeLabel, $myMinutes --}}
+{{-- Tab: Zeiterfassung — erwartet: $project, $timeEntries, $totalMinutes, $rangeMinutes, $rangeLabel, $myMinutes, $seesAllTimes --}}
 @php
     $fmt = fn (int $min): string => \App\Support\Formats::duration($min, 'clock');
     $viewer = auth()->user();
@@ -24,10 +24,16 @@
 
 <div class="flex flex-col gap-3">
     {{-- Summary — Standard-KPI-Kacheln wie auf der Kunden-Detailseite --}}
-    <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <x-kpi-tile :label="__('Gesamt')" :value="$fmt($totalMinutes)" tone="neutral" />
-        <x-kpi-tile :label="$rangeLabel" :value="$fmt($rangeMinutes)" tone="neutral" />
-        <x-kpi-tile :label="__('Meine Stunden')" :value="$fmt($myMinutes)" :hint="$rangeLabel" tone="neutral" />
+    {{-- Ohne Sicht auf alle Zeiten zählen beide Summen nur die eigenen; die
+         dritte Kachel wäre dann doppelt. --}}
+    <div class="grid grid-cols-1 gap-3 {{ $seesAllTimes ? 'sm:grid-cols-3' : 'sm:grid-cols-2' }}">
+        <x-kpi-tile :label="__('Gesamt')" :value="$fmt($totalMinutes)" tone="neutral"
+                    :hint="$seesAllTimes ? null : __('nur eigene Zeiten')" />
+        <x-kpi-tile :label="$rangeLabel" :value="$fmt($rangeMinutes)" tone="neutral"
+                    :hint="$seesAllTimes ? null : __('nur eigene Zeiten')" />
+        @if ($seesAllTimes)
+            <x-kpi-tile :label="__('Meine Stunden')" :value="$fmt($myMinutes)" :hint="$rangeLabel" tone="neutral" />
+        @endif
     </div>
 
     {{-- Tabelle — Standard-Karte; Leerzustand kommt aus x-table --}}

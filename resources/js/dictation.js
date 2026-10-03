@@ -118,7 +118,11 @@ async function start(button) {
 }
 
 document.addEventListener("click", (event) => {
-    const button = event.target.closest?.("[data-dictation]");
+    const button = /** @type {HTMLElement | null} */ (
+        event.target instanceof Element
+            ? event.target.closest("[data-dictation]")
+            : null
+    );
     if (!button) return;
     event.preventDefault();
     if (recording && recording.button === button) {

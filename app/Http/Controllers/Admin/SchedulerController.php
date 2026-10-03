@@ -296,8 +296,8 @@ class SchedulerController extends Controller {
         $parameters = [];
         foreach ($tokens as $token) {
             if (str_starts_with($token, '--')) {
-                [$key, $value] = array_pad(explode('=', $token, 2), 2, null);
-                $parameters[$key] = $value ?? true;
+                $parts = explode('=', $token, 2);
+                $parameters[$parts[0]] = $parts[1] ?? true;
             }
         }
 

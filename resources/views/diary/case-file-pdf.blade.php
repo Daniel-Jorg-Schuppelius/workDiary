@@ -70,7 +70,7 @@
 
     {{-- Zeiten --}}
     @if ($timeEntries->isNotEmpty())
-        <h2>{{ __('timeline.case.times') }}</h2>
+        <h2>{{ __('timeline.case.times') }}@if (! $seesAllTimes) ({{ __('nur eigene Zeiten') }})@endif</h2>
         <table>
             <thead>
                 <tr>

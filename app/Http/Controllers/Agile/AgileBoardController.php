@@ -48,10 +48,14 @@ class AgileBoardController extends Controller {
             $sprint = \App\Models\Agile\AgileSprint::query()->where('board_id', $board->id)->findOrFail($sprintId);
         }
 
-        $board?->load(['columns.workItems' => function ($query) use ($sprint): void {
+        /** @var User $viewer */
+        $viewer = Auth::user();
+
+        $board?->load(['columns.workItems' => function ($query) use ($sprint, $viewer): void {
             // Gebuchte Zeit je Task (P6) — Story Points werden NIE in
-            // Zeit/€ umgerechnet, beides steht getrennt auf der Karte.
-            $query->with(['task' => fn($q) => $q->withSum('timeEntries', 'minutes')])
+            // Zeit/€ umgerechnet, beides steht getrennt auf der Karte. Ohne
+            // Sicht auf alle Zeiten zählt die Summe nur die eigenen Einträge.
+            $query->with(['task' => fn($q) => $q->withSum(['timeEntries' => fn($t) => $t->visibleTo($viewer)], 'minutes')])
                 ->orderBy('backlog_rank');
             if ($sprint !== null) {
                 $query->whereHas('sprintItems', fn($q) => $q->where('sprint_id', $sprint->id));
@@ -62,6 +66,7 @@ class AgileBoardController extends Controller {
             'project' => $project,
             'board' => $board,
             'sprint' => $sprint,
+            'seesAllTimes' => $viewer->canViewAllTimeEntries(),
             'sprints' => $board !== null
                 ? \App\Models\Agile\AgileSprint::query()->where('board_id', $board->id)->orderByDesc('id')->get(['id', 'name', 'status'])
                 : collect(),

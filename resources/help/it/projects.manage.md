@@ -1,7 +1,7 @@
 ---
 title: "Gestire i progetti"
 topic: projects.manage
-version: 2
+version: 3
 audience: []
 modules:
     - module.vertrieb
@@ -40,6 +40,22 @@ corretto registrazione per registrazione.
 
 ![Elenco progetti con cliente, stato e durata](media/kunden/projektliste.png)
 *L’elenco progetti: ogni progetto con cliente, stato e durata.*
+
+La scheda **Tempi** sopra l’elenco progetti mostra le registrazioni ore di
+tutti i progetti nel periodo selezionato in alto, senza aprire ogni
+progetto. Le registrazioni sono raggruppate per progetto; con «Raggruppa
+per» passa a data o persona. Ogni gruppo indica il numero di registrazioni
+e il totale dell’intero periodo e può essere compresso. Può filtrare per
+termine di ricerca (progetto, attività, descrizione), cliente, progetto,
+collaboratore, etichetta e fatturabilità. Solo amministrazione, contabilità
+e chi può consultare tutte le ore vedono le registrazioni altrui; tutti gli
+altri vedono le proprie. Le ore senza progetto non compaiono qui.
+
+La stessa regola di visibilità vale nel singolo progetto (rilevazione ore,
+fogli ore, ore totali), nel fascicolo di un ordine e per i valori di tempo
+nella scheda cliente: senza accesso a tutte le ore, elenchi e totali
+contano solo le proprie registrazioni e riportano la nota «solo le proprie
+ore».
 
 ## Esempio pratico
 

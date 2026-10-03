@@ -11,7 +11,7 @@
 namespace App\Models\Platform;
 
 use App\Casts\MoneyCast;
-use App\Enums\User\{CompensationModel, UserRole};
+use App\Enums\User\{CompensationModel, Permission, UserRole};
 use App\Legacy\LegacyBridge;
 use App\Legacy\Models\LegacyUser;
 use App\Models\Absence\{SickLeave, Vacation};
@@ -149,6 +149,15 @@ class User extends Authenticatable implements \Illuminate\Contracts\Translation\
      */
     public function canManageBilling(): bool {
         return $this->isAdmin() || $this->hasRole(UserRole::Buchhaltung->value);
+    }
+
+    /**
+     * Darf Zeiteinträge anderer Personen sehen: Admin, Buchhaltung oder das
+     * Recht `timeEntry.viewAny`. Alle anderen sehen in Listen und Summen nur
+     * die eigenen Zeiten — {@see \App\Models\Time\TimeEntry::scopeVisibleTo()}.
+     */
+    public function canViewAllTimeEntries(): bool {
+        return $this->canManageBilling() || $this->hasEffectivePermission(Permission::TimeEntryViewAny->value);
     }
 
     /**

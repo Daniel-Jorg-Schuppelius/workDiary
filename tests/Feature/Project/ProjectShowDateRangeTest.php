@@ -92,11 +92,23 @@ class ProjectShowDateRangeTest extends TestCase {
         $this->createTimeEntry('2026-05-10', 9, 10);
         $this->createTimeEntry('2026-06-12', 9, 12, user: $colleague);
 
+        // Ohne Sicht auf alle Zeiten zählen Zeitraum und Gesamt nur die eigenen Einträge.
         $response = $this->getProjectPinnedToJune();
 
         $response->assertOk();
         $response->assertViewHas('myMinutes', 120);
-        $response->assertViewHas('rangeMinutes', 300);
+        $response->assertViewHas('rangeMinutes', 120);
+        $response->assertViewHas('totalMinutes', 180);
+
+        $accounting = User::factory()->buchhaltung()->create(['organization_id' => $this->organization->id]);
+        $all = $this->actingAs($accounting)
+            ->withSession($this->dateRangeMonth(2026, 6))
+            ->get(route('projects.show', $this->project));
+
+        $all->assertOk();
+        $all->assertViewHas('myMinutes', 0);
+        $all->assertViewHas('rangeMinutes', 300);
+        $all->assertViewHas('totalMinutes', 360);
     }
 
     public function test_timesheets_filtered_by_work_date(): void {

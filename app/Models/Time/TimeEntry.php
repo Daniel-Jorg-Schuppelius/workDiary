@@ -294,6 +294,19 @@ class TimeEntry extends Model {
         });
     }
 
+    /**
+     * Sicht auf Zeiten anderer: ohne {@see User::canViewAllTimeEntries()} nur
+     * die eigenen. Gilt für Listen wie für Summen.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder<self>  $query
+     * @return \Illuminate\Database\Eloquent\Builder<self>
+     */
+    public function scopeVisibleTo(\Illuminate\Database\Eloquent\Builder $query, User $user): \Illuminate\Database\Eloquent\Builder {
+        return $user->canViewAllTimeEntries()
+            ? $query
+            : $query->where($this->qualifyColumn('user_id'), $user->id);
+    }
+
     /** @return BelongsTo<Project, $this> */
     public function project(): BelongsTo {
         return $this->belongsTo(Project::class);

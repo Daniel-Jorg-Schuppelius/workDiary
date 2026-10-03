@@ -84,8 +84,8 @@ class AbsenceCalendarReportController extends Controller {
         $detailSqid = (string) $request->input('user', '');
         if ($detailSqid !== '') {
             $detailId = Sqid::decodeOrNumeric(User::class, $detailSqid);
-            $detailUser = $users->firstWhere('id', $detailId);
-            if ($detailUser === null) {
+            $detailUser = $detailId !== null ? $users->firstWhere('id', $detailId) : null;
+            if ($detailId === null || $detailUser === null) {
                 abort(403);
             }
 

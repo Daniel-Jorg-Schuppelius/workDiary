@@ -1,7 +1,7 @@
 ---
 title: "Managing projects"
 topic: projects.manage
-version: 2
+version: 3
 audience: []
 modules:
     - module.vertrieb
@@ -39,6 +39,21 @@ fixing per booking later.
 
 ![Project list with customer, status and duration](media/kunden/projektliste.png)
 *The project list: every project with customer, status and duration.*
+
+The **Times** tab above the project list shows the time entries of all
+projects in the period selected at the top, without opening each project.
+Entries are grouped by project; use “Group by” to switch to date or person.
+Each group states the number of entries and the total for the whole period
+and can be collapsed. You can filter by search term (project, task,
+description), customer, project, employee, tag and billability. Only
+administration, accounting and people allowed to view all times see other
+people’s entries; everyone else sees their own. Time entries without a
+project are not listed here.
+
+The same visibility rule applies on a single project (time tracking,
+timesheets, total hours), in the case file of an order and to the time
+figures on the customer page: without access to all times, lists and
+totals count only your own entries and carry the note “own times only”.
 
 ## Practical example
 

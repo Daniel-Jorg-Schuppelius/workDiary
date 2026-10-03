@@ -93,7 +93,7 @@ final class ActivitySearchVisibility {
         $me = (int) $user->id;
 
         return match ($type) {
-            SearchSourceType::TimeEntry => $admin || $user->canManageBilling() || $user->hasEffectivePermission(Permission::TimeEntryViewAny->value)
+            SearchSourceType::TimeEntry => $admin || $user->canViewAllTimeEntries()
                 ? true
                 : self::own($me, 'user_id'),
             SearchSourceType::DiaryEntry => $admin || $user->can(Permission::DiaryViewAny->value)

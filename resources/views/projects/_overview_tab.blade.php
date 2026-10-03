@@ -23,6 +23,7 @@
                     tone="primary" />
         <x-kpi-tile :label="__('Gesamtstunden')"
                     :value="$totalHours"
+                    :hint="$seesAllTimes ? null : __('nur eigene Zeiten')"
                     format="text" />
         <x-kpi-tile :label="__('Erledigte Aufgaben')"
                     :value="$doneTasks"

@@ -56,7 +56,7 @@ class TogglConfig {
             // Toolkit-Minimum (setRequestInterval wirft darunter).
             'request_interval' => $intervalOverride > 0.0
                 ? max($intervalOverride, \APIToolkit\Contracts\Abstracts\API\ClientAbstract::MIN_INTERVAL)
-                : (self::PLAN_REQUEST_INTERVALS[$plan] ?? self::DEFAULT_REQUEST_INTERVAL),
+                : (self::PLAN_REQUEST_INTERVALS[$plan ?? ''] ?? self::DEFAULT_REQUEST_INTERVAL),
             'sync_window_days' => max(1, $r->int('sync_window_days', 30)),
             'default_billable' => $r->bool('default_billable', true),
             'default_user_id' => $r->intOrNull('default_user_id'),

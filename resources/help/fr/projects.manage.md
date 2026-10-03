@@ -1,7 +1,7 @@
 ---
 title: "Gérer les projets"
 topic: projects.manage
-version: 2
+version: 3
 audience: []
 modules:
     - module.vertrieb
@@ -40,6 +40,23 @@ saisie par saisie.
 
 ![Liste des projets avec client, statut et durée](media/kunden/projektliste.png)
 *La liste des projets : chaque projet avec client, statut et durée.*
+
+L’onglet **Temps** au-dessus de la liste des projets affiche les saisies
+de temps de tous les projets sur la période choisie en haut, sans ouvrir
+chaque projet. Les saisies sont regroupées par projet ; « Regrouper par »
+vous permet de passer à la date ou à la personne. Chaque groupe indique le
+nombre de saisies et le total pour toute la période et peut être replié.
+Vous pouvez filtrer par terme de recherche (projet, tâche, description),
+client, projet, collaborateur, tag et caractère facturable. Seules
+l’administration, la comptabilité et les personnes autorisées à consulter
+tous les temps voient les saisies des autres ; les autres voient les leurs.
+Les temps sans projet n’apparaissent pas ici.
+
+La même règle de visibilité s’applique sur un projet (suivi du temps,
+feuilles d’heures, total des heures), dans le dossier d’une commande et
+pour les valeurs de temps sur la fiche client : sans accès à tous les
+temps, les listes et les totaux ne comptent que vos propres saisies et
+portent la mention « uniquement vos propres temps ».
 
 ## Exemple pratique
 

@@ -1,7 +1,7 @@
 ---
 title: "Projekte verwalten"
 topic: projects.manage
-version: 2
+version: 3
 audience: []
 modules:
     - module.vertrieb
@@ -40,6 +40,21 @@ je Buchung korrigieren.
 
 ![Projektliste mit Kunde, Status und Laufzeit](media/kunden/projektliste.png)
 *Die Projektliste: jedes Projekt mit Kunde, Status und Laufzeit.*
+
+Der Reiter **Zeiten** über der Projektliste zeigt die Zeiteinträge aller
+Projekte im oben gewählten Zeitraum, ohne dass Sie jedes Projekt einzeln
+öffnen müssen. Die Einträge sind nach Projekt gruppiert; über „Gruppieren
+nach“ wechseln Sie auf Datum oder Person. Jede Gruppe nennt Anzahl und
+Summe für den ganzen Zeitraum und lässt sich einklappen. Filtern können Sie
+nach Suchbegriff (Projekt, Aufgabe, Beschreibung), Kunde, Projekt,
+Mitarbeitenden, Tag und Abrechenbarkeit. Zeiten anderer Personen sehen nur
+Administration, Buchhaltung und wer alle Zeiten einsehen darf; alle anderen
+sehen ihre eigenen. Zeiten ohne Projekt erscheinen hier nicht.
+
+Dieselbe Sichtregel gilt am einzelnen Projekt (Zeiterfassung,
+Stundenzettel, Gesamtstunden), in der Fallakte eines Auftrags und bei den
+Zeitwerten am Kunden: Ohne die Sicht auf alle Zeiten zählen Listen und
+Summen nur die eigenen Einträge und tragen den Hinweis „nur eigene Zeiten“.
 
 ## Beispiel aus der Praxis
 

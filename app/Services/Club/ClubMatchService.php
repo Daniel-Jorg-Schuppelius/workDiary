@@ -239,8 +239,10 @@ class ClubMatchService {
                     }
                     $jerseys[$jersey] = true;
                 }
-                $pairing = $slot === ClubLineupSlot::Double ? ($this->nullableInt($row['pairing_no'] ?? null) ?? 1) : ($slot === ClubLineupSlot::Single ? $this->nullableInt($row['pairing_no'] ?? null) : null);
+                $pairing = $slot->isPairing() ? $this->nullableInt($row['pairing_no'] ?? null) : null;
                 if ($slot === ClubLineupSlot::Double) {
+                    // Doppel ohne Nummer zählt als Paarung 1.
+                    $pairing ??= 1;
                     $pairings[$pairing] = ($pairings[$pairing] ?? 0) + 1;
                     if ($pairings[$pairing] > 2) {
                         throw ValidationException::withMessages(['lineup' => __('club.matches.error.double_overfull', ['no' => $pairing])]);

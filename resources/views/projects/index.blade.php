@@ -32,6 +32,8 @@
         @endcan
     </x-slot:actions>
 
+    @include('projects._list_tabs')
+
     <x-filter-bar :action="route('projects.index')" method="GET" :reset="route('projects.index')">
         <input type="text" name="q" value="{{ $search ?? '' }}"
                class="input input-sm input-bordered w-48 shrink-0"

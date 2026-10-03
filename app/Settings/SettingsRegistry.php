@@ -158,7 +158,9 @@ class SettingsRegistry {
 
         assert($organization !== null);
         $settings = (array) ($organization->settings ?? []);
-        [$group, $rest] = array_pad(explode('.', $key, 2), 2, null);
+        $parts = explode('.', $key, 2);
+        $group = $parts[0];
+        $rest = $parts[1] ?? null;
         if ($rest === null || !isset($settings[$group])) {
             return;
         }

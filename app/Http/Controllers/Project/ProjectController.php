@@ -117,6 +117,12 @@ class ProjectController extends Controller {
     public function show(Project $project): View {
         Gate::authorize('view', $project);
 
+        /** @var User $viewer */
+        $viewer = Auth::user();
+        // Zeiten und Stundenzettel anderer nur mit der Sicht auf alle Zeiten;
+        // sonst zeigen Listen und Summen die eigenen.
+        $seesAllTimes = $viewer->canViewAllTimeEntries();
+
         // Alle datumsbehafteten Listen folgen dem globalen Header-Zeitraum
         // (AGENTS.md §8) — bewusst ohne from/to-Query-Override, damit die
         // withQueryString()-Sortier-/Paginierlinks frei von Range-Params bleiben.
@@ -172,6 +178,7 @@ class ProjectController extends Controller {
         [$timeSort, $timeDir] = SortableQuery::resolve(request(), ['date', 'user', 'task', 'minutes', 'description'], 'date');
 
         $timeEntriesQuery = $project->timeEntries()
+            ->visibleTo($viewer)
             // timesheet:status für die Sperr-Anzeige der Massen-Neuzuordnung (MVP-508).
             ->with(['user:id,name', 'task:id,title', 'tags:id,name,color', 'timesheet:id,status'])
             ->whereBetween('date', $rangeDateBounds);
@@ -194,8 +201,9 @@ class ProjectController extends Controller {
 
         // Zeit-Aggregationen (Tab 1 + 3): Gesamt bleibt bewusst all-time als
         // Anker, Zeitraum- und Meine-Stunden folgen dem Header-Zeitraum.
-        $totalMinutes = $project->timeEntries()->sum('minutes');
+        $totalMinutes = $project->timeEntries()->visibleTo($viewer)->sum('minutes');
         $rangeMinutes = $project->timeEntries()
+            ->visibleTo($viewer)
             ->whereBetween('date', $rangeDateBounds)
             ->sum('minutes');
         $myMinutes = $project->timeEntries()
@@ -217,8 +225,6 @@ class ProjectController extends Controller {
 
         // Projekt-Timeline (Rang 56): Volumen über Offset-Pagination gekappt.
         $timelineOffset = max(0, (int) request()->query('toffset', 0));
-        /** @var User $viewer */
-        $viewer = Auth::user();
         $timeline = app(\App\Services\Timeline\ProjectTimelineService::class)
             ->forProject($project, $viewer, 50, $timelineOffset, $rangeFrom, $rangeTo);
 
@@ -248,8 +254,10 @@ class ProjectController extends Controller {
             'rangeMinutes' => (int) $rangeMinutes,
             'rangeLabel' => $rangeLabel,
             'myMinutes' => (int) $myMinutes,
+            'seesAllTimes' => $seesAllTimes,
             'nextMilestone' => $nextMilestone,
             'timesheets' => $project->timesheets()
+                ->when(! $seesAllTimes, fn($q) => $q->forUser((int) $viewer->id))
                 ->with('user:id,name')
                 ->inRange($rangeFrom, $rangeTo)
                 ->withCount(['entries as non_billable_count' => fn($q) => $q->where('billable', false)])

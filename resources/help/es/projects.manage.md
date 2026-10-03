@@ -1,7 +1,7 @@
 ---
 title: "Gestionar proyectos"
 topic: projects.manage
-version: 2
+version: 3
 audience: []
 modules:
     - module.vertrieb
@@ -39,6 +39,22 @@ corregirlo luego registro a registro.
 
 ![Lista de proyectos con cliente, estado y duración](media/kunden/projektliste.png)
 *La lista de proyectos: cada proyecto con cliente, estado y duración.*
+
+La pestaña **Tiempos** sobre la lista de proyectos muestra los registros
+de tiempo de todos los proyectos en el periodo elegido arriba, sin abrir
+cada proyecto. Los registros se agrupan por proyecto; con «Agrupar por»
+puede cambiar a fecha o persona. Cada grupo indica el número de registros y
+el total de todo el periodo y se puede contraer. Puede filtrar por término
+de búsqueda (proyecto, tarea, descripción), cliente, proyecto, empleado,
+etiqueta y facturabilidad. Solo administración, contabilidad y quien puede
+consultar todos los tiempos ven los registros de otras personas; los demás
+ven los suyos. Los tiempos sin proyecto no aparecen aquí.
+
+La misma regla de visibilidad se aplica en cada proyecto (registro de
+tiempos, hojas de horas, horas totales), en el expediente de una orden y
+en los valores de tiempo de la ficha del cliente: sin acceso a todos los
+tiempos, las listas y los totales cuentan solo los registros propios y
+llevan la nota «solo los tiempos propios».
 
 ## Ejemplo práctico
 

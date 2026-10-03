@@ -103,7 +103,7 @@ class DiaryEntryTimelineService {
         $items = [];
         $sources = [
             'status' => fn(): array => $this->statusItems($entry, $cap),
-            'time' => fn(): array => $this->timeItems($entry, $cap),
+            'time' => fn(): array => $this->timeItems($entry, $viewer, $cap),
             'comment' => fn(): array => $this->commentItems($entry, $cap),
             'attachment' => fn(): array => $this->attachmentItems($entry, $cap),
             'protocol' => fn(): array => $this->protocolItems($entry, $cap),
@@ -472,10 +472,11 @@ class DiaryEntryTimelineService {
     }
 
     /** @return list<TimelineItem> */
-    private function timeItems(DiaryEntry $entry, int $cap): array {
+    private function timeItems(DiaryEntry $entry, User $viewer, int $cap): array {
         $items = [];
         $timeEntries = TimeEntry::query()
             ->where('diary_entry_id', $entry->id)
+            ->visibleTo($viewer)
             ->with('user:id,name')
             ->latest('created_at')
             ->latest('id')

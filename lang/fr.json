@@ -10841,5 +10841,17 @@
     "Die Datei ist keine lesbare Rechnung (XRechnung, ZUGFeRD oder PDF/Bild mit erkennbarer Nummer und Summe).": "Le fichier n’est pas une facture lisible (XRechnung, ZUGFeRD ou PDF/image avec numéro et montant reconnaissables).",
     "Rechnung :number aus PDF bzw. Bild erkannt — bitte die Werte prüfen.": "Facture :number reconnue à partir d’un PDF ou d’une image — veuillez vérifier les valeurs.",
     "Rechnungen (XML, PDF oder Foto)": "Factures (XML, PDF ou photo)",
-    "Rechnungen hochladen": "Téléverser des factures"
+    "Rechnungen hochladen": "Téléverser des factures",
+    "Zeiteinträge aller Projekte im gewählten Zeitraum.": "Saisies de temps de tous les projets sur la période choisie.",
+    "Projekt, Aufgabe oder Beschreibung …": "Projet, tâche ou description …",
+    "Alle Tags": "Tous les tags",
+    "Abrechenbar und nicht abrechenbar": "Facturable et non facturable",
+    "Nur abrechenbar": "Facturable uniquement",
+    "Nur nicht abrechenbar": "Non facturable uniquement",
+    "gesamt": "au total",
+    "Projekte mit Zeiten": "Projets avec des temps",
+    "Gruppieren nach": "Regrouper par",
+    "Alle Gruppen ein- oder ausklappen": "Replier ou déplier tous les groupes",
+    "Einträge von :name ein- oder ausklappen": "Replier ou déplier les saisies de :name",
+    "nur eigene Zeiten": "uniquement vos propres temps"
 }

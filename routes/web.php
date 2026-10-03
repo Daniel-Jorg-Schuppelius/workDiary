@@ -2015,6 +2015,8 @@ Route::middleware('auth')->group(function () {
         Route::post('projects/duplicates/merge', [ProjectMergeController::class, 'merge'])->name('projects.duplicates.merge');
         Route::post('projects/duplicates/bulk-merge', [ProjectMergeController::class, 'bulkMerge'])->name('projects.duplicates.bulk-merge');
         Route::post('projects/duplicates/dismiss', [ProjectMergeController::class, 'dismiss'])->name('projects.duplicates.dismiss');
+        // Zeitenübersicht über alle Projekte (MVP-1073) — ebenfalls vor der Resource-Route.
+        Route::get('projects/times', \App\Http\Controllers\Project\ProjectTimeOverviewController::class)->name('projects.times');
         Route::resource('projects', ProjectController::class);
         Route::get('projects/{project}/planning', [ProjectController::class, 'planning'])->name('projects.planning');
         Route::resource('projects.milestones', MilestoneController::class)->except(['index', 'show']);

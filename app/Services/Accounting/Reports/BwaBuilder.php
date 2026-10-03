@@ -212,7 +212,7 @@ class BwaBuilder extends AbstractAccountingReportBuilder {
                 $rows[] = $this->row('account', 'account:' . $entry['account']->id, $entry['account']->displayLabel(), $entry['values'], $hasDelta, account: $entry['account'], group: $group, depth: 1);
             }
         }
-        foreach (self::SUBTOTALS_AFTER[$section] ?? [] as $key) {
+        foreach ($section !== null ? (self::SUBTOTALS_AFTER[$section] ?? []) : [] as $key) {
             $rows[] = $this->row('subtotal', $key, (string) __('accounting.bwa.subtotal.' . $key), $sub[$key], $hasDelta, emphasis: true);
         }
 

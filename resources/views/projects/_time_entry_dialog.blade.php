@@ -13,9 +13,12 @@
     $action    = $entry
         ? route('projects.time-entries.update', [$project, $entry])
         : route('projects.time-entries.store', $project);
+    // Aus der Zeitenübersicht geöffnet (MVP-1073): Rücksprung dorthin, auch
+    // wenn der Dialog nach einem Validierungsfehler neu geladen wird.
+    $returnToTimes = request('return_to') === 'times';
     $dialogUrl = ($entry
         ? route('projects.time-entries.edit', [$project, $entry])
-        : route('projects.time-entries.create', $project)) . '?dialog=1';
+        : route('projects.time-entries.create', $project)) . '?dialog=1' . ($returnToTimes ? '&return_to=times' : '');
 
     // HH:MM-Wert aus minutes berechnen
     $currentMinutes = old('minutes', $entry?->minutes ?? 60);
@@ -39,6 +42,9 @@
     :submit-label="$entry ? __('Speichern') : __('Erfassen')">
     @if ($isDialog)
         <input type="hidden" name="_dialog_url" value="{{ $dialogUrl }}">
+    @endif
+    @if ($returnToTimes)
+        <input type="hidden" name="return_to" value="times">
     @endif
 
     {{-- Minuten als verstecktes Feld; wird im Dauer-Modus per JS aus HH:MM

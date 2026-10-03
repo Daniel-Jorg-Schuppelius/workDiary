@@ -67,12 +67,16 @@ class CustomerDetailAssembler {
 
         $projectIds = $projects->pluck('id')->map(static fn($id): int => (int) $id)->all();
 
+        // Zeit-Kennzahlen folgen der Sicht auf Zeiten anderer: ohne sie zählen
+        // nur die eigenen Einträge (wie in den Berichten).
         $totalMinutes = (int) TimeEntry::query()
             ->whereIn('project_id', $projectIds)
+            ->visibleTo($user)
             ->sum('minutes');
 
         $totalRate = (float) TimeEntry::query()
             ->whereIn('project_id', $projectIds)
+            ->visibleTo($user)
             ->sum('rate');
 
         // Zeitraum-gebundene KPI-Werte (globaler Header-Zeitraum, AGENTS.md §8):
@@ -82,10 +86,12 @@ class CustomerDetailAssembler {
         $rangeTo = $globalRange['to']->endOfDay();
         $rangeMinutes = (int) TimeEntry::query()
             ->whereIn('project_id', $projectIds)
+            ->visibleTo($user)
             ->whereBetween('date', DateRange::days($rangeFrom, $rangeTo))
             ->sum('minutes');
         $rangeRate = (float) TimeEntry::query()
             ->whereIn('project_id', $projectIds)
+            ->visibleTo($user)
             ->whereBetween('date', DateRange::days($rangeFrom, $rangeTo))
             ->sum('rate');
 
@@ -267,8 +273,9 @@ class CustomerDetailAssembler {
             'timelineLimit' => $timelineLimit,
             'projects' => $projects,
             'defaultProject' => $defaultProject,
-            'statsTotal' => $this->stats->forCustomer($customer),
-            'statsRange' => $this->stats->forCustomer($customer, $rangeFrom, $rangeTo),
+            'statsTotal' => $this->stats->forCustomer($customer, $user),
+            'statsRange' => $this->stats->forCustomer($customer, $user, $rangeFrom, $rangeTo),
+            'seesAllTimes' => $user->canViewAllTimeEntries(),
             'statsRangeLabel' => $globalRange['label'],
             'totalMinutes' => $totalMinutes,
             'totalRate' => $totalRate,

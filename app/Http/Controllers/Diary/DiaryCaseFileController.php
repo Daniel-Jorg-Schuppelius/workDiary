@@ -86,8 +86,10 @@ class DiaryCaseFileController extends Controller {
             'attachments.uploader:id,name',
         ]);
 
+        // Zeiten anderer nur mit der Sicht auf alle Zeiten; die Summen folgen.
         $timeEntries = TimeEntry::query()
             ->where('diary_entry_id', $diary->id)
+            ->visibleTo($viewer)
             ->with('user:id,name')
             ->orderBy('date')
             ->orderBy('id')
@@ -144,6 +146,7 @@ class DiaryCaseFileController extends Controller {
             'timeEntries' => $timeEntries,
             'totalMinutes' => (int) $timeEntries->sum('minutes'),
             'billableMinutes' => (int) $timeEntries->where('billable', true)->sum('minutes'),
+            'seesAllTimes' => $viewer->canViewAllTimeEntries(),
             'materials' => $materials,
             'protocols' => $protocols,
             'openIssues' => $openIssues,
