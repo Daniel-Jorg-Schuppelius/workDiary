@@ -1,7 +1,7 @@
 ---
 title: "Access & Security"
 topic: customer-portal.access
-version: 1
+version: 2
 audience: []
 related:
     - customer-portal.overview
@@ -24,3 +24,10 @@ You manage the configured methods yourself and can remove them again. If
 your organisation requires two-factor authentication, the last remaining
 factor cannot be deleted. At your next sign-in the second factor is
 requested in addition to your email and password.
+
+**Profile and login email:** Under **Profile** you see your name, your login
+email and the company your access belongs to. This is also where you change
+the email address: a confirmation link is sent to the new address. Only after
+you click it does it become your login email; the previous address receives a
+notice. Until then you sign in with the previous address. The link is valid
+for a limited time only; a new request replaces one that is still pending.

@@ -1,7 +1,7 @@
 ---
 title: "Zugang & Sicherheit"
 topic: customer-portal.access
-version: 1
+version: 2
 audience: []
 related:
     - customer-portal.overview
@@ -25,3 +25,11 @@ entfernen. Verlangt Ihre Organisation die Zwei-Faktor-Authentifizierung,
 lässt sich der letzte verbleibende Faktor nicht löschen. Bei der nächsten
 Anmeldung wird der zweite Faktor zusätzlich zu E-Mail und Passwort
 abgefragt.
+
+**Profil und Anmelde-E-Mail:** Unter **Profil** sehen Sie Ihren Namen, Ihre
+Anmelde-E-Mail und das Unternehmen, dem Ihr Zugang zugeordnet ist. Dort
+ändern Sie auch die E-Mail-Adresse: Sie erhalten einen Bestätigungslink an
+die neue Adresse. Erst nach dem Klick darauf wird sie zur Anmelde-E-Mail; die
+bisherige Adresse erhält eine Information. Bis dahin melden Sie sich mit der
+bisherigen Adresse an. Der Link gilt nur begrenzte Zeit; eine neue Anfrage
+ersetzt eine noch offene.

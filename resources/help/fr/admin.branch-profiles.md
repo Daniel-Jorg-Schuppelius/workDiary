@@ -1,7 +1,7 @@
 ---
 title: "Profils de branche"
 topic: admin.branch-profiles
-version: 2
+version: 3
 audience:
     - admin
 related:
@@ -31,3 +31,15 @@ utilisées et efface les règles obligatoires du profil ; les modèles sont
 conservés. Un indicateur de mise à jour sur la carte signale une version
 plus récente ; **Importer** accepte un profil JSON du catalogue. Les types
 d'intervention s'affichent dans la langue de l'utilisateur.
+
+**Variantes spécifiques au client :** une variante se superpose à un profil
+sectoriel – elle reprend le profil de base, retire des éléments et ajoute les
+siens, sans modifier le profil. « Créer une variante » demande le profil de
+base, un code (minuscules, chiffres et tirets) et un intitulé. Sous « Retirer
+des éléments », vous cochez ce qui ne doit pas être créé à l'installation ;
+les entrées existantes ne sont pas touchées. Les « Ajouts » sont un extrait
+de profil au format JSON, structuré comme un profil sectoriel ; les éléments
+de même nom remplacent ceux du profil de base. **Installer** applique la
+variante, « Mettre à jour les entrées existantes » aligne les entrées déjà
+installées ; chaque enregistrement incrémente la version. « Exporter en
+JSON » transmet la variante ; la supprimer conserve les entrées installées.

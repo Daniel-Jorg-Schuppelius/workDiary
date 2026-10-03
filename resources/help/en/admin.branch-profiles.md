@@ -1,7 +1,7 @@
 ---
 title: "Industry profiles"
 topic: admin.branch-profiles
-version: 2
+version: 3
 audience:
     - admin
 related:
@@ -66,3 +66,21 @@ Multiple profiles, primary profile and uninstall:
   classification domains or modules are rejected.
 - Order types ship in the enabled languages; the display follows the
   user's language while the source label stays editable.
+
+Customer-specific variants:
+
+- A **variant** overlays an industry profile: it takes over the base profile,
+  leaves out building blocks and adds its own – the profile itself stays
+  unchanged.
+- **Create variant** requires the base profile, a code (lowercase letters,
+  digits and hyphens) and a name.
+- Under **Leave out building blocks** you tick what should not be created
+  during installation. Entries that already exist are not touched.
+- **Additions** are a profile excerpt in JSON format, structured like an
+  industry profile; building blocks with the same name replace those of the
+  base profile.
+- **Install** applies the variant; "Update existing entries" brings entries
+  that are already installed to the state of the variant. Every save
+  increases the version.
+- **Export as JSON** passes the variant on. **Delete** only removes the
+  variant; installed entries are kept.

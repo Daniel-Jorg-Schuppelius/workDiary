@@ -21,8 +21,9 @@ use Illuminate\Support\Str;
  * der Leitsprache de — CI-tauglich (Exit 1 bei Befunden).
  *
  * Composer: `composer help:coverage` (Teil von `composer qa`).
- * Bewusste Ausnahmen (öffentliche Seiten ohne App-Layout, die Hilfeseite
- * selbst) stehen in config/help-topics.php unter `coverage_exceptions`.
+ * Bewusste Ausnahmen (öffentliche Seiten ohne App-Layout, Druckansichten,
+ * technische Endpunkte, die Hilfe selbst) stehen in config/help-topics.php
+ * unter `coverage_exceptions`.
  */
 class HelpCoverageCommand extends Command {
     protected $signature = 'help:coverage';
@@ -46,7 +47,7 @@ class HelpCoverageCommand extends Command {
         return self::FAILURE;
     }
 
-    /** Seiten-Routen (App-Layout) ohne Eintrag in der Topic-Registry. */
+    /** Seiten-Routen ohne Eintrag in der Topic-Registry. */
     private function reportUnmappedPages(): int {
         /** @var array<string, string> $map */
         $map = (array) config('help-topics.routes', []);
@@ -125,9 +126,9 @@ class HelpCoverageCommand extends Command {
     }
 
     /**
-     * Heuristik „Seite im App-Layout": benannte GET-Route, kein API-/
-     * Portal-/Auth-Endpunkt, und eine Haupt-Ansicht (index/show/board/
-     * dashboard bzw. Top-Level-Name).
+     * Jede benannte GET-Route außerhalb von API, Framework und Anmeldung
+     * braucht ein Topic oder eine Ausnahme. Die Namensendung zählt bewusst
+     * nicht: Seiten wie `billing.feed` heißen nicht `*.index`.
      */
     private function isAppPage(string $name, string $uri): bool {
         foreach (['api/', 'scim/', 'webhook', 'oauth', '_debugbar'] as $segment) {
@@ -135,13 +136,13 @@ class HelpCoverageCommand extends Command {
                 return false;
             }
         }
-        foreach (['api.', 'customer.', 'sanctum.', 'ignition.', 'livewire.', 'storage.', 'password.', 'login', 'logout', 'verification.', 'two-factor'] as $prefix) {
+        foreach (['api.', 'sanctum.', 'ignition.', 'livewire.', 'storage.', 'password.', 'login', 'logout', 'verification.', 'two-factor'] as $prefix) {
             if (str_starts_with($name, $prefix)) {
                 return false;
             }
         }
 
-        return Str::endsWith($name, ['.index', '.show', '.board', '.dashboard']) || ! str_contains($name, '.');
+        return true;
     }
 
     /** @param list<string> $patterns */

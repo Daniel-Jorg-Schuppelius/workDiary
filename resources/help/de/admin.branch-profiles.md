@@ -1,7 +1,7 @@
 ---
 title: "Branchenprofile"
 topic: admin.branch-profiles
-version: 2
+version: 3
 audience:
     - admin
 related:
@@ -66,3 +66,20 @@ Mehrere Profile, Hauptprofil und Deinstallation:
   Klassifikations-Domänen oder Module werden abgelehnt.
 - Auftragsarten sind in den aktivierbaren Sprachen hinterlegt; die Anzeige
   folgt der Sprache des Nutzers, das Quell-Label bleibt bearbeitbar.
+
+Kundenspezifische Varianten:
+
+- Eine **Variante** überlagert ein Branchenprofil: Sie übernimmt das
+  Basisprofil, lässt Bausteine weg und ergänzt eigene – das Profil selbst
+  bleibt unverändert.
+- **Variante anlegen** verlangt Basisprofil, Kürzel (Kleinbuchstaben, Ziffern
+  und Bindestriche) und Bezeichnung.
+- Unter **Bausteine weglassen** haken Sie an, was bei der Installation nicht
+  angelegt werden soll. Bereits vorhandene Einträge bleiben unberührt.
+- **Ergänzungen** sind ein Profilausschnitt im JSON-Format, aufgebaut wie ein
+  Branchenprofil; gleichnamige Bausteine ersetzen die des Basisprofils.
+- **Installieren** wendet die Variante an; „Bestehende Einträge
+  aktualisieren“ bringt bereits installierte Einträge auf den Stand der
+  Variante. Jedes Speichern erhöht die Fassung.
+- **Als JSON exportieren** gibt die Variante weiter. **Löschen** entfernt nur
+  die Variante; installierte Einträge bleiben erhalten.

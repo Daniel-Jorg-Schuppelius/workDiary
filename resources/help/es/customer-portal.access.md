@@ -1,7 +1,7 @@
 ---
 title: "Acceso y seguridad"
 topic: customer-portal.access
-version: 1
+version: 2
 audience: []
 related:
     - customer-portal.overview
@@ -19,3 +19,11 @@ pues permiten acceder si su segundo factor no está disponible. Usted
 mismo gestiona y puede eliminar los métodos configurados; si su
 organización exige el segundo factor, el último método restante no puede
 borrarse.
+
+**Perfil y correo de inicio de sesión:** en **Perfil** ve su nombre, su
+correo de inicio de sesión y la empresa a la que pertenece su acceso. Allí
+cambia también la dirección de correo: se envía un enlace de confirmación a
+la nueva dirección. Solo tras hacer clic pasa a ser el correo de inicio de
+sesión; la dirección anterior recibe un aviso. Hasta entonces inicia sesión
+con la dirección anterior. El enlace solo es válido durante un tiempo
+limitado; una nueva solicitud sustituye a la que siga pendiente.

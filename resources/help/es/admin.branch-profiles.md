@@ -1,7 +1,7 @@
 ---
 title: "Perfiles sectoriales"
 topic: admin.branch-profiles
-version: 2
+version: 3
 audience:
     - admin
 related:
@@ -31,3 +31,15 @@ y borra las reglas obligatorias del perfil; las plantillas se conservan.
 Un aviso de actualización en la tarjeta indica una versión más reciente;
 **Importar** acepta un perfil JSON del catálogo. Los tipos de encargo se
 muestran en el idioma del usuario.
+
+**Variantes específicas del cliente:** una variante se superpone a un perfil
+sectorial – adopta el perfil base, omite elementos y añade los propios, sin
+modificar el perfil. «Crear variante» pide el perfil base, un código
+(minúsculas, cifras y guiones) y una denominación. En «Omitir elementos»
+marca lo que no debe crearse al instalar; las entradas ya existentes no se
+tocan. Los «Añadidos» son un extracto de perfil en formato JSON, estructurado
+como un perfil sectorial; los elementos con el mismo nombre sustituyen a los
+del perfil base. **Instalar** aplica la variante, «Actualizar entradas
+existentes» pone al día las entradas ya instaladas; cada guardado incrementa
+la versión. «Exportar como JSON» transmite la variante; al eliminarla, las
+entradas instaladas se conservan.

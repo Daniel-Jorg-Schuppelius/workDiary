@@ -67,6 +67,29 @@ class HelpAndLanguageCommandsTest extends TestCase {
             ->assertExitCode(1);
     }
 
+    public function test_help_coverage_reports_a_page_whose_route_name_is_not_an_index(): void {
+        config([
+            'help-topics.routes' => [],
+            'help-topics.coverage_exceptions' => [],
+            'app.available_locales' => ['de'],
+        ]);
+
+        // Belegfluss und Belegkette enden nicht auf .index/.show und blieben
+        // deshalb lange ohne Hilfe.
+        $this->artisan('help:coverage')
+            ->expectsOutputToContain('Seite ohne Hilfe-Topic: billing.feed')
+            ->expectsOutputToContain('Seite ohne Hilfe-Topic: billing.chain')
+            ->assertExitCode(1);
+    }
+
+    public function test_help_coverage_confirms_the_shipped_registry(): void {
+        // Das Gate ist Teil von `composer qa` — wird es rot, fehlt einer neuen
+        // Seite das Topic oder die begründete Ausnahme in config/help-topics.php.
+        $this->artisan('help:coverage')
+            ->expectsOutputToContain('Hilfe-Abdeckung vollständig')
+            ->assertExitCode(0);
+    }
+
     // ── help:reindex ─────────────────────────────────────────────────────
 
     public function test_help_reindex_fills_the_topic_index(): void {

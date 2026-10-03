@@ -21,40 +21,71 @@
 
 return [
 
-    // Bewusste Ausnahmen der Abdeckungsprüfung (composer help:coverage):
-    // öffentliche Seiten ohne App-Layout + die Hilfeseite selbst.
+    // Bewusste Ausnahmen der Abdeckungsprüfung (composer help:coverage). Sie
+    // verlangt für jede benannte GET-Route außerhalb von API und Anmeldung ein
+    // Topic; hier steht, was keine Seite im App- oder Portal-Layout ist.
     'coverage_exceptions' => [
+        // Die Hilfe selbst.
         'help.topics.show',
+        'help.search',
+        'customer.help.*',
+        // Öffentliche Seiten ohne Anmeldung und ohne App-Layout: Token-Links,
+        // Karriereseiten, Kiosk, Zahlungslink, Rechtstexte, Auskunftsportal.
         'external.show',
         'quotes.portal.show',
-        // Öffentliche Bewerber-Karriereseiten (sessionlos, externe Zielgruppe).
-        'careers.index',
-        'careers.show',
-        // Ziel nach dem Login (MVP-799): reine Weiterleitung, rendert keine Seite.
-        'start',
-        // Kiosk-Modus (MVP-800): Tablet-Terminal ohne Anmeldung und ohne App-Layout.
+        'careers.*',
         'kiosk.show',
-        // Terminwahl durch Bewerber (MVP-925): öffentlicher Token-Link ohne App-Layout.
         'interview-offers.show',
-        // Komponenten-Vorschau (MVP-958): Entwicklungswerkzeug des Betreibers, keine Fachfunktion.
-        'admin.ui-patterns.*',
-        // Diktat-Ergebnis (MVP-1060): JSON-Abfrage des Diktatknopfs, keine Seite.
+        'payments.*',
+        'agreements.public-*',
+        'audit-packages.public-*',
+        'crisis-status.public',
+        'inspection-order.public',
+        'investment-proposal.public',
+        'supplier-questionnaire.public',
+        'sustainability-excerpt.public',
+        'dsar.*',
+        'legal.*',
+        // PunchOut-Katalog und OCI-Rücksprung laufen im Einkaufssystem des
+        // Kunden; die Verwaltung (b2b-catalog.*) ist gemappt.
+        'b2b-punchout.*',
+        'oci-carts.result',
+        // Anmeldung über SSO: Gastlayout ohne Hilfe-Knopf.
+        'sso.*',
+        // Ziel nach dem Login (MVP-799): reine Weiterleitung.
+        'start',
+        // Druckansichten im Print-Layout.
+        'print.*',
+        // Technische Endpunkte: Dateien, JSON, API-Dokumentation.
+        'attachments.download',
+        'branding.logo',
+        'push.vapid',
+        'security.txt',
+        'msgraph.availability',
         'dictations.show',
-        // Zahlungslink (MVP-1067): öffentliche Weiterleitung zum Zahlungsanbieter ohne App-Layout.
-        'payments.show',
-        // Entfernt am 2026-09-17 (MVP-797, Befund P8-35): Hier standen
-        // 'b2b-catalog.index'/'.show' mit der Begründung "tokengesicherte
-        // Public-Routen". Das sind aber die ADMIN-Routen (admin/b2b-katalog);
-        // sie waren dadurch von der Abdeckungsprüfung ausgenommen und hatten
-        // kein Topic. Sie sind jetzt auf 'admin.b2b-catalog' gemappt. Die
-        // wirklich öffentlichen Routen heissen 'b2b-punchout.*' und brauchen
-        // keine Ausnahme: isAppPage() prüft nur Namen auf .index/.show/.board/
-        // .dashboard — 'b2b-punchout.entry|browse|transfer' fallen nicht darunter.
+        'l5-swagger.*',
+        // Komponenten-Vorschau (MVP-958): Entwicklungswerkzeug des Betreibers.
+        'admin.ui-patterns.*',
     ],
 
     'routes' => [
         // Hilfecenter-Vollseite (Feature 039, MVP-752): Hilfe zur Hilfe.
         'help.center.*' => 'help.center',
+        // Belegfluss (Feature 105) und Belegkette (MVP-1057): Rechnungs- und
+        // Angebotsliste leiten hierher um, die Seiten heißen aber nicht *.index.
+        'billing.feed' => 'billing.feed',
+        'billing.chain' => 'billing.chain',
+        // Zuordnungs-Inbox: eigenes Thema, weil sie das Abrechnungsrecht verlangt
+        // und admin.integrations nur die Verwaltung sieht.
+        'admin.integration.inbox*' => 'admin.integration-inbox',
+        // NIST-CSF-Sichten (Funktionsabdeckung + Crosswalk).
+        'isms.csf*' => 'isms.csf',
+        // Persönlicher Einstieg je Rolle (MVP-911).
+        'me.onboarding*' => 'onboarding.personal',
+        // Eigenauskunft Personalakte (Feature 141) — vor personnel-file.*.
+        'account.personnel-file*' => 'account.personnel-file',
+        // Zustimmungsseite für KI-Assistenten (MVP-1065).
+        'mcp.oauth.authorize' => 'account.ai-assistant',
         // Kundenportal-Schulungen (Feature 149, MVP-742): fehlte im Register
         // (MVP-797, Befund C3-28) — die uebrigen customer.*-Routen sind gemappt.
         'customer.learning.*' => 'customer-portal.learning',
@@ -175,6 +206,7 @@ return [
         // Angebots-Nachfassen (Feature 112, MVP-601)
         'quotes.follow-ups.*' => 'quotes.follow-ups',
         'quotes.win-rate' => 'quotes.follow-ups',
+        'quotes.*' => 'quotes.overview',
         // Bürgschaften (Feature 114) und Gewährleistung (Feature 115)
         'guarantees.*' => 'guarantees.overview',
         'warranties.*' => 'warranties.overview',
@@ -218,6 +250,7 @@ return [
         'helpdesk.queues.*' => 'helpdesk.overview',
         'helpdesk.routing.*' => 'helpdesk.overview',
         'helpdesk.reports.*' => 'helpdesk.overview',
+        'helpdesk.tickets.*' => 'helpdesk.overview',
         // Servicekatalog + Genehmigungs-Inbox (Feature 065, MVP-154):
         // bewusst KEIN neues Topic (Paritätspflicht ×alle Locales).
         'servicedesk.catalog.*' => 'helpdesk.overview',
@@ -234,7 +267,7 @@ return [
         // SLA-Verträge
         'sla-contracts.*' => 'sla.overview',
         // Verfahrenslauf-Detail (Designer/Läufe sind bereits gemappt)
-        'procedure-runs.show' => 'procedures.run',
+        'procedure-runs.*' => 'procedures.run',
         // ISMS-Auditprogramme → bestehendes Audit-Topic
         'isms.audit-programs.*' => 'isms.audits',
         // Startseite → Dashboard-Hilfe
@@ -263,6 +296,7 @@ return [
         'admin.operations.*' => 'admin.operations',
         'admin.scheduler.*' => 'admin.scheduler',
         'admin.ai.*' => 'ai.services', // Feature 025 KI-Dienste + Gedächtnis
+        'ai.suggestions.*' => 'ai.services',
         'admin.maintenance-windows.*' => 'admin.operations',
         // Admin: Systemeinstellungen, Datenhoheit, Kostenstellenregeln
         'admin.settings.*' => 'admin.settings',
@@ -279,7 +313,7 @@ return [
         'admin.problem-reports.*' => 'support.report-problem',
 
         // Tagesübersicht, Kanban und interne Kommunikation
-        'today.show' => 'work.overview',
+        'today.*' => 'work.overview',
         'kanban.*' => 'work.overview',
         'tasks.global.*' => 'work.overview',
         'chat.*' => 'communication.chat',
@@ -292,7 +326,8 @@ return [
         'diary.create' => 'diary-entries.create',
         'diary.show' => 'diary-entries.edit',
         'diary.edit' => 'diary-entries.edit',
-        'diary.case-file' => 'diary-entries.edit',
+        'diary.case-file*' => 'diary-entries.edit',
+        'diary.export.*' => 'diary-entries.create',
         // Aufmaßblatt (MVP-1058/1059)
         'takeoffs.*' => 'takeoffs',
 
@@ -308,6 +343,7 @@ return [
         // Wochenansicht der Aufträge sowie separate Zeiterfassung
         'week.index' => 'week.overview',
         'time-entries.create' => 'time-entries.start',
+        'time-entries.allocations.*' => 'time-entries.edit',
         'stopwatch.*' => 'time-entries.start',
         'admin-time-entries.*' => 'time-entries.edit',
         'projects.time-entries.*' => 'time-entries.edit',
@@ -398,6 +434,8 @@ return [
         // Anlagenregister und AfA (Feature 133, MVP-698).
         'finance.accounting.fixed-assets.*' => 'accounting.fixed-assets',
         'finance.accounting.fixed-asset-classes.*' => 'accounting.fixed-assets',
+        // Einrichtungsdialoge (Geschäftsjahr, Versteuerung, Meldezeitraum, …).
+        'finance.accounting.*' => 'accounting.overview',
         // Mahnwesen (Feature 127, MVP-691).
         'finance.dunning.*' => 'finance.dunning',
         // Provisionen (Feature 146, MVP-729): Regeln, offene Zeilen, Läufe.
@@ -596,7 +634,9 @@ return [
         // Compliance – Hinweisgebersystem & Audit
         'whistleblowing.internal.*' => 'whistleblowing.cases',
         'whistleblowing.portal.edit' => 'whistleblowing.portal',
+        'whistleblowing.portal.poster' => 'whistleblowing.portal',
         'whistleblowing.portal' => 'whistleblowing.report',
+        'whistleblowing.landing' => 'whistleblowing.report',
         'whistleblowing.receipt' => 'whistleblowing.report',
         'whistleblowing.mailbox.*' => 'whistleblowing.report',
         'audit.*' => 'audit.log',
@@ -631,6 +671,7 @@ return [
         'admin.support.access-audit.*' => 'admin.support',
         'admin.backup.*' => 'admin.backups',
         'admin.branch-profiles.*' => 'admin.branch-profiles',
+        'admin.branch-profile-variants.*' => 'admin.branch-profiles',
 
         // Administration – Betrieb, Stammdaten-Pflege & Integrationen
         'admin.automations.*' => 'admin.automations',
@@ -670,7 +711,7 @@ return [
         'bookmarks.*' => 'account.bookmarks',
         'filter-presets.*' => 'account.bookmarks',
         'profile.api-tokens.*' => 'account.api-tokens',
-        'calendar.index' => 'account.calendar',
+        'calendar.*' => 'account.calendar',
 
         // Kundenportal (eigener customer-Guard, eigene Zielgruppe)
         'customer.dashboard' => 'customer-portal.overview',
@@ -691,6 +732,10 @@ return [
         'customer.returns.*' => 'customer-portal.claims',
         'customer.rentals.*' => 'customer-portal.rentals',
         'customer.queries.*' => 'customer-portal.queries',
+        'customer.assets.*' => 'customer-portal.assets',
+        'customer.profile.*' => 'customer-portal.access',
+        'customer.invitation.*' => 'customer-portal.access',
+        'customer.password.confirm' => 'customer-portal.access',
         'customer.login' => 'customer-portal.access',
         'customer.2fa.*' => 'customer-portal.access',
         'customer.two-factor.*' => 'customer-portal.access',

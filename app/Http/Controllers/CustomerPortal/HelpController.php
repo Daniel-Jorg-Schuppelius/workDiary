@@ -36,6 +36,7 @@ class HelpController extends Controller {
         'invoices' => PortalCapability::Invoices,
         'billing' => PortalCapability::Invoices,
         'documents' => PortalCapability::Documents,
+        'assets' => PortalCapability::Assets,
         'issues' => PortalCapability::OpenIssues,
         'tickets' => PortalCapability::Tickets,
         'claims' => PortalCapability::Claims,

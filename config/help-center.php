@@ -86,7 +86,7 @@ return [
         'faktura' => [
             'icon' => 'receipt_long',
             'patterns' => [
-                'invoices.*', 'quotes.*', 'commissions*', 'contracts.*',
+                'invoices.*', 'quotes.*', 'billing.*', 'commissions*', 'contracts.*',
                 // Lexware-Office-Tarifergänzungen (Feature 158).
                 'lexware.*',
                 'documents.*',

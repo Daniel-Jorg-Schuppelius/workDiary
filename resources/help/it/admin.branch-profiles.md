@@ -1,7 +1,7 @@
 ---
 title: "Profili di settore"
 topic: admin.branch-profiles
-version: 2
+version: 3
 audience:
     - admin
 related:
@@ -31,3 +31,15 @@ uso ed elimina le regole obbligatorie del profilo; i modelli restano. Un
 avviso di aggiornamento sulla scheda segnala una versione più recente;
 **Importa** accetta un profilo JSON dal catalogo. I tipi di incarico
 vengono mostrati nella lingua dell'utente.
+
+**Varianti specifiche del cliente:** una variante si sovrappone a un profilo
+di settore – riprende il profilo base, omette elementi e ne aggiunge di
+propri, senza modificare il profilo. «Crea variante» richiede profilo base,
+codice (minuscole, cifre e trattini) e denominazione. In «Omettere elementi»
+spunta ciò che non deve essere creato all'installazione; le voci già presenti
+non vengono toccate. Le «Aggiunte» sono un estratto di profilo in formato
+JSON, strutturato come un profilo di settore; gli elementi con lo stesso nome
+sostituiscono quelli del profilo base. **Installa** applica la variante,
+«Aggiorna le voci esistenti» allinea le voci già installate; ogni salvataggio
+incrementa la versione. «Esporta come JSON» trasmette la variante;
+eliminandola, le voci installate restano.
