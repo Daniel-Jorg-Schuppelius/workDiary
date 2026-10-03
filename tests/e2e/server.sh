@@ -10,17 +10,21 @@ cd "$(dirname "$0")/../.."
 
 : "${DB_DATABASE:?DB_DATABASE muss gesetzt sein (playwright.config.ts webServer.env)}"
 
+# shellcheck source=../../scripts/lib/php-bin.sh
+source scripts/lib/php-bin.sh
+PHP_BIN="$(resolve_php_bin . "${PHP_BIN:-}")"
+
 rm -f "$DB_DATABASE"
 touch "$DB_DATABASE"
 
-php artisan migrate:fresh --seed --force --no-interaction
+"$PHP_BIN" artisan migrate:fresh --seed --force --no-interaction
 
 # Default-Org kommt mit Plan "free" aus dem Seeder — das Modul-Gate (423)
 # würde sonst fast jede Seite sperren. Für E2E: alles freischalten.
-php artisan tinker --execute='\App\Models\Platform\Organization::query()->update(["plan" => "enterprise"]);'
+"$PHP_BIN" artisan tinker --execute='\App\Models\Platform\Organization::query()->update(["plan" => "enterprise"]);'
 
 # Hilfecenter (MVP-752): help_topics wird im Deploy per Reindex befüllt —
 # die frische E2E-DB braucht denselben Schritt, sonst ist /hilfe leer.
-php artisan help:reindex
+"$PHP_BIN" artisan help:reindex
 
-exec php artisan serve --host=127.0.0.1 --port="${E2E_PORT:-8010}"
+exec "$PHP_BIN" artisan serve --host=127.0.0.1 --port="${E2E_PORT:-8010}"

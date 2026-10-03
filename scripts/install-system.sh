@@ -84,18 +84,10 @@ if [[ -z "$DESTDIR" && $DRY_RUN -eq 0 && $EUID -ne 0 ]]; then
   fail "bitte als root ausführen (schreibt nach /etc und steuert systemd)."
 fi
 
-# PHP-Binary: Override → PATH → gängige versionsierte Pfade.
-detect_php() {
-  if [[ -n "${PHP_BIN:-}" ]]; then printf '%s' "$PHP_BIN"; return; fi
-  local candidate
-  for candidate in php php8.5 /usr/bin/php /usr/bin/php8.5; do
-    if command -v "$candidate" >/dev/null 2>&1; then
-      command -v "$candidate"; return
-    fi
-  done
-  fail "kein PHP-Binary gefunden — PHP_BIN=/pfad/zu/php setzen."
-}
-PHP_BIN="$(detect_php)"
+# PHP-Binary: Override → versioniertes Binary passend zur composer.json → php.
+# shellcheck source=lib/php-bin.sh
+source "$SCRIPT_DIR/lib/php-bin.sh"
+PHP_BIN="$(resolve_php_bin "$APP_DIR" "${PHP_BIN:-}")"
 
 # Betriebs-User: Owner von storage/ (dem gehören Laravel-Schreibpfade).
 RUN_USER="${RUN_USER:-$(stat -c %U "$APP_DIR/storage" 2>/dev/null || echo www-data)}"
@@ -298,7 +290,7 @@ install() {
 
   # Wächter nur mit ext-inotify (sonst Restart-Schleife im Unit).
   if [[ $WITH_WATCH -eq 1 ]] && ! "$PHP_BIN" -m 2>/dev/null | grep -qx inotify; then
-    fail "--with-integrity-watch braucht ext-inotify ($PHP_BIN meldet sie nicht). Ubuntu/Debian: apt install php8.5-inotify"
+    fail "--with-integrity-watch braucht ext-inotify ($PHP_BIN meldet sie nicht). Ubuntu/Debian: apt install php$(php_version_of "$PHP_BIN")-inotify"
   fi
 
   # 1) Cron (Herzschlag + optional Backup) + Backup-Konfiguration + Token

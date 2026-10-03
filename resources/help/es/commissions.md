@@ -4,6 +4,7 @@ topic: commissions
 version: 1
 audience:
     - admin
+    - geschaeftsfuehrung
     - buchhaltung
 modules:
     - module.vertrieb

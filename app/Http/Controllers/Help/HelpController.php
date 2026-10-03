@@ -12,17 +12,17 @@ namespace App\Http\Controllers\Help;
 
 use App\Http\Controllers\Controller;
 use App\Models\Platform\{HelpView, User};
-use App\Services\Help\HelpTopicResolver;
+use App\Services\Help\{HelpContextResolver, HelpTopicResolver};
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{JsonResponse, Request};
 use Symfony\Component\HttpFoundation\Response;
 
 class HelpController extends Controller {
-    public function show(Request $request, HelpTopicResolver $resolver, string $topic): JsonResponse {
+    public function show(Request $request, HelpTopicResolver $resolver, HelpContextResolver $context, string $topic): JsonResponse {
         /** @var User|null $user */
         $user = $request->user();
 
-        $row = $resolver->find($topic, $user);
+        $row = $context->readableTopic($request, $topic, $user);
         if ($row === null) {
             return response()->json([
                 'found' => false,

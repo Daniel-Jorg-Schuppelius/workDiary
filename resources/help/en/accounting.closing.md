@@ -4,6 +4,7 @@ topic: accounting.closing
 version: 1
 audience:
     - admin
+    - geschaeftsfuehrung
     - buchhaltung
 related:
     - accounting.overview

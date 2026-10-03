@@ -4,6 +4,8 @@ topic: pricing.margin-rules
 version: 1
 audience:
     - admin
+    - geschaeftsfuehrung
+    - teamleitung
 modules:
     - module.lager
 related:

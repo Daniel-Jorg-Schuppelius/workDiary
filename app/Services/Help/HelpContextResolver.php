@@ -10,7 +10,7 @@
 
 namespace App\Services\Help;
 
-use App\Models\Platform\User;
+use App\Models\Platform\{HelpTopic, User};
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
 use Illuminate\Support\Str;
@@ -26,6 +26,7 @@ use Illuminate\Support\Str;
 class HelpContextResolver {
     public function __construct(
         private readonly HelpTopicResolver $topics,
+        private readonly PageHelpAccess $pageAccess,
     ) {}
 
     /**
@@ -66,16 +67,31 @@ class HelpContextResolver {
 
     /**
      * Wie {@see currentTopicFor()}, liefert den Topic-Code aber nur, wenn das
-     * Topic tatsächlich existiert UND für den Nutzer sichtbar ist
-     * (audience-Filter + Locale-Fallback via HelpTopicResolver). Damit
-     * erscheint im Layout nie ein "toter" Hilfe-Button.
+     * Topic existiert und der Nutzer es lesen darf: über die Zielgruppe oder,
+     * auf einer geöffneten Seite, über den Seitenzugriff. Damit erscheint im
+     * Layout nie ein "toter" Hilfe-Button.
      */
     public function visibleTopicFor(Request|Route $routeOrRequest, ?User $user): ?string {
         $topic = $this->currentTopicFor($routeOrRequest);
         if ($topic === null) {
             return null;
         }
+        if ($this->topics->find($topic, $user) !== null) {
+            return $topic;
+        }
 
-        return $this->topics->find($topic, $user) !== null ? $topic : null;
+        if ($routeOrRequest instanceof Request && $user !== null && $this->topics->findForPage($topic) !== null) {
+            $this->pageAccess->mark($routeOrRequest, $topic);
+
+            return $topic;
+        }
+
+        return null;
+    }
+
+    /** Thema für den Abruf: sichtbar über die Zielgruppe oder über eine geöffnete Seite freigegeben. */
+    public function readableTopic(Request $request, string $topic, ?User $user): ?HelpTopic {
+        return $this->topics->find($topic, $user)
+            ?? ($this->pageAccess->allows($request, $topic) ? $this->topics->findForPage($topic) : null);
     }
 }

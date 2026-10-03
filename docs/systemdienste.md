@@ -50,6 +50,13 @@ Dienste neu geladen. Ausnahme: eine vorhandene `/etc/workdiary-backup.conf`
 bleibt unangetastet — nur explizite `--backup-dir`/`--backup-keep-days`
 schreiben sie neu. Overrides per Env: `APP_DIR`, `PHP_BIN`, `RUN_USER`.
 
+Das PHP-Binary für Cron und Dienste sucht der Installer selbst
+(`scripts/lib/php-bin.sh`): Mindestversion aus `require.php` der
+`composer.json`, dann `php8.5` vor `php`. Auf Servern mit mehreren
+PHP-Versionen darf `php` also auf eine ältere zeigen. Nach einer Anhebung der
+PHP-Version den Installer erneut ausführen, damit Cron und Units das neue
+Binary bekommen.
+
 ## Mehrere Instanzen auf einem Host
 
 Ohne `--instance` verwendet der Installer **feste, systemweite Namen**

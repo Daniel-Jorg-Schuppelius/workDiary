@@ -4,6 +4,7 @@ topic: accounting.overview
 version: 2
 audience:
     - admin
+    - geschaeftsfuehrung
     - buchhaltung
 modules:
     - module.finance

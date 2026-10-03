@@ -188,19 +188,74 @@ class HelpContextTest extends TestCase {
             ->assertSee('data-help-trigger', false);
     }
 
-    public function test_layout_renders_no_context_when_topic_is_admin_only(): void {
+    public function test_page_access_unlocks_the_page_help_outside_the_audience(): void {
         $this->createTopic('week.overview', ['admin']);
+        $this->createTopic('admin.backups', ['admin']);
 
         $user = User::factory()->user()->create();
 
-        // audience-fremdes Topic ⇒ kein Kontext-Attribut und kein
-        // data-help-topic am Header-Button (Fallback statt 404 im Drawer).
+        // Ohne Seitenbesuch bleibt das Thema verborgen.
+        $this->actingAs($user)
+            ->getJson(route('help.topics.show', ['topic' => 'week.overview']))
+            ->assertNotFound();
+
+        // Wer die Seite öffnen darf, sieht ihre Hilfe — die Zielgruppe bildet
+        // eigene Rollen und einzeln vergebene Rechte nicht ab.
         $this->actingAs($user)
             ->get(route('week.index'))
             ->assertOk()
-            ->assertDontSee('data-help-context=', false)
-            ->assertDontSee(__('Hilfe zu dieser Seite'))
-            ->assertSee('data-help-trigger', false);
+            ->assertSee('data-help-context="week.overview"', false)
+            ->assertSee(__('Hilfe zu dieser Seite'));
+
+        $this->actingAs($user)
+            ->getJson(route('help.topics.show', ['topic' => 'week.overview']))
+            ->assertOk()
+            ->assertJsonPath('found', true);
+        $this->actingAs($user)
+            ->get(route('help.center.show', ['topic' => 'week.overview']))
+            ->assertOk();
+
+        // Freigegeben ist nur das Thema der geöffneten Seite.
+        $this->actingAs($user)
+            ->getJson(route('help.topics.show', ['topic' => 'admin.backups']))
+            ->assertNotFound();
+    }
+
+    public function test_a_rejected_request_does_not_unlock_the_page_help(): void {
+        $access = app(\App\Services\Help\PageHelpAccess::class);
+        $middleware = new \App\Http\Middleware\RememberPageHelp($access);
+
+        $request = \Illuminate\Http\Request::create('/week');
+        $request->setLaravelSession(app('session')->driver('array'));
+        $access->mark($request, 'week.overview');
+
+        $middleware->handle($request, static fn(): \Illuminate\Http\Response => new \Illuminate\Http\Response('', 403));
+        $this->assertFalse($access->allows($request, 'week.overview'));
+
+        $middleware->handle($request, static fn(): \Illuminate\Http\Response => new \Illuminate\Http\Response('ok'));
+        $this->assertTrue($access->allows($request, 'week.overview'));
+        $this->assertFalse($access->allows($request, 'admin.backups'));
+    }
+
+    public function test_page_access_does_not_unlock_help_of_a_disabled_module(): void {
+        HelpTopic::query()->create([
+            'topic' => 'week.overview',
+            'locale' => 'de',
+            'title' => 'Titel',
+            'audience' => ['admin'],
+            'modules' => ['module.gibt-es-nicht'],
+            'version' => 1,
+            'body_md' => 'Body',
+            'body_html' => '<p>Body</p>',
+            'related' => [],
+        ]);
+
+        $user = User::factory()->user()->create();
+
+        $this->actingAs($user)
+            ->get(route('week.index'))
+            ->assertOk()
+            ->assertDontSee('data-help-context=', false);
     }
 
     public function test_layout_renders_no_context_when_topic_file_is_missing(): void {

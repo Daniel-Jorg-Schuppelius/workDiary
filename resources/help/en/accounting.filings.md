@@ -4,6 +4,7 @@ topic: accounting.filings
 version: 1
 audience:
     - admin
+    - geschaeftsfuehrung
     - buchhaltung
 modules:
     - module.finance

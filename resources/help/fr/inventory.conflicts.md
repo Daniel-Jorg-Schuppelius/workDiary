@@ -4,6 +4,8 @@ topic: inventory.conflicts
 version: 1
 audience:
     - admin
+    - geschaeftsfuehrung
+    - teamleitung
 modules:
     - module.lager
 related:

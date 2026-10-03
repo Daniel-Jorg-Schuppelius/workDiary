@@ -2,7 +2,9 @@
 title: "Checklist di onboarding"
 topic: onboarding.checklist
 version: 1
-audience: ["admin"]
+audience:
+    - admin
+    - geschaeftsfuehrung
 related:
     - diary-entries.create
     - time-entries.start

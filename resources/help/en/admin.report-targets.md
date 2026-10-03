@@ -4,6 +4,7 @@ topic: admin.report-targets
 version: 1
 audience:
     - admin
+    - geschaeftsfuehrung
 related:
     - reports.overview
     - admin.handbook

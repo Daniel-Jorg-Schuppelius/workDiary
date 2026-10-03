@@ -4,6 +4,12 @@ topic: admin.import
 version: 3
 audience:
     - admin
+    - geschaeftsfuehrung
+    - personalverwaltung
+    - teamleitung
+    - buchhaltung
+    - user
+    - aussendienst
 schema: process
 related:
     - admin.handbook

@@ -4,6 +4,7 @@ topic: admin.webhooks
 version: 1
 audience:
     - admin
+    - geschaeftsfuehrung
 related:
     - admin.notification-rules
     - admin.handbook

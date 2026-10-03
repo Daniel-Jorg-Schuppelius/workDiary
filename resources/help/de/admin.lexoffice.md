@@ -4,6 +4,7 @@ topic: admin.lexoffice
 version: 1
 audience:
     - admin
+    - buchhaltung
 related:
     - admin.plugins
     - articles.lexoffice

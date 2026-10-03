@@ -4,6 +4,7 @@ topic: finance.gobd
 version: 1
 audience:
     - admin
+    - buchhaltung
 modules:
     - module.finance
 related:

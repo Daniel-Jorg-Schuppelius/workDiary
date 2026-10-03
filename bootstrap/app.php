@@ -142,6 +142,8 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\EnforcePlatformAdminIpAllowlist::class,
             // Listen-URL samt Filtern für redirect()->toList() merken.
             RememberListUrl::class,
+            // Hilfethema der ausgelieferten Seite für den Abruf freigeben.
+            \App\Http\Middleware\RememberPageHelp::class,
             // Dialog-fetch: Redirect → {redirect}/422, damit der Flash nicht verpufft.
             \App\Http\Middleware\DialogRedirectAsJson::class,
         ]);

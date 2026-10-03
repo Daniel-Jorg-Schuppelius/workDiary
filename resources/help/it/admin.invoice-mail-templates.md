@@ -4,6 +4,7 @@ topic: admin.invoice-mail-templates
 version: 1
 audience:
     - admin
+    - buchhaltung
 related:
     - invoices.manage
     - admin.handbook

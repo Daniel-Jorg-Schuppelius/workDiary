@@ -4,7 +4,14 @@ topic: construction-notices
 version: 1
 audience:
     - admin
+    - geschaeftsfuehrung
+    - personalverwaltung
     - teamleitung
+    - buchhaltung
+    - user
+    - aussendienst
+    - callcenter
+    - support
 modules:
     - module.bau
 related:

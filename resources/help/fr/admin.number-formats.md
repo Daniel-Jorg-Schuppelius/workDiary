@@ -4,6 +4,7 @@ topic: admin.number-formats
 version: 1
 audience:
     - admin
+    - teamleitung
 related:
     - invoices.manage
     - admin.classifications

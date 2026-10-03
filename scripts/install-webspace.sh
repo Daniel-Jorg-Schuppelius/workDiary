@@ -79,19 +79,6 @@ require_command() {
     fi
 }
 
-require_php_version() {
-    local min_major=8
-    local min_minor=5
-    local current
-    current="$(php -r 'echo PHP_VERSION;')"
-
-    if ! php -r 'exit(version_compare(PHP_VERSION, "8.5.0", ">=") ? 0 : 1);'; then
-        echo "PHP ${min_major}.${min_minor} oder neuer wird benoetigt, gefunden: ${current}." >&2
-        echo "Bitte auf dem Webspace ein PHP-${min_major}.${min_minor}-CLI auswaehlen (z. B. ueber das Hosting-Panel)." >&2
-        exit 1
-    fi
-}
-
 preflight_webserver() {
     # Best-effort: laeuft das Skript unprivilegiert oder unter nginx, sind das nur
     # Hinweise (kein Abbruch). Die harten Schreibrechte-Checks kommen spaeter.
@@ -133,8 +120,13 @@ env_set() {
 }
 
 log "Pruefe Umgebung"
-require_command php
-require_php_version
+# PHP-CLI passend zur composer.json: versioniertes Binary (php8.5) vor php,
+# PHP_BIN=<pfad> gibt eines vor. Auf Webspaces mit mehreren PHP-Versionen ist
+# die CLI-Vorgabe oft aelter als die Version des Webs.
+# shellcheck source=lib/php-bin.sh
+source scripts/lib/php-bin.sh
+PHP_BIN="$(resolve_php_bin . "${PHP_BIN:-}")"
+echo "PHP-Binary: $PHP_BIN ($("$PHP_BIN" -r 'echo PHP_VERSION;'))"
 preflight_webserver
 
 if [[ "$SKIP_COMPOSER" -eq 0 ]]; then
@@ -177,12 +169,12 @@ if [[ "$SKIP_COMPOSER" -eq 0 ]]; then
     log "Installiere PHP-Abhaengigkeiten"
     # Composer-Cache in die Site legen: ISPConfig-Home (.../webNNN) ist immutable.
     export COMPOSER_CACHE_DIR="$PWD/storage/framework/cache/composer"
-    composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction
+    run_composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction
 fi
 
 if [[ -z "$(env_get APP_KEY)" ]]; then
     log "Erzeuge APP_KEY"
-    php artisan key:generate --force
+    "$PHP_BIN" artisan key:generate --force
 fi
 
 if [[ "$SKIP_ASSETS" -eq 0 ]]; then
@@ -232,31 +224,31 @@ log "Erzeuge Storage-Link"
 if [[ -L public/storage || -e public/storage ]]; then
     echo "  vorhanden, uebersprungen"
 else
-    php artisan storage:link || true
+    "$PHP_BIN" artisan storage:link || true
 fi
 
 if [[ "$SKIP_MIGRATIONS" -eq 0 ]]; then
     log "Fuehre Datenbank-Migrationen aus"
-    php artisan migrate --force
+    "$PHP_BIN" artisan migrate --force
 fi
 
 if [[ "$SKIP_CACHE" -eq 0 ]]; then
     log "Erzeuge Production-Caches"
-    php artisan optimize:clear
-    php artisan config:cache
-    php artisan route:cache
-    php artisan event:cache
-php artisan modules:cache
+    "$PHP_BIN" artisan optimize:clear
+    "$PHP_BIN" artisan config:cache
+    "$PHP_BIN" artisan route:cache
+    "$PHP_BIN" artisan event:cache
+    "$PHP_BIN" artisan modules:cache
 fi
 
 log "Starte Queue-Worker neu, falls vorhanden"
 if [[ "$SKIP_MIGRATIONS" -eq 0 ]]; then
-    php artisan queue:restart || true
+    "$PHP_BIN" artisan queue:restart || true
 else
     echo "  uebersprungen (Migrationen ausgelassen — DB/cache-Tabelle evtl. noch nicht vorhanden)"
 fi
 
-cat <<'DONE'
+cat <<DONE
 
 Installation abgeschlossen.
 
@@ -264,9 +256,10 @@ Naechste Schritte:
   1. Domain/Webroot im Hosting-Panel auf public/ setzen.
   2. .env pruefen: APP_URL, DB_*, MAIL_*, optionale Integrationen.
   3. Cron fuer Laravel Scheduler einrichten:
-     * * * * * cd /pfad/zum/projekt && php artisan schedule:run >> /dev/null 2>&1
+     * * * * * cd $ROOT_DIR && $PHP_BIN artisan schedule:run >> /dev/null 2>&1
+     (oder scripts/cron.sh: Scheduler und Queue in einem Eintrag, sucht das PHP-Binary selbst)
   4. Queue-Worker dauerhaft ueber Supervisor, systemd oder Hoster-Job starten:
-     php artisan queue:work --tries=3
+     $PHP_BIN artisan queue:work --tries=3
 
-Hinweis: php artisan view:cache wird bewusst nicht ausgefuehrt.
+Hinweis: artisan view:cache wird bewusst nicht ausgefuehrt.
 DONE

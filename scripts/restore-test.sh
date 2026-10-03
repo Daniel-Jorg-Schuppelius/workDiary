@@ -64,15 +64,10 @@ note() { echo "  $*"; }
 [[ $EUID -eq 0 ]] || fail "bitte als root ausführen (Test-DB anlegen, Arbeitsverzeichnis unter /var/tmp)."
 [[ -r "$ENV_FILE" ]] || fail "$ENV_FILE nicht lesbar — APP_DIR korrekt?"
 
-detect_php() {
-  if [[ -n "${PHP_BIN:-}" ]]; then printf '%s' "$PHP_BIN"; return; fi
-  local candidate
-  for candidate in php php8.5 /usr/bin/php /usr/bin/php8.5; do
-    if command -v "$candidate" >/dev/null 2>&1; then command -v "$candidate"; return; fi
-  done
-  fail "kein PHP-Binary gefunden — PHP_BIN=/pfad/zu/php setzen."
-}
-PHP_BIN="$(detect_php)"
+# PHP-Binary: Override → versioniertes Binary passend zur composer.json → php.
+# shellcheck source=lib/php-bin.sh
+source "$SCRIPT_DIR/lib/php-bin.sh"
+PHP_BIN="$(resolve_php_bin "$APP_DIR" "${PHP_BIN:-}")"
 RUN_USER="${RUN_USER:-$(stat -c %U "$APP_DIR/storage" 2>/dev/null || echo www-data)}"
 
 # .env-Leser + Instanzname: identisch zu scripts/backup.sh.

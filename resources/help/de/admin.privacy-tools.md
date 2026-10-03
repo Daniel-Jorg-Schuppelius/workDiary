@@ -4,6 +4,8 @@ topic: admin.privacy-tools
 version: 1
 audience:
     - admin
+    - geschaeftsfuehrung
+    - support
 related:
     - admin.security
     - admin.handbook

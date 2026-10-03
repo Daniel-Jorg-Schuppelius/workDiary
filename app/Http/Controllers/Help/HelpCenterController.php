@@ -14,7 +14,7 @@ namespace App\Http\Controllers\Help;
 
 use App\Http\Controllers\Controller;
 use App\Models\Platform\{HelpView, User};
-use App\Services\Help\{HelpCenterCatalog, HelpTopicResolver};
+use App\Services\Help\{HelpCenterCatalog, HelpContextResolver, HelpTopicResolver};
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
@@ -143,13 +143,13 @@ class HelpCenterController extends Controller {
         return $popular;
     }
 
-    public function show(Request $request, HelpTopicResolver $resolver, HelpCenterCatalog $catalog, string $topic): View {
+    public function show(Request $request, HelpTopicResolver $resolver, HelpContextResolver $context, HelpCenterCatalog $catalog, string $topic): View {
         /** @var User|null $user */
         $user = $request->user();
 
         // Unbekannt, unsichtbar oder ohne Übersetzung in der Fallback-Kette:
         // einheitliches 404, keine Inhaltsmetadaten, kein Berechtigungs-Orakel.
-        $row = $resolver->find($topic, $user);
+        $row = $context->readableTopic($request, $topic, $user);
         abort_if($row === null, 404);
 
         HelpView::query()->create([

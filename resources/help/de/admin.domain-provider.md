@@ -4,6 +4,7 @@ topic: admin.domain-provider
 version: 1
 audience:
     - admin
+    - geschaeftsfuehrung
 modules:
     - module.domain
 related:

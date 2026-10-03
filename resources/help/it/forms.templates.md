@@ -4,6 +4,7 @@ topic: forms.templates
 version: 1
 audience:
     - admin
+    - geschaeftsfuehrung
     - teamleitung
 modules:
     - module.forms

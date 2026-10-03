@@ -4,6 +4,7 @@ topic: admin.surcharge-rules
 version: 1
 audience:
     - admin
+    - geschaeftsfuehrung
     - buchhaltung
 modules:
     - module.lohn

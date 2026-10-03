@@ -4,6 +4,7 @@ topic: finance.cashbook
 version: 1
 audience:
     - admin
+    - geschaeftsfuehrung
 modules:
     - module.kasse
 related:

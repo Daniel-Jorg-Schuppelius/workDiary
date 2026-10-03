@@ -4,6 +4,7 @@ topic: admin.license
 version: 2
 audience:
     - admin
+    - geschaeftsfuehrung
 related:
     - admin.handbook
     - admin.tenants

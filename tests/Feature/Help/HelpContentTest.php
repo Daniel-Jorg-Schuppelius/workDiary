@@ -221,6 +221,35 @@ class HelpContentTest extends TestCase {
     }
 
     /**
+     * Hilfe-Sichtbarkeit folgt der Seiten-Sichtbarkeit (MVP-753): Trägt ein
+     * Thema `modules`, steht das Modul jeder zugeordneten Seite darin — sonst
+     * öffnet jemand die Seite und sieht keine Hilfe.
+     */
+    public function test_topic_modules_cover_the_module_of_every_mapped_page(): void {
+        $context = $this->app->make(\App\Services\Help\HelpContextResolver::class);
+        $registry = $this->app->make(\App\Modules\ModuleRegistry::class);
+        $problems = [];
+
+        foreach (\Illuminate\Support\Facades\Route::getRoutes()->getRoutes() as $route) {
+            $name = $route->getName();
+            if ($name === null || ! in_array('GET', $route->methods(), true)) {
+                continue;
+            }
+            $topic = $context->currentTopicFor($route);
+            $module = $registry->moduleForRoute($name);
+            if ($topic === null || $module === null) {
+                continue;
+            }
+            $modules = $this->loader->load($topic, 'de')['modules'] ?? [];
+            if ($modules !== [] && ! in_array($module, $modules, true)) {
+                $problems[] = "{$name} ({$module}) → {$topic} nennt nur: " . implode(', ', $modules);
+            }
+        }
+
+        $this->assertSame([], $problems, implode("\n", $problems));
+    }
+
+    /**
      * Bild-Gates (MVP-754): Artikel-Bilder sind lokale `media/`-Assets mit
      * Alt-Text und existierender Basisdatei; der Media-Ordner enthält nur
      * erlaubte, referenzierte Dateien unterhalb des Größenlimits (kein SVG,

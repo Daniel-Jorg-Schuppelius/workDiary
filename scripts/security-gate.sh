@@ -20,6 +20,10 @@ cd "$(dirname "$0")/.."
 
 step() { printf '\n\033[1;34m▶ %s\033[0m\n' "$1"; }
 
+# shellcheck source=lib/php-bin.sh
+source scripts/lib/php-bin.sh
+PHP_BIN="$(resolve_php_bin . "${PHP_BIN:-}")"
+
 step "Secret-/Credential-Scan der Git-Historie (gitleaks)"
 if command -v gitleaks >/dev/null 2>&1; then
   gitleaks detect --source . --config .gitleaks.toml --redact --no-banner
@@ -29,7 +33,7 @@ else
 fi
 
 step "Composer-Abhängigkeits-Advisories (composer audit)"
-composer audit --no-interaction
+run_composer audit --no-interaction
 
 step "NPM-Abhängigkeits-Advisories (npm audit, prod)"
 npm audit --omit=dev
@@ -37,7 +41,7 @@ npm audit --omit=dev
 step "OSV-Sicherheitslage (security:advisories-check, Warn-Step)"
 # Nicht blockierend: die CI-Datenbank enthält keine Advisory-Daten; auf dem
 # Betriebssystem warnt der Step bei offenen high/critical-Advisories.
-php artisan security:advisories-check || printf '\033[1;33m⚠ Offene high/critical-Advisories — Admin → Sicherheit prüfen.\033[0m\n'
+"$PHP_BIN" artisan security:advisories-check || printf '\033[1;33m⚠ Offene high/critical-Advisories — Admin → Sicherheit prüfen.\033[0m\n'
 
 step "SBOM erzeugen (CycloneDX 1.6: Composer + npm + hierarchischer Merge)"
 # Feature 044e (AR §23): echte Dependency-Graphen über die offiziellen
@@ -45,22 +49,22 @@ step "SBOM erzeugen (CycloneDX 1.6: Composer + npm + hierarchischer Merge)"
 # (kein .NET nötig). Fallback: selbsttragender Eigenbau (composer sbom).
 # @cyclonedx/cyclonedx-npm ist bewusst KEINE devDependency (würde bei jedem
 # npm ci mitinstalliert, auch beim Server-Deploy) — npx lädt es on-demand.
-if composer CycloneDX:make-sbom --spec-version=1.6 --output-format=JSON --omit=dev --omit=plugin --output-file=storage/app/sbom-composer.cdx.json \
+if run_composer CycloneDX:make-sbom --spec-version=1.6 --output-format=JSON --omit=dev --omit=plugin --output-file=storage/app/sbom-composer.cdx.json \
    && npx --yes @cyclonedx/cyclonedx-npm@6 --omit dev --spec-version 1.6 --output-format JSON --output-file storage/app/sbom-npm.cdx.json; then
-  php scripts/merge-sbom.php storage/app/sbom-composer.cdx.json storage/app/sbom-npm.cdx.json storage/app/sbom.cdx.json "${APP_VERSION:-dev}"
+  "$PHP_BIN" scripts/merge-sbom.php storage/app/sbom-composer.cdx.json storage/app/sbom-npm.cdx.json storage/app/sbom.cdx.json "${APP_VERSION:-dev}"
 else
   printf '\033[1;33m⚠ CycloneDX-Tools nicht verfügbar — Fallback auf Eigenbau (flacher Graph).\033[0m\n'
-  php scripts/generate-sbom.php
+  "$PHP_BIN" scripts/generate-sbom.php
 fi
 
 step "Code-Stil (pint --test)"
-vendor/bin/pint --test
+"$PHP_BIN" vendor/bin/pint --test
 
 step "Statische Analyse (phpstan, Level 8)"
-composer lint
+run_composer lint
 
 step "Testsuite (composer test)"
-composer test
+run_composer test
 
 printf '\n\033[1;32m✓ Automatisiertes Security-Gate bestanden.\033[0m\n'
 printf 'Offen für die Freigabe: manuelle Whitebox-/2FA-Prüfung und unabhängiger Pentest (MVP-099/100/101).\n'

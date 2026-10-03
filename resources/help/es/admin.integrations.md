@@ -4,6 +4,7 @@ topic: admin.integrations
 version: 3
 audience:
     - admin
+    - buchhaltung
 related:
     - admin.plugins
     - admin.lexoffice

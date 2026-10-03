@@ -25,6 +25,19 @@ class HelpTopicResolver {
      * Audience-Filter: leere/fehlende audience = sichtbar für alle.
      */
     public function find(string $topic, ?User $user = null, ?string $preferredLocale = null): ?HelpTopic {
+        return $this->firstInChain($topic, $preferredLocale, fn(HelpTopic $row): bool => $this->isVisibleFor($row, $user));
+    }
+
+    /**
+     * Hilfe einer Seite, die der Nutzer geöffnet hat: Der Seitenzugriff ist
+     * die Freigabe, die Zielgruppe zählt nicht — das Modul-Gating bleibt.
+     */
+    public function findForPage(string $topic, ?string $preferredLocale = null): ?HelpTopic {
+        return $this->firstInChain($topic, $preferredLocale, fn(HelpTopic $row): bool => $this->modulesEnabled($row));
+    }
+
+    /** @param \Closure(HelpTopic): bool $visible */
+    private function firstInChain(string $topic, ?string $preferredLocale, \Closure $visible): ?HelpTopic {
         $locales = $this->localeFallbackChain($preferredLocale);
 
         $candidates = HelpTopic::query()
@@ -36,7 +49,7 @@ class HelpTopicResolver {
         foreach ($locales as $locale) {
             /** @var HelpTopic|null $row */
             $row = $candidates->get($locale);
-            if ($row !== null && $this->isVisibleFor($row, $user)) {
+            if ($row !== null && $visible($row)) {
                 return $row;
             }
         }

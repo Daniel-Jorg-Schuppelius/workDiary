@@ -4,6 +4,7 @@ topic: accounting.posting
 version: 1
 audience:
     - admin
+    - geschaeftsfuehrung
     - buchhaltung
 modules:
     - module.finance

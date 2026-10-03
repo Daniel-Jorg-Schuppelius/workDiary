@@ -4,6 +4,13 @@ topic: admin.classifications
 version: 1
 audience:
     - admin
+    - geschaeftsfuehrung
+    - personalverwaltung
+    - teamleitung
+    - user
+    - aussendienst
+    - callcenter
+    - support
 related:
     - catalog.entry-types
     - diary-entries.create

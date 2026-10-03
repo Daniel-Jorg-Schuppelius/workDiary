@@ -12,6 +12,10 @@
 #
 # Aufruf auf dem Server:  ./deploy.sh
 #
+# PHP: gesucht wird das Binary passend zu require.php der composer.json
+# (php8.5 vor php, siehe scripts/lib/php-bin.sh) — die CLI-Vorgabe des Servers
+# darf also eine ältere Version sein. PHP_BIN=<pfad> gibt eines vor.
+#
 set -euo pipefail
 
 cd "$(dirname "$0")"
@@ -31,18 +35,24 @@ MAINTENANCE_ON=0
 # nur ein Backup gemacht und sich dann kommentarlos beendet.
 # Das `exit` am Ende ist Pflicht: `set +e` im ERR-Trap schaltet errexit für das
 # ganze Skript ab — ohne exit liefe der Deploy nach jedem Fehler weiter, bis
-# hin zu `php artisan up` über einem halb migrierten Stand.
+# hin zu `artisan up` über einem halb migrierten Stand.
 finish_maintenance() {
     local rc=$? line="${1:-?}" cmd="${2:-?}"
     set +e  # nach dem Sichern von $?: sonst kann der Trap mitten in der Meldung abbrechen
     echo "✗ Deploy ABGEBROCHEN in Zeile $line (Exit-Code $rc): $cmd" >&2
     if [ "$MAINTENANCE_ON" = "1" ]; then
         echo "⚠ Die Anwendung bleibt im WARTUNGSMODUS (halb migrierter Stand darf nicht online)." >&2
-        echo "  Nach Klärung manuell: php artisan up" >&2
+        echo "  Nach Klärung manuell: $PHP_BIN artisan up" >&2
     fi
     exit "$rc"
 }
 trap 'finish_maintenance "$LINENO" "$BASH_COMMAND"' ERR
+
+# shellcheck source=scripts/lib/php-bin.sh
+source scripts/lib/php-bin.sh
+PHP_BIN_WISH="${PHP_BIN:-}"
+PHP_BIN="$(resolve_php_bin . "$PHP_BIN_WISH")"
+echo "→ PHP-Binary: $PHP_BIN ($("$PHP_BIN" -r 'echo PHP_VERSION;'))"
 
 # Liest einen Wert aus einer .env-artigen Datei. Fehlende Datei und fehlender
 # Schlüssel sind KEIN Fehler, sondern leere Ausgabe: unter `set -o pipefail`
@@ -113,7 +123,7 @@ fi
 
 if [ "${DEPLOY_SKIP_MAINTENANCE:-0}" != "1" ]; then
     echo "→ Wartungsmodus (Betreiber-Bypass über den ausgegebenen Secret-Link)"
-    DEPLOY_SECRET="$(php -r 'echo bin2hex(random_bytes(12));')"
+    DEPLOY_SECRET="$("$PHP_BIN" -r 'echo bin2hex(random_bytes(12));')"
     # --render: die Wartungsseite wird JETZT gerendert und von public/index.php
     # ausgeliefert, bevor Laravel bootet — sonst zeigten Besucher, solange
     # Composer und Vite die Anwendung umbauen, die nackte Standard-503-Seite
@@ -126,7 +136,7 @@ if [ "${DEPLOY_SKIP_MAINTENANCE:-0}" != "1" ]; then
     # Sonde bootet Laravel direkt; Exit 0 = leer, 3 = offene Jobs, sonst Fehler.
     # Gezählt wird je Queue (default UND media teilen sich die Tabelle).
     queue_rc=0
-    queue_report="$(php -r '
+    queue_report="$("$PHP_BIN" -r '
         try {
             require "vendor/autoload.php";
             $app = require "bootstrap/app.php";
@@ -147,8 +157,8 @@ if [ "${DEPLOY_SKIP_MAINTENANCE:-0}" != "1" ]; then
         0) ;;
         3)
             echo "Abbruch: offene Queue-Jobs — $queue_report." >&2
-            echo "  Erst leerlaufen lassen: php artisan queue:work --stop-when-empty" >&2
-            echo "                          php artisan queue:work media --queue=media --stop-when-empty" >&2
+            echo "  Erst leerlaufen lassen: $PHP_BIN artisan queue:work --stop-when-empty" >&2
+            echo "                          $PHP_BIN artisan queue:work media --queue=media --stop-when-empty" >&2
             echo "  Verzögerte Jobs laufen erst zu ihrem Termin — bis dahin warten oder gezielt löschen." >&2
             exit 1
             ;;
@@ -157,7 +167,7 @@ if [ "${DEPLOY_SKIP_MAINTENANCE:-0}" != "1" ]; then
             exit 1
             ;;
     esac
-    php artisan down --retry=60 --secret="$DEPLOY_SECRET" --render="errors::503"
+    "$PHP_BIN" artisan down --retry=60 --secret="$DEPLOY_SECRET" --render="errors::503"
     MAINTENANCE_ON=1
     DEPLOY_APP_URL="$(env_value APP_URL .env)"
     echo "  Bypass: ${DEPLOY_APP_URL:-<APP_URL>}/$DEPLOY_SECRET"
@@ -168,6 +178,12 @@ echo "→ Code auf origin/main bringen (Hard-Reset – verwirft lokale Änderung
 # storage/license-keys.env ist gitignored/untracked → reset --hard lässt sie unberührt.
 git fetch origin
 git reset --hard origin/main
+# Der neue Stand kann eine neuere PHP-Version verlangen als der bisherige.
+PHP_BIN_NEW="$(resolve_php_bin . "$PHP_BIN_WISH")"
+if [ "$PHP_BIN_NEW" != "$PHP_BIN" ]; then
+    PHP_BIN="$PHP_BIN_NEW"
+    echo "  PHP-Binary für den neuen Stand: $PHP_BIN ($("$PHP_BIN" -r 'echo PHP_VERSION;'))"
+fi
 
 echo "→ Lizenz-Signierschlüssel absichern (falls vorhanden)"
 [ -f storage/license-keys.env ] && chmod 600 storage/license-keys.env || true
@@ -200,10 +216,10 @@ export COMPOSER_CACHE_DIR="$PWD/storage/framework/cache/composer"
 # reproduzierbarer Install aus der Lock.
 if [ -f composer.local.json ]; then
     echo "  composer.local.json erkannt → privates Zusatzmodul (php-financial-formats) wird mit aufgelöst"
-    composer update daniel-jorg-schuppelius/php-financial-formats --with-all-dependencies \
+    run_composer update daniel-jorg-schuppelius/php-financial-formats --with-all-dependencies \
         --no-dev --optimize-autoloader --no-interaction
 else
-    composer install --no-dev --optimize-autoloader --no-interaction
+    run_composer install --no-dev --optimize-autoloader --no-interaction
 fi
 
 echo "→ Frontend-Assets bauen (Vite-Manifest für public/build)"
@@ -238,44 +254,44 @@ echo "→ Storage-Link sicherstellen (public/storage → storage/app/public)"
 # erreichbar. Nur anlegen, wenn er fehlt — sonst meldet Laravel einen Fehler
 # („link already exists"). Idempotent und still bei vorhandenem Link.
 if [ ! -e public/storage ]; then
-    php artisan storage:link
+    "$PHP_BIN" artisan storage:link
 else
     echo "  ✓ Storage-Link existiert bereits."
 fi
 
 echo "→ Datenbank-Migrationen"
-php artisan migrate --force
+"$PHP_BIN" artisan migrate --force
 
 echo "→ Datenbank-Seeder ausführen"
-php artisan db:seed --force
+"$PHP_BIN" artisan db:seed --force
 
 echo "→ Hilfe-Topics indexieren (resources/help/{locale} → help_topics)"
 # Ohne diesen Schritt bleibt die Tabelle help_topics leer und die In-App-Hilfe
 # (Sidebar) zeigt keine Texte.
-php artisan help:reindex
+"$PHP_BIN" artisan help:reindex
 
 echo "→ Suchindex abgleichen (Tätigkeitsrecherche: fehlende/veraltete Dokumente)"
 # Beim ersten Deploy baut der Abgleich den Index vollständig auf; danach nur
 # Nachzügler. Ein Fehler bricht den Deploy nicht ab — der nächtliche Lauf
 # (search:reconcile, Zeitplan) holt es nach.
-php artisan search:reconcile || echo "  ⚠ Suchindex-Abgleich fehlgeschlagen — nachholen: php artisan search:reconcile" >&2
+"$PHP_BIN" artisan search:reconcile || echo "  ⚠ Suchindex-Abgleich fehlgeschlagen — nachholen: $PHP_BIN artisan search:reconcile" >&2
 
 echo "→ Production-Caches bauen (config/route/event)"
 # optimize:clear räumt alte Caches weg, dann werden Production-Caches gebaut
 # (schneller + konsistent mit scripts/install-webspace.sh). view:cache bleibt
 # bewusst außen vor. Hinweis: spätere .env-Änderungen erst nach erneutem
 # config:cache wirksam.
-php artisan optimize:clear
-php artisan config:cache
-php artisan route:cache
-php artisan event:cache
+"$PHP_BIN" artisan optimize:clear
+"$PHP_BIN" artisan config:cache
+"$PHP_BIN" artisan route:cache
+"$PHP_BIN" artisan event:cache
 # Modul-Manifeste (MVP-861): Liste einmal einlesen statt je Request zu suchen.
-php artisan modules:cache
+"$PHP_BIN" artisan modules:cache
 
 echo "→ Queue-Worker neu starten (laufende Worker laden den neuen Code)"
 # Ohne Restart arbeiten dauerhaft laufende Worker (Supervisor/systemd) mit dem
 # alten Code weiter. Idempotent und unkritisch, wenn kein Worker läuft.
-php artisan queue:restart || true
+"$PHP_BIN" artisan queue:restart || true
 
 echo "→ Public Key ermitteln (license-keys.env, sonst .env)"
 PUBKEY="$(env_value LICENSE_PUBLIC_KEY storage/license-keys.env)"
@@ -285,11 +301,11 @@ fi
 
 echo "→ Lizenzdateien neu sealen"
 if [ -n "$PUBKEY" ]; then
-    php artisan license:seal --public-key="$PUBKEY"
+    "$PHP_BIN" artisan license:seal --public-key="$PUBKEY"
 else
     # Kein Key in license-keys.env/.env: license:seal nimmt die Vorgabe aus
     # config/license.php (eingebauter Herausgeber-Key).
-    php artisan license:seal
+    "$PHP_BIN" artisan license:seal
 fi
 
 echo "→ Integritäts-Baseline neu einfrieren (MVP-439)"
@@ -299,26 +315,26 @@ echo "→ Integritäts-Baseline neu einfrieren (MVP-439)"
 # --yes: nicht-interaktiv eine vorhandene Baseline überschreiben.
 # Ein Fehlschlag bricht den Deploy nicht ab, muss aber sichtbar sein —
 # sonst schlägt erst der nächtliche integrity:verify Alarm.
-if ! php artisan integrity:freeze --yes; then
+if ! "$PHP_BIN" artisan integrity:freeze --yes; then
     echo "  ⚠ integrity:freeze FEHLGESCHLAGEN — Baseline veraltet/fehlt."
-    echo "    Manuell nachholen: php artisan integrity:freeze --yes && php artisan integrity:verify"
+    echo "    Manuell nachholen: $PHP_BIN artisan integrity:freeze --yes && $PHP_BIN artisan integrity:verify"
 fi
 
 echo "→ Release-Manifest (Versionen, Prüfsummen; optional signiert)"
 # Kein Abbruchgrund: das Manifest ist Nachweis, nicht Betriebsvoraussetzung.
-php artisan release:manifest || echo "  ⚠ release:manifest fehlgeschlagen — Nachweis manuell erzeugen."
+"$PHP_BIN" artisan release:manifest || echo "  ⚠ release:manifest fehlgeschlagen — Nachweis manuell erzeugen."
 
 echo "→ Health-Check nach dem Update (harter Exit-Check)"
 # Exit 1 = Problem (DB, offene Migrationen, Storage, Queue, APP_KEY, Mail,
 # Lizenz) → Deploy bricht ab, Wartungsmodus bleibt aktiv.
-php artisan system:health
+"$PHP_BIN" artisan system:health
 
 echo "→ Kontrolle"
-php artisan license:show || true
+"$PHP_BIN" artisan license:show || true
 
 if [ "$MAINTENANCE_ON" = "1" ]; then
     echo "→ Wartungsmodus beenden"
-    php artisan up
+    "$PHP_BIN" artisan up
     MAINTENANCE_ON=0
 fi
 
@@ -327,7 +343,7 @@ echo "→ Blindindizes umrechnen (einmal je Schlüssel, danach übersprungen)"
 # über den alten und den neuen Abdruck — die Anwendung ist währenddessen voll
 # nutzbar. Ein Fehlschlag bricht den Deploy nicht ab; system:health meldet den
 # offenen Rest beim nächsten Update.
-if ! php artisan security:rehash-blind-indexes; then
+if ! "$PHP_BIN" artisan security:rehash-blind-indexes; then
     echo "  ⚠ security:rehash-blind-indexes FEHLGESCHLAGEN — manuell nachholen."
 fi
 

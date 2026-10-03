@@ -4,6 +4,7 @@ topic: admin.operations
 version: 1
 audience:
     - admin
+    - geschaeftsfuehrung
 related:
     - admin.backups
     - admin.diagnostics

@@ -4,6 +4,14 @@ topic: catalog.expense-categories
 version: 1
 audience:
     - admin
+    - geschaeftsfuehrung
+    - personalverwaltung
+    - teamleitung
+    - buchhaltung
+    - user
+    - aussendienst
+    - callcenter
+    - support
 related:
     - travel-expenses.manage
     - catalog.per-diem-rates

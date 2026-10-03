@@ -4,6 +4,7 @@ topic: admin.data-transfer
 version: 1
 audience:
     - admin
+    - buchhaltung
 related:
     - admin.import
     - admin.backups

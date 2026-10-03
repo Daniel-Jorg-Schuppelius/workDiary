@@ -10,7 +10,8 @@
 #
 # Konfiguration über optionale Env-Variablen (sonst sinnvolle Defaults):
 #   APP_DIR        – WorkDiary-Installationsverzeichnis (default: Verzeichnis dieses Scripts/..)
-#   PHP_BIN        – PHP-Interpreter (default: php)
+#   PHP_BIN        – PHP-Interpreter (default: passend zur composer.json gesucht,
+#                    php8.5 vor php — siehe scripts/lib/php-bin.sh)
 #   RUN_QUEUE      – "1" = Queue mit abarbeiten, "0" = überspringen (default: 1)
 #   QUEUE_MAX_TIME – Sekunden, die der Queue-Worker pro Lauf arbeitet (default: 55)
 #   RUN_MEDIA_QUEUE – "1" = Medien-Warteschlange mit abarbeiten (default: 1)
@@ -24,7 +25,9 @@ set -euo pipefail
 # sofern nicht explizit per APP_DIR vorgegeben.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 APP_DIR="${APP_DIR:-$(cd "$SCRIPT_DIR/.." && pwd)}"
-PHP_BIN="${PHP_BIN:-php}"
+# shellcheck source=lib/php-bin.sh
+source "$SCRIPT_DIR/lib/php-bin.sh"
+PHP_BIN="$(resolve_php_bin "$APP_DIR" "${PHP_BIN:-}")"
 RUN_QUEUE="${RUN_QUEUE:-1}"
 QUEUE_MAX_TIME="${QUEUE_MAX_TIME:-55}"
 RUN_MEDIA_QUEUE="${RUN_MEDIA_QUEUE:-1}"

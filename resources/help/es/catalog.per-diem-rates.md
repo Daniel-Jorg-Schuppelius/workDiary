@@ -4,6 +4,14 @@ topic: catalog.per-diem-rates
 version: 1
 audience:
     - admin
+    - geschaeftsfuehrung
+    - personalverwaltung
+    - teamleitung
+    - buchhaltung
+    - user
+    - aussendienst
+    - callcenter
+    - support
 related:
     - travel-expenses.manage
     - catalog.expense-categories

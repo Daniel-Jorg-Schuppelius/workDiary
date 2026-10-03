@@ -25,7 +25,11 @@ if [ -f .env ]; then
     fi
 fi
 
-php artisan config:clear --ansi >/dev/null
+# shellcheck source=lib/php-bin.sh
+source scripts/lib/php-bin.sh
+PHP_BIN="$(resolve_php_bin . "${PHP_BIN:-}")"
+
+"$PHP_BIN" artisan config:clear --ansi >/dev/null
 
 export XDEBUG_MODE=off
-exec php artisan test --parallel --processes="${TEST_PROCESSES:-8}" "$@"
+exec "$PHP_BIN" artisan test --parallel --processes="${TEST_PROCESSES:-8}" "$@"

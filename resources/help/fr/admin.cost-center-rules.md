@@ -4,6 +4,8 @@ topic: admin.cost-center-rules
 version: 1
 audience:
     - admin
+    - geschaeftsfuehrung
+    - buchhaltung
 related:
     - exports.payroll
     - org.teams

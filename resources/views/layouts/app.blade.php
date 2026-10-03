@@ -139,8 +139,9 @@
     @php
         $_bodyMode = (session('work_mode', 'legacy') === 'legacy' && filled(config('database.connections.legacy.database'))) ? 'legacy' : 'new';
         // Kontext-Hilfe (Feature 039): Topic der aktuellen Route serverseitig
-        // auflösen — nur wenn das Topic existiert und für den Nutzer sichtbar
-        // ist (audience-Filter), sonst kein Kontext (Fallback im Drawer-JS).
+        // auflösen — nur wenn das Topic existiert und der Nutzer es lesen darf
+        // (Zielgruppe oder Zugriff auf diese Seite), sonst kein Kontext
+        // (Fallback im Drawer-JS).
         $_helpContextTopic = null;
         if (Auth::check()) {
             try {

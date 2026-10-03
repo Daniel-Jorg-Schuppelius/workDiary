@@ -4,6 +4,7 @@ topic: admin.notification-rules
 version: 1
 audience:
     - admin
+    - geschaeftsfuehrung
     - teamleitung
 related:
     - admin.handbook

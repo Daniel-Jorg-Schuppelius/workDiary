@@ -4,6 +4,7 @@ topic: accounting.fixed-assets
 version: 1
 audience:
     - admin
+    - geschaeftsfuehrung
     - buchhaltung
 modules:
     - module.finance

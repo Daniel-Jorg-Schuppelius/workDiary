@@ -4,6 +4,10 @@ topic: fleet.license-checks
 version: 1
 audience:
     - admin
+    - geschaeftsfuehrung
+    - teamleitung
+    - aussendienst
+    - support
 modules:
     - module.fuhrpark
 related:
