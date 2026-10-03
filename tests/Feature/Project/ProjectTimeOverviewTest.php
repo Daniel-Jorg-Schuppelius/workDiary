@@ -217,6 +217,44 @@ class ProjectTimeOverviewTest extends TestCase {
             ->assertDontSee('name="return_to"', false);
     }
 
+    /**
+     * Regression: Die Projekt-URL enthält den Kunden-Slug. Fehlt er im
+     * Eager-Load, zeigen Bearbeiten, Löschen und der Projektlink auf
+     * "intern/…" — bei Projekten mit Kunde ein 404.
+     */
+    public function test_links_of_customer_projects_lead_to_the_right_project(): void {
+        $customer = Customer::create(['organization_id' => $this->organization->id, 'name' => 'Link-Kunde']);
+        $this->beta->update(['customer_id' => $customer->id]);
+        $entry = $this->createEntry($this->beta, '2026-06-10', 'Kundenprojekt-Eintrag');
+        $project = $this->beta->fresh();
+
+        $response = $this->overview($this->admin);
+        $response->assertOk();
+
+        $editUrl = route('projects.time-entries.edit', [$project, $entry, 'return_to' => 'times']);
+        $this->assertStringNotContainsString('/intern/', $editUrl);
+        $response->assertSee($editUrl, false);
+        $response->assertSee(route('projects.time-entries.destroy', [$project, $entry]), false);
+        $response->assertSee(e(route('projects.show', ['project' => $project, 'tab' => 'time'])), false);
+
+        // Jeder Bearbeiten-Link der Seite öffnet seinen Dialog.
+        preg_match_all('#href="([^"]+/time-entries/[^"]+/edit\?return_to=times)"#', (string) $response->getContent(), $matches);
+        $this->assertNotEmpty($matches[1]);
+        foreach ($matches[1] as $href) {
+            $this->actingAs($this->admin)->get(html_entity_decode($href))->assertOk();
+        }
+
+        $this->actingAs($this->admin)
+            ->put(route('projects.time-entries.update', [$project, $entry]), [
+                'date' => '2026-06-10',
+                'minutes' => 120,
+                'description' => 'Kundenprojekt-geändert',
+                'return_to' => 'times',
+            ])
+            ->assertRedirect(route('projects.times'));
+        $this->assertDatabaseHas('time_entries', ['id' => $entry->id, 'description' => 'Kundenprojekt-geändert']);
+    }
+
     public function test_update_and_delete_return_to_the_overview_when_asked(): void {
         $entry = $this->createEntry($this->alpha, '2026-06-10', 'Rücksprung-Eintrag');
 

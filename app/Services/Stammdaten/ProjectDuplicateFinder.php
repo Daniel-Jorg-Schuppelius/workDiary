@@ -42,7 +42,8 @@ class ProjectDuplicateFinder extends AbstractDuplicateFinder {
 
     protected function fetchCandidates(Organization $organization): EloquentCollection {
         return $this->profile->candidates($organization)
-            ->with(['customer:id,name', 'foreignCustomer:id,name'])
+            // slug: Teil der Projekt-URL ("<kunde>/<projekt>") in der Dublettenliste.
+            ->with(['customer:id,name,slug', 'foreignCustomer:id,name'])
             ->withCount(['diaryEntries', 'timeEntries'])
             ->get();
     }

@@ -150,6 +150,24 @@ class ProjectMergeTest extends TestCase {
         $this->assertContains('name', $pair['reasons']);
     }
 
+    /**
+     * Regression: Die Projekt-URL enthält den Kunden-Slug. Lädt die
+     * Dublettenliste den Kunden ohne slug, zeigen die Links auf "intern/…".
+     */
+    public function test_duplicate_list_links_customer_projects_correctly(): void {
+        $customer = \App\Models\Customer\Customer::factory()->create(['organization_id' => $this->organization->id]);
+        $a = $this->project('Kundenwartung', ['customer_id' => $customer->id]);
+        $this->project('Kundenwartung', ['customer_id' => $customer->id]);
+
+        $response = $this->actingAs($this->admin)->get(route('projects.duplicates.index'));
+
+        $response->assertOk();
+        $url = route('projects.show', $a->fresh());
+        $this->assertStringNotContainsString('/intern/', $url);
+        $response->assertSee($url, false);
+        $response->assertDontSee('/projects/intern/', false);
+    }
+
     public function test_finder_ignores_cross_customer_duplicates(): void {
         $customerA = Customer::factory()->create(['organization_id' => $this->organization->id]);
         $customerB = Customer::factory()->create(['organization_id' => $this->organization->id]);

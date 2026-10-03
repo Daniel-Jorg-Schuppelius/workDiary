@@ -58,7 +58,9 @@ class ProjectTimeOverviewController extends Controller {
         $entries = $this->ordered(clone $query, $group, $sort, $dir)
             ->with([
                 'project:id,name,slug,color,customer_id,foreign_customer_id',
-                'project.customer:id,name',
+                // slug gehört in die Projekt-URL ("<kunde>/<projekt>"); ohne ihn
+                // zeigen alle Links auf "intern/…" und laufen ins Leere.
+                'project.customer:id,name,slug',
                 'user:id,name',
                 'task:id,title',
                 'tags:id,name,color',
