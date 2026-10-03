@@ -12,6 +12,7 @@ namespace App\Models\Supplier;
 
 use App\Enums\Procurement\{CatalogSourceFormat, PunchoutProtocol};
 use App\Models\Concerns\BelongsToOrganization;
+use App\Services\Procurement\OpenMasterdata\OpenMasterdataConfig;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
@@ -83,6 +84,7 @@ class SupplierCatalogSource extends Model {
         'punchout_password',
         'punchout_protocol',
         'punchout_customer_number',
+        'omd_config',
         'mapping',
         'fetch_interval_minutes',
         'next_fetch_at',
@@ -98,6 +100,7 @@ class SupplierCatalogSource extends Model {
         'remote_password' => 'encrypted', // verschlüsselt at-rest (APP_KEY)
         'punchout_password' => 'encrypted', // verschlüsselt at-rest (APP_KEY)
         'punchout_protocol' => PunchoutProtocol::class,
+        'omd_config' => 'encrypted:array', // Zugangsdaten zum Großhändler-Webservice (MVP-1072)
         'mapping' => 'array',
         'fetch_interval_minutes' => 'integer',
         'next_fetch_at' => 'datetime',
@@ -106,6 +109,11 @@ class SupplierCatalogSource extends Model {
     /** Hat die Quelle einen automatischen Abrufweg (kein manueller Upload)? */
     public function hasRemoteFetch(): bool {
         return in_array($this->source_type, ['http', 'ftp', 'sftp'], true);
+    }
+
+    /** Open-Masterdata-Quelle mit vollständigem Zugang (MVP-1072)? */
+    public function hasOpenMasterdata(): bool {
+        return $this->format === CatalogSourceFormat::OpenMasterdata && OpenMasterdataConfig::fromSource($this) !== null;
     }
 
     /** Ist ein aktiver Shop-Absprung (OCI, IDS-Connect) konfiguriert (MVP-096, MVP-1071)? */

@@ -48,6 +48,16 @@ class CatalogImportDispatcher {
         return $summary;
     }
 
+    /**
+     * Protokolliert einen Lauf ohne Datei — den Preisabgleich einer
+     * Open-Masterdata-Quelle (MVP-1072).
+     *
+     * @param  array{rows?: int, created?: int, updated?: int, unchanged?: int, price_changed?: int, discontinued?: int}  $summary
+     */
+    public function recordRun(SupplierCatalogSource $source, string $trigger, array $summary): void {
+        $this->record($source, $trigger, SupplierCatalogImport::STATUS_SUCCESS, $summary, null, null);
+    }
+
     /** Protokolliert einen fehlgeschlagenen Lauf (z. B. Abruf-/Verbindungsfehler). */
     public function recordFailure(SupplierCatalogSource $source, string $trigger, string $message): void {
         $this->record($source, $trigger, SupplierCatalogImport::STATUS_ERROR, [], null, $message);

@@ -1,7 +1,7 @@
 ---
 title: "Lieferantenkataloge"
 topic: supplier-catalogs.overview
-version: 2
+version: 3
 audience: []
 modules:
     - module.lager
@@ -63,6 +63,17 @@ Shops (etwa Lieferzeiten oder gesperrte Artikel) erscheinen als Meldung.
 Meldet der Shop den Warenkorb als bereits bestellt, bestellen Sie ihn
 nicht ein zweites Mal. Bei IDS-Quellen öffnet das Shop-Symbol in der
 Artikelliste die Artikelseite direkt im Shop.
+
+**Open Masterdata:** Eine Quelle im Format „Open Masterdata“ liest keine
+Datei, sondern fragt den Webservice des Großhändlers je Artikel ab —
+über Großhandelsnummer, GTIN oder Hersteller und Herstellernummer. Die
+Abfrage zeigt Preis, Verfügbarkeit, Bilder und Dokumente; „In den
+Katalog übernehmen“ legt den Katalogartikel an, der dann wie jeder
+andere verknüpft oder in den Artikelstamm übernommen wird. Mit
+Abrufintervall fragt workDiary Preise und Verfügbarkeit der geführten
+Artikel regelmäßig nach, „Preise aktualisieren“ sofort. Token-Adresse,
+Produkt-Adresse, Client-ID und Anmeldedaten vergibt der Großhändler; ob
+die Kundennummer zur Anmeldung gehört, steht in dessen Zugangsbrief.
 
 Lesen ist mit Lager-Leserechten möglich; Anlegen, Importieren und
 Verknüpfen erfordern Lager-Buchungsrechte.

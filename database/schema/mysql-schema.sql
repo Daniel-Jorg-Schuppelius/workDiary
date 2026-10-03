@@ -22295,6 +22295,7 @@ CREATE TABLE `supplier_catalog_sources` (
   `updated_at` timestamp NULL DEFAULT NULL,
   `punchout_protocol` varchar(8) NOT NULL DEFAULT 'oci',
   `punchout_customer_number` varchar(50) DEFAULT NULL,
+  `omd_config` text DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `scs_sup_fk` (`supplier_id`),
   KEY `scs_org_sup_idx` (`organization_id`,`supplier_id`),
@@ -26286,3 +26287,4 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (952,'2027_03_09_10
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (953,'2027_03_09_110000_create_online_payment_tables',51);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (954,'2027_03_09_120000_create_datev_online_tables',52);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (955,'2027_03_09_130000_create_ebics_tables',53);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (956,'2027_03_09_140000_add_open_masterdata_to_supplier_catalog_sources',54);

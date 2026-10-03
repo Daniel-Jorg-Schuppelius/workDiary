@@ -1,7 +1,7 @@
 ---
 title: "Catalogues fournisseurs"
 topic: supplier-catalogs.overview
-version: 2
+version: 3
 audience: []
 modules:
     - module.lager
@@ -70,6 +70,18 @@ exemple) s'affichent comme message. Si la boutique signale le panier
 comme déjà commandé, ne le commandez pas une seconde fois. Pour les
 sources IDS, le symbole de boutique dans la liste des articles ouvre la
 page de l'article directement dans la boutique.
+
+**Open Masterdata :** Une source au format « Open Masterdata » ne lit
+pas de fichier mais interroge le service web du grossiste par article —
+via numéro grossiste, GTIN ou fabricant et numéro fabricant. La
+consultation affiche prix, disponibilité, images et documents ; «
+Reprendre dans le catalogue » crée l’article du catalogue, qui est
+ensuite lié ou repris dans le fichier articles comme tout autre. Avec un
+intervalle de récupération, workDiary demande régulièrement au grossiste
+les prix et la disponibilité des articles du catalogue ; « Actualiser
+les prix » le fait immédiatement. L’URL du jeton, l’URL des produits,
+l’ID client et les identifiants sont délivrés par le grossiste ; sa
+lettre d’accès indique si le numéro client fait partie de la connexion.
 
 La lecture est possible avec des droits de lecture du stock ; la
 création, l'import et la liaison exigent des droits d'écriture du stock.

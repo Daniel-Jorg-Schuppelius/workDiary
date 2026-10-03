@@ -20,12 +20,15 @@ use App\Models\Inventory\Warehouse;
 use App\Models\Supplier\{Supplier, SupplierCatalogImport, SupplierCatalogItem, SupplierCatalogSource};
 use App\Services\Article\PriceSuggestionService;
 use App\Services\Procurement\{CatalogArticleAdopter, CatalogFetchService, CatalogImportDispatcher, CatalogLinkService, PunchoutHandoff, ShopinfoParser};
+use App\Services\Procurement\OpenMasterdata\Exceptions\OpenMasterdataException;
+use App\Services\Procurement\OpenMasterdata\{OpenMasterdataConfig, OpenMasterdataService};
 use App\Support\{ErrorText, SqidEncoder};
 use CommonToolkit\Helper\FileSystem\File;
 use ERechnungToolkit\Enums\IdsConnectAction;
 use ERechnungToolkit\Helper\IdsConnect\IdsConnectRequest;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use InvalidArgumentException;
 use RuntimeException;
@@ -106,9 +109,9 @@ class SupplierCatalogController extends Controller {
             'name' => $data['name'],
             'format' => $data['format'],
             'source_type' => $data['source_type'] ?? 'upload',
-            'delimiter' => $data['delimiter'],
-            'decimal_separator' => $data['decimal_separator'],
-            'encoding' => $data['encoding'],
+            'delimiter' => $data['delimiter'] ?? ';',
+            'decimal_separator' => $data['decimal_separator'] ?? ',',
+            'encoding' => $data['encoding'] ?? 'UTF-8',
             'has_header' => (bool) ($data['has_header'] ?? true),
             'sheet_name' => ($data['sheet_name'] ?? '') !== '' ? $data['sheet_name'] : null,
             'expected_customer_no' => ($data['expected_customer_no'] ?? '') !== '' ? $data['expected_customer_no'] : null,
@@ -125,6 +128,7 @@ class SupplierCatalogController extends Controller {
             'punchout_password' => ($data['punchout_password'] ?? '') !== '' ? $data['punchout_password'] : null,
             'punchout_protocol' => $data['punchout_protocol'] ?? PunchoutProtocol::Oci->value,
             'punchout_customer_number' => ($data['punchout_customer_number'] ?? '') !== '' ? $data['punchout_customer_number'] : null,
+            'omd_config' => $this->omdConfig($data, null),
         ]);
 
         return redirect()->route('supplier-catalogs.show', $source)
@@ -152,9 +156,9 @@ class SupplierCatalogController extends Controller {
             'name' => $data['name'],
             'format' => $data['format'],
             'source_type' => $data['source_type'] ?? 'upload',
-            'delimiter' => $data['delimiter'],
-            'decimal_separator' => $data['decimal_separator'],
-            'encoding' => $data['encoding'],
+            'delimiter' => $data['delimiter'] ?? ';',
+            'decimal_separator' => $data['decimal_separator'] ?? ',',
+            'encoding' => $data['encoding'] ?? 'UTF-8',
             'has_header' => (bool) ($data['has_header'] ?? false),
             'sheet_name' => ($data['sheet_name'] ?? '') !== '' ? $data['sheet_name'] : null,
             'expected_customer_no' => ($data['expected_customer_no'] ?? '') !== '' ? $data['expected_customer_no'] : null,
@@ -169,6 +173,7 @@ class SupplierCatalogController extends Controller {
             'punchout_username' => $data['punchout_username'] ?? null,
             'punchout_protocol' => $data['punchout_protocol'] ?? PunchoutProtocol::Oci->value,
             'punchout_customer_number' => ($data['punchout_customer_number'] ?? '') !== '' ? $data['punchout_customer_number'] : null,
+            'omd_config' => $this->omdConfig($data, is_array($supplierCatalog->omd_config) ? $supplierCatalog->omd_config : null),
         ]);
         // Passwörter nur ersetzen, wenn neue angegeben wurden (sonst bestehende behalten).
         if (($data['remote_password'] ?? '') !== '') {
@@ -238,6 +243,7 @@ class SupplierCatalogController extends Controller {
         }
 
         return view('supplier-catalogs.show', [
+            'omd' => $this->omdLookup($request, $supplierCatalog),
             'source' => $supplierCatalog->load('supplier'),
             'imports' => $supplierCatalog->imports()->limit(10)->get(),
             'items' => $items,
@@ -536,6 +542,95 @@ class SupplierCatalogController extends Controller {
             ),
             'multipart' => true,
         ]);
+    }
+
+    /**
+     * Open Masterdata (MVP-1072): Zugang aus dem Formular — leere Geheimnisse
+     * behalten die gespeicherten, ein anderes Format verwirft den Zugang.
+     *
+     * @param  array<string, mixed>  $data
+     * @param  array<string, mixed>|null  $existing
+     * @return array<string, mixed>|null
+     */
+    private function omdConfig(array $data, ?array $existing): ?array {
+        if (($data['format'] ?? '') !== CatalogSourceFormat::OpenMasterdata->value) {
+            return null;
+        }
+        $input = (array) ($data['omd'] ?? []);
+        foreach (['client_secret', 'password'] as $secret) {
+            if (trim((string) ($input[$secret] ?? '')) === '') {
+                $input[$secret] = $existing[$secret] ?? '';
+            }
+        }
+
+        return OpenMasterdataConfig::fromArray($input)->toArray();
+    }
+
+    /**
+     * Artikelabfrage beim Großhändler (MVP-1072) aus der Suchmaske der Quelle.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function omdLookup(Request $request, SupplierCatalogSource $source): ?array {
+        if ($source->format !== CatalogSourceFormat::OpenMasterdata) {
+            return null;
+        }
+        $lookup = [
+            'configured' => $source->hasOpenMasterdata(),
+            'by' => (string) $request->query('omd_by', OpenMasterdataService::BY_SUPPLIER_PID),
+            'value' => trim((string) $request->query('omd_value', '')),
+            'manufacturer_id' => trim((string) $request->query('omd_manufacturer_id', '')),
+            'manufacturer_id_type' => trim((string) $request->query('omd_manufacturer_id_type', 'GLN')),
+            'error' => null,
+            'product' => null,
+            'record' => [],
+            'item' => null,
+        ];
+        if ($lookup['value'] === '') {
+            return $lookup;
+        }
+        try {
+            $lookup = array_merge($lookup, app(OpenMasterdataService::class)->lookup($source, $lookup['by'], $lookup['value'], $lookup['manufacturer_id'], $lookup['manufacturer_id_type']));
+        } catch (OpenMasterdataException $e) {
+            $lookup['error'] = (string) __('procurement.omd.error.' . $e->reason);
+        }
+
+        return $lookup;
+    }
+
+    /** Abgefragten Artikel in den Katalog übernehmen bzw. nachführen (MVP-1072). */
+    public function omdAdopt(Request $request, SupplierCatalogSource $supplierCatalog, OpenMasterdataService $service): RedirectResponse {
+        $this->canManage();
+        $this->assertSourceOrg($supplierCatalog);
+        $data = $request->validate([
+            'omd_by' => ['required', Rule::in([OpenMasterdataService::BY_SUPPLIER_PID, OpenMasterdataService::BY_GTIN, OpenMasterdataService::BY_MANUFACTURER])],
+            'omd_value' => ['required', 'string', 'max:100'],
+            'omd_manufacturer_id' => ['required_if:omd_by,manufacturer', 'nullable', 'string', 'max:100'],
+            'omd_manufacturer_id_type' => ['nullable', 'string', 'max:20'],
+        ]);
+
+        try {
+            $item = $service->adopt($supplierCatalog, $data['omd_by'], $data['omd_value'], $data['omd_manufacturer_id'] ?? null, $data['omd_manufacturer_id_type'] ?? null);
+        } catch (OpenMasterdataException $e) {
+            return redirect()->route('supplier-catalogs.show', $supplierCatalog)->with('error', __('procurement.omd.error.' . $e->reason));
+        }
+
+        return redirect()->route('supplier-catalogs.show', [$supplierCatalog, 'q' => $item->external_no])
+            ->with('success', __('procurement.omd.flash.adopted', ['no' => $item->external_no]));
+    }
+
+    /** Preise und Verfügbarkeit der geführten Artikel beim Großhändler nachfragen (MVP-1072). */
+    public function omdRefresh(SupplierCatalogSource $supplierCatalog, OpenMasterdataService $service): RedirectResponse {
+        $this->canManage();
+        $this->assertSourceOrg($supplierCatalog);
+
+        try {
+            $summary = $service->refreshPrices($supplierCatalog, 100);
+        } catch (OpenMasterdataException $e) {
+            return back()->with('error', __('procurement.omd.error.' . $e->reason));
+        }
+
+        return back()->with($summary['failed'] > 0 ? 'warning' : 'success', __('procurement.omd.flash.refreshed', $summary));
     }
 
     private function assertOrg(SupplierCatalogItem $item): void {

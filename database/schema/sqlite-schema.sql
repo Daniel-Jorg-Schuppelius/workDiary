@@ -4493,6 +4493,7 @@ CREATE TABLE IF NOT EXISTS "supplier_catalog_sources"(
   "remote_host_fingerprint" varchar,
   "punchout_protocol" varchar not null default 'oci',
   "punchout_customer_number" varchar,
+  "omd_config" text,
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("supplier_id") references "suppliers"("id") on delete cascade
 );
@@ -24215,3 +24216,4 @@ INSERT INTO migrations VALUES(948,'2027_03_09_100000_add_ids_connect_to_supplier
 INSERT INTO migrations VALUES(949,'2027_03_09_110000_create_online_payment_tables',54);
 INSERT INTO migrations VALUES(950,'2027_03_09_120000_create_datev_online_tables',55);
 INSERT INTO migrations VALUES(951,'2027_03_09_130000_create_ebics_tables',56);
+INSERT INTO migrations VALUES(952,'2027_03_09_140000_add_open_masterdata_to_supplier_catalog_sources',57);

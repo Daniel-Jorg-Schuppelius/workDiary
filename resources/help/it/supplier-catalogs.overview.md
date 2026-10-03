@@ -1,7 +1,7 @@
 ---
 title: "Cataloghi fornitori"
 topic: supplier-catalogs.overview
-version: 2
+version: 3
 audience: []
 modules:
     - module.lager
@@ -69,6 +69,18 @@ consegna o articoli bloccati) compaiono come messaggio. Se il negozio
 segnala il carrello come già ordinato, non lo ordini una seconda volta.
 Per le fonti IDS, il simbolo del negozio nell'elenco articoli apre la
 pagina dell'articolo direttamente nel negozio.
+
+**Open Masterdata:** Una fonte nel formato «Open Masterdata» non legge
+un file ma interroga il servizio web del grossista per articolo, tramite
+numero del grossista, GTIN oppure produttore e numero del produttore.
+L’interrogazione mostra prezzo, disponibilità, immagini e documenti;
+«Acquisisci nel catalogo» crea l’articolo del catalogo, che poi si
+collega o si riprende nell’anagrafica articoli come ogni altro. Con un
+intervallo di recupero, workDiary richiede regolarmente al grossista
+prezzi e disponibilità degli articoli a catalogo; «Aggiorna prezzi» lo
+fa subito. URL del token, URL dei prodotti, ID client e dati di accesso
+li rilascia il grossista; se il numero cliente fa parte dell’accesso lo
+indica la sua lettera di accesso.
 
 La lettura è possibile con permessi di lettura del magazzino; la
 creazione, l'importazione e il collegamento richiedono permessi di

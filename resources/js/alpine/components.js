@@ -591,6 +591,15 @@ export function registerAlpineComponents(Alpine) {
         },
     }));
 
+    // Katalogquelle (MVP-1072): Open Masterdata ist ein Webservice — Datei-
+    // und Abrufeinstellungen weichen den Zugangsdaten des Großhändlers.
+    Alpine.data("catalogSourceForm", (format) => ({
+        format,
+        isOmd() {
+            return this.format === "omd";
+        },
+    }));
+
     // Krankmeldungs-Dialog: Tage-Berechnung + AU-Pflicht-Hinweis.
     Alpine.data(
         "sickLeaveForm",

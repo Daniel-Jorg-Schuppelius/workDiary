@@ -10,7 +10,7 @@
 
 namespace Tests\Support;
 
-use APIToolkit\API\Authentication\OAuth2\{OAuth2AuthorizationCodeGrant, OAuth2ClientCredentialsGrant};
+use APIToolkit\API\Authentication\OAuth2\{OAuth2AuthorizationCodeGrant, OAuth2ClientCredentialsGrant, OAuth2PasswordGrant};
 use APIToolkit\Contracts\Abstracts\API\ClientAbstract;
 use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
 use Closure;
@@ -116,6 +116,14 @@ class FakePluginHttp extends PluginHttpFactory {
         );
 
         // Auch Token-Endpunkt-Retries (429/503) sollen nicht real schlafen.
+        $grant->setBaseRetryDelay(0);
+        $grant->setMaxRetryDelay(0);
+
+        return $grant;
+    }
+
+    public function passwordGrant(string $serviceId, string $clientId, string $clientSecret, string $tokenUrl): OAuth2PasswordGrant {
+        $grant = $this->configureGrant(new OAuth2PasswordGrant($clientId, $clientSecret, $tokenUrl, null, $this->mockedGuzzle($tokenUrl)), $serviceId);
         $grant->setBaseRetryDelay(0);
         $grant->setMaxRetryDelay(0);
 

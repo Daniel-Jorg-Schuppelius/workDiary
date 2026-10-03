@@ -59,6 +59,10 @@
         @endif
     </x-card>
 
+    @if ($omd !== null)
+        @include('supplier-catalogs._omd', ['source' => $source, 'omd' => $omd, 'canManage' => $canManage])
+    @endif
+
     @if ($canManage)
         @php
             $fmt = $source->format->value;
@@ -88,6 +92,7 @@
             </x-card>
         @endif
 
+        @if ($fmt !== 'omd')
         <x-card class="mb-4">
             <h2 class="font-semibold mb-3">{{ __('procurement.catalog.import_title') }}</h2>
             <form method="POST" action="{{ route('supplier-catalogs.import', $source) }}" enctype="multipart/form-data" class="space-y-3">
@@ -141,6 +146,7 @@
                 <button type="submit" class="btn btn-primary btn-sm">{{ __('procurement.catalog.action.import') }}</button>
             </form>
         </x-card>
+        @endif
     @endif
 
     @if ($imports->isNotEmpty())

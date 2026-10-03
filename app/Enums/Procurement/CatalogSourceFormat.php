@@ -31,6 +31,8 @@ enum CatalogSourceFormat: string implements HasLabel {
     case ShopInfo = 'shopinfo';
     case Datanorm = 'datanorm';
     case BMEcat = 'bmecat';
+    /** Open Masterdata (MVP-1072): kein Dateiimport, sondern Abfrage je Artikel beim Großhändler. */
+    case OpenMasterdata = 'omd';
 
     public function label(): string {
         return __('procurement.catalog.format.' . $this->value);

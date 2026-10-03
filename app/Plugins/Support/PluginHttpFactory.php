@@ -10,7 +10,7 @@
 
 namespace App\Plugins\Support;
 
-use APIToolkit\API\Authentication\OAuth2\{OAuth2AuthorizationCodeGrant, OAuth2ClientCredentialsGrant, OAuth2GrantAbstract};
+use APIToolkit\API\Authentication\OAuth2\{OAuth2AuthorizationCodeGrant, OAuth2ClientCredentialsGrant, OAuth2GrantAbstract, OAuth2PasswordGrant};
 use APIToolkit\Contracts\Abstracts\API\ClientAbstract;
 use App\Support\UrlSafety;
 use GuzzleHttp\Client as GuzzleClient;
@@ -138,6 +138,21 @@ class PluginHttpFactory {
         $this->assertTargetAllowed($pluginId, $tokenUrl);
 
         return $this->configureGrant(new OAuth2ClientCredentialsGrant($clientId, $clientSecret, $tokenUrl), $pluginId);
+    }
+
+    /**
+     * Passwort-Grant (RFC 6749 Abschnitt 4.3) eines Kerndienstes gegen den
+     * Token-Endpunkt — Transport-Defaults und SSRF-Schranke wie
+     * {@see coreClient()}; Tests ersetzen den Transport über
+     * {@see \Tests\Support\FakePluginHttp}.
+     */
+    public function passwordGrant(string $serviceId, string $clientId, string $clientSecret, string $tokenUrl): OAuth2PasswordGrant {
+        $this->assertTargetAllowed($serviceId, $tokenUrl, $this->privateNetworkAllowed($serviceId));
+
+        $grant = $this->configureGrant(new OAuth2PasswordGrant($clientId, $clientSecret, $tokenUrl), $serviceId);
+        $grant->setUserAgent('workDiary/' . $serviceId);
+
+        return $grant;
     }
 
     /**

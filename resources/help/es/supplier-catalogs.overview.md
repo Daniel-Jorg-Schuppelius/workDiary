@@ -1,7 +1,7 @@
 ---
 title: "Catálogos de proveedores"
 topic: supplier-catalogs.overview
-version: 2
+version: 3
 audience: []
 modules:
     - module.lager
@@ -69,6 +69,18 @@ artículos bloqueados) aparecen como aviso. Si la tienda indica que el
 carrito ya se ha pedido, no lo pida una segunda vez. En las fuentes IDS,
 el símbolo de tienda en la lista de artículos abre la página del
 artículo directamente en la tienda.
+
+**Open Masterdata:** Una fuente en formato «Open Masterdata» no lee un
+archivo, sino que consulta el servicio web del mayorista por artículo,
+mediante número de mayorista, GTIN o fabricante y número de fabricante.
+La consulta muestra precio, disponibilidad, imágenes y documentos;
+«Añadir al catálogo» crea el artículo de catálogo, que luego se vincula
+o se pasa al maestro de artículos como cualquier otro. Con un intervalo
+de consulta, workDiary pide periódicamente al mayorista los precios y la
+disponibilidad de los artículos del catálogo; «Actualizar precios» lo
+hace de inmediato. La URL del token, la URL de productos, el ID de
+cliente y los datos de acceso los emite el mayorista; si el número de
+cliente forma parte del inicio de sesión, lo indica su carta de acceso.
 
 La lectura es posible con permisos de lectura de almacén; crear,
 importar y vincular requieren permisos de contabilización de almacén.

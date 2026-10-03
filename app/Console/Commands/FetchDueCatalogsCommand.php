@@ -13,8 +13,11 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Console\Concerns\IteratesOrganizations;
+use App\Enums\Procurement\CatalogSourceFormat;
 use App\Models\Supplier\{SupplierCatalogImport, SupplierCatalogSource};
 use App\Services\Procurement\{CatalogFetchService, CatalogImportDispatcher};
+use App\Services\Procurement\OpenMasterdata\Exceptions\OpenMasterdataException;
+use App\Services\Procurement\OpenMasterdata\OpenMasterdataService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 use Throwable;
@@ -35,7 +38,8 @@ class FetchDueCatalogsCommand extends Command {
     public function handle(CatalogFetchService $fetch, CatalogImportDispatcher $dispatcher): int {
         $due = SupplierCatalogSource::query()->withoutGlobalScopes()
             ->where('active', true)
-            ->whereIn('source_type', ['http', 'ftp', 'sftp'])
+            // Open Masterdata (MVP-1072) hat keine Datei: der Lauf fragt Preise nach.
+            ->where(fn ($q) => $q->whereIn('source_type', ['http', 'ftp', 'sftp'])->orWhere('format', CatalogSourceFormat::OpenMasterdata->value))
             ->where('fetch_interval_minutes', '>', 0)
             ->where(fn ($q) => $q->whereNull('next_fetch_at')->orWhere('next_fetch_at', '<=', Carbon::now()))
             ->get();
@@ -55,6 +59,19 @@ class FetchDueCatalogsCommand extends Command {
     }
 
     private function process(SupplierCatalogSource $source, CatalogFetchService $fetch, CatalogImportDispatcher $dispatcher): void {
+        if ($source->format === CatalogSourceFormat::OpenMasterdata) {
+            try {
+                app(OpenMasterdataService::class)->refreshPrices($source, 500, SupplierCatalogImport::TRIGGER_SCHEDULED);
+            } catch (OpenMasterdataException) {
+                // Abgelehnte Zugangsdaten hat der Dienst protokolliert.
+            } catch (Throwable $e) {
+                $dispatcher->recordFailure($source, SupplierCatalogImport::TRIGGER_SCHEDULED, $e->getMessage());
+            }
+            $this->scheduleNext($source);
+
+            return;
+        }
+
         try {
             $content = $fetch->fetch($source);
         } catch (Throwable $e) {

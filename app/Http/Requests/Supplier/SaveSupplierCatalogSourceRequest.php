@@ -14,6 +14,7 @@ use App\Enums\Procurement\PunchoutProtocol;
 use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Rules\ExistsInCurrentOrganization;
+use App\Services\Procurement\OpenMasterdata\OpenMasterdataConfig;
 use App\Support\UrlSafety;
 use Illuminate\Validation\Rule;
 
@@ -32,15 +33,22 @@ class SaveSupplierCatalogSourceRequest extends BaseFormRequest {
 
     /** @return array<string, mixed> */
     public function rules(): array {
+        $externalUrl = static function (string $attribute, mixed $value, \Closure $fail): void {
+            if (is_string($value) && trim($value) !== '' && ! UrlSafety::isAcceptableExternalHttpUrl($value)) {
+                $fail((string) __('procurement.catalog.error.host_not_allowed'));
+            }
+        };
+
         return [
             'supplier' => ['required', 'integer', new ExistsInCurrentOrganization('suppliers')],
             'name' => ['required', 'string', 'max:191'],
-            'format' => ['required', Rule::in(['csv', 'xlsx', 'datanorm', 'bmecat'])],
+            'format' => ['required', Rule::in(['csv', 'xlsx', 'datanorm', 'bmecat', 'omd'])],
             'source_type' => ['nullable', Rule::in(['upload', 'http', 'ftp', 'sftp'])],
-            'delimiter' => ['required', 'string', 'min:1', 'max:4'],
+            // Dateieinstellungen gelten nicht für den Webservice Open Masterdata (MVP-1072).
+            'delimiter' => ['required_unless:format,omd', 'nullable', 'string', 'min:1', 'max:4'],
             'sheet_name' => ['nullable', 'string', 'max:64'],
-            'decimal_separator' => ['required', Rule::in([',', '.'])],
-            'encoding' => ['required', 'string', 'max:32'],
+            'decimal_separator' => ['required_unless:format,omd', 'nullable', Rule::in([',', '.'])],
+            'encoding' => ['required_unless:format,omd', 'nullable', 'string', 'max:32'],
             'expected_customer_no' => ['nullable', 'string', 'max:32'],
             'has_header' => ['nullable', 'boolean'],
             // SSRF-Konfigurationszeit-Guard: keine internen/privaten Ziele als
@@ -80,6 +88,23 @@ class SaveSupplierCatalogSourceRequest extends BaseFormRequest {
                 Rule::requiredIf(fn (): bool => $this->input('punchout_protocol') === PunchoutProtocol::Ids->value && trim((string) $this->input('punchout_url')) !== ''),
                 'nullable', 'string', 'max:50',
             ],
+            // Open Masterdata (MVP-1072): Token- und Produktadresse vergibt der Großhändler.
+            'omd' => ['nullable', 'array'],
+            'omd.token_url' => ['required_if:format,omd', 'nullable', 'string', 'url:https', 'max:1024', $externalUrl],
+            'omd.base_url' => ['required_if:format,omd', 'nullable', 'string', 'url:https', 'max:1024', $externalUrl],
+            'omd.grant_type' => ['nullable', Rule::in([OpenMasterdataConfig::GRANT_PASSWORD, OpenMasterdataConfig::GRANT_CLIENT_CREDENTIALS])],
+            'omd.client_id' => ['required_if:format,omd', 'nullable', 'string', 'max:191'],
+            'omd.client_secret' => ['nullable', 'string', 'max:512'],
+            'omd.username' => [
+                Rule::requiredIf(fn (): bool => $this->input('format') === 'omd' && trim((string) $this->input('omd.customer_number')) === ''),
+                'nullable', 'string', 'max:191',
+            ],
+            'omd.password' => ['nullable', 'string', 'max:512'],
+            'omd.customer_number' => ['nullable', 'string', 'max:50'],
+            'omd.customer_number_in_login' => ['nullable', 'boolean'],
+            'omd.scope' => ['nullable', 'string', 'max:191'],
+            'omd.package_mode' => ['nullable', Rule::in([OpenMasterdataConfig::PACKAGES_PIPE, OpenMasterdataConfig::PACKAGES_EXPLODED])],
+            'omd.customer_id' => ['nullable', 'string', 'max:50'],
         ];
     }
 }

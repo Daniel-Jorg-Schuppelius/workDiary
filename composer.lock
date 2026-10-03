@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e17c95b4ea1066955faba2bd8fb41daa",
+    "content-hash": "f4de90a093d2cd184211fee94a5a7018",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -767,16 +767,16 @@
         },
         {
             "name": "daniel-jorg-schuppelius/php-api-toolkit",
-            "version": "v2.10.3",
+            "version": "v2.11.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Daniel-Jorg-Schuppelius/php-api-toolkit.git",
-                "reference": "ce7c888e1b15cc9052f7f06570a71c6da94a22ea"
+                "reference": "f973444850994d6521fd7419d05266e19103a3ac"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/php-api-toolkit/zipball/ce7c888e1b15cc9052f7f06570a71c6da94a22ea",
-                "reference": "ce7c888e1b15cc9052f7f06570a71c6da94a22ea",
+                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/php-api-toolkit/zipball/f973444850994d6521fd7419d05266e19103a3ac",
+                "reference": "f973444850994d6521fd7419d05266e19103a3ac",
                 "shasum": ""
             },
             "require": {
@@ -811,9 +811,9 @@
             "description": "Reused codes for my api php sdks",
             "support": {
                 "issues": "https://github.com/Daniel-Jorg-Schuppelius/php-api-toolkit/issues",
-                "source": "https://github.com/Daniel-Jorg-Schuppelius/php-api-toolkit/tree/v2.10.3"
+                "source": "https://github.com/Daniel-Jorg-Schuppelius/php-api-toolkit/tree/v2.11.0"
             },
-            "time": "2026-09-21T19:34:10+00:00"
+            "time": "2026-10-03T08:38:45+00:00"
         },
         {
             "name": "daniel-jorg-schuppelius/php-elearning-toolkit",

@@ -1,7 +1,7 @@
 ---
 title: "Supplier catalogues"
 topic: supplier-catalogs.overview
-version: 2
+version: 3
 audience: []
 modules:
     - module.lager
@@ -60,6 +60,17 @@ times or blocked items) appear as a message. If the shop reports the
 basket as already ordered, do not order it a second time. For IDS
 sources, the shop icon in the item list opens the article page directly
 in the shop.
+
+**Open Masterdata:** A source in the “Open Masterdata” format does not
+read a file but queries the wholesaler’s web service per article — by
+wholesale number, GTIN or manufacturer and manufacturer number. The
+lookup shows price, availability, images and documents; “Add to
+catalogue” creates the catalogue item, which is then linked or taken
+into the article master like any other. With a fetch interval, workDiary
+regularly requests prices and availability of the listed articles,
+“Refresh prices” does so immediately. Token URL, product URL, client ID
+and login details are issued by the wholesaler; whether the customer
+number is part of the login is stated in its access letter.
 
 Reading requires inventory view permissions; creating, importing and
 linking require inventory posting permissions.

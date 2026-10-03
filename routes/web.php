@@ -1741,6 +1741,9 @@ Route::middleware('auth')->group(function () {
         Route::post('supplier-catalogs/items/{catalogItem}/adopt', [\App\Http\Controllers\Procurement\SupplierCatalogController::class, 'adoptItem'])->name('supplier-catalogs.items.adopt');
         Route::get('supplier-catalogs/{supplierCatalog}/punchout', [\App\Http\Controllers\Procurement\SupplierCatalogController::class, 'punchout'])->name('supplier-catalogs.punchout'); // MVP-096 aktiver Punchout-Absprung
         Route::get('supplier-catalogs/items/{catalogItem}/shop', [\App\Http\Controllers\Procurement\SupplierCatalogController::class, 'shopDeepLink'])->name('supplier-catalogs.items.shop'); // MVP-1071 IDS-Artikeldeeplink
+        // Open Masterdata (MVP-1072): Artikel vom Großhändler übernehmen, Preise nachfragen.
+        Route::post('supplier-catalogs/{supplierCatalog}/omd/uebernehmen', [\App\Http\Controllers\Procurement\SupplierCatalogController::class, 'omdAdopt'])->middleware('throttle:30,1')->name('supplier-catalogs.omd.adopt');
+        Route::post('supplier-catalogs/{supplierCatalog}/omd/preise', [\App\Http\Controllers\Procurement\SupplierCatalogController::class, 'omdRefresh'])->middleware('throttle:6,1')->name('supplier-catalogs.omd.refresh');
 
         // ── Margenregeln (Feature 050, MVP-095) ─ Gate pricing-margin-rules.* → module.lager
         Route::get('pricing-margin-rules', [\App\Http\Controllers\Article\PricingMarginRuleController::class, 'index'])->name('pricing-margin-rules.index');
