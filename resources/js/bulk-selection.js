@@ -5,6 +5,8 @@
  *  - data-bulk-form           : Formular-Wurzel (kapselt alle Checkboxen + Toolbar)
  *  - data-bulk-select-all     : Header-Checkbox (toggelt alle sichtbaren Row-Checkboxen)
  *  - data-bulk-checkbox       : Row-Checkbox (input[type=checkbox] mit name="ids[]")
+ *  - data-bulk-select-group="<key>" : Gruppen-Checkbox, toggelt die Row-Checkboxen
+ *                               in Zeilen mit data-row-group="<key>" (auch eingeklappte)
  *  - data-bulk-toolbar        : Sticky-Toolbar (wird ein-/ausgeblendet)
  *  - data-bulk-counter        : Zähler-Element innerhalb der Toolbar
  *  - data-bulk-clear          : Button "Auswahl aufheben"
@@ -36,6 +38,11 @@ const init = (root) => {
     const checkboxes = () =>
         Array.from(root.querySelectorAll("[data-bulk-checkbox]"));
 
+    const groupBoxes = (key) =>
+        checkboxes().filter(
+            (b) => b.closest("[data-row-group]")?.dataset.rowGroup === key,
+        );
+
     const refresh = () => {
         const boxes = checkboxes();
         const selected = boxes.filter((b) => b.checked);
@@ -50,6 +57,15 @@ const init = (root) => {
             selectAll.indeterminate = count > 0 && count < boxes.length;
             selectAll.checked = boxes.length > 0 && count === boxes.length;
         }
+        root.querySelectorAll("[data-bulk-select-group]").forEach((group) => {
+            const members = groupBoxes(group.dataset.bulkSelectGroup).filter(
+                (b) => !b.disabled,
+            );
+            const picked = members.filter((b) => b.checked).length;
+            group.disabled = members.length === 0;
+            group.indeterminate = picked > 0 && picked < members.length;
+            group.checked = members.length > 0 && picked === members.length;
+        });
 
         root.querySelectorAll("[data-bulk-dialog-link]").forEach((link) => {
             if (!link.dataset.bulkDialogBase) {
@@ -103,6 +119,13 @@ const init = (root) => {
     }
 
     root.addEventListener("change", (e) => {
+        if (e.target && e.target.matches("[data-bulk-select-group]")) {
+            groupBoxes(e.target.dataset.bulkSelectGroup).forEach((b) => {
+                if (!b.disabled) b.checked = e.target.checked;
+            });
+            refresh();
+            return;
+        }
         if (e.target && e.target.matches("[data-bulk-checkbox]")) {
             refresh();
         }

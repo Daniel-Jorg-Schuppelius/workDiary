@@ -56,6 +56,14 @@ en los valores de tiempo de la ficha del cliente: sin acceso a todos los
 tiempos, las listas y los totales cuentan solo los registros propios y
 llevan la nota «solo los tiempos propios».
 
+Para corregir tiempos mal asignados, por ejemplo tras una importación
+con el usuario equivocado, use la pestaña **Tiempos**: marque registros o
+grupos enteros y asígnelos a otra persona con «Asignar usuario». Requiere
+derechos de administración o el permiso «Reasignar registros de tiempo a
+otros usuarios» y solo afecta a los tiempos que puede ver. Los tiempos
+facturados y firmados permanecen bloqueados; una selección nunca se guarda
+parcialmente.
+
 ## Ejemplo práctico
 
 Para una migración de servidores nace el proyecto «Migración CPD» con

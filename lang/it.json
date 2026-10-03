@@ -10853,5 +10853,8 @@
     "Gruppieren nach": "Raggruppa per",
     "Alle Gruppen ein- oder ausklappen": "Comprimi o espandi tutti i gruppi",
     "Einträge von :name ein- oder ausklappen": "Comprimi o espandi le registrazioni di :name",
-    "nur eigene Zeiten": "solo le proprie ore"
+    "nur eigene Zeiten": "solo le proprie ore",
+    ":n Eintrag der Auswahl ist nicht (mehr) verfügbar und wurde entfernt.|:n Einträge der Auswahl sind nicht (mehr) verfügbar und wurden entfernt.": ":n voce della selezione non è (più) disponibile ed è stata rimossa.|:n voci della selezione non sono (più) disponibili e sono state rimosse.",
+    "Mindestens ein gewählter Zeiteintrag existiert nicht mehr oder ist nicht verfügbar.": "Almeno una registrazione di tempo selezionata non esiste più o non è disponibile.",
+    "Alle Einträge von :name auswählen": "Seleziona tutte le registrazioni di :name"
 }

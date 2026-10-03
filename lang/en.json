@@ -10853,5 +10853,8 @@
     "Gruppieren nach": "Group by",
     "Alle Gruppen ein- oder ausklappen": "Collapse or expand all groups",
     "Einträge von :name ein- oder ausklappen": "Collapse or expand entries of :name",
-    "nur eigene Zeiten": "own times only"
+    "nur eigene Zeiten": "own times only",
+    ":n Eintrag der Auswahl ist nicht (mehr) verfügbar und wurde entfernt.|:n Einträge der Auswahl sind nicht (mehr) verfügbar und wurden entfernt.": ":n entry in the selection is not (or no longer) available and was removed.|:n entries in the selection are not (or no longer) available and were removed.",
+    "Mindestens ein gewählter Zeiteintrag existiert nicht mehr oder ist nicht verfügbar.": "At least one selected time entry no longer exists or is not available.",
+    "Alle Einträge von :name auswählen": "Select all entries of :name"
 }

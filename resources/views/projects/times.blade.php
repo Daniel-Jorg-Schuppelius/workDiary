@@ -28,7 +28,8 @@
     $showDate = $group !== 'day';
     $showProject = $group !== 'project';
     $showUser = $seesAll && $group !== 'user';
-    $colspan = 4 + (int) $showDate + (int) $showProject + (int) $showUser;
+    $colspan = 4 + (int) $showDate + (int) $showProject + (int) $showUser + (int) $canReassign;
+    $editPolicy = app(\App\Services\Timekeeping\TimeEntryEditPolicy::class);
     $listQuery = request()->except(['page', 'group']);
 @endphp
 <x-index-page overflow="clip" :subtitle="__('Zeiteinträge aller Projekte im gewählten Zeitraum.')">
@@ -116,6 +117,20 @@
         </div>
     </div>
 
+    {{-- data-bulk-form als <div>: die Zeilen enthalten eigene Lösch-Formulare.
+         Die Neuzuordnung läuft über den Dialog-Link (data-bulk-dialog-link). --}}
+    <div @if ($canReassign) data-bulk-form @endif class="flex min-h-0 flex-1 flex-col gap-4">
+    @if ($canReassign)
+        <x-bulk-toolbar :label="__(':n Zeiteinträge ausgewählt')">
+            <x-slot:actions>
+                <a href="{{ route('projects.times.reassign-dialog') }}"
+                   data-bulk-dialog-link data-entry-modal-trigger
+                   class="btn btn-primary btn-sm">
+                    <x-icon name="person_add" /> {{ __('Benutzer zuordnen') }}
+                </a>
+            </x-slot:actions>
+        </x-bulk-toolbar>
+    @endif
     <x-table id="project-times" scroll="flex" :pinRows="true" :zebra="false" table-sort="server"
              :route="route('projects.times')"
              :current-sort="$sort"
@@ -124,6 +139,12 @@
              empty-icon="schedule" :empty-title="__('Keine Zeiteinträge im gewählten Zeitraum.')">
         <x-slot:head>
             <tr>
+                @if ($canReassign)
+                    <th class="w-8">
+                        <input type="checkbox" class="checkbox checkbox-sm" data-bulk-select-all
+                               aria-label="{{ __('Alle auswählen') }}">
+                    </th>
+                @endif
                 @if ($showDate)
                     <x-table.th sort="date" default="desc">{{ __('Datum') }}</x-table.th>
                 @endif
@@ -152,6 +173,10 @@
             <tr class="bg-base-200/60">
                 <td colspan="{{ $colspan }}">
                     <div class="flex items-center gap-2">
+                        @if ($canReassign)
+                            <input type="checkbox" class="checkbox checkbox-sm" data-bulk-select-group="{{ $groupId }}"
+                                   aria-label="{{ __('Alle Einträge von :name auswählen', ['name' => $groupLabel]) }}">
+                        @endif
                         <x-icon-btn icon="expand_more"
                                     data-toggle-rows="{{ $groupId }}" aria-expanded="true"
                                     :label="__('Einträge von :name ein- oder ausklappen', ['name' => $groupLabel])" />
@@ -180,6 +205,16 @@
             </tr>
             @foreach ($data['entries'] as $entry)
                 <tr id="time-entry-{{ $entry->sqid }}" class="hover" data-row-group="{{ $groupId }}">
+                    @if ($canReassign)
+                        @php($hardLock = $editPolicy->isHardLocked($entry))
+                        <td>
+                            <input type="checkbox" class="checkbox checkbox-sm"
+                                   data-bulk-checkbox value="{{ $entry->sqid }}"
+                                   @disabled($hardLock['locked'])
+                                   @if ($hardLock['locked']) title="{{ $editPolicy->reasonLabel($hardLock['reason']) }}" @endif
+                                   aria-label="{{ __('Zeiteintrag vom :date auswählen', ['date' => $entry->date?->fdate() ?? '—']) }}">
+                        </td>
+                    @endif
                     @if ($showDate)
                         <td class="whitespace-nowrap">{{ $entry->date?->fdate() ?? '—' }}</td>
                     @endif
@@ -247,6 +282,7 @@
             @endforeach
         @endforeach
     </x-table>
+    </div>
 
     <x-pagination :paginator="$entries" standing />
 </x-index-page>

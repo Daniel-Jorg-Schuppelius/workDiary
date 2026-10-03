@@ -10853,5 +10853,8 @@
     "Gruppieren nach": "Agrupar por",
     "Alle Gruppen ein- oder ausklappen": "Contraer o expandir todos los grupos",
     "Einträge von :name ein- oder ausklappen": "Contraer o expandir los registros de :name",
-    "nur eigene Zeiten": "solo los tiempos propios"
+    "nur eigene Zeiten": "solo los tiempos propios",
+    ":n Eintrag der Auswahl ist nicht (mehr) verfügbar und wurde entfernt.|:n Einträge der Auswahl sind nicht (mehr) verfügbar und wurden entfernt.": ":n entrada de la selección ya no está disponible y fue eliminada.|:n entradas de la selección ya no están disponibles y fueron eliminadas.",
+    "Mindestens ein gewählter Zeiteintrag existiert nicht mehr oder ist nicht verfügbar.": "Al menos un registro de tiempo seleccionado ya no existe o no está disponible.",
+    "Alle Einträge von :name auswählen": "Seleccionar todos los registros de :name"
 }

@@ -56,6 +56,14 @@ Stundenzettel, Gesamtstunden), in der Fallakte eines Auftrags und bei den
 Zeitwerten am Kunden: Ohne die Sicht auf alle Zeiten zählen Listen und
 Summen nur die eigenen Einträge und tragen den Hinweis „nur eigene Zeiten“.
 
+Falsch zugeordnete Zeiten, etwa nach einem Import mit falschem Benutzer,
+korrigieren Sie im Reiter **Zeiten**: Einträge oder ganze Gruppen ankreuzen
+und über „Benutzer zuordnen“ einer anderen Person zuweisen. Das geht mit
+Administrationsrechten oder dem Recht „Zeiteinträge anderen Benutzern
+zuordnen“ und nur für Zeiten, die Sie sehen dürfen. Abgerechnete und
+signierte Zeiten bleiben gesperrt; eine Auswahl wird nie teilweise
+gespeichert.
+
 ## Beispiel aus der Praxis
 
 Für einen Serverumzug entsteht das Projekt „Migration RZ" mit Laufzeit,

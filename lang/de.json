@@ -43,5 +43,6 @@
     "{1}:n Urlaubsantrag wartet auf Entscheidung|[2,*]:n Urlaubsanträge warten auf Entscheidung": "{1}:n Urlaubsantrag wartet auf Entscheidung|[2,*]:n Urlaubsanträge warten auf Entscheidung",
     "{1}:n Urlaubsantrag wartet auf Freigabe|[2,*]:n Urlaubsanträge warten auf Freigabe": "{1}:n Urlaubsantrag wartet auf Freigabe|[2,*]:n Urlaubsanträge warten auf Freigabe",
     "Kundengruppen": "Kundengruppen",
-    "Kundengruppe": "Kundengruppe"
+    "Kundengruppe": "Kundengruppe",
+    ":n Eintrag der Auswahl ist nicht (mehr) verfügbar und wurde entfernt.|:n Einträge der Auswahl sind nicht (mehr) verfügbar und wurden entfernt.": ":n Eintrag der Auswahl ist nicht (mehr) verfügbar und wurde entfernt.|:n Einträge der Auswahl sind nicht (mehr) verfügbar und wurden entfernt."
 }

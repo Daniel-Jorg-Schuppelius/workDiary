@@ -89,6 +89,8 @@ class ProjectTimeOverviewController extends Controller {
             'filters' => $filters,
             'hasActiveFilters' => array_filter($filters, fn(string $value): bool => $value !== '') !== [],
             'seesAll' => $seesAll,
+            // Massen-Neuzuordnung wie am Projekt (MVP-508): Admin oder eigenes Recht.
+            'canReassign' => $viewer->isAdmin() || Gate::allows('timeEntry.reassign'),
             'totals' => $this->totals(clone $query),
             'rangeLabel' => $this->globalDateRange()['label'],
             'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),

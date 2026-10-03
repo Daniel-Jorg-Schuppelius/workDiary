@@ -15,7 +15,7 @@ namespace App\Services\Timekeeping;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
 use App\Models\Time\TimeEntry;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\{Builder, Collection};
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -27,24 +27,42 @@ use Illuminate\Validation\ValidationException;
  * exportiert, Stundenzettel signiert/gesperrt). Eine gemischte Auswahl wird
  * nie teilweise gespeichert: der Preflight benennt die gesperrten Einträge,
  * {@see reassign()} bricht dann komplett ab.
+ *
+ * Ohne Projekt arbeitet der Dienst projektübergreifend für die
+ * Zeitenübersicht (MVP-1073). In beiden Fällen zählt nur, was der Handelnde
+ * sehen darf ({@see TimeEntry::scopeVisibleTo()}).
  */
 class TimeEntryReassignService {
     public function __construct(private readonly TimeEntryEditPolicy $editPolicy) {}
 
     /**
-     * Lädt die Auswahl projekt-gebunden und benennt gesperrte Einträge.
-     * IDs, die nicht zum Projekt gehören, fallen still heraus und werden
-     * über `missing` gezählt (manipulierte oder veraltete Auswahl).
+     * Auswahlbasis: die Zeiten des Projekts oder — ohne Projekt — alle
+     * Projektzeiten der Organisation des Handelnden.
+     *
+     * @return Builder<TimeEntry>
+     */
+    private function selection(?Project $project, User $actor): Builder {
+        $query = TimeEntry::query()->visibleTo($actor);
+
+        return $project !== null
+            ? $query->where('project_id', $project->id)
+            : $query->where('organization_id', $actor->organization_id)->whereNotNull('project_id');
+    }
+
+    /**
+     * Lädt die Auswahl und benennt gesperrte Einträge. IDs außerhalb der
+     * Auswahlbasis fallen still heraus und werden über `missing` gezählt
+     * (manipulierte oder veraltete Auswahl).
      *
      * @param  array<int, int|null>  $ids
      * @return array{entries: Collection<int, TimeEntry>, blocked: array<int, array{entry: TimeEntry, reason: string}>, missing: int}
      */
-    public function preflight(Project $project, array $ids): array {
+    public function preflight(?Project $project, array $ids, User $actor): array {
         $ids = array_values(array_unique(array_filter($ids, is_int(...))));
 
         /** @var Collection<int, TimeEntry> $entries */
-        $entries = $project->timeEntries()
-            ->with(['timesheet:id,status', 'user:id,name'])
+        $entries = $this->selection($project, $actor)
+            ->with(['timesheet:id,status', 'user:id,name', 'project:id,name'])
             ->whereIn('id', $ids)
             ->orderBy('date')
             ->orderBy('id')
@@ -66,8 +84,8 @@ class TimeEntryReassignService {
     }
 
     /** Ziel muss ein aktiver interner Benutzer derselben Organisation sein. */
-    public function isEligibleTarget(Project $project, User $target): bool {
-        return (int) $target->organization_id === (int) $project->organization_id
+    public function isEligibleTarget(int $organizationId, User $target): bool {
+        return (int) $target->organization_id === $organizationId
             && ! $target->isCustomer()
             && ! $target->isDeactivated();
     }
@@ -83,8 +101,8 @@ class TimeEntryReassignService {
      *
      * @throws ValidationException bei fremden, fehlenden oder gesperrten Einträgen
      */
-    public function reassign(Project $project, array $ids, User $target, User $actor): int {
-        if (! $this->isEligibleTarget($project, $target)) {
+    public function reassign(?Project $project, array $ids, User $target, User $actor): int {
+        if (! $this->isEligibleTarget((int) ($project->organization_id ?? $actor->organization_id), $target)) {
             throw ValidationException::withMessages([
                 'target_user_id' => (string) __('Der Zielbenutzer muss ein aktiver interner Benutzer derselben Organisation sein.'),
             ]);
@@ -94,7 +112,7 @@ class TimeEntryReassignService {
 
         return DB::transaction(function () use ($project, $ids, $target, $actor): int {
             /** @var Collection<int, TimeEntry> $entries */
-            $entries = $project->timeEntries()
+            $entries = $this->selection($project, $actor)
                 ->with('timesheet:id,status')
                 ->whereIn('id', $ids)
                 ->lockForUpdate()
@@ -102,7 +120,9 @@ class TimeEntryReassignService {
 
             if ($entries->count() !== count($ids)) {
                 throw ValidationException::withMessages([
-                    'ids' => (string) __('Mindestens ein gewählter Zeiteintrag gehört nicht zu diesem Projekt oder existiert nicht mehr.'),
+                    'ids' => (string) ($project !== null
+                        ? __('Mindestens ein gewählter Zeiteintrag gehört nicht zu diesem Projekt oder existiert nicht mehr.')
+                        : __('Mindestens ein gewählter Zeiteintrag existiert nicht mehr oder ist nicht verfügbar.')),
                 ]);
             }
 
@@ -140,7 +160,7 @@ class TimeEntryReassignService {
                     'from_user_id' => $from,
                     'to_user_id' => (int) $target->id,
                     'by' => (int) $actor->id,
-                    'project_id' => (int) $project->id,
+                    'project_id' => (int) $entry->project_id,
                 ]);
                 $count++;
             }

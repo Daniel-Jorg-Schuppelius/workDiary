@@ -204,28 +204,47 @@ class TimeEntryController extends Controller {
      * Auswahl, gesperrte Einträge mit Grund, Zielbenutzer-Auswahl.
      */
     public function reassignDialog(Project $project, Request $request): View {
+        return $this->reassignDialogView($project, $request);
+    }
+
+    /** Führt die Massen-Neuzuordnung aus (transaktional, siehe Service). */
+    public function reassign(Project $project, ReassignTimeEntriesRequest $request): RedirectResponse {
+        return $this->performReassign($project, $request);
+    }
+
+    /** Dieselbe Neuzuordnung projektübergreifend aus der Zeitenübersicht (MVP-1073). */
+    public function overviewReassignDialog(Request $request): View {
+        return $this->reassignDialogView(null, $request);
+    }
+
+    public function overviewReassign(ReassignTimeEntriesRequest $request): RedirectResponse {
+        return $this->performReassign(null, $request);
+    }
+
+    private function reassignDialogView(?Project $project, Request $request): View {
         abort_unless($this->canReassign(), 403);
 
+        /** @var User $actor */
+        $actor = $request->user();
         $encoder = app(SqidEncoder::class);
         $ids = array_map(
             static fn($sqid): ?int => is_string($sqid) && $sqid !== '' ? $encoder->decode(TimeEntry::class, $sqid) : null,
             (array) $request->query('ids', []),
         );
 
-        $preflight = app(TimeEntryReassignService::class)->preflight($project, $ids);
+        $preflight = app(TimeEntryReassignService::class)->preflight($project, $ids, $actor);
 
         return view('projects._time_reassign_dialog', [
             'project' => $project,
             'entries' => $preflight['entries'],
             'blocked' => $preflight['blocked'],
             'missing' => $preflight['missing'],
-            'targets' => $this->reassignTargets($project),
+            'targets' => $this->reassignTargets((int) ($project->organization_id ?? $actor->organization_id)),
             'isDialog' => true,
         ]);
     }
 
-    /** Führt die Massen-Neuzuordnung aus (transaktional, siehe Service). */
-    public function reassign(Project $project, ReassignTimeEntriesRequest $request): RedirectResponse {
+    private function performReassign(?Project $project, ReassignTimeEntriesRequest $request): RedirectResponse {
         $data = $request->validated();
 
         /** @var User $target */
@@ -240,8 +259,11 @@ class TimeEntryController extends Controller {
             $actor,
         );
 
-        return redirect()->route('projects.show', ['project' => $project, '#' => 'time'])
-            ->with('success', __(':n Zeiteinträge :name zugeordnet.', ['n' => $count, 'name' => $target->name]));
+        $redirect = $project !== null
+            ? redirect()->route('projects.show', ['project' => $project, '#' => 'time'])
+            : redirect()->toList('projects.times');
+
+        return $redirect->with('success', __(':n Zeiteinträge :name zugeordnet.', ['n' => $count, 'name' => $target->name]));
     }
 
     /**
@@ -295,10 +317,10 @@ class TimeEntryController extends Controller {
      *
      * @return Collection<int, User>
      */
-    private function reassignTargets(Project $project): Collection {
+    private function reassignTargets(int $organizationId): Collection {
         return User::query()
             ->withoutGlobalScopes()
-            ->where('organization_id', $project->organization_id)
+            ->where('organization_id', $organizationId)
             ->whereNull('customer_id')
             ->whereNull('deactivated_at')
             ->orderBy('name')

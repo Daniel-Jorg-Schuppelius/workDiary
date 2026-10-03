@@ -58,6 +58,15 @@ pour les valeurs de temps sur la fiche client : sans accès à tous les
 temps, les listes et les totaux ne comptent que vos propres saisies et
 portent la mention « uniquement vos propres temps ».
 
+Pour corriger des temps mal attribués, par exemple après un import avec
+le mauvais utilisateur, utilisez l’onglet **Temps** : cochez des saisies
+ou des groupes entiers et attribuez-les à une autre personne avec
+« Attribuer un utilisateur ». Cela nécessite les droits d’administration
+ou le droit « Réattribuer des saisies de temps à d’autres utilisateurs »
+et ne concerne que les temps que vous pouvez voir. Les temps facturés et
+signés restent verrouillés ; une sélection n’est jamais enregistrée
+partiellement.
+
 ## Exemple pratique
 
 Pour une migration de serveurs, le projet « Migration DC » est créé

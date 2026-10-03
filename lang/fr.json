@@ -10853,5 +10853,8 @@
     "Gruppieren nach": "Regrouper par",
     "Alle Gruppen ein- oder ausklappen": "Replier ou déplier tous les groupes",
     "Einträge von :name ein- oder ausklappen": "Replier ou déplier les saisies de :name",
-    "nur eigene Zeiten": "uniquement vos propres temps"
+    "nur eigene Zeiten": "uniquement vos propres temps",
+    ":n Eintrag der Auswahl ist nicht (mehr) verfügbar und wurde entfernt.|:n Einträge der Auswahl sind nicht (mehr) verfügbar und wurden entfernt.": ":n entrée de la sélection n’est pas (ou plus) disponible et a été retirée.|:n entrées de la sélection ne sont pas (ou plus) disponibles et ont été retirées.",
+    "Mindestens ein gewählter Zeiteintrag existiert nicht mehr oder ist nicht verfügbar.": "Au moins une saisie de temps sélectionnée n’existe plus ou n’est pas disponible.",
+    "Alle Einträge von :name auswählen": "Sélectionner toutes les saisies de :name"
 }

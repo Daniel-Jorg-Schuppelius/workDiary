@@ -2017,6 +2017,8 @@ Route::middleware('auth')->group(function () {
         Route::post('projects/duplicates/dismiss', [ProjectMergeController::class, 'dismiss'])->name('projects.duplicates.dismiss');
         // Zeitenübersicht über alle Projekte (MVP-1073) — ebenfalls vor der Resource-Route.
         Route::get('projects/times', \App\Http\Controllers\Project\ProjectTimeOverviewController::class)->name('projects.times');
+        Route::get('projects/times/reassign', [TimeEntryController::class, 'overviewReassignDialog'])->name('projects.times.reassign-dialog');
+        Route::post('projects/times/reassign', [TimeEntryController::class, 'overviewReassign'])->name('projects.times.reassign');
         Route::resource('projects', ProjectController::class);
         Route::get('projects/{project}/planning', [ProjectController::class, 'planning'])->name('projects.planning');
         Route::resource('projects.milestones', MilestoneController::class)->except(['index', 'show']);

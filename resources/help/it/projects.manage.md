@@ -57,6 +57,14 @@ nella scheda cliente: senza accesso a tutte le ore, elenchi e totali
 contano solo le proprie registrazioni e riportano la nota «solo le proprie
 ore».
 
+Per correggere ore assegnate in modo errato, ad esempio dopo un
+import con l’utente sbagliato, usi la scheda **Tempi**: selezioni
+registrazioni o interi gruppi e li assegni a un’altra persona con
+«Assegna utente». Servono i diritti di amministrazione o il diritto
+«Riassegna le registrazioni di tempo ad altri utenti» e vale solo per le
+ore che può vedere. Le ore fatturate e firmate restano bloccate; una
+selezione non viene mai salvata parzialmente.
+
 ## Esempio pratico
 
 Per una migrazione server nasce il progetto «Migrazione CED» con

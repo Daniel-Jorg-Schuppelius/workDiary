@@ -22,7 +22,7 @@ use App\Support\{MorphMap, Sqid};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Permission as SpatiePermission;
 use Spatie\Permission\PermissionRegistrar;
-use Tests\Concerns\WithOrganization;
+use Tests\Concerns\{WithGlobalDateRange, WithOrganization};
 use Tests\TestCase;
 
 /**
@@ -32,6 +32,7 @@ use Tests\TestCase;
  */
 class TimeEntryReassignTest extends TestCase {
     use RefreshDatabase;
+    use WithGlobalDateRange;
     use WithOrganization;
 
     private User $actor;
@@ -61,10 +62,17 @@ class TimeEntryReassignTest extends TestCase {
         parent::tearDown();
     }
 
-    private function grantReassign(User $user): void {
+    /**
+     * Neuzuordnung greift nur auf sichtbare Zeiten (MVP-1073): die Rollen mit
+     * dem Recht (Teamleitung, Buchhaltung) sehen alle Zeiten, der Handelnde
+     * im Test deshalb auch.
+     */
+    private function grantReassign(User $user, bool $withView = true): void {
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
-        SpatiePermission::findOrCreate(P::TimeEntryReassign->value, 'web');
-        $user->givePermissionTo(P::TimeEntryReassign->value);
+        foreach (array_filter([P::TimeEntryReassign, $withView ? P::TimeEntryViewAny : null]) as $permission) {
+            SpatiePermission::findOrCreate($permission->value, 'web');
+            $user->givePermissionTo($permission->value);
+        }
     }
 
     private function makeEntry(User $owner, array $overrides = []): TimeEntry {
@@ -278,6 +286,139 @@ class TimeEntryReassignTest extends TestCase {
             ->assertOk()
             ->assertSee(__('Eintrag bereits exportiert'))
             ->assertSee(__('Gesperrte Einträge in der Auswahl — bitte Auswahl bereinigen:'));
+    }
+
+    public function test_reassign_without_view_right_cannot_touch_foreign_entries(): void {
+        $limited = $this->orgUser();
+        $this->grantReassign($limited, withView: false);
+        $owner = $this->orgUser();
+        $foreign = $this->makeEntry($owner);
+        $own = $this->makeEntry($limited);
+
+        $this->actingAs($limited)
+            ->post(route('projects.time-entries.reassign', $this->project), $this->payload([$foreign], $this->target))
+            ->assertSessionHasErrors('ids');
+        $this->assertSame($owner->id, $foreign->fresh()->user_id);
+
+        // Auch der Dialog nennt den fremden Eintrag nicht.
+        $this->actingAs($limited)
+            ->get(route('projects.time-entries.reassign-dialog', $this->project) . '?' . http_build_query(['ids' => [$foreign->sqid]]))
+            ->assertOk()
+            ->assertViewHas('entries', fn($entries): bool => $entries->isEmpty())
+            ->assertViewHas('missing', 1);
+
+        $this->actingAs($limited)
+            ->post(route('projects.time-entries.reassign', $this->project), $this->payload([$own], $this->target))
+            ->assertSessionHasNoErrors();
+        $this->assertSame($this->target->id, $own->fresh()->user_id);
+    }
+
+    public function test_overview_reassigns_entries_across_projects(): void {
+        $second = $this->secondProject();
+        $owner = $this->orgUser();
+        $a = $this->makeEntry($owner);
+        $b = $this->makeEntry($owner, ['project_id' => $second->id, 'minutes' => 45]);
+
+        $this->actingAs($this->actor)
+            ->get(route('projects.times.reassign-dialog') . '?' . http_build_query(['ids' => [$a->sqid, $b->sqid]]))
+            ->assertOk()
+            ->assertViewHas('entries', fn($entries): bool => $entries->count() === 2)
+            ->assertSee('Zweites Projekt')
+            ->assertSee('action="' . route('projects.times.reassign') . '"', false);
+
+        $this->actingAs($this->actor)
+            ->post(route('projects.times.reassign'), $this->payload([$a, $b], $this->target))
+            ->assertRedirect(route('projects.times'))
+            ->assertSessionHas('success');
+
+        $this->assertSame($this->target->id, $a->fresh()->user_id);
+        $this->assertSame($this->target->id, $b->fresh()->user_id);
+
+        $projectIds = AuditLog::query()
+            ->where('event', 'timeEntry.reassigned')
+            ->where('auditable_type', MorphMap::stableKey(TimeEntry::class))
+            ->get()
+            ->map(fn(AuditLog $log): int => (int) $log->getAttribute('changes')['project_id'])
+            ->sort()->values()->all();
+        $this->assertSame([$this->project->id, $second->id], $projectIds);
+    }
+
+    public function test_overview_reassign_requires_the_right(): void {
+        $plain = $this->orgUser();
+        $entry = $this->makeEntry($plain);
+
+        $this->actingAs($plain)->get(route('projects.times.reassign-dialog'))->assertForbidden();
+        $this->actingAs($plain)
+            ->post(route('projects.times.reassign'), $this->payload([$entry], $this->target))
+            ->assertForbidden();
+
+        $this->assertSame($plain->id, $entry->fresh()->user_id);
+    }
+
+    public function test_overview_reassign_saves_nothing_with_locked_or_foreign_entries(): void {
+        $owner = $this->orgUser();
+        $free = $this->makeEntry($owner);
+        $locked = $this->makeEntry($owner, ['exported' => true]);
+
+        $this->actingAs($this->actor)
+            ->from(route('projects.times'))
+            ->post(route('projects.times.reassign'), $this->payload([$free, $locked], $this->target))
+            ->assertSessionHasErrors('ids');
+        $this->assertSame($owner->id, $free->fresh()->user_id);
+
+        // Zeiten einer anderen Organisation sind nie Teil der Auswahl.
+        $otherOrg = Organization::factory()->create();
+        $stranger = User::factory()->user()->create(['organization_id' => $otherOrg->id]);
+        $strangerProject = Project::withoutGlobalScopes()->create([
+            'organization_id' => $otherOrg->id,
+            'name' => 'Fremdes Projekt',
+            'status' => ProjectStatus::Active->value,
+            'created_by' => $stranger->id,
+        ]);
+        $foreign = TimeEntry::withoutGlobalScopes()->create([
+            'organization_id' => $otherOrg->id,
+            'project_id' => $strangerProject->id,
+            'user_id' => $stranger->id,
+            'date' => now()->subDays(2)->toDateString(),
+            'minutes' => 30,
+        ]);
+
+        $this->actingAs($this->actor)
+            ->from(route('projects.times'))
+            ->post(route('projects.times.reassign'), [
+                'ids' => [$free->sqid, Sqid::encode(TimeEntry::class, $foreign->id)],
+                'target_user_id' => Sqid::encode(User::class, $this->target->id),
+            ])
+            ->assertSessionHasErrors('ids');
+        $this->assertSame($owner->id, $free->fresh()->user_id);
+        $this->assertSame($stranger->id, (int) TimeEntry::withoutGlobalScopes()->findOrFail($foreign->id)->user_id);
+    }
+
+    public function test_overview_offers_the_selection_only_with_the_right(): void {
+        $this->makeEntry($this->orgUser());
+        $range = $this->dateRangeSession(now()->subDays(10)->toDateString(), now()->toDateString());
+
+        $this->actingAs($this->actor)->withSession($range)->get(route('projects.times'))
+            ->assertOk()
+            ->assertSee('data-bulk-checkbox', false)
+            ->assertSee('data-bulk-select-group', false)
+            ->assertSee(route('projects.times.reassign-dialog'), false);
+
+        $plain = $this->orgUser();
+        $this->makeEntry($plain);
+        $this->actingAs($plain)->withSession($range)->get(route('projects.times'))
+            ->assertOk()
+            ->assertDontSee('data-bulk-checkbox', false)
+            ->assertDontSee(route('projects.times.reassign-dialog'), false);
+    }
+
+    private function secondProject(): Project {
+        return Project::create([
+            'organization_id' => $this->organization->id,
+            'name' => 'Zweites Projekt',
+            'status' => ProjectStatus::Active->value,
+            'created_by' => $this->actor->id,
+        ]);
     }
 
     public function test_manipulated_ids_are_ignored_in_dialog(): void {

@@ -6,16 +6,17 @@
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
-{{-- Massen-Neuzuordnung (MVP-508) — erwartet: $project, $entries, $blocked, $missing, $targets, $isDialog --}}
+{{-- Massen-Neuzuordnung (MVP-508) — erwartet: $project (null = projektübergreifend aus der Zeitenübersicht), $entries, $blocked, $missing, $targets, $isDialog --}}
 @php
     $isDialog = $isDialog ?? false;
-    $action = route('projects.time-entries.reassign', $project);
+    $action = $project ? route('projects.time-entries.reassign', $project) : route('projects.times.reassign');
     $sqids = $entries->pluck('sqid')->all();
-    $dialogUrl = route('projects.time-entries.reassign-dialog', $project)
+    $dialogUrl = ($project ? route('projects.time-entries.reassign-dialog', $project) : route('projects.times.reassign-dialog'))
         . '?' . http_build_query(['ids' => $sqids, 'dialog' => 1]);
 
     $totalMinutes = (int) $entries->sum('minutes');
     $byUser = $entries->groupBy(fn ($e) => $e->user->name ?? '—')->map->count()->sortDesc();
+    $byProject = $project ? collect() : $entries->groupBy(fn ($e) => $e->project->name ?? '—')->map->count()->sortDesc();
     $hasBlockers = $blocked !== [] || $entries->isEmpty();
 @endphp
 
@@ -49,12 +50,22 @@
                 {{ $byUser->map(fn ($count, $name) => $name . ' (' . $count . ')')->implode(', ') }}
             </p>
         @endif
+        @if ($byProject->isNotEmpty())
+            <p class="mt-1 text-base-content/70">
+                {{ __('Projekte') }}:
+                {{ $byProject->map(fn ($count, $name) => $name . ' (' . $count . ')')->implode(', ') }}
+            </p>
+        @endif
     </div>
 
     @if ($missing > 0)
         <div class="alert alert-warning alert-soft text-sm">
             <x-icon name="warning" />
-            <span>{{ trans_choice(':n Eintrag der Auswahl gehört nicht (mehr) zu diesem Projekt und wurde entfernt.|:n Einträge der Auswahl gehören nicht (mehr) zu diesem Projekt und wurden entfernt.', $missing, ['n' => $missing]) }}</span>
+            @if ($project)
+                <span>{{ trans_choice(':n Eintrag der Auswahl gehört nicht (mehr) zu diesem Projekt und wurde entfernt.|:n Einträge der Auswahl gehören nicht (mehr) zu diesem Projekt und wurden entfernt.', $missing, ['n' => $missing]) }}</span>
+            @else
+                <span>{{ trans_choice(':n Eintrag der Auswahl ist nicht (mehr) verfügbar und wurde entfernt.|:n Einträge der Auswahl sind nicht (mehr) verfügbar und wurden entfernt.', $missing, ['n' => $missing]) }}</span>
+            @endif
         </div>
     @endif
 

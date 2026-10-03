@@ -55,6 +55,13 @@ timesheets, total hours), in the case file of an order and to the time
 figures on the customer page: without access to all times, lists and
 totals count only your own entries and carry the note “own times only”.
 
+To correct wrongly assigned times, for example after an import with the
+wrong user, use the **Times** tab: tick entries or whole groups and assign
+them to another person with “Assign user”. This requires administration
+rights or the permission “Reassign time entries to other users” and works
+only for times you are allowed to see. Invoiced and signed times stay
+locked; a selection is never saved partially.
+
 ## Practical example
 
 For a server migration the project "Migration DC" is created with
