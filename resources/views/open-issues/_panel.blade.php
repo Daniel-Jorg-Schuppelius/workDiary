@@ -83,7 +83,7 @@
                             @foreach ($issue->followUps as $followUp)
                                 <p class="mt-1 text-xs text-base-content/70">
                                     {{ __('open-issue.field.follow_up') }}:
-                                    <a href="{{ route('diary.show', $followUp) }}" class="link link-primary">{{ $followUp->title ?: __('Auftrag') }} · {{ $followUp->start_at?->fdate() ?? '—' }}</a>
+                                    <x-order-link :entry="$followUp" link-class="link link-primary">{{ $followUp->title ?: __('Auftrag') }} · {{ $followUp->start_at?->fdate() ?? '—' }}</x-order-link>
                                 </p>
                             @endforeach
                         </div>

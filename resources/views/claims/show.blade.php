@@ -74,7 +74,7 @@
             <x-detail-grid class="grid-cols-2">
                 <x-detail-grid.row :label="__('Auftrag')">
                     @if ($claim->diaryEntry !== null)
-                        <a class="link" href="{{ route('diary.show', $claim->diaryEntry) }}">{{ $claim->diaryEntry->title ?? ('#' . $claim->diaryEntry->id) }}</a>
+                        <x-order-link :entry="$claim->diaryEntry" link-class="link">{{ $claim->diaryEntry->title ?? ('#' . $claim->diaryEntry->id) }}</x-order-link>
                     @else
                         —
                     @endif

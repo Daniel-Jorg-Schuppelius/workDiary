@@ -16,7 +16,7 @@
         <ul class="space-y-2 text-sm">
             @foreach ($entries as $entry)
                 <li class="rounded-box border border-base-300 bg-base-200 px-3 py-2">
-                    <a href="{{ route('diary.show', $entry) }}" class="link link-primary block">{{ \CommonToolkit\Helper\Data\StringHelper::truncate($entry->content, 80) }}</a>
+                    <x-order-link :entry="$entry" link-class="link link-primary" class="block">{{ \CommonToolkit\Helper\Data\StringHelper::truncate($entry->content, 80) }}</x-order-link>
                     <span class="text-xs text-muted">{{ $entry->statusLabel() }} · {{ $entry->updated_at->diffForHumans() }}</span>
                 </li>
             @endforeach

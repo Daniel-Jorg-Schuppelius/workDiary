@@ -16,10 +16,12 @@
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('Pflichtklassifikationen pro Auftragstyp für :org verwalten.', ['org' => $organization->name])">
     <x-slot:actions>
-        <x-icon-btn icon="add" tone="primary" size="sm"
-                    data-entry-modal-trigger
-                    :href="route('admin.classification-requirements.create')"
-                    show-label>{{ __('Pflichtregel anlegen') }}</x-icon-btn>
+        @can('create', \App\Models\Classification\ClassificationRequirement::class)
+            <x-icon-btn icon="add" tone="primary" size="sm"
+                        data-entry-modal-trigger
+                        :href="route('admin.classification-requirements.create')"
+                        show-label>{{ __('Pflichtregel anlegen') }}</x-icon-btn>
+        @endcan
     </x-slot:actions>
 
     <x-filter-bar :action="route('admin.classification-requirements.index')" :reset="route('admin.classification-requirements.index')">
@@ -156,16 +158,20 @@
                         @endif
                     </td>
                     <td class="text-right whitespace-nowrap">
-                        <x-icon-btn icon="edit" size="xs"
-                                    data-entry-modal-trigger
-                                    :href="route('admin.classification-requirements.edit', $requirement)"
-                                    :title="__('Bearbeiten')" />
-                        <form method="POST" action="{{ route('admin.classification-requirements.destroy', $requirement) }}" class="inline">
-                            @csrf @method('DELETE')
-                            <x-icon-btn type="submit" icon="delete" size="xs" tone="error"
-                                        :title="__('Löschen')"
-                                        data-confirm-dialog data-confirm-message="{{ __('Pflichtregel wirklich löschen?') }}" data-confirm-tone="error" />
-                        </form>
+                        @can('update', $requirement)
+                            <x-icon-btn icon="edit" size="xs"
+                                        data-entry-modal-trigger
+                                        :href="route('admin.classification-requirements.edit', $requirement)"
+                                        :title="__('Bearbeiten')" />
+                        @endcan
+                        @can('delete', $requirement)
+                            <form method="POST" action="{{ route('admin.classification-requirements.destroy', $requirement) }}" class="inline">
+                                @csrf @method('DELETE')
+                                <x-icon-btn type="submit" icon="delete" size="xs" tone="error"
+                                            :title="__('Löschen')"
+                                            data-confirm-dialog data-confirm-message="{{ __('Pflichtregel wirklich löschen?') }}" data-confirm-tone="error" />
+                            </form>
+                        @endcan
                     </td>
                 </tr>
             @endforeach

@@ -14,14 +14,16 @@
 @section('content')
 <x-index-page :subtitle="__('Plattform-Defaults vergleichen und organisationsspezifische Werte pflegen für :org.', ['org' => $organization->name])">
     <x-slot:actions>
-        <x-icon-btn icon="upload" size="sm"
-                    data-entry-modal-trigger
-                    :href="route('admin.classifications.import.form')"
-                    show-label>{{ __('CSV-Import') }}</x-icon-btn>
-        <x-icon-btn icon="add" tone="primary" size="sm"
-                    data-entry-modal-trigger
-                    :href="route('admin.classifications.create')"
-                    show-label>{{ __('Klassifikation anlegen') }}</x-icon-btn>
+        @can('create', \App\Models\Classification\Classification::class)
+            <x-icon-btn icon="upload" size="sm"
+                        data-entry-modal-trigger
+                        :href="route('admin.classifications.import.form')"
+                        show-label>{{ __('CSV-Import') }}</x-icon-btn>
+            <x-icon-btn icon="add" tone="primary" size="sm"
+                        data-entry-modal-trigger
+                        :href="route('admin.classifications.create')"
+                        show-label>{{ __('Klassifikation anlegen') }}</x-icon-btn>
+        @endcan
     </x-slot:actions>
 
     @foreach ($domains as $domain)
@@ -38,10 +40,12 @@
                     <h2 class="text-lg font-semibold">{{ $domain->label() }}</h2>
                     <p class="text-sm text-muted">{{ __('Domain: :domain', ['domain' => $domain->value]) }}</p>
                 </div>
-                <x-icon-btn icon="add_circle" size="xs" tone="primary"
-                            data-entry-modal-trigger
-                            :href="route('admin.classifications.create', ['domain' => $domain->value])"
-                            show-label>{{ __('Org-Wert anlegen') }}</x-icon-btn>
+                @can('create', \App\Models\Classification\Classification::class)
+                    <x-icon-btn icon="add_circle" size="xs" tone="primary"
+                                data-entry-modal-trigger
+                                :href="route('admin.classifications.create', ['domain' => $domain->value])"
+                                show-label>{{ __('Org-Wert anlegen') }}</x-icon-btn>
+                @endcan
             </div>
 
             <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
@@ -71,7 +75,7 @@
                                 </td>
                                 <td>{{ $classification->sort_order }}</td>
                                 <td>
-                                    <input type="number"
+                                    <input type="number" @cannot('create', \App\Models\Classification\Classification::class) disabled @endcannot
                                            form="classification-reorder-{{ $domain->value }}"
                                            name="sort_map[{{ $classification->id }}]"
                                            value="{{ old('sort_map.' . $classification->id, $classification->sort_order) }}"
@@ -90,29 +94,35 @@
                                     @endif
                                 </td>
                                 <td class="text-right whitespace-nowrap">
-                                    <x-icon-btn icon="edit" size="xs"
-                                                data-entry-modal-trigger
-                                                :href="route('admin.classifications.edit', $classification)"
-                                                :title="__('Bearbeiten')" />
-                                    <form method="POST" action="{{ route('admin.classifications.destroy', $classification) }}" class="inline">
-                                        @csrf @method('DELETE')
-                                        <x-icon-btn type="submit" icon="delete" size="xs" tone="error"
-                                                    :title="__('Löschen')"
-                                                    data-confirm-dialog data-confirm-message="{{ __('Klassifikation wirklich löschen?') }}" data-confirm-tone="error" />
-                                    </form>
+                                    @can('update', $classification)
+                                        <x-icon-btn icon="edit" size="xs"
+                                                    data-entry-modal-trigger
+                                                    :href="route('admin.classifications.edit', $classification)"
+                                                    :title="__('Bearbeiten')" />
+                                    @endcan
+                                    @can('delete', $classification)
+                                        <form method="POST" action="{{ route('admin.classifications.destroy', $classification) }}" class="inline">
+                                            @csrf @method('DELETE')
+                                            <x-icon-btn type="submit" icon="delete" size="xs" tone="error"
+                                                        :title="__('Löschen')"
+                                                        data-confirm-dialog data-confirm-message="{{ __('Klassifikation wirklich löschen?') }}" data-confirm-tone="error" />
+                                        </form>
+                                    @endcan
                                 </td>
                             </tr>
                         @empty
                             <x-table.empty :colspan="5" icon="category" :title="__('Noch keine organisationsspezifischen Werte vorhanden.')" compact />
                         @endforelse
                     </x-table>
-                    @if ($orgRows->isNotEmpty())
-                        <div class="flex justify-end">
-                            <button type="submit" form="classification-reorder-{{ $domain->value }}" class="btn btn-sm btn-outline gap-2">
-                                <x-icon name="swap_vert" /> {{ __('Reihenfolge speichern') }}
-                            </button>
-                        </div>
-                    @endif
+                    @can('create', \App\Models\Classification\Classification::class)
+                        @if ($orgRows->isNotEmpty())
+                            <div class="flex justify-end">
+                                <button type="submit" form="classification-reorder-{{ $domain->value }}" class="btn btn-sm btn-outline gap-2">
+                                    <x-icon name="swap_vert" /> {{ __('Reihenfolge speichern') }}
+                                </button>
+                            </div>
+                        @endif
+                    @endcan
                 </section>
 
                 <section class="space-y-3">
@@ -145,16 +155,20 @@
                                     @endif
                                 </td>
                                 <td class="text-right whitespace-nowrap">
-                                    <x-icon-btn icon="edit_square" size="xs"
-                                                data-entry-modal-trigger
-                                                :href="route('admin.classifications.create', ['source' => $classification->sqid])"
-                                                :title="__('Override anlegen')" />
+                                    @can('create', \App\Models\Classification\Classification::class)
+                                        <x-icon-btn icon="edit_square" size="xs"
+                                                    data-entry-modal-trigger
+                                                    :href="route('admin.classifications.create', ['source' => $classification->sqid])"
+                                                    :title="__('Override anlegen')" />
+                                    @endcan
+                                    @can('deactivateDefault', \App\Models\Classification\Classification::class)
                                     <form method="POST" action="{{ route('admin.classifications.deactivate-default', $classification) }}" class="inline">
                                         @csrf
                                         <x-icon-btn type="submit" icon="block" size="xs" tone="warning"
                                                     :title="__('Standard deaktivieren')"
                                                     data-confirm-dialog data-confirm-message="{{ __('Plattform-Default für diese Organisation deaktivieren?') }}" data-confirm-tone="error" />
                                     </form>
+                                    @endcan
                                 </td>
                             </tr>
                         @empty

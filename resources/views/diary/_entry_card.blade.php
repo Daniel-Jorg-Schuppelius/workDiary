@@ -82,11 +82,14 @@
         <x-custom-field-summary class="mt-2" :columns="$customColumns ?? []" :model="$entry" />
     </div>
     <div class="flex flex-col gap-2 md:items-end md:justify-between">
-        <x-icon-btn icon="visibility" tone="outline" size="sm"
-                    data-entry-modal-trigger
-                    :href="route('diary.show', $entry)"
-                    class="btn-primary"
-                    show-label>{{ __('Details') }}</x-icon-btn>
+        {{-- Team-Sicht: fremde Aufträge stehen in der Liste, öffnen darf sie nur, wer sie sehen darf. --}}
+        @can('view', $entry)
+            <x-icon-btn icon="visibility" tone="outline" size="sm"
+                        data-entry-modal-trigger
+                        :href="route('diary.show', $entry)"
+                        class="btn-primary"
+                        show-label>{{ __('Details') }}</x-icon-btn>
+        @endcan
         @can('update', $entry)
             <x-icon-btn icon="edit" size="sm"
                         data-entry-modal-trigger

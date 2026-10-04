@@ -66,7 +66,7 @@
                         <div><dt class="inline font-medium">{{ __('construction.field.customer') }}:</dt> <dd class="inline">{{ $notice->customer?->name ?? '—' }}</dd></div>
                         <div><dt class="inline font-medium">{{ __('construction.field.diary_entry') }}:</dt> <dd class="inline">
                             @if ($notice->diaryEntry !== null)
-                                <a class="link" href="{{ route('diary.show', $notice->diaryEntry) }}">{{ $notice->diaryEntry->title }}</a>
+                                <x-order-link :entry="$notice->diaryEntry" link-class="link">{{ $notice->diaryEntry->title }}</x-order-link>
                             @else — @endif
                         </dd></div>
                     </dl>

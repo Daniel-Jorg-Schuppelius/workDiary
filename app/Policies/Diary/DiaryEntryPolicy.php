@@ -20,8 +20,14 @@ class DiaryEntryPolicy {
     use HasAdminBypass;
 
     public function view(User $user, DiaryEntry $entry): bool {
+        // Zugewiesene lesen, was sie bearbeiten; Ändern und Löschen bleiben
+        // Eigentum oder diary.viewAny plus Recht.
         return $this->sharesOrganization($user, $entry)
-            && ($this->owns($user, $entry) || $user->can(Permission::DiaryViewAny->value));
+            && (
+                $this->owns($user, $entry)
+                || (int) $entry->assigned_user_id === (int) $user->id
+                || $user->can(Permission::DiaryViewAny->value)
+            );
     }
 
     public function update(User $user, DiaryEntry $entry): bool {

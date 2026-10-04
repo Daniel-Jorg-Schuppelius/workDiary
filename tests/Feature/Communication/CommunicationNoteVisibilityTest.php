@@ -23,7 +23,10 @@ class CommunicationNoteVisibilityTest extends TestCase {
     public function test_confidential_note_is_hidden_from_other_users_via_scope(): void {
         $author = User::factory()->user()->create();
         $other = User::factory()->user()->create(['organization_id' => $author->organization_id]);
-        $entry = DiaryEntry::factory()->for($author)->create();
+        // Träger ist ein Kunde: Notizen an einem fremden AUFTRAG fallen seit
+        // 2026-10-04 schon über die Sicht auf den Auftrag heraus
+        // (OrderVisibilityInListsTest) — hier geht es nur um „vertraulich".
+        $entry = \App\Models\Customer\Customer::factory()->create(['organization_id' => $author->organization_id]);
 
         CommunicationNote::factory()->for($entry, 'notable')->create([
             'organization_id' => $author->organization_id,

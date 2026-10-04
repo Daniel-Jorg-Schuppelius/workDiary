@@ -34,6 +34,8 @@ use Illuminate\View\View;
  */
 class DiaryCaseFileController extends Controller {
     public function __invoke(DiaryEntry $diary, DiaryEntryTimelineService $timeline, FeatureFlagResolver $featureFlags): View {
+        Gate::authorize('view', $diary);
+
         /** @var User $viewer */
         $viewer = Auth::user();
 
@@ -47,6 +49,8 @@ class DiaryCaseFileController extends Controller {
      * kundensichtbaren Portal-PDF.
      */
     public function pdf(DiaryEntry $diary, DiaryEntryTimelineService $timeline, FeatureFlagResolver $featureFlags): \Symfony\Component\HttpFoundation\Response {
+        Gate::authorize('view', $diary);
+
         /** @var User $viewer */
         $viewer = Auth::user();
 

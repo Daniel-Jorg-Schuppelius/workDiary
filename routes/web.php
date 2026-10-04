@@ -200,13 +200,14 @@ Route::get('branding/logo/{logo}', BrandingLogoController::class)
     ->middleware(['signed', 'throttle:240,1'])
     ->name('branding.logo');
 
+// Fester Pfad VOR der Token-Route: sonst gilt „thanks“ als Token und die Danke-Seite endet im 404.
+Route::get('sign/timesheet/thanks', [PublicSignatureController::class, 'thanks'])->name('timesheets.public-thanks');
 Route::get('sign/timesheet/{token}', [PublicSignatureController::class, 'show'])
     ->middleware('throttle:30,1')
     ->name('timesheets.public-sign');
 Route::post('sign/timesheet/{token}', [PublicSignatureController::class, 'store'])
     ->middleware('throttle:6,1')
     ->name('timesheets.public-sign.submit');
-Route::get('sign/timesheet/thanks', [PublicSignatureController::class, 'thanks'])->name('timesheets.public-thanks');
 
 // Öffentlicher Protokoll-Signaturlink (MVP-022 §3.3)
 Route::get('sign/protocol/{token}', [PublicProtocolSignatureController::class, 'show'])
@@ -5172,13 +5173,14 @@ Route::middleware('auth')->group(function () {
 
         // Integrations-Drehscheibe: zentrale Zuordnungs-Inbox + Zuordnungs-Register (MVP-103)
         Route::get('admin/integration/inbox', [\App\Http\Controllers\Admin\IntegrationInboxController::class, 'index'])->name('admin.integration.inbox');
+        // Feste Pfade VOR den {item}-Routen: sonst gilt „group“ als Eintrag (404 bei „Gruppe verwerfen“).
+        Route::post('admin/integration/inbox/group/book', [\App\Http\Controllers\Admin\IntegrationInboxController::class, 'bookGroup'])->name('admin.integration.inbox.group.book');
+        Route::post('admin/integration/inbox/group/dismiss', [\App\Http\Controllers\Admin\IntegrationInboxController::class, 'dismissGroup'])->name('admin.integration.inbox.group.dismiss');
         Route::post('admin/integration/inbox/{item}/assign', [\App\Http\Controllers\Admin\IntegrationInboxController::class, 'assign'])->name('admin.integration.inbox.assign');
         Route::post('admin/integration/inbox/{item}/create', [\App\Http\Controllers\Admin\IntegrationInboxController::class, 'create'])->name('admin.integration.inbox.create');
         Route::post('admin/integration/inbox/{item}/accept-remote', [\App\Http\Controllers\Admin\IntegrationInboxController::class, 'acceptRemote'])->name('admin.integration.inbox.accept-remote');
         Route::post('admin/integration/inbox/{item}/keep-local', [\App\Http\Controllers\Admin\IntegrationInboxController::class, 'keepLocal'])->name('admin.integration.inbox.keep-local');
         Route::post('admin/integration/inbox/{item}/dismiss', [\App\Http\Controllers\Admin\IntegrationInboxController::class, 'dismiss'])->name('admin.integration.inbox.dismiss');
-        Route::post('admin/integration/inbox/group/book', [\App\Http\Controllers\Admin\IntegrationInboxController::class, 'bookGroup'])->name('admin.integration.inbox.group.book');
-        Route::post('admin/integration/inbox/group/dismiss', [\App\Http\Controllers\Admin\IntegrationInboxController::class, 'dismissGroup'])->name('admin.integration.inbox.group.dismiss');
         Route::get('admin/integration/mappings', [\App\Http\Controllers\Admin\IntegrationMappingController::class, 'index'])->name('admin.integration.mappings.index');
         Route::delete('admin/integration/mappings/{reference}', [\App\Http\Controllers\Admin\IntegrationMappingController::class, 'destroy'])->name('admin.integration.mappings.destroy');
 

@@ -45,10 +45,12 @@ class ProjectTimelineTest extends TestCase {
             'is_default' => false,
         ]);
 
+        // Eigener Auftrag des Betrachters: fremde Aufträge listet die Timeline
+        // seit 2026-10-04 nur mit `diary.viewAny` (OrderVisibilityInListsTest).
         DiaryEntry::factory()->create([
             'organization_id' => $this->organization->id,
             'project_id' => $project->id,
-            'user_id' => $author->id,
+            'user_id' => $viewer->id,
             'title' => 'Kesselwartung März',
         ]);
         Document::factory()->create([

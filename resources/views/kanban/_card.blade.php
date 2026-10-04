@@ -28,7 +28,7 @@
      data-id="{{ $entry->id }}"
      data-status="{{ $entry->status->value }}"
      data-actions="{{ $lifecycleActions->toJson(JSON_UNESCAPED_SLASHES) }}">
-    <a href="{{ route('diary.show', $entry) }}"
+    <x-order-link :entry="$entry" as="div"
        data-entry-modal-trigger
        draggable="false"
        class="block cursor-grab rounded-lg border border-base-300 bg-base-100 p-2 pe-8 text-sm shadow-xs transition hover:shadow-md active:cursor-grabbing">
@@ -46,7 +46,7 @@
                 @endforeach
             </div>
         @endif
-    </a>
+    </x-order-link>
     <x-icon-btn icon="drag_indicator"
                 :label="__('Verschieben nach')"
                 size="xs"

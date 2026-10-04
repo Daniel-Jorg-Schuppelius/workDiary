@@ -329,16 +329,20 @@ class DiaryEntry extends Model implements CustomFieldSubject {
     }
 
     /**
-     * Massenabzüge (CSV/PDF-Export, API-Liste) folgen derselben Grenze wie
-     * DiaryEntryPolicy::view: ohne `diary.viewAny` nur eigene Aufträge
-     * (Sicherheitsaudit 2026-09-17, authz-diary-1). Die Team-Sicht in Liste
-     * und Kanban bleibt bewusst offen (KanbanTest).
+     * Massenabzüge (CSV/PDF-Export, API-Liste) und Listen auf Detailseiten
+     * folgen derselben Grenze wie DiaryEntryPolicy::view: ohne `diary.viewAny`
+     * nur eigene und zugewiesene Aufträge (Sicherheitsaudit 2026-09-17,
+     * authz-diary-1). Die Team-Sicht in Liste und Kanban bleibt bewusst offen
+     * (KanbanTest) und verlinkt über `<x-order-link>`.
      *
      * @param  Builder<DiaryEntry>  $query
      */
     public function scopeVisibleInBulkTo(Builder $query, User $user): void {
         if (! $user->can(\App\Enums\User\Permission::DiaryViewAny->value)) {
-            $query->where($query->getModel()->qualifyColumn('user_id'), $user->id);
+            $query->where(static function (Builder $own) use ($user): void {
+                $own->where($own->getModel()->qualifyColumn('user_id'), $user->id)
+                    ->orWhere($own->getModel()->qualifyColumn('assigned_user_id'), $user->id);
+            });
         }
     }
 

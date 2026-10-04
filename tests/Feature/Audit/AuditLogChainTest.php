@@ -51,6 +51,34 @@ class AuditLogChainTest extends TestCase {
         $this->assertSame(0, $this->runVerify());
     }
 
+    /**
+     * Regression (UI-Vollcrawl 2026-10-03): Ein INSERT IGNORE auf die
+     * vorhandene Kopfzeile hinterlässt in InnoDB eine geteilte Sperre; zwei
+     * gleichzeitige Schreiber derselben Kette verklemmten beim FOR UPDATE.
+     * Die Kopfzeile wird deshalb nur beim ersten Eintrag angelegt.
+     */
+    public function test_existing_chain_head_is_not_inserted_again(): void {
+        $inserts = static fn(array $log): int => count(array_filter(
+            $log,
+            static fn(array $query): bool => preg_match('/^insert\b.*audit_chain_heads/i', (string) $query['query']) === 1,
+        ));
+
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+        $first = $this->makeEntry('created', 1);
+        $this->assertSame(1, $inserts(DB::getQueryLog()), 'Der erste Eintrag legt den Kettenkopf an.');
+
+        DB::flushQueryLog();
+        $second = $this->makeEntry('updated', 1);
+        $third = $this->makeEntry('deleted', 1);
+        $this->assertSame(0, $inserts(DB::getQueryLog()), 'Spätere Einträge fassen die Kopfzeile nur noch per FOR UPDATE an.');
+        DB::disableQueryLog();
+
+        $this->assertSame($first->hash, $second->prev_hash);
+        $this->assertSame($second->hash, $third->prev_hash);
+        $this->assertSame(0, $this->runVerify());
+    }
+
     public function test_update_is_blocked(): void {
         $entry = $this->makeEntry('created', 1);
 

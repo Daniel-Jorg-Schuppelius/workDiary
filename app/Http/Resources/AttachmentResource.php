@@ -38,7 +38,7 @@ class AttachmentResource extends JsonResource {
             'mime' => $this->mime,
             'size' => $this->size,
             'uploader' => UserResource::make($this->whenLoaded('uploader')),
-            'download_url' => route('attachments.download', $this->resource),
+            'download_url' => route('api.attachments.download', $this->resource),
             'created_at' => optional($this->created_at)->toIso8601String(),
         ];
     }

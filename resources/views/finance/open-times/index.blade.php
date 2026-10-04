@@ -63,7 +63,7 @@
                 <ul class="mt-2 space-y-1 text-sm">
                     @foreach ($invoicedMismatches as $diary)
                         <li class="flex flex-wrap items-center gap-2">
-                            <a href="{{ route('diary.show', $diary) }}" class="link">{{ $diary->title ?? ('#' . $diary->sqid) }}</a>
+                            <x-order-link :entry="$diary" link-class="link">{{ $diary->title ?? ('#' . $diary->sqid) }}</x-order-link>
                             <span class="text-muted">{{ $diary->customer->name ?? '—' }}</span>
                             <x-status-badge tone="warning" outline>{{ trans_choice('finance.open_times.mismatch.open_entries', (int) $diary->open_time_entries_count, ['count' => (int) $diary->open_time_entries_count]) }}</x-status-badge>
                         </li>

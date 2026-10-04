@@ -42,7 +42,7 @@
                     <tr class="hover">
                         <td>
                             <x-status-badge size="md" outline
-                                  :style="$tag->color ? 'border-color: '.$tag->color.'; color: '.$tag->color.';' : null">
+                                  :style="$tag->color ? 'border-color: '.$tag->color.'; color: '.$tag->color.';' : ''">
                                 #{{ $tag->displayName() }}
                             </x-status-badge>
                         </td>

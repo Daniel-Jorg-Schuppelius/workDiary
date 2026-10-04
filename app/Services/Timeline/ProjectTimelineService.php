@@ -35,7 +35,7 @@ class ProjectTimelineService {
      */
     public function forProject(Project $project, User $viewer, int $limit = 50, int $offset = 0, ?CarbonImmutable $from = null, ?CarbonImmutable $to = null): array {
         $items = array_merge(
-            $this->entryItems($project),
+            $this->entryItems($project, $viewer),
             $this->milestoneItems($project),
             $this->documentItems($project, $viewer),
             $this->communicationItems($project, $viewer),
@@ -59,10 +59,12 @@ class ProjectTimelineService {
     }
 
     /** @return list<TimelineItem> */
-    private function entryItems(Project $project): array {
+    private function entryItems(Project $project, User $viewer): array {
         $items = [];
+        // Wie DiaryEntryPolicy::view: ohne `diary.viewAny` nur eigene Aufträge.
         $entries = DiaryEntry::query()
             ->where('project_id', $project->id)
+            ->visibleInBulkTo($viewer)
             ->orderByDesc('created_at')
             ->limit(self::PER_SOURCE_CAP)
             ->get(['id', 'title', 'status', 'start_at', 'created_at', 'completed_at']);

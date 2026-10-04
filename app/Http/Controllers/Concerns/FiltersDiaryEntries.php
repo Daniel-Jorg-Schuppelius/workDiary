@@ -111,7 +111,8 @@ trait FiltersDiaryEntries {
      * @return array<int,string>
      */
     protected function diaryListColumns(): array {
-        return ['id', 'user_id', 'content', 'status', 'is_archived', 'start_at', 'end_at', 'created_at',
+        // user_id und assigned_user_id braucht die Karte für can('view').
+        return ['id', 'user_id', 'assigned_user_id', 'content', 'status', 'is_archived', 'start_at', 'end_at', 'created_at',
             'mode', 'due_date', 'window_start_date', 'window_end_date', 'location_mode'];
     }
 }

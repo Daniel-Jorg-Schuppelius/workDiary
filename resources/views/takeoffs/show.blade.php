@@ -15,7 +15,8 @@
     $num = static fn ($v, int $d = 3): string => $v === null ? '—' : \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $v, $d, trimTrailingZeros: true);
     $carrier = $takeoff->carrier();
     $backUrl = match (true) {
-        $carrier instanceof \App\Models\Diary\DiaryEntry => route('diary.show', $carrier),
+        // Rückpfeil nur, wenn der Auftrag sich öffnen lässt.
+        $carrier instanceof \App\Models\Diary\DiaryEntry => \Illuminate\Support\Facades\Gate::allows('view', $carrier) ? route('diary.show', $carrier) : null,
         $carrier instanceof \App\Models\Project\Project => route('projects.show', $carrier),
         $carrier instanceof \App\Models\Gaeb\BillOfQuantity => route('bill-of-quantities.show', $carrier),
         default => null,

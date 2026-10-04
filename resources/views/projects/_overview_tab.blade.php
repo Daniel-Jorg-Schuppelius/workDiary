@@ -131,7 +131,7 @@
                         };
                     @endphp
                     <li class="px-4 py-3">
-                        <a href="{{ route('diary.show', $entry) }}" data-entry-modal-trigger class="block">
+                        <x-order-link :entry="$entry" as="div" data-entry-modal-trigger class="block">
                             <div class="flex flex-wrap items-center gap-2 text-xs text-muted">
                                 @if ($dateLabel)
                                     <span>{{ $dateLabel }}</span>
@@ -143,7 +143,7 @@
                                 @endif
                             </div>
                             <div class="line-clamp-2 text-sm">{{ \CommonToolkit\Helper\Data\StringHelper::truncate($entry->content, 150) }}</div>
-                        </a>
+                        </x-order-link>
                     </li>
                 @endforeach
             </ul>

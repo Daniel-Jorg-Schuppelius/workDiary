@@ -24,6 +24,28 @@ class ProjectsTest extends TestCase {
         parent::setUp();
     }
 
+    /**
+     * Die Projekt-URL enthält das Kunden-Kürzel. Teilgeladene Modelle
+     * verlinkten still auf "intern/…" (404) — der Routenschlüssel lädt
+     * fehlende Teile seit 2026-10-04 nach.
+     */
+    public function test_route_key_survives_partially_loaded_models(): void {
+        $organizationId = (int) User::factory()->user()->create()->organization_id;
+        $customer = Customer::factory()->create(['organization_id' => $organizationId]);
+        $project = Project::factory()->create(['organization_id' => $organizationId, 'customer_id' => $customer->id]);
+        $expected = $project->fresh()->getRouteKey();
+        $this->assertStringStartsNotWith('intern/', $expected);
+
+        $withoutCustomerSlug = Project::query()->with('customer:id,name')->findOrFail($project->id);
+        $this->assertSame($expected, $withoutCustomerSlug->getRouteKey());
+
+        $withoutOwnColumns = Project::query()->select(['id', 'name'])->findOrFail($project->id);
+        $this->assertSame($expected, $withoutOwnColumns->getRouteKey());
+
+        $internal = Project::factory()->create(['organization_id' => $organizationId, 'customer_id' => null]);
+        $this->assertStringStartsWith('intern/', Project::query()->select(['id', 'name'])->findOrFail($internal->id)->getRouteKey());
+    }
+
     public function test_user_can_create_project_via_web_route(): void {
         $user = User::factory()->user()->create();
 

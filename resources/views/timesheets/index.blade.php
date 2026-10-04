@@ -24,7 +24,7 @@
 
     {{-- Filter --}}
     <x-filter-bar :action="route('timesheets.index')" :reset="route('timesheets.index')">
-        @if($isAdmin)
+        @if ($seesTeam)
             <x-filter-field :label="__('Bereich')" for="ts-scope">
                 <select id="ts-scope" name="scope" class="select select-sm select-bordered" data-autosubmit>
                     <option value="mine" @selected($scope==='mine')>{{ __('Eigene') }}</option>

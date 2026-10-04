@@ -52,15 +52,15 @@
                                                 $entry = $item['entry'];
                                                 $tone = $item['dispatch']->tone();
                                             @endphp
-                                            <a href="{{ route('diary.show', $entry) }}"
-                                               @class([
+                                            <x-order-link :entry="$entry"
+                                               :class="\Illuminate\Support\Arr::toCssClasses([
                                                    'badge badge-sm w-full justify-start gap-1 truncate',
                                                    'badge-success' => $tone === 'done',
                                                    'badge-info' => $tone === 'progress',
                                                    'badge-warning' => $tone === 'open',
                                                    'badge-ghost' => $tone === 'neutral',
-                                               ])
-                                               title="{{ $entry->title }} — {{ $item['dispatch']->label() }}">
+                                               ])"
+                                               :title="$entry->title . ' — ' . $item['dispatch']->label()">
                                                 @if (in_array($item['sla']->value, ['atRisk', 'breached'], true))
                                                     <x-icon name="warning" class="text-xs" aria-label="{{ __('SLA-Risiko') }}" />
                                                 @endif
@@ -68,7 +68,7 @@
                                                     <x-icon name="block" class="text-xs" aria-label="{{ __('Konflikt') }}" />
                                                 @endif
                                                 <span class="truncate">{{ $entry->title }}</span>
-                                            </a>
+                                            </x-order-link>
                                         @endforeach
                                     </div>
                                 </td>

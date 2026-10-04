@@ -249,6 +249,41 @@ final class ActivitySearchTest extends TestCase {
         $this->assertSame(1, $this->search($colleague, 'smtp')->hits->total(), 'Eigene Zeiten sind immer sichtbar.');
     }
 
+    /**
+     * Notizen an einem Auftrag folgen der Sicht auf den Auftrag — wie in den
+     * Listen (Entscheidung 2026-10-04). Der Index kennt den Träger nicht; die
+     * Regel läuft über die Notiz-Tabelle.
+     */
+    public function test_notes_on_orders_follow_the_visibility_of_the_order(): void {
+        $owner = $this->actorIn($this->organization, [Permission::CommunicationViewAny]);
+        $colleague = $this->actorIn($this->organization, [Permission::CommunicationViewAny]);
+        $viewAll = $this->actorIn($this->organization, [Permission::CommunicationViewAny, Permission::DiaryViewAny]);
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        $order = DiaryEntry::factory()->for($owner)->create(['organization_id' => $this->organization->id, 'customer_id' => $customer->id]);
+
+        \App\Models\Communication\CommunicationNote::factory()->create([
+            'organization_id' => $this->organization->id,
+            'notable_type' => MorphMap::alias(DiaryEntry::class),
+            'notable_id' => $order->id,
+            'created_by_user_id' => $owner->id,
+            'subject' => 'Kupferleitung Rückruf zum Auftrag',
+        ]);
+        \App\Models\Communication\CommunicationNote::factory()->create([
+            'organization_id' => $this->organization->id,
+            'notable_type' => MorphMap::alias(Customer::class),
+            'notable_id' => $customer->id,
+            'created_by_user_id' => $owner->id,
+            'subject' => 'Kupferleitung Angebot am Kunden',
+        ]);
+
+        $titles = fn(User $viewer): array => $this->search($viewer, 'kupferleitung')->hits->getCollection()
+            ->map(fn($hit): string => (string) $hit->title)->sort()->values()->all();
+
+        $this->assertSame(['Kupferleitung Angebot am Kunden', 'Kupferleitung Rückruf zum Auftrag'], $titles($owner), 'Eigener Auftrag: beide Notizen.');
+        $this->assertSame(['Kupferleitung Angebot am Kunden'], $titles($colleague), 'Fremder Auftrag: nur die Notiz am Kunden.');
+        $this->assertSame(['Kupferleitung Angebot am Kunden', 'Kupferleitung Rückruf zum Auftrag'], $titles($viewAll), 'Mit diary.viewAny: beide Notizen.');
+    }
+
     public function test_tickets_index_messages_and_hide_restricted_ones(): void {
         $agent = User::factory()->create(['organization_id' => $this->organization->id]);
         $this->grantPermissions($agent, [Permission::ServiceTicketView]);

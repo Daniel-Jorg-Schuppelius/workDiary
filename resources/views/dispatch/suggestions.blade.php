@@ -55,7 +55,7 @@
                 @foreach ($suggestions as $suggestion)
                     <x-card>
                         <div class="flex flex-wrap items-center gap-2">
-                            <a class="link font-medium" href="{{ route('diary.show', $suggestion['entry']) }}">{{ $suggestion['entry']->title ?? __('Auftrag #:id', ['id' => $suggestion['entry']->id]) }}</a>
+                            <x-order-link :entry="$suggestion['entry']" link-class="link" class="font-medium">{{ $suggestion['entry']->title ?? __('Auftrag #:id', ['id' => $suggestion['entry']->id]) }}</x-order-link>
                             <x-status-badge size="xs" outline>{{ __('Score :score', ['score' => $suggestion['score']]) }}</x-status-badge>
                             @if ($suggestion['distance_is_estimate'] && $suggestion['distance_km'] !== null)
                                 <span class="badge badge-warning badge-xs">{{ __('grobe Schätzung (Luftlinie)') }}</span>

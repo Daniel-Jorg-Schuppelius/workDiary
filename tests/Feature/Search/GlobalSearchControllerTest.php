@@ -214,7 +214,11 @@ class GlobalSearchControllerTest extends TestCase {
     // ── Kommunikationsnotizen (MVP-012, seit Feature 153 „Tätigkeiten") ──────
 
     public function test_finds_communication_notes_by_subject(): void {
-        $note = CommunicationNote::factory()->create([
+        // Eigener Auftrag als Träger: Notizen an fremden Aufträgen findet die
+        // Suche seit 2026-10-04 nur mit `diary.viewAny` (ActivitySearchTest).
+        $order = DiaryEntry::factory()->for($this->user)->create(['organization_id' => $this->organization->id]);
+        $note = CommunicationNote::factory()->for($order, 'notable')->create([
+            'organization_id' => $this->organization->id,
             'subject' => 'Zuluwort Rückruf Angebot',
             'created_by_user_id' => $this->user->id,
         ]);
@@ -274,7 +278,11 @@ class GlobalSearchControllerTest extends TestCase {
 
     public function test_confidential_note_is_hidden_from_third_parties(): void {
         $creator = User::factory()->user()->create(['organization_id' => $this->organization->id]);
-        CommunicationNote::factory()->confidential()->create([
+        // Träger ist ein Kunde, damit hier allein „vertraulich" entscheidet und
+        // nicht die Sicht auf einen fremden Auftrag.
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        CommunicationNote::factory()->confidential()->for($customer, 'notable')->create([
+            'organization_id' => $this->organization->id,
             'subject' => 'Zuluwort Gehaltsthema vertraulich',
             'created_by_user_id' => $creator->id,
         ]);

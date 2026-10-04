@@ -151,14 +151,17 @@
                         $userHue = $entry->user_id ? $service->userHue((int) $entry->user_id) : 210;
                         $leftFrac = $placed['left'] / 100;
                         $widthFrac = $placed['width'] / 100;
+                        // Gebundene Attribute (:style/:title): {{ }} im Komponenten-Tag würde doppelt maskiert.
+                        $entryStyle = 'top: ' . $placed['top'] . '%; height: ' . max($placed['height'], 3) . '%; left: calc(1rem + (100% - 1.25rem) * ' . $leftFrac . ' + 2px); width: calc((100% - 1.25rem) * ' . $widthFrac . ' - 4px); border-left: 3px solid hsl(' . $userHue . ' 70% 45%);';
+                        $entryTitle = $entry->statusLabel() . ' · ' . $entry->user?->name . ' · ' . $entry->start_at?->orgTz()->format('d.m. H:i');
                     @endphp
-                    <a href="{{ route('diary.show', $entry) }}" data-entry-modal-trigger
-                       class="wd-week-entry {{ $toneClass }}"
-                       style="top: {{ $placed['top'] }}%; height: {{ max($placed['height'], 3) }}%; left: calc(1rem + (100% - 1.25rem) * {{ $leftFrac }} + 2px); width: calc((100% - 1.25rem) * {{ $widthFrac }} - 4px); border-left: 3px solid hsl({{ $userHue }} 70% 45%);"
-                       title="{{ $entry->statusLabel() }} · {{ $entry->user?->name }} · {{ $entry->start_at?->orgTz()->format('d.m. H:i') }}">
+                    <x-order-link :entry="$entry" as="div" data-entry-modal-trigger
+                                  :class="'wd-week-entry ' . $toneClass"
+                                  :style="$entryStyle"
+                                  :title="$entryTitle">
                         <span class="wd-week-entry-time">{{ $entry->start_at?->ftime() }}{{ $entry->user ? ' · ' . $entry->user->name : '' }}</span>
                         <span class="wd-week-entry-text">{{ \CommonToolkit\Helper\Data\StringHelper::truncate($entry->content, 60) }}</span>
-                    </a>
+                    </x-order-link>
                 @endforeach
             </div>
         @endforeach

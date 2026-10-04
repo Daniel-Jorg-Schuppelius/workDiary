@@ -27,7 +27,7 @@
                 };
             @endphp
             <li class="flex flex-wrap items-start justify-between gap-2 px-4 py-3">
-                <a href="{{ route('diary.show', $entry) }}" data-entry-modal-trigger class="min-w-0 flex-1">
+                <x-order-link :entry="$entry" as="div" data-entry-modal-trigger class="min-w-0 flex-1">
                     <div class="flex flex-wrap items-center gap-2 text-xs text-muted">
                         @if ($dateLabel)
                             <span>{{ $dateLabel }}</span>
@@ -47,7 +47,7 @@
                         @endforeach
                     </div>
                     <div class="line-clamp-2 text-sm">{{ \CommonToolkit\Helper\Data\StringHelper::truncate($entry->content, 200) }}</div>
-                </a>
+                </x-order-link>
             </li>
         @empty
             <li class="p-4">

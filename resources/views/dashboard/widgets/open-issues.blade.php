@@ -24,7 +24,10 @@
                 @php
                     $subjectRoute = null;
                     if (\App\Support\MorphMap::is($issue->subject_type, \App\Models\Diary\DiaryEntry::class)) {
-                        $subjectRoute = route('diary.show', $issue->subject_id) . '#open-issues';
+                        // Zugewiesene Punkte können an fremden Aufträgen hängen — Link nur, wenn er sich öffnen lässt.
+                        $subjectRoute = $issue->subject !== null && \Illuminate\Support\Facades\Gate::allows('view', $issue->subject)
+                            ? route('diary.show', $issue->subject) . '#open-issues'
+                            : null;
                     } elseif (\App\Support\MorphMap::is($issue->subject_type, \App\Models\Safety\SafetyEvent::class) && $issue->subject) {
                         $subjectRoute = route('safety-events.show', $issue->subject) . '#open-issues';
                     }

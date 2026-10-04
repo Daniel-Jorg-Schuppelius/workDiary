@@ -24217,3 +24217,4 @@ INSERT INTO migrations VALUES(949,'2027_03_09_110000_create_online_payment_table
 INSERT INTO migrations VALUES(950,'2027_03_09_120000_create_datev_online_tables',55);
 INSERT INTO migrations VALUES(951,'2027_03_09_130000_create_ebics_tables',56);
 INSERT INTO migrations VALUES(952,'2027_03_09_140000_add_open_masterdata_to_supplier_catalog_sources',57);
+INSERT INTO migrations VALUES(953,'2027_03_09_150000_reslug_customers_with_reserved_slugs',58);

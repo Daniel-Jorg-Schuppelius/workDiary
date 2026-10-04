@@ -328,6 +328,41 @@ class TimesheetTest extends TestCase {
         $this->assertNull($entry->fresh()?->timesheet_id);
     }
 
+    /**
+     * Wer alle Zeiten sehen darf, liest fremde Stundenzettel (Entscheidung
+     * 2026-10-04) — ändern oder löschen darf er sie nicht.
+     */
+    public function test_viewers_of_all_times_may_read_foreign_timesheets_but_not_change_them(): void {
+        $accounting = User::factory()->buchhaltung()->create(['organization_id' => $this->organization->id]);
+        $colleague = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+        $sheet = Timesheet::create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $this->project->id,
+            'user_id' => $this->user->id,
+            'work_date' => now()->subDay()->toDateString(),
+            'status' => TimesheetStatus::Draft->value,
+        ]);
+
+        $this->actingAs($accounting)->get(route('projects.timesheets.show', [$this->project, $sheet]))->assertOk();
+        $this->actingAs($accounting)->get(route('projects.timesheets.edit', [$this->project, $sheet]))->assertForbidden();
+        $this->actingAs($accounting)->delete(route('projects.timesheets.destroy', [$this->project, $sheet]))->assertForbidden();
+        $this->assertDatabaseHas('timesheets', ['id' => $sheet->id]);
+
+        // Ohne die Sicht auf alle Zeiten bleibt der fremde Stundenzettel verschlossen.
+        $this->actingAs($colleague)->get(route('projects.timesheets.show', [$this->project, $sheet]))->assertForbidden();
+
+        // Die Übersicht bietet die Team-Sicht derselben Gruppe an.
+        $range = ['ui.daterange.preset' => 'custom', 'ui.daterange.from' => now()->subWeek()->toDateString(), 'ui.daterange.to' => now()->toDateString()];
+        $this->actingAs($accounting)->withSession($range)->get(route('timesheets.index', ['scope' => 'team']))
+            ->assertOk()
+            ->assertViewHas('seesTeam', true)
+            ->assertViewHas('timesheets', fn($timesheets): bool => $timesheets->total() === 1);
+        $this->actingAs($colleague)->withSession($range)->get(route('timesheets.index', ['scope' => 'team']))
+            ->assertOk()
+            ->assertViewHas('seesTeam', false)
+            ->assertViewHas('timesheets', fn($timesheets): bool => $timesheets->total() === 0);
+    }
+
     public function test_signed_timesheet_cannot_be_deleted(): void {
         $ts = $this->makeTimesheet(['status' => TimesheetStatus::Signed->value]);
 

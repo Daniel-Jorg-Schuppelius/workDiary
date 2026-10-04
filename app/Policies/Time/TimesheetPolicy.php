@@ -23,7 +23,13 @@ class TimesheetPolicy {
     }
 
     public function view(User $user, Timesheet $timesheet): bool {
-        return $this->owns($user, $timesheet, 'user_id');
+        if ($this->owns($user, $timesheet, 'user_id')) {
+            return true;
+        }
+
+        // Wer alle Zeiten sehen darf, liest auch fremde Stundenzettel —
+        // Ändern, Signieren und Löschen bleiben beim Eigentümer.
+        return $this->sharesOrganization($user, $timesheet) && $user->canViewAllTimeEntries();
     }
 
     public function create(User $user): bool {

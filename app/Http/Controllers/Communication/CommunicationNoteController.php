@@ -145,7 +145,11 @@ class CommunicationNoteController extends Controller {
 
         return view('communication-notes._show_dialog', [
             'note' => $note->load(['notable', 'creator:id,name', 'participants', 'nextActionUser:id,name', 'nextActionCompletedBy:id,name']),
-            'contextUrl' => $note->isOrganizationNote() ? null : EntityUrl::byType($note->notable_type, (int) $note->notable_id),
+            // Notizen sind über Suche und Direktlink auch ohne Sicht auf ihren
+            // Auftrag erreichbar; der Link dorthin wäre dann ein 403.
+            'contextUrl' => $note->isOrganizationNote() || ($note->notable instanceof DiaryEntry && Gate::denies('view', $note->notable))
+                ? null
+                : EntityUrl::byType($note->notable_type, (int) $note->notable_id),
         ]);
     }
 

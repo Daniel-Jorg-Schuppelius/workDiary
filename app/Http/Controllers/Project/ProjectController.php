@@ -137,6 +137,9 @@ class ProjectController extends Controller {
         // verknüpft; Header-Zeitraum mode-aware (Backlog/Recurring bleiben sichtbar);
         // nach updated_at, da Backlog/Deadline/Window kein start_at haben.
         $entries = DiaryEntry::query()
+            // Wie DiaryEntryPolicy::view: ohne `diary.viewAny` nur eigene Aufträge,
+            // sonst führten die Zeilen ins 403.
+            ->visibleInBulkTo($viewer)
             ->with(['user:id,name', 'tags:id,name,color'])
             ->where(function ($q) use ($project): void {
                 $q->where('project_id', $project->id)

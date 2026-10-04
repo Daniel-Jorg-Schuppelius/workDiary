@@ -25,7 +25,7 @@ use App\Models\Travel\{Expense, PerDiemTrip};
 use App\Services\Licensing\FeatureFlagResolver;
 use App\Support\{CarbonFmt, OrganizationContext};
 use App\Support\MorphMap;
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\{Gate, URL};
 
 /**
  * Gemeinsame Treffer-Queries der globalen Suche (MVP-014, Feature 023):
@@ -365,7 +365,8 @@ class GlobalSearchService {
                         'title' => (string) $a->original_name,
                         'subtitle' => ($a->created_at !== null ? CarbonFmt::fdate(CarbonFmt::orgTz($a->created_at)) : '')
                             . ($a->mime ? ' · ' . $a->mime : ''),
-                        'url' => route('attachments.download', $a),
+                        // Der Download prüft die Signatur — ein nackter Link endet im 403.
+                        'url' => URL::signedRoute('attachments.download', $a),
                     ])
                     ->all()
             );

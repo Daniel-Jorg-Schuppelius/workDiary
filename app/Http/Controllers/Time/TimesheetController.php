@@ -39,7 +39,8 @@ class TimesheetController extends Controller {
         $userId = (int) Auth::id();
         $scope = $request->string('scope', 'mine')->toString();
         $authUser = Auth::user();
-        $isAdmin = $authUser instanceof User && $authUser->isAdmin();
+        // Team-Sicht wie TimesheetPolicy::view: wer alle Zeiten sehen darf.
+        $seesTeam = $authUser instanceof User && $authUser->canViewAllTimeEntries();
 
         $globalRange = app(DateRangeContext::class)->current();
         $query = Timesheet::query()
@@ -47,7 +48,7 @@ class TimesheetController extends Controller {
             // Scope statt Inline-whereBetween: kennt den Randtag-Fall
             // (date-Cast speichert 'Y-m-d 00:00:00').
             ->inRange($globalRange['from'], $globalRange['to']);
-        if ($scope !== 'team' || ! $isAdmin) {
+        if ($scope !== 'team' || ! $seesTeam) {
             $query->forUser($userId);
         }
 
@@ -71,7 +72,7 @@ class TimesheetController extends Controller {
         return view('timesheets.index', [
             'timesheets' => $query->paginate((int) Setting::get('pagination.timesheets', 20))->withQueryString(),
             'scope' => $scope,
-            'isAdmin' => $isAdmin,
+            'seesTeam' => $seesTeam,
             'selectedProjectSqid' => $projectId ? \App\Support\Sqid::encode(Project::class, $projectId) : null,
             'sort' => $sort,
             'dir' => $dir,

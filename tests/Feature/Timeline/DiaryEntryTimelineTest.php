@@ -148,6 +148,30 @@ class DiaryEntryTimelineTest extends TestCase {
         return $entry;
     }
 
+    /** Regression (UI-Vollcrawl 2026-10-03): Der Anhang-Link der Timeline muss signiert sein, sonst endet er im 403. */
+    public function test_attachment_item_links_to_a_signed_download(): void {
+        \Illuminate\Support\Facades\Storage::fake('local');
+        \Illuminate\Support\Facades\Storage::disk('local')->put('attachments/signiert.pdf', 'inhalt');
+        $user = User::factory()->user()->create();
+        $entry = DiaryEntry::factory()->for($user)->create(['organization_id' => $user->organization_id]);
+        $entry->attachments()->create([
+            'organization_id' => $user->organization_id,
+            'user_id' => $user->id,
+            'disk' => 'local',
+            'path' => 'attachments/signiert.pdf',
+            'original_name' => 'signiert.pdf',
+            'mime' => 'application/pdf',
+            'size' => 6,
+        ]);
+
+        $this->actingAs($user);
+        $items = app(\App\Services\Timeline\DiaryEntryTimelineService::class)->forDiaryEntry($entry, $user, ['attachment'])['items'];
+
+        $this->assertCount(1, $items);
+        $this->assertStringContainsString('signature=', (string) $items[0]->url);
+        $this->get((string) $items[0]->url)->assertOk();
+    }
+
     public function test_timeline_contains_events_from_all_sources_in_descending_order(): void {
         $user = User::factory()->user()->create();
         $entry = $this->makeEntryWithAllSources($user);

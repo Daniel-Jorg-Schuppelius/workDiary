@@ -107,7 +107,14 @@ trait HashChained {
         // aber davor. Kopfzeile deshalb hier sicherstellen — vorher wäre sie
         // für die falsche Kette angelegt worden.
         $chain = $this->chainName();
-        DB::table('audit_chain_heads')->insertOrIgnore(['chain' => $chain, 'head_hash' => null, 'height' => 0]);
+        // Kopfzeile nur anlegen, wenn sie fehlt: Ein INSERT IGNORE auf die
+        // vorhandene Zeile hinterlässt in InnoDB eine geteilte Sperre. Zwei
+        // gleichzeitige Schreiber derselben Kette hielten sie beide und
+        // verklemmten beim Hochstufen auf FOR UPDATE (gemessen: 300 von 600
+        // Einfügungen bei vier Schreibern einer Organisation).
+        if (! DB::table('audit_chain_heads')->where('chain', $chain)->exists()) {
+            DB::table('audit_chain_heads')->insertOrIgnore(['chain' => $chain, 'head_hash' => null, 'height' => 0]);
+        }
 
         $head = DB::table('audit_chain_heads')->where('chain', $chain)->lockForUpdate()->first();
         $prevHash = $head->head_hash ?? null;

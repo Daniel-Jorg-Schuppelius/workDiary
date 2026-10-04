@@ -401,7 +401,7 @@
                             </div>
                             @if ($currentAssignment->diaryEntry)
                                 <div class="text-base-content/70">{{ __('Auftrag') }}:
-                                    <a class="link link-hover" href="{{ route('diary.show', $currentAssignment->diaryEntry) }}">{{ $currentAssignment->diaryEntry->title ?: ('#' . $currentAssignment->diaryEntry->id) }}</a>
+                                    <x-order-link :entry="$currentAssignment->diaryEntry" link-class="link link-hover">{{ $currentAssignment->diaryEntry->title ?: ('#' . $currentAssignment->diaryEntry->id) }}</x-order-link>
                                 </div>
                             @endif
                             @if ($currentAssignment->condition_out)
@@ -480,7 +480,7 @@
                                         @if ($defect->attachments->isNotEmpty())
                                             <div class="mt-1 flex flex-wrap gap-1">
                                                 @foreach ($defect->attachments as $photo)
-                                                    <a href="{{ route('attachments.download', $photo) }}" target="_blank" rel="noopener"
+                                                    <a href="{{ URL::signedRoute('attachments.download', $photo) }}" target="_blank" rel="noopener"
                                                        class="badge badge-ghost badge-sm gap-1" title="{{ $photo->original_name }}">
                                                         <x-icon name="image" class="text-sm" />
                                                         {{ \Illuminate\Support\Str::limit($photo->original_name, 16) }}
@@ -546,7 +546,7 @@
                             @foreach ($diaryEntries as $entry)
                                 <tr>
                                     <td>
-                                        <a href="{{ route('diary.show', $entry) }}" class="link link-hover">{{ $entry->title ?: ('#' . $entry->id) }}</a>
+                                        <x-order-link :entry="$entry" link-class="link link-hover">{{ $entry->title ?: ('#' . $entry->id) }}</x-order-link>
                                     </td>
                                     <td>{{ $entry->project?->name ?: '—' }}</td>
                                     <td>{{ $entry->user?->name ?: '—' }}</td>
@@ -653,7 +653,7 @@
                     <ul class="divide-y divide-base-300 text-sm">
                         @foreach ($attachments as $attachment)
                             <li class="flex items-center justify-between gap-3 py-2">
-                                <a href="{{ route('attachments.download', $attachment) }}" class="link link-hover truncate">{{ $attachment->original_name }}</a>
+                                <a href="{{ URL::signedRoute('attachments.download', $attachment) }}" class="link link-hover truncate">{{ $attachment->original_name }}</a>
                                 <span class="text-muted">{{ $attachment->humanSize() }}</span>
                             </li>
                         @endforeach

@@ -79,7 +79,7 @@
             <x-detail-grid.row :label="__('disposal.field.site')">{{ $job->site?->name ?? '—' }}</x-detail-grid.row>
             <x-detail-grid.row :label="__('disposal.field.diary_entry')">
                 @if ($job->diaryEntry !== null)
-                    <a class="link" href="{{ route('diary.show', $job->diaryEntry) }}">#{{ $job->diaryEntry->id }} {{ $job->diaryEntry->title }}</a>
+                    <x-order-link :entry="$job->diaryEntry" link-class="link">#{{ $job->diaryEntry->id }} {{ $job->diaryEntry->title }}</x-order-link>
                 @else
                     —
                 @endif

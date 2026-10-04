@@ -29,7 +29,7 @@ use App\Models\Time\TimeEntry;
 use App\Services\Licensing\FeatureFlagResolver;
 use App\Support\MorphMap;
 use CommonToolkit\Helper\Data\NumberHelper;
-use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\{Gate, URL};
 use Illuminate\Support\Str;
 
 /**
@@ -141,7 +141,7 @@ class DiaryEntryTimelineService {
 
         $items = [];
         $sources = [
-            'order' => fn(): array => $this->customerOrderItems($customer, $cap),
+            'order' => fn(): array => $this->customerOrderItems($customer, $viewer, $cap),
             'protocol' => fn(): array => $this->customerProtocolItems($customer, $cap),
             'communication' => fn(): array => $this->customerCommunicationItems($customer, $viewer, $cap),
             'document' => fn(): array => $this->customerDocumentItems($customer, $viewer, $cap),
@@ -160,10 +160,12 @@ class DiaryEntryTimelineService {
     }
 
     /** @return list<TimelineItem> */
-    private function customerOrderItems(Customer $customer, int $cap): array {
+    private function customerOrderItems(Customer $customer, User $viewer, int $cap): array {
         $items = [];
 
-        foreach (DiaryEntry::query()->where('customer_id', $customer->id)->with('user:id,name')->latest('created_at')->limit($cap)->get() as $entry) {
+        // Wie DiaryEntryPolicy::view: ohne `diary.viewAny` nur eigene Aufträge —
+        // sonst zeigte die Kundenseite Links, die im 403 enden.
+        foreach (DiaryEntry::query()->where('customer_id', $customer->id)->visibleInBulkTo($viewer)->with('user:id,name')->latest('created_at')->limit($cap)->get() as $entry) {
             $items[] = new TimelineItem(
                 id: 'order:' . $entry->id,
                 type: 'order',
@@ -177,7 +179,7 @@ class DiaryEntryTimelineService {
             );
         }
 
-        foreach (DiaryEntry::query()->where('customer_id', $customer->id)->whereIn('status', [
+        foreach (DiaryEntry::query()->where('customer_id', $customer->id)->visibleInBulkTo($viewer)->whereIn('status', [
             Status::Completed->value,
             Status::AcceptedFinal->value,
             Status::Invoiced->value,
@@ -544,7 +546,8 @@ class DiaryEntryTimelineService {
                 actor: $attachment->uploader?->name,
                 title: (string) __('timeline.event.attachment_added'),
                 summary: $attachment->original_name,
-                url: route('attachments.download', $attachment),
+                // Der Download prüft die Signatur — ein nackter Link endet im 403.
+                url: URL::signedRoute('attachments.download', $attachment),
             );
         }
 

@@ -222,11 +222,19 @@ class Customer extends Model implements ContactDetailsHolder, CustomFieldSubject
     }
 
     /**
+     * Kürzel, die als erstes Segment der Projekt-URL ("<kunde>/<projekt>")
+     * schon belegt sind: der Platzhalter für Projekte ohne Kunden und feste
+     * Pfade unter /projects. Ein Kunde „Intern" verlinkte sonst auf fremde
+     * interne Projekte. Gate: ReservedCustomerSlugTest.
+     */
+    public const RESERVED_SLUGS = ['intern', 'create', 'duplicates', 'times'];
+
+    /**
      * Liefert einen Slug, der innerhalb der angegebenen Organisation
      * eindeutig ist (Sentinel "kunde" falls Name keinen Slug ergibt).
      */
     public static function uniqueSlug(string $name, ?int $organizationId, ?int $ignoreId = null): string {
-        return self::resolveUniqueSlug($name, 'kunde', fn(string $slug): bool =>
+        return self::resolveUniqueSlug($name, 'kunde', fn(string $slug): bool => in_array($slug, self::RESERVED_SLUGS, true) ||
         // TENANT-BYPASS: ohne Global Scope, weil $organizationId explizit übergeben wird;
         // der explizite where('organization_id', ...) erhält die Mandantengrenze.
         static::query()

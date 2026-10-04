@@ -15,6 +15,7 @@ namespace App\Services\Search;
 use App\Enums\Search\SearchSourceType;
 use App\Enums\User\Permission;
 use App\Models\Communication\CommunicationNote;
+use App\Models\Diary\DiaryEntry;
 use App\Models\Document\Document;
 use App\Models\Knowledge\KnowledgeArticle;
 use App\Models\Platform\User;
@@ -22,8 +23,10 @@ use App\Models\Search\SearchDocument;
 use App\Plugins\Contracts\ProvidesRemoteSessions;
 use App\Plugins\PluginManager;
 use App\Services\Licensing\FeatureFlagResolver;
+use App\Support\MorphMap;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Support\Facades\Gate;
 
 /**
@@ -36,7 +39,8 @@ use Illuminate\Support\Facades\Gate;
  * - Tickets: `serviceTicket.view`; vertrauliche nur Bearbeitung, Watcher, Queue-Team (Modul Helpdesk).
  * - Protokolle: eigene; alle mit `protocol.viewAny`.
  * - Offene Punkte: Ersteller/Zuständige; alle mit `openIssue.viewAny`.
- * - Notizen: `communication.viewAny`; vertrauliche nur Erfasser oder `communication.confidential.manage`.
+ * - Notizen: `communication.viewAny`; vertrauliche nur Erfasser oder `communication.confidential.manage`;
+ *   Notizen an einem Auftrag nur, wenn der Auftrag sichtbar ist (wie `CommunicationNote::scopeVisibleTo()`).
  * - Wissen: Veröffentlichtes + eigene Entwürfe; alles mit `knowledge.publish` (Modul Wissen).
  * - Offene Fernwartung: nur Admins bei aktivem Plugin.
  * - Lernkurse: eigene Einschreibung; alle mit `learning.viewAny` (Modul Lernplattform).
@@ -101,7 +105,7 @@ final class ActivitySearchVisibility {
                 : self::own($me, 'user_id', 'assigned_user_id'),
             SearchSourceType::Timesheet => ! $this->features->isEnabled('module.planung')
                 ? false
-                : ($admin ? true : self::own($me, 'user_id')),
+                : ($admin || $user->canViewAllTimeEntries() ? true : self::own($me, 'user_id')),
             SearchSourceType::ServiceTicket => $this->ticketCondition($user),
             SearchSourceType::Protocol => $admin || $user->can(Permission::ProtocolViewAny->value)
                 ? true
@@ -111,7 +115,7 @@ final class ActivitySearchVisibility {
                 : self::own($me, 'user_id', 'assigned_user_id'),
             SearchSourceType::CommunicationNote => ! Gate::forUser($user)->allows('viewAny', CommunicationNote::class)
                 ? false
-                : ($admin || $user->can(Permission::CommunicationConfidentialManage->value) ? true : self::unrestrictedOrOwn($me)),
+                : self::noteCondition($user, $admin),
             SearchSourceType::KnowledgeArticle => ! ($this->features->isEnabled('module.knowledge') && Gate::forUser($user)->allows('viewAny', KnowledgeArticle::class))
                 ? false
                 : ($admin || $user->can(Permission::KnowledgePublish->value) ? true : self::unrestrictedOrOwn($me)),
@@ -168,6 +172,35 @@ final class ActivitySearchVisibility {
         return static function (Builder $query) use ($userId, $columns): void {
             foreach ($columns as $column) {
                 $query->orWhere('search_documents.' . $column, $userId);
+            }
+        };
+    }
+
+    /**
+     * Notizen folgen zwei Regeln: Vertraulichkeit (im Index als `restricted`)
+     * und der Sicht auf ihren Auftrag. Den Träger kennt der Index nicht —
+     * die zweite Regel läuft deshalb über die Notiz-Tabelle, mit derselben
+     * Grenze wie die Listen ({@see DiaryEntry::scopeVisibleInBulkTo()}).
+     */
+    private static function noteCondition(User $user, bool $admin): bool|Closure {
+        $seesConfidential = $admin || $user->can(Permission::CommunicationConfidentialManage->value);
+        $seesAllOrders = $admin || $user->can(Permission::DiaryViewAny->value);
+        if ($seesConfidential && $seesAllOrders) {
+            return true;
+        }
+
+        return static function (Builder $query) use ($user, $seesConfidential, $seesAllOrders): void {
+            if (! $seesConfidential) {
+                $query->where(self::unrestrictedOrOwn((int) $user->id));
+            }
+            if (! $seesAllOrders) {
+                $query->whereNotExists(static function (QueryBuilder $carrier) use ($user): void {
+                    $carrier->selectRaw('1')
+                        ->from('communication_notes as carrier_note')
+                        ->whereColumn('carrier_note.id', 'search_documents.source_id')
+                        ->where('carrier_note.notable_type', MorphMap::alias(DiaryEntry::class))
+                        ->whereNotIn('carrier_note.notable_id', DiaryEntry::query()->visibleInBulkTo($user)->select('id'));
+                });
             }
         };
     }

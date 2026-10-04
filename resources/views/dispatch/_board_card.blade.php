@@ -25,9 +25,9 @@
             . ($entry->end_at !== null ? ' – ' . $entry->end_at->orgTz()->format('H:i') : '');
     }
 @endphp
-<a href="{{ route('diary.show', $entry) }}"
+<x-order-link :entry="$entry" as="div"
    class="block rounded-box border border-base-300 bg-base-100 p-2 text-sm transition hover:border-primary/50 hover:shadow-sm"
-   data-dispatch-card data-status="{{ $dispatch->value }}">
+   data-dispatch-card :data-status="$dispatch->value">
     <div class="flex items-start justify-between gap-2">
         <span class="line-clamp-2 font-medium">{{ $entry->title }}</span>
         <x-status-badge :tone="$dispatch->tone() === 'open' ? 'info' : ($dispatch->tone() === 'progress' ? 'warning' : ($dispatch->tone() === 'done' ? 'success' : 'neutral'))" size="xs">
@@ -75,4 +75,4 @@
             @endif
         </div>
     @endif
-</a>
+</x-order-link>

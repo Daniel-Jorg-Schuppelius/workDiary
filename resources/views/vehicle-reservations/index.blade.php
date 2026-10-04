@@ -46,7 +46,7 @@
                     <td>{{ $reservation->reserved_to->fdatetime() }}</td>
                     <td>
                         @if ($reservation->diaryEntry)
-                            <a class="link" href="{{ route('diary.show', $reservation->diaryEntry) }}">#{{ $reservation->diaryEntry->id }}</a>
+                            <x-order-link :entry="$reservation->diaryEntry" link-class="link">#{{ $reservation->diaryEntry->id }}</x-order-link>
                         @else
                             —
                         @endif

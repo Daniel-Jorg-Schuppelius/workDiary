@@ -52,7 +52,7 @@
                     <div class="flex flex-wrap gap-1">
                         @foreach ($member->userGroups as $group)
                             <x-status-badge tone="ghost" size="sm"
-                                  :style="$group->color ? 'border-color: '.$group->color : null">
+                                  :style="$group->color ? 'border-color: '.$group->color : ''">
                                 {{ $group->name }}
                             </x-status-badge>
                         @endforeach

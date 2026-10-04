@@ -169,9 +169,20 @@ class Project extends Model implements CustomFieldSubject {
     }
 
     public function getRouteKey(): string {
-        $customerSlug = $this->customer?->slug ?: 'intern';
+        // Teilgeladene Modelle (with('project:id,name'), with('customer:id,name'))
+        // kennen Slug oder Kunde nicht. Still auf "intern/…" zu verlinken führte
+        // ins 404 — fehlende Teile werden deshalb nachgeladen.
+        $project = $this;
+        if ($this->exists && (! array_key_exists('slug', $this->attributes) || ! array_key_exists('customer_id', $this->attributes))) {
+            $project = static::query()->withoutGlobalScopes()->whereKey($this->getKey())->first(['id', 'slug', 'customer_id']) ?? $this;
+        }
 
-        return $customerSlug . '/' . ((string) $this->slug);
+        $customer = $project->customer;
+        $customerSlug = $customer !== null && ! array_key_exists('slug', $customer->getAttributes())
+            ? $project->customer()->value('slug')
+            : $customer?->slug;
+
+        return ($customerSlug ?: 'intern') . '/' . ((string) $project->slug);
     }
 
     /**

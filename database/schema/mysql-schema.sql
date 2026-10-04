@@ -26288,3 +26288,4 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (953,'2027_03_09_11
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (954,'2027_03_09_120000_create_datev_online_tables',52);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (955,'2027_03_09_130000_create_ebics_tables',53);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (956,'2027_03_09_140000_add_open_masterdata_to_supplier_catalog_sources',54);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (957,'2027_03_09_150000_reslug_customers_with_reserved_slugs',55);

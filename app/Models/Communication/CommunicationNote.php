@@ -14,6 +14,7 @@ use App\Enums\Communication\{CommunicationDirection, CommunicationNoteType, Comm
 use App\Enums\User\Permission;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid, HasTags};
 use App\Models\Customer\Customer;
+use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\{Organization, User};
 use App\Support\MorphMap;
 use Database\Factories\Communication\CommunicationNoteFactory;
@@ -116,7 +117,10 @@ class CommunicationNote extends Model {
 
     /**
      * Blendet vertrauliche Notizen anderer Erfasser aus, sofern der Benutzer
-     * keine `communication.confidential.manage`-Permission besitzt.
+     * keine `communication.confidential.manage`-Permission besitzt. Notizen an
+     * einem Auftrag folgen außerdem der Sicht auf den Auftrag
+     * ({@see DiaryEntry::scopeVisibleInBulkTo()}): wer ihn nicht öffnen darf,
+     * bekommt seine Notizen nicht aufgelistet.
      *
      * @param  Builder<self>  $query
      * @return Builder<self>
@@ -128,6 +132,14 @@ class CommunicationNote extends Model {
             $q->where('visibility', '!=', CommunicationVisibility::Private->value)
                 ->orWhere('created_by_user_id', $user->id);
         });
+
+        // Nur für Eingeschränkte: mit `diary.viewAny` bleibt die Abfrage unverändert.
+        if (! $user->can(Permission::DiaryViewAny->value)) {
+            $query->where(function (Builder $q) use ($user): void {
+                $q->where('notable_type', '!=', MorphMap::alias(DiaryEntry::class))
+                    ->orWhereIn('notable_id', DiaryEntry::query()->visibleInBulkTo($user)->select('id'));
+            });
+        }
 
         if ($user->isAdmin() || $user->can(Permission::CommunicationConfidentialManage->value)) {
             return $query;

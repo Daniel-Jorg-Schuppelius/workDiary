@@ -162,7 +162,9 @@ class CaseFileTest extends TestCase {
     public function test_case_file_hides_confidential_notes_from_third_users(): void {
         $author = User::factory()->user()->create();
         $other = User::factory()->user()->create(['organization_id' => $author->organization_id]);
-        $entry = DiaryEntry::factory()->for($author)->create();
+        // Der Dritte ist dem Auftrag zugewiesen: die Fallakte verlangt seit
+        // 2026-10-04 das Leserecht am Auftrag (OrderVisibilityInListsTest).
+        $entry = DiaryEntry::factory()->for($author)->create(['assigned_user_id' => $other->id]);
 
         CommunicationNote::factory()->confidential()->for($entry, 'notable')->create([
             'organization_id' => $author->organization_id,

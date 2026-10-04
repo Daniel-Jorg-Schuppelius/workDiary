@@ -16,10 +16,12 @@
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('Spesen-Kategorien für Belegerfassung verwalten.')">
     <x-slot:actions>
-        <x-icon-btn icon="add" tone="primary" size="sm"
-                    data-entry-modal-trigger
-                    :href="route('admin.expense-categories.create')"
-                    show-label>{{ __('Kategorie anlegen') }}</x-icon-btn>
+        @can('create', \App\Models\Travel\ExpenseCategory::class)
+            <x-icon-btn icon="add" tone="primary" size="sm"
+                        data-entry-modal-trigger
+                        :href="route('admin.expense-categories.create')"
+                        show-label>{{ __('Kategorie anlegen') }}</x-icon-btn>
+        @endcan
     </x-slot:actions>
 
     <div role="alert" class="alert alert-info alert-soft">
@@ -78,15 +80,19 @@
                 </td>
                 <td class="text-right">
                     <div class="flex justify-end gap-1">
-                        <x-icon-btn icon="edit"
-                                    data-entry-modal-trigger
-                                    :href="route('admin.expense-categories.edit', $cat)"
-                                    :label="__('Bearbeiten')" />
-                        <x-action-form :action="route('admin.expense-categories.destroy', $cat)" method="DELETE"
-                              :confirm="__('Kategorie wirklich löschen?')"
-                              :confirm-label="__('Löschen')">
-                            <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
-                        </x-action-form>
+                        @can('update', $cat)
+                            <x-icon-btn icon="edit"
+                                        data-entry-modal-trigger
+                                        :href="route('admin.expense-categories.edit', $cat)"
+                                        :label="__('Bearbeiten')" />
+                        @endcan
+                        @can('delete', $cat)
+                            <x-action-form :action="route('admin.expense-categories.destroy', $cat)" method="DELETE"
+                                  :confirm="__('Kategorie wirklich löschen?')"
+                                  :confirm-label="__('Löschen')">
+                                <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
+                            </x-action-form>
+                        @endcan
                     </div>
                 </td>
             </tr>

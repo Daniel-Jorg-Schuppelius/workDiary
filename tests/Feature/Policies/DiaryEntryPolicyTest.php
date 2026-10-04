@@ -74,8 +74,10 @@ final class DiaryEntryPolicyTest extends TestCase {
         $this->assertTrue($this->policy->resume($assignee, $entry));
         $this->assertTrue($this->policy->complete($assignee, $entry));
         $this->assertTrue($this->policy->handover($assignee, $entry));
+        // Lesen darf der Zugewiesene (Entscheidung 2026-10-04) — sonst könnte er
+        // nicht öffnen, was er bearbeitet.
+        $this->assertTrue($this->policy->view($assignee, $entry));
         // Bearbeiten/Löschen verlangt Eigentum oder diary.viewAny+diary.update/delete.
-        $this->assertFalse($this->policy->view($assignee, $entry));
         $this->assertFalse($this->policy->update($assignee, $entry));
         $this->assertFalse($this->policy->delete($assignee, $entry));
     }

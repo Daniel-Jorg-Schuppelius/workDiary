@@ -75,7 +75,7 @@
                     @forelse ($stops as $s)
                         <tr>
                             <td>{{ $s->tour_position }}</td>
-                            <td><a href="{{ route('diary.show', $s) }}" class="link">{{ $s->title }}</a></td>
+                            <td><x-order-link :entry="$s" link-class="link">{{ $s->title }}</x-order-link></td>
                             <td>{{ $s->customer?->name }}</td>
                             <td>{{ $s->address_city }}</td>
                             <td><x-status-badge tone="ghost" size="xs">{{ $s->statusLabel() }}</x-status-badge></td>
