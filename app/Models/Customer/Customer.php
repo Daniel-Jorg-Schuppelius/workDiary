@@ -197,19 +197,11 @@ class Customer extends Model implements ContactDetailsHolder, CustomFieldSubject
     protected static function booted(): void {
         self::registerSequentialNumberHook();
 
-        // creating statt saving: erst BelongsToOrganization::creating setzt die
-        // organization_id — saving liefe davor und prüfte gegen NULL.
-        $assignSlug = function (self $customer): void {
-            if ($customer->slug === null || $customer->slug === '') {
-                $customer->slug = self::uniqueSlug(
-                    (string) $customer->name,
-                    $customer->organization_id,
-                    $customer->exists ? $customer->id : null,
-                );
-            }
-        };
-        static::creating($assignSlug);
-        static::updating($assignSlug);
+        self::assignSlugWhenMissing(static fn(self $customer): string => self::uniqueSlug(
+            (string) $customer->name,
+            $customer->organization_id,
+            $customer->exists ? $customer->id : null,
+        ));
     }
 
     /**

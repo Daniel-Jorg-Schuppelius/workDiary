@@ -19,7 +19,8 @@ use App\Models\Customer\Customer;
 use App\Models\Platform\User;
 use App\Models\Time\TimeEntry;
 use Carbon\CarbonImmutable;
-use CommonToolkit\Enums\Month;
+use CommonToolkit\Enums\{DateTimeFormat, Month};
+use CommonToolkit\Helper\Data\DateHelper;
 use CommonToolkit\Parsers\XLSXDocumentParser;
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Support\Str;
@@ -253,18 +254,9 @@ class ExcelHistoryImporter {
         if ($s === '') {
             return null;
         }
-        foreach (['Y-m-d', 'd.m.Y'] as $format) {
-            try {
-                $parsed = CarbonImmutable::createFromFormat('!' . $format, $s, $timezone);
-            } catch (\Carbon\Exceptions\InvalidFormatException) {
-                continue;
-            }
-            if ($parsed instanceof CarbonImmutable && $parsed->format($format) === $s) {
-                return $parsed;
-            }
-        }
+        $iso = DateHelper::normalizeToIso($s, DateTimeFormat::DE);
 
-        return null;
+        return $iso === null ? null : CarbonImmutable::parse(substr($iso, 0, 10), $timezone);
     }
 
     /** Erster Tag eines Monats in der Import-Zeitzone (nie null, im Gegensatz zu Carbon::create). */

@@ -11,9 +11,10 @@
 
 @section('title', __('recall.title'))
 @section('nav-title', __('recall.title'))
+@include('partials.page-fill')
 
 @section('content')
-<x-index-page :subtitle="__('recall.subtitle')">
+<x-index-page overflow="clip" :subtitle="__('recall.subtitle')">
     <x-slot:actions>
         @can('create', \App\Models\Inventory\Recall::class)
             <x-icon-btn icon="add" tone="primary" size="sm" data-entry-modal-trigger :href="route('recalls.create')" show-label>{{ __('recall.action.create') }}</x-icon-btn>
@@ -33,34 +34,32 @@
         </select>
     </x-filter-bar>
 
-    <x-card padding="p-0">
-        <x-table bare>
-            <x-slot:head>
-                <tr>
-                    <th>{{ __('recall.field.number') }}</th>
-                    <th>{{ __('recall.field.title') }}</th>
-                    <th>{{ __('recall.field.variant') }}</th>
-                    <th>{{ __('recall.field.kind') }}</th>
-                    <th class="text-right">{{ __('recall.field.open_items') }}</th>
-                    <th>{{ __('recall.field.status') }}</th>
-                    <th></th>
-                </tr>
-            </x-slot:head>
-            @forelse ($recalls as $recall)
-                <tr>
-                    <td><a href="{{ route('recalls.show', $recall) }}" class="link font-mono">{{ $recall->number }}</a></td>
-                    <td>{{ $recall->title }}</td>
-                    <td>{{ $recall->variant?->article?->name }}{{ $recall->variant?->sku ? ' · ' . $recall->variant->sku : '' }}</td>
-                    <td>{{ $recall->kind->label() }}</td>
-                    <td class="text-right tabular-nums">{{ $recall->open_items_count }} / {{ $recall->items_count }}</td>
-                    <td><x-status-badge size="md" outline :tone="$recall->status->tone()">{{ $recall->status->label() }}</x-status-badge></td>
-                    <td class="text-right"><x-icon-btn icon="visibility" :href="route('recalls.show', $recall)" :label="__('recall.action.show')" /></td>
-                </tr>
-            @empty
-                <x-table.empty icon="campaign" :colspan="7" :title="__('recall.empty')" compact />
-            @endforelse
-        </x-table>
-    </x-card>
+    <x-table scroll="flex">
+        <x-slot:head>
+            <tr>
+                <th>{{ __('recall.field.number') }}</th>
+                <th>{{ __('recall.field.title') }}</th>
+                <th>{{ __('recall.field.variant') }}</th>
+                <th>{{ __('recall.field.kind') }}</th>
+                <th class="text-right">{{ __('recall.field.open_items') }}</th>
+                <th>{{ __('recall.field.status') }}</th>
+                <th></th>
+            </tr>
+        </x-slot:head>
+        @forelse ($recalls as $recall)
+            <tr class="hover">
+                <td><a href="{{ route('recalls.show', $recall) }}" class="link font-mono">{{ $recall->number }}</a></td>
+                <td>{{ $recall->title }}</td>
+                <td>{{ $recall->variant?->article?->name }}{{ $recall->variant?->sku ? ' · ' . $recall->variant->sku : '' }}</td>
+                <td>{{ $recall->kind->label() }}</td>
+                <td class="text-right tabular-nums">{{ $recall->open_items_count }} / {{ $recall->items_count }}</td>
+                <td><x-status-badge size="md" outline :tone="$recall->status->tone()">{{ $recall->status->label() }}</x-status-badge></td>
+                <td class="text-right"><x-icon-btn icon="visibility" :href="route('recalls.show', $recall)" :label="__('recall.action.show')" /></td>
+            </tr>
+        @empty
+            <x-table.empty icon="campaign" :colspan="7" :title="__('recall.empty')" compact />
+        @endforelse
+    </x-table>
 
     <x-pagination :paginator="$recalls" standing />
 </x-index-page>

@@ -7,18 +7,7 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
 {{-- Terminwahl des Bewerbers (MVP-925). Erwartet: $offer, $token, $orgName, $title --}}
-<!doctype html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="light">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="robots" content="noindex, nofollow">
-<title>{{ __('recruiting.offer.public_title') }}</title>
-@include('partials.font-bootstrap')
-@vite(['resources/css/app.css','resources/js/app.js'])
-</head>
-<body class="min-h-screen bg-base-200">
-<main class="max-w-md mx-auto p-4 flex flex-col gap-4">
+<x-public-page :title="__('recruiting.offer.public_title')" main="max-w-md mx-auto p-4 flex flex-col gap-4" icons>
     <x-card class="flex flex-col gap-2">
         <h1 class="card-title">{{ __('recruiting.offer.public_title') }}</h1>
         <p class="text-sm opacity-70">{{ $orgName }}{{ $title !== '' ? ' · ' . $title : '' }}</p>
@@ -42,6 +31,4 @@
             <x-button type="submit" icon="event_available">{{ __('recruiting.offer.confirm') }}</x-button>
         </form>
     </x-card>
-</main>
-</body>
-</html>
+</x-public-page>

@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Applications;
 
+use App\Enums\Applications\JobRequisitionStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
@@ -29,7 +30,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property int $headcount
  * @property string $employment_type
  * @property string|null $budget_note
- * @property string $status
+ * @property JobRequisitionStatus $status
  * @property int|null $responsible_user_id
  * @property \Illuminate\Support\Carbon|null $target_start_on
  * @property int|null $created_by
@@ -38,8 +39,6 @@ class JobRequisition extends Model {
     use Auditable;
     use BelongsToOrganization;
     use HasSqid;
-
-    public const STATUSES = ['draft', 'open', 'on_hold', 'filled', 'closed'];
 
     public const EMPLOYMENT_TYPES = ['full_time', 'part_time', 'apprentice', 'freelance'];
 
@@ -52,6 +51,7 @@ class JobRequisition extends Model {
     /** @var array<string, string> */
     protected $casts = [
         'headcount' => 'integer',
+        'status' => JobRequisitionStatus::class,
         'target_start_on' => 'date',
     ];
 
@@ -68,16 +68,5 @@ class JobRequisition extends Model {
     /** @return BelongsTo<User, $this> */
     public function responsible(): BelongsTo {
         return $this->belongsTo(User::class, 'responsible_user_id');
-    }
-
-    /** DaisyUI badge tone */
-    public function statusTone(): string {
-        return match ($this->status) {
-            'open' => 'primary',
-            'on_hold' => 'warning',
-            'filled' => 'success',
-            'closed' => 'neutral',
-            default => 'ghost',
-        };
     }
 }

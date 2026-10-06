@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Location;
 
+use App\Enums\Location\LocationVisitStatus;
 use App\Http\Controllers\Api\LocationController;
 use App\Models\Customer\Customer;
 use App\Models\Location\{CustomerGeofence, LocationPendingEntry, LocationPoint, LocationVisit};
@@ -126,7 +127,7 @@ class LocationImportStampTest extends TestCase {
         $this->assertSame(3, LocationPoint::query()->count());
 
         $visit = LocationVisit::query()->sole();
-        $this->assertSame(LocationVisit::STATUS_CLOSED, $visit->status);
+        $this->assertSame(LocationVisitStatus::Closed, $visit->status);
         $this->assertSame(120, (int) $visit->duration_min);
 
         $pending = LocationPendingEntry::query()->sole();

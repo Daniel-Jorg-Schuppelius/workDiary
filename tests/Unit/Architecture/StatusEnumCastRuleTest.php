@@ -20,97 +20,63 @@ use Tests\Unit\Architecture\Concerns\ScansSourceTree;
  * brechen unter MariaDB-Strict beim ersten längeren Wert.
  *
  * Regel: Ein Modell, dessen Tabelle eine Spalte `status` oder `state` hat,
- * castet sie auf eine App\Enums-Klasse. Der Bestand steht als BASELINE (Welle 3,
- * F9 — Quote/Invoice/Problem/Change/ServiceRequest zuerst); neue Modelle
- * dürfen nicht dazukommen, abgearbeitete werden hier gestrichen.
+ * castet sie auf eine App\Enums-Klasse. Der Bestand ist abgearbeitet
+ * (Konsolidierungs-Audit 2026-10, k3-10, Welle 8); in der BASELINE stehen nur
+ * noch Spalten mit Anbieterwerten. Neue Modelle dürfen nicht dazukommen.
  */
 class StatusEnumCastRuleTest extends TestCase {
     use ScansSourceTree;
 
-    /** @var list<string> Modellklassen ohne Enum-Cast (Stand 2026-08-23) */
+    /**
+     * Modellklassen ohne Enum-Cast (Stand 2026-10-05): nur Anbieterwerte — die
+     * Spalte übernimmt ungeprüft, was die fremde API liefert, ein Cast würde
+     * das Laden der Zeile bei einem neuen Wert sprengen.
+     *
+     * @var list<string>
+     */
     private const BASELINE = [
-        'App\Models\Agile\AgileSprint',
-        'App\Models\Ai\AiTextSuggestion',
-        'App\Models\Applications\ApplicationContractNegotiation',
-        'App\Models\Applications\ApplicationContractReview',
-        'App\Models\Applications\ApplicationOpportunity',
-        'App\Models\Applications\ApplicationRequirement',
-        'App\Models\Applications\EmployeeDraft',
-        'App\Models\Applications\JobApplication',
-        'App\Models\Applications\JobApplicationInterview',
-        'App\Models\Applications\JobPosting',
-        'App\Models\Applications\JobRequisition',
-        'App\Models\Calendar\AppointmentRequest',
-        'App\Models\Asset\AssetComponent',
-        'App\Models\AssetFinance\AssetFinanceDeadline',
-        'App\Models\AssetFinance\AssetFinanceEndProcess',
-        'App\Models\AssetFinance\AssetFinanceRateSchedule',
-        'App\Models\B2b\B2bOrder',
+        // Billbee-Statuscode (Ganzzahl) aus der Bestell-API; Vorgabe 0 und Codes außerhalb von
+        // BillbeeOrderState zeigt stateLabel() als „#<int>".
         'App\Plugins\Billbee\Models\BillbeeOrder',
-        'App\Plugins\Calendly\Models\CalendlyConnection',
-        'App\Plugins\Calendly\Models\CalendlyWebhookSubscription',
-        'App\Models\ServiceTicket\Change',
-        'App\Models\Claims\ClaimAssessment',
-        'App\Models\Communication\CustomerCircular',
-        'App\Models\Communication\CustomerCircularRecipient',
-        'App\Models\Contract\ContractObligation',
-        'App\Models\Crisis\CrisisAction',
-        'App\Models\Crisis\CrisisCase',
-        'App\Models\Crisis\CrisisCommunication',
-        'App\Models\Crisis\CrisisContinuityImpact',
-        'App\Models\DocumentDesign\DocumentRenderProfileVersion',
-        'App\Models\Domain\DomainEvent',
+        // Die Rechnungsprojektion hat noch keine Schreibstelle und keine belegte Wertemenge,
+        // der Registrarstatus kommt frei vom Provider.
         'App\Models\Domain\DomainExternalInvoice',
         'App\Models\Domain\DomainProjection',
-        'App\Plugins\Etsy\Models\EtsyConnection',
+        // Etsy-Bestellstatus aus der Receipt-Antwort (nullable); der Filter der Liste liest die vorhandenen Werte.
         'App\Plugins\Etsy\Models\EtsyReceipt',
-        'App\Plugins\GoogleCalendar\Models\GoogleCalendarConnection',
-        'App\Models\Invoicing\IncomingEInvoice',
-        'App\Models\Integration\IntegrationInboxItem',
-        'App\Models\Investments\InvestmentBudgetRequest',
-        'App\Models\Investments\InvestmentCase',
-        'App\Models\Investments\InvestmentDeviation',
-        'App\Models\Invoicing\Invoice',
-        'App\Models\Document\DocumentDispatch',
-        'App\Models\Invoicing\InvoiceSchedule',
-        'App\Models\Isms\IsmsAuditProgram',
-        'App\Plugins\JtlWawi\Models\JtlConnection',
-        'App\Models\Location\LocationPendingEntry',
-        'App\Models\Location\LocationVisit',
-        'App\Models\Metering\MeterBillingAgreement',
-        'App\Models\Migration\AccountingMigrationItem',
-        'App\Plugins\Msgraph\Models\MsgraphConnection',
-        'App\Plugins\Msgraph\Models\MsgraphContactConnection',
-        'App\Plugins\Msgraph\Models\MsgraphMailConnection',
-        'App\Plugins\Msgraph\Models\MsgraphTaskConnection',
-        'App\Plugins\Msgraph\Models\MsgraphTaskListLink',
-        'App\Models\Platform\OnboardingProgress',
-        'App\Plugins\OrgaMax\Models\OrgaMaxConnection',
-        'App\Models\Passenger\PassengerShiftSettlement',
-        'App\Models\Patrol\PatrolRun',
-        'App\Models\Integration\PendingExternalConflict',
-        'App\Models\Article\PriceChangeRequest',
-        'App\Models\Article\PricingChangeAlert',
-        'App\Models\Privacy\ComplianceFinding',
-        'App\Models\Privacy\DpiaStep',
-        'App\Models\Privacy\Measure',
-        'App\Models\Privacy\RetentionProposal',
-        'App\Models\Sales\Quote',
-        'App\Models\Auth\RemotePendingSession',
-        'App\Models\Rental\RentalCaseAsset',
-        'App\Models\Rental\RentalConditionItem',
-        'App\Models\Rental\RentalReservation',
-        'App\Models\ServiceTicket\ServiceRequest',
-        'App\Plugins\Sharepoint\Models\SharepointConnection',
-        'App\Models\Inventory\StockLot',
-        'App\Models\Supplier\SupplierCatalogImport',
-        'App\Models\Survey\SurveyInvitation',
-        'App\Models\Sustainability\SustainabilityAssessment',
-        'App\Models\Sustainability\SustainabilityMeasure',
-        'App\Models\Finance\TaxRule',
-        'App\Models\Tenders\TenderNoticeMatch',
-        'App\Plugins\Todoist\Models\TodoistConnection',
-        'App\Plugins\Todoist\Models\TodoistProjectLink',
+    ];
+
+    /**
+     * "Modell::spalte" ohne Enum-Cast (Stand 2026-10-06, Konsolidierungs-Audit
+     * 2026-10, k3-10, Runde der benannten Spalten). Die app-eigenen Wertemengen
+     * sind gecastet; hier steht nur noch, was die App nicht selbst festlegt
+     * oder was kein Status ist. Ein Cast würde das Laden der Zeile beim ersten
+     * unbekannten Wert sprengen. Neue Einträge nur mit Begründung.
+     *
+     * @var list<string>
+     */
+    private const NAMED_COLUMNS_BASELINE = [
+        // Protokoll trägt Rohwerte: Status-Slugs (Status::slug(), das Enum selbst ist int-gestützt)
+        // und Altwerte der Datenmigration 2026_08_14 (done/problem/open), die kein heutiger Fall kennt.
+        'App\Models\Diary\DiaryEntryEvent::from_status',
+        'App\Models\Diary\DiaryEntryEvent::to_status',
+        // Rohstatus des Buchhaltungssystems (sevDesk-Code, InvoicePlane-Nummer …) als Nachweis;
+        // ausgewertet wird der normalisierte voucher_state (AccountingVoucherState).
+        'App\Models\Finance\AccountingVoucher::voucher_status',
+        // Freitext bis 24 Zeichen: API und Sync nehmen jede Zeichenkette an, Altbestand trägt eigene
+        // Wörter; IdeaNodeStatus ist nur die Vorschlagsliste des Editors.
+        'App\Models\Ideas\IdeaNode::node_status',
+        // SCORM-Datenmodell (cmi.core.lesson_status, cmi.completion_status, cmi.success_status): der
+        // Inhalt meldet den Wert, die App übernimmt ihn ungeprüft; das php-elearning-toolkit hat dafür kein Enum.
+        'App\Models\Learning\LearningScormState::lesson_status',
+        'App\Models\Learning\LearningScormState::success_status',
+        // Kein Status: Schlüssel des zuletzt gespiegelten Halters mit Id (`p:c<id>`, `p:f<id>`, `p:own`, `p:none`).
+        'App\Models\Reselling\ResaleSubscription::sync_status',
+        // voucherStatus aus der Lexoffice-API, ungeprüft übernommen (das SDK kennt
+        // Lexoffice\Enums\VoucherStatus, die Schreibstelle bildet aber nicht darauf ab).
+        'App\Plugins\Lexoffice\Models\LexofficeVoucher::voucher_status',
+        // Name eines Ticketstatus im Zammad des Kunden, frei konfiguriert (z. B. „closed“).
+        'App\Plugins\Zammad\Models\ZammadConnection::resolved_state',
     ];
 
     public function test_status_columns_are_cast_to_enums(): void {
@@ -148,5 +114,45 @@ class StatusEnumCastRuleTest extends TestCase {
 
         $stale = array_values(array_intersect(self::BASELINE, $resolved));
         $this->assertSame([], $stale, "Aus der BASELINE streichen (inzwischen gecastet):\n" . implode("\n", $stale));
+    }
+
+    /**
+     * Statusartige Spalten unter anderem Namen (`sync_status`, `payment_state` …)
+     * sah die Regel nicht (Konsolidierungs-Audit 2026-10, k3-10). Die Baseline trägt
+     * nur begründete Fremd-, Protokoll- und Freitextwerte.
+     */
+    public function test_named_status_columns_are_cast_to_enums(): void {
+        $tables = $this->schemaTables();
+        $violations = [];
+        $resolved = [];
+
+        foreach ($this->modelClasses() as $class) {
+            $table = $this->tableOfModel($class);
+            if ($table === '' || ! isset($tables[$table])) {
+                continue;
+            }
+            $casts = (new $class())->getCasts();
+            foreach ($tables[$table]['columns'] as $column => $definition) {
+                if (preg_match('/_(?:status|state)$/', $column) !== 1 || preg_match('/^(?:var)?char\b/i', $definition) !== 1) {
+                    continue;
+                }
+                $key = $class . '::' . $column;
+                $cast = (string) ($casts[$column] ?? '');
+                if ($cast !== '' && enum_exists($cast)) {
+                    $resolved[] = $key;
+
+                    continue;
+                }
+                if (! in_array($key, self::NAMED_COLUMNS_BASELINE, true)) {
+                    $violations[] = $key;
+                }
+            }
+        }
+
+        sort($violations);
+        $this->assertSame([], $violations, "Statusartige Spalte ohne Enum-Cast — Enum anlegen und casten:\n" . implode("\n", $violations));
+
+        $stale = array_values(array_intersect(self::NAMED_COLUMNS_BASELINE, $resolved));
+        $this->assertSame([], $stale, "Aus NAMED_COLUMNS_BASELINE streichen (inzwischen gecastet):\n" . implode("\n", $stale));
     }
 }

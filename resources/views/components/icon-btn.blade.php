@@ -10,11 +10,12 @@
     'icon'    => null,        // Material-Symbol-Name (z. B. "edit", "delete", "visibility", "add")
     'label'   => null,        // Tooltip + aria-label; auch als sichtbarer Text, wenn $slot leer
     'showLabel' => false,     // sichtbar neben Icon anzeigen (Default: nur Icon)
-    'tone'    => 'ghost',     // ghost | primary | secondary | error | success | warning | info | outline
+    'tone'    => 'ghost',     // ghost | primary | secondary | error | success | warning | info | outline | plain (ohne Tonklasse)
     'size'    => 'xs',        // xs | sm | md | lg
     'href'    => null,        // wenn gesetzt → <a>, sonst <button>
     'type'    => 'button',    // button | submit | reset
     'iconFilled' => false,
+    'iconSize' => null,       // abweichende Icon-Größe (CSS-Länge, z. B. "1rem")
     'placement' => null,     // Seitenkopf: bar | menu | danger (sonst auto, MVP-966)
 ])
 
@@ -47,6 +48,7 @@
         'info'      => 'btn-info',
         'error'     => 'btn-ghost text-error',
         'outline'   => 'btn-outline',
+        'plain'     => '',
         default     => 'btn-ghost',
     };
 
@@ -72,7 +74,7 @@
        @if ($placementAttr) data-toolbar-placement="{{ $placementAttr }}" @endif
        @if ($a11yLabel) title="{{ $a11yLabel }}" aria-label="{{ $a11yLabel }}" @endif>
         @if ($icon)
-            <x-icon :name="$icon" :filled="$iconFilled" />
+            <x-icon :name="$icon" :filled="$iconFilled" :size="$iconSize" />
         @endif
         @if ($showText)
             <span>{{ $hasSlot ? $slot : $label }}</span>
@@ -84,7 +86,7 @@
             @if ($placementAttr) data-toolbar-placement="{{ $placementAttr }}" @endif
             @if ($a11yLabel) title="{{ $a11yLabel }}" aria-label="{{ $a11yLabel }}" @endif>
         @if ($icon)
-            <x-icon :name="$icon" :filled="$iconFilled" />
+            <x-icon :name="$icon" :filled="$iconFilled" :size="$iconSize" />
         @endif
         @if ($showText)
             <span>{{ $hasSlot ? $slot : $label }}</span>

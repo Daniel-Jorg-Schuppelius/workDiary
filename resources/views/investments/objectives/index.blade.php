@@ -11,9 +11,10 @@
 
 @section('title', __('investment.objective.title'))
 @section('nav-title', __('investment.objective.title'))
+@include('partials.page-fill')
 
 @section('content')
-<x-index-page :subtitle="__('investment.objective.subtitle')">
+<x-index-page overflow="clip" :subtitle="__('investment.objective.subtitle')">
     <x-slot:actions>
         @if ($canManage)
             <x-icon-btn icon="add" size="sm" tone="primary" data-entry-modal-trigger :href="route('investments.objectives.create')" show-label>{{ __('investment.objective.create') }}</x-icon-btn>
@@ -21,33 +22,33 @@
     </x-slot:actions>
 
     @include('investments._tabs')
-    <x-card padding="p-0">
-        <x-table bare>
-            <x-slot:head>
-                <tr>
-                    <th>{{ __('investment.objective.field.title') }}</th>
-                    <th>{{ __('investment.objective.field.owner') }}</th>
-                    <th>{{ __('investment.objective.field.period') }}</th>
-                    <th>{{ __('investment.objective.field.key_results') }}</th>
-                    <th class="text-right">{{ __('investment.objective.field.cases') }}</th>
-                </tr>
-            </x-slot:head>
-            @forelse ($objectives as $objective)
-                <tr>
-                    <td><a class="link" href="{{ route('investments.objectives.show', $objective) }}">{{ $objective->title }}</a>@unless ($objective->is_active) <span class="wd-badge badge-ghost">{{ __('investment.objective.inactive') }}</span>@endunless</td>
-                    <td>{{ $objective->owner?->name ?? '—' }}</td>
-                    <td>{{ $objective->valid_from?->format('d.m.Y') ?? '—' }} – {{ $objective->valid_until?->format('d.m.Y') ?? '—' }}</td>
-                    <td class="text-sm">
-                        @foreach ($objective->keyResults as $kr)
-                            <div>{{ $kr->label }}: {{ $kr->progress() === null ? '—' : $kr->progress() . ' %' }}</div>
-                        @endforeach
-                    </td>
-                    <td class="text-right tabular-nums">{{ $objective->cases_count }}</td>
-                </tr>
-            @empty
-                <x-table.empty icon="flag" :colspan="5" :title="__('investment.objective.empty')" compact />
-            @endforelse
-        </x-table>
-    </x-card>
+    <x-table scroll="flex">
+        <x-slot:head>
+            <tr>
+                <th>{{ __('investment.objective.field.title') }}</th>
+                <th>{{ __('investment.objective.field.owner') }}</th>
+                <th>{{ __('investment.objective.field.period') }}</th>
+                <th>{{ __('investment.objective.field.key_results') }}</th>
+                <th class="text-right">{{ __('investment.objective.field.cases') }}</th>
+            </tr>
+        </x-slot:head>
+        @forelse ($objectives as $objective)
+            <tr class="hover">
+                <td><a class="link" href="{{ route('investments.objectives.show', $objective) }}">{{ $objective->title }}</a>@unless ($objective->is_active) <span class="wd-badge badge-ghost">{{ __('investment.objective.inactive') }}</span>@endunless</td>
+                <td>{{ $objective->owner?->name ?? '—' }}</td>
+                <td>{{ $objective->valid_from?->fdate() ?? '—' }} – {{ $objective->valid_until?->fdate() ?? '—' }}</td>
+                <td class="text-sm">
+                    @foreach ($objective->keyResults as $kr)
+                        <div>{{ $kr->label }}: {{ $kr->progress() === null ? '—' : $kr->progress() . ' %' }}</div>
+                    @endforeach
+                </td>
+                <td class="text-right tabular-nums">{{ $objective->cases_count }}</td>
+            </tr>
+        @empty
+            <x-table.empty icon="flag" :colspan="5" :title="__('investment.objective.empty')" compact />
+        @endforelse
+    </x-table>
+
+    <x-pagination :paginator="$objectives" standing />
 </x-index-page>
 @endsection

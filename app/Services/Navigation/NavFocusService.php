@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Navigation;
 
 use App\Models\Platform\{Organization, User, UserWorkspace};
-use CommonToolkit\Helper\FileSystem\File;
+use App\Support\BranchProfileFiles;
 use Illuminate\Support\Facades\Auth;
 
 /**
@@ -256,14 +256,7 @@ class NavFocusService {
             return null;
         }
 
-        $path = database_path("data/branchprofiles/{$code}.php");
-        if (! File::isFile($path)) {
-            return null;
-        }
-
-        /** @var array<string, mixed> $profile */
-        $profile = require $path;
-        $default = $profile['nav_focus_default'] ?? null;
+        $default = BranchProfileFiles::profile($code)['nav_focus_default'] ?? null;
 
         return is_string($default) && $this->has($default) ? $default : null;
     }

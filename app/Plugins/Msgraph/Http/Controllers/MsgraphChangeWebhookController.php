@@ -70,6 +70,7 @@ class MsgraphChangeWebhookController extends Controller {
             ->first();
         if ($calendar instanceof MsgraphConnection) {
             if (WebhookSignature::tokenValid((string) ($calendar->webhook_secret ?? ''), $clientState)
+                && ! \App\Plugins\Support\PluginTenantGate::blocks((int) $calendar->organization_id)
                 && Cache::add('msgraph:wake:calendar:' . $calendar->id, true, self::DEBOUNCE_SECONDS)) {
                 MsgraphCalendarWakeJob::dispatch((int) $calendar->organization_id);
             }
@@ -83,6 +84,7 @@ class MsgraphChangeWebhookController extends Controller {
             ->first();
         if ($link instanceof MsgraphTaskListLink) {
             if (WebhookSignature::tokenValid((string) ($link->webhook_secret ?? ''), $clientState)
+                && ! \App\Plugins\Support\PluginTenantGate::blocks((int) $link->organization_id)
                 && Cache::add('msgraph:wake:todo:' . $link->id, true, self::DEBOUNCE_SECONDS)) {
                 MsgraphTodoWakeJob::dispatch((int) $link->organization_id, (int) $link->id);
             }
@@ -97,6 +99,7 @@ class MsgraphChangeWebhookController extends Controller {
             ->first();
         if ($mailbox instanceof EmailConnection
             && WebhookSignature::tokenValid((string) ($mailbox->webhook_secret ?? ''), $clientState)
+            && ! \App\Plugins\Support\PluginTenantGate::blocks((int) $mailbox->organization_id)
             && Cache::add('msgraph:wake:mail:' . $mailbox->id, true, self::DEBOUNCE_SECONDS)) {
             MsgraphMailWakeJob::dispatch((int) $mailbox->organization_id, (int) $mailbox->id);
         }

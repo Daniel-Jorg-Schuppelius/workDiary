@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Sales;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Enums\Sales\CommissionStatus;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
@@ -102,7 +103,7 @@ class CommissionController extends Controller {
      */
     private function unassignedPaidInvoices(): \Illuminate\Database\Eloquent\Collection {
         return Invoice::query()
-            ->where('status', Invoice::STATUS_PAID)
+            ->where('status', InvoiceStatus::Paid)
             ->whereNotIn('type', [Invoice::TYPE_CREDIT_NOTE, Invoice::TYPE_CANCELLATION, Invoice::TYPE_PROFORMA])
             ->whereDoesntHave('commissions')
             ->with(['customer:id,name,company'])

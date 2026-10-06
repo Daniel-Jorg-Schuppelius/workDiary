@@ -16,10 +16,10 @@
     $money = function (float $val): string {
         return \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($val, 2, withThousandsSeparator: true) . ' €';
     };
-    $kindBadge = [
-        'work' => 'badge-primary',
-        'travel' => 'badge-info',
-        'standby' => 'badge-warning',
+    $kindTone = [
+        'work' => 'primary',
+        'travel' => 'info',
+        'standby' => 'warning',
     ];
 @endphp
 
@@ -27,17 +27,7 @@
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="__('Tagesweise Übersicht aller eigenen Zeiteinträge im Monat.')">
             <x-slot:actions>
-                <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
-                            :href="route('reports.my-month', array_merge(['export' => 'pdf', 'kind' => $kind], $standardFilters->toQueryParams()))"
-                            show-label>PDF</x-icon-btn>
-                <x-action-menu icon="download" tone="outline" :label="__('Export')">
-                    <x-icon-btn icon="download" tone="outline" size="sm"
-                                :href="route('reports.my-month', array_merge(['export' => 'csv', 'kind' => $kind], $standardFilters->toQueryParams()))"
-                                show-label>CSV</x-icon-btn>
-                    <x-icon-btn icon="table_chart" tone="outline" size="sm"
-                                :href="route('reports.my-month', array_merge(['export' => 'xlsx', 'kind' => $kind], $standardFilters->toQueryParams()))"
-                                show-label>XLSX</x-icon-btn>
-                </x-action-menu>
+                <x-report-export :url="fn (string $format) => route('reports.my-month', array_merge(['export' => $format, 'kind' => $kind], $standardFilters->toQueryParams()))" />
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
@@ -119,7 +109,7 @@
                                 @endif
                             </td>
                             <td>
-                                <span class="badge badge-sm {{ $kindBadge[$e->kind->value] ?? 'badge-ghost' }}">{{ $e->kind->label() }}</span>
+                                <x-status-badge :tone="$kindTone[$e->kind->value] ?? 'ghost'">{{ $e->kind->label() }}</x-status-badge>
                             </td>
                             <td class="text-sm">
                                 @if ($e->project)

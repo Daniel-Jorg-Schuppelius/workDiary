@@ -36,8 +36,6 @@ class ContactColumnsRuleTest extends TestCase {
         'suppliers' => 'Projektion der Primäradresse (ContactDetailsProjectionObserver).',
         'diary_entries' => 'Einsatzort des Auftrags, keine Parteiadresse.',
         'sites' => 'Objektadresse (Standort), keine Parteiadresse.',
-        'buildings' => 'Objektadresse (Gebäude), keine Parteiadresse.',
-        'organizations' => 'Absenderanschrift der Organisation (Branding/PDF).',
     ];
 
     public function test_schema_keeps_party_addresses_in_the_satellite(): void {

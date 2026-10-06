@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\AssetFinance;
 
-use App\Enums\AssetFinance\{AssetFinanceDeadlineKind, AssetFinanceEndKind, AssetFinanceKind, AssetFinanceStatus, AssetFinanceUsageLimitKind};
+use App\Enums\AssetFinance\{AssetFinanceDeadlineKind, AssetFinanceDeadlineStatus, AssetFinanceEndKind, AssetFinanceKind, AssetFinanceRateScheduleStatus, AssetFinanceStatus, AssetFinanceUsageLimitKind};
+use App\Enums\Invoicing\IncomingEInvoiceStatus;
 use App\Models\Asset\Asset;
 use App\Models\AssetFinance\AssetFinanceContract;
 use App\Models\Invoicing\IncomingEInvoice;
@@ -89,20 +90,71 @@ final class AssetFinanceLifecycleTest extends TestCase {
             'sha256' => hash('sha256', 'demo'),
             'source' => 'upload',
             'received_at' => now(),
-            'status' => 'approved',
+            'status' => IncomingEInvoiceStatus::Approved,
             'summary' => ['gross' => 400.0],
         ]);
 
         $schedule = $contract->rateSchedules()->firstOrFail();
         $service->linkIncomingInvoice($schedule, $invoice);
 
-        $this->assertSame('paid', (string) $schedule->fresh()->status);
+        $this->assertSame(AssetFinanceRateScheduleStatus::Paid, $schedule->fresh()->status);
         $this->assertSame($invoice->id, (int) $schedule->fresh()->incoming_einvoice_id);
 
         $projection = $service->projection($contract->fresh());
         $this->assertSame(4800.0, $projection['planned']);
         $this->assertSame(400.0, $projection['referenced']);
         $this->assertSame(4400.0, $projection['open']);
+    }
+
+    /** Die Referenz hatte Route und Dienst, aber keinen Einstieg an der Ratenzeile. */
+    public function test_rate_is_linked_to_an_incoming_invoice_from_the_schedule(): void {
+        $contract = $this->createContract();
+        app(AssetFinanceService::class)->activate($contract, $this->admin);
+        $schedule = $contract->rateSchedules()->orderBy('due_on')->firstOrFail();
+
+        $document = \App\Models\Document\Document::factory()->create(['organization_id' => $this->organization->id]);
+        $incoming = fn (string $number, IncomingEInvoiceStatus $status): IncomingEInvoice => IncomingEInvoice::query()->create([
+            'organization_id' => $this->organization->id,
+            'document_id' => $document->id,
+            'sha256' => hash('sha256', $number),
+            'source' => 'upload',
+            'received_at' => now(),
+            'status' => $status,
+            'invoice_number' => $number,
+            'seller_name' => 'Muster-Leasing GmbH',
+        ]);
+        $invoice = $incoming('LR-2026-001', IncomingEInvoiceStatus::Approved);
+        $rejected = $incoming('LR-ABGELEHNT', IncomingEInvoiceStatus::Rejected);
+
+        $accounting = $this->userWithRole(\App\Enums\User\UserRole::Buchhaltung->value);
+        $this->actingAs($accounting)->get(route('asset-finance.show', $contract))->assertOk()
+            ->assertSee(route('asset-finance.schedules.link-dialog', $schedule), false);
+
+        $this->actingAs($accounting)->get(route('asset-finance.schedules.link-dialog', $schedule))->assertOk()
+            ->assertSee(route('asset-finance.schedules.link', $schedule), false)
+            ->assertSee('value="' . $invoice->sqid . '"', false)
+            ->assertDontSee('value="' . $rejected->sqid . '"', false);
+
+        $this->actingAs($accounting)->from(route('asset-finance.show', $contract))
+            ->post(route('asset-finance.schedules.link', $schedule), ['incoming_einvoice_id' => $invoice->sqid])
+            ->assertRedirect(route('asset-finance.show', $contract))
+            ->assertSessionHas('status');
+
+        $schedule->refresh();
+        $this->assertSame(AssetFinanceRateScheduleStatus::Paid, $schedule->status);
+        $this->assertSame((int) $invoice->id, (int) $schedule->incoming_einvoice_id);
+        $this->actingAs($accounting)->get(route('asset-finance.show', $contract))->assertOk()->assertSee('LR-2026-001');
+
+        // Raten sind vertrauliche Konditionen: ohne finance-Recht weder Zeile noch Dialog.
+        $viewer = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+        $viewer->givePermissionTo([
+            \App\Enums\User\Permission::AssetFinanceViewAny->value,
+            \App\Enums\User\Permission::AssetFinanceView->value,
+        ]);
+        $this->actingAs($viewer)->get(route('asset-finance.show', $contract))->assertOk()
+            ->assertDontSee(route('asset-finance.schedules.link-dialog', $schedule), false);
+        $this->actingAs($viewer)->get(route('asset-finance.schedules.link-dialog', $schedule))->assertForbidden();
+        $this->actingAs($viewer)->post(route('asset-finance.schedules.link', $schedule), ['incoming_einvoice_id' => $invoice->sqid])->assertForbidden();
     }
 
     public function test_deadline_warning_notifies_and_overdue_is_marked_missed(): void {
@@ -129,7 +181,7 @@ final class AssetFinanceLifecycleTest extends TestCase {
         $service = app(AssetFinanceService::class);
         $service->scanDeadlines($this->organization);
 
-        $this->assertSame('missed', (string) $missed->fresh()->status);
+        $this->assertSame(AssetFinanceDeadlineStatus::Missed, $missed->fresh()->status);
         $this->assertDatabaseHas('notification_dispatch_log', [
             'event' => \App\Enums\Notification\NotificationEvent::AssetFinanceDeadline->value,
             'subject_id' => $warning->id,

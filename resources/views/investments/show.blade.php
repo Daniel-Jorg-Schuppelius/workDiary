@@ -14,7 +14,7 @@
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar :badge="__('values.' . $case->status)" badge-tone="outline">
+        <x-page-toolbar :badge="$case->status->label()" badge-tone="outline">
             <div class="text-sm text-base-content/70">
                 {{ __("values.{$case->category}") }} · {{ __('Dringlichkeit: :urgency', ['urgency' => __("values.{$case->urgency}")]) }}
                 @if ($case->costCenterDisplay()) · {{ $case->costCenterDisplay() }} @endif
@@ -22,10 +22,10 @@
             <x-slot:actions>
                 @can('update', $case)
                     <x-icon-btn icon="edit" size="sm" data-entry-modal-trigger :href="route('investments.edit', $case)" show-label>{{ __('Bearbeiten') }}</x-icon-btn>
-                    @if (in_array($case->status, ['approved', 'in_progress'], true))
+                    @if (in_array($case->status, [\App\Enums\Investments\InvestmentCaseStatus::Approved, \App\Enums\Investments\InvestmentCaseStatus::InProgress], true))
                         <x-action-form :action="route('investments.status', $case)">
-                            <input type="hidden" name="status" value="{{ $case->status === 'approved' ? 'in_progress' : 'completed' }}">
-                            <x-icon-btn icon="task_alt" tone="primary" size="sm" type="submit" show-label>{{ $case->status === 'approved' ? __('Umsetzung starten') : __('Abschließen') }}</x-icon-btn>
+                            <input type="hidden" name="status" value="{{ $case->status === \App\Enums\Investments\InvestmentCaseStatus::Approved ? 'in_progress' : 'completed' }}">
+                            <x-icon-btn icon="task_alt" tone="primary" size="sm" type="submit" show-label>{{ $case->status === \App\Enums\Investments\InvestmentCaseStatus::Approved ? __('Umsetzung starten') : __('Abschließen') }}</x-icon-btn>
                         </x-action-form>
                     @endif
                 @endcan
@@ -66,15 +66,27 @@
             @if ($case->objective)<p class="mt-1 text-sm"><span class="font-semibold">{{ __('Ziel/Nutzen:') }}</span> {{ $case->objective }}</p>@endif
             @if ($case->risk_note)<p class="mt-1 text-sm"><span class="font-semibold">{{ __('Risiko:') }}</span> {{ $case->risk_note }}</p>@endif
             @can('update', $case)
-                @if (in_array($case->status, \App\Models\Investments\InvestmentCase::PLANNING_STATUSES, true))
-                    <form method="POST" action="{{ route('investments.status', $case) }}" class="mt-2 flex items-center gap-1">
-                        @csrf
-                        <select name="status" class="select select-sm select-bordered" data-autosubmit aria-label="{{ __('Status') }}">
-                            @foreach (\App\Models\Investments\InvestmentCase::PLANNING_STATUSES as $status)
-                                <option value="{{ $status }}" @selected($case->status === $status)>{{ __("values.$status") }}</option>
-                            @endforeach
-                        </select>
-                    </form>
+                @if ($case->status->isPlanning())
+                    <div class="mt-2 flex flex-wrap items-center gap-2">
+                        <form method="POST" action="{{ route('investments.status', $case) }}" class="flex items-center gap-1">
+                            @csrf
+                            <select name="status" class="select select-sm select-bordered" data-autosubmit aria-label="{{ __('Status') }}">
+                                @foreach (\App\Enums\Investments\InvestmentCaseStatus::planning() as $status)
+                                    <option value="{{ $status->value }}" @selected($case->status === $status)>{{ $status->label() }}</option>
+                                @endforeach
+                            </select>
+                        </form>
+                        <x-action-form :action="route('investments.status', $case)"
+                              :confirm="__('Akte zurückstellen? Die Planung lässt sich später wieder aufnehmen.')" confirm-icon="pause_circle" :confirm-label="__('Zurückstellen')">
+                            <input type="hidden" name="status" value="deferred">
+                            <x-icon-btn icon="pause_circle" size="sm" type="submit" show-label>{{ __('Zurückstellen') }}</x-icon-btn>
+                        </x-action-form>
+                    </div>
+                @elseif ($case->status === \App\Enums\Investments\InvestmentCaseStatus::Deferred)
+                    <x-action-form :action="route('investments.status', $case)" class="mt-2 inline">
+                        <input type="hidden" name="status" value="{{ $case->resumeTarget()->value }}">
+                        <x-icon-btn icon="play_circle" tone="primary" size="sm" type="submit" show-label>{{ __('Wieder aufnehmen') }}</x-icon-btn>
+                    </x-action-form>
                 @endif
             @endcan
         </x-card>
@@ -82,7 +94,7 @@
         {{-- Variantenvergleich (MVP-201) --}}
         <x-card :title="__('Variantenvergleich')">
             @can('update', $case)
-                @if (in_array($case->status, \App\Models\Investments\InvestmentCase::PLANNING_STATUSES, true))
+                @if ($case->status->isPlanning())
                     <form method="POST" action="{{ route('investments.options.store', $case) }}" class="mb-3 grid gap-2 sm:grid-cols-2">
                         @csrf
                         <input aria-label="{{ __('Variante (z. B. Angebot Lieferant A)') }}" name="title" required maxlength="200" class="input input-sm input-bordered sm:col-span-2" placeholder="{{ __('Variante (z. B. Angebot Lieferant A)') }}">
@@ -123,7 +135,7 @@
                                 <tr @class(['bg-success/10' => $option->recommended])>
                                     <td>
                                         {{ $option->title }}
-                                        @if ($option->recommended)<span class="badge badge-success badge-xs">{{ __('Empfehlung') }}</span>@endif
+                                        @if ($option->recommended)<x-status-badge tone="success" size="xs">{{ __('Empfehlung') }}</x-status-badge>@endif
                                         @if ($option->supplier)<div class="text-xs text-muted">{{ $option->supplier->displayLabel() }}</div>@endif
                                     </td>
                                     <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $option->one_time_cost, 2, withThousandsSeparator: true) }} €</td>
@@ -156,9 +168,9 @@
             </x-slot:actions>
         @endif
         @can('update', $case)
-            @if (in_array($case->status, \App\Models\Investments\InvestmentCase::PLANNING_STATUSES, true))
+            @if ($case->status->isPlanning())
                 @unless ($hasCostCenters)
-                    <div class="alert alert-warning text-sm">
+                    <div role="alert" class="alert alert-warning text-sm">
                         <x-icon name="warning" />
                         <div class="flex flex-wrap items-center gap-2">
                             {{ __('Noch keine Kostenstellen angelegt — für saubere Budgetauswertung zuerst eine anlegen:') }}
@@ -166,7 +178,7 @@
                                 @csrf
                                 <input aria-label="{{ __('Code') }}" name="code" required maxlength="30" class="input input-xs input-bordered w-24" placeholder="{{ __('Code') }}">
                                 <input aria-label="{{ __('Bezeichnung') }}" name="label" required maxlength="200" class="input input-xs input-bordered w-48" placeholder="{{ __('Bezeichnung') }}">
-                                <button type="submit" class="btn btn-xs btn-primary">{{ __('Anlegen') }}</button>
+                                <x-button type="submit" size="xs">{{ __('Anlegen') }}</x-button>
                             </form>
                         </div>
                     </div>
@@ -201,17 +213,17 @@
                     <div class="rounded-box border border-base-300 p-3">
                         <div class="flex flex-wrap items-center gap-2">
                             <span class="font-medium">V{{ $request->version }} · {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $request->amount, 2, withThousandsSeparator: true) }} €</span>
-                            <x-status-badge size="xs" outline>{{ __("values.{$request->status}") }}</x-status-badge>
+                            <x-status-badge size="xs" outline>{{ $request->status->label() }}</x-status-badge>
                             <span class="text-xs text-muted">{{ __("values.{$request->cost_kind}") }} · {{ __("values.{$request->financing}") }}</span>
                         </div>
                         <div class="mt-1 text-sm">
                             @foreach ($request->approvals->sortBy('step') as $approval)
-                                <span class="badge badge-sm {{ $approval->decision === 'approved' ? 'badge-success' : ($approval->decision === 'rejected' ? 'badge-error' : 'badge-ghost') }}">
+                                <x-status-badge :tone="$approval->decision === 'approved' ? 'success' : ($approval->decision === 'rejected' ? 'error' : 'ghost')">
                                     {{ __('Stufe :step', ['step' => $approval->step]) }}: {{ $approval->decision !== null ? __("values.{$approval->decision}") : __('offen') }}
-                                </span>
+                                </x-status-badge>
                             @endforeach
                         </div>
-                        @if ($request->status === 'in_approval')
+                        @if ($request->status === \App\Enums\Investments\InvestmentBudgetRequestStatus::InApproval)
                             @can('approve', $case)
                                 <div class="mt-2 flex flex-wrap gap-2">
                                     <x-action-form :action="route('investments.budget.approve', [$case, $request])">
@@ -220,7 +232,7 @@
                                     <form method="POST" action="{{ route('investments.budget.reject', [$case, $request]) }}" class="flex items-center gap-1">
                                         @csrf
                                         <input aria-label="{{ __('Ablehnungsgrund (Pflicht)') }}" name="reason" required maxlength="1000" class="input input-xs input-bordered w-56" placeholder="{{ __('Ablehnungsgrund (Pflicht)') }}">
-                                        <button type="submit" class="btn btn-xs btn-outline">{{ __('Ablehnen') }}</button>
+                                        <x-button type="submit" tone="outline" size="xs">{{ __('Ablehnen') }}</x-button>
                                     </form>
                                 </div>
                             @endcan
@@ -254,7 +266,7 @@
                 <ul class="space-y-1 text-sm">
                     @foreach ($case->links as $link)
                         <li>
-                            <span class="badge badge-outline badge-xs">{{ \App\Support\EntityType::label($link->linkable_type) }}</span>
+                            <x-status-badge tone="plain" size="xs" outline>{{ \App\Support\EntityType::label($link->linkable_type) }}</x-status-badge>
                             {{ $link->linkable?->getAttribute('title') ?? $link->linkable?->getAttribute('name') ?? $link->linkable?->getAttribute('number') ?? ('#' . $link->linkable_id) }}
                             @if ($link->note)<span class="text-muted">— {{ $link->note }}</span>@endif
                         </li>
@@ -300,26 +312,27 @@
                                 <x-status-badge size="xs" outline>{{ __("values.{$deviation->kind}") }}</x-status-badge>
                                 <span>{{ $deviation->description }}</span>
                                 @if ($deviation->amount_delta !== null)<span class="tabular-nums">Δ {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $deviation->amount_delta, 2, withThousandsSeparator: true) }} €</span>@endif
-                                <x-status-badge size="xs" :tone="$deviation->status === 'approved' ? 'success' : ($deviation->status === 'rejected' ? 'error' : 'warning')">{{ __("values.{$deviation->status}") }}</x-status-badge>
+                                <x-status-badge size="xs" :tone="$deviation->status->tone()">{{ $deviation->status->label() }}</x-status-badge>
                             </div>
-                            @if ($deviation->status === 'open')
+                            @if ($deviation->status === \App\Enums\Investments\InvestmentDeviationStatus::Open)
                                 @can('approve', $case)
                                     <form method="POST" action="{{ route('investments.deviations.decide', [$case, $deviation]) }}" class="mt-1 flex flex-wrap items-center gap-1">
                                         @csrf
-                                        <select name="decision" class="select select-xs select-bordered">
+                                        <select name="decision" class="select select-xs select-bordered" required aria-label="{{ __('Entscheidung') }}">
+                                            <option value="" selected disabled>{{ __('Bitte wählen') }}</option>
                                             <option value="approved">{{ __('Genehmigen') }}</option>
                                             <option value="rejected">{{ __('Ablehnen') }}</option>
                                         </select>
                                         <input aria-label="{{ __('Begründung') }}" name="note" maxlength="1000" class="input input-xs input-bordered w-48" placeholder="{{ __('Begründung') }}">
-                                        <button type="submit" class="btn btn-xs">{{ __('Entscheiden') }}</button>
+                                        <x-button type="submit" tone="plain" size="xs">{{ __('Entscheiden') }}</x-button>
                                     </form>
                                 @endcan
-                            @elseif ($deviation->status === 'approved' && $deviation->kind === 'budget')
+                            @elseif ($deviation->status === \App\Enums\Investments\InvestmentDeviationStatus::Approved && $deviation->kind === 'budget')
                                 @can('update', $case)
                                     <form method="POST" action="{{ route('investments.budget.supplement', [$case, $deviation]) }}" class="mt-1 flex flex-wrap items-center gap-1">
                                         @csrf
                                         <input aria-label="{{ __('Neues Budget €') }}" name="amount" type="number" step="0.01" min="0.01" required class="input input-xs input-bordered w-32" placeholder="{{ __('Neues Budget €') }}">
-                                        <button type="submit" class="btn btn-xs btn-primary">{{ __('Nachtrag beantragen') }}</button>
+                                        <x-button type="submit" size="xs">{{ __('Nachtrag beantragen') }}</x-button>
                                     </form>
                                 @endcan
                             @endif
@@ -340,7 +353,7 @@
                 @if ($case->review->follow_up)<x-detail-grid.row :label="__('Folgemaßnahmen')">{{ $case->review->follow_up }}</x-detail-grid.row>@endif
                 <x-detail-grid.row :label="__('Bewertet am')">{{ optional($case->review->reviewed_at)->fdatetime() ?? '—' }}</x-detail-grid.row>
             </x-detail-grid>
-        @elseif (in_array($case->status, ['completed', 'cancelled'], true))
+        @elseif ($case->status->awaitsReview())
             @can('update', $case)
                 <form method="POST" action="{{ route('investments.review.store', $case) }}" class="grid gap-2">
                     @csrf
@@ -380,7 +393,7 @@
                                         </select>
                                     @endforeach
                                     <input name="note" maxlength="2000" value="{{ $rating?->note }}" class="input input-xs input-bordered w-48" aria-label="{{ __('investment.supplier_rating.note') }}" placeholder="{{ __('investment.supplier_rating.note') }}">
-                                    <button type="submit" class="btn btn-xs">{{ __('investment.supplier_rating.save') }}</button>
+                                    <x-button type="submit" tone="plain" size="xs">{{ __('investment.supplier_rating.save') }}</x-button>
                                 </form>
                             @endcan
                         @elseif ($rating !== null)

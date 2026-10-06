@@ -12,13 +12,15 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Reporting;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Article\Article;
 use App\Models\Customer\Customer;
 use App\Models\Integration\{ExternalArticleMapping, ExternalReference};
 use App\Models\Invoicing\{Invoice, InvoiceItem};
 use App\Models\Platform\{Organization, User};
-use App\Plugins\Lexoffice\{LexofficeInvoiceService, LexofficePlugin};
+use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\Lexoffice\Models\{LexofficeArticle, LexofficeVoucher, LexofficeVoucherLine};
+use App\Plugins\Lexoffice\Services\LexofficeInvoiceService;
 use App\Services\Reporting\ProductRevenueReportBuilder;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -57,22 +59,22 @@ class ProductRevenueReportTest extends TestCase {
         $this->service = Article::factory()->create(['organization_id' => $this->organization->id, 'number' => 'D-1', 'name' => 'Montage', 'base_unit' => 'Std.']);
 
         // Ausgestellt: Schraube 10 × 2, Montage 2 × 100, ohne Artikel 1 × 50.
-        $this->invoice(Invoice::STATUS_ISSUED, '2030-06-10', [
+        $this->invoice(InvoiceStatus::Issued, '2030-06-10', [
             [$this->screw->id, '10', '2.00'],
             [$this->service->id, '2', '100.00'],
             [null, '1', '50.00'],
         ]);
         // Bezahlt: Schraube 5 × 2.
-        $this->invoice(Invoice::STATUS_PAID, '2030-06-20', [[$this->screw->id, '5', '2.00']]);
+        $this->invoice(InvoiceStatus::Paid, '2030-06-20', [[$this->screw->id, '5', '2.00']]);
         // Entwurf/Storno zählen nicht.
-        $this->invoice(Invoice::STATUS_DRAFT, '2030-06-15', [[$this->screw->id, '100', '2.00']]);
-        $this->invoice(Invoice::STATUS_CANCELLED, '2030-06-15', [[$this->screw->id, '100', '2.00']]);
+        $this->invoice(InvoiceStatus::Draft, '2030-06-15', [[$this->screw->id, '100', '2.00']]);
+        $this->invoice(InvoiceStatus::Cancelled, '2030-06-15', [[$this->screw->id, '100', '2.00']]);
         // Außerhalb des Zeitraums.
-        $this->invoice(Invoice::STATUS_ISSUED, '2030-07-05', [[$this->screw->id, '100', '2.00']]);
+        $this->invoice(InvoiceStatus::Issued, '2030-07-05', [[$this->screw->id, '100', '2.00']]);
     }
 
     /** @param list<array{0: ?int, 1: string, 2: string}> $items [article_id, quantity, unit_price] */
-    private function invoice(string $status, string $issuedOn, array $items, ?int $organizationId = null, string $type = Invoice::TYPE_INVOICE): Invoice {
+    private function invoice(InvoiceStatus|string $status, string $issuedOn, array $items, ?int $organizationId = null, string $type = Invoice::TYPE_INVOICE): Invoice {
         $orgId = $organizationId ?? (int) $this->organization->id;
         $invoice = Invoice::create([
             'organization_id' => $orgId,
@@ -148,9 +150,9 @@ class ProductRevenueReportTest extends TestCase {
 
     /** MVP-990: Gutschrift und Stornobeleg spiegeln die Positionen negativ und mindern. */
     public function test_credit_notes_and_cancellation_documents_reduce_the_revenue(): void {
-        $this->invoice(Invoice::STATUS_ISSUED, '2030-06-25', [[$this->service->id, '-1', '100.00']], type: Invoice::TYPE_CREDIT_NOTE);
-        $this->invoice(Invoice::STATUS_ISSUED, '2030-06-26', [[$this->screw->id, '-5', '2.00']], type: Invoice::TYPE_CANCELLATION);
-        $this->invoice(Invoice::STATUS_DRAFT, '2030-06-27', [[$this->screw->id, '-10', '2.00']], type: Invoice::TYPE_CREDIT_NOTE);
+        $this->invoice(InvoiceStatus::Issued, '2030-06-25', [[$this->service->id, '-1', '100.00']], type: Invoice::TYPE_CREDIT_NOTE);
+        $this->invoice(InvoiceStatus::Issued, '2030-06-26', [[$this->screw->id, '-5', '2.00']], type: Invoice::TYPE_CANCELLATION);
+        $this->invoice(InvoiceStatus::Draft, '2030-06-27', [[$this->screw->id, '-10', '2.00']], type: Invoice::TYPE_CREDIT_NOTE);
 
         $result = $this->build();
         $byName = $this->byName($result['rows']);
@@ -235,7 +237,7 @@ class ProductRevenueReportTest extends TestCase {
     }
 
     public function test_voucher_created_from_a_local_invoice_is_not_counted_twice(): void {
-        $local = Invoice::query()->where('status', Invoice::STATUS_PAID)->firstOrFail();
+        $local = Invoice::query()->where('status', InvoiceStatus::Paid)->firstOrFail();
         ExternalReference::query()->create([
             'organization_id' => $this->organization->id,
             'plugin_id' => LexofficePlugin::ID,
@@ -286,7 +288,7 @@ class ProductRevenueReportTest extends TestCase {
     public function test_other_organizations_are_excluded(): void {
         $other = Organization::factory()->create();
         $foreignArticle = Article::factory()->create(['organization_id' => $other->id, 'name' => 'Fremdartikel']);
-        $this->invoice(Invoice::STATUS_ISSUED, '2030-06-12', [[$foreignArticle->id, '9', '9.00']], (int) $other->id);
+        $this->invoice(InvoiceStatus::Issued, '2030-06-12', [[$foreignArticle->id, '9', '9.00']], (int) $other->id);
 
         $result = $this->build();
 

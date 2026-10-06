@@ -10,8 +10,7 @@
 @extends('layouts.app')
 @section('title', __('club.fees.title.runs'))
 @section('nav-title', __('club.fees.title.runs'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('club.fees.subtitle.runs')">
     <x-slot:actions>
@@ -52,7 +51,7 @@
                 <td class="text-right tabular-nums">{{ count($run->positions ?? []) }}</td>
                 <td class="text-right tabular-nums">{{ $run->claims_count }}</td>
                 <td class="text-right tabular-nums">{{ $run->total->format() }}</td>
-                <td class="text-sm text-muted">{{ $run->released_at?->orgTz()->format('d.m.Y H:i') ?? '–' }}@if ($run->releasedBy) · {{ $run->releasedBy->name }}@endif</td>
+                <td class="text-sm text-muted">{{ $run->released_at?->fdatetime() ?? '–' }}@if ($run->releasedBy) · {{ $run->releasedBy->name }}@endif</td>
                 <td class="text-right"><x-icon-btn icon="visibility" tone="ghost" size="xs" :href="route('club.fees.runs.show', $run)" :label="__('club.action.show')" /></td>
             </tr>
         @empty

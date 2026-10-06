@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers\Platform;
 
+use App\Enums\Platform\OnboardingStepState;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\Audit\AuditLog;
@@ -121,7 +122,7 @@ class OnboardingController extends Controller {
                 'step_code' => $step,
             ],
             [
-                'state' => 'skipped',
+                'state' => OnboardingStepState::Skipped,
                 'done_at' => null,
                 'done_by_user_id' => $user->id,
                 'skipped_reason' => (string) $data['reason'],

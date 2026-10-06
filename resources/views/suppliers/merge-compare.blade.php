@@ -43,73 +43,9 @@
 @endphp
 
 @section('content')
-<x-index-page :subtitle="__('Wählen Sie pro Feld, ob der Wert des zu löschenden Lieferanten den Ziel-Wert ersetzen soll. Nicht angehakte, leere Ziel-Felder werden ohnehin aus der Quelle aufgefüllt; befüllte Ziel-Felder bleiben unangetastet.')"
-              back-route="suppliers.duplicates.index" :back-label="__('Zurück')">
-
-    <form method="POST" action="{{ route('suppliers.duplicates.merge') }}"
-          data-confirm-dialog
-          data-confirm-message="{{ __('„:source“ endgültig in „:target“ zusammenführen? Der Quell-Lieferant wird gelöscht.', ['source' => $source->name, 'target' => $target->name]) }}"
-          data-confirm-icon="merge" data-confirm-tone="primary" data-confirm-label="{{ __('Zusammenführen') }}">
-        @csrf
-        <input type="hidden" name="source" value="{{ $source->sqid }}">
-        <input type="hidden" name="target" value="{{ $target->sqid }}">
-
-        <x-table>
-            <x-slot:head>
-                    <tr>
-                        <th class="w-44">{{ __('Feld') }}</th>
-                        <th>
-                            <span class="badge badge-sm badge-success">{{ __('Bleibt') }}</span>
-                            <a href="{{ route('suppliers.show', $target) }}" class="link ml-1">{{ $target->name }}</a>
-                        </th>
-                        <th>
-                            <span class="badge badge-sm badge-ghost">{{ __('Wird gelöscht') }}</span>
-                            <a href="{{ route('suppliers.show', $source) }}" class="link ml-1">{{ $source->name }}</a>
-                        </th>
-                        <th class="w-40 text-center">{{ __('Wert aus Quelle übernehmen') }}</th>
-                    </tr>
-            </x-slot:head>
-                    @foreach ($identityFields as $field => $label)
-                        @php
-                            $tv = (string) ($target->getAttribute($field) ?? '');
-                            $sv = (string) ($source->getAttribute($field) ?? '');
-                        @endphp
-                        <tr>
-                            <td class="text-muted">{{ $label }}</td>
-                            <td>{{ $tv !== '' ? $tv : '—' }}</td>
-                            <td class="{{ $tv !== $sv ? 'text-warning' : 'text-muted' }}">{{ $sv !== '' ? $sv : '—' }}</td>
-                            <td class="text-center text-muted">—</td>
-                        </tr>
-                    @endforeach
-
-                    @foreach ($overridableFields as $field => $label)
-                        @php
-                            $tv = (string) ($target->getAttribute($field) ?? '');
-                            $sv = (string) ($source->getAttribute($field) ?? '');
-                        @endphp
-                        @if ($tv !== '' || $sv !== '')
-                            <tr>
-                                <td class="text-muted">{{ $label }}</td>
-                                <td class="{{ $tv === '' ? 'text-muted' : '' }}">{{ $tv !== '' ? $tv : '—' }}</td>
-                                <td class="{{ $tv !== $sv ? 'text-warning' : 'text-muted' }}">{{ $sv !== '' ? $sv : '—' }}</td>
-                                <td class="text-center">
-                                    @if ($sv !== '' && $tv !== $sv)
-                                        <input type="checkbox" class="checkbox checkbox-sm"
-                                               name="prefer_source[]" value="{{ $field }}">
-                                    @else
-                                        <span class="text-muted">—</span>
-                                    @endif
-                                </td>
-                            </tr>
-                        @endif
-                    @endforeach
-        </x-table>
-
-        <div class="mt-4 flex flex-wrap justify-end gap-2">
-            <a href="{{ route('suppliers.duplicates.compare', ['target' => $source->sqid, 'source' => $target->sqid]) }}"
-               class="btn btn-sm btn-outline">{{ __('Richtung tauschen') }}</a>
-            <button class="btn btn-sm btn-primary">{{ __('Zusammenführen →') }}</button>
-        </div>
-    </form>
-</x-index-page>
+@include('stammdaten._merge_compare', [
+    'routePrefix' => 'suppliers',
+    'subtitle' => __('Wählen Sie pro Feld, ob der Wert des zu löschenden Lieferanten den Ziel-Wert ersetzen soll. Nicht angehakte, leere Ziel-Felder werden ohnehin aus der Quelle aufgefüllt; befüllte Ziel-Felder bleiben unangetastet.'),
+    'confirm' => __('„:source“ endgültig in „:target“ zusammenführen? Der Quell-Lieferant wird gelöscht.', ['source' => $source->name, 'target' => $target->name]),
+])
 @endsection

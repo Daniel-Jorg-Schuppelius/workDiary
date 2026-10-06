@@ -30,9 +30,11 @@ Rechnungen, Timeline und Aktionen. „Aktualisieren“ gleicht den
 Providerzustand für genau diese Domain ab.
 
 **DNS:** Die Zone wird auf Anforderung gelesen. In der Oberfläche lassen sich
-einzelne Einträge hinzufügen und löschen; die ganze Zone zu ersetzen ist dort
-bewusst nicht vorgesehen, weil ein falscher Vollersatz alle Einträge der Domain
-löscht. Nach dem Schreiben erkennt das System Abweichungen (DNS-Konflikt) und
+einzelne Einträge hinzufügen und löschen. „Zone ersetzen“ gibt es erst, wenn die
+Zone gelesen wurde: Der Dialog ist mit ihrem Stand vorbelegt und fragt vor dem
+Absenden nach, weil ein Vollersatz jeden Eintrag löscht, der im Formular fehlt.
+Einträge, deren Typ das Formular nicht bearbeiten kann, bleiben unverändert
+erhalten; ein leeres Formular wird abgewiesen. Nach dem Schreiben erkennt das System Abweichungen (DNS-Konflikt) und
 macht sie sichtbar, statt sie zu überschreiben. MX-/SRV-Records verlangen eine
 Priorität.
 

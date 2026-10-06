@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Plugins\Github;
 
+use App\Enums\Plugin\PluginHealthStatus;
 use App\Models\Platform\{Organization, PluginSetting, PluginState};
 use App\Plugins\Contracts\{PluginCapability, TaskSyncer};
 use App\Plugins\Github\{GithubConfig, GithubPlugin};
@@ -120,7 +121,7 @@ final class GithubConnectionTest extends TestCase {
             ->where('plugin_id', GithubPlugin::ID)
             ->where('organization_id', $this->organization->id)
             ->firstOrFail();
-        $this->assertSame(PluginHealth::STATUS_FAILING, $state->last_health_status);
+        $this->assertSame(PluginHealthStatus::Failing, $state->last_health_status);
         // Fehler zählt org-bezogen auf den Auto-Disable-Zähler ein
         // (Schwellen-Mechanik generisch in PluginManagerAutoDisableTest).
         $this->assertGreaterThanOrEqual(1, (int) $state->failure_count);

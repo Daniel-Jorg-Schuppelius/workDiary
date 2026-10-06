@@ -11,6 +11,7 @@
 namespace App\Services\CloudIntake;
 
 use App\Enums\CloudIntake\{CloudIntakeItemStatus, CloudIntakeRouteTarget};
+use App\Enums\Integration\IntegrationInboxStatus;
 use App\Models\Asset\Asset;
 use App\Models\CloudIntake\{CloudDocumentConnection, CloudDocumentItem, CloudDocumentRoute};
 use App\Models\Contract\Contract;
@@ -231,7 +232,7 @@ class CloudIntakeRouter {
                 'case_type' => $caseReason === 'ambiguous_variables'
                     ? IntegrationInboxItem::CASE_AMBIGUOUS
                     : IntegrationInboxItem::CASE_UNMATCHED,
-                'status' => IntegrationInboxItem::STATUS_OPEN,
+                'status' => IntegrationInboxStatus::Open,
                 'referenceable_type' => $document?->getMorphClass(),
                 'referenceable_id' => $document?->getKey(),
                 'remote_snapshot' => [

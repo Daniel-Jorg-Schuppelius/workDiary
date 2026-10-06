@@ -10,11 +10,10 @@
 @extends('layouts.app')
 @section('title', __('Lesezeichen'))
 @section('nav-title', __('Lesezeichen'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @php
-    /** @var \Illuminate\Support\Collection<int, \App\Models\Platform\UserBookmark> $bookmarks */
+    /** @var \Illuminate\Pagination\LengthAwarePaginator<int, \App\Models\Platform\UserBookmark> $bookmarks */
 @endphp
 
 @section('content')
@@ -32,17 +31,20 @@
                    placeholder="{{ __('Suche') }}" aria-label="{{ __('Suche') }}" />
         </x-filter-bar>
 
-        <x-table scroll="flex" :pinRows="true" :zebra="true" table-sort="client">
+        <x-table scroll="flex" :pinRows="true" :zebra="true" table-sort="server"
+                 :route="route('bookmarks.index')"
+                 :current-sort="$sort"
+                 :current-dir="$dir"
+                 :sort-params="request()->except(['sort', 'dir', 'page'])">
             <x-slot:head>
                 <tr>
-                    <x-table.th sort type="number" align="right" class="w-16">{{ __('#') }}</x-table.th>
+                    <x-table.th sort="sort_order" default align="right" class="w-16">{{ __('#') }}</x-table.th>
                     <th class="w-12"></th>
-                    <x-table.th sort type="string">{{ __('Bezeichnung') }}</x-table.th>
-                    <x-table.th sort type="string">{{ __('URL') }}</x-table.th>
+                    <x-table.th sort="label">{{ __('Bezeichnung') }}</x-table.th>
+                    <x-table.th sort="url">{{ __('URL') }}</x-table.th>
                     <th class="w-32 text-right">{{ __('Aktion') }}</th>
                 </tr>
             </x-slot:head>
-            <tbody>
                 @forelse ($bookmarks as $bookmark)
                     <tr class="hover">
                         <td class="text-right tabular-nums">{{ $bookmark->sort_order }}</td>
@@ -72,7 +74,8 @@
                         icon="bookmark"
                         :title="__('Noch keine Lesezeichen angelegt')" compact />
                 @endforelse
-            </tbody>
         </x-table>
+
+        <x-pagination :paginator="$bookmarks" standing />
     </x-index-page>
 @endsection

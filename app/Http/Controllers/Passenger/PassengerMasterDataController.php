@@ -34,8 +34,6 @@ use Illuminate\View\View;
 class PassengerMasterDataController extends Controller {
     use ResolvesCurrentOrganization;
 
-    public function __construct(private readonly PassengerRideService $rides) {}
-
     public function index(Request $request): View {
         Gate::authorize('viewAny', PassengerFareTariff::class);
         $this->passengerOrganization();
@@ -295,7 +293,7 @@ class PassengerMasterDataController extends Controller {
     /** Branchenprofil-Gate: 404 ohne installiertes Profil (Muster Recipes). */
     private function passengerOrganization(): Organization {
         $organization = $this->currentOrganization();
-        abort_unless($this->rides->isPassengerProfileActive($organization), 404);
+        abort_unless($organization->hasBranchProfile(PassengerRideService::PROFILE_CODE), 404);
 
         return $organization;
     }

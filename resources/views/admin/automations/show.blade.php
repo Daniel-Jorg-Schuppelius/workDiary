@@ -53,8 +53,8 @@
                     <td class="whitespace-nowrap text-sm" data-sort-value="{{ $run->ran_at?->orgTz()->format('Y-m-d H:i:s') ?? '' }}">{{ $run->ran_at?->orgTz()->format('d.m.Y H:i:s') }}</td>
                     <td class="text-xs font-mono">{{ \App\Support\EntityType::label($run->subject_type) }}#{{ $run->subject_id }}</td>
                     <td>
-                        @php($cls = match($run->decision) { 'matched' => 'badge-success', 'error' => 'badge-error', default => 'badge-ghost' })
-                        <span class="badge {{ $cls }} badge-sm">{{ $run->decision }}</span>
+                        @php($tone = match($run->decision) { 'matched' => 'success', 'error' => 'error', default => 'ghost' })
+                        <x-status-badge :tone="$tone">{{ $run->decision }}</x-status-badge>
                     </td>
                     <td><pre class="text-[10px] overflow-x-auto max-w-md">{{ json_encode($run->log, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) }}</pre></td>
                 </tr>

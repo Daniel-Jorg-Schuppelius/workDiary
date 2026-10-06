@@ -141,7 +141,7 @@
                                 @endif
                             </div>
                         @empty
-                            <p class="text-sm text-muted">{{ __('accounting.fixed_assets.special.none') }}</p>
+                            <x-empty-state icon="trending_down" :title="__('accounting.fixed_assets.special.none')" compact />
                         @endforelse
                     </x-card>
                 @endif

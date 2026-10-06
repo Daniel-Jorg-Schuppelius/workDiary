@@ -14,7 +14,9 @@ namespace App\Plugins\Msgraph\Console;
 
 use App\Models\Platform\Organization;
 use App\Plugins\Msgraph\Models\MsgraphTaskConnection;
+use App\Plugins\Msgraph\MsgraphPlugin;
 use App\Plugins\Msgraph\Services\MsgraphTodoSyncService;
+use App\Plugins\Support\Console\ChecksPluginSwitch;
 use Illuminate\Console\Command;
 
 /**
@@ -23,6 +25,8 @@ use Illuminate\Console\Command;
  * Konflikte in die Integrations-Inbox, nie Last-write-wins.
  */
 class MsgraphTodoSyncCommand extends Command {
+    use ChecksPluginSwitch;
+
     protected $signature = 'msgraph:todo-sync
         {--organization= : ID einer einzelnen Organisation, sonst alle}';
 
@@ -38,6 +42,9 @@ class MsgraphTodoSyncCommand extends Command {
 
         $totals = MsgraphTodoSyncService::emptyCounters();
         foreach (Organization::query()->whereIn('id', $organizationIds)->get() as $organization) {
+            if (! $this->pluginEnabledFor(MsgraphPlugin::ID, (int) $organization->id)) {
+                continue;
+            }
             $result = $sync->syncOrganization($organization);
             foreach ($totals as $key => $value) {
                 $totals[$key] = $value + $result[$key];

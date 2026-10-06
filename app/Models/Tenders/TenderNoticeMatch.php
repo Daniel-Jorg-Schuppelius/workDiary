@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Tenders;
 
+use App\Enums\Tenders\TenderNoticeMatchState;
 use App\Models\Applications\ApplicationOpportunity;
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Model;
@@ -28,22 +29,23 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $organization_id
  * @property int $tender_notice_id
  * @property int|null $tender_filter_profile_id
- * @property string $state
+ * @property TenderNoticeMatchState $state
  * @property int|null $application_opportunity_id
  */
 class TenderNoticeMatch extends Model {
     use BelongsToOrganization;
     use HasSqid;
 
-    public const STATE_NEW = 'new';
-    public const STATE_MUTED = 'muted';
-    public const STATE_CONVERTED = 'converted';
-
     protected $table = 'tender_notice_matches';
 
     protected $fillable = [
         'organization_id', 'tender_notice_id', 'tender_filter_profile_id',
         'state', 'application_opportunity_id',
+    ];
+
+    /** @var array<string, string> */
+    protected $casts = [
+        'state' => TenderNoticeMatchState::class,
     ];
 
     /** @return BelongsTo<TenderNotice, $this> */

@@ -19,17 +19,7 @@
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="__('reporting.allocations.subtitle')">
             <x-slot:actions>
-                <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
-                            :href="route('reports.allocations', ['export' => 'pdf'])"
-                            show-label>PDF</x-icon-btn>
-                <x-action-menu icon="download" tone="outline" :label="__('Export')">
-                    <x-icon-btn icon="download" tone="outline" size="sm"
-                                :href="route('reports.allocations', ['export' => 'csv'])"
-                                show-label>CSV</x-icon-btn>
-                    <x-icon-btn icon="table_view" tone="outline" size="sm"
-                                :href="route('reports.allocations', ['export' => 'xlsx'])"
-                                show-label>Excel</x-icon-btn>
-                </x-action-menu>
+                <x-report-export :url="fn (string $format) => route('reports.allocations', ['export' => $format])" />
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>

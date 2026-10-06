@@ -12,12 +12,14 @@ declare(strict_types=1);
 
 namespace App\Services\Sales\Mcp;
 
+use App\Enums\Sales\QuoteStatus;
 use App\Models\Customer\Customer;
 use App\Models\Platform\{Organization, User};
 use App\Models\Sales\{Quote, QuoteItem};
 use App\Services\Mcp\GuardedTool;
 use App\Support\Sqid;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
+use Illuminate\Validation\Rule;
 use Laravel\Mcp\{Request, Response, ResponseFactory};
 use Laravel\Mcp\Server\Attributes\{Description, Name};
 use Laravel\Mcp\Server\Tools\Annotations\{IsIdempotent, IsReadOnly};
@@ -31,7 +33,7 @@ final class QuotesTool extends GuardedTool {
     public function schema(JsonSchema $schema): array {
         return [
             'id' => $schema->string()->description('Kennung eines Angebots für die Detailansicht.'),
-            'status' => $schema->string()->enum(Quote::STATUSES)->description('Status des Angebots.'),
+            'status' => $schema->string()->enum(QuoteStatus::values())->description('Status des Angebots.'),
             'customer' => $schema->string()->description('Kennung eines Kunden.'),
             'limit' => $schema->integer()->min(1)->max(50)->description('Höchstzahl der Treffer, Standard 20.'),
         ];
@@ -48,7 +50,7 @@ final class QuotesTool extends GuardedTool {
     protected function respond(Request $request, User $user, Organization $organization): Response|ResponseFactory {
         $data = $request->validate([
             'id' => ['nullable', 'string', 'max:64'],
-            'status' => ['nullable', 'string', 'in:' . implode(',', Quote::STATUSES)],
+            'status' => ['nullable', 'string', Rule::enum(QuoteStatus::class)],
             'customer' => ['nullable', 'string', 'max:64'],
             'limit' => ['nullable', 'integer', 'min:1', 'max:50'],
         ]);
@@ -92,7 +94,7 @@ final class QuotesTool extends GuardedTool {
             'id' => $quote->sqid,
             'number' => $quote->number,
             'version' => $quote->version,
-            'status' => $quote->status,
+            'status' => $quote->status->value,
             'customer' => $quote->customer !== null ? ['id' => $quote->customer->sqid, 'name' => $quote->customer->name] : null,
             'valid_until' => $quote->valid_until?->toDateString(),
             'subtotal' => $quote->subtotal,

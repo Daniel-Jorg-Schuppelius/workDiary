@@ -20,8 +20,8 @@
                         back-route="asset-finance.index" :back-label="__('Zur Liste')">
             <div class="flex flex-wrap items-center gap-2 text-sm">
                 <x-status-badge size="md" outline>{{ $contract->status->label() }}</x-status-badge>
-                <span class="badge badge-outline">{{ $contract->kind->label() }}</span>
-                <span class="badge badge-outline">{{ $contract->starts_on->fdate() }} – {{ optional($contract->ends_on)->fdate() ?? __('unbefristet') }}</span>
+                <x-status-badge tone="plain" size="md" outline>{{ $contract->kind->label() }}</x-status-badge>
+                <x-status-badge tone="plain" size="md" outline>{{ $contract->starts_on->fdate() }} – {{ optional($contract->ends_on)->fdate() ?? __('unbefristet') }}</x-status-badge>
                 @if ($investmentLink !== null)
                     <a class="badge badge-info badge-outline" href="{{ route('investments.show', $investmentLink->investmentCase) }}">{{ __('Investition: :title', ['title' => $investmentLink->investmentCase->title ?? '—']) }}</a>
                 @endif
@@ -111,7 +111,7 @@
                             <x-input-field name="label" :label="__('Bezeichnung')" required />
                             <x-input-field name="amount" type="number" step="0.01" :label="__('Betrag')" />
                             <x-input-field name="unit" :label="__('Einheit')" />
-                            <button type="submit" class="btn btn-sm">{{ __('Ergänzen') }}</button>
+                            <x-button type="submit" tone="plain">{{ __('Ergänzen') }}</x-button>
                         </form>
                     </details>
                 @endif
@@ -174,16 +174,16 @@
                         <td>{{ $deadline->kind->label() }}</td>
                         <td>
                             {{ $deadline->due_on->fdate() }}
-                            @if ($deadline->status === 'open' && $deadline->isDueForWarning())
-                                <span class="badge badge-warning badge-outline badge-sm">{{ __('Vorwarnzeit läuft') }}</span>
+                            @if ($deadline->isDueForWarning())
+                                <x-status-badge tone="warning" outline>{{ __('Vorwarnzeit läuft') }}</x-status-badge>
                             @endif
                         </td>
-                        <td><x-status-badge size="md" outline>{{ __("values.{$deadline->status}") }}</x-status-badge></td>
+                        <td><x-status-badge size="md" outline>{{ $deadline->status->label() }}</x-status-badge></td>
                         <td class="text-right">
                             @can('update', $contract)
-                                @if ($deadline->status === 'open')
+                                @if ($deadline->status === \App\Enums\AssetFinance\AssetFinanceDeadlineStatus::Open)
                                     <form method="POST" action="{{ route('asset-finance.deadlines.complete', $deadline) }}" class="inline">@csrf
-                                        <button type="submit" class="btn btn-xs">{{ __('Erledigt') }}</button>
+                                        <x-button type="submit" tone="plain" size="xs">{{ __('Erledigt') }}</x-button>
                                     </form>
                                 @endif
                             @endcan
@@ -209,7 +209,7 @@
                             <option value="{{ $u->sqid }}">{{ $u->name }}</option>
                         @endforeach
                     </x-select-field>
-                    <button type="submit" class="btn btn-sm">{{ __('Frist eintragen') }}</button>
+                    <x-button type="submit" tone="plain">{{ __('Frist eintragen') }}</x-button>
                 </form>
             @endcan
         </x-card>
@@ -225,27 +225,33 @@
                 </div>
             @endif
             <x-table bare>
-                <x-slot:head><tr><th>{{ __('Fällig') }}</th><th class="text-right">{{ __('Betrag') }}</th><th>{{ __('Status') }}</th><th>{{ __('Eingangsrechnung') }}</th></tr></x-slot:head>
+                <x-slot:head><tr><th>{{ __('Fällig') }}</th><th class="text-right">{{ __('Betrag') }}</th><th>{{ __('Status') }}</th><th>{{ __('Eingangsrechnung') }}</th><th class="text-right"></th></tr></x-slot:head>
                 @forelse ($contract->rateSchedules as $schedule)
                     <tr>
                         <td>{{ $schedule->due_on->fdate() }}</td>
                         <td class="text-right font-mono">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $schedule->amount, 2, withThousandsSeparator: true) }} €</td>
-                        <td><x-status-badge size="md" outline>{{ __("values.{$schedule->status}") }}</x-status-badge></td>
+                        <td><x-status-badge size="md" outline>{{ $schedule->status->label() }}</x-status-badge></td>
                         <td>
                             @if ($schedule->incomingEInvoice !== null)
-                                <span class="font-mono text-sm">#{{ $schedule->incomingEInvoice->id }}</span>
+                                <span class="font-mono text-sm">{{ $schedule->incomingEInvoice->invoice_number ?? $schedule->incomingEInvoice->sqid }}</span>
                             @else
                                 —
                             @endif
                         </td>
+                        <td class="text-right">
+                            <x-icon-btn icon="link" size="xs" tone="ghost"
+                                        data-entry-modal-trigger
+                                        :href="route('asset-finance.schedules.link-dialog', $schedule)"
+                                        :label="__('Eingangsrechnung referenzieren')" />
+                        </td>
                     </tr>
                 @empty
-                    <x-table.empty :colspan="4" :title="__('Ratenplan entsteht bei der Aktivierung (Rate + Laufzeit).')" compact />
+                    <x-table.empty :colspan="5" :title="__('Ratenplan entsteht bei der Aktivierung (Rate + Laufzeit).')" compact />
                 @endforelse
             </x-table>
             <div class="border-t border-base-300 p-3">
                 <form method="POST" action="{{ route('asset-finance.costs.snapshot', $contract) }}">@csrf
-                    <button type="submit" class="btn btn-sm">{{ __('Soll-/Ist-Snapshot einfrieren') }}</button>
+                    <x-button type="submit" tone="plain">{{ __('Soll-/Ist-Snapshot einfrieren') }}</x-button>
                 </form>
             </div>
         </x-card>
@@ -268,7 +274,7 @@
                                     <form method="POST" action="{{ route('asset-finance.limits.record', $limit) }}" class="mt-2 flex items-end gap-2 rounded-box border border-base-300 p-3">
                                         @csrf
                                         <x-input-field name="actual_value" type="number" step="0.01" min="0" :label="__('Wert (leer = letzter Zählerstand)')" />
-                                        <button type="submit" class="btn btn-sm">{{ __('Erfassen') }}</button>
+                                        <x-button type="submit" tone="plain">{{ __('Erfassen') }}</x-button>
                                     </form>
                                 </details>
                             @endcan
@@ -292,7 +298,7 @@
                         <option value="yearly">{{ __('pro Jahr') }}</option>
                     </x-select-field>
                     <x-input-field name="overrun_fee_per_unit" type="number" step="0.0001" min="0" :label="__('Mehrkosten je Einheit')" />
-                    <button type="submit" class="btn btn-sm">{{ __('Limit hinterlegen') }}</button>
+                    <x-button type="submit" tone="plain">{{ __('Limit hinterlegen') }}</x-button>
                 </form>
             @endcan
         </x-card>
@@ -305,7 +311,7 @@
                         <td>{{ __("values.{$option->kind}") }}</td>
                         <td>
                             @if ($option->exercised_at !== null)
-                                <span class="badge badge-success badge-outline">{{ __('ausgeübt am :date', ['date' => $option->exercised_at->fdate()]) }}</span>
+                                <x-status-badge tone="success" size="md" outline>{{ __('ausgeübt am :date', ['date' => $option->exercised_at->fdate()]) }}</x-status-badge>
                             @else
                                 {{ optional($option->exercisable_from)->fdate() ?? '—' }} – {{ optional($option->exercisable_until)->fdate() ?? '—' }}
                             @endif
@@ -314,7 +320,7 @@
                         <td class="text-right">
                             @if ($canFinance && $option->isExercisable())
                                 <form method="POST" action="{{ route('asset-finance.options.exercise', $option) }}" class="inline">@csrf
-                                    <button type="submit" class="btn btn-xs btn-primary">{{ __('Ausüben') }}</button>
+                                    <x-button type="submit" size="xs">{{ __('Ausüben') }}</x-button>
                                 </form>
                             @endif
                         </td>
@@ -335,7 +341,7 @@
                                   from-name="exercisable_from" to-name="exercisable_until" type="date"
                                   :from-label="__('Ausübbar ab')" :to-label="__('Ausübbar bis')" />
                     <x-input-field name="amount" type="number" step="0.01" min="0" :label="__('Betrag')" />
-                    <button type="submit" class="btn btn-sm">{{ __('Option hinterlegen') }}</button>
+                    <x-button type="submit" tone="plain">{{ __('Option hinterlegen') }}</x-button>
                 </form>
             @endif
 
@@ -345,13 +351,13 @@
                     @forelse ($contract->endProcesses as $endProcess)
                         <tr>
                             <td>{{ $endProcess->kind->label() }}</td>
-                            <td><x-status-badge size="md" outline>{{ __("values.{$endProcess->status}") }}</x-status-badge></td>
+                            <td><x-status-badge size="md" outline>{{ $endProcess->status->label() }}</x-status-badge></td>
                             <td class="text-right font-mono">{{ $endProcess->follow_up_amount !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $endProcess->follow_up_amount, 2, withThousandsSeparator: true) . ' €' : '—' }}</td>
                             <td class="text-right">
                                 @can('update', $contract)
-                                    @if ($endProcess->status !== 'completed')
+                                    @if ($endProcess->status !== \App\Enums\AssetFinance\AssetFinanceEndProcessStatus::Completed)
                                         <form method="POST" action="{{ route('asset-finance.ends.complete', $endProcess) }}" class="inline">@csrf
-                                            <button type="submit" class="btn btn-xs btn-primary">{{ __('Abschließen') }}</button>
+                                            <x-button type="submit" size="xs">{{ __('Abschließen') }}</x-button>
                                         </form>
                                     @endif
                                 @endcan
@@ -379,7 +385,7 @@
                                 <x-textarea-field name="damages" :label="__('Schäden')" rows="2"></x-textarea-field>
                                 <x-input-field name="follow_up_amount" type="number" step="0.01" :label="__('Nachberechnung/Erstattung (Referenz)')" />
                                 <div class="flex items-end">
-                                    <button type="submit" class="btn btn-sm btn-primary">{{ __('Ende-Prozess starten') }}</button>
+                                    <x-button type="submit">{{ __('Ende-Prozess starten') }}</x-button>
                                 </div>
                             </form>
                         </details>

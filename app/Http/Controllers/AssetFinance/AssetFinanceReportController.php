@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\AssetFinance;
 
+use App\Enums\AssetFinance\{AssetFinanceDeadlineStatus, AssetFinanceRateScheduleStatus};
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\AssetFinance\{AssetFinanceContract, AssetFinanceCostSnapshot, AssetFinanceDeadline, AssetFinanceRateSchedule, AssetFinanceReportSnapshot, AssetFinanceUsageLimit};
@@ -96,7 +97,7 @@ class AssetFinanceReportController extends Controller {
         )->values();
 
         $plannedTotal = round((float) AssetFinanceRateSchedule::query()->sum('amount'), 2);
-        $referencedTotal = round((float) AssetFinanceRateSchedule::query()->where('status', 'paid')->sum('amount'), 2);
+        $referencedTotal = round((float) AssetFinanceRateSchedule::query()->where('status', AssetFinanceRateScheduleStatus::Paid)->sum('amount'), 2);
 
         return [
             'contractCount' => $contracts->count(),
@@ -108,7 +109,7 @@ class AssetFinanceReportController extends Controller {
                 'status' => $c->status->value,
             ])->values()->all(),
             'openDeadlines' => AssetFinanceDeadline::query()->open()->count(),
-            'missedDeadlines' => AssetFinanceDeadline::query()->where('status', 'missed')->count(),
+            'missedDeadlines' => AssetFinanceDeadline::query()->where('status', AssetFinanceDeadlineStatus::Missed)->count(),
             'plannedTotal' => $plannedTotal,
             'referencedTotal' => $referencedTotal,
             'openTotal' => round($plannedTotal - $referencedTotal, 2),

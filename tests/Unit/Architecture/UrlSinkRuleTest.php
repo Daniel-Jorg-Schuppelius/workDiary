@@ -33,7 +33,6 @@ class UrlSinkRuleTest extends TestCase {
     private const ALLOW_LIST = [
         'resources/js/lib/html.js' => 'Definiert sameOriginPath() selbst.',
         'resources/js/layout.js' => 'Folgt der href-Eigenschaft eines Ankers der Seite nach dem Bestätigungsdialog — dieselbe Navigation, die der Klick ohnehin ausgelöst hätte.',
-        'resources/js/sw.js' => 'Service-Worker ohne DOM-Kontext.',
     ];
 
     private const WINDOW = 10;

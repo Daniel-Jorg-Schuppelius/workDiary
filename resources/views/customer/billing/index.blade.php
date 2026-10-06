@@ -44,7 +44,7 @@
                 <td class="text-right tabular-nums font-medium">{{ $money($statement->balance) }}</td>
                 <td>
                     @unless ($statement->locked)
-                        <span class="badge badge-ghost badge-sm">{{ __('customer-billing.provisional') }}</span>
+                        <x-status-badge>{{ __('customer-billing.provisional') }}</x-status-badge>
                     @endunless
                 </td>
             </tr>
@@ -52,4 +52,6 @@
             <x-table.empty :colspan="7" :title="__('customer-billing.no_statements')" />
         @endforelse
     </x-table>
+
+    <x-pagination :paginator="$statements" standing />
 @endsection

@@ -11,6 +11,7 @@
 namespace Tests\Feature\Finance;
 
 use App\Enums\Finance\PaymentRunStatus;
+use App\Enums\Invoicing\IncomingEInvoiceStatus;
 use App\Models\Document\Document;
 use App\Models\Finance\{BankAccount, PaymentRun};
 use App\Models\Invoicing\IncomingEInvoice;
@@ -61,7 +62,7 @@ class PaymentRunTest extends TestCase {
             'sha256' => hash('sha256', uniqid('inv', true)),
             'source' => 'upload',
             'received_at' => now(),
-            'status' => IncomingEInvoice::STATUS_PAYMENT_RELEASED,
+            'status' => IncomingEInvoiceStatus::PaymentReleased,
             'invoice_number' => 'RE-' . fake()->unique()->numberBetween(1000, 9999),
             'seller_name' => 'Lieferant GmbH',
             'issue_date' => CarbonImmutable::today()->subDays(3)->toDateString(),
@@ -141,7 +142,7 @@ class PaymentRunTest extends TestCase {
 
     public function test_proposal_lists_released_invoices_only(): void {
         $this->invoice();
-        $this->invoice(['status' => IncomingEInvoice::STATUS_APPROVED]);
+        $this->invoice(['status' => IncomingEInvoiceStatus::Approved]);
 
         $this->assertCount(1, app(PaymentProposalService::class)->proposals());
     }
@@ -245,6 +246,19 @@ class PaymentRunTest extends TestCase {
         // Eine Rechnung im Lauf darf nicht in einen zweiten geraten.
         $this->assertSame($run->id, $first->fresh()?->paid_in_run_id);
         $this->assertCount(0, app(PaymentProposalService::class)->proposals());
+    }
+
+    /** Sicherheitsaudit 2026-10-04, li-2: nur zur Zahlung freigegebene Rechnungen kommen in den Lauf — auch bei frei gewählten IDs. */
+    public function test_run_takes_only_invoices_released_for_payment(): void {
+        $released = $this->invoice();
+        $rejected = $this->invoice(['status' => IncomingEInvoiceStatus::Rejected]);
+        $received = $this->invoice(['status' => IncomingEInvoiceStatus::Received]);
+
+        $run = $this->service()->createFromProposals($this->account, $this->admin, [$released->id, $rejected->id, $received->id]);
+
+        $this->assertSame([$released->id], $run->items()->pluck('incoming_einvoice_id')->all());
+        $this->assertNull($rejected->fresh()?->paid_in_run_id);
+        $this->assertNull($received->fresh()?->paid_in_run_id);
     }
 
     public function test_blocked_position_is_not_taken_into_the_run(): void {

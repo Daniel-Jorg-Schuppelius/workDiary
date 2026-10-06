@@ -20,8 +20,7 @@
 @endphp
 
 @section('nav-title', __('Urlaubskonto'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('Jahresansprüche, Übertrag und Restsalden je Mitarbeiter.')"
@@ -41,7 +40,7 @@
     </x-filter-bar>
 
     @if ($usersWithoutEntitlement->isNotEmpty())
-        <div class="alert alert-warning text-sm flex-wrap">
+        <div role="alert" class="alert alert-warning text-sm flex-wrap">
             <span>{{ __(':count Mitarbeiter ohne Anspruch für :year.', ['count' => $usersWithoutEntitlement->count(), 'year' => $year]) }}</span>
             <form method="POST" action="{{ route('vacation-entitlements.bulk') }}" class="flex items-center gap-2">
                 @csrf
@@ -49,7 +48,7 @@
                 <label class="text-xs" for="ve-bulk-days">{{ __('Standardanspruch (Tage)') }}</label>
                 <input id="ve-bulk-days" type="number" name="default_days" min="0" max="365" step="0.5"
                        class="input input-bordered input-sm w-24" value="{{ $defaultDays }}">
-                <button type="submit" class="btn btn-sm btn-primary">{{ __('Fehlende anlegen') }}</button>
+                <x-button type="submit">{{ __('Fehlende anlegen') }}</x-button>
             </form>
         </div>
     @endif

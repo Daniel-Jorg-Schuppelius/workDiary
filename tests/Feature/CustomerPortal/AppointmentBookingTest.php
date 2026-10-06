@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\CustomerPortal;
 
+use App\Enums\Calendar\AppointmentRequestStatus;
 use App\Models\Calendar\AppointmentRequest;
 use App\Models\Customer\Customer;
 use App\Models\Diary\DiaryEntry;
@@ -80,7 +81,7 @@ final class AppointmentBookingTest extends TestCase {
     public function test_request_alone_creates_no_diary_entry(): void {
         $request = $this->request();
 
-        $this->assertSame(AppointmentRequest::STATUS_REQUESTED, $request->status);
+        $this->assertSame(AppointmentRequestStatus::Requested, $request->status);
         $this->assertSame(0, DiaryEntry::query()->count());
     }
 
@@ -92,7 +93,7 @@ final class AppointmentBookingTest extends TestCase {
 
         $this->assertSame(1, DiaryEntry::query()->count());
         $fresh = $request->fresh();
-        $this->assertSame(AppointmentRequest::STATUS_CONFIRMED, $fresh?->status);
+        $this->assertSame(AppointmentRequestStatus::Confirmed, $fresh?->status);
         $this->assertSame($entry->id, $fresh?->diary_entry_id);
         $this->assertSame($this->admin->id, $fresh?->decided_by);
     }
@@ -118,7 +119,7 @@ final class AppointmentBookingTest extends TestCase {
 
         // 30 h Abstand, 24 h Frist → noch stornierbar.
         app(AppointmentRequestService::class)->cancelFromPortal($request, $this->portalUser);
-        $this->assertSame(AppointmentRequest::STATUS_CANCELED, $request->fresh()?->status);
+        $this->assertSame(AppointmentRequestStatus::Canceled, $request->fresh()?->status);
 
         // Innerhalb der Frist: abgelehnt.
         $late = $this->request(CarbonImmutable::now()->addHours(25));
@@ -156,6 +157,48 @@ final class AppointmentBookingTest extends TestCase {
             ->assertSee('Wartungstermin');
     }
 
+    /** Portal-Liste: Abzeichen, Ablehnungsgrund und Stornieren-Knopf folgen dem Status-Enum, nicht dem Rohwert. */
+    public function test_portal_list_follows_the_status_enum(): void {
+        $this->travelTo(CarbonImmutable::parse('2030-07-01 08:00:00'));
+        \Illuminate\Support\Facades\Mail::fake();
+
+        $open = $this->request(CarbonImmutable::parse('2030-07-10 09:00:00'));
+        $declined = $this->request(CarbonImmutable::parse('2030-07-11 09:00:00'));
+        app(AppointmentRequestService::class)->decline($declined, $this->admin, 'Kein Personal an dem Tag');
+
+        $response = $this->actingAs($this->portalUser, 'customer')
+            ->get(route('customer.appointments.index'))
+            ->assertOk();
+
+        $response->assertSee(__('angefragt'))->assertSee(__('abgelehnt'));
+        $response->assertSee('Kein Personal an dem Tag');
+        $response->assertSee(route('customer.appointments.cancel', $open), false);
+        $response->assertDontSee(route('customer.appointments.cancel', $declined), false);
+    }
+
+    /** Konsolidierungs-Audit 2026-10 (k4-14): bisher zeigte das Portal still nur die 20 jüngsten Anfragen. */
+    public function test_portal_list_pages_through_all_own_requests(): void {
+        \Illuminate\Support\Facades\Mail::fake();
+        $this->travelTo(CarbonImmutable::parse('2030-07-01 08:00:00'));
+        $requests = [];
+        foreach (range(1, 26) as $i) {
+            $requests[] = $this->request(CarbonImmutable::parse('2030-07-10 09:00:00')->addDays($i));
+        }
+        $colleague = User::factory()->kunde((int) $this->customer->id, (int) $this->organization->id)->create();
+        app(AppointmentRequestService::class)->requestFromPortal($this->service, $this->customer, $colleague, CarbonImmutable::parse('2030-09-10 09:00:00'));
+
+        $first = $this->actingAs($this->portalUser, 'customer')->get(route('customer.appointments.index'))->assertOk();
+        $paginator = $first->viewData('requests');
+        $this->assertSame(26, $paginator->total());
+        $this->assertCount(25, $paginator->items());
+        $this->assertSame($requests[25]->id, $paginator->items()[0]->id);
+
+        // Die gewählte Leistung bleibt beim Blättern erhalten.
+        $second = $this->get(route('customer.appointments.index', ['page' => 2, 'service' => $this->service->sqid]))->assertOk();
+        $this->assertSame([$requests[0]->id], array_map(static fn (AppointmentRequest $r): int => $r->id, $second->viewData('requests')->items()));
+        $this->assertStringContainsString('service=' . $this->service->sqid, (string) $second->viewData('requests')->previousPageUrl());
+    }
+
     /** Die Dispositions-Inbox zeigt die Anfrage; Ablehnen trägt den Grund. */
     public function test_inbox_shows_and_declines_with_reason(): void {
         $request = $this->request();
@@ -170,7 +213,7 @@ final class AppointmentBookingTest extends TestCase {
             ->assertRedirect();
 
         $fresh = $request->fresh();
-        $this->assertSame(AppointmentRequest::STATUS_DECLINED, $fresh?->status);
+        $this->assertSame(AppointmentRequestStatus::Declined, $fresh?->status);
         $this->assertSame('Kein Personal an dem Tag', $fresh?->decline_reason);
 
         $this->actingAs($this->admin)

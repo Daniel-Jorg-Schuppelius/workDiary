@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Applications;
 
+use App\Enums\Applications\ApplicationRequirementStatus;
 use App\Models\Applications\ApplicationOpportunity;
 use App\Models\Gaeb\BoqItem;
 use App\Support\{CarbonFmt, Tz};
@@ -56,7 +57,7 @@ final class TenderSubmissionPreflight {
 
         $openRequired = $opportunity->requirements()
             ->where('required', true)
-            ->whereNotIn('status', ['done', 'not_applicable'])
+            ->whereNotIn('status', ApplicationRequirementStatus::settled())
             ->count();
         if ($openRequired > 0) {
             $findings[] = $this->blocker('requirements_open', __(':count Pflicht-Unterlagen sind noch offen.', ['count' => $openRequired]));

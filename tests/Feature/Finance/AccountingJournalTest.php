@@ -332,6 +332,40 @@ class AccountingJournalTest extends TestCase {
         $this->assertSame('Bank (neu benannt)', $this->bank->refresh()->name);
     }
 
+    /** Der Import hatte Route und Dienst, aber keinen Einstieg im Kontenplan. */
+    public function test_chart_of_accounts_is_imported_from_the_accounts_page(): void {
+        $this->actingAs($this->admin)->get(route('finance.accounting.accounts.index'))->assertOk()
+            ->assertSee('data-open-dialog="accounts-import"', false)
+            ->assertSee(route('finance.accounting.accounts.import'), false)
+            ->assertSee('enctype="multipart/form-data"', false);
+
+        $csv = implode("\r\n", [
+            'number;name;type;normal_balance;is_open_item;datev_account',
+            '1000;Kasse;asset;debit;0;1000',
+            '1200;Bank (neu benannt);asset;debit;0;1200',
+            ';Ohne Nummer;asset;debit;0;',
+        ]) . "\r\n";
+
+        $this->actingAs($this->admin)->from(route('finance.accounting.accounts.index'))
+            ->post(route('finance.accounting.accounts.import'), [
+                'file' => \Illuminate\Http\UploadedFile::fake()->createWithContent('kontenplan.csv', $csv),
+            ])
+            ->assertRedirect(route('finance.accounting.accounts.index'))
+            ->assertSessionHas('status', __('accounting.ledger.flash.imported', ['imported' => 1, 'updated' => 1, 'errors' => 1]));
+
+        $this->assertSame('Bank (neu benannt)', $this->bank->refresh()->name);
+        $this->assertDatabaseHas('accounting_accounts', ['organization_id' => $this->org->id, 'number' => '1000', 'name' => 'Kasse']);
+
+        // Nur lesend: weder Knopf noch Import.
+        $reader = User::factory()->create(['organization_id' => $this->org->id]);
+        $reader->givePermissionTo(\App\Enums\User\Permission::AccountingLedgerView->value);
+        $this->actingAs($reader)->get(route('finance.accounting.accounts.index'))->assertOk()
+            ->assertDontSee('accounts-import', false);
+        $this->actingAs($reader)->post(route('finance.accounting.accounts.import'), [
+            'file' => \Illuminate\Http\UploadedFile::fake()->createWithContent('kontenplan.csv', $csv),
+        ])->assertForbidden();
+    }
+
     public function test_journal_pages_require_permissions(): void {
         $member = User::factory()->create(['organization_id' => $this->org->id]);
         $entry = $this->journal()->postDirect($this->org, $this->entryData(), $this->admin);

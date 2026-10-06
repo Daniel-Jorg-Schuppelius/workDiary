@@ -29,13 +29,13 @@
     @else
         <div class="space-y-3">
             @foreach ($queries as $query)
-                <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-sm">
+                <x-card>
                     <div class="flex flex-wrap items-start justify-between gap-2">
                         <div class="min-w-0">
                             <div class="flex items-center gap-2">
-                                <span class="badge badge-sm {{ $query->status === \App\Enums\Customer\CustomerQueryStatus::Open ? 'badge-warning' : 'badge-ghost' }}">
+                                <x-status-badge :tone="$query->status === \App\Enums\Customer\CustomerQueryStatus::Open ? 'warning' : 'ghost'">
                                     {{ $query->status->label() }}
-                                </span>
+                                </x-status-badge>
                                 <span class="text-xs text-muted">
                                     {{ $query->asker_name ?: __('protocol.signature.customer') }}
                                     · {{ $query->created_at?->fdatetime() }}
@@ -66,7 +66,7 @@
                                 <ul class="mt-1 flex flex-wrap gap-3 text-xs">
                                     @foreach ($query->attachments as $attachment)
                                         <li>
-                                            <a class="link link-hover inline-flex items-center gap-1" href="{{ URL::signedRoute('attachments.download', $attachment) }}">
+                                            <a class="link link-hover inline-flex items-center gap-1" href="{{ \App\Http\Controllers\Attachments\AttachmentController::downloadUrl($attachment) }}">
                                                 <x-icon name="attach_file" class="text-sm" />{{ $attachment->original_name }}
                                             </a>
                                             <span class="text-muted">({{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($attachment->size / 1024, 0, withThousandsSeparator: true) }} KB)</span>
@@ -123,7 +123,7 @@
                             </form>
                         </div>
                     @endif
-                </div>
+                </x-card>
             @endforeach
         </div>
 

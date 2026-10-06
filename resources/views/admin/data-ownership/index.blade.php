@@ -13,43 +13,36 @@
 
 @section('title', __('Datenführerschaft'))
 @section('nav-title', __('Datenführerschaft'))
+@include('partials.page-fill')
 
 @section('content')
-<x-page-shell>
-    <x-slot:toolbar>
-        <x-page-toolbar>
-            <x-slot:subtitle>{{ __('Je Datenbereich führt genau ein System. Bei Plugin-Führung landen Schreibversuche anderer Plugins als Inbox-Konflikt statt als Änderung.') }}</x-slot:subtitle>
-        </x-page-toolbar>
-    </x-slot:toolbar>
-
-    <x-card>
-        <x-table bare>
-            <x-slot:head>
-                <tr>
-                    <th>{{ __('Datenbereich') }}</th>
-                    <th>{{ __('Führendes System') }}</th>
-                    <th></th>
-                </tr>
-            </x-slot:head>
-            @foreach ($domains as $domain)
-                <tr>
-                    <td class="font-medium">{{ $domain->label() }}</td>
-                    <td colspan="2">
-                        <form method="POST" action="{{ route('admin.data-ownership.update') }}" class="flex items-center gap-2">
-                            @csrf
-                            <input type="hidden" name="domain" value="{{ $domain->value }}">
-                            <select name="owner" class="select select-sm select-bordered max-w-64">
-                                <option value="native" @selected(($matrix[$domain->value] ?? 'native') === 'native')>{{ __('WorkDiary (nativ)') }}</option>
-                                @foreach ($plugins as $plugin)
-                                    <option value="{{ $plugin['id'] }}" @selected(($matrix[$domain->value] ?? '') === $plugin['id'])>{{ $plugin['name'] }}</option>
-                                @endforeach
-                            </select>
-                            <x-icon-btn icon="check" tone="ghost" size="sm" type="submit" :label="__('Speichern')" />
-                        </form>
-                    </td>
-                </tr>
-            @endforeach
-        </x-table>
-    </x-card>
-</x-page-shell>
+<x-index-page overflow="clip" :subtitle="__('Je Datenbereich führt genau ein System. Bei Plugin-Führung landen Schreibversuche anderer Plugins als Inbox-Konflikt statt als Änderung.')">
+    <x-table scroll="flex">
+        <x-slot:head>
+            <tr>
+                <th>{{ __('Datenbereich') }}</th>
+                <th>{{ __('Führendes System') }}</th>
+                <th></th>
+            </tr>
+        </x-slot:head>
+        @foreach ($domains as $domain)
+            <tr>
+                <td class="font-medium">{{ $domain->label() }}</td>
+                <td colspan="2">
+                    <form method="POST" action="{{ route('admin.data-ownership.update') }}" class="flex items-center gap-2">
+                        @csrf
+                        <input type="hidden" name="domain" value="{{ $domain->value }}">
+                        <select name="owner" class="select select-sm select-bordered max-w-64">
+                            <option value="native" @selected(($matrix[$domain->value] ?? 'native') === 'native')>{{ __('WorkDiary (nativ)') }}</option>
+                            @foreach ($plugins as $plugin)
+                                <option value="{{ $plugin['id'] }}" @selected(($matrix[$domain->value] ?? '') === $plugin['id'])>{{ $plugin['name'] }}</option>
+                            @endforeach
+                        </select>
+                        <x-icon-btn icon="check" tone="ghost" size="sm" type="submit" :label="__('Speichern')" />
+                    </form>
+                </td>
+            </tr>
+        @endforeach
+    </x-table>
+</x-index-page>
 @endsection

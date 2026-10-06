@@ -11,160 +11,139 @@
 @section('nav-title', __('Toggl-Workspace-Import (API)'))
 
 @section('content')
-<x-page-shell>
-    <div class="space-y-4">
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-            <div class="mb-1 flex flex-wrap items-center justify-between gap-2">
-                <h1 class="font-['Space_Grotesk'] text-lg font-semibold">{{ __('Workspaces direkt aus der Toggl-API importieren') }}</h1>
-                <a href="{{ route('admin.toggl.index') }}" class="btn btn-ghost btn-sm">{{ __('Zurück zum Import') }}</a>
+<x-index-page :title="__('Workspaces direkt aus der Toggl-API importieren')" :subtitle="__('Importiert die Workspaces des hinterlegten API-Tokens ohne Datei-Export. Stammdaten kommen aus der Track-API (v9), die Zeiteinträge aller Benutzer aus der Reports-API (v3). Je gefundenem Workspace legen Sie fest, was passieren soll.')" back-route="admin.toggl.index" :back-label="__('Zurück zum Import')">
+    <x-card>
+        <x-validation-errors first class="mb-3" />
+
+        @unless ($tokenSet)
+            <div role="alert" class="alert alert-warning text-sm">{{ __('Kein Toggl API-Token hinterlegt. Bitte zuerst in den Plugin-Einstellungen hinterlegen.') }}</div>
+        @elseif (empty($workspaces))
+            <div role="alert" class="alert alert-warning text-sm">{{ __('Keine Workspaces für dieses Token gefunden (oder die API ist nicht erreichbar).') }}</div>
+        @endunless
+    </x-card>
+
+    {{-- Konfiguration je Workspace --}}
+    @if ($tokenSet && ! empty($workspaces))
+        <x-card as="form" class="space-y-4" method="POST" action="{{ route('admin.toggl.import-api.run') }}">
+            @csrf
+
+            <div>
+                <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Was soll mit jedem Workspace passieren?') }}</h2>
+                <p class="text-sm text-muted">
+                    {{ __('„Eigener Workspace" = Toggl-Clients werden zu Kunden, Projekte zu Projekten. „Als ein Kunde" = der ganze Workspace wird zu genau einem Kunden; jeder interne Toggl-Client (Endkunde der Firma) wird als Fremdkunde angelegt, die Projekte verweisen darauf — so bleibt die Endkunden-Trennung erhalten. Bestehende Kunden/Fremdkunden/Projekte werden per Name wiederverwendet (keine Duplikate).') }}
+                </p>
             </div>
-            <p class="mb-4 text-sm text-muted">
-                {{ __('Importiert die Workspaces des hinterlegten API-Tokens ohne Datei-Export. Stammdaten kommen aus der Track-API (v9), die Zeiteinträge aller Benutzer aus der Reports-API (v3). Je gefundenem Workspace legen Sie fest, was passieren soll.') }}
-            </p>
 
-            @if ($errors->any())
-                <div class="alert alert-error mb-3 text-sm">{{ $errors->first() }}</div>
-            @endif
+            <div class="space-y-2">
+                @foreach ($workspaces as $i => $ws)
+                    <div class="grid items-end gap-2 rounded-box border border-base-300 p-3 md:grid-cols-12"
+                         x-data="{ mode: 'skip' }">
+                        <input type="hidden" name="workspace_ids[{{ $i }}]" value="{{ $ws['id'] }}">
+                        <input type="hidden" name="workspace_names[{{ $i }}]" value="{{ $ws['name'] }}">
+                        <div class="md:col-span-5">
+                            <div class="font-semibold">{{ $ws['name'] }}</div>
+                            <div class="text-xs text-muted">
+                                {{ $ws['clients'] }} {{ __('Clients') }} · {{ $ws['projects'] }} {{ __('Projekte') }} · {{ $ws['users'] }} {{ __('Benutzer') }}
+                            </div>
+                        </div>
+                        <label class="form-control md:col-span-3">
+                            <span class="label-text text-xs">{{ __('Modus') }}</span>
+                            <select name="modes[{{ $i }}]" x-model="mode" class="select select-sm select-bordered">
+                                <option value="skip">{{ __('Überspringen') }}</option>
+                                <option value="own">{{ __('Eigener Workspace') }}</option>
+                                <option value="customer">{{ __('Als ein Kunde (Endkunden als Fremdkunden)') }}</option>
+                            </select>
+                        </label>
+                        <div class="md:col-span-4 space-y-1" x-show="mode === 'customer'" x-cloak x-data="{ cmode: 'new' }">
+                            <span class="label-text text-xs">{{ __('Kunde') }}</span>
+                            <select x-model="cmode" class="select select-sm select-bordered w-full">
+                                <option value="new">{{ __('Neuen Kunden anlegen') }}</option>
+                                <option value="existing">{{ __('Bestehenden Kunden wählen') }}</option>
+                            </select>
+                            <select name="customer_ids[{{ $i }}]" x-show="cmode === 'existing'" x-cloak
+                                    class="select select-sm select-bordered w-full">
+                                <option value="">{{ __('– Kunde wählen –') }}</option>
+                                @foreach ($customers as $c)
+                                    <option value="{{ $c['sqid'] }}">{{ $c['label'] }}</option>
+                                @endforeach
+                            </select>
+                            <input aria-label="{{ __('Kundenname') }}" type="text" name="customer_names[{{ $i }}]" value="{{ $ws['name'] }}"
+                                   x-show="cmode === 'new'" placeholder="{{ __('Kundenname') }}"
+                                   class="input input-sm input-bordered w-full">
+                        </div>
+                    </div>
+                @endforeach
+            </div>
 
-            @unless ($tokenSet)
-                <div class="alert alert-warning text-sm">{{ __('Kein Toggl API-Token hinterlegt. Bitte zuerst in den Plugin-Einstellungen hinterlegen.') }}</div>
-            @elseif (empty($workspaces))
-                <div class="alert alert-warning text-sm">{{ __('Keine Workspaces für dieses Token gefunden (oder die API ist nicht erreichbar).') }}</div>
-            @endunless
-        </div>
+            <div class="grid gap-4 md:grid-cols-2">
+                <div>
+                    <h2 class="mb-1 font-['Space_Grotesk'] text-base font-semibold">{{ __('Benutzer-Zuordnung') }}</h2>
+                    <div class="flex flex-col gap-1">
+                        <label class="flex items-center gap-2 text-sm">
+                            <input type="radio" name="user_mode" value="per_email" class="radio radio-sm" checked>
+                            {{ __('Bestehenden Benutzern per E-Mail zuordnen — unbekannte Benutzer bleiben sichtbar offen (empfohlen)') }}
+                        </label>
+                        <label class="flex items-center gap-2 text-sm">
+                            <input type="radio" name="user_mode" value="per_email_create" class="radio radio-sm">
+                            {{ __('Pro E-Mail zuordnen und fehlende Benutzer neu anlegen (erhält „wer hat was gemacht")') }}
+                        </label>
+                        <label class="flex items-center gap-2 text-sm">
+                            <input type="radio" name="user_mode" value="single" class="radio radio-sm">
+                            {{ __('Einbenutzer-Modus: alles auf den konfigurierten Standard-Benutzer buchen') }}
+                        </label>
+                    </div>
 
-        {{-- Konfiguration je Workspace --}}
-        @if ($tokenSet && ! empty($workspaces))
-            <form method="POST" action="{{ route('admin.toggl.import-api.run') }}"
-                  class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs space-y-4">
-                @csrf
+                    @if (! empty($togglUsers))
+                        <div class="mt-3 rounded-box border border-base-300 p-3">
+                            <p class="mb-2 text-xs text-muted">
+                                {{ __('Optional: einzelne Toggl-Benutzer fest einem bestehenden Benutzer zuordnen. Eine Auswahl hier hat Vorrang vor der obigen Regel (auch vor „Standard-Benutzer"). „Automatisch" = nach obiger Regel.') }}
+                            </p>
+                            <div class="space-y-1">
+                                @foreach ($togglUsers as $tu)
+                                    <div class="flex items-center gap-2">
+                                        <span class="min-w-0 flex-1 truncate text-sm" title="{{ $tu['email'] }}">
+                                            {{ $tu['name'] }} <span class="text-muted">({{ $tu['email'] }})</span>
+                                        </span>
+                                        <select name="user_map[{{ $tu['email'] }}]" class="select select-sm select-bordered w-full max-w-xs">
+                                            <option value="">{{ __('— automatisch —') }}</option>
+                                            @foreach ($systemUsers as $su)
+                                                <option value="{{ $su['sqid'] }}">{{ $su['label'] }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+                </div>
 
                 <div>
-                    <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Was soll mit jedem Workspace passieren?') }}</h2>
-                    <p class="text-sm text-muted">
-                        {{ __('„Eigener Workspace" = Toggl-Clients werden zu Kunden, Projekte zu Projekten. „Als ein Kunde" = der ganze Workspace wird zu genau einem Kunden; jeder interne Toggl-Client (Endkunde der Firma) wird als Fremdkunde angelegt, die Projekte verweisen darauf — so bleibt die Endkunden-Trennung erhalten. Bestehende Kunden/Fremdkunden/Projekte werden per Name wiederverwendet (keine Duplikate).') }}
-                    </p>
-                </div>
-
-                <div class="space-y-2">
-                    @foreach ($workspaces as $i => $ws)
-                        <div class="grid items-end gap-2 rounded-box border border-base-300 p-3 md:grid-cols-12"
-                             x-data="{ mode: 'skip' }">
-                            <input type="hidden" name="workspace_ids[{{ $i }}]" value="{{ $ws['id'] }}">
-                            <input type="hidden" name="workspace_names[{{ $i }}]" value="{{ $ws['name'] }}">
-                            <div class="md:col-span-5">
-                                <div class="font-semibold">{{ $ws['name'] }}</div>
-                                <div class="text-xs text-muted">
-                                    {{ $ws['clients'] }} {{ __('Clients') }} · {{ $ws['projects'] }} {{ __('Projekte') }} · {{ $ws['users'] }} {{ __('Benutzer') }}
-                                </div>
-                            </div>
-                            <label class="form-control md:col-span-3">
-                                <span class="label-text text-xs">{{ __('Modus') }}</span>
-                                <select name="modes[{{ $i }}]" x-model="mode" class="select select-sm select-bordered">
-                                    <option value="skip">{{ __('Überspringen') }}</option>
-                                    <option value="own">{{ __('Eigener Workspace') }}</option>
-                                    <option value="customer">{{ __('Als ein Kunde (Endkunden als Fremdkunden)') }}</option>
-                                </select>
-                            </label>
-                            <div class="md:col-span-4 space-y-1" x-show="mode === 'customer'" x-cloak x-data="{ cmode: 'new' }">
-                                <span class="label-text text-xs">{{ __('Kunde') }}</span>
-                                <select x-model="cmode" class="select select-sm select-bordered w-full">
-                                    <option value="new">{{ __('Neuen Kunden anlegen') }}</option>
-                                    <option value="existing">{{ __('Bestehenden Kunden wählen') }}</option>
-                                </select>
-                                <select name="customer_ids[{{ $i }}]" x-show="cmode === 'existing'" x-cloak
-                                        class="select select-sm select-bordered w-full">
-                                    <option value="">{{ __('– Kunde wählen –') }}</option>
-                                    @foreach ($customers as $c)
-                                        <option value="{{ $c['sqid'] }}">{{ $c['label'] }}</option>
-                                    @endforeach
-                                </select>
-                                <input aria-label="{{ __('Kundenname') }}" type="text" name="customer_names[{{ $i }}]" value="{{ $ws['name'] }}"
-                                       x-show="cmode === 'new'" placeholder="{{ __('Kundenname') }}"
-                                       class="input input-sm input-bordered w-full">
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-
-                <div class="grid gap-4 md:grid-cols-2">
-                    <div>
-                        <h2 class="mb-1 font-['Space_Grotesk'] text-base font-semibold">{{ __('Benutzer-Zuordnung') }}</h2>
-                        <div class="flex flex-col gap-1">
-                            <label class="flex items-center gap-2 text-sm">
-                                <input type="radio" name="user_mode" value="per_email" class="radio radio-sm" checked>
-                                {{ __('Bestehenden Benutzern per E-Mail zuordnen — unbekannte Benutzer bleiben sichtbar offen (empfohlen)') }}
-                            </label>
-                            <label class="flex items-center gap-2 text-sm">
-                                <input type="radio" name="user_mode" value="per_email_create" class="radio radio-sm">
-                                {{ __('Pro E-Mail zuordnen und fehlende Benutzer neu anlegen (erhält „wer hat was gemacht")') }}
-                            </label>
-                            <label class="flex items-center gap-2 text-sm">
-                                <input type="radio" name="user_mode" value="single" class="radio radio-sm">
-                                {{ __('Einbenutzer-Modus: alles auf den konfigurierten Standard-Benutzer buchen') }}
-                            </label>
-                        </div>
-
-                        @if (! empty($togglUsers))
-                            <div class="mt-3 rounded-box border border-base-300 p-3">
-                                <p class="mb-2 text-xs text-muted">
-                                    {{ __('Optional: einzelne Toggl-Benutzer fest einem bestehenden Benutzer zuordnen. Eine Auswahl hier hat Vorrang vor der obigen Regel (auch vor „Standard-Benutzer"). „Automatisch" = nach obiger Regel.') }}
-                                </p>
-                                <div class="space-y-1">
-                                    @foreach ($togglUsers as $tu)
-                                        <div class="flex items-center gap-2">
-                                            <span class="min-w-0 flex-1 truncate text-sm" title="{{ $tu['email'] }}">
-                                                {{ $tu['name'] }} <span class="text-muted">({{ $tu['email'] }})</span>
-                                            </span>
-                                            <select name="user_map[{{ $tu['email'] }}]" class="select select-sm select-bordered w-full max-w-xs">
-                                                <option value="">{{ __('— automatisch —') }}</option>
-                                                @foreach ($systemUsers as $su)
-                                                    <option value="{{ $su['sqid'] }}">{{ $su['label'] }}</option>
-                                                @endforeach
-                                            </select>
-                                        </div>
-                                    @endforeach
-                                </div>
-                            </div>
-                        @endif
-                    </div>
-
-                    <div>
-                        <h2 class="mb-1 font-['Space_Grotesk'] text-base font-semibold">{{ __('Zeitraum (optional)') }}</h2>
-                        <p class="mb-2 text-xs text-muted">{{ __('Leer lassen, um die vollständige Historie zu importieren.') }}</p>
-                        <div class="flex flex-wrap gap-2">
-                            <label class="form-control">
-                                <span class="label-text text-xs">{{ __('Von') }}</span>
-                                <input type="date" name="date_from" value="{{ old('date_from') }}" class="input input-sm input-bordered">
-                            </label>
-                            <label class="form-control">
-                                <span class="label-text text-xs">{{ __('Bis') }}</span>
-                                <input type="date" name="date_to" value="{{ old('date_to') }}" class="input input-sm input-bordered">
-                            </label>
-                        </div>
+                    <h2 class="mb-1 font-['Space_Grotesk'] text-base font-semibold">{{ __('Zeitraum (optional)') }}</h2>
+                    <p class="mb-2 text-xs text-muted">{{ __('Leer lassen, um die vollständige Historie zu importieren.') }}</p>
+                    <div class="flex flex-wrap gap-2">
+                        <x-date-range from-name="date_from" to-name="date_to" :from="old('date_from')" :to="old('date_to')" />
                     </div>
                 </div>
-
-                <div class="flex flex-wrap justify-end gap-2 border-t border-base-300 pt-3">
-                    <button type="submit" name="action" value="preview" class="btn btn-sm">{{ __('Vorschau (nichts speichern)') }}</button>
-                    <button type="submit" name="action" value="import" class="btn btn-sm btn-primary"
-                            data-confirm-dialog
-                            data-confirm-message="{{ __('Import jetzt ausführen? Es werden Kunden, Projekte, Benutzer und Zeiteinträge angelegt.') }}">
-                        {{ __('Importieren') }}
-                    </button>
-                </div>
-            </form>
-        @endif
-
-        {{-- Ergebnis / Vorschau --}}
-        @if (! empty($summary))
-            <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-                <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">
-                    {{ $summary['dry_run'] ? __('Vorschau (nicht gespeichert)') : __('Import-Ergebnis') }}
-                </h2>
-                @include('toggl::admin._import-summary', ['summary' => $summary])
             </div>
-        @endif
-    </div>
-</x-page-shell>
+
+            <div class="flex flex-wrap justify-end gap-2 border-t border-base-300 pt-3">
+                <x-button type="submit" tone="plain" name="action" value="preview">{{ __('Vorschau (nichts speichern)') }}</x-button>
+                <x-button type="submit" name="action" value="import" data-confirm-dialog
+                        data-confirm-message="{{ __('Import jetzt ausführen? Es werden Kunden, Projekte, Benutzer und Zeiteinträge angelegt.') }}">
+                    {{ __('Importieren') }}
+                </x-button>
+            </div>
+        </x-card>
+    @endif
+
+    {{-- Ergebnis / Vorschau --}}
+    @if (! empty($summary))
+        <x-card>
+            <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">
+                {{ $summary['dry_run'] ? __('Vorschau (nicht gespeichert)') : __('Import-Ergebnis') }}
+            </h2>
+            @include('toggl::admin._import-summary', ['summary' => $summary])
+        </x-card>
+    @endif
+</x-index-page>
 @endsection

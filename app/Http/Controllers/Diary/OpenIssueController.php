@@ -12,6 +12,7 @@ namespace App\Http\Controllers\Diary;
 
 use App\Enums\OpenIssue\{OpenIssueSeverity, OpenIssueSource, OpenIssueVisibility};
 use App\Exceptions\InvalidOpenIssueTransitionException;
+use App\Http\Controllers\Concerns\AuthorizesCarrier;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\OpenIssue\{AssignOpenIssueRequest, StoreOpenIssueRequest, TransitionOpenIssueRequest, UpdateOpenIssueRequest};
 use App\Models\Customer\Customer;
@@ -28,6 +29,7 @@ use Illuminate\View\View;
 use InvalidArgumentException;
 
 class OpenIssueController extends Controller {
+    use AuthorizesCarrier;
     /**
      * Whitelist der erlaubten Subject-Typen. Verhindert, dass Aufrufer beliebige
      * Klassen an `subject_type` setzen können (auch von
@@ -101,6 +103,7 @@ class OpenIssueController extends Controller {
         if ($subject === null) {
             abort(404);
         }
+        $this->authorizeCarrier($subject);
 
         /** @var User $creator */
         $creator = Auth::user();

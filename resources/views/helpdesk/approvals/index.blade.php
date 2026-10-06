@@ -8,16 +8,17 @@
 --}}
 
 {{-- Genehmigungs-Inbox (Feature 065, MVP-154): offene Schritte, für die der
-     angemeldete Benutzer laut approver_rule zuständig ist — ServiceRequests
-     UND Changes über EINE Mechanik. --}}
+     angemeldete Benutzer zuständig ist (Person, Rolle oder Stufenart → Rolle
+     der Organisation). Variablen: $approvals, $entries/$kinds/$mappedRoles je Approval-Id. --}}
 
 @extends('layouts.app')
 @section('title', __('Genehmigungen'))
 @section('nav-title', __('Genehmigungen'))
+@include('partials.page-fill')
 
 @section('content')
-    <x-index-page :subtitle="__('Offene Genehmigungsschritte, für die Sie zuständig sind — genehmigen, ablehnen, rückfragen oder delegieren.')">
-        <x-table :zebra="true">
+    <x-index-page overflow="clip" :subtitle="__('Offene Genehmigungsschritte, für die Sie zuständig sind — genehmigen, ablehnen, rückfragen oder delegieren.')">
+        <x-table scroll="flex" :zebra="true">
             <x-slot:head>
                 <tr>
                     <th>{{ __('Typ') }}</th>
@@ -28,28 +29,33 @@
                     <th class="w-24 text-right">{{ __('Aktion') }}</th>
                 </tr>
             </x-slot:head>
-            <tbody>
                 @forelse ($approvals as $approval)
                     @php
-                        $approvable = $approval->approvable;
-                        $ticket = $approvable instanceof \App\Models\ServiceTicket\ServiceRequest ? $approvable->ticket : null;
+                        /** @var \App\Services\Approval\Dto\ApprovalInboxEntry $entry */
+                        $entry = $entries[$approval->id];
+                        $kind = $kinds[$approval->id] ?? null;
+                        $mappedRole = $mappedRoles[$approval->id] ?? null;
                         $rule = (array) $approval->approver_rule;
                     @endphp
                     <tr class="hover">
                         <td>
-                            <x-status-badge tone="ghost" size="sm">{{ \App\Support\EntityType::label($approval->approvable_type) }}</x-status-badge>
+                            <x-status-badge tone="ghost" size="sm">{{ $entry->type ?? \App\Support\EntityType::label($approval->approvable_type) }}</x-status-badge>
                         </td>
                         <td>
-                            @if ($ticket !== null)
-                                <a class="link link-hover font-medium" href="{{ route('service-tickets.show', $ticket) }}">{{ $ticket->title }}</a>
-                                <div class="text-xs text-muted font-mono">{{ $ticket->ticket_no }}</div>
+                            @if ($entry->url !== null)
+                                <a class="link link-hover font-medium" href="{{ $entry->url }}">{{ $entry->title }}</a>
                             @else
-                                <span class="font-medium">{{ $approvable?->title ?? $approvable?->name ?? '—' }}</span>
+                                <span class="font-medium">{{ $entry->title }}</span>
+                            @endif
+                            @if ($entry->reference !== null)
+                                <div class="text-xs text-muted font-mono">{{ $entry->reference }}</div>
                             @endif
                         </td>
                         <td class="text-right tabular-nums">{{ $approval->step }}</td>
                         <td class="text-sm text-muted">
-                            @if ((string) ($rule['type'] ?? '') === 'role')
+                            @if ($kind !== null && $mappedRole !== null)
+                                {{ $kind->label() }} · {{ __('Rolle') }}: {{ $mappedRole->label() }}
+                            @elseif ((string) ($rule['type'] ?? '') === 'role')
                                 {{ __('Rolle') }}: {{ \App\Enums\User\UserRole::tryFrom((string) ($rule['value'] ?? ''))?->label() ?? (string) ($rule['value'] ?? '') }}
                             @else
                                 {{ __('Persönlich') }}
@@ -72,7 +78,6 @@
                 @empty
                     <x-table.empty :colspan="6" icon="inbox" :title="__('Keine offenen Genehmigungen')" compact />
                 @endforelse
-            </tbody>
         </x-table>
 
         <x-pagination :paginator="$approvals" standing />

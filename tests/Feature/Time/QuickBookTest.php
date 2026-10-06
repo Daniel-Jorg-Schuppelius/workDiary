@@ -146,6 +146,10 @@ class QuickBookTest extends TestCase {
         $activeProjects = Project::query()->where('status', ProjectStatus::Active->value)->count();
         $this->assertGreaterThan(10, $activeProjects);
         $this->assertSame(10, substr_count($html, 'data-qb-target'));
+        // Zugquelle für lib/pointer-sort.js: jeder Block mit Griff, kein HTML5-`draggable`.
+        $this->assertGreaterThan(0, substr_count($html, 'data-qb-block'));
+        $this->assertSame(substr_count($html, 'data-qb-block'), substr_count($html, 'data-qb-handle='));
+        $this->assertStringNotContainsString('draggable="true"', $html);
         $this->assertStringContainsString(sprintf('+ %d weitere im Dropdown', $activeProjects - 10), $html);
         // Dropdown gruppiert: „Zuletzt verwendet" zuerst, Rest je Kunde.
         $this->assertStringContainsString('Zuletzt verwendet', $html);

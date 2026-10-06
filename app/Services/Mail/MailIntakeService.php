@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Mail;
 
+use App\Enums\Integration\IntegrationInboxStatus;
 use App\Models\Customer\Customer;
 use App\Models\Integration\IntegrationInboxItem;
 use App\Models\Mail\EmailConnection;
@@ -103,7 +104,7 @@ class MailIntakeService {
             'external_type' => self::EXTERNAL_TYPE,
             'external_id' => $message->messageId,
             'case_type' => $candidates !== [] ? IntegrationInboxItem::CASE_AMBIGUOUS : IntegrationInboxItem::CASE_UNMATCHED,
-            'status' => IntegrationInboxItem::STATUS_OPEN,
+            'status' => IntegrationInboxStatus::Open,
             'referenceable_type' => $best instanceof Model ? $best->getMorphClass() : null,
             'referenceable_id' => $best instanceof Model ? $best->getKey() : null,
             'candidate_ids' => $this->candidatePayload($candidates),

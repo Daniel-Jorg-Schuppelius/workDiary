@@ -10,9 +10,10 @@
 
 @section('title', __('problemreport.title.index'))
 @section('nav-title', __('problemreport.title.index'))
+@include('partials.page-fill')
 
 @section('content')
-<x-index-page :subtitle="__('problemreport.title.index_subtitle')">
+<x-index-page overflow="clip" :subtitle="__('problemreport.title.index_subtitle')">
     <x-slot:actions>
         <x-button data-entry-modal-trigger
                   :href="route('problem-reports.create', ['route' => 'problem-reports.index', 'url' => route('problem-reports.index')])"
@@ -24,7 +25,7 @@
     @if ($reports->isEmpty())
         <x-empty-state framed icon="flag" :title="__('problemreport.empty.title')" :message="__('problemreport.empty.message')" />
     @else
-        <x-table>
+        <x-table scroll="flex">
             <x-slot:head>
                 <tr>
                     <th>{{ __('problemreport.field.reference') }}</th>
@@ -35,12 +36,12 @@
                 </tr>
             </x-slot:head>
             @foreach ($reports as $report)
-                <tr>
+                <tr class="hover">
                     <td class="font-mono text-sm">{{ $report->reference_no }}</td>
                     <td>{{ $report->summary }}</td>
                     <td><x-status-badge size="xs" :tone="$report->severity->tone()">{{ $report->severity->label() }}</x-status-badge></td>
                     <td><x-status-badge size="xs" :tone="$report->status->tone()">{{ $report->status->label() }}</x-status-badge></td>
-                    <td class="text-sm">{{ $report->created_at?->orgTz()->format('d.m.Y H:i') }}</td>
+                    <td class="text-sm">{{ $report->created_at?->fdatetime() }}</td>
                 </tr>
             @endforeach
         </x-table>

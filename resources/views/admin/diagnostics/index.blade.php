@@ -13,11 +13,11 @@
 
 @php
     /** @var \App\Services\Diagnostics\DiagnosticsReport $report */
-    $statusToBadge = [
-        'ok' => 'badge-success',
-        'warn' => 'badge-warning',
-        'critical' => 'badge-error',
-        'unknown' => 'badge-ghost',
+    $statusToTone = [
+        'ok' => 'success',
+        'warn' => 'warning',
+        'critical' => 'error',
+        'unknown' => 'ghost',
     ];
     $statusToLabel = [
         'ok' => __('Ok'),
@@ -77,7 +77,7 @@
         @foreach ($report->sections as $section)
             @php
                 $sv = $section->status->value;
-                $badge = $statusToBadge[$sv] ?? 'badge-ghost';
+                $badgeTone = $statusToTone[$sv] ?? 'ghost';
                 $label = $statusToLabel[$sv] ?? $sv;
                 $title = $sectionTitles[$section->code] ?? $section->code;
                 $icon = $sectionIcons[$section->code] ?? 'help';
@@ -88,26 +88,23 @@
                         <x-icon :name="$icon" />
                         <h2 class="font-['Space_Grotesk'] text-base font-semibold text-base-content truncate">{{ $title }}</h2>
                     </div>
-                    <span class="badge badge-outline {{ $badge }}">{{ $label }}</span>
+                    <x-status-badge :tone="$badgeTone" size="md" outline>{{ $label }}</x-status-badge>
                 </header>
 
                 @if (count($section->metrics) > 0)
-                    <dl class="grid grid-cols-1 gap-1 text-sm">
+                    <x-detail-grid layout="split" divided>
                         @foreach ($section->metrics as $key => $value)
-                            <div class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1 last:border-0">
-                                <dt class="text-muted">{{ $key }}</dt>
-                                <dd class="text-right font-mono text-xs text-base-content/80 truncate">
-                                    @if ($value === null)
-                                        <span class="italic text-muted">—</span>
-                                    @elseif (is_bool($value))
-                                        {{ $value ? 'true' : 'false' }}
-                                    @else
-                                        {{ (string) $value }}
-                                    @endif
-                                </dd>
-                            </div>
+                            <x-detail-grid.row :label="$key" class="text-right font-mono text-xs text-base-content/80 truncate">
+                                @if ($value === null)
+                                    <span class="italic text-muted">—</span>
+                                @elseif (is_bool($value))
+                                    {{ $value ? 'true' : 'false' }}
+                                @else
+                                    {{ (string) $value }}
+                                @endif
+                            </x-detail-grid.row>
                         @endforeach
-                    </dl>
+                    </x-detail-grid>
                 @endif
 
                 @if (count($section->messages) > 0)

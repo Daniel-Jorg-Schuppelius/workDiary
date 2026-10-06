@@ -13,11 +13,9 @@ declare(strict_types=1);
 namespace App\Services\Invoicing;
 
 use App\Models\Invoicing\BaseInterestRate;
-use App\Plugins\Support\PluginHttpFactory;
+use App\Support\BundesbankSeries;
 use App\Support\Query\DateRange;
 use Carbon\{CarbonImmutable, CarbonInterface};
-use CommonToolkit\Helper\Data\NumberHelper;
-use RuntimeException;
 
 /**
  * Basiszinssatz nach § 247 BGB (MVP-879): Abruf der Bundesbank-Reihe
@@ -31,17 +29,11 @@ class BaseInterestRateService {
 
     public const SOURCE = 'bundesbank';
 
-    public function __construct(private readonly PluginHttpFactory $http) {}
+    public function __construct(private readonly BundesbankSeries $series) {}
 
     /** @return int Anzahl neu angelegter oder geänderter Perioden */
     public function import(): int {
-        $response = $this->http->coreClient('bundesbank', self::SERIES_URL)
-            ->getResponse(self::SERIES_URL, ['format' => 'csv'], ['timeout' => 30]);
-        if (! $response->successful()) {
-            throw new RuntimeException('Bundesbank-Abruf fehlgeschlagen (HTTP ' . $response->status() . ').');
-        }
-
-        return $this->ingest($response->body());
+        return $this->ingest($this->series->csv(self::SERIES_URL));
     }
 
     /**
@@ -51,12 +43,7 @@ class BaseInterestRateService {
      * @return int Anzahl neu angelegter oder geänderter Perioden
      */
     public function ingest(string $csv): int {
-        $months = [];
-        foreach (preg_split('/\r?\n/', $csv) ?: [] as $line) {
-            if (preg_match('/^(\d{4})-(\d{2});(-?[\d.,]+);/', trim($line), $m) === 1) {
-                $months[$m[1] . '-' . $m[2]] = NumberHelper::normalizeDecimalString($m[3]);
-            }
-        }
+        $months = BundesbankSeries::monthlyValues($csv);
         ksort($months);
 
         $changed = 0;

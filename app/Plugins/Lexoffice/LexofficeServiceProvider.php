@@ -11,7 +11,7 @@
 namespace App\Plugins\Lexoffice;
 
 use App\Plugins\Lexoffice\Console\{LexofficeMaterializeVoucherFilesCommand, LexofficeRepairResaleLinksCommand, LexofficeSyncArticlesCommand, LexofficeSyncContactsCommand, LexofficeSyncVoucherCategoriesCommand, LexofficeSyncVoucherLinesCommand, LexofficeSyncVouchersCommand, LexofficeWebhooksCommand};
-use App\Plugins\Lexoffice\Services\{LexofficeArticleCatalogSource, LexofficeInvoiceDraftTarget, LexofficeInvoiceMirrorSource, LexofficeMaterialProvider, LexofficePartyDocumentSource, LexofficePurchaseDocumentSource, LexofficeRevenueSource, LexofficeSpendSource, LexofficeTarget};
+use App\Plugins\Lexoffice\Services\{LexofficeArticleCatalogSource, LexofficeContactSync, LexofficeDocumentFeedSource, LexofficeExpenseLinkProvider, LexofficeInvoiceDraftTarget, LexofficeInvoiceMapper, LexofficeInvoiceMirrorSource, LexofficeInvoiceService, LexofficeMapper, LexofficeMaterialProvider, LexofficePartyDocumentSource, LexofficePhoneContactSource, LexofficePurchaseDocumentSource, LexofficeRevenueSource, LexofficeService, LexofficeSpendSource, LexofficeTarget};
 use App\Plugins\Lexoffice\Services\Retainer\{LexofficeRetainerPublisher, LexofficeRetainerVouchers};
 use App\Plugins\Support\PluginServiceProviderBase;
 use App\Services\Billing\{BillingModeResolver, ExpenseLinkProviderResolver, ExternalPurchaseSources, ExternalRevenueSources, PartyDocumentSources, RetainerChannelResolver};
@@ -52,6 +52,7 @@ class LexofficeServiceProvider extends PluginServiceProviderBase {
                 mapper: new LexofficeMapper,
                 defaults: $config['defaults'],
                 baseUrl: $config['base_url'],
+                requestInterval: $config['request_interval'],
             );
         });
 
@@ -67,6 +68,7 @@ class LexofficeServiceProvider extends PluginServiceProviderBase {
                 apiKey: $config['api_key'],
                 defaults: $config['defaults'],
                 baseUrl: $config['base_url'],
+                requestInterval: $config['request_interval'],
             );
         });
     }
@@ -89,13 +91,16 @@ class LexofficeServiceProvider extends PluginServiceProviderBase {
         $this->app->make(\App\Services\Stammdaten\IdentifierAuditModels::class)->register(\App\Plugins\Lexoffice\Models\LexofficeArticle::class);
         // Belegliste der Kunden- und Lieferantenakte (MVP-1038).
         $this->app->make(PartyDocumentSources::class)->register(new LexofficePartyDocumentSource);
+        // „Lexoffice-Stand übernehmen“ in der Konfliktliste des Lagers (Entscheidung 2026-10-06):
+        // der Kern erreicht das Plugin nur über diesen Beitrag.
+        $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Inventory\Contracts\ArticleConflictHandler::class, \App\Plugins\Lexoffice\Services\LexofficeArticleConflictHandler::class);
 
         // Material-Suche (MVP-1033) mit den Zugangsdaten der aktuellen Organisation.
         $this->app->make(MaterialProviderRegistry::class)->register('lexoffice', static function (): ?LexofficeMaterialProvider {
             $config = LexofficeConfig::resolve();
 
             return is_string($config['api_key']) && $config['api_key'] !== ''
-                ? new LexofficeMaterialProvider($config['api_key'], (string) $config['base_url'])
+                ? new LexofficeMaterialProvider($config['api_key'], (string) $config['base_url'], $config['request_interval'])
                 : null;
         });
 

@@ -15,6 +15,7 @@ namespace App\Services\Customer\Mcp;
 use App\Enums\Api\ApiAbility;
 use App\Models\Customer\Customer;
 use App\Models\Platform\{Organization, User};
+use App\Rules\IsoCountryCode;
 use App\Services\Mcp\GuardedTool;
 use App\Services\Stammdaten\ContactDetailsWriter;
 use App\Settings\SettingsRegistry;
@@ -68,8 +69,11 @@ final class CreateCustomerTool extends GuardedTool {
             'address_street' => ['nullable', 'string', 'max:255'],
             'address_zip' => ['nullable', 'string', 'max:20'],
             'address_city' => ['nullable', 'string', 'max:255'],
-            'country' => ['nullable', 'string', 'size:2'],
+            'country' => ['nullable', 'string', 'max:2', new IsoCountryCode],
         ]);
+        if (isset($data['country'])) {
+            $data['country'] = strtoupper((string) $data['country']);
+        }
         if (($data['vat_id'] ?? '') !== '') {
             $existing = Customer::query()->where('organization_id', $organization->id)->where('vat_id', $data['vat_id'])->first();
             if ($existing !== null) {

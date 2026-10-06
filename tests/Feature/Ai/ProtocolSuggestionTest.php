@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Ai;
 
+use App\Enums\Ai\AiTextSuggestionStatus;
 use App\Enums\Classification\ClassificationDomain;
 use App\Enums\OpenIssue\OpenIssueSeverity;
 use App\Enums\Protocol\{ProtocolItemResult, ProtocolItemType, ProtocolStatus};
@@ -113,7 +114,7 @@ class ProtocolSuggestionTest extends TestCase {
         $this->actingAs($this->user)->post(route('ai.suggestions.protocol-all', $protocol))->assertRedirect()
             ->assertSessionHas('success', __('ai.flash.suggestions_queued', ['count' => 2]));
 
-        $texts = AiTextSuggestion::query()->where('capability', ProtocolTextSuggestionService::CAPABILITY_TEXT)->where('status', AiTextSuggestion::STATUS_PROPOSED)->get();
+        $texts = AiTextSuggestion::query()->where('capability', ProtocolTextSuggestionService::CAPABILITY_TEXT)->where('status', AiTextSuggestionStatus::Proposed)->get();
         $this->assertEqualsCanonicalizing([$first->id, $defect->id], $texts->pluck('subject_id')->all());
         $this->assertNotContains($empty->id, $texts->pluck('subject_id')->all());
         $this->assertSame($classifications, AiTextSuggestion::query()->where('capability', ProtocolTextSuggestionService::CAPABILITY_CLASSIFY)->count(), 'Klassifikationsvorschlag bleibt');
@@ -174,7 +175,7 @@ class ProtocolSuggestionTest extends TestCase {
             ->assertSessionHas('success');
 
         $this->assertSame('Kabel lose; Steckdose sitzt nicht fest.', $item->fresh()->description);
-        $this->assertSame(AiTextSuggestion::STATUS_ACCEPTED, $suggestion->fresh()->status);
+        $this->assertSame(AiTextSuggestionStatus::Accepted, $suggestion->fresh()->status);
         $this->assertDatabaseHas('protocol_events', ['protocol_id' => $protocol->id, 'event' => 'protocol.itemFilled']);
 
         $audit = AuditLog::query()->where('event', 'ai.suggestion_decided')->latest('id')->firstOrFail();
@@ -202,7 +203,7 @@ class ProtocolSuggestionTest extends TestCase {
         $this->assertSame('low', $fresh->value_json['severity']);
         $this->assertSame(ProtocolItemResult::NotOk, $fresh->result);
         $this->assertSame($this->user->id, $fresh->measured_by_user_id);
-        $this->assertSame(AiTextSuggestion::STATUS_EDITED, $suggestion->fresh()->status);
+        $this->assertSame(AiTextSuggestionStatus::Edited, $suggestion->fresh()->status);
     }
 
     public function test_reject_marks_suggestion_and_leaves_item_untouched(): void {
@@ -216,7 +217,7 @@ class ProtocolSuggestionTest extends TestCase {
             ->assertRedirect()
             ->assertSessionHas('success');
 
-        $this->assertSame(AiTextSuggestion::STATUS_REJECTED, $suggestion->fresh()->status);
+        $this->assertSame(AiTextSuggestionStatus::Rejected, $suggestion->fresh()->status);
         $this->assertSame('kabel lose, steckdose wackelt', $item->fresh()->description);
         $this->assertDatabaseHas('audit_logs', ['event' => 'ai.suggestion_decided', 'auditable_id' => $suggestion->id]);
     }
@@ -237,7 +238,7 @@ class ProtocolSuggestionTest extends TestCase {
             ->post(route('ai.suggestions.accept', $suggestion), ['text' => 'x']);
         $this->assertContains($accept->getStatusCode(), [302, 403]);
         $this->assertSame('kabel lose, steckdose wackelt', $item->fresh()->description);
-        $this->assertSame(AiTextSuggestion::STATUS_PROPOSED, $suggestion->fresh()->status);
+        $this->assertSame(AiTextSuggestionStatus::Proposed, $suggestion->fresh()->status);
 
         // Service-Ebene: signiert → AiException, kein Provider-Aufruf.
         $this->expectException(\App\Services\Ai\Exceptions\AiException::class);
@@ -290,7 +291,7 @@ class ProtocolSuggestionTest extends TestCase {
             ->assertRedirect()
             ->assertSessionHas('success');
         $this->assertSame('high', $item->fresh()->value_json['severity']);
-        $this->assertSame(AiTextSuggestion::STATUS_PROPOSED, $suggestion->fresh()->status);
+        $this->assertSame(AiTextSuggestionStatus::Proposed, $suggestion->fresh()->status);
         $this->assertCount(1, ProtocolTextSuggestionService::classificationValues($suggestion->fresh()));
 
         // Fremder Wert wird abgelehnt.
@@ -306,7 +307,7 @@ class ProtocolSuggestionTest extends TestCase {
             ->assertRedirect()
             ->assertSessionHas('success');
         $this->assertSame('elektrik', $item->fresh()->value_json['category']);
-        $this->assertSame(AiTextSuggestion::STATUS_ACCEPTED, $suggestion->fresh()->status);
+        $this->assertSame(AiTextSuggestionStatus::Accepted, $suggestion->fresh()->status);
         $this->assertSame(2, AuditLog::query()->where('event', 'ai.suggestion_decided')->where('auditable_id', $suggestion->id)->count());
     }
 
@@ -331,12 +332,12 @@ class ProtocolSuggestionTest extends TestCase {
         $this->actingAs($this->user)->post(route('ai.suggestions.protocol-item', $item));
         $this->actingAs($this->user)->post(route('ai.suggestions.protocol-item-classify', $item));
 
-        $open = AiTextSuggestion::query()->where('subject_id', $item->id)->where('status', AiTextSuggestion::STATUS_PROPOSED)->pluck('capability')->sort()->values()->all();
+        $open = AiTextSuggestion::query()->where('subject_id', $item->id)->where('status', AiTextSuggestionStatus::Proposed)->pluck('capability')->sort()->values()->all();
         $this->assertSame([ProtocolTextSuggestionService::CAPABILITY_CLASSIFY, ProtocolTextSuggestionService::CAPABILITY_TEXT], $open);
 
         // Erneuter Textvorschlag ersetzt nur den Textvorschlag.
         $this->actingAs($this->user)->post(route('ai.suggestions.protocol-item', $item));
-        $this->assertSame(2, AiTextSuggestion::query()->where('subject_id', $item->id)->where('status', AiTextSuggestion::STATUS_PROPOSED)->count());
+        $this->assertSame(2, AiTextSuggestion::query()->where('subject_id', $item->id)->where('status', AiTextSuggestionStatus::Proposed)->count());
     }
 
     public function test_show_page_has_no_ai_buttons_without_enabled_capability(): void {

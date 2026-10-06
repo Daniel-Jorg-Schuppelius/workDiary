@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Learning;
 
+use App\Enums\Learning\LearningTimeApprovalStatus;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\Attachments\Attachment;
@@ -122,7 +123,7 @@ class LearningGradingController extends Controller {
         return view('learning.grading.time-approvals', [
             'sessions' => LearningTimeSession::query()
                 ->with(['user:id,name', 'enrollment.course:id,title'])
-                ->where('approval_status', LearningTimeSession::APPROVAL_PENDING)
+                ->where('approval_status', LearningTimeApprovalStatus::Pending)
                 ->orderBy('started_at')
                 ->paginate(25),
         ]);

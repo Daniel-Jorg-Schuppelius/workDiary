@@ -16,7 +16,7 @@ use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use App\Plugins\Msgraph\Api\MsgraphCalendarClient;
 use App\Plugins\Msgraph\Models\MsgraphConnection;
 use App\Plugins\Msgraph\MsgraphPlugin;
-use App\Plugins\Support\Calendar\{CalendarSeriesStager, RemoteCalendarPublishService};
+use App\Plugins\Support\Calendar\{CalendarImportStager, RemoteCalendarPublishService};
 use App\Services\CloudIntake\StaleCheckpointException;
 use Illuminate\Support\Carbon;
 
@@ -36,15 +36,12 @@ use Illuminate\Support\Carbon;
  *
  * Serien (MVP-977): `calendarView` liefert die Vorkommen selbst —
  * `occurrence`/`exception` werden Einzelvorschläge, gruppiert je Serie
- * ({@see CalendarSeriesStager}); ein `seriesMaster` bringt nichts Neues.
+ * ({@see CalendarImportStager}); ein `seriesMaster` bringt nichts Neues.
  * Checkpoint = absolute Delta-URL an der Verbindung; 410 ⇒ Neustart ab
  * Zeitfenster (−30/+180 Tage, wie der Publish).
  */
 class MsgraphCalendarImportService {
-    /** Publish-Echo-Toleranz zwischen unserem PATCH und Graphs lastModified. */
-    private const ECHO_TOLERANCE_SECONDS = 120;
-
-    public function __construct(private readonly CalendarSeriesStager $series) {}
+    public function __construct(private readonly CalendarImportStager $series) {}
 
     /** @return array{proposals: int, conflicts: int, deleted: int} */
     public function run(MsgraphConnection $connection): array {
@@ -120,7 +117,7 @@ class MsgraphCalendarImportService {
         if (in_array($type, ['occurrence', 'exception'], true) && is_string($seriesId) && $seriesId !== '') {
             $snapshot = ['series_uid' => $seriesId, 'series_title' => (string) ($item['subject'] ?? '')] + $this->snapshot($item);
             if ($this->series->upsertOccurrence($connection->organization_id, MsgraphPlugin::ID, (string) ($connection->calendar_name ?? ''), [
-                'key' => CalendarSeriesStager::key($seriesId, $remoteId),
+                'key' => CalendarImportStager::key($seriesId, $remoteId),
                 'title' => (string) ($item['subject'] ?? '—'),
                 'snapshot' => $snapshot,
                 'mapped' => $this->eventAttributes($item),
@@ -134,9 +131,7 @@ class MsgraphCalendarImportService {
         if ($reference instanceof ExternalReference) {
             // Publish-Echo? Unsere eigenen Create/PATCHes tauchen im Delta auf.
             $lastModified = isset($item['lastModifiedDateTime']) ? Carbon::parse((string) $item['lastModifiedDateTime']) : null;
-            $syncedAt = $reference->synced_at;
-            if ($lastModified === null || $syncedAt === null
-                || $lastModified->lessThanOrEqualTo($syncedAt->copy()->addSeconds(self::ECHO_TOLERANCE_SECONDS))) {
+            if ($lastModified === null || CalendarImportStager::isOwnEcho($lastModified, $reference->synced_at)) {
                 return; // von uns selbst — kein externer Eingriff
             }
 
@@ -220,26 +215,8 @@ class MsgraphCalendarImportService {
      * @return bool true = NEUER Fall
      */
     private function stage(MsgraphConnection $connection, string $dedupeKey, string $caseType, array $snapshot, string $title, ?ExternalReference $reference, ?array $mapped = null): bool {
-        $item = IntegrationInboxItem::query()->firstOrCreate([
-            'organization_id' => $connection->organization_id,
-            'plugin_id' => MsgraphPlugin::ID,
-            'dedupe_key' => $dedupeKey,
-        ], [
-            'source' => MsgraphPlugin::ID,
-            'target_type' => (new \App\Models\Calendar\Event())->getMorphClass(),
-            'external_type' => RemoteCalendarPublishService::EXTERNAL_TYPE,
-            'external_id' => (string) ($snapshot['remote_id'] ?? ''),
-            'case_type' => $caseType,
-            'status' => IntegrationInboxItem::STATUS_OPEN,
-            'referenceable_type' => $reference?->referenceable_type,
-            'referenceable_id' => $reference?->referenceable_id,
-            'remote_snapshot' => $snapshot,
-            'mapped_snapshot' => $mapped,
-            'display_title' => $title !== '' ? $title : '—',
-            'display_subtitle' => (string) ($connection->calendar_name ?? __('msgraph::msgraph.calendar.default')),
-            'occurred_at' => now(),
-        ]);
+        $subtitle = (string) ($connection->calendar_name ?? __('msgraph::msgraph.calendar.default'));
 
-        return $item->wasRecentlyCreated;
+        return $this->series->stageCase($connection->organization_id, MsgraphPlugin::ID, $subtitle, $dedupeKey, $caseType, $snapshot, $title, $reference, $mapped);
     }
 }

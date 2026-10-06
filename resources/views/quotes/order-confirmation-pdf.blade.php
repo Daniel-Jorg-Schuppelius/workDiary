@@ -62,7 +62,7 @@
         <h1>{{ __('Auftragsbestätigung') }}</h1>
         {{ __('zu Angebot :nr (V:version)', ['nr' => $quote->number, 'version' => $quote->version]) }}<br>
         {{ __('Datum') }}: {{ optional($quote->decided_at)->fdate() }}<br>
-        @if ($quote->status === 'partially_accepted')
+        @if ($quote->status === \App\Enums\Sales\QuoteStatus::PartiallyAccepted)
             <span class="muted">{{ __('Teilannahme') }}</span><br>
         @endif
     </div>

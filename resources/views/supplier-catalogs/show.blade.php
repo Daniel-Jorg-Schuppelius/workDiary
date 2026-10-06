@@ -28,16 +28,16 @@
             <div><span class="opacity-60">{{ __('procurement.catalog.col.format') }}:</span> {{ $source->format->label() }}</div>
             <div><span class="opacity-60">{{ __('procurement.catalog.field.delimiter') }}:</span> <code>{{ $source->delimiter }}</code></div>
             <div><span class="opacity-60">{{ __('procurement.catalog.field.decimal_separator') }}:</span> <code>{{ $source->decimal_separator }}</code></div>
-            <div><span class="opacity-60">{{ __('procurement.catalog.col.last_import') }}:</span> {{ $source->last_imported_at?->orgTz()->format('d.m.Y H:i') ?: '—' }}</div>
+            <div><span class="opacity-60">{{ __('procurement.catalog.col.last_import') }}:</span> {{ $source->last_imported_at?->fdatetime() ?: '—' }}</div>
         </div>
         @if ($canManage && ($source->hasRemoteFetch() || $source->hasPunchout()))
             <div class="mt-3 flex flex-wrap items-end gap-3">
                 @if ($source->hasRemoteFetch())
                     <form method="POST" action="{{ route('supplier-catalogs.fetch', $source) }}">
                         @csrf
-                        <button type="submit" class="btn btn-sm btn-outline gap-1">
-                            <x-icon name="cloud_download" class="text-base" />{{ __('procurement.catalog.remote.fetch') }}
-                        </button>
+                        <x-button type="submit" tone="outline" icon="cloud_download" icon-size="1rem">
+                            {{ __('procurement.catalog.remote.fetch') }}
+                        </x-button>
                     </form>
                 @endif
                 @if ($source->hasPunchout())
@@ -50,9 +50,9 @@
                                 @endforeach
                             </select>
                         </div>
-                        <button type="submit" class="btn btn-sm btn-outline gap-1">
-                            <x-icon name="shopping_cart_checkout" class="text-base" />{{ __('procurement.oci.punchout.action') }}
-                        </button>
+                        <x-button type="submit" tone="outline" icon="shopping_cart_checkout" icon-size="1rem">
+                            {{ __('procurement.oci.punchout.action') }}
+                        </x-button>
                     </form>
                 @endif
             </div>
@@ -82,7 +82,7 @@
                     @csrf
                     <input type="file" name="shopinfo" accept=".xml,text/xml,application/xml" required
                            class="file-input file-input-bordered file-input-sm max-w-md" />
-                    <button type="submit" class="btn btn-sm">{{ __('procurement.catalog.shopinfo.action') }}</button>
+                    <x-button type="submit" tone="plain">{{ __('procurement.catalog.shopinfo.action') }}</x-button>
                 </form>
                 <p class="text-xs opacity-60 mt-2">{{ __('procurement.catalog.shopinfo.hint') }}</p>
                 @if (session('shopinfo_url'))
@@ -143,7 +143,7 @@
                     </div>
                 @endif
 
-                <button type="submit" class="btn btn-primary btn-sm">{{ __('procurement.catalog.action.import') }}</button>
+                <x-button type="submit">{{ __('procurement.catalog.action.import') }}</x-button>
             </form>
         </x-card>
         @endif
@@ -161,11 +161,11 @@
                 </x-slot:head>
                 @foreach ($imports as $imp)
                     <tr>
-                        <td class="text-sm">{{ $imp->created_at->orgTz()->format('d.m.Y H:i') }}</td>
+                        <td class="text-sm">{{ $imp->created_at->fdatetime() }}</td>
                         <td class="text-sm">{{ __('procurement.catalog.history.trigger_' . $imp->trigger) }}</td>
-                        <td><x-status-badge :tone="$imp->status === 'success' ? 'success' : 'error'">{{ __('procurement.catalog.history.status_' . $imp->status) }}</x-status-badge></td>
+                        <td><x-status-badge :tone="$imp->status === \App\Enums\Procurement\CatalogImportStatus::Success ? 'success' : 'error'">{{ $imp->status->label() }}</x-status-badge></td>
                         <td class="text-sm tabular-nums">
-                            @if ($imp->status === 'success')
+                            @if ($imp->status === \App\Enums\Procurement\CatalogImportStatus::Success)
                                 +{{ $imp->created }} / ~{{ $imp->updated }} / !{{ $imp->price_changed }} / ×{{ $imp->discontinued }}
                             @else
                                 <span class="text-error">{{ \Illuminate\Support\Str::limit((string) $imp->error, 80) }}</span>
@@ -190,7 +190,7 @@
             @if ($status !== 'all')<input type="hidden" name="status" value="{{ $status }}">@endif
             <input aria-label="{{ __('procurement.catalog.search_placeholder') }}" type="search" name="q" value="{{ request('q') }}" class="input input-sm input-bordered w-56"
                    placeholder="{{ __('procurement.catalog.search_placeholder') }}">
-            <button type="submit" class="btn btn-sm">{{ __('Suchen') }}</button>
+            <x-button type="submit" tone="plain">{{ __('Suchen') }}</x-button>
         </form>
     </div>
 

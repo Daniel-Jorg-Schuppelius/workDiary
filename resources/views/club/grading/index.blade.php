@@ -10,8 +10,7 @@
 @extends('layouts.app')
 @section('title', __('club.grading.title.index'))
 @section('nav-title', __('club.grading.title.index'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('club.grading.subtitle.index')">
     <x-slot:actions>
@@ -61,5 +60,6 @@
             <x-table.empty icon="military_tech" :colspan="7" :title="__('club.grading.empty.systems')" compact />
         @endforelse
     </x-table>
+    <x-pagination :paginator="$systems" standing />
 </x-index-page>
 @endsection

@@ -10,8 +10,8 @@
 
 namespace Tests\Feature\DocumentDesign;
 
-use App\Enums\DocumentDesign\{RenderDocumentKind, RenderProfileStatus};
-use App\Models\DocumentDesign\{DocumentRenderProfile, DocumentRenderProfileVersion};
+use App\Enums\DocumentDesign\{RenderDocumentKind, RenderProfileStatus, RenderProfileVersionStatus};
+use App\Models\DocumentDesign\DocumentRenderProfile;
 use App\Models\Platform\{Organization, User};
 use App\Services\DocumentDesign\{RenderPreflightService, RenderProfileService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -91,7 +91,7 @@ class RenderProfileTest extends TestCase {
         $v1 = $profile->versions()->firstOrFail();
 
         $this->assertTrue($service->activate($v1, $admin)->ok());
-        $this->assertSame(DocumentRenderProfileVersion::STATUS_ACTIVE, $v1->fresh()->status);
+        $this->assertSame(RenderProfileVersionStatus::Active, $v1->fresh()->status);
         $this->assertSame($v1->id, $profile->fresh()->active_version_id);
 
         // Aktivierte Version ist unveränderlich (Model-Guard).
@@ -112,7 +112,14 @@ class RenderProfileTest extends TestCase {
         $this->assertSame(2, $v2->version);
         $this->assertTrue($v2->isDraft());
         $service->activate($v2, $admin);
-        $this->assertSame(DocumentRenderProfileVersion::STATUS_SUPERSEDED, $v1->fresh()->status);
+        $this->assertSame(RenderProfileVersionStatus::Superseded, $v1->fresh()->status);
+
+        // Der Editor zeigt den Stand je Version und bietet den Rollback nur für abgelöste an.
+        $this->actingAs($admin)->get(route('admin.document-design.editor', $profile->sqid))
+            ->assertOk()
+            ->assertSee('v1 — ' . RenderProfileVersionStatus::Superseded->label())
+            ->assertSee('v2 — ' . RenderProfileVersionStatus::Active->label())
+            ->assertSee(__('document_design.editor.rollback'));
 
         // Rollback: alter Stand wird als NEUE Entwurfsversion übernommen.
         $v3 = $service->newDraftFrom($v1->fresh(), $admin);

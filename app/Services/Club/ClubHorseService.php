@@ -38,6 +38,7 @@ class ClubHorseService {
     public function __construct(
         private readonly ClubResourceService $resources,
         private readonly NotificationDispatcher $dispatcher,
+        private readonly ClubEventService $events,
     ) {}
 
     // ── Pferdeprofil ─────────────────────────────────────────────────────
@@ -142,7 +143,7 @@ class ClubHorseService {
                     throw ValidationException::withMessages(['club_horse_id' => __('club.horses.error.private_horse', ['name' => $horse->name])]);
                 }
                 $resource = $horse->resource()->firstOrFail();
-                $day = $this->localDay($event);
+                $day = $this->events->localDay($event);
                 if (! $this->resources->hasClearance($resource, $rider, $day) && ! $override) {
                     throw ValidationException::withMessages(['club_horse_id' => __('club.horses.error.no_clearance', ['name' => $rider->fullName(), 'horse' => $horse->name])]);
                 }
@@ -260,7 +261,7 @@ class ClubHorseService {
                 $members->push($extra);
             }
         }
-        $day = $this->localDay($event);
+        $day = $this->events->localDay($event);
         $rows = collect();
         foreach ($members as $member) {
             $assignment = $assignments->get($member->id);
@@ -347,12 +348,6 @@ class ClubHorseService {
                 throw $e;
             }
         }
-    }
-
-    private function localDay(Event $event): CarbonImmutable {
-        $tz = Tz::isValid($event->timezone) && $event->timezone !== 'UTC' ? (string) $event->timezone : Tz::current();
-
-        return CarbonImmutable::instance($event->started_at)->setTimezone($tz)->startOfDay();
     }
 
     /** @param  array<string, mixed>  $data */

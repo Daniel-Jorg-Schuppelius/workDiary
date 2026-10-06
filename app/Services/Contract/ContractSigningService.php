@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Contract;
 
-use App\Enums\Contract\{ContractKind, ContractObligationKind, EvidenceReviewStatus, SignatureLinkPurpose, SignatureMethod, SignatureParty, SignatureRequestStatus, SigningRevisionStatus};
+use App\Enums\Contract\{ContractKind, ContractObligationKind, ContractObligationStatus, EvidenceReviewStatus, SignatureLinkPurpose, SignatureMethod, SignatureParty, SignatureRequestStatus, SigningRevisionStatus};
 use App\Enums\Notification\NotificationEvent;
 use App\Events\Contract\ContractSigningCompleted;
 use App\Mail\AgreementLinkMail;
@@ -314,12 +314,8 @@ class ContractSigningService {
      * Der Aufrufer bindet danach die Organisation der Fassung.
      */
     public function resolveLink(string $token, SignatureLinkPurpose $purpose): ContractSignatureLink {
-        $link = ContractSignatureLink::query()
-            ->withoutGlobalScopes()
-            ->where('token_hash', CryptoHelper::hash($token))
-            ->where('purpose', $purpose->value)
-            ->first();
-        if ($link === null) {
+        $link = ContractSignatureLink::findByAccessToken($token);
+        if ($link === null || $link->purpose !== $purpose) {
             throw new RuntimeException((string) __('contract-signing.error.link_unknown'));
         }
         if (! $link->isUsable()) {
@@ -666,7 +662,7 @@ class ContractSigningService {
         }
         $exists = $contract->obligations()
             ->where('kind', ContractObligationKind::Review->value)
-            ->where('status', 'open')
+            ->where('status', ContractObligationStatus::Open)
             ->whereBetween('due_on', DateRange::days($revision->review_on, $revision->review_on))
             ->exists();
         if ($exists) {

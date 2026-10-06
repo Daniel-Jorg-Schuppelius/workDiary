@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Passenger;
 
 use App\Enums\Passenger\{RideOperationMode, RideStatus};
+use App\Enums\Passenger\ShiftSettlementStatus;
 use App\Models\Fleet\Vehicle;
 use App\Models\Hr\Qualification;
 use App\Models\Passenger\{PassengerConcession, PassengerFareTariff, PassengerRide, PassengerShiftSettlement, PassengerVehicleProfile};
@@ -238,12 +239,59 @@ class PassengerUiTest extends TestCase {
         // Offene Differenz ohne Begründung → Validierungsfehler, bleibt offen.
         $this->post(route('passenger-settlements.close', $settlement))
             ->assertSessionHasErrors('difference_reason');
-        $this->assertSame(PassengerShiftSettlement::STATUS_OPEN, $settlement->refresh()->status);
+        $this->assertSame(ShiftSettlementStatus::Open, $settlement->refresh()->status);
 
         $this->post(route('passenger-settlements.close', $settlement), [
             'difference_reason' => 'Kartenterminal-Abrechnung folgt am Montag.',
         ])->assertRedirect(route('passenger-settlements.index'));
-        $this->assertSame(PassengerShiftSettlement::STATUS_DISPUTED, $settlement->refresh()->status);
+        $this->assertSame(ShiftSettlementStatus::Disputed, $settlement->refresh()->status);
+    }
+
+    /** Liste, Statusfilter und Sperren lesen den Stand als Enum: Badge-Ton, Filter und „abgeschlossen bleibt abgeschlossen". */
+    public function test_settlement_list_shows_status_and_closed_settlements_stay_closed(): void {
+        $this->travelTo('2026-10-15 12:00:00');
+        $this->activateProfile();
+        $disputed = PassengerShiftSettlement::query()->create([
+            'organization_id' => $this->organization->id,
+            'driver_user_id' => $this->orgUser(['name' => 'Dora Differenz'])->id,
+            'shift_date' => '2026-10-15',
+            'meter_total' => '500.00',
+            'cash_total' => '480.00',
+            'difference_reason' => 'Terminal',
+            'status' => ShiftSettlementStatus::Disputed,
+        ]);
+        PassengerShiftSettlement::query()->create([
+            'organization_id' => $this->organization->id,
+            'driver_user_id' => $this->orgUser(['name' => 'Otto Offen'])->id,
+            'shift_date' => '2026-10-15',
+            'meter_total' => '100.00',
+            'cash_total' => '100.00',
+        ]);
+
+        $this->get(route('passenger-settlements.index'))
+            ->assertOk()
+            ->assertSee('Dora Differenz')
+            ->assertSee('Otto Offen')
+            ->assertSee('badge badge-md badge-warning badge-outline', false)
+            ->assertSee('badge badge-md badge-neutral badge-outline', false);
+
+        $this->get(route('passenger-settlements.index', ['status' => 'disputed']))
+            ->assertOk()
+            ->assertSee('Dora Differenz')
+            ->assertDontSee('Otto Offen');
+
+        // Abgeschlossen bleibt abgeschlossen: weder ändern noch erneut schließen.
+        $this->put(route('passenger-settlements.update', $disputed), [
+            'driver_user_id' => $disputed->driver_user_id,
+            'shift_date' => '2026-10-15',
+            'meter_total' => '1.00',
+        ])->assertSessionHasErrors('status');
+        $this->post(route('passenger-settlements.close', $disputed), ['difference_reason' => 'nochmal'])
+            ->assertSessionHasErrors('status');
+        $disputed->refresh();
+        $this->assertSame(ShiftSettlementStatus::Disputed, $disputed->status);
+        $this->assertSame('500.00', $disputed->meter_total);
+        $this->assertSame('Terminal', $disputed->difference_reason);
     }
 
     public function test_foreign_organization_cannot_access_rides(): void {

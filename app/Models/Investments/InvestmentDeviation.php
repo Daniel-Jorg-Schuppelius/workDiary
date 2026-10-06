@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Investments;
 
+use App\Enums\Investments\InvestmentDeviationStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -27,7 +28,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $kind
  * @property string $description
  * @property string|null $amount_delta
- * @property string $status
+ * @property InvestmentDeviationStatus $status
  * @property int|null $decided_by
  * @property \Illuminate\Support\Carbon|null $decided_at
  * @property string|null $decision_note
@@ -47,7 +48,7 @@ class InvestmentDeviation extends Model {
     ];
 
     /** @var array<string, string> */
-    protected $casts = ['decided_at' => 'datetime', 'amount_delta' => 'decimal:2'];
+    protected $casts = ['decided_at' => 'datetime', 'amount_delta' => 'decimal:2', 'status' => InvestmentDeviationStatus::class];
 
     /** @return BelongsTo<InvestmentCase, $this> */
     public function investmentCase(): BelongsTo {

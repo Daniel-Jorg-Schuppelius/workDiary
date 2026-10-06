@@ -36,7 +36,7 @@
                 <div class="space-y-2">
                     <div class="flex flex-wrap items-center gap-2">
                         <x-status-badge :tone="$notice->isEditable() ? 'ghost' : 'success'" size="sm">{{ $notice->status->label() }}</x-status-badge>
-                        <span class="text-sm text-base-content/70">{{ $notice->occurred_on?->format('d.m.Y') }}</span>
+                        <span class="text-sm text-base-content/70">{{ $notice->occurred_on?->fdate() }}</span>
                         @if ($notice->legal_reference)
                             <span class="text-sm text-base-content/70">{{ $notice->legal_reference }}</span>
                         @endif
@@ -49,7 +49,7 @@
                         <p class="whitespace-pre-line"><span class="font-semibold">{{ __('construction.field.impact_cost') }}:</span><br>{{ $notice->impact_cost }}</p>
                     @endif
                     @if ($notice->claims_time_extension)
-                        <div class="alert alert-warning text-sm">
+                        <div role="alert" class="alert alert-warning text-sm">
                             <span>{{ __('construction.note.time_extension') }}</span>
                         </div>
                     @endif
@@ -60,16 +60,16 @@
             <aside class="space-y-3">
                 <x-card>
                     <h3 class="text-sm font-semibold mb-1">{{ __('construction.section.context') }}</h3>
-                    <dl class="text-sm space-y-1">
-                        <div><dt class="inline font-medium">{{ __('construction.column.project') }}:</dt> <dd class="inline">{{ $notice->project?->name ?? '—' }}</dd></div>
-                        <div><dt class="inline font-medium">{{ __('construction.field.site') }}:</dt> <dd class="inline">{{ $notice->site?->name ?? '—' }}</dd></div>
-                        <div><dt class="inline font-medium">{{ __('construction.field.customer') }}:</dt> <dd class="inline">{{ $notice->customer?->name ?? '—' }}</dd></div>
-                        <div><dt class="inline font-medium">{{ __('construction.field.diary_entry') }}:</dt> <dd class="inline">
+                    <x-detail-grid>
+                        <x-detail-grid.row :label="__('construction.column.project') . ':'">{{ $notice->project?->name ?? '—' }}</x-detail-grid.row>
+                        <x-detail-grid.row :label="__('construction.field.site') . ':'">{{ $notice->site?->name ?? '—' }}</x-detail-grid.row>
+                        <x-detail-grid.row :label="__('construction.field.customer') . ':'">{{ $notice->customer?->name ?? '—' }}</x-detail-grid.row>
+                        <x-detail-grid.row :label="__('construction.field.diary_entry') . ':'">
                             @if ($notice->diaryEntry !== null)
                                 <x-order-link :entry="$notice->diaryEntry" link-class="link">{{ $notice->diaryEntry->title }}</x-order-link>
                             @else — @endif
-                        </dd></div>
-                    </dl>
+                        </x-detail-grid.row>
+                    </x-detail-grid>
                 </x-card>
 
                 @if ($notice->weatherSnapshot !== null)
@@ -80,7 +80,7 @@
                             {{ $notice->weatherSnapshot->precipitation_mm }} mm ·
                             {{ $notice->weatherSnapshot->wind_gust_kmh }} km/h
                         </p>
-                        <p class="text-xs text-muted">{{ $notice->weatherSnapshot->provider }} — {{ $notice->weatherSnapshot->fetched_at?->orgTz()->format('d.m.Y H:i') }}</p>
+                        <p class="text-xs text-muted">{{ $notice->weatherSnapshot->provider }} — {{ $notice->weatherSnapshot->fetched_at?->fdatetime() }}</p>
                     </x-card>
                 @endif
 
@@ -113,7 +113,7 @@
                     <x-card>
                         <h3 class="text-sm font-semibold mb-1">{{ __('construction.section.acknowledge') }}</h3>
                         @if ($notice->acknowledged_at)
-                            <p class="text-sm text-success">{{ $notice->acknowledged_at->format('d.m.Y') }} — {{ $notice->acknowledged_note ?: '—' }}</p>
+                            <p class="text-sm text-success">{{ $notice->acknowledged_at->fdate() }} — {{ $notice->acknowledged_note ?: '—' }}</p>
                         @else
                             <form method="post" action="{{ route('construction-notices.acknowledge', $notice) }}" class="space-y-1">
                                 @csrf

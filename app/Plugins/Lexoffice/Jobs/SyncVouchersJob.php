@@ -50,8 +50,9 @@ class SyncVouchersJob implements ShouldBeUnique, ShouldQueue {
 
     public function handle(): void {
         $config = LexofficeConfig::resolve($this->organizationId);
-        if (! is_string($config['api_key']) || $config['api_key'] === '') {
-            return; // Org nicht konfiguriert → nichts zu tun
+        // Abgeschaltet steht auch der Job — sonst liefe er mit einem Schlüssel aus der Installation weiter (S-28, k2-06).
+        if ($config['enabled'] !== true || ! is_string($config['api_key']) || $config['api_key'] === '') {
+            return;
         }
 
         $customerMorph = (new Customer)->getMorphClass();

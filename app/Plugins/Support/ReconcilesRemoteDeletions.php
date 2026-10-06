@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Support;
 
+use App\Enums\Integration\IntegrationInboxStatus;
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use App\Models\Platform\Organization;
 use App\Models\Time\TimeEntry;
@@ -90,7 +91,7 @@ trait ReconcilesRemoteDeletions {
                 'case_type' => IntegrationInboxItem::CASE_CONFLICT,
                 'referenceable_type' => $timeEntry->getMorphClass(),
                 'referenceable_id' => $timeEntry->getKey(),
-                'status' => IntegrationInboxItem::STATUS_OPEN,
+                'status' => IntegrationInboxStatus::Open,
                 'remote_snapshot' => [
                     'reason' => 'remote_deleted_after_export',
                     // Die Zeit hängt an einem Beleg: der Fremdstand darf hier

@@ -19,7 +19,7 @@
 @endphp
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar :subtitle="$instruction->topic . ' · ' . $instruction->held_on->format('d.m.Y')"
+        <x-page-toolbar :subtitle="$instruction->topic . ' · ' . $instruction->held_on->fdate()"
                         :badge="__('safety.register.status_summary', ['signed' => $signed, 'total' => $total])"
                         :badgeTone="$total > 0 && $signed === $total ? 'success' : 'warning'"
                         :back-route="auth()->user()?->can('viewAny', \App\Models\Safety\SafetyInstruction::class) ? 'safety.instructions.index' : null"
@@ -64,9 +64,9 @@
                                     {{ $participant->isSigned() ? __('Ja') : __('Nein') }}
                                 </x-status-badge>
                             </td>
-                            <td class="text-sm text-base-content/70">{{ $participant->signed_at?->orgTz()->format('d.m.Y H:i') ?? '–' }}</td>
+                            <td class="text-sm text-base-content/70">{{ $participant->signed_at?->fdatetime() ?? '–' }}</td>
                             <td class="text-sm text-base-content/70">{{ $participant->method?->label() ?? '–' }}</td>
-                            <td class="text-sm {{ $participant->isDueOverdue() ? 'text-error font-semibold' : 'text-base-content/70' }}">{{ $participant->next_due_on?->format('d.m.Y') ?? '–' }}</td>
+                            <td class="text-sm {{ $participant->isDueOverdue() ? 'text-error font-semibold' : 'text-base-content/70' }}">{{ $participant->next_due_on?->fdate() ?? '–' }}</td>
                             <td class="text-right">
                                 @can('sign', $participant)
                                     <x-action-form :action="route('safety.instructions.participants.sign', [$instruction, $participant])"
@@ -94,11 +94,11 @@
                             <div class="rounded-box border border-base-300 bg-white p-2">
                                 <canvas x-ref="canvas" class="block h-32 w-full touch-none rounded bg-white"></canvas>
                             </div>
-                            <button type="button" class="btn btn-ghost btn-xs self-start" @click="clear()">{{ __('Leeren') }}</button>
+                            <x-button tone="ghost" size="xs" class="self-start" @click="clear()">{{ __('Leeren') }}</x-button>
                             <form method="POST" action="{{ route('safety.instructions.participants.sign', [$instruction, $signable]) }}" @submit="prepare($event)" class="flex">
                                 @csrf
                                 <input type="hidden" name="signature" x-ref="sigInput">
-                                <button class="btn btn-primary btn-sm w-full" :disabled="isEmpty">{{ __('safety.register.action.sign_drawn') }}</button>
+                                <x-button type="submit" class="w-full" ::disabled="isEmpty">{{ __('safety.register.action.sign_drawn') }}</x-button>
                             </form>
                         </div>
                         <x-slot:actions>
@@ -124,7 +124,7 @@
                 <x-detail-grid>
                     <x-detail-grid.row :label="__('safety.register.field.instruction_no')" :value="$instruction->displayNo()" />
                     <x-detail-grid.row :label="__('safety.register.field.topic')" :value="$instruction->topic" />
-                    <x-detail-grid.row :label="__('safety.register.field.held_on')" :value="$instruction->held_on->format('d.m.Y')" />
+                    <x-detail-grid.row :label="__('safety.register.field.held_on')" :value="$instruction->held_on->fdate()" />
                     <x-detail-grid.row :label="__('safety.register.field.instructor')" :value="$instruction->instructor?->name ?? '–'" />
                     <x-detail-grid.row :label="__('safety.register.field.repeat_interval_months')" :value="$instruction->repeat_interval_months ?? '–'" />
                     @if ($instruction->assessment)

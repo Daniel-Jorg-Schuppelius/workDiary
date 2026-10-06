@@ -15,21 +15,10 @@
 @php
     use App\Enums\ExternalParticipant\ExternalAbility;
 @endphp
-<!doctype html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="light">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="robots" content="noindex,nofollow">
-<title>{{ __('external.public.title') }}</title>
-@include('partials.font-bootstrap', ['icons' => false])
-@vite(['resources/css/app.css','resources/js/app.js'])
-</head>
-<body class="min-h-screen bg-base-200">
-<main class="mx-auto max-w-3xl p-4 space-y-4">
+<x-public-page :title="__('external.public.title')" main="mx-auto max-w-3xl p-4 space-y-4">
     <div class="rounded-box bg-base-100 p-4 shadow">
         <div class="mb-1 flex items-center gap-2 text-xs text-muted">
-            <span class="badge badge-outline badge-sm">{{ $participant->party->label() }}</span>
+            <x-status-badge tone="plain" outline>{{ $participant->party->label() }}</x-status-badge>
             <span>{{ __('external.public.hello', ['name' => $participant->name]) }}</span>
         </div>
         <h1 class="font-['Space_Grotesk'] text-xl font-semibold">{{ $context['title'] }}</h1>
@@ -100,6 +89,4 @@
             {{ __('external.public.view_only') }}
         </div>
     @endunless
-</main>
-</body>
-</html>
+</x-public-page>

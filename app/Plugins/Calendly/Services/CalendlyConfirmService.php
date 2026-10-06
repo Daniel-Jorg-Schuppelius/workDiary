@@ -12,7 +12,9 @@ declare(strict_types=1);
 
 namespace App\Plugins\Calendly\Services;
 
+use App\Enums\Calendar\AppointmentRequestStatus;
 use App\Enums\Diary\{DispatchStatus, Status};
+use App\Enums\Integration\IntegrationInboxStatus;
 use App\Exceptions\InvalidOrderTransitionException;
 use App\Models\Calendar\AppointmentRequest;
 use App\Models\Diary\DiaryEntry;
@@ -44,7 +46,7 @@ class CalendlyConfirmService {
 
     /** Bestätigt einen `requested`-Terminwunsch und legt den Dispositionseintrag an. */
     public function confirm(AppointmentRequest $request, User $decider): ?DiaryEntry {
-        if ($request->status !== AppointmentRequest::STATUS_REQUESTED) {
+        if (! $request->status->canTransitionTo(AppointmentRequestStatus::Confirmed)) {
             return null;
         }
 
@@ -84,7 +86,7 @@ class CalendlyConfirmService {
         ]);
 
         $request->forceFill([
-            'status' => AppointmentRequest::STATUS_CONFIRMED,
+            'status' => AppointmentRequestStatus::Confirmed,
             'decided_by' => (int) $decider->id,
             'decided_at' => now(),
             'diary_entry_id' => $entry->id,
@@ -97,11 +99,11 @@ class CalendlyConfirmService {
 
     /** Lehnt einen `requested`-Terminwunsch intern ab (ohne Dispositionseintrag). */
     public function decline(AppointmentRequest $request, User $decider, ?string $reason = null): void {
-        if ($request->status !== AppointmentRequest::STATUS_REQUESTED) {
+        if (! $request->status->canTransitionTo(AppointmentRequestStatus::Declined)) {
             return;
         }
         $request->forceFill([
-            'status' => AppointmentRequest::STATUS_DECLINED,
+            'status' => AppointmentRequestStatus::Declined,
             'decided_by' => (int) $decider->id,
             'decided_at' => now(),
             'decline_reason' => $reason,
@@ -171,7 +173,7 @@ class CalendlyConfirmService {
                 'external_type' => 'calendly_cancel_conflict',
                 'external_id' => (string) $request->source_uri,
                 'case_type' => IntegrationInboxItem::CASE_CONFLICT,
-                'status' => IntegrationInboxItem::STATUS_OPEN,
+                'status' => IntegrationInboxStatus::Open,
                 'referenceable_type' => $entry->getMorphClass(),
                 'referenceable_id' => $entry->getKey(),
                 'remote_snapshot' => ['appointment_request_id' => $request->id, 'diary_entry_id' => $entry->id, 'reason' => (string) __('Calendly-Absage nach Auftragsbeginn')],

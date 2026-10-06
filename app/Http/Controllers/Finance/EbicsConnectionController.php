@@ -115,6 +115,18 @@ class EbicsConnectionController extends Controller {
         return back()->with('success', __('ebics.flash.submitted', ['order' => $orderId !== '' ? $orderId : '—']));
     }
 
+    /** Ausgang der letzten Übermittlung war unklar und ist bei der Bank geprüft: der Auftrag liegt dort nicht vor. */
+    public function confirmNotSubmitted(PaymentRun $run, EbicsPaymentSubmission $submission): RedirectResponse {
+        Gate::authorize(P::FinancePaymentRelease->value);
+        try {
+            $submission->confirmNotSubmitted($run, $this->actor());
+        } catch (EbicsException $e) {
+            return back()->with('error', $this->message($e));
+        }
+
+        return back()->with('success', __('ebics.flash.submission_released'));
+    }
+
     private function run(callable $step, string $flash): RedirectResponse {
         try {
             $step();

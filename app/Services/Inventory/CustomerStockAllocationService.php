@@ -14,7 +14,7 @@ namespace App\Services\Inventory;
 
 use App\Models\Article\ArticleVariant;
 use App\Models\Customer\Customer;
-use App\Models\Inventory\{StockMovement, Warehouse};
+use App\Models\Inventory\{StockLot, StockMovement, Warehouse};
 use App\Models\Material\MaterialCostAllocation;
 use App\Support\DecimalQty;
 use CommonToolkit\Helper\Data\NumberHelper;
@@ -24,16 +24,21 @@ use Illuminate\Support\Facades\DB;
 /**
  * Verbindet Lagerentnahme und Kunden-Materialkosten: eine Entnahme (gleitender
  * Durchschnitt) wird zugleich als {@see MaterialCostAllocation} auf den Kunden
- * gebucht (Quelle = die {@see StockMovement}). Das Löschen einer so entstandenen
- * Zuordnung bucht die Entnahme wieder ins Lager zurück (Gegenbuchung vom Typ
- * Return zum ursprünglichen Stückkostenwert — das append-only Journal bleibt intakt).
+ * gebucht (Quelle = die erste {@see StockMovement} des Abgangs). Das Löschen
+ * einer so entstandenen Zuordnung bucht jede Bewegung des Abgangs in ihre
+ * Charge zurück (Gegenbuchung vom Typ Return zum ursprünglichen
+ * Stückkostenwert — das append-only Journal bleibt intakt).
  */
 class CustomerStockAllocationService {
-    public function __construct(private readonly ValuationService $valuation) {}
+    public function __construct(
+        private readonly ValuationService $valuation,
+        private readonly InventoryLedger $ledger,
+    ) {}
 
     /**
-     * Entnimmt `$qty` der Variante aus dem Lager (zum gleitenden Durchschnitt)
-     * und bucht den Kostenwert als Materialkosten auf den Kunden.
+     * Entnimmt `$qty` der Variante aus dem Lager (zum gleitenden Durchschnitt,
+     * gewählte Charge oder FEFO) und bucht den Kostenwert als Materialkosten
+     * auf den Kunden.
      */
     public function issueForCustomer(
         Customer $customer,
@@ -43,11 +48,12 @@ class CustomerStockAllocationService {
         ?int $projectId = null,
         ?string $allocatedOn = null,
         ?int $actorUserId = null,
+        ?StockLot $lot = null,
+        bool $requireLot = false,
     ): MaterialCostAllocation {
-        return DB::transaction(function () use ($customer, $variant, $warehouse, $qty, $projectId, $allocatedOn, $actorUserId): MaterialCostAllocation {
-            $movement = $this->valuation->issue($variant, $warehouse, $qty, actorUserId: $actorUserId);
-
-            $amount = $movement->cost_total?->getAmount() ?? '0';
+        return DB::transaction(function () use ($customer, $variant, $warehouse, $qty, $projectId, $allocatedOn, $actorUserId, $lot, $requireLot): MaterialCostAllocation {
+            $issue = $this->valuation->issue($variant, $warehouse, $qty, actorUserId: $actorUserId, lot: $lot, requireLot: $requireLot);
+            $movement = $issue->first();
             $currency = $customer->currency->value;
 
             return $customer->materialCostAllocations()->create([
@@ -56,7 +62,7 @@ class CustomerStockAllocationService {
                 'source_type' => $movement->getMorphClass(),
                 'source_id' => $movement->getKey(),
                 'description' => $this->describe($variant, $qty),
-                'allocated_amount' => $amount,
+                'allocated_amount' => $issue->costTotal(),
                 'currency' => $currency,
                 'allocated_on' => $allocatedOn ?? Carbon::now()->toDateString(),
                 'created_by' => $actorUserId,
@@ -71,10 +77,14 @@ class CustomerStockAllocationService {
      */
     public function reverse(MaterialCostAllocation $allocation): void {
         DB::transaction(function () use ($allocation): void {
-            $movement = $allocation->source;
-            $variant = $movement instanceof StockMovement ? $movement->variant : null;
-            $warehouse = $movement instanceof StockMovement ? $movement->warehouse : null;
-            if ($movement instanceof StockMovement && $variant !== null && $warehouse !== null) {
+            $source = $allocation->source;
+            $movements = $source instanceof StockMovement ? $this->ledger->issueOf($source) : [];
+            foreach ($movements as $movement) {
+                $variant = $movement->variant;
+                $warehouse = $movement->warehouse;
+                if ($variant === null || $warehouse === null) {
+                    continue;
+                }
                 $this->valuation->returnToStock(
                     $variant,
                     $warehouse,
@@ -83,6 +93,7 @@ class CustomerStockAllocationService {
                     $allocation->currency->value,
                     $allocation->created_by,
                     source: $movement,
+                    lot: $movement->lot,
                 );
             }
 

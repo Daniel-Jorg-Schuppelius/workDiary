@@ -1,7 +1,7 @@
 ---
 title: "Lexoffice-Produkte & Leistungen"
 topic: articles.lexoffice
-version: 1
+version: 2
 audience: []
 modules:
     - module.vertrieb
@@ -25,3 +25,11 @@ Eintrags als Dialog.
 Mit ausreichender Berechtigung lässt sich der Sync manuell anstoßen; er
 meldet, wie viele Einträge neu, aktualisiert oder archiviert wurden.
 Voraussetzung ist, dass Lexoffice für die Organisation konfiguriert ist.
+
+Die Konflikt-Strategie aus den Lexoffice-Einstellungen (Lexoffice gewinnt,
+Lokal gewinnt, Manuelle Prüfung) gilt auch für den Artikel-Sync: Bei
+„Manuelle Prüfung“ landen lokal geänderte Artikel, deren Stand in Lexoffice
+abweicht, als Konflikt in der Konfliktliste des Lagers (Lager → Konflikte).
+Dort entscheiden Sie je Artikel, ob der lokale Stand bleibt, der
+Lexoffice-Stand übernommen oder der Konflikt verworfen wird. Der manuelle
+Sync meldet die Zahl der neuen Konflikte.

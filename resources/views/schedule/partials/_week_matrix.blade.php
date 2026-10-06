@@ -125,12 +125,17 @@
                                     @if ($isAdmin) cursor-pointer hover:opacity-80 @endif"
                              style="background:{{ $shift->shiftType?->color ?? '#6b7280' }};color:#fff;"
                              @if ($isAdmin)
-                                 draggable="true"
                                  data-shift-drag="{{ $shift->sqid }}"
                                  data-shift-edit="{{ $shift->sqid }}"
                                  data-shift-payload="{{ json_encode($shiftPayload) }}"
                              @endif
                              title="{{ $shift->shiftType?->name ?? __('Schicht') }}{{ $shift->resolvedStartTime() ? ': '.$shift->resolvedStartTime() : '' }}{{ $shift->resolvedEndTime() ? '–'.$shift->resolvedEndTime() : '' }}{{ $shift->note ? ' · '.$shift->note : '' }}{{ $complTitle }}{{ $qualTitle }}">
+                            @if ($isAdmin)
+                                {{-- Griff für Finger und Stift; die Maus zieht am ganzen Abzeichen.
+                                     Trefferfläche: app.css ([data-shift-handle]::before). --}}
+                                <x-icon name="drag_indicator" size="1.1em" data-shift-handle
+                                        class="-ml-1.5 -mr-1 cursor-grab touch-none opacity-70" />
+                            @endif
                             <span>{{ $shift->shiftType?->abbreviation ?? '?' }}</span>
                             @if ($shift->resolvedStartTime() || $shift->resolvedEndTime())
                                 <span class="font-normal opacity-80">{{ $shift->resolvedStartTime() ?? '' }}–{{ $shift->resolvedEndTime() ?? '' }}</span>
@@ -154,7 +159,7 @@
             @endforeach
         </div>
     @empty
-        <p class="py-12 text-center text-sm text-muted">{{ __('Keine Schichten in diesem Zeitraum.') }}</p>
+        <x-empty-state icon="calendar_month" :title="__('Keine Schichten in diesem Zeitraum.')" />
     @endforelse
 
     {{-- ── Open-slot row (Soll vs Ist) ── --}}

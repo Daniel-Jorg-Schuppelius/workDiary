@@ -29,87 +29,54 @@
             @endif
         </div>
 
-        <dl class="grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-2">
-            <div>
-                <dt class="text-xs text-muted">{{ __('Artikelnummer') }}</dt>
-                <dd class="tabular-nums">{{ $article->article_number ?: '—' }}</dd>
-            </div>
-            <div>
-                <dt class="text-xs text-muted">{{ __('GTIN / Barcode') }}</dt>
-                <dd class="tabular-nums">{{ $article->gtin ?: '—' }}</dd>
-            </div>
-            <div>
-                <dt class="text-xs text-muted">{{ __('Einheit') }}</dt>
-                <dd>{{ $article->unit_name ?: '—' }}</dd>
-            </div>
-            <div>
-                <dt class="text-xs text-muted">{{ __('Führende Preisangabe') }}</dt>
-                <dd>
-                    @if ($article->leading_price === 'GROSS')
-                        {{ __('Brutto') }}
-                    @elseif ($article->leading_price === 'NET')
-                        {{ __('Netto') }}
-                    @else
-                        —
-                    @endif
-                </dd>
-            </div>
-            <div>
-                <dt class="text-xs text-muted">{{ __('Netto-Preis') }}</dt>
-                <dd class="tabular-nums">
-                    @if ($article->net_unit_price !== null)
-                        {{ $article->net_unit_price?->withScale(2)->format(withSymbol: false) ?? '0,00' }} {{ $article->currency->value }}
-                    @else
-                        —
-                    @endif
-                </dd>
-            </div>
-            <div>
-                <dt class="text-xs text-muted">{{ __('Brutto-Preis') }}</dt>
-                <dd class="tabular-nums">
-                    @if ($article->gross_unit_price !== null)
-                        {{ $article->gross_unit_price?->withScale(2)->format(withSymbol: false) ?? '0,00' }} {{ $article->currency->value }}
-                    @else
-                        —
-                    @endif
-                </dd>
-            </div>
-            <div>
-                <dt class="text-xs text-muted">{{ __('Umsatzsteuersatz') }}</dt>
-                <dd class="tabular-nums">
-                    @if ($article->vat_rate !== null)
-                        {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($article->vat_rate !== null ? (float) $article->vat_rate->getNumericValue() : 0.0, 0, withThousandsSeparator: true) }} %
-                    @else
-                        —
-                    @endif
-                </dd>
-            </div>
+        <x-detail-grid layout="cells" small-labels>
+            <x-detail-grid.row :label="__('Artikelnummer')" class="tabular-nums">{{ $article->article_number ?: '—' }}</x-detail-grid.row>
+            <x-detail-grid.row :label="__('GTIN / Barcode')" class="tabular-nums">{{ $article->gtin ?: '—' }}</x-detail-grid.row>
+            <x-detail-grid.row :label="__('Einheit')">{{ $article->unit_name ?: '—' }}</x-detail-grid.row>
+            <x-detail-grid.row :label="__('Führende Preisangabe')">
+                @if ($article->leading_price === 'GROSS')
+                    {{ __('Brutto') }}
+                @elseif ($article->leading_price === 'NET')
+                    {{ __('Netto') }}
+                @else
+                    —
+                @endif
+            </x-detail-grid.row>
+            <x-detail-grid.row :label="__('Netto-Preis')" class="tabular-nums">
+                @if ($article->net_unit_price !== null)
+                    {{ $article->net_unit_price?->withScale(2)->format(withSymbol: false) ?? '0,00' }} {{ $article->currency->value }}
+                @else
+                    —
+                @endif
+            </x-detail-grid.row>
+            <x-detail-grid.row :label="__('Brutto-Preis')" class="tabular-nums">
+                @if ($article->gross_unit_price !== null)
+                    {{ $article->gross_unit_price?->withScale(2)->format(withSymbol: false) ?? '0,00' }} {{ $article->currency->value }}
+                @else
+                    —
+                @endif
+            </x-detail-grid.row>
+            <x-detail-grid.row :label="__('Umsatzsteuersatz')" class="tabular-nums">
+                @if ($article->vat_rate !== null)
+                    {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($article->vat_rate !== null ? (float) $article->vat_rate->getNumericValue() : 0.0, 0, withThousandsSeparator: true) }} %
+                @else
+                    —
+                @endif
+            </x-detail-grid.row>
             @if ($article->description)
-                <div class="sm:col-span-2">
-                    <dt class="text-xs text-muted">{{ __('Beschreibung') }}</dt>
-                    <dd class="whitespace-pre-wrap">{{ $article->description }}</dd>
-                </div>
+                <x-detail-grid.row :label="__('Beschreibung')" full class="whitespace-pre-wrap">{{ $article->description }}</x-detail-grid.row>
             @endif
             @if ($article->note)
-                <div class="sm:col-span-2">
-                    <dt class="text-xs text-muted">{{ __('Notiz') }}</dt>
-                    <dd class="whitespace-pre-wrap">{{ $article->note }}</dd>
-                </div>
+                <x-detail-grid.row :label="__('Notiz')" full class="whitespace-pre-wrap">{{ $article->note }}</x-detail-grid.row>
             @endif
-            <div>
-                <dt class="text-xs text-muted">{{ __('Lexoffice-ID') }}</dt>
-                <dd class="font-mono text-xs">{{ $article->external_id }}</dd>
-            </div>
-            <div>
-                <dt class="text-xs text-muted">{{ __('Zuletzt synchronisiert') }}</dt>
-                <dd>{{ $article->synced_at?->orgTz()->format('d.m.Y H:i') ?: '—' }}</dd>
-            </div>
-        </dl>
+            <x-detail-grid.row :label="__('Lexoffice-ID')" class="font-mono text-xs">{{ $article->external_id }}</x-detail-grid.row>
+            <x-detail-grid.row :label="__('Zuletzt synchronisiert')">{{ $article->synced_at?->fdatetime() ?: '—' }}</x-detail-grid.row>
+        </x-detail-grid>
     </div>
 
     <x-slot:actions>
-        <button type="button" class="btn btn-ghost gap-2" data-entry-modal-close>
-            <x-icon name="close" /> {{ __('Schließen') }}
-        </button>
+        <x-button tone="ghost" size="md" icon="close" class="gap-2" data-entry-modal-close>
+            {{ __('Schließen') }}
+        </x-button>
     </x-slot:actions>
 </x-modal>

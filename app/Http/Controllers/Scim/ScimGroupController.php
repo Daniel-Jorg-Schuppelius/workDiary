@@ -13,13 +13,11 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Scim;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Scim\Concerns\GuardsScimRequests;
 use App\Models\Auth\ScimGroup;
-use App\Models\Platform\Organization;
 use App\Services\Scim\{ScimException, ScimGroupService, ScimResponse};
 use App\Support\SqidEncoder;
-use Closure;
 use Illuminate\Http\{JsonResponse, Request};
-use Throwable;
 
 /**
  * SCIM-2.0-Gruppenendpunkt (Feature 057, MVP-121 → Rang 16). Auth/Org-Bindung/
@@ -28,6 +26,8 @@ use Throwable;
  * NICHT vom IdP. SCIM vergibt weiterhin keine Rollen.
  */
 class ScimGroupController extends Controller {
+    use GuardsScimRequests;
+
     public function __construct(private readonly ScimGroupService $service) {}
 
     /** GET /scim/v2/Groups — Liste, optional `displayName eq "…"`; `excludedAttributes=members` respektiert. */
@@ -105,25 +105,6 @@ class ScimGroupController extends Controller {
     // --- intern -----------------------------------------------------------
 
     /** Fängt SCIM-Fehler ein und übersetzt sie in SCIM-Fehlerantworten. */
-    private function guard(Closure $fn): JsonResponse {
-        try {
-            return $fn();
-        } catch (ScimException $e) {
-            return ScimResponse::error($e->status, $e->getMessage(), $e->scimType);
-        } catch (Throwable $e) {
-            return ScimResponse::error(500, class_basename($e));
-        }
-    }
-
-    private function organization(): Organization {
-        $org = app('currentOrganization');
-        if (! $org instanceof Organization) {
-            throw new ScimException(401, 'No organization context.');
-        }
-
-        return $org;
-    }
-
     /** Löst die SCIM-`id` (Sqid) auf eine Gruppe der Organisation auf. */
     private function resolve(string $id): ScimGroup {
         $org = $this->organization();

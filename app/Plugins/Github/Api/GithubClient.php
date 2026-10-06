@@ -12,9 +12,10 @@ declare(strict_types=1);
 
 namespace App\Plugins\Github\Api;
 
+use APIToolkit\API\Authentication\BearerAuthentication;
+use App\Plugins\Github\Exceptions\GithubApiException;
 use App\Plugins\Github\GithubPlugin;
-use App\Plugins\Support\PluginHttpFactory;
-use Illuminate\Http\Client\Response;
+use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
 
 /**
  * Typisierte Oberfläche der GitHub-REST-API v3 (Feature 060, MVP-129,
@@ -30,6 +31,8 @@ use Illuminate\Http\Client\Response;
 class GithubClient {
     // Gemeinsame guard()-Fehlerbehandlung (Vollaudit 2026-07, N33).
     use \App\Plugins\Support\GuardsPluginApiResponses;
+
+    private ?PluginApiClient $api = null;
 
     public function __construct(
         private readonly PluginHttpFactory $http,
@@ -57,7 +60,7 @@ class GithubClient {
         }
 
         $endpoint = sprintf('/repos/%s/%s/issues', rawurlencode($owner), rawurlencode($repo));
-        $body = $this->guard($this->authed('get', $endpoint, ['query' => $query]), $endpoint);
+        $body = $this->guard($this->api()->requestResponse('get', $this->baseUrl . $endpoint, ['query' => $query]), $endpoint);
 
         return array_values(array_filter($body, 'is_array'));
     }
@@ -69,22 +72,21 @@ class GithubClient {
      */
     public function user(): array {
         /** @var array<string, mixed> */
-        return $this->guard($this->authed('get', '/user'), '/user');
+        return $this->guard($this->api()->requestResponse('get', $this->baseUrl . '/user'), '/user');
     }
 
-    /** @param array<string, mixed> $options */
-    private function authed(string $method, string $path, array $options = []): Response {
-        $options['headers'] = array_merge(
-            (array) ($options['headers'] ?? []),
-            [
-                'Authorization' => 'Bearer ' . $this->apiToken,
+    /** Ein Exemplar je Client; Anmeldung und GitHub-Kopfzeilen hängen daran. */
+    private function api(): PluginApiClient {
+        if ($this->api === null) {
+            $this->api = $this->http->client(GithubPlugin::ID, $this->baseUrl);
+            $this->api->setAuthentication(new BearerAuthentication($this->apiToken));
+            $this->api->setDefaultHeaders([
                 'Accept' => 'application/vnd.github+json',
                 'X-GitHub-Api-Version' => (string) config('plugins.github.api_version', '2022-11-28'),
-            ],
-        );
+            ]);
+        }
 
-        return $this->http->client(GithubPlugin::ID, $this->baseUrl)
-            ->requestResponse($method, $this->baseUrl . $path, $options);
+        return $this->api;
     }
 
     /**
@@ -94,13 +96,13 @@ class GithubClient {
      */
     public function setIssueState(string $owner, string $repo, int $number, bool $closed): void {
         $endpoint = sprintf('/repos/%s/%s/issues/%d', rawurlencode($owner), rawurlencode($repo), $number);
-        $this->guard($this->authed('patch', $endpoint, ['json' => ['state' => $closed ? 'closed' : 'open']]), $endpoint);
+        $this->guard($this->api()->requestResponse('patch', $this->baseUrl . $endpoint, ['json' => ['state' => $closed ? 'closed' : 'open']]), $endpoint);
     }
 
     /** POST /repos/{owner}/{repo}/issues/{number}/comments — Erledigungs-Notiz. */
     public function commentIssue(string $owner, string $repo, int $number, string $body): void {
         $endpoint = sprintf('/repos/%s/%s/issues/%d/comments', rawurlencode($owner), rawurlencode($repo), $number);
-        $this->guard($this->authed('post', $endpoint, ['json' => ['body' => $body]]), $endpoint);
+        $this->guard($this->api()->requestResponse('post', $this->baseUrl . $endpoint, ['json' => ['body' => $body]]), $endpoint);
     }
 
     /** @return class-string<\App\Plugins\Support\PluginApiException> */

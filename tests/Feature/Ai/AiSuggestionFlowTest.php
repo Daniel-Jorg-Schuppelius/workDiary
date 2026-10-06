@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Ai;
 
+use App\Enums\Ai\AiTextSuggestionStatus;
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Enums\User\Permission;
 use App\Models\Ai\{AiCapabilitySetting, AiMemoryEntry, AiProviderConnection, AiTextSuggestion};
 use App\Models\Customer\Customer;
@@ -82,7 +84,7 @@ class AiSuggestionFlowTest extends TestCase {
             'organization_id' => $this->organization->id,
             'customer_id' => $customer->id,
             'number' => 'R2030-' . str_pad((string) ++self::$invoiceSeq, 4, '0', STR_PAD_LEFT),
-            'status' => Invoice::STATUS_DRAFT,
+            'status' => InvoiceStatus::Draft,
             'currency' => 'EUR',
             'tax_rate' => '19.00',
             'created_by' => $this->user->id,
@@ -135,7 +137,7 @@ class AiSuggestionFlowTest extends TestCase {
             ->assertRedirect();
 
         $suggestion = AiTextSuggestion::query()->where('subject_id', $item->id)->firstOrFail();
-        $this->assertSame(AiTextSuggestion::STATUS_PROPOSED, $suggestion->status);
+        $this->assertSame(AiTextSuggestionStatus::Proposed, $suggestion->status);
         $this->assertSame('wartung clients server installation snap', $suggestion->original);
 
         // Anzeige auf der Rechnungsseite inkl. Vorschlag.
@@ -152,7 +154,7 @@ class AiSuggestionFlowTest extends TestCase {
         $item->refresh();
         $this->assertSame($suggestion->suggestion, $item->description);
         $this->assertNotNull($item->ai_assisted_at);
-        $this->assertSame(AiTextSuggestion::STATUS_ACCEPTED, $suggestion->fresh()->status);
+        $this->assertSame(AiTextSuggestionStatus::Accepted, $suggestion->fresh()->status);
         $this->assertDatabaseHas('audit_logs', ['event' => 'ai.suggestion_decided']);
     }
 
@@ -177,7 +179,7 @@ class AiSuggestionFlowTest extends TestCase {
             'entry_type' => 'example',
             'source_text' => $payload['source_text'],
             'content' => $payload['content'],
-            'customer_id' => $payload['customer_id'],
+            'customer_id' => \App\Support\Sqid::encode(\App\Models\Customer\Customer::class, $payload['customer_id']),
         ])->assertRedirect();
 
         $this->assertDatabaseHas('ai_memory_entries', [
@@ -222,7 +224,7 @@ class AiSuggestionFlowTest extends TestCase {
 
         $this->assertSame(2, AiTextSuggestion::query()
             ->whereIn('subject_id', [$first->id, $second->id])
-            ->where('status', AiTextSuggestion::STATUS_PROPOSED)
+            ->where('status', AiTextSuggestionStatus::Proposed)
             ->count());
     }
 
@@ -238,7 +240,7 @@ class AiSuggestionFlowTest extends TestCase {
 
         $this->assertSame(2, $this->fake->callCount('translate'));
         $this->assertSame(2, AiTextSuggestion::query()->whereIn('subject_id', [$first->id, $second->id])
-            ->where('capability', ItemTextSuggestionService::CAPABILITY_TRANSLATE)->where('status', AiTextSuggestion::STATUS_PROPOSED)->count());
+            ->where('capability', ItemTextSuggestionService::CAPABILITY_TRANSLATE)->where('status', AiTextSuggestionStatus::Proposed)->count());
     }
 
     public function test_translate_flow_creates_suggestion(): void {
@@ -268,7 +270,7 @@ class AiSuggestionFlowTest extends TestCase {
         $this->actingAs($this->user)->post(route('ai.suggestions.invoice-item', [$invoice, $item]));
         $suggestion = AiTextSuggestion::query()->where('subject_id', $item->id)->firstOrFail();
 
-        $invoice->forceFill(['status' => Invoice::STATUS_ISSUED])->save();
+        $invoice->forceFill(['status' => InvoiceStatus::Issued])->save();
 
         // Neuer Vorschlag nach Ausstellung: gesperrt (Fehler-Flash oder
         // Policy-403 — je nachdem, wie streng die Update-Policy ist).
@@ -281,7 +283,7 @@ class AiSuggestionFlowTest extends TestCase {
             ->post(route('ai.suggestions.accept', $suggestion), ['text' => 'x']);
         $this->assertContains($accept->getStatusCode(), [302, 403]);
         $this->assertSame('wartung clients server installation snap', $item->fresh()->description);
-        $this->assertNotSame(AiTextSuggestion::STATUS_ACCEPTED, $suggestion->fresh()->status);
+        $this->assertNotSame(AiTextSuggestionStatus::Accepted, $suggestion->fresh()->status);
     }
 
     public function test_capability_disabled_yields_error_flash_not_exception(): void {
@@ -311,12 +313,12 @@ class AiSuggestionFlowTest extends TestCase {
         $invoice = $this->draftInvoice();
         $item = $this->item($invoice);
         $this->actingAs($this->user)->post(route('ai.suggestions.invoice-item', [$invoice, $item]));
-        $invoice->forceFill(['status' => Invoice::STATUS_ISSUED])->save();
+        $invoice->forceFill(['status' => InvoiceStatus::Issued])->save();
 
         $this->artisan('ai:maintenance')->assertSuccessful();
 
         $this->assertSame(
-            AiTextSuggestion::STATUS_EXPIRED,
+            AiTextSuggestionStatus::Expired,
             AiTextSuggestion::query()->where('subject_id', $item->id)->value('status')
         );
     }

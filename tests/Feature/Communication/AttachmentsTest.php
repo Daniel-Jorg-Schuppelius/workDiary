@@ -19,6 +19,7 @@ use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\{Storage, URL};
+use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class AttachmentsTest extends TestCase {
@@ -77,6 +78,32 @@ class AttachmentsTest extends TestCase {
                 'original_name' => 'beleg-' . $type . '.pdf',
             ]);
         }
+    }
+
+    /** Konsolidierungs-Audit 2026-10, k3-7: die API kennt dieselben Träger wie das Web. */
+    public function test_api_accepts_the_carriers_of_the_web(): void {
+        $admin = User::factory()->admin()->create();
+        Sanctum::actingAs($admin, ['attachments:write']);
+        $parents = [
+            'supplier' => \App\Models\Supplier\Supplier::factory()->create(['organization_id' => $admin->organization_id]),
+            'knowledge' => \App\Models\Knowledge\KnowledgeArticle::factory()->create(['organization_id' => $admin->organization_id]),
+        ];
+
+        foreach ($parents as $type => $parent) {
+            $this->postJson(route('api.attachments.store', ['type' => $type, 'id' => $parent->id]), [
+                'file' => UploadedFile::fake()->create('api-' . $type . '.pdf', 40, 'application/pdf'),
+            ])->assertCreated();
+
+            $this->assertDatabaseHas('attachments', [
+                'attachable_type' => $parent->getMorphClass(),
+                'attachable_id' => $parent->id,
+                'original_name' => 'api-' . $type . '.pdf',
+            ]);
+        }
+
+        $this->postJson(route('api.attachments.store', ['type' => 'unbekannt', 'id' => 1]), [
+            'file' => UploadedFile::fake()->create('x.pdf', 4, 'application/pdf'),
+        ])->assertNotFound();
     }
 
     public function test_user_can_upload_attachment_to_diary_entry(): void {

@@ -40,8 +40,22 @@ class ClubAttendanceService {
         private readonly ClubEventService $clubEvents,
     ) {}
 
-    /** Liste zum Termin (wird beim ersten Zugriff angelegt); Kalenderdauer als Vorgabe bei eintägigen Terminen. */
+    /** Liste zum Termin; der erste schreibende Zugriff legt sie an. */
     public function sheetFor(Event $event): ClubAttendanceSheet {
+        $sheet = $this->sheetOrDraft($event);
+        if (! $sheet->exists) {
+            $sheet->save();
+        }
+
+        return $sheet;
+    }
+
+    /**
+     * Vorhandene Liste, sonst ihr Anfangszustand ohne Speichern — für die
+     * Anzeige, damit ein GET nichts anlegt. Kalenderdauer als Vorgabe bei
+     * eintägigen Terminen.
+     */
+    public function sheetOrDraft(Event $event): ClubAttendanceSheet {
         /** @var ClubAttendanceSheet|null $sheet */
         $sheet = ClubAttendanceSheet::query()->where('event_id', $event->id)->first();
         if ($sheet !== null) {
@@ -55,7 +69,7 @@ class ClubAttendanceService {
         $end = CarbonImmutable::instance($event->ended_at);
         $singleDay = $this->clubEvents->localDay($event)->equalTo($this->clubEvents->localDay($this->endAsEvent($event)));
 
-        return ClubAttendanceSheet::query()->create([
+        return new ClubAttendanceSheet([
             'organization_id' => $event->organization_id,
             'event_id' => $event->id,
             'status' => ClubAttendanceSheetStatus::Open->value,

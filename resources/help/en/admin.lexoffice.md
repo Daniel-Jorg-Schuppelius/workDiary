@@ -1,7 +1,7 @@
 ---
 title: "Lexoffice Conflicts"
 topic: admin.lexoffice
-version: 1
+version: 2
 audience:
     - admin
     - buchhaltung
@@ -36,3 +36,9 @@ Risks: "keep local" and "take remote" overwrite values. Review the
 compared data carefully before deciding. Note that for invoices the
 billing authority rests with the external program – WorkDiary
 supplies data to it.
+
+The conflict strategy of the Lexoffice settings applies to contacts and
+articles. Article conflicts do not appear in this inbox but in the inventory
+conflict list (Inventory → Conflicts): there you keep the local state, take
+the Lexoffice state or dismiss the conflict — with the article management
+permission.

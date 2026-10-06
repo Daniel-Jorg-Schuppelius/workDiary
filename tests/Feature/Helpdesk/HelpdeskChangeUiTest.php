@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Helpdesk;
 
+use App\Enums\ServiceTicket\ChangeStatus;
 use App\Models\Approval\Approval;
 use App\Models\Asset\Asset;
 use App\Models\Platform\{Organization, User};
@@ -134,7 +135,7 @@ final class HelpdeskChangeUiTest extends TestCase {
             ->assertRedirect();
 
         $change = Change::query()->where('title', 'Patchday Juli')->firstOrFail();
-        $this->assertSame('approved', $change->status);
+        $this->assertSame(ChangeStatus::Approved, $change->status);
         $this->assertSame(3, $change->template_snapshot['version']);
         $this->assertSame('Snapshot zurückspielen', $change->rollback_plan);
     }
@@ -170,7 +171,7 @@ final class HelpdeskChangeUiTest extends TestCase {
             ->assertRedirect();
 
         $change = Change::query()->where('title', 'Genehmigungspflichtiger Change')->firstOrFail();
-        $this->assertSame('pending_approval', $change->status);
+        $this->assertSame(ChangeStatus::PendingApproval, $change->status);
         $this->assertSame((int) $problem->id, (int) $change->problem_id);
         $this->assertTrue($change->tickets()->whereKey($ticket->id)->exists());
         $this->assertSame(2, $change->approvals()->count());
@@ -186,7 +187,7 @@ final class HelpdeskChangeUiTest extends TestCase {
         $this->actingAs($this->approverA)
             ->post(route('servicedesk.approvals.decide', $step1), ['decision' => 'approved'])
             ->assertRedirect(route('servicedesk.approvals.index'));
-        $this->assertSame('pending_approval', $change->fresh()->status);
+        $this->assertSame(ChangeStatus::PendingApproval, $change->fresh()->status);
 
         // Schritt 2 (Rolle) wird DELEGIERT: neuer offener Schritt GLEICHER Nummer.
         $step2 = $change->approvals()->where('step', 2)->firstOrFail();
@@ -210,7 +211,7 @@ final class HelpdeskChangeUiTest extends TestCase {
         $this->actingAs($this->approverC)
             ->post(route('servicedesk.approvals.decide', $delegated), ['decision' => 'approved'])
             ->assertRedirect(route('servicedesk.approvals.index'));
-        $this->assertSame('approved', $change->fresh()->status);
+        $this->assertSame(ChangeStatus::Approved, $change->fresh()->status);
     }
 
     public function test_emergency_complete_without_pir_fails_via_ui(): void {
@@ -233,18 +234,18 @@ final class HelpdeskChangeUiTest extends TestCase {
         $step = $change->approvals()->firstOrFail();
         $this->actingAs($this->approverA)
             ->post(route('servicedesk.approvals.decide', $step), ['decision' => 'approved']);
-        $this->assertSame('approved', $change->fresh()->status);
+        $this->assertSame(ChangeStatus::Approved, $change->fresh()->status);
 
         $this->actingAs($this->manager)
             ->post(route('servicedesk.changes.implement', $change))
             ->assertRedirect(route('servicedesk.changes.show', $change));
-        $this->assertSame('implementing', $change->fresh()->status);
+        $this->assertSame(ChangeStatus::Implementing, $change->fresh()->status);
 
         // PIR-Zwang: Abschluss ohne Notizen scheitert (Service als zweite Linie).
         $this->actingAs($this->manager)
             ->post(route('servicedesk.changes.complete', $change), ['outcome' => 'successful'])
             ->assertSessionHasErrors('pir_notes');
-        $this->assertSame('implementing', $change->fresh()->status);
+        $this->assertSame(ChangeStatus::Implementing, $change->fresh()->status);
 
         $this->actingAs($this->manager)
             ->post(route('servicedesk.changes.complete', $change), [
@@ -254,7 +255,7 @@ final class HelpdeskChangeUiTest extends TestCase {
             ->assertRedirect(route('servicedesk.changes.show', $change));
 
         $change = $change->fresh();
-        $this->assertSame('done', $change->status);
+        $this->assertSame(ChangeStatus::Done, $change->status);
         $this->assertSame('successful', $change->outcome);
         $this->assertNotNull($change->pir_done_at);
     }

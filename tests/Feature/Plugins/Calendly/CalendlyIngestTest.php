@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Plugins\Calendly;
 
+use App\Enums\Calendar\AppointmentRequestStatus;
 use App\Enums\Sales\LeadSource;
 use App\Models\Calendar\AppointmentRequest;
 use App\Models\Customer\Customer;
@@ -79,7 +80,7 @@ final class CalendlyIngestTest extends TestCase {
         $request = $this->service()->handlePayload($this->organization, $this->created('inv-1'));
 
         $this->assertNotNull($request);
-        $this->assertSame(AppointmentRequest::STATUS_REQUESTED, $request->status);
+        $this->assertSame(AppointmentRequestStatus::Requested, $request->status);
         $this->assertSame($customer->id, $request->customer_id);
         $this->assertSame('Erstberatung', $request->service_label);
         $this->assertNotNull($request->start_at);
@@ -106,7 +107,7 @@ final class CalendlyIngestTest extends TestCase {
         $this->service()->handlePayload($this->organization, $this->canceled('inv-4'));
 
         $request = AppointmentRequest::query()->where('source_uri', 'inv-4')->firstOrFail();
-        $this->assertSame(AppointmentRequest::STATUS_CANCELED, $request->status);
+        $this->assertSame(AppointmentRequestStatus::Canceled, $request->status);
         $this->assertSame('Terminkollision', $request->cancellation['reason'] ?? null);
     }
 
@@ -120,11 +121,11 @@ final class CalendlyIngestTest extends TestCase {
         $successor = $this->service()->handlePayload($this->organization, $this->created('inv-new', 'unknown@example.com', oldInvitee: 'inv-old'));
 
         $predecessor = AppointmentRequest::query()->where('source_uri', 'inv-old')->firstOrFail();
-        $this->assertSame(AppointmentRequest::STATUS_SUPERSEDED, $predecessor->status);
+        $this->assertSame(AppointmentRequestStatus::Superseded, $predecessor->status);
         $this->assertSame('inv-new', $predecessor->rescheduled_to_uri);
 
         $this->assertNotNull($successor);
-        $this->assertSame(AppointmentRequest::STATUS_REQUESTED, $successor->status);
+        $this->assertSame(AppointmentRequestStatus::Requested, $successor->status);
         $this->assertTrue($successor->is_reschedule);
         $this->assertSame('inv-old', $successor->rescheduled_from_uri);
         // Mapping vom Vorgänger geerbt, obwohl die neue Invitee-E-Mail nicht matcht.

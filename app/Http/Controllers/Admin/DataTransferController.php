@@ -49,8 +49,8 @@ class DataTransferController extends Controller {
         $runs = ExportRun::query()
             ->where('organization_id', $organization->id)
             ->orderByDesc('id')
-            ->limit(15)
-            ->get();
+            ->paginate(15)
+            ->withQueryString();
 
         return view('admin.data.index', [
             'organization' => $organization,
@@ -174,7 +174,7 @@ class DataTransferController extends Controller {
         }
         $export->delete();
 
-        return redirect()->route('admin.data.index')
+        return redirect()->toList('admin.data.index')
             ->with('success', __('Export wurde gelöscht.'));
     }
 

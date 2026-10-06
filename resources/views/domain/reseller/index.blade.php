@@ -9,13 +9,14 @@
 @extends('layouts.app')
 @section('title', __('domain.title.reseller') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('domain.title.reseller'))
+@include('partials.page-fill')
 
 @section('content')
-<x-index-page :subtitle="__('domain.title.reseller_subtitle')">
+<x-index-page overflow="clip" :subtitle="__('domain.title.reseller_subtitle')">
 
     @include('domain._tabs')
 
-    <x-table :caption="__('domain.title.reseller')">
+    <x-table scroll="flex" :caption="__('domain.title.reseller')">
         <x-slot:head>
             <tr>
                 <x-table.th>{{ __('domain.reseller.user') }}</x-table.th>
@@ -28,7 +29,7 @@
         </x-slot:head>
         @forelse ($accounts as $account)
             @php $indentClass = ['', 'pl-6', 'pl-12'][$account->depth] ?? 'pl-12'; @endphp
-            <tr>
+            <tr class="hover">
                 <td>
                     <div class="flex items-center gap-2 {{ $indentClass }}">
                         @if ($account->depth > 0)
@@ -54,5 +55,7 @@
             <x-table.empty :colspan="6" :title="__('domain.empty.reseller')" compact />
         @endforelse
     </x-table>
+
+    <x-pagination :paginator="$accounts" standing />
 </x-index-page>
 @endsection

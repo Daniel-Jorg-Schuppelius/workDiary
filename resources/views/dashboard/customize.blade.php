@@ -55,7 +55,7 @@
 
 
         @if ($hasOrgDefault && ! $hasOwnLayout)
-            <div class="alert alert-info">
+            <div role="status" class="alert alert-info">
                 <x-icon name="corporate_fare" />
                 <span>{{ __('Es gilt derzeit die Dashboard-Vorgabe der Organisation.') }}</span>
             </div>
@@ -72,9 +72,10 @@
                         @foreach ($presets as $preset)
                             <div class="flex min-w-0 flex-1 flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 bg-base-200 px-4 py-3">
                                 <div class="flex min-w-0 items-start gap-3">
-                                    <span class="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-box border border-base-300 bg-base-100 text-base-content/70">
+                                    <x-card as="span" padding="p-0"
+                                            class="mt-0.5 flex size-8 shrink-0 items-center justify-center text-base-content/70">
                                         <x-icon name="dashboard_customize" />
-                                    </span>
+                                    </x-card>
                                     <div class="min-w-0">
                                         <p class="font-semibold">{{ $preset['label'] }}</p>
                                         <p class="text-xs text-muted">{{ $preset['description'] }}</p>
@@ -103,7 +104,7 @@
 
                 <ul class="space-y-2" data-tab-list>
                     @foreach ($tabs as $idx => $tab)
-                        <li class="rounded-box border border-base-300 bg-base-100 px-3 py-2" data-tab-row data-tab-key="{{ $tab['key'] }}">
+                        <x-card as="li" padding="px-3 py-2" data-tab-row data-tab-key="{{ $tab['key'] }}">
                             <div class="flex flex-wrap items-center gap-2 sm:flex-nowrap">
                                 <span class="flex size-8 shrink-0 items-center justify-center rounded-box border border-base-300 bg-base-200 text-base-content/70">
                                     <x-icon :name="$tab['icon'] ?: 'tab'" data-tab-icon-preview />
@@ -142,27 +143,22 @@
                                 </summary>
                                 <div class="mt-2 flex flex-wrap gap-1 rounded-box border border-base-300 bg-base-200 p-2" data-icon-grid>
                                     @foreach ($iconChoices as $choice)
-                                        <button type="button"
-                                                class="btn btn-xs btn-ghost btn-square"
-                                                data-icon-pick="{{ $choice }}"
-                                                title="{{ $choice }}"
-                                                aria-label="{{ $choice }}">
-                                            <x-icon :name="$choice" />
-                                        </button>
+                                        <x-icon-btn :icon="$choice" :label="$choice" class="btn-square" data-icon-pick="{{ $choice }}" />
                                     @endforeach
                                 </div>
                             </details>
-                        </li>
+                        </x-card>
                     @endforeach
                 </ul>
 
+                {{-- raw-markup-ok: erklärender Hinweis im Bearbeitungsformular, per JS umgeschaltet --}}
                 <p class="mt-2 text-xs text-muted" data-tab-empty @if ($tabs !== []) hidden @endif>
                     {{ __('Keine Bereiche angelegt — alle Kacheln liegen auf einer Fläche.') }}
                 </p>
 
                 {{-- Vorlage für neue Bereichszeilen; das Skript klont sie. --}}
                 <template data-tab-template>
-                    <li class="rounded-box border border-base-300 bg-base-100 px-3 py-2" data-tab-row data-tab-key="">
+                    <x-card as="li" padding="px-3 py-2" data-tab-row data-tab-key="">
                         <div class="flex flex-wrap items-center gap-2 sm:flex-nowrap">
                             <span class="flex size-8 shrink-0 items-center justify-center rounded-box border border-base-300 bg-base-200 text-base-content/70">
                                 <x-icon name="tab" data-tab-icon-preview />
@@ -190,17 +186,11 @@
                             </summary>
                             <div class="mt-2 flex flex-wrap gap-1 rounded-box border border-base-300 bg-base-200 p-2" data-icon-grid>
                                 @foreach ($iconChoices as $choice)
-                                    <button type="button"
-                                            class="btn btn-xs btn-ghost btn-square"
-                                            data-icon-pick="{{ $choice }}"
-                                            title="{{ $choice }}"
-                                            aria-label="{{ $choice }}">
-                                        <x-icon :name="$choice" />
-                                    </button>
+                                    <x-icon-btn :icon="$choice" :label="$choice" class="btn-square" data-icon-pick="{{ $choice }}" />
                                 @endforeach
                             </div>
                         </details>
-                    </li>
+                    </x-card>
                 </template>
             </x-card>
 
@@ -210,9 +200,9 @@
                 <div class="flex flex-wrap items-center justify-between gap-3 border-b border-base-300 px-3 py-3">
                     <div class="flex min-w-0 items-center gap-2">
                         <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Kacheln') }}</h2>
-                        <span class="badge badge-ghost badge-sm tabular-nums">
+                        <x-status-badge class="tabular-nums">
                             {{ __(':visible von :total sichtbar', ['visible' => $visibleCount, 'total' => count($items)]) }}
-                        </span>
+                        </x-status-badge>
                     </div>
                     {{-- Spaltenköpfe: dieselben Breiten wie in den Zeilen, damit sie
                          darüber stehen. Erst ab lg — darunter bricht die Zeile um. --}}
@@ -232,10 +222,9 @@
                                 // getönten Grund und am Randstreifen sofort erkennbar.
                                 'border-l-2 border-l-base-300 bg-base-200/60' => $item['hidden'],
                             ])
-                            draggable="true"
                             data-widget-row
                             data-widget-key="{{ $item['key'] }}">
-                            <span class="cursor-grab text-muted" data-widget-handle
+                            <span class="cursor-grab touch-none select-none text-muted" data-widget-handle
                                   title="{{ __('Zum Sortieren ziehen') }}" aria-hidden="true">
                                 <x-icon name="drag_indicator" />
                             </span>
@@ -250,10 +239,10 @@
                             <div class="min-w-0 flex-1">
                                 <div class="flex flex-wrap items-center gap-2">
                                     <span class="font-semibold">{{ $item['label'] }}</span>
-                                    <span class="badge badge-ghost badge-sm gap-1">
+                                    <x-status-badge class="gap-1">
                                         <x-icon name="{{ $item['group']->icon() }}" class="text-[0.9rem]" />
                                         {{ $item['group']->label() }}
-                                    </span>
+                                    </x-status-badge>
                                 </div>
                                 @if ($item['description'])
                                     <p class="text-xs text-muted">{{ $item['description'] }}</p>

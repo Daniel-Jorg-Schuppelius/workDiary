@@ -43,9 +43,9 @@
                 <input type="hidden" name="latitude" data-checkin-latitude>
                 <input type="hidden" name="longitude" data-checkin-longitude>
                 <x-validation-errors first />
-                <button type="submit" class="btn btn-lg w-full {{ $open ? 'btn-warning' : 'btn-primary' }}">
+                <x-button type="submit" size="lg" :tone="$open ? 'warning' : 'primary'" class="w-full">
                     {{ $open ? __('attendance.checkin.action.out') : __('attendance.checkin.action.in') }}
-                </button>
+                </x-button>
                 @if ($checkpoint->requiresLocation())
                     <p class="mt-3 text-center text-xs text-muted">{{ __('attendance.checkin.location_hint', ['radius' => $checkpoint->radius_m]) }}</p>
                     <p class="mt-2 hidden text-center text-sm text-error" role="alert" data-checkin-location-error>{{ __('attendance.checkin.error.location_denied') }}</p>

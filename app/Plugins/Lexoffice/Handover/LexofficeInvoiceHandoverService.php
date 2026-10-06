@@ -13,12 +13,14 @@ declare(strict_types=1);
 namespace App\Plugins\Lexoffice\Handover;
 
 use App\Enums\Finance\BillingMode;
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Integration\ExternalReference;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\{Organization, User};
 use App\Plugins\Lexoffice\Enums\LexofficeHandoverStatus;
-use App\Plugins\Lexoffice\{LexofficeInvoiceService, LexofficePlugin};
+use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\Lexoffice\Models\LexofficeInvoiceHandover;
+use App\Plugins\Lexoffice\Services\LexofficeInvoiceService;
 use App\Plugins\Lexoffice\Tariff\LexwareTariffService;
 use App\Services\Invoicing\InvoicePdfRenderer;
 use App\Support\CsvExport;
@@ -52,7 +54,7 @@ class LexofficeInvoiceHandoverService {
 
         return Invoice::query()
             ->where('organization_id', $organization->id)
-            ->whereIn('status', [Invoice::STATUS_ISSUED, Invoice::STATUS_PARTIALLY_PAID, Invoice::STATUS_PAID, Invoice::STATUS_CANCELLED])
+            ->whereIn('status', [InvoiceStatus::Issued, InvoiceStatus::PartiallyPaid, InvoiceStatus::Paid, InvoiceStatus::Cancelled])
             ->whereBetween('issued_on', DateRange::days($from, $to))
             ->whereNotIn('id', ExternalReference::query()
                 ->select('referenceable_id')
@@ -110,7 +112,7 @@ class LexofficeInvoiceHandoverService {
         $files = [];
         $rows = [];
         foreach ($invoices as $invoice) {
-            if ((int) $invoice->organization_id !== (int) $organization->id || $invoice->status === Invoice::STATUS_DRAFT) {
+            if ((int) $invoice->organization_id !== (int) $organization->id || $invoice->status === InvoiceStatus::Draft) {
                 throw new RuntimeException((string) __('lexoffice::lexware.error.not_exportable', ['number' => (string) $invoice->number]));
             }
             $bytes = $this->pdf->output($invoice);
@@ -143,7 +145,7 @@ class LexofficeInvoiceHandoverService {
                 $invoice->due_on?->toDateString() ?? '',
                 (string) $invoice->customer->name,
                 (string) ($invoice->customer->number ?? ''),
-                (string) __('values.' . $invoice->status),
+                $invoice->status->label(),
                 (string) $invoice->currency->value,
                 NumberHelper::toGermanFormat($invoice->subtotal?->toFloat() ?? 0.0, 2),
                 NumberHelper::toGermanFormat($invoice->tax_amount?->toFloat() ?? 0.0, 2),
@@ -169,7 +171,7 @@ class LexofficeInvoiceHandoverService {
 
     /** Manuelle Bestätigung — braucht Benutzer und Zeitpunkt, ersetzt keine technische Empfangsbestätigung. */
     public function confirm(Invoice $invoice, User $actor, ?string $note): LexofficeInvoiceHandover {
-        if ($invoice->status === Invoice::STATUS_DRAFT) {
+        if ($invoice->status === InvoiceStatus::Draft) {
             throw new RuntimeException((string) __('lexoffice::lexware.error.not_exportable', ['number' => (string) $invoice->number]));
         }
 

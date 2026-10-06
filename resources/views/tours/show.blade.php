@@ -61,7 +61,7 @@
         </x-slot:toolbar>
 
         <div class="grid gap-4 lg:grid-cols-2">
-            <div class="rounded-box border border-base-300 bg-base-100">
+            <x-card padding="p-0">
                 <x-table table-sort="client" bare>
                     <x-slot:head>
                         <tr>
@@ -84,7 +84,7 @@
                         <x-table.empty icon="route" :colspan="5" :title="__('Keine Stopps zugewiesen.')" compact />
                     @endforelse
                 </x-table>
-            </div>
+            </x-card>
 
             @if ($markers !== [])
                 <x-map :center="$center" :markers="$markers" :route="$geometry" :zoom="11" height="420px" />
@@ -92,10 +92,10 @@
         </div>
 
         @if ($tour->notes)
-            <div class="rounded-box border border-base-300 bg-base-100 p-4">
+            <x-card>
                 <h2 class="mb-2 text-sm font-medium">{{ __('Notizen') }}</h2>
                 <p class="whitespace-pre-line text-sm">{{ $tour->notes }}</p>
-            </div>
+            </x-card>
         @endif
     </x-page-shell>
 @endsection

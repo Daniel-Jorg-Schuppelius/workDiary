@@ -16,8 +16,6 @@ use App\Enums\Club\ClubGroupMembershipStatus;
 use App\Enums\User\Permission as P;
 use App\Models\Club\{ClubGroup, ClubMember};
 use App\Models\Platform\User;
-use App\Support\Query\DateRange;
-use Illuminate\Support\Carbon;
 
 /**
  * Gemeinsame Rechteprüfungen der Vereins-Policies (MVP-842): Register lesen
@@ -50,18 +48,6 @@ trait ClubAccess {
         return $member->groupMemberships()
             ->where('status', ClubGroupMembershipStatus::Active->value)
             ->whereHas('group', fn($query) => $query->where('leader_user_id', $user->id))
-            ->exists();
-    }
-
-    /** Nutzer ist aktive Vertretung dieses Mitglieds (explizite, nicht widerrufene Zuordnung). */
-    protected function isGuardianOf(User $user, ClubMember $member): bool {
-        $today = Carbon::today();
-
-        return $member->guardians()
-            ->where('user_id', $user->id)
-            ->whereNull('revoked_at')
-            ->where(fn($query) => $query->whereNull('valid_from')->orWhere('valid_from', '<', DateRange::dayAfter($today)))
-            ->where(fn($query) => $query->whereNull('valid_to')->orWhere('valid_to', '>=', DateRange::day($today)))
             ->exists();
     }
 }

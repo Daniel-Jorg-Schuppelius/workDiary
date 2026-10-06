@@ -38,11 +38,14 @@ class AvailabilityController extends Controller {
             ->orderBy('specific_date')
             ->get();
 
+        // Jüngste zuerst: aufsteigend stünden die kommenden Wünsche auf der letzten Seite.
         $desired = DesiredShift::query()
             ->forUser($auth->id)
             ->with('shiftType')
-            ->orderBy('date')
-            ->get();
+            ->orderByDesc('date')
+            ->orderByDesc('id')
+            ->paginate(25)
+            ->withQueryString();
 
         return view('availability.index', [
             'windows' => $windows,
@@ -59,7 +62,7 @@ class AvailabilityController extends Controller {
 
         AvailabilityWindow::create($data);
 
-        return redirect()->route('schedule.availability.index')
+        return redirect()->toList('schedule.availability.index')
             ->with('success', __('schedule.availability.window_saved'));
     }
 
@@ -67,7 +70,7 @@ class AvailabilityController extends Controller {
         Gate::authorize('update', $window);
         $window->update($request->validated());
 
-        return redirect()->route('schedule.availability.index')
+        return redirect()->toList('schedule.availability.index')
             ->with('success', __('schedule.availability.window_saved'));
     }
 
@@ -75,7 +78,7 @@ class AvailabilityController extends Controller {
         Gate::authorize('delete', $window);
         $window->delete();
 
-        return redirect()->route('schedule.availability.index')
+        return redirect()->toList('schedule.availability.index')
             ->with('success', __('schedule.availability.window_deleted'));
     }
 
@@ -87,7 +90,7 @@ class AvailabilityController extends Controller {
 
         DesiredShift::create($data);
 
-        return redirect()->route('schedule.availability.index')
+        return redirect()->toList('schedule.availability.index')
             ->with('success', __('schedule.availability.desired_saved'));
     }
 
@@ -95,7 +98,7 @@ class AvailabilityController extends Controller {
         Gate::authorize('update', $desired);
         $desired->update($request->validated());
 
-        return redirect()->route('schedule.availability.index')
+        return redirect()->toList('schedule.availability.index')
             ->with('success', __('schedule.availability.desired_saved'));
     }
 
@@ -103,7 +106,7 @@ class AvailabilityController extends Controller {
         Gate::authorize('delete', $desired);
         $desired->delete();
 
-        return redirect()->route('schedule.availability.index')
+        return redirect()->toList('schedule.availability.index')
             ->with('success', __('schedule.availability.desired_deleted'));
     }
 }

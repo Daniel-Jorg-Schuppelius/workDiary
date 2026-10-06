@@ -6,23 +6,10 @@
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
-<!doctype html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="light">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="robots" content="noindex,nofollow">
-<title>{{ __('Vielen Dank!') }}</title>
-@include('partials.font-bootstrap')
-@vite(['resources/css/app.css','resources/js/app.js'])
-</head>
-<body class="min-h-screen bg-base-200">
-<main class="mx-auto max-w-2xl p-4">
+<x-public-page :title="__('Vielen Dank!')" main="mx-auto max-w-2xl p-4" icons>
     <div class="rounded-box bg-base-100 p-8 text-center shadow">
         <x-icon name="check_circle" class="text-5xl text-success" />
         <h1 class="mt-2 text-xl font-semibold">{{ __('Vielen Dank!') }}</h1>
         <p class="mt-1 text-sm text-base-content/70">{{ __('Ihre Antworten zu „:title" sind angekommen.', ['title' => $survey->title]) }}</p>
     </div>
-</main>
-</body>
-</html>
+</x-public-page>

@@ -36,9 +36,6 @@ return [
     ],
 
     'section' => [
-        'sessions' => 'Sessions web/app',
-        'tokens' => 'Jetons API',
-        'devices' => 'Appareils de localisation',
         'terminals' => 'Terminaux de pointage',
         'remote_support' => 'Maintenance à distance récente',
     ],
@@ -58,6 +55,13 @@ return [
         'remote' => 'Identifiant',
         'started' => 'Début',
         'ended' => 'Fin',
+        'kind' => 'Type',
+    ],
+
+    'kind' => [
+        'session' => 'Session web/app',
+        'token' => 'Jeton API',
+        'device' => 'Appareil de localisation',
     ],
 
     'terminal' => [

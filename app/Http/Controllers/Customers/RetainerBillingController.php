@@ -32,7 +32,7 @@ class RetainerBillingController extends Controller {
     public function __construct(private readonly RetainerChannelResolver $channels) {}
 
     public function pushMonth(Request $request, Customer $customer): RedirectResponse {
-        Gate::authorize('update', $customer);
+        Gate::authorize('manageBilling', $customer);
         $agreement = $customer->billingAgreement()->firstOrFail();
 
         $data = $request->validate([
@@ -56,7 +56,7 @@ class RetainerBillingController extends Controller {
     }
 
     public function trueUp(Customer $customer): RedirectResponse {
-        Gate::authorize('update', $customer);
+        Gate::authorize('manageBilling', $customer);
         $agreement = $customer->billingAgreement()->firstOrFail();
 
         $publisher = $this->channels->publisherFor($customer);
@@ -76,7 +76,7 @@ class RetainerBillingController extends Controller {
 
     /** Modal-Fragment: bereits im Buchhaltungsprogramm geführten Beleg an den Monat hängen. */
     public function editVoucher(Customer $customer, CustomerBillingStatement $statement): View {
-        Gate::authorize('update', $customer);
+        Gate::authorize('manageBilling', $customer);
         $this->assertBelongsToCustomer($customer, $statement);
 
         return view('customers.billing._voucher_link_dialog', [
@@ -89,7 +89,7 @@ class RetainerBillingController extends Controller {
     }
 
     public function linkVoucher(Request $request, Customer $customer, CustomerBillingStatement $statement): RedirectResponse {
-        Gate::authorize('update', $customer);
+        Gate::authorize('manageBilling', $customer);
         $this->assertBelongsToCustomer($customer, $statement);
 
         if ($statement->retainer_invoice_id !== null) {
@@ -107,7 +107,7 @@ class RetainerBillingController extends Controller {
     }
 
     public function unlinkVoucher(Customer $customer, CustomerBillingStatement $statement): RedirectResponse {
-        Gate::authorize('update', $customer);
+        Gate::authorize('manageBilling', $customer);
         $this->assertBelongsToCustomer($customer, $statement);
 
         $this->channels->linksFor($customer)->unlink($statement);

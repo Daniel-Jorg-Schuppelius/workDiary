@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Applications;
 
+use App\Enums\Applications\JobApplicationUploadScanStatus;
 use App\Enums\User\UserRole;
 use App\Enums\Whistleblowing\AttachmentScanStatus;
 use App\Models\Applications\{JobApplication, JobApplicationUpload};
@@ -59,7 +60,7 @@ final class ApplicationUploadScanTest extends TestCase {
         return JobApplication::query()->firstOrFail();
     }
 
-    private function upload(JobApplication $application, string $status = JobApplicationUpload::SCAN_PENDING): JobApplicationUpload {
+    private function upload(JobApplication $application, JobApplicationUploadScanStatus $status = JobApplicationUploadScanStatus::Pending): JobApplicationUpload {
         $key = 'careers/' . $application->organization_id . '/' . $application->id . '/lebenslauf.pdf';
         Storage::disk('local')->put($key, '%PDF-1.4 Lebenslauf');
 
@@ -83,7 +84,7 @@ final class ApplicationUploadScanTest extends TestCase {
         $stats = app(ApplicationUploadScanService::class)->scanPending();
 
         $this->assertSame(1, $stats['clean']);
-        $this->assertSame(JobApplicationUpload::SCAN_CLEAN, $upload->refresh()->scan_status);
+        $this->assertSame(JobApplicationUploadScanStatus::Clean, $upload->refresh()->scan_status);
     }
 
     public function test_rejected_verdict_blocks_the_upload(): void {
@@ -92,7 +93,7 @@ final class ApplicationUploadScanTest extends TestCase {
 
         app(ApplicationUploadScanService::class)->scanPending();
 
-        $this->assertSame(JobApplicationUpload::SCAN_REJECTED, $upload->refresh()->scan_status);
+        $this->assertSame(JobApplicationUploadScanStatus::Rejected, $upload->refresh()->scan_status);
     }
 
     public function test_without_a_verdict_the_upload_stays_in_quarantine(): void {
@@ -102,7 +103,7 @@ final class ApplicationUploadScanTest extends TestCase {
         $stats = app(ApplicationUploadScanService::class)->scanPending();
 
         $this->assertSame(1, $stats['skipped']);
-        $this->assertSame(JobApplicationUpload::SCAN_PENDING, $upload->refresh()->scan_status);
+        $this->assertSame(JobApplicationUploadScanStatus::Pending, $upload->refresh()->scan_status);
     }
 
     public function test_missing_file_is_rejected_instead_of_hanging(): void {
@@ -113,7 +114,7 @@ final class ApplicationUploadScanTest extends TestCase {
 
         app(ApplicationUploadScanService::class)->scanPending();
 
-        $this->assertSame(JobApplicationUpload::SCAN_REJECTED, $upload->refresh()->scan_status);
+        $this->assertSame(JobApplicationUploadScanStatus::Rejected, $upload->refresh()->scan_status);
     }
 
     public function test_download_is_available_only_after_release(): void {
@@ -126,7 +127,7 @@ final class ApplicationUploadScanTest extends TestCase {
             ->get(route('recruiting.applications.uploads.download', [$application, $upload]))
             ->assertForbidden();
 
-        $upload->forceFill(['scan_status' => JobApplicationUpload::SCAN_CLEAN])->save();
+        $upload->forceFill(['scan_status' => JobApplicationUploadScanStatus::Clean])->save();
 
         $this->actingAs($hr)
             ->get(route('recruiting.applications.uploads.download', [$application, $upload]))
@@ -136,7 +137,7 @@ final class ApplicationUploadScanTest extends TestCase {
 
     public function test_upload_of_a_foreign_application_is_not_reachable(): void {
         $application = $this->application();
-        $upload = $this->upload($application, JobApplicationUpload::SCAN_CLEAN);
+        $upload = $this->upload($application, JobApplicationUploadScanStatus::Clean);
 
         $second = JobApplication::query()->create([
             'organization_id' => $this->organization->id,
@@ -149,6 +150,29 @@ final class ApplicationUploadScanTest extends TestCase {
         $this->actingAs($hr)
             ->get(route('recruiting.applications.uploads.download', [$second, $upload]))
             ->assertNotFound();
+    }
+
+    /** k3-10: gegen die frühere Zeichenkette verglichen hieße jede zurückgehaltene Datei „In Prüfung“. */
+    public function test_application_page_names_rejected_and_pending_uploads(): void {
+        $application = $this->application();
+        foreach (JobApplicationUploadScanStatus::cases() as $status) {
+            $this->upload($application, $status)->forceFill(['original_name' => $status->value . '.pdf'])->save();
+        }
+        $hr = $this->userWithRole(UserRole::Personalverwaltung->value);
+
+        $html = (string) $this->actingAs($hr)->get(route('recruiting.applications.show', $application))->assertOk()->getContent();
+        $item = static function (string $name) use ($html): string {
+            preg_match('/<li\b[^>]*>(?:(?!<\/li>).)*' . preg_quote($name, '/') . '(?:(?!<\/li>).)*<\/li>/s', $html, $match);
+
+            return $match[0] ?? '';
+        };
+
+        $this->assertStringContainsString(e(__('Abgewiesen')), $item('rejected.pdf'));
+        $this->assertStringContainsString('badge-error', $item('rejected.pdf'));
+        $this->assertStringContainsString(e(__('In Prüfung')), $item('pending.pdf'));
+        $this->assertStringContainsString('badge-warning', $item('pending.pdf'));
+        $this->assertStringContainsString('<a ', $item('clean.pdf'));
+        $this->assertStringNotContainsString('badge-', $item('clean.pdf'));
     }
 
     public function test_scan_command_runs(): void {

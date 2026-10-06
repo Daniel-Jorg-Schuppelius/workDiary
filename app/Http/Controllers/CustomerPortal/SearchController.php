@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\CustomerPortal;
 
 use App\Enums\CustomerPortal\PortalCapability;
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Customer\Customer;
 use App\Models\Diary\DiaryEntry;
@@ -45,7 +46,7 @@ class SearchController extends Controller {
 
         if (mb_strlen($q) >= 2) {
             if ($this->visibility->allows($customer, PortalCapability::Invoices)) {
-                $groups['invoices'] = Invoice::query()->where('customer_id', $customer->id)->where('status', '!=', Invoice::STATUS_DRAFT)
+                $groups['invoices'] = Invoice::query()->where('customer_id', $customer->id)->where('status', '!=', InvoiceStatus::Draft)
                     ->whereLikeEscaped('number', $q)->orderByDesc('issued_on')->limit(self::LIMIT)->get()
                     ->map(fn (Invoice $invoice): array => ['label' => (string) $invoice->number, 'meta' => $invoice->issued_on?->format('d.m.Y'), 'url' => route('customer.invoices.index')])->all();
             }

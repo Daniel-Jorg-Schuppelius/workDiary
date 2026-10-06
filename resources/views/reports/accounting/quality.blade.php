@@ -18,14 +18,7 @@
 @section('content')
     <x-index-page :subtitle="__('accounting.reports.period', ['from' => $from->fdate(), 'to' => $to->fdate()])">
         <x-slot:actions>
-            <x-icon-btn icon="picture_as_pdf" size="sm" tone="ghost" show-label
-                        :href="route('reports.accounting.quality', ['export' => 'pdf'])" :label="__('PDF')" />
-            <x-action-menu icon="download" :label="__('Export')">
-                <x-icon-btn icon="download" size="sm" tone="ghost" show-label
-                            :href="route('reports.accounting.quality', ['export' => 'csv'])" :label="__('CSV')" />
-                <x-icon-btn icon="table_view" size="sm" tone="ghost" show-label
-                            :href="route('reports.accounting.quality', ['export' => 'xlsx'])" :label="__('Excel')" />
-            </x-action-menu>
+            <x-report-export :url="fn (string $format) => route('reports.accounting.quality', ['export' => $format])" tone="ghost" />
         </x-slot:actions>
 
         <div class="grid gap-3 sm:grid-cols-4">
@@ -37,7 +30,7 @@
 
         <x-card :title="__('accounting.reports.quality.headline')" icon="fact_check">
             @if ($findings === [])
-                <p class="text-sm text-muted">{{ __('accounting.reports.quality.none') }}</p>
+                <x-empty-state icon="check_circle" :title="__('accounting.reports.quality.none')" compact />
             @else
                 <ul class="list-disc pl-5 text-sm">
                     @foreach ($findings as $finding)

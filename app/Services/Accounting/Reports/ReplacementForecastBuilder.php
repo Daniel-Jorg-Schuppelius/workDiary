@@ -34,11 +34,12 @@ final class ReplacementForecastBuilder {
     public function __construct(private readonly DepreciationCalculator $calculator) {}
 
     /**
+     * @param  numeric-string  $inflationPercent
      * @return array{asOf: CarbonImmutable, until: CarbonImmutable, assets: list<array{asset: FixedAsset, ends_on: CarbonImmutable, book_value: string, replacement: string, overdue: bool}>, leases: list<array{contract: AssetFinanceContract, ends_on: CarbonImmutable, residual: string}>, years: array<int, string>}
      */
     public function build(Organization $organization, CarbonImmutable $asOf, int $horizonYears, string $inflationPercent, int $startMonth = 1): array {
         $until = $asOf->addYears(max(1, $horizonYears))->endOfYear();
-        $factor = bcadd('1', bcdiv($inflationPercent, '100', 8), 8);
+        $factor = NumberHelper::addPrecise('1', NumberHelper::dividePrecise($inflationPercent, '100', 8), 8);
         $assets = [];
         $years = [];
 
@@ -57,14 +58,14 @@ final class ReplacementForecastBuilder {
             $depreciated = '0.00';
             foreach ($this->calculator->scheduleFor($asset, $startMonth) as $row) {
                 if ($row->endsOn->lessThanOrEqualTo($asOf)) {
-                    $depreciated = bcadd($depreciated, $row->amount->getAmount(), 2);
+                    $depreciated = NumberHelper::addPrecise($depreciated, $row->amount->getAmount(), 2);
                 }
             }
             $age = intdiv($asset->useful_life_months + 6, 12); // Preisstand am Ende der Nutzungsdauer
-            $replacement = NumberHelper::roundPrecise(bcmul($cost, bcpow($factor, (string) $age, 8), 8), 2, RoundingMode::HalfUp);
-            $assets[] = ['asset' => $asset, 'ends_on' => $endsOn, 'book_value' => bcsub($cost, $depreciated, 2), 'replacement' => $replacement, 'overdue' => $endsOn->lessThan($asOf)];
+            $replacement = NumberHelper::roundPrecise(NumberHelper::multiplyPrecise($cost, NumberHelper::powPrecise($factor, (string) $age, 8), 8), 2, RoundingMode::HalfUp);
+            $assets[] = ['asset' => $asset, 'ends_on' => $endsOn, 'book_value' => NumberHelper::subtractPrecise($cost, $depreciated, 2), 'replacement' => $replacement, 'overdue' => $endsOn->lessThan($asOf)];
             $bucket = max($asOf->year, $endsOn->year);
-            $years[$bucket] = bcadd($years[$bucket] ?? '0.00', $replacement, 2);
+            $years[$bucket] = NumberHelper::addPrecise($years[$bucket] ?? '0.00', $replacement, 2);
         }
 
         $leases = [];
@@ -76,7 +77,7 @@ final class ReplacementForecastBuilder {
             ->orderBy('ends_on')
             ->get();
         foreach ($contracts as $contract) {
-            $leases[] = ['contract' => $contract, 'ends_on' => CarbonImmutable::parse($contract->ends_on), 'residual' => bcadd((string) ($contract->residual_value ?? '0'), '0', 2)];
+            $leases[] = ['contract' => $contract, 'ends_on' => CarbonImmutable::parse($contract->ends_on), 'residual' => NumberHelper::roundPrecise((string) ($contract->residual_value ?? '0'), 2)];
         }
         ksort($years);
 

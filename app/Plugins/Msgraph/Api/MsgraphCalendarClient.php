@@ -11,6 +11,7 @@
 namespace App\Plugins\Msgraph\Api;
 
 use APIToolkit\API\Authentication\OAuth2\OAuth2BearerAuthentication;
+use APIToolkit\API\Pagination\{CursorPage, CursorPaginator};
 use App\Plugins\Msgraph\Models\MsgraphConnection;
 use App\Plugins\Msgraph\{MsgraphConfig, MsgraphPlugin};
 use App\Plugins\Support\Calendar\{RemoteCalendarEvent, RemoteCalendarGateway, RemoteCalendarItem};
@@ -160,7 +161,7 @@ class MsgraphCalendarClient implements GraphSubscriptionClient, RemoteCalendarGa
                 'endDateTime' => $windowEnd->format('Y-m-d\TH:i:s\Z'),
             ]);
         } else {
-            $response = $this->api->getResponse($checkpoint); // absolute next-/deltaLink-URL
+            $response = $this->api->getFollowUp($checkpoint); // absolute next-/deltaLink-URL
         }
 
         if ($response->status() === 410) {
@@ -198,19 +199,19 @@ class MsgraphCalendarClient implements GraphSubscriptionClient, RemoteCalendarGa
             ? $this->base . '/me/calendars/' . rawurlencode($calendarId) . '/calendarView'
             : $this->base . '/me/calendarView';
         $query = ['startDateTime' => $from->format('Y-m-d\TH:i:s\Z'), 'endDateTime' => $until->format('Y-m-d\TH:i:s\Z'), '$top' => 200];
-        $items = [];
-        $pages = 0;
-        do {
-            $response = $query !== [] ? $this->api->getResponse($url, $query) : $this->api->getResponse($url);
+        // Der nextLink trägt die Query-Parameter selbst.
+        $paginator = new CursorPaginator(function (?string $nextLink) use ($url, $query): CursorPage {
+            $response = $nextLink === null ? $this->api->getResponse($url, $query) : $this->api->getFollowUp($nextLink);
             if (! $response->successful()) {
                 throw new RuntimeException('Graph calendarView fehlgeschlagen (HTTP ' . $response->status() . ').');
             }
-            /** @var array{value?: list<array<string, mixed>>, '@odata.nextLink'?: string} $data */
             $data = (array) $response->json();
-            array_push($items, ...($data['value'] ?? []));
-            $url = isset($data['@odata.nextLink']) ? (string) $data['@odata.nextLink'] : '';
-            $query = [];
-        } while ($url !== '' && ++$pages < 10);
+            $next = $data['@odata.nextLink'] ?? null;
+
+            return new CursorPage((array) ($data['value'] ?? []), is_string($next) && $next !== '' ? $next : null);
+        }, maxPages: 10);
+        /** @var list<array<string, mixed>> $items */
+        $items = $paginator->toArray();
 
         return $items;
     }

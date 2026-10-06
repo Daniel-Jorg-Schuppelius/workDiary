@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Support\Mirror;
 
+use App\Enums\Integration\IntegrationInboxStatus;
 use App\Models\Document\{Document, DocumentVersion};
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use App\Models\Platform\User;
@@ -43,7 +44,7 @@ class DocumentConflictResolver {
         app(DocumentMirrorService::class)->mirror($target, $document, $connection, $gateway, force: true);
 
         $document->audit($target->pluginId() . '.conflict.overwritten', ['external_id' => $item->external_id]);
-        $this->inbox->markResolved($item, IntegrationInboxItem::STATUS_RESOLVED_LOCAL, $document);
+        $this->inbox->markResolved($item, IntegrationInboxStatus::ResolvedLocal, $document);
     }
 
     /** (b) „Remote als neue lokale Version importieren": externer Stand gewinnt lokal. */
@@ -88,7 +89,7 @@ class DocumentConflictResolver {
         );
 
         $document->audit($target->pluginId() . '.conflict.imported', ['external_id' => $item->external_id, 'version_no' => $version->version_no]);
-        $this->inbox->markResolved($item, IntegrationInboxItem::STATUS_RESOLVED_REMOTE, $document);
+        $this->inbox->markResolved($item, IntegrationInboxStatus::ResolvedRemote, $document);
     }
 
     /** (c) „Spiegelung trennen": Referenz löschen + Marker setzen, Anbindung bleibt aktiv. */
@@ -104,7 +105,7 @@ class DocumentConflictResolver {
         $document->detachMirror($target->pluginId(), auth()->id() !== null ? (int) auth()->id() : null);
 
         $document->audit($target->pluginId() . '.mirror.detached', ['external_id' => $item->external_id]);
-        $this->inbox->markResolved($item, IntegrationInboxItem::STATUS_DISMISSED, $document);
+        $this->inbox->markResolved($item, IntegrationInboxStatus::Dismissed, $document);
     }
 
     private function document(IntegrationInboxItem $item): Document {

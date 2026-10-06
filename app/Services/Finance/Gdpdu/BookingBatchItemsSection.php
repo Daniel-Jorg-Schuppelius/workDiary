@@ -14,6 +14,7 @@ namespace App\Services\Finance\Gdpdu;
 
 use App\Models\Finance\DatevBookingSource;
 use App\Models\Platform\Organization;
+use App\Support\MorphMap;
 use Carbon\CarbonInterface;
 
 /**
@@ -55,7 +56,8 @@ class BookingBatchItemsSection extends AbstractGdpduSection {
             yield [
                 $this->num($numberById[$source->datev_booking_batch_id] ?? null, 0),
                 $this->str($source->document_ref),
-                class_basename($source->source_type),
+                // Klassenkurzname wie vor der Alias-Umstellung (MVP-860), damit die Belegart über alle Exporte gleich bleibt.
+                MorphMap::basename($source->source_type),
                 $this->str($source->debtor_account),
                 $this->str($source->revenue_account),
                 $this->str($source->soll_haben),

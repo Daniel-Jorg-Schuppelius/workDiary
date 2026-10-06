@@ -22,12 +22,12 @@
     <div class="space-y-4 text-sm">
         <div class="flex flex-wrap items-center gap-2">
             <x-status-badge :tone="$review->status->tone()">{{ $review->status->label() }}</x-status-badge>
-            <span class="text-base-content/70">{{ __('isms.field.held_on') }}: {{ $review->held_on->format('d.m.Y') }}</span>
+            <span class="text-base-content/70">{{ __('isms.field.held_on') }}: {{ $review->held_on->fdate() }}</span>
             @if ($review->isApproved())
                 <span class="text-base-content/70">
                     {{ __('isms.review.approved_by_at', [
                         'name' => optional($review->approvedBy)->name ?? '—',
-                        'date' => $review->approved_at?->orgTz()->format('d.m.Y H:i') ?? '—',
+                        'date' => $review->approved_at?->fdatetime() ?? '—',
                     ]) }}
                 </span>
             @endif

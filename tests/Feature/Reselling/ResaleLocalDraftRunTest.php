@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Reselling;
 
 use App\Enums\Finance\BillingMode;
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Enums\Reselling\PeriodStatus;
 use App\Models\Audit\AuditLog;
 use App\Models\Customer\{Customer, ForeignCustomer};
@@ -100,7 +101,7 @@ class ResaleLocalDraftRunTest extends TestCase {
         $invoices = Invoice::query()->orderBy('customer_id')->get();
         $this->assertCount(2, $invoices, 'ein Entwurf je Rechnungsempfänger');
         foreach ($invoices as $invoice) {
-            $this->assertSame(Invoice::STATUS_DRAFT, $invoice->status);
+            $this->assertSame(InvoiceStatus::Draft, $invoice->status);
             $this->assertSame('resale', $invoice->category);
             $this->assertNull($invoice->created_by, 'Serienlauf ohne Nutzer');
         }

@@ -13,7 +13,8 @@ namespace App\Plugins\Toggl;
 use App\Models\Platform\Organization;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{Plugin, PluginCapability, TimeImporter};
-use App\Plugins\Toggl\Sources\TogglApiClient;
+use App\Plugins\Toggl\Api\TogglApiClient;
+use App\Plugins\Toggl\Services\TogglImportService;
 use Carbon\CarbonImmutable;
 
 /**

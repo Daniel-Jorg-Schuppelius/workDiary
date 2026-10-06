@@ -12,6 +12,7 @@ namespace App\Plugins\Msgraph\Http\Controllers;
 
 use App\Models\Platform\User;
 use App\Plugins\Msgraph\Api\{MsgraphMailClient, MsgraphMailOAuth};
+use App\Plugins\Msgraph\Enums\MsgraphConnectionStatus;
 use App\Plugins\Msgraph\Models\MsgraphMailConnection;
 use App\Plugins\Msgraph\{MsgraphConfig, MsgraphPlugin};
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
@@ -60,11 +61,11 @@ class MsgraphMailController extends ConnectionOAuthController {
     }
 
     protected function connectedStatus(): string {
-        return MsgraphMailConnection::STATUS_ACTIVE;
+        return MsgraphConnectionStatus::Active->value;
     }
 
     protected function disconnectedStatus(): string {
-        return MsgraphMailConnection::STATUS_DISCONNECTED;
+        return MsgraphConnectionStatus::Disconnected->value;
     }
 
     /** Bestätigte Kontoidentität laden (Fehler unkritisch — Health meldet API-Probleme). */

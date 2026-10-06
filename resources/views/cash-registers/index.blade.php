@@ -11,16 +11,17 @@
 
 @php
 /**
- * @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\Finance\CashRegister> $registers
+ * @var \Illuminate\Pagination\LengthAwarePaginator<int, \App\Models\Finance\CashRegister> $registers
  * @var array<int, float> $balances
  * @var array<int, \Carbon\Carbon|null> $lastClosings
  */
 @endphp
 
 @section('nav-title', __('Kassenbuch'))
+@include('partials.page-fill')
 
 @section('content')
-<x-page-shell>
+<x-page-shell overflow="clip">
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="__('GoBD-konformes Kassenbuch: Buchungen sind unveränderlich, Korrekturen laufen als Storno-Gegenbuchung (kein POS/TSE).')">
             <x-slot:actions>
@@ -34,7 +35,7 @@
         </x-page-toolbar>
     </x-slot:toolbar>
 
-    <x-table table-sort="client" :zebra="true" size="sm">
+    <x-table scroll="flex" table-sort="client" :zebra="true" size="sm">
         <x-slot:head>
             <tr>
                 <x-table.th sort type="string" default>{{ __('Kasse') }}</x-table.th>
@@ -62,5 +63,7 @@
             <x-table.empty icon="point_of_sale" :colspan="5" :title="__('Noch keine Kasse angelegt')" compact />
         @endforelse
     </x-table>
+
+    <x-pagination :paginator="$registers" standing />
 </x-page-shell>
 @endsection

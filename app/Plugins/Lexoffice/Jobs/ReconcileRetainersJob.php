@@ -11,7 +11,9 @@
 namespace App\Plugins\Lexoffice\Jobs;
 
 use App\Models\Platform\Organization;
-use App\Plugins\Lexoffice\{LexofficeConfig, LexofficeInvoiceService};
+use App\Plugins\Lexoffice\Jobs\Concerns\RunsUnderApiLock;
+use App\Plugins\Lexoffice\LexofficeConfig;
+use App\Plugins\Lexoffice\Services\LexofficeInvoiceService;
 use App\Plugins\Lexoffice\Services\Retainer\LexofficeRetainerVouchers;
 use App\Support\OrganizationContext;
 use Illuminate\Bus\Queueable;
@@ -30,11 +32,12 @@ class ReconcileRetainersJob implements ShouldBeUnique, ShouldQueue {
     use Dispatchable;
     use InteractsWithQueue;
     use Queueable;
+    use RunsUnderApiLock;
     use SerializesModels;
 
     public int $timeout = 60;
 
-    public int $tries = 1;
+    public int $maxExceptions = 1;
 
     public function __construct(public readonly int $organizationId) {}
 
@@ -44,7 +47,8 @@ class ReconcileRetainersJob implements ShouldBeUnique, ShouldQueue {
 
     public function handle(): void {
         $config = LexofficeConfig::resolve($this->organizationId);
-        if (! is_string($config['api_key']) || $config['api_key'] === '') {
+        // Abgeschaltet steht auch der Job — sonst liefe er mit einem Schlüssel aus der Installation weiter (S-28, k2-06).
+        if ($config['enabled'] !== true || ! is_string($config['api_key']) || $config['api_key'] === '') {
             return;
         }
 
@@ -53,11 +57,13 @@ class ReconcileRetainersJob implements ShouldBeUnique, ShouldQueue {
             return;
         }
 
-        OrganizationContext::run($organization, function () use ($organization): void {
-            // Singleton mit org-spezifischem Key neu auflösen — der Netto-
-            // Nachschlag ruft sonst mit dem Key einer fremden Organisation an.
-            app()->forgetInstance(LexofficeInvoiceService::class);
-            app(LexofficeRetainerVouchers::class)->reconcile($organization);
+        $this->underApiLock($this->organizationId, static function () use ($organization): void {
+            OrganizationContext::run($organization, static function () use ($organization): void {
+                // Singleton mit org-spezifischem Key neu auflösen — der Netto-
+                // Nachschlag ruft sonst mit dem Key einer fremden Organisation an.
+                app()->forgetInstance(LexofficeInvoiceService::class);
+                app(LexofficeRetainerVouchers::class)->reconcile($organization);
+            });
         });
     }
 }

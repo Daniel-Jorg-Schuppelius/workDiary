@@ -11,6 +11,7 @@
 namespace Tests\Feature\Billing;
 
 use App\Dashboard\Widgets\DocumentChainWidget;
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
@@ -61,7 +62,7 @@ class DocumentChainTest extends TestCase {
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
             'number' => 'R-OVERDUE-1',
-            'status' => Invoice::STATUS_ISSUED,
+            'status' => InvoiceStatus::Issued,
             'type' => Invoice::TYPE_INVOICE,
             'issued_on' => now()->subDays(40)->toDateString(),
             'due_on' => now()->subDays(10)->toDateString(),

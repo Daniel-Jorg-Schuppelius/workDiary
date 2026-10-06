@@ -21,7 +21,7 @@ use Illuminate\Database\Eloquent\{Builder, Model};
  * Remote→lokales Schema, die Kandidaten-Query und das Anlegen neuer Datensätze.
  *
  * Eine Implementierung pro Entität ersetzt die heute pro Plugin duplizierte
- * Match-Logik ({@see \App\Plugins\Lexoffice\LexofficeContactSync::findLocalMatch}
+ * Match-Logik ({@see \App\Plugins\Lexoffice\Services\LexofficeContactSync::findLocalMatch}
  * etc.). Siehe ../WorkDiary-Architecture/features/053-datenimport-integrations-drehscheibe.md.
  *
  * Wichtig: Die QUELLSPEZIFISCHE Übersetzung (Lexoffice-JSON, Toggl-flat, CSV-Zeile

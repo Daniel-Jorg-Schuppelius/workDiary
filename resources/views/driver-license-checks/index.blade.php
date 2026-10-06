@@ -16,9 +16,10 @@
 @endphp
 
 @section('nav-title', __('Führerscheinkontrolle'))
+@include('partials.page-fill')
 
 @section('content')
-<x-page-shell>
+<x-page-shell overflow="clip">
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="__('Dokumentierte Sichtprüfungen je Fahrer (Halterhaftung); überfällige Kontrollen sperren die Fahrzeugreservierung.')"
                         back-route="vehicles.index" :back-label="__('Fuhrpark')">
@@ -33,7 +34,7 @@
         </x-page-toolbar>
     </x-slot:toolbar>
 
-    <x-table :zebra="true" size="sm">
+    <x-table scroll="flex" :zebra="true" size="sm">
         <x-slot:head>
             <tr>
                 <th>{{ __('Fahrer') }}</th>

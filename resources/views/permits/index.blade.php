@@ -11,8 +11,7 @@
 
 @section('title', __('permit.title'))
 @section('nav-title', __('permit.title'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @php
     /** @var \Illuminate\Pagination\LengthAwarePaginator $permits */
@@ -76,7 +75,7 @@
                     </td>
                     <td class="text-base-content/70 tabular-nums">
                         @if ($permit->valid_until)
-                            <span @class(['text-error font-medium' => $permit->isOverdue()])>{{ $permit->valid_until->format('d.m.Y') }}</span>
+                            <span @class(['text-error font-medium' => $permit->isOverdue()])>{{ $permit->valid_until->fdate() }}</span>
                         @else
                             —
                         @endif

@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Calendar;
 
+use App\Enums\Calendar\AppointmentRequestStatus;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\Calendar\AppointmentRequest;
@@ -39,18 +40,18 @@ class AppointmentInboxController extends Controller {
 
         return view('appointments.index', [
             'tab' => $tab,
-            'openCount' => AppointmentRequest::query()->where('status', AppointmentRequest::STATUS_REQUESTED)->count(),
+            'openCount' => AppointmentRequest::query()->where('status', AppointmentRequestStatus::Requested)->count(),
             'serviceCount' => BookableService::query()->where('active', true)->count(),
             'requests' => $tab === 'open'
                 ? AppointmentRequest::query()
-                    ->where('status', AppointmentRequest::STATUS_REQUESTED)
+                    ->where('status', AppointmentRequestStatus::Requested)
                     ->with(['customer:id,name', 'bookableService:id,title'])
                     ->orderBy('start_at')
                     ->get()
                 : collect(),
             'decided' => $tab === 'decided'
                 ? AppointmentRequest::query()
-                    ->whereIn('status', [AppointmentRequest::STATUS_CONFIRMED, AppointmentRequest::STATUS_DECLINED, AppointmentRequest::STATUS_CANCELED])
+                    ->whereIn('status', [AppointmentRequestStatus::Confirmed, AppointmentRequestStatus::Declined, AppointmentRequestStatus::Canceled])
                     ->with(['customer:id,name', 'bookableService:id,title', 'decidedBy:id,name'])
                     ->orderByDesc('decided_at')
                     ->paginate(25)

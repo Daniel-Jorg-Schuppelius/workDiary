@@ -36,9 +36,6 @@ return [
     ],
 
     'section' => [
-        'sessions' => 'Web-/App-Sitzungen',
-        'tokens' => 'API-Tokens',
-        'devices' => 'Standort-Geräte',
         'terminals' => 'Stempelterminals',
         'remote_support' => 'Letzte Fernwartungen',
     ],
@@ -58,6 +55,13 @@ return [
         'remote' => 'Kennung',
         'started' => 'Beginn',
         'ended' => 'Ende',
+        'kind' => 'Art',
+    ],
+
+    'kind' => [
+        'session' => 'Web-/App-Sitzung',
+        'token' => 'API-Token',
+        'device' => 'Standort-Gerät',
     ],
 
     'terminal' => [

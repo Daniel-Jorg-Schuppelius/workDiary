@@ -23,14 +23,7 @@
                 {{ $label }} · {{ __('Schwelle: :n Defekte in :m Monaten', ['n' => $threshold, 'm' => $windowMonths]) }}
             </x-slot:subtitle>
             <x-slot:actions>
-                <x-action-menu icon="download" tone="outline" :label="__('Export')">
-                    <x-icon-btn icon="download" tone="outline" size="sm"
-                                :href="route('reports.assets.drilldown.recurring-defects', ['export' => 'csv'])"
-                                show-label>CSV</x-icon-btn>
-                    <x-icon-btn icon="table_view" tone="outline" size="sm"
-                                :href="route('reports.assets.drilldown.recurring-defects', ['export' => 'xlsx'])"
-                                show-label>Excel</x-icon-btn>
-                </x-action-menu>
+                <x-report-export :url="fn (string $format) => route('reports.assets.drilldown.recurring-defects', ['export' => $format])" :formats="['csv', 'xlsx']" />
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>

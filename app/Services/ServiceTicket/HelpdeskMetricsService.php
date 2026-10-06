@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\ServiceTicket;
 
-use App\Enums\ServiceTicket\ServiceTicketStatus;
+use App\Enums\ServiceTicket\{ChangeStatus, ServiceRequestStatus, ServiceTicketStatus};
 use App\Models\Audit\AuditLog;
 use App\Models\Knowledge\{ContentReference, KnowledgeArticle};
 use App\Models\ServiceTicket\{Change, Problem, ServiceRequest, ServiceTicket, SlaClockSegment, TicketSatisfaction};
@@ -175,7 +175,7 @@ class HelpdeskMetricsService {
      */
     public function changeOutcomes(Carbon $from, Carbon $to): array {
         return Change::query()
-            ->where('status', 'done')
+            ->where('status', ChangeStatus::Done)
             ->whereBetween('updated_at', [$from, $to])
             ->get(['outcome'])
             ->countBy(fn(Change $change): string => (string) $change->outcome)
@@ -336,7 +336,7 @@ class HelpdeskMetricsService {
             if ($firstDecision !== null && $createdAt !== null) {
                 $byItem[$name]['approval_hours'][] = round($createdAt->diffInMinutes($firstDecision) / 60, 2);
             }
-            if ($request->status === ServiceRequest::STATUS_DONE && $createdAt !== null && $request->updated_at !== null) {
+            if ($request->status === ServiceRequestStatus::Done && $createdAt !== null && $request->updated_at !== null) {
                 $byItem[$name]['fulfillment_hours'][] = round($createdAt->diffInMinutes($request->updated_at) / 60, 2);
             }
         }
@@ -344,8 +344,8 @@ class HelpdeskMetricsService {
         return collect($byItem)->map(fn(array $row, string $name): array => [
             'item' => $name,
             'count' => $row['count'],
-            'approval_median_hours' => $this->median($row['approval_hours']),
-            'fulfillment_median_hours' => $this->median($row['fulfillment_hours']),
+            'approval_median_hours' => round(NumberHelper::median($row['approval_hours']), 1),
+            'fulfillment_median_hours' => round(NumberHelper::median($row['fulfillment_hours']), 1),
         ])->values()->all();
     }
 
@@ -523,17 +523,5 @@ class HelpdeskMetricsService {
             'p95' => NumberHelper::percentile($values, 95, PercentileMethod::NearestRank),
             'count' => count($values),
         ];
-    }
-
-    /** @param array<int, float> $values */
-    private function median(array $values): float {
-        if ($values === []) {
-            return 0.0;
-        }
-        sort($values);
-        $count = count($values);
-        $middle = intdiv($count, 2);
-
-        return $count % 2 === 1 ? (float) $values[$middle] : round(((float) $values[$middle - 1] + (float) $values[$middle]) / 2, 1);
     }
 }

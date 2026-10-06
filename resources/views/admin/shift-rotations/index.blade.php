@@ -59,9 +59,9 @@
                     <span class="text-sm text-muted">{{ __(':weeks Wochen-Rhythmus', ['weeks' => $rotation->weeks_count]) }}</span>
                     <form method="POST" action="{{ route('admin.shift-rotations.toggle', $rotation) }}" class="ml-auto">
                         @csrf
-                        <button type="submit" class="btn btn-xs btn-ghost">
+                        <x-button type="submit" tone="ghost" size="xs">
                             {{ $rotation->is_active ? __('Deaktivieren') : __('Aktivieren') }}
-                        </button>
+                        </x-button>
                     </form>
                 </div>
 
@@ -103,7 +103,7 @@
                         </table>
                     </div>
                     <div class="mt-2 flex justify-end">
-                        <button type="submit" class="btn btn-sm btn-primary">{{ __('Wochenraster speichern') }}</button>
+                        <x-button type="submit">{{ __('Wochenraster speichern') }}</x-button>
                     </div>
                 </form>
 
@@ -157,7 +157,7 @@
                     <x-date-range layout="split" form-control grid-class="contents"
                                   from-name="valid_from" to-name="valid_until" type="date"
                                   :from-label="__('Gültig ab')" :to-label="__('Gültig bis')" />
-                    <button type="submit" class="btn btn-sm btn-outline">{{ __('Zuweisen') }}</button>
+                    <x-button type="submit" tone="outline">{{ __('Zuweisen') }}</x-button>
                 </form>
             </x-card>
         @endforeach

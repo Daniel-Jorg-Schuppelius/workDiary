@@ -41,6 +41,19 @@ final class InvestmentProgramTest extends TestCase {
         return $case;
     }
 
+    /** Konsolidierungs-Audit 2026-10, k1-02: „1e3“ ist ein Formularfehler statt ValueError, zu viele Nachkommastellen werden nicht still abgeschnitten. */
+    public function test_budget_input_must_be_a_plain_decimal(): void {
+        $this->actingAs($this->admin)->post(route('investments.programs.store'), ['name' => 'Werkstatt 2030', 'starts_year' => 2026, 'ends_year' => 2027, 'currency' => 'EUR'])->assertRedirect();
+        $program = InvestmentProgram::query()->sole();
+
+        $this->actingAs($this->admin)->put(route('investments.programs.budgets', $program), ['budget' => [2026 => '1e3']])->assertSessionHasErrors('budget.2026');
+        $this->actingAs($this->admin)->put(route('investments.programs.budgets', $program), ['budget' => [2026 => '1.999']])->assertSessionHasErrors('budget.2026');
+        $this->assertSame(0, $program->budgets()->count());
+
+        app(InvestmentProgramService::class)->saveBudgets($program, [2026 => '1.995']);
+        $this->assertSame('2.00', (string) $program->budgets()->sole()->budget_amount);
+    }
+
     public function test_programme_compares_planned_values_per_year_with_budgets(): void {
         $this->actingAs($this->admin)->post(route('investments.programs.store'), ['name' => 'Werkstatt 2030', 'starts_year' => 2026, 'ends_year' => 2028, 'currency' => 'EUR'])->assertRedirect();
         $program = InvestmentProgram::query()->sole();

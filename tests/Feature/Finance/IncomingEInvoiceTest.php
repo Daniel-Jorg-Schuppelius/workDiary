@@ -11,6 +11,7 @@
 namespace Tests\Feature\Finance;
 
 use App\Enums\Document\DocumentType;
+use App\Enums\Invoicing\{IncomingEInvoiceStatus, InvoiceStatus};
 use App\Enums\Whistleblowing\AttachmentScanStatus;
 use App\Models\Customer\Customer;
 use App\Models\Document\Document;
@@ -74,7 +75,7 @@ final class IncomingEInvoiceTest extends TestCase {
             'organization_id' => $this->organization->id,
             'customer_id' => $customer->id,
             'number' => 'ER-2026-0042',
-            'status' => Invoice::STATUS_ISSUED,
+            'status' => InvoiceStatus::Issued,
             'issued_on' => '2026-06-01',
             'due_on' => '2026-06-15',
             'currency' => 'EUR',
@@ -142,7 +143,7 @@ final class IncomingEInvoiceTest extends TestCase {
         $incoming = \App\Models\Invoicing\IncomingEInvoice::query()->firstOrFail();
         $this->assertSame(hash('sha256', $xml), $incoming->sha256);
         $this->assertSame('upload', $incoming->source);
-        $this->assertSame(\App\Models\Invoicing\IncomingEInvoice::STATUS_RECEIVED, $incoming->status);
+        $this->assertSame(IncomingEInvoiceStatus::Received, $incoming->status);
         $this->assertSame('ER-2026-0042', $incoming->summary['number']);
 
         // Dublette: identischer Inhalt wird abgewiesen (kein zweites Document).
@@ -157,17 +158,17 @@ final class IncomingEInvoiceTest extends TestCase {
         $this->actingAs($this->admin)
             ->post(route('finance.incoming-invoices.decide', $incoming), ['decision' => 'payment_released'])
             ->assertSessionHas('error');
-        $this->assertSame(\App\Models\Invoicing\IncomingEInvoice::STATUS_RECEIVED, $incoming->fresh()->status);
+        $this->assertSame(IncomingEInvoiceStatus::Received, $incoming->fresh()->status);
 
         $this->actingAs($this->admin)
             ->post(route('finance.incoming-invoices.decide', $incoming), ['decision' => 'approved'])
             ->assertSessionHas('success');
-        $this->assertSame(\App\Models\Invoicing\IncomingEInvoice::STATUS_APPROVED, $incoming->fresh()->status);
+        $this->assertSame(IncomingEInvoiceStatus::Approved, $incoming->fresh()->status);
 
         $this->actingAs($this->admin)
             ->post(route('finance.incoming-invoices.decide', $incoming), ['decision' => 'payment_released'])
             ->assertSessionHas('success');
-        $this->assertSame(\App\Models\Invoicing\IncomingEInvoice::STATUS_PAYMENT_RELEASED, $incoming->fresh()->status);
+        $this->assertSame(IncomingEInvoiceStatus::PaymentReleased, $incoming->fresh()->status);
 
         // Ablehnung braucht eine Anmerkung.
         $second = \App\Models\Invoicing\IncomingEInvoice::query()->create([
@@ -180,6 +181,42 @@ final class IncomingEInvoiceTest extends TestCase {
         $this->actingAs($this->admin)
             ->post(route('finance.incoming-invoices.decide', $second), ['decision' => 'rejected'])
             ->assertSessionHasErrors('note');
+    }
+
+    /** Der Prüfstand ist ein Enum: Rückfrage wiederholbar, Meldung und Audit tragen den Rohwert, die Seite das Label. */
+    public function test_review_decisions_follow_the_status_enum(): void {
+        $this->actingAs($this->admin)->post(route('finance.incoming-invoices.store'), [
+            'file' => UploadedFile::fake()->createWithContent('rechnung.xml', $this->sampleXml()),
+        ])->assertRedirect();
+        $incoming = \App\Models\Invoicing\IncomingEInvoice::query()->firstOrFail();
+        $document = Document::query()->findOrFail($incoming->document_id);
+        $decide = fn (string $decision, ?string $note = null) => $this->actingAs($this->admin)
+            ->post(route('finance.incoming-invoices.decide', $incoming), ['decision' => $decision, 'note' => $note]);
+
+        $decide('question', 'Bestellnummer fehlt')->assertSessionHas('success');
+        $decide('question', 'Lieferschein fehlt auch')->assertSessionHas('success');
+        $this->assertSame(IncomingEInvoiceStatus::Question, $incoming->fresh()->status);
+        $this->assertSame('Lieferschein fehlt auch', $incoming->fresh()->decision_note);
+
+        $decide('payment_released')->assertSessionHas('error', 'Übergang question → payment_released ist nicht zulässig.');
+
+        $decide('approved')->assertSessionHas('success');
+        $decide('approved')->assertSessionHas('error');
+        $this->assertSame(
+            ['to' => 'approved'],
+            \App\Models\Audit\AuditLog::query()->where('event', 'incoming_einvoice.decided')->latest('id')->firstOrFail()->changes,
+        );
+
+        $this->actingAs($this->admin)->get(route('finance.incoming-invoices.show', $document))
+            ->assertOk()
+            ->assertSee('Fachlich freigegeben')
+            ->assertSee(route('finance.incoming-invoices.transfer', $incoming), false);
+
+        $decide('rejected', 'Doppelt berechnet')->assertSessionHas('success');
+        $this->actingAs($this->admin)->get(route('finance.incoming-invoices.show', $document))
+            ->assertOk()
+            ->assertDontSee(route('finance.incoming-invoices.transfer', $incoming), false);
+        $decide('approved')->assertSessionHas('error');
     }
 
     public function test_incoming_validation_reports_schema_and_kosit(): void {

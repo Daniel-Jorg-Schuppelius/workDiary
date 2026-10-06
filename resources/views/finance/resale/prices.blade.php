@@ -14,7 +14,7 @@
 @extends('layouts.app')
 @section('title', __('resale.prices.title'))
 @section('nav-title', __('resale.title.menu'))
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @php
     $money = static fn(?float $v, \CommonToolkit\Enums\CurrencyCode $c): string => $v === null ? '—' : \CommonToolkit\ValueObjects\Money::ofFloat($v, $c, 2)->format();

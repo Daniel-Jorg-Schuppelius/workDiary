@@ -67,8 +67,8 @@
                     @endif
                     @if ($canQuery)
                         <td class="text-right whitespace-nowrap">
-                            <a href="{{ route('customer.queries.create', ['subject_type' => 'time_entry', 'subject' => $entry->sqid]) }}"
-                               class="btn btn-ghost btn-xs">{{ __('Rückfrage') }}</a>
+                            <x-button :href="route('customer.queries.create', ['subject_type' => 'time_entry', 'subject' => $entry->sqid])"
+                                    tone="ghost" size="xs">{{ __('Rückfrage') }}</x-button>
                         </td>
                     @endif
                 </tr>

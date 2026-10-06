@@ -25,10 +25,7 @@ class RawRequestDateParseRuleTest extends TestCase {
     use ScansSourceTree;
 
     /** @var array<string, string> Pfad → Begründung */
-    private const ALLOW_LIST = [
-        'app/Http/Controllers/Concerns/ResolvesGlobalDateRange.php' => 'der Guard selbst (parst innerhalb von try/catch bzw. dokumentierter Precedence)',
-        'app/Http/Controllers/Admin/MaintenanceWindowController.php' => "inline \$request->validate(['ends_at' => 'date']) unmittelbar vor dem Parse",
-    ];
+    private const ALLOW_LIST = [];
 
     public function test_http_layer_guards_request_date_parsing(): void {
         $violations = [];

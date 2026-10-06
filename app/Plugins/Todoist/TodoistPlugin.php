@@ -15,6 +15,7 @@ use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{Plugin, PluginCapability, TaskSyncer};
 use App\Plugins\Support\PluginOrgContext;
 use App\Plugins\Todoist\Api\TodoistApiClient;
+use App\Plugins\Todoist\Enums\TodoistConnectionStatus;
 use App\Plugins\Todoist\Models\TodoistConnection;
 use Throwable;
 
@@ -109,10 +110,10 @@ class TodoistPlugin extends AbstractPlugin implements \App\Plugins\Contracts\Slo
         }
 
         $connection = TodoistConnection::query()->where('organization_id', $org->id)->first();
-        if (! $connection instanceof TodoistConnection || $connection->status === TodoistConnection::STATUS_DISCONNECTED) {
+        if (! $connection instanceof TodoistConnection || $connection->status === TodoistConnectionStatus::Disconnected) {
             return PluginHealth::degraded(__('Keine Todoist-Verbindung hergestellt.'));
         }
-        if ($connection->status === TodoistConnection::STATUS_PAUSED) {
+        if ($connection->status === TodoistConnectionStatus::Paused) {
             return PluginHealth::failing(__('Verbindung pausiert — bitte neu verbinden.'));
         }
 

@@ -16,17 +16,7 @@
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="__('Plan vs. Ist, Nacharbeit und Eskalation je Auftragstyp.')">
             <x-slot:actions>
-                <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
-                            :href="route('reports.entry-types', array_merge($standardFilters->toQueryParams(), array_filter(['entry_type_id' => \App\Support\Sqid::encode(\App\Models\Classification\EntryType::class, $entryTypeFilter)]), ['export' => 'pdf']))"
-                            show-label>PDF</x-icon-btn>
-                <x-action-menu icon="download" tone="outline" :label="__('Export')">
-                    <x-icon-btn icon="download" tone="outline" size="sm"
-                                :href="route('reports.entry-types', array_merge($standardFilters->toQueryParams(), array_filter(['entry_type_id' => \App\Support\Sqid::encode(\App\Models\Classification\EntryType::class, $entryTypeFilter)]), ['export' => 'csv']))"
-                                show-label>CSV</x-icon-btn>
-                    <x-icon-btn icon="table_view" tone="outline" size="sm"
-                                :href="route('reports.entry-types', array_merge($standardFilters->toQueryParams(), array_filter(['entry_type_id' => \App\Support\Sqid::encode(\App\Models\Classification\EntryType::class, $entryTypeFilter)]), ['export' => 'xlsx']))"
-                                show-label>Excel</x-icon-btn>
-                </x-action-menu>
+                <x-report-export :url="fn (string $format) => route('reports.entry-types', array_merge($standardFilters->toQueryParams(), array_filter(['entry_type_id' => \App\Support\Sqid::encode(\App\Models\Classification\EntryType::class, $entryTypeFilter)]), ['export' => $format]))" />
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
@@ -93,9 +83,9 @@
                             'status' => $statusFilter,
                         ]));
                         $reportDrilldown = array_filter([
-                            'entry_type_id' => $row['entryTypeId'] > 0 ? $row['entryTypeId'] : null,
-                            'customer_id' => $customerId,
-                            'user_id' => $userId,
+                            'entry_type_id' => \App\Support\Sqid::encode(\App\Models\Classification\EntryType::class, $row['entryTypeId']),
+                            'customer_id' => \App\Support\Sqid::encode(\App\Models\Customer\Customer::class, $customerId),
+                            'user_id' => \App\Support\Sqid::encode(\App\Models\Platform\User::class, $userId),
                             'status' => $statusFilter,
                         ]);
                     @endphp

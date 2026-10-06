@@ -11,14 +11,15 @@
 namespace App\Plugins\Lexoffice\Services\Retainer;
 
 use App\Enums\Billing\{AccountPaymentSource, BillingAgreementMode};
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Billing\{CustomerBillingAgreement, CustomerBillingStatement};
 use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\Organization;
-use App\Plugins\Lexoffice\{LexofficeInvoiceService, LexofficePlugin, LexofficeVoucherNetAmount};
+use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\Lexoffice\Models\LexofficeVoucher;
-use App\Plugins\Lexoffice\VoucherTypes;
+use App\Plugins\Lexoffice\Services\{LexofficeInvoiceService, LexofficeVoucherNetAmount, VoucherTypes};
 use App\Services\Billing\Contracts\RetainerVoucherLinks;
 use App\Services\Billing\{CustomerAccountStatementService, RetainerVoucherRef};
 use App\Support\Tz;
@@ -30,7 +31,7 @@ use Illuminate\Validation\ValidationException;
 /**
  * Retainer-Zahlstatus-Rücksync (Feature 098): spiegelt den Lexoffice-Beleg-
  * status (paid/teilbezahlt/storniert) der Pauschal-/Ausgleichsbelege zurück in
- * den Leistungssaldo. Läuft nach {@see \App\Plugins\Lexoffice\LexofficeVoucherSync}.
+ * den Leistungssaldo. Läuft nach {@see \App\Plugins\Lexoffice\Services\LexofficeVoucherSync}.
  * Idempotent über die Voucher-UUID (source_reference).
  *
  * Zwei Zuordnungswege, weil die Pauschale aus beiden Richtungen entstehen kann:
@@ -86,7 +87,7 @@ class LexofficeRetainerVouchers implements RetainerVoucherLinks {
             if ($status === 'voided') {
                 $this->statements->revokeExternalPayment($agreement, AccountPaymentSource::Lexoffice, $voucher->external_id);
                 if ($invoice !== null) {
-                    $this->markInvoice($invoice, Invoice::STATUS_CANCELLED);
+                    $this->markInvoice($invoice, InvoiceStatus::Cancelled);
                 }
                 $result['revoked']++;
 
@@ -119,7 +120,7 @@ class LexofficeRetainerVouchers implements RetainerVoucherLinks {
             );
 
             if ($invoice !== null) {
-                $this->markInvoice($invoice, $open->isPositive() ? Invoice::STATUS_PARTIALLY_PAID : Invoice::STATUS_PAID, $paidOn);
+                $this->markInvoice($invoice, $open->isPositive() ? InvoiceStatus::PartiallyPaid : InvoiceStatus::Paid, $paidOn);
             }
             $result['booked']++;
         }
@@ -426,12 +427,12 @@ class LexofficeRetainerVouchers implements RetainerVoucherLinks {
     }
 
     /** Pflegt ausschließlich Whitelist-Felder (status, paid_on) der Invoice. */
-    private function markInvoice(Invoice $invoice, string $status, ?Carbon $paidOn = null): void {
+    private function markInvoice(Invoice $invoice, InvoiceStatus $status, ?Carbon $paidOn = null): void {
         if ($invoice->status === $status) {
             return;
         }
         $invoice->status = $status;
-        if ($status === Invoice::STATUS_PAID && $paidOn !== null) {
+        if ($status === InvoiceStatus::Paid && $paidOn !== null) {
             $invoice->paid_on = $paidOn;
         }
         $invoice->saveQuietly();

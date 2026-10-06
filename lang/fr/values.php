@@ -282,4 +282,5 @@ return [
     'manual' => 'Manuel',
     // Artikel-Mapping (ExternalArticleMapping.sync_status)
     'synced' => 'Synchronisé',
+    'linked' => 'Lié',
 ];

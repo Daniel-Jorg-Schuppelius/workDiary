@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\ServiceTicket;
 
+use App\Enums\ServiceTicket\ServiceRequestStatus;
 use App\Models\Approval\Approval;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Procurement\RequestItem;
@@ -29,7 +30,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphMany, MorphTo};
  * @property int $request_item_id
  * @property array<string, mixed>|null $form_snapshot
  * @property array<string, mixed> $catalog_snapshot
- * @property string $status
+ * @property ServiceRequestStatus $status
  * @property string|null $fulfilled_type
  * @property int|null $fulfilled_id
  */
@@ -37,18 +38,6 @@ class ServiceRequest extends Model {
     use Auditable;
     use BelongsToOrganization;
     use HasSqid;
-
-    public const STATUS_DRAFT = 'draft';
-
-    public const STATUS_PENDING = 'pending_approval';
-
-    public const STATUS_APPROVED = 'approved';
-
-    public const STATUS_REJECTED = 'rejected';
-
-    public const STATUS_FULFILLING = 'fulfilling';
-
-    public const STATUS_DONE = 'done';
 
     protected $fillable = [
         'organization_id', 'service_ticket_id', 'request_item_id',
@@ -59,6 +48,7 @@ class ServiceRequest extends Model {
     protected $casts = [
         'form_snapshot' => 'array',
         'catalog_snapshot' => 'array',
+        'status' => ServiceRequestStatus::class,
     ];
 
     /** @return BelongsTo<ServiceTicket, $this> */

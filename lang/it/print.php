@@ -155,7 +155,6 @@ return [
         'approval_stale' => 'Il file è stato modificato dopo l\'approvazione — l\'ordine torna da verificare/approvare.',
         'machine_foreign' => 'La macchina non appartiene a questa organizzazione.',
         'machine_inspection_overdue' => 'Macchina con verifica/taratura obbligatoria scaduta — avvio non consentito.',
-        'qc_result_invalid' => 'Esito CQ non valido.',
         'invalid_transition' => 'Cambio di stato non consentito.',
         'invalid_transition_detail' => 'Cambio di stato non consentito: :from → :to.',
         'shipment_required' => 'La consegna per spedizione richiede una spedizione esistente.',

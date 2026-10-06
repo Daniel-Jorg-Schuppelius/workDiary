@@ -190,6 +190,14 @@ class Organization extends Model {
         return $codes;
     }
 
+    /** Ob das Branchenprofil installiert ist — als Hauptprofil oder zusätzlich. */
+    public function hasBranchProfile(string $code): bool {
+        $settings = is_array($this->settings) ? $this->settings : [];
+
+        return ($settings['branch_profile_code'] ?? null) === $code
+            || data_get($settings, 'branch_profile_versions.' . $code) !== null;
+    }
+
     /** Hauptprofil (`settings.branch_profile_code`): das zuerst installierte, bis es bewusst gewechselt wird. */
     public function primaryBranchProfileCode(): ?string {
         $settings = is_array($this->settings) ? $this->settings : [];

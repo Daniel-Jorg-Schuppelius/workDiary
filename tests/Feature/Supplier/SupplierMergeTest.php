@@ -126,7 +126,10 @@ class SupplierMergeTest extends TestCase {
         $this->actingAs($this->admin)
             ->get(route('suppliers.duplicates.index'))
             ->assertOk()
-            ->assertSee('Nord Handel');
+            ->assertSee('Nord Handel')
+            // k4-05: die kopierte Zeile „Projekte“ zählte hier etwas, das Lieferanten nicht haben.
+            ->assertSee('<td class="text-muted">' . __('Bestellungen') . '</td>', false)
+            ->assertDontSee('<td class="text-muted">' . __('Projekte') . '</td>', false);
 
         $this->actingAs($this->admin)
             ->get(route('suppliers.duplicates.compare', ['source' => $source->sqid, 'target' => $target->sqid]))

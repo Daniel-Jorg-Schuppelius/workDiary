@@ -12,9 +12,10 @@ declare(strict_types=1);
 
 namespace App\Plugins\SevDesk\Api;
 
+use APIToolkit\API\Authentication\ApiKeyAuthentication;
+use App\Plugins\SevDesk\Exceptions\SevDeskApiException;
 use App\Plugins\SevDesk\SevDeskPlugin;
-use App\Plugins\Support\PluginHttpFactory;
-use Illuminate\Http\Client\Response;
+use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
 use Illuminate\Support\Facades\Cache;
 
 /**
@@ -33,6 +34,8 @@ use Illuminate\Support\Facades\Cache;
 class SevDeskClient {
     // Gemeinsame guard()-Fehlerbehandlung (Vollaudit 2026-07, N33).
     use \App\Plugins\Support\GuardsPluginApiResponses;
+
+    private ?PluginApiClient $api = null;
 
     public function __construct(
         private readonly PluginHttpFactory $http,
@@ -67,7 +70,7 @@ class SevDeskClient {
 
     /** @return array<string, mixed> GET /Tools/bookkeepingSystemVersion (ungecacht). */
     public function bookkeepingSystemVersion(): array {
-        return (array) $this->guard($this->authed('get', '/Tools/bookkeepingSystemVersion'), '/Tools/bookkeepingSystemVersion');
+        return (array) $this->guard($this->api()->requestResponse('get', $this->baseUrl . '/Tools/bookkeepingSystemVersion'), '/Tools/bookkeepingSystemVersion');
     }
 
     /**
@@ -89,7 +92,7 @@ class SevDeskClient {
     /** @return array<int, mixed> GET /Contact?customerNumber= — exakte Nummer. */
     public function contactsByCustomerNumber(string $customerNumber): array {
         $body = (array) $this->guard(
-            $this->authed('get', '/Contact', ['query' => ['customerNumber' => $customerNumber, 'limit' => 10]]),
+            $this->api()->requestResponse('get', $this->baseUrl . '/Contact', ['query' => ['customerNumber' => $customerNumber, 'limit' => 10]]),
             '/Contact',
         );
 
@@ -103,7 +106,7 @@ class SevDeskClient {
      * @return array<string, mixed>
      */
     public function createContact(array $payload): array {
-        $body = (array) $this->guard($this->authed('post', '/Contact', ['json' => $payload]), '/Contact');
+        $body = (array) $this->guard($this->api()->requestResponse('post', $this->baseUrl . '/Contact', ['json' => $payload]), '/Contact');
 
         return $this->object($body);
     }
@@ -117,7 +120,7 @@ class SevDeskClient {
      */
     public function updateContact(string $contactId, array $payload): array {
         $body = (array) $this->guard(
-            $this->authed('put', '/Contact/' . rawurlencode($contactId), ['json' => $payload]),
+            $this->api()->requestResponse('put', $this->baseUrl . '/Contact/' . rawurlencode($contactId), ['json' => $payload]),
             '/Contact/{id}',
         );
 
@@ -132,7 +135,7 @@ class SevDeskClient {
      */
     public function vouchers(int $offset, int $limit): array {
         $body = (array) $this->guard(
-            $this->authed('get', '/Voucher', ['query' => [
+            $this->api()->requestResponse('get', $this->baseUrl . '/Voucher', ['query' => [
                 'offset' => $offset,
                 'limit' => $limit,
                 'ordering[id]' => 'DESC',
@@ -153,7 +156,7 @@ class SevDeskClient {
      * @return array<string, mixed>
      */
     public function createContactAddress(array $payload): array {
-        $body = (array) $this->guard($this->authed('post', '/ContactAddress', ['json' => $payload]), '/ContactAddress');
+        $body = (array) $this->guard($this->api()->requestResponse('post', $this->baseUrl . '/ContactAddress', ['json' => $payload]), '/ContactAddress');
 
         return $this->object($body);
     }
@@ -167,7 +170,7 @@ class SevDeskClient {
      */
     public function updateContactAddress(string $addressId, array $payload): array {
         $body = (array) $this->guard(
-            $this->authed('put', '/ContactAddress/' . rawurlencode($addressId), ['json' => $payload]),
+            $this->api()->requestResponse('put', $this->baseUrl . '/ContactAddress/' . rawurlencode($addressId), ['json' => $payload]),
             '/ContactAddress/{id}',
         );
 
@@ -182,7 +185,7 @@ class SevDeskClient {
      * @return array<string, mixed>
      */
     public function createCommunicationWay(array $payload): array {
-        $body = (array) $this->guard($this->authed('post', '/CommunicationWay', ['json' => $payload]), '/CommunicationWay');
+        $body = (array) $this->guard($this->api()->requestResponse('post', $this->baseUrl . '/CommunicationWay', ['json' => $payload]), '/CommunicationWay');
 
         return $this->object($body);
     }
@@ -195,7 +198,7 @@ class SevDeskClient {
      */
     public function updateCommunicationWay(string $wayId, array $payload): array {
         $body = (array) $this->guard(
-            $this->authed('put', '/CommunicationWay/' . rawurlencode($wayId), ['json' => $payload]),
+            $this->api()->requestResponse('put', $this->baseUrl . '/CommunicationWay/' . rawurlencode($wayId), ['json' => $payload]),
             '/CommunicationWay/{id}',
         );
 
@@ -214,7 +217,7 @@ class SevDeskClient {
      * @return array<string, mixed>
      */
     public function saveInvoice(array $payload): array {
-        $body = (array) $this->guard($this->authed('post', '/Invoice/Factory/saveInvoice', ['json' => $payload]), '/Invoice/Factory/saveInvoice');
+        $body = (array) $this->guard($this->api()->requestResponse('post', $this->baseUrl . '/Invoice/Factory/saveInvoice', ['json' => $payload]), '/Invoice/Factory/saveInvoice');
 
         return $this->object($body);
     }
@@ -222,7 +225,7 @@ class SevDeskClient {
     /** @return array<int, mixed> GET /Invoice — jüngste zuerst (Reconciliation-Scan). */
     public function invoices(int $offset, int $limit): array {
         $body = (array) $this->guard(
-            $this->authed('get', '/Invoice', ['query' => [
+            $this->api()->requestResponse('get', $this->baseUrl . '/Invoice', ['query' => [
                 'offset' => $offset,
                 'limit' => $limit,
                 // Jüngste zuerst, damit der Marker-Scan das kleinste Fenster braucht.
@@ -236,7 +239,7 @@ class SevDeskClient {
 
     /** @return array<string, mixed> GET /Invoice/{id} — Statusrücklauf. */
     public function invoice(string $invoiceId): array {
-        $body = (array) $this->guard($this->authed('get', '/Invoice/' . rawurlencode($invoiceId)), '/Invoice/{id}');
+        $body = (array) $this->guard($this->api()->requestResponse('get', $this->baseUrl . '/Invoice/' . rawurlencode($invoiceId)), '/Invoice/{id}');
 
         return $this->object($body);
     }
@@ -245,7 +248,7 @@ class SevDeskClient {
 
     /** @return array<string, mixed> Erster SevUser des Accounts (GET /SevUser). */
     public function firstSevUser(): array {
-        $body = (array) $this->guard($this->authed('get', '/SevUser', ['query' => ['limit' => 1]]), '/SevUser');
+        $body = (array) $this->guard($this->api()->requestResponse('get', $this->baseUrl . '/SevUser', ['query' => ['limit' => 1]]), '/SevUser');
         $rows = $this->rows($body);
         $first = $rows[0] ?? null;
 
@@ -285,16 +288,15 @@ class SevDeskClient {
         return is_array($objects) ? $objects : [];
     }
 
-    /** @param array<string, mixed> $options */
-    private function authed(string $method, string $path, array $options = []): Response {
-        $options['headers'] = array_merge(
-            (array) ($options['headers'] ?? []),
+    /** Ein Exemplar je Client; die Anmeldung hängt daran. */
+    private function api(): PluginApiClient {
+        if ($this->api === null) {
+            $this->api = $this->http->client(SevDeskPlugin::ID, $this->baseUrl);
             // sevDesk-Vertrag: Token OHNE "Bearer "-Präfix.
-            ['Authorization' => $this->apiKey],
-        );
+            $this->api->setAuthentication(new ApiKeyAuthentication($this->apiKey, 'Authorization'));
+        }
 
-        return $this->http->client(SevDeskPlugin::ID, $this->baseUrl)
-            ->requestResponse($method, $this->baseUrl . $path, $options);
+        return $this->api;
     }
 
     /** @return class-string<\App\Plugins\Support\PluginApiException> */

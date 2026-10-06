@@ -10,6 +10,7 @@
 
 namespace App\Plugins\Lexoffice;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Enums\User\Permission;
 use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
@@ -22,6 +23,8 @@ use App\Models\Time\TimeEntry;
 use App\Plugins\{AbstractPlugin, PluginHealth, PluginManager};
 use App\Plugins\Contracts\{ContactSyncer, ContributesWhileInactive, NavigationContributor, PaymentSyncer, Plugin, PluginCapability, SlotRenderer, TimeExporter};
 use App\Plugins\Lexoffice\Enums\LexwareFeature;
+use App\Plugins\Lexoffice\Exceptions\LexofficeRateLimitException;
+use App\Plugins\Lexoffice\Services\{LexofficeMapper, LexofficeService, LexofficeVoucherSync, LexofficeWebhookService};
 use App\Plugins\Lexoffice\Tariff\LexwareTariffService;
 use App\Support\Query\DateRange;
 use App\Support\Sqid;
@@ -78,6 +81,7 @@ class LexofficePlugin extends AbstractPlugin implements \App\Plugins\Contracts\S
                 mapper: new LexofficeMapper,
                 defaults: $config['defaults'],
                 baseUrl: $config['base_url'],
+                requestInterval: $config['request_interval'],
             ));
 
             return $this->withWebhookState($health, $config);
@@ -91,7 +95,7 @@ class LexofficePlugin extends AbstractPlugin implements \App\Plugins\Contracts\S
      * drüben auch Subscriptions existieren — sonst laufen die Events ins
      * Leere und der geplante Sync ist die einzige Quelle.
      *
-     * @param  array{api_key: ?string, base_url: string, webhook_secret: ?string}  $config
+     * @param  array{api_key: ?string, base_url: string, webhook_secret: ?string, request_interval: float}  $config
      */
     private function withWebhookState(PluginHealth $health, array $config): PluginHealth {
         if (! $health->isOk() || ! is_string($config['webhook_secret']) || $config['webhook_secret'] === '') {
@@ -99,7 +103,7 @@ class LexofficePlugin extends AbstractPlugin implements \App\Plugins\Contracts\S
         }
 
         try {
-            $subscriptions = (new LexofficeWebhookService($config['api_key'], $config['base_url']))->subscriptions();
+            $subscriptions = (new LexofficeWebhookService($config['api_key'], $config['base_url'], $config['request_interval']))->subscriptions();
         } catch (Throwable) {
             // Zustand nicht ermittelbar (transient) — Ping war ok, kein Downgrade.
             return $health;
@@ -185,7 +189,7 @@ class LexofficePlugin extends AbstractPlugin implements \App\Plugins\Contracts\S
         }
 
         return [
-            'paid_dates' => (new LexofficeVoucherSync($config['api_key'], $config['base_url']))
+            'paid_dates' => (new LexofficeVoucherSync($config['api_key'], $config['base_url'], $config['request_interval']))
                 ->enrichPaidDates((int) $organization->id),
         ];
     }
@@ -331,7 +335,7 @@ class LexofficePlugin extends AbstractPlugin implements \App\Plugins\Contracts\S
             ])->render()) ?: null;
         }
 
-        if ($slot === 'invoice-show.actions' && $context instanceof Invoice && $context->status === Invoice::STATUS_DRAFT) {
+        if ($slot === 'invoice-show.actions' && $context instanceof Invoice && $context->status === InvoiceStatus::Draft) {
             $url = route('invoices.lexoffice.publish', $context);
             $csrf = csrf_token();
             $label = __('An Lexoffice');
@@ -365,7 +369,7 @@ class LexofficePlugin extends AbstractPlugin implements \App\Plugins\Contracts\S
 
         return match (true) {
             $slot === 'invoice-show.badges', $slot === 'invoice-schedule-run.badges' => trim(view('lexoffice::handover._badge', ['invoice' => $context])->render()) ?: null,
-            $slot === 'invoice-show.exports' => $profile->localFeatures !== [] && $context instanceof Invoice && $context->status !== Invoice::STATUS_DRAFT
+            $slot === 'invoice-show.exports' => $profile->localFeatures !== [] && $context instanceof Invoice && $context->status !== InvoiceStatus::Draft
                 && (auth()->user()?->can(Permission::InvoiceExport->value) ?? false)
                 ? view('lexoffice::handover._export_one', ['invoice' => $context])->render()
                 : null,

@@ -42,9 +42,9 @@
                     @endphp
                     <tr>
                         <td>
-                            <span class="badge badge-sm {{ $alert->type === \App\Models\Article\PricingChangeAlert::TYPE_AVAILABILITY ? 'badge-warning' : 'badge-error badge-outline' }}">
+                            <x-status-badge :tone="$alert->type === \App\Models\Article\PricingChangeAlert::TYPE_AVAILABILITY ? 'warning' : 'error'" :outline="$alert->type !== \App\Models\Article\PricingChangeAlert::TYPE_AVAILABILITY">
                                 {{ __('procurement.alert.type.' . $alert->type) }}
-                            </span>
+                            </x-status-badge>
                         </td>
                         <td>
                             {{ $alert->article?->name ?: '—' }}

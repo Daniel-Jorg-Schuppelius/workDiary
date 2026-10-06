@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Print;
 
 use App\Enums\Print\{PrintOrderStatus, PrintOutputKind};
+use App\Enums\Print\PrintQcStatus;
 use App\Http\Controllers\Concerns\{ResolvesCurrentOrganization, ResolvesGlobalDateRange};
 use App\Http\Controllers\Controller;
 use App\Models\Article\Article;
@@ -27,6 +28,7 @@ use App\Services\Print\PrintOrderService;
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 /**
@@ -267,10 +269,10 @@ class PrintOrderController extends Controller {
         $this->assertInOrganization($order->organization_id);
 
         $validated = $request->validate([
-            'result' => ['required', 'string', 'in:' . implode(',', [PrintOrder::QC_PASSED, PrintOrder::QC_REWORK, PrintOrder::QC_BLOCKED])],
+            'result' => ['required', 'string', Rule::enum(PrintQcStatus::class)],
             'note' => ['nullable', 'string', 'max:1000'],
         ]);
-        $this->orders->qualityCheck($order, (string) $validated['result'], $validated['note'] ?? null, $request->user() ?? abort(401));
+        $this->orders->qualityCheck($order, PrintQcStatus::from((string) $validated['result']), $validated['note'] ?? null, $request->user() ?? abort(401));
 
         return redirect()->route('print-orders.show', $order)->with('status', (string) __('print.flash.quality_checked'));
     }
@@ -371,7 +373,7 @@ class PrintOrderController extends Controller {
     /** Branchenprofil-Gate: 404 ohne installiertes Profil (Muster Recipes). */
     private function printOrganization(): Organization {
         $organization = $this->currentOrganization();
-        abort_unless($this->orders->isPrintProfileActive($organization), 404);
+        abort_unless($organization->hasBranchProfile(PrintOrderService::PROFILE_CODE), 404);
 
         return $organization;
     }

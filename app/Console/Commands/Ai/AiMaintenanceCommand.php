@@ -12,9 +12,11 @@ declare(strict_types=1);
 
 namespace App\Console\Commands\Ai;
 
-use App\Enums\Ai\AiConnectionStatus;
+use App\Enums\Ai\{AiConnectionStatus, AiTextSuggestionStatus};
+use App\Enums\Invoicing\InvoiceStatus;
+use App\Enums\Sales\QuoteStatus;
 use App\Models\Ai\{AiProviderConnection, AiTextSuggestion};
-use App\Models\Invoicing\{Invoice, InvoiceItem};
+use App\Models\Invoicing\InvoiceItem;
 use App\Models\Sales\QuoteItem;
 use App\Services\Ai\AiConnectionTester;
 use Illuminate\Console\Command;
@@ -70,14 +72,14 @@ class AiMaintenanceCommand extends Command {
 
         AiTextSuggestion::query()
             ->withoutGlobalScopes()
-            ->where('status', AiTextSuggestion::STATUS_PROPOSED)
+            ->where('status', AiTextSuggestionStatus::Proposed)
             ->orderBy('id')
             ->each(function (AiTextSuggestion $suggestion) use (&$expired): void {
                 $subject = $suggestion->subject;
 
                 $stillDraft = match (true) {
-                    $subject instanceof InvoiceItem => $subject->invoice?->status === Invoice::STATUS_DRAFT,
-                    $subject instanceof QuoteItem => $subject->quote?->status === 'draft',
+                    $subject instanceof InvoiceItem => $subject->invoice?->status === InvoiceStatus::Draft,
+                    $subject instanceof QuoteItem => $subject->quote?->status === QuoteStatus::Draft,
                     default => false,
                 };
 
@@ -85,7 +87,7 @@ class AiMaintenanceCommand extends Command {
                     return;
                 }
 
-                $suggestion->forceFill(['status' => AiTextSuggestion::STATUS_EXPIRED])->save();
+                $suggestion->forceFill(['status' => AiTextSuggestionStatus::Expired])->save();
                 $expired++;
             });
 
@@ -98,10 +100,10 @@ class AiMaintenanceCommand extends Command {
         return AiTextSuggestion::query()
             ->withoutGlobalScopes()
             ->whereIn('status', [
-                AiTextSuggestion::STATUS_ACCEPTED,
-                AiTextSuggestion::STATUS_EDITED,
-                AiTextSuggestion::STATUS_REJECTED,
-                AiTextSuggestion::STATUS_EXPIRED,
+                AiTextSuggestionStatus::Accepted,
+                AiTextSuggestionStatus::Edited,
+                AiTextSuggestionStatus::Rejected,
+                AiTextSuggestionStatus::Expired,
             ])
             ->where('updated_at', '<', Carbon::now()->subDays($retentionDays))
             ->delete();

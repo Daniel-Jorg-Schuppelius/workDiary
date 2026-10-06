@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Plugins;
 
-use App\Plugins\Lexoffice\LexofficeInvoiceParser;
+use App\Plugins\Lexoffice\Services\LexofficeInvoiceParser;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 

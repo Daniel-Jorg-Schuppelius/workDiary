@@ -24,17 +24,7 @@
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="__('Deckungsbeitrag, Ranking und Plan-vs-Ist je Kunde und Projekt.')">
             <x-slot:actions>
-                <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
-                            :href="route('reports.economics', array_merge($standardFilters->toQueryParams(), ['export' => 'pdf']))"
-                            show-label>PDF</x-icon-btn>
-                <x-action-menu icon="download" tone="outline" :label="__('Export')">
-                    <x-icon-btn icon="download" tone="outline" size="sm"
-                                :href="route('reports.economics', array_merge($standardFilters->toQueryParams(), ['export' => 'csv']))"
-                                show-label>CSV</x-icon-btn>
-                    <x-icon-btn icon="table_view" tone="outline" size="sm"
-                                :href="route('reports.economics', array_merge($standardFilters->toQueryParams(), ['export' => 'xlsx']))"
-                                show-label>Excel</x-icon-btn>
-                </x-action-menu>
+                <x-report-export :url="fn (string $format) => route('reports.economics', array_merge($standardFilters->toQueryParams(), ['export' => $format]))" />
                 <x-help-button topic="reports.economics" />
             </x-slot:actions>
         </x-page-toolbar>
@@ -90,7 +80,7 @@
                 @forelse($topProjects as $row)
                     <tr><td>{{ $row['projectName'] }}</td><td class="text-right tabular-nums {{ $contribTone($row['contribution']) }}">{{ $eur($row['contribution']) }}</td><td class="text-right tabular-nums">{{ $pct($row['margin']) }}</td></tr>
                 @empty
-                    <tr><td colspan="3" class="text-muted">{{ __('Keine Daten') }}</td></tr>
+                    <x-table.empty :colspan="3" :title="__('Keine Daten')" compact />
                 @endforelse
             </x-table>
         </x-card>
@@ -104,7 +94,7 @@
                 @forelse($flopProjects as $row)
                     <tr><td>{{ $row['projectName'] }}</td><td class="text-right tabular-nums {{ $contribTone($row['contribution']) }}">{{ $eur($row['contribution']) }}</td><td class="text-right tabular-nums">{{ $pct($row['margin']) }}</td></tr>
                 @empty
-                    <tr><td colspan="3" class="text-muted">{{ __('Keine Daten') }}</td></tr>
+                    <x-table.empty :colspan="3" :title="__('Keine Daten')" compact />
                 @endforelse
             </x-table>
         </x-card>
@@ -118,7 +108,7 @@
                 @forelse($topCustomers as $row)
                     <tr><td>{{ $row['customerName'] }}</td><td class="text-right tabular-nums {{ $contribTone($row['contribution']) }}">{{ $eur($row['contribution']) }}</td><td class="text-right tabular-nums">{{ $pct($row['margin']) }}</td></tr>
                 @empty
-                    <tr><td colspan="3" class="text-muted">{{ __('Keine Daten') }}</td></tr>
+                    <x-table.empty :colspan="3" :title="__('Keine Daten')" compact />
                 @endforelse
             </x-table>
         </x-card>
@@ -132,7 +122,7 @@
                 @forelse($flopCustomers as $row)
                     <tr><td>{{ $row['customerName'] }}</td><td class="text-right tabular-nums {{ $contribTone($row['contribution']) }}">{{ $eur($row['contribution']) }}</td><td class="text-right tabular-nums">{{ $pct($row['margin']) }}</td></tr>
                 @empty
-                    <tr><td colspan="3" class="text-muted">{{ __('Keine Daten') }}</td></tr>
+                    <x-table.empty :colspan="3" :title="__('Keine Daten')" compact />
                 @endforelse
             </x-table>
         </x-card>
@@ -344,7 +334,7 @@
                         </tr>
                         @foreach($boqAddenda as $p)
                             <tr>
-                                <td class="font-medium tabular-nums">{{ $p['referenceNo'] }} <span class="badge badge-outline badge-xs align-middle">{{ __('Nachtrag') }}</span></td>
+                                <td class="font-medium tabular-nums">{{ $p['referenceNo'] }} <x-status-badge tone="plain" size="xs" outline class="align-middle">{{ __('Nachtrag') }}</x-status-badge></td>
                                 <td class="max-w-md truncate text-sm">{{ $p['shortText'] ?? '—' }}</td>
                                 @if($multiBill)
                                     <td class="text-sm">{{ $p['billName'] }}</td>

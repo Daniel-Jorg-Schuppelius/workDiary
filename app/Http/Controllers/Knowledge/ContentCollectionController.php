@@ -16,7 +16,6 @@ use App\Models\Knowledge\{ContentCollection, ContentCollectionItem};
 use App\Models\Platform\User;
 use App\Services\Collections\{CollectableTypes, ContentCollectionService};
 use App\Support\Sqid;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\Rule;
@@ -120,7 +119,7 @@ class ContentCollectionController extends Controller {
     /** Dialog „Zur Sammlung hinzufügen“ von der Detailseite eines Inhalts. */
     public function addDialog(Request $request): View {
         Gate::authorize('create', ContentCollection::class);
-        $item = $this->resolveItem((string) $request->query('type', ''), (string) $request->query('item', ''));
+        $item = $this->types->findVisibleOrFail((string) $request->query('type', ''), (string) $request->query('item', ''), $this->user());
         $user = $this->user();
 
         return view('collections._add_dialog', [
@@ -148,7 +147,7 @@ class ContentCollectionController extends Controller {
         abort_if($collection === null, 404);
         $this->authorizeCollection('update', $collection);
 
-        $item = $this->resolveItem($data['type'], $data['item']);
+        $item = $this->types->findVisibleOrFail($data['type'], $data['item'], $this->user());
         $this->service->addItem($collection, $this->user(), $item);
 
         return redirect()->back()->with('success', __('collections.flash.item_added', ['collection' => $collection->title]));
@@ -219,19 +218,6 @@ class ContentCollectionController extends Controller {
             'parent_id' => filled($data['parent_id'] ?? null) ? (Sqid::decodeOrNumeric(ContentCollection::class, (string) $data['parent_id']) ?? 0) : null,
             'visibility' => (string) $data['visibility'],
         ];
-    }
-
-    /** Inhalt aus Typ und Kennung — nur, wenn die Person ihn sehen darf. */
-    private function resolveItem(string $type, string $sqid): Model {
-        $class = $this->types->classFor($type);
-        abort_if($class === null, 404);
-        $id = Sqid::decode($class, $sqid);
-        abort_if($id === null, 404);
-
-        $visible = $this->types->visible($type, $this->user(), [$id]);
-        abort_if($visible === [], 404);
-
-        return $visible[0];
     }
 
     /** Private Sammlungen öffnet auch der Admin-Bypass nicht. */

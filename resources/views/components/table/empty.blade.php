@@ -31,7 +31,7 @@
 @php
     $iconResolved = $icon ?? '<span class="material-symbols-outlined" aria-hidden="true">inbox</span>';
     $titleResolved = $title ?? __('Keine Einträge vorhanden');
-    $messageResolved = $message ?? __('Für die aktuelle Auswahl wurden keine Daten gefunden.');
+    $messageResolved = $message ?? ($compact ? null : __('Für die aktuelle Auswahl wurden keine Daten gefunden.'));
 @endphp
 
 <tr data-sort-ignore>

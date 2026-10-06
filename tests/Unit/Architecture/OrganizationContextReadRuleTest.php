@@ -31,11 +31,7 @@ class OrganizationContextReadRuleTest extends TestCase {
     use ScansSourceTree;
 
     /** @var array<string, string> Pfad → Begründung */
-    private const ALLOW_LIST = [
-        // Die kanonischen Leser selbst — sie SIND die Absicherung.
-        'app/Support/OrganizationContext.php' => 'Kanonischer Leser (current/currentId).',
-        'app/Http/Controllers/Concerns/ResolvesCurrentOrganization.php' => 'Kanonischer Controller-Helfer (abort 403).',
-    ];
+    private const ALLOW_LIST = [];
 
     /** Zeilen um die Lesung herum, in denen die Absicherung stehen darf. */
     private const WINDOW = 6;

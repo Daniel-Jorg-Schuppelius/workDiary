@@ -1365,6 +1365,8 @@
             var(--color-base-100)
         );
         outline: 2px dashed var(--color-primary);
+        /* Nach innen: außen verdecken ihn Nachbarzellen und der Scrollrand. */
+        outline-offset: -2px;
     }
 
     .schedule-shift-badge {
@@ -1373,9 +1375,23 @@
             transform 0.1s ease;
     }
 
-    .schedule-shift-badge[draggable="true"]:active {
+    .schedule-shift-badge[data-shift-drag] {
+        position: relative;
+    }
+
+    .schedule-shift-badge[data-shift-drag]:active {
         opacity: 0.5;
         transform: scale(0.95);
+    }
+
+    /* Trefferfläche des Griffs für Finger und Stift: das linke Stück des
+       Abzeichens in voller Höhe — ohne dessen Inhalt zu verschieben. */
+    .schedule-shift-badge [data-shift-handle]::before {
+        content: "";
+        position: absolute;
+        inset-block: 0;
+        left: 0;
+        width: 1.5rem;
     }
 
     .schedule-month-matrix .schedule-cell {
@@ -1912,16 +1928,15 @@
 }
 
 /* ------------------------------------------------------------------ */
-/* Kanban: Zeigergeste (MVP-725)                                       */
-/*   kanban.js setzt .wd-kanban-dragging auf das Board, solange eine    */
-/*   Karte gezogen wird. Ohne user-select:none markiert der Zug unter   */
-/*   der Maus Text, und der Zeiger soll den Zustand zeigen.             */
+/* Sortieren und Ziehen per Zeiger (MVP-725, lib/pointer-sort.js)      */
+/*   Der Baustein setzt .wd-sorting auf <html>, solange gezogen wird.   */
+/*   Ohne user-select:none markiert der Zug unter der Maus Text, und    */
+/*   der Zeiger soll den Zustand überall zeigen — auch über Links und   */
+/*   Griffen mit eigenem cursor.                                        */
 /* ------------------------------------------------------------------ */
-.wd-kanban-dragging {
+.wd-sorting,
+.wd-sorting * {
     user-select: none;
-    cursor: grabbing;
-}
-.wd-kanban-dragging [data-kanban-card] a {
     cursor: grabbing;
 }
 

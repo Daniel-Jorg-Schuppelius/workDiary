@@ -27,7 +27,7 @@
             <x-input-field name="useful_life_months" type="number" min="1" max="1200" :label="__('asset_finance.classification.field.useful_life_months')" :value="old('useful_life_months', $contract->useful_life_months)" />
             <x-input-field name="asset_value_amount" type="number" step="0.01" min="0" :label="__('asset_finance.classification.field.asset_value_amount')" :value="old('asset_value_amount', $contract->asset_value_amount)" />
             <x-checkbox-field name="is_special_lease" :label="__('asset_finance.classification.field.is_special_lease')" :checked="(bool) $contract->is_special_lease" />
-            <button type="submit" class="btn btn-sm">{{ __('asset_finance.classification.assess') }}</button>
+            <x-button type="submit" tone="plain">{{ __('asset_finance.classification.assess') }}</x-button>
         </form>
     </details>
 </x-card>

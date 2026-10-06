@@ -14,6 +14,7 @@ namespace App\Jobs\Inventory;
 
 use App\Contracts\Inventory\ExternalInventoryDispatcher;
 use App\Contracts\PluginDispatcher;
+use App\Enums\Integration\ExternalConflictStatus;
 use App\Jobs\AbstractOutboxDeliveryJob;
 use App\Models\Integration\PendingExternalConflict;
 use App\Models\Inventory\{InventoryOutboxEntry, StockMovement};
@@ -68,14 +69,14 @@ class InventoryOutboxDeliveryJob extends AbstractOutboxDeliveryJob {
         PendingExternalConflict::query()->withoutGlobalScopes()->create([
             'organization_id' => $entry->organization_id,
             'plugin_id' => $entry->plugin_id ?? 'inventory',
-            'conflict_type' => 'inventory_outbox',
+            'conflict_type' => PendingExternalConflict::TYPE_INVENTORY_OUTBOX,
             'referenceable_type' => (new StockMovement())->getMorphClass(),
             'referenceable_id' => $entry->stock_movement_id,
             'external_id' => null,
             'local_snapshot' => $entry->payload,
             'remote_snapshot' => [],
             'diff_fields' => null,
-            'status' => PendingExternalConflict::STATUS_OPEN,
+            'status' => ExternalConflictStatus::Open,
         ]);
     }
 }

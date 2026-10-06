@@ -18,10 +18,7 @@
         <x-page-toolbar>
             <div class="text-sm text-base-content/70">{{ __('Quote, Ursachen, Produkte, Lieferanten, Kosten, Dauer und Wiederholfehler — Zeitraum nach Meldedatum.') }}</div>
             <x-slot:actions>
-                <x-action-menu icon="download" :label="__('Export')">
-                    <x-icon-btn icon="download" size="sm" :href="route('claims.reports.index', ['from' => $from->toDateString(), 'to' => $to->toDateString(), 'export' => 'csv'])" show-label>{{ __('CSV') }}</x-icon-btn>
-                    <x-icon-btn icon="table_view" size="sm" :href="route('claims.reports.index', ['from' => $from->toDateString(), 'to' => $to->toDateString(), 'export' => 'xlsx'])" show-label>Excel</x-icon-btn>
-                </x-action-menu>
+                <x-report-export :url="fn (string $format) => route('claims.reports.index', ['from' => $from->toDateString(), 'to' => $to->toDateString(), 'export' => $format])" :formats="['csv', 'xlsx']" tone="ghost" />
                 <form method="POST" action="{{ route('claims.reports.snapshot', ['from' => $from->toDateString(), 'to' => $to->toDateString()]) }}">
                     @csrf
                     <x-icon-btn icon="ac_unit" size="sm" type="submit" show-label>{{ __('Stand einfrieren') }}</x-icon-btn>
@@ -48,7 +45,7 @@
         @foreach (['by_cause' => __('Nach Ursache'), 'by_defect' => __('Nach Mangelart'), 'by_article' => __('Nach Artikel'), 'by_supplier' => __('Nach Lieferant')] as $key => $label)
             <x-card :title="$label">
                 @if ($data[$key] === [])
-                    <p class="text-sm text-muted">{{ __('Keine Daten im Zeitraum.') }}</p>
+                    <x-empty-state icon="bar_chart" :title="__('Keine Daten im Zeitraum.')" compact />
                 @else
                     <x-table bare>
                         @foreach ($data[$key] as $name => $count)
@@ -67,7 +64,7 @@
     <x-card :title="__('claims.pattern.title')" :count="count($data['patterns'])">
         <p class="mb-2 text-xs text-muted">{{ __('claims.pattern.hint', ['threshold' => $data['pattern_threshold']]) }}</p>
         @if ($data['patterns'] === [])
-            <p class="text-sm text-muted">{{ __('claims.pattern.none') }}</p>
+            <x-empty-state icon="check_circle" :title="__('claims.pattern.none')" compact />
         @else
             <x-table bare>
                 <x-slot:head>
@@ -92,7 +89,7 @@
 
     <x-card :title="__('Eingefrorene Berichtsstände')">
         @if ($snapshots->isEmpty())
-            <p class="text-sm text-muted">{{ __('Noch keine Snapshots.') }}</p>
+            <x-empty-state icon="history" :title="__('Noch keine Snapshots.')" compact />
         @else
             <ul class="space-y-1 text-sm">
                 @foreach ($snapshots as $snapshot)

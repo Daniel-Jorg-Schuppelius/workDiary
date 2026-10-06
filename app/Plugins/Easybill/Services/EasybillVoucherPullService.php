@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\Easybill\Services;
 
 use App\Enums\Billing\{DocumentDirection, DocumentKind};
+use App\Enums\Finance\AccountingVoucherState;
 use App\Plugins\Easybill\Api\EasybillClientFactory;
 use App\Plugins\Easybill\{EasybillConfig, EasybillPlugin};
 use App\Services\Finance\Accounting\Vouchers\{MirroredVoucher, VoucherMirror, VoucherPuller};
@@ -146,16 +147,16 @@ class EasybillVoucherPullService implements VoucherPuller {
     }
 
     /** @param array<string, mixed> $row */
-    private function state(array $row, string $cancelId): string {
+    private function state(array $row, string $cancelId): AccountingVoucherState {
         if (($row['is_draft'] ?? false) === true) {
-            return 'draft';
+            return AccountingVoucherState::Draft;
         }
         if ($cancelId !== '' && $cancelId !== '0') {
             // Der Beleg wurde durch ein Stornodokument aufgehoben.
-            return 'cancelled';
+            return AccountingVoucherState::Cancelled;
         }
 
-        return VoucherMirror::date($row['paid_at'] ?? null) !== null ? 'paid' : 'open';
+        return VoucherMirror::date($row['paid_at'] ?? null) !== null ? AccountingVoucherState::Paid : AccountingVoucherState::Open;
     }
 
     /**

@@ -12,7 +12,10 @@ declare(strict_types=1);
 
 namespace App\Services\Applications;
 
+use App\Enums\Applications\{ApplicationContractNegotiationStatus, ApplicationContractReviewStatus, ApplicationOpportunityStatus, JobApplicationStatus};
+use App\Enums\Approval\ApprovalStepKind;
 use App\Models\Applications\{ApplicationContractNegotiation, ApplicationContractVersion, ApplicationOpportunity, JobApplication};
+use App\Models\Approval\Approval;
 use App\Models\Platform\User;
 use App\Services\Approval\ApprovalService;
 use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
@@ -23,15 +26,18 @@ use Illuminate\Support\Facades\DB;
  * Gegenentwürfe (append-only), Review-Punkte (offene Blocker verhindern
  * den Abschluss), zweistufige Freigabe (kaufmännisch + fachlich) über das
  * bestehende Approval-Modell inkl. Selbstfreigabe-Sperre.
+ *
+ * Eine Freigabe gilt einer Version: trägt die geltende Freigaberunde schon
+ * ein Urteil, startet eine neue Version die nächste Runde.
  */
 class ContractNegotiationService {
     public function __construct(private readonly ApprovalService $approvals) {}
 
     public function open(ApplicationOpportunity|JobApplication $parent, string $title, ?string $dueOn, User $actor): ApplicationContractNegotiation {
-        if ($parent instanceof ApplicationOpportunity && $parent->status !== 'won') {
+        if ($parent instanceof ApplicationOpportunity && $parent->status !== ApplicationOpportunityStatus::Won) {
             throw new \RuntimeException((string) __('Vertragsverhandlungen starten erst nach der Gewinnentscheidung.'));
         }
-        if ($parent instanceof JobApplication && ! in_array($parent->status, ['offer', 'accepted'], true)) {
+        if ($parent instanceof JobApplication && ! in_array($parent->status, [JobApplicationStatus::Offer, JobApplicationStatus::Accepted], true)) {
             throw new \RuntimeException((string) __('Vertragsverhandlungen starten erst mit dem Angebot.'));
         }
 
@@ -40,7 +46,7 @@ class ContractNegotiationService {
             $negotiation = $parent->negotiations()->create([
                 'organization_id' => $parent->getAttribute('organization_id'),
                 'title' => $title,
-                'status' => 'draft',
+                'status' => ApplicationContractNegotiationStatus::Draft,
                 'due_on' => $dueOn,
                 'responsible_user_id' => $actor->id,
                 'created_by' => $actor->id,
@@ -48,8 +54,8 @@ class ContractNegotiationService {
 
             // Zweistufige Freigabe (MVP-195): kaufmännisch → fachlich/HR.
             $this->approvals->createChain($negotiation, [
-                ['rule' => ['kind' => 'commercial']],
-                ['rule' => ['kind' => $parent instanceof JobApplication ? 'hr' : 'technical']],
+                ['rule' => ['kind' => ApprovalStepKind::Commercial->value]],
+                ['rule' => ['kind' => ($parent instanceof JobApplication ? ApprovalStepKind::Hr : ApprovalStepKind::Technical)->value]],
             ]);
 
             $negotiation->audit('contract.negotiation_opened', ['parent' => $parent->getMorphClass()]);
@@ -65,19 +71,27 @@ class ContractNegotiationService {
      * @param array<string, mixed> $conditions
      */
     public function addVersion(ApplicationContractNegotiation $negotiation, string $kind, ?string $summary, array $conditions, User $actor, ?int $documentId = null): ApplicationContractVersion {
-        if ($negotiation->isDecided()) {
-            throw new \RuntimeException((string) __('Die Verhandlung ist abgeschlossen — keine neuen Versionen.'));
-        }
         if (! in_array($kind, ApplicationContractVersion::KINDS, true)) {
             throw new \RuntimeException((string) __('Ungültige Versionsart.'));
         }
 
-        return DB::transaction(function () use ($negotiation, $kind, $summary, $conditions, $actor, $documentId): ApplicationContractVersion {
+        return $this->serialized($negotiation, function () use ($negotiation, $kind, $summary, $conditions, $actor, $documentId): ApplicationContractVersion {
+            if ($negotiation->isDecided()) {
+                throw new \RuntimeException((string) __('Die Verhandlung ist abgeschlossen — keine neuen Versionen.'));
+            }
+
+            // Erteilte Stufen gelten dem bisherigen Stand; ohne Urteil bleibt die laufende Runde.
+            $restarted = $this->approvals->currentRoundHasVerdict($negotiation);
+            $round = $restarted
+                ? $this->approvals->startNextRound($negotiation)
+                : max(1, $this->approvals->currentRound($negotiation));
+
             $payload = $conditions !== [] ? JsonHelper::encode($conditions) : null;
             $version = ApplicationContractVersion::query()->create([
                 'organization_id' => $negotiation->organization_id,
                 'negotiation_id' => $negotiation->id,
                 'version' => (int) $negotiation->versions()->max('version') + 1,
+                'approval_round' => $round,
                 'kind' => $kind,
                 'summary' => $summary,
                 'conditions' => $payload,
@@ -86,8 +100,11 @@ class ContractNegotiationService {
                 'created_by' => $actor->id,
             ]);
 
-            $negotiation->update(['status' => $kind === 'counter' ? 'counter' : 'in_review']);
+            $negotiation->update(['status' => $kind === 'counter' ? ApplicationContractNegotiationStatus::Counter : ApplicationContractNegotiationStatus::InReview]);
             $negotiation->audit('contract.version_added', ['version' => $version->version, 'kind' => $kind]);
+            if ($restarted) {
+                $negotiation->audit('contract.approval_restarted', ['round' => $round, 'version' => $version->version]);
+            }
 
             return $version;
         });
@@ -101,7 +118,7 @@ class ContractNegotiationService {
             'organization_id' => $negotiation->organization_id,
             'label' => $label,
             'severity' => $severity,
-            'status' => 'open',
+            'status' => ApplicationContractReviewStatus::Open,
             'note' => $note,
         ]);
         $negotiation->audit('contract.review_item_added', ['label' => $label, 'severity' => $severity, 'by' => $actor->id]);
@@ -113,7 +130,7 @@ class ContractNegotiationService {
         }
         $item = $negotiation->reviewItems()->whereKey($itemId)->firstOrFail();
         $item->update([
-            'status' => $resolution,
+            'status' => ApplicationContractReviewStatus::from($resolution),
             'note' => $note ?? $item->note,
             'resolved_by' => $actor->id,
             'resolved_at' => now(),
@@ -121,26 +138,44 @@ class ContractNegotiationService {
         $negotiation->audit('contract.review_item_resolved', ['label' => $item->label, 'resolution' => $resolution]);
     }
 
-    /** Freigabe der nächsten offenen Stufe (Selbstfreigabe-Sperre: Ersteller). */
+    /** Freigabe der nächsten offenen Stufe der geltenden Runde (Selbstfreigabe-Sperre: Ersteller). */
     public function approve(ApplicationContractNegotiation $negotiation, User $actor, ?string $reason = null): string {
-        if ($negotiation->isDecided()) {
-            throw new \RuntimeException((string) __('Die Verhandlung ist abgeschlossen.'));
-        }
-        $pending = $negotiation->approvals()
-            ->where(fn($q) => $q->whereNull('decision')->orWhere('decision', 'question'))
-            ->orderBy('step')
-            ->first();
-        if ($pending === null) {
-            throw new \RuntimeException((string) __('Keine offene Freigabestufe.'));
+        return $this->serialized($negotiation, function () use ($negotiation, $actor, $reason): string {
+            if ($negotiation->isDecided()) {
+                throw new \RuntimeException((string) __('Die Verhandlung ist abgeschlossen.'));
+            }
+            $pending = $negotiation->approvals()
+                ->currentRound()
+                ->where(fn($q) => $q->whereNull('decision')->orWhere('decision', 'question'))
+                ->orderBy('step')
+                ->first();
+            if ($pending === null) {
+                throw new \RuntimeException((string) __('Keine offene Freigabestufe.'));
+            }
+
+            return $this->applyDecision($negotiation, $pending, $actor, 'approved', $reason, null);
+        });
+    }
+
+    /**
+     * Entscheidung einer bestimmten Stufe aus dem Genehmigungs-Eingang — mit
+     * denselben Folgen wie die Freigabe an der Akte.
+     *
+     * @return 'approved_all'|'rejected'|'pending'
+     */
+    public function decide(Approval $approval, User $actor, string $decision, ?string $reason = null, ?int $delegateUserId = null): string {
+        $negotiation = $approval->approvable;
+        if (! $negotiation instanceof ApplicationContractNegotiation) {
+            throw new \LogicException('Die Stufe gehört zu keiner Vertragsverhandlung.');
         }
 
-        $result = $this->approvals->decide($pending, $actor, 'approved', $reason, (int) $negotiation->created_by);
-        if ($result === 'approved_all') {
-            $negotiation->update(['status' => 'approved']);
-        }
-        $negotiation->audit('contract.approved_step', ['step' => $pending->step, 'result' => $result]);
+        return $this->serialized($negotiation, function () use ($negotiation, $approval, $actor, $decision, $reason, $delegateUserId): string {
+            if ($negotiation->isDecided()) {
+                throw new \RuntimeException((string) __('Die Verhandlung ist abgeschlossen.'));
+            }
 
-        return $result;
+            return $this->applyDecision($negotiation, $approval->refresh(), $actor, $decision, $reason, $delegateUserId);
+        });
     }
 
     /**
@@ -151,30 +186,74 @@ class ContractNegotiationService {
         if (! in_array($decision, ['concluded', 'declined'], true)) {
             throw new \RuntimeException((string) __('Ungültige Abschluss-Entscheidung.'));
         }
-        if ($negotiation->isDecided()) {
-            throw new \RuntimeException((string) __('Die Verhandlung ist bereits abgeschlossen.'));
-        }
-        if ($decision === 'concluded') {
-            if ($negotiation->hasOpenBlockers()) {
-                throw new \RuntimeException((string) __('Offene Blocker-Punkte müssen vor dem Abschluss entschieden werden.'));
-            }
-            if ($negotiation->status !== 'approved') {
-                throw new \RuntimeException((string) __('Der Abschluss braucht die vollständige Freigabe (kaufmännisch + fachlich).'));
-            }
-            if ((int) $negotiation->versions()->count() === 0) {
-                throw new \RuntimeException((string) __('Ohne Vertragsversion gibt es nichts abzuschließen.'));
-            }
-        }
 
-        $negotiation->update([
-            'status' => $decision,
-            'decision' => $decision,
-            'decided_by' => $actor->id,
-            'decided_at' => now(),
-            'decision_note' => $note,
-        ]);
-        $negotiation->audit('contract.concluded', ['decision' => $decision]);
+        return $this->serialized($negotiation, function () use ($negotiation, $decision, $note, $actor): ApplicationContractNegotiation {
+            if ($negotiation->isDecided()) {
+                throw new \RuntimeException((string) __('Die Verhandlung ist bereits abgeschlossen.'));
+            }
+            if ($decision === 'concluded') {
+                if ($negotiation->hasOpenBlockers()) {
+                    throw new \RuntimeException((string) __('Offene Blocker-Punkte müssen vor dem Abschluss entschieden werden.'));
+                }
+                if (! $negotiation->status->canTransitionTo(ApplicationContractNegotiationStatus::Concluded)) {
+                    throw new \RuntimeException((string) __('Der Abschluss braucht die vollständige Freigabe (kaufmännisch + fachlich).'));
+                }
+                if ((int) $negotiation->versions()->count() === 0) {
+                    throw new \RuntimeException((string) __('Ohne Vertragsversion gibt es nichts abzuschließen.'));
+                }
+            }
 
-        return $negotiation->refresh();
+            $negotiation->update([
+                'status' => ApplicationContractNegotiationStatus::from($decision),
+                'decision' => $decision,
+                'decided_by' => $actor->id,
+                'decided_at' => now(),
+                'decision_note' => $note,
+            ]);
+            $negotiation->audit('contract.concluded', ['decision' => $decision]);
+
+            return $negotiation->refresh();
+        });
+    }
+
+    /**
+     * Genehmigung, Ablehnung, Rückfrage oder Delegation (Guards im
+     * ApprovalService). Eine Ablehnung beendet die Runde, der Status bleibt —
+     * eine neue Version startet die nächste Runde.
+     *
+     * @return 'approved_all'|'rejected'|'pending'
+     */
+    private function applyDecision(ApplicationContractNegotiation $negotiation, Approval $approval, User $actor, string $decision, ?string $reason, ?int $delegateUserId): string {
+        $result = $this->approvals->decide($approval, $actor, $decision, $reason, (int) $negotiation->created_by, $delegateUserId);
+        if ($result === 'approved_all') {
+            $negotiation->update(['status' => ApplicationContractNegotiationStatus::Approved]);
+        }
+        $negotiation->audit(match ($decision) {
+            'approved' => 'contract.approved_step',
+            'rejected' => 'contract.rejected_step',
+            'question' => 'contract.question_step',
+            default => 'contract.delegated_step',
+        }, ['step' => $approval->step, 'round' => $approval->round, 'result' => $result]);
+
+        return $result;
+    }
+
+    /**
+     * Neue Version, Freigabe und Abschluss lesen und schreiben denselben Stand
+     * (Status, geltende Runde) und laufen je Verhandlung nacheinander — sonst
+     * landet eine Freigabe in einer Runde, die gerade abgelöst wird.
+     *
+     * @template T
+     *
+     * @param \Closure(): T $work
+     * @return T
+     */
+    private function serialized(ApplicationContractNegotiation $negotiation, \Closure $work): mixed {
+        return DB::transaction(function () use ($negotiation, $work): mixed {
+            $negotiation->newQueryWithoutScopes()->whereKey($negotiation->getKey())->lockForUpdate()->value('id');
+            $negotiation->refresh();
+
+            return $work();
+        });
     }
 }

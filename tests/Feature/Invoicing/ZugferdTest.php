@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Invoicing;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
@@ -72,7 +73,7 @@ class ZugferdTest extends TestCase {
         ];
     }
 
-    private function makeInvoice(string $status = Invoice::STATUS_ISSUED): Invoice {
+    private function makeInvoice(InvoiceStatus $status = InvoiceStatus::Issued): Invoice {
         $invoice = Invoice::create([
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
@@ -147,7 +148,7 @@ class ZugferdTest extends TestCase {
     }
 
     public function test_download_redirects_with_error_for_draft_invoice(): void {
-        $invoice = $this->makeInvoice(Invoice::STATUS_DRAFT);
+        $invoice = $this->makeInvoice(InvoiceStatus::Draft);
 
         $response = $this->actingAs($this->admin)->get(route('invoices.zugferd', $invoice));
 

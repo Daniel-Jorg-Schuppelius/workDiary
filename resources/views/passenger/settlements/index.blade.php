@@ -10,8 +10,7 @@
 
 @section('title', __('passenger.settlements.title'))
 @section('nav-title', __('passenger.settlements.title'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('passenger.settlements.subtitle')">
@@ -33,8 +32,8 @@
     <x-filter-bar :action="route('passenger-settlements.index')" :reset="route('passenger-settlements.index')">
         <select name="status" class="select select-sm select-bordered w-44 shrink-0" aria-label="{{ __('Status') }}">
             <option value="">{{ __('Alle Status') }}</option>
-            @foreach (['open', 'balanced', 'disputed'] as $s)
-                <option value="{{ $s }}" @selected(request('status') === $s)>{{ __('passenger.settlement_status.' . $s) }}</option>
+            @foreach (\App\Enums\Passenger\ShiftSettlementStatus::options() as $value => $label)
+                <option value="{{ $value }}" @selected(request('status') === $value)>{{ $label }}</option>
             @endforeach
         </select>
     </x-filter-bar>
@@ -66,15 +65,11 @@
                 <td class="text-right tabular-nums">{{ $settlement->tip_total }}</td>
                 <td class="text-right tabular-nums {{ bccomp($difference, '0', 2) !== 0 ? 'text-warning font-medium' : '' }}">{{ $difference }}</td>
                 <td>
-                    <x-status-badge size="md" outline :tone="match ($settlement->status) {
-                        \App\Models\Passenger\PassengerShiftSettlement::STATUS_BALANCED => 'success',
-                        \App\Models\Passenger\PassengerShiftSettlement::STATUS_DISPUTED => 'warning',
-                        default => 'neutral',
-                    }">{{ __('passenger.settlement_status.' . $settlement->status) }}</x-status-badge>
+                    <x-status-badge size="md" outline :tone="$settlement->status->tone()">{{ $settlement->status->label() }}</x-status-badge>
                 </td>
                 <td class="text-right">
                     @can('settle', $settlement)
-                        @if ($settlement->status === \App\Models\Passenger\PassengerShiftSettlement::STATUS_OPEN)
+                        @if ($settlement->status === \App\Enums\Passenger\ShiftSettlementStatus::Open)
                             <div class="flex items-center justify-end gap-1">
                                 <x-icon-btn icon="edit" data-entry-modal-trigger :href="route('passenger-settlements.edit', $settlement)" :label="__('passenger.masterdata.action.edit')" />
                                 <form method="POST" action="{{ route('passenger-settlements.close', $settlement) }}" class="flex items-center gap-1">

@@ -10,8 +10,7 @@
 
 @section('title', __('Tank- & Ladelog'))
 @section('nav-title', __('Tank- & Ladelog'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
     <x-index-page overflow="clip" :subtitle="__('Tank- und Ladevorgänge der Fahrzeuge erfassen.')">
@@ -86,7 +85,7 @@
                     <td>{{ $log->vehicle?->displayName() }}</td>
                     <td>{{ $log->user?->name }}</td>
                     <td>
-                        <span class="badge badge-sm">{{ __($log->energy_type) }}</span>
+                        <x-status-badge tone="plain">{{ __($log->energy_type) }}</x-status-badge>
                         @if ($log->fuel_kind)
                             <x-status-badge tone="ghost" size="sm">{{ __($log->fuel_kind) }}</x-status-badge>
                         @endif

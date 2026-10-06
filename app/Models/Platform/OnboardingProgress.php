@@ -10,6 +10,7 @@
 
 namespace App\Models\Platform;
 
+use App\Enums\Platform\OnboardingStepState;
 use App\Models\Concerns\BelongsToOrganization;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -18,7 +19,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $id
  * @property int $organization_id
  * @property string $step_code
- * @property string $state
+ * @property OnboardingStepState $state
  * @property \Illuminate\Support\Carbon|null $done_at
  * @property int|null $done_by_user_id
  * @property string|null $skipped_reason
@@ -38,6 +39,7 @@ class OnboardingProgress extends Model {
     ];
 
     protected $casts = [
+        'state' => OnboardingStepState::class,
         'done_at' => 'datetime',
     ];
 

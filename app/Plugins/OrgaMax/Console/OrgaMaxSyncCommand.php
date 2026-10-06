@@ -13,10 +13,12 @@ declare(strict_types=1);
 namespace App\Plugins\OrgaMax\Console;
 
 use App\Console\Concerns\IteratesOrganizations;
-use App\Models\Platform\{Organization, PluginSetting};
+use App\Models\Platform\Organization;
+use App\Plugins\OrgaMax\Enums\OrgaMaxConnectionStatus;
 use App\Plugins\OrgaMax\Models\OrgaMaxConnection;
 use App\Plugins\OrgaMax\OrgaMaxPlugin;
 use App\Plugins\OrgaMax\Services\OrgaMaxSyncService;
+use App\Plugins\Support\Console\ChecksPluginSwitch;
 use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Console\Command;
 use Throwable;
@@ -27,6 +29,7 @@ use Throwable;
  * Organisation stoppen die anderen nicht.
  */
 class OrgaMaxSyncCommand extends Command {
+    use ChecksPluginSwitch;
     use IteratesOrganizations;
 
     protected $signature = 'orgamax:sync {--org= : Nur diese Organisations-ID abgleichen}';
@@ -36,15 +39,14 @@ class OrgaMaxSyncCommand extends Command {
     public function handle(OrgaMaxSyncService $sync): int {
         $query = OrgaMaxConnection::query()
             ->withoutGlobalScopes()
-            ->where('status', OrgaMaxConnection::STATUS_ACTIVE);
+            ->where('status', OrgaMaxConnectionStatus::Active);
         if ($this->option('org') !== null) {
             $query->where('organization_id', (int) $this->option('org'));
         }
 
         $failures = 0;
         foreach ($query->orderBy('organization_id')->get() as $connection) {
-            $setting = PluginSetting::forOrganization($connection->organization_id, OrgaMaxPlugin::ID);
-            if ($setting->exists && ! $setting->enabled) {
+            if (! $this->pluginEnabledFor(OrgaMaxPlugin::ID, (int) $connection->organization_id)) {
                 continue;
             }
 

@@ -85,13 +85,10 @@ class GobdLockGuardRuleTest extends TestCase {
      */
     private const ALLOW_LIST = [
         // Zahlungsabgleich schreibt Zahl-/Abgleichsfelder auf AUSGESTELLTEN
-        // Rechnungen — bewusste Umgehung des Ausstellungs-Guards, dokumentiert
-        // in Invoice.php (MUTABLE_AFTER_ISSUE/saveQuietly-Hinweis).
-        'app/Services/Finance/ReconciliationService.php' => 'Zahlungsabgleich aktualisiert Zahlfelder ausgestellter Rechnungen (dokumentierte Guard-Ausnahme).',
         // Retainer-Voucher-Abgleich (Feature 098) markiert Pauschal-Rechnungen
         // nach Lexoffice-Rückmeldung als bezahlt — schreibt ausschließlich die
-        // MUTABLE_AFTER_ISSUE-Whitelist (status, paid_on), identisch zum
-        // ReconciliationService-Fall oben.
+        // MUTABLE_AFTER_ISSUE-Whitelist (status, paid_on); bewusste Umgehung des
+        // Ausstellungs-Guards, dokumentiert in Invoice.php.
         'app/Plugins/Lexoffice/Services/Retainer/LexofficeRetainerVouchers.php' => 'Retainer-Zahlungsabgleich aktualisiert status/paid_on ausgestellter Pauschal-Rechnungen (dokumentierte Guard-Ausnahme).',
         // Messdatensatz des Lastprofils (MVP-683): schreibt Buchungen per
         // Sammel-Insert, weil 30.000 Einzelbuchungen über den JournalService

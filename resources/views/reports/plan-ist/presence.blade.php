@@ -22,7 +22,7 @@
         @include('reports.plan-ist._dimensions')
         {{-- Drilldown-Kontext (Rang 38): Team-/Org-Berechtigte sehen hier andere Mitarbeitende. --}}
         @if (isset($reportUser) && (int) $reportUser->id !== (int) auth()->id())
-            <div class="alert alert-info alert-soft text-sm">
+            <div role="status" class="alert alert-info alert-soft text-sm">
                 <x-icon name="person" />
                 <span>{{ __('Ansicht für :name', ['name' => $reportUser->name]) }}</span>
             </div>

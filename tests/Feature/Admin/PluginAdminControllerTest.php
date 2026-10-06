@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Admin;
 
+use App\Enums\Plugin\PluginHealthStatus;
 use App\Models\Platform\{PluginError, PluginSetting, PluginState, User};
 use App\Plugins\Contracts\{Plugin, PluginCapability};
 use App\Plugins\{PluginDefaults, PluginHealth, PluginManager};
@@ -106,7 +107,7 @@ class PluginAdminControllerTest extends TestCase {
             ->assertJson(['status' => PluginHealth::STATUS_OK, 'label' => \App\Enums\Plugin\PluginHealthStatus::Ok->label()]);
 
         $state = PluginState::query()->where('plugin_id', 'admintest')->firstOrFail();
-        $this->assertSame(PluginHealth::STATUS_OK, $state->last_health_status);
+        $this->assertSame(PluginHealthStatus::Ok, $state->last_health_status);
     }
 
     /** W0e: Deaktivierte Plugins werden nicht geprüft — kein Pseudo-Fehler-Check. */
@@ -135,7 +136,7 @@ class PluginAdminControllerTest extends TestCase {
         $this->assertSame(PluginError::PHASE_MANUAL, $error->phase);
 
         $state = PluginState::query()->where('plugin_id', 'adminbroken')->firstOrFail();
-        $this->assertSame(PluginHealth::STATUS_FAILING, $state->last_health_status);
+        $this->assertSame(PluginHealthStatus::Failing, $state->last_health_status);
         $this->assertSame(0, (int) $state->failure_count);
         $this->assertNull($state->disabled_reason);
     }

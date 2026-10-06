@@ -10,6 +10,7 @@
 
 namespace App\Models\Learning;
 
+use App\Enums\Learning\LearningTimeApprovalStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Platform\User;
 use App\Models\Time\Attendance;
@@ -38,7 +39,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $classification
  * @property int|null $attendance_id
  * @property Carbon|null $last_heartbeat_at
- * @property string|null $approval_status
+ * @property LearningTimeApprovalStatus|null $approval_status
  * @property int|null $approved_by_user_id
  * @property Carbon|null $approved_at
  * @property string|null $approval_note
@@ -47,13 +48,6 @@ use Illuminate\Support\Carbon;
  * @property-read Attendance|null $attendance
  */
 class LearningTimeSession extends Model {
-    /** Freigabestatus (nur bei Zeitpolitik „Freigabe nötig"). */
-    public const APPROVAL_PENDING = 'pending';
-
-    public const APPROVAL_APPROVED = 'approved';
-
-    public const APPROVAL_REJECTED = 'rejected';
-
     use Auditable;
 
     use BelongsToOrganization;
@@ -85,6 +79,7 @@ class LearningTimeSession extends Model {
         'started_at' => 'datetime',
         'ended_at' => 'datetime',
         'last_heartbeat_at' => 'datetime',
+        'approval_status' => LearningTimeApprovalStatus::class,
         'approved_at' => 'datetime',
         'active_seconds' => 'integer',
     ];

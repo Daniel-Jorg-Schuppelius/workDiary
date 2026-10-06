@@ -31,17 +31,16 @@
         </x-select-field>
 
         {{-- An (To) --}}
-        <x-input-field name="to[]" :label="__('An (To, mehrere mit Komma)')" required :value="old('to.0', $defaultTo)"
-                       data-multi-email
+        <x-input-field name="to[]" :label="__('An (To, mehrere mit Komma)')" required :value="old('to') ? implode(', ', (array) old('to')) : $defaultTo"
                        placeholder="empfaenger@firma.de"
                        :hint="__('Mehrere Empfänger durch Komma trennen.')" />
 
         {{-- CC --}}
-        <x-input-field name="cc[]" :label="__('CC (optional)')" data-multi-email
+        <x-input-field name="cc[]" :label="__('CC (optional)')"
                        placeholder="cc@firma.de" />
 
         {{-- BCC --}}
-        <x-input-field name="bcc[]" :label="__('BCC (optional)')" data-multi-email
+        <x-input-field name="bcc[]" :label="__('BCC (optional)')"
                        placeholder="bcc@firma.de" />
 
         <label class="label cursor-pointer justify-start gap-2">
@@ -65,26 +64,4 @@
 
     </div>
 
-    {{-- Kleines Inline-Script: splittet komma-getrennte Eingaben in mehrere [] Felder --}}
-    <script @cspNonce>
-    document.addEventListener('submit', function (e) {
-        const form = e.target;
-        if (! form.matches('form[data-entry-form]')) return;
-        form.querySelectorAll('input[data-multi-email]').forEach(function (inp) {
-            const raw = (inp.value || '').trim();
-            if (! raw) { inp.remove(); return; }
-            const parts = raw.split(/[,;\s]+/).filter(Boolean);
-            if (parts.length <= 1) { inp.value = parts[0] || ''; return; }
-            const name = inp.getAttribute('name');
-            inp.value = parts[0];
-            for (let i = 1; i < parts.length; i++) {
-                const h = document.createElement('input');
-                h.type = 'hidden';
-                h.name = name;
-                h.value = parts[i];
-                inp.parentNode.appendChild(h);
-            }
-        });
-    }, true);
-    </script>
 </x-modal>

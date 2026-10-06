@@ -11,7 +11,7 @@
 
 @section('content')
     <div class="mx-auto max-w-xl">
-        <div class="rounded-box border border-base-300 bg-base-100 p-6">
+        <x-card padding="p-6">
             <h1 class="mb-1 text-xl font-semibold">{{ __('Rückfrage stellen') }}</h1>
             <p class="mb-4 text-sm text-base-content/70">{{ $subjectLabel }}</p>
 
@@ -38,10 +38,10 @@
                 </div>
 
                 <div class="flex justify-end gap-2">
-                    <a href="{{ url()->previous(route('customer.queries.index')) }}" class="btn btn-ghost">{{ __('Abbrechen') }}</a>
+                    <x-button :href="url()->previous(route('customer.queries.index'))" tone="ghost" size="md">{{ __('Abbrechen') }}</x-button>
                     <x-button type="submit" tone="primary" icon="send"><span>{{ __('Absenden') }}</span></x-button>
                 </div>
             </form>
-        </div>
+        </x-card>
     </div>
 @endsection

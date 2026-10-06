@@ -26,7 +26,7 @@
                         back-route="damage-cases.index" :back-label="__('damage.title')">
             <div class="flex flex-wrap items-center gap-2 text-sm">
                 <x-status-badge size="md" outline :tone="$case->status->tone()">{{ $case->status->label() }}</x-status-badge>
-                <span class="badge badge-outline">{{ $case->kind->label() }}</span>
+                <x-status-badge tone="plain" size="md" outline>{{ $case->kind->label() }}</x-status-badge>
             </div>
             <x-slot:actions>
                 @can('update', $case)

@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Investments;
 
+use App\Enums\Investments\{InvestmentBudgetRequestStatus, InvestmentCaseStatus, InvestmentDeviationStatus};
 use App\Enums\User\Permission as P;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
@@ -45,7 +46,7 @@ class InvestmentsReportController extends Controller {
         // Zeitraum wirkt nur auf die Ist-Zeitreihe — die Akten-/Pipeline-Sicht
         // bleibt bewusst zeitraumunabhängig (Lebenszyklus statt Periode).
         [$from, $to] = $this->resolveRange($request);
-        $filters = $this->standardFilters($request, ['status'], $from, $to, InvestmentCase::STATUSES);
+        $filters = $this->standardFilters($request, ['status'], $from, $to, InvestmentCaseStatus::values());
 
         $pipeline = [];
         $rows = [];
@@ -57,7 +58,7 @@ class InvestmentsReportController extends Controller {
             ->orderByDesc('id')
             ->get();
         foreach ($cases as $case) {
-            $pipeline[(string) $case->status] = ($pipeline[(string) $case->status] ?? 0) + 1;
+            $pipeline[$case->status->value] = ($pipeline[$case->status->value] ?? 0) + 1;
             $projection = $investments->projection($case);
             if ($projection['approved'] > 0 || $projection['actual'] > 0 || $projection['committed'] > 0) {
                 $rows[] = ['case' => $case, 'projection' => $projection];
@@ -67,15 +68,15 @@ class InvestmentsReportController extends Controller {
             }
         }
 
-        $openApprovals = InvestmentBudgetRequest::query()->where('status', 'in_approval')->count();
-        $openDeviations = InvestmentDeviation::query()->where('status', 'open')->count();
+        $openApprovals = InvestmentBudgetRequest::query()->where('status', InvestmentBudgetRequestStatus::InApproval)->count();
+        $openDeviations = InvestmentDeviation::query()->where('status', InvestmentDeviationStatus::Open)->count();
 
         if (in_array($request->query('export'), ['csv', 'xlsx'], true)) {
             $csv = [['Akte', 'Status', 'Kostenstelle', 'Genehmigt €', 'Gebunden €', 'Ist €', 'Rest €']];
             foreach ($rows as $row) {
                 $csv[] = [
                     $row['case']->title,
-                    $row['case']->status,
+                    $row['case']->status->value,
                     $row['case']->costCenterDisplay() ?? '',
                     NumberHelper::toUSFormat((float) $row['projection']['approved'], 2),
                     NumberHelper::toUSFormat((float) $row['projection']['committed'], 2),
@@ -87,11 +88,6 @@ class InvestmentsReportController extends Controller {
             return $this->csvWithMetadata($csv, 'investments.csv', 'investments', $filters->toAuditArray(), $request);
         }
 
-        $statusOptions = [];
-        foreach (InvestmentCase::STATUSES as $status) {
-            $statusOptions[$status] = (string) __("values.$status");
-        }
-
         return view('reports.investments', [
             'pipeline' => $pipeline,
             'rows' => $rows,
@@ -100,7 +96,7 @@ class InvestmentsReportController extends Controller {
             'openDeviations' => $openDeviations,
             'standardFilters' => $filters,
             'filterFields' => ['status'],
-            'statusOptions' => $statusOptions,
+            'statusOptions' => InvestmentCaseStatus::options(),
             'monthlyActualSeries' => $this->monthlyActualSeries($from, $to, $filters),
             'categoryVolumeSeries' => $this->categoryVolumeSeries($rows),
             'periodPhrase' => $this->periodPhrase($this->bucketGranularity($from, $to)),

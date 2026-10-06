@@ -63,7 +63,7 @@
                             {{ $event->kind->label() }}
                             @if ($event->occurred_at)
                                 <span class="text-muted">·</span>
-                                {{ $event->occurred_at->orgTz()->format('d.m.Y H:i') }}
+                                {{ $event->occurred_at->fdatetime() }}
                             @endif
                         </p>
                     </div>
@@ -72,7 +72,7 @@
                 <div class="divider my-3"></div>
 
                 <x-detail-grid>
-                    <x-detail-grid.row :label="__('safety.field.occurred_at')" :value="$event->occurred_at?->orgTz()->format('d.m.Y H:i')" />
+                    <x-detail-grid.row :label="__('safety.field.occurred_at')" :value="$event->occurred_at?->fdatetime()" />
                     <x-detail-grid.row :label="__('safety.field.location')" :value="$event->location ?? '–'" />
                     <x-detail-grid.row :label="__('safety.field.affected_person')" :value="$event->affected_person ?? '–'" />
                     <x-detail-grid.row :label="__('safety.field.reporter')" :value="$event->reporter?->name ?? '–'" />
@@ -89,7 +89,7 @@
                     <x-detail-grid.row :label="__('safety.field.immediate_action')" :value="$event->immediate_action ?? '–'" />
                     <x-detail-grid.row :label="__('safety.field.root_cause')" :value="$event->root_cause ?? '–'" />
                     @if ($event->closed_at)
-                        <x-detail-grid.row :label="__('safety.field.closed_at')" :value="$event->closed_at->orgTz()->format('d.m.Y H:i')" />
+                        <x-detail-grid.row :label="__('safety.field.closed_at')" :value="$event->closed_at->fdatetime()" />
                         <x-detail-grid.row :label="__('safety.field.closed_by')" :value="$event->closer?->name ?? '–'" />
                     @endif
                 </x-detail-grid>
@@ -110,7 +110,7 @@
                         @foreach ($event->attachments as $att)
                             <li class="flex items-center justify-between gap-2 py-2">
                                 <div class="min-w-0 truncate">
-                                    <a class="link link-hover" href="{{ URL::signedRoute('attachments.download', $att) }}">{{ $att->original_name }}</a>
+                                    <a class="link link-hover" href="{{ \App\Http\Controllers\Attachments\AttachmentController::downloadUrl($att) }}">{{ $att->original_name }}</a>
                                     <span class="text-muted">· {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($att->size / 1024, 0, withThousandsSeparator: true) }} KB</span>
                                 </div>
                                 @can('delete', $att)
@@ -173,7 +173,7 @@
                                         <span class="inline-flex items-center gap-1"><x-icon name="person" class="size-3.5" />{{ $issue->assignee->name }}</span>
                                     @endif
                                     @if ($issue->due_at)
-                                        <span class="inline-flex items-center gap-1"><x-icon name="event" class="size-3.5" />{{ $issue->due_at->format('d.m.Y') }}</span>
+                                        <span class="inline-flex items-center gap-1"><x-icon name="event" class="size-3.5" />{{ $issue->due_at->fdate() }}</span>
                                     @endif
                                 </div>
 

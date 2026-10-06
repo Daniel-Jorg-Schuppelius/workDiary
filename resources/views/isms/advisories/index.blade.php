@@ -14,9 +14,10 @@
 
 @section('title', __('isms.title.advisories'))
 @section('nav-title', __('isms.title.advisories'))
+@include('partials.page-fill')
 
 @section('content')
-    <x-index-page :subtitle="__('isms.subtitle.advisories')">
+    <x-index-page overflow="clip" :subtitle="__('isms.subtitle.advisories')">
         <x-slot:actions>
             @if ($canManage)
                 {{-- CSAF-Feed-Pull (Nachtrag 044b): Trusted Provider, Default BSI WID. --}}
@@ -38,7 +39,7 @@
 
         <p class="text-sm text-base-content/70">{{ __('isms.advisories.intro') }}</p>
 
-        <x-table>
+        <x-table scroll="flex">
             <x-slot:head>
                 <tr>
                     <th>{{ __('isms.field.title') }}</th>
@@ -57,7 +58,7 @@
                     <td class="font-mono text-xs">{{ $advisory->document_id_ref ?? '—' }}</td>
                     <td class="text-center">{{ $advisory->vulnerabilities_count }}</td>
                     <td class="text-base-content/70">{{ optional($advisory->importedBy)->name ?? '—' }}</td>
-                    <td class="text-base-content/70">{{ $advisory->created_at?->orgTz()->format('d.m.Y H:i') ?? '—' }}</td>
+                    <td class="text-base-content/70">{{ $advisory->created_at?->fdatetime() ?? '—' }}</td>
                     <td class="font-mono text-xs" title="{{ $advisory->file_hash }}">{{ \Illuminate\Support\Str::limit($advisory->file_hash, 12, '…') }}</td>
                 </tr>
             @empty

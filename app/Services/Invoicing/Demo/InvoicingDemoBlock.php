@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Invoicing\Demo;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\{Organization, User};
@@ -84,7 +85,7 @@ final class InvoicingDemoBlock implements DemoBlock {
             // Ausstellen: friert Parteien ein; §-19-Hinweis steht in den Notes.
             $invoice->freezeParties();
             $invoice->update([
-                'status' => Invoice::STATUS_ISSUED,
+                'status' => InvoiceStatus::Issued,
                 'issued_on' => \Carbon\Carbon::now(),
                 'due_on' => \Carbon\Carbon::now()->addDays((int) ($invoice->payment_terms_days ?? 14)),
             ]);
@@ -171,7 +172,7 @@ final class InvoicingDemoBlock implements DemoBlock {
                     'interval_count' => 1,
                     'billing_period_mode' => 'previous',
                     'next_run_on' => \Illuminate\Support\Carbon::now()->addMonth()->startOfMonth()->toDateString(),
-                    'status' => \App\Models\Invoicing\InvoiceSchedule::STATUS_ACTIVE,
+                    'status' => \App\Enums\Invoicing\InvoiceScheduleStatus::Active,
                     'created_by' => $actor->id,
                 ]);
                 if ($schedule->wasRecentlyCreated) {
@@ -198,7 +199,7 @@ final class InvoicingDemoBlock implements DemoBlock {
                     'organization_id' => $organization->id,
                     'customer_id' => $customer->id,
                     'number' => app(\App\Services\Invoicing\InvoiceGenerator::class)->nextNumber($organization->id),
-                    'status' => Invoice::STATUS_DRAFT,
+                    'status' => InvoiceStatus::Draft,
                     'currency' => $customer->currency,
                     'tax_rate' => 19,
                     'skonto_percent' => '2.00',

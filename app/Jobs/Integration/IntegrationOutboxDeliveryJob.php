@@ -14,6 +14,7 @@ namespace App\Jobs\Integration;
 
 use App\Contracts\Integration\IntegrationOutboxDispatcher;
 use App\Contracts\PluginDispatcher;
+use App\Enums\Integration\IntegrationInboxStatus;
 use App\Jobs\AbstractOutboxDeliveryJob;
 use App\Models\Integration\{IntegrationInboxItem, IntegrationOutboxEntry};
 use App\Services\Integration\{IntegrationOutboxDispatcherResolver, IntegrationOutboxService};
@@ -61,7 +62,7 @@ class IntegrationOutboxDeliveryJob extends AbstractOutboxDeliveryJob {
             'external_type' => $entry->operation,
             'external_id' => (string) $entry->id,
             'case_type' => IntegrationInboxItem::CASE_CONFLICT,
-            'status' => IntegrationInboxItem::STATUS_OPEN,
+            'status' => IntegrationInboxStatus::Open,
             'referenceable_type' => $entry->subject_type,
             'referenceable_id' => $entry->subject_id,
             'local_snapshot' => $entry->payload,

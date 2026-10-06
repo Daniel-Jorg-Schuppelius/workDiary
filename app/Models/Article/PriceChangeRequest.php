@@ -11,6 +11,7 @@
 namespace App\Models\Article;
 
 use App\Casts\{MoneyCast, PercentageCast};
+use App\Enums\Article\PriceChangeRequestStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Platform\User;
 use App\Models\Supplier\SupplierCatalogItem;
@@ -32,7 +33,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property \CommonToolkit\ValueObjects\Money|null $purchase_price_snapshot
  * @property \CommonToolkit\ValueObjects\Money|null $suggested_price
  * @property \CommonToolkit\ValueObjects\Percentage|null $margin_snapshot
- * @property string $status
+ * @property PriceChangeRequestStatus $status
  * @property int $requested_by
  * @property int|null $decided_by
  * @property \Illuminate\Support\Carbon|null $decided_at
@@ -44,14 +45,6 @@ class PriceChangeRequest extends Model {
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
     use HasSqid;
-
-    public const STATUS_REQUESTED = 'requested';
-
-    public const STATUS_APPROVED = 'approved';
-
-    public const STATUS_REJECTED = 'rejected';
-
-    public const STATUS_EXPIRED = 'expired';
 
     protected $fillable = [
         'organization_id',
@@ -73,6 +66,7 @@ class PriceChangeRequest extends Model {
         'purchase_price_snapshot' => MoneyCast::class . ':currency,4',
         'suggested_price' => MoneyCast::class . ':currency,4',
         'margin_snapshot' => PercentageCast::class . ':3',
+        'status' => PriceChangeRequestStatus::class,
         'decided_at' => 'datetime',
     ];
 

@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Policies;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
 use App\Policies\Invoicing\InvoicePolicy;
@@ -44,7 +45,7 @@ final class InvoicePolicyTest extends TestCase {
         $this->actAsTeam($this->organization);
     }
 
-    private function invoice(string $status, string $type = Invoice::TYPE_INVOICE): Invoice {
+    private function invoice(InvoiceStatus|string $status, string $type = Invoice::TYPE_INVOICE): Invoice {
         $invoice = new Invoice;
         $invoice->status = $status;
         $invoice->type = $type;
@@ -53,7 +54,7 @@ final class InvoicePolicyTest extends TestCase {
     }
 
     public function test_accountant_may_manage_drafts(): void {
-        $draft = $this->invoice(Invoice::STATUS_DRAFT);
+        $draft = $this->invoice(InvoiceStatus::Draft);
 
         $this->assertTrue($this->policy->viewAny($this->accountant));
         $this->assertTrue($this->policy->view($this->accountant, $draft));
@@ -66,7 +67,7 @@ final class InvoicePolicyTest extends TestCase {
     }
 
     public function test_issued_invoices_are_immutable_but_payable_and_cancellable(): void {
-        $issued = $this->invoice(Invoice::STATUS_ISSUED);
+        $issued = $this->invoice(InvoiceStatus::Issued);
 
         $this->assertFalse($this->policy->update($this->accountant, $issued), 'Ausgestellte Rechnung ist unveränderlich (GoBD).');
         $this->assertFalse($this->policy->delete($this->accountant, $issued));
@@ -77,7 +78,7 @@ final class InvoicePolicyTest extends TestCase {
     }
 
     public function test_paid_invoices_require_credit_note_to_cancel(): void {
-        $paid = $this->invoice(Invoice::STATUS_PAID);
+        $paid = $this->invoice(InvoiceStatus::Paid);
 
         $this->assertFalse($this->policy->cancel($this->accountant, $paid), 'Bezahlte Rechnung: kein Direkt-Storno.');
         $this->assertTrue($this->policy->createCreditNote($this->accountant, $paid));
@@ -85,7 +86,7 @@ final class InvoicePolicyTest extends TestCase {
     }
 
     public function test_credit_notes_cannot_be_cancelled_or_credited_again(): void {
-        $creditNote = $this->invoice(Invoice::STATUS_PAID, Invoice::TYPE_CREDIT_NOTE);
+        $creditNote = $this->invoice(InvoiceStatus::Paid, Invoice::TYPE_CREDIT_NOTE);
 
         $this->assertFalse($this->policy->cancel($this->accountant, $creditNote));
         $this->assertFalse($this->policy->createCreditNote($this->accountant, $creditNote));
@@ -93,7 +94,7 @@ final class InvoicePolicyTest extends TestCase {
 
     public function test_regular_user_has_no_invoice_access(): void {
         $user = $this->actorIn($this->organization);
-        $draft = $this->invoice(Invoice::STATUS_DRAFT);
+        $draft = $this->invoice(InvoiceStatus::Draft);
 
         $this->assertFalse($this->policy->viewAny($user));
         $this->assertFalse($this->policy->view($user, $draft));

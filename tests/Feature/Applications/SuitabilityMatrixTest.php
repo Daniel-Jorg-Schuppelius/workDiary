@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Applications;
 
+use App\Enums\Applications\JobRequisitionStatus;
 use App\Enums\User\UserRole;
 use App\Models\Applications\{JobApplication, JobApplicationRating, JobRequisition};
 use App\Models\Learning\{Competency, CompetencyRequirement};
@@ -40,7 +41,7 @@ final class SuitabilityMatrixTest extends TestCase {
         $this->setUpOrganization();
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
         $this->hr = $this->userWithRole(UserRole::Personalverwaltung->value);
-        $this->requisition = JobRequisition::query()->create(['organization_id' => $this->organization->id, 'title' => 'Servicetechniker:in', 'status' => 'open']);
+        $this->requisition = JobRequisition::query()->create(['organization_id' => $this->organization->id, 'title' => 'Servicetechniker:in', 'status' => JobRequisitionStatus::Open]);
         $this->safety = Competency::query()->create(['organization_id' => $this->organization->id, 'code' => 'psa', 'name' => 'PSA gegen Absturz', 'max_level' => 4, 'is_active' => true]);
         $this->electrics = Competency::query()->create(['organization_id' => $this->organization->id, 'code' => 'efk', 'name' => 'Elektrofachkraft', 'max_level' => 4, 'is_active' => true]);
     }

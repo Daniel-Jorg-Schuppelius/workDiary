@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Document;
 
+use App\Enums\Document\DocumentDispatchStatus;
 use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Mail\DocumentMail;
 use App\Models\Contracts\AuditsChanges;
@@ -95,7 +96,7 @@ class DocumentMailService {
             'document_id' => (int) $document->getKey(),
             'channel' => DocumentDispatch::CHANNEL_EMAIL,
             'format' => 'pdf',
-            'status' => 'queued',
+            'status' => DocumentDispatchStatus::Queued,
             'recipient' => implode(', ', $recipients['to']),
             'meta' => array_filter([
                 'cc' => $recipients['cc'] ?? [],

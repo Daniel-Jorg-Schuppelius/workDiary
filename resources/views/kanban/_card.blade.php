@@ -42,7 +42,7 @@
         @if ($entry->tags->isNotEmpty())
             <div class="mt-1 flex flex-wrap gap-1">
                 @foreach ($entry->tags as $tag)
-                    <span class="badge badge-xs" style="background: {{ $tag->color }}; color: #fff; border-color: {{ $tag->color }}">{{ $tag->displayName() }}</span>
+                    <x-status-badge tone="plain" size="xs" style="background: {{ $tag->color }}; color: #fff; border-color: {{ $tag->color }}">{{ $tag->displayName() }}</x-status-badge>
                 @endforeach
             </div>
         @endif

@@ -9,8 +9,7 @@
 @extends('layouts.app')
 @section('title', __('TOM-Katalog'))
 @section('nav-title', __('Technische & organisatorische Maßnahmen'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 @section('content')
     <x-index-page overflow="clip" :subtitle="__('Technische und organisatorische Maßnahmen dokumentieren und prüfen.')">
         <x-slot:actions>
@@ -35,7 +34,7 @@
                     <td><a class="link" href="{{ route('dataprotection.tom.show', $m) }}">{{ $m->name }}</a></td>
                     <td>{{ $m->category->label() }}</td>
                     <td><x-status-badge tone="ghost" size="sm">{{ $m->implementation_status->label() }}</x-status-badge></td>
-                    <td class="{{ $m->isReviewOverdue() ? 'text-error font-semibold' : '' }}">{{ $m->next_review_at?->format('d.m.Y') ?? '—' }}</td>
+                    <td class="{{ $m->isReviewOverdue() ? 'text-error font-semibold' : '' }}">{{ $m->next_review_at?->fdate() ?? '—' }}</td>
                 </tr>
             @empty
                 <x-table.empty :colspan="4" :title="__('Noch keine Maßnahmen erfasst.')" />

@@ -22,6 +22,13 @@
         · {{ $run->started_at->orgTz()->format('d.m.Y H:i') }}–{{ $run->finished_at?->orgTz()->format('H:i') ?? '—' }}
         @if ($run->route?->site) · {{ $run->route->site->name }} @endif
     </p>
+    @if ($run->status === \App\Enums\Patrol\PatrolRunStatus::Aborted)
+        <p style="font-size:9pt;border:1px solid #999;padding:2mm;margin:0 0 4mm 0">
+            <strong>{{ __('Rundgang abgebrochen — nicht abgeschlossen') }}</strong><br>
+            {{ __('Abgebrochen von :name am :date', ['name' => $run->abortedBy?->name ?? '—', 'date' => $run->finished_at?->fdatetime() ?? '—']) }}<br>
+            {{ __('Begründung') }}: {{ $run->abort_reason }}
+        </p>
+    @endif
 
     <table style="width:100%;border-collapse:collapse;font-size:8pt">
         <thead>
@@ -45,7 +52,7 @@
                     <td style="text-align:right;padding:1mm;border-bottom:1px solid #eee">{{ $scan !== null ? (($scan->delta_minutes > 0 ? '+' : '') . $scan->delta_minutes . ' min') : '—' }}</td>
                     <td style="padding:1mm;border-bottom:1px solid #eee">
                         @if ($scan === null)
-                            {{ __('verpasst') }}
+                            {{ $run->status === \App\Enums\Patrol\PatrolRunStatus::Aborted ? __('offen bei Abbruch') : __('verpasst') }}
                         @elseif ($scan->in_window)
                             {{ __('im Fenster') }}
                         @else

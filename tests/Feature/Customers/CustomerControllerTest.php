@@ -10,10 +10,12 @@
 
 namespace Tests\Feature\Customers;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Enums\Project\ProjectStatus;
 use App\Models\Audit\AuditLog;
 use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
+use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
 use App\Plugins\Lexoffice\LexofficePlugin;
@@ -538,5 +540,29 @@ class CustomerControllerTest extends TestCase {
         $response->assertDontSee('AB-OUT-RANGE');
         // Belegbild-Aktion (Vorschau/Download) je Beleg vorhanden.
         $response->assertSee('lexoffice-vouchers', false);
+    }
+
+    public function test_customer_show_leaves_cancelled_invoices_out_of_revenue(): void {
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        foreach ([[InvoiceStatus::Issued, '100.00'], [InvoiceStatus::Cancelled, '40.00']] as [$status, $total]) {
+            Invoice::factory()->create([
+                'organization_id' => $this->organization->id,
+                'customer_id' => $customer->id,
+                'type' => Invoice::TYPE_INVOICE,
+                'status' => $status,
+                'issued_on' => '2026-06-15',
+                'total' => $total,
+            ]);
+        }
+
+        $this->actingAs($this->admin)
+            ->withSession([
+                'ui.daterange.preset' => 'custom',
+                'ui.daterange.from' => '2026-06-01',
+                'ui.daterange.to' => '2026-06-30',
+            ])
+            ->get(route('customers.show', $customer))
+            ->assertOk()
+            ->assertViewHas('invoicedRange', 100.0);
     }
 }

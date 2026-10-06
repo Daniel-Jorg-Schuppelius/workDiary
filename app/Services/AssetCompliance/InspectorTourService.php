@@ -47,12 +47,25 @@ final class InspectorTourService {
 
     /** @param  list<int>  $scheduleIds */
     public function plan(User $inspector, CarbonImmutable $date, CarbonImmutable $until, array $scheduleIds): Tour {
-        $schedules = $this->dueFor($inspector, $until)->whereIn('id', $scheduleIds)->values();
-        if ($schedules->isEmpty()) {
+        $selected = $this->dueFor($inspector, $until)->whereIn('id', $scheduleIds)->pluck('id')->all();
+        if ($selected === []) {
             throw new RuntimeException((string) __('inspection_tour.none_selected'));
         }
 
-        return DB::transaction(function () use ($inspector, $date, $schedules): Tour {
+        return DB::transaction(function () use ($inspector, $date, $selected): Tour {
+            // Unter Zeilensperre neu lesen: zwei gleichzeitige Planungen legten sonst je Prüftermin
+            // zwei Aufträge an (Konsolidierungs-Audit 2026-10, k3-4).
+            $schedules = AssetInspectionSchedule::query()
+                ->whereIn('id', $selected)
+                ->whereNull('diary_entry_id')
+                ->with(['asset', 'assignment.profile'])
+                ->orderBy('due_on')
+                ->lockForUpdate()
+                ->get();
+            if ($schedules->isEmpty()) {
+                throw new RuntimeException((string) __('inspection_tour.none_selected'));
+            }
+
             $orderIds = [];
             foreach ($schedules as $schedule) {
                 $asset = $schedule->asset;

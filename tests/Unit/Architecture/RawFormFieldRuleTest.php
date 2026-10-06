@@ -80,7 +80,7 @@ class RawFormFieldRuleTest extends TestCase {
         $stale = [];
         $seen = [];
 
-        $files = array_merge($this->bladeFiles(), $this->filesUnder('app/Plugins', '/\.blade\.php$/'));
+        $files = $this->bladeFiles();
 
         foreach ($files as $file) {
             $relative = $this->relativePath($file);

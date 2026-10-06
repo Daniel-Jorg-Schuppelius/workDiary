@@ -14,7 +14,7 @@ namespace App\Plugins\Webdav\Console;
 
 use App\Plugins\Support\Mirror\Console\MirrorBackfillCommand;
 use App\Plugins\Support\Mirror\MirrorTarget;
-use App\Plugins\Webdav\WebdavMirrorTarget;
+use App\Plugins\Webdav\Services\WebdavMirrorTarget;
 
 /**
  * Voll-Spiegellauf der WebDAV-Ablage (Feature 058, MVP-127; Kern seit

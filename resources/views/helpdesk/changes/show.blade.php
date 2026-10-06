@@ -21,7 +21,7 @@
         <x-page-toolbar :subtitle="$change->title"
                         back-route="servicedesk.changes.index" :back-label="__('Zurück')">
             <x-slot:actions>
-                @if ($canManage && in_array($change->status, ['approved', 'implementing'], true))
+                @if ($canManage && $change->status->canTransitionTo(\App\Enums\ServiceTicket\ChangeStatus::Done))
                     <x-icon-btn icon="task_alt" tone="primary" size="sm"
                                 data-entry-modal-trigger
                                 :href="route('servicedesk.changes.complete-form', $change)"
@@ -34,7 +34,7 @@
     <x-card>
         <div class="flex flex-wrap items-center gap-3">
             <x-status-badge tone="ghost" size="md">{{ $typeLabels[$change->change_type] ?? $change->change_type }}</x-status-badge>
-            <x-status-badge size="md" outline>{{ $statusLabels[$change->status] ?? $change->status }}</x-status-badge>
+            <x-status-badge size="md" outline>{{ $change->status->label() }}</x-status-badge>
             @if ($change->outcome !== null)
                 <x-status-badge tone="info" size="md">{{ $outcomeLabels[$change->outcome] ?? $change->outcome }}</x-status-badge>
             @endif
@@ -43,45 +43,33 @@
             </span>
         </div>
 
-        <dl class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 text-sm">
-            <div>
-                <dt class="text-muted">{{ __('Wartungsfenster') }}</dt>
-                <dd>
-                    @if ($change->window_from !== null)
-                        {{ $change->window_from->translatedFormat('d.m.Y H:i') }}
-                        – {{ $change->window_to?->translatedFormat('d.m.Y H:i') ?? '…' }}
-                    @else
-                        —
-                    @endif
-                </dd>
-            </div>
-            <div>
-                <dt class="text-muted">{{ __('Risiko / Auswirkung / Dringlichkeit') }}</dt>
-                <dd class="tabular-nums">{{ $change->risk ?? '—' }} / {{ $change->impact ?? '—' }} / {{ $change->urgency ?? '—' }}</dd>
-            </div>
+        <x-detail-grid layout="cells" class="mt-4">
+            <x-detail-grid.row :label="__('Wartungsfenster')">
+                @if ($change->window_from !== null)
+                    {{ $change->window_from->translatedFormat('d.m.Y H:i') }}
+                    – {{ $change->window_to?->translatedFormat('d.m.Y H:i') ?? '…' }}
+                @else
+                    —
+                @endif
+            </x-detail-grid.row>
+            <x-detail-grid.row :label="__('Risiko / Auswirkung / Dringlichkeit')" class="tabular-nums">{{ $change->risk ?? '—' }} / {{ $change->impact ?? '—' }} / {{ $change->urgency ?? '—' }}</x-detail-grid.row>
             @if ($change->reason)
-                <div class="md:col-span-2">
-                    <dt class="text-muted">{{ __('Grund') }}</dt>
-                    <dd class="whitespace-pre-wrap">{{ $change->reason }}</dd>
-                </div>
+                <x-detail-grid.row :label="__('Grund')" full class="whitespace-pre-wrap">{{ $change->reason }}</x-detail-grid.row>
             @endif
             @if ($change->scope)
-                <div class="md:col-span-2">
-                    <dt class="text-muted">{{ __('Umfang') }}</dt>
-                    <dd class="whitespace-pre-wrap">{{ $change->scope }}</dd>
-                </div>
+                <x-detail-grid.row :label="__('Umfang')" full class="whitespace-pre-wrap">{{ $change->scope }}</x-detail-grid.row>
             @endif
-        </dl>
+        </x-detail-grid>
     </x-card>
 
     <x-card :title="__('Pläne')" icon="checklist">
-        <dl class="grid grid-cols-1 gap-y-3 text-sm">
-            <div><dt class="text-muted">{{ __('Umsetzungsplan') }}</dt><dd class="whitespace-pre-wrap">{{ $change->implementation_plan ?: '—' }}</dd></div>
-            <div><dt class="text-muted">{{ __('Testplan') }}</dt><dd class="whitespace-pre-wrap">{{ $change->test_plan ?: '—' }}</dd></div>
-            <div><dt class="text-muted">{{ __('Rollback-Plan') }}</dt><dd class="whitespace-pre-wrap">{{ $change->rollback_plan ?: '—' }}</dd></div>
-        </dl>
+        <x-detail-grid layout="cells" :cols="1">
+            <x-detail-grid.row :label="__('Umsetzungsplan')" class="whitespace-pre-wrap">{{ $change->implementation_plan ?: '—' }}</x-detail-grid.row>
+            <x-detail-grid.row :label="__('Testplan')" class="whitespace-pre-wrap">{{ $change->test_plan ?: '—' }}</x-detail-grid.row>
+            <x-detail-grid.row :label="__('Rollback-Plan')" class="whitespace-pre-wrap">{{ $change->rollback_plan ?: '—' }}</x-detail-grid.row>
+        </x-detail-grid>
 
-        @if ($canManage && $change->status === 'approved')
+        @if ($canManage && $change->status === \App\Enums\ServiceTicket\ChangeStatus::Approved)
             <form method="POST" action="{{ route('servicedesk.changes.implement', $change) }}" class="mt-4 flex flex-wrap items-end gap-2">
                 @csrf
                 @if ($procedureTemplates->isNotEmpty())
@@ -104,11 +92,11 @@
         {{-- Eingefrorener Vorlagenstand — bewusst READ-ONLY (MVP-157):
              spätere Vorlagenänderungen deuten den Change nicht um. --}}
         <x-card :title="__('Vorlagen-Snapshot (eingefroren)')" icon="ac_unit">
-            <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 text-sm">
-                <div><dt class="text-muted">{{ __('Vorlage') }}</dt><dd>{{ $change->template_snapshot['name'] ?? '—' }}</dd></div>
-                <div><dt class="text-muted">{{ __('Version') }}</dt><dd class="tabular-nums">{{ $change->template_snapshot['version'] ?? '—' }}</dd></div>
-                <div class="md:col-span-2"><dt class="text-muted">{{ __('Rollback-Plan') }}</dt><dd class="whitespace-pre-wrap">{{ $change->template_snapshot['rollback_plan'] ?? '—' }}</dd></div>
-            </dl>
+            <x-detail-grid layout="cells">
+                <x-detail-grid.row :label="__('Vorlage')">{{ $change->template_snapshot['name'] ?? '—' }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Version')" class="tabular-nums">{{ $change->template_snapshot['version'] ?? '—' }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Rollback-Plan')" full class="whitespace-pre-wrap">{{ $change->template_snapshot['rollback_plan'] ?? '—' }}</x-detail-grid.row>
+            </x-detail-grid>
         </x-card>
     @endif
 
@@ -182,7 +170,7 @@
 
     <x-card :title="__('Betroffene Assets')" icon="devices">
         @if ($change->assets->isEmpty())
-            <p class="text-sm text-muted">{{ __('Keine Assets verknüpft.') }}</p>
+            <x-empty-state icon="devices" :title="__('Keine Assets verknüpft.')" compact />
         @else
             <ul class="space-y-1 text-sm">
                 @foreach ($change->assets as $asset)

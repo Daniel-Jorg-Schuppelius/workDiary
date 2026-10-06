@@ -10,7 +10,7 @@
 
 namespace Database\Factories\Migration;
 
-use App\Enums\Migration\MigrationDataArea;
+use App\Enums\Migration\{AccountingMigrationItemStatus, MigrationDataArea};
 use App\Models\Migration\{AccountingMigrationItem, AccountingMigrationRun};
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -26,7 +26,7 @@ class AccountingMigrationItemFactory extends Factory {
             'organization_id' => null, // wird über Global Scope / explizit gesetzt
             'accounting_migration_run_id' => AccountingMigrationRun::factory(),
             'data_area' => MigrationDataArea::Customers,
-            'status' => AccountingMigrationItem::STATUS_PENDING,
+            'status' => AccountingMigrationItemStatus::Pending,
             'dedupe_key' => 'customers:' . fake()->unique()->uuid(),
             'display_title' => fake()->company(),
         ];

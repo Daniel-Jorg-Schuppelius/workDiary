@@ -458,7 +458,7 @@
                                                 ['label' => __('Stammdaten'), 'icon' => 'inventory_2', 'routes' => ['admin.entry-types.index', 'admin.classifications.index', 'admin.classification-requirements.index', 'admin.branch-profiles.index', 'admin.expense-categories.index', 'admin.per-diem-rates.index']],
                                                 ['label' => __('Zeitwirtschaft'), 'icon' => 'hourglass_top', 'routes' => ['admin.time-accounts.index', 'admin.time-dimensions.index', 'admin.shift-rotations.index']],
                                                 ['label' => __('Regeln & Prozesse'), 'icon' => 'account_tree', 'routes' => ['admin.automations.index', 'admin.notification-rules.index', 'admin.webhooks.index', 'form-templates.index', 'procedures.index', 'admin.report-targets.index', 'whistleblowing.portal.edit']],
-                                                ['key' => 'finance', 'label' => __('Finanzen & Lohn'), 'icon' => 'payments', 'routes' => ['finance.bank-accounts.index', 'admin.surcharge-rules.index', 'admin.cost-center-rules.index', 'admin.wage-type-mappings.index', 'admin.text-corrections.index']],
+                                                ['key' => 'finance', 'label' => __('Finanzen & Lohn'), 'icon' => 'payments', 'routes' => ['finance.bank-accounts.index', 'finance.tax-rules.index', 'admin.surcharge-rules.index', 'admin.cost-center-rules.index', 'admin.wage-type-mappings.index', 'admin.text-corrections.index']],
                                                 ['key' => 'data', 'label' => __('Daten & Schnittstellen'), 'icon' => 'sync_alt', 'routes' => ['admin.data.index', 'admin.integration.inbox', 'admin.cloud-intake.index', 'admin.domain-provider.index', 'admin.ai.index', 'admin.support.grants.index', 'admin.legacy-migration.index']],
                                                 ['label' => __('Systembetrieb'), 'icon' => 'monitor_heart', 'routes' => ['audit.index', 'admin.audit-diff.index', 'admin.license.index', 'admin.billing-profile.show', 'admin.ui-patterns.index', 'admin.metrics.index', 'admin.components.index', 'admin.security.index', 'admin.sessions.index', 'admin.integrity.index', 'admin.security-events.index', 'admin.backup.status', 'admin.backup-targets.index', 'admin.scheduler.index', 'admin.problem-reports.index', 'admin.operations.index', 'admin.maintenance-windows.index', 'admin.settings.index']],
                                                 ['label' => __('Plugins'), 'icon' => 'extension', 'routes' => ['admin.plugins.index', 'admin.plugin-errors.index']],
@@ -1331,6 +1331,15 @@
                 <div role="status" class="alert alert-info mb-4 rounded-2xl px-5 py-3 text-sm shadow-xs">
                     {{ session('info') }}
                 </div>
+            @endif
+            {{-- Validierungsfehler, die die Seite nicht selbst zeigt: ein
+                 abgelehnter Vollseiten-POST endete sonst auf einer Seite ohne
+                 jede Meldung (Konsolidierungs-Audit 2026-10, k4-08). Der Inhalt
+                 ist vor dem Layout gerendert, der Merker also gesetzt. Gelesen
+                 wird der geteilte Fehler-Bag — eine Seite darf `$errors` als
+                 eigene Variable führen (Importfehler-Liste). --}}
+            @if (view()->shared('errors') instanceof \Illuminate\Support\ViewErrorBag && view()->shared('errors')->any() && ! request()->attributes->get('wd.validation_errors_shown', false))
+                <x-validation-errors class="mb-4 rounded-2xl px-5 py-3 shadow-xs" />
             @endif
 
             @auth

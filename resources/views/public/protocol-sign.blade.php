@@ -6,17 +6,7 @@
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
-<!doctype html>
-<html lang="de" data-theme="light">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{{ __('Protokoll unterschreiben') }}</title>
-@include('partials.font-bootstrap', ['icons' => false])
-@vite(['resources/css/app.css','resources/js/app.js'])
-</head>
-<body class="min-h-screen bg-base-200">
-<main class="mx-auto max-w-3xl p-4">
+<x-public-page :title="__('Protokoll unterschreiben')">
     <div class="mb-4 rounded-box bg-base-100 p-4 shadow">
         <h1 class="font-['Space_Grotesk'] text-xl font-semibold">{{ $protocol->title }}</h1>
         <div class="mt-1 text-sm text-base-content/70">
@@ -57,7 +47,7 @@
     @endif
 
     @if($record->used_at)
-        <div class="alert alert-info mb-4">
+        <div role="status" class="alert alert-info mb-4">
             {{ __('protocol.signature.alreadyDecided') }}
         </div>
     @else
@@ -138,6 +128,4 @@
             </ul>
         </div>
     @endif
-</main>
-</body>
-</html>
+</x-public-page>

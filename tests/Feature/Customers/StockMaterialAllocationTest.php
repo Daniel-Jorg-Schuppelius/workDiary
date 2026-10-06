@@ -10,11 +10,12 @@
 
 namespace Tests\Feature\Customers;
 
+use App\Enums\Inventory\{StockMovementType, StockState};
 use App\Models\Article\{Article, ArticleVariant};
 use App\Models\Customer\Customer;
 use App\Models\Inventory\{StockMovement, Warehouse};
 use App\Models\Platform\User;
-use App\Services\Inventory\{CustomerStockAllocationService, InventoryLedger, ValuationService};
+use App\Services\Inventory\{CustomerStockAllocationService, InventoryLedger, LotService, LotStockReader, ValuationService};
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
@@ -116,6 +117,67 @@ class StockMaterialAllocationTest extends TestCase {
             ->where('article_variant_id', $this->variant->id)
             ->where('movement_type', \App\Enums\Inventory\StockMovementType::Return->value)
             ->count());
+    }
+
+    /** Über Charge und Rest ohne Charge: eine Zuordnung mit der Summe; die Rückbuchung trifft jede Bewegung in ihrer Charge. */
+    public function test_allocation_across_lot_and_unlotted_stock_returns_per_lot(): void {
+        $lots = app(LotService::class);
+        $lot = $lots->register($this->variant, 'K-CH1', '2026-12-01');
+        $lots->receiveIntoLot($this->variant, $this->warehouse, '2', '5', $lot);
+        $service = app(CustomerStockAllocationService::class);
+
+        $allocation = $service->issueForCustomer($this->customer, $this->variant, $this->warehouse, '4', actorUserId: $this->admin->id);
+
+        $issued = StockMovement::query()->where('movement_type', StockMovementType::Issue->value)->orderBy('id')->get();
+        $this->assertSame([[$lot->id, '-2.0000'], [null, '-2.0000']], $issued->map(fn (StockMovement $m): array => [$m->stock_lot_id, $m->qty_base])->all());
+        $this->assertSame(20.0, $allocation->allocated_amount?->toFloat());
+        $this->assertSame([MorphMap::alias(StockMovement::class), $issued[0]->id], [$allocation->source_type, $allocation->source_id]);
+        $this->assertSame(1, $this->customer->materialCostAllocations()->count());
+        $this->assertSame('0.0000', app(LotStockReader::class)->balanceOf($lot));
+
+        $service->reverse($allocation);
+
+        $returned = StockMovement::query()->where('movement_type', StockMovementType::Return->value)->orderBy('id')->get();
+        $this->assertSame([[$lot->id, '2.0000', $issued[0]->id], [null, '2.0000', $issued[1]->id]], $returned->map(fn (StockMovement $m): array => [$m->stock_lot_id, $m->qty_base, $m->source_id])->all());
+        $this->assertSame('2.0000', app(LotStockReader::class)->balanceOf($lot));
+        $this->assertSame('12.0000', app(InventoryLedger::class)->available($this->variant, $this->warehouse));
+    }
+
+    /** Gewählte Charge: die Zuordnung entnimmt genau sie, auch wenn eine andere früher verfällt. */
+    public function test_allocation_with_a_chosen_lot_books_that_lot(): void {
+        $lots = app(LotService::class);
+        $early = $lots->register($this->variant, 'K-EARLY', '2026-11-01');
+        $late = $lots->register($this->variant, 'K-LATE', '2027-03-01');
+        $lots->receiveIntoLot($this->variant, $this->warehouse, '3', '5', $early);
+        $lots->receiveIntoLot($this->variant, $this->warehouse, '3', '5', $late);
+
+        app(CustomerStockAllocationService::class)->issueForCustomer($this->customer, $this->variant, $this->warehouse, '2', actorUserId: $this->admin->id, lot: $late);
+
+        $this->assertSame(['3.0000', '1.0000'], [app(LotStockReader::class)->balanceOf($early), app(LotStockReader::class)->balanceOf($late)]);
+    }
+
+    /** Die Rückbuchung in eine inzwischen gesperrte Charge scheitert nicht: die Menge wird mitgesperrt (D5). */
+    public function test_reverse_into_a_blocked_lot_keeps_the_returned_quantity_blocked(): void {
+        $ledger = app(InventoryLedger::class);
+        $lots = app(LotService::class);
+        $lot = $lots->register($this->variant, 'K-HOLD', '2026-12-01');
+        $lots->receiveIntoLot($this->variant, $this->warehouse, '4', '5', $lot);
+        $service = app(CustomerStockAllocationService::class);
+        $allocation = $service->issueForCustomer($this->customer, $this->variant, $this->warehouse, '3', actorUserId: $this->admin->id, lot: $lot);
+        $lots->block($lot, 'Rückruf', $this->admin);
+        $this->assertSame('10.0000', $ledger->available($this->variant, $this->warehouse));
+
+        $service->reverse($allocation);
+
+        $return = StockMovement::query()->where('movement_type', StockMovementType::Return->value)->sole();
+        $hold = StockMovement::query()->where('idempotency_key', 'lot-block:' . $lot->id . ':arrival:' . $return->id)->sole();
+        $this->assertSame([StockMovementType::LotBlock, StockState::Blocked, '3.0000', $lot->id], [$hold->movement_type, $hold->stock_state, $hold->qty_base, $hold->stock_lot_id]);
+        $this->assertSame(['4.0000', '4.0000'], [app(LotStockReader::class)->balanceOf($lot), $ledger->balance($this->variant, $this->warehouse, StockState::Blocked)]);
+        $this->assertSame('10.0000', $ledger->available($this->variant, $this->warehouse));
+
+        // Die Freigabe gibt auch die mitgesperrte Menge frei.
+        $lots->unblock($lot, 'Prüfung ohne Befund', $this->admin);
+        $this->assertSame(['0.0000', '14.0000'], [$ledger->balance($this->variant, $this->warehouse, StockState::Blocked), $ledger->available($this->variant, $this->warehouse)]);
     }
 
     public function test_stock_dialog_blocked_without_module(): void {

@@ -43,6 +43,47 @@ final class ExternalStockMirrorTest extends TestCase {
         $this->assertSame('jtl_wawi', InventoryOutboxEntry::query()->first()?->plugin_id);
     }
 
+    /** Eine Umbuchung zwischen Chargen ändert den Bestand je Variante und Lager nicht — das Fremdsystem erfährt nichts davon. */
+    public function test_lot_merge_is_not_mirrored(): void {
+        Bus::fake();
+        $this->organization->update(['settings' => ['inventory_mode' => 'external', 'inventory_plugin_id' => 'jtl_wawi']]);
+        $warehouse = \App\Models\Inventory\Warehouse::factory()->create(['organization_id' => $this->organization->id]);
+        $article = \App\Models\Article\Article::factory()->create(['organization_id' => $this->organization->id, 'batch_required' => true]);
+        $variant = \App\Models\Article\ArticleVariant::factory()->create(['organization_id' => $this->organization->id, 'article_id' => $article->id, 'option_signature' => 'default']);
+        $lots = app(\App\Services\Inventory\LotService::class);
+        $target = $lots->register($variant, 'L-ZIEL');
+        $source = $lots->register($variant, 'L-QUELLE');
+        $lots->receiveIntoLot($variant, $warehouse, '6', '2', $target);
+        $lots->receiveIntoLot($variant, $warehouse, '5', '3', $source);
+        $this->assertSame(2, InventoryOutboxEntry::query()->count());
+
+        app(\App\Services\Inventory\LotSplitService::class)->merge($source, $target);
+
+        $this->assertSame(4, StockMovement::query()->count());
+        $this->assertSame(2, InventoryOutboxEntry::query()->count());
+    }
+
+    /** Teilen, Sperren und die Reparaturpaarung ändern den Bestand je Variante und Lager nicht — nichts davon wird gespiegelt. */
+    public function test_lot_split_block_and_repair_are_not_mirrored(): void {
+        Bus::fake();
+        $this->organization->update(['settings' => ['inventory_mode' => 'external', 'inventory_plugin_id' => 'jtl_wawi']]);
+        $warehouse = \App\Models\Inventory\Warehouse::factory()->create(['organization_id' => $this->organization->id]);
+        $article = \App\Models\Article\Article::factory()->create(['organization_id' => $this->organization->id, 'batch_required' => true]);
+        $variant = \App\Models\Article\ArticleVariant::factory()->create(['organization_id' => $this->organization->id, 'article_id' => $article->id, 'option_signature' => 'default']);
+        $lots = app(\App\Services\Inventory\LotService::class);
+        $lot = $lots->register($variant, 'L-QUELLE');
+        $lots->receiveIntoLot($variant, $warehouse, '6', '2', $lot);
+        $this->assertSame(1, InventoryOutboxEntry::query()->count());
+
+        $part = app(\App\Services\Inventory\LotSplitService::class)->split($lot, '2', 'L-TEIL');
+        $lots->detach($part, '1');
+        $lots->block($lot, 'Rückruf', \App\Models\Platform\User::factory()->create(['organization_id' => $this->organization->id]));
+
+        // Zugang, Teilen (2), Reparaturpaarung (2), Sperre.
+        $this->assertSame(6, StockMovement::query()->count());
+        $this->assertSame(1, InventoryOutboxEntry::query()->count());
+    }
+
     public function test_mirror_is_noop_when_local(): void {
         Bus::fake();
         $movement = StockMovement::factory()->create(['organization_id' => $this->organization->id]);

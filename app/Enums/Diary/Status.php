@@ -45,6 +45,17 @@ enum Status: int implements HasLabel {
         };
     }
 
+    /** Ton für `<x-status-badge>`; tone() bleibt die fachliche Stufe. */
+    public function badgeTone(): string {
+        return match ($this->tone()) {
+            'done' => 'success',
+            'progress' => 'info',
+            'open' => 'warning',
+            'alert' => 'error',
+            default => 'ghost',
+        };
+    }
+
     public function key(): string {
         return match ($this) {
             self::Done => 'Completed',

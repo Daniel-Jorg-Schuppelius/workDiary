@@ -10,6 +10,7 @@
 
 namespace App\Plugins\Todoist\Models;
 
+use App\Enums\Task\TaskStatus;
 use App\Models\Concerns\BelongsToOrganization;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
@@ -25,7 +26,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $todoist_project_link_id
  * @property string $todoist_section_id
  * @property string|null $name
- * @property string $task_status
+ * @property TaskStatus $task_status
  */
 class TodoistSectionLink extends Model {
     use BelongsToOrganization;
@@ -38,6 +39,11 @@ class TodoistSectionLink extends Model {
         'todoist_section_id',
         'name',
         'task_status',
+    ];
+
+    /** @var array<string, string> */
+    protected $casts = [
+        'task_status' => TaskStatus::class,
     ];
 
     /** @return BelongsTo<TodoistProjectLink, $this> */

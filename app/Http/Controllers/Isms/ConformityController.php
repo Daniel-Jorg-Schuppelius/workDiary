@@ -12,6 +12,7 @@ namespace App\Http\Controllers\Isms;
 
 use App\Enums\Isms\NormConformityStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Isms\Concerns\ResolvesIsmsScope;
 use App\Models\Document\Document;
 use App\Models\Isms\{IsmsNormStatus, IsmsRequirement, IsmsScope};
 use App\Models\Platform\User;
@@ -19,7 +20,6 @@ use App\Services\Isms\{ConformityService, ScopeService};
 use App\Support\SqidEncoder;
 use CommonToolkit\Helper\Data\DateHelper;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -36,6 +36,8 @@ use Illuminate\View\View;
  * IsmsNormStatusPolicy (isms.viewAny/view/manage).
  */
 class ConformityController extends Controller {
+    use ResolvesIsmsScope;
+
     public function __construct(
         private readonly ConformityService $service,
         private readonly ScopeService $scopeService,
@@ -50,7 +52,7 @@ class ConformityController extends Controller {
             ->orderBy('name')
             ->get();
 
-        $scope = $this->resolveScope($request->query('scope'), $scopes);
+        $scope = $this->scopeForView($request->query('scope'), $scopes);
 
         $statuses = $scope === null
             ? collect()
@@ -99,7 +101,7 @@ class ConformityController extends Controller {
         Gate::authorize('create', IsmsNormStatus::class);
 
         return view('isms.conformity._form_dialog', [
-            'scope' => $this->resolveScope($request->query('scope'), null),
+            'scope' => $this->scopeForView($request->query('scope')),
             'scopes' => IsmsScope::query()->orderByDesc('is_default')->orderBy('name')->get(),
         ]);
     }
@@ -119,7 +121,7 @@ class ConformityController extends Controller {
 
         // Fehlender/ungültiger Scope fällt auf den Default-Scope zurück
         // (wird bei Bedarf angelegt — analog Katalog-Import).
-        $scope = $this->resolveScope($data['scope'], null)
+        $scope = $this->scopeOrDefault($data['scope'])
             ?? $this->scopeService->ensureDefaultScope((int) $creator->organization_id);
         $this->service->create($creator, $scope, $data);
 
@@ -205,31 +207,5 @@ class ConformityController extends Controller {
         return redirect()
             ->back()
             ->with('success', __('isms.flash.certificate_added'));
-    }
-
-    /**
-     * Löst den Scope-Query-/Formularparameter (Sqid) auf — ungültige,
-     * fremde (Org-Scope!) oder fehlende Werte fallen auf den Default-Scope
-     * zurück.
-     *
-     * @param  Collection<int, IsmsScope>|null  $scopes  bereits geladene Scopes (optional)
-     */
-    private function resolveScope(mixed $sqid, ?Collection $scopes): ?IsmsScope {
-        if (is_string($sqid) && $sqid !== '') {
-            $id = $this->sqids->decode(IsmsScope::class, $sqid);
-            $scope = $id === null
-                ? null
-                : ($scopes !== null
-                    ? $scopes->firstWhere('id', $id)
-                    : IsmsScope::query()->whereKey($id)->first());
-
-            if ($scope !== null) {
-                return $scope;
-            }
-        }
-
-        return $scopes !== null
-            ? $scopes->firstWhere('is_default', true)
-            : IsmsScope::query()->where('is_default', true)->first();
     }
 }

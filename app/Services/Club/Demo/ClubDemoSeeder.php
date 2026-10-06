@@ -227,6 +227,7 @@ class ClubDemoSeeder implements DemoBlock {
             'club_horse_uses', 'club_horse_assignments', 'club_horse_groups', 'club_resource_clearances', 'club_resource_closures', 'club_resource_bookings',
             'club_performances', 'club_start_rights', 'club_competition_entries', 'club_competition_details', 'club_attendance_requirements',
             'club_lineup_entries', 'club_match_availabilities', 'club_event_roles', 'club_match_proposals', 'club_match_details', 'club_squad_members', 'club_squads', 'club_seasons',
+            'club_donations', 'club_donation_receipts',
             'club_fee_dunnings', 'club_fee_payments', 'club_fee_claim_items', 'club_fee_claims', 'club_fee_runs', 'club_fee_assignments', 'club_fee_exemptions', 'club_fee_surcharges',
             'club_fee_accounts', 'club_fee_tariff_rates', 'club_fee_tariffs',
             'club_member_grades', 'club_exam_candidates', 'club_exam_offers', 'club_member_proofs',

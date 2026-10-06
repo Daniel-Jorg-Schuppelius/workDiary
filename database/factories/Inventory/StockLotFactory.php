@@ -10,6 +10,7 @@
 
 namespace Database\Factories\Inventory;
 
+use App\Enums\Inventory\StockLotStatus;
 use App\Models\Article\ArticleVariant;
 use App\Models\Inventory\StockLot;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -26,7 +27,7 @@ class StockLotFactory extends Factory {
             'organization_id' => null,
             'article_variant_id' => ArticleVariant::factory(),
             'lot_no' => 'LOT-' . fake()->unique()->numerify('#####'),
-            'status' => StockLot::STATUS_ACTIVE,
+            'status' => StockLotStatus::Active,
         ];
     }
 }

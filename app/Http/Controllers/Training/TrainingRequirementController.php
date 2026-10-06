@@ -81,7 +81,7 @@ class TrainingRequirementController extends Controller {
         $this->assignments->syncOrganization($organization);
 
         return redirect()
-            ->route('training.requirements.index')
+            ->toList('training.requirements.index')
             ->with('success', __('training.flash.requirement_created'));
     }
 
@@ -113,7 +113,7 @@ class TrainingRequirementController extends Controller {
         $this->assignments->syncOrganization($this->currentOrganization());
 
         return redirect()
-            ->route('training.requirements.index')
+            ->toList('training.requirements.index')
             ->with('success', __('training.flash.requirement_deleted'));
     }
 
@@ -124,7 +124,7 @@ class TrainingRequirementController extends Controller {
         $result = $this->assignments->syncOrganization($this->currentOrganization());
 
         return redirect()
-            ->route('training.requirements.index')
+            ->toList('training.requirements.index')
             ->with('success', __('training.flash.assignments_synced', $result));
     }
 

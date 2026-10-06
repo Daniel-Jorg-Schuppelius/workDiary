@@ -157,6 +157,7 @@
                             <span class="text-sm">@if ($team->color)<span class="mr-1 inline-block h-2 w-2 rounded-full" style="background-color: {{ $team->color }}"></span>@endif{{ $team->name }}</span>
                         </label>
                     @empty
+                        {{-- raw-markup-ok: Platzhalter in der Auswahlliste eines Formularfelds --}}
                         <p class="text-xs text-muted">{{ __('Noch keine Teams angelegt.') }}</p>
                     @endforelse
                 </div>

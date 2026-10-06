@@ -13,8 +13,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Plugins;
 
 use App\Models\Supplier\Supplier;
-use App\Plugins\Lexoffice\{LexofficePlugin, LexofficeVoucherCategorySync};
+use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\Lexoffice\Models\{LexofficePostingCategory, LexofficeVoucher, LexofficeVoucherCategory};
+use App\Plugins\Lexoffice\Services\LexofficeVoucherCategorySync;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\{WithGlobalDateRange, WithOrganization};
 use Tests\Support\{FakePluginHttp, InteractsWithPlugins};

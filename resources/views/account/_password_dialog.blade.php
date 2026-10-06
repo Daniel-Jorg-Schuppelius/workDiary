@@ -20,13 +20,13 @@
     :form-data="['data-entry-form' => '']"
     :submit-label="__('Speichern')">
     @if ($mustChange)
-        <div class="alert alert-warning mb-4">
+        <div role="alert" class="alert alert-warning mb-4">
             <span>{{ __('Bitte legen Sie ein neues Passwort fest, bevor Sie weiterarbeiten.') }}</span>
         </div>
     @endif
 
     @if (session('warning'))
-        <div class="alert alert-warning mb-4">{{ session('warning') }}</div>
+        <div role="alert" class="alert alert-warning mb-4">{{ session('warning') }}</div>
     @endif
 
     @if ($isDialog)

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f4de90a093d2cd184211fee94a5a7018",
+    "content-hash": "0424a51d69903445422bf82a2de6c0df",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -876,16 +876,16 @@
         },
         {
             "name": "daniel-jorg-schuppelius/php-erechnung-toolkit",
-            "version": "v0.17.0",
+            "version": "v0.17.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Daniel-Jorg-Schuppelius/php-erechnung-toolkit.git",
-                "reference": "d02b71f585a99e876b8344b6cd26994e1f3ac246"
+                "reference": "e4629bc5508696ddb79a80d00e992433a0866eb4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/php-erechnung-toolkit/zipball/d02b71f585a99e876b8344b6cd26994e1f3ac246",
-                "reference": "d02b71f585a99e876b8344b6cd26994e1f3ac246",
+                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/php-erechnung-toolkit/zipball/e4629bc5508696ddb79a80d00e992433a0866eb4",
+                "reference": "e4629bc5508696ddb79a80d00e992433a0866eb4",
                 "shasum": ""
             },
             "require": {
@@ -948,7 +948,7 @@
                 "issues": "https://github.com/Daniel-Jorg-Schuppelius/php-erechnung-toolkit/issues",
                 "source": "https://github.com/Daniel-Jorg-Schuppelius/php-erechnung-toolkit"
             },
-            "time": "2026-10-02T21:56:03+00:00"
+            "time": "2026-10-04T14:40:16+00:00"
         },
         {
             "name": "daniel-jorg-schuppelius/php-pdf-toolkit",
@@ -1731,16 +1731,16 @@
         },
         {
             "name": "dschuppelius/php-common-toolkit",
-            "version": "v2.5.0",
+            "version": "v2.5.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/DSchuppelius/php-common-toolkit.git",
-                "reference": "3d280755d198f582b6efc57683ac4b336581b58a"
+                "reference": "ced43057b7275654f917d825e85b7e1c46a86899"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/DSchuppelius/php-common-toolkit/zipball/3d280755d198f582b6efc57683ac4b336581b58a",
-                "reference": "3d280755d198f582b6efc57683ac4b336581b58a",
+                "url": "https://api.github.com/repos/DSchuppelius/php-common-toolkit/zipball/ced43057b7275654f917d825e85b7e1c46a86899",
+                "reference": "ced43057b7275654f917d825e85b7e1c46a86899",
                 "shasum": ""
             },
             "require": {
@@ -1782,7 +1782,7 @@
                 "issues": "https://github.com/DSchuppelius/php-common-toolkit/issues",
                 "source": "https://github.com/DSchuppelius/php-common-toolkit"
             },
-            "time": "2026-09-28T08:39:28+00:00"
+            "time": "2026-10-05T08:57:18+00:00"
         },
         {
             "name": "dschuppelius/php-config-toolkit",

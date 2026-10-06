@@ -11,6 +11,7 @@
 namespace Tests\Feature\Plugins\JtlWawi;
 
 use App\Models\Platform\User;
+use App\Plugins\JtlWawi\Enums\{JtlConnectionStatus, JtlRegistrationStatus};
 use App\Plugins\JtlWawi\Models\JtlConnection;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -71,7 +72,7 @@ final class JtlConnectionTest extends TestCase {
             'organization_id' => $this->organization->id,
             'mode' => JtlConnection::MODE_ON_PREMISE,
             'allow_private_network' => true,
-            'status' => JtlConnection::STATUS_DRAFT,
+            'status' => JtlConnectionStatus::Draft->value,
         ]);
     }
 
@@ -93,19 +94,21 @@ final class JtlConnectionTest extends TestCase {
         $this->actingAs($this->admin)->post(route('admin.jtl.connection.register'))->assertSessionHas('success');
 
         $connection->refresh();
-        $this->assertSame(JtlConnection::STATUS_PENDING_REGISTRATION, $connection->status);
+        $this->assertSame(JtlConnectionStatus::PendingRegistration, $connection->status);
         $this->assertSame('REG-1', $connection->registration_id);
+        $this->assertSame(JtlRegistrationStatus::Pending, $connection->registration_status);
         $fake->assertSent(static function (RequestInterface $request): bool {
             return str_contains((string) $request->getUri(), '/v2/authentication')
                 && $request->getHeaderLine('x-challengecode') !== ''
                 && $request->getHeaderLine('api-version') === '2.0';
         });
 
-        $this->actingAs($this->admin)->post(route('admin.jtl.connection.check'))->assertSessionHas('success');
+        $this->actingAs($this->admin)->post(route('admin.jtl.connection.check'))
+            ->assertSessionHas('success', __('jtl_wawi::jtl_wawi.flash.registration_accepted'));
 
         $connection->refresh();
-        $this->assertSame(JtlConnection::STATUS_ACTIVE, $connection->status);
-        $this->assertSame(JtlConnection::REGISTRATION_ACCEPTED, $connection->registration_status);
+        $this->assertSame(JtlConnectionStatus::Active, $connection->status);
+        $this->assertSame(JtlRegistrationStatus::Accepted, $connection->registration_status);
         $this->assertSame('KEY-SECRET-123', $connection->api_key);
 
         // At-rest verschlüsselt + nie in Array-/Audit-Payloads.
@@ -118,7 +121,7 @@ final class JtlConnectionTest extends TestCase {
         $connection = $this->makeOnPremiseConnection([
             'registration_id' => 'REG-2',
             'challenge_code' => 'challenge-xyz',
-            'status' => JtlConnection::STATUS_PENDING_REGISTRATION,
+            'status' => JtlConnectionStatus::PendingRegistration,
         ]);
 
         FakePluginHttp::fake([
@@ -132,8 +135,60 @@ final class JtlConnectionTest extends TestCase {
         $this->actingAs($this->admin)->post(route('admin.jtl.connection.check'));
 
         $connection->refresh();
-        $this->assertSame(JtlConnection::STATUS_BLOCKED, $connection->status);
+        $this->assertSame(JtlConnectionStatus::Blocked, $connection->status);
         $this->assertSame('missing_scopes', $connection->blocked_reason);
+    }
+
+    /**
+     * k3-10: der Dienst meldet den Registrierungsstand als Enum. Gegen die
+     * frühere Zeichenkette verglichen fiele jede Antwort auf „steht noch aus“.
+     */
+    public function test_registration_check_reports_rejection_and_pending_distinctly(): void {
+        $connection = $this->makeOnPremiseConnection([
+            'registration_id' => 'REG-3',
+            'challenge_code' => 'challenge-abc',
+            'status' => JtlConnectionStatus::PendingRegistration,
+        ]);
+
+        FakePluginHttp::fake([self::BASE . '/v2/authentication/*' => FakePluginHttp::response(['requestStatusInfo' => ['status' => 0]])]);
+        $this->actingAs($this->admin)->post(route('admin.jtl.connection.check'))
+            ->assertSessionHas('success', __('jtl_wawi::jtl_wawi.flash.registration_pending'));
+        $this->assertSame(JtlRegistrationStatus::Pending, $connection->refresh()->registration_status);
+        $this->assertSame(JtlConnectionStatus::PendingRegistration, $connection->status);
+
+        FakePluginHttp::fake([self::BASE . '/v2/authentication/*' => FakePluginHttp::response(['requestStatusInfo' => ['status' => 1]])]);
+        $this->actingAs($this->admin)->post(route('admin.jtl.connection.check'))
+            ->assertSessionHas('error', __('jtl_wawi::jtl_wawi.flash.registration_rejected'));
+        $connection->refresh();
+        $this->assertSame(JtlRegistrationStatus::Rejected, $connection->registration_status);
+        $this->assertSame(JtlConnectionStatus::Blocked, $connection->status);
+        $this->assertSame('registration_rejected', $connection->blocked_reason);
+        $this->assertDatabaseHas('jtl_connections', ['id' => $connection->id, 'registration_status' => JtlRegistrationStatus::Rejected->value]);
+    }
+
+    /** Die Kopfzeile verkettete den Status früher mit dem Textschlüssel (Entwurf und getrennt). */
+    public function test_index_shows_status_badge_for_each_state(): void {
+        $connection = $this->makeOnPremiseConnection(['status' => JtlConnectionStatus::Draft]);
+
+        $expected = [
+            [JtlConnectionStatus::Draft, 'badge-ghost', 'Entwurf'],
+            [JtlConnectionStatus::PendingRegistration, 'badge-warning', 'Registrierung ausstehend'],
+            [JtlConnectionStatus::Blocked, 'badge-error', 'Blockiert'],
+            [JtlConnectionStatus::Active, 'badge-success', 'Aktiv'],
+            [JtlConnectionStatus::Disconnected, 'badge-ghost', 'Getrennt'],
+        ];
+        foreach ($expected as [$status, $tone, $label]) {
+            $connection->forceFill(['status' => $status])->save();
+            $html = (string) $this->actingAs($this->admin)->get(route('admin.jtl.index'))->assertOk()->getContent();
+
+            $this->assertMatchesRegularExpression('/badge badge-sm ' . $tone . '">\s*' . preg_quote($label, '/') . '/', $html, $status->value);
+            // Die Registrierungsprüfung gibt es nur, solange die Freigabe in der Wawi aussteht.
+            $this->assertSame(
+                $status === JtlConnectionStatus::PendingRegistration,
+                str_contains($html, route('admin.jtl.connection.check')),
+                $status->value,
+            );
+        }
     }
 
     public function test_cloud_connection_exchanges_client_credentials_for_token(): void {
@@ -155,7 +210,7 @@ final class JtlConnectionTest extends TestCase {
         $response->assertSessionHas('success');
 
         $connection = JtlConnection::query()->where('organization_id', $this->organization->id)->firstOrFail();
-        $this->assertSame(JtlConnection::STATUS_ACTIVE, $connection->status);
+        $this->assertSame(JtlConnectionStatus::Active, $connection->status);
         $this->assertSame('JWT-TOKEN-XYZ', $connection->access_token);
         $this->assertTrue($connection->hasValidCloudToken());
 
@@ -181,7 +236,7 @@ final class JtlConnectionTest extends TestCase {
             'base_url' => self::BASE,
             'api_version' => '2.0',
             'allow_private_network' => true,
-            'status' => JtlConnection::STATUS_DRAFT,
+            'status' => JtlConnectionStatus::Draft,
         ], $overrides));
     }
 }

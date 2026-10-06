@@ -12,8 +12,7 @@
 @extends('layouts.app')
 @section('title', __('commission.page.runs'))
 @section('nav-title', __('commission.page.runs'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('commission.subtitle.runs')">
     <x-slot:actions>
@@ -45,8 +44,8 @@
                 <td class="font-medium">
                     <a class="link link-hover" href="{{ route('commission-runs.show', $run) }}">{{ $run->period }}</a>
                 </td>
-                <td class="text-sm">{{ $run->period_start?->format('d.m.Y') }}</td>
-                <td class="text-sm">{{ $run->period_end?->format('d.m.Y') }}</td>
+                <td class="text-sm">{{ $run->period_start?->fdate() }}</td>
+                <td class="text-sm">{{ $run->period_end?->fdate() }}</td>
                 <td class="text-center">
                     <x-status-badge :tone="$run->status->tone()" size="sm">{{ $run->status->label() }}</x-status-badge>
                 </td>

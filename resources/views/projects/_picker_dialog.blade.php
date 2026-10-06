@@ -58,7 +58,7 @@
                         $rootCust = $root->customer_id ?? 0;
                         $children = $childrenByParent->get((int) $root->id, collect());
                     @endphp
-                    <li data-card class="rounded-box border border-base-300 bg-base-100 overflow-hidden">
+                    <x-card as="li" padding="p-0" class="overflow-hidden" data-card>
                         <a href="{{ route($targetRoute, $root) }}"
                            data-entry-modal-trigger
                            data-haystack="{{ $rootHaystack }}"
@@ -98,12 +98,10 @@
                                 @endforeach
                             </ul>
                         @endif
-                    </li>
+                    </x-card>
                 @endforeach
             </ul>
-            <p data-filter-empty class="hidden mt-3 text-sm text-muted text-center">
-                {{ __('Keine Projekte passen zu den Filtern.') }}
-            </p>
+            <x-empty-state icon="search_off" :title="__('Keine Projekte passen zu den Filtern.')" compact data-filter-empty class="hidden mt-3" />
         </div>
     @endif
 </x-modal>

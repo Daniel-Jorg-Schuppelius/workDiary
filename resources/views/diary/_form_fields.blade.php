@@ -217,6 +217,7 @@
 
     {{-- Backlog: keine Datumsfelder --}}
     <div class="fieldset md:col-span-2" x-show="isMode('{{ \App\Enums\Diary\Mode::Backlog->value }}')" x-cloak>
+        {{-- raw-markup-ok: Hinweis am Formularfeld, kein Leerzustand einer Liste --}}
         <p class="text-sm text-muted">{{ __('Kein Datum erfasst — erscheint im Backlog und kann später terminiert werden.') }}</p>
     </div>
 </x-form-group>
@@ -311,107 +312,8 @@
 </template>
 
 <x-form-group :legend="__('Tags')" icon="flag" tone="success">
-    @php
-        $tagPickerAll = ($allTags ?? collect())->map(fn ($t) => [
-            'id' => $t->sqid,
-            'name' => $t->name,
-            'color' => $t->color,
-        ])->values()->all();
-        $tagPickerSelected = collect(old('tag_ids', $selectedTagIds ?? []))
-            ->map(fn ($v) => (string) $v)->filter()->unique()->values()->all();
-        $tagPickerRecent = collect($recentTagIds ?? [])
-            ->map(fn ($v) => (string) $v)->values()->all();
-        // Bei Validierungsfehlern eingegebene neue Tags wiederherstellen.
-        $tagPickerNew = collect(preg_split('/[,;\n]+/', (string) old('new_tags', '')) ?: [])
-            ->map(fn ($v) => trim((string) $v))->filter()->values()->all();
-        // KI-Tagvorschläge (Feature 143, MVP-711): nur mit nutzbarer Capability.
-        $tagSuggestUrl = app(\App\Services\Ai\Contracts\SuggestionView::class)->capabilityUsable(\App\Services\Ai\Suggestions\ClassificationSuggestionService::CAPABILITY)
-            ? route('ai.suggest.tags')
-            : null;
-        $tagPickerConfig = ['all' => $tagPickerAll, 'selectedIds' => $tagPickerSelected, 'recentIds' => $tagPickerRecent, 'initialNew' => $tagPickerNew, 'quickLimit' => 8, 'allowCreate' => true, 'suggestUrl' => $tagSuggestUrl, 'textSelector' => '[name="content"]', 'customerSelector' => '[name="customer_id"]'];
-    @endphp
-    <div class="fieldset"
-         x-data="tagPicker"
-         data-config="{{ json_encode($tagPickerConfig) }}"
-         @click.outside="close()">
-
-        {{-- Versteckte Felder für den Submit --}}
-        <template x-for="id in existingIds" :key="id">
-            <input type="hidden" name="tag_ids[]" :value="id">
-        </template>
-        <input type="hidden" name="new_tags" :value="newNamesText">
-
-        {{-- Ausgewählte Tags als entfernbare Chips --}}
-        <div class="flex flex-wrap gap-2" x-show="hasSelected" x-cloak>
-            <template x-for="tag in selected" :key="tag.key">
-                <span class="badge gap-1"
-                      :class="chipClass(tag)"
-                      :style="chipStyle(tag)">
-                    <span x-text="tag.name"></span>
-                    <button type="button" class="opacity-70 hover:opacity-100"
-                            aria-label="{{ __('Tag entfernen') }}"
-                            @click="remove(tag)">&times;</button>
-                </span>
-            </template>
-        </div>
-
-        {{-- Schnellauswahl: zuletzt verwendete Tags --}}
-        <div class="flex flex-wrap gap-2 mt-2" x-show="hasQuickPicks" x-cloak>
-            <template x-for="tag in quickPicks" :key="tag.id">
-                <button type="button"
-                        class="badge badge-outline transition-colors hover:bg-primary hover:border-primary hover:text-primary-content"
-                        @click="addExisting(tag)">
-                    <span x-show="tag.color" class="inline-block w-2 h-2 rounded-full mr-1"
-                          :style="dotStyle(tag)"></span>
-                    <span x-text="tag.name"></span>
-                </button>
-            </template>
-        </div>
-
-        @if ($tagSuggestUrl !== null)
-            <x-tag-picker-ai />
-        @endif
-
-        {{-- Such-/Eingabefeld mit Dropdown --}}
-        <div class="relative mt-2">
-            <input aria-label="{{ __('Tag suchen oder neuen Tag eingeben…') }}" type="text"
-                   x-model="query"
-                   @focus="openMenu()"
-                   @input="onInput()"
-                   @keydown.enter.prevent="enterPressed()"
-                   @keydown.arrow-down.prevent="move(1)"
-                   @keydown.arrow-up.prevent="move(-1)"
-                   @keydown.escape="close()"
-                   autocomplete="off"
-                   class="input input-bordered input-sm w-full"
-                   placeholder="{{ __('Tag suchen oder neuen Tag eingeben…') }}">
-
-            <ul x-show="showMenu" x-cloak x-transition.opacity
-                class="menu menu-sm absolute z-30 mt-1 w-full max-h-56 flex-nowrap overflow-y-auto rounded-box border border-base-300 bg-base-100 shadow-lg">
-                <template x-for="(tag, idx) in filtered" :key="tag.id">
-                    <li>
-                        <button type="button"
-                                :class="optionClass(idx)"
-                                @mouseenter="setHighlight(idx)"
-                                @click="addExisting(tag)">
-                            <span x-show="tag.color" class="inline-block w-2 h-2 rounded-full"
-                                  :style="dotStyle(tag)"></span>
-                            <span x-text="tag.name"></span>
-                        </button>
-                    </li>
-                </template>
-                <li x-show="canCreate">
-                    <button type="button" class="text-success" @click="createNew()">
-                        <span>{{ __('Neu anlegen:') }} „<span x-text="queryTrimmed"></span>"</span>
-                    </button>
-                </li>
-            </ul>
-        </div>
-
-        <p class="text-xs text-muted mt-1">
-            {{ __('Auf einen Tag klicken oder tippen, um zu suchen bzw. neue Tags anzulegen.') }}
-        </p>
-    </div>
+    <x-tag-picker :tags="$allTags ?? collect()" :selected="$selectedTagIds ?? []" :recent="$recentTagIds ?? []"
+                  suggest-from='[name="content"]' customer-from='[name="customer_id"]' />
 </x-form-group>
 
 </div>

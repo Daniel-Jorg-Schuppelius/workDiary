@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Applications;
 
-use App\Enums\Applications\TenderProcedureType;
+use App\Enums\Applications\{ApplicationOpportunityStatus, ApplicationRequirementStatus, TenderProcedureType};
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Applications\{ApplicationOpportunity, ApplicationRequirement, TenderCompetitorBid};
@@ -39,12 +39,11 @@ class TenderController extends Controller {
     public function index(Request $request): View {
         Gate::authorize('viewAny', ApplicationOpportunity::class);
 
-        $status = $request->string('status')->toString();
-        $statusFilter = in_array($status, ApplicationOpportunity::STATUSES, true) ? $status : '';
+        $statusFilter = ApplicationOpportunityStatus::tryFrom($request->string('status')->toString());
 
         $query = ApplicationOpportunity::query()->with(['customer', 'responsible'])
-            ->when($statusFilter !== '', fn($q) => $q->where('status', $statusFilter))
-            ->when($request->boolean('open_only'), fn($q) => $q->whereIn('status', ApplicationOpportunity::OPEN_STATUSES));
+            ->when($statusFilter !== null, fn($q) => $q->where('status', $statusFilter))
+            ->when($request->boolean('open_only'), fn($q) => $q->whereIn('status', ApplicationOpportunityStatus::open()));
 
         [$sort, $dir] = SortableQuery::apply($query, $request, [
             'title' => 'title',
@@ -55,8 +54,8 @@ class TenderController extends Controller {
 
         return view('applications.tenders.index', [
             'opportunities' => $query->paginate(25)->withQueryString(),
-            'statuses' => ApplicationOpportunity::STATUSES,
-            'filters' => ['status' => $statusFilter, 'open_only' => $request->boolean('open_only')],
+            'statuses' => ApplicationOpportunityStatus::cases(),
+            'filters' => ['status' => $statusFilter->value ?? '', 'open_only' => $request->boolean('open_only')],
             'sort' => $sort,
             'dir' => $dir,
         ]);
@@ -90,7 +89,7 @@ class TenderController extends Controller {
 
     public function show(ApplicationOpportunity $opportunity): View {
         Gate::authorize('view', $opportunity);
-        $opportunity->load(['requirements.document', 'submissions', 'customer', 'project', 'responsible', 'competitorBids', 'negotiations.versions', 'negotiations.reviewItems', 'negotiations.approvals']);
+        $opportunity->load(['requirements.document', 'submissions', 'customer', 'project', 'responsible', 'competitorBids', 'negotiations.versions', 'negotiations.reviewItems', 'negotiations.approvals.decidedBy:id,name']);
 
         return view('applications.tenders.show', [
             'opportunity' => $opportunity,
@@ -153,7 +152,7 @@ class TenderController extends Controller {
         abort_unless($requirement->application_opportunity_id === $opportunity->id, 404);
 
         $data = $request->validate([
-            'status' => ['required', 'in:open,in_progress,done,not_applicable'],
+            'status' => ['required', Rule::enum(ApplicationRequirementStatus::class)],
             'document_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('documents')],
             'note' => ['nullable', 'string', 'max:500'],
         ]);
@@ -175,12 +174,14 @@ class TenderController extends Controller {
     public function updateStatus(Request $request, ApplicationOpportunity $opportunity): RedirectResponse {
         Gate::authorize('update', $opportunity);
         $data = $request->validate([
-            'status' => ['required', 'in:captured,screened,in_progress,question,post_submission'],
+            'status' => ['required', Rule::enum(ApplicationOpportunityStatus::class)->only(ApplicationOpportunityStatus::working())],
         ]);
-        if (! $opportunity->isOpen()) {
+        $target = ApplicationOpportunityStatus::from($data['status']);
+        // Den Stand erneut zu setzen ist kein Übergang und bleibt erlaubt.
+        if ($opportunity->status !== $target && ! $opportunity->status->canTransitionTo($target)) {
             return back()->with('error', __('Die Akte ist bereits entschieden.'));
         }
-        $opportunity->update(['status' => $data['status']]);
+        $opportunity->update(['status' => $target]);
 
         return back()->with('success', __('Status aktualisiert.'));
     }

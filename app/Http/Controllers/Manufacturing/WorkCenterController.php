@@ -38,8 +38,8 @@ class WorkCenterController extends Controller {
         $range = $this->globalDateRange();
         $from = Carbon::parse($range['from']->toDateString())->startOfDay();
         $to = Carbon::parse($range['to']->toDateString())->startOfDay();
-        $board = WorkCenter::query()->orderBy('name')->get()
-            ->map(fn (WorkCenter $center): array => ['center' => $center, 'load' => $this->capacity->loadRange($center, $from, $to)]);
+        $board = WorkCenter::query()->orderBy('name')->orderBy('id')->paginate(25)->withQueryString()
+            ->through(fn (WorkCenter $center): array => ['center' => $center, 'load' => $this->capacity->loadRange($center, $from, $to)]);
 
         return view('manufacturing.work-centers.index', [
             'board' => $board,
@@ -72,6 +72,6 @@ class WorkCenterController extends Controller {
             'setup_minutes' => (int) ($data['setup_minutes'] ?? 0),
         ]);
 
-        return redirect()->route('work-centers.index')->with('success', __('manufacturing.capacity.flash.created'));
+        return redirect()->toList('work-centers.index')->with('success', __('manufacturing.capacity.flash.created'));
     }
 }

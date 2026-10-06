@@ -338,6 +338,25 @@ class LearningScormTest extends TestCase {
         $this->assertNull($enrollment->refresh()->progress()->where('learning_unit_id', $unit->id)->first());
     }
 
+    /** Die Spalten fassen 20 Zeichen; erlaubt waren 40 — unter MariaDB-Strict ein 500er statt einer Absage. */
+    public function test_ein_ueberlanger_status_wird_abgewiesen_statt_die_spalte_zu_sprengen(): void {
+        $unit = $this->scormUnit($this->manifest2004(), 'start.html');
+        $enrollment = $this->enrolledLearner($unit);
+        $route = route('learning.my.scorm.commit', ['enrollment' => $enrollment->sqid, 'unit' => $unit->sqid]);
+
+        $this->actingAs($enrollment->user)
+            ->postJson($route, ['lesson_status' => str_repeat('x', 21)])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('lesson_status');
+        $this->actingAs($enrollment->user)
+            ->postJson($route, ['success_status' => str_repeat('x', 21)])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('success_status');
+        $this->actingAs($enrollment->user)
+            ->postJson($route, ['lesson_status' => str_repeat('x', 20)])
+            ->assertOk();
+    }
+
     public function test_lernzeit_summiert_sich_ueber_die_sitzungen(): void {
         $unit = $this->scormUnit($this->manifest12());
         $enrollment = $this->enrolledLearner($unit);

@@ -134,6 +134,24 @@
         <option value="1" @selected($tcStages === 1)>{{ __('Einstufig (eine Freigabe)') }}</option>
         <option value="2" @selected($tcStages === 2)>{{ __('Zweistufig (Vier-Augen-Prinzip)') }}</option>
     </x-select-field>
+    {{-- Stufenart → Rolle im Genehmigungs-Eingang (Registry approvals.step_role.*; leer = Vorgabe aus config/approvals.php). --}}
+    <p class="text-sm text-muted">{{ __('settings.approvals.step_roles_hint') }}</p>
+    @foreach (\App\Enums\Approval\ApprovalStepKind::cases() as $stepKind)
+        @continue($stepKind->roleSetting() === null)
+        @php
+            $stepRoleDefault = \App\Enums\User\UserRole::tryFrom((string) config($stepKind->roleSetting()));
+            $stepRole = (string) old('settings.approvals.step_role.' . $stepKind->value, data_get($organization?->settings, 'approvals.step_role.' . $stepKind->value, ''));
+        @endphp
+        <x-select-field :name="'settings[approvals][step_role][' . $stepKind->value . ']'"
+                        :error="'settings.approvals.step_role.' . $stepKind->value"
+                        :label="__('settings.approvals.step_role', ['kind' => $stepKind->label()])">
+            <option value="">{{ __('settings.approvals.default_role', ['role' => $stepRoleDefault?->label() ?? '—']) }}</option>
+            @foreach (\App\Enums\User\UserRole::cases() as $stepRoleOption)
+                @continue($stepRoleOption === \App\Enums\User\UserRole::Kunde)
+                <option value="{{ $stepRoleOption->value }}" @selected($stepRole === $stepRoleOption->value)>{{ $stepRoleOption->label() }}</option>
+            @endforeach
+        </x-select-field>
+    @endforeach
     {{-- MVP-536: Vorbehalts-Eintragung beantragter Fehlzeiten (Q1 S. 43). --}}
     @php $provisional = (string) old('settings.vacation.provisional_booking', data_get($organization?->settings, 'vacation.provisional_booking', '0')); @endphp
     <label class="label cursor-pointer justify-start gap-3">

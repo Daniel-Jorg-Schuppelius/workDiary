@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Applications\Retention;
 
+use App\Enums\Applications\JobApplicationStatus;
 use App\Services\Retention\Contracts\RetentionPolicyProvider;
 use App\Services\Retention\RetentionPolicy;
 use App\Support\Query\DateRange;
@@ -41,7 +42,7 @@ final class ApplicationsRetentionPolicies implements RetentionPolicyProvider {
                         'phone' => null,
                         'email_hash' => null,
                         'notes' => null,
-                        'status' => 'deleted',
+                        'status' => JobApplicationStatus::Deleted,
                         'anonymized_at' => now(),
                     ])->save();
                 },

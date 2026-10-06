@@ -11,6 +11,13 @@
 @section('nav-title', $domain->external_domain)
 
 @section('content')
+@php
+    // Vollersatz geht vom zuletzt gelesenen Stand der Zone aus, nie von einer leeren Liste.
+    $replaceZone = $domain->dnsZones->first(fn ($zone) => mb_strtolower($zone->zone) === mb_strtolower($domain->external_domain));
+    $replaceRecords = $replaceZone?->records ?? collect();
+    $replaceKept = $replaceZone?->unparsed_records ?? [];
+    $replaceable = $replaceRecords->isNotEmpty() || $replaceKept !== [];
+@endphp
 <x-page-shell>
     <x-entity-header :title="$domain->external_domain" :back-route="route('domains.index')" :back-label="__('domain.title.index')">
         <x-slot:badges>
@@ -30,7 +37,7 @@
             <x-detail-grid>
                 <x-detail-grid.row :label="__('domain.field.registrar')" :value="$domain->registrar ?? '—'" />
                 <x-detail-grid.row :label="__('domain.field.status')" :value="$domain->status !== null ? \App\Support\Trans::or('values.' . $domain->status, $domain->status) : '—'" />
-                <x-detail-grid.row :label="__('domain.field.expiration')" class="tabular-nums" :value="$domain->expiration_at?->format('d.m.Y') ?? '—'" />
+                <x-detail-grid.row :label="__('domain.field.expiration')" class="tabular-nums" :value="$domain->expiration_at?->fdate() ?? '—'" />
                 <x-detail-grid.row :label="__('domain.field.renewal_mode')" :value="$domain->renewal_mode?->label() ?? '—'" />
                 <x-detail-grid.row :label="__('domain.field.transferlock')" :value="$domain->transferlock ? __('domain.yes') : __('domain.no')" />
                 <x-detail-grid.row :label="__('domain.field.renewal_price')"
@@ -61,10 +68,10 @@
                         @foreach ($suggestions as $suggestion)
                             <x-action-form :action="route('domains.customer', $domain)">
                                 <input type="hidden" name="customer" value="{{ $suggestion['customer']->sqid }}">
-                                <button type="submit" class="btn btn-xs btn-outline">
+                                <x-button type="submit" tone="outline" size="xs">
                                     {{ $suggestion['customer']->name }}
                                     <span class="text-muted">({{ __('domain.mapping.reason_' . $suggestion['reason']) }})</span>
-                                </button>
+                                </x-button>
                             </x-action-form>
                         @endforeach
                     </div>
@@ -95,9 +102,9 @@
                 {{-- Eigenbestand-Umschalter (schließt Kundenzuordnung aus) --}}
                 <x-action-form :action="route('domains.customer', $domain)" class="mt-2">
                     <input type="hidden" name="own" value="{{ $domain->is_own_holding ? '0' : '1' }}">
-                    <button type="submit" class="btn btn-xs btn-ghost">
+                    <x-button type="submit" tone="ghost" size="xs">
                         {{ $domain->is_own_holding ? __('domain.mapping.own_clear') : __('domain.mapping.own_mark') }}
-                    </button>
+                    </x-button>
                 </x-action-form>
             @endif
         </x-card>
@@ -111,6 +118,9 @@
                     <x-icon-btn icon="download" size="xs" type="submit" show-label>{{ __('domain.action.dns_read') }}</x-icon-btn>
                 </x-action-form>
                 <x-icon-btn icon="add" tone="primary" size="xs" data-open-dialog="domain-dns-add" show-label>{{ __('domain.action.dns_add') }}</x-icon-btn>
+                @if ($replaceable)
+                    <x-icon-btn icon="published_with_changes" tone="warning" size="xs" data-open-dialog="domain-dns-replace" show-label>{{ __('domain.action.dns_replace') }}</x-icon-btn>
+                @endif
             @endif
         </x-slot:actions>
         @forelse ($domain->dnsZones as $zone)
@@ -153,13 +163,12 @@
                 @endforeach
             </x-table>
         @empty
-            <p class="text-sm text-muted">{{ __('domain.dns.empty') }}</p>
+            <x-empty-state compact icon="dns" :title="__('domain.dns.empty')" />
         @endforelse
 
     </x-card>
 
-    {{-- Eintrag hinzufügen (MVP-798, Befund C1-06). Zone ersetzen bleibt bewusst ohne
-         Einstieg: Ein falscher Vollersatz löscht alle Einträge der Domain. --}}
+    {{-- Eintrag hinzufügen (MVP-798, Befund C1-06). --}}
     @if ($can['dns'])
         <x-modal id="domain-dns-add" :embedded="false" tone="primary" icon="dns"
             :eyebrow="$domain->external_domain" :title="__('domain.action.dns_add')"
@@ -177,6 +186,90 @@
                 <x-input-field name="add[0][content]" id="domain-dns-add-content" :label="__('domain.dns.content')" required maxlength="4000" span="2" />
             </x-form-group>
         </x-modal>
+
+        {{-- Zone ersetzen (Entscheidung 2026-10-05): nur mit gelesener Zone, vorbelegt mit ihrem
+             Stand und mit Rückfrage. Einträge, die das Formular nicht bearbeiten kann, sendet der
+             Dienst unverändert mit — sonst löschte der Vollersatz sie beim Anbieter. --}}
+        @if ($replaceable)
+            <x-modal id="domain-dns-replace" :embedded="false" size="wide" tone="warning" icon="published_with_changes"
+                :eyebrow="$domain->external_domain" :title="__('domain.action.dns_replace')"
+                :action="route('domains.dns.replace', $domain)"
+                :submit-label="__('domain.action.dns_replace')" submit-class="btn-warning"
+                :form-data="[
+                    'data-confirm-dialog' => '',
+                    'data-confirm-message' => __('domain.action.dns_replace_confirm', ['domain' => $domain->external_domain]),
+                    'data-confirm-label' => __('domain.action.dns_replace'),
+                    'data-confirm-icon' => 'warning',
+                    'data-confirm-tone' => 'error',
+                ]">
+                <div role="alert" class="alert alert-warning text-sm">
+                    <x-icon name="warning" />
+                    <span>
+                        {{ __('domain.dns.replace_hint') }}
+                        @if ($replaceZone?->synced_at !== null)
+                            {{ __('domain.dns.replace_state', ['date' => $replaceZone->synced_at->fdatetime()]) }}
+                        @endif
+                    </span>
+                </div>
+                @if ($replaceKept !== [])
+                    <div role="status" class="alert alert-info text-sm">
+                        <x-icon name="info" />
+                        <div>
+                            <p>{{ __('domain.dns.replace_kept', ['count' => count($replaceKept)]) }}</p>
+                            <ul class="mt-1 font-mono text-xs">
+                                @foreach ($replaceKept as $line)
+                                    <li class="break-all">{{ $line }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    </div>
+                @endif
+                <x-table size="xs" :zebra="false" bare :caption="__('domain.action.dns_replace')">
+                    <x-slot:head>
+                        <tr>
+                            <x-table.th>{{ __('domain.dns.type') }}</x-table.th>
+                            <x-table.th>{{ __('domain.dns.name') }}</x-table.th>
+                            <x-table.th>TTL</x-table.th>
+                            <x-table.th>{{ __('domain.dns.priority') }}</x-table.th>
+                            <x-table.th>{{ __('domain.dns.content') }}</x-table.th>
+                        </tr>
+                    </x-slot:head>
+                    {{-- Drei Leerzeilen für neue Einträge; ohne Namen verwirft sie der Server. --}}
+                    @foreach ([...$replaceRecords, null, null, null] as $row => $record)
+                        <tr>
+                            <td>
+                                <select name="records[{{ $row }}][type]" class="select select-xs select-bordered"
+                                        aria-label="{{ __('domain.dns.row_field', ['field' => __('domain.dns.type'), 'row' => $row + 1]) }}">
+                                    @foreach (\App\Enums\Domain\DomainDnsRecordType::cases() as $recordType)
+                                        <option value="{{ $recordType->value }}" @selected($record?->type === $recordType)>{{ $recordType->value }}</option>
+                                    @endforeach
+                                </select>
+                            </td>
+                            <td>
+                                <input type="text" name="records[{{ $row }}][name]" value="{{ $record?->name }}" maxlength="255"
+                                       class="input input-xs input-bordered w-full font-mono"
+                                       aria-label="{{ __('domain.dns.row_field', ['field' => __('domain.dns.name'), 'row' => $row + 1]) }}">
+                            </td>
+                            <td>
+                                <input type="number" name="records[{{ $row }}][ttl]" value="{{ $record?->ttl }}" min="0"
+                                       class="input input-xs input-bordered w-24 tabular-nums"
+                                       aria-label="{{ __('domain.dns.row_field', ['field' => 'TTL', 'row' => $row + 1]) }}">
+                            </td>
+                            <td>
+                                <input type="number" name="records[{{ $row }}][priority]" value="{{ $record?->priority }}" min="0"
+                                       class="input input-xs input-bordered w-20 tabular-nums"
+                                       aria-label="{{ __('domain.dns.row_field', ['field' => __('domain.dns.priority'), 'row' => $row + 1]) }}">
+                            </td>
+                            <td>
+                                <input type="text" name="records[{{ $row }}][content]" value="{{ $record?->content }}" maxlength="4000"
+                                       class="input input-xs input-bordered w-full font-mono"
+                                       aria-label="{{ __('domain.dns.row_field', ['field' => __('domain.dns.content'), 'row' => $row + 1]) }}">
+                            </td>
+                        </tr>
+                    @endforeach
+                </x-table>
+            </x-modal>
+        @endif
     @endif
 
     {{-- Rechnungen (Blocked-State / capability-gegatet) --}}
@@ -232,6 +325,15 @@
                         @endforeach
                     </select>
                     <x-icon-btn icon="autorenew" size="sm" type="submit" show-label>{{ __('domain.action.set_renewal_mode') }}</x-icon-btn>
+                </x-action-form>
+
+                {{-- Manuelle Verlängerung löst beim Anbieter Kosten aus — deshalb mit Rückfrage. --}}
+                <x-action-form :action="route('domains.renew', $domain)" class="flex flex-wrap items-end gap-2"
+                               :confirm="__('domain.action.renew_confirm', ['domain' => $domain->external_domain])"
+                               confirm-icon="event_repeat" confirm-tone="warning" :confirm-label="__('domain.action.renew')">
+                    <x-input-field name="period" id="domain-renew-period" type="number" min="1" max="10" required
+                                   :label="__('domain.field.period')" :value="old('period', 1)" class="input-sm" />
+                    <x-icon-btn icon="event_repeat" size="sm" type="submit" show-label>{{ __('domain.action.renew') }}</x-icon-btn>
                 </x-action-form>
             @endif
 

@@ -10,7 +10,7 @@
 
 namespace App\Services\Domain;
 
-use App\Enums\Domain\DomainCapabilityArea;
+use App\Enums\Domain\{DomainCapabilityArea, DomainEventStatus};
 use App\Models\Domain\{DomainEvent, DomainProviderConnection};
 use App\Plugins\Support\Domain\DomainProviderException;
 use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
@@ -57,7 +57,7 @@ class DomainEventPollingService {
                 'occurred_at' => isset($row['eventdate']) ? Carbon::parse($row['eventdate'], 'UTC') : null,
             ]);
             if ($isNew) {
-                $event->status = 'stored';
+                $event->status = DomainEventStatus::Stored;
                 $event->stored_at = Carbon::now();
                 $stored++;
             }
@@ -81,11 +81,11 @@ class DomainEventPollingService {
                 );
             }
 
-            if ($event->status !== 'acknowledged') {
+            if ($event->status !== DomainEventStatus::Acknowledged) {
                 try {
                     $ack = $adapter->execute('DeleteEvent', ['event' => $eventId], DomainCapabilityArea::Events);
                     if ($ack->isSuccess()) {
-                        $event->forceFill(['status' => 'acknowledged', 'acknowledged_at' => Carbon::now()])->save();
+                        $event->forceFill(['status' => DomainEventStatus::Acknowledged, 'acknowledged_at' => Carbon::now()])->save();
                         $acknowledged++;
                     }
                 } catch (DomainProviderException) {

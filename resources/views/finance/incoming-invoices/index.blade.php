@@ -14,8 +14,7 @@
 
 @section('title', __('Eingangs-E-Rechnungen'))
 @section('nav-title', __('Eingangs-E-Rechnungen'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('XRechnung/ZUGFeRD empfangen und visualisieren — das Original wird als Dokument abgelegt, die Rechnungsführung bleibt im externen Programm.')">
@@ -49,7 +48,7 @@
                     <a class="link font-medium" href="{{ route('finance.incoming-invoices.show', $document) }}">{{ $document->title }}</a>
                 </td>
                 <td class="max-w-md truncate text-sm text-base-content/70">{{ $document->description ?? '—' }}</td>
-                <td class="tabular-nums text-sm">{{ $document->created_at?->orgTz()->format('d.m.Y H:i') }}</td>
+                <td class="tabular-nums text-sm">{{ $document->created_at?->fdatetime() }}</td>
                 <td class="text-sm">{{ $document->creator?->name ?? '—' }}</td>
                 <td class="text-right">
                     <x-icon-btn icon="download" tone="ghost" size="xs"

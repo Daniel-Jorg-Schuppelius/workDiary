@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Finance;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\{Organization, User};
@@ -55,7 +56,7 @@ class DatevBookingRestTest extends TestCase {
         return app(DatevBookingService::class);
     }
 
-    private function makeInvoice(string $number, string $status = Invoice::STATUS_ISSUED): Invoice {
+    private function makeInvoice(string $number, InvoiceStatus $status = InvoiceStatus::Issued): Invoice {
         return Invoice::create([
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,

@@ -15,12 +15,12 @@
     <td>
         <span class="inline-flex items-center gap-1" style="padding-left: {{ ($node['level'] - 1) * 1.25 }}rem">
             @if ($hasChildren)
-                <button type="button" class="btn btn-ghost btn-xs px-1"
+                <x-button tone="ghost" size="xs" class="px-1"
                         x-on:click="toggle({{ $nodeId }})"
                         x-bind:aria-expanded="isOpen({{ $nodeId }})"
                         aria-label="{{ __('Ebene auf-/zuklappen') }}">
                     <x-icon name="chevron_right" class="text-base" x-text="caret({{ $nodeId }})" />
-                </button>
+                </x-button>
             @else
                 <span class="inline-block w-6" aria-hidden="true"></span>
             @endif

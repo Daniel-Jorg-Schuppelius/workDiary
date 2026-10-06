@@ -75,6 +75,20 @@ final class UrlSafetyTest extends TestCase {
      * Sicherheitsaudit 2026-09-17 (ssrf-5): Prüfung und Verbindung müssen
      * dieselbe Adresse benutzen, sonst wechselt ein Angreifer-DNS dazwischen.
      */
+    /** sf-3: die tolerante Bindung übersteht eine DNS-Störung, aber kein Ziel im internen Netz. */
+    public function test_tolerant_pinned_resolution_only_tolerates_an_unresolvable_host(): void {
+        $unresolved = false;
+        $this->assertSame([], UrlSafety::tolerantPinnedResolution('https://kein-eintrag.invalid/api', $unresolved));
+        $this->assertTrue($unresolved, 'Ein Host ohne DNS-Eintrag läuft ungebunden weiter und wird gemeldet.');
+
+        $this->assertNull(UrlSafety::tolerantPinnedResolution('https://127.0.0.1/api', $unresolved));
+        $this->assertFalse($unresolved, 'Eine interne Adresse ist keine Störung, sondern das, was die Bindung verhindern soll.');
+
+        $this->assertSame([], UrlSafety::tolerantPinnedResolution('https://93.184.216.34/api', $unresolved));
+        $this->assertFalse($unresolved);
+        $this->assertNull(UrlSafety::tolerantPinnedResolution('ftp://example.com/api', $unresolved));
+    }
+
     public function test_pinned_resolution_is_fail_closed(): void {
         $this->assertNull(UrlSafety::pinnedResolution('https://kein-eintrag.invalid/hook'));
         $this->assertNull(UrlSafety::pinnedResolution('https://127.0.0.1/hook'));

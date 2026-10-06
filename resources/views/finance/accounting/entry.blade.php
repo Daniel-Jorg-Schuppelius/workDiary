@@ -37,32 +37,14 @@
 
     <div class="mt-4 grid gap-4">
         <x-card :title="__('accounting.ledger.entry.head')" icon="receipt_long">
-            <dl class="grid gap-3 sm:grid-cols-3">
-                <div>
-                    <dt class="text-xs text-muted">{{ __('accounting.ledger.column.journal_no') }}</dt>
-                    <dd class="font-mono">{{ $entry->journal_no ?? '—' }}</dd>
-                </div>
-                <div>
-                    <dt class="text-xs text-muted">{{ __('accounting.ledger.column.booked_on') }}</dt>
-                    <dd>{{ $entry->booked_on->fdate() }}</dd>
-                </div>
-                <div>
-                    <dt class="text-xs text-muted">{{ __('accounting.ledger.column.document_on') }}</dt>
-                    <dd>{{ $entry->document_on?->fdate() ?? '—' }}</dd>
-                </div>
-                <div>
-                    <dt class="text-xs text-muted">{{ __('accounting.ledger.column.document_reference') }}</dt>
-                    <dd>{{ $entry->document_reference ?? '—' }}</dd>
-                </div>
-                <div>
-                    <dt class="text-xs text-muted">{{ __('accounting.ledger.column.posted_by') }}</dt>
-                    <dd>{{ $entry->postedBy?->name ?? '—' }}</dd>
-                </div>
-                <div>
-                    <dt class="text-xs text-muted">{{ __('accounting.ledger.column.source') }}</dt>
-                    <dd class="font-mono text-xs">{{ $entry->source_key ?? '—' }}</dd>
-                </div>
-            </dl>
+            <x-detail-grid layout="cells" :cols="3" small-labels>
+                <x-detail-grid.row :label="__('accounting.ledger.column.journal_no')" class="font-mono">{{ $entry->journal_no ?? '—' }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('accounting.ledger.column.booked_on')">{{ $entry->booked_on->fdate() }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('accounting.ledger.column.document_on')">{{ $entry->document_on?->fdate() ?? '—' }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('accounting.ledger.column.document_reference')">{{ $entry->document_reference ?? '—' }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('accounting.ledger.column.posted_by')">{{ $entry->postedBy?->name ?? '—' }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('accounting.ledger.column.source')" class="font-mono text-xs">{{ $entry->source_key ?? '—' }}</x-detail-grid.row>
+            </x-detail-grid>
 
             @if ($entry->reverses)
                 <div class="alert bg-warning/10 border-warning/30 mt-3 text-sm" role="note">

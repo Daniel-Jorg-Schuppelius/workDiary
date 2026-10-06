@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Invoicing;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Enums\Project\ProjectStatus;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
@@ -165,7 +166,7 @@ class ManualInvoiceItemTest extends TestCase {
 
     public function test_cannot_add_item_to_issued_invoice(): void {
         $invoice = $this->makeDraft();
-        $invoice->update(['status' => Invoice::STATUS_ISSUED]);
+        $invoice->update(['status' => InvoiceStatus::Issued]);
 
         $this->actingAs($this->admin)
             ->post(route('invoices.items.store', $invoice), [
@@ -212,7 +213,7 @@ class ManualInvoiceItemTest extends TestCase {
             'customer_id' => $this->customer->id,
             'project_id' => $this->project->id,
             'number' => 'R2030-' . str_pad((string) random_int(1, 9999), 4, '0', STR_PAD_LEFT),
-            'status' => Invoice::STATUS_DRAFT,
+            'status' => InvoiceStatus::Draft,
             'currency' => 'EUR',
             'tax_rate' => '19.00',
             'created_by' => $this->admin->id,

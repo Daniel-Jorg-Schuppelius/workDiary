@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Learning;
 
 use App\Enums\Attendance\{AttendanceSource, AttendanceStatus};
-use App\Enums\Learning\LearningTimePolicy;
+use App\Enums\Learning\{LearningTimeApprovalStatus, LearningTimePolicy};
 use App\Models\Learning\{LearningEnrollment, LearningTimeSession, LearningUnit};
 use App\Models\Platform\User;
 use App\Models\Time\Attendance;
@@ -168,7 +168,7 @@ class LearningTimeService {
 
         // Lernzeit außerhalb der Arbeitszeit mit Freigabepflicht: die
         // Teamleitung erfährt es sofort, nicht erst beim Öffnen der Liste.
-        if ($stopped->approval_status === LearningTimeSession::APPROVAL_PENDING) {
+        if ($stopped->approval_status === LearningTimeApprovalStatus::Pending) {
             $this->notifier->timeApprovalRequested($stopped);
         }
 
@@ -259,7 +259,7 @@ class LearningTimeService {
      * Nur außerhalb der Arbeitszeit und nur bei der entsprechenden
      * Zeitpolitik — innerhalb ist die Zeit ohnehin erfasst.
      */
-    private function approvalStatusFor(LearningTimeSession $session, string $classification): ?string {
+    private function approvalStatusFor(LearningTimeSession $session, string $classification): ?LearningTimeApprovalStatus {
         $policy = $session->enrollment->course->time_policy ?? LearningTimePolicy::WorkTimeRequired;
 
         if ($policy !== LearningTimePolicy::ApprovalRequired) {
@@ -267,7 +267,7 @@ class LearningTimeService {
         }
 
         return $this->classifier->createsWorkTime($classification)
-            ? LearningTimeSession::APPROVAL_PENDING
+            ? LearningTimeApprovalStatus::Pending
             : null;
     }
 
@@ -275,7 +275,7 @@ class LearningTimeService {
      * Freigabe erteilen: **erst jetzt** entsteht die Anwesenheitsspanne.
      */
     public function approve(LearningTimeSession $session, User $actor, ?string $note = null, ?Carbon $now = null): LearningTimeSession {
-        if ($session->approval_status !== LearningTimeSession::APPROVAL_PENDING) {
+        if ($session->approval_status?->canTransitionTo(LearningTimeApprovalStatus::Approved) !== true) {
             throw ValidationException::withMessages([
                 'approval' => (string) __('learning.errors.approval_decided'),
             ]);
@@ -292,7 +292,7 @@ class LearningTimeService {
             }
 
             $session->forceFill([
-                'approval_status' => LearningTimeSession::APPROVAL_APPROVED,
+                'approval_status' => LearningTimeApprovalStatus::Approved,
                 'approved_by_user_id' => $actor->id,
                 'approved_at' => $now,
                 'approval_note' => $note,
@@ -307,7 +307,7 @@ class LearningTimeService {
      * nichts, sonst wäre die Ablehnung nicht nachvollziehbar.
      */
     public function reject(LearningTimeSession $session, User $actor, string $reason, ?Carbon $now = null): LearningTimeSession {
-        if ($session->approval_status !== LearningTimeSession::APPROVAL_PENDING) {
+        if ($session->approval_status?->canTransitionTo(LearningTimeApprovalStatus::Rejected) !== true) {
             throw ValidationException::withMessages([
                 'approval' => (string) __('learning.errors.approval_decided'),
             ]);
@@ -320,7 +320,7 @@ class LearningTimeService {
         }
 
         $session->forceFill([
-            'approval_status' => LearningTimeSession::APPROVAL_REJECTED,
+            'approval_status' => LearningTimeApprovalStatus::Rejected,
             'approved_by_user_id' => $actor->id,
             'approved_at' => $now ?? Carbon::now(),
             'approval_note' => $reason,

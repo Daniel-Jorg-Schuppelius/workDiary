@@ -59,13 +59,4 @@ final class AuthManifest extends Manifest {
             PermissionGroup::Access,
         ];
     }
-
-    /** @return array<class-string, list<class-string>> */
-    public function extensions(): array {
-        return [
-            \App\Services\Search\Indexing\Sources\SearchSource::class => [
-                \App\Services\Auth\Search\RemoteSessionSource::class,
-            ],
-        ];
-    }
 }

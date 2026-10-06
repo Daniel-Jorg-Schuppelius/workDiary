@@ -10,12 +10,14 @@
 
 namespace Tests\Feature\Plugins\GoogleCalendar;
 
+use App\Enums\Integration\IntegrationInboxStatus;
 use App\Models\Calendar\Event;
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use App\Plugins\GoogleCalendar\GoogleCalendarPlugin;
 use App\Plugins\GoogleCalendar\Models\GoogleCalendarConnection;
 use App\Plugins\GoogleCalendar\Services\GoogleCalendarImportService;
 use App\Plugins\Support\Calendar\RemoteCalendarPublishService;
+use App\Plugins\Support\OAuthConnectionStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Tests\Concerns\{WithOrganization, WithPluginSecrets};
@@ -48,7 +50,7 @@ final class GoogleCalendarImportTest extends TestCase {
         return GoogleCalendarConnection::query()->create($attributes + [
             'organization_id' => $this->organization->id,
             'access_token' => 'secret-token-123',
-            'status' => GoogleCalendarConnection::STATUS_ACTIVE,
+            'status' => OAuthConnectionStatus::Active,
             'two_way' => true,
         ]);
     }
@@ -186,11 +188,11 @@ final class GoogleCalendarImportTest extends TestCase {
         $result = app(GoogleCalendarImportService::class)->run($connection->fresh());
 
         $this->assertSame(3, $result['proposals']);
-        $open = IntegrationInboxItem::query()->where('status', IntegrationInboxItem::STATUS_OPEN)->orderBy('id')->get();
+        $open = IntegrationInboxItem::query()->where('status', IntegrationInboxStatus::Open)->orderBy('id')->get();
         $this->assertCount(2, $open);
         $this->assertSame('Jour fixe (später)', $open[1]->display_title);
         $this->assertSame('evt-serie', $open[1]->remote_snapshot['series_uid'] ?? null);
-        $this->assertSame(IntegrationInboxItem::STATUS_DISMISSED, IntegrationInboxItem::query()->where('dedupe_key', 'calendar-proposal:evt-serie:' . strtotime('2026-09-03 07:00:00 UTC'))->value('status'));
+        $this->assertSame(IntegrationInboxStatus::Dismissed, IntegrationInboxItem::query()->where('dedupe_key', 'calendar-proposal:evt-serie:' . strtotime('2026-09-03 07:00:00 UTC'))->value('status'));
         Carbon::setTestNow();
     }
 
@@ -255,5 +257,34 @@ final class GoogleCalendarImportTest extends TestCase {
         $this->artisan('google-calendar:import')->assertExitCode(0);
 
         $this->assertSame(0, IntegrationInboxItem::query()->count());
+    }
+
+    /** k2-05: nur der Microsoft-Zweig räumte auf; die Inbox bot sonst „Neu anlegen“ für gelöschte Termine. */
+    public function test_cancelled_foreign_event_and_series_take_their_open_proposals_along(): void {
+        Carbon::setTestNow('2026-08-19 08:00:00');
+        $connection = $this->connection();
+        FakePluginHttp::fake([self::EVENTS => FakePluginHttp::response([
+            'items' => [
+                $this->remoteEvent(['id' => 'evt-fremd']),
+                $this->remoteEvent(['id' => 'evt-bleibt']),
+                $this->remoteEvent(['id' => 'evt-serie', 'summary' => 'Jour fixe', 'recurrence' => ['RRULE:FREQ=WEEKLY;COUNT=3']]),
+            ],
+            'nextSyncToken' => 'f',
+        ])]);
+        $this->assertSame(5, app(GoogleCalendarImportService::class)->run($connection->fresh())['proposals']);
+
+        FakePluginHttp::fake([self::EVENTS => FakePluginHttp::response([
+            'items' => [
+                ['id' => 'evt-fremd', 'status' => 'cancelled'],
+                ['id' => 'evt-serie', 'status' => 'cancelled'],
+            ],
+            'nextSyncToken' => 'g',
+        ])]);
+        $result = app(GoogleCalendarImportService::class)->run($connection->fresh());
+
+        $this->assertSame(0, $result['deleted']);
+        $this->assertSame(['calendar-proposal:evt-bleibt'], IntegrationInboxItem::query()->where('status', IntegrationInboxStatus::Open)->pluck('dedupe_key')->all());
+        $this->assertSame(4, IntegrationInboxItem::query()->where('status', IntegrationInboxStatus::Dismissed)->count());
+        Carbon::setTestNow();
     }
 }

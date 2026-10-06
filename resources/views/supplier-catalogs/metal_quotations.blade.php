@@ -29,7 +29,7 @@
                 <x-input-field name="price_per_kg" type="number" step="0.0001" min="0" :label="__('procurement.metal.col.price')" required />
                 <x-input-field name="quoted_at" type="date" :label="__('procurement.metal.col.date')" required :value="now()->toDateString()" max="{{ now()->toDateString() }}" />
                 <div class="flex items-end">
-                    <button type="submit" class="btn btn-primary btn-sm">{{ __('procurement.metal.action.save') }}</button>
+                    <x-button type="submit">{{ __('procurement.metal.action.save') }}</x-button>
                 </div>
             </form>
 
@@ -46,11 +46,11 @@
                             <tr class="hover">
                                 <td class="font-mono">{{ $quotation->metal }}</td>
                                 <td class="text-right">{{ $quotation->price_per_kg?->getAmount() }} €/kg</td>
-                                <td>{{ $quotation->quoted_at->format('d.m.Y') }}</td>
+                                <td>{{ $quotation->quoted_at->fdate() }}</td>
                                 <td class="text-right">
                                     <form method="POST" action="{{ route('supplier-catalogs.metal-quotations.destroy', $quotation) }}">
                                         @csrf @method('DELETE')
-                                        <button type="submit" class="btn btn-ghost btn-xs text-error">{{ __('procurement.metal.action.delete') }}</button>
+                                        <x-button type="submit" tone="ghost" size="xs" class="text-error">{{ __('procurement.metal.action.delete') }}</x-button>
                                     </form>
                                 </td>
                             </tr>

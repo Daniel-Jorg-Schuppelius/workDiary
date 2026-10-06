@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Helpdesk;
 
+use App\Enums\ServiceTicket\ChangeStatus;
 use App\Models\Platform\{Organization, User};
 use App\Models\ServiceTicket\{Change, ChangeTemplate};
 use App\Services\ServiceTicket\ChangeService;
@@ -71,7 +72,7 @@ final class HelpdeskChangeTest extends TestCase {
         $change = app(ChangeService::class)->submit(['title' => 'Patchday Juli', 'change_type' => 'standard'], $this->actor, [], $template);
 
         // Standard: sofort approved, Snapshot eingefroren.
-        $this->assertSame('approved', $change->status);
+        $this->assertSame(ChangeStatus::Approved, $change->status);
         $this->assertSame(3, $change->template_snapshot['version']);
 
         // Vorlagenänderung (neue Version) deutet den Change nicht um.
@@ -104,7 +105,7 @@ final class HelpdeskChangeTest extends TestCase {
         }
 
         $change = $service->decide($step, $this->approver, 'approved');
-        $this->assertSame('approved', $change->status);
+        $this->assertSame(ChangeStatus::Approved, $change->status);
 
         $change = $service->implement($change, $this->actor);
 
@@ -116,7 +117,7 @@ final class HelpdeskChangeTest extends TestCase {
         }
 
         $change = $service->complete($change, $this->actor, 'successful', 'PIR: Ursache dokumentiert, Monitoring ergänzt.');
-        $this->assertSame('done', $change->status);
+        $this->assertSame(ChangeStatus::Done, $change->status);
         $this->assertSame('successful', $change->outcome);
         $this->assertNotNull($change->pir_done_at);
     }
@@ -131,7 +132,36 @@ final class HelpdeskChangeTest extends TestCase {
 
         $change = $service->decide($change->approvals()->firstOrFail(), $this->approver, 'rejected', 'Zu riskant im Quartal');
 
-        $this->assertSame('cancelled', $change->status);
+        $this->assertSame(ChangeStatus::Cancelled, $change->status);
         $this->assertSame('cancelled', $change->outcome);
+    }
+
+    public function test_a_rejected_change_cannot_be_approved_by_a_later_step(): void {
+        $service = app(ChangeService::class);
+        $second = User::factory()->teamleitung()->create(['organization_id' => $this->org->id]);
+
+        $change = $service->submit([
+            'title' => 'Firewall-Umbau',
+            'change_type' => 'normal',
+            'rollback_plan' => 'Alte Regeln einspielen',
+        ], $this->actor, [
+            ['approver' => ['type' => 'user', 'value' => (int) $this->approver->id]],
+            ['approver' => ['type' => 'user', 'value' => (int) $second->id]],
+        ]);
+        $step1 = $change->approvals()->where('step', 1)->firstOrFail();
+        $step2 = $change->approvals()->where('step', 2)->firstOrFail();
+
+        $change = $service->decide($step1, $this->approver, 'rejected', 'Zu riskant');
+        $this->assertSame(ChangeStatus::Cancelled, $change->status);
+
+        try {
+            $service->decide($step2, $second, 'approved');
+            $this->fail('Die Ablehnung wurde durch eine spätere Stufe aufgehoben.');
+        } catch (\RuntimeException $e) {
+            $this->assertSame(__('Die Genehmigung wurde bereits abgelehnt.'), $e->getMessage());
+        }
+
+        $this->assertSame(ChangeStatus::Cancelled, $change->fresh()->status);
+        $this->assertNull($step2->fresh()->decision);
     }
 }

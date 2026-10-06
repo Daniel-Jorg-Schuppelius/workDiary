@@ -11,6 +11,7 @@
 namespace App\Observers;
 
 use App\Enums\Diary\Status as DiaryStatus;
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Diary\DiaryEntry;
 use App\Models\Invoicing\Invoice;
 use App\Models\Project\Project;
@@ -98,7 +99,7 @@ class ProjectObserver {
             if ($newCustomerId !== null) {
                 Invoice::query()
                     ->where('project_id', $project->id)
-                    ->where('status', Invoice::STATUS_DRAFT)
+                    ->where('status', InvoiceStatus::Draft)
                     ->get()
                     ->each(function (Invoice $invoice) use ($newCustomerId): void {
                         $invoice->customer_id = $newCustomerId;

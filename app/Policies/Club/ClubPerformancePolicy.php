@@ -29,10 +29,14 @@ class ClubPerformancePolicy {
         return $this->canManage($user) || $this->isGroupLead($user);
     }
 
+    /** Gruppenleitung nur für Mitglieder ihrer Gruppen — wie beim Erfassen (authz-a-4). */
     public function confirm(User $user, ClubPerformance $performance): bool {
-        unset($performance);
+        if ($this->canManage($user)) {
+            return true;
+        }
+        $member = $performance->member;
 
-        return $this->create($user);
+        return $member !== null && $this->leadsMemberGroup($user, $member);
     }
 
     public function update(User $user, ClubPerformance $performance): bool {

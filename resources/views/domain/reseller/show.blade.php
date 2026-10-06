@@ -68,7 +68,7 @@
                     <td><a href="{{ route('domains.show', $domain) }}" class="link link-hover">{{ $domain->external_domain }}</a>
                         <span class="text-xs text-muted">{{ __('domain.reseller.managed_under', ['user' => $reseller->external_user]) }}</span></td>
                     <td>{{ $domain->customer?->name ?? '—' }}</td>
-                    <td class="tabular-nums">{{ $domain->expiration_at?->format('d.m.Y') ?? '—' }}</td>
+                    <td class="tabular-nums">{{ $domain->expiration_at?->fdate() ?? '—' }}</td>
                 </tr>
             @empty
                 <x-table.empty :colspan="3" :title="__('domain.empty.domains')" compact />
@@ -90,7 +90,7 @@
                 </x-slot:head>
                 @forelse ($entries as $entry)
                     <tr>
-                        <td class="tabular-nums">{{ $entry->entry_date?->format('d.m.Y') ?? '—' }}</td>
+                        <td class="tabular-nums">{{ $entry->entry_date?->fdate() ?? '—' }}</td>
                         <td>{{ $entry->type ?? '—' }}</td>
                         <td>{{ $entry->description ?? '—' }}</td>
                         <td class="text-right tabular-nums">{{ $entry->net_amount !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $entry->net_amount, 2, withThousandsSeparator: true) . ' ' . ($entry->currency?->value ?? '') : '—' }}</td>

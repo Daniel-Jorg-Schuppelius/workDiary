@@ -13,9 +13,10 @@
 @extends('layouts.app')
 @section('title', __('Änderungsverlauf & Versionsvergleich'))
 @section('nav-title', __('Änderungsverlauf'))
+@include('partials.page-fill')
 
 @section('content')
-<x-page-shell>
+<x-page-shell overflow="clip">
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="__('Zwei Änderungsstände eines Datensatzes vergleichen — aus der revisionssicheren Audit-Kette, nur Anzeige.')" />
     </x-slot:toolbar>
@@ -46,10 +47,10 @@
 
     @if ($record !== null && $logs !== null)
         @if ($diff !== null)
-            <x-card>
+            <x-card class="shrink-0">
                 <h3 class="font-semibold mb-2">{{ __('Unterschiede zwischen Stand A und Stand B') }}</h3>
                 @if (empty($diff))
-                    <p class="text-muted">{{ __('Keine Feldänderungen zwischen den gewählten Ständen.') }}</p>
+                    <x-empty-state icon="difference" :title="__('Keine Feldänderungen zwischen den gewählten Ständen.')" compact />
                 @else
                     <x-table bare>
                         <x-slot:head>
@@ -71,42 +72,64 @@
             </x-card>
         @endif
 
-        <x-card>
-            <h3 class="font-semibold mb-2">{{ __('Änderungs-Timeline') }} — {{ $record->name }}</h3>
-            @if ($logs->isEmpty())
-                <p class="text-muted">{{ __('Keine Audit-Einträge zu diesem Datensatz.') }}</p>
-            @else
-                <form method="GET" action="{{ route('admin.audit-diff.index') }}">
-                    <input type="hidden" name="type" value="{{ $typeKey }}">
-                    <input type="hidden" name="record" value="{{ $recordSqid }}">
-                    <x-table bare>
-                        <x-slot:head>
-                            <tr>
-                                <x-table.th>A</x-table.th>
-                                <x-table.th>B</x-table.th>
-                                <x-table.th>{{ __('Zeitpunkt') }}</x-table.th>
-                                <x-table.th>{{ __('Ereignis') }}</x-table.th>
-                                <x-table.th>{{ __('Benutzer') }}</x-table.th>
-                            </tr>
-                        </x-slot:head>
-                        @foreach ($logs as $log)
-                            <tr>
-                                <td><input type="radio" name="a" value="{{ $log->id }}" class="radio radio-xs"
-                                           @checked($selectedA === (int) $log->id)></td>
-                                <td><input type="radio" name="b" value="{{ $log->id }}" class="radio radio-xs"
-                                           @checked($selectedB === (int) $log->id)></td>
-                                <td class="tabular-nums">{{ $log->created_at?->fdatetime() }}</td>
-                                <td class="font-mono text-sm">{{ $log->event }}</td>
-                                <td>{{ $log->user?->name ?? __('System') }}</td>
-                            </tr>
-                        @endforeach
-                    </x-table>
-                    <div class="mt-2 flex justify-end">
-                        <button type="submit" class="btn btn-sm btn-primary">{{ __('Stände vergleichen') }}</button>
-                    </div>
-                </form>
+        {{-- Die Radios der Timeline gehören über form= zu diesem Formular. Ein gewählter
+             Stand einer anderen Seite reist als verstecktes Feld mit; wählt man auf dieser
+             Seite neu, folgt das Radio im Dokument danach und sein Wert gewinnt. --}}
+        <form method="GET" action="{{ route('admin.audit-diff.index') }}" id="audit-diff-select" class="contents">
+            <input type="hidden" name="type" value="{{ $typeKey }}">
+            <input type="hidden" name="record" value="{{ $recordSqid }}">
+            <input type="hidden" name="page" value="{{ $logs->currentPage() }}">
+            @if ($stateA !== null && ! $logs->contains('id', $stateA->id))
+                <input type="hidden" name="a" value="{{ $stateA->id }}">
             @endif
-        </x-card>
+            @if ($stateB !== null && ! $logs->contains('id', $stateB->id))
+                <input type="hidden" name="b" value="{{ $stateB->id }}">
+            @endif
+        </form>
+
+        <div class="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-2">
+            <h3 class="font-semibold">{{ __('Änderungs-Timeline') }} — {{ $record->name }}</h3>
+            <span class="text-sm text-muted">{{ trans_choice(':count Eintrag|:count Einträge', $logs->total(), ['count' => $logs->total()]) }}</span>
+            @if ($logs->total() > 0)
+                @foreach ([__('Stand A') => $stateA, __('Stand B') => $stateB] as $stateLabel => $state)
+                    <span class="text-sm">
+                        {{ $stateLabel }}:
+                        @if ($state !== null)
+                            <span class="tabular-nums">{{ $state->created_at?->fdatetime() }}</span>
+                            · <span class="font-mono">{{ $state->event }}</span>
+                        @else
+                            <span class="text-muted">—</span>
+                        @endif
+                    </span>
+                @endforeach
+                <x-button type="submit" form="audit-diff-select" class="ml-auto">{{ __('Stände vergleichen') }}</x-button>
+            @endif
+        </div>
+
+        <x-table scroll="flex" :pinRows="true" empty-icon="history" :empty-title="__('Keine Audit-Einträge zu diesem Datensatz.')">
+            <x-slot:head>
+                <tr>
+                    <x-table.th>A</x-table.th>
+                    <x-table.th>B</x-table.th>
+                    <x-table.th>{{ __('Zeitpunkt') }}</x-table.th>
+                    <x-table.th>{{ __('Ereignis') }}</x-table.th>
+                    <x-table.th>{{ __('Benutzer') }}</x-table.th>
+                </tr>
+            </x-slot:head>
+            @foreach ($logs as $log)
+                <tr class="hover">
+                    <td><input type="radio" name="a" value="{{ $log->id }}" form="audit-diff-select" class="radio radio-xs" data-autosubmit
+                               @checked($selectedA === (int) $log->id)></td>
+                    <td><input type="radio" name="b" value="{{ $log->id }}" form="audit-diff-select" class="radio radio-xs" data-autosubmit
+                               @checked($selectedB === (int) $log->id)></td>
+                    <td class="tabular-nums">{{ $log->created_at?->fdatetime() }}</td>
+                    <td class="font-mono text-sm">{{ $log->event }}</td>
+                    <td>{{ $log->user?->name ?? __('System') }}</td>
+                </tr>
+            @endforeach
+        </x-table>
+
+        <x-pagination :paginator="$logs" standing />
     @endif
 </x-page-shell>
 @endsection

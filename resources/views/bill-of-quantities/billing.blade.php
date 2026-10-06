@@ -65,8 +65,8 @@
                 <tr>
                     <td><a class="link" href="{{ route('invoices.show', $row['invoice']) }}">{{ $row['invoice']->number }}</a></td>
                     <td>{{ $row['invoice']->documentLabel() }}</td>
-                    <td>{{ $row['invoice']->issued_on?->format('d.m.Y') ?? '—' }}</td>
-                    <td><span class="wd-badge badge-ghost">{{ __('values.' . $row['invoice']->status) }}</span></td>
+                    <td>{{ $row['invoice']->issued_on?->fdate() ?? '—' }}</td>
+                    <td><span class="wd-badge badge-ghost">{{ $row['invoice']->status->label() }}</span></td>
                     <td class="text-right tabular-nums">{{ $money($row['invoice']->subtotal?->toFloat() ?? 0.0) }}</td>
                     <td class="text-right tabular-nums">{{ $money($row['invoice']->total?->toFloat() ?? 0.0) }}</td>
                     <td class="text-right tabular-nums">{{ $money($row['paid']) }}</td>

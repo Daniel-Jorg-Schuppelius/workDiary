@@ -34,8 +34,9 @@ class BillingController extends Controller {
 
         $statements = $agreement->statements()
             ->orderByDesc('year')->orderByDesc('month')
-            ->limit(24)
-            ->get();
+            ->orderByDesc('id')
+            ->paginate(24)
+            ->withQueryString();
 
         return view('customer.billing.index', [
             'agreement' => $agreement,

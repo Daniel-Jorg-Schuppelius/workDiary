@@ -11,6 +11,7 @@
 namespace Tests\Feature\Finance;
 
 use App\Enums\Finance\{AccountType, EuerCategory, ProfitDetermination};
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Accounting\AccountingAccount;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
@@ -167,7 +168,7 @@ class AccountingEuerTest extends TestCase {
             'organization_id' => $this->org->id,
             'customer_id' => $customer->id,
             'number' => 'RE-9',
-            'status' => Invoice::STATUS_ISSUED,
+            'status' => InvoiceStatus::Issued,
             'issued_on' => $this->startsOn->addDays(5)->toDateString(),
             'currency' => 'EUR',
             'subtotal' => '100.00',
@@ -241,7 +242,7 @@ class AccountingEuerTest extends TestCase {
             'organization_id' => $this->org->id,
             'customer_id' => $customer->id,
             'number' => 'RE-12',
-            'status' => Invoice::STATUS_ISSUED,
+            'status' => InvoiceStatus::Issued,
             'issued_on' => '2026-12-28',
             'currency' => 'EUR',
             'subtotal' => '100.00',

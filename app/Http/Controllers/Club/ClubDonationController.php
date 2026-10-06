@@ -39,7 +39,7 @@ class ClubDonationController extends Controller {
         return view('club.fees.donations.index', [
             'year' => $year,
             'donations' => ClubDonation::query()->where('organization_id', $organization->id)->whereYear('received_on', $year)
-                ->with(['member', 'receipt'])->orderByDesc('received_on')->orderByDesc('id')->get(),
+                ->with(['member', 'receipt'])->orderByDesc('received_on')->orderByDesc('id')->paginate(50)->withQueryString(),
             'receipts' => ClubDonationReceipt::query()->where('organization_id', $organization->id)->where('year', $year)->orderByDesc('receipt_no')->get(),
             'openByDonor' => $this->service->openByDonor($organization, $year),
             'exemptionComplete' => $this->service->exemptionComplete($this->service->exemption($organization)),

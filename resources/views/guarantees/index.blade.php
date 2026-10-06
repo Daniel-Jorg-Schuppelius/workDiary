@@ -15,8 +15,7 @@
 @section('title', __('guarantee.title'))
 @section('nav-title', __('guarantee.title'))
 
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
     <x-index-page overflow="clip" :subtitle="__('guarantee.subtitle')">
@@ -95,9 +94,24 @@
                                         :href="route('guarantees.edit', $guarantee)"
                                         :label="__('Bearbeiten')" />
                             @if ($guarantee->status->isActive())
+                                {{-- Eine Bürgschaft trägt genau einen Einbehalt: Ein zweites
+                                     Ablösen überschriebe die Verknüpfung des ersten. --}}
+                                @if ($guarantee->invoice_retention_id === null)
+                                    <x-icon-btn icon="savings" size="xs" tone="ghost"
+                                                data-entry-modal-trigger
+                                                :href="route('guarantees.secure-dialog', $guarantee)"
+                                                :label="__('guarantee.action.secure')" />
+                                @endif
                                 <x-action-form :action="route('guarantees.returned', $guarantee)">
                                     <x-icon-btn icon="assignment_return" size="xs" tone="ghost" type="submit"
                                                 :label="__('guarantee.action.returned')" />
+                                </x-action-form>
+                                <x-action-form :action="route('guarantees.drawn', $guarantee)"
+                                               :confirm="__('guarantee.confirm.drawn', ['reference' => $guarantee->reference ?? '—'])"
+                                               confirm-icon="gavel" confirm-tone="error"
+                                               :confirm-label="__('guarantee.action.drawn')">
+                                    <x-icon-btn icon="gavel" size="xs" tone="error" type="submit"
+                                                :label="__('guarantee.action.drawn')" />
                                 </x-action-form>
                             @endif
                         </div>

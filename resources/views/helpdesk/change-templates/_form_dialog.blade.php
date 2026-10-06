@@ -36,7 +36,7 @@
     </x-form-group>
 
     @if ($isEdit)
-        <div class="alert alert-warning text-sm">
+        <div role="alert" class="alert alert-warning text-sm">
             {{ __('Speichern erhöht die Version und zieht die Freigabe zurück — bestehende Changes behalten ihren eingefrorenen Snapshot.') }}
         </div>
     @endif

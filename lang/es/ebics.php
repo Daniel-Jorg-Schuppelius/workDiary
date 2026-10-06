@@ -41,10 +41,12 @@ return [
         'fetch' => 'Recuperar extractos ahora',
         'suspend' => 'Bloquear acceso',
         'submit' => 'Enviar por EBICS',
+        'confirm_not_submitted' => 'Confirmar como no enviado',
     ],
     'confirm' => [
         'suspend' => '¿Bloquear el acceso en el banco? Después harán falta claves nuevas y una carta nueva.',
         'submit' => '¿Enviar ahora esta remesa al banco por EBICS? La autorización se da después en el banco.',
+        'not_submitted' => '¿Ha comprobado en el banco que esta orden no se ha recibido? Después podrá volver a enviar la remesa.',
     ],
     'last_error' => 'Último error: :error',
     'flash' => [
@@ -55,6 +57,7 @@ return [
         'suspended' => 'Acceso bloqueado.',
         'fetched' => ':statements extractos importados, :skipped ya existentes.',
         'submitted' => 'Remesa enviada (orden :order). Autorícela en el banco.',
+        'submission_released' => 'Envío registrado como no realizado. La remesa puede volver a enviarse.',
     ],
     'error' => [
         'host_not_allowed' => 'Esta dirección no está permitida como acceso bancario.',
@@ -67,6 +70,7 @@ return [
         'bank_rejected' => 'El banco ha rechazado la orden.',
         'failed' => 'Ha fallado la conexión con el banco.',
         'already_submitted' => 'Esta remesa ya se ha enviado por EBICS.',
+        'outcome_unclear' => 'El resultado del último envío no está claro. Compruebe primero en el banco si la orden se ha recibido.',
     ],
     'letter' => [
         'title' => 'Carta de inicialización EBICS (INI/HIA)',
@@ -85,5 +89,6 @@ return [
     ],
     'run' => [
         'submitted' => 'Enviada por EBICS el :date (orden :order).',
+        'unclear' => 'Envío por EBICS iniciado el :date — resultado no claro.',
     ],
 ];

@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Article;
 
+use App\Enums\Article\PriceChangeRequestStatus;
 use App\Models\Article\{Article, PriceChangeRequest};
 use App\Models\Platform\User;
 use App\Models\Supplier\SupplierCatalogItem;
@@ -52,7 +53,7 @@ class PriceApprovalService {
         return DB::transaction(function () use ($item, $requester, $suggestion): PriceChangeRequest {
             $open = PriceChangeRequest::query()
                 ->where('supplier_catalog_item_id', $item->id)
-                ->where('status', PriceChangeRequest::STATUS_REQUESTED)
+                ->where('status', PriceChangeRequestStatus::Requested)
                 ->lockForUpdate()
                 ->first();
             if ($open !== null) {
@@ -67,7 +68,7 @@ class PriceApprovalService {
                 'purchase_price_snapshot' => $item->purchase_price,
                 'suggested_price' => $suggestion['price'],
                 'margin_snapshot' => (string) $suggestion['margin'],
-                'status' => PriceChangeRequest::STATUS_REQUESTED,
+                'status' => PriceChangeRequestStatus::Requested,
                 'requested_by' => $requester->id,
             ]);
         });
@@ -82,7 +83,7 @@ class PriceApprovalService {
      * @throws RuntimeException Bei Selbstfreigabe, verfallenem oder nicht mehr berechenbarem Vorschlag.
      */
     public function approve(PriceChangeRequest $request, User $approver): PriceChangeRequest {
-        $this->assertOpen($request);
+        $this->assertOpen($request, PriceChangeRequestStatus::Approved);
 
         if ((int) $request->requested_by === (int) $approver->id) {
             throw new RuntimeException((string) __('procurement.approval.error.self_approval'));
@@ -92,7 +93,7 @@ class PriceApprovalService {
         $suggestion = $item instanceof SupplierCatalogItem ? $this->pricing->suggestForItem($item) : null;
         if ($suggestion === null || bccomp(NumberHelper::normalizeDecimalString($suggestion['price']), NumberHelper::normalizeDecimalString($request->suggested_price?->getAmount() ?? '0'), 4) !== 0) {
             $request->forceFill([
-                'status' => PriceChangeRequest::STATUS_EXPIRED,
+                'status' => PriceChangeRequestStatus::Expired,
                 'decided_by' => $approver->id,
                 'decided_at' => Carbon::now(),
                 'decision_note' => (string) __('procurement.approval.error.stale'),
@@ -107,7 +108,7 @@ class PriceApprovalService {
             $article->save();
 
             $request->forceFill([
-                'status' => PriceChangeRequest::STATUS_APPROVED,
+                'status' => PriceChangeRequestStatus::Approved,
                 'decided_by' => $approver->id,
                 'decided_at' => Carbon::now(),
             ])->save();
@@ -118,14 +119,14 @@ class PriceApprovalService {
 
     /** Lehnt einen offenen Antrag mit optionaler Begründung ab. */
     public function reject(PriceChangeRequest $request, User $approver, ?string $note = null): PriceChangeRequest {
-        $this->assertOpen($request);
+        $this->assertOpen($request, PriceChangeRequestStatus::Rejected);
 
         if ((int) $request->requested_by === (int) $approver->id) {
             throw new RuntimeException((string) __('procurement.approval.error.self_approval'));
         }
 
         $request->forceFill([
-            'status' => PriceChangeRequest::STATUS_REJECTED,
+            'status' => PriceChangeRequestStatus::Rejected,
             'decided_by' => $approver->id,
             'decided_at' => Carbon::now(),
             'decision_note' => $note,
@@ -134,8 +135,8 @@ class PriceApprovalService {
         return $request;
     }
 
-    private function assertOpen(PriceChangeRequest $request): void {
-        if ($request->status !== PriceChangeRequest::STATUS_REQUESTED) {
+    private function assertOpen(PriceChangeRequest $request, PriceChangeRequestStatus $target): void {
+        if (! $request->status->canTransitionTo($target)) {
             throw new RuntimeException((string) __('procurement.approval.error.not_open'));
         }
     }

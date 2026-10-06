@@ -13,9 +13,10 @@
 @extends('layouts.app')
 @section('title', __('Ticket-Queues'))
 @section('nav-title', __('Ticket-Queues'))
+@include('partials.page-fill')
 
 @section('content')
-    <x-index-page :subtitle="__('Arbeitsvorräte des Helpdesks mit Team, Standard-SLA und Sichtbarkeit.')">
+    <x-index-page overflow="clip" :subtitle="__('Arbeitsvorräte des Helpdesks mit Team, Standard-SLA und Sichtbarkeit.')">
         <x-slot:actions>
             @if ($canManage)
                 <x-icon-btn icon="add" tone="primary" size="sm"
@@ -25,7 +26,7 @@
             @endif
         </x-slot:actions>
 
-        <x-table :zebra="true">
+        <x-table scroll="flex" :zebra="true">
             <x-slot:head>
                 <tr>
                     <th>{{ __('Name') }}</th>
@@ -35,7 +36,6 @@
                     <th class="w-32 text-right">{{ __('Aktion') }}</th>
                 </tr>
             </x-slot:head>
-            <tbody>
                 @forelse ($queues as $queue)
                     <tr class="hover">
                         <td class="font-semibold">
@@ -68,7 +68,8 @@
                 @empty
                     <x-table.empty :colspan="5" icon="inbox" :title="__('Noch keine Queues angelegt')" compact />
                 @endforelse
-            </tbody>
         </x-table>
+
+        <x-pagination :paginator="$queues" standing />
     </x-index-page>
 @endsection

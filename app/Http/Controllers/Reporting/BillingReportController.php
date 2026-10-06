@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers\Reporting;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, ResolvesStandardReportFilters, WritesReportCsv};
@@ -219,7 +220,7 @@ class BillingReportController extends Controller {
             ->get(['status', 'summary', 'transferred_at']);
 
         foreach ($records as $record) {
-            $st = (string) $record->status;
+            $st = $record->status->value;
             $incoming[$st] ??= ['count' => 0, 'gross' => 0.0];
             $incoming[$st]['count']++;
             $incoming[$st]['gross'] += (float) data_get($record->summary, 'gross', 0);
@@ -239,7 +240,7 @@ class BillingReportController extends Controller {
         $dunning = [1 => 0, 2 => 0, 3 => 0];
         /** @var Collection<int, Invoice> $dunned */
         $dunned = Invoice::query()
-            ->whereIn('status', [Invoice::STATUS_ISSUED, Invoice::STATUS_PARTIALLY_PAID])
+            ->whereIn('status', [InvoiceStatus::Issued, InvoiceStatus::PartiallyPaid])
             ->where('dunning_level', '>', 0)
             ->get(['dunning_level']);
         foreach ($dunned as $inv) {
@@ -283,7 +284,7 @@ class BillingReportController extends Controller {
         /** @var list<float> $decisionDays */
         $decisionDays = [];
         foreach ($quotes as $quote) {
-            $byStatus[(string) $quote->status] = ($byStatus[(string) $quote->status] ?? 0) + 1;
+            $byStatus[$quote->status->value] = ($byStatus[$quote->status->value] ?? 0) + 1;
             $decidedAt = $quote->decided_at ?? data_get($quote->decision_snapshot, 'decided_at');
             if ($decidedAt !== null) {
                 $hours = Carbon::parse((string) $quote->created_at)->diffInHours(Carbon::parse((string) $decidedAt));
@@ -329,7 +330,7 @@ class BillingReportController extends Controller {
      * @return array<string, array{count:int, subtotal:float, tax:float, total:float}>
      */
     private function aggregateByStatus(string $from, string $to, ReportFilters $filters): array {
-        $statuses = Invoice::STATUSES;
+        $statuses = InvoiceStatus::values();
         $result = [];
         foreach ($statuses as $st) {
             $result[$st] = ['count' => 0, 'subtotal' => 0.0, 'tax' => 0.0, 'total' => 0.0];
@@ -348,7 +349,7 @@ class BillingReportController extends Controller {
         )->get(['status', 'subtotal', 'tax_amount', 'total']);
 
         foreach ($invoices as $inv) {
-            $st = $inv->status;
+            $st = $inv->status->value;
             if (! isset($result[$st])) {
                 $result[$st] = ['count' => 0, 'subtotal' => 0.0, 'tax' => 0.0, 'total' => 0.0];
             }
@@ -376,7 +377,7 @@ class BillingReportController extends Controller {
 
         /** @var Collection<int, Invoice> $invoices */
         $invoices = $this->applyInvoiceFilters(
-            Invoice::query()->where('status', Invoice::STATUS_ISSUED),
+            Invoice::query()->where('status', InvoiceStatus::Issued),
             $filters,
         )->get(['due_on', 'issued_on', 'total']);
 
@@ -405,7 +406,7 @@ class BillingReportController extends Controller {
         $invoices = $this->applyInvoiceFilters(
             Invoice::query()
                 ->whereBetween('issued_on', [$from, $to])
-                ->whereIn('status', [Invoice::STATUS_ISSUED, Invoice::STATUS_PAID]),
+                ->whereIn('status', [InvoiceStatus::Issued, InvoiceStatus::Paid]),
             $filters,
         )->get(['customer_id', 'total']);
 

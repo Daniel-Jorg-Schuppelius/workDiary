@@ -56,10 +56,11 @@ final class FifoValuationTest extends TestCase {
 
         $this->assertSame('2.0000', $this->fifo->unitCost($this->variant, $this->warehouse)); // nächste Schicht
 
-        $movement = $this->fifo->issue($this->variant, $this->warehouse, '15');
+        $issue = $this->fifo->issue($this->variant, $this->warehouse, '15');
 
         // 10 × 2 + 5 × 3 = 35
-        $this->assertSame('35.0000', $movement->cost_total?->getAmount());
+        $this->assertSame('35.0000', $issue->costTotal());
+        $this->assertSame('35.0000', $issue->first()->cost_total?->getAmount());
         $this->assertSame('5.0000', $this->fifo->onHand($this->variant, $this->warehouse));
         $this->assertSame('15.0000', $this->fifo->totalValue($this->variant, $this->warehouse));
     }

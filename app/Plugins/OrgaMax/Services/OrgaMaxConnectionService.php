@@ -14,6 +14,7 @@ namespace App\Plugins\OrgaMax\Services;
 
 use App\Models\Platform\{Organization, User};
 use App\Plugins\OrgaMax\Api\{OrgaMaxClientFactory, OrgaMaxTokenService};
+use App\Plugins\OrgaMax\Enums\OrgaMaxConnectionStatus;
 use App\Plugins\OrgaMax\Models\OrgaMaxConnection;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Support\Str;
@@ -61,7 +62,7 @@ class OrgaMaxConnectionService {
         $connection->fill([
             'organization_id' => $organization->id,
             'mode' => $mode,
-            'status' => OrgaMaxConnection::STATUS_PENDING_CALLBACK,
+            'status' => OrgaMaxConnectionStatus::PendingCallback,
             'blocked_reason' => null,
             'intent_token_hash' => CryptoHelper::hash($intent),
             'intent_expires_at' => now()->addMinutes((int) config('plugins.orgamax.intent_ttl_minutes', 30)),
@@ -92,7 +93,7 @@ class OrgaMaxConnectionService {
             ->where('organization_id', $organization->id)
             ->firstOrFail();
 
-        $intentValid = $connection->status === OrgaMaxConnection::STATUS_PENDING_CALLBACK
+        $intentValid = $connection->status->canTransitionTo(OrgaMaxConnectionStatus::PendingConfirmation)
             && $connection->intent_token_hash !== null
             && hash_equals($connection->intent_token_hash, CryptoHelper::hash($state))
             && $connection->intent_expires_at !== null
@@ -111,7 +112,7 @@ class OrgaMaxConnectionService {
         // OpenAPI nicht dokumentiert (MVP-306).
         $snapshot = (new AccountSettingEndpoint($this->clients->for($connection)))->raw();
         $connection->forceFill([
-            'status' => OrgaMaxConnection::STATUS_PENDING_CONFIRMATION,
+            'status' => OrgaMaxConnectionStatus::PendingConfirmation,
             'account_snapshot' => $this->redactAccount($snapshot),
             'granted_scopes' => array_values(array_map('strval', (array) ($snapshot['scopes'] ?? []))),
             'intent_token_hash' => null,
@@ -126,14 +127,15 @@ class OrgaMaxConnectionService {
 
     /** Ausdrückliche Kontobestätigung durch den Admin → Scope-Preflight → aktiv. */
     public function confirm(OrgaMaxConnection $connection, User $admin): OrgaMaxConnection {
-        if ($connection->status !== OrgaMaxConnection::STATUS_PENDING_CONFIRMATION) {
+        // Kein canTransitionTo(): aktiv wird auch eine blockierte Verbindung, bestätigt wird nur hier.
+        if ($connection->status !== OrgaMaxConnectionStatus::PendingConfirmation) {
             throw new RuntimeException((string) __('orgamax::orgamax.error.nothing_to_confirm'));
         }
 
         $missing = $this->preflight->missing($connection);
         if ($missing !== []) {
             $connection->forceFill([
-                'status' => OrgaMaxConnection::STATUS_BLOCKED,
+                'status' => OrgaMaxConnectionStatus::Blocked,
                 'blocked_reason' => 'missing_scopes: ' . implode(', ', $missing),
             ])->save();
             $connection->audit('orgamax_scopes_missing', ['missing' => $missing]);
@@ -142,7 +144,7 @@ class OrgaMaxConnectionService {
         }
 
         $connection->forceFill([
-            'status' => OrgaMaxConnection::STATUS_ACTIVE,
+            'status' => OrgaMaxConnectionStatus::Active,
             'confirmed_at' => now(),
             'blocked_reason' => null,
         ])->save();
@@ -177,11 +179,11 @@ class OrgaMaxConnectionService {
 
         $missing = $this->preflight->missing($connection);
         if ($missing !== [] && $connection->isActive()) {
-            $connection->status = OrgaMaxConnection::STATUS_BLOCKED;
+            $connection->status = OrgaMaxConnectionStatus::Blocked;
             $connection->blocked_reason = 'missing_scopes: ' . implode(', ', $missing);
-        } elseif ($missing === [] && $connection->status === OrgaMaxConnection::STATUS_BLOCKED
+        } elseif ($missing === [] && $connection->status === OrgaMaxConnectionStatus::Blocked
             && str_starts_with((string) $connection->blocked_reason, 'missing_scopes')) {
-            $connection->status = OrgaMaxConnection::STATUS_ACTIVE;
+            $connection->status = OrgaMaxConnectionStatus::Active;
             $connection->blocked_reason = null;
         }
         $connection->save();
@@ -192,7 +194,7 @@ class OrgaMaxConnectionService {
 
     public function disconnect(OrgaMaxConnection $connection): void {
         $connection->forceFill([
-            'status' => OrgaMaxConnection::STATUS_DISCONNECTED,
+            'status' => OrgaMaxConnectionStatus::Disconnected,
             'bearer_token' => null,
             'token_expires_at' => null,
             'intent_token_hash' => null,

@@ -12,8 +12,9 @@ declare(strict_types=1);
 
 namespace App\Services\Applications;
 
+use App\Enums\Applications\{EmployeeDraftStatus, JobApplicationInterviewStatus, JobApplicationStatus};
 use App\Enums\Notification\NotificationEvent;
-use App\Models\Applications\{EmployeeDraft, JobApplication, JobApplicationRating, JobPosting};
+use App\Models\Applications\{EmployeeDraft, JobApplication, JobApplicationInterview, JobApplicationRating, JobPosting};
 use App\Models\Platform\{Organization, User};
 use App\Services\Fields\FieldDocument;
 use App\Services\Notification\NotificationDispatcher;
@@ -25,8 +26,9 @@ use Illuminate\Support\Str;
  * Bewerbungs-Lifecycle (Feature 068, MVP-190–193): Eingang mit
  * Dublettenprüfung (email_hash), Pipeline-Entscheidungen mit
  * Datenschutzfolgen (Aufbewahrung nach AGG-/Klagefrist, Talentpool nur
- * mit befristeter Einwilligung), Auskunfts-Export, Anonymisierung und
- * kontrollierte Onboarding-Übergabe über den Mitarbeiter-Entwurf (D4).
+ * mit befristeter Einwilligung, Aufnahme daraus nur mit gültiger
+ * Einwilligung), Auskunfts-Export, Anonymisierung und kontrollierte
+ * Onboarding-Übergabe über den Mitarbeiter-Entwurf (D4).
  */
 class RecruitingService {
     /**
@@ -56,7 +58,7 @@ class RecruitingService {
             'phone' => trim((string) ($attributes['phone'] ?? '')) ?: null,
             'email_hash' => $emailHash,
             'source' => (string) ($attributes['source'] ?? 'other'),
-            'status' => 'received',
+            'status' => JobApplicationStatus::Received,
             'received_at' => now(),
             'notes' => trim((string) ($attributes['notes'] ?? '')) ?: null,
             'responsible_user_id' => $attributes['responsible_user_id'] ?? null,
@@ -102,7 +104,7 @@ class RecruitingService {
             'phone' => trim((string) ($attributes['phone'] ?? '')) ?: null,
             'email_hash' => $emailHash,
             'source' => 'website',
-            'status' => 'received',
+            'status' => JobApplicationStatus::Received,
             'received_at' => now(),
             'notes' => trim((string) ($attributes['notes'] ?? '')) ?: null,
             'responsible_user_id' => $responsibleId,
@@ -147,10 +149,41 @@ class RecruitingService {
         );
     }
 
+    /** Gespräch planen (MVP-191) — nur in der Pipeline. */
+    public function planInterview(JobApplication $application, \DateTimeInterface|string $scheduledAt, string $mode, ?int $interviewerId = null, ?string $notes = null): JobApplicationInterview {
+        $this->ensureInPipeline($application);
+
+        $interview = $application->interviews()->create([
+            'organization_id' => $application->organization_id,
+            'scheduled_at' => $scheduledAt,
+            'mode' => $mode,
+            'interviewer_id' => $interviewerId,
+            'status' => JobApplicationInterviewStatus::Planned,
+            'notes' => trim((string) $notes) ?: null,
+        ]);
+        $application->update(['status' => JobApplicationStatus::InterviewPlanned]);
+
+        return $interview;
+    }
+
+    /** Gespräch als geführt dokumentieren (MVP-191) — nur in der Pipeline. */
+    public function completeInterview(JobApplication $application, JobApplicationInterview $interview, ?int $rating, ?string $notes): JobApplicationInterview {
+        $this->ensureInPipeline($application);
+
+        $interview->update([
+            'status' => JobApplicationInterviewStatus::Done,
+            'rating' => $rating,
+            'notes' => trim((string) $notes) ?: $interview->notes,
+        ]);
+        $application->update(['status' => JobApplicationStatus::Interviewed]);
+
+        return $interview;
+    }
+
     /**
      * Entscheidung mit Datenschutzfolgen (MVP-191/192): Absage/Rückzug
      * startet die Löschvormerkung; Talentpool verlangt eine ausdrückliche,
-     * befristete Einwilligung.
+     * befristete Einwilligung. Eine Entscheidung ist endgültig.
      */
     public function decide(JobApplication $application, string $decision, ?string $note, User $actor, bool $talentPoolConsent = false): JobApplication {
         if (! in_array($decision, ['offer', 'accepted', 'rejected', 'withdrawn', 'talent_pool'], true)) {
@@ -159,8 +192,9 @@ class RecruitingService {
         if ($application->isAnonymized()) {
             throw new \RuntimeException((string) __('Die Akte ist bereits anonymisiert.'));
         }
+        $this->ensureInPipeline($application);
 
-        $changes = ['status' => $decision];
+        $changes = ['status' => JobApplicationStatus::from($decision)];
 
         if (in_array($decision, ['rejected', 'withdrawn'], true)) {
             // AGG §15 Abs. 4 + ArbGG §61b → Praxis-Default 6 Monate,
@@ -179,10 +213,73 @@ class RecruitingService {
             $changes['retention_until'] = now()->addMonths($months)->toDateString();
         }
 
-        $application->update($changes);
-        $application->audit('recruiting.application_decided', ['decision' => $decision, 'note' => $note, 'by' => $actor->id]);
+        return DB::transaction(function () use ($application, $changes, $decision, $note, $actor): JobApplication {
+            $application->update($changes);
+            // Offene Gespräche und Terminangebote enden mit der Entscheidung;
+            // ein nicht gewählter Link darf danach kein Gespräch mehr planen.
+            $interviewsCancelled = $application->interviews()
+                ->where('status', JobApplicationInterviewStatus::Planned)
+                ->update(['status' => JobApplicationInterviewStatus::Cancelled]);
+            $offersExpired = $application->interviewOffers()
+                ->whereNull('chosen_at')
+                ->where('expires_at', '>', now())
+                ->update(['expires_at' => now()]);
+            $application->audit('recruiting.application_decided', [
+                'decision' => $decision,
+                'note' => $note,
+                'by' => $actor->id,
+                'interviews_cancelled' => $interviewsCancelled,
+                'offers_expired' => $offersExpired,
+            ]);
 
-        return $application->refresh();
+            return $application->refresh();
+        });
+    }
+
+    /**
+     * Sonst fiele eine entschiedene Akte in die Pipeline zurück, behielte aber
+     * ihre Löschvormerkung und würde trotzdem gelöscht.
+     */
+    private function ensureInPipeline(JobApplication $application): void {
+        if (! $application->status->inPipeline()) {
+            throw new \RuntimeException((string) __('Die Akte ist bereits entschieden.'));
+        }
+    }
+
+    /**
+     * Aufnahme aus dem Talentpool — die einzige Ausnahme von „entschieden ist
+     * endgültig“. Ohne gültige Einwilligung dürfen die Daten nicht weiter
+     * verarbeitet werden. Die Akte beginnt als eingegangene Bewerbung;
+     * Löschvormerkung und Einwilligung werden geräumt, die Löschfrist entsteht
+     * mit der nächsten Entscheidung neu.
+     */
+    public function readmit(JobApplication $application, User $actor, ?string $note = null): JobApplication {
+        if ($application->isAnonymized()) {
+            throw new \RuntimeException((string) __('Die Akte ist bereits anonymisiert.'));
+        }
+        if ($application->status !== JobApplicationStatus::TalentPool) {
+            throw new \RuntimeException((string) __('Nur Akten im Talentpool lassen sich wieder aufnehmen.'));
+        }
+        if (! $application->hasValidTalentPoolConsent()) {
+            throw new \RuntimeException((string) __('Die Talentpool-Einwilligung fehlt oder ist abgelaufen — die Akte kann nicht wieder aufgenommen werden.'));
+        }
+        $consentExpiresOn = $application->consent_expires_on?->toDateString();
+
+        return DB::transaction(function () use ($application, $actor, $note, $consentExpiresOn): JobApplication {
+            $application->update([
+                'status' => JobApplicationStatus::Received,
+                'retention_until' => null,
+                'consent_talent_pool_at' => null,
+                'consent_expires_on' => null,
+            ]);
+            $application->audit('recruiting.application_readmitted', [
+                'note' => $note,
+                'by' => $actor->id,
+                'consent_expires_on' => $consentExpiresOn,
+            ]);
+
+            return $application->refresh();
+        });
     }
 
     /**
@@ -201,7 +298,7 @@ class RecruitingService {
                 'phone' => null,
                 'email_hash' => null,
                 'notes' => null,
-                'status' => 'deleted',
+                'status' => JobApplicationStatus::Deleted,
                 'anonymized_at' => now(),
             ]);
             // Die hochgeladenen Unterlagen (Lebenslauf, Zeugnisse, Lichtbild)
@@ -239,7 +336,7 @@ class RecruitingService {
             'phone' => $application->phone,
             'address' => $application->postalAddress(),
             'source' => $application->source,
-            'status' => $application->status,
+            'status' => $application->status->value,
             'received_at' => optional($application->received_at)->toIso8601String(),
             'requisition' => $application->requisition?->title,
             'consent_talent_pool_at' => optional($application->consent_talent_pool_at)->toIso8601String(),
@@ -248,7 +345,7 @@ class RecruitingService {
             'interviews' => $application->interviews->map(fn($interview): array => [
                 'scheduled_at' => $interview->scheduled_at->toIso8601String(),
                 'mode' => $interview->mode,
-                'status' => $interview->status,
+                'status' => $interview->status->value,
             ])->all(),
             'documents' => $application->documents->map(fn($doc): array => [
                 'label' => $doc->label,
@@ -271,7 +368,7 @@ class RecruitingService {
      * @param array<int, string> $checklist
      */
     public function createEmployeeDraft(JobApplication $application, User $actor, array $qualifications = [], array $checklist = []): EmployeeDraft {
-        if ($application->status !== 'accepted') {
+        if ($application->status !== JobApplicationStatus::Accepted) {
             throw new \RuntimeException((string) __('Nur zugesagte Bewerbungen werden ins Onboarding übergeben.'));
         }
         if ($application->employeeDraft()->exists()) {
@@ -292,7 +389,7 @@ class RecruitingService {
             'email' => $application->email,
             'qualifications' => $qualifications,
             'checklist' => FieldDocument::checklist($defaultChecklist),
-            'status' => 'draft',
+            'status' => EmployeeDraftStatus::Draft,
             'created_by' => $actor->id,
         ]);
         $application->audit('recruiting.onboarding_draft_created', ['draft_id' => $draft->id]);
@@ -306,7 +403,7 @@ class RecruitingService {
      * 'user'; SCIM-/Rollenvergabe bleibt Admin-Sache.
      */
     public function inviteFromDraft(EmployeeDraft $draft, User $actor): User {
-        if ($draft->status !== 'draft') {
+        if (! $draft->status->canTransitionTo(EmployeeDraftStatus::Invited)) {
             throw new \RuntimeException((string) __('Der Entwurf wurde bereits übernommen oder verworfen.'));
         }
         $email = trim((string) $draft->email);
@@ -334,7 +431,7 @@ class RecruitingService {
             ]);
             $user->assignRole(\Spatie\Permission\Models\Role::findOrCreate('user', 'web'));
 
-            $draft->update(['status' => 'invited', 'invited_user_id' => $user->id]);
+            $draft->update(['status' => EmployeeDraftStatus::Invited, 'invited_user_id' => $user->id]);
             $draft->audit('recruiting.draft_invited', ['user_id' => $user->id, 'by' => $actor->id]);
 
             return $user;

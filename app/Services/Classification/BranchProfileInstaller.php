@@ -18,8 +18,7 @@ use App\Models\Platform\{Organization, User};
 use App\Models\ServiceTicket\SlaContract;
 use App\Modules\ModuleRegistry;
 use App\Services\Classification\Contracts\ProfileInstallStep;
-use App\Support\MorphMap;
-use CommonToolkit\Helper\FileSystem\File;
+use App\Support\{BranchProfileFiles, MorphMap};
 use Database\Seeders\EntryTypeSeeder;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
@@ -41,8 +40,8 @@ class BranchProfileInstaller {
      * @return array{profile_code: string, version: int, created: array<string, int>, updated: array<string, int>, skipped: array<string, int>}
      */
     public function install(Organization $organization, string $profileCode, ?User $actor = null, bool $force = false): array {
-        /** @var array<string, mixed> $profile */
-        $profile = require database_path("data/branchprofiles/{$profileCode}.php");
+        $profile = BranchProfileFiles::profile($profileCode)
+            ?? throw new \InvalidArgumentException(sprintf('Profil „%s" ist nicht vorhanden.', $profileCode));
 
         return $this->installProfile($organization, $profile, $actor, $force, $profileCode);
     }
@@ -56,6 +55,12 @@ class BranchProfileInstaller {
      * @return array{profile_code: string, version: int, created: array<string, int>, updated: array<string, int>, skipped: array<string, int>}
      */
     public function installProfile(Organization $organization, array $profile, ?User $actor = null, bool $force = false, string $profileCode = ''): array {
+        // Der Code wird gespeichert und später zu Dateipfaden (Beilage, Navigation, Seeder).
+        $declaredCode = (string) ($profile['code'] ?? $profileCode);
+        if ($declaredCode !== '' && ! BranchProfileFiles::isValidCode($declaredCode)) {
+            throw new \RuntimeException((string) __('Profilcode ungültig: erlaubt sind Kleinbuchstaben, Ziffern und Bindestrich.'));
+        }
+
         // Versionsguard (Restpunkt 042): Profile können eine Mindest-App-Version verlangen (neue Domänen/Felder).
         $minAppVersion = trim((string) ($profile['min_app_version'] ?? ''));
         if ($minAppVersion !== '' && version_compare((string) config('app.version', '0.0.0'), $minAppVersion, '<')) {
@@ -88,10 +93,7 @@ class BranchProfileInstaller {
 
         // MVP-841: Übersetzungen der Labels aus der Beilage i18n/<code>.php
         // (Inline `label_i18n` je Zeile gewinnt) → classifications.label_i18n.
-        $sidecarCode = (string) ($profile['code'] ?? $profileCode);
-        $sidecarPath = database_path("data/branchprofiles/i18n/{$sidecarCode}.php");
-        /** @var array<string, array<string, array<string, string>>> $sidecar */
-        $sidecar = $sidecarCode !== '' && File::isFile($sidecarPath) ? (array) require $sidecarPath : [];
+        $sidecar = BranchProfileFiles::sidecar($declaredCode);
 
         /** @var array<string, list<array<string, mixed>>> $classificationDomains */
         $classificationDomains = (array) Arr::get($profile, 'classifications', []);
@@ -701,9 +703,8 @@ class BranchProfileInstaller {
             throw new \InvalidArgumentException(sprintf('Profil „%s" ist nicht installiert.', $profileCode));
         }
 
-        $path = database_path("data/branchprofiles/{$profileCode}.php");
-        /** @var array<string, mixed> $profile Importierte Marketplace-Profile ohne Datei: nur abmelden. */
-        $profile = File::isFile($path) ? require $path : [];
+        // Importierte Marketplace-Profile ohne Datei: nur abmelden.
+        $profile = BranchProfileFiles::profile($profileCode) ?? [];
 
         $removed = ['classifications' => 0, 'classification_requirements' => 0, 'tags' => 0];
         $deactivated = ['classifications' => 0];

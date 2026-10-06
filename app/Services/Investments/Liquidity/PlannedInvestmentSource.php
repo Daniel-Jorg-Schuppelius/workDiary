@@ -12,19 +12,19 @@ declare(strict_types=1);
 
 namespace App\Services\Investments\Liquidity;
 
+use App\Enums\Investments\InvestmentCaseStatus;
 use App\Models\Investments\InvestmentCase;
 use App\Models\Platform\Organization;
 use App\Services\Accounting\Contracts\LiquidityForecastSource;
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\NumberHelper;
 
 /**
  * Geplante Investitionen als Auszahlung zum Projektbeginn (MVP-954):
  * genehmigtes Budget, sonst der geschätzte Betrag.
  */
 class PlannedInvestmentSource implements LiquidityForecastSource {
-    private const OPEN_STATUSES = ['idea', 'screening', 'comparison', 'budget_request', 'in_approval', 'approved', 'in_progress'];
-
     public function key(): string {
         return 'investments';
     }
@@ -33,14 +33,14 @@ class PlannedInvestmentSource implements LiquidityForecastSource {
         $items = [];
         $cases = InvestmentCase::query()
             ->where('organization_id', $organization->id)
-            ->whereIn('status', self::OPEN_STATUSES)
+            ->whereIn('status', InvestmentCaseStatus::open())
             ->whereNotNull('starts_on')
             ->where('starts_on', '>=', $from->toDateString())
             ->where('starts_on', '<', DateRange::dayAfter($to))
             ->get();
         foreach ($cases as $case) {
             $amount = $case->approvedBudget()->amount ?? $case->estimated_amount;
-            if ($amount === null || $case->starts_on === null || bccomp($amount, '0', 2) <= 0) {
+            if ($amount === null || $case->starts_on === null || ! NumberHelper::isPositivePrecise($amount, 2)) {
                 continue;
             }
             $items[] = [

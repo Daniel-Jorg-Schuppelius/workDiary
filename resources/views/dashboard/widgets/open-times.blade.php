@@ -14,11 +14,11 @@
     </x-slot:actions>
 
     <div class="grid grid-cols-2 gap-3">
-        <div class="rounded-box border border-base-300 bg-base-100 px-4 py-3 shadow-xs">
+        <x-card padding="px-4 py-3">
             <p class="text-xs uppercase tracking-wider text-muted">{{ __('Nicht abgerechnet') }}</p>
             <p class="mt-1 font-['Space_Grotesk'] text-2xl font-bold tabular-nums">{{ \App\Support\Formats::duration($minutes) }}</p>
             <p class="text-xs text-muted">{{ __(':n Zeiteinträge', ['n' => $count]) }}</p>
-        </div>
+        </x-card>
         <div class="rounded-box border {{ $staleCount > 0 ? 'border-warning/40 bg-warning/5' : 'border-base-300 bg-base-200' }} px-4 py-3">
             <p class="text-xs uppercase tracking-wider text-muted">{{ __('Älter als :d Tage', ['d' => $staleAfterDays]) }}</p>
             <p class="mt-1 font-['Space_Grotesk'] text-2xl font-bold tabular-nums {{ $staleCount > 0 ? 'text-warning' : '' }}">{{ $staleCount }}</p>

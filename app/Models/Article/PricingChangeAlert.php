@@ -11,6 +11,7 @@
 namespace App\Models\Article;
 
 use App\Casts\{MoneyCast, PercentageCast};
+use App\Enums\Article\PricingChangeAlertStatus;
 use App\Models\Concerns\BelongsToOrganization;
 use App\Models\Supplier\{Supplier, SupplierCatalogItem};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
@@ -35,16 +36,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property \CommonToolkit\ValueObjects\Percentage|null $new_margin
  * @property \CommonToolkit\ValueObjects\Percentage|null $min_margin
  * @property array<string, mixed>|null $impacts
- * @property string $status
+ * @property PricingChangeAlertStatus $status
  */
 class PricingChangeAlert extends Model {
     use BelongsToOrganization;
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
-
-    public const STATUS_OPEN = 'open';
-
-    public const STATUS_ACKNOWLEDGED = 'acknowledged';
 
     public const TYPE_MARGIN = 'margin';
 
@@ -76,6 +73,7 @@ class PricingChangeAlert extends Model {
         'min_margin' => PercentageCast::class . ':3',
         'impacts' => 'array',
         'acknowledged_at' => 'datetime',
+        'status' => PricingChangeAlertStatus::class,
     ];
 
     /** @return BelongsTo<Article, $this> */

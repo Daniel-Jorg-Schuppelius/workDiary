@@ -10,8 +10,10 @@
 
 namespace Tests\Feature\Ai;
 
+use App\Enums\Ai\AiTextSuggestionStatus;
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Enums\User\Permission;
-use App\Models\Ai\{AiCapabilitySetting, AiProviderConnection};
+use App\Models\Ai\{AiCapabilitySetting, AiProviderConnection, AiTextSuggestion};
 use App\Models\Customer\{Customer, CustomerQuery};
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
@@ -76,7 +78,7 @@ class AiPhase36RestTest extends TestCase {
 
     private static int $invoiceSeq = 0;
 
-    private function invoice(string $status, ?string $dueOn = null): Invoice {
+    private function invoice(InvoiceStatus|string $status, ?string $dueOn = null): Invoice {
         return Invoice::create([
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer()->id,
@@ -110,6 +112,31 @@ class AiPhase36RestTest extends TestCase {
         $this->assertStringContainsString('text/csv', (string) $response->headers->get('Content-Type'));
     }
 
+    /** Der Vorschlags-Trichter zählt je Entscheidungsstand; der Status ist ein Enum und taugt nicht als Zeichenkette. */
+    public function test_usage_report_funnel_counts_decisions_by_status(): void {
+        $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+        $capability = CoveringTextSuggestionService::CAPABILITY_MAIL_TEXT;
+        foreach ([AiTextSuggestionStatus::Accepted, AiTextSuggestionStatus::Edited, AiTextSuggestionStatus::Rejected, AiTextSuggestionStatus::Proposed] as $index => $status) {
+            AiTextSuggestion::query()->create([
+                'organization_id' => $this->organization->id,
+                'subject_type' => MorphMap::alias(Invoice::class),
+                'subject_id' => $index + 1,
+                'capability' => $capability,
+                'suggestion' => 'Text',
+                'status' => $status,
+            ]);
+        }
+
+        $response = $this->actingAs($admin)->get(route('admin.ai.usage'))->assertOk();
+
+        $stats = $response->viewData('funnel')[$capability];
+        $this->assertSame(4, $stats['total']);
+        $byStatus = $stats['byStatus'];
+        ksort($byStatus);
+        $this->assertSame(['accepted' => 1, 'edited' => 1, 'proposed' => 1, 'rejected' => 1], $byStatus);
+        $this->assertSame(66.7, $stats['adoptionPercent']);
+    }
+
     public function test_usage_report_denied_without_permission(): void {
         $plain = User::factory()->user()->create(['organization_id' => $this->organization->id]);
 
@@ -119,7 +146,7 @@ class AiPhase36RestTest extends TestCase {
     // ── Begleittexte (MVP-405-Rest) ──────────────────────────────────────
 
     public function test_send_dialog_prefills_ai_covering_text_on_request(): void {
-        $invoice = $this->invoice(Invoice::STATUS_ISSUED);
+        $invoice = $this->invoice(InvoiceStatus::Issued);
 
         $this->actingAs($this->user)
             ->get(route('invoices.send.form', [$invoice, 'ki' => 1]))
@@ -130,7 +157,7 @@ class AiPhase36RestTest extends TestCase {
     }
 
     public function test_send_dialog_without_ki_flag_does_not_invoke_provider(): void {
-        $invoice = $this->invoice(Invoice::STATUS_ISSUED);
+        $invoice = $this->invoice(InvoiceStatus::Issued);
 
         $this->actingAs($this->user)
             ->get(route('invoices.send.form', $invoice))
@@ -141,7 +168,7 @@ class AiPhase36RestTest extends TestCase {
     }
 
     public function test_dun_dialog_prefills_ai_dunning_text_on_request(): void {
-        $invoice = $this->invoice(Invoice::STATUS_ISSUED, now()->subDays(14)->toDateString());
+        $invoice = $this->invoice(InvoiceStatus::Issued, now()->subDays(14)->toDateString());
 
         $this->actingAs($this->user)
             ->get(route('invoices.dun.form', [$invoice, 'ki' => 1]))
@@ -155,7 +182,7 @@ class AiPhase36RestTest extends TestCase {
         AiCapabilitySetting::query()
             ->where('capability', CoveringTextSuggestionService::CAPABILITY_MAIL_TEXT)
             ->update(['enabled' => false]);
-        $invoice = $this->invoice(Invoice::STATUS_ISSUED);
+        $invoice = $this->invoice(InvoiceStatus::Issued);
 
         $this->actingAs($this->user)
             ->get(route('invoices.send.form', $invoice))

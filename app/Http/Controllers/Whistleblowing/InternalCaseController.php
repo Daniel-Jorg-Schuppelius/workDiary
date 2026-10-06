@@ -26,9 +26,12 @@ use App\Services\Whistleblowing\{
     WhistleblowingExportService,
     WhistleblowingMessageService,
 };
+use App\Services\Whistleblowing\InvalidCaseTransition;
+use App\Support\ErrorText;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
+use RuntimeException;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 /**
@@ -80,7 +83,12 @@ class InternalCaseController extends Controller {
         Gate::authorize('process', $case);
         $data = $request->validated();
 
-        $workflow->transition($case, CaseStatus::from($data['to']), $this->user(), $data['reason'] ?? null);
+        // Der Stand kann sich nach dem Laden der Seite geändert haben — dann Meldung statt HTTP 500.
+        try {
+            $workflow->transition($case, CaseStatus::from($data['to']), $this->user(), $data['reason'] ?? null);
+        } catch (InvalidCaseTransition) {
+            return back()->withInput()->withErrors(['to' => __('Dieser Statuswechsel ist aus dem aktuellen Stand nicht möglich.')]);
+        }
 
         return back()->with('success', __('Status aktualisiert.'));
     }
@@ -163,7 +171,14 @@ class InternalCaseController extends Controller {
 
     public function destroy(WhistleblowingCase $case, WhistleblowingDeletionService $deletion): RedirectResponse {
         Gate::authorize('retention', $case);
-        $deletion->delete($case, $this->user());
+
+        // Der Dienst lehnt außerhalb der Aufbewahrungsprüfung und unter Löschsperre ab —
+        // auch wenn der Stand sich nach dem Laden der Seite geändert hat.
+        try {
+            $deletion->delete($case, $this->user());
+        } catch (RuntimeException $e) {
+            return back()->with('error', ErrorText::for($e));
+        }
 
         return redirect()
             ->route('whistleblowing.internal.index')

@@ -17,8 +17,7 @@
 
         @if ($run === null)
             {{-- Planung: Datenbereiche + Stichtag --}}
-            <form method="POST" action="{{ route('admin.accounting-migration.store') }}"
-                  class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs space-y-3">
+            <x-card as="form" class="space-y-3" method="POST" action="{{ route('admin.accounting-migration.store') }}">
                 @csrf
                 <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('accounting_migration.plan_heading') }}</h2>
                 <p class="text-xs text-muted">{{ __('accounting_migration.plan_hint') }}</p>
@@ -50,7 +49,7 @@
                             <input type="checkbox" name="areas[]" value="{{ $area->value }}" class="checkbox checkbox-sm" checked>
                             {{ $area->label() }}
                             @unless ($area->isBuildable())
-                                <span class="badge badge-ghost badge-xs">{{ __('accounting_migration.read_only') }}</span>
+                                <x-status-badge size="xs">{{ __('accounting_migration.read_only') }}</x-status-badge>
                             @endunless
                         </label>
                     @endforeach
@@ -62,8 +61,8 @@
                     <span class="label-text-alt text-xs text-muted">{{ __('accounting_migration.cutover_hint') }}</span>
                 </label>
 
-                <button type="submit" class="btn btn-sm btn-primary">{{ __('accounting_migration.plan_submit') }}</button>
-            </form>
+                <x-button type="submit">{{ __('accounting_migration.plan_submit') }}</x-button>
+            </x-card>
         @else
             {{-- Laufender Wechsel --}}
             <x-card>
@@ -71,43 +70,43 @@
                     <div>
                         <h2 class="flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold">
                             {{ __('accounting_migration.run_heading', ['source' => $run->source()->label(), 'target' => $run->target()->label()]) }}
-                            <span class="badge badge-{{ $run->status->tone() }} badge-sm">{{ $run->status->label() }}</span>
+                            <x-status-badge :tone="$run->status->tone()">{{ $run->status->label() }}</x-status-badge>
                         </h2>
                         <p class="text-sm text-muted">
                             {{ __('accounting_migration.cutover_on') }}:
                             {{ $run->cutover_on?->fdate() ?? __('accounting_migration.no_cutover') }}
                             @if ($run->dry_run_only)
-                                · <span class="badge badge-ghost badge-xs">{{ __('accounting_migration.dry_run_badge') }}</span>
+                                · <x-status-badge size="xs">{{ __('accounting_migration.dry_run_badge') }}</x-status-badge>
                             @endif
                         </p>
                     </div>
                     <div class="flex flex-wrap gap-2">
                         <x-action-form :action="route('admin.accounting-migration.analyze', $run->sqid)">
-                            <button type="submit" class="btn btn-sm">{{ __('accounting_migration.analyze') }}</button>
+                            <x-button type="submit" tone="plain">{{ __('accounting_migration.analyze') }}</x-button>
                         </x-action-form>
                         <x-action-form :action="route('admin.accounting-migration.parallel', $run->sqid)">
-                            <button type="submit" class="btn btn-sm btn-outline">{{ __('accounting_migration.start_parallel') }}</button>
+                            <x-button type="submit" tone="outline">{{ __('accounting_migration.start_parallel') }}</x-button>
                         </x-action-form>
                         <x-action-form :action="route('admin.accounting-migration.cutover', $run->sqid)"
                               :confirm="__('accounting_migration.cutover_confirm')"
                               :confirm-label="__('accounting_migration.cutover')">
-                            <button type="submit" class="btn btn-sm btn-warning">{{ __('accounting_migration.cutover') }}</button>
+                            <x-button type="submit" tone="warning">{{ __('accounting_migration.cutover') }}</x-button>
                         </x-action-form>
                         <x-action-form :action="route('admin.accounting-migration.complete', $run->sqid)">
-                            <button type="submit" class="btn btn-sm btn-success">{{ __('accounting_migration.complete') }}</button>
+                            <x-button type="submit" tone="success">{{ __('accounting_migration.complete') }}</x-button>
                         </x-action-form>
-                        <a href="{{ route('admin.accounting-migration.report', $run->sqid) }}" class="btn btn-sm btn-ghost">{{ __('accounting_migration.report') }}</a>
+                        <x-button :href="route('admin.accounting-migration.report', $run->sqid)" tone="ghost">{{ __('accounting_migration.report') }}</x-button>
                         <x-action-form :action="route('admin.accounting-migration.cancel', $run->sqid)"
                               :confirm="__('accounting_migration.cancel_confirm')"
                               confirm-tone="error"
                               :confirm-label="__('accounting_migration.cancel')">
-                            <button type="submit" class="btn btn-sm btn-ghost text-error">{{ __('accounting_migration.cancel') }}</button>
+                            <x-button type="submit" tone="ghost" class="text-error">{{ __('accounting_migration.cancel') }}</x-button>
                         </x-action-form>
                     </div>
                 </div>
 
                 @if ($run->blocked_reason)
-                    <div class="alert alert-warning mt-3 text-sm">{{ $run->blocked_reason }}</div>
+                    <div role="alert" class="alert alert-warning mt-3 text-sm">{{ $run->blocked_reason }}</div>
                 @endif
             </x-card>
 
@@ -151,7 +150,7 @@
             @endif
 
             {{-- Positionen mit Entscheidung --}}
-            @if ($items->isNotEmpty())
+            @if ($items?->total() > 0)
                 <x-card>
                     <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('accounting_migration.items_heading') }}</h2>
                     <x-table :bare="true">
@@ -172,9 +171,9 @@
                                         <td class="font-mono text-xs">{{ $item->source_external_id ?? '—' }}</td>
                                         <td class="font-mono text-xs">{{ $item->target_external_id ?? '—' }}</td>
                                         <td>
-                                            <span class="badge badge-xs {{ $item->blocksCutover() ? 'badge-warning' : 'badge-ghost' }}">
-                                                {{ __('accounting_migration.status.' . $item->status) }}
-                                            </span>
+                                            <x-status-badge :tone="$item->blocksCutover() ? 'warning' : 'ghost'" size="xs">
+                                                {{ $item->status->label() }}
+                                            </x-status-badge>
                                             @if ($item->note)
                                                 <div class="text-xs text-muted">{{ $item->note }}</div>
                                             @endif
@@ -189,13 +188,14 @@
                                                     <option value="historic">{{ __('accounting_migration.status.historic') }}</option>
                                                     <option value="conflict">{{ __('accounting_migration.status.conflict') }}</option>
                                                 </select>
-                                                <button type="submit" class="btn btn-xs">{{ __('Speichern') }}</button>
+                                                <x-button type="submit" tone="plain" size="xs">{{ __('Speichern') }}</x-button>
                                             </form>
                                         </td>
                                     </tr>
                                 @endforeach
                     </x-table>
                 </x-card>
+                <x-pagination :paginator="$items" standing />
             @endif
         @endif
 
@@ -205,7 +205,7 @@
                 <ul class="space-y-1 text-sm">
                     @foreach ($history as $past)
                         <li class="flex flex-wrap items-center gap-2">
-                            <span class="badge badge-{{ $past->status->tone() }} badge-xs">{{ $past->status->label() }}</span>
+                            <x-status-badge :tone="$past->status->tone()" size="xs">{{ $past->status->label() }}</x-status-badge>
                             {{ $past->source()->label() }} → {{ $past->target()->label() }}
                             @if ($past->completed_at) · {{ $past->completed_at->fdatetime() }} @endif
                             <a href="{{ route('admin.accounting-migration.report', $past->sqid) }}" class="link text-xs">{{ __('accounting_migration.report') }}</a>

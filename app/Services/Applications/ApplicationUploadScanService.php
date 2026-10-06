@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace App\Services\Applications;
 
+use App\Enums\Applications\JobApplicationUploadScanStatus;
 use App\Enums\Whistleblowing\AttachmentScanStatus;
 use App\Models\Applications\JobApplicationUpload;
 use App\Services\Security\Scanning\ScanDriver;
@@ -40,7 +41,7 @@ class ApplicationUploadScanService {
 
         JobApplicationUpload::query()
             ->withoutGlobalScopes()
-            ->where('scan_status', JobApplicationUpload::SCAN_PENDING)
+            ->where('scan_status', JobApplicationUploadScanStatus::Pending)
             ->orderBy('id')
             ->chunkById(100, function ($uploads) use (&$stats): void {
                 foreach ($uploads as $upload) {
@@ -76,10 +77,10 @@ class ApplicationUploadScanService {
     }
 
     public function markClean(JobApplicationUpload $upload): void {
-        $upload->forceFill(['scan_status' => JobApplicationUpload::SCAN_CLEAN])->save();
+        $upload->forceFill(['scan_status' => JobApplicationUploadScanStatus::Clean])->save();
     }
 
     public function markRejected(JobApplicationUpload $upload): void {
-        $upload->forceFill(['scan_status' => JobApplicationUpload::SCAN_REJECTED])->save();
+        $upload->forceFill(['scan_status' => JobApplicationUploadScanStatus::Rejected])->save();
     }
 }

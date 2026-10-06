@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Applications;
 
+use App\Enums\Applications\{EmployeeDraftStatus, JobApplicationStatus, JobRequisitionStatus};
 use App\Enums\User\UserRole;
 use App\Models\Applications\{JobApplication, JobRequisition};
 use App\Models\Platform\User;
@@ -66,7 +67,7 @@ final class RecruitingLifecycleTest extends TestCase {
         // Absage → Löschvormerkung nach konfigurierter Frist (Default 6 Monate).
         $service->decide($application, 'rejected', null, $hr);
         $fresh = $application->fresh();
-        $this->assertSame('rejected', $fresh->status);
+        $this->assertSame(JobApplicationStatus::Rejected, $fresh->status);
         $this->assertNotNull($fresh->retention_until);
         $this->assertTrue($fresh->retention_until->between(now()->addMonths(5), now()->addMonths(7)));
 
@@ -89,7 +90,7 @@ final class RecruitingLifecycleTest extends TestCase {
         $anonymized = $second->fresh();
         $this->assertNull($anonymized->candidate_name);
         $this->assertNull($anonymized->email_hash);
-        $this->assertSame('deleted', $anonymized->status);
+        $this->assertSame(JobApplicationStatus::Deleted, $anonymized->status);
         $this->assertNotNull($anonymized->anonymized_at);
     }
 
@@ -145,7 +146,7 @@ final class RecruitingLifecycleTest extends TestCase {
         $requisition = JobRequisition::query()->create([
             'organization_id' => $this->organization->id,
             'title' => 'Servicetechniker:in',
-            'status' => 'open',
+            'status' => JobRequisitionStatus::Open,
         ]);
         ['application' => $application] = app(RecruitingService::class)->intake([
             'job_requisition_id' => $requisition->id,
@@ -164,7 +165,7 @@ final class RecruitingLifecycleTest extends TestCase {
 
         $draft = $application->fresh()->employeeDraft;
         $this->assertNotNull($draft);
-        $this->assertSame('draft', $draft->status);
+        $this->assertSame(EmployeeDraftStatus::Draft, $draft->status);
         $this->assertSame(0, User::query()->where('email', 'kim.neu@example.test')->count(), 'Entwurf darf KEIN Live-Konto erzeugen.');
 
         // Bewusste Einladung erzeugt den User über den Invite-Pfad.
@@ -172,7 +173,7 @@ final class RecruitingLifecycleTest extends TestCase {
         $user = User::query()->where('email', 'kim.neu@example.test')->firstOrFail();
         $this->assertTrue((bool) $user->is_new_system);
         $this->assertTrue((bool) $user->must_change_password);
-        $this->assertSame('invited', $draft->fresh()->status);
+        $this->assertSame(EmployeeDraftStatus::Invited, $draft->fresh()->status);
 
         // Idempotent: zweite Einladung schlägt fehl.
         $this->actingAs($hr)->post(route('recruiting.applications.draft.invite', [$application, $draft]))->assertSessionHas('error');

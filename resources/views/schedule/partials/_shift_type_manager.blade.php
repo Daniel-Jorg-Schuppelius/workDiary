@@ -115,7 +115,7 @@
                 </div>
             </div>
 
-            <div id="shift-type-error" class="alert alert-error alert-sm hidden text-sm"></div>
+            <div id="shift-type-error" role="alert" class="alert alert-error alert-sm hidden text-sm"></div>
 
             <div class="flex justify-between">
                 <x-icon-btn icon="restart_alt" size="sm" type="button" id="shift-type-reset" show-label>{{ __('Zurücksetzen') }}</x-icon-btn>

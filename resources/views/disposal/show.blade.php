@@ -30,7 +30,7 @@
             <div class="flex flex-wrap items-center gap-2 text-sm">
                 <x-status-badge size="md" :tone="$job->status->tone()" outline>{{ $job->status->label() }}</x-status-badge>
                 @if ($job->isSigned())
-                    <span class="badge badge-outline badge-success">{{ __('disposal.badge.signed') }}</span>
+                    <x-status-badge tone="success" size="md" outline>{{ __('disposal.badge.signed') }}</x-status-badge>
                 @endif
             </div>
             <x-slot:actions>
@@ -299,7 +299,7 @@
                     </div>
 
                     <div class="flex flex-wrap items-center justify-between gap-2">
-                        <button type="button" class="btn btn-ghost btn-xs" @click="clear()">{{ __('Leeren') }}</button>
+                        <x-button tone="ghost" size="xs" @click="clear()">{{ __('Leeren') }}</x-button>
                         <span class="text-xs text-muted" x-show="hasSignature">{{ __('disposal.sign.hint') }}</span>
                     </div>
 
@@ -307,7 +307,7 @@
                         @csrf
                         <input type="hidden" name="signature" x-ref="sigInput">
                         <input type="hidden" name="signer_name" :value="customerName">
-                        <button class="btn btn-primary btn-sm w-full" :disabled="submitDisabled">{{ __('disposal.action.sign') }}</button>
+                        <x-button type="submit" class="w-full" ::disabled="submitDisabled">{{ __('disposal.action.sign') }}</x-button>
                     </form>
                 </div>
             @else

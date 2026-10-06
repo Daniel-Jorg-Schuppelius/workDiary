@@ -49,7 +49,7 @@
                     <input type="text" name="username" value="{{ old('username') }}" class="input input-bordered input-sm" required maxlength="64" autocomplete="off">
                 </label>
                 <div class="flex items-end">
-                    <button type="submit" class="btn btn-sm btn-primary">{{ __('b2b_catalog.action.issue') }}</button>
+                    <x-button type="submit">{{ __('b2b_catalog.action.issue') }}</x-button>
                 </div>
             </form>
         </x-card>
@@ -78,18 +78,18 @@
                                     <td>{{ $access->last_used_at?->diffForHumans() ?? '—' }}</td>
                                     <td>
                                         @if ($access->isActive())
-                                            <span class="badge badge-success badge-sm">{{ __('b2b_catalog.status.active') }}</span>
+                                            <x-status-badge tone="success">{{ __('b2b_catalog.status.active') }}</x-status-badge>
                                         @else
-                                            <span class="badge badge-ghost badge-sm">{{ __('b2b_catalog.status.revoked') }}</span>
+                                            <x-status-badge>{{ __('b2b_catalog.status.revoked') }}</x-status-badge>
                                         @endif
                                     </td>
                                     <td class="text-right">
                                         <div class="flex justify-end gap-1">
-                                            <a href="{{ route('b2b-catalog.show', $access) }}" class="btn btn-xs btn-ghost">{{ __('b2b_catalog.action.manage') }}</a>
+                                            <x-button :href="route('b2b-catalog.show', $access)" tone="ghost" size="xs">{{ __('b2b_catalog.action.manage') }}</x-button>
                                             @if ($access->isActive())
                                                 <form method="POST" action="{{ route('b2b-catalog.revoke', $access) }}">
                                                     @csrf
-                                                    <button type="submit" class="btn btn-xs btn-ghost text-error">{{ __('b2b_catalog.action.revoke') }}</button>
+                                                    <x-button type="submit" tone="ghost" size="xs" class="text-error">{{ __('b2b_catalog.action.revoke') }}</x-button>
                                                 </form>
                                             @endif
                                         </div>
@@ -106,7 +106,7 @@
                 <form method="POST" action="{{ route('b2b-catalog.orders.upload') }}" enctype="multipart/form-data" class="flex items-center gap-2">
                     @csrf
                     <input type="file" name="order_file" accept=".xml,text/xml,application/xml" required class="file-input file-input-bordered file-input-sm">
-                    <button type="submit" class="btn btn-sm btn-primary">{{ __('b2b_catalog.action.upload_order') }}</button>
+                    <x-button type="submit">{{ __('b2b_catalog.action.upload_order') }}</x-button>
                 </form>
             </div>
             <p class="mb-3 text-xs text-muted">{{ __('b2b_catalog.orders_hint') }}</p>
@@ -127,20 +127,21 @@
                                     <td>{{ $order->customer?->name ?? ($order->buyer['name'] ?? '—') }}</td>
                                     <td>{{ $order->source }}</td>
                                     <td class="text-right">{{ $order->total_net?->format() ?? '—' }}</td>
-                                    <td>{{ $order->ordered_at?->format('d.m.Y') ?? '—' }}</td>
+                                    <td>{{ $order->ordered_at?->fdate() ?? '—' }}</td>
                                     <td>
-                                        @if ($order->status === \App\Models\B2b\B2bOrder::STATUS_OPEN)
-                                            <a href="{{ route('admin.integration.inbox') }}" class="badge badge-warning badge-sm">{{ __('b2b_catalog.status.order_open') }}</a>
-                                        @elseif ($order->status === \App\Models\B2b\B2bOrder::STATUS_BOOKED)
-                                            <span class="badge badge-success badge-sm">{{ __('b2b_catalog.status.order_booked') }}</span>
+                                        @if ($order->status === \App\Enums\B2b\B2bOrderStatus::Open)
+                                            <a href="{{ route('admin.integration.inbox') }}" class="badge badge-warning badge-sm">{{ $order->status->label() }}</a>
+                                        @elseif ($order->status === \App\Enums\B2b\B2bOrderStatus::Booked)
+                                            <x-status-badge tone="success">{{ $order->status->label() }}</x-status-badge>
                                         @else
-                                            <span class="badge badge-ghost badge-sm">{{ __('b2b_catalog.status.order_dismissed') }}</span>
+                                            <x-status-badge>{{ $order->status->label() }}</x-status-badge>
                                         @endif
                                     </td>
                                 </tr>
                             @endforeach
             </x-table>
         </x-card>
+        <x-pagination :paginator="$orders" standing />
     </div>
 </x-page-shell>
 @endsection

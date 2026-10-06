@@ -14,7 +14,7 @@
 @extends('layouts.app')
 @section('title', __('resale.products.title'))
 @section('nav-title', __('resale.title.menu'))
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @php
     $canManage = auth()->user()?->can(\App\Enums\User\Permission::ResellingManage->value) ?? false;

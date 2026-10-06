@@ -200,6 +200,23 @@ final class TimeTrackingWebhookTest extends TestCase {
         Bus::assertNothingDispatched();
     }
 
+    /** Entscheidung 2026-10-05: der Webhook eines gesperrten Mandanten wird nicht verarbeitet. */
+    public function test_blocked_tenant_receives_no_webhook_processing(): void {
+        Bus::fake();
+        $this->settings(TogglPlugin::ID, $this->organization, '4711', 'geheim');
+        $this->organization->forceFill(['is_active' => false])->save();
+
+        // Erst die Signatur, dann die Sperre: ohne gültige Signatur bleibt es bei 401.
+        $this->togglPost($this->togglPayload(), 'falsch')->assertStatus(401);
+        $this->togglPost($this->togglPayload(), 'geheim')->assertStatus(423)->assertJson(['status' => 'tenant_blocked']);
+
+        Bus::assertNothingDispatched();
+        $this->assertSame(0, TimeTrackingWebhookDelivery::query()->count());
+
+        $this->organization->forceFill(['is_active' => true])->save();
+        $this->togglPost($this->togglPayload(), 'geheim')->assertJson(['status' => 'queued']);
+    }
+
     public function test_clockify_webhook_uses_the_shared_secret_header(): void {
         Bus::fake();
         $this->settings(ClockifyPlugin::ID, $this->organization, 'ws-abc', 'clockify-geheim');
@@ -209,6 +226,20 @@ final class TimeTrackingWebhookTest extends TestCase {
             ->assertJson(['status' => 'queued']);
 
         Bus::assertDispatched(WebhookImportJob::class);
+    }
+
+    public function test_clockify_later_change_of_the_same_entry_is_a_new_delivery(): void {
+        Bus::fake();
+        $this->settings(ClockifyPlugin::ID, $this->organization, 'ws-abc', 'clockify-geheim');
+        // Der Rumpf ist der Zeiteintrag; seine `id` bleibt über Änderungen gleich.
+        $entry = ['id' => 'entry-1', 'workspaceId' => 'ws-abc', 'description' => 'Angebot'];
+
+        $this->clockifyPost($entry, 'clockify-geheim')->assertJson(['status' => 'queued']);
+        $this->clockifyPost($entry, 'clockify-geheim')->assertJson(['status' => 'duplicate']);
+        $this->clockifyPost(['description' => 'Angebot und Nachtrag'] + $entry, 'clockify-geheim')
+            ->assertJson(['status' => 'debounced']);
+
+        $this->assertSame(2, TimeTrackingWebhookDelivery::query()->count());
     }
 
     public function test_clockify_webhook_rejects_a_wrong_secret(): void {

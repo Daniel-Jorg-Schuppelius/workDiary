@@ -17,7 +17,11 @@
             @foreach ($comments as $comment)
                 <li class="rounded-box border border-base-300 bg-base-200 px-3 py-2">
                     <div class="text-xs text-muted">{{ optional($comment->user)->name ?? '—' }} · {{ $comment->created_at->diffForHumans() }}</div>
-                    <a href="{{ route('diary.show', $comment->commentable_id) }}#comments" class="link block">{{ \CommonToolkit\Helper\Data\StringHelper::truncate($comment->body, 100) }}</a>
+                    @if ($comment->commentable)
+                        <a href="{{ route('diary.show', $comment->commentable) }}#comments" class="link block">{{ \CommonToolkit\Helper\Data\StringHelper::truncate($comment->body, 100) }}</a>
+                    @else
+                        <span class="block">{{ \CommonToolkit\Helper\Data\StringHelper::truncate($comment->body, 100) }}</span>
+                    @endif
                 </li>
             @endforeach
         </ul>

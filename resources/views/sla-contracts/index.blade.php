@@ -12,9 +12,10 @@
 @extends('layouts.app')
 @section('title', __('SLA-Verträge'))
 @section('nav-title', __('SLA-Verträge'))
+@include('partials.page-fill')
 
 @section('content')
-<x-page-shell>
+<x-page-shell overflow="clip">
     <x-slot:toolbar>
         <x-page-toolbar>
             <x-slot:subtitle>{{ __('Reaktions-/Lösungsfristen, Geschäftszeiten, Eskalation und Inklusivzeit-Kontingente je Vertrag.') }}</x-slot:subtitle>
@@ -23,7 +24,7 @@
 
     @if ($canManage ?? false)
         {{-- SLA-CRUD (Feature 065, P3): kompaktes Admin-Formular. --}}
-        <details class="rounded-box border border-base-300 bg-base-100 p-3">
+        <x-card as="details" padding="p-3">
             <summary class="cursor-pointer text-sm font-semibold">{{ __('Neuen SLA-Vertrag anlegen') }}</summary>
             <form method="POST" action="{{ route('sla-contracts.store') }}" class="mt-2 grid gap-2 md:grid-cols-2">
                 @csrf
@@ -55,51 +56,51 @@
                     <x-icon-btn icon="add" tone="primary" size="sm" type="submit" show-label>{{ __('Anlegen') }}</x-icon-btn>
                 </div>
             </form>
-        </details>
+        </x-card>
     @endif
 
 
-    <x-card>
-        @if ($contracts->isEmpty())
-            <x-empty-state icon="gavel"
-                           :title="__('Noch keine SLA-Verträge angelegt.')" />
-        @else
-            <x-table table-sort="client" bare>
-                <x-slot:head>
-                    <tr>
-                        <x-table.th sort type="string">{{ __('Code') }}</x-table.th>
-                        <x-table.th sort type="string">{{ __('Bezeichnung') }}</x-table.th>
-                        <x-table.th sort type="string">{{ __('Kunde') }}</x-table.th>
-                        <x-table.th sort type="string">{{ __('Projekt') }}</x-table.th>
-                        <x-table.th sort type="number" align="right">{{ __('Kontingente') }}</x-table.th>
-                        <x-table.th sort type="string">{{ __('Status') }}</x-table.th>
-                    </tr>
-                </x-slot:head>
-                @foreach ($contracts as $contract)
-                    <tr>
-                        <td class="font-mono text-xs">
-                            <a href="{{ route('sla-contracts.show', $contract) }}" class="link">{{ $contract->code }}</a>
-                        </td>
-                        <td class="font-medium">{{ $contract->label }}</td>
-                        <td class="text-base-content/70">{{ $contract->customer?->name ?? __('Standard (alle Kunden)') }}</td>
-                        <td class="text-base-content/70">{{ $contract->project?->name ?? '—' }}</td>
-                        <td class="text-right tabular-nums">{{ $contract->quotas_count }}</td>
-                        <td>
-                            <div class="flex flex-wrap gap-1">
-                                @if ($contract->is_default)
-                                    <x-status-badge tone="info" size="sm">{{ __('Standard') }}</x-status-badge>
-                                @endif
-                                @if ($contract->is_active)
-                                    <x-status-badge tone="success" size="sm" outline>{{ __('Aktiv') }}</x-status-badge>
-                                @else
-                                    <x-status-badge tone="ghost" size="sm" outline>{{ __('Inaktiv') }}</x-status-badge>
-                                @endif
-                            </div>
-                        </td>
-                    </tr>
-                @endforeach
-            </x-table>
-        @endif
-    </x-card>
+    <x-table scroll="flex" table-sort="server"
+             :route="route('sla-contracts.index')"
+             :current-sort="$sort"
+             :current-dir="$dir">
+        <x-slot:head>
+            <tr>
+                <x-table.th sort="code">{{ __('Code') }}</x-table.th>
+                <x-table.th sort="label">{{ __('Bezeichnung') }}</x-table.th>
+                <x-table.th sort="customer">{{ __('Kunde') }}</x-table.th>
+                <x-table.th sort="project">{{ __('Projekt') }}</x-table.th>
+                <x-table.th sort="quotas" align="right">{{ __('Kontingente') }}</x-table.th>
+                <x-table.th sort="status" default>{{ __('Status') }}</x-table.th>
+            </tr>
+        </x-slot:head>
+        @forelse ($contracts as $contract)
+            <tr class="hover">
+                <td class="font-mono text-xs">
+                    <a href="{{ route('sla-contracts.show', $contract) }}" class="link">{{ $contract->code }}</a>
+                </td>
+                <td class="font-medium">{{ $contract->label }}</td>
+                <td class="text-base-content/70">{{ $contract->customer?->name ?? __('Standard (alle Kunden)') }}</td>
+                <td class="text-base-content/70">{{ $contract->project?->name ?? '—' }}</td>
+                <td class="text-right tabular-nums">{{ $contract->quotas_count }}</td>
+                <td>
+                    <div class="flex flex-wrap gap-1">
+                        @if ($contract->is_default)
+                            <x-status-badge tone="info" size="sm">{{ __('Standard') }}</x-status-badge>
+                        @endif
+                        @if ($contract->is_active)
+                            <x-status-badge tone="success" size="sm" outline>{{ __('Aktiv') }}</x-status-badge>
+                        @else
+                            <x-status-badge tone="ghost" size="sm" outline>{{ __('Inaktiv') }}</x-status-badge>
+                        @endif
+                    </div>
+                </td>
+            </tr>
+        @empty
+            <x-table.empty icon="gavel" :colspan="6" :title="__('Noch keine SLA-Verträge angelegt.')" compact />
+        @endforelse
+    </x-table>
+
+    <x-pagination :paginator="$contracts" standing />
 </x-page-shell>
 @endsection

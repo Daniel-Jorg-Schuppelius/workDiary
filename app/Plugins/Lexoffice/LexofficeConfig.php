@@ -23,7 +23,7 @@ class LexofficeConfig {
     public const DEFAULT_REQUEST_INTERVAL = 0.5;
 
     /**
-     * @return array{api_key: ?string, base_url: string, defaults: array<string, mixed>, match_policy: string, create_missing_local: bool, number_authority: bool, webhook_secret: ?string, webhook_public_key: ?string, enabled: bool}
+     * @return array{api_key: ?string, base_url: string, defaults: array<string, mixed>, match_policy: string, create_missing_local: bool, number_authority: bool, webhook_secret: ?string, webhook_public_key: ?string, enabled: bool, request_interval: float}
      */
     public static function resolve(?int $organizationId = null): array {
         $r = PluginSettingsResolver::for(LexofficePlugin::ID, $organizationId);
@@ -61,9 +61,16 @@ class LexofficeConfig {
         return self::clampInterval(PluginSettingsResolver::for(LexofficePlugin::ID, $organizationId)->float('request_interval', self::DEFAULT_REQUEST_INTERVAL));
     }
 
+    /** Geplante Läufe warten so lange aufeinander (Sekunden). */
+    public const API_LOCK_WAIT_SCHEDULED = 600;
+
+    /** Jobs und Aufrufe aus der Oberfläche warten nur kurz und weichen dann aus. */
+    public const API_LOCK_WAIT_SHORT = 5;
+
     /**
      * Sperrschlüssel, unter dem sich Lexoffice-Läufe einer Organisation
-     * (Kontakte, Artikel, Belege, Lizenz-Abgleich) gegenseitig ausschließen.
+     * gegenseitig ausschließen: Sync-Kommandos, Jobs und Direktläufe aus der
+     * Oberfläche (Konsolidierungs-Audit 2026-10, k2-02).
      */
     public static function apiLockKey(int $organizationId): string {
         return 'lexoffice:api:' . $organizationId;

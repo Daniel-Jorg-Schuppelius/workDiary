@@ -12,7 +12,8 @@ namespace App\Plugins\Lexoffice\Console;
 
 use App\Console\Concerns\IteratesOrganizations;
 use App\Models\Platform\PluginSetting;
-use App\Plugins\Lexoffice\{LexofficeConfig, LexofficePlugin, LexofficeWebhookService};
+use App\Plugins\Lexoffice\{LexofficeConfig, LexofficePlugin};
+use App\Plugins\Lexoffice\Services\LexofficeWebhookService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 
@@ -51,7 +52,7 @@ class LexofficeWebhooksCommand extends Command {
                 : $this->generateSecret((int) $org->id);
 
             $callbackUrl = route('api.webhooks.lexoffice', ['organization' => $org->id, 'token' => $secret]);
-            $service = new LexofficeWebhookService($config['api_key'], $config['base_url']);
+            $service = new LexofficeWebhookService($config['api_key'], $config['base_url'], $config['request_interval']);
 
             $this->info("Lexoffice-Webhooks für Organisation #{$org->id} ({$org->name})...");
             try {

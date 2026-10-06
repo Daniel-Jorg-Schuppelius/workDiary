@@ -22,6 +22,7 @@
         <div role="status" class="alert alert-info mb-3 block text-sm">
             <p class="font-medium">{{ __('contract.extraction.title', ['document' => $analysisDocument?->title]) }}</p>
             @if ($analysis['hints'] === [])
+                {{-- raw-markup-ok: Satz im Hinweisblock (alert), kein eigener Leerzustand --}}
                 <p>{{ __('contract.extraction.none') }}</p>
             @else
                 <p>{{ __('contract.extraction.check') }}</p>

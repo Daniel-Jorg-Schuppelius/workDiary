@@ -9,28 +9,28 @@
 @extends('layouts.app')
 @section('title', __('inventory.lot.title') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('inventory.lot.title'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('inventory.lot.subtitle')">
     @if ($lots->total() === 0)
         <x-empty-state framed :title="__('inventory.lot.empty')" />
     @else
-        @if ($canManage)
+        {{-- Zusammenführen nur zwischen aktiven Chargen: eine gesperrte muss erst freigegeben werden. --}}
+        @if ($canManage && $mergeable->count() > 1)
             <x-card>
                 <h2 class="font-semibold mb-2">{{ __('inventory.lot.merge') }}</h2>
                 <form method="POST" action="{{ route('inventory.lots.merge') }}" class="flex flex-wrap items-end gap-2">
                     @csrf
                     <div class="fieldset"><label for="from" class="fieldset-label">{{ __('inventory.lot.from') }}</label>
                         <select id="from" name="from" class="select select-sm select-bordered" required>
-                            @foreach ($lots as $lot)<option value="{{ $lot->sqid }}">{{ $lot->lot_no }}</option>@endforeach
+                            @foreach ($mergeable as $lot)<option value="{{ $lot->sqid }}">{{ $lot->lot_no }}</option>@endforeach
                         </select></div>
                     <div class="fieldset"><label for="into" class="fieldset-label">{{ __('inventory.lot.into') }}</label>
                         <select id="into" name="into" class="select select-sm select-bordered" required>
-                            @foreach ($lots as $lot)<option value="{{ $lot->sqid }}">{{ $lot->lot_no }}</option>@endforeach
+                            @foreach ($mergeable as $lot)<option value="{{ $lot->sqid }}">{{ $lot->lot_no }}</option>@endforeach
                         </select></div>
-                    <button type="submit" class="btn btn-sm">{{ __('inventory.lot.merge') }}</button>
+                    <x-button type="submit" tone="plain">{{ __('inventory.lot.merge') }}</x-button>
                 </form>
             </x-card>
         @endif
@@ -42,34 +42,59 @@
                     <th>{{ __('inventory.lot.article') }}</th>
                     <th>{{ __('inventory.lot.best_before') }}</th>
                     <th class="text-right">{{ __('inventory.lot.on_hand') }}</th>
-                    @if ($canManage)<th>{{ __('inventory.lot.split') }}</th>@endif
+                    @if ($canManage)
+                        <th>{{ __('inventory.lot.split') }}</th>
+                        <th class="text-right">{{ __('Aktionen') }}</th>
+                    @endif
                 </tr>
             </x-slot:head>
             @forelse ($lots as $lot)
+                @php
+                    $isActive = $lot->status === \App\Enums\Inventory\StockLotStatus::Active;
+                    $isBlocked = $lot->status === \App\Enums\Inventory\StockLotStatus::Blocked;
+                @endphp
                 <tr>
-                    <td class="font-mono">{{ $lot->lot_no }} <span class="badge badge-xs">{{ __('values.' . $lot->status) }}</span></td>
+                    <td class="font-mono">
+                        {{ $lot->lot_no }} <x-status-badge :tone="$isBlocked ? 'warning' : 'plain'" size="xs">{{ $lot->status->label() }}</x-status-badge>
+                        @if ($isBlocked && $lot->blocked_reason)
+                            <span class="block font-sans text-xs text-muted">{{ $lot->blocked_reason }} · {{ $lot->blockedBy?->name ?? '—' }} · {{ $lot->blocked_at?->fdatetime() ?? '—' }}</span>
+                        @elseif ($lot->mergedInto)
+                            <span class="block font-sans text-xs text-muted">{{ __('inventory.lot.merged_into', ['lot' => $lot->mergedInto->lot_no]) }}</span>
+                        @endif
+                    </td>
                     <td>{{ $lot->variant?->article?->name }}</td>
-                    <td>{{ $lot->best_before?->format('d.m.Y') ?? '—' }}</td>
+                    <td>{{ $lot->best_before?->fdate() ?? '—' }}</td>
                     <td class="text-right tabular-nums">{{ $onHand[$lot->id] }}</td>
                     @if ($canManage)
                         <td>
-                            <div class="flex items-end gap-1">
+                            @if ($isActive)
                                 <form method="POST" action="{{ route('inventory.lots.split') }}" class="flex items-end gap-1">
                                     @csrf
                                     <input type="hidden" name="lot" value="{{ $lot->sqid }}">
                                     <input aria-label="{{ __('inventory.lot.qty') }}" name="qty" type="number" step="0.0001" min="0.0001" placeholder="{{ __('inventory.lot.qty') }}" class="input input-xs input-bordered w-20">
                                     <input aria-label="{{ __('inventory.lot.new_lot_no') }}" name="new_lot_no" type="text" maxlength="80" placeholder="{{ __('inventory.lot.new_lot_no') }}" class="input input-xs input-bordered w-28">
-                                    <button type="submit" class="btn btn-xs">{{ __('inventory.lot.split') }}</button>
+                                    <x-button type="submit" tone="plain" size="xs">{{ __('inventory.lot.split') }}</x-button>
                                 </form>
-                                <x-icon-btn icon="label" size="xs" tone="ghost"
-                                            :href="route('inventory.labels.lot', $lot)"
-                                            target="_blank" :title="__('Etikett drucken')" />
-                            </div>
+                            @endif
+                        </td>
+                        <td class="text-right whitespace-nowrap">
+                            @if ($isActive)
+                                <x-icon-btn icon="lock" size="xs" tone="ghost" data-entry-modal-trigger
+                                            :href="route('inventory.lots.block.create', $lot)"
+                                            show-label>{{ __('inventory.lot.block.action') }}</x-icon-btn>
+                            @elseif ($isBlocked)
+                                <x-icon-btn icon="lock_open" size="xs" tone="ghost" data-entry-modal-trigger
+                                            :href="route('inventory.lots.unblock.create', $lot)"
+                                            show-label>{{ __('inventory.lot.unblock.action') }}</x-icon-btn>
+                            @endif
+                            <x-icon-btn icon="label" size="xs" tone="ghost"
+                                        :href="route('inventory.labels.lot', $lot)"
+                                        target="_blank" :title="__('Etikett drucken')" />
                         </td>
                     @endif
                 </tr>
             @empty
-                <x-table.empty :colspan="$canManage ? 5 : 4"
+                <x-table.empty :colspan="$canManage ? 6 : 4"
                                icon="inventory_2"
                                :title="__('inventory.lot.empty')" compact />
             @endforelse

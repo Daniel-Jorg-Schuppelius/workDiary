@@ -28,7 +28,7 @@
             </x-page-toolbar>
         </x-slot:toolbar>
 
-        <div class="alert alert-info rounded-2xl px-5 py-3 text-sm shadow-xs">
+        <div role="status" class="alert alert-info rounded-2xl px-5 py-3 text-sm shadow-xs">
             <x-icon name="info" class="text-base" />
             <span>{{ __('scope.page.no_data_loss') }}</span>
         </div>
@@ -67,7 +67,7 @@
                         </p>
                         <div class="mt-2 flex flex-wrap gap-1">
                             @foreach ($recommendation['modules'] as $code)
-                                <span class="badge badge-outline badge-sm">{{ __((string) (app(\App\Services\Licensing\ModuleCatalog::class)->labels()[$code] ?? $code)) }}</span>
+                                <x-status-badge tone="plain" outline>{{ __((string) (app(\App\Services\Licensing\ModuleCatalog::class)->labels()[$code] ?? $code)) }}</x-status-badge>
                             @endforeach
                         </div>
                     </div>
@@ -104,7 +104,7 @@
                             <div class="min-w-0 flex-1">
                                 <div class="flex flex-wrap items-center gap-2">
                                     <span class="font-semibold">{{ __($module['label']) }}</span>
-                                    <span class="badge badge-{{ $module['status']->tone() }} badge-sm">{{ $module['status']->label() }}</span>
+                                    <x-status-badge :tone="$module['status']->tone()">{{ $module['status']->label() }}</x-status-badge>
                                 </div>
                                 @if ($module['description'] !== '')
                                     <p class="mt-0.5 text-xs text-base-content/70">{{ __($module['description']) }}</p>

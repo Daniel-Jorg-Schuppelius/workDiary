@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Asset;
 
+use App\Enums\Asset\AssetComponentStatus;
 use App\Models\Article\Article;
 use App\Models\Asset\{Asset, AssetComponent};
 use App\Models\Platform\{Organization, User};
@@ -106,7 +107,7 @@ class AssetComponentTest extends TestCase {
         ], $this->admin);
 
         $old->refresh();
-        $this->assertSame(AssetComponent::STATUS_REPLACED, $old->status);
+        $this->assertSame(AssetComponentStatus::Replaced, $old->status);
         $this->assertSame(now()->toDateString(), $old->removed_on?->toDateString());
         $this->assertSame($new->id, $old->replaced_by_id);
         // Die Liste zeigt nur das neue Teil, die Historie beide.
@@ -129,8 +130,39 @@ class AssetComponentTest extends TestCase {
             ->post(route('assets.components.remove', [$this->asset, $component]))
             ->assertRedirect();
 
-        $this->assertSame(AssetComponent::STATUS_REMOVED, $component->refresh()->status);
+        $this->assertSame(AssetComponentStatus::Removed, $component->refresh()->status);
         $this->assertCount(0, app(AssetComponentService::class)->installed($this->asset));
+    }
+
+    public function test_a_replaced_part_keeps_its_history_when_removed_from_a_stale_page(): void {
+        $old = $this->part();
+        $this->travelTo(now()->subWeek());
+        app(AssetComponentService::class)->replace($old, ['label' => 'Neu'], $this->admin);
+        $this->travelBack();
+        $replacedOn = $old->refresh()->removed_on?->toDateString();
+
+        $this->actingAs($this->admin)
+            ->post(route('assets.components.remove', [$this->asset, $old]))
+            ->assertRedirect()
+            ->assertSessionHas('error', __('asset.components.not_installed'));
+
+        $this->assertSame(AssetComponentStatus::Replaced, $old->refresh()->status);
+        $this->assertSame($replacedOn, $old->removed_on?->toDateString());
+    }
+
+    public function test_history_lists_only_parts_that_are_no_longer_installed(): void {
+        $old = $this->part(['label' => 'Filter alt']);
+        app(AssetComponentService::class)->replace($old, ['label' => 'Filter neu'], $this->admin);
+        $gone = $this->part(['label' => 'Keilriemen']);
+        $this->actingAs($this->admin)->post(route('assets.components.remove', [$this->asset, $gone]))->assertRedirect();
+
+        $response = $this->actingAs($this->admin)->get(route('assets.components.index', $this->asset));
+
+        $response->assertOk()
+            ->assertSee(AssetComponentStatus::Replaced->label())
+            ->assertSee(AssetComponentStatus::Removed->label());
+        // Das verbaute Teil steht nur in der Liste, nicht in der Historie.
+        $this->assertSame(1, substr_count((string) $response->getContent(), 'Filter neu'));
     }
 
     public function test_index_shows_installed_and_due_parts(): void {

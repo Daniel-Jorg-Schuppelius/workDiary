@@ -11,7 +11,9 @@
 namespace Tests\Feature\Plugins\JtlWawi;
 
 use App\Enums\Billing\{DocumentDirection, DocumentKind};
+use App\Enums\Finance\AccountingVoucherState;
 use App\Models\Finance\AccountingVoucher;
+use App\Plugins\JtlWawi\Enums\JtlConnectionStatus;
 use App\Plugins\JtlWawi\Models\JtlConnection;
 use App\Plugins\JtlWawi\Services\JtlVoucherPullService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -45,7 +47,7 @@ final class JtlVoucherPullTest extends TestCase {
             'api_version' => '2.0',
             'allow_private_network' => true,
             'api_key' => 'KEY-TEST',
-            'status' => JtlConnection::STATUS_ACTIVE,
+            'status' => JtlConnectionStatus::Active,
         ]);
     }
 
@@ -71,7 +73,7 @@ final class JtlVoucherPullTest extends TestCase {
         $this->assertSame('jtl_wawi', $invoice->plugin_id);
         $this->assertSame(DocumentDirection::Outgoing->value, $invoice->direction);
         $this->assertSame(DocumentKind::Invoice->value, $invoice->document_kind);
-        $this->assertSame('open', $invoice->voucher_state);
+        $this->assertSame(AccountingVoucherState::Open, $invoice->voucher_state);
         $this->assertSame('238.00', (string) $invoice->total_amount);
         $this->assertSame('RE-88001', $invoice->voucher_number);
 
@@ -79,7 +81,7 @@ final class JtlVoucherPullTest extends TestCase {
         $storno = AccountingVoucher::query()->where('external_id', '88002')->firstOrFail();
         $this->assertTrue($storno->is_cancellation);
         $this->assertSame(DocumentKind::Cancellation->value, $storno->document_kind);
-        $this->assertSame('cancelled', $storno->voucher_state);
+        $this->assertSame(AccountingVoucherState::Cancelled, $storno->voucher_state);
         $this->assertSame('88001', $storno->cancels_external_id);
     }
 
@@ -108,7 +110,7 @@ final class JtlVoucherPullTest extends TestCase {
     }
 
     public function test_without_active_connection_nothing_is_requested(): void {
-        JtlConnection::query()->update(['status' => JtlConnection::STATUS_BLOCKED]);
+        JtlConnection::query()->update(['status' => JtlConnectionStatus::Blocked]);
         $fake = FakePluginHttp::fake([self::BASE . '/*' => FakePluginHttp::response([])]);
 
         $result = app(JtlVoucherPullService::class)->pull((int) $this->organization->id);

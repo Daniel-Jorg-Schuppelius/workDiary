@@ -12,8 +12,7 @@
 {{-- App-Standard für volle, scrollende Inhaltshöhe (wie Woche/Kanban): der Wrapper
      bekommt feste Höhe (wd-page-fill), main füllt sie (flex-1), die inneren Panes
      regeln ihr Scrollen selbst. --}}
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @php
     /** @var \Illuminate\Support\Collection<int,\App\Models\Chat\Channel> $channels */
@@ -42,7 +41,7 @@
     </x-slot:toolbar>
 
     {{-- Such-/Filterleiste (Standard-Optik, eigener div unter dem Header) --}}
-    <div class="flex min-h-16 flex-none items-center gap-2 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+    <x-card class="flex min-h-16 flex-none items-center gap-2">
         <div class="relative w-full max-w-md">
             <input id="chat-search" type="search" autocomplete="off"
                    class="input input-sm input-bordered w-full"
@@ -50,7 +49,7 @@
             <div id="chat-search-results"
                  class="absolute inset-x-0 top-full z-30 mt-1 hidden max-h-80 overflow-y-auto rounded-box border border-base-300 bg-base-100 shadow-lg"></div>
         </div>
-    </div>
+    </x-card>
 
 <div id="chat-root"
      data-channel-id="{{ $activeChannel?->sqid }}"
@@ -69,20 +68,21 @@
      class="flex min-h-0 flex-1 gap-2 lg:gap-3">
 
     {{-- Sidebar: Kanäle (mobil: Vollbreite; bei offenem Kanal ausgeblendet) --}}
-    <aside class="{{ $activeChannel ? 'hidden lg:flex' : 'flex' }} w-full min-h-0 shrink-0 flex-col overflow-hidden rounded-box border border-base-300 bg-base-100 shadow-xs lg:w-64">
+    <x-card as="aside" padding="p-0" class="{{ $activeChannel ? 'hidden lg:flex' : 'flex' }} w-full min-h-0 shrink-0 flex-col overflow-hidden lg:w-64">
         <div class="flex h-14 shrink-0 items-center gap-2 border-b border-base-300 px-3">
             <h2 class="font-['Space_Grotesk'] font-semibold">{{ __('Kanäle') }}</h2>
         </div>
         <nav id="chat-channel-list" class="min-h-0 flex-1 overflow-y-auto p-2" data-list-url="{{ route('chat.channel-list') }}">
             @include('chat._channel_list')
         </nav>
-    </aside>
+    </x-card>
 
     {{-- Hauptbereich (mobil: nur sichtbar, wenn ein Kanal offen ist) --}}
-    <section class="{{ $activeChannel ? 'flex' : 'hidden lg:flex' }} min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-box border border-base-300 bg-base-100 shadow-xs">
+    <x-card as="section" padding="p-0" class="{{ $activeChannel ? 'flex' : 'hidden lg:flex' }} min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
         @if ($activeChannel)
             <header class="flex h-14 shrink-0 items-center justify-between gap-2 border-b border-base-300 px-3">
-                <a href="{{ route('chat.index') }}" class="btn btn-ghost btn-sm btn-square -ml-1 shrink-0 lg:hidden" title="{{ __('Zurück') }}"><x-icon name="arrow_back" /></a>
+                <x-icon-btn icon="arrow_back" size="sm" :href="route('chat.index')" :label="__('Zurück')"
+                        class="btn-square -ml-1 shrink-0 lg:hidden" />
                 <div class="min-w-0 flex-1">
                     <h1 class="truncate font-['Space_Grotesk'] text-lg font-semibold leading-tight">
                         <x-icon :name="$icon[$activeChannel->type] ?? 'tag'" size="1.1rem" class="opacity-60" /> {{ $channelTitle($activeChannel) }}
@@ -95,20 +95,16 @@
                     </span>
                     <span class="text-xs text-muted">{{ trans_choice(':count Mitglied|:count Mitglieder', $activeChannel->members->count(), ['count' => $activeChannel->members->count()]) }}</span>
                     @can('manageMembers', $activeChannel)
-                        <button class="btn btn-xs btn-ghost btn-square" title="{{ __('Mitglieder einladen') }}" aria-label="{{ __('Mitglieder einladen') }}" data-open-dialog="chat-invite"><x-icon name="person_add" size="1.1rem" /></button>
+                        <x-icon-btn icon="person_add" icon-size="1.1rem" type="submit" :label="__('Mitglieder einladen')"
+                                class="btn-square" data-open-dialog="chat-invite" />
                     @endcan
                     {{-- Angepinnte, Umbenennen, Löschen (MVP-798, Befund C1-03):
                          Endpunkte gab es, Einstiege fehlten. --}}
-                    <button type="button" class="btn btn-xs btn-ghost btn-square" data-pinned-open
-                            data-open-dialog="chat-pinned"
-                            title="{{ __('Angepinnte Nachrichten') }}" aria-label="{{ __('Angepinnte Nachrichten') }}">
-                        <x-icon name="push_pin" size="1rem" />
-                    </button>
+                    <x-icon-btn icon="push_pin" icon-size="1rem" :label="__('Angepinnte Nachrichten')" class="btn-square"
+                            data-pinned-open data-open-dialog="chat-pinned" />
                     @can('update', $activeChannel)
-                        <button type="button" class="btn btn-xs btn-ghost btn-square" data-open-dialog="chat-edit-channel"
-                                title="{{ __('Kanal bearbeiten') }}" aria-label="{{ __('Kanal bearbeiten') }}">
-                            <x-icon name="edit" size="1rem" />
-                        </button>
+                        <x-icon-btn icon="edit" icon-size="1rem" :label="__('Kanal bearbeiten')" class="btn-square"
+                                data-open-dialog="chat-edit-channel" />
                     @endcan
                     @can('delete', $activeChannel)
                         <x-action-form :action="route('chat.channels.destroy', $activeChannel)" method="DELETE"
@@ -116,7 +112,8 @@
                               :confirm="__('Der Kanal wird mit allen Nachrichten gelöscht. Das lässt sich nicht rückgängig machen.')"
                               :confirm-label="__('Kanal löschen')"
                               confirm-icon="delete_forever">
-                            <button class="btn btn-xs btn-ghost btn-square text-error" title="{{ __('Kanal löschen') }}" aria-label="{{ __('Kanal löschen') }}"><x-icon name="delete_forever" size="1rem" /></button>
+                            <x-icon-btn icon="delete_forever" icon-size="1rem" tone="error" type="submit" :label="__('Kanal löschen')"
+                                    class="btn-square" />
                         </x-action-form>
                     @endcan
                     @if (! $activeChannel->isDirect())
@@ -125,7 +122,7 @@
                               :confirm="__('Sie erhalten keine neuen Nachrichten dieses Kanals mehr.')"
                               :confirm-label="__('Verlassen')"
                               confirm-icon="logout">
-                            <button class="btn btn-xs btn-ghost btn-square text-error" title="{{ __('Verlassen') }}" aria-label="{{ __('Verlassen') }}"><x-icon name="logout" size="1.1rem" /></button>
+                            <x-icon-btn icon="logout" icon-size="1.1rem" tone="error" type="submit" :label="__('Verlassen')" class="btn-square" />
                         </x-action-form>
                     @endif
                 </div>
@@ -134,9 +131,8 @@
             {{-- Nachrichtenliste --}}
             <div class="relative flex min-h-0 flex-1 flex-col">
                 <div id="chat-messages" class="min-h-0 flex-1 overflow-x-clip overflow-y-auto pt-3"></div>
-                <button id="chat-scroll-bottom" type="button"
-                        class="btn btn-circle btn-sm absolute bottom-3 right-4 z-10 hidden shadow-md"
-                        title="{{ __('Nach unten') }}"><x-icon name="arrow_downward" /></button>
+                <x-icon-btn icon="arrow_downward" tone="plain" size="sm" :label="__('Nach unten')"
+                        class="btn-circle absolute bottom-3 right-4 z-10 hidden shadow-md" id="chat-scroll-bottom" />
             </div>
 
             {{-- Tipp-Anzeige ("… schreibt …") --}}
@@ -152,25 +148,25 @@
                         <span id="chat-reply-name" class="font-semibold text-primary"></span>
                         <span id="chat-reply-snippet" class="block truncate opacity-70"></span>
                     </div>
-                    <button type="button" id="chat-reply-cancel" class="btn btn-ghost btn-xs btn-square" title="{{ __('Abbrechen') }}"><x-icon name="close" size="1rem" /></button>
+                    <x-icon-btn icon="close" icon-size="1rem" :label="__('Abbrechen')" class="btn-square" id="chat-reply-cancel" />
                 </div>
                 {{-- Format-Toolbar --}}
                 <div class="mb-1 flex items-center gap-0.5">
-                    <button type="button" data-fmt="bold" class="btn btn-ghost btn-xs btn-square" title="{{ __('Fett') }}"><x-icon name="format_bold" size="1.15rem" /></button>
-                    <button type="button" data-fmt="italic" class="btn btn-ghost btn-xs btn-square" title="{{ __('Kursiv') }}"><x-icon name="format_italic" size="1.15rem" /></button>
-                    <button type="button" data-fmt="code" class="btn btn-ghost btn-xs btn-square" title="{{ __('Inline-Code') }}"><x-icon name="code" size="1.15rem" /></button>
-                    <button type="button" data-fmt="codeblock" class="btn btn-ghost btn-xs btn-square" title="{{ __('Codeblock') }}"><x-icon name="data_object" size="1.15rem" /></button>
-                    <button type="button" id="chat-schedule-btn" class="btn btn-ghost btn-xs btn-square" title="{{ __('Senden planen') }}"><x-icon name="schedule" size="1.15rem" /></button>
+                    <x-icon-btn icon="format_bold" icon-size="1.15rem" :label="__('Fett')" class="btn-square" data-fmt="bold" />
+                    <x-icon-btn icon="format_italic" icon-size="1.15rem" :label="__('Kursiv')" class="btn-square" data-fmt="italic" />
+                    <x-icon-btn icon="code" icon-size="1.15rem" :label="__('Inline-Code')" class="btn-square" data-fmt="code" />
+                    <x-icon-btn icon="data_object" icon-size="1.15rem" :label="__('Codeblock')" class="btn-square" data-fmt="codeblock" />
+                    <x-icon-btn icon="schedule" icon-size="1.15rem" :label="__('Senden planen')" class="btn-square" id="chat-schedule-btn" />
                     <div class="relative">
-                        <button type="button" id="chat-emoji-insert" class="btn btn-ghost btn-xs btn-square" title="{{ __('Emoji') }}"><x-icon name="mood" size="1.15rem" /></button>
+                        <x-icon-btn icon="mood" icon-size="1.15rem" :label="__('Emoji')" class="btn-square" id="chat-emoji-insert" />
                         <div id="chat-emoji-panel" class="absolute bottom-full left-0 z-30 mb-1 hidden max-h-56 w-72 grid-cols-8 gap-0.5 overflow-y-auto rounded-box border border-base-300 bg-base-100 p-1 text-2xl shadow-lg">
                             @foreach (['👍', '👎', '❤️', '🔥', '🎉', '😂', '😅', '😍', '😎', '🤔', '😮', '😢', '😡', '🤯', '🥳', '😴', '🙏', '👏', '🙌', '💪', '🤝', '👀', '✅', '❌', '❓', '❗', '💡', '⭐', '🚀', '🎯', '💯', '☕'] as $emoji)
                                 <button type="button" data-insert="{{ $emoji }}" class="rounded p-1 leading-none hover:bg-base-200">{{ $emoji }}</button>
                             @endforeach
                         </div>
                     </div>
-                    <button type="button" class="btn btn-ghost btn-xs btn-square ml-auto" title="{{ __('Formatierungshilfe') }}"
-                            data-open-dialog="chat-format-help"><x-icon name="help" size="1.15rem" /></button>
+                    <x-icon-btn icon="help" icon-size="1.15rem" :label="__('Formatierungshilfe')" class="btn-square ml-auto"
+                            data-open-dialog="chat-format-help" />
                 </div>
                 {{-- Anhang-Vorschau (Einfügen/Drag&Drop) --}}
                 <div id="chat-file-preview" class="mb-1 hidden flex-wrap gap-2"></div>
@@ -182,8 +178,8 @@
                         <x-icon name="attach_file" />
                         <input id="chat-file-input" type="file" name="files[]" multiple class="hidden">
                     </label>
-                    <button type="button" class="btn btn-ghost btn-square" title="{{ __('Umfrage') }}" data-open-dialog="chat-new-poll"><x-icon name="bar_chart" /></button>
-                    <button type="submit" class="btn btn-primary btn-square" title="{{ __('Senden') }}"><x-icon name="send" /></button>
+                    <x-icon-btn icon="bar_chart" size="md" :label="__('Umfrage')" class="btn-square" data-open-dialog="chat-new-poll" />
+                    <x-icon-btn icon="send" tone="primary" size="md" type="submit" :label="__('Senden')" class="btn-square" />
                 </div>
             </form>
         @else
@@ -193,20 +189,20 @@
                            :title="__('Kein Kanal ausgewählt')"
                            :message="__('Wählen Sie links einen Kanal oder erstellen Sie einen neuen.')" />
         @endif
-    </section>
+    </x-card>
 
     {{-- Thread-Drawer --}}
     <aside id="chat-thread" class="hidden min-h-0 flex-col border border-base-300 bg-base-100 shadow-xs fixed inset-0 z-40 lg:static lg:inset-auto lg:z-auto lg:w-80 lg:shrink-0 lg:rounded-box">
         <div class="flex h-14 shrink-0 items-center justify-between border-b border-base-300 px-3">
             <h2 class="font-['Space_Grotesk'] font-semibold">{{ __('Thread') }}</h2>
-            <button id="chat-thread-close" class="btn btn-xs btn-ghost btn-square" aria-label="{{ __('Thread schließen') }}" title="{{ __('Thread schließen') }}"><x-icon name="close" /></button>
+            <x-icon-btn icon="close" type="submit" :label="__('Thread schließen')" class="btn-square" id="chat-thread-close" />
         </div>
         <div id="chat-thread-body" class="min-h-0 flex-1 overflow-y-auto p-2"></div>
         <form id="chat-thread-form" class="border-t border-base-300 p-3" enctype="multipart/form-data">
             @csrf
             <div class="flex items-end gap-2">
                 <textarea aria-label="{{ __('Antworten …') }}" name="body" rows="1" class="textarea textarea-bordered min-h-10 flex-1" placeholder="{{ __('Antworten …') }}"></textarea>
-                <button type="submit" class="btn btn-primary btn-square" aria-label="{{ __('Senden') }}" title="{{ __('Senden') }}"><x-icon name="send" /></button>
+                <x-icon-btn icon="send" tone="primary" size="md" type="submit" :label="__('Senden')" class="btn-square" />
             </div>
         </form>
     </aside>
@@ -240,6 +236,7 @@
             @foreach ($orgUsers as $u)<option value="{{ $u->sqid }}">{{ $u->name }}</option>@endforeach
         </select>
         @if ($orgUsers->isEmpty())
+            {{-- raw-markup-ok: Hinweis am Formularfeld, kein Leerzustand einer Liste --}}
             <p class="mt-1 text-xs text-muted">{{ __('Keine weiteren Mitarbeiter in dieser Organisation.') }}</p>
         @endif
     </div>
@@ -313,10 +310,10 @@
     {{-- Dialog: Erinnerung (JS-gesteuert) --}}
     <x-modal id="chat-remind-dialog" :embedded="false" icon="alarm" :eyebrow="__('Chat')" :title="__('Erinnerung')">
         <div class="flex flex-wrap gap-2">
-            <button type="button" class="btn btn-sm" data-remind="20">{{ __('In 20 Min.') }}</button>
-            <button type="button" class="btn btn-sm" data-remind="60">{{ __('In 1 Stunde') }}</button>
-            <button type="button" class="btn btn-sm" data-remind="180">{{ __('In 3 Stunden') }}</button>
-            <button type="button" class="btn btn-sm" data-remind="tomorrow">{{ __('Morgen früh') }}</button>
+            <x-button tone="plain" data-remind="20">{{ __('In 20 Min.') }}</x-button>
+            <x-button tone="plain" data-remind="60">{{ __('In 1 Stunde') }}</x-button>
+            <x-button tone="plain" data-remind="180">{{ __('In 3 Stunden') }}</x-button>
+            <x-button tone="plain" data-remind="tomorrow">{{ __('Morgen früh') }}</x-button>
         </div>
         <div class="fieldset mt-3">
             <span class="fieldset-label">{{ __('Eigener Zeitpunkt') }}</span>
@@ -341,7 +338,8 @@
                 @for ($i = 0; $i < 2; $i++)
                     <div class="flex items-center gap-1">
                         <input aria-label="{{ __('Option') }} {{ $i + 1 }}" type="text" name="options[]" maxlength="200" class="input input-bordered input-sm w-full" placeholder="{{ __('Option') }} {{ $i + 1 }}">
-                        <button type="button" class="chat-poll-remove btn btn-ghost btn-sm btn-square" tabindex="-1" title="{{ __('Entfernen') }}"><x-icon name="close" size="1rem" /></button>
+                        <x-icon-btn icon="close" icon-size="1rem" size="sm" :label="__('Entfernen')"
+                                class="chat-poll-remove btn-square" tabindex="-1" />
                     </div>
                 @endfor
             </div>

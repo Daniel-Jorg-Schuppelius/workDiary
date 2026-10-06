@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Accounting\Posting;
 
 use App\Enums\Finance\PostingSourceKind;
+use App\Models\Accounting\AccountingEntry;
 use App\Models\Platform\Organization;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
@@ -42,4 +43,10 @@ interface PostingSourceAdapter {
 
     /** Idempotenzschlüssel der Quelle (`invoice:42`). */
     public function sourceKey(Model $source): string;
+
+    /**
+     * Bildet der gebuchte Satz die Quelle nicht mehr ab (z. B. Erstattung nach
+     * dem Buchen)? Dann zeigt der Buchungseingang sie wieder an.
+     */
+    public function changedSincePosting(Model $source, AccountingEntry $entry): bool;
 }

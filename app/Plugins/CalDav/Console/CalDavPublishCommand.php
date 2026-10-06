@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\CalDav\Console;
 
 use App\Plugins\CalDav\CalDavPlugin;
-use App\Plugins\Contracts\CalendarPublisher;
+use App\Plugins\Contracts\{CalendarPublisher, Plugin};
 use App\Plugins\Support\Calendar\Console\CalendarPublishCommand;
 
 /**
@@ -26,7 +26,7 @@ class CalDavPublishCommand extends CalendarPublishCommand {
 
     protected $description = 'Publiziert WorkDiary-Termine idempotent in die konfigurierten CalDAV-Kalender.';
 
-    protected function plugin(): CalendarPublisher {
+    protected function plugin(): Plugin&CalendarPublisher {
         return new CalDavPlugin();
     }
 }

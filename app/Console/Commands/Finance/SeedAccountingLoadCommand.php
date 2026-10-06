@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands\Finance;
 
+use App\Console\Concerns\MeasuresQueryLoad;
 use App\Enums\Finance\{AccountType, AccountingEntryStatus, OpenItemDirection, OpenItemStatus, ProfitDetermination};
 use App\Models\Accounting\{AccountingAccount, AccountingEntry, AccountingFiscalYear, AccountingPeriod, AccountingProfile};
 use App\Models\Platform\{Organization, User};
@@ -37,6 +38,8 @@ use Illuminate\Support\Facades\DB;
  * EXPLAIN der dabei erzeugten Abfragen: Erst messen, dann optimieren.
  */
 class SeedAccountingLoadCommand extends Command {
+    use MeasuresQueryLoad;
+
     protected $signature = 'accounting:seed-load
         {--organization= : ID der Organisation (Standard: erste)}
         {--years=5 : Anzahl Geschäftsjahre}
@@ -362,73 +365,7 @@ class SeedAccountingLoadCommand extends Command {
         $this->newLine();
         $this->line('<info>Messung</info> (Zeitraum ' . $from->toDateString() . ' – ' . $to->toDateString() . ')');
 
-        // Genau ein Zuhörer für alle Fälle — je Fall einen zu registrieren
-        // würde jede Abfrage mehrfach zählen.
-        /** @var list<array<string, mixed>> $queries */
-        $queries = [];
-        $recording = new \ArrayObject(['on' => false]);
-        DB::listen(static function ($query) use (&$queries, $recording): void {
-            if ($recording['on'] === true) {
-                $queries[] = ['sql' => $query->sql, 'bindings' => $query->bindings, 'time' => $query->time];
-            }
-        });
-
-        foreach ($cases as $name => $case) {
-            // Ein Aufwärmlauf: Die erste Abfrage misst den kalten Puffer der
-            // Datenbank, nicht das Verhalten der Anwendung.
-            $case();
-
-            $queries = [];
-            $recording['on'] = true;
-
-            $startedAt = microtime(true);
-            $case();
-            $elapsed = (microtime(true) - $startedAt) * 1000;
-            $recording['on'] = false;
-
-            $this->line(sprintf('  %-16s %8.1f ms  %3d Abfragen', $name, $elapsed, count($queries)));
-
-            foreach ($this->slowest($queries) as $query) {
-                $this->line(sprintf('    %6.1f ms  %s', $query['time'], mb_substr((string) $query['sql'], 0, 120)));
-                foreach ($this->explain($query) as $row) {
-                    $this->line('      EXPLAIN: ' . $row);
-                }
-            }
-        }
+        $this->measureCases($cases);
     }
 
-    /**
-     * @param  list<array<string, mixed>>  $queries
-     * @return list<array<string, mixed>>
-     */
-    private function slowest(array $queries): array {
-        usort($queries, static fn (array $a, array $b): int => $b['time'] <=> $a['time']);
-
-        return array_slice($queries, 0, 2);
-    }
-
-    /**
-     * @param  array<string, mixed>  $query
-     * @return list<string>
-     */
-    private function explain(array $query): array {
-        if (! str_starts_with(strtolower(trim((string) $query['sql'])), 'select')) {
-            return [];
-        }
-
-        try {
-            $rows = DB::select('EXPLAIN ' . $query['sql'], (array) $query['bindings']);
-        } catch (\Throwable $exception) {
-            return ['nicht verfügbar (' . $exception->getMessage() . ')'];
-        }
-
-        return array_values(array_map(static function (object $row): string {
-            $data = (array) $row;
-
-            return implode(' | ', array_map(
-                static fn (string $key): string => $key . '=' . (string) ($data[$key] ?? '—'),
-                array_values(array_filter(array_keys($data), static fn (string $key): bool => in_array($key, ['table', 'type', 'key', 'rows', 'Extra'], true))),
-            ));
-        }, $rows));
-    }
 }

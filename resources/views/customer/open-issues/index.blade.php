@@ -21,14 +21,7 @@
                     <div class="flex flex-wrap items-start justify-between gap-3">
                         <div class="min-w-0 flex-1">
                             <div class="mb-1 flex flex-wrap items-center gap-2">
-                                <span @class([
-                                    'badge badge-sm',
-                                    'badge-warning' => $issue->status->value === 'open',
-                                    'badge-info' => $issue->status->value === 'inProgress',
-                                    'badge-error' => $issue->status->value === 'blocked',
-                                    'badge-success' => $issue->status->value === 'done',
-                                    'badge-ghost' => in_array($issue->status->value, ['wontDo', 'reopened'], true),
-                                ])>{{ $issue->status->label() }}</span>
+                                <x-status-badge :tone="match ($issue->status->value) { 'open' => 'warning', 'inProgress' => 'info', 'blocked' => 'error', 'done' => 'success', 'wontDo', 'reopened' => 'ghost', default => 'plain' }">{{ $issue->status->label() }}</x-status-badge>
                                 <x-status-badge size="sm" outline>{{ $issue->severity->label() }}</x-status-badge>
                                 @if ($issue->category)
                                     <x-status-badge tone="ghost" size="sm">{{ $issue->category }}</x-status-badge>

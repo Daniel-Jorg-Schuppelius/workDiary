@@ -24,16 +24,10 @@
 @php($inspectionStatus = $vehicles->mapWithKeys(fn ($v) => [$v->id => $v->asset !== null ? app(\App\Services\Asset\Contracts\AssetComplianceStatusProvider::class)->statusFor($v->asset) : null]))
 @php($reservations = \App\Models\Fleet\VehicleReservation::query()->where('diary_entry_id', $diary->id)->with(['vehicle', 'reservedBy'])->orderBy('reserved_from')->get())
 
-<section class="rounded-box border border-base-300 bg-base-100 p-6 shadow-xs space-y-5">
+<x-card as="section" padding="p-6" class="space-y-5">
     <div class="flex flex-wrap items-center justify-between gap-3">
         <h2 class="font-['Space_Grotesk'] text-xl font-bold text-base-content">{{ __('dispatch.heading') }}</h2>
-        <span @class([
-            'badge',
-            'badge-success' => $dispatchStatus->tone() === 'done',
-            'badge-info' => $dispatchStatus->tone() === 'progress',
-            'badge-warning' => $dispatchStatus->tone() === 'open',
-            'badge-ghost' => $dispatchStatus->tone() === 'neutral',
-        ])>{{ $dispatchStatus->label() }}</span>
+        <x-status-badge :tone="$dispatchStatus->badgeTone()" size="md">{{ $dispatchStatus->label() }}</x-status-badge>
     </div>
 
     @if (! empty($blocking))
@@ -65,6 +59,7 @@
     @endif
 
     @if (empty($blocking) && empty($warnings))
+        {{-- raw-markup-ok: Prüfergebnis (Erfolgsaussage), kein Leerzustand einer Liste --}}
         <p class="text-sm text-success">{{ __('dispatch.conflicts.none') }}</p>
     @endif
 
@@ -116,19 +111,14 @@
             <div class="flex flex-wrap gap-1">
                 @foreach ($requiredQualifications as $qualification)
                     @php($qStatus = $assigneeStatus[$qualification->id] ?? 'missing')
-                    <span @class([
-                        'badge badge-sm gap-1',
-                        'badge-success' => $qStatus === 'ok',
-                        'badge-warning' => $qStatus === 'expiring',
-                        'badge-error' => $qStatus === 'missing',
-                    ])>
+                    <x-status-badge :tone="match ($qStatus) { 'ok' => 'success', 'expiring' => 'warning', 'missing' => 'error', default => 'plain' }" class="gap-1">
                         <x-icon name="{{ $qStatus === 'ok' ? 'check' : ($qStatus === 'expiring' ? 'schedule' : 'close') }}" class="text-xs" />
                         {{ $qualification->abbreviation ?? $qualification->name }}
-                    </span>
+                    </x-status-badge>
                 @endforeach
             </div>
         @elseif ($requiredQualifications->isEmpty())
-            <p class="text-sm text-muted">{{ __('Keine Qualifikationen gefordert.') }}</p>
+            <x-empty-state icon="workspace_premium" :title="__('Keine Qualifikationen gefordert.')" compact />
         @endif
 
         @if ($canDispatch && $allQualifications->isNotEmpty())
@@ -175,7 +165,7 @@
                 @endforeach
             </ul>
         @else
-            <p class="text-sm text-muted">{{ __('dispatch.vehicle.none') }}</p>
+            <x-empty-state icon="directions_car" :title="__('dispatch.vehicle.none')" compact />
         @endif
 
         @if ($canReserve && $vehicles->isNotEmpty())
@@ -214,4 +204,4 @@
             @endif
         @endif
     </div>
-</section>
+</x-card>

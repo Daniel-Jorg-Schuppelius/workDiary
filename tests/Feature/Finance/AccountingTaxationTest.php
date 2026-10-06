@@ -11,6 +11,7 @@
 namespace Tests\Feature\Finance;
 
 use App\Enums\Finance\{AccountType, ProfitDetermination, SettlementKind, TaxationMethod};
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Accounting\{AccountingAccount, AccountingEvent, AccountingPostingRule, AccountingTaxationPeriod};
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
@@ -93,7 +94,7 @@ class AccountingTaxationTest extends TestCase {
             'organization_id' => $this->org->id,
             'customer_id' => $customer->id,
             'number' => 'RE-1',
-            'status' => Invoice::STATUS_ISSUED,
+            'status' => InvoiceStatus::Issued,
             'issued_on' => $this->startsOn->addDays(10)->toDateString(),
             'currency' => 'EUR',
             'subtotal' => '100.00',

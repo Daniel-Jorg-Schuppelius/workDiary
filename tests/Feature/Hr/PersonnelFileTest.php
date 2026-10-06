@@ -99,6 +99,34 @@ final class PersonnelFileTest extends TestCase {
         $this->assertDatabaseHas('audit_logs', ['event' => 'hrFile.downloaded', 'auditable_id' => $document->id, 'user_id' => $this->hr->id]);
     }
 
+    /** Konsolidierungs-Audit 2026-10 (k4-14): die Akte blättert und sortiert über die Datenbank. */
+    public function test_file_pages_and_sorts_on_the_server(): void {
+        foreach (range(1, 31) as $i) {
+            Document::factory()->create([
+                'organization_id' => $this->org->id,
+                'documentable_type' => $this->member->getMorphClass(),
+                'documentable_id' => $this->member->id,
+                'title' => sprintf('Unterlage %02d', $i),
+                'hr_category' => HrDocumentCategory::Contract->value,
+                'confidential' => true,
+                'valid_until' => sprintf('2030-01-%02d', 32 - $i),
+            ]);
+        }
+
+        $first = $this->actingAs($this->hr)->get(route('org.members.personnel-file.index', $this->member))->assertOk();
+        $documents = $first->viewData('documents');
+        $this->assertSame(31, $documents->total());
+        $this->assertCount(30, $documents->items());
+        $this->assertSame('Unterlage 01', $documents->items()[0]->title);
+        $first->assertDontSee('Unterlage 31');
+
+        $byValidity = $this->get(route('org.members.personnel-file.index', [$this->member, 'sort' => 'valid_until', 'dir' => 'asc']))->assertOk();
+        $this->assertSame('Unterlage 31', $byValidity->viewData('documents')->items()[0]->title);
+        $this->assertStringContainsString('sort=valid_until', (string) $byValidity->viewData('documents')->nextPageUrl());
+
+        $this->actingAs($this->member)->get(route('account.personnel-file', ['page' => 2]))->assertOk()->assertSee('Unterlage 31');
+    }
+
     public function test_other_member_is_forbidden(): void {
         $document = $this->file();
         $colleague = User::factory()->user()->create(['organization_id' => $this->org->id]);
@@ -231,7 +259,7 @@ final class PersonnelFileTest extends TestCase {
 
         $proposal = RetentionProposal::query()->where('area', 'personnel_files')->firstOrFail();
         $this->assertSame($document->id, (int) $proposal->subject_id);
-        $this->assertSame(RetentionProposal::STATUS_PENDING, $proposal->status);
+        $this->assertSame(\App\Enums\Privacy\RetentionProposalStatus::Pending, $proposal->status);
         // Die Akte blockt die Anonymisierung des Kontos (Bereichs-Muster „zuerst bereinigen").
         $this->assertSame(0, RetentionProposal::query()->where('area', 'employee_records')->count());
         $this->assertGreaterThanOrEqual(1, $result['exempt']);

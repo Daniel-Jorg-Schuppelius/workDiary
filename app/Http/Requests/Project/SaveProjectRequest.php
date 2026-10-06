@@ -93,7 +93,7 @@ class SaveProjectRequest extends BaseFormRequest {
             // der Projektname selbst wird ohnehin abgeleitet.
             'keywords' => ['nullable', 'array', 'max:20'],
             'keywords.*' => ['string', 'min:3', 'max:60'],
-            'color' => ['nullable', 'string', 'max:16'],
+            'color' => ['nullable', 'string', 'max:16', new \App\Rules\ColorValue],
             'status' => ['required', Rule::enum(ProjectStatus::class)],
             'starts_on' => ['nullable', 'date'],
             'ends_on' => ['nullable', 'date', 'after_or_equal:starts_on'],

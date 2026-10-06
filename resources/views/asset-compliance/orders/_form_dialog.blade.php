@@ -31,7 +31,7 @@
         @forelse ($schedules as $schedule)
             <label class="flex items-center gap-2 text-sm">
                 <input type="checkbox" class="checkbox checkbox-sm" name="schedule_ids[]" value="{{ $schedule->sqid }}" @checked(in_array($schedule->sqid, (array) old('schedule_ids', []), true))>
-                <span>{{ $schedule->asset?->name }} <span class="text-muted">({{ $schedule->asset?->asset_no }})</span> — {{ __('inspection_order.due', ['date' => $schedule->due_on->format('d.m.Y')]) }}</span>
+                <span>{{ $schedule->asset?->name }} <span class="text-muted">({{ $schedule->asset?->asset_no }})</span> — {{ __('inspection_order.due', ['date' => $schedule->due_on->fdate()]) }}</span>
             </label>
         @empty
             <p class="text-sm text-muted">{{ __('inspection_order.no_schedules') }}</p>

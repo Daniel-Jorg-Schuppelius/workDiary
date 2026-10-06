@@ -10,6 +10,7 @@
 
 namespace App\Services\Reporting;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
 use App\Services\Billing\Contracts\ExternalRevenue;
@@ -54,7 +55,7 @@ class PaymentBehaviorReportBuilder {
             ->whereNotNull('issued_on')
             ->where('issued_on', '<', DateRange::dayAfter($to))
             ->whereIn('type', [Invoice::TYPE_INVOICE, Invoice::TYPE_PARTIAL, Invoice::TYPE_FINAL])
-            ->whereIn('status', [Invoice::STATUS_ISSUED, Invoice::STATUS_PARTIALLY_PAID, Invoice::STATUS_PAID])
+            ->whereIn('status', [InvoiceStatus::Issued, InvoiceStatus::PartiallyPaid, InvoiceStatus::Paid])
             ->when($customerId !== null, fn($q) => $q->where('customer_id', $customerId))
             ->when($customerId === null && $excludedCustomerIds !== [], fn($q) => $q->whereNotIn('customer_id', $excludedCustomerIds))
             ->get(['id', 'customer_id', 'number', 'issued_on', 'due_on', 'paid_on', 'total', 'status'])
@@ -66,7 +67,7 @@ class PaymentBehaviorReportBuilder {
                 'dueOn' => $inv->due_on?->toDateString(),
                 'paidOn' => $inv->paid_on?->toDateString(),
                 'total' => $inv->total?->toFloat() ?? 0.0,
-                'paid' => $inv->status === Invoice::STATUS_PAID,
+                'paid' => $inv->status === InvoiceStatus::Paid,
             ])
             ->values()
             ->all();

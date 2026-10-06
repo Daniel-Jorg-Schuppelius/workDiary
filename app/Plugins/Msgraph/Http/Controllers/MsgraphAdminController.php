@@ -11,6 +11,7 @@
 namespace App\Plugins\Msgraph\Http\Controllers;
 
 use App\Plugins\Msgraph\Api\{MsgraphCalendarClient, MsgraphOAuth};
+use App\Plugins\Msgraph\Enums\MsgraphConnectionStatus;
 use App\Plugins\Msgraph\Models\MsgraphConnection;
 use App\Plugins\Msgraph\{MsgraphConfig, MsgraphPlugin};
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
@@ -123,11 +124,11 @@ class MsgraphAdminController extends ConnectionOAuthController {
     }
 
     protected function connectedStatus(): string {
-        return MsgraphConnection::STATUS_ACTIVE;
+        return MsgraphConnectionStatus::Active->value;
     }
 
     protected function disconnectedStatus(): string {
-        return MsgraphConnection::STATUS_DISCONNECTED;
+        return MsgraphConnectionStatus::Disconnected->value;
     }
 
     // ── Tenantweite Freigabe (v2-Admin-Consent) ──

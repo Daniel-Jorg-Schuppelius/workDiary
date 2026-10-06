@@ -23,7 +23,7 @@
 
     @if ($q !== '' && mb_strlen($q) >= 2)
         @if (collect($groups)->flatten(1)->isEmpty())
-            <p class="text-sm text-muted">{{ __('customer_search.empty', ['q' => $q]) }}</p>
+            <x-empty-state icon="search_off" :title="__('customer_search.empty', ['q' => $q])" compact />
         @endif
         @foreach ($groups as $group => $hits)
             @continue($hits === [])

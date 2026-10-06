@@ -59,7 +59,8 @@ final class CsvExport {
             foreach ($commentLines as $line) {
                 fwrite($out, $line . self::EOL);
             }
-            fwrite($out, CsvStringHelper::encodeLine($header, $delimiter) . self::EOL);
+            // Auch Kopfzeilen tragen frei erfasste Beschriftungen (eigene Felder, xi-3).
+            fwrite($out, CsvStringHelper::encodeLine(self::guardRow($header), $delimiter) . self::EOL);
             foreach ($rows as $row) {
                 fwrite($out, CsvStringHelper::encodeLine(self::guardRow($row), $delimiter) . self::EOL);
             }

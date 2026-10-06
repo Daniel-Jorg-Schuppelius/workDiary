@@ -135,7 +135,7 @@
                     @endif
                 </div>
                 @if ($connection->routes->isEmpty())
-                    <p class="text-sm text-muted">{{ __('cloud_intake.route.empty') }}</p>
+                    <x-empty-state icon="alt_route" :message="__('cloud_intake.route.empty')" compact />
                 @else
                     <x-table>
                         <x-slot:head>
@@ -176,7 +176,7 @@
         <x-card class="flex flex-col gap-2">
             <h3 class="card-title text-base">{{ __('cloud_intake.log.heading') }}</h3>
             @if ($items->total() === 0)
-                <p class="text-sm text-muted">{{ __('cloud_intake.log.empty') }}</p>
+                <x-empty-state icon="receipt_long" :title="__('cloud_intake.log.empty')" compact />
             @else
                 <x-table>
                     <x-slot:head>

@@ -125,9 +125,9 @@
             <div class="mt-0.5 flex flex-wrap items-center gap-1 {{ $isMine ? 'justify-end' : '' }}">
                 @foreach ($reactions as $emoji => $group)
                     @php $mine = $group->contains('user_id', $me?->id); @endphp
-                    <button type="button" class="btn btn-xs {{ $mine ? 'btn-primary' : 'btn-ghost border border-base-300' }} gap-1" data-action="react" data-message-id="{{ $message->sqid }}" data-emoji="{{ $emoji }}">
-                        <span>{{ $emoji }}</span><span class="tabular-nums">{{ $group->count() }}</span>
-                    </button>
+                    <x-button size="xs" :tone="$mine ? 'primary' : 'ghost'" :class="$mine ? null : 'border border-base-300'" data-action="react" data-message-id="{{ $message->sqid }}" data-emoji="{{ $emoji }}">
+                        <span>{{ $emoji }}</span> <span class="tabular-nums">{{ $group->count() }}</span>
+                    </x-button>
                 @endforeach
             </div>
         @endif
@@ -135,27 +135,32 @@
         {{-- Aktionen: kleiner Trigger neben der Bubble (bei Nachrichten-Hover).
              Das volle Aktionsmenü erscheint erst beim Hovern des Triggers. --}}
         <div class="group/act absolute -top-2 z-10 hidden group-hover:block {{ $isMine ? 'right-1' : 'left-1' }}">
-            <button type="button" class="btn btn-circle btn-sm border border-base-300 bg-base-100 shadow-sm" title="{{ __('Aktionen') }}">
-                <x-icon name="more_horiz" size="1.25rem" />
-            </button>
+            <x-icon-btn icon="more_horiz" icon-size="1.25rem" tone="plain" size="sm" :label="__('Aktionen')"
+                    class="btn-circle border border-base-300 bg-base-100 shadow-sm" />
             {{-- Menü: deckt den Trigger bei Hover ab, wächst zur Mitte --}}
             <div class="absolute top-0 hidden items-center gap-0.5 rounded-full border border-base-300 bg-base-100 px-1 py-0.5 shadow-md group-hover/act:flex {{ $isMine ? 'right-0' : 'left-0' }}">
-                <button type="button" class="btn btn-sm btn-ghost text-lg" data-action="react" data-message-id="{{ $message->sqid }}" data-emoji="👍" title="{{ __('Gefällt mir') }}">👍</button>
-                <button type="button" class="btn btn-sm btn-ghost text-lg" data-action="react-pick" data-message-id="{{ $message->sqid }}" title="{{ __('Reagieren') }}">😀</button>
-                <button type="button" class="btn btn-sm btn-ghost" data-action="quote" data-message-id="{{ $message->sqid }}"
-                        data-quote-name="{{ $message->user?->name ?? __('System') }}"
-                        data-quote-body="{{ \Illuminate\Support\Str::limit(strip_tags((string) $message->body), 120) }}"
-                        title="{{ __('Zitieren') }}"><x-icon name="reply" size="1.15rem" /></button>
-                <button type="button" class="btn btn-sm btn-ghost" data-action="forward" data-message-id="{{ $message->sqid }}" title="{{ __('Weiterleiten') }}"><x-icon name="forward" size="1.15rem" /></button>
-                <button type="button" class="btn btn-sm btn-ghost {{ $message->isStarredBy($me) ? 'text-warning' : '' }}" data-action="star" data-message-id="{{ $message->sqid }}" title="{{ __('Favorit') }}"><x-icon name="{{ $message->isStarredBy($me) ? 'star' : 'star_border' }}" size="1.15rem" /></button>
-                <button type="button" class="btn btn-sm btn-ghost" data-action="remind" data-message-id="{{ $message->sqid }}" title="{{ __('Erinnern') }}"><x-icon name="alarm" size="1.15rem" /></button>
+                <x-button tone="ghost" class="text-lg" data-action="react" data-message-id="{{ $message->sqid }}"
+                        data-emoji="👍" title="{{ __('Gefällt mir') }}">👍</x-button>
+                <x-button tone="ghost" class="text-lg" data-action="react-pick" data-message-id="{{ $message->sqid }}" title="{{ __('Reagieren') }}">😀</x-button>
+                <x-icon-btn icon="reply" icon-size="1.15rem" size="sm" :label="__('Zitieren')" data-action="quote"
+                        data-message-id="{{ $message->sqid }}" data-quote-name="{{ $message->user?->name ?? __('System') }}"
+                        data-quote-body="{{ \Illuminate\Support\Str::limit(strip_tags((string) $message->body), 120) }}" />
+                <x-icon-btn icon="forward" icon-size="1.15rem" size="sm" :label="__('Weiterleiten')" data-action="forward"
+                        data-message-id="{{ $message->sqid }}" />
+                <x-icon-btn :icon="$message->isStarredBy($me) ? 'star' : 'star_border'" icon-size="1.15rem" size="sm" :label="__('Favorit')" :class="$message->isStarredBy($me) ? 'text-warning' : null" data-action="star"
+                        data-message-id="{{ $message->sqid }}" />
+                <x-icon-btn icon="alarm" icon-size="1.15rem" size="sm" :label="__('Erinnern')" data-action="remind"
+                        data-message-id="{{ $message->sqid }}" />
                 @if (! $message->parent_id)
                     <x-button type="button" tone="ghost" data-action="thread" data-message-id="{{ $message->sqid }}"><x-icon name="forum" size="1.15rem" /> {{ __('Antworten') }}</x-button>
-                    <button type="button" class="btn btn-sm btn-ghost" data-action="pin" data-message-id="{{ $message->sqid }}" title="{{ __('Anpinnen') }}"><x-icon name="push_pin" size="1.15rem" /></button>
+                    <x-icon-btn icon="push_pin" icon-size="1.15rem" size="sm" :label="__('Anpinnen')" data-action="pin"
+                            data-message-id="{{ $message->sqid }}" />
                 @endif
                 @if ($isMine)
-                    <button type="button" class="btn btn-sm btn-ghost" data-action="edit" data-message-id="{{ $message->sqid }}" data-body="{{ $message->body }}" title="{{ __('Bearbeiten') }}"><x-icon name="edit" size="1.15rem" /></button>
-                    <button type="button" class="btn btn-sm btn-ghost text-error" data-action="delete" data-message-id="{{ $message->sqid }}" title="{{ __('Löschen') }}"><x-icon name="delete" size="1.15rem" /></button>
+                    <x-icon-btn icon="edit" icon-size="1.15rem" size="sm" :label="__('Bearbeiten')" data-action="edit"
+                            data-message-id="{{ $message->sqid }}" data-body="{{ $message->body }}" />
+                    <x-icon-btn icon="delete" icon-size="1.15rem" tone="error" size="sm" :label="__('Löschen')"
+                            data-action="delete" data-message-id="{{ $message->sqid }}" />
                 @endif
             </div>
         </div>

@@ -21,8 +21,7 @@
 @endphp
 
 @section('nav-title', $register->name)
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('Kassenbuch') . ' · ' . __('Saldo') . ': ' . \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($balance, 2, withThousandsSeparator: true) . ' ' . $register->currency->value"

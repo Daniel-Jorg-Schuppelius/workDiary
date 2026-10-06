@@ -14,16 +14,15 @@ namespace App\Http\Controllers\Helpdesk\Portal;
 
 use App\Enums\ServiceTicket\{ServiceTicketSource, ServiceTicketStatus, TicketMessageKind};
 use App\Http\Controllers\Attachments\AttachmentController;
+use App\Http\Controllers\Concerns\ValidatesUploadedFiles;
 use App\Http\Controllers\Controller;
 use App\Models\Attachments\Attachment;
 use App\Models\Platform\User;
 use App\Models\ServiceTicket\{ServiceQueue, ServiceTicket, ServiceTicketMessage, TicketSatisfaction};
-use App\Services\Attachments\FileAttacher;
 use App\Services\ServiceTicket\{ServiceTicketService, TicketConversationService};
 use App\Services\Timeline\ServiceTicketTimelineService;
-use Illuminate\Http\{RedirectResponse, Request, UploadedFile};
+use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Storage};
-use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
@@ -36,6 +35,8 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
  * und sind als Kunden-Uploads immer `customer_visible`.
  */
 class TicketController extends Controller {
+    use ValidatesUploadedFiles;
+
     public function index(): View {
         $user = $this->portalUser();
 
@@ -145,31 +146,6 @@ class TicketController extends Controller {
 
         return redirect()->route('customer.tickets.show', $ticket)
             ->with('success', __('Antwort gesendet.'));
-    }
-
-    /**
-     * Datei-Uploads nach der zentralen Policy des {@see AttachmentController}
-     * prüfen (Extension-Whitelist + Server-MIME via Fileinfo + Größenlimit).
-     *
-     * @return list<UploadedFile>
-     */
-    private function validatedUploads(Request $request): array {
-        $request->validate([
-            'files' => ['nullable', 'array', 'max:5'],
-            'files.*' => ['file', 'max:' . FileAttacher::maxKb()],
-        ]);
-
-        $files = array_values(array_filter((array) $request->file('files', []), fn($f) => $f instanceof UploadedFile));
-        foreach ($files as $file) {
-            $ext = strtolower($file->getClientOriginalExtension() ?: ($file->extension() ?? ''));
-            $serverMime = $file->getMimeType() ?? '';
-            if (! in_array($ext, AttachmentController::ALLOWED_EXTENSIONS, true)
-                || ! in_array($serverMime, AttachmentController::ALLOWED_MIMES, true)) {
-                throw ValidationException::withMessages(['files' => (string) __('Dateityp nicht erlaubt.')]);
-            }
-        }
-
-        return $files;
     }
 
     /** Lösung bestätigen: done → accepted. */

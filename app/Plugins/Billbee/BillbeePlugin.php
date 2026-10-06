@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Plugins\Billbee;
 
 use App\Plugins\{AbstractPlugin, PluginHealth};
-use App\Plugins\Billbee\Api\{BillbeeApiException, BillbeeClientFactory};
+use App\Plugins\Billbee\Api\BillbeeClientFactory;
+use App\Plugins\Billbee\Exceptions\BillbeeApiException;
 use App\Plugins\Contracts\Plugin;
 use Throwable;
 

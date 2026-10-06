@@ -79,4 +79,26 @@ class ClubMemberImportTest extends TestCase {
         $this->assertContains('member_no', $fields);
         $this->assertSame(0, ClubMember::query()->count());
     }
+
+    /** k1-05: acht Specs lehnten „1.2.2010“ ab, vier nahmen es an. */
+    public function test_dates_without_leading_zero_are_read(): void {
+        $spec = $this->spec();
+
+        $row = $spec->normalize(['first_name' => 'Mia', 'last_name' => 'Muster', 'birth_date' => '1.2.2010', 'joined_on' => '5.6.26']);
+        $this->assertSame([], $spec->validateRow($row, $this->organization));
+        $this->assertSame('2010-02-01', $row['birth_date']);
+        $this->assertSame('2026-06-05', $row['joined_on']);
+
+        $row = $spec->normalize(['first_name' => 'Mia', 'last_name' => 'Muster', 'birth_date' => '31.02.2010']);
+        $this->assertNull($row['birth_date']);
+        $this->assertCount(1, $spec->validateRow($row, $this->organization));
+    }
+
+    /** k1-14: geschütztes Leerzeichen und Mehrfach-Leerraum im Spaltenkopf trafen keinen Alias. */
+    public function test_header_with_protected_or_repeated_spaces_meets_its_alias(): void {
+        $this->assertSame(
+            ['joined_on', 'last_name'],
+            \App\Services\Import\HeaderMapper::map($this->spec(), ["Mitglied\u{00A0} seit", ' NACHNAME ']),
+        );
+    }
 }

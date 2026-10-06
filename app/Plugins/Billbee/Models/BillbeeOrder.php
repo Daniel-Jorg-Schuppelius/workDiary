@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\Billbee\Models;
 
 use App\Casts\MoneyCast;
+use App\Enums\Integration\MarketplaceInboxStatus;
 use App\Models\Concerns\BelongsToOrganization;
 use App\Models\Customer\Customer;
 use CommonToolkit\Enums\CurrencyCode;
@@ -40,14 +41,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property \Illuminate\Support\Carbon|null $ordered_at
  * @property \Illuminate\Support\Carbon|null $billbee_modified_at
  * @property int|null $customer_id
- * @property string $inbox_status
+ * @property MarketplaceInboxStatus $inbox_status
  */
 class BillbeeOrder extends Model {
     use BelongsToOrganization;
-
-    public const INBOX_OPEN = 'open';
-
-    public const INBOX_LINKED = 'linked';
 
     protected $fillable = [
         'organization_id',
@@ -71,6 +68,7 @@ class BillbeeOrder extends Model {
     protected $casts = [
         'state' => 'integer',
         'currency' => CurrencyCode::class,
+        'inbox_status' => MarketplaceInboxStatus::class,
         'total_gross' => MoneyCast::class . ':currency,2',
         'buyer' => 'array',
         'items' => 'array',

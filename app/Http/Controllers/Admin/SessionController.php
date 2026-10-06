@@ -40,11 +40,10 @@ class SessionController extends Controller {
     public function index(Request $request, SessionManagementService $service): View {
         Gate::authorize(Permission::SecuritySessionsView->value);
 
-        $organization = $this->organization($request);
+        $overview = $service->forOrganization($this->organization($request), $request->session()->getId());
+        $overview['users']->withQueryString();
 
-        return view('admin.sessions.index', [
-            'overview' => $service->forOrganization($organization, $request->session()->getId()),
-        ]);
+        return view('admin.sessions.index', ['overview' => $overview]);
     }
 
     /**
@@ -82,7 +81,7 @@ class SessionController extends Controller {
         // Selbst-Aussperr-Schutz: die eigene aktuelle Sitzung wird hier nicht
         // beendet (normaler Logout dafür nutzen).
         if (hash_equals(SessionManagementService::handleFor($request->session()->getId()), $handle)) {
-            return back()->withErrors(['session' => __('sessions.error.own_current_session')]);
+            return redirect()->toList('admin.sessions.index')->withErrors(['session' => __('sessions.error.own_current_session')]);
         }
 
         /** @var list<int> $memberIds */
@@ -92,12 +91,12 @@ class SessionController extends Controller {
 
         $id = SessionManagementService::resolveHandle($handle, $memberIds);
         if ($id === null) {
-            return back()->withErrors(['session' => __('sessions.error.session_gone')]);
+            return redirect()->toList('admin.sessions.index')->withErrors(['session' => __('sessions.error.session_gone')]);
         }
 
         $row = DB::table('sessions')->where('id', $id)->first(['id', 'user_id']);
         if ($row === null) {
-            return back()->withErrors(['session' => __('sessions.error.session_gone')]);
+            return redirect()->toList('admin.sessions.index')->withErrors(['session' => __('sessions.error.session_gone')]);
         }
 
         abort_unless($this->belongsToOrg((int) $row->user_id, $organization->id), Response::HTTP_NOT_FOUND);
@@ -109,7 +108,7 @@ class SessionController extends Controller {
             'by_user_id' => $actor->id,
         ]);
 
-        return back()->with('success', __('sessions.flash.session_revoked'));
+        return redirect()->toList('admin.sessions.index')->with('success', __('sessions.flash.session_revoked'));
     }
 
     /** Alle Geräte eines Nutzers abmelden (Sitzungen + remember_token). */
@@ -139,7 +138,7 @@ class SessionController extends Controller {
             'self' => $userId === (int) $actor->id,
         ]);
 
-        return back()->with('success', __('sessions.flash.all_revoked', ['name' => $target->name]));
+        return redirect()->toList('admin.sessions.index')->with('success', __('sessions.flash.all_revoked', ['name' => $target->name]));
     }
 
     /**
@@ -156,14 +155,14 @@ class SessionController extends Controller {
         $userId = Sqid::decodeOrAbort(User::class, $userSqid);
         abort_unless($this->belongsToOrg($userId, $organization->id), Response::HTTP_NOT_FOUND);
         if ($userId === (int) $actor->id) {
-            return back()->withErrors(['user' => __('security.account_secure.error.self_admin')]);
+            return redirect()->toList('admin.sessions.index')->withErrors(['user' => __('security.account_secure.error.self_admin')]);
         }
 
         /** @var User $target */
         $target = User::query()->findOrFail($userId);
         $responder->secure($target, $actor, AccountTakeoverResponder::SOURCE_ORGANIZATION_ADMIN);
 
-        return back()->with('success', __('security.account_secure.flash.done', ['name' => $target->name]));
+        return redirect()->toList('admin.sessions.index')->with('success', __('security.account_secure.flash.done', ['name' => $target->name]));
     }
 
     /** API-Token (Sanctum) widerrufen. */
@@ -181,7 +180,7 @@ class SessionController extends Controller {
             ->where('tokenable_type', MorphMap::alias(User::class))
             ->first(['id', 'tokenable_id', 'name']);
         if ($row === null) {
-            return back()->withErrors(['token' => __('sessions.error.token_gone')]);
+            return redirect()->toList('admin.sessions.index')->withErrors(['token' => __('sessions.error.token_gone')]);
         }
 
         abort_unless($this->belongsToOrg((int) $row->tokenable_id, $organization->id), Response::HTTP_NOT_FOUND);
@@ -195,7 +194,7 @@ class SessionController extends Controller {
             'by_user_id' => $actor->id,
         ]);
 
-        return back()->with('success', __('sessions.flash.token_revoked'));
+        return redirect()->toList('admin.sessions.index')->with('success', __('sessions.flash.token_revoked'));
     }
 
     /** Standort-Erfassungsgerät trennen (revoked_at setzen). */
@@ -212,7 +211,7 @@ class SessionController extends Controller {
             ->whereNull('revoked_at')
             ->first(['id', 'user_id', 'organization_id', 'label']);
         if ($row === null) {
-            return back()->withErrors(['device' => __('sessions.error.device_gone')]);
+            return redirect()->toList('admin.sessions.index')->withErrors(['device' => __('sessions.error.device_gone')]);
         }
 
         abort_unless((int) $row->organization_id === $organization->id, Response::HTTP_NOT_FOUND);
@@ -226,7 +225,7 @@ class SessionController extends Controller {
             'by_user_id' => $actor->id,
         ]);
 
-        return back()->with('success', __('sessions.flash.device_revoked'));
+        return redirect()->toList('admin.sessions.index')->with('success', __('sessions.flash.device_revoked'));
     }
 
     /** Stempelterminal deaktivieren (Geräteaktion, kein Nutzer-Logout). */
@@ -254,7 +253,7 @@ class SessionController extends Controller {
             'by_user_id' => $actor->id,
         ]);
 
-        return back()->with('success', __('sessions.flash.terminal_deactivated'));
+        return redirect()->toList('admin.sessions.index')->with('success', __('sessions.flash.terminal_deactivated'));
     }
 
     private function organization(Request $request): \App\Models\Platform\Organization {

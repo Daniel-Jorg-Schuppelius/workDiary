@@ -35,7 +35,7 @@ class MsgraphIntakeTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
-        config(['plugins.msgraph.client_id' => 'cid', 'plugins.msgraph.client_secret' => 'sec']);
+        config(['plugins.msgraph.enabled' => true, 'plugins.msgraph.client_id' => 'cid', 'plugins.msgraph.client_secret' => 'sec']);
 
         $this->connection = CloudDocumentConnection::factory()->create([
             'organization_id' => $this->organization->id,

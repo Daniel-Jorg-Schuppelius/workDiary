@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Crisis;
 
-use App\Models\Crisis\{CrisisCase, CrisisCommunication};
+use App\Enums\Crisis\{CrisisCaseStatus, CrisisCommunicationStatus};
+use App\Models\Crisis\CrisisCommunication;
 use App\Models\Customer\Customer;
 use App\Models\Platform\Organization;
 use App\Services\CustomerPortal\Contracts\PortalNoticeSource;
@@ -53,9 +54,9 @@ class CrisisStatusPageService extends OrganizationAccessToken implements PortalN
         return OrganizationContext::run($organization, fn (): array => array_values(CrisisCommunication::query()
             ->with('crisisCase')
             ->whereIn('audience', $audiences)
-            ->where('status', 'sent')
+            ->where('status', CrisisCommunicationStatus::Sent)
             ->whereHas('crisisCase', fn ($q) => $q->where(fn ($c) => $c
-                ->whereIn('status', CrisisCase::ACTIVE_STATUSES)
+                ->whereIn('status', CrisisCaseStatus::active())
                 ->orWhere('all_clear_at', '>=', now()->subDays(self::RESOLVED_DAYS))))
             ->orderByDesc('sent_at')
             ->limit(20)
@@ -64,7 +65,7 @@ class CrisisStatusPageService extends OrganizationAccessToken implements PortalN
                 $c->subject,
                 $c->body,
                 $c->sent_at ?? now(),
-                ...(in_array($c->crisisCase?->status, CrisisCase::ACTIVE_STATUSES, true) ? [] : ['tone' => 'success', 'badge' => (string) __('crisis.status_page.resolved')]),
+                ...($c->crisisCase?->status->isActive() === true ? [] : ['tone' => 'success', 'badge' => (string) __('crisis.status_page.resolved')]),
             ))
             ->all()));
     }

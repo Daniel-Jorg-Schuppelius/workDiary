@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Tenders;
 
+use App\Enums\Tenders\TenderNoticeMatchState;
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -75,6 +76,6 @@ class TenderFilterProfile extends Model {
             return null;
         }
 
-        return round($this->matches()->where('state', TenderNoticeMatch::STATE_MUTED)->count() / $total * 100, 1);
+        return round($this->matches()->where('state', TenderNoticeMatchState::Muted)->count() / $total * 100, 1);
     }
 }

@@ -10,7 +10,8 @@
 
 namespace App\Mail;
 
-use App\Enums\Invoicing\InvoiceDeliveryFormat;
+use App\Enums\Invoicing\{InvoiceDeliveryFormat, InvoiceStatus};
+use App\Mail\Concerns\TracksDocumentDispatch;
 use App\Models\Invoicing\Invoice;
 use App\Services\Invoicing\InvoicePdfRenderer;
 use Illuminate\Bus\Queueable;
@@ -32,6 +33,7 @@ use Illuminate\Queue\SerializesModels;
  */
 class InvoiceMail extends Mailable implements ShouldQueue {
     use Queueable, SerializesModels;
+    use TracksDocumentDispatch;
 
     public function __construct(
         public Invoice $invoice,
@@ -48,26 +50,6 @@ class InvoiceMail extends Mailable implements ShouldQueue {
 
     public function envelope(): Envelope {
         return new Envelope(subject: $this->renderedSubject);
-    }
-
-    public function headers(): \Illuminate\Mail\Mailables\Headers {
-        // Vollaudit 2026-07 (M26): Dispatch-Referenz für den Zustellnachweis
-        // ({@see \App\Listeners\RecordInvoiceMailDelivery}).
-        return new \Illuminate\Mail\Mailables\Headers(text: array_filter([
-            \App\Listeners\RecordInvoiceMailDelivery::HEADER => $this->dispatchId !== null ? (string) $this->dispatchId : null,
-        ]));
-    }
-
-    /** Queue-Fehlschlag → Zustellnachweis auf failed (Vollaudit 2026-07, M26). */
-    public function failed(\Throwable $exception): void {
-        if ($this->dispatchId === null) {
-            return;
-        }
-        $dispatch = \App\Models\Document\DocumentDispatch::query()->withoutGlobalScopes()->find($this->dispatchId);
-        $dispatch?->forceFill([
-            'status' => 'failed',
-            'meta' => [...(array) $dispatch->meta, 'error' => mb_substr($exception->getMessage(), 0, 500)],
-        ])->save();
     }
 
     public function content(): Content {
@@ -91,14 +73,14 @@ class InvoiceMail extends Mailable implements ShouldQueue {
         $payloads = [];
         $electronicInvoice = $this->invoice;
         if ($this->deliveryFormat->isElectronic()
-            && $this->invoice->status === Invoice::STATUS_DRAFT
+            && $this->invoice->status === InvoiceStatus::Draft
             && ! $this->invoice->isCreditNote()
             && ! $this->invoice->isProforma()) {
             // Bei synchroner Queue entsteht der Anhang, bevor markSent() den
             // Entwurf persistiert. Die E-Rechnung erhält denselben Zielstatus
             // und dieselben Datums-Fallbacks, ohne den Datensatz vorab zu ändern.
             $electronicInvoice = clone $this->invoice;
-            $electronicInvoice->status = Invoice::STATUS_ISSUED;
+            $electronicInvoice->status = InvoiceStatus::Issued;
             $electronicInvoice->issued_on ??= now();
             $electronicInvoice->due_on ??= now()->addDays($electronicInvoice->effectivePaymentTermsDays());
         }

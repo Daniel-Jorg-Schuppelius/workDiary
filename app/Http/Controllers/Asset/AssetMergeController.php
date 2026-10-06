@@ -15,8 +15,10 @@ namespace App\Http\Controllers\Asset;
 use App\Http\Controllers\Controller;
 use App\Models\Asset\Asset;
 use App\Services\Stammdaten\AssetMergeService;
+use App\Support\ErrorText;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 /**
@@ -62,7 +64,12 @@ class AssetMergeController extends Controller {
             $overrides[(string) $field] = $source->getAttribute((string) $field);
         }
 
-        $merger->merge($source, $target, $overrides);
+        // Fachliche Ablehnung (z. B. Eindeutigkeitskollision) als Formularfehler, wie MergesDuplicates::performMerge().
+        try {
+            $merger->merge($source, $target, $overrides);
+        } catch (\InvalidArgumentException $e) {
+            throw ValidationException::withMessages(['source' => ErrorText::for($e)]);
+        }
 
         return redirect()
             ->route('assets.show', $target)

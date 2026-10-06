@@ -10,8 +10,7 @@
 @extends('layouts.app')
 @section('title', __('Räume'))
 @section('nav-title', __('Räume'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @php
     /** @var \Illuminate\Pagination\LengthAwarePaginator $rooms */
@@ -44,7 +43,7 @@
                     <x-icon-btn icon="chevron_right" tone="ghost" size="xs"
                                 :href="route('rooms.index', ['view' => 'grid', 'day' => $day->copy()->addDay()->format('Y-m-d')])"
                                 :label="__('Folgetag')" />
-                    <a href="{{ route('rooms.index', ['view' => 'grid']) }}" class="btn btn-xs btn-ghost">{{ __('Heute') }}</a>
+                    <x-button :href="route('rooms.index', ['view' => 'grid'])" tone="ghost" size="xs">{{ __('Heute') }}</x-button>
                 </div>
 
                 <div class="overflow-x-auto">

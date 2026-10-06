@@ -16,7 +16,7 @@ use App\Enums\Asset\AssetBlockReason;
 use App\Enums\Contract\{ContractKind, ContractStatus};
 use App\Enums\Notification\NotificationEvent;
 use App\Enums\Numbering\NumberScope;
-use App\Enums\Rental\{RentalCaseStatus, RentalReservationKind, RentalReturnFollowUp};
+use App\Enums\Rental\{RentalCaseAssetStatus, RentalCaseStatus, RentalConditionItemState, RentalReservationKind, RentalReservationStatus, RentalReturnFollowUp};
 use App\Models\Asset\Asset;
 use App\Models\Contract\{Contract, ContractSigningRevision};
 use App\Models\Notification\NotificationDispatchLog;
@@ -63,7 +63,7 @@ class RentalCaseService {
                     'organization_id' => $organization->id,
                     'rental_case_id' => $case->id,
                     'asset_id' => $assetId,
-                    'status' => 'planned',
+                    'status' => RentalCaseAssetStatus::Planned,
                 ]);
             }
 
@@ -128,7 +128,7 @@ class RentalCaseService {
                     'rental_case_id' => $case->id,
                     'asset_id' => $asset->id,
                     'kind' => RentalReservationKind::Hard->value,
-                    'status' => 'active',
+                    'status' => RentalReservationStatus::Active,
                     'starts_at' => $case->starts_at,
                     'ends_at' => $case->ends_at,
                     'buffer_before_hours' => $profile->buffer_before_hours ?? 0,
@@ -178,7 +178,7 @@ class RentalCaseService {
 
             $this->syncReportItems($report, $data);
 
-            $caseAsset->forceFill(['status' => 'handed_over'])->save();
+            $caseAsset->forceFill(['status' => RentalCaseAssetStatus::HandedOver])->save();
             $asset->audit('rental.handedOver', ['case' => $case->number, 'report_id' => $report->id]);
 
             $reservation = $case->reservations()->active()
@@ -187,7 +187,7 @@ class RentalCaseService {
                 ->first();
             $reservation?->forceFill(['kind' => RentalReservationKind::Rental->value])->save();
 
-            $open = $case->caseAssets()->whereIn('status', ['planned'])->exists();
+            $open = $case->caseAssets()->where('status', RentalCaseAssetStatus::Planned)->exists();
             if (! $open && $case->status === RentalCaseStatus::Reserved) {
                 $case->forceFill(['status' => RentalCaseStatus::HandedOver->value])->save();
                 $case->audit('rental.active', []);
@@ -292,17 +292,17 @@ class RentalCaseService {
                 'organization_id' => $case->organization_id,
                 'rental_case_id' => $case->id,
                 'asset_id' => $replacement->id,
-                'status' => $case->status === RentalCaseStatus::Reserved ? 'planned' : 'handed_over',
+                'status' => $case->status === RentalCaseStatus::Reserved ? RentalCaseAssetStatus::Planned : RentalCaseAssetStatus::HandedOver,
                 'note' => $note,
             ]);
 
-            $current->forceFill(['status' => 'swapped', 'replaced_by_id' => $newCaseAsset->id])->save();
+            $current->forceFill(['status' => RentalCaseAssetStatus::Swapped, 'replaced_by_id' => $newCaseAsset->id])->save();
 
             // Belegung des Altgeräts endet jetzt; Ersatzgerät übernimmt.
             $case->reservations()->active()->where('asset_id', $current->asset_id)
                 ->get()
                 ->each(function (RentalReservation $reservation) use ($from): void {
-                    $reservation->forceFill(['ends_at' => $from, 'status' => 'completed'])->save();
+                    $reservation->forceFill(['ends_at' => $from, 'status' => RentalReservationStatus::Completed])->save();
                 });
 
             $profile = $replacement->rentalProfile;
@@ -311,7 +311,7 @@ class RentalCaseService {
                 'rental_case_id' => $case->id,
                 'asset_id' => $replacement->id,
                 'kind' => ($case->status === RentalCaseStatus::Reserved ? RentalReservationKind::Hard : RentalReservationKind::Rental)->value,
-                'status' => 'active',
+                'status' => RentalReservationStatus::Active,
                 'starts_at' => $from,
                 'ends_at' => $case->ends_at,
                 'buffer_before_hours' => $profile->buffer_before_hours ?? 0,
@@ -354,16 +354,16 @@ class RentalCaseService {
 
             $this->syncReportItems($report, $data);
 
-            $caseAsset->forceFill(['status' => 'returned'])->save();
+            $caseAsset->forceFill(['status' => RentalCaseAssetStatus::Returned])->save();
             $asset->audit('rental.returned', ['case' => $case->number, 'report_id' => $report->id]);
 
             $case->reservations()->active()->where('asset_id', $asset->id)
                 ->get()
-                ->each(fn (RentalReservation $r) => $r->forceFill(['status' => 'completed'])->save());
+                ->each(fn (RentalReservation $r) => $r->forceFill(['status' => RentalReservationStatus::Completed])->save());
 
             $this->applyFollowUp($case, $asset, $actor, $report);
 
-            $open = $case->caseAssets()->whereIn('status', ['planned', 'handed_over'])->exists();
+            $open = $case->caseAssets()->whereIn('status', RentalCaseAssetStatus::open())->exists();
             if (! $open) {
                 $case->forceFill([
                     'status' => RentalCaseStatus::Returned->value,
@@ -381,7 +381,7 @@ class RentalCaseService {
 
         return DB::transaction(function () use ($case, $actor, $reason): RentalCase {
             $case->reservations()->active()->get()->each(
-                fn (RentalReservation $r) => $r->forceFill(['status' => 'cancelled', 'cancelled_at' => now()])->save(),
+                fn (RentalReservation $r) => $r->forceFill(['status' => RentalReservationStatus::Cancelled, 'cancelled_at' => now()])->save(),
             );
 
             $case->forceFill(['status' => RentalCaseStatus::Cancelled->value])->save();
@@ -461,7 +461,7 @@ class RentalCaseService {
                     'rental_case_id' => $case->id,
                     'asset_id' => $asset->id,
                     'kind' => RentalReservationKind::Cleaning->value,
-                    'status' => 'active',
+                    'status' => RentalReservationStatus::Active,
                     'starts_at' => $report->reported_at,
                     'ends_at' => $report->reported_at->copy()->addHours(max(1, $asset->rentalProfile->buffer_after_hours ?? 4)),
                     'note' => (string) __('Reinigung nach Rücknahme :number', ['number' => $case->number]),
@@ -544,10 +544,11 @@ class RentalCaseService {
                 continue;
             }
 
+            $state = $item['state'] ?? null;
             $report->conditionItems()->create([
                 'organization_id' => $report->organization_id,
                 'label' => (string) $item['label'],
-                'state' => in_array($item['state'] ?? 'ok', \App\Models\Rental\RentalConditionItem::STATES, true) ? (string) $item['state'] : 'ok',
+                'state' => (is_string($state) ? RentalConditionItemState::tryFrom($state) : null) ?? RentalConditionItemState::Ok,
                 'note' => $item['note'] ?? null,
             ]);
         }

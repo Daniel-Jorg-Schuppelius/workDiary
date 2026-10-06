@@ -155,7 +155,6 @@ return [
         'approval_stale' => 'El archivo se modificó tras la aprobación — la orden vuelve a requerir comprobación/aprobación.',
         'machine_foreign' => 'La máquina no pertenece a esta organización.',
         'machine_inspection_overdue' => 'Máquina con inspección/calibración obligatoria vencida — inicio no permitido.',
-        'qc_result_invalid' => 'Resultado CC no válido.',
         'invalid_transition' => 'Cambio de estado no permitido.',
         'invalid_transition_detail' => 'Cambio de estado no permitido: :from → :to.',
         'shipment_required' => 'La entrega por envío requiere un envío existente.',

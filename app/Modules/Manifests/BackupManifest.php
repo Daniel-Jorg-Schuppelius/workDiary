@@ -53,6 +53,7 @@ final class BackupManifest extends Manifest {
             'nextcloud',
             'dropbox',
             'google-drive',
+            's3',
             'sharepoint',
             'webdav',
         ];

@@ -23,17 +23,7 @@
         <x-page-toolbar :subtitle="__('Stunden und Erlöse je Monat für ein einzelnes Projekt.')">
             <x-slot:actions>
                 @if ($project)
-                    <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
-                                :href="route('reports.project-details', array_merge($standardFilters->toQueryParams(), ['export' => 'pdf']))"
-                                show-label>PDF</x-icon-btn>
-                    <x-action-menu icon="download" tone="outline" :label="__('Export')">
-                        <x-icon-btn icon="download" tone="outline" size="sm"
-                                    :href="route('reports.project-details', array_merge($standardFilters->toQueryParams(), ['export' => 'csv']))"
-                                    show-label>CSV</x-icon-btn>
-                        <x-icon-btn icon="table_chart" tone="outline" size="sm"
-                                    :href="route('reports.project-details', array_merge($standardFilters->toQueryParams(), ['export' => 'xlsx']))"
-                                    show-label>XLSX</x-icon-btn>
-                    </x-action-menu>
+                    <x-report-export :url="fn (string $format) => route('reports.project-details', array_merge($standardFilters->toQueryParams(), ['export' => $format]))" />
                 @endif
             </x-slot:actions>
         </x-page-toolbar>
@@ -50,7 +40,7 @@
     <x-charts.stacked-bar :title="__('Stunden nach Auftragstyp je Monat')" unit="h" :series="$typeMonthlySeries" :bands="$typeBands" :x-label="__('Monat')" />
 
     @if (! $project)
-        <div class="alert">{{ __('Kein Projekt vorhanden.') }}</div>
+        <div role="status" class="alert">{{ __('Kein Projekt vorhanden.') }}</div>
     @else
         <x-card>
             <div class="mb-3 flex flex-wrap items-baseline justify-between gap-2">

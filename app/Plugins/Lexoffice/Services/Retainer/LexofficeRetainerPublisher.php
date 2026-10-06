@@ -10,11 +10,13 @@
 
 namespace App\Plugins\Lexoffice\Services\Retainer;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Billing\CustomerBillingAgreement;
 use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
 use App\Models\Invoicing\Invoice;
-use App\Plugins\Lexoffice\{LexofficeInvoiceService, LexofficePlugin};
+use App\Plugins\Lexoffice\LexofficePlugin;
+use App\Plugins\Lexoffice\Services\LexofficeInvoiceService;
 use App\Plugins\PluginManager;
 use App\Services\Billing\Contracts\RetainerPublisher;
 use App\Services\Billing\CustomerAccountStatementService;
@@ -204,7 +206,7 @@ class LexofficeRetainerPublisher implements RetainerPublisher {
             ->where('customer_id', $customer->id)
             ->where('type', Invoice::TYPE_RETAINER)
             ->whereNotIn('id', $pauschaleIds === [] ? [0] : $pauschaleIds)
-            ->whereIn('status', [Invoice::STATUS_ISSUED, Invoice::STATUS_PARTIALLY_PAID])
+            ->whereIn('status', [InvoiceStatus::Issued, InvoiceStatus::PartiallyPaid])
             ->exists();
     }
 

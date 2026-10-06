@@ -27,6 +27,14 @@ Rundgang starten → Tokens scannen (Kamera-Scanner tippt als Tastatur, oder
 von Hand eingeben) → abschließen. Je Route läuft höchstens ein Rundgang
 zugleich; Doppelscans zählen einmal.
 
+## Abbruch
+
+Ein laufender Rundgang lässt sich **abbrechen** — nur mit **Begründung**. Er
+zählt dann nicht als abgeschlossen; bestätigte Kontrollpunkte bleiben als
+Nachweis stehen, und der Bericht weist den Abbruch mit Grund, Person und
+Zeitpunkt aus. Offene Kontrollpunkte gehen wie eine Abweichung als **offener
+Punkt** an die Leitstelle. Danach ist die Route wieder frei.
+
 ## Abweichungen
 
 Verpasste Punkte oder Scans außerhalb des Fensters werden **gezeigt, nie

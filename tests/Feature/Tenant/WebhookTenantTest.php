@@ -22,6 +22,7 @@ use App\Models\Project\Task;
 use App\Models\Time\Attendance;
 use App\Plugins\Github\GithubPlugin;
 use App\Plugins\Gitlab\GitlabPlugin;
+use App\Plugins\Todoist\Enums\TodoistConnectionStatus;
 use App\Plugins\Todoist\Jobs\TodoistWebhookSyncJob;
 use App\Plugins\Todoist\Models\{TodoistConnection, TodoistWebhookDelivery};
 use App\Plugins\Zammad\Models\ZammadConnection;
@@ -235,13 +236,13 @@ final class WebhookTenantTest extends TestCase {
             'organization_id' => $this->organization->id,
             'todoist_user_id' => 'u-A',
             'access_token' => 'tok-a',
-            'status' => TodoistConnection::STATUS_ACTIVE,
+            'status' => TodoistConnectionStatus::Active,
         ]);
         TodoistConnection::query()->create([
             'organization_id' => $this->orgB->id,
             'todoist_user_id' => 'u-B',
             'access_token' => 'tok-b',
-            'status' => TodoistConnection::STATUS_ACTIVE,
+            'status' => TodoistConnectionStatus::Active,
         ]);
 
         $this->postTodoist(['event_name' => 'item:updated', 'user_id' => 'u-A', 'event_data' => ['id' => 't', 'project_id' => 'p']], 'd-a')
@@ -262,7 +263,7 @@ final class WebhookTenantTest extends TestCase {
             'organization_id' => $this->orgB->id,
             'todoist_user_id' => 'u-B',
             'access_token' => 'tok-b',
-            'status' => TodoistConnection::STATUS_ACTIVE,
+            'status' => TodoistConnectionStatus::Active,
         ]);
 
         $raw = (string) json_encode(['event_name' => 'item:updated', 'user_id' => 'u-B', 'event_data' => []]);

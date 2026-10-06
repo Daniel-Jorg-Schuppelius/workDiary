@@ -140,6 +140,13 @@ class ClubDonationService {
         $member = $first->member;
 
         return DB::transaction(function () use ($organization, $donations, $kind, $actor, $exemption, $first, $member): ClubDonationReceipt {
+            // Zeilen sperren und den Stand neu lesen: zwei gleichzeitige Aufrufe stellten sonst zwei Bestätigungen
+            // für dieselbe Zuwendung aus (Sicherheitsaudit 2026-10-04, li-4).
+            $locked = ClubDonation::query()->whereKey($donations->map(static fn (ClubDonation $donation): int => $donation->id)->all())->lockForUpdate()->get();
+            if ($locked->count() !== $donations->count() || $locked->contains(static fn (ClubDonation $donation): bool => $donation->isReceipted())) {
+                throw ValidationException::withMessages(['donation' => (string) __('club.donations.error.receipted')]);
+            }
+
             $receipt = ClubDonationReceipt::query()->create([
                 'organization_id' => $organization->id,
                 'receipt_no' => $this->nextNo(ClubDonationReceipt::class, 'receipt_no', 'organization_id', (int) $organization->id),
@@ -151,12 +158,14 @@ class ClubDonationService {
                     'address' => $member instanceof ClubMember ? $member->postalAddressLines() : array_values(array_filter(array_map('trim', preg_split('/\R/u', (string) $first->donor_address) ?: []))),
                 ],
                 'exemption_snapshot' => $exemption,
-                'total_amount' => Money::sum($donations->map(static fn (ClubDonation $donation): Money => $donation->amount)->all(), CurrencyCode::Euro),
+                'total_amount' => Money::sum($locked->map(static fn (ClubDonation $donation): Money => $donation->amount)->all(), CurrencyCode::Euro),
                 'currency' => CurrencyCode::Euro,
                 'issued_on' => now()->toDateString(),
                 'created_by' => $actor->id,
             ]);
-            ClubDonation::query()->whereKey($donations->map(static fn (ClubDonation $donation): int => $donation->id)->all())->update(['club_donation_receipt_id' => $receipt->id]);
+            foreach ($locked as $donation) {
+                $donation->update(['club_donation_receipt_id' => $receipt->id]);
+            }
 
             return $receipt;
         });

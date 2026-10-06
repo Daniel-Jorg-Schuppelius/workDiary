@@ -15,11 +15,13 @@ use App\Jobs\Integration\IntegrationOutboxDeliveryJob;
 use App\Models\Document\{Document, DocumentVersion};
 use App\Models\Integration\{ExternalReference, IntegrationOutboxEntry};
 use App\Models\Platform\User;
+use App\Plugins\Contracts\PluginCapability;
 use App\Plugins\{PluginDiscovery, PluginHealth};
 use App\Plugins\Support\Mirror\{DocumentMirrorService, MirrorOutboxDispatcher, RemoteFileGateway};
 use App\Plugins\Webdav\Contracts\WebdavGatewayFactory;
 use App\Plugins\Webdav\Models\WebdavConnection;
-use App\Plugins\Webdav\{WebdavMirrorTarget, WebdavPlugin};
+use App\Plugins\Webdav\Services\WebdavMirrorTarget;
+use App\Plugins\Webdav\WebdavPlugin;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\{Queue, Storage};
 use Tests\Concerns\WithOrganization;
@@ -91,11 +93,12 @@ final class WebdavPluginTest extends TestCase {
         return $document;
     }
 
-    public function test_is_discovered_without_capability(): void {
+    public function test_is_discovered_and_announces_only_the_backup_target(): void {
         $this->assertContains(WebdavPlugin::class, PluginDiscovery::classes());
 
+        // Der Dokumentspiegel läuft über den DocumentMirrorService, nicht über eine Capability.
         $plugin = new WebdavPlugin();
-        $this->assertSame([], $plugin->capabilities());
+        $this->assertSame([PluginCapability::BackupTarget], $plugin->capabilities());
         $this->assertTrue($plugin->isPerOrganization());
     }
 

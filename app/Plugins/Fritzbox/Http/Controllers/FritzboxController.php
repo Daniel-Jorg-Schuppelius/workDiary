@@ -13,7 +13,8 @@ namespace App\Plugins\Fritzbox\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Integration\IntegrationInboxItem;
 use App\Models\Platform\Organization;
-use App\Plugins\Fritzbox\{FritzboxConfig, FritzboxImportService, FritzboxPlugin};
+use App\Plugins\Fritzbox\{FritzboxConfig, FritzboxPlugin};
+use App\Plugins\Fritzbox\Services\FritzboxImportService;
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
 use App\Services\Contacts\ExternalPhoneContactDirectory;
 use App\Support\ErrorText;
@@ -38,12 +39,7 @@ class FritzboxController extends Controller {
         $organization = $admin->organization;
 
         $inboxOpenCount = $organization instanceof Organization
-            ? IntegrationInboxItem::query()
-                ->where('organization_id', $organization->id)
-                ->where('plugin_id', FritzboxPlugin::ID)
-                ->where('status', IntegrationInboxItem::STATUS_OPEN)
-                ->whereNotNull('group_key')
-                ->count()
+            ? IntegrationInboxItem::openCount((int) $organization->id, FritzboxPlugin::ID, grouped: true)
             : 0;
 
         $config = FritzboxConfig::resolve($admin->organization_id);

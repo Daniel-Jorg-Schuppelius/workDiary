@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Policies\Sustainability;
 
+use App\Enums\Sustainability\SustainabilityAssessmentStatus;
 use App\Enums\User\Permission as P;
 use App\Models\Sustainability\SustainabilityAssessment;
 use App\Policies\Sustainability\SustainabilityAssessmentPolicy;
@@ -41,7 +42,7 @@ final class SustainabilityAssessmentPolicyTest extends TestCase {
         $this->policy = new SustainabilityAssessmentPolicy;
     }
 
-    private function assessment(string $status): SustainabilityAssessment {
+    private function assessment(SustainabilityAssessmentStatus $status): SustainabilityAssessment {
         $assessment = new SustainabilityAssessment;
         $assessment->status = $status;
 
@@ -50,7 +51,7 @@ final class SustainabilityAssessmentPolicyTest extends TestCase {
 
     public function test_viewer_reads_but_never_writes(): void {
         $viewer = $this->actorIn($this->organization, [P::SustainabilityViewAny, P::SustainabilityView]);
-        $draft = $this->assessment('draft');
+        $draft = $this->assessment(SustainabilityAssessmentStatus::Draft);
 
         $this->assertTrue($this->policy->viewAny($viewer));
         $this->assertTrue($this->policy->view($viewer, $draft));
@@ -61,8 +62,8 @@ final class SustainabilityAssessmentPolicyTest extends TestCase {
 
     public function test_manager_edits_drafts_but_final_is_immutable(): void {
         $manager = $this->actorIn($this->organization, [P::SustainabilityManage]);
-        $draft = $this->assessment('draft');
-        $final = $this->assessment('final');
+        $draft = $this->assessment(SustainabilityAssessmentStatus::Draft);
+        $final = $this->assessment(SustainabilityAssessmentStatus::Final);
 
         $this->assertTrue($this->policy->create($manager));
         $this->assertTrue($this->policy->update($manager, $draft));
@@ -74,7 +75,7 @@ final class SustainabilityAssessmentPolicyTest extends TestCase {
 
     public function test_orgless_or_permissionless_user_is_denied(): void {
         $nobody = $this->actorIn($this->organization);
-        $draft = $this->assessment('draft');
+        $draft = $this->assessment(SustainabilityAssessmentStatus::Draft);
 
         $this->assertFalse($this->policy->viewAny($nobody));
         $this->assertFalse($this->policy->view($nobody, $draft));

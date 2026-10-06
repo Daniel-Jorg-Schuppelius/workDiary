@@ -279,6 +279,7 @@ class IncomingEInvoiceService {
             'sha256' => $sha256,
             'source' => $source,
             'received_at' => now(),
+            'status' => \App\Enums\Invoicing\IncomingEInvoiceStatus::Received,
             'summary' => $summary,
             ...\App\Models\Invoicing\IncomingEInvoice::columnsFromSummary($summary),
         ]);

@@ -11,6 +11,7 @@
     Default: Liste aller Fehler (Markup der häufigsten Bestandsvariante).
     `first` → nur erste Meldung als Einzeiler; `tone` → error|warning.
     Abstände (mt-3/mb-4 …) via class-Attribut am Aufrufer.
+    Seiten ohne diesen Block bekommen ihre Fehler vom Layout (layouts.app, k4-08).
 --}}
 @props([
     'first' => false,
@@ -18,6 +19,8 @@
 ])
 @php($alertTone = $tone === 'warning' ? 'alert alert-warning' : 'alert alert-error')
 @if ($errors->any())
+    {{-- Die Seite zeigt ihre Fehler selbst — das Layout gibt sie dann nicht noch einmal aus. --}}
+    @php(request()->attributes->set('wd.validation_errors_shown', true))
     @if ($first)
         <div {{ $attributes->merge(['class' => $alertTone . ' text-sm']) }} role="alert">{{ $errors->first() }}</div>
     @else

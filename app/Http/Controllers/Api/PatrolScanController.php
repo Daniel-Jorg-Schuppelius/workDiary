@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\Patrol\PatrolRunStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Location\LocationDeviceToken;
 use App\Models\Patrol\{PatrolCheckpoint, PatrolRun};
@@ -89,7 +90,7 @@ class PatrolScanController extends Controller {
             ->withoutGlobalScopes()
             ->where('organization_id', $device->organization_id)
             ->where('patrol_route_id', $checkpoint->patrol_route_id)
-            ->where('status', PatrolRun::STATUS_RUNNING)
+            ->where('status', PatrolRunStatus::Running)
             ->first();
         if ($run === null) {
             return response()->json(['error' => 'no_running_patrol'], 422);

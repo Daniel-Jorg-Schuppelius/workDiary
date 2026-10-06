@@ -1,7 +1,7 @@
 ---
 title: "Helpdesk e service desk"
 topic: helpdesk.overview
-version: 1
+version: 2
 audience: []
 related:
     - open-issues
@@ -42,6 +42,16 @@ ingresso — ad esempio in una coda, con priorità o responsabilità — e
 vengono applicate in un ordine definito. Una modalità di test verifica
 una regola su un ticket di esempio e ne protocolla il risultato, senza
 modificare nulla.
+
+**Approvazioni:** le fasi di approvazione aperte di richieste di servizio,
+change e trattative contrattuali sono raccolte in «Approvazioni» — per
+pratica solo la fase aperta successiva e solo per i responsabili: una
+persona, un ruolo o, per le trattative contrattuali, il ruolo che
+l'organizzazione assegna al tipo di fase (predefinito: commerciale →
+Contabilità, tecnica → Capo team, risorse umane → Gestione del personale).
+Approvare, respingere, chiedere chiarimenti e delegare hanno lo stesso
+effetto che nella pratica; un rifiuto chiude il turno e
+l'auto-approvazione resta bloccata.
 
 **Soddisfazione e report:** dopo la chiusura, il cliente può lasciare
 nel portale una breve valutazione — una per ticket. I report mostrano

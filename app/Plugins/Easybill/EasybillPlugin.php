@@ -14,8 +14,9 @@ namespace App\Plugins\Easybill;
 
 use App\Models\Customer\Customer;
 use App\Plugins\{AbstractPlugin, PluginHealth};
-use App\Plugins\Contracts\{ContactSyncer, Plugin};
-use App\Plugins\Easybill\Api\{EasybillApiException, EasybillClientFactory};
+use App\Plugins\Contracts\{ContactSyncer, Plugin, PluginCapability};
+use App\Plugins\Easybill\Api\EasybillClientFactory;
+use App\Plugins\Easybill\Exceptions\EasybillApiException;
 use App\Services\Finance\Accounting\ContactPushService;
 use RuntimeException;
 use Throwable;
@@ -50,15 +51,17 @@ class EasybillPlugin extends AbstractPlugin implements ContactSyncer {
         return __('Übergibt bestätigte Abrechnungspositionen als Rechnungsentwurf an easybill (Bearer-API-Key gegen api.easybill.de): Kunden-Projektion, idempotente Übergabe mit Quellmarker, optionaler Rückabruf fertiggestellter Belege (PDF/E-Rechnung) ins DMS.');
     }
 
-    /** @return array<int, \App\Plugins\Contracts\PluginCapability> Fähigkeiten hängen am FacturationTarget-Vertrag. */
     /**
-     * Bewusst leer: Übergabe läuft über die
+     * Angekündigt wird, was die Klasse selbst implementiert (Kontakt-Push).
+     * Die Übergabe läuft über die
      * {@see \App\Services\Finance\Targets\FacturationTargetRegistry}, der
      * Beleg-Pull über {@see \App\Plugins\Easybill\Services\EasybillDocumentPullService}
-     * — beides eigene Registries/Services statt Plugin-Interfaces (Audit 2026-08, W1.6).
+     * — eigene Registries/Services statt Plugin-Interfaces (Audit 2026-08, W1.6).
+     *
+     * @return array<int, PluginCapability>
      */
     public function capabilities(): array {
-        return [];
+        return [PluginCapability::ContactSync];
     }
 
     /** @return array<int, array{key: string, label: string, type: string, options?: array<string, string>, help?: string, required?: bool, default?: mixed}> */

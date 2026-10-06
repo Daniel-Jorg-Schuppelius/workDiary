@@ -27,8 +27,7 @@
         @endif
 
         {{-- Anbindung ausstellen --}}
-        <form method="POST" action="{{ route('admin.cti.connection.store') }}"
-              class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+        <x-card as="form" method="POST" action="{{ route('admin.cti.connection.store') }}">
             @csrf
             <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('cti.issue_heading') }}</h2>
             <div class="flex flex-wrap items-end gap-2">
@@ -44,9 +43,9 @@
                         @endforeach
                     </select>
                 </label>
-                <button type="submit" class="btn btn-sm btn-primary">{{ __('cti.action.issue') }}</button>
+                <x-button type="submit">{{ __('cti.action.issue') }}</x-button>
             </div>
-        </form>
+        </x-card>
 
         {{-- Anbindungen --}}
         <x-card>
@@ -70,9 +69,9 @@
                                     <td class="text-muted">{{ ucfirst($connection->provider) }}</td>
                                     <td>
                                         @if ($connection->isActive())
-                                            <span class="badge badge-success badge-sm">{{ __('cti.status.active') }}</span>
+                                            <x-status-badge tone="success">{{ __('cti.status.active') }}</x-status-badge>
                                         @else
-                                            <span class="badge badge-ghost badge-sm">{{ __('cti.status.inactive') }}</span>
+                                            <x-status-badge>{{ __('cti.status.inactive') }}</x-status-badge>
                                         @endif
                                     </td>
                                     <td class="text-muted">{{ $connection->last_event_at?->diffForHumans() ?? '—' }}</td>
@@ -81,7 +80,7 @@
                                             <form method="POST" action="{{ route('admin.cti.disconnect') }}">
                                                 @csrf
                                                 <input type="hidden" name="connection" value="{{ $connection->sqid }}">
-                                                <button type="submit" class="btn btn-ghost btn-xs text-error">{{ __('cti.action.disconnect') }}</button>
+                                                <x-button type="submit" tone="ghost" size="xs" class="text-error">{{ __('cti.action.disconnect') }}</x-button>
                                             </form>
                                         @endif
                                     </td>
@@ -96,8 +95,7 @@
                     <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('cti.dial.settings') }}</h2>
                     @foreach ($connections as $connection)
                         @if ($connection->isActive())
-                            <form method="POST" action="{{ route('admin.cti.dial-settings') }}"
-                                  class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+                            <x-card as="form" method="POST" action="{{ route('admin.cti.dial-settings') }}">
                                 @csrf
                                 <input type="hidden" name="connection" value="{{ $connection->sqid }}">
                                 <p class="mb-3 text-sm font-medium">{{ $connection->name }} <span class="text-muted">({{ $connection->provider }})</span></p>
@@ -133,7 +131,7 @@
                                 <div class="mt-3">
                                     <x-icon-btn icon="save" tone="primary" size="sm" type="submit" show-label>{{ __('Speichern') }}</x-icon-btn>
                                 </div>
-                            </form>
+                            </x-card>
                         @endif
                     @endforeach
                 </div>

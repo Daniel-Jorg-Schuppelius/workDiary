@@ -21,7 +21,9 @@ use Tests\Unit\Architecture\Concerns\ScansSourceTree;
  *
  *  F1  <!DOCTYPE> + @vite ohne @include('partials.font-bootstrap') davor
  *  F2  `html.fonts-loaded`-Regel außerhalb des Partials (eine Quelle)
- *  F3  ['icons' => false], obwohl die Seite Icons rendert
+ *  F3  ['icons' => false], obwohl die Seite Icons rendert — auch `<x-public-page>` ohne `icons`
+ *  F4  Seite unter `public/` mit eigenem Dokumentkopf statt `<x-public-page>`
+ *      (Konsolidierungs-Audit 2026-10, k4-06: 20 Kopien, vier ohne Sprache und `noindex`)
  */
 class FontBootstrapRuleTest extends TestCase {
     use ScansSourceTree;
@@ -37,7 +39,7 @@ class FontBootstrapRuleTest extends TestCase {
     public function test_standalone_documents_bootstrap_fonts(): void {
         $violations = [];
 
-        $files = array_merge($this->bladeFiles(), $this->filesUnder('app/Plugins', '/\.blade\.php$/'));
+        $files = $this->bladeFiles();
 
         foreach ($files as $file) {
             $relative = $this->relativePath($file);
@@ -49,6 +51,13 @@ class FontBootstrapRuleTest extends TestCase {
 
             if (str_contains($source, 'html.fonts-loaded')) {
                 $violations[] = "F2 {$relative} — fonts-loaded-Regel gehört nur ins Partial";
+            }
+
+            if (str_starts_with($relative, 'resources/views/public/') && stripos($source, '<!DOCTYPE') !== false) {
+                $violations[] = "F4 {$relative} — öffentliche Token-Seite mit eigenem Dokumentkopf, <x-public-page> nutzen";
+            }
+            if (preg_match('~^<x-public-page\b([^\n]*)>$~m', $source, $page) === 1 && preg_match('~\sicons(\s|$)~', $page[1]) !== 1 && preg_match(self::ICON_USE, $source) === 1) {
+                $violations[] = "F3 {$relative} — rendert Icons, <x-public-page> lädt die Icon-Schrift ohne `icons` nicht vor";
             }
 
             $vite = strpos($source, '@vite(');

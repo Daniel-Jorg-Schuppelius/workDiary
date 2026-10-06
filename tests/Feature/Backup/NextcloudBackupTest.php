@@ -131,6 +131,7 @@ class NextcloudBackupTest extends TestCase {
                 . '<d:quota-used-bytes>400</d:quota-used-bytes>'
                 . '</d:prop><d:status>HTTP/1.1 200 OK</d:status></d:propstat></d:response></d:multistatus>'),
             new Response(201), // ensureFolder MKCOL (Pseudonym = ein Segment)
+            ...$this->selfTestResponses(),
         ]);
 
         $this->actingAs($admin)->post(route('admin.backup-targets.nextcloud.connect'), [
@@ -160,5 +161,50 @@ class NextcloudBackupTest extends TestCase {
             'username' => 'bob',
             'app_password' => 'pw',
         ])->assertForbidden();
+    }
+
+    /**
+     * Probe des Selbsttests (k2-04): Zielordner, Upload-Session, Chunk,
+     * Zusammensetzen, Größenprüfung, zurücklesen, löschen.
+     *
+     * @return list<Response>
+     */
+    private function selfTestResponses(string $readBack = \App\Plugins\Support\Backup\BackupTargetSelfTest::PAYLOAD): array {
+        return [
+            new Response(405), // MKCOL Zielordner — besteht schon
+            new Response(201), // MKCOL Upload-Session
+            new Response(201), // PUT Chunk 0
+            new Response(201), // MOVE .file → Ziel
+            new Response(200, ['Content-Length' => (string) strlen(\App\Plugins\Support\Backup\BackupTargetSelfTest::PAYLOAD)]), // HEAD
+            new Response(200, [], $readBack), // GET
+            new Response(204), // DELETE
+        ];
+    }
+
+    /** k2-04: Nextcloud wurde nach Konto, Kontingent und Ordner aktiv — ohne je gelesen oder gelöscht zu haben. */
+    public function test_connect_keeps_target_inactive_when_the_probe_reads_back_different_content(): void {
+        $admin = User::factory()->platformAdmin()->create(['organization_id' => $this->organization->id]);
+        $factory = $this->fake([
+            FakeNextcloudTransportFactory::folder('/remote.php/dav/files/bob/', []),
+            new Response(207, [], '<?xml version="1.0"?><d:multistatus xmlns:d="DAV:"><d:response>'
+                . '<d:href>/remote.php/dav/files/bob/</d:href><d:propstat><d:prop>'
+                . '<d:quota-available-bytes>600</d:quota-available-bytes>'
+                . '<d:quota-used-bytes>400</d:quota-used-bytes>'
+                . '</d:prop><d:status>HTTP/1.1 200 OK</d:status></d:propstat></d:response></d:multistatus>'),
+            new Response(201),
+            ...$this->selfTestResponses('etwas anderes'),
+        ]);
+
+        $this->actingAs($admin)->from(route('admin.backup-targets.index'))->post(route('admin.backup-targets.nextcloud.connect'), [
+            'name' => 'NC-Kaputt',
+            'server_url' => 'https://nextcloud.test',
+            'username' => 'bob',
+            'app_password' => 'secret-app-pw',
+        ])->assertRedirect()->assertSessionHas('error');
+
+        $connection = BackupTargetConnection::query()->where('name', 'NC-Kaputt')->firstOrFail();
+        $this->assertNotSame(BackupTargetStatus::Active, $connection->status);
+        // Aufgeräumt wird auch nach der misslungenen Probe.
+        $this->assertSame('DELETE', end($factory->history)['request']->getMethod());
     }
 }

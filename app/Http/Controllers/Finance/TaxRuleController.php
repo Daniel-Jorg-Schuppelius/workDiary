@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Finance;
 
+use App\Enums\Finance\TaxRuleStatus;
 use App\Enums\User\Permission as P;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
@@ -49,7 +50,7 @@ class TaxRuleController extends Controller {
 
         // Lückenwarnung (MVP-242): aktive Regelketten mit zeitlichem Loch.
         $gaps = [];
-        foreach ($rules->where('status', 'active')->groupBy(fn(TaxRule $r): string => $r->country . '|' . $r->category . '|' . $r->rate_type . '|' . ($r->organization_id ?? 'global')) as $key => $chain) {
+        foreach ($rules->where('status', TaxRuleStatus::Active)->groupBy(fn(TaxRule $r): string => $r->country . '|' . $r->category . '|' . $r->rate_type . '|' . ($r->organization_id ?? 'global')) as $key => $chain) {
             $sorted = $chain->sortBy(fn(TaxRule $r): string => $r->valid_from->toDateString())->values()->all();
             for ($i = 0; $i < count($sorted) - 1; $i++) {
                 $current = $sorted[$i];
@@ -94,7 +95,7 @@ class TaxRuleController extends Controller {
             ...$data,
             'country' => strtoupper($data['country']),
             'organization_id' => $this->currentOrganization()->id,
-            'status' => 'active',
+            'status' => TaxRuleStatus::Active,
             'created_by' => (int) Auth::id(),
         ]);
 
@@ -116,7 +117,7 @@ class TaxRuleController extends Controller {
         abort_if($rule->organization_id === null, 403, (string) __('Der ausgelieferte Katalog wird nicht verändert — Org-Override anlegen.'));
         abort_unless((int) $rule->organization_id === $this->currentOrganization()->id, 404);
 
-        $rule->update(['status' => 'retired']);
+        $rule->update(['status' => TaxRuleStatus::Retired]);
         $rule->audit('tax_rule.retired', ['country' => $rule->country, 'category' => $rule->category]);
 
         return back()->with('status', __('Regel stillgelegt — der Katalog/ältere Regeln greifen wieder.'));
@@ -156,7 +157,7 @@ class TaxRuleController extends Controller {
                 'valid_to' => ($parts[5] ?? '') !== '' ? $parts[5] : null,
                 'source' => $parts[6] ?? null,
                 'note' => $parts[7] ?? null,
-                'status' => 'active',
+                'status' => TaxRuleStatus::Active,
                 'created_by' => (int) Auth::id(),
             ]);
             if (! in_array($rule->category, TaxRule::CATEGORIES, true) || ! in_array($rule->rate_type, TaxRule::RATE_TYPES, true)) {

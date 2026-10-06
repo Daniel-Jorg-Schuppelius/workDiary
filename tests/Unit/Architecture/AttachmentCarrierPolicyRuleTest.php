@@ -30,13 +30,9 @@ class AttachmentCarrierPolicyRuleTest extends TestCase {
 
     /** @var array<string, string> Modellpfad unter app/Models (ohne .php) → Begründung für org-weiten Zugriff */
     private const ORG_WIDE = [
-        'Platform/Organization' => 'Stammdaten der Organisation selbst.',
-        'Communication/Comment' => 'Kommentare tragen die Sichtbarkeit ihres Trägers über die CommentPolicy.',
-        'Knowledge/KnowledgeArticle' => 'Wissensartikel sind org-weit gedacht; die Policy prüft Sichtbarkeit.',
         'Construction/ConstructionNotice' => 'Bautagebuch-Mitteilung: org-weit einsehbar wie das Bauvorhaben.',
         'Guarantee/Guarantee' => 'Gewährleistungsfall: org-weit einsehbar (keine personenbezogenen Anlagen).',
         'Finance/CashEntry' => 'Kassenbeleg: org-weit einsehbar, GoBD-append-only.',
-        'Claims/ClaimCase' => 'Reklamationsfall mit eigener Policy im Unterordner Claims.',
         'Learning/LearningQuestion' => 'Fragenpool: Anhang ist Teil der Frage, sichtbar wie der Kurs.',
         'ServiceTicket/ProblemReport' => 'Störungsmeldung: org-weit einsehbar, die Bearbeitung hängt an den Rechten der Seite.',
         'Shipping/Shipment' => 'Sendung: org-weit einsehbar wie die Lieferung selbst.',

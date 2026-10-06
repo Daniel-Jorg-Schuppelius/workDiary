@@ -61,6 +61,10 @@ use Tests\TestCase;
  * (`/admin/remote-support/pending`) erscheinen nur noch bei aktivem Plugin
  * bzw. aktiver Lexware-Ergänzung — in den Personas ist keines aktiv. Das
  * Tarifprofil (`/lexware/tarif`) bleibt als Einstieg sichtbar.
+ *
+ * Angepasst 2026-10-05 (Konsolidierungs-Audit `k3-20`): einziges Delta ist
+ * `/finanzen/steuerregeln` im Header-Systemmenü (`enterprise_admin`, Recht
+ * Finanzkonfiguration) — die Seite gab es, aber keinen Link dorthin.
  */
 class NavigationGoldenTest extends TestCase {
     use RefreshDatabase;

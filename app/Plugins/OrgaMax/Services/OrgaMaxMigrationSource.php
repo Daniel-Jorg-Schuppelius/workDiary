@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\OrgaMax\Services;
 
 use App\Enums\Migration\MigrationProvider;
+use App\Plugins\OrgaMax\Enums\OrgaMaxInvoiceStatus;
 use App\Plugins\OrgaMax\Models\OrgaMaxInvoice;
 use App\Services\AccountingMigration\Contracts\MigrationSource;
 
@@ -28,7 +29,7 @@ final class OrgaMaxMigrationSource implements MigrationSource {
             ->where('organization_id', $organizationId)
             ->orderBy('id')
             ->cursor() as $invoice) {
-            $status = (string) $invoice->invoice_status;
+            $status = ($invoice->invoice_status ?? OrgaMaxInvoiceStatus::Unknown)->value;
             yield [
                 'external_id' => (string) $invoice->external_id,
                 'number' => $invoice->invoice_number,

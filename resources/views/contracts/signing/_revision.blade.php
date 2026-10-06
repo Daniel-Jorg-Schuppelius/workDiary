@@ -14,12 +14,12 @@
     $st = $revision->status;
     $sq = $revision->sqid;
 @endphp
-<details class="rounded-box border border-base-300 bg-base-100" @if ($expanded) open @endif>
+<x-card as="details" padding="p-0" :open="(bool) $expanded">
     <summary class="flex cursor-pointer flex-wrap items-center gap-2 px-4 py-3 text-sm">
         <span class="font-semibold">{{ $revision->label() }}</span>
         <x-status-badge size="sm" :tone="$st->tone()" :label="$st->label()" />
         @if ($revision->isReleasedToCustomer())
-            <span class="badge badge-outline badge-sm">{{ __('contract-signing.revision.portal_released') }}</span>
+            <x-status-badge tone="plain" outline>{{ __('contract-signing.revision.portal_released') }}</x-status-badge>
         @endif
         <span class="text-muted">
             @if ($revision->completed_at)
@@ -57,7 +57,7 @@
                     @foreach ($revision->manifestItems as $item)
                         <li class="flex flex-wrap items-center justify-between gap-2 px-3 py-2">
                             <span class="min-w-0">
-                                <span class="badge badge-ghost badge-xs">{{ $item->roleLabel() }}</span>
+                                <x-status-badge size="xs">{{ $item->roleLabel() }}</x-status-badge>
                                 <span class="font-medium">{{ $item->original_name }}</span>
                                 <span class="block font-mono text-[11px] text-muted" title="SHA-256">{{ $item->sha256 }}</span>
                             </span>
@@ -121,7 +121,7 @@
                         </td>
                         <td class="align-top text-xs">
                             @if ($link)
-                                <span class="badge badge-info badge-outline badge-xs">{{ __('contract-signing.link.state.' . $link->stateKey()) }}</span>
+                                <x-status-badge tone="info" size="xs" outline>{{ __('contract-signing.link.state.' . $link->stateKey()) }}</x-status-badge>
                                 <span class="block text-muted">{{ __('contract-signing.link.expires', ['at' => $link->expires_at->fdatetime()]) }}</span>
                                 @if ($link->sent_at)
                                     <span class="block text-muted">{{ __('contract-signing.link.sent', ['to' => $link->sent_to, 'at' => $link->sent_at->fdatetime()]) }}</span>
@@ -135,7 +135,7 @@
                                     <form method="POST" action="{{ route('contracts.signing.links.revoke', $link) }}" class="mt-1"
                                           data-confirm-dialog data-confirm-message="{{ __('contract-signing.confirm.revoke_link') }}">
                                         @csrf
-                                        <button type="submit" class="btn btn-ghost btn-xs text-error">{{ __('contract-signing.action.revoke_link') }}</button>
+                                        <x-button type="submit" tone="ghost" size="xs" class="text-error">{{ __('contract-signing.action.revoke_link') }}</x-button>
                                     </form>
                                 @endif
                             @else
@@ -147,11 +147,11 @@
                                 <div class="flex flex-wrap justify-end gap-1">
                                     @if ($req->party === SignatureParty::Customer)
                                         <form method="POST" action="{{ route('contracts.signing.requests.link', $req) }}">@csrf
-                                            <button type="submit" class="btn btn-xs">{{ __('contract-signing.action.issue_link') }}</button>
+                                            <x-button type="submit" tone="plain" size="xs">{{ __('contract-signing.action.issue_link') }}</x-button>
                                         </form>
                                         @if ($req->signer_email)
                                             <form method="POST" action="{{ route('contracts.signing.requests.send', $req) }}">@csrf
-                                                <button type="submit" class="btn btn-xs btn-primary">{{ __('contract-signing.action.send_link') }}</button>
+                                                <x-button type="submit" size="xs">{{ __('contract-signing.action.send_link') }}</x-button>
                                             </form>
                                         @endif
                                     @else
@@ -177,7 +177,7 @@
                                         <span class="label-text text-xs">{{ __('contract-signing.review.reject') }}</span>
                                     </label>
                                     <x-textarea-field name="review_note" id="review-note-{{ $pending->sqid }}" :label="__('contract-signing.field.review_note')" rows="2" />
-                                    <button type="submit" class="btn btn-xs btn-primary">{{ __('contract-signing.action.decide') }}</button>
+                                    <x-button type="submit" size="xs">{{ __('contract-signing.action.decide') }}</x-button>
                                 </form>
                             @endif
                         </td>
@@ -230,7 +230,7 @@
                 <x-icon-btn icon="edit" tone="outline" size="sm" data-entry-modal-trigger
                             :href="route('contracts.signing.edit', $revision)" show-label>{{ __('contract-signing.action.edit_revision') }}</x-icon-btn>
                 <form method="POST" action="{{ route('contracts.signing.prepare', $revision) }}">@csrf
-                    <button type="submit" class="btn btn-sm btn-primary">{{ __('contract-signing.action.prepare') }}</button>
+                    <x-button type="submit">{{ __('contract-signing.action.prepare') }}</x-button>
                 </form>
             @endif
             @if ($st->isOpen() && $canSign)
@@ -239,7 +239,7 @@
                     <form method="POST" action="{{ route('contracts.signing.withdraw', $revision) }}" class="mt-2 flex flex-wrap items-end gap-2 rounded-box border border-base-300 p-3">
                         @csrf
                         <x-input-field name="reason" id="withdraw-reason-{{ $sq }}" :label="__('contract-signing.field.withdrawal_reason')" required />
-                        <button type="submit" class="btn btn-sm btn-error">{{ __('contract-signing.action.withdraw') }}</button>
+                        <x-button type="submit" tone="error">{{ __('contract-signing.action.withdraw') }}</x-button>
                     </form>
                 </details>
             @endif
@@ -253,16 +253,16 @@
                     <form method="POST" action="{{ route('contracts.signing.download-link', $revision) }}" class="mt-2 flex flex-wrap items-end gap-2 rounded-box border border-base-300 p-3">
                         @csrf
                         <x-input-field name="signer_email" id="download-email-{{ $sq }}" type="email" :label="__('contract-signing.field.download_recipient')" :value="$revision->customerRequest?->signer_email" :hint="__('contract-signing.hint.download_link')" />
-                        <button type="submit" class="btn btn-sm">{{ __('contract-signing.action.download_link_go') }}</button>
+                        <x-button type="submit" tone="plain">{{ __('contract-signing.action.download_link_go') }}</x-button>
                     </form>
                 </details>
                 @if ($revision->customer_visible_at)
                     <form method="POST" action="{{ route('contracts.signing.portal-revoke', $revision) }}">@csrf
-                        <button type="submit" class="btn btn-sm btn-ghost">{{ __('contract-signing.action.portal_revoke') }}</button>
+                        <x-button type="submit" tone="ghost">{{ __('contract-signing.action.portal_revoke') }}</x-button>
                     </form>
                 @else
                     <form method="POST" action="{{ route('contracts.signing.portal-release', $revision) }}">@csrf
-                        <button type="submit" class="btn btn-sm btn-ghost">{{ __('contract-signing.action.portal_release') }}</button>
+                        <x-button type="submit" tone="ghost">{{ __('contract-signing.action.portal_release') }}</x-button>
                     </form>
                 @endif
                 @if ($supersedable->isNotEmpty() && $revision->predecessor_id === null)
@@ -277,11 +277,11 @@
                                 @endforeach
                             </x-select-field>
                             <x-input-field name="effective_on" id="effective-on-{{ $sq }}" type="date" :label="__('contract-signing.field.effective_on')" :value="now()->toDateString()" required />
-                            <button type="submit" class="btn btn-sm">{{ __('contract-signing.action.supersede') }}</button>
+                            <x-button type="submit" tone="plain">{{ __('contract-signing.action.supersede') }}</x-button>
                         </form>
                     </details>
                 @endif
             @endif
         </div>
     </div>
-</details>
+</x-card>

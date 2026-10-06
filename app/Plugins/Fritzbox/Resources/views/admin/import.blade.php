@@ -21,9 +21,7 @@
         <x-slot:subtitle>{{ __('Telefonate aus der FRITZ!Box-Anrufliste als Zeiteinträge übernehmen.') }}</x-slot:subtitle>
     </x-page-toolbar>
 
-    @if ($errors->any())
-        <div class="alert alert-error text-sm">{{ $errors->first() }}</div>
-    @endif
+    <x-validation-errors first />
 
     <x-card>
         <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('Anrufliste hochladen') }}</h2>
@@ -86,7 +84,7 @@
                             <form method="POST" action="{{ route('admin.fritzbox.stamp-numbers.destroy') }}" class="inline">
                                 @csrf @method('DELETE')
                                 <input type="hidden" name="number" value="{{ $reference->external_id }}">
-                                <button type="submit" class="btn btn-ghost btn-xs text-error">{{ __('Entfernen') }}</button>
+                                <x-button type="submit" tone="ghost" size="xs" class="text-error">{{ __('Entfernen') }}</x-button>
                             </form>
                         </td>
                     </tr>

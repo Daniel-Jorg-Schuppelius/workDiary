@@ -36,6 +36,15 @@ class CustomerPolicy {
     }
 
     /**
+     * Sonderkonditionen, Kontozahlungen, Abrechnungsmonate und Retainer-Belege:
+     * nur die Abrechnungsrolle — der Ersteller eines Kunden gehört nicht dazu
+     * (Sicherheitsaudit 2026-10-04, authz-a-1).
+     */
+    public function manageBilling(User $user, Customer $customer): bool {
+        return $user->canManageBilling() && $this->sharesOrganization($user, $customer);
+    }
+
+    /**
      * Hardes Löschen nur wenn keine Projekte und keine externen Referenzen
      * (z. B. Lexoffice-Kontakte) am Kunden hängen. Sonst bitte archivieren.
      */

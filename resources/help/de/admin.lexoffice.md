@@ -1,7 +1,7 @@
 ---
 title: "Lexoffice-Konflikte"
 topic: admin.lexoffice
-version: 1
+version: 2
 audience:
     - admin
     - buchhaltung
@@ -36,3 +36,9 @@ Risiken: „Lokal übernehmen" und „Extern übernehmen" überschreiben
 Werte. Prüfen Sie die gegenübergestellten Daten genau, bevor Sie
 entscheiden. Beachten Sie, dass bei Rechnungen die Faktura-Hoheit beim
 externen Programm liegt – WorkDiary liefert dorthin zu.
+
+Die Konflikt-Strategie der Lexoffice-Einstellungen gilt für Kontakte und
+Artikel. Artikelkonflikte erscheinen nicht in dieser Inbox, sondern in der
+Konfliktliste des Lagers (Lager → Konflikte): Dort behalten Sie den lokalen
+Stand, übernehmen den Lexoffice-Stand oder verwerfen den Konflikt — mit dem
+Recht zur Artikelpflege.

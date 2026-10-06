@@ -113,8 +113,8 @@ class StocktakeController extends Controller {
         $counts = $selected instanceof Warehouse
             ? StockCount::query()->where('warehouse_id', $selected->id)
                 ->whereBetween('created_at', [$range['from']->startOfDay(), $range['to']->endOfDay()])
-                ->latest('counted_at')->limit(50)->get()
-            : collect();
+                ->latest('counted_at')->orderByDesc('id')->paginate(25)->withQueryString()
+            : null;
 
         return view('inventory.counts.index', [
             'warehouses' => $warehouses,

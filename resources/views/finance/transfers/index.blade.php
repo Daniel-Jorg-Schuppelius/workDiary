@@ -14,9 +14,10 @@
 
 @section('title', __('finance.title.transfers'))
 @section('nav-title', __('finance.title.transfers'))
+@include('partials.page-fill')
 
 @section('content')
-    <x-index-page :subtitle="__('finance.subtitle.transfers')">
+    <x-index-page overflow="clip" :subtitle="__('finance.subtitle.transfers')">
         <x-slot:actions>
             @if ($canCreate)
                 <x-icon-btn icon="add" tone="primary" size="sm"
@@ -57,7 +58,7 @@
 
         </x-filter-bar>
 
-        <x-table>
+        <x-table scroll="flex">
             <x-slot:head>
                 <tr>
                     <th>{{ __('finance.field.customer') }}</th>
@@ -77,7 +78,7 @@
                     <td><x-status-badge :tone="$transfer->channel->tone()" outline>{{ $transfer->channel->label() }}</x-status-badge></td>
                     <td><x-status-badge :tone="$transfer->target->tone()" outline>{{ $transfer->target->label() }}</x-status-badge></td>
                     <td class="text-base-content/70">
-                        {{ $transfer->period_from?->format('d.m.Y') ?? '—' }} – {{ $transfer->period_to?->format('d.m.Y') ?? '—' }}
+                        {{ $transfer->period_from?->fdate() ?? '—' }} – {{ $transfer->period_to?->fdate() ?? '—' }}
                     </td>
                     <td class="text-right tabular-nums">{{ $transfer->position_count }}</td>
                     <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $transfer->total_amount, 2, withThousandsSeparator: true) }}</td>

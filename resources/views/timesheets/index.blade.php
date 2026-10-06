@@ -9,8 +9,7 @@
 @extends('layouts.app')
 @section('title', __('Stundenzettel'))
 @section('nav-title', __('Stundenzettel'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('Stundenzettel verwalten und signieren lassen.')">

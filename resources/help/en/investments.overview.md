@@ -1,7 +1,7 @@
 ---
 title: "Investment planning"
 topic: investments.overview
-version: 1
+version: 2
 audience: []
 modules:
     - module.investments
@@ -20,6 +20,12 @@ principle applies with an additional management step. The requester can
 never approve their own request. Approved budgets are frozen as a
 snapshot — an increase always requires an approved budget deviation and
 a supplement (new request, the old state remains as "superseded").
+
+**Deferring & rejection:** During planning the case can be parked with
+"Defer"; "Resume" returns it to exactly the phase it was in. The
+rejection of a budget request is final: a rejected case stays rejected
+and can neither be deferred nor submitted again — a new attempt starts
+with a new case.
 
 **Implementation & actuals:** After approval, projects, purchase orders,
 assets, incoming invoices or documents are linked. The plan/actual view

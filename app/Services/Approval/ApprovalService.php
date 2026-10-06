@@ -14,13 +14,17 @@ namespace App\Services\Approval;
 
 use App\Models\Approval\Approval;
 use App\Models\Platform\User;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\{Builder, Model};
 
 /**
  * EINE Genehmigungsmechanik (Feature 065, P7): gemeinsame Guards
  * (Selbstfreigabe-Sperre, Doppel-Entscheid, Pflichtgrund bei Ablehnung)
  * für ServiceRequest UND Change — die Domänen-Services reagieren nur noch
  * auf das Ergebnis (alle Schritte genehmigt / abgelehnt).
+ *
+ * Runden: `startNextRound()` löst die laufende Kette ab. Alle Regeln gelten
+ * je Runde, entscheidbar ist nur die höchste Runde des Objekts; frühere
+ * Runden bleiben als Historie stehen.
  */
 class ApprovalService {
     /** @param array<int, array<string, mixed>> $chain */
@@ -37,6 +41,43 @@ class ApprovalService {
     }
 
     /**
+     * Neue Runde mit den Stufen der geltenden Runde, alle offen. Je Stufe
+     * zählt die ursprüngliche Regel — eine Delegation galt nur ihrer Runde.
+     *
+     * @return int Nummer der neuen Runde
+     */
+    public function startNextRound(Model $approvable): int {
+        $current = $this->chainOf($approvable)->currentRound()->orderBy('step')->orderBy('id')->get();
+        if ($current->isEmpty()) {
+            throw new \LogicException('Ohne Freigabekette gibt es keine neue Runde.');
+        }
+
+        $round = (int) $current->max('round') + 1;
+        foreach ($current->unique('step') as $step) {
+            Approval::query()->create([
+                'organization_id' => (int) $step->organization_id,
+                'approvable_type' => $step->approvable_type,
+                'approvable_id' => $step->approvable_id,
+                'step' => $step->step,
+                'round' => $round,
+                'approver_rule' => $step->approver_rule,
+            ]);
+        }
+
+        return $round;
+    }
+
+    /** Geltende Runde des Objekts; 0 ohne Freigabekette. */
+    public function currentRound(Model $approvable): int {
+        return (int) $this->chainOf($approvable)->max('round');
+    }
+
+    /** Trägt die geltende Runde schon ein Urteil (Genehmigung oder Ablehnung)? Rückfrage und Delegation sind keines. */
+    public function currentRoundHasVerdict(Model $approvable): bool {
+        return $this->chainOf($approvable)->currentRound()->whereIn('decision', ['approved', 'rejected'])->exists();
+    }
+
+    /**
      * @return 'approved_all'|'rejected'|'pending' Gesamtzustand nach dem Entscheid
      */
     public function decide(Approval $approval, User $actor, string $decision, ?string $reason, ?int $blockedUserId, ?int $delegateUserId = null): string {
@@ -48,6 +89,14 @@ class ApprovalService {
         }
         if ($approval->decision !== null && $approval->decision !== 'question') {
             throw new \RuntimeException((string) __('Der Schritt ist bereits entschieden.'));
+        }
+        // Offene Stufen einer abgelösten Runde gelten einem überholten Stand.
+        if ($this->isSuperseded($approval)) {
+            throw new \RuntimeException((string) __('Diese Freigaberunde wurde durch eine neue abgelöst.'));
+        }
+        // Eine Ablehnung beendet die Kette — eine spätere Stufe darf sie nicht mehr aufheben.
+        if ($this->chainRejected($approval)) {
+            throw new \RuntimeException((string) __('Die Genehmigung wurde bereits abgelehnt.'));
         }
         // **Vier Augen heißt zwei Personen** (Sicherheitsscan 2026-08-23,
         // S-34). Geprüft wurde nur „Antragsteller ≠ Entscheider" — dieselbe
@@ -96,6 +145,7 @@ class ApprovalService {
                 'approvable_type' => $approval->approvable_type,
                 'approvable_id' => $approval->approvable_id,
                 'step' => $approval->step,
+                'round' => $approval->round,
                 'approver_rule' => ['type' => 'user', 'value' => (int) $delegate->id],
             ]);
 
@@ -106,20 +156,21 @@ class ApprovalService {
             return 'rejected';
         }
 
-        $open = Approval::query()
-            ->where('approvable_type', $approval->approvable_type)
-            ->where('approvable_id', $approval->approvable_id)
+        $open = $this->sameRound($approval)
             ->where(fn($q) => $q->whereNull('decision')->orWhere('decision', 'question'))
             ->count();
 
         return $open === 0 ? 'approved_all' : 'pending';
     }
 
-    /** Hat der Entscheider in derselben Kette schon eine Stufe entschieden? */
+    /** Wurde in der Runde dieses Schritts abgelehnt? */
+    public function chainRejected(Approval $approval): bool {
+        return $this->sameRound($approval)->where('decision', 'rejected')->exists();
+    }
+
+    /** Hat der Entscheider in derselben Runde schon eine Stufe entschieden? */
     private function hasDecidedEarlierStep(Approval $approval, User $actor): bool {
-        return Approval::query()
-            ->where('approvable_type', $approval->approvable_type)
-            ->where('approvable_id', $approval->approvable_id)
+        return $this->sameRound($approval)
             ->where('id', '!=', $approval->id)
             ->where('decided_by', $actor->id)
             ->whereNotNull('decision')
@@ -127,4 +178,34 @@ class ApprovalService {
             ->exists();
     }
 
+    private function isSuperseded(Approval $approval): bool {
+        return Approval::query()
+            ->where('approvable_type', $approval->approvable_type)
+            ->where('approvable_id', $approval->approvable_id)
+            ->where('round', '>', $approval->round)
+            ->exists();
+    }
+
+    /**
+     * Schritte derselben Runde desselben Objekts.
+     *
+     * @return Builder<Approval>
+     */
+    private function sameRound(Approval $approval): Builder {
+        return Approval::query()
+            ->where('approvable_type', $approval->approvable_type)
+            ->where('approvable_id', $approval->approvable_id)
+            ->where('round', $approval->round);
+    }
+
+    /**
+     * Alle Schritte des Objekts über alle Runden.
+     *
+     * @return Builder<Approval>
+     */
+    private function chainOf(Model $approvable): Builder {
+        return Approval::query()
+            ->where('approvable_type', $approvable->getMorphClass())
+            ->where('approvable_id', $approvable->getKey());
+    }
 }

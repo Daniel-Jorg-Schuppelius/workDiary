@@ -11,6 +11,7 @@
 namespace App\Models\Learning;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Concerns\HasAccessToken;
 use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
@@ -36,8 +37,9 @@ use Illuminate\Support\Carbon;
  */
 class LearningAccessToken extends Model {
     use Auditable;
-
     use BelongsToOrganization;
+
+    use HasAccessToken;
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
 

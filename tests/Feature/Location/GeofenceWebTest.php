@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Location;
 
+use App\Enums\Location\{LocationPendingEntryStatus, LocationVisitStatus};
 use App\Http\Controllers\Api\LocationController;
 use App\Models\Customer\Customer;
 use App\Models\Location\{CustomerGeofence, LocationDeviceToken, LocationPendingEntry, LocationVisit};
@@ -109,7 +110,7 @@ class GeofenceWebTest extends TestCase {
             'left_at' => '2026-06-29 10:00:00',
             'duration_min' => 120,
             'sample_count' => 5,
-            'status' => LocationVisit::STATUS_CLOSED,
+            'status' => LocationVisitStatus::Closed,
             'materialized' => false,
         ]);
         app(VisitMaterializer::class)->materializeForUser($this->admin);
@@ -123,7 +124,7 @@ class GeofenceWebTest extends TestCase {
         $this->actingAs($this->admin)->post(route('location.review.confirm', $entry))->assertRedirect();
 
         $entry->refresh();
-        $this->assertSame(LocationPendingEntry::STATUS_IMPORTED, $entry->status);
+        $this->assertSame(LocationPendingEntryStatus::Imported, $entry->status);
         $this->assertSame(1, TimeEntry::query()->count());
         $this->assertSame(120, TimeEntry::query()->firstOrFail()->minutes);
     }
@@ -134,7 +135,7 @@ class GeofenceWebTest extends TestCase {
         $this->actingAs($this->admin)->post(route('location.review.dismiss', $entry))->assertRedirect();
 
         $entry->refresh();
-        $this->assertSame(LocationPendingEntry::STATUS_DISMISSED, $entry->status);
+        $this->assertSame(LocationPendingEntryStatus::Dismissed, $entry->status);
         $this->assertSame(0, TimeEntry::query()->count());
     }
 

@@ -24,6 +24,23 @@ trait GeneratesUniqueSlug {
      * @param  string  $sentinel  Basis-Slug, falls der Name keinen Slug ergibt
      * @param  callable(string): bool  $taken  true = Slug bereits vergeben
      */
+    /**
+     * Vergibt den Slug, solange keiner gesetzt ist. creating statt saving:
+     * erst BelongsToOrganization::creating setzt die organization_id — saving
+     * liefe davor und prüfte gegen NULL.
+     *
+     * @param  \Closure(self): string  $slugFor
+     */
+    protected static function assignSlugWhenMissing(\Closure $slugFor): void {
+        $assign = static function (self $model) use ($slugFor): void {
+            if ($model->slug === null || $model->slug === '') {
+                $model->slug = $slugFor($model);
+            }
+        };
+        static::creating($assign);
+        static::updating($assign);
+    }
+
     protected static function resolveUniqueSlug(string $name, string $sentinel, callable $taken): string {
         $base = Str::slug($name) ?: $sentinel;
         $slug = $base;

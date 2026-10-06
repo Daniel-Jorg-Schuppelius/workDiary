@@ -40,7 +40,7 @@ class QuoteFollowUpService {
      * @param string|null $nextAt Neuer Nachfasstermin (Y-m-d) oder null = abgeschlossen
      */
     public function record(Quote $quote, User $actor, string $result, ?string $nextAt = null): Quote {
-        if (! in_array($quote->status, ['approved', 'sent'], true)) {
+        if (! $quote->status->isPending()) {
             throw new RuntimeException((string) __('quotes.follow_up.wrong_status'));
         }
 

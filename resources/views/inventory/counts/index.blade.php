@@ -9,8 +9,7 @@
 @extends('layouts.app')
 @section('title', __('inventory.count_ui.title') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('inventory.count_ui.title'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('inventory.count_ui.title')">
@@ -65,7 +64,7 @@
                                     <option value="B">B</option>
                                     <option value="C">C</option>
                                 </select></div>
-                            <button type="submit" class="btn btn-sm">{{ __('inventory.count_ui.cycle_open') }}</button>
+                            <x-button type="submit" tone="plain">{{ __('inventory.count_ui.cycle_open') }}</x-button>
                         </form>
                     </div>
                 </x-card>
@@ -81,8 +80,8 @@
                 </x-slot:head>
                 @forelse ($counts as $count)
                     <tr>
-                        <td>{{ $count->counted_at?->orgTz()->format('d.m.Y H:i') }}</td>
-                        <td><span class="badge badge-sm">{{ $count->status->label() }}</span></td>
+                        <td>{{ $count->counted_at?->fdatetime() }}</td>
+                        <td><x-status-badge tone="plain">{{ $count->status->label() }}</x-status-badge></td>
                         <td class="text-right"><a href="{{ route('inventory.counts.show', $count) }}" class="link">{{ __('Öffnen') }}</a></td>
                     </tr>
                 @empty
@@ -91,6 +90,8 @@
                                    :title="__('inventory.count_ui.no_counts')" compact />
                 @endforelse
             </x-table>
+
+            <x-pagination :paginator="$counts" standing />
         @endif
     @endif
 </x-index-page>

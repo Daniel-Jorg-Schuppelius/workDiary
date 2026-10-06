@@ -14,6 +14,7 @@ use App\Models\Article\{Article, ArticleVariant};
 use App\Models\Integration\ExternalArticleMapping;
 use App\Models\Inventory\{StockMovement, Warehouse};
 use App\Models\Platform\User;
+use App\Plugins\JtlWawi\Enums\JtlConnectionStatus;
 use App\Plugins\JtlWawi\Models\{JtlConnection, JtlWarehouseMapping};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Permission as SpatiePermission;
@@ -142,7 +143,7 @@ final class JtlModeSwitchTest extends TestCase {
             ->post(route('admin.jtl.connection.disconnect'))
             ->assertSessionHas('error');
 
-        $this->assertSame(JtlConnection::STATUS_ACTIVE, $connection->refresh()->status);
+        $this->assertSame(JtlConnectionStatus::Active, $connection->refresh()->status);
         $this->assertNotNull($connection->api_key);
     }
 
@@ -154,7 +155,7 @@ final class JtlModeSwitchTest extends TestCase {
             'api_version' => '2.0',
             'allow_private_network' => true,
             'api_key' => 'KEY-TEST',
-            'status' => JtlConnection::STATUS_ACTIVE,
+            'status' => JtlConnectionStatus::Active,
         ]);
     }
 }

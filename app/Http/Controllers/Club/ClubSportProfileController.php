@@ -35,7 +35,7 @@ class ClubSportProfileController extends Controller {
         Gate::authorize('viewAny', ClubSportProfile::class);
 
         return view('club.profiles.index', [
-            'profiles' => ClubSportProfile::query()->withCount(['groups', 'departments'])->orderBy('name')->get(),
+            'profiles' => ClubSportProfile::query()->withCount(['groups', 'departments'])->orderBy('name')->orderBy('id')->paginate(30)->withQueryString(),
             'canManage' => Gate::allows('create', ClubSportProfile::class),
             'packs' => $this->packs->available(),
         ]);
@@ -49,7 +49,7 @@ class ClubSportProfileController extends Controller {
         $user = $request->user();
         $result = $this->packs->install($this->currentOrganization(), (string) $data['pack'], $user);
 
-        return redirect()->route('club.profiles.index')->with('success', __('club.teams.flash.pack_installed', [
+        return redirect()->toList('club.profiles.index')->with('success', __('club.teams.flash.pack_installed', [
             'name' => $result['profile']->name,
             'groups' => $result['groups'],
             'resources' => $result['resources'],
@@ -66,7 +66,7 @@ class ClubSportProfileController extends Controller {
         Gate::authorize('create', ClubSportProfile::class);
         $this->teams->createProfile($this->currentOrganization(), $request->validated());
 
-        return redirect()->route('club.profiles.index')->with('success', __('club.teams.flash.profile_saved'));
+        return redirect()->toList('club.profiles.index')->with('success', __('club.teams.flash.profile_saved'));
     }
 
     public function edit(ClubSportProfile $profile): View {
@@ -79,13 +79,13 @@ class ClubSportProfileController extends Controller {
         Gate::authorize('update', $profile);
         $this->teams->updateProfile($profile, $request->validated());
 
-        return redirect()->route('club.profiles.index')->with('success', __('club.teams.flash.profile_saved'));
+        return redirect()->toList('club.profiles.index')->with('success', __('club.teams.flash.profile_saved'));
     }
 
     public function destroy(ClubSportProfile $profile): RedirectResponse {
         Gate::authorize('delete', $profile);
         $this->teams->deleteProfile($profile);
 
-        return redirect()->route('club.profiles.index')->with('success', __('club.teams.flash.profile_deleted'));
+        return redirect()->toList('club.profiles.index')->with('success', __('club.teams.flash.profile_deleted'));
     }
 }

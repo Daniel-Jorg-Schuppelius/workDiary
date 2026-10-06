@@ -14,8 +14,7 @@
 @extends('layouts.app')
 @section('title', __('club.title.members'))
 @section('nav-title', __('club.title.members'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('club.subtitle.members')">
     <x-slot:actions>
@@ -83,15 +82,15 @@
                 <td class="text-center text-sm">{{ $age ?? '–' }}</td>
                 <td class="text-sm">
                     @forelse ($member->activeGroupMemberships as $membership)
-                        <span class="badge badge-ghost badge-sm">{{ $membership->group?->name }}</span>
+                        <x-status-badge>{{ $membership->group?->name }}</x-status-badge>
                     @empty
                         <span class="text-muted">–</span>
                     @endforelse
                 </td>
-                <td class="text-sm text-base-content/70">{{ $member->joined_on->format('d.m.Y') }}</td>
+                <td class="text-sm text-base-content/70">{{ $member->joined_on->fdate() }}</td>
                 <td>
                     @if ($member->hasLeftOn($today))
-                        <x-status-badge tone="ghost" size="sm">{{ __('club.label.left') }} · {{ $member->left_on?->format('d.m.Y') }}</x-status-badge>
+                        <x-status-badge tone="ghost" size="sm">{{ __('club.label.left') }} · {{ $member->left_on?->fdate() }}</x-status-badge>
                     @else
                         <x-status-badge tone="success" size="sm">{{ __('club.label.current') }}</x-status-badge>
                     @endif

@@ -26,7 +26,7 @@
     </x-slot:toolbar>
 
     @unless ($consistent)
-        <div class="alert alert-warning">
+        <div role="alert" class="alert alert-warning">
             <x-icon name="warning" />
             <span>{{ __('Konsistenz-Hinweis: Der Datenpunkt meldet :expected, der Drilldown findet :actual Datensätze (Datenstand kann sich geändert haben).', ['expected' => $expected, 'actual' => count($rows)]) }}</span>
         </div>

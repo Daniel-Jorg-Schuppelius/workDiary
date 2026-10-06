@@ -14,9 +14,10 @@
 @extends('layouts.app')
 @section('title', __('Change-Vorlagen'))
 @section('nav-title', __('Change-Vorlagen'))
+@include('partials.page-fill')
 
 @section('content')
-    <x-index-page :subtitle="__('Vorlagen für Standard-Changes — nur freigegebene Vorlagen sind nutzbar; Änderungen erhöhen die Version und ziehen die Freigabe zurück.')"
+    <x-index-page overflow="clip" :subtitle="__('Vorlagen für Standard-Changes — nur freigegebene Vorlagen sind nutzbar; Änderungen erhöhen die Version und ziehen die Freigabe zurück.')"
                   back-route="servicedesk.changes.index" :back-label="__('Changes')">
         <x-slot:actions>
             <x-icon-btn icon="add" tone="primary" size="sm"
@@ -25,7 +26,7 @@
                         show-label>{{ __('Neue Vorlage') }}</x-icon-btn>
         </x-slot:actions>
 
-        <x-table :zebra="true">
+        <x-table scroll="flex" :zebra="true">
             <x-slot:head>
                 <tr>
                     <th>{{ __('Name') }}</th>
@@ -35,7 +36,6 @@
                     <th class="w-40 text-right">{{ __('Aktion') }}</th>
                 </tr>
             </x-slot:head>
-            <tbody>
                 @forelse ($templates as $template)
                     <tr class="hover">
                         <td class="font-medium">{{ $template->name }}</td>
@@ -69,7 +69,6 @@
                 @empty
                     <x-table.empty :colspan="5" icon="library_books" :title="__('Noch keine Vorlagen erfasst')" compact />
                 @endforelse
-            </tbody>
         </x-table>
 
         <x-pagination :paginator="$templates" standing />

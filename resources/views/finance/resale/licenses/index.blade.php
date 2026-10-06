@@ -15,7 +15,7 @@
 
 @section('title', __('resale.license.title'))
 @section('nav-title', __('resale.title.menu'))
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
     <x-index-page overflow="clip" :subtitle="__('resale.license.subtitle')">

@@ -15,8 +15,7 @@
 @section('title', __('finance.open_times.title'))
 @section('nav-title', __('finance.open_times.title'))
 
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
     <x-index-page overflow="clip" :subtitle="__('finance.open_times.subtitle')">
@@ -50,7 +49,7 @@
         @if ($ledgerManagedCount > 0)
             {{-- Saldo-geführte Kunden (Konto-/Pauschal-Modus) sind ausgeblendet;
                  der Zähler hält die Kontrollfunktion der Liste aufrecht. --}}
-            <div class="alert text-sm">
+            <div role="status" class="alert text-sm">
                 <x-icon name="info" />
                 <span>{{ trans_choice('finance.open_times.ledger_managed', $ledgerManagedCount, ['count' => $ledgerManagedCount]) }}</span>
             </div>
@@ -117,7 +116,7 @@
 
         @if ($outsideRangeCount > 0)
             {{-- Offene-Posten-Schutz: Altbestand außerhalb des Zeitraums nie lautlos ausblenden. --}}
-            <div class="alert alert-warning text-sm">
+            <div role="alert" class="alert alert-warning text-sm">
                 <x-icon name="event_busy" />
                 <span>{{ trans_choice('finance.open_times.outside_range', $outsideRangeCount, ['count' => $outsideRangeCount]) }}</span>
                 <a href="{{ route('finance.open-times.index', array_merge(request()->query(), ['all' => 1])) }}" class="link whitespace-nowrap">
@@ -127,7 +126,7 @@
         @endif
 
         @if (count($groups) > 0)
-            <details class="rounded-box border border-base-300 bg-base-100 shadow-xs">
+            <x-card as="details" padding="p-0">
                 <summary class="cursor-pointer px-4 py-3 text-sm font-medium">{{ __('finance.open_times.groups_heading') }}</summary>
                 <div class="px-4 pb-4">
                     <x-table :bare="true">
@@ -151,7 +150,7 @@
                             @endforeach
                     </x-table>
                 </div>
-            </details>
+            </x-card>
         @endif
 
         <x-table scroll="flex">

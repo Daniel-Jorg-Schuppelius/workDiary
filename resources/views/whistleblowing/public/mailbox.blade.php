@@ -30,10 +30,11 @@
         <h2>{{ __('Nachrichten') }}</h2>
         @forelse ($messages as $m)
             <div class="border-l-2 pl-2">
-                <span class="badge">{{ $m->author_type->value === 'reporter' ? __('Sie') : __('Meldestelle') }}</span>
+                <x-status-badge tone="plain" size="md">{{ $m->author_type->value === 'reporter' ? __('Sie') : __('Meldestelle') }}</x-status-badge>
                 <p class="whitespace-pre-line">{{ $m->body_ciphertext }}</p>
             </div>
         @empty
+            {{-- raw-markup-ok: öffentliches Hinweisgeber-Formular mit eigenem Stylesheet (whistleblowing.css), ohne App-CSS --}}
             <p>{{ __('Noch keine Nachrichten.') }}</p>
         @endforelse
 

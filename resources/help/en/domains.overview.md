@@ -30,9 +30,11 @@ invoices, timeline and actions. "Refresh" reconciles the provider state for
 exactly this domain.
 
 **DNS:** The zone is read on demand. In the interface, individual records can be
-added and deleted; replacing the whole zone is deliberately not offered there,
-because a wrong full replacement deletes every record of the domain. After a
-write the system detects deviations (DNS conflict) and surfaces them instead of
+added and deleted. "Replace zone" only appears once the zone has been read: the
+dialog is prefilled with its state and asks for confirmation before sending,
+because a full replacement deletes every record missing from the form. Records
+whose type the form cannot edit are kept unchanged; an empty form is rejected.
+After a write the system detects deviations (DNS conflict) and surfaces them instead of
 overwriting. MX/SRV records require a priority.
 
 **Registration:** Availability is checked before registering. A registration

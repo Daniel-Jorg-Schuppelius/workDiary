@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Claims;
 
-use App\Enums\Claims\{ClaimSource, ClaimStatus};
+use App\Enums\Claims\{ClaimAssessmentStatus, ClaimSource, ClaimStatus};
 use App\Enums\Damage\DamageKind;
 use App\Models\Article\Article;
 use App\Models\Asset\Asset;
@@ -228,7 +228,7 @@ class ClaimCase extends Model implements DamageCaseSubject {
     }
 
     public function activeAssessment(): ?ClaimAssessment {
-        return $this->assessments->firstWhere('status', 'active');
+        return $this->assessments->firstWhere('status', ClaimAssessmentStatus::Active);
     }
 
     public function latestDecision(): ?ClaimDecision {

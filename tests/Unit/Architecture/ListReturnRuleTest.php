@@ -31,7 +31,8 @@ class ListReturnRuleTest extends TestCase {
         $this->assertNotEmpty($lists, 'Keine Listenrouten gefunden — Erkennung der Filterleiste prüfen.');
 
         $names = implode('|', array_map(static fn(string $n): string => preg_quote($n, '/'), $lists));
-        $pattern = '/(?:redirect\(\)->route|to_route)\(\s*\'(?:' . $names . ')\'\s*\)|redirect\(\s*route\(\s*\'(?:' . $names . ')\'\s*\)\s*\)/';
+        // \s* vor und nach dem Pfeil: der Aufruf steht oft umbrochen (24 Stellen blieben so unentdeckt).
+        $pattern = '/(?:redirect\(\)\s*->\s*route|to_route)\(\s*\'(?:' . $names . ')\'\s*\)|redirect\(\s*route\(\s*\'(?:' . $names . ')\'\s*\)\s*\)/';
 
         $violations = [];
         $files = array_merge($this->phpFiles('app/Http'), $this->phpFiles('app/Plugins'));
@@ -56,7 +57,7 @@ class ListReturnRuleTest extends TestCase {
     /** @return list<string> */
     private function listRoutes(): array {
         $routes = [];
-        $views = array_merge($this->bladeFiles(), $this->filesUnder('app/Plugins', '/\.blade\.php$/'));
+        $views = $this->bladeFiles();
         foreach ($views as $view) {
             if (str_contains($this->relativePath($view), 'resources/views/legacy/')) {
                 continue;

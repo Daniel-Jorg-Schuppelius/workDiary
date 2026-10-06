@@ -8,19 +8,7 @@
 --}}
 {{-- Abrufseite (Feature 157): Ergebnis einer vollständig unterzeichneten
      Fassung über den getrennten, befristeten Abruflink. --}}
-<!doctype html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="light">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="robots" content="noindex,nofollow">
-<meta name="referrer" content="no-referrer">
-<title>{{ __('contract-signing.public.download_title', ['kind' => $contract?->kind->label()]) }}</title>
-@include('partials.font-bootstrap')
-@vite(['resources/css/app.css', 'resources/js/app.js'])
-</head>
-<body class="min-h-screen bg-base-200">
-<main class="mx-auto max-w-3xl p-4">
+<x-public-page :title="__('contract-signing.public.download_title', ['kind' => $contract?->kind->label()])" referrer="no-referrer" icons>
     <div class="mb-4 rounded-box bg-base-100 p-4 shadow">
         <p class="text-xs uppercase text-muted">{{ $contract?->organization?->name }}</p>
         <h1 class="font-['Space_Grotesk'] text-xl font-semibold">{{ $contract?->kind->label() }} — {{ $contract?->title }}</h1>
@@ -46,7 +34,7 @@
         <ul class="divide-y divide-base-300">
             @foreach ($items as $item)
                 <li class="flex flex-wrap items-center justify-between gap-2 py-2 text-sm">
-                    <span><span class="badge badge-ghost badge-xs">{{ $item->roleLabel() }}</span> {{ $item->original_name }}</span>
+                    <span><x-status-badge size="xs">{{ $item->roleLabel() }}</x-status-badge> {{ $item->original_name }}</span>
                     <x-button tone="outline" size="xs" icon="download" :href="route('agreements.public-download.file', ['token' => $token, 'item' => $item->sort])">
                         <span>{{ __('contract-signing.action.download_file') }}</span>
                     </x-button>
@@ -70,6 +58,4 @@
     </div>
 
     <p class="text-xs text-muted">{{ __('contract-signing.public.legal_note') }}</p>
-</main>
-</body>
-</html>
+</x-public-page>

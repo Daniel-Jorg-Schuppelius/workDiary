@@ -68,9 +68,9 @@
                     <th class="whitespace-nowrap">{{ __('Datum') }}</th>
                     @foreach ($types as $st)
                         <th class="text-center whitespace-nowrap" title="{{ $st->name }}">
-                            <span class="badge badge-sm" @if (!$forPrint) style="background-color:{{ $st->color }};color:#fff;" @endif>
+                            <x-status-badge tone="plain" :style="$forPrint ? null : 'background-color:'.$st->color.';color:#fff;'">
                                 {{ $st->abbreviation }}
-                            </span>
+                            </x-status-badge>
                         </th>
                     @endforeach
                 </tr>

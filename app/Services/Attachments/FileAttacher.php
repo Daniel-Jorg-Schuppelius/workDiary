@@ -27,8 +27,39 @@ use Illuminate\Support\Str;
  * Request anlegen können — ohne den generischen AttachmentController-Endpoint.
  */
 final class FileAttacher {
-    /** @var list<string> */
+    /**
+     * Positivliste der Datei-Uploads — die eine Stelle für Anhänge, Dokumente,
+     * Portal- und Helpdesk-Formulare (Konsolidierungs-Audit 2026-10, k3-7).
+     *
+     * @var list<string>
+     */
     public const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'txt', 'csv', 'log', 'zip', 'docx', 'xlsx'];
+
+    /**
+     * Am Inhalt erkannte MIME-Typen (PHP Fileinfo, nicht der Client-Header).
+     *
+     * @var list<string>
+     */
+    public const ALLOWED_MIMES = [
+        'image/jpeg',
+        'image/png',
+        'image/gif',
+        'image/webp',
+        'application/pdf',
+        'text/plain',
+        'text/csv',
+        'application/zip',
+        'application/x-zip-compressed',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    ];
+
+    /** Endung und der am Inhalt erkannte Typ stehen beide auf der Positivliste. */
+    public static function accepts(UploadedFile $file): bool {
+        $extension = strtolower($file->getClientOriginalExtension() ?: ($file->extension() ?? ''));
+
+        return in_array($extension, self::ALLOWED_EXTENSIONS, true) && in_array($file->getMimeType() ?? '', self::ALLOWED_MIMES, true);
+    }
 
     /**
      * Maximale Dateigröße in KB (Laravel `max:`-Einheit) — eine Wahrheit für

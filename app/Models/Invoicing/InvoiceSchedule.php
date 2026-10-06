@@ -10,6 +10,7 @@
 
 namespace App\Models\Invoicing;
 
+use App\Enums\Invoicing\InvoiceScheduleStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Contract\Contract;
 use App\Models\Contracts\HasDocumentLines;
@@ -41,7 +42,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property Carbon $next_run_on
  * @property Carbon|null $last_run_on
  * @property Carbon|null $end_on
- * @property string $status
+ * @property InvoiceScheduleStatus $status
  * @property int|null $created_by
  */
 class InvoiceSchedule extends Model implements HasDocumentLines {
@@ -50,12 +51,6 @@ class InvoiceSchedule extends Model implements HasDocumentLines {
     /** @use HasFactory<\Database\Factories\Invoicing\InvoiceScheduleFactory> */
     use HasFactory;
     use HasSqid;
-
-    public const STATUS_ACTIVE = 'active';
-
-    public const STATUS_PAUSED = 'paused';
-
-    public const STATUS_ENDED = 'ended';
 
     public const UNIT_WEEK = 'week';
 
@@ -93,6 +88,7 @@ class InvoiceSchedule extends Model implements HasDocumentLines {
         'next_run_on' => 'date',
         'last_run_on' => 'date',
         'end_on' => 'date',
+        'status' => InvoiceScheduleStatus::class,
     ];
 
     /** @return BelongsTo<Customer, $this> */
@@ -148,7 +144,7 @@ class InvoiceSchedule extends Model implements HasDocumentLines {
 
     /** @param Builder<InvoiceSchedule> $query */
     public function scopeActive(Builder $query): void {
-        $query->where('status', self::STATUS_ACTIVE);
+        $query->where('status', InvoiceScheduleStatus::Active);
     }
 
     /**
@@ -200,7 +196,7 @@ class InvoiceSchedule extends Model implements HasDocumentLines {
      * @return list<Carbon>
      */
     public function upcomingRuns(int $count = 3): array {
-        if ($this->status !== self::STATUS_ACTIVE) {
+        if ($this->status !== InvoiceScheduleStatus::Active) {
             return [];
         }
         $runs = [];
@@ -222,22 +218,6 @@ class InvoiceSchedule extends Model implements HasDocumentLines {
             self::UNIT_QUARTER => (string) __('Quartal(e)'),
             self::UNIT_YEAR => (string) __('Jahr(e)'),
             default => (string) __('Monat(e)'),
-        };
-    }
-
-    public function statusLabel(): string {
-        return match ($this->status) {
-            self::STATUS_ACTIVE => (string) __('Aktiv'),
-            self::STATUS_PAUSED => (string) __('Pausiert'),
-            default => (string) __('Beendet'),
-        };
-    }
-
-    public function statusTone(): string {
-        return match ($this->status) {
-            self::STATUS_ACTIVE => 'success',
-            self::STATUS_PAUSED => 'warning',
-            default => 'neutral',
         };
     }
 }

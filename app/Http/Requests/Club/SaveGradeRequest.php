@@ -21,7 +21,7 @@ class SaveGradeRequest extends BaseFormRequest {
         return [
             'name' => ['required', 'string', 'max:80'],
             'rank' => ['nullable', 'integer', 'min:0', 'max:999'],
-            'color' => ['nullable', 'string', 'max:32'],
+            'color' => ['nullable', 'string', 'max:32', new \App\Rules\ColorValue],
             'is_active' => ['sometimes', 'boolean'],
         ];
     }

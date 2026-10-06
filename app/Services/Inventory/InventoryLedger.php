@@ -14,11 +14,12 @@ namespace App\Services\Inventory;
 
 use App\Enums\Inventory\{OwnershipType, StockMovementType, StockState};
 use App\Models\Article\ArticleVariant;
-use App\Models\Inventory\{StockMovement, Warehouse, WarehouseBin};
+use App\Models\Inventory\{StockLot, StockMovement, Warehouse, WarehouseBin};
 use App\Support\DecimalQty;
+use Closure;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\QueryException;
-use Illuminate\Support\Carbon;
+use Illuminate\Support\{Carbon, Str};
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
@@ -32,8 +33,13 @@ use RuntimeException;
 class InventoryLedger {
     public const SCALE = 4;
 
+    /** Schlüsselpräfix mehrteiliger Abgänge ohne eigenen Schlüssel: hält die Teile für {@see issueOf()} zusammen. */
+    public const ISSUE_GROUP_PREFIX = 'issue:';
+
     /** @var array<int, \App\Enums\Inventory\InventoryMode|null> */
     private array $modeCache = [];
+
+    public function __construct(private readonly LotStockReader $lotStock) {}
 
     /** Schreibt eine Buchung append-only; idempotent über (org, idempotency_key). */
     public function post(StockPosting $posting): StockMovement {
@@ -127,7 +133,8 @@ class InventoryLedger {
      * Lagerort-/Lagerplatz-Guard (MVP-706): ein gesperrter oder inaktiver Ort
      * nimmt keine Zu-/Abgänge und Reservierungen an; Korrekturen (Inventur)
      * und Reservierungsfreigaben bleiben möglich, damit ein gesperrter Platz
-     * bereinigt werden kann. Ein Platz muss zum gebuchten Lagerort gehören —
+     * bereinigt werden kann, ebenso Chargensperren — sie bewegen keine Ware.
+     * Ein Platz muss zum gebuchten Lagerort gehören —
      * sonst wäre der Bucket (Lager, Platz) widersprüchlich.
      */
     private function assertPlaceUsable(StockPosting $posting): void {
@@ -136,7 +143,7 @@ class InventoryLedger {
             throw new RuntimeException((string) __('inventory.error.bin_foreign'));
         }
 
-        if (in_array($posting->type, [StockMovementType::Correction, StockMovementType::ReleaseReservation], true)) {
+        if (in_array($posting->type, [StockMovementType::Correction, StockMovementType::ReleaseReservation, StockMovementType::LotBlock, StockMovementType::LotRelease], true)) {
             return;
         }
 
@@ -348,13 +355,86 @@ class InventoryLedger {
         return $this->post(new StockPosting($variant, $warehouse, StockState::Physical, DecimalQty::positive($qty), StockMovementType::Receipt, $ownership, idempotencyKey: $idempotencyKey, actorUserId: $actorUserId, bin: $bin));
     }
 
-    public function issue(ArticleVariant $variant, Warehouse $warehouse, string $qty, OwnershipType $ownership = OwnershipType::Own, bool $allowNegative = false, ?string $idempotencyKey = null, ?int $actorUserId = null, ?WarehouseBin $bin = null): StockMovement {
-        // Prüfung + Buchung in einer Transaktion: availableForUpdate() sperrt den Bestand gegen parallele Abgänge.
-        return DB::transaction(function () use ($variant, $warehouse, $qty, $ownership, $allowNegative, $idempotencyKey, $actorUserId, $bin): StockMovement {
-            $this->guardSufficient($variant, $warehouse, $qty, $allowNegative, $bin);
+    /**
+     * Abgang je Charge (E3): gewählte Charge oder FEFO-Zuteilung
+     * ({@see LotStockReader::allocate()}), je Teil eine Bewegung. Ein Teil
+     * behält den Schlüssel, mehrere tragen `<schlüssel>#1` … — eine
+     * Wiederholung liefert den früheren Abgang, statt neu zuzuteilen.
+     * `$costing` bewertet jeden Teil vor seiner Buchung (Bewertungsverfahren).
+     * `$requireLot` (chargenpflichtiger Artikel) weist eine Zuteilung mit
+     * einem Teil ohne Charge ab, bevor etwas gebucht ist.
+     *
+     * @param  (Closure(StockLot|null, numeric-string): array{unit: numeric-string, total: numeric-string})|null  $costing
+     */
+    public function issue(ArticleVariant $variant, Warehouse $warehouse, string $qty, OwnershipType $ownership = OwnershipType::Own, bool $allowNegative = false, ?string $idempotencyKey = null, ?int $actorUserId = null, ?WarehouseBin $bin = null, ?StockLot $lot = null, ?Closure $costing = null, bool $requireLot = false): StockIssue {
+        $qty = DecimalQty::positive($qty);
 
-            return $this->post(new StockPosting($variant, $warehouse, StockState::Physical, DecimalQty::negative($qty), StockMovementType::Issue, $ownership, idempotencyKey: $idempotencyKey, actorUserId: $actorUserId, bin: $bin));
+        // Prüfung, Zuteilung und Buchung in einer Transaktion: availableForUpdate() und die Zuteilung sperren den Bestand gegen parallele Abgänge.
+        return DB::transaction(function () use ($variant, $warehouse, $qty, $ownership, $allowNegative, $idempotencyKey, $actorUserId, $bin, $lot, $costing, $requireLot): StockIssue {
+            $orgId = $variant->organization_id;
+            if ($idempotencyKey !== null && $orgId !== null) {
+                $earlier = $this->findByIdempotencyKey($orgId, $idempotencyKey, lock: true);
+                $parts = $earlier !== null ? [$earlier] : $this->issueParts($orgId, $idempotencyKey);
+                if ($parts !== []) {
+                    return new StockIssue($parts);
+                }
+            }
+
+            $this->guardSufficient($variant, $warehouse, $qty, $allowNegative, $bin);
+            $parts = $this->lotStock->allocate($variant, $warehouse, $qty, $bin, $lot, $allowNegative, $ownership)->parts;
+            if ($requireLot && in_array(null, array_column($parts, 'lot'), true)) {
+                throw new RuntimeException((string) __('inventory.error.lot_required'));
+            }
+            if (count($parts) > 1) {
+                $idempotencyKey ??= self::ISSUE_GROUP_PREFIX . Str::uuid()->toString();
+            }
+
+            $movements = [];
+            foreach ($parts as $index => ['lot' => $partLot, 'qty' => $partQty]) {
+                $cost = $costing !== null ? $costing($partLot, $partQty) : null;
+                $movement = $this->post(new StockPosting(
+                    $variant, $warehouse, StockState::Physical, DecimalQty::negative($partQty), StockMovementType::Issue, $ownership,
+                    idempotencyKey: $idempotencyKey !== null && count($parts) > 1 ? $idempotencyKey . '#' . ($index + 1) : $idempotencyKey,
+                    actorUserId: $actorUserId,
+                    costUnit: $cost['unit'] ?? null,
+                    costTotal: $cost['total'] ?? null,
+                    stockLotId: $partLot?->id,
+                    bin: $bin,
+                ));
+                $movements[] = $movement->setRelation('lot', $partLot);
+            }
+
+            return new StockIssue($movements);
         });
+    }
+
+    /** Alle Bewegungen des Abgangs, zu dem eine Abgangsbewegung gehört (z. B. für eine Rückbuchung je Charge). */
+    public function issueOf(StockMovement $movement): StockIssue {
+        $orgId = $movement->organization_id;
+        if ($orgId !== null && preg_match('/^(.+)#\d+$/', (string) $movement->idempotency_key, $match) === 1) {
+            $parts = $this->issueParts($orgId, $match[1]);
+            foreach ($parts as $part) {
+                if ($part->id === $movement->id) {
+                    return new StockIssue($parts);
+                }
+            }
+        }
+
+        return new StockIssue([$movement]);
+    }
+
+    /**
+     * Teile eines mehrteiligen Abgangs: `<schlüssel>#1`, `#2` … lückenlos.
+     *
+     * @return list<StockMovement>
+     */
+    private function issueParts(int $orgId, string $key): array {
+        $parts = [];
+        while (($part = $this->findByIdempotencyKey($orgId, $key . '#' . (count($parts) + 1), lock: true)) !== null) {
+            $parts[] = $part;
+        }
+
+        return $parts;
     }
 
     public function reserve(ArticleVariant $variant, Warehouse $warehouse, string $qty, OwnershipType $ownership = OwnershipType::Own, ?string $idempotencyKey = null, ?int $actorUserId = null, ?WarehouseBin $bin = null): StockMovement {

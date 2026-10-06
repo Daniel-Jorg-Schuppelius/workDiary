@@ -15,9 +15,11 @@ use App\Models\Integration\{ExternalReference, ExternalReferenceAlias, Integrati
 use App\Models\Platform\Organization;
 use App\Models\Time\TimeEntry;
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
-use App\Plugins\Toggl\Services\TogglUserMappingService;
-use App\Plugins\Toggl\Sources\{ApiWorkspaceSource, TogglApiClient, TogglCsvParser, TogglWorkspaceReader};
-use App\Plugins\Toggl\{TogglArchiveException, TogglConfig, TogglExportArchiveService, TogglExportImporter, TogglExportService, TogglImportService, TogglOptionBuilder, TogglPlugin};
+use App\Plugins\Toggl\Api\TogglApiClient;
+use App\Plugins\Toggl\Exceptions\TogglArchiveException;
+use App\Plugins\Toggl\Services\{TogglExportArchiveService, TogglExportImporter, TogglExportService, TogglImportService, TogglOptionBuilder, TogglUserMappingService};
+use App\Plugins\Toggl\Sources\{ApiWorkspaceSource, TogglCsvParser, TogglWorkspaceReader};
+use App\Plugins\Toggl\{TogglConfig, TogglPlugin};
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
@@ -49,12 +51,7 @@ class TogglController extends Controller {
         // Zuordnungs-Inbox (MVP-103) bearbeitet — hier nur noch die Anzahl
         // offener Gruppen als Hinweis/Deep-Link.
         $inboxOpenCount = $organization instanceof Organization
-            ? IntegrationInboxItem::query()
-                ->where('organization_id', $organization->id)
-                ->where('plugin_id', TogglPlugin::ID)
-                ->where('status', IntegrationInboxItem::STATUS_OPEN)
-                ->whereNotNull('group_key')
-                ->count()
+            ? IntegrationInboxItem::openCount((int) $organization->id, TogglPlugin::ID, grouped: true)
             : 0;
 
         $config = TogglConfig::resolve($admin->organization_id);

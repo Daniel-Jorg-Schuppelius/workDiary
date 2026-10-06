@@ -70,6 +70,21 @@ abstract class AbstractEntitySpec implements EntitySpec {
         );
     }
 
+    /**
+     * @param  list<ValidationIssue>  $issues
+     * @param  array<string, mixed>  $row
+     * @param  class-string<\BackedEnum>  $enum
+     */
+    protected function validateEnum(array &$issues, array $row, string $field, string $enum): void {
+        $value = $row[$field] ?? null;
+        if ($value === null) {
+            return;
+        }
+        if ($enum::tryFrom((string) $value) === null) {
+            $issues[] = $this->formatIssue($field, (string) __('import.error.format.enum'));
+        }
+    }
+
     protected function formatIssue(string $field, string $reason): ValidationIssue {
         return new ValidationIssue(
             ImportErrorCode::Format,

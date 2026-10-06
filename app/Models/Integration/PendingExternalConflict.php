@@ -10,6 +10,8 @@
 
 namespace App\Models\Integration;
 
+use App\Enums\Integration\ExternalConflictStatus;
+use App\Enums\User\Permission as P;
 use App\Models\Concerns\BelongsToOrganization;
 use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
@@ -28,7 +30,7 @@ use Illuminate\Support\Carbon;
  * @property array<string, mixed> $local_snapshot
  * @property array<string, mixed> $remote_snapshot
  * @property array<int, string>|null $diff_fields
- * @property string $status
+ * @property ExternalConflictStatus $status
  * @property int|null $resolved_by
  * @property Carbon|null $resolved_at
  */
@@ -38,16 +40,11 @@ class PendingExternalConflict extends Model {
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
 
-    public const STATUS_OPEN = 'open';
+    /** Endgültig gescheiterte Spiegelung einer Lagerbewegung (MVP-072). */
+    public const TYPE_INVENTORY_OUTBOX = 'inventory_outbox';
 
-    public const STATUS_RESOLVED_LOCAL = 'resolved_local';
-
-    public const STATUS_RESOLVED_REMOTE = 'resolved_remote';
-
-    public const STATUS_DISMISSED = 'dismissed';
-
-    /** Konflikt durch fachliche Gegenbuchung ausgeglichen (Inventory-Outbox, MVP-072). */
-    public const STATUS_COMPENSATED = 'compensated';
+    /** Lokal geänderter Artikel, dessen Stand im Fremdsystem abweicht. */
+    public const TYPE_ARTICLE = 'article';
 
     protected $fillable = [
         'organization_id',
@@ -69,6 +66,7 @@ class PendingExternalConflict extends Model {
         'local_snapshot' => 'array',
         'remote_snapshot' => 'array',
         'diff_fields' => 'array',
+        'status' => ExternalConflictStatus::class,
         'resolved_at' => 'datetime',
     ];
 
@@ -83,6 +81,21 @@ class PendingExternalConflict extends Model {
     }
 
     public function isOpen(): bool {
-        return $this->status === self::STATUS_OPEN;
+        return $this->status === ExternalConflictStatus::Open;
+    }
+
+    /**
+     * Arten der Konfliktliste, die ein Nutzer sehen darf (Entscheidung
+     * 2026-10-06): Bestand mit inventory.viewAny, Artikel mit article.viewAny.
+     *
+     * @return list<string>
+     */
+    public static function typesVisibleTo(User $user): array {
+        $allowed = [
+            self::TYPE_INVENTORY_OUTBOX => $user->can(P::InventoryViewAny->value),
+            self::TYPE_ARTICLE => $user->can(P::ArticleViewAny->value),
+        ];
+
+        return array_keys(array_filter($allowed));
     }
 }

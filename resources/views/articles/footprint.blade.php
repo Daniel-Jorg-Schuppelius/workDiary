@@ -38,7 +38,7 @@
                 <x-input-field name="pcf_factor_kg" type="number" step="0.0001" min="0" :label="__('article.footprint.field.factor')" :value="$article->pcf_factor_kg" :hint="__('article.footprint.hint.factor', ['unit' => $article->base_unit])" />
                 <x-input-field name="pcf_process_kg" type="number" step="0.0001" min="0" :label="__('article.footprint.field.process')" :value="$article->pcf_process_kg" />
                 <x-input-field name="pcf_source" :label="__('article.footprint.field.source')" :value="$article->pcf_source" />
-                <div class="sm:col-span-3 flex justify-end"><button type="submit" class="btn btn-sm btn-primary">{{ __('article.footprint.save') }}</button></div>
+                <div class="sm:col-span-3 flex justify-end"><x-button type="submit">{{ __('article.footprint.save') }}</x-button></div>
             </form>
         @endcan
     </x-card>

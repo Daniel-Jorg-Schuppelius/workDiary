@@ -13,7 +13,7 @@ namespace App\Plugins\Webdav;
 use App\Plugins\Support\Mirror\{MirrorOutboxDispatcher, MirrorTargetRegistry};
 use App\Plugins\Support\PluginServiceProviderBase;
 use App\Plugins\Webdav\Contracts\WebdavGatewayFactory;
-use App\Plugins\Webdav\Services\GuzzleWebdavGatewayFactory;
+use App\Plugins\Webdav\Services\{GuzzleWebdavGatewayFactory, WebdavMirrorTarget};
 use App\Services\Integration\IntegrationOutboxDispatcherResolver;
 
 /**

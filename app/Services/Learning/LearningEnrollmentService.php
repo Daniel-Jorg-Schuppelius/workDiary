@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Learning;
 
-use App\Enums\Learning\{LearningCourseStatus, LearningEnrollmentSource, LearningEnrollmentStatus, LearningProgressStatus};
+use App\Enums\Learning\{LearningAccessKind, LearningCourseStatus, LearningEnrollmentSource, LearningEnrollmentStatus, LearningProgressStatus};
 use App\Models\Communication\ExternalParticipant;
 use App\Models\Learning\{LearningCourse, LearningEnrollment, LearningTimeSession, LearningUnit, LearningUnitProgress};
 use App\Models\Platform\User;
@@ -52,6 +52,14 @@ class LearningEnrollmentService {
         }
 
         $source = LearningEnrollmentSource::tryFrom((string) ($attributes['source'] ?? LearningEnrollmentSource::Manual->value)) ?? LearningEnrollmentSource::Manual;
+
+        // Selbst einschreiben geht nur in offene Kurse; buchbare laufen über die Buchung,
+        // die übrigen über die Verwaltung (Sicherheitsaudit 2026-10-04, authz-b-5).
+        if ($source === LearningEnrollmentSource::Self && $course->access_kind !== LearningAccessKind::Open) {
+            throw ValidationException::withMessages([
+                'course' => (string) __('learning.errors.self_enroll_requires_open'),
+            ]);
+        }
 
         // Verfügbarkeitsfenster (MVP-788) gilt für die Selbsteinschreibung;
         // eine Zuweisung durch die Verwaltung bleibt frei.
@@ -468,8 +476,8 @@ class LearningEnrollmentService {
         ?User $actor = null,
     ): void {
         $enrollment->record('status_changed', [], $actor, extra: [
-            'from_status' => $from?->value,
-            'to_status' => $to->value,
+            'from_status' => $from,
+            'to_status' => $to,
             'reason' => $reason,
         ]);
     }

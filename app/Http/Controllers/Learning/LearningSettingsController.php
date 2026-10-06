@@ -74,7 +74,7 @@ class LearningSettingsController extends Controller {
         );
 
         return redirect()
-            ->route('learning.courses.index')
+            ->toList('learning.courses.index')
             ->with('success', __('learning.flash.settings_saved'));
     }
 }

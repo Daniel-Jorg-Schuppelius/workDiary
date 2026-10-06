@@ -49,12 +49,12 @@
     </x-card>
 
     <x-card :title="__('Ursachenanalyse')" icon="troubleshoot">
-        <dl class="grid grid-cols-1 gap-y-3 text-sm">
-            <div><dt class="text-muted">{{ __('Ursache') }}</dt><dd class="whitespace-pre-wrap">{{ $problem->root_cause ?: '—' }}</dd></div>
-            <div><dt class="text-muted">{{ __('Evidenz') }}</dt><dd class="whitespace-pre-wrap">{{ $problem->evidence ?: '—' }}</dd></div>
-            <div><dt class="text-muted">{{ __('Workaround') }}</dt><dd class="whitespace-pre-wrap">{{ $problem->workaround ?: '—' }}</dd></div>
-            <div><dt class="text-muted">{{ __('Dauerhafte Lösung') }}</dt><dd class="whitespace-pre-wrap">{{ $problem->permanent_fix ?: '—' }}</dd></div>
-        </dl>
+        <x-detail-grid layout="cells" :cols="1">
+            <x-detail-grid.row :label="__('Ursache')" class="whitespace-pre-wrap">{{ $problem->root_cause ?: '—' }}</x-detail-grid.row>
+            <x-detail-grid.row :label="__('Evidenz')" class="whitespace-pre-wrap">{{ $problem->evidence ?: '—' }}</x-detail-grid.row>
+            <x-detail-grid.row :label="__('Workaround')" class="whitespace-pre-wrap">{{ $problem->workaround ?: '—' }}</x-detail-grid.row>
+            <x-detail-grid.row :label="__('Dauerhafte Lösung')" class="whitespace-pre-wrap">{{ $problem->permanent_fix ?: '—' }}</x-detail-grid.row>
+        </x-detail-grid>
     </x-card>
 
     @if ($canManage && $transitions !== [])
@@ -62,10 +62,10 @@
     @endif
 
     <x-card :title="__('Wirksamkeitsprüfung')" icon="fact_check">
-        <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 text-sm">
-            <div><dt class="text-muted">{{ __('Fällig am') }}</dt><dd>{{ $problem->effectiveness_check_due_at?->orgTz()->translatedFormat('d.m.Y H:i') ?: '—' }}</dd></div>
-            <div><dt class="text-muted">{{ __('Geprüft am') }}</dt><dd>{{ $problem->effectiveness_checked_at?->orgTz()->translatedFormat('d.m.Y H:i') ?: '—' }}</dd></div>
-        </dl>
+        <x-detail-grid layout="cells">
+            <x-detail-grid.row :label="__('Fällig am')">{{ $problem->effectiveness_check_due_at?->orgTz()->translatedFormat('d.m.Y H:i') ?: '—' }}</x-detail-grid.row>
+            <x-detail-grid.row :label="__('Geprüft am')">{{ $problem->effectiveness_checked_at?->orgTz()->translatedFormat('d.m.Y H:i') ?: '—' }}</x-detail-grid.row>
+        </x-detail-grid>
         @if ($problem->effectiveness_result)
             <div class="mt-3">
                 <div class="text-xs uppercase text-muted mb-1">{{ __('Ergebnis') }}</div>
@@ -95,7 +95,7 @@
                 <a class="link link-hover font-medium" href="{{ route('knowledge.show', $article) }}">{{ $article->title }}</a>
             </p>
         @else
-            <p class="text-sm text-muted">{{ __('Noch kein Wissensartikel veröffentlicht.') }}</p>
+            <x-empty-state icon="menu_book" :title="__('Noch kein Wissensartikel veröffentlicht.')" compact />
         @endif
 
         @if ($canManage)
@@ -116,7 +116,7 @@
                     <li class="flex flex-wrap items-center gap-2">
                         <a href="{{ route('servicedesk.changes.show', $change) }}" class="link link-hover">{{ $change->title }}</a>
                         <x-status-badge tone="ghost" size="xs">{{ \App\Http\Controllers\Helpdesk\ChangeController::typeLabels()[$change->change_type] ?? $change->change_type }}</x-status-badge>
-                        <x-status-badge size="xs" outline>{{ \App\Http\Controllers\Helpdesk\ChangeController::statusLabels()[$change->status] ?? $change->status }}</x-status-badge>
+                        <x-status-badge size="xs" outline>{{ $change->status->label() }}</x-status-badge>
                     </li>
                 @endforeach
             </ul>
@@ -125,7 +125,7 @@
 
     <x-card :title="__('Verknüpfte Incidents')" icon="link">
         @if ($problem->tickets->isEmpty())
-            <p class="text-sm text-muted">{{ __('Keine Incidents verknüpft.') }}</p>
+            <x-empty-state icon="link_off" :title="__('Keine Incidents verknüpft.')" compact />
         @else
             <ul class="space-y-1 text-sm">
                 @foreach ($problem->tickets as $ticket)

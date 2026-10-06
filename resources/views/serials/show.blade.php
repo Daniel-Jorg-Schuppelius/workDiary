@@ -17,8 +17,8 @@
     <x-slot:toolbar>
         <x-page-toolbar :title="$serial->serial_no">
             <div class="flex flex-wrap items-center gap-2">
-                <span class="badge badge-sm badge-ghost">{{ $serial->status->label() }}</span>
-                <span class="badge badge-sm badge-ghost">{{ $serial->source->label() }}</span>
+                <x-status-badge>{{ $serial->status->label() }}</x-status-badge>
+                <x-status-badge>{{ $serial->source->label() }}</x-status-badge>
             </div>
             @if ($canManage)
                 <x-slot:actions>
@@ -47,19 +47,19 @@
 
     @if ($serial->blocked_reason)
         <x-card>
-            <div class="alert alert-warning text-sm">{{ $serial->blocked_reason }}</div>
+            <div role="alert" class="alert alert-warning text-sm">{{ $serial->blocked_reason }}</div>
         </x-card>
     @endif
 
     <x-card>
-        <dl class="grid sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
-            <div><dt class="opacity-60">{{ __('inventory.serial.field.article') }}</dt><dd>{{ $serial->article?->name }}</dd></div>
-            <div><dt class="opacity-60">{{ __('inventory.serial.field.variant') }}</dt><dd>{{ $serial->variant?->name ?? $serial->variant?->option_signature ?? '—' }}</dd></div>
-            <div><dt class="opacity-60">{{ __('inventory.serial.field.warehouse') }}</dt><dd>{{ $serial->warehouse?->name ?? '—' }}</dd></div>
-            <div><dt class="opacity-60">{{ __('inventory.serial.field.customer') }}</dt><dd>{{ $serial->customer?->name ?? '—' }}</dd></div>
-            <div><dt class="opacity-60">{{ __('inventory.serial.field.order') }}</dt><dd class="font-mono">{{ $serial->manufacturingOrder?->number ?? '—' }}</dd></div>
-            <div><dt class="opacity-60">{{ __('inventory.serial.field.shipped_at') }}</dt><dd>{{ $serial->shipped_at?->orgTz()->format('d.m.Y H:i') ?? '—' }}</dd></div>
-        </dl>
+        <x-detail-grid layout="cells">
+            <x-detail-grid.row :label="__('inventory.serial.field.article')">{{ $serial->article?->name }}</x-detail-grid.row>
+            <x-detail-grid.row :label="__('inventory.serial.field.variant')">{{ $serial->variant?->name ?? $serial->variant?->option_signature ?? '—' }}</x-detail-grid.row>
+            <x-detail-grid.row :label="__('inventory.serial.field.warehouse')">{{ $serial->warehouse?->name ?? '—' }}</x-detail-grid.row>
+            <x-detail-grid.row :label="__('inventory.serial.field.customer')">{{ $serial->customer?->name ?? '—' }}</x-detail-grid.row>
+            <x-detail-grid.row :label="__('inventory.serial.field.order')" class="font-mono">{{ $serial->manufacturingOrder?->number ?? '—' }}</x-detail-grid.row>
+            <x-detail-grid.row :label="__('inventory.serial.field.shipped_at')">{{ $serial->shipped_at?->fdatetime() ?? '—' }}</x-detail-grid.row>
+        </x-detail-grid>
     </x-card>
 </x-page-shell>
 @endsection

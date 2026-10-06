@@ -13,8 +13,10 @@ namespace App\Http\Requests\Billing;
 use App\Enums\Billing\{BillingAgreementMode, BillingRateDayType};
 use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
+use App\Models\Customer\Customer;
 use App\Rules\ExistsInCurrentOrganization;
 use CommonToolkit\Enums\CurrencyCode;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 
 /**
@@ -29,6 +31,13 @@ class SaveBillingAgreementRequest extends BaseFormRequest {
         'rate_activity_category_id' => \App\Models\Classification\ActivityCategory::class,
         'travel_categories' => \App\Models\Classification\ActivityCategory::class,
     ];
+
+    /** Vor der Validierung: ohne Abrechnungsrolle 403 statt Feldfehler (Sicherheitsaudit 2026-10-04, authz-a-1). */
+    public function authorize(): bool {
+        $customer = $this->route('customer');
+
+        return $customer instanceof Customer && Gate::allows('manageBilling', $customer);
+    }
 
     /** @return array<string, mixed> */
     public function rules(): array {

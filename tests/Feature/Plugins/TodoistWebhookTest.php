@@ -11,6 +11,7 @@
 namespace Tests\Feature\Plugins;
 
 use App\Models\Project\Task;
+use App\Plugins\Todoist\Enums\{TodoistConnectionStatus, TodoistProjectLinkStatus};
 use App\Plugins\Todoist\Jobs\TodoistWebhookSyncJob;
 use App\Plugins\Todoist\Models\{TodoistConnection, TodoistProjectLink, TodoistWebhookDelivery};
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -42,7 +43,7 @@ final class TodoistWebhookTest extends TestCase {
             'organization_id' => $this->organization->id,
             'todoist_user_id' => 'u-1',
             'access_token' => 'secret-token',
-            'status' => TodoistConnection::STATUS_ACTIVE,
+            'status' => TodoistConnectionStatus::Active,
         ]);
     }
 
@@ -132,7 +133,7 @@ final class TodoistWebhookTest extends TestCase {
             'todoist_project_name' => 'Sync-Projekt',
             'target_kind' => TodoistProjectLink::KIND_GLOBAL_KANBAN,
             'sync_mode' => TodoistProjectLink::MODE_BIDIRECTIONAL,
-            'status' => TodoistProjectLink::STATUS_ACTIVE,
+            'status' => TodoistProjectLinkStatus::Active,
         ]);
         FakePluginHttp::fake([
             'https://api.todoist.com/api/v1/tasks*' => FakePluginHttp::response([

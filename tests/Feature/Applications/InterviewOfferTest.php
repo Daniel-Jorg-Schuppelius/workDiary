@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Applications;
 
+use App\Enums\Applications\{JobApplicationStatus, JobRequisitionStatus};
+use App\Enums\Organization\TenantStatus;
 use App\Enums\User\UserRole;
 use App\Mail\{InterviewConfirmedMail, InterviewOfferMail};
 use App\Models\Applications\{JobApplication, JobApplicationInterview, JobInterviewOffer, JobRequisition};
@@ -41,7 +43,7 @@ final class InterviewOfferTest extends TestCase {
         $this->setUpOrganization();
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
         $this->hr = $this->userWithRole(UserRole::Personalverwaltung->value);
-        $requisition = JobRequisition::query()->create(['organization_id' => $this->organization->id, 'title' => 'Servicetechniker:in', 'status' => 'open']);
+        $requisition = JobRequisition::query()->create(['organization_id' => $this->organization->id, 'title' => 'Servicetechniker:in', 'status' => JobRequisitionStatus::Open]);
         $this->application = app(RecruitingService::class)->intake(['job_requisition_id' => $requisition->id, 'candidate_name' => 'Kim Neu', 'email' => 'kim.neu@example.test', 'source' => 'website'], $this->hr)['application'];
     }
 
@@ -75,7 +77,7 @@ final class InterviewOfferTest extends TestCase {
 
         $interview = JobApplicationInterview::query()->sole();
         $this->assertSame($offer->slots[1], $interview->scheduled_at->toIso8601String());
-        $this->assertSame('interview_planned', $this->application->fresh()->status);
+        $this->assertSame(JobApplicationStatus::InterviewPlanned, $this->application->fresh()->status);
         Mail::assertQueued(InterviewConfirmedMail::class, fn (InterviewConfirmedMail $m): bool => $m->hasTo('kim.neu@example.test'));
         $this->assertStringContainsString('BEGIN:VCALENDAR', app(IcsFeedService::class)->documentForInterview($interview, 45));
         $confirmed = new InterviewConfirmedMail($interview->id, 45);
@@ -97,5 +99,40 @@ final class InterviewOfferTest extends TestCase {
     public function test_only_recruiting_may_offer(): void {
         $lead = $this->userWithRole(UserRole::Teamleitung->value);
         $this->actingAs($lead)->post(route('recruiting.applications.interview-offers.store', $this->application), ['slots' => ['2026-10-01T10:00'], 'mode' => 'onsite', 'duration_minutes' => 45, 'valid_days' => 7])->assertForbidden();
+    }
+
+    /** Sicherheitsaudit 2026-10-04, pub-3: der Link endet mit der Mandantensperre. */
+    public function test_offer_link_is_locked_for_a_suspended_tenant(): void {
+        $token = $this->offer();
+        app()->forgetInstance('currentOrganization');
+        $this->organization->forceFill(['tenant_status' => TenantStatus::Suspended])->save();
+
+        $this->get(route('interview-offers.show', $token))->assertStatus(423);
+        $this->post(route('interview-offers.choose', $token), ['slot' => 0])->assertStatus(423);
+    }
+    /** Entschieden ist endgültig: ein noch offener Link plant kein Gespräch mehr. */
+    public function test_an_open_link_plans_no_interview_once_the_application_is_decided(): void {
+        $token = $this->offer();
+        $this->application->forceFill(['status' => JobApplicationStatus::Rejected])->save();
+
+        $this->from(route('interview-offers.show', $token))
+            ->post(route('interview-offers.choose', $token), ['slot' => 0])
+            ->assertRedirect(route('interview-offers.show', $token))
+            ->assertSessionHas('error', __('recruiting.offer.error.unavailable'));
+
+        $this->assertSame(0, JobApplicationInterview::query()->count());
+        $this->assertSame(JobApplicationStatus::Rejected, $this->application->fresh()->status);
+        Mail::assertNotQueued(InterviewConfirmedMail::class);
+    }
+
+    /** Das Feld ist ein Ortszeit-Feld; gespeichert wird UTC (vorher stand die Ortszeit als UTC in der Spalte). */
+    public function test_a_planned_interview_is_entered_in_local_time(): void {
+        $this->organization->forceFill(['timezone' => 'Europe/Berlin'])->save();
+
+        $this->actingAs($this->hr)
+            ->post(route('recruiting.applications.interviews.store', $this->application), ['scheduled_at' => '2026-10-01T10:00', 'mode' => 'onsite'])
+            ->assertSessionHas('success');
+
+        $this->assertSame('2026-10-01 08:00:00', JobApplicationInterview::query()->sole()->scheduled_at->utc()->format('Y-m-d H:i:s'));
     }
 }

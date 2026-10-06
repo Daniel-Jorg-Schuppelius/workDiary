@@ -126,10 +126,8 @@ class OrderVisibilityInListsTest extends TestCase {
     public function test_note_dialog_links_the_order_only_when_it_can_be_opened(): void {
         $note = CommunicationNote::query()->where('subject', 'Notiz-am-fremden-Auftrag')->firstOrFail();
 
-        // Über Suche oder Direktlink bleibt die Notiz nach ihrer eigenen Regel erreichbar.
-        $this->actingAs($this->worker)->get(route('communication-notes.show', $note))
-            ->assertOk()
-            ->assertDontSee(route('diary.show', $this->foreign), false);
+        // Die Notiz folgt ihrem Träger (Entscheidung zu authz-b-6): am fremden Auftrag ist sie auch per Direktlink zu.
+        $this->actingAs($this->worker)->get(route('communication-notes.show', $note))->assertForbidden();
 
         $this->actingAs($this->viewAll)->get(route('communication-notes.show', $note))
             ->assertOk()
@@ -213,5 +211,31 @@ class OrderVisibilityInListsTest extends TestCase {
             'created_by_user_id' => $creator->id,
             'subject' => $subject,
         ]);
+    }
+
+    /**
+     * Sicherheitsaudit 2026-10-04, authz-b-6: wer etwas an einen Auftrag hängt,
+     * muss den Auftrag sehen dürfen — die Prüfung saß nur im Dialog.
+     */
+    public function test_children_cannot_be_attached_to_an_order_the_user_may_not_open(): void {
+        $this->worker->givePermissionTo([
+            \App\Enums\User\Permission::CommunicationCreate->value,
+            \App\Enums\User\Permission::OpenIssueCreate->value,
+        ]);
+        $note = [
+            'notable_kind' => 'diary', 'type' => \App\Enums\Communication\CommunicationNoteType::Call->value,
+            'direction' => \App\Enums\Communication\CommunicationDirection::Outbound->value,
+            'occurred_at' => now()->subMinutes(30)->format('Y-m-d H:i'), 'subject' => 'Rückruf', 'body' => 'Rückruf zugesagt.',
+        ];
+
+        $this->actingAs($this->worker)
+            ->post(route('communication-notes.store'), ['notable_id' => $this->foreign->sqid] + $note)
+            ->assertForbidden();
+        $this->actingAs($this->worker)
+            ->post(route('open-issues.store'), ['subject_kind' => 'diary', 'subject_id' => $this->foreign->sqid, 'title' => 'Nacharbeit'])
+            ->assertForbidden();
+
+        $this->assertSame(0, \App\Models\Communication\CommunicationNote::query()->where('subject', 'Rückruf')->count());
+        $this->assertSame(0, \App\Models\Diary\OpenIssue::query()->where('title', 'Nacharbeit')->count());
     }
 }

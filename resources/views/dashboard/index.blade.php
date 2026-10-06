@@ -80,7 +80,7 @@
                                 <x-icon :name="$tab['icon']" />
                             @endif
                             <span>{{ $tab['label'] }}</span>
-                            <span class="badge badge-ghost badge-sm tabular-nums">{{ $grouped->get($tab['key'], collect())->count() }}</span>
+                            <x-status-badge class="tabular-nums">{{ $grouped->get($tab['key'], collect())->count() }}</x-status-badge>
                         </button>
                     @endforeach
                 </div>

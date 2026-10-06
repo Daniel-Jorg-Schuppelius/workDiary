@@ -53,7 +53,9 @@ class DropboxWebhookController extends Controller {
             ->withoutGlobalScopes()
             ->where('provider', CloudIntakeProvider::Dropbox->value)
             ->whereIn('external_account_id', array_filter(array_map('strval', $accounts)))
-            ->pluck('id')
+            ->pluck('organization_id', 'id')
+            ->reject(static fn ($organizationId): bool => \App\Plugins\Support\PluginTenantGate::blocks((int) $organizationId))
+            ->keys()
             ->each(fn ($id) => $wake->signal((int) $id));
 
         return response('', 200);

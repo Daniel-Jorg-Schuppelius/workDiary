@@ -15,8 +15,9 @@ namespace App\Plugins\Gitlab\Console;
 use App\Console\Concerns\IteratesOrganizations;
 use App\Models\Platform\Organization;
 use App\Plugins\Gitlab\Api\GitlabClientFactory;
-use App\Plugins\Gitlab\GitlabConfig;
+use App\Plugins\Gitlab\{GitlabConfig, GitlabPlugin};
 use App\Plugins\Gitlab\Services\GitlabIssueImporter;
+use App\Plugins\Support\Console\ChecksPluginSwitch;
 use Illuminate\Console\Command;
 use Throwable;
 
@@ -28,6 +29,7 @@ use Throwable;
  * unberührt.
  */
 class GitlabSyncCommand extends Command {
+    use ChecksPluginSwitch;
     use IteratesOrganizations;
 
     protected $signature = 'gitlab:sync ' . self::ORGANIZATION_OPTION;
@@ -37,7 +39,7 @@ class GitlabSyncCommand extends Command {
     public function handle(GitlabClientFactory $factory, GitlabIssueImporter $importer): int {
         $this->forEachOrganization(function (Organization $org) use ($factory, $importer): void {
             $config = GitlabConfig::resolve((int) $org->id);
-            if (! $config['enabled'] || ! GitlabConfig::isConfigured((int) $org->id)) {
+            if (! $this->pluginEnabledFor(GitlabPlugin::ID, (int) $org->id) || ! GitlabConfig::isConfigured((int) $org->id)) {
                 return;
             }
 

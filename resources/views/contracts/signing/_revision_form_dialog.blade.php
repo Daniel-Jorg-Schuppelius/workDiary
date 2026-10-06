@@ -30,7 +30,7 @@
     :submit-label="$isEdit ? __('contract-signing.action.save_revision') : __('contract-signing.action.create_revision')"
 >
     @if ($versions->isEmpty())
-        <div class="alert alert-warning mb-3">
+        <div role="alert" class="alert alert-warning mb-3">
             <span>{{ __('contract-signing.dialog.no_pdf') }}</span>
         </div>
     @endif

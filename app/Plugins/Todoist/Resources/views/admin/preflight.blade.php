@@ -50,9 +50,9 @@
                     <td class="text-sm">{{ $collaborator['email'] ?: '—' }}</td>
                     <td class="text-sm">
                         @if ($collaborator['mapped_user'])
-                            <span class="badge badge-success badge-sm">{{ $collaborator['mapped_user'] }}</span>
+                            <x-status-badge tone="success">{{ $collaborator['mapped_user'] }}</x-status-badge>
                         @elseif ($collaborator['suggestion'])
-                            <span class="badge badge-info badge-sm">{{ __('todoist::todoist.preflight.suggestion') }}: {{ $collaborator['suggestion'] }}</span>
+                            <x-status-badge tone="info">{{ __('todoist::todoist.preflight.suggestion') }}: {{ $collaborator['suggestion'] }}</x-status-badge>
                         @else
                             —
                         @endif
@@ -67,7 +67,7 @@
                                     <option value="{{ $user->sqid }}">{{ $user->name }}</option>
                                 @endforeach
                             </select>
-                            <button type="submit" class="btn btn-xs">{{ __('Speichern') }}</button>
+                            <x-button type="submit" tone="plain" size="xs">{{ __('Speichern') }}</x-button>
                         </form>
                     </td>
                 </tr>
@@ -81,7 +81,7 @@
     <x-card>
         <h2 class="font-semibold mb-3">{{ __('todoist::todoist.preflight.sections') }}</h2>
         @if ($sections === [])
-            <p class="text-sm opacity-60">{{ __('todoist::todoist.preflight.no_sections') }}</p>
+            <x-empty-state icon="view_column" :title="__('todoist::todoist.preflight.no_sections')" compact />
         @else
             @php($sectionLinkMap = $link->sectionLinks->keyBy('todoist_section_id'))
             <form method="POST" action="{{ route('admin.todoist.links.sections', $link) }}" class="space-y-2">
@@ -93,12 +93,12 @@
                         <input type="hidden" name="sections[{{ $sid }}][name]" value="{{ $section['name'] ?? '' }}">
                         <select name="sections[{{ $sid }}][status]" class="select select-sm select-bordered">
                             <option value="">{{ __('todoist::todoist.preflight.section_unmapped') }}</option>
-                            <option value="open" @selected($sectionLinkMap->get($sid)?->task_status === 'open')>{{ __('todoist::todoist.preflight.section_open') }}</option>
-                            <option value="in_progress" @selected($sectionLinkMap->get($sid)?->task_status === 'in_progress')>{{ __('todoist::todoist.preflight.section_in_progress') }}</option>
+                            <option value="open" @selected($sectionLinkMap->get($sid)?->task_status === \App\Enums\Task\TaskStatus::Open)>{{ __('todoist::todoist.preflight.section_open') }}</option>
+                            <option value="in_progress" @selected($sectionLinkMap->get($sid)?->task_status === \App\Enums\Task\TaskStatus::InProgress)>{{ __('todoist::todoist.preflight.section_in_progress') }}</option>
                         </select>
                     </div>
                 @endforeach
-                <button type="submit" class="btn btn-sm">{{ __('Speichern') }}</button>
+                <x-button type="submit" tone="plain">{{ __('Speichern') }}</x-button>
             </form>
         @endif
     </x-card>

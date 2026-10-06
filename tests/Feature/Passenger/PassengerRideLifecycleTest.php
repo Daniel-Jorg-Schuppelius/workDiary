@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Passenger;
 
-use App\Enums\Passenger\{RideOperationMode, RideStatus};
+use App\Enums\Passenger\{RideOperationMode, RideSettlementStatus, RideStatus};
 use App\Models\Fleet\Vehicle;
 use App\Models\Hr\Qualification;
 use App\Models\Passenger\{PassengerConcession, PassengerFareTariff, PassengerRide, PassengerVehicleProfile};
@@ -129,6 +129,7 @@ class PassengerRideLifecycleTest extends TestCase {
         $this->assertSame(RideStatus::Accepted, $ride->status);
         $this->assertSame(RideOperationMode::Taxi, $ride->operation_mode);
         $this->assertNotNull($ride->diary_entry_id);
+        $this->assertSame(RideSettlementStatus::Open, $ride->fresh()->settlement_status, 'Spaltenvorgabe als Enum');
         $this->assertSame('Alexanderplatz 1, Berlin', $ride->pickup_address);
         // Taxi per Telefon: kein Betriebssitz-Nachweis nötig.
         $this->assertNull($ride->order_received_at);

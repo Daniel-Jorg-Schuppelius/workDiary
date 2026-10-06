@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Patrol;
 
+use App\Enums\Patrol\PatrolRunStatus;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\Facility\Site;
@@ -45,7 +46,7 @@ class PatrolController extends Controller {
                 ->orderBy('name')
                 ->paginate(25),
             'openRuns' => PatrolRun::query()
-                ->where('status', PatrolRun::STATUS_RUNNING)
+                ->where('status', PatrolRunStatus::Running)
                 ->with(['route:id,name', 'starter:id,name'])
                 ->orderByDesc('started_at')
                 ->get(),
@@ -59,7 +60,7 @@ class PatrolController extends Controller {
 
         return view('patrols.show', [
             'route' => $patrolRoute->load(['site:id,name', 'checkpoints']),
-            'runs' => $patrolRoute->runs()->with('starter:id,name')->withCount('scans')->orderByDesc('started_at')->limit(20)->get(),
+            'runs' => $patrolRoute->runs()->with(['starter:id,name', 'abortedBy:id,name'])->withCount('scans')->orderByDesc('started_at')->limit(20)->get(),
             'canManage' => Gate::allows(Permission::DispatchManage->value),
         ]);
     }
@@ -150,7 +151,7 @@ class PatrolController extends Controller {
         Gate::authorize(Permission::DispatchViewAny->value);
         abort_unless($patrolRun->organization_id === $this->orgId(), 404);
 
-        $patrolRun->load(['route.checkpoints', 'scans', 'starter:id,name']);
+        $patrolRun->load(['route.checkpoints', 'scans', 'starter:id,name', 'abortedBy:id,name']);
         $scansByCheckpoint = $patrolRun->scans->keyBy('patrol_checkpoint_id');
 
         // Rundgangsbericht (Folgepunkt aus MVP-665): der Nachweis für den
@@ -208,6 +209,31 @@ class PatrolController extends Controller {
 
         return redirect()->route('patrols.show', PatrolRoute::query()->findOrFail($patrolRun->patrol_route_id))
             ->with('success', __('Rundgang abgeschlossen.'));
+    }
+
+    public function abortCreate(PatrolRun $patrolRun): View {
+        Gate::authorize(Permission::DispatchViewAny->value);
+        abort_unless($patrolRun->organization_id === $this->orgId(), 404);
+        abort_unless($patrolRun->status->canTransitionTo(PatrolRunStatus::Aborted), 404);
+
+        return view('patrols._abort_dialog', ['run' => $patrolRun->load('route:id,name')]);
+    }
+
+    /** Wer abschließen darf, darf auch abbrechen — dieselbe Regel wie in complete(). */
+    public function abortStore(Request $request, PatrolRun $patrolRun): RedirectResponse {
+        Gate::authorize(Permission::DispatchViewAny->value);
+        abort_unless($patrolRun->organization_id === $this->orgId(), 404);
+
+        $data = $request->validate(['reason' => ['required', 'string', 'max:1000']]);
+
+        try {
+            $this->service->abort($patrolRun, $this->actor(), (string) $data['reason']);
+        } catch (RuntimeException $e) {
+            return redirect()->route('patrols.runs.show', $patrolRun)->with('error', ErrorText::for($e));
+        }
+
+        return redirect()->route('patrols.show', PatrolRoute::query()->findOrFail($patrolRun->patrol_route_id))
+            ->with('success', __('Rundgang abgebrochen.'));
     }
 
     private function guard(PatrolRoute $route): void {

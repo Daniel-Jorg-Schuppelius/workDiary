@@ -207,7 +207,7 @@ class LearningGradebookService {
         $head[] = (string) __('learning.field.total');
         $head[] = (string) __('learning.field.grade');
 
-        $csv = StringHelper::encodeLine($head, ',', '"', QuotingStyle::FPUTCSV) . "\n";
+        $csv = StringHelper::encodeLine(CsvExport::guardRow($head), ',', '"', QuotingStyle::FPUTCSV) . "\n";
         foreach ($matrix['rows'] as $row) {
             $cells = [$row['enrollment']->learnerName(), $row['enrollment']->status->label()];
             $byId = collect((array) $row['result']['components'])->keyBy('component_id');

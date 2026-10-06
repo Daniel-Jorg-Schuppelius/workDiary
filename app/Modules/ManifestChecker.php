@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Modules;
 
 use App\Enums\User\PermissionGroup;
+use App\Plugins\PluginDiscovery;
 use App\Support\Architecture\SchemaDump;
 use CommonToolkit\Helper\FileSystem\Folder;
 use Illuminate\Routing\Route as RoutingRoute;
@@ -349,9 +350,13 @@ final class ManifestChecker {
                 }
             }
         }
+        $known = array_map(static fn(string $class): string => $class::ID, PluginDiscovery::classes());
         foreach ($plugins as $plugin => $codes) {
             if (count($codes) > 1) {
                 $out[] = "Plugin {$plugin} ist mehrfach zugeordnet: " . implode(', ', $codes) . '.';
+            }
+            if (! in_array($plugin, $known, true)) {
+                $out[] = "Plugin {$plugin} (" . implode(', ', $codes) . ') gibt es nicht — Plugin-ID prüfen.';
             }
         }
 

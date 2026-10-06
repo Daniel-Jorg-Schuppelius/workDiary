@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Gaeb;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Customer\Customer;
 use App\Models\Gaeb\BillOfQuantity;
 use App\Models\Invoicing\Invoice;
@@ -67,7 +68,7 @@ final class BoqBillingTest extends TestCase {
         $this->assertSame(1649.0, $billing->proposal($this->boq->fresh())['amount']);
 
         // Ein stornierter Abschlag zählt nicht mehr.
-        $first->forceFill(['status' => Invoice::STATUS_CANCELLED])->saveQuietly();
+        $first->forceFill(['status' => InvoiceStatus::Cancelled])->saveQuietly();
         $this->assertSame(2149.0, $billing->proposal($this->boq->fresh())['amount']);
     }
 

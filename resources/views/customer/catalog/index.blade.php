@@ -17,34 +17,26 @@
     </div>
 
     @if ($items->isEmpty())
-        <div class="rounded-box border border-base-300 bg-base-100 p-6 text-center text-muted">
+        <x-card padding="p-6" class="text-center text-muted">
             {{ __('Derzeit sind keine Leistungen bestellbar.') }}
-        </div>
+        </x-card>
     @else
         <div class="grid gap-3 sm:grid-cols-2">
             @foreach ($items as $item)
-                <div class="rounded-box border border-base-300 bg-base-100 p-4">
+                <x-card>
                     <div class="font-semibold">{{ $item->name }}</div>
                     @if ($item->description)
                         <p class="mt-1 text-sm text-muted">{{ $item->description }}</p>
                     @endif
-                    <a class="btn btn-primary btn-sm mt-3" href="{{ route('customer.catalog.show', $item) }}">
+                    <x-button :href="route('customer.catalog.show', $item)" class="mt-3">
                         {{ __('Bestellen') }}
-                    </a>
-                </div>
+                    </x-button>
+                </x-card>
             @endforeach
         </div>
     @endif
 
     <h2 class="mt-8 mb-2 text-lg font-semibold">{{ __('Meine Bestellungen') }}</h2>
-    @php($statusLabels = [
-        \App\Models\ServiceTicket\ServiceRequest::STATUS_DRAFT => __('Entwurf'),
-        \App\Models\ServiceTicket\ServiceRequest::STATUS_PENDING => __('Wartet auf Genehmigung'),
-        \App\Models\ServiceTicket\ServiceRequest::STATUS_APPROVED => __('Genehmigt'),
-        \App\Models\ServiceTicket\ServiceRequest::STATUS_REJECTED => __('Abgelehnt'),
-        \App\Models\ServiceTicket\ServiceRequest::STATUS_FULFILLING => __('In Erfüllung'),
-        \App\Models\ServiceTicket\ServiceRequest::STATUS_DONE => __('Erledigt'),
-    ])
     <x-table>
         <x-slot:head>
             <tr>
@@ -64,7 +56,7 @@
                     @endif
                 </td>
                 <td>{{ $request->catalog_snapshot['name'] ?? $request->requestItem?->name ?? '—' }}</td>
-                <td>{{ $statusLabels[$request->status] ?? $request->status }}</td>
+                <td>{{ $request->status->label() }}</td>
                 <td class="whitespace-nowrap">{{ $request->created_at?->isoFormat('L') }}</td>
             </tr>
         @empty

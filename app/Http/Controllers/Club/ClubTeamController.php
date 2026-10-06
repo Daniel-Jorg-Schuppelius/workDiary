@@ -18,7 +18,7 @@ use App\Http\Requests\Club\{SaveSeasonRequest, SaveSquadMemberRequest};
 use App\Models\Club\{ClubGroup, ClubMember, ClubSeason, ClubSquad, ClubSquadMember};
 use App\Models\Platform\User;
 use App\Services\Club\ClubTeamService;
-use App\Support\Sqid;
+use App\Support\{Sqid, UrlSafety};
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -43,7 +43,8 @@ class ClubTeamController extends Controller {
         $season = $this->teams->createSeason($this->currentOrganization(), $request->validated());
         $back = trim((string) $request->input('return_to', ''));
 
-        return redirect($back !== '' && str_starts_with($back, url('/')) ? $back : route('club.groups.index'))
+        // Präfixvergleich mit url('/') ließ `https://app.example.evil.tld` durch (xi-1).
+        return redirect(UrlSafety::isSameOriginOrRelative($back, $request->getHost()) ? $back : route('club.groups.index'))
             ->with('success', __('club.teams.flash.season_saved', ['name' => $season->name]));
     }
 

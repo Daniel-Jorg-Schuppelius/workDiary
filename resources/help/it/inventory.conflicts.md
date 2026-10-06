@@ -1,7 +1,7 @@
 ---
-title: "Conflitti di giacenza (trasferimento esterno)"
+title: "Conflitti con sistemi esterni (giacenze e articoli)"
 topic: inventory.conflicts
-version: 1
+version: 3
 audience:
     - admin
     - geschaeftsfuehrung
@@ -40,11 +40,29 @@ elimina mai a posteriori né si esegue un rollback tecnico; il giornale
 di magazzino resta senza lacune e ogni decisione viene registrata con
 persona e momento.
 
-**Permessi e filtri:** per la consultazione è sufficiente il permesso
-di lettura delle giacenze; per la risoluzione è inoltre necessario il
-permesso di registrazione, perché la compensazione è una vera
-registrazione di magazzino. L'elenco può essere filtrato per conflitti
-aperti o per tutti i conflitti.
+**Conflitti di articoli:** lo stesso elenco mostra gli articoli
+modificati localmente il cui stato differisce nel sistema esterno
+collegato (ad esempio Lexware Office) — con la strategia di conflitto del
+plugin impostata su «Verifica manuale». Per ogni conflitto sono affiancati
+l'articolo, i campi divergenti ed entrambi i valori. Tre vie: *Mantieni
+locale* chiude il conflitto; lo stato locale resta e viene trasmesso al
+sistema esterno alla prossima sincronizzazione. *Applica lo stato del
+sistema esterno* (ad esempio «Applica lo stato di Lexoffice») recupera
+l'articolo di nuovo dal sistema esterno e sovrascrive la modifica locale.
+*Ignora* chiude il conflitto senza riconciliazione — entrambi gli stati
+restano come sono; se l'articolo differisce ancora alla prossima
+sincronizzazione, viene creato un nuovo conflitto.
+
+**Permessi e filtri:** la scheda «Conflitti» nella barra delle schede del
+magazzino mostra il numero di conflitti aperti. Per la consultazione è
+sufficiente il permesso di lettura delle giacenze o quello di lettura degli
+articoli; senza permesso sulle giacenze vede solo i conflitti di articoli,
+senza permesso sugli articoli solo i conflitti di giacenza. La risoluzione
+dipende dal tipo: i conflitti di giacenza richiedono il permesso di
+registrazione, perché la compensazione è una vera registrazione di
+magazzino; i conflitti di articoli richiedono il permesso di gestione degli
+articoli. L'elenco può essere filtrato per conflitti aperti o per tutti i
+conflitti e per tipo (giacenza, articolo).
 
 I conflitti aperti dovrebbero essere verificati tempestivamente: finché
 esistono, la giacenza locale e quella esterna divergono — con

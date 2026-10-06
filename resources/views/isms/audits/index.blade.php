@@ -19,9 +19,10 @@
 
 @section('title', __('isms.title.audits'))
 @section('nav-title', __('isms.title.audits'))
+@include('partials.page-fill')
 
 @section('content')
-    <x-index-page :subtitle="__('isms.subtitle.audits')">
+    <x-index-page overflow="clip" :subtitle="__('isms.subtitle.audits')">
         <x-slot:actions>
             <x-icon-btn icon="event_repeat" tone="ghost" size="sm"
                         :href="route('isms.audit-programs.index')"
@@ -80,7 +81,7 @@
             </x-filter-field>
         </x-filter-bar>
 
-        <x-table>
+        <x-table scroll="flex">
             <x-slot:head>
                 <tr>
                     <th>{{ __('isms.field.audit_no') }}</th>
@@ -174,11 +175,11 @@
                                                             @endif
                                                             @if ($action->due_on !== null)
                                                                 <span class="{{ $action->due_on->isPast() && $action->status->isPending() ? 'text-error font-semibold' : 'text-muted' }}">
-                                                                    {{ __('isms.field.due_on') }}: {{ $action->due_on->format('d.m.Y') }}
+                                                                    {{ __('isms.field.due_on') }}: {{ $action->due_on->fdate() }}
                                                                 </span>
                                                             @endif
                                                             @if ($action->completed_on !== null)
-                                                                <span class="text-muted">{{ __('isms.field.completed_on') }}: {{ $action->completed_on->format('d.m.Y') }}</span>
+                                                                <span class="text-muted">{{ __('isms.field.completed_on') }}: {{ $action->completed_on->fdate() }}</span>
                                                             @endif
                                                             @can('manageFindings', $audit)
                                                                 <span class="ml-auto flex items-center gap-1">
@@ -259,9 +260,9 @@
                     <td><x-status-badge :tone="$audit->kind->tone()" outline>{{ $audit->kind->label() }}</x-status-badge></td>
                     <td class="text-base-content/70">
                         @if ($audit->performed_from !== null)
-                            {{ $audit->performed_from->format('d.m.Y') }} – {{ $audit->performed_to?->format('d.m.Y') ?? '…' }}
+                            {{ $audit->performed_from->fdate() }} – {{ $audit->performed_to?->fdate() ?? '…' }}
                         @elseif ($audit->planned_on !== null)
-                            {{ __('isms.audit.planned_short') }}: {{ $audit->planned_on->format('d.m.Y') }}
+                            {{ __('isms.audit.planned_short') }}: {{ $audit->planned_on->fdate() }}
                         @else
                             —
                         @endif

@@ -92,12 +92,6 @@ Route::middleware(['web', 'auth', \App\Http\Middleware\EnforcePlanModules::class
     // Konflikt-Inbox
     Route::get('admin/lexoffice/conflicts', [LexofficeConflictInboxController::class, 'index'])
         ->name('admin.lexoffice.conflicts.index');
-    Route::post('admin/lexoffice/conflicts/{conflict}/resolve-local', [LexofficeConflictInboxController::class, 'resolveLocal'])
-        ->name('admin.lexoffice.conflicts.resolve-local');
-    Route::post('admin/lexoffice/conflicts/{conflict}/resolve-remote', [LexofficeConflictInboxController::class, 'resolveRemote'])
-        ->name('admin.lexoffice.conflicts.resolve-remote');
-    Route::post('admin/lexoffice/conflicts/{conflict}/dismiss', [LexofficeConflictInboxController::class, 'dismiss'])
-        ->name('admin.lexoffice.conflicts.dismiss');
 });
 
 // Sessionloser Webhook-Empfang (Audit 2026-08, Welle 1.3): Autorisierung über

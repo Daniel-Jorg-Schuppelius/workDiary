@@ -11,7 +11,7 @@
 namespace App\Models\Invoicing;
 
 use App\Casts\{MoneyCast, PercentageCast};
-use App\Enums\Invoicing\InvoiceDeliveryFormat;
+use App\Enums\Invoicing\{InvoiceDeliveryFormat, InvoiceStatus};
 use App\Models\Classification\Tag;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, DisclosesLabourCosts, HasSqid};
 use App\Models\Contracts\HasDocumentLines;
@@ -46,7 +46,7 @@ use Illuminate\Support\Carbon;
  * @property InvoiceDeliveryFormat $delivery_format
  * @property string|null $buyer_reference
  * @property array<string, mixed>|null $import_metadata
- * @property string $status
+ * @property InvoiceStatus $status
  * @property string $type
  * @property string $category
  * @property int|null $parent_invoice_id
@@ -96,16 +96,6 @@ class Invoice extends Model implements HasDocumentLines {
 
     use HasSqid;
 
-    public const STATUS_DRAFT = 'draft';
-
-    public const STATUS_ISSUED = 'issued';
-
-    public const STATUS_PAID = 'paid';
-
-    public const STATUS_CANCELLED = 'cancelled';
-
-    public const STATUS_PARTIALLY_PAID = 'partially_paid';
-
     public const TYPE_INVOICE = 'invoice';
 
     public const TYPE_CREDIT_NOTE = 'credit_note';
@@ -135,9 +125,6 @@ class Invoice extends Model implements HasDocumentLines {
 
     /** @var array<int, string> */
     public const CATEGORIES = [self::CATEGORY_SERVICE, self::CATEGORY_MATERIAL];
-
-    /** @var array<int, string> */
-    public const STATUSES = [self::STATUS_DRAFT, self::STATUS_ISSUED, self::STATUS_PARTIALLY_PAID, self::STATUS_PAID, self::STATUS_CANCELLED];
 
     /** @var array<int, string> */
     public const TYPES = [self::TYPE_INVOICE, self::TYPE_CREDIT_NOTE, self::TYPE_CANCELLATION, self::TYPE_DOWN_PAYMENT, self::TYPE_PARTIAL, self::TYPE_FINAL, self::TYPE_PROFORMA, self::TYPE_RETAINER];
@@ -229,6 +216,7 @@ class Invoice extends Model implements HasDocumentLines {
     /** @var array<string, string> */
     protected $casts = [
         'currency' => CurrencyCode::class,
+        'status' => InvoiceStatus::class,
         'delivery_format' => InvoiceDeliveryFormat::class,
         'import_metadata' => 'array',
         'is_reverse_charge' => 'boolean',
@@ -529,11 +517,11 @@ class Invoice extends Model implements HasDocumentLines {
             if (! $invoice->wasChanged('status')) {
                 return;
             }
-            if ($invoice->status === self::STATUS_PAID) {
+            if ($invoice->status === InvoiceStatus::Paid) {
                 app(\App\Services\Integration\LifecycleWebhookPublisher::class)->invoicePaid($invoice);
                 app(\App\Services\Sales\CommissionAccrualService::class)->onInvoicePaid($invoice);
             }
-            if ($invoice->status === self::STATUS_CANCELLED) {
+            if ($invoice->status === InvoiceStatus::Cancelled) {
                 app(\App\Services\Sales\CommissionAccrualService::class)->onInvoiceCancelled($invoice);
             }
         });
@@ -573,7 +561,7 @@ class Invoice extends Model implements HasDocumentLines {
 
     /** Überfällig = ausgestellt/teilbezahlt und Fälligkeit überschritten. */
     public function isOverdue(): bool {
-        return in_array($this->status, [self::STATUS_ISSUED, self::STATUS_PARTIALLY_PAID], true)
+        return in_array($this->status, [InvoiceStatus::Issued, InvoiceStatus::PartiallyPaid], true)
             && $this->due_on !== null
             && $this->due_on->isPast();
     }
@@ -605,7 +593,7 @@ class Invoice extends Model implements HasDocumentLines {
     }
 
     public function isCancelled(): bool {
-        return $this->status === self::STATUS_CANCELLED;
+        return $this->status === InvoiceStatus::Cancelled;
     }
 
     /**
@@ -618,7 +606,7 @@ class Invoice extends Model implements HasDocumentLines {
             return false;
         }
 
-        return in_array($this->status, [self::STATUS_DRAFT, self::STATUS_ISSUED], true);
+        return in_array($this->status, [InvoiceStatus::Draft, InvoiceStatus::Issued], true);
     }
 
     /**
@@ -626,7 +614,7 @@ class Invoice extends Model implements HasDocumentLines {
      * Pro Original existiert höchstens eine aktive Gutschrift.
      */
     public function needsCreditNoteToCancel(): bool {
-        return $this->status === self::STATUS_PAID
+        return $this->status === InvoiceStatus::Paid
             && ! $this->isCreditNote()
             && $this->creditNotes()->count() === 0;
     }
@@ -639,9 +627,9 @@ class Invoice extends Model implements HasDocumentLines {
      */
     public function cancel(?string $reason, ?int $userId): void {
         if (! $this->canBeCancelled()) {
-            throw new \LogicException('Invoice cannot be cancelled in current state: ' . $this->status);
+            throw new \LogicException('Invoice cannot be cancelled in current state: ' . $this->status->value);
         }
-        $this->status = self::STATUS_CANCELLED;
+        $this->status = InvoiceStatus::Cancelled;
         $this->cancelled_at = now();
         $this->cancelled_by = $userId;
         $this->cancel_reason = $reason;
@@ -711,7 +699,7 @@ class Invoice extends Model implements HasDocumentLines {
         }
 
         return self::query()
-            ->where('status', '!=', self::STATUS_CANCELLED)
+            ->where('status', '!=', InvoiceStatus::Cancelled)
             ->whereHas('items', fn($q) => $q->where('settled_invoice_id', $this->id))
             ->first();
     }

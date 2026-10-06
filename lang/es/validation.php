@@ -2513,6 +2513,8 @@ return [
         'todo_list_id' => 'Lista de To Do',
         'todoist_project_id' => 'Proyecto Todoist',
         'todoist_project_name' => 'Proyecto de Todoist',
+        'todoist_project_names' => 'Proyecto de Todoist',
+        'todoist_project_names.*' => 'Proyecto de Todoist',
         'toggl_email' => 'Correo de Toggl',
         'token' => 'Token',
         'tolerance_days' => 'Tolerancia (días)',

@@ -35,7 +35,7 @@
                 <input type="hidden" name="entry_type" value="example">
                 <input type="hidden" name="source_text" value="{{ $aiLearn['source_text'] }}">
                 <input type="hidden" name="content" value="{{ $aiLearn['content'] }}">
-                <input type="hidden" name="customer_id" value="{{ $aiLearn['customer_id'] }}">
+                <input type="hidden" name="customer_id" value="{{ \App\Support\Sqid::encode(\App\Models\Customer\Customer::class, $aiLearn['customer_id']) }}">
                 <input type="hidden" name="capability" value="{{ $aiLearn['capability'] }}">
                 <x-button type="submit" tone="warning" size="xs" icon="psychology">{{ __('ai.learn.confirm') }}</x-button>
             </form>

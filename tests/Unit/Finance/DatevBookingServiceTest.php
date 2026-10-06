@@ -11,6 +11,7 @@
 namespace Tests\Unit\Finance;
 
 use App\Enums\Finance\ChartOfAccounts;
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
 use App\Services\Finance\Datev\DatevBookingConfig;
@@ -59,7 +60,7 @@ class DatevBookingServiceTest extends TestCase {
             'organization_id' => $this->organization->id,
             'customer_id' => $customer->id,
             'number' => 'RE-2026-0001',
-            'status' => Invoice::STATUS_ISSUED,
+            'status' => InvoiceStatus::Issued,
             'type' => Invoice::TYPE_INVOICE,
             'category' => Invoice::CATEGORY_SERVICE,
             'issued_on' => '2026-05-15',

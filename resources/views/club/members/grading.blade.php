@@ -25,16 +25,7 @@
         </x-page-toolbar>
     </x-slot:toolbar>
 
-    @if ($errors->any())
-        <div class="alert alert-error text-sm" role="alert">
-            <x-icon name="error" />
-            <ul class="list-inside list-disc">
-                @foreach ($errors->all() as $message)
-                    <li>{{ $message }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
+    <x-validation-errors />
     @unless ($enabled)
         <div class="alert alert-info text-sm" role="status"><x-icon name="info" /><span>{{ __('club.grading.hint.disabled') }}</span></div>
     @endunless
@@ -46,7 +37,7 @@
                     <p class="text-sm">
                         <span class="text-muted">{{ __('club.grading.field.current_grade') }}:</span>
                         <strong>{{ $row['current']?->grade?->name ?? __('club.grading.label.no_grade') }}</strong>
-                        @if ($row['current'])<span class="text-xs text-muted">· {{ __('club.grading.label.since', ['date' => $row['current']->obtained_on->format('d.m.Y')]) }}</span>@endif
+                        @if ($row['current'])<span class="text-xs text-muted">· {{ __('club.grading.label.since', ['date' => $row['current']->obtained_on->fdate()]) }}</span>@endif
                     </p>
                     @if ($row['requirement'] && $row['report'])
                         @php $report = $row['report']; @endphp
@@ -85,7 +76,7 @@
                 <ul class="space-y-1 text-sm">
                     @forelse ($history as $item)
                         <li class="flex flex-wrap items-center gap-2 {{ $item->isRevoked() ? 'line-through opacity-60' : '' }}">
-                            <span class="tabular-nums">{{ $item->obtained_on->format('d.m.Y') }}</span>
+                            <span class="tabular-nums">{{ $item->obtained_on->fdate() }}</span>
                             <span class="font-medium">{{ $item->grade?->name }}</span>
                             <span class="text-xs text-muted">{{ $item->system?->discipline }} · {{ $item->source->label() }}@if ($item->confirmedBy) · {{ $item->confirmedBy->name }}@endif</span>
                             @if ($item->evidence)<span class="text-xs text-muted">· {{ $item->evidence }}</span>@endif
@@ -126,11 +117,11 @@
                 <ul class="space-y-1 text-sm">
                     @forelse ($proofs as $proof)
                         <li class="flex flex-wrap items-center gap-2">
-                            <span class="tabular-nums">{{ $proof->obtained_on->format('d.m.Y') }}</span>
+                            <span class="tabular-nums">{{ $proof->obtained_on->fdate() }}</span>
                             <span class="font-medium">{{ $proof->label }}</span>
                             <x-status-badge tone="ghost" size="xs">{{ $proof->kind->label() }}</x-status-badge>
                             @if ($proof->minutes)<span class="text-xs text-muted">{{ \App\Services\Club\ClubEligibilityReport::hoursMinutes($proof->minutes) }}</span>@endif
-                            @if ($proof->valid_until)<span class="text-xs text-muted">{{ __('club.grading.label.valid_until', ['date' => $proof->valid_until->format('d.m.Y')]) }}</span>@endif
+                            @if ($proof->valid_until)<span class="text-xs text-muted">{{ __('club.grading.label.valid_until', ['date' => $proof->valid_until->fdate()]) }}</span>@endif
                             @if ($proof->origin)<span class="text-xs text-muted">· {{ $proof->origin }}</span>@endif
                             @if ($canManage)
                                 <span class="ml-auto flex gap-1">

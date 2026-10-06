@@ -126,7 +126,7 @@ class ClubFeeCalculator {
                 $amount = $this->prorate($rate->amount, $rate->proration, $days, $start, $end);
                 $discount = $assignment->discountPercent();
                 if (Decimal::of($discount, 2)->isPositive()) {
-                    $amount = $amount->minusPercentage(self::numeric(Decimal::of($discount, 2)));
+                    $amount = $amount->minusPercentage(Decimal::of($discount, 2)->getValue());
                 }
                 if (! $amount->isZero()) {
                     $positions->push(new ClubFeePosition(
@@ -343,7 +343,7 @@ class ClubFeeCalculator {
                 $min = Decimal::min($min, Decimal::of($percent, 2));
             }
 
-            return $amount->percentage(self::numeric($min));
+            return $amount->percentage($min->getValue());
         }
 
         $sum = Decimal::zero(2);
@@ -353,16 +353,7 @@ class ClubFeeCalculator {
         // Σ Prozent / (100 × Periodentage) — erst dividieren, dann einmal runden.
         $factor = $sum->dividedBy(Decimal::of((string) ($periodDays * 100), 0), 10);
 
-        return $amount->times(self::numeric($factor));
-    }
-
-    /**
-     * Decimal als numerischer String für die Money-Arithmetik (Typvertrag, keine Float-Umwandlung).
-     *
-     * @return numeric-string
-     */
-    private static function numeric(Decimal $value): string {
-        return $value->getValue();
+        return $amount->times($factor->getValue());
     }
 
     /**
@@ -521,7 +512,7 @@ class ClubFeeCalculator {
                 $p->periodStart,
                 $p->periodEnd,
                 $p->dueOn,
-                $p->amount->minusPercentage(self::numeric($decimal)),
+                $p->amount->minusPercentage($decimal->getValue()),
                 $p->basis + ['sibling_rank' => $rank, 'sibling_percent' => $decimal->getValue()],
             );
         })->values();

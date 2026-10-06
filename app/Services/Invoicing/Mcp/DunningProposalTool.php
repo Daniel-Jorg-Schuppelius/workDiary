@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Invoicing\Mcp;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\{Organization, User};
 use App\Services\Invoicing\DunningService;
@@ -52,7 +53,7 @@ final class DunningProposalTool extends GuardedTool {
         $proposals = [];
         $candidates = Invoice::query()
             ->where('organization_id', $organization->id)
-            ->whereIn('status', [Invoice::STATUS_ISSUED, Invoice::STATUS_PARTIALLY_PAID])
+            ->whereIn('status', [InvoiceStatus::Issued, InvoiceStatus::PartiallyPaid])
             ->whereNotIn('type', [Invoice::TYPE_PROFORMA, Invoice::TYPE_CANCELLATION, Invoice::TYPE_CREDIT_NOTE])
             ->whereNull('dunning_blocked_at')
             ->whereNotNull('due_on')

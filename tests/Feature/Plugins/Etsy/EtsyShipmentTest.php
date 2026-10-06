@@ -14,6 +14,7 @@ use App\Models\Integration\IntegrationOutboxEntry;
 use App\Models\Platform\{PluginSetting, User};
 use App\Plugins\Etsy\EtsyPlugin;
 use App\Plugins\Etsy\Models\{EtsyConnection, EtsyReceipt};
+use App\Plugins\Support\OAuthConnectionStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Psr\Http\Message\RequestInterface;
 use Tests\Concerns\WithOrganization;
@@ -53,7 +54,7 @@ final class EtsyShipmentTest extends TestCase {
             'shop_id' => 77,
             'etsy_user_id' => 12345,
             'access_token' => '12345.tok',
-            'status' => EtsyConnection::STATUS_ACTIVE,
+            'status' => OAuthConnectionStatus::Active,
             'webhook_token' => 'hook-123',
         ]);
 

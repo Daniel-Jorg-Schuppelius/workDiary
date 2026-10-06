@@ -13,7 +13,10 @@ declare(strict_types=1);
 namespace App\Plugins\JtlWawi\Services;
 
 use App\Enums\Billing\{DocumentDirection, DocumentKind};
-use App\Plugins\JtlWawi\Api\{JtlApiException, JtlGatewayFactory};
+use App\Enums\Finance\AccountingVoucherState;
+use App\Plugins\JtlWawi\Api\JtlGatewayFactory;
+use App\Plugins\JtlWawi\Enums\JtlConnectionStatus;
+use App\Plugins\JtlWawi\Exceptions\JtlApiException;
 use App\Plugins\JtlWawi\JtlWawiPlugin;
 use App\Plugins\JtlWawi\Models\JtlConnection;
 use App\Services\Finance\Accounting\Vouchers\{MirroredVoucher, VoucherMirror, VoucherPuller};
@@ -133,7 +136,7 @@ class JtlVoucherPullService implements VoucherPuller {
             kind: $isCancellation ? DocumentKind::Cancellation : DocumentKind::Invoice,
             rawType: 'salesinvoice',
             rawStatus: $isCancellation ? 'cancelled' : null,
-            state: $isCancellation ? 'cancelled' : ($paidDate !== null ? 'paid' : 'open'),
+            state: $isCancellation ? AccountingVoucherState::Cancelled : ($paidDate !== null ? AccountingVoucherState::Paid : AccountingVoucherState::Open),
             number: trim((string) ($this->first($row, 'number') ?? '')) ?: null,
             date: VoucherMirror::date($this->first($row, 'date')),
             dueDate: VoucherMirror::date($this->first($row, 'due')),
@@ -165,7 +168,7 @@ class JtlVoucherPullService implements VoucherPuller {
         return JtlConnection::query()
             ->withoutGlobalScopes()
             ->where('organization_id', $organizationId)
-            ->where('status', JtlConnection::STATUS_ACTIVE)
+            ->where('status', JtlConnectionStatus::Active)
             ->first();
     }
 }

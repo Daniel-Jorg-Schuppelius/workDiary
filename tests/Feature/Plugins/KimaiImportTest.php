@@ -10,12 +10,14 @@
 
 namespace Tests\Feature\Plugins;
 
+use App\Enums\Integration\IntegrationInboxStatus;
 use App\Models\Customer\Customer;
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use App\Models\Platform\{PluginSetting, User};
 use App\Models\Project\Project;
 use App\Models\Time\TimeEntry;
-use App\Plugins\Kimai\{KimaiConfig, KimaiImportService, KimaiPlugin};
+use App\Plugins\Kimai\{KimaiConfig, KimaiPlugin};
+use App\Plugins\Kimai\Services\KimaiImportService;
 use App\Plugins\Kimai\Sources\KimaiCsvParser;
 use App\Plugins\Support\RemoteTimeFingerprint;
 use App\Support\Tz;
@@ -217,7 +219,7 @@ class KimaiImportTest extends TestCase {
             'source' => 'csv',
             'group_key' => $this->groupKey('Beta GmbH', 'Intranet', 'Wartung'),
             'case_type' => IntegrationInboxItem::CASE_UNMATCHED,
-            'status' => IntegrationInboxItem::STATUS_OPEN,
+            'status' => IntegrationInboxStatus::Open->value,
         ]);
     }
 
@@ -320,7 +322,7 @@ class KimaiImportTest extends TestCase {
 
         $this->assertDatabaseHas('integration_inbox_items', [
             'plugin_id' => KimaiPlugin::ID,
-            'status' => IntegrationInboxItem::STATUS_RESOLVED_CREATED,
+            'status' => IntegrationInboxStatus::ResolvedCreated->value,
         ]);
 
         // Projekt-Referenz gemerkt → Folgeimport matcht automatisch.

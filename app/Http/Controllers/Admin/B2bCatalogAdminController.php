@@ -52,8 +52,8 @@ class B2bCatalogAdminController extends Controller {
                 ->where('organization_id', $organization->id)
                 ->with('customer')
                 ->orderByDesc('id')
-                ->limit(50)
-                ->get(),
+                ->paginate(25)
+                ->withQueryString(),
             'issuedSecret' => session('b2b_issued_secret'),
             'punchoutUrl' => route('b2b-punchout.entry', ['org' => $organization->slug]),
         ]);

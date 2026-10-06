@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Applications;
 
+use App\Enums\Applications\{ApplicationOpportunityStatus, ApplicationRequirementStatus};
 use App\Models\Applications\{ApplicationOpportunity, ApplicationSubmission};
 use App\Models\Platform\User;
 use App\Models\Project\Project;
@@ -39,7 +40,7 @@ class TenderService {
             'go_decided_at' => now(),
             'go_note' => $note,
             // No-go beendet die Akte nachvollziehbar (zurückgezogen).
-            'status' => $decision === 'no_go' ? 'withdrawn' : $opportunity->status,
+            'status' => $decision === 'no_go' ? ApplicationOpportunityStatus::Withdrawn : $opportunity->status,
             'loss_reason' => $decision === 'no_go' ? ($note ?? (string) __('Interne No-go-Entscheidung.')) : $opportunity->loss_reason,
         ]);
         $opportunity->audit('tender.go_decided', ['decision' => $decision]);
@@ -56,13 +57,14 @@ class TenderService {
         if ($opportunity->go_decision !== 'go') {
             throw new \RuntimeException((string) __('Vor der Einreichung braucht die Akte eine Go-Entscheidung.'));
         }
-        if (! $opportunity->isOpen()) {
+        // Die erneute Abgabe einer eingereichten Akte legt nur eine weitere Version an.
+        if ($opportunity->status !== ApplicationOpportunityStatus::Submitted && ! $opportunity->status->canTransitionTo(ApplicationOpportunityStatus::Submitted)) {
             throw new \RuntimeException((string) __('Die Akte ist bereits entschieden.'));
         }
 
         $openRequired = $opportunity->requirements()
             ->where('required', true)
-            ->whereNotIn('status', ['done', 'not_applicable'])
+            ->whereNotIn('status', ApplicationRequirementStatus::settled())
             ->count();
         if ($openRequired > 0) {
             throw new \RuntimeException((string) __(':count Pflicht-Unterlagen sind noch offen.', ['count' => $openRequired]));
@@ -78,7 +80,7 @@ class TenderService {
                     'label' => $requirement->label,
                     'kind' => $requirement->kind,
                     'required' => (bool) $requirement->required,
-                    'status' => $requirement->status,
+                    'status' => $requirement->status->value,
                     'document_id' => $requirement->document_id,
                 ])->all(),
                 'submitted_at' => now()->toIso8601String(),
@@ -96,7 +98,7 @@ class TenderService {
                 'submitted_by' => $actor->id,
             ]);
 
-            $opportunity->update(['status' => 'submitted']);
+            $opportunity->update(['status' => ApplicationOpportunityStatus::Submitted]);
             $opportunity->audit('tender.submitted', ['version' => $version, 'sha256' => $submission->sha256, 'channel' => $channel]);
 
             return $submission;
@@ -108,7 +110,8 @@ class TenderService {
         if (! in_array($decision, ['won', 'lost', 'withdrawn'], true)) {
             throw new \RuntimeException((string) __('Ungültige Entscheidung.'));
         }
-        if (! $opportunity->isOpen()) {
+        $target = ApplicationOpportunityStatus::from($decision);
+        if (! $opportunity->status->canTransitionTo($target)) {
             throw new \RuntimeException((string) __('Die Akte ist bereits entschieden.'));
         }
         if (in_array($decision, ['lost', 'withdrawn'], true) && ($reason === null || trim($reason) === '')) {
@@ -116,8 +119,8 @@ class TenderService {
         }
 
         $opportunity->update([
-            'status' => $decision,
-            'loss_reason' => $decision === 'won' ? null : $reason,
+            'status' => $target,
+            'loss_reason' => $target === ApplicationOpportunityStatus::Won ? null : $reason,
         ]);
         $opportunity->audit('tender.decided', ['decision' => $decision, 'by' => $actor->id]);
 
@@ -130,7 +133,7 @@ class TenderService {
      * Nachweis erhalten (kein stiller Datenumzug).
      */
     public function transferToProject(ApplicationOpportunity $opportunity, ?Project $existing, User $actor): Project {
-        if ($opportunity->status !== 'won') {
+        if ($opportunity->status !== ApplicationOpportunityStatus::Won) {
             throw new \RuntimeException((string) __('Nur gewonnene Ausschreibungen werden überführt.'));
         }
 

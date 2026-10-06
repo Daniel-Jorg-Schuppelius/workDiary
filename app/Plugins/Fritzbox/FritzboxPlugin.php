@@ -12,6 +12,7 @@ namespace App\Plugins\Fritzbox;
 
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\Plugin;
+use App\Plugins\Fritzbox\Services\{FritzboxGroupBooker, FritzboxImportService};
 use App\Plugins\Support\PluginOrgContext;
 
 /**

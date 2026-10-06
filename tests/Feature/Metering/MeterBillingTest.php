@@ -10,6 +10,8 @@
 
 namespace Tests\Feature\Metering;
 
+use App\Enums\Invoicing\InvoiceStatus;
+use App\Enums\Metering\MeterBillingAgreementStatus;
 use App\Models\Asset\{Asset, MeterReading};
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
@@ -88,7 +90,7 @@ class MeterBillingTest extends TestCase {
         );
 
         $this->assertNotNull($invoice);
-        $this->assertSame(Invoice::STATUS_DRAFT, $invoice->status, 'Es entsteht NUR ein Entwurf.');
+        $this->assertSame(InvoiceStatus::Draft, $invoice->status, 'Es entsteht NUR ein Entwurf.');
         $this->assertCount(2, $invoice->items);
         // 3500 Klicks − 1000 frei = 2500 × 0,0120 = 30,00 + 25,00 Grundpreis
         // = 55,00 netto; der Beleg trägt die vom TaxResolver ermittelte USt.
@@ -203,6 +205,20 @@ class MeterBillingTest extends TestCase {
 
         $this->assertSame('2026-07-30', $agreement->refresh()->next_run_on->toDateString());
         $this->assertSame('2026-06-30', $agreement->last_run_on?->toDateString());
+        $this->assertSame(MeterBillingAgreementStatus::Active, $agreement->status);
+    }
+
+    public function test_run_ends_the_agreement_past_its_end_date(): void {
+        // isRunnable() misst das Enddatum an der Uhr, nicht am übergebenen Stichtag.
+        $this->travelTo(CarbonImmutable::parse('2026-07-01 09:00:00'));
+        $agreement = $this->agreement(['next_run_on' => '2026-06-30', 'end_on' => '2026-07-15']);
+        $this->reading('2026-05-31 10:00:00', '10000');
+        $this->reading('2026-06-30 10:00:00', '13500');
+
+        app(MeterBillingService::class)->runAgreement($agreement, CarbonImmutable::parse('2026-07-01'));
+
+        $this->assertSame(MeterBillingAgreementStatus::Ended, $agreement->refresh()->status);
+        $this->assertFalse($agreement->isRunnable());
     }
 
     public function test_command_reports_the_result(): void {
@@ -237,6 +253,7 @@ class MeterBillingTest extends TestCase {
         $response = $this->actingAs($this->admin)->get(route('metering.index'));
 
         $response->assertOk();
+        $response->assertSee(MeterBillingAgreementStatus::Active->label());
         $this->assertCount(1, $response->viewData('agreements'));
         $this->assertCount(1, $response->viewData('skipped'));
     }

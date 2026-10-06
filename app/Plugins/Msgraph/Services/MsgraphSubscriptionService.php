@@ -16,6 +16,7 @@ use App\Enums\CloudIntake\CloudIntakeProvider;
 use App\Models\CloudIntake\CloudDocumentConnection;
 use App\Models\Mail\EmailConnection;
 use App\Plugins\Msgraph\Api\{GraphSubscriptionClient, MsgraphCalendarClient, MsgraphIntakeClient, MsgraphMailClient, MsgraphTodoClient};
+use App\Plugins\Msgraph\Enums\MsgraphTaskListLinkStatus;
 use App\Plugins\Msgraph\Models\{MsgraphConnection, MsgraphMailConnection, MsgraphTaskConnection, MsgraphTaskListLink};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\{Carbon, Str};
@@ -95,7 +96,7 @@ class MsgraphSubscriptionService {
 
     /** To-Do-Liste: weckt den Sync des Links (nur importierende Links). */
     public function ensureTodoLink(MsgraphTaskListLink $link, MsgraphTaskConnection $connection): void {
-        if ($link->status !== MsgraphTaskListLink::STATUS_ACTIVE || ! $link->importsFromTodo() || ! $connection->isActive()) {
+        if ($link->status !== MsgraphTaskListLinkStatus::Active || ! $link->importsFromTodo() || ! $connection->isActive()) {
             return; // reine Export-Links weckt der Observer, kein Webhook nötig
         }
 
@@ -212,7 +213,7 @@ class MsgraphSubscriptionService {
         // ── To-Do-Listen-Links (Feature 102, Schnitt E) ─────────────────
         $links = MsgraphTaskListLink::query()
             ->withoutGlobalScopes()
-            ->where('status', MsgraphTaskListLink::STATUS_ACTIVE);
+            ->where('status', MsgraphTaskListLinkStatus::Active);
         if ($organizationId !== null) {
             $links->where('organization_id', $organizationId);
         }

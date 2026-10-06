@@ -14,8 +14,9 @@ namespace App\Plugins\Etsy\Services;
 
 use App\Contracts\Integration\IntegrationOutboxDispatcher;
 use App\Models\Integration\IntegrationOutboxEntry;
-use App\Plugins\Etsy\Api\{EtsyApiException, EtsyClientFactory};
+use App\Plugins\Etsy\Api\EtsyClientFactory;
 use App\Plugins\Etsy\EtsyPlugin;
+use App\Plugins\Etsy\Exceptions\EtsyApiException;
 use App\Plugins\Etsy\Models\{EtsyConnection, EtsyReceipt};
 use Carbon\CarbonImmutable;
 use RuntimeException;

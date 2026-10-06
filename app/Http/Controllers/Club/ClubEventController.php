@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Club;
 
 use App\Enums\Club\{ClubEventKind, ClubParticipationSource, ClubParticipationStatus};
+use App\Http\Controllers\Club\Concerns\ConvertsEventTimesToUtc;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Club\{CancelClubEventRequest, RegisterClubEventMemberRequest, SaveClubEventRequest};
@@ -43,6 +44,8 @@ use RuntimeException;
  * Gruppenleitung sieht nur Termine ihrer Zielgruppen.
  */
 class ClubEventController extends Controller {
+    use ConvertsEventTimesToUtc;
+
     use ResolvesCurrentOrganization;
 
     public function __construct(
@@ -292,25 +295,6 @@ class ClubEventController extends Controller {
         abort_unless($details instanceof ClubEventDetails, 404);
 
         return $details;
-    }
-
-    /**
-     * Wandzeit der Formularzeitzone → UTC (wie EventController, MVP-823).
-     *
-     * @param  array<string, mixed>  $data
-     * @return array<string, mixed>
-     */
-    private function withUtcTimes(array $data): array {
-        $tz = trim((string) ($data['timezone'] ?? ''));
-        $tz = Tz::isValid($tz) && $tz !== 'UTC' ? $tz : Tz::current();
-        $data['timezone'] = $tz;
-        foreach (['started_at', 'ended_at'] as $key) {
-            if (array_key_exists($key, $data)) {
-                $data[$key] = CarbonImmutable::parse((string) $data[$key], $tz)->utc()->format('Y-m-d H:i:s');
-            }
-        }
-
-        return $data;
     }
 
     /** @return array<string, mixed> */

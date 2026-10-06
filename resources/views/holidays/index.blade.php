@@ -23,15 +23,15 @@
     {{-- Tabs: Jahresübersicht | Eigene Feiertage --}}
     <div role="tablist" class="tabs tabs-box">
         <a role="tab" href="#yearly" class="tab tab-active" data-holiday-tab="yearly">
-            {{ __('Jahresübersicht') }} <span class="badge badge-sm ml-2">{{ $merged->count() }}</span>
+            {{ __('Jahresübersicht') }} <x-status-badge tone="plain" class="ml-2">{{ $merged->count() }}</x-status-badge>
         </a>
         <a role="tab" href="#custom" class="tab" data-holiday-tab="custom">
-            {{ __('Eigene Feiertage') }} <span class="badge badge-sm ml-2">{{ $customHolidays->count() }}</span>
+            {{ __('Eigene Feiertage') }} <x-status-badge tone="plain" class="ml-2">{{ $customHolidays->count() }}</x-status-badge>
         </a>
     </div>
 
     {{-- Jahresübersicht --}}
-    <div data-holiday-pane="yearly" class="rounded-box border border-base-300 bg-base-100 shadow-xs">
+    <x-card padding="p-0" data-holiday-pane="yearly">
         <x-table table-sort="client" bare scroll="none" :pinRows="true">
             <x-slot:head>
                 <tr>
@@ -86,10 +86,10 @@
                 <x-table.empty icon="event" :colspan="5" :title="__('Keine Feiertage in diesem Jahr')" compact />
             @endforelse
         </x-table>
-    </div>
+    </x-card>
 
     {{-- Eigene Feiertage (Verwaltung) --}}
-    <div data-holiday-pane="custom" class="hidden rounded-box border border-base-300 bg-base-100 shadow-xs">
+    <x-card padding="p-0" class="hidden" data-holiday-pane="custom">
         <x-table table-sort="client" bare scroll="none" :pinRows="true">
             <x-slot:head>
                 <tr>
@@ -130,7 +130,7 @@
                 <x-table.empty icon="event" :colspan="4" :title="__('Keine eigenen Feiertage vorhanden')" compact />
             @endforelse
         </x-table>
-    </div>
+    </x-card>
 </x-index-page>
 
 <script @cspNonce>

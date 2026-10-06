@@ -11,6 +11,7 @@
 namespace App\Http\Controllers\Communication;
 
 use App\Enums\Communication\{CommunicationDirection, CommunicationNoteType, CommunicationVisibility, ParticipantParty};
+use App\Http\Controllers\Concerns\AuthorizesCarrier;
 use App\Http\Controllers\Concerns\{ParsesIndexQuery, ResolvesCurrentOrganization};
 use App\Http\Controllers\Controller;
 use App\Models\Classification\Tag;
@@ -29,6 +30,7 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class CommunicationNoteController extends Controller {
+    use AuthorizesCarrier;
     use ParsesIndexQuery;
     use ResolvesCurrentOrganization;
 
@@ -211,6 +213,7 @@ class CommunicationNoteController extends Controller {
 
         $notableClass = self::NOTABLE_MAP[$data['notable_kind']];
         $notable = $this->findNotable($notableClass, (string) $data['notable_id']);
+        $this->authorizeCarrier($notable);
 
         if (($data['visibility'] ?? CommunicationVisibility::Internal->value) === CommunicationVisibility::Customer->value) {
             Gate::authorize('publishToCustomer', CommunicationNote::class);
@@ -465,6 +468,7 @@ class CommunicationNoteController extends Controller {
 
         $notableClass = self::NOTABLE_MAP[$notableKind];
         $notable = $this->findNotable($notableClass, (string) $request->query('notable_id', ''));
+        $this->authorizeCarrier($notable);
 
         return [$notableKind, $notable];
     }

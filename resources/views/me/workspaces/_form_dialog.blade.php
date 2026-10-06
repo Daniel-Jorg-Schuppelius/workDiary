@@ -11,9 +11,9 @@
 
     Links der Katalog dessen, was die Person laut NavGate sehen darf (der
     Server prüft dieselbe Liste beim Speichern erneut), rechts die gewählte
-    Reihenfolge. Sortiert wird per Pointer-Events-Drag-and-drop ODER über die
-    Schaltflächen „Nach oben"/„Nach unten" bzw. die Pfeiltasten am Griff —
-    ohne Maus geht es genauso. Logik in resources/js/workspace-editor.js
+    Reihenfolge. Sortiert wird per Ziehen am Griff (Maus, Finger, Stift) ODER
+    über die Schaltflächen „Nach oben"/„Nach unten" bzw. die Pfeiltasten am
+    Griff — ohne Maus geht es genauso. Logik in resources/js/workspace-editor.js
     (CSP-konform, keine Inline-Handler).
 
     Variablen: $workspace, $isEdit, $catalog, $selected
@@ -97,7 +97,7 @@
         <div class="rounded-box border border-base-300">
             <div class="flex items-center gap-2 border-b border-base-300 px-3 py-2">
                 <span class="text-sm font-semibold">{{ __('scope.workspace.selected') }}</span>
-                <span class="badge badge-ghost badge-sm ml-auto" data-workspace-count>{{ count($chosen) }}</span>
+                <x-status-badge class="ml-auto" data-workspace-count>{{ count($chosen) }}</x-status-badge>
             </div>
             <ol data-workspace-order class="max-h-80 space-y-1 overflow-y-auto p-2">
                 @foreach ($chosen as $key)
@@ -106,7 +106,7 @@
                         <input type="hidden" name="items[]" value="{{ $key }}" />
                         <span data-workspace-handle tabindex="0" role="button"
                               aria-label="{{ __('scope.workspace.drag_hint') }}"
-                              class="cursor-grab select-none text-muted">
+                              class="cursor-grab touch-none select-none text-muted">
                             <x-icon name="drag_indicator" class="text-[1.1rem]" />
                         </span>
                         <x-icon :name="$icons[$key] ?? 'circle'" class="text-[1.05rem] opacity-70" />
@@ -135,7 +135,7 @@
                 <input type="hidden" name="items[]" value="" />
                 <span data-workspace-handle tabindex="0" role="button"
                       aria-label="{{ __('scope.workspace.drag_hint') }}"
-                      class="cursor-grab select-none text-muted">
+                      class="cursor-grab touch-none select-none text-muted">
                     <x-icon name="drag_indicator" class="text-[1.1rem]" />
                 </span>
                 <x-icon name="circle" data-workspace-icon class="text-[1.05rem] opacity-70" />

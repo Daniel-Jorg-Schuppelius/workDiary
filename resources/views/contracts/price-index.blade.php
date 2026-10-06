@@ -17,14 +17,14 @@
 
     @include('contracts._tabs')
         @if ($pending > 0)
-            <div class="alert alert-warning mb-3 text-sm">{{ __('contract.price_index.pending', ['count' => $pending]) }}</div>
+            <div role="alert" class="alert alert-warning mb-3 text-sm">{{ __('contract.price_index.pending', ['count' => $pending]) }}</div>
         @endif
         @if ($canApprove)
             <form method="POST" action="{{ route('contracts.price-index.store') }}" class="mb-3 flex flex-wrap items-end gap-2" data-entry-form>
                 @csrf
                 <x-input-field name="period" type="month" :label="__('contract.price_index.field.period')" required />
                 <x-input-field name="value" type="number" step="0.1" min="1" :label="__('contract.price_index.field.value')" required />
-                <button type="submit" class="btn btn-sm">{{ __('contract.price_index.add') }}</button>
+                <x-button type="submit" tone="plain">{{ __('contract.price_index.add') }}</x-button>
             </form>
         @endif
         <x-table bare>

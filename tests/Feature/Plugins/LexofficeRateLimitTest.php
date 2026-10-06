@@ -10,7 +10,10 @@
 
 namespace Tests\Feature\Plugins;
 
-use App\Plugins\Lexoffice\{LexofficeMapper, LexofficePlugin, LexofficeRateLimitException, LexofficeService};
+use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
+use App\Plugins\Lexoffice\Exceptions\LexofficeRateLimitException;
+use App\Plugins\Lexoffice\LexofficePlugin;
+use App\Plugins\Lexoffice\Services\{LexofficeMapper, LexofficeService};
 use App\Plugins\PluginHealth;
 use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
@@ -34,8 +37,8 @@ class LexofficeRateLimitTest extends TestCase {
         $health = (new LexofficePlugin($this->service()))->healthCheck();
 
         $this->assertSame(PluginHealth::STATUS_DEGRADED, $health->status);
-        // Drei Versuche gegen denselben Endpunkt (maxRetries=3 = 3 Versuche gesamt).
-        $fake->assertSentCount(3);
+        // Direkt aufgerufen gilt das Budget der Fabrik; über PluginHealthService ist es ein Versuch.
+        $fake->assertSentCount(LexofficeClientFactory::MAX_RETRIES);
     }
 
     public function test_ping_throws_rate_limit_exception_after_exhausting_retries(): void {

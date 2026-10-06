@@ -18,7 +18,7 @@
                         <span class="flex items-center gap-2">
                             <x-icon name="{{ $group['icon'] }}" class="text-base" />
                             {{ $group['label'] }}
-                            <span class="badge badge-sm">{{ count($group['items']) }}</span>
+                            <x-status-badge tone="plain">{{ count($group['items']) }}</x-status-badge>
                         </span>
                     </x-slot:title>
                     <ul class="divide-y divide-base-200">

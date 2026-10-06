@@ -66,5 +66,5 @@
     <x-input-field name="cost" type="number" step="0.01" min="0" :label="__('Prüfkosten (netto, €)')" />
     <x-textarea-field name="note" :label="__('Bemerkung')" rows="2"></x-textarea-field>
 
-    <button type="submit" class="btn btn-sm btn-primary">{{ __('Prüfung dokumentieren') }}</button>
+    <x-button type="submit">{{ __('Prüfung dokumentieren') }}</x-button>
 </form>

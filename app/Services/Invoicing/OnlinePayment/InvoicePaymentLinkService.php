@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Invoicing\OnlinePayment;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Invoicing\{Invoice, InvoicePaymentLink};
 use App\Services\Invoicing\DunningService;
 use App\Settings\SettingsRegistry;
@@ -64,7 +65,7 @@ class InvoicePaymentLinkService {
     }
 
     public function payable(Invoice $invoice): bool {
-        return in_array($invoice->status, [Invoice::STATUS_ISSUED, Invoice::STATUS_PARTIALLY_PAID], true)
+        return in_array($invoice->status, [InvoiceStatus::Issued, InvoiceStatus::PartiallyPaid], true)
             && ! $invoice->isCreditNote()
             && ! $invoice->isCancelled()
             && ! $invoice->isProforma()
@@ -73,11 +74,8 @@ class InvoicePaymentLinkService {
 
     /** Rechnung zum Klartext-Token — die einzige Auflösung ohne Anmeldung. */
     public function resolve(string $token): ?Invoice {
-        // TENANT-BYPASS: Auflösung ohne Anmeldung, ausschließlich über den Abdruck.
-        $link = InvoicePaymentLink::query()->withoutGlobalScopes()
-            ->where('token_hash', CryptoHelper::hash($token))
-            ->first();
-        if (! $link instanceof InvoicePaymentLink) {
+        $link = InvoicePaymentLink::findByAccessToken($token);
+        if ($link === null) {
             return null;
         }
 

@@ -9,8 +9,7 @@
 @extends('layouts.app')
 @section('title', __('procurement.ui.incoming_title') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('procurement.ui.incoming_title'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('procurement.ui.incoming_subtitle')">
@@ -35,7 +34,7 @@
             </x-slot:head>
             @forelse ($lines as $line)
                 <tr>
-                    <td>{{ $line->purchaseOrder?->expected_at?->format('d.m.Y') ?? '—' }}</td>
+                    <td>{{ $line->purchaseOrder?->expected_at?->fdate() ?? '—' }}</td>
                     <td><a href="{{ route('purchase-orders.show', $line->purchaseOrder) }}" class="link link-hover font-mono">{{ $line->purchaseOrder?->number }}</a></td>
                     <td>{{ $line->purchaseOrder?->supplier?->name }}</td>
                     <td>{{ $line->description }}</td>

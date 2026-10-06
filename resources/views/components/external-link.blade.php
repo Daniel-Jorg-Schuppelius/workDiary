@@ -13,8 +13,10 @@
 
   @param string|null $url    Die Zieladresse
   @param string|null $label  Anzeigetext (Vorgabe: die Adresse selbst)
+  @param bool        $plain  Ohne die Klasse `link` (Schaltfläche, Symbol)
+  Slot (optional): eigener Inhalt statt des Anzeigetexts, etwa ein Symbol.
 --}}
-@props(['url' => null, 'label' => null])
+@props(['url' => null, 'label' => null, 'plain' => false])
 
 @php
     $target = trim((string) $url);
@@ -25,9 +27,9 @@
 @if ($target === '')
     {{-- nichts --}}
 @elseif ($safe)
-    <a {{ $attributes->merge(['class' => 'link', 'target' => '_blank', 'rel' => 'noopener noreferrer']) }}
-       href="{{ $target }}">{{ $text }}</a>
+    <a {{ $attributes->merge(['class' => $plain ? '' : 'link', 'target' => '_blank', 'rel' => 'noopener noreferrer']) }}
+       href="{{ $target }}">{{ $slot->isEmpty() ? $text : $slot }}</a>
 @else
-    <span {{ $attributes->except(['class', 'target', 'rel'])->merge(['class' => 'text-base-content/70']) }}
+    <span {{ $attributes->except(['class', 'target', 'rel', 'title'])->merge(['class' => 'text-base-content/70']) }}
           title="{{ __('Kein aufrufbarer Link.') }}">{{ $text }}</span>
 @endif

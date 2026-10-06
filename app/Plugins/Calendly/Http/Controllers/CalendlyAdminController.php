@@ -10,10 +10,12 @@
 
 namespace App\Plugins\Calendly\Http\Controllers;
 
+use App\Enums\Calendar\AppointmentRequestStatus;
 use App\Models\Calendar\AppointmentRequest;
 use App\Models\Platform\User;
 use App\Plugins\Calendly\Api\{CalendlyClient, CalendlyOAuth};
 use App\Plugins\Calendly\{CalendlyConfig, CalendlyPlugin};
+use App\Plugins\Calendly\Enums\{CalendlyConnectionStatus, CalendlyWebhookSubscriptionStatus};
 use App\Plugins\Calendly\Models\{CalendlyConnection, CalendlyWebhookSubscription};
 use App\Plugins\Calendly\Services\{CalendlyBackfillService, CalendlyConfirmService, CalendlyOutboundService, CalendlySubscriptionManager};
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
@@ -41,15 +43,16 @@ class CalendlyAdminController extends ConnectionOAuthController {
         $connection = CalendlyConnection::query()->where('organization_id', $organization->id)->first();
         $subscription = CalendlyWebhookSubscription::query()
             ->where('organization_id', $organization->id)
-            ->where('status', CalendlyWebhookSubscription::STATUS_ACTIVE)
+            ->where('status', CalendlyWebhookSubscriptionStatus::Active)
             ->first();
         $requests = AppointmentRequest::query()
             ->where('organization_id', $organization->id)
             ->where('source', AppointmentRequest::SOURCE_CALENDLY)
-            ->where('status', AppointmentRequest::STATUS_REQUESTED)
+            ->where('status', AppointmentRequestStatus::Requested)
             ->orderBy('start_at')
-            ->limit(100)
-            ->get();
+            ->orderBy('id')
+            ->paginate(25)
+            ->withQueryString();
 
         return view('calendly::admin.index', [
             'configured' => CalendlyConfig::isConfigured(),
@@ -90,11 +93,11 @@ class CalendlyAdminController extends ConnectionOAuthController {
     }
 
     protected function connectedStatus(): string {
-        return CalendlyConnection::STATUS_ACTIVE;
+        return CalendlyConnectionStatus::Active->value;
     }
 
     protected function disconnectedStatus(): string {
-        return CalendlyConnection::STATUS_DISCONNECTED;
+        return CalendlyConnectionStatus::Disconnected->value;
     }
 
     protected function keepsRefreshTokenOnReconnect(): bool {

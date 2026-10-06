@@ -10,19 +10,17 @@
 --}}
 <x-card :title="__('Offene Genehmigungen')" icon="rule">
     <div class="grid gap-3 sm:grid-cols-2">
-        <a href="{{ route('expense-approvals.inbox') }}"
-           class="rounded-box border border-base-300 bg-base-100 px-4 py-3 shadow-xs transition hover:border-primary">
+        <x-card as="a" padding="px-4 py-3" class="transition hover:border-primary" href="{{ route('expense-approvals.inbox') }}">
             <p class="text-xs uppercase tracking-wider text-muted">{{ __('Spesen') }}</p>
             <p class="mt-1 font-['Space_Grotesk'] text-2xl font-bold tabular-nums {{ $pending['expenses'] > 0 ? 'text-warning' : '' }}">
                 {{ $pending['expenses'] }}
             </p>
-        </a>
-        <a href="{{ route('vacations.index', ['status' => 'pending']) }}"
-           class="rounded-box border border-base-300 bg-base-100 px-4 py-3 shadow-xs transition hover:border-primary">
+        </x-card>
+        <x-card as="a" padding="px-4 py-3" class="transition hover:border-primary" href="{{ route('vacations.index', ['status' => 'pending']) }}">
             <p class="text-xs uppercase tracking-wider text-muted">{{ __('Urlaub') }}</p>
             <p class="mt-1 font-['Space_Grotesk'] text-2xl font-bold tabular-nums {{ $pending['vacations'] > 0 ? 'text-info' : '' }}">
                 {{ $pending['vacations'] }}
             </p>
-        </a>
+        </x-card>
     </div>
 </x-card>

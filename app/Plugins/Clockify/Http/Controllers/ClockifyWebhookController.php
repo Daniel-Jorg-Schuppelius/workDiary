@@ -12,13 +12,11 @@ declare(strict_types=1);
 
 namespace App\Plugins\Clockify\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use App\Models\Integration\TimeTrackingWebhookDelivery;
-use App\Models\Platform\Organization;
 use App\Plugins\Clockify\ClockifyPlugin;
-use App\Plugins\Support\{RecordsWebhookDeliveries, WebhookSignature};
-use App\Plugins\Support\TimeTracking\{TimeTrackingWebhookGate, WebhookImportJob};
-use Illuminate\Http\{JsonResponse, Request};
+use App\Plugins\Support\TimeTracking\TimeTrackingWebhookController;
+use App\Plugins\Support\WebhookSignature;
+use CommonToolkit\Helper\Data\CryptoHelper;
+use Illuminate\Http\Request;
 
 /**
  * Sessionloser Clockify-Webhook (Feature 124, MVP-613).
@@ -35,57 +33,29 @@ use Illuminate\Http\{JsonResponse, Request};
  * Tarife. Ohne Tarif-Deckung bleibt der Endpunkt ungenutzt — er stört dann
  * niemanden, aber er hilft auch nicht.
  */
-class ClockifyWebhookController extends Controller {
-    use RecordsWebhookDeliveries;
+class ClockifyWebhookController extends TimeTrackingWebhookController {
+    protected function pluginId(): string {
+        return ClockifyPlugin::ID;
+    }
 
-    public function __invoke(Request $request, TimeTrackingWebhookGate $gate): JsonResponse {
-        $raw = (string) $request->getContent();
-        /** @var array<string, mixed> $payload */
-        $payload = (array) json_decode($raw, true);
+    protected function workspaceId(array $payload): string {
+        return (string) ($payload['workspaceId'] ?? '');
+    }
 
-        // Alle Kandidaten prüfen, nicht nur den ersten (S-57) — siehe
-        // TogglWebhookController.
-        $candidates = $gate->organizationsFor(ClockifyPlugin::ID, (string) ($payload['workspaceId'] ?? ''));
+    protected function signatureValid(Request $request, string $raw, ?string $secret): bool {
+        return WebhookSignature::tokenValid($secret, (string) $request->header('Clockify-Signature', ''));
+    }
 
-        $organization = null;
-        foreach ($candidates as $candidate) {
-            $secret = $gate->secretFor(ClockifyPlugin::ID, (int) $candidate->id);
-            if (WebhookSignature::tokenValid($secret, (string) $request->header('Clockify-Signature', ''))) {
-                $organization = $candidate;
-                break;
-            }
-        }
+    /**
+     * Der Rumpf ist der Zeiteintrag; seine `id` bleibt über jede Änderung
+     * gleich und taugt nicht als Zustell-ID. Ereignisart + Rumpf: dieselbe
+     * Zustellung ergibt denselben Wert, eine spätere Änderung einen neuen.
+     */
+    protected function deliveryId(Request $request, array $payload, string $raw): string {
+        return CryptoHelper::hash($this->eventName($request, $payload) . "\n" . $raw);
+    }
 
-        if (! $organization instanceof Organization) {
-            // Siehe TogglWebhookController: unbekannter Workspace → ignoriert,
-            // bekannter mit falscher Signatur → 401.
-            return $candidates->isEmpty()
-                ? response()->json(['status' => 'ignored'])
-                : response()->json(['message' => 'invalid signature'], 401);
-        }
-
-        $deliveryId = trim((string) ($payload['id'] ?? ''));
-        if ($deliveryId === '') {
-            $deliveryId = $this->deliveryHash($raw);
-        }
-
-        $delivery = $this->recordDelivery(fn (): TimeTrackingWebhookDelivery => TimeTrackingWebhookDelivery::query()->create([
-            'plugin_id' => ClockifyPlugin::ID,
-            'delivery_id' => $deliveryId,
-            'event_name' => mb_substr((string) $request->header('Clockify-Webhook-Event-Type', ''), 0, 128) ?: null,
-            'organization_id' => (int) $organization->id,
-            'received_at' => now(),
-        ]));
-        if ($delivery === null) {
-            return response()->json(['status' => 'duplicate']);
-        }
-
-        if (! $gate->shouldRun(ClockifyPlugin::ID, (int) $organization->id)) {
-            return response()->json(['status' => 'debounced']);
-        }
-
-        WebhookImportJob::dispatch(ClockifyPlugin::ID, (int) $organization->id, (int) $delivery->id);
-
-        return response()->json(['status' => 'queued']);
+    protected function eventName(Request $request, array $payload): string {
+        return (string) $request->header('Clockify-Webhook-Event-Type', '');
     }
 }

@@ -12,9 +12,10 @@
 @extends('layouts.app')
 @section('title', __('Gespeicherte Auswertungen'))
 @section('nav-title', __('Gespeicherte Auswertungen'))
+@include('partials.page-fill')
 
 @section('content')
-<x-page-shell>
+<x-page-shell overflow="clip">
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="__('Benannte Report-Ansichten — persönlich oder mit der Organisation geteilt.')" />
     </x-slot:toolbar>
@@ -40,57 +41,54 @@
                 <input type="checkbox" name="is_shared" value="1" class="checkbox checkbox-sm" @checked(old('is_shared'))>
                 <span class="label-text">{{ __('Mit Organisation teilen') }}</span>
             </label>
-            <button type="submit" class="btn btn-sm btn-primary">{{ __('Speichern') }}</button>
+            <x-button type="submit">{{ __('Speichern') }}</x-button>
         </form>
     </x-card>
 
-    <x-card>
-        @if ($views->isEmpty())
-            <x-empty-state icon="bookmark"
-                           :title="__('Noch keine gespeicherten Ansichten')" />
-        @else
-            <x-table bare>
-                <x-slot:head>
-                    <tr>
-                        <x-table.th>{{ __('Name') }}</x-table.th>
-                        <x-table.th>{{ __('Erstellt von') }}</x-table.th>
-                        <x-table.th>{{ __('Sichtbarkeit') }}</x-table.th>
-                        <x-table.th></x-table.th>
-                    </tr>
-                </x-slot:head>
-                @foreach ($views as $view)
-                    <tr>
-                        <td>
-                            <a class="link link-hover font-medium" href="{{ $view->targetUrl() }}">{{ $view->name }}</a>
-                        </td>
-                        <td class="text-sm text-muted">{{ $view->creator?->name }}</td>
-                        <td>
-                            <x-status-badge :tone="$view->is_shared ? 'info' : 'ghost'" size="sm">
-                                {{ $view->is_shared ? __('geteilt') : __('persönlich') }}
-                            </x-status-badge>
-                        </td>
-                        <td class="text-right">
-                            @if ((int) $view->created_by === $viewerId || $isAdmin)
-                                <div class="flex items-center gap-1 justify-end">
-                                    <form method="POST" action="{{ route('report-views.toggle-share', $view) }}">
-                                        @csrf
-                                        <button type="submit" class="btn btn-xs btn-ghost">
-                                            {{ $view->is_shared ? __('Nicht mehr teilen') : __('Teilen') }}
-                                        </button>
-                                    </form>
-                                    <form method="POST" action="{{ route('report-views.destroy', $view) }}">
-                                        @csrf
-                                        @method('DELETE')
-                                        <x-icon-btn icon="delete" size="sm" tone="ghost" type="submit"
-                                                    :aria-label="__('Löschen')" />
-                                    </form>
-                                </div>
-                            @endif
-                        </td>
-                    </tr>
-                @endforeach
-            </x-table>
-        @endif
-    </x-card>
+    <x-table scroll="flex">
+        <x-slot:head>
+            <tr>
+                <x-table.th>{{ __('Name') }}</x-table.th>
+                <x-table.th>{{ __('Erstellt von') }}</x-table.th>
+                <x-table.th>{{ __('Sichtbarkeit') }}</x-table.th>
+                <x-table.th></x-table.th>
+            </tr>
+        </x-slot:head>
+        @forelse ($views as $view)
+            <tr class="hover">
+                <td>
+                    <a class="link link-hover font-medium" href="{{ $view->targetUrl() }}">{{ $view->name }}</a>
+                </td>
+                <td class="text-sm text-muted">{{ $view->creator?->name }}</td>
+                <td>
+                    <x-status-badge :tone="$view->is_shared ? 'info' : 'ghost'" size="sm">
+                        {{ $view->is_shared ? __('geteilt') : __('persönlich') }}
+                    </x-status-badge>
+                </td>
+                <td class="text-right">
+                    @if ((int) $view->created_by === $viewerId || $isAdmin)
+                        <div class="flex items-center gap-1 justify-end">
+                            <form method="POST" action="{{ route('report-views.toggle-share', $view) }}">
+                                @csrf
+                                <x-button type="submit" tone="ghost" size="xs">
+                                    {{ $view->is_shared ? __('Nicht mehr teilen') : __('Teilen') }}
+                                </x-button>
+                            </form>
+                            <form method="POST" action="{{ route('report-views.destroy', $view) }}">
+                                @csrf
+                                @method('DELETE')
+                                <x-icon-btn icon="delete" size="sm" tone="ghost" type="submit"
+                                            :aria-label="__('Löschen')" />
+                            </form>
+                        </div>
+                    @endif
+                </td>
+            </tr>
+        @empty
+            <x-table.empty icon="bookmark" :colspan="4" :title="__('Noch keine gespeicherten Ansichten')" compact />
+        @endforelse
+    </x-table>
+
+    <x-pagination :paginator="$views" standing />
 </x-page-shell>
 @endsection

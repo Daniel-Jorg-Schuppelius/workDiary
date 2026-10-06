@@ -40,8 +40,8 @@
                 @forelse ($row['claims'] as $claim)
                     <tr>
                         <td class="font-medium">{{ $claim->number }}</td>
-                        <td class="whitespace-nowrap text-sm tabular-nums">{{ $claim->period_start->format('d.m.Y') }} – {{ $claim->period_end->format('d.m.Y') }}</td>
-                        <td class="whitespace-nowrap text-sm tabular-nums {{ $claim->isOverdue($today) ? 'text-error font-medium' : '' }}">{{ $claim->due_on->format('d.m.Y') }}</td>
+                        <td class="whitespace-nowrap text-sm tabular-nums">{{ $claim->period_start->fdate() }} – {{ $claim->period_end->fdate() }}</td>
+                        <td class="whitespace-nowrap text-sm tabular-nums {{ $claim->isOverdue($today) ? 'text-error font-medium' : '' }}">{{ $claim->due_on->fdate() }}</td>
                         <td><x-status-badge :tone="$claim->status->tone()" size="sm">{{ $claim->status->label() }}</x-status-badge></td>
                         <td class="text-right tabular-nums">{{ $claim->total->format() }}</td>
                         <td class="text-right tabular-nums">{{ $claim->openAmount()->format() }}</td>
@@ -55,7 +55,7 @@
                 <p class="mt-3 text-xs font-medium text-muted">{{ __('club.fees.card.payments') }}</p>
                 <ul class="space-y-0.5 text-sm">
                     @foreach ($row['payments'] as $payment)
-                        <li class="flex flex-wrap items-center gap-2"><span class="tabular-nums">{{ $payment->paid_on->format('d.m.Y') }}</span><span>{{ $payment->method->label() }}</span>@if ($payment->claim)<span class="text-xs text-muted">{{ $payment->claim->number }}</span>@endif<span class="ml-auto tabular-nums {{ $payment->amount->isNegative() ? 'text-error' : '' }}">{{ $payment->amount->format() }}</span></li>
+                        <li class="flex flex-wrap items-center gap-2"><span class="tabular-nums">{{ $payment->paid_on->fdate() }}</span><span>{{ $payment->method->label() }}</span>@if ($payment->claim)<span class="text-xs text-muted">{{ $payment->claim->number }}</span>@endif<span class="ml-auto tabular-nums {{ $payment->amount->isNegative() ? 'text-error' : '' }}">{{ $payment->amount->format() }}</span></li>
                     @endforeach
                 </ul>
             @endif

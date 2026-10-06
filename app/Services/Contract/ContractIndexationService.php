@@ -21,8 +21,8 @@ use App\Services\Notification\NotificationDispatcher;
 use App\Support\OrganizationContext;
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Support\Facades\DB;
-use RoundingMode;
 
 /**
  * Indexanpassung nach Verbraucherpreisindex (MVP-952): Veränderung des
@@ -34,7 +34,8 @@ use RoundingMode;
 class ContractIndexationService {
     use AssertsStatusTransition;
 
-    private const SCALE = 6;
+    /** Arbeitsskala: Produkte der Eingangswerte bleiben exakt, geteilt wird je Ergebnis nur einmal. */
+    private const SCALE = 12;
 
     public function __construct(
         private readonly PriceIndexService $index,
@@ -45,7 +46,7 @@ class ContractIndexationService {
     public function applicable(Contract $contract): bool {
         return $contract->indexation_method === IndexationMethod::ConsumerPriceIndex
             && $contract->indexation_base_value !== null
-            && bccomp((string) $contract->indexation_base_value, '0', 1) > 0
+            && NumberHelper::isPositivePrecise((string) $contract->indexation_base_value, 1)
             && $contract->value_amount !== null
             && $contract->status->isOpen();
     }
@@ -64,21 +65,24 @@ class ContractIndexationService {
             return null;
         }
         $base = $contract->indexation_base_value ?? '0';
-        $change = bcmul(bcsub(bcdiv((string) $latest->value, $base, self::SCALE), '1', self::SCALE), '100', self::SCALE);
         $passThrough = $contract->indexation_pass_through_percent ?? '100';
-        $effective = bcdiv(bcmul($change, $passThrough, self::SCALE), '100', self::SCALE);
         $old = $contract->value_amount ?? '0';
-        $new = bcround(bcmul($old, bcadd('1', bcdiv($effective, '100', self::SCALE), self::SCALE), self::SCALE), 2, RoundingMode::HalfAwayFromZero);
+        // Erst multiplizieren, zuletzt teilen: ein früh abgeschnittener Quotient kostete bei 1 Mio. € 76 Cent.
+        $delta = NumberHelper::subtractPrecise((string) $latest->value, $base, self::SCALE);
+        $change = NumberHelper::dividePrecise(NumberHelper::multiplyPrecise($delta, '100', self::SCALE), $base, self::SCALE);
+        $effective = NumberHelper::dividePrecise(NumberHelper::multiplyPrecise($delta, $passThrough, self::SCALE), $base, self::SCALE);
+        $scaledBase = NumberHelper::multiplyPrecise($base, '100', self::SCALE);
+        $new = NumberHelper::roundPrecise(NumberHelper::dividePrecise(NumberHelper::multiplyPrecise($old, NumberHelper::addPrecise($scaledBase, NumberHelper::multiplyPrecise($delta, $passThrough, self::SCALE), self::SCALE), self::SCALE), $scaledBase, self::SCALE), 2);
         $threshold = $contract->indexation_threshold_percent ?? '0';
-        $absChange = bccomp($change, '0', self::SCALE) < 0 ? bcmul($change, '-1', self::SCALE) : $change;
+        $absChange = NumberHelper::absPrecise($change);
 
         return [
             'index_period_on' => CarbonImmutable::parse($latest->period_on->toDateString()),
             'index_value' => (string) $latest->value,
-            'change_percent' => bcround($change, 4, RoundingMode::HalfAwayFromZero),
-            'effective_percent' => bcround($effective, 4, RoundingMode::HalfAwayFromZero),
+            'change_percent' => NumberHelper::roundPrecise($change, 4),
+            'effective_percent' => NumberHelper::roundPrecise($effective, 4),
             'new_amount' => $new,
-            'reaches_threshold' => bccomp($absChange, $threshold, self::SCALE) >= 0 && bccomp($new, $old, 2) !== 0,
+            'reaches_threshold' => NumberHelper::comparePrecise($absChange, $threshold, self::SCALE) >= 0 && NumberHelper::comparePrecise($new, $old, 2) !== 0,
         ];
     }
 

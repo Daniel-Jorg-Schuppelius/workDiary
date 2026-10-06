@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\Support;
 
 use App\Contracts\Integration\IntegrationOutboxDispatcher;
+use App\Enums\Integration\IntegrationInboxStatus;
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem, IntegrationOutboxEntry};
 use App\Models\Time\TimeEntry;
 use App\Support\MorphMap;
@@ -228,7 +229,7 @@ abstract class TimeWritebackDispatcher implements IntegrationOutboxDispatcher {
                 'case_type' => IntegrationInboxItem::CASE_CONFLICT,
                 'referenceable_type' => $timeEntry->getMorphClass(),
                 'referenceable_id' => $timeEntry->getKey(),
-                'status' => IntegrationInboxItem::STATUS_OPEN,
+                'status' => IntegrationInboxStatus::Open,
                 'remote_snapshot' => [
                     'reason' => 'remote_changed',
                     'time_entry_id' => $timeEntry->getKey(),

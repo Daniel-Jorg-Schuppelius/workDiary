@@ -13,6 +13,7 @@ namespace Tests\Feature\Plugins;
 use App\Enums\Task\TaskStatus;
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use App\Models\Project\Task;
+use App\Plugins\Todoist\Enums\{TodoistConnectionStatus, TodoistProjectLinkStatus};
 use App\Plugins\Todoist\Models\{TodoistConnection, TodoistProjectLink};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Psr\Http\Message\RequestInterface;
@@ -39,12 +40,13 @@ final class TodoistSyncCommandTest extends TestCase {
         parent::setUp();
         $this->setUpOrganization();
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
+        config()->set('plugins.todoist.enabled', true);
         config()->set('plugins.todoist.client_id', 'cid');
         config()->set('plugins.todoist.client_secret', 'sec');
         $this->connection = TodoistConnection::query()->create([
             'organization_id' => $this->organization->id,
             'access_token' => 'secret-token',
-            'status' => TodoistConnection::STATUS_ACTIVE,
+            'status' => TodoistConnectionStatus::Active,
         ]);
         $this->link = TodoistProjectLink::query()->create([
             'organization_id' => $this->organization->id,
@@ -52,7 +54,7 @@ final class TodoistSyncCommandTest extends TestCase {
             'todoist_project_name' => 'Sync-Projekt',
             'target_kind' => TodoistProjectLink::KIND_GLOBAL_KANBAN,
             'sync_mode' => TodoistProjectLink::MODE_BIDIRECTIONAL,
-            'status' => TodoistProjectLink::STATUS_ACTIVE,
+            'status' => TodoistProjectLinkStatus::Active,
         ]);
     }
 

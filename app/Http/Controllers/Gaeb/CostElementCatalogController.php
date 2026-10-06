@@ -40,7 +40,7 @@ class CostElementCatalogController extends Controller {
         Gate::authorize(P::ProjectViewAny->value);
 
         return view('gaeb.cost-catalogs.index', [
-            'catalogs' => CostElementCatalog::query()->withCount('elements')->orderBy('name')->get(),
+            'catalogs' => CostElementCatalog::query()->withCount('elements')->orderBy('name')->orderBy('id')->paginate(25)->withQueryString(),
             'canManage' => Gate::allows(P::ProjectImport->value),
         ]);
     }
@@ -129,7 +129,7 @@ class CostElementCatalogController extends Controller {
 
         $catalog->delete();
 
-        return redirect()->route('cost-catalogs.index')->with('success', __('Baukostenkatalog gelöscht.'));
+        return redirect()->toList('cost-catalogs.index')->with('success', __('Baukostenkatalog gelöscht.'));
     }
 
     private function guard(CostElementCatalog $catalog): void {

@@ -32,7 +32,7 @@
 
         <ul class="space-y-2 max-h-[55vh] overflow-y-auto pr-1">
             @foreach ($candidates as $entry)
-                <li class="rounded-box border border-base-300 bg-base-100">
+                <x-card as="li" padding="p-0">
                     <label class="flex cursor-pointer items-start gap-3 px-3 py-2.5">
                         <input type="checkbox" name="entry_ids[]" value="{{ $entry->sqid }}"
                                checked class="checkbox checkbox-sm mt-0.5">
@@ -63,7 +63,7 @@
                             @endif
                         </span>
                     </label>
-                </li>
+                </x-card>
             @endforeach
         </ul>
     @endif

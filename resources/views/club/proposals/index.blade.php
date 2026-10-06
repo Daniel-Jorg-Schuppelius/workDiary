@@ -13,8 +13,7 @@
 @extends('layouts.app')
 @section('title', __('club.title.proposals'))
 @section('nav-title', __('club.title.proposals'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('club.subtitle.proposals')">
     <x-slot:actions>
@@ -67,7 +66,7 @@
                 <td>
                     <x-status-badge :tone="$proposal->status->tone()" size="sm">{{ $proposal->status->label() }}</x-status-badge>
                     @if ($proposal->effective_on)
-                        <span class="text-xs text-muted">{{ $proposal->effective_on->format('d.m.Y') }}</span>
+                        <span class="text-xs text-muted">{{ $proposal->effective_on->fdate() }}</span>
                     @endif
                 </td>
                 <td class="text-right">

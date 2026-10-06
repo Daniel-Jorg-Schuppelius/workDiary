@@ -13,6 +13,7 @@ namespace App\Plugins\Todoist\Models;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Project\Project;
 use App\Plugins\Support\TaskSync\TaskSyncLink;
+use App\Plugins\Todoist\Enums\TodoistProjectLinkStatus;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
@@ -31,7 +32,7 @@ use Illuminate\Support\Carbon;
  * @property string $target_kind
  * @property int|null $project_id
  * @property string $sync_mode
- * @property string $status
+ * @property TodoistProjectLinkStatus $status
  * @property Carbon|null $last_run_at
  * @property array<string, int>|null $last_run_counters
  */
@@ -52,12 +53,6 @@ class TodoistProjectLink extends Model implements TaskSyncLink {
 
     public const MODE_BIDIRECTIONAL = 'bidirectional';
 
-    public const STATUS_DRAFT = 'draft';
-
-    public const STATUS_ACTIVE = 'active';
-
-    public const STATUS_PAUSED = 'paused';
-
     protected $fillable = [
         'organization_id',
         'todoist_project_id',
@@ -74,6 +69,7 @@ class TodoistProjectLink extends Model implements TaskSyncLink {
     protected $casts = [
         'last_run_at' => 'datetime',
         'last_run_counters' => 'array',
+        'status' => TodoistProjectLinkStatus::class,
     ];
 
     /** @return BelongsTo<Project, $this> */

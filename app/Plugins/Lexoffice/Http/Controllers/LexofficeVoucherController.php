@@ -17,12 +17,14 @@ use App\Models\Customer\Customer;
 use App\Models\Platform\User;
 use App\Models\Supplier\Supplier;
 use App\Plugins\Lexoffice\Jobs\SyncVouchersJob;
-use App\Plugins\Lexoffice\{LexofficeConfig, LexofficeDunningService, LexofficeVoucherFileService, LexofficeVoucherSync};
+use App\Plugins\Lexoffice\LexofficeConfig;
 use App\Plugins\Lexoffice\Models\LexofficeVoucher;
+use App\Plugins\Lexoffice\Services\{LexofficeDunningService, LexofficeVoucherFileService, LexofficeVoucherSync};
 use App\Plugins\Lexoffice\Services\Retainer\LexofficeRetainerVouchers;
 use App\Support\ErrorText;
+use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\{Auth, Cache};
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
@@ -30,14 +32,14 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 /**
  * Zentrale Übersicht der lokal gecachten Lexoffice-Belege (voucherlist).
  *
- * Nur lesend; der Pull-Sync ({@see \App\Plugins\Lexoffice\LexofficeVoucherSync})
+ * Nur lesend; der Pull-Sync ({@see \App\Plugins\Lexoffice\Services\LexofficeVoucherSync})
  * über `php artisan lexoffice:sync-vouchers` hält den Cache aktuell. Belege je
  * Kontakt sind zusätzlich auf der jeweiligen Kunden-/Lieferanten-Detailseite.
  */
 class LexofficeVoucherController extends Controller {
     /**
      * Stößt den Pull-Sync der Lexoffice-Belege für die aktuelle Organisation an
-     * ({@see \App\Plugins\Lexoffice\LexofficeVoucherSync}). Manueller Gegenpart
+     * ({@see \App\Plugins\Lexoffice\Services\LexofficeVoucherSync}). Manueller Gegenpart
      * zum geplanten `lexoffice:sync-vouchers`.
      */
     /** Die eigene Belegliste ist im Belegfluss aufgegangen (MVP-549): Herkunft als Filter. */
@@ -94,19 +96,26 @@ class LexofficeVoucherController extends Controller {
         }
 
         try {
-            $result = (new LexofficeVoucherSync($config['api_key'], $config['base_url']))->syncFor($owner);
+            $result = Cache::lock(LexofficeConfig::apiLockKey((int) $owner->organization_id), 1800)
+                ->block(LexofficeConfig::API_LOCK_WAIT_SHORT, static function () use ($config, $owner, $user): array {
+                    $result = (new LexofficeVoucherSync($config['api_key'], $config['base_url'], $config['request_interval']))->syncFor($owner);
 
-            // Retainer-Zahlstatus (Feature 098) mitziehen — sonst holt der
-            // Knopf zwar die Belege, der Leistungssaldo bliebe aber bis zum
-            // stündlichen `lexoffice:sync-vouchers` unverändert.
-            if ($owner instanceof Customer && $user->organization !== null) {
-                app(LexofficeRetainerVouchers::class)->reconcile($user->organization);
-            }
+                    // Retainer-Zahlstatus (Feature 098) mitziehen — sonst holt der
+                    // Knopf zwar die Belege, der Leistungssaldo bliebe aber bis zum
+                    // stündlichen `lexoffice:sync-vouchers` unverändert.
+                    if ($owner instanceof Customer && $user->organization !== null) {
+                        app(LexofficeRetainerVouchers::class)->reconcile($user->organization);
+                    }
+
+                    return $result;
+                });
 
             return back()->with('success', __('Belege synchronisiert: :created neu, :updated aktualisiert.', [
                 'created' => $result['created'],
                 'updated' => $result['updated'],
             ]));
+        } catch (LockTimeoutException) {
+            return back()->with('error', __('Lexoffice wird gerade von einem anderen Lauf abgeglichen. Bitte versuchen Sie es in einigen Minuten erneut.'));
         } catch (\Throwable $e) {
             return back()->with('error', __('Sync fehlgeschlagen: :msg', ['msg' => ErrorText::for($e)]));
         }
@@ -156,7 +165,7 @@ class LexofficeVoucherController extends Controller {
         abort_unless($voucher->organization_id === $user->organization_id, 403);
 
         $config = LexofficeConfig::resolve($user->organization_id);
-        $service = new LexofficeVoucherFileService($config['api_key'], $config['base_url']);
+        $service = new LexofficeVoucherFileService($config['api_key'], $config['base_url'], $config['request_interval']);
 
         // MVP-690 (G3): materialisierte Belegbilder zuerst — nach dem
         // Buchhaltungswechsel gibt es keine Live-API mehr.

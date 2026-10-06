@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Mcp;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Customer\Customer;
 use App\Models\Diary\DiaryEntry;
 use App\Models\Invoicing\Invoice;
@@ -106,7 +107,7 @@ class McpReadToolsTest extends TestCase {
         Invoice::factory()->create([
             'organization_id' => $this->organization->id,
             'customer_id' => $customer->id,
-            'status' => Invoice::STATUS_ISSUED,
+            'status' => InvoiceStatus::Issued,
             'number' => 'RE-2026-0042',
             'issued_on' => now()->subDays(40),
             'due_on' => now()->subDays(10),

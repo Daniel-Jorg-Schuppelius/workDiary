@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Mail;
 
+use App\Enums\Calendar\AppointmentRequestStatus;
 use App\Models\Calendar\AppointmentRequest;
 use App\Services\Event\IcsFeedService;
 use App\Support\Tz;
@@ -32,7 +33,7 @@ class AppointmentDecisionMail extends Mailable {
     public function __construct(public readonly AppointmentRequest $request) {}
 
     public function envelope(): Envelope {
-        $confirmed = $this->request->status === AppointmentRequest::STATUS_CONFIRMED;
+        $confirmed = $this->request->status === AppointmentRequestStatus::Confirmed;
 
         return new Envelope(subject: $confirmed
             ? (string) __('Terminbestätigung: :service am :date', [
@@ -48,7 +49,7 @@ class AppointmentDecisionMail extends Mailable {
 
     /** @return list<Attachment> */
     public function attachments(): array {
-        if ($this->request->status !== AppointmentRequest::STATUS_CONFIRMED) {
+        if ($this->request->status !== AppointmentRequestStatus::Confirmed) {
             return [];
         }
 

@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\AssetFinance;
 
+use App\Enums\AssetFinance\AssetFinanceRateScheduleStatus;
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
 use App\Models\Invoicing\IncomingEInvoice;
 use Illuminate\Database\Eloquent\{Builder, Model};
@@ -26,13 +27,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $asset_finance_contract_id
  * @property \Illuminate\Support\Carbon $due_on
  * @property numeric-string $amount
- * @property string $status
+ * @property AssetFinanceRateScheduleStatus $status
  */
 class AssetFinanceRateSchedule extends Model {
     use BelongsToOrganization;
     use HasSqid;
-
-    public const STATUSES = ['planned', 'paid', 'overdue'];
 
     protected $fillable = [
         'organization_id', 'asset_finance_contract_id', 'due_on', 'amount',
@@ -43,12 +42,13 @@ class AssetFinanceRateSchedule extends Model {
     protected $casts = [
         'due_on' => 'date',
         'amount' => 'decimal:2',
+        'status' => AssetFinanceRateScheduleStatus::class,
         'paid_at' => 'datetime',
     ];
 
     /** @param Builder<self> $query */
     public function scopePlanned(Builder $query): void {
-        $query->where('status', 'planned');
+        $query->where('status', AssetFinanceRateScheduleStatus::Planned);
     }
 
     /** @return BelongsTo<AssetFinanceContract, $this> */

@@ -99,10 +99,10 @@
                                     <div class="text-muted mb-1">{{ __('Enthaltene Auftragsarten') }}</div>
                                     <div class="flex flex-wrap gap-1">
                                         @foreach ($profile['entry_types'] as $entryType)
-                                            <span class="badge badge-ghost badge-sm">{{ $entryType }}</span>
+                                            <x-status-badge>{{ $entryType }}</x-status-badge>
                                         @endforeach
                                         @if ($profile['entry_type_count'] > count($profile['entry_types']))
-                                            <span class="badge badge-sm">+{{ $profile['entry_type_count'] - count($profile['entry_types']) }}</span>
+                                            <x-status-badge tone="plain">+{{ $profile['entry_type_count'] - count($profile['entry_types']) }}</x-status-badge>
                                         @endif
                                     </div>
                                 </div>

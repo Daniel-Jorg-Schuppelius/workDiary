@@ -14,7 +14,7 @@
 @section('content')
 <x-page-shell>
     @if (session('acceptance_url'))
-        <div class="alert alert-info">
+        <div role="status" class="alert alert-info">
             <x-icon name="link" />
             <div class="min-w-0">
                 <div class="font-bold">{{ __('Annahme-Link für den Kunden (wird nur EINMAL angezeigt):') }}</div>
@@ -25,14 +25,14 @@
     @endif
 
     @if ($quote->isExpired())
-        <div class="alert alert-warning text-sm">
+        <div role="alert" class="alert alert-warning text-sm">
             <x-icon name="timer_off" />
             {{ __('Die Bindefrist (:date) ist abgelaufen.', ['date' => optional($quote->valid_until)->fdate()]) }}
         </div>
     @endif
 
     <x-slot:toolbar>
-        <x-page-toolbar :title="__('Angebot') . ' ' . $quote->number . ' · V' . $quote->version" :badge="__('values.' . $quote->status)" badge-tone="outline">
+        <x-page-toolbar :title="__('Angebot') . ' ' . $quote->number . ' · V' . $quote->version" :badge="$quote->status->label()" badge-tone="outline">
             <div class="text-sm text-base-content/70">{{ $quote->customer->name }}</div>
             @if ($quote->valid_until)
                 <div class="text-sm text-base-content/70">{{ __('Bindefrist: :date', ['date' => $quote->valid_until->fdate()]) }}</div>
@@ -43,13 +43,13 @@
                             :href="route('quotes.pdf', $quote)"
                             show-label>{{ __('PDF') }}</x-icon-btn>
                 {{-- Feature 128 (MVP-692): PDF-Mailversand — getrennt vom Annahme-Token-Flow („Versenden"). --}}
-                @if ($quote->status !== 'draft')
+                @if ($quote->status !== \App\Enums\Sales\QuoteStatus::Draft)
                     <x-icon-btn icon="mail" tone="ghost" size="sm"
                                 data-entry-modal-trigger
                                 :href="route('quotes.mail.form', $quote)"
                                 show-label>{{ __('Per E-Mail senden') }}</x-icon-btn>
                 @endif
-                @if (in_array($quote->status, ['accepted', 'partially_accepted'], true))
+                @if ($quote->status->isWon())
                     <x-action-menu icon="assignment_turned_in" :label="__('Auftragsbestätigung')">
                         <x-icon-btn icon="picture_as_pdf" size="sm"
                                     :href="route('quotes.order-confirmation', $quote)"
@@ -74,7 +74,7 @@
                         <x-icon-btn icon="send" tone="primary" size="sm" type="submit" placement="bar" show-label>{{ __('Versenden') }}</x-icon-btn>
                     </x-action-form>
                 @endcan
-                @if (in_array($quote->status, ['sent', 'rejected', 'expired'], true))
+                @if ($quote->status->isVersionable())
                     @can('decide', $quote)
                         <x-action-form :action="route('quotes.new-version', $quote)">
                             <x-icon-btn icon="difference" tone="info" size="sm" type="submit" placement="menu" show-label>{{ __('Neue Version') }}</x-icon-btn>
@@ -109,7 +109,7 @@
                 <span>{{ __('Vorherige Version:') }} <a class="link" href="{{ route('quotes.show', $previousVersion) }}">V{{ $previousVersion->version }}</a></span>
             @endif
             @foreach ($newerVersions as $newer)
-                <span>{{ __('Neuere Version:') }} <a class="link" href="{{ route('quotes.show', $newer) }}">V{{ $newer->version }} ({{ __('values.' . $newer->status) }})</a></span>
+                <span>{{ __('Neuere Version:') }} <a class="link" href="{{ route('quotes.show', $newer) }}">V{{ $newer->version }} ({{ $newer->status->label() }})</a></span>
             @endforeach
             @foreach ($invoices as $inv)
                 <span>{{ __('Rechnung:') }} <a class="link" href="{{ route('invoices.show', $inv) }}">{{ $inv->number }}</a></span>
@@ -120,7 +120,7 @@
     {{-- KI-Leistungstexte (Feature 084, MVP-405): Vorschläge nur im Entwurf. --}}
     @php
         $aiViewData = app(\App\Services\Ai\Contracts\SuggestionView::class);
-        $aiDraft = $quote->status === 'draft' && auth()->user()?->can('update', $quote);
+        $aiDraft = $quote->status === \App\Enums\Sales\QuoteStatus::Draft && auth()->user()?->can('update', $quote);
         $aiSuggestEnabled = $aiDraft && $aiViewData->capabilityUsable(\App\Services\Ai\Contracts\ItemTextSuggester::CAPABILITY_QUOTE_ITEM);
         $aiSuggestions = $aiSuggestEnabled
             ? $aiViewData->openSuggestionsFor((new \App\Models\Sales\QuoteItem)->getMorphClass(), $quote->items, \App\Services\Ai\Contracts\ItemTextSuggester::CAPABILITY_QUOTE_ITEM)
@@ -158,7 +158,7 @@
                     <x-icon-btn icon="notes" size="sm" data-entry-modal-trigger
                                 :href="route('quotes.items.create', [$quote, 'kind' => 'text'])"
                                 show-label>{{ __('invoicing.line_kind.add_text') }}</x-icon-btn>
-                    @if ($quote->status === 'draft')
+                    @if ($quote->status === \App\Enums\Sales\QuoteStatus::Draft)
                         {{-- MVP-1055: Zuschlag verteilen --}}
                         <x-icon-btn icon="percent" size="sm" data-entry-modal-trigger
                                     :href="route('quotes.markup.form', $quote)"
@@ -233,7 +233,7 @@
                     @if (! $kind->isPriced())
                         <td colspan="{{ 5 + $decidedCols }}" class="{{ $kind === \App\Enums\Billing\DocumentLineKind::Title ? 'font-semibold' : 'italic text-base-content/80 whitespace-pre-line' }}">{{ $item->description }}</td>
                     @else
-                    <td>{{ $item->description }}@if ($item->article) <span class="badge badge-ghost badge-xs" title="{{ __('Artikel') }}">{{ $item->article->number ?: $item->article->name }}</span>@endif</td>
+                    <td>{{ $item->description }}@if ($item->article) <x-status-badge size="xs" title="{{ __('Artikel') }}">{{ $item->article->number ?: $item->article->name }}</x-status-badge>@endif</td>
                     <td class="text-right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $item->quantity, 2, withThousandsSeparator: true) }} {{ $item->unit }}</td>
                     <td class="text-right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($item->unit_price?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} EUR</td>
                     <td class="text-right">{{ $item->tax_rate !== null ? rtrim(rtrim($item->tax_rate?->getNumericValue() ?? '0', '0'), '.') : '—' }}</td>
@@ -328,7 +328,7 @@
     @endif
 
     {{-- Interne Entscheidung dokumentieren (MVP-170): Annahme/Teilannahme/Ablehnung ohne Portal --}}
-    @if ($quote->status === 'sent')
+    @if ($quote->status === \App\Enums\Sales\QuoteStatus::Sent)
         @can('decide', $quote)
             <x-card :title="__('Entscheidung dokumentieren (telefonisch/schriftlich erhalten)')">
                 <form method="POST" action="{{ route('quotes.decide', $quote) }}" class="space-y-3">
@@ -349,8 +349,8 @@
                     </div>
                     <input aria-label="{{ __('Grund (bei Ablehnung)') }}" name="reason" maxlength="1000" class="input input-sm input-bordered w-full" placeholder="{{ __('Grund (bei Ablehnung)') }}">
                     <div class="flex gap-2">
-                        <button type="submit" name="decision" value="accept" class="btn btn-primary btn-sm">{{ __('Annahme dokumentieren') }}</button>
-                        <button type="submit" name="decision" value="reject" class="btn btn-outline btn-sm">{{ __('Ablehnung dokumentieren') }}</button>
+                        <x-button type="submit" name="decision" value="accept">{{ __('Annahme dokumentieren') }}</x-button>
+                        <x-button type="submit" tone="outline" name="decision" value="reject">{{ __('Ablehnung dokumentieren') }}</x-button>
                     </div>
                     <p class="text-xs text-muted">{{ __('Die Auswahl der Positionen bestimmt Voll- oder Teilannahme; der Stand wird eingefroren (kein Rückfluss).') }}</p>
                 </form>

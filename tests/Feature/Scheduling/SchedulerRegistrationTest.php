@@ -84,6 +84,8 @@ class SchedulerRegistrationTest extends TestCase {
         // Neu mit MVP-795: Quarantäne-Freigabe der Bewerbungsunterlagen
         // (Vollscan 2026-09-15, Befund P6-46).
         'recruiting:scan-uploads' => ['*/15 * * * *', true, true],
+        // Neu 2026-10-05: abgelaufene Stellenanzeigen auf „abgelaufen“ setzen.
+        'recruiting:expire-postings' => ['50 2 * * *', true, true],
         'zammad:sync' => ['*/15 * * * *', true, true],
         'github:sync' => ['0 * * * *', true, true],
         'gitlab:sync' => ['0 * * * *', true, true],

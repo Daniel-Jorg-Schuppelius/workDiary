@@ -45,7 +45,7 @@
         <x-card>
             <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Nach Domäne') }}</h3>
             @if (empty($by_domain))
-                <p class="text-sm text-muted">{{ __('Keine Lücken im gewählten Zeitraum.') }}</p>
+                <x-empty-state icon="check_circle" :title="__('Keine Lücken im gewählten Zeitraum.')" compact />
             @else
                 <x-table table-sort="client" bare>
                     <x-slot:head>
@@ -64,11 +64,11 @@
         <x-card>
             <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Nach Phase') }}</h3>
             @if (empty($by_phase))
-                <p class="text-sm text-muted">{{ __('Keine Lücken im gewählten Zeitraum.') }}</p>
+                <x-empty-state icon="check_circle" :title="__('Keine Lücken im gewählten Zeitraum.')" compact />
             @else
                 <div class="flex flex-wrap gap-2">
                     @foreach ($by_phase as $phase => $count)
-                        <span class="badge badge-outline">{{ $phase }}: {{ $count }}</span>
+                        <x-status-badge tone="plain" size="md" outline>{{ $phase }}: {{ $count }}</x-status-badge>
                     @endforeach
                 </div>
             @endif
@@ -97,11 +97,7 @@
                         <td>
                             <div class="flex flex-wrap gap-1">
                                 @foreach ($row['gaps'] as $gap)
-                                    <span @class([
-                                        'badge badge-sm',
-                                        'badge-error' => $gap['severity'] === 'hard',
-                                        'badge-warning' => $gap['severity'] !== 'hard',
-                                    ])>{{ $gap['label'] }} · {{ $gap['phase'] }}</span>
+                                    <x-status-badge :tone="$gap['severity'] === 'hard' ? 'error' : 'warning'">{{ $gap['label'] }} · {{ $gap['phase'] }}</x-status-badge>
                                 @endforeach
                             </div>
                         </td>

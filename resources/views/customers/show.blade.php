@@ -279,7 +279,7 @@
         {{-- Fremdkunden (Endkunden dieser Firma) --}}
         <div x-show="isTab('foreign')" x-cloak>
             @if ($foreignCustomers->isEmpty())
-                <p class="text-sm text-muted">{{ __('Keine Fremdkunden. Endkunden dieser Firma hier erfassen, um Zeiten/Abrechnung pro Endkunde zu trennen.') }}</p>
+                <x-empty-state icon="groups" :message="__('Keine Fremdkunden. Endkunden dieser Firma hier erfassen, um Zeiten/Abrechnung pro Endkunde zu trennen.')" compact />
             @else
                 <ul class="divide-y divide-base-200">
                     @foreach ($topForeign as $fc)
@@ -445,8 +445,8 @@
     {{-- Portal-Sichtbarkeit (MVP-511) — nur mit customerPortal.visibility.manage. --}}
     @include('customers._portal_visibility_panel', ['customer' => $customer])
 
-    {{-- Sonderkonditionen & Abrechnungskonto (Feature 098) — nur mit update-Recht. --}}
-    @can('update', $customer)
+    {{-- Sonderkonditionen & Abrechnungskonto (Feature 098) — nur mit Abrechnungsrolle. --}}
+    @can('manageBilling', $customer)
         @include('customers._billing_panel')
     @endcan
 

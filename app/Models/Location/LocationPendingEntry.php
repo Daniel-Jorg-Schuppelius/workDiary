@@ -10,6 +10,7 @@
 
 namespace App\Models\Location;
 
+use App\Enums\Location\LocationPendingEntryStatus;
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
@@ -34,7 +35,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon $ended_at
  * @property int $minutes
  * @property string|null $description
- * @property string $status
+ * @property LocationPendingEntryStatus $status
  * @property int|null $time_entry_id
  * @property int|null $resolved_by
  * @property Carbon|null $resolved_at
@@ -42,12 +43,6 @@ use Illuminate\Support\Carbon;
 class LocationPendingEntry extends Model {
     use BelongsToOrganization;
     use HasSqid;
-
-    public const STATUS_OPEN = 'open';
-
-    public const STATUS_IMPORTED = 'imported';
-
-    public const STATUS_DISMISSED = 'dismissed';
 
     protected $fillable = [
         'organization_id',
@@ -72,11 +67,12 @@ class LocationPendingEntry extends Model {
         'ended_at' => 'datetime',
         'minutes' => 'integer',
         'resolved_at' => 'datetime',
+        'status' => LocationPendingEntryStatus::class,
     ];
 
     /** @param Builder<LocationPendingEntry> $query */
     public function scopeOpen(Builder $query): void {
-        $query->where('status', self::STATUS_OPEN);
+        $query->where('status', LocationPendingEntryStatus::Open);
     }
 
     /** @return BelongsTo<LocationVisit, $this> */

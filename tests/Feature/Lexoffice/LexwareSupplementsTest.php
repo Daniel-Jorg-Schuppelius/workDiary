@@ -12,14 +12,16 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Lexoffice;
 
+use App\Enums\Invoicing\{InvoiceScheduleStatus, InvoiceStatus};
 use App\Enums\User\Permission;
 use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
 use App\Models\Invoicing\{Invoice, InvoiceSchedule};
 use App\Models\Platform\{Organization, User};
 use App\Plugins\Lexoffice\Enums\{LexofficeHandoverStatus, LexwareCoverage, LexwareFeature, LexwarePlan};
-use App\Plugins\Lexoffice\{LexofficeInvoiceService, LexofficePlugin};
+use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\Lexoffice\Models\LexofficeInvoiceHandover;
+use App\Plugins\Lexoffice\Services\LexofficeInvoiceService;
 use App\Plugins\Lexoffice\Tariff\{FeatureAvailability, LexwareFeatureResolver, LexwarePlanMatrix};
 use App\Settings\SettingScope;
 use App\Support\Setting;
@@ -134,9 +136,9 @@ final class LexwareSupplementsTest extends TestCase {
         Setting::set('lexware.local_features', ['invoices', 'recurring_invoices'], SettingScope::Organization, $this->organization, $this->admin->id);
         app()->instance('currentOrganization', $this->organization->fresh());
 
-        $issued = $this->makeInvoice('R2026-0100', Invoice::STATUS_ISSUED);
-        $draft = $this->makeInvoice('R2026-0101', Invoice::STATUS_DRAFT);
-        $published = $this->makeInvoice('R2026-0102', Invoice::STATUS_ISSUED);
+        $issued = $this->makeInvoice('R2026-0100', InvoiceStatus::Issued);
+        $draft = $this->makeInvoice('R2026-0101', InvoiceStatus::Draft);
+        $published = $this->makeInvoice('R2026-0102', InvoiceStatus::Issued);
         ExternalReference::query()->create([
             'organization_id' => $this->organization->id,
             'plugin_id' => LexofficePlugin::ID,
@@ -189,7 +191,7 @@ final class LexwareSupplementsTest extends TestCase {
             'interval_count' => 1,
             'billing_period_mode' => 'previous',
             'next_run_on' => now()->addMonth()->toDateString(),
-            'status' => 'active',
+            'status' => InvoiceScheduleStatus::Active,
             'created_by' => $this->admin->id,
         ]);
         \App\Models\Invoicing\InvoiceScheduleRun::query()->create([
@@ -209,7 +211,7 @@ final class LexwareSupplementsTest extends TestCase {
     public function test_rights_and_tenant_boundaries(): void {
         Setting::set('lexware.local_features', ['invoices'], SettingScope::Organization, $this->organization, $this->admin->id);
         app()->instance('currentOrganization', $this->organization->fresh());
-        $issued = $this->makeInvoice('R2026-0200', Invoice::STATUS_ISSUED);
+        $issued = $this->makeInvoice('R2026-0200', InvoiceStatus::Issued);
 
         // Factories verstellen den Spatie-Team-Kontext — vor der Rechtevergabe zurücksetzen.
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
@@ -229,14 +231,14 @@ final class LexwareSupplementsTest extends TestCase {
         $this->assertDatabaseMissing('lexoffice_invoice_handovers', ['invoice_id' => $issued->id]);
     }
 
-    private function makeInvoice(string $number, string $status): Invoice {
+    private function makeInvoice(string $number, InvoiceStatus|string $status): Invoice {
         $invoice = Invoice::create([
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
             'number' => $number,
             'status' => $status,
-            'issued_on' => $status === Invoice::STATUS_DRAFT ? null : now()->toDateString(),
-            'due_on' => $status === Invoice::STATUS_DRAFT ? null : now()->addDays(14)->toDateString(),
+            'issued_on' => $status === InvoiceStatus::Draft ? null : now()->toDateString(),
+            'due_on' => $status === InvoiceStatus::Draft ? null : now()->addDays(14)->toDateString(),
             'currency' => 'EUR',
             'tax_rate' => '19.00',
             'created_by' => $this->admin->id,

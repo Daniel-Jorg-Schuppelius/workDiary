@@ -63,7 +63,7 @@
                   data-confirm-message="{{ $task->subTasks->isNotEmpty() ? __('Sub-Aufgaben werden ebenfalls gelöscht.') : '' }}"
                   data-confirm-label="{{ __('Löschen') }}">
                 @csrf @method('DELETE')
-                <x-button tone="ghost" size="xs" class="text-error">{{ __('Del') }}</x-button>
+                <x-button type="submit" tone="ghost" size="xs" class="text-error">{{ __('Del') }}</x-button>
             </form>
         @endcan
     </div>

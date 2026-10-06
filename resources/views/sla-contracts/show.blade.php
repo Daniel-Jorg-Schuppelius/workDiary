@@ -146,7 +146,7 @@
                             @endif
                         </td>
                         <td class="text-base-content/70">{{ $plan->asset?->name ?? '—' }}</td>
-                        <td class="tabular-nums">{{ $plan->next_due_on?->format('d.m.Y') ?? '—' }}</td>
+                        <td class="tabular-nums">{{ $plan->next_due_on?->fdate() ?? '—' }}</td>
                         <td>{{ $plan->due_action->label() }}</td>
                     </tr>
                 @endforeach

@@ -13,8 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Sustainability;
 
 use App\Models\Platform\Organization;
-use App\Support\OrganizationContext;
-use CommonToolkit\Helper\FileSystem\File;
+use App\Support\{BranchProfileFiles, OrganizationContext};
 
 /**
  * Branchenvergleich der Emissionen (MVP-949) als anonymes Plattform-Aggregat:
@@ -56,12 +55,10 @@ final class BranchEmissionBenchmarkService {
 
     /** Bezeichnung des mitgelieferten Profils, sonst der Code. */
     private function branchLabel(string $code): string {
-        $file = database_path('data/branchprofiles/' . basename($code) . '.php');
-        if (! File::isFile($file)) {
+        $profile = BranchProfileFiles::profile($code);
+        if ($profile === null) {
             return $code;
         }
-        /** @var array<string, mixed> $profile */
-        $profile = require $file;
 
         return (string) ($profile['label'] ?? $code);
     }

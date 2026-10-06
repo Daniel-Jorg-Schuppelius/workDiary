@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Claims;
 
-use App\Enums\Claims\{ClaimKind, ClaimStatus, ClaimVerdict};
+use App\Enums\Claims\{ClaimAssessmentStatus, ClaimKind, ClaimStatus, ClaimVerdict};
 use App\Enums\Notification\NotificationEvent;
 use App\Enums\Numbering\NumberScope;
 use App\Models\Claims\{ClaimAssessment, ClaimCase, ClaimDecision};
@@ -104,7 +104,7 @@ class ClaimCaseService implements ClaimIntake {
      */
     public function assess(ClaimCase $case, User $assessor, ClaimKind $kind, ClaimVerdict $verdict, string $justification): ClaimAssessment {
         return DB::transaction(function () use ($case, $assessor, $kind, $verdict, $justification): ClaimAssessment {
-            $case->assessments()->where('status', 'active')->update(['status' => 'superseded']);
+            $case->assessments()->where('status', ClaimAssessmentStatus::Active)->update(['status' => ClaimAssessmentStatus::Superseded]);
 
             $serialShipped = null;
             $serial = trim((string) ($case->serial_no ?? ''));
@@ -128,7 +128,7 @@ class ClaimCaseService implements ClaimIntake {
                     'invoice_number' => $case->invoice?->number,
                     'invoice_issued_on' => $case->invoice?->issued_on?->toDateString(),
                 ],
-                'status' => 'active',
+                'status' => ClaimAssessmentStatus::Active,
                 'assessed_by' => $assessor->id,
                 'assessed_at' => now(),
             ]);

@@ -11,6 +11,7 @@
 namespace Tests\Feature\Invoicing;
 
 use App\Enums\Notification\{NotificationChannel, NotificationEvent};
+use App\Enums\Sales\QuoteStatus;
 use App\Models\Communication\CommunicationNote;
 use App\Models\Customer\Customer;
 use App\Models\Notification\{NotificationDispatchLog, NotificationRule};
@@ -56,13 +57,13 @@ class QuoteFollowUpTest extends TestCase {
             'organization_id' => $this->org->id,
             'customer_id' => $this->customer->id,
             'number' => 'A-' . uniqid(),
-            'status' => 'sent',
+            'status' => QuoteStatus::Sent,
             'created_by' => $this->admin->id,
         ], $attributes));
     }
 
     public function test_sending_prefills_the_follow_up_date(): void {
-        $quote = $this->quote(['status' => 'approved']);
+        $quote = $this->quote(['status' => QuoteStatus::Approved]);
 
         app(QuoteService::class)->send($quote, $this->admin);
 
@@ -74,7 +75,7 @@ class QuoteFollowUpTest extends TestCase {
 
     /** Ein bereits gesetzter Termin wird beim Versand nicht überschrieben. */
     public function test_sending_keeps_an_existing_follow_up_date(): void {
-        $quote = $this->quote(['status' => 'approved', 'follow_up_at' => now()->addDays(30)->toDateString()]);
+        $quote = $this->quote(['status' => QuoteStatus::Approved, 'follow_up_at' => now()->addDays(30)->toDateString()]);
 
         app(QuoteService::class)->send($quote, $this->admin);
 
@@ -113,7 +114,7 @@ class QuoteFollowUpTest extends TestCase {
     }
 
     public function test_recording_is_refused_for_drafts(): void {
-        $quote = $this->quote(['status' => 'draft']);
+        $quote = $this->quote(['status' => QuoteStatus::Draft]);
 
         $this->expectException(\RuntimeException::class);
         app(QuoteFollowUpService::class)->record($quote, $this->admin, 'Zu früh.');
@@ -194,5 +195,56 @@ class QuoteFollowUpTest extends TestCase {
             ->assertRedirect();
 
         $this->assertNotNull($quote->refresh()->followed_up_at);
+    }
+
+    /** Termin setzen ohne Gesprächsergebnis: eigener Dialog an jeder Zeile der Arbeitsliste. */
+    public function test_work_list_offers_the_schedule_dialog_and_it_sets_the_date(): void {
+        $quote = $this->quote();
+
+        $this->actingAs($this->admin)->get(route('quotes.follow-ups.index'))
+            ->assertOk()
+            ->assertSee(route('quotes.follow-ups.schedule-dialog', $quote), false);
+
+        $this->actingAs($this->admin)->get(route('quotes.follow-ups.schedule-dialog', $quote))
+            ->assertOk()
+            ->assertSee(route('quotes.follow-ups.schedule', $quote), false)
+            ->assertSee('name="follow_up_at"', false);
+
+        $date = now()->addDays(14)->toDateString();
+        $this->actingAs($this->admin)->from(route('quotes.follow-ups.index'))
+            ->post(route('quotes.follow-ups.schedule', $quote), ['follow_up_at' => $date])
+            ->assertRedirect(route('quotes.follow-ups.index'))
+            ->assertSessionHas('status', __('quotes.follow_up.scheduled'));
+
+        $quote->refresh();
+        $this->assertSame($date, $quote->follow_up_at?->toDateString());
+        $this->assertSame((int) $this->admin->id, (int) $quote->follow_up_user_id);
+    }
+
+    /** Ein neuer Termin öffnet ein abgeschlossenes Nachfassen wieder; Vergangenes wird abgelehnt. */
+    public function test_scheduling_reopens_a_finished_follow_up_and_refuses_past_dates(): void {
+        $quote = $this->quote(['follow_up_at' => now()->subDay()->toDateString()]);
+        app(QuoteFollowUpService::class)->record($quote, $this->admin, 'Kunde bittet um Geduld.');
+        $this->assertNotNull($quote->refresh()->followed_up_at);
+
+        $this->actingAs($this->admin)
+            ->post(route('quotes.follow-ups.schedule', $quote), ['follow_up_at' => now()->subDay()->toDateString()])
+            ->assertSessionHasErrors('follow_up_at');
+
+        $this->actingAs($this->admin)
+            ->post(route('quotes.follow-ups.schedule', $quote), ['follow_up_at' => now()->addDays(7)->toDateString()])
+            ->assertSessionHasNoErrors();
+
+        $this->assertNull($quote->refresh()->followed_up_at);
+    }
+
+    /** Entwürfe lassen sich nicht nachfassen — weder Dialog noch Termin. */
+    public function test_schedule_dialog_is_refused_for_drafts(): void {
+        $quote = $this->quote(['status' => QuoteStatus::Draft]);
+
+        $this->actingAs($this->admin)->get(route('quotes.follow-ups.schedule-dialog', $quote))->assertForbidden();
+        $this->actingAs($this->admin)
+            ->post(route('quotes.follow-ups.schedule', $quote), ['follow_up_at' => now()->addDay()->toDateString()])
+            ->assertForbidden();
     }
 }

@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Onboarding;
 
+use App\Enums\Platform\OnboardingStepState;
 use App\Enums\Protocol\ProtocolStatus;
 use App\Enums\User\UserRole;
 use App\Models\Audit\AuditLog;
@@ -148,7 +149,7 @@ class OnboardingChecklistResolverTest extends TestCase {
             ->where('step_code', 'time.first')
             ->firstOrFail();
 
-        $this->assertSame('skipped', $row->state);
+        $this->assertSame(OnboardingStepState::Skipped, $row->state);
         $this->assertSame('Wird später erledigt', $row->skipped_reason);
     }
 
@@ -171,7 +172,7 @@ class OnboardingChecklistResolverTest extends TestCase {
 
         $this->assertIsArray($branchProfileStep);
         $this->assertTrue($branchProfileStep['done']);
-        $this->assertSame('done', $branchProfileStep['state']);
+        $this->assertSame(OnboardingStepState::Done, $branchProfileStep['state']);
     }
 
     public function test_resolver_accepts_operational_roles_beyond_basic_user_role(): void {
@@ -185,7 +186,7 @@ class OnboardingChecklistResolverTest extends TestCase {
 
         $this->assertIsArray($rolesStep);
         $this->assertTrue($rolesStep['done']);
-        $this->assertSame('done', $rolesStep['state']);
+        $this->assertSame(OnboardingStepState::Done, $rolesStep['state']);
     }
 
     public function test_resolver_accepts_operational_role_assigned_through_group(): void {
@@ -215,7 +216,7 @@ class OnboardingChecklistResolverTest extends TestCase {
 
         $this->assertIsArray($rolesStep);
         $this->assertTrue($rolesStep['done']);
-        $this->assertSame('done', $rolesStep['state']);
+        $this->assertSame(OnboardingStepState::Done, $rolesStep['state']);
     }
 
     public function test_resolver_writes_step_completed_audit_only_on_transition_to_done(): void {

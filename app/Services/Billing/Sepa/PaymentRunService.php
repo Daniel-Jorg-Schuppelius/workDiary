@@ -14,7 +14,8 @@ namespace App\Services\Billing\Sepa;
 
 use App\Enums\Document\DocumentType;
 use App\Enums\Finance\{PaymentRunKind, PaymentRunStatus};
-use App\Enums\Invoicing\RetentionStatus;
+use App\Enums\Invoicing\IncomingEInvoiceStatus;
+use App\Enums\Invoicing\{InvoiceStatus, RetentionStatus};
 use App\Models\Finance\{BankAccount, PaymentRun, PaymentRunItem, SepaMandate};
 use App\Models\Finance\IncomingInvoiceRetention;
 use App\Models\Invoicing\{IncomingEInvoice, Invoice};
@@ -71,9 +72,13 @@ class PaymentRunService {
                 'created_by' => $actor->id,
             ]);
 
+            // Nur zur Zahlung Freigegebenes, und unter Zeilensperre: zwei gleichzeitige Läufe nähmen sonst
+            // dieselbe Rechnung auf (Sicherheitsaudit 2026-10-04, li-2). Der Statusfilter stand nur in der Vorschlagsliste.
             $invoices = IncomingEInvoice::query()
                 ->whereIn('id', $incomingIds)
+                ->where('status', IncomingEInvoiceStatus::PaymentReleased)
                 ->whereNull('paid_in_run_id')
+                ->lockForUpdate()
                 ->get();
 
             foreach ($invoices as $invoice) {
@@ -127,7 +132,7 @@ class PaymentRunService {
         }
         if ($invoice !== null && (
             (int) $invoice->customer_id !== (int) $mandate->customer_id
-            || ! in_array($invoice->status, [Invoice::STATUS_ISSUED, Invoice::STATUS_PARTIALLY_PAID], true)
+            || ! in_array($invoice->status, [InvoiceStatus::Issued, InvoiceStatus::PartiallyPaid], true)
         )) {
             throw new RuntimeException((string) __('sepa.error.invoice_not_collectable'));
         }
@@ -197,16 +202,24 @@ class PaymentRunService {
             throw new RuntimeException((string) __('sepa.error.not_draft'));
         }
         $gross = (float) ($item->gross_amount ?? $item->amount);
-        if ($amount <= 0 || $amount > $gross) {
+        // Obergrenze ist der zahlbare Betrag: ein offener Einbehalt bleibt einbehalten und wird später
+        // über seinen eigenen Posten ausgezahlt (Sicherheitsaudit 2026-10-04, li-3).
+        $retained = $item->incomingEInvoice !== null ? (float) $this->proposals->proposalFor($item->incomingEInvoice)['retained'] : 0.0;
+        $max = round($gross - $retained, 2);
+        if ($amount <= 0 || $amount > $max) {
             throw new RuntimeException((string) __('sepa.error.invalid_amount'));
         }
-        if ($amount < $gross && trim((string) $reason) === '') {
+        $reason = trim((string) $reason);
+        if ($reason === '' && $retained > 0 && abs($amount - $max) < 0.005) {
+            $reason = (string) __('sepa.retention.deduction');
+        }
+        if ($amount < $gross && $reason === '') {
             throw new RuntimeException((string) __('sepa.error.reason_required'));
         }
 
         $item->forceFill([
             'amount' => round($amount, 2),
-            'deduction_reason' => $amount < $gross ? trim((string) $reason) : null,
+            'deduction_reason' => $amount < $gross ? $reason : null,
         ])->save();
 
         $this->recalculate($run->refresh());
@@ -350,6 +363,7 @@ class PaymentRunService {
             ->where('status', RetentionStatus::Released->value)
             ->whereNull('paid_in_run_id')
             ->with('incomingEInvoice')
+            ->lockForUpdate()
             ->get();
         foreach ($retentions as $retention) {
             $invoice = $retention->incomingEInvoice;

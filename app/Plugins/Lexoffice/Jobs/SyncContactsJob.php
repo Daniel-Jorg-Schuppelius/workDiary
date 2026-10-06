@@ -11,7 +11,10 @@
 namespace App\Plugins\Lexoffice\Jobs;
 
 use App\Models\Platform\Organization;
-use App\Plugins\Lexoffice\{LexofficeConfig, LexofficeContactSync, LexofficeMatchPolicy, LexofficeNumberAuthority};
+use App\Plugins\Lexoffice\Enums\LexofficeMatchPolicy;
+use App\Plugins\Lexoffice\Jobs\Concerns\RunsUnderApiLock;
+use App\Plugins\Lexoffice\LexofficeConfig;
+use App\Plugins\Lexoffice\Services\{LexofficeContactSync, LexofficeNumberAuthority};
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\{ShouldBeUnique, ShouldQueue};
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -28,9 +31,10 @@ class SyncContactsJob implements ShouldBeUnique, ShouldQueue {
     use Dispatchable;
     use InteractsWithQueue;
     use Queueable;
+    use RunsUnderApiLock;
     use SerializesModels;
 
-    public int $tries = 1;
+    public int $maxExceptions = 1;
 
     public function __construct(public readonly int $organizationId) {}
 
@@ -40,7 +44,8 @@ class SyncContactsJob implements ShouldBeUnique, ShouldQueue {
 
     public function handle(LexofficeContactSync $sync, LexofficeNumberAuthority $numberAuthority): void {
         $config = LexofficeConfig::resolve($this->organizationId);
-        if (! is_string($config['api_key']) || $config['api_key'] === '') {
+        // Abgeschaltet steht auch der Job — sonst liefe er mit einem Schlüssel aus der Installation weiter (S-28, k2-06).
+        if ($config['enabled'] !== true || ! is_string($config['api_key']) || $config['api_key'] === '') {
             return;
         }
 
@@ -49,18 +54,20 @@ class SyncContactsJob implements ShouldBeUnique, ShouldQueue {
             return;
         }
 
-        $numberAuthority->apply($organization, (bool) $config['number_authority']);
+        $this->underApiLock($this->organizationId, static function () use ($sync, $numberAuthority, $organization, $config): void {
+            $numberAuthority->apply($organization, (bool) $config['number_authority']);
 
-        // Staging hat Vorrang vor create_missing_local (wie im Command) —
-        // Webhook-getriebene Läufe legen nie still lokale Kontakte an.
-        $sync->sync(
-            $organization,
-            LexofficeMatchPolicy::fromSetting((string) $config['match_policy']),
-            $config['api_key'],
-            $config['base_url'],
-            false,
-            'both',
-            true,
-        );
+            // Staging hat Vorrang vor create_missing_local (wie im Command) —
+            // Webhook-getriebene Läufe legen nie still lokale Kontakte an.
+            $sync->sync(
+                $organization,
+                LexofficeMatchPolicy::fromSetting((string) $config['match_policy']),
+                $config['api_key'],
+                $config['base_url'],
+                false,
+                'both',
+                true,
+            );
+        });
     }
 }

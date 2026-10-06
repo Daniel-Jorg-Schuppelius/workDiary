@@ -368,6 +368,8 @@ class ProcedureRunController extends Controller {
         ProcedureApplicabilityResolver $resolver,
     ): RedirectResponse {
         Gate::authorize('start', ProcedureRun::class);
+        // Der Lauf hängt am Auftrag — wer ihn startet, muss den Auftrag sehen dürfen (authz-b-6).
+        Gate::authorize('view', $diary);
         abort_unless($template->organization_id === $diary->organization_id, 404);
 
         /** @var User $actor */

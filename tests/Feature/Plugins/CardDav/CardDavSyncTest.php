@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Plugins\CardDav;
 
+use App\Enums\Integration\IntegrationInboxStatus;
 use App\Models\Customer\Customer;
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use App\Models\Platform\Organization;
@@ -38,6 +39,7 @@ final class CardDavSyncTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
+        config()->set('plugins.carddav.enabled', true);
     }
 
     private function bindGateway(FakeCardDavGateway $gateway): void {
@@ -242,7 +244,7 @@ final class CardDavSyncTest extends TestCase {
         $this->assertSame(1, $second['deleted']);
         $this->assertDatabaseMissing('carddav_cards', ['href' => '/dav/ab/a.vcf']);
         $this->assertSame(
-            IntegrationInboxItem::STATUS_DISMISSED,
+            IntegrationInboxStatus::Dismissed,
             IntegrationInboxItem::query()->firstOrFail()->status,
         );
         // Keine Löschweitergabe an lokale Daten.

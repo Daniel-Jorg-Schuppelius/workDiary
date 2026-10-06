@@ -66,7 +66,7 @@
                     @endif
                 </div>
             @else
-                <div class="alert alert-warning mt-4">
+                <div role="alert" class="alert alert-warning mt-4">
                     <x-icon name="error" />
                     <span>{{ __('inventory.serial.verify.not_found') }}</span>
                 </div>

@@ -12,6 +12,7 @@ namespace Tests\Feature\Plugins\Bhb;
 
 use App\Enums\Finance\BillingMode;
 use App\Enums\Integration\IntegrationOutboxStatus;
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Jobs\Integration\IntegrationOutboxDeliveryJob;
 use App\Models\Customer\Customer;
 use App\Models\Integration\{ExternalReference, IntegrationOutboxEntry};
@@ -70,7 +71,7 @@ class BhbPushTest extends TestCase {
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
             'number' => 'R2030-0001',
-            'status' => Invoice::STATUS_DRAFT,
+            'status' => InvoiceStatus::Draft,
             'currency' => 'EUR',
             'tax_rate' => '19.00',
             'created_by' => $this->accountant->id,
@@ -101,7 +102,7 @@ class BhbPushTest extends TestCase {
         $invoice = $this->draftInvoice();
         $fake = FakePluginHttp::fake($this->stubs());
 
-        $invoice->update(['status' => Invoice::STATUS_ISSUED, 'issued_on' => '2030-04-15']);
+        $invoice->update(['status' => InvoiceStatus::Issued, 'issued_on' => '2030-04-15']);
 
         $entry = IntegrationOutboxEntry::withoutGlobalScopes()->firstOrFail();
         $this->assertSame(BhbOutboxDispatcher::OP_RECEIPT_PUSH, $entry->operation);
@@ -149,7 +150,7 @@ class BhbPushTest extends TestCase {
         $fake = FakePluginHttp::fake([]);
         $invoice = $this->draftInvoice();
 
-        $invoice->update(['status' => Invoice::STATUS_ISSUED]);
+        $invoice->update(['status' => InvoiceStatus::Issued]);
 
         $this->assertSame(0, IntegrationOutboxEntry::withoutGlobalScopes()->count());
         $fake->assertNothingSent();
@@ -162,7 +163,7 @@ class BhbPushTest extends TestCase {
         $fake = FakePluginHttp::fake([]);
         $invoice = $this->draftInvoice();
 
-        $invoice->update(['status' => Invoice::STATUS_ISSUED]);
+        $invoice->update(['status' => InvoiceStatus::Issued]);
 
         $this->assertSame(0, IntegrationOutboxEntry::withoutGlobalScopes()->count());
         $fake->assertNothingSent();
@@ -173,7 +174,7 @@ class BhbPushTest extends TestCase {
 
         // Asynchrones Fenster: Enqueue ohne Zustellung, Referenz existiert schon.
         Queue::fake();
-        $invoice->update(['status' => Invoice::STATUS_ISSUED]);
+        $invoice->update(['status' => InvoiceStatus::Issued]);
         $entry = IntegrationOutboxEntry::withoutGlobalScopes()->firstOrFail();
 
         ExternalReference::create([

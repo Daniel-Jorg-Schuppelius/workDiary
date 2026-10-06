@@ -1,7 +1,7 @@
 ---
 title: "Sustainability & ESG"
 topic: sustainability.overview
-version: 1
+version: 2
 audience: []
 modules:
     - module.sustainability
@@ -29,6 +29,12 @@ alternative comparison puts two assessments side by side.
 **Measures & targets:** the measure register tracks expected impact,
 effort, cost, deadline, evidence and the effectiveness review after
 implementation. Target paths interpolate expected values per year.
+
+**Lists:** the overview shows the ten most recent assessments and
+measures and counts the full set in each case. “Show all” opens a
+complete, sortable list for each. The measure list can be filtered by
+status; this is also where you maintain the status of older measures
+that no longer appear in the overview.
 
 **Report:** KPIs with drilldown, data-quality warnings, CSV export with
 methodology note and a freezable management-review snapshot. The

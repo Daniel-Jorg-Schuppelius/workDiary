@@ -33,7 +33,7 @@ class SupplierQuestionnaireController extends Controller {
 
         return view('suppliers.questionnaires.index', [
             'questionnaires' => SupplierQuestionnaire::query()->withCount('requests')->orderBy('name')->get(),
-            'requests' => SupplierQuestionnaireRequest::query()->with(['supplier', 'questionnaire'])->orderByDesc('id')->limit(50)->get(),
+            'requests' => SupplierQuestionnaireRequest::query()->with(['supplier', 'questionnaire'])->orderByDesc('id')->paginate(25)->withQueryString(),
             'canManage' => Gate::allows(P::SupplierUpdate->value),
         ]);
     }
@@ -54,14 +54,14 @@ class SupplierQuestionnaireController extends Controller {
         Gate::authorize(P::SupplierUpdate->value);
         $this->service->save($this->currentOrganization(), null, $this->validated($request), $this->authUser());
 
-        return redirect()->route('supplier-questionnaires.index')->with('success', __('supplier_questionnaire.flash.saved'));
+        return redirect()->toList('supplier-questionnaires.index')->with('success', __('supplier_questionnaire.flash.saved'));
     }
 
     public function update(Request $request, SupplierQuestionnaire $questionnaire): RedirectResponse {
         Gate::authorize(P::SupplierUpdate->value);
         $this->service->save($this->currentOrganization(), $questionnaire, $this->validated($request), $this->authUser());
 
-        return redirect()->route('supplier-questionnaires.index')->with('success', __('supplier_questionnaire.flash.saved'));
+        return redirect()->toList('supplier-questionnaires.index')->with('success', __('supplier_questionnaire.flash.saved'));
     }
 
     public function sendForm(Supplier $supplier): View {

@@ -110,12 +110,8 @@ class AiRoutingResolver {
             return false;
         }
 
-        $settings = is_array($organization->settings) ? $organization->settings : [];
         foreach ((array) config('ai.cloud_blocked_profiles', []) as $profileCode) {
-            if (($settings['branch_profile_code'] ?? null) === $profileCode) {
-                return false;
-            }
-            if (data_get($settings, 'branch_profile_versions.' . $profileCode) !== null) {
+            if ($organization->hasBranchProfile((string) $profileCode)) {
                 return false;
             }
         }

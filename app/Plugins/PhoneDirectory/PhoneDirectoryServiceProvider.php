@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\PhoneDirectory;
 
+use App\Plugins\PhoneDirectory\Services\PhoneDirectoryResolver;
 use App\Plugins\Support\PluginServiceProviderBase;
 
 /**

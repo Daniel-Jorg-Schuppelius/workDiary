@@ -111,7 +111,7 @@ class TrainingCourseController extends Controller {
         $this->catalog->deleteCourse($course);
 
         return redirect()
-            ->route('training.courses.index')
+            ->toList('training.courses.index')
             ->with('success', __('training.flash.course_deleted'));
     }
 

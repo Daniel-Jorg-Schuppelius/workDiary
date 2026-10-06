@@ -23,7 +23,7 @@
                 <p id="shortcuts-dialog-hint" class="mt-1 text-sm text-muted">{{ __('Übersicht aller Tastenkürzel. Kürzel gelten nicht in Eingabefeldern.') }}</p>
             </div>
             <form method="dialog">
-                <x-icon-btn icon="close" tone="ghost" size="sm" class="btn-square" :label="__('Schließen')" />
+                <x-icon-btn type="submit" icon="close" tone="ghost" size="sm" class="btn-square" :label="__('Schließen')" />
             </form>
         </div>
 

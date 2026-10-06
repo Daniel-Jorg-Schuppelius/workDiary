@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\AccountingMigration;
 
+use App\Enums\Migration\AccountingMigrationItemStatus;
 use App\Enums\Migration\{MigrationDataArea, MigrationProvider};
 use App\Models\Article\Article;
 use App\Models\Customer\Customer;
@@ -77,7 +78,7 @@ class MigrationAnalyzer {
             if (! $local instanceof Model) {
                 // Verwaiste Referenz: das lokale Objekt existiert nicht mehr.
                 $this->upsertItem($run, $area, [
-                    'status' => AccountingMigrationItem::STATUS_CONFLICT,
+                    'status' => AccountingMigrationItemStatus::Conflict,
                     'source_external_id' => $ref->external_id,
                     'dedupe_key' => $area->value . ':' . $ref->external_id,
                     'display_title' => (string) $ref->external_id,
@@ -98,8 +99,8 @@ class MigrationAnalyzer {
                 ->first();
 
             $status = $targetRef !== null
-                ? AccountingMigrationItem::STATUS_MATCHED
-                : AccountingMigrationItem::STATUS_PENDING;
+                ? AccountingMigrationItemStatus::Matched
+                : AccountingMigrationItemStatus::Pending;
 
             $this->upsertItem($run, $area, [
                 'status' => $status,
@@ -112,7 +113,7 @@ class MigrationAnalyzer {
                 'source_snapshot' => (array) ($ref->payload ?? []),
             ]);
 
-            $counters[$status === AccountingMigrationItem::STATUS_MATCHED ? 'matched' : 'pending']++;
+            $counters[$status === AccountingMigrationItemStatus::Matched ? 'matched' : 'pending']++;
         }
 
         return $counters;
@@ -136,7 +137,7 @@ class MigrationAnalyzer {
             }
 
             $this->upsertItem($run, MigrationDataArea::Documents, [
-                'status' => AccountingMigrationItem::STATUS_HISTORIC,
+                'status' => AccountingMigrationItemStatus::Historic,
                 'source_external_id' => $document['external_id'],
                 'dedupe_key' => 'documents:' . $document['external_id'],
                 'display_title' => (string) ($document['number'] ?? $document['external_id']),

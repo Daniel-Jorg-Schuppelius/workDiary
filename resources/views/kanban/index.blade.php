@@ -9,8 +9,7 @@
 @extends('layouts.app')
 @section('title', __('Kanban') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('Kanban'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 @php
@@ -33,7 +32,7 @@
     @include('duties._tab_strip', ['tabs' => $tabs, 'tab' => $activeTab])
 
     @if ($errors->has('lifecycle'))
-        <div class="alert alert-error rounded-2xl px-5 py-3 text-sm shadow-xs">
+        <div role="alert" class="alert alert-error rounded-2xl px-5 py-3 text-sm shadow-xs">
             {{ $errors->first('lifecycle') }}
         </div>
     @endif
@@ -49,22 +48,23 @@
          data-kanban-board>
         @foreach ($columns as $statusCode => $col)
             @php $items = $byStatus->get($statusCode, collect()); @endphp
-            <section class="flex min-h-0 flex-col rounded-box border border-base-300 bg-base-100 shadow-xs"
-                     data-kanban-column data-status="{{ $statusCode }}" data-label="{{ __($col['label']) }}">
+            <x-card as="section" padding="p-0" class="flex min-h-0 flex-col" data-kanban-column
+                    data-status="{{ $statusCode }}" data-label="{{ __($col['label']) }}">
                 <header class="flex items-center justify-between border-b border-base-300 px-3 py-2">
                     <div class="flex items-center gap-2">
                         <span class="wd-week-legend wd-week-entry--{{ $col['tone'] }}"></span>
                         <span class="font-['Space_Grotesk'] font-semibold">{{ __($col['label']) }}</span>
                     </div>
-                    <span class="badge badge-sm" data-kanban-count>{{ $items->count() }}</span>
+                    <x-status-badge tone="plain" data-kanban-count>{{ $items->count() }}</x-status-badge>
                 </header>
                 <div class="flex min-h-0 flex-1 flex-col gap-2 overflow-auto p-2" data-kanban-list>
                     @foreach ($items as $entry)
                         @include('kanban._card', ['entry' => $entry])
                     @endforeach
+                    {{-- raw-markup-ok: Board-Spalte (Ablagefläche): einzeiliger Platzhalter in schmaler Spalte --}}
                     <p class="px-2 py-4 text-center text-xs text-muted {{ $items->isEmpty() ? '' : 'hidden' }}" data-kanban-empty>{{ __('Keine Einträge') }}</p>
                 </div>
-            </section>
+            </x-card>
         @endforeach
     </div>
 </x-index-page>

@@ -10,7 +10,7 @@
 
 namespace App\Plugins\Kimai;
 
-use App\Plugins\Kimai\Services\KimaiOutboxDispatcher;
+use App\Plugins\Kimai\Services\{KimaiGroupBooker, KimaiImportService, KimaiOutboxDispatcher};
 use App\Plugins\Support\PluginServiceProviderBase;
 use App\Services\Integration\{InboxGroupBookerRegistry, IntegrationOutboxDispatcherResolver};
 

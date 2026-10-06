@@ -10,8 +10,7 @@
 
 @section('title', __('Bewerbungen') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('Bewerbungen'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('Bewerberpipeline — Zugriff nur für den Personalbereich (recruiting.*).')">
@@ -31,7 +30,7 @@
             <select id="app-status" name="status" class="select select-sm select-bordered w-44" aria-label="{{ __('Status') }}">
                 <option value="">{{ __('Alle Status') }}</option>
                 @foreach ($statuses as $s)
-                    <option value="{{ $s }}" @selected(($filters['status'] ?? '') === $s)>{{ __("values.$s") }}</option>
+                    <option value="{{ $s->value }}" @selected(($filters['status'] ?? '') === $s->value)>{{ $s->label() }}</option>
                 @endforeach
             </select>
         </x-filter-field>
@@ -58,7 +57,7 @@
                 <td>{{ $application->isAnonymized() ? __('(anonymisiert)') : ($application->candidate_name ?? '—') }}</td>
                 <td>{{ $application->requisition->title ?? '—' }}</td>
                 <td>{{ __("values.{$application->source}") }}</td>
-                <td><x-status-badge :tone="$application->statusTone()" size="sm">{{ __("values.{$application->status}") }}</x-status-badge></td>
+                <td><x-status-badge :tone="$application->status->tone()" size="sm">{{ $application->status->label() }}</x-status-badge></td>
                 <td class="tabular-nums">{{ optional($application->received_at)->fdate() ?? '—' }}</td>
                 <td class="tabular-nums">{{ optional($application->retention_until)->fdate() ?? '—' }}</td>
                 <td class="text-right"><x-icon-btn icon="visibility" tone="ghost" size="xs" :href="route('recruiting.applications.show', $application)" :label="__('Anzeigen')" /></td>

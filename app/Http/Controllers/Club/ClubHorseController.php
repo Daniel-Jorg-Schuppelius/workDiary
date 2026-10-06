@@ -36,7 +36,7 @@ class ClubHorseController extends Controller {
         $closed = ClubResourceClosure::query()->where('starts_at', '<=', $now)->where('ends_at', '>', $now)->pluck('club_resource_id')->unique();
 
         return view('club.horses.index', [
-            'horses' => ClubHorse::query()->with(['resource:id,teardown_minutes,requires_clearance', 'owner:id,first_name,last_name', 'groups:id,name'])->withCount('assignments')->orderBy('name')->get(),
+            'horses' => ClubHorse::query()->with(['resource:id,teardown_minutes,requires_clearance', 'owner:id,first_name,last_name', 'groups:id,name'])->withCount('assignments')->orderBy('name')->orderBy('id')->paginate(30)->withQueryString(),
             'closedResourceIds' => $closed,
             'canManage' => Gate::allows('create', ClubHorse::class),
         ]);
@@ -90,7 +90,7 @@ class ClubHorseController extends Controller {
         Gate::authorize('delete', $horse);
         $this->horses->delete($horse);
 
-        return redirect()->route('club.horses.index')->with('success', __('club.horses.flash.deleted'));
+        return redirect()->toList('club.horses.index')->with('success', __('club.horses.flash.deleted'));
     }
 
     /** @return array<string, mixed> */

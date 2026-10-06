@@ -82,7 +82,7 @@
                 </fieldset>
 
                 @if ($canEdit)
-                    <button type="submit" class="btn btn-sm btn-primary">{{ __('lexoffice::lexware.action.save') }}</button>
+                    <x-button type="submit">{{ __('lexoffice::lexware.action.save') }}</x-button>
                 @else
                     <p class="text-xs text-muted">{{ __('lexoffice::lexware.plan_page.read_only') }}</p>
                 @endif

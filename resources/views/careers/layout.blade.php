@@ -57,7 +57,7 @@
             <div role="alert" class="alert err">{{ session('error') }}</div>
         @endif
         @if($errors->any())
-            <div class="alert err"><ul class="errs">@foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul></div>
+            <div role="status" class="alert err"><ul class="errs">@foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach</ul></div>
         @endif
 
         @yield('content')

@@ -66,10 +66,19 @@
                                         :href="route('customer.learning.preview', $course)"
                                         show-label>{{ __('learning.action.preview') }}</x-icon-btn>
                         @endif
-                        <form method="POST" action="{{ route('customer.learning.enroll', $course) }}">
-                            @csrf
-                            <x-icon-btn icon="school" tone="primary" size="sm" type="submit" show-label>{{ __('learning.action.enroll') }}</x-icon-btn>
-                        </form>
+                        @if ($course->access_kind === \App\Enums\Learning\LearningAccessKind::Open)
+                            <form method="POST" action="{{ route('customer.learning.enroll', $course) }}">
+                                @csrf
+                                <x-icon-btn icon="school" tone="primary" size="sm" type="submit" show-label>{{ __('learning.action.enroll') }}</x-icon-btn>
+                            </form>
+                        @elseif ($course->access_kind === \App\Enums\Learning\LearningAccessKind::Bookable)
+                            <form method="POST" action="{{ route('customer.learning.book', $course) }}">
+                                @csrf
+                                <x-icon-btn icon="shopping_cart" tone="primary" size="sm" type="submit" show-label>{{ __('learning.action.book_course') }}</x-icon-btn>
+                            </form>
+                        @else
+                            <span class="text-xs text-muted">{{ __('learning.help.enroll_by_operator') }}</span>
+                        @endif
                     </div>
                 @endif
             </div>

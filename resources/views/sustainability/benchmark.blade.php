@@ -41,7 +41,7 @@
             </x-slot:head>
             @forelse ($rows as $row)
                 <tr>
-                    <td>{{ $row['site']->name }}@if (! $row['site']->is_active) <span class="badge badge-ghost badge-sm">{{ __('sustainability.site.inactive') }}</span>@endif</td>
+                    <td>{{ $row['site']->name }}@if (! $row['site']->is_active) <x-status-badge>{{ __('sustainability.site.inactive') }}</x-status-badge>@endif</td>
                     <td class="text-right tabular-nums">{{ $row['site']->area_m2 !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['site']->area_m2, 0, withThousandsSeparator: true) : '—' }}</td>
                     <td class="text-right tabular-nums">{{ $row['site']->headcount ?? '—' }}</td>
                     <td class="text-right tabular-nums">{{ $t($row['co2e_kg']) }}</td>
@@ -60,7 +60,7 @@
                                     <input name="headcount" type="number" min="0" value="{{ $row['site']->headcount }}" class="input input-xs input-bordered w-20" aria-label="{{ __('sustainability.site.field.headcount') }}">
                                     <input type="hidden" name="is_active" value="0">
                                     <label class="label cursor-pointer gap-1 text-xs"><input type="checkbox" name="is_active" value="1" class="checkbox checkbox-xs" @checked($row['site']->is_active)> {{ __('sustainability.site.field.active') }}</label>
-                                    <button type="submit" class="btn btn-xs">{{ __('sustainability.site.save') }}</button>
+                                    <x-button type="submit" tone="plain" size="xs">{{ __('sustainability.site.save') }}</x-button>
                                 </form>
                             </details>
                         </td>

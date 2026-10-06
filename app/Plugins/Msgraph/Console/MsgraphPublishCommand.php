@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Msgraph\Console;
 
-use App\Plugins\Contracts\CalendarPublisher;
+use App\Plugins\Contracts\{CalendarPublisher, Plugin};
 use App\Plugins\Msgraph\MsgraphPlugin;
 use App\Plugins\Support\Calendar\Console\CalendarPublishCommand;
 
@@ -27,7 +27,7 @@ class MsgraphPublishCommand extends CalendarPublishCommand {
 
     protected $description = 'Publiziert WorkDiary-Termine idempotent in den verbundenen Microsoft-365-Kalender.';
 
-    protected function plugin(): CalendarPublisher {
+    protected function plugin(): Plugin&CalendarPublisher {
         return new MsgraphPlugin();
     }
 }

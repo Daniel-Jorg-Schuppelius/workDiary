@@ -17,7 +17,7 @@
         {{ __('expenses.receipt.hint') }}
     </p>
 
-    <div class="alert alert-info mt-3 text-sm">
+    <div role="status" class="alert alert-info mt-3 text-sm">
         <div>
             <div class="font-semibold">{{ $expense->vendor ?: __('expenses.receipt.no_vendor') }}</div>
             <div class="text-base-content/70">
@@ -64,7 +64,7 @@
                     @if ($wasPushed ?? false)
                         {{-- Feature 106: aktiv übergebener Beleg — er existiert
                              unwiderruflich, die Verknüpfung bleibt. --}}
-                        <span class="badge badge-success badge-sm shrink-0">{{ __('Als Beleg übergeben') }}</span>
+                        <x-status-badge tone="success" class="shrink-0">{{ __('Als Beleg übergeben') }}</x-status-badge>
                     @elseif ($canLink)
                         <x-action-form :action="route('expenses.unlink-voucher', $expense)" method="DELETE"
                                        :confirm="__('expenses.receipt.unlink_confirm')"
@@ -79,7 +79,7 @@
                     <div class="mt-3 border-t border-base-300 pt-3 text-sm">
                         @if ($counterVoucher ?? null)
                             <p>
-                                <span class="badge badge-warning badge-sm">{{ __('Gegenbeleg übergeben') }}</span>
+                                <x-status-badge tone="warning">{{ __('Gegenbeleg übergeben') }}</x-status-badge>
                                 {{ $counterVoucher->number ?: $counterVoucher->externalId }} · {{ optional($counterVoucher->date)->format('d.m.Y') }}
                             </p>
                             @if ($correction ?? null)

@@ -32,9 +32,8 @@
             @endforeach
         </div>
 
-        <dl class="grid grid-cols-1 gap-x-4 gap-y-1 sm:grid-cols-[auto_1fr]">
-            <dt class="text-muted">{{ __('communication.field.storage') }}</dt>
-            <dd>
+        <x-detail-grid>
+            <x-detail-grid.row :label="__('communication.field.storage')">
                 @if ($note->isOrganizationNote())
                     {{ __('communication.storage.internal') }}
                 @elseif ($contextUrl)
@@ -42,14 +41,12 @@
                 @else
                     {{ $note->notableKindLabel() }}: {{ $note->notableLabel() }}
                 @endif
-            </dd>
-            <dt class="text-muted">{{ __('communication.field.creator') }}</dt>
-            <dd>{{ $note->creator?->name ?? '—' }}</dd>
+            </x-detail-grid.row>
+            <x-detail-grid.row :label="__('communication.field.creator')">{{ $note->creator?->name ?? '—' }}</x-detail-grid.row>
             @if ($note->participants->isNotEmpty())
-                <dt class="text-muted">{{ __('communication.field.participants') }}</dt>
-                <dd>{{ $note->participants->map(fn($p) => $p->name . ($p->role ? ' (' . $p->role . ')' : ''))->implode(', ') }}</dd>
+                <x-detail-grid.row :label="__('communication.field.participants')">{{ $note->participants->map(fn($p) => $p->name . ($p->role ? ' (' . $p->role . ')' : ''))->implode(', ') }}</x-detail-grid.row>
             @endif
-        </dl>
+        </x-detail-grid>
 
         <div>
             <h4 class="font-semibold">{{ __('communication.field.body') }}</h4>

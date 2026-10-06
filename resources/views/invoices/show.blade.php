@@ -15,7 +15,7 @@
 <x-page-shell>
 
     @if ($invoice->isCancelled())
-        <div class="alert alert-error">
+        <div role="alert" class="alert alert-error">
             <x-icon name="block" />
             <div>
                 <div class="font-bold">{{ __('Storniert') }}@if ($invoice->cancelled_at) – {{ $invoice->cancelled_at->fdatetime() }}@endif</div>
@@ -27,17 +27,18 @@
     @endif
 
     @if ($invoice->isProforma())
-        <div class="alert alert-warning">
+        <div role="alert" class="alert alert-warning">
             <x-icon name="info" />
             <div>
                 <div class="font-bold">{{ __('Pro-forma-Rechnung — keine Rechnung im umsatzsteuerlichen Sinn.') }}</div>
+                {{-- raw-markup-ok: Satz im Hinweisblock (alert), kein eigener Leerzustand --}}
                 <div class="text-sm">{{ __('Kein Umsatz, keine Forderung, keine E-Rechnung. Für die Abrechnung in eine echte Rechnung umwandeln.') }}</div>
             </div>
         </div>
     @endif
 
     @if ((int) $invoice->dunning_level > 0)
-        <div class="alert alert-warning text-sm">
+        <div role="alert" class="alert alert-warning text-sm">
             <x-icon name="notification_important" />
             {{ __('Mahnstufe :level — zuletzt gemahnt am :date.', [
                 'level' => (int) $invoice->dunning_level,
@@ -47,7 +48,7 @@
     @endif
 
     @if ($invoice->isCreditNote() && $invoice->parent)
-        <div class="alert alert-info">
+        <div role="status" class="alert alert-info">
             <x-icon name="undo" />
             <div>
                 {{ __('Korrekturrechnung (Gutschrift) zu') }}
@@ -59,7 +60,7 @@
     {{-- Vollaudit 2026-07 (M27): § 14 Abs. 2 UStG — Widerspruch dokumentieren/anzeigen. --}}
     @if ($invoice->isCreditNote())
         @if ($invoice->objection_at !== null)
-            <div class="alert alert-warning">
+            <div role="alert" class="alert alert-warning">
                 <x-icon name="gavel" />
                 <div>
                     {{ __('Widerspruch dokumentiert am :date', ['date' => $invoice->objection_at->fdatetime()]) }}
@@ -67,7 +68,7 @@
                 </div>
             </div>
         @elseif (auth()->user()?->canManageBilling())
-            <details class="rounded-box border border-base-300 bg-base-100 p-3">
+            <x-card as="details" padding="p-3">
                 <summary class="cursor-pointer text-sm font-medium">{{ __('Widerspruch dokumentieren (§ 14 Abs. 2 UStG)') }}</summary>
                 <form method="POST" action="{{ route('invoices.objection', $invoice) }}" class="mt-2 space-y-2">
                     @csrf
@@ -76,12 +77,12 @@
                               placeholder="{{ __('Begründung des Empfänger-Widerspruchs (Pflicht)') }}"></textarea>
                     <x-button type="submit" tone="warning" icon="gavel">{{ __('Widerspruch dokumentieren') }}</x-button>
                 </form>
-            </details>
+            </x-card>
         @endif
     @endif
 
     @if ($invoice->isDownPayment() && ($settledByInvoice ?? null) !== null)
-        <div class="alert alert-info">
+        <div role="status" class="alert alert-info">
             <x-icon name="functions" />
             <div>
                 {{ __('Angerechnet in Schlussrechnung') }}
@@ -94,7 +95,7 @@
          erzeugt über Blades storePhpBlocks ein ungültiges "<?php(" (kein Open-Tag) — View bricht. --}}
     @php $childCredits = $invoice->isCreditNote() ? collect() : $invoice->creditNotes()->get(); @endphp
     @if ($childCredits->isNotEmpty())
-        <div class="alert alert-warning">
+        <div role="alert" class="alert alert-warning">
             <x-icon name="undo" />
             <div>
                 {{ __('Es existieren Korrekturrechnungen:') }}
@@ -106,7 +107,7 @@
     @endif
 
     @if ($invoice->sent_at)
-        <div class="alert alert-success/40 text-sm">
+        <div role="status" class="alert alert-success/40 text-sm">
             <x-icon name="mark_email_read" />
             {{ __('Zuletzt versendet: :date (:count Versand(e))', [
                 'date' => $invoice->sent_at->fdatetime(),
@@ -120,7 +121,7 @@
             $importExtraction = (array) ($invoice->import_metadata['extraction'] ?? []);
             $importValidation = is_array($importExtraction['validation'] ?? null) ? $importExtraction['validation'] : null;
         @endphp
-        <div class="alert alert-info">
+        <div role="status" class="alert alert-info">
             <x-icon name="document_scanner" />
             <div class="grow">
                 <div class="font-bold">{{ __('invoice-import.imported_notice') }}</div>
@@ -172,16 +173,16 @@
 
     <x-slot:toolbar>
         @php
-            $isDraft = $invoice->status === \App\Models\Invoicing\Invoice::STATUS_DRAFT;
+            $isDraft = $invoice->status === \App\Enums\Invoicing\InvoiceStatus::Draft;
             $billingInternal = ! app(\App\Services\Billing\BillingModeResolver::class)->effectiveFor($invoice->customer)->isExternal();
             // E-Rechnung (Feature 045): XRechnung nur im Pfad „WorkDiary führt" und für gestellte/bezahlte Rechnungen.
-            $einvoiceVisible = in_array($invoice->status, [\App\Models\Invoicing\Invoice::STATUS_ISSUED, \App\Models\Invoicing\Invoice::STATUS_PAID], true) && $billingInternal;
+            $einvoiceVisible = in_array($invoice->status, [\App\Enums\Invoicing\InvoiceStatus::Issued, \App\Enums\Invoicing\InvoiceStatus::Paid], true) && $billingInternal;
             // Export-Einträge der Plugins (MVP-1039), z. B. Einzelübergabe an Lexware.
             $pluginExports = app(\App\Plugins\PluginManager::class)->renderSlot('invoice-show.exports', $invoice);
             // Mahnsperre (Feature 127, MVP-691): nimmt die Rechnung aus Einzeldialog UND Mahnlauf; Umschalten wird auditiert.
-            $dunningBlockVisible = in_array($invoice->status, [\App\Models\Invoicing\Invoice::STATUS_ISSUED, \App\Models\Invoicing\Invoice::STATUS_PARTIALLY_PAID], true) && (auth()->user()?->canManageBilling() ?? false);
+            $dunningBlockVisible = in_array($invoice->status, [\App\Enums\Invoicing\InvoiceStatus::Issued, \App\Enums\Invoicing\InvoiceStatus::PartiallyPaid], true) && (auth()->user()?->canManageBilling() ?? false);
         @endphp
-        <x-page-toolbar :title="$invoice->documentLabel() . ' ' . $invoice->number" :badge="__('values.' . $invoice->status)" badge-tone="outline">
+        <x-page-toolbar :title="$invoice->documentLabel() . ' ' . $invoice->number" :badge="$invoice->status->label()" badge-tone="outline">
             <x-slot:badges>
                 {!! app(\App\Plugins\PluginManager::class)->renderSlot('invoice-show.badges', $invoice) !!}
                 @if ($dunningBlockVisible && $invoice->isDunningBlocked())
@@ -365,7 +366,7 @@
     {{-- KI-Leistungstexte (Feature 084): Vorschläge nur im Entwurf, nie stille Änderungen. --}}
     @php
         $aiViewData = app(\App\Services\Ai\Contracts\SuggestionView::class);
-        $aiDraft = $invoice->status === \App\Models\Invoicing\Invoice::STATUS_DRAFT && auth()->user()?->can('update', $invoice);
+        $aiDraft = $invoice->status === \App\Enums\Invoicing\InvoiceStatus::Draft && auth()->user()?->can('update', $invoice);
         $aiSuggestEnabled = $aiDraft && $aiViewData->capabilityUsable(\App\Services\Ai\Contracts\ItemTextSuggester::CAPABILITY_ITEM);
         $aiTranslateEnabled = $aiDraft && $aiViewData->capabilityUsable(\App\Services\Ai\Contracts\ItemTextSuggester::CAPABILITY_TRANSLATE);
         $aiSuggestions = ($aiSuggestEnabled || $aiTranslateEnabled)
@@ -427,7 +428,7 @@
             // MVP-1054: Gliederung (Ordnungszahlen, Titelsummen); mit Titeln ergibt Umsortieren keinen Sinn.
             $outlineRows = \App\Services\Billing\DocumentOutline::rows($invoice->items);
             $hasStructure = $invoice->items->contains(fn ($line): bool => ! $line->lineKind()->isPriced());
-            $canEditItems = auth()->user()?->can('update', $invoice) && $invoice->status === \App\Models\Invoicing\Invoice::STATUS_DRAFT;
+            $canEditItems = auth()->user()?->can('update', $invoice) && $invoice->status === \App\Enums\Invoicing\InvoiceStatus::Draft;
         @endphp
         <x-table :table-sort="$hasStructure ? 'none' : 'client'" bare>
             <x-slot:head>
@@ -439,7 +440,7 @@
                     <x-table.th sort type="number" align="right">{{ __('Einzelpreis') }}</x-table.th>
                     <x-table.th sort type="number" align="right">{{ __('Betrag') }}</x-table.th>
                     @can('update', $invoice)
-                        @if ($invoice->status === \App\Models\Invoicing\Invoice::STATUS_DRAFT)
+                        @if ($invoice->status === \App\Enums\Invoicing\InvoiceStatus::Draft)
                             <th class="text-right">{{ __('Aktionen') }}</th>
                         @endif
                     @endcan
@@ -532,14 +533,14 @@
                 @endif
                 <tr>
                     <td>{{ $outlineRow['number'] }}</td>
-                    <td>{{ $item->description }}@if ($item->article_number_snapshot) <span class="badge badge-ghost badge-xs" title="{{ __('Artikel') }}">{{ $item->article_number_snapshot }}</span>@elseif ($item->article) <span class="badge badge-ghost badge-xs" title="{{ __('Artikel') }}">{{ $item->article->number ?: $item->article->name }}</span>@endif
+                    <td>{{ $item->description }}@if ($item->article_number_snapshot) <x-status-badge size="xs" title="{{ __('Artikel') }}">{{ $item->article_number_snapshot }}</x-status-badge>@elseif ($item->article) <x-status-badge size="xs" title="{{ __('Artikel') }}">{{ $item->article->number ?: $item->article->name }}</x-status-badge>@endif
                         @if ($item->service_from !== null)<div class="text-xs text-muted">{{ __('invoicing.item.service_period') }}: {{ $item->servicePeriodLabel() }}</div>@endif</td>
                     @if ($showServiceDates)<td data-sort-value="{{ optional($item->service_date)->toDateString() }}">{{ optional($item->service_date)->fdate() ?: '—' }}</td>@endif
                     <td class="text-right" data-sort-value="{{ (float) $item->quantity }}">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $item->quantity, ((int) round((float) $item->quantity * 1000)) % 10 !== 0 ? 3 : 2, withThousandsSeparator: true) }} {{ $item->unit }}@if ($item->unit === __('invoicing.unit_hour')) <span class="whitespace-nowrap text-xs text-muted">({{ \App\Support\Formats::duration((int) round((float) $item->quantity * 60), 'clock') }})</span>@endif</td>
                     <td class="text-right" data-sort-value="{{ ($item->unit_price?->toFloat() ?? 0.0) }}">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($item->unit_price?->toFloat() ?? 0.0), ((int) round(($item->unit_price?->toFloat() ?? 0.0) * 10000)) % 100 !== 0 ? 4 : 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td>
                     <td class="text-right" data-sort-value="{{ ($item->amount?->toFloat() ?? 0.0) }}">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($item->amount?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td>
                     @can('update', $invoice)
-                        @if ($invoice->status === \App\Models\Invoicing\Invoice::STATUS_DRAFT)
+                        @if ($invoice->status === \App\Enums\Invoicing\InvoiceStatus::Draft)
                             <td class="text-right whitespace-nowrap">
                                 @if ($aiSuggestEnabled)
                                     <x-action-form :action="route('ai.suggestions.invoice-item', [$invoice, $item])">
@@ -619,7 +620,7 @@
                     </tr>
                 @endif
             @empty
-                <x-table.empty icon="receipt_long" :colspan="5" :title="__('Keine Positionen.')" :message="$invoice->status === \App\Models\Invoicing\Invoice::STATUS_DRAFT ? __('invoicing.free.hint.empty_draft') : null" compact />
+                <x-table.empty icon="receipt_long" :colspan="5" :title="__('Keine Positionen.')" :message="$invoice->status === \App\Enums\Invoicing\InvoiceStatus::Draft ? __('invoicing.free.hint.empty_draft') : null" compact />
             @endforelse
         </x-table>
     </x-card>
@@ -654,7 +655,7 @@
                                 <td>{{ __('values.' . $dispatch->channel) }}</td>
                                 <td>{{ $dispatch->format ?? '—' }}</td>
                                 <td class="max-w-xs truncate">{{ $dispatch->recipient ?? '—' }}</td>
-                                <td>{{ __('values.' . $dispatch->status) }}</td>
+                                <td>{{ $dispatch->status->label() }}</td>
                                 <td class="font-mono text-xs">{{ $dispatch->sha256 !== null ? substr($dispatch->sha256, 0, 16) . '…' : '—' }}</td>
                             </tr>
                         @endforeach

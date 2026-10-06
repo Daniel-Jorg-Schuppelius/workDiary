@@ -92,10 +92,7 @@ final class SupplierQuestionnaireService {
 
     /** Offene oder abgelehnte (zur Nachbesserung offene) Anfrage zum Link; sonst null. */
     public function resolve(string $token): ?SupplierQuestionnaireRequest {
-        if ($token === '') {
-            return null;
-        }
-        $request = SupplierQuestionnaireRequest::query()->withoutGlobalScopes()->where('token_hash', CryptoHelper::hash($token))->first();
+        $request = SupplierQuestionnaireRequest::findByAccessToken($token);
 
         return $request !== null
             && in_array($request->status, [SupplierQuestionnaireStatus::Sent, SupplierQuestionnaireStatus::Rejected], true)

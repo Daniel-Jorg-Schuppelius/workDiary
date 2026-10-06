@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Privacy;
 
+use App\Enums\Privacy\{ComplianceFindingStatus, DpiaStepStatus};
 use App\Models\Platform\{Organization, User};
 use App\Models\Privacy\{ComplianceFinding, Dpia, DpiaStep, PrivacyAttachment, PrivacyRequirement, ProcessingActivity, TechnicalMeasure};
 use App\Services\Classification\BranchProfileInstaller;
@@ -63,6 +64,7 @@ class PrivacyFollowupsTest extends TestCase {
 
         // Reihenfolge-Zwang: Freigabe vor den Inhaltsschritten ist gesperrt.
         $approval = $dpia->steps()->where('step', 'approval')->firstOrFail();
+        $this->assertSame(DpiaStepStatus::Pending, $approval->status);
         try {
             $workflow->complete($approval, $user, null, 'proceed');
             $this->fail('Reihenfolge-Zwang griff nicht.');
@@ -80,6 +82,7 @@ class PrivacyFollowupsTest extends TestCase {
         $this->assertSame('Inhalt risks', $dpia->risks);
 
         $workflow->complete($approval->fresh(), $user, 'Freigabe erteilt', 'proceed', 'low');
+        $this->assertSame(DpiaStepStatus::Done, $approval->refresh()->status);
         $dpia->refresh();
         $this->assertSame('proceed', $dpia->outcome->value);
         $this->assertNotNull($dpia->assessed_at);
@@ -105,6 +108,41 @@ class PrivacyFollowupsTest extends TestCase {
             ->assertHeader('Content-Type', 'application/pdf');
     }
 
+    /**
+     * Konsolidierungs-Audit 2026-10, vierte Runde: das Ergebnis der Freigabe
+     * beginnt leer; ohne Wahl bleibt der Schritt offen, weil der Dienst für
+     * die Freigabe ein Ergebnis verlangt.
+     */
+    public function test_approval_step_starts_empty_and_needs_an_outcome(): void {
+        $org = Organization::factory()->create();
+        $officer = $this->officer($org);
+        $activity = $this->activity($org);
+        $dpia = Dpia::query()->create(['organization_id' => $org->id, 'activity_id' => $activity->id]);
+        $workflow = app(DpiaWorkflowService::class);
+        $workflow->ensureSteps($dpia);
+        foreach (['description', 'necessity', 'risks', 'mitigations'] as $code) {
+            $workflow->complete($dpia->steps()->where('step', $code)->firstOrFail(), $officer, 'Inhalt ' . $code);
+        }
+
+        $html = (string) $this->actingAs($officer)->get(route('dataprotection.activities.show', $activity))->assertOk()->getContent();
+        $this->assertStringContainsString('name="outcome"', $html);
+        $this->assertStringContainsString('<option value="" selected disabled>' . e(__('Bitte wählen')) . '</option>', $html);
+        $this->assertStringNotContainsString('<option value="proceed" selected', $html);
+
+        $this->actingAs($officer)
+            ->post(route('dataprotection.activities.dpia.step', [$activity, 'approval']), ['content' => 'Freigabe'])
+            ->assertRedirect(route('dataprotection.activities.show', $activity))
+            ->assertSessionHas('error');
+        $this->assertSame(DpiaStepStatus::Pending, $dpia->steps()->where('step', 'approval')->firstOrFail()->status);
+        $this->assertSame('open', $dpia->fresh()->outcome->value);
+
+        $this->actingAs($officer)
+            ->post(route('dataprotection.activities.dpia.step', [$activity, 'approval']), ['content' => 'Freigabe', 'outcome' => 'proceed'])
+            ->assertSessionHas('status');
+        $this->assertSame(DpiaStepStatus::Done, $dpia->steps()->where('step', 'approval')->firstOrFail()->status);
+        $this->assertSame('proceed', $dpia->fresh()->outcome->value);
+    }
+
     public function test_expiring_tom_proof_creates_compliance_finding(): void {
         $org = Organization::factory()->create();
         $measure = TechnicalMeasure::create(['organization_id' => $org->id, 'name' => 'Verschlüsselung', 'category' => 'data_access']);
@@ -125,7 +163,7 @@ class PrivacyFollowupsTest extends TestCase {
             ->where('organization_id', $org->id)
             ->where('requirement_key', 'tom_proof_current')
             ->firstOrFail();
-        $this->assertSame('expiring', $finding->status);
+        $this->assertSame(ComplianceFindingStatus::Expiring, $finding->status);
         $this->assertStringContainsString('iso-zertifikat.pdf', (string) $finding->trigger);
     }
 

@@ -25,7 +25,7 @@
 @endphp
 
 @if ($canManage || $participants->isNotEmpty())
-    <section class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs space-y-3">
+    <x-card as="section" class="space-y-3">
         <div class="flex items-center justify-between gap-2">
             <h2 class="flex items-center gap-2 text-sm font-semibold">
                 <x-icon name="badge" /> {{ __('external.panel.title') }}
@@ -54,7 +54,7 @@
         @endif
 
         @if ($participants->isEmpty())
-            <p class="text-sm text-muted">{{ __('external.panel.empty') }}</p>
+            <x-empty-state icon="group" :title="__('external.panel.empty')" compact />
         @else
             <x-table>
                 <x-slot:head>
@@ -77,10 +77,10 @@
                                 <td>
                                     <span class="text-xs">{{ __('external.ability.view') }}</span>
                                     @foreach ((array) $p->abilities as $ab)
-                                        <span class="badge badge-ghost badge-sm">{{ __('external.ability.' . $ab) }}</span>
+                                        <x-status-badge>{{ __('external.ability.' . $ab) }}</x-status-badge>
                                     @endforeach
                                 </td>
-                                <td><span class="badge badge-sm">{{ __('external.status.' . $p->status()) }}</span></td>
+                                <td><x-status-badge tone="plain">{{ __('external.status.' . $p->status()) }}</x-status-badge></td>
                                 <td class="text-xs">{{ $p->expires_at?->fdate() }}</td>
                                 <td class="text-right">
                                     @if ($canManage && $p->revoked_at === null)
@@ -96,5 +96,5 @@
                         @endforeach
             </x-table>
         @endif
-    </section>
+    </x-card>
 @endif

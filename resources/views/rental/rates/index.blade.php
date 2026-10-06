@@ -47,7 +47,7 @@
             <div class="flex flex-wrap items-center justify-between gap-2 border-b border-base-300 p-3">
                 <div class="flex items-center gap-2">
                     <span class="font-medium">{{ $card->name }}</span>
-                    <span class="badge badge-outline">v{{ $card->version }}</span>
+                    <x-status-badge tone="plain" size="md" outline>v{{ $card->version }}</x-status-badge>
                     <x-status-badge size="md" outline>{{ $card->status->label() }}</x-status-badge>
                     @if ($card->valid_from !== null)
                         <span class="text-xs text-muted">{{ __('gültig ab') }} {{ $card->valid_from->fdate() }}</span>
@@ -56,7 +56,7 @@
                 @can('update', $card)
                     @if ($card->status === \App\Enums\Rental\RentalRateCardStatus::Draft)
                         <form method="POST" action="{{ route('rental.rates.activate', $card) }}">@csrf
-                            <button type="submit" class="btn btn-xs btn-primary">{{ __('Aktivieren') }}</button>
+                            <x-button type="submit" size="xs">{{ __('Aktivieren') }}</x-button>
                         </form>
                     @endif
                 @endcan
@@ -84,7 +84,7 @@
                                 @if ($card->status === \App\Enums\Rental\RentalRateCardStatus::Draft)
                                     <form method="POST" action="{{ route('rental.rates.items.destroy', [$card, $item]) }}" class="inline">
                                         @csrf @method('DELETE')
-                                        <button type="submit" class="btn btn-xs btn-ghost text-error">{{ __('Entfernen') }}</button>
+                                        <x-button type="submit" tone="ghost" size="xs" class="text-error">{{ __('Entfernen') }}</x-button>
                                     </form>
                                 @endif
                             @endcan
@@ -108,7 +108,7 @@
                         <x-input-field name="amount" type="number" step="0.01" min="0" :label="__('Betrag')" required />
                         <x-input-field name="unit" :label="__('Einheit')" value="day" required />
                         <x-input-field name="min_duration_days" type="number" min="1" :label="__('Mindestdauer (Tage)')" />
-                        <button type="submit" class="btn btn-sm">{{ __('Kondition ergänzen') }}</button>
+                        <x-button type="submit" tone="plain">{{ __('Kondition ergänzen') }}</x-button>
                     </form>
                 @endif
             @endcan

@@ -11,6 +11,7 @@
 namespace App\Plugins\Calendly\Models;
 
 use App\Models\Concerns\BelongsToOrganization;
+use App\Plugins\Calendly\Enums\CalendlyWebhookSubscriptionStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
@@ -29,15 +30,11 @@ use Illuminate\Support\Carbon;
  * @property string|null $calendly_subscription_uri
  * @property string $scope
  * @property array<int, string> $events
- * @property string $status
+ * @property CalendlyWebhookSubscriptionStatus $status
  * @property Carbon|null $last_delivery_at
  */
 class CalendlyWebhookSubscription extends Model {
     use BelongsToOrganization;
-
-    public const STATUS_ACTIVE = 'active';
-
-    public const STATUS_DISABLED = 'disabled';
 
     public const SCOPE_ORGANIZATION = 'organization';
 
@@ -66,11 +63,12 @@ class CalendlyWebhookSubscription extends Model {
     protected $casts = [
         'signing_key' => 'encrypted',
         'events' => 'array',
+        'status' => CalendlyWebhookSubscriptionStatus::class,
         'last_delivery_at' => 'datetime',
     ];
 
     public function isActive(): bool {
-        return $this->status === self::STATUS_ACTIVE;
+        return $this->status === CalendlyWebhookSubscriptionStatus::Active;
     }
 
     /** @return BelongsTo<CalendlyConnection, $this> */

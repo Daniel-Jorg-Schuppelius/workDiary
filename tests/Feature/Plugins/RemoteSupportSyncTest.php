@@ -12,13 +12,16 @@ namespace Tests\Feature\Plugins;
 
 use App\Enums\Asset\AssetClass;
 use App\Models\Asset\Asset;
-use App\Models\Auth\RemotePendingSession;
 use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Platform\{PluginSetting, User};
 use App\Models\Project\Project;
 use App\Models\Time\TimeEntry;
-use App\Plugins\RemoteSupport\Providers\{RemoteSession, TeamViewerClient};
-use App\Plugins\RemoteSupport\{RemoteDeviceRegistry, RemotePendingAssignmentService, RemoteSessionImporter, RemoteSupportConfig, RemoteSupportPlugin};
+use App\Plugins\RemoteSupport\Api\TeamViewerClient;
+use App\Plugins\RemoteSupport\Enums\RemotePendingSessionStatus;
+use App\Plugins\RemoteSupport\Models\RemotePendingSession;
+use App\Plugins\RemoteSupport\Providers\RemoteSession;
+use App\Plugins\RemoteSupport\{RemoteSupportConfig, RemoteSupportPlugin};
+use App\Plugins\RemoteSupport\Services\{RemoteDeviceRegistry, RemotePendingAssignmentService, RemoteSessionImporter};
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
@@ -337,7 +340,7 @@ class RemoteSupportSyncTest extends TestCase {
             'provider' => 'teamviewer',
             'remote_id' => 'unknown-id',
             'session_id' => 'tv-session-x',
-            'status' => RemotePendingSession::STATUS_OPEN,
+            'status' => RemotePendingSessionStatus::Open->value,
         ]);
     }
 
@@ -370,7 +373,7 @@ class RemoteSupportSyncTest extends TestCase {
             'session_id' => 'tv-session-x',
             'started_at' => CarbonImmutable::parse('2026-05-26 10:00:00'),
             'ended_at' => CarbonImmutable::parse('2026-05-26 10:20:00'),
-            'status' => RemotePendingSession::STATUS_OPEN,
+            'status' => RemotePendingSessionStatus::Open,
         ]);
 
         $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
@@ -392,7 +395,7 @@ class RemoteSupportSyncTest extends TestCase {
 
         $this->assertDatabaseHas('remote_pending_sessions', [
             'session_id' => 'tv-session-x',
-            'status' => RemotePendingSession::STATUS_IMPORTED,
+            'status' => RemotePendingSessionStatus::Imported->value,
             'time_entry_id' => $entry->id,
         ]);
     }
@@ -409,7 +412,7 @@ class RemoteSupportSyncTest extends TestCase {
             'session_id' => 'tv-inbox-1',
             'started_at' => CarbonImmutable::parse('2026-05-26 10:00:00'),
             'ended_at' => CarbonImmutable::parse('2026-05-26 10:30:00'),
-            'status' => RemotePendingSession::STATUS_OPEN,
+            'status' => RemotePendingSessionStatus::Open,
         ]);
 
         $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
@@ -419,7 +422,7 @@ class RemoteSupportSyncTest extends TestCase {
             'customer_id' => $customer->id,
         ]);
 
-        $booker = app(\App\Plugins\RemoteSupport\RemoteSupportGroupBooker::class);
+        $booker = app(\App\Plugins\RemoteSupport\Services\RemoteSupportGroupBooker::class);
 
         $groups = $booker->groups($this->organization);
         $this->assertTrue($groups->contains(fn(array $g): bool => $g['group_key'] === 'teamviewer|inbox-dev'));
@@ -467,7 +470,7 @@ class RemoteSupportSyncTest extends TestCase {
             'session_id' => 'ad-1',
             'started_at' => CarbonImmutable::parse('2026-05-26 10:00:00'),
             'ended_at' => CarbonImmutable::parse('2026-05-26 10:05:00'),
-            'status' => RemotePendingSession::STATUS_OPEN,
+            'status' => RemotePendingSessionStatus::Open,
         ]);
 
         $count = $this->pending()->dismissPending($this->organization, 'anydesk', '999');
@@ -476,8 +479,47 @@ class RemoteSupportSyncTest extends TestCase {
         $this->assertSame(0, TimeEntry::query()->count());
         $this->assertDatabaseHas('remote_pending_sessions', [
             'session_id' => 'ad-1',
-            'status' => RemotePendingSession::STATUS_DISMISSED,
+            'status' => RemotePendingSessionStatus::Dismissed->value,
         ]);
+    }
+
+    public function test_dismiss_sessions_skips_rows_that_are_not_open(): void {
+        $rows = collect([
+            'ad-open' => RemotePendingSessionStatus::Open,
+            'ad-imported' => RemotePendingSessionStatus::Imported,
+            'ad-attempt' => RemotePendingSessionStatus::Attempt,
+        ])->map(fn (RemotePendingSessionStatus $status, string $sessionId): RemotePendingSession => RemotePendingSession::query()->create([
+            'organization_id' => $this->organization->id,
+            'provider' => 'anydesk',
+            'remote_id' => '999',
+            'session_id' => $sessionId,
+            'started_at' => CarbonImmutable::parse('2026-05-26 10:00:00'),
+            'ended_at' => CarbonImmutable::parse('2026-05-26 10:05:00'),
+            'status' => $status,
+        ]));
+
+        $this->assertSame(1, $this->pending()->dismissSessions($rows));
+
+        $this->assertSame(RemotePendingSessionStatus::Dismissed, $rows['ad-open']->refresh()->status);
+        $this->assertSame(RemotePendingSessionStatus::Imported, $rows['ad-imported']->refresh()->status);
+        $this->assertSame(RemotePendingSessionStatus::Attempt, $rows['ad-attempt']->refresh()->status);
+    }
+
+    /** Die Sitzungsübersicht bekommt den Stand als Rohwert, nicht als Enum. */
+    public function test_recent_remote_sessions_report_status_as_value(): void {
+        RemotePendingSession::query()->create([
+            'organization_id' => $this->organization->id,
+            'provider' => 'anydesk',
+            'remote_id' => '999',
+            'session_id' => 'ad-1',
+            'started_at' => CarbonImmutable::parse('2026-05-26 10:00:00'),
+            'ended_at' => CarbonImmutable::parse('2026-05-26 10:05:00'),
+            'status' => RemotePendingSessionStatus::Dismissed,
+        ]);
+
+        $sessions = (new RemoteSupportPlugin)->recentRemoteSessions((int) $this->organization->id, 5);
+
+        $this->assertSame(['dismissed'], array_column($sessions, 'status'));
     }
 
     public function test_shared_remote_asset_records_pending_instead_of_booking(): void {
@@ -514,7 +556,7 @@ class RemoteSupportSyncTest extends TestCase {
             'organization_id' => $this->organization->id,
             'asset_id' => $asset->id,
             'session_id' => 'tv-shared-1',
-            'status' => RemotePendingSession::STATUS_OPEN,
+            'status' => RemotePendingSessionStatus::Open->value,
         ]);
     }
 
@@ -539,7 +581,7 @@ class RemoteSupportSyncTest extends TestCase {
             'session_id' => 'tv-shared-1',
             'started_at' => CarbonImmutable::parse('2026-05-26 09:00:00'),
             'ended_at' => CarbonImmutable::parse('2026-05-26 09:40:00'),
-            'status' => RemotePendingSession::STATUS_OPEN,
+            'status' => RemotePendingSessionStatus::Open,
         ]);
 
         $result = $this->pending()->assignSharedSessions($this->organization, collect([$row]), $target);
@@ -554,7 +596,7 @@ class RemoteSupportSyncTest extends TestCase {
 
         $this->assertDatabaseHas('remote_pending_sessions', [
             'id' => $row->id,
-            'status' => RemotePendingSession::STATUS_IMPORTED,
+            'status' => RemotePendingSessionStatus::Imported->value,
             'time_entry_id' => $entry->id,
         ]);
     }
@@ -586,7 +628,7 @@ class RemoteSupportSyncTest extends TestCase {
             'session_id' => 'tv-shared-2',
             'started_at' => CarbonImmutable::parse('2026-05-26 11:00:00'),
             'ended_at' => CarbonImmutable::parse('2026-05-26 11:15:00'),
-            'status' => RemotePendingSession::STATUS_OPEN,
+            'status' => RemotePendingSessionStatus::Open,
         ]);
 
         $result = $this->pending()->assignSharedSessions($this->organization, collect([$row]), $target, $project);
@@ -612,7 +654,7 @@ class RemoteSupportSyncTest extends TestCase {
             'session_id' => 'tv-shared-1',
             'started_at' => CarbonImmutable::parse('2026-05-26 09:00:00'),
             'ended_at' => CarbonImmutable::parse('2026-05-26 09:30:00'),
-            'status' => RemotePendingSession::STATUS_OPEN,
+            'status' => RemotePendingSessionStatus::Open,
         ]);
 
         $this->assertTrue($this->pending()->openPendingGroups($this->organization)->isEmpty());
@@ -681,7 +723,7 @@ class RemoteSupportSyncTest extends TestCase {
         $this->assertDatabaseHas('remote_pending_sessions', [
             'session_id' => 'tv-shared-park-1',
             'asset_id' => $asset->id,
-            'status' => RemotePendingSession::STATUS_OPEN,
+            'status' => RemotePendingSessionStatus::Open->value,
         ]);
         $this->assertSame(1, $this->pending()->openSharedSessions($this->organization)->count());
     }
@@ -715,7 +757,7 @@ class RemoteSupportSyncTest extends TestCase {
         $this->assertDatabaseHas('remote_pending_sessions', [
             'session_id' => 'tv-company-1',
             'asset_id' => $asset->id,
-            'status' => RemotePendingSession::STATUS_OPEN,
+            'status' => RemotePendingSessionStatus::Open->value,
         ]);
     }
 
@@ -775,7 +817,7 @@ class RemoteSupportSyncTest extends TestCase {
             'session_id' => 'tv-foreign-shared-1',
             'started_at' => CarbonImmutable::parse('2026-07-20 14:00:00'),
             'ended_at' => CarbonImmutable::parse('2026-07-20 14:40:00'),
-            'status' => RemotePendingSession::STATUS_OPEN,
+            'status' => RemotePendingSessionStatus::Open,
         ]);
 
         $result = $this->pending()->assignSharedSessions($this->organization, [$row], $customer, null, null, $foreign);
@@ -786,7 +828,7 @@ class RemoteSupportSyncTest extends TestCase {
         $this->assertSame($foreign->id, (int) $project->foreign_customer_id);
         $this->assertDatabaseHas('remote_pending_sessions', [
             'id' => $row->id,
-            'status' => RemotePendingSession::STATUS_IMPORTED,
+            'status' => RemotePendingSessionStatus::Imported->value,
         ]);
     }
 
@@ -807,7 +849,7 @@ class RemoteSupportSyncTest extends TestCase {
             'session_id' => 'tv-internal-1',
             'started_at' => CarbonImmutable::parse('2026-07-20 15:00:00'),
             'ended_at' => CarbonImmutable::parse('2026-07-20 15:25:00'),
-            'status' => RemotePendingSession::STATUS_OPEN,
+            'status' => RemotePendingSessionStatus::Open,
         ]);
 
         $response = $this->actingAs($this->orgAdmin())->post(route('admin.remote-support.pending.assign-internal'), [
@@ -821,7 +863,7 @@ class RemoteSupportSyncTest extends TestCase {
         $this->assertSame('Interne Wartung', $project->name);
         $this->assertDatabaseHas('remote_pending_sessions', [
             'id' => $row->id,
-            'status' => RemotePendingSession::STATUS_IMPORTED,
+            'status' => RemotePendingSessionStatus::Imported->value,
             'time_entry_id' => $entry->id,
         ]);
     }
@@ -846,7 +888,7 @@ class RemoteSupportSyncTest extends TestCase {
         $this->assertSame(0, TimeEntry::query()->count());
         $this->assertDatabaseHas('remote_pending_sessions', [
             'session_id' => 'tv-zero-1',
-            'status' => RemotePendingSession::STATUS_ATTEMPT,
+            'status' => RemotePendingSessionStatus::Attempt->value,
         ]);
         $this->assertTrue($this->pending()->openPendingGroups($this->organization)->isEmpty());
 
@@ -923,7 +965,7 @@ class RemoteSupportSyncTest extends TestCase {
             'session_id' => 'tv-dup-1',
             'started_at' => CarbonImmutable::parse('2026-07-20 08:00:00'),
             'ended_at' => CarbonImmutable::parse('2026-07-20 08:20:00'),
-            'status' => RemotePendingSession::STATUS_OPEN,
+            'status' => RemotePendingSessionStatus::Open,
         ]);
 
         $result = $this->devices()->mergeRemoteDevice($dup, $target);
@@ -966,7 +1008,7 @@ class RemoteSupportSyncTest extends TestCase {
                 'session_id' => $sid,
                 'started_at' => CarbonImmutable::parse("2026-07-20 {$time}"),
                 'ended_at' => CarbonImmutable::parse("2026-07-20 {$time}"),
-                'status' => RemotePendingSession::STATUS_ATTEMPT,
+                'status' => RemotePendingSessionStatus::Attempt,
             ]);
         }
 
@@ -987,7 +1029,7 @@ class RemoteSupportSyncTest extends TestCase {
 
         // Beide Versuche sind dem Eintrag zugeordnet und tauchen nicht mehr als Badge auf.
         $this->assertSame(2, RemotePendingSession::query()
-            ->where('status', RemotePendingSession::STATUS_IMPORTED)
+            ->where('status', RemotePendingSessionStatus::Imported)
             ->where('time_entry_id', $entry->id)
             ->count());
     }
@@ -1009,7 +1051,7 @@ class RemoteSupportSyncTest extends TestCase {
             'session_id' => 'tv-open-a',
             'started_at' => CarbonImmutable::parse('2026-07-20 09:00:00'),
             'ended_at' => CarbonImmutable::parse('2026-07-20 09:30:00'),
-            'status' => RemotePendingSession::STATUS_OPEN,
+            'status' => RemotePendingSessionStatus::Open,
         ]);
         RemotePendingSession::query()->create([
             'organization_id' => $this->organization->id,
@@ -1019,7 +1061,7 @@ class RemoteSupportSyncTest extends TestCase {
             'session_id' => 'tv-attempt-a',
             'started_at' => CarbonImmutable::parse('2026-07-20 09:31:00'),
             'ended_at' => CarbonImmutable::parse('2026-07-20 09:31:00'),
-            'status' => RemotePendingSession::STATUS_ATTEMPT,
+            'status' => RemotePendingSessionStatus::Attempt,
         ]);
 
         $device = $this->pending()->openSharedSessions($this->organization)->firstOrFail();
@@ -1037,7 +1079,7 @@ class RemoteSupportSyncTest extends TestCase {
             'note' => 'Druckertreiber',
             'started_at' => CarbonImmutable::parse('2026-07-20 08:00:00'),
             'ended_at' => CarbonImmutable::parse('2026-07-20 08:30:00'),
-            'status' => RemotePendingSession::STATUS_OPEN,
+            'status' => RemotePendingSessionStatus::Open,
         ]);
         RemotePendingSession::query()->create([
             'organization_id' => $this->organization->id,
@@ -1046,7 +1088,7 @@ class RemoteSupportSyncTest extends TestCase {
             'session_id' => 'tv-search-2',
             'started_at' => CarbonImmutable::parse('2026-07-20 09:00:00'),
             'ended_at' => CarbonImmutable::parse('2026-07-20 09:30:00'),
-            'status' => RemotePendingSession::STATUS_OPEN,
+            'status' => RemotePendingSessionStatus::Open,
         ]);
 
         $service = $this->pending();
@@ -1073,7 +1115,7 @@ class RemoteSupportSyncTest extends TestCase {
             'note' => 'Jahresabschluss',
             'started_at' => CarbonImmutable::parse('2026-07-20 10:00:00'),
             'ended_at' => CarbonImmutable::parse('2026-07-20 10:30:00'),
-            'status' => RemotePendingSession::STATUS_OPEN,
+            'status' => RemotePendingSessionStatus::Open,
         ]);
 
         $service = $this->pending();
@@ -1092,7 +1134,7 @@ class RemoteSupportSyncTest extends TestCase {
             'session_id' => 'tv-search-4',
             'started_at' => CarbonImmutable::parse('2026-07-20 11:00:00'),
             'ended_at' => CarbonImmutable::parse('2026-07-20 11:30:00'),
-            'status' => RemotePendingSession::STATUS_OPEN,
+            'status' => RemotePendingSessionStatus::Open,
         ]);
 
         $admin = $this->orgAdmin();

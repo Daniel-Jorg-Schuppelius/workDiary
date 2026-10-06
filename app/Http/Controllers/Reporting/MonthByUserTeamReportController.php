@@ -12,7 +12,7 @@ namespace App\Http\Controllers\Reporting;
 
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesStandardReportFilters, WritesReportCsv};
+use App\Http\Controllers\Reporting\Concerns\{BuildsUserPeriodMatrix, RendersReportPdf, ResolvesStandardReportFilters, WritesReportCsv};
 use App\Models\Platform\User;
 use App\Models\Time\TimeEntry;
 use App\Support\Query\DateRange;
@@ -34,6 +34,7 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  * Implementierung, kein Code-Reuse.
  */
 class MonthByUserTeamReportController extends Controller {
+    use BuildsUserPeriodMatrix;
     use RendersReportPdf;
     use ResolvesGlobalDateRange;
     use ResolvesStandardReportFilters;
@@ -119,7 +120,7 @@ class MonthByUserTeamReportController extends Controller {
         }
 
         $exportFilters = array_merge(['year' => $year], $filters->toAuditArray());
-        $heatmapRows = $this->heatmapRows($byUser, $users);
+        $heatmapRows = $this->heatmapRows($byUser, $users, 'months');
         $userHoursSeries = $this->userHoursSeries($byUser, $users);
 
         if ($request->query('export') === 'csv') {
@@ -171,56 +172,6 @@ class MonthByUserTeamReportController extends Controller {
     }
 
     /**
-     * Heatmap-Zeilen User × Monat (Minuten; Anzeige h:mm via format-Prop).
-     *
-     * @param  array<int, array{months: array<int, int>, total: int, rate: float}>  $byUser
-     * @param  Collection<int, User>  $users
-     * @return list<array{label: string, cells: list<array{value: int}>}>
-     */
-    private function heatmapRows(array $byUser, Collection $users): array {
-        $rows = [];
-        foreach ($byUser as $uid => $row) {
-            $userModel = $users->get($uid);
-            $rows[] = [
-                'label' => $userModel instanceof User ? $userModel->name : '#' . $uid,
-                'cells' => array_map(fn(int $minutes): array => ['value' => $minutes], array_values($row['months'])),
-            ];
-        }
-
-        return $rows;
-    }
-
-    /**
-     * @param  array<int, array{months: array<int, int>, total: int, rate: float}>  $byUser
-     * @param  Collection<int, User>  $users
-     * @param  array<int, int>  $monthTotals
-     * @return list<list<int|float|string|null>>
-     */
-    private function buildRows(array $byUser, Collection $users, array $monthTotals, int $yearTotal, float $yearRate): array {
-        $rows = [];
-        foreach ($byUser as $uid => $row) {
-            $userModel = $users->get($uid);
-            $name = $userModel instanceof User ? $userModel->name : '#' . $uid;
-            $cols = [(string) $name];
-            foreach ($row['months'] as $m) {
-                $cols[] = (int) $m;
-            }
-            $cols[] = (int) $row['total'];
-            $cols[] = (float) $row['rate'];
-            $rows[] = $cols;
-        }
-        $totalRow = ['Gesamt'];
-        foreach ($monthTotals as $m) {
-            $totalRow[] = (int) $m;
-        }
-        $totalRow[] = (int) $yearTotal;
-        $totalRow[] = (float) $yearRate;
-        $rows[] = $totalRow;
-
-        return $rows;
-    }
-
-    /**
      * @param  array<int, array{months: array<int, int>, total: int, rate: float}>  $byUser
      * @param  Collection<int, User>  $users
      * @param  array<int, string>  $monthLabels
@@ -230,7 +181,7 @@ class MonthByUserTeamReportController extends Controller {
     private function exportCsv(array $byUser, Collection $users, array $monthLabels, array $monthTotals, int $yearTotal, float $yearRate, int $year, array $exportFilters, Request $request): Response {
         $filename = sprintf('monat-team-%04d.csv', $year);
         $rows = [array_merge(['Mitarbeiter'], array_values($monthLabels), ['Jahressumme', 'Erloes'])];
-        foreach ($this->buildRows($byUser, $users, $monthTotals, $yearTotal, $yearRate) as $row) {
+        foreach ($this->buildRows($byUser, $users, 'months', $monthTotals, $yearTotal, $yearRate) as $row) {
             $rows[] = array_map(static fn($v) => is_float($v) ? NumberHelper::toGermanFormat($v, 2, withThousandsSeparator: true) : $v, $row);
         }
 
@@ -247,7 +198,7 @@ class MonthByUserTeamReportController extends Controller {
         $filename = sprintf('monat-team-%04d.xlsx', $year);
         $headers = array_merge(['Mitarbeiter'], array_values($monthLabels), ['Jahressumme', 'Erloes']);
 
-        return XlsxExport::streamFromArray($filename, $headers, $this->buildRows($byUser, $users, $monthTotals, $yearTotal, $yearRate));
+        return XlsxExport::streamFromArray($filename, $headers, $this->buildRows($byUser, $users, 'months', $monthTotals, $yearTotal, $yearRate));
     }
 
     /**

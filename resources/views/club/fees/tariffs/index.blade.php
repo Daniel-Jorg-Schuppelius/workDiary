@@ -26,16 +26,7 @@
 
     @include('club.fees._tabs')
 
-    @if ($errors->any())
-        <div class="alert alert-error text-sm" role="alert">
-            <x-icon name="error" />
-            <ul class="list-inside list-disc">
-                @foreach ($errors->all() as $message)
-                    <li>{{ $message }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
+    <x-validation-errors />
 
     <div class="grid gap-4 lg:grid-cols-3">
         <div class="space-y-4 lg:col-span-2">
@@ -64,7 +55,7 @@
                                 <ul class="space-y-0.5">
                                     @forelse ($tariff->rates as $rate)
                                         <li class="flex flex-wrap items-center gap-1">
-                                            <span class="tabular-nums">{{ __('club.fees.label.from', ['date' => $rate->valid_from->format('d.m.Y')]) }}</span>
+                                            <span class="tabular-nums">{{ __('club.fees.label.from', ['date' => $rate->valid_from->fdate()]) }}</span>
                                             <strong class="tabular-nums">{{ $rate->amount->format() }}</strong>
                                             <span>{{ $rate->interval->label() }}</span>
                                             <span class="text-muted">· {{ $rate->proration->label() }} · {{ __('club.fees.label.due_days', ['days' => $rate->due_days]) }}</span>
@@ -115,7 +106,7 @@
                             <span class="font-medium">{{ $surcharge->name }}</span>
                             <span class="text-xs text-muted">{{ $surcharge->department?->name }}</span>
                             <span class="tabular-nums">{{ $surcharge->amount->format() }} {{ $surcharge->interval->label() }}</span>
-                            <span class="text-xs text-muted">{{ $surcharge->valid_from->format('d.m.Y') }}@if ($surcharge->valid_to) – {{ $surcharge->valid_to->format('d.m.Y') }}@endif</span>
+                            <span class="text-xs text-muted">{{ $surcharge->valid_from->fdate() }}@if ($surcharge->valid_to) – {{ $surcharge->valid_to->fdate() }}@endif</span>
                             @if ($canManage)
                                 <span class="ml-auto flex gap-1">
                                     <x-icon-btn icon="edit" tone="outline" size="xs" data-entry-modal-trigger :href="route('club.fees.surcharges.edit', $surcharge)" :label="__('club.action.edit')" />

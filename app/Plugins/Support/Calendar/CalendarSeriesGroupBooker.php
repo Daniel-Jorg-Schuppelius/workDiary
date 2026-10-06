@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Support\Calendar;
 
+use App\Enums\Integration\IntegrationInboxStatus;
 use App\Models\Integration\IntegrationInboxItem;
 use App\Models\Platform\Organization;
 use App\Services\Integration\{InboxActionService, InboxGroupBooker};
@@ -96,7 +97,7 @@ abstract class CalendarSeriesGroupBooker implements InboxGroupBooker {
         return IntegrationInboxItem::query()
             ->where('organization_id', $organization->id)
             ->where('plugin_id', $this->pluginId())
-            ->where('status', IntegrationInboxItem::STATUS_OPEN)
+            ->where('status', IntegrationInboxStatus::Open)
             ->whereLikeEscaped('dedupe_key', 'calendar-proposal:', 'prefix')
             ->get();
     }

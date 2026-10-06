@@ -10,10 +10,10 @@
 
 namespace Tests\Feature\Inventory;
 
-use App\Enums\Inventory\{BarcodeMatchType, ScanAction, SerialSource};
+use App\Enums\Inventory\{BarcodeMatchType, ScanAction, SerialSource, StockMovementType};
 use App\Models\Article\{Article, ArticleVariant};
-use App\Models\Inventory\Warehouse;
-use App\Services\Inventory\{BarcodeResolver, LabelService, LotService, ScanActionService, SerialService};
+use App\Models\Inventory\{StockLot, StockMovement, Warehouse};
+use App\Services\Inventory\{BarcodeResolver, InventoryLedger, LabelService, LotService, LotStockReader, PickListBuilder, ScanActionService, SerialService, StockIssue};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -74,6 +74,50 @@ final class BarcodeScanTest extends TestCase {
         $scan->book('SKU-1', ScanAction::Transfer, $this->warehouse, '2', ['target' => $target]);
         $this->assertSame('5.0000', $ledger->available($this->variant, $this->warehouse));
         $this->assertSame('2.0000', $ledger->available($this->variant, $target));
+    }
+
+    /** Umlagerung je Charge (E4): FEFO-Zuteilung, je Teil Abgang und Zugang mit derselben Charge — im Ziel-Lager pickbar. */
+    public function test_transfer_keeps_the_lot_and_the_target_suggests_it_fefo(): void {
+        $lots = app(LotService::class);
+        $stock = app(LotStockReader::class);
+        $target = Warehouse::factory()->create(['organization_id' => $this->organization->id]);
+        $early = $lots->register($this->variant, 'L-EARLY', '2026-05-01');
+        $late = $lots->register($this->variant, 'L-LATE', '2026-09-01');
+        $lots->receiveIntoLot($this->variant, $this->warehouse, '4', '2', $early);
+        $lots->receiveIntoLot($this->variant, $this->warehouse, '3', '2', $late);
+        app(InventoryLedger::class)->receipt($this->variant, $this->warehouse, '2');
+
+        $transfer = app(ScanActionService::class)->book('SKU-1', ScanAction::Transfer, $this->warehouse, '6', ['target' => $target]);
+
+        $this->assertInstanceOf(StockIssue::class, $transfer);
+        $this->assertSame(['L-EARLY', 'L-LATE'], array_map(fn (StockLot $lot): string => $lot->lot_no, $transfer->lots()));
+        $this->assertSame(
+            [[$early->id, '4.0000'], [$late->id, '2.0000']],
+            StockMovement::query()->where('movement_type', StockMovementType::TransferIn->value)->orderBy('id')->get()
+                ->map(fn (StockMovement $m): array => [$m->stock_lot_id, $m->qty_base])->all(),
+        );
+        $this->assertSame(['0.0000', '1.0000'], [$stock->balanceOf($early, $this->warehouse), $stock->balanceOf($late, $this->warehouse)]);
+        $this->assertSame(['4.0000', '2.0000'], [$stock->balanceOf($early, $target), $stock->balanceOf($late, $target)]);
+
+        $list = app(PickListBuilder::class)->fromLines([['variant' => $this->variant, 'warehouse' => $target, 'qty' => '5.0000']]);
+        $this->assertSame(
+            [['L-EARLY', '4.0000'], ['L-LATE', '1.0000']],
+            array_map(fn ($line): array => [$line->lot?->lot_no, $line->qty], $list->lines),
+        );
+    }
+
+    /** Ein gescannter Chargencode lagert genau diese Charge um, auch wenn eine andere früher verfällt. */
+    public function test_transfer_of_a_scanned_lot_moves_exactly_that_lot(): void {
+        $lots = app(LotService::class);
+        $target = Warehouse::factory()->create(['organization_id' => $this->organization->id]);
+        $early = $lots->register($this->variant, 'L-EARLY', '2026-05-01');
+        $late = $lots->register($this->variant, 'L-LATE', '2026-09-01');
+        $lots->receiveIntoLot($this->variant, $this->warehouse, '4', '2', $early);
+        $lots->receiveIntoLot($this->variant, $this->warehouse, '3', '2', $late);
+
+        app(ScanActionService::class)->book('L-LATE', ScanAction::Transfer, $this->warehouse, '2', ['target' => $target]);
+
+        $this->assertSame(['0.0000', '2.0000'], [app(LotStockReader::class)->balanceOf($early, $target), app(LotStockReader::class)->balanceOf($late, $target)]);
     }
 
     public function test_scan_unknown_code_throws(): void {

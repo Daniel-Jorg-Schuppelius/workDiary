@@ -12,7 +12,10 @@ declare(strict_types=1);
 
 namespace App\Plugins\GoogleDrive\Console;
 
+use App\Console\Concerns\IteratesOrganizations;
+use App\Plugins\GoogleDrive\GoogleDrivePlugin;
 use App\Plugins\GoogleDrive\Services\GoogleDriveSubscriptionService;
+use App\Plugins\Support\Console\ChecksPluginSwitch;
 use Illuminate\Console\Command;
 
 /**
@@ -22,14 +25,24 @@ use Illuminate\Console\Command;
  * Graph. Fehler zählen auf den Verbindungs-Health.
  */
 class GoogleDriveSubscriptionsCommand extends Command {
+    use ChecksPluginSwitch;
+    use IteratesOrganizations;
+
     protected $signature = 'google-drive:subscriptions
         {--organization= : ID einer einzelnen Organisation, sonst alle}';
 
     protected $description = 'Stellt die Google-Drive-Push-Kanäle des Dokumenteingangs sicher (Laufzeit ~24 h, kein Verlängern).';
 
     public function handle(GoogleDriveSubscriptionService $subscriptions): int {
-        $orgOption = $this->option('organization');
-        $result = $subscriptions->ensureAll(is_numeric($orgOption) ? (int) $orgOption : null);
+        $result = ['ensured' => 0, 'failed' => 0];
+        foreach ($this->organizationsToProcess() as $organization) {
+            if (! $this->pluginEnabledFor(GoogleDrivePlugin::ID, (int) $organization->id)) {
+                continue;
+            }
+            $perOrganization = $subscriptions->ensureAll((int) $organization->id);
+            $result['ensured'] += $perOrganization['ensured'];
+            $result['failed'] += $perOrganization['failed'];
+        }
 
         $this->info(sprintf('Push-Kanäle sichergestellt: %d, fehlgeschlagen: %d', $result['ensured'], $result['failed']));
 

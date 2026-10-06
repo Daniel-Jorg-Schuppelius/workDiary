@@ -8,14 +8,13 @@
 
   Digitale Personalakte (Feature 141): Akte eines Mitglieds (hrFile-Kreis)
   bzw. Eigenauskunft (selfView, read-only).
-  Variablen: $member (User), $documents (Collection<Document>), $acknowledgements (array<int, PersonnelFileAcknowledgement>),
+  Variablen: $member (User), $documents (Paginator<Document>), $sort, $dir, $acknowledgements (array<int, PersonnelFileAcknowledgement>),
   $submissions (Collection<PersonnelFileSubmission>), $selfView (bool), $canCreate (bool)
 --}}
 @extends('layouts.app')
 @section('title', $selfView ? __('hr.personnel_file.title_mine') : __('hr.personnel_file.title'))
 @section('nav-title', $selfView ? __('hr.personnel_file.title_mine') : __('hr.personnel_file.title'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 @section('content')
 <x-index-page overflow="clip"
               :subtitle="$selfView ? __('hr.personnel_file.subtitle_mine') : __('hr.personnel_file.subtitle', ['name' => $member->name])"
@@ -38,7 +37,7 @@
     @if ($submissions->isNotEmpty())
         <div class="mb-3 space-y-2">
             @foreach ($submissions as $submission)
-                <div class="flex flex-wrap items-center justify-between gap-2 rounded-box border border-base-300 bg-base-100 px-3 py-2 text-sm" id="submission-{{ $submission->id }}">
+                <x-card padding="px-3 py-2" class="flex flex-wrap items-center justify-between gap-2 text-sm" id="submission-{{ $submission->id }}">
                     <div class="min-w-0">
                         <span class="font-medium">{{ $submission->title }}</span>
                         <span class="text-muted">· {{ $submission->hr_category->label() }} · {{ $submission->created_at?->fdate() }}</span>
@@ -57,20 +56,23 @@
                             <x-icon-btn icon="block" tone="error" size="xs" data-entry-modal-trigger :href="route('personnel-file.submissions.reject-form', $submission)" show-label>{{ __('hr.personnel_file.action.reject') }}</x-icon-btn>
                         </div>
                     @endunless
-                </div>
+                </x-card>
             @endforeach
         </div>
     @endif
 
-    <x-table scroll="flex" :pinRows="true" table-sort="client">
+    <x-table scroll="flex" :pinRows="true" table-sort="server"
+             :route="$selfView ? route('account.personnel-file') : route('org.members.personnel-file.index', $member)"
+             :current-sort="$sort"
+             :current-dir="$dir">
         <x-slot:head>
             <tr>
-                <x-table.th sort default="asc">{{ __('hr.personnel_file.field.title') }}</x-table.th>
-                <x-table.th sort>{{ __('hr.personnel_file.field.category') }}</x-table.th>
-                <x-table.th sort type="date">{{ __('hr.personnel_file.field.valid_until') }}</x-table.th>
-                <x-table.th sort type="date">{{ __('hr.personnel_file.field.retention_until') }}</x-table.th>
+                <x-table.th sort="title" default>{{ __('hr.personnel_file.field.title') }}</x-table.th>
+                <x-table.th sort="category">{{ __('hr.personnel_file.field.category') }}</x-table.th>
+                <x-table.th sort="valid_until">{{ __('hr.personnel_file.field.valid_until') }}</x-table.th>
+                <x-table.th sort="retention_until">{{ __('hr.personnel_file.field.retention_until') }}</x-table.th>
                 <th>{{ __('hr.personnel_file.field.version') }}</th>
-                <x-table.th sort type="date">{{ __('hr.personnel_file.field.updated_at') }}</x-table.th>
+                <x-table.th sort="updated_at">{{ __('hr.personnel_file.field.updated_at') }}</x-table.th>
                 <th></th>
             </tr>
         </x-slot:head>
@@ -100,8 +102,8 @@
                     @endif
                 </td>
                 <td><x-status-badge tone="ghost" outline>{{ $category?->label() ?? '—' }}</x-status-badge></td>
-                <td data-sort-value="{{ $document->valid_until?->toDateString() }}">{{ $document->valid_until?->fdate() ?? '—' }}</td>
-                <td data-sort-value="{{ $document->retention_until?->toDateString() }}" class="text-base-content/70">
+                <td>{{ $document->valid_until?->fdate() ?? '—' }}</td>
+                <td class="text-base-content/70">
                     @if ($document->retention_until !== null)
                         {{ $document->retention_until->fdate() }}
                     @else
@@ -109,7 +111,7 @@
                     @endif
                 </td>
                 <td class="font-mono text-sm">v{{ $document->currentVersion?->version_no ?? '—' }}</td>
-                <td data-sort-value="{{ $document->updated_at?->toDateString() }}" class="text-sm text-base-content/70">{{ $document->updated_at?->fdate() }}</td>
+                <td class="text-sm text-base-content/70">{{ $document->updated_at?->fdate() }}</td>
                 <td class="text-right">
                     <div class="flex justify-end gap-1">
                         @if ($selfView && $document->is_ack_required && ! isset($acknowledgements[$document->id]) && $document->currentVersion !== null)
@@ -149,5 +151,7 @@
                            :colspan="7" :title="__('hr.personnel_file.empty')" compact />
         @endforelse
     </x-table>
+
+    <x-pagination :paginator="$documents" standing />
 </x-index-page>
 @endsection

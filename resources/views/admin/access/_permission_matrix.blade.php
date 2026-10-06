@@ -35,16 +35,12 @@
                 </div>
                 <div class="collapse-content">
                     <div class="flex gap-2 mb-2">
-                        <button type="button"
-                                class="btn btn-xs btn-ghost"
-                                @click="selectGroup('{{ $groupKey }}')">
+                        <x-button tone="ghost" size="xs" @click="selectGroup('{{ $groupKey }}')">
                             {{ __('access.action.select_all') }}
-                        </button>
-                        <button type="button"
-                                class="btn btn-xs btn-ghost"
-                                @click="clearGroup('{{ $groupKey }}')">
+                        </x-button>
+                        <x-button tone="ghost" size="xs" @click="clearGroup('{{ $groupKey }}')">
                             {{ __('access.action.select_none') }}
-                        </button>
+                        </x-button>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                         @foreach ($items as $permission)

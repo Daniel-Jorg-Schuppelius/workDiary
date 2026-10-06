@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Finance;
 
+use App\Enums\Invoicing\IncomingEInvoiceStatus;
 use App\Enums\Invoicing\{RetentionKind, RetentionStatus};
 use App\Models\Document\Document;
 use App\Models\Finance\{BankAccount, IncomingInvoiceRetention, PaymentRun, PaymentRunItem};
@@ -46,7 +47,7 @@ final class IncomingRetentionTest extends TestCase {
 
         return IncomingEInvoice::query()->create([
             'organization_id' => $this->org->id, 'document_id' => $document->id, 'sha256' => hash('sha256', uniqid('inv', true)),
-            'source' => 'upload', 'received_at' => now(), 'status' => IncomingEInvoice::STATUS_PAYMENT_RELEASED,
+            'source' => 'upload', 'received_at' => now(), 'status' => IncomingEInvoiceStatus::PaymentReleased,
             'invoice_number' => 'RE-4711', 'seller_name' => 'Rohbau GmbH',
             'issue_date' => CarbonImmutable::today()->subDays(3)->toDateString(), 'due_date' => CarbonImmutable::today()->addDays(27)->toDateString(),
             'currency' => 'EUR', 'amount_gross' => '10000.00', 'creditor_iban' => 'DE89370400440532013000', 'creditor_bic' => 'COBADEFFXXX',
@@ -67,6 +68,15 @@ final class IncomingRetentionTest extends TestCase {
         $item = $run->items()->sole();
         $this->assertSame('9500.00', (string) $item->amount);
         $this->assertSame(__('sepa.retention.deduction'), $item->deduction_reason);
+
+        // Sicherheitsaudit 2026-10-04, li-3: die Position lässt sich nicht bis zum Brutto anheben — der Einbehalt bleibt einbehalten.
+        try {
+            app(PaymentRunService::class)->adjustItem($item, 10000.00, null);
+            $this->fail('Anheben über den zahlbaren Betrag hätte abgelehnt werden müssen.');
+        } catch (\RuntimeException $e) {
+            $this->assertSame(__('sepa.error.invalid_amount'), $e->getMessage());
+        }
+        $this->assertSame(__('sepa.retention.deduction'), app(PaymentRunService::class)->adjustItem($item->fresh(), 9500.00, null)->deduction_reason);
 
         // Eine Rechnung im Zahllauf nimmt keinen neuen Einbehalt mehr an.
         $this->expectExceptionMessage(__('sepa.retention.error.in_run'));

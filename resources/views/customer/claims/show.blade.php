@@ -16,7 +16,7 @@
 
 
     <x-card class="flex flex-col gap-2">
-        <p><span class="badge badge-outline">{{ $claim->status->label() }}</span></p>
+        <p><x-status-badge tone="plain" size="md" outline>{{ $claim->status->label() }}</x-status-badge></p>
         <x-detail-grid class="grid-cols-2">
             <x-detail-grid.row :label="__('Gemeldet am')">{{ $claim->reported_at->fdate() }}</x-detail-grid.row>
             <x-detail-grid.row :label="__('Rücksendungen')">
@@ -48,7 +48,7 @@
             @csrf
             <textarea aria-label="{{ __('Ihre Nachricht …') }}" name="note" rows="3" class="textarea textarea-bordered w-full" required minlength="3" maxlength="2000" placeholder="{{ __('Ihre Nachricht …') }}"></textarea>
             @error('note')<p class="text-sm text-error">{{ $message }}</p>@enderror
-            <button type="submit" class="btn btn-primary btn-sm">{{ __('Absenden') }}</button>
+            <x-button type="submit">{{ __('Absenden') }}</x-button>
         </form>
     </x-card>
 

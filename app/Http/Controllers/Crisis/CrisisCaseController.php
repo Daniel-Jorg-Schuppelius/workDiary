@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Crisis;
 
+use App\Enums\Crisis\{CrisisActionStatus, CrisisCaseStatus, CrisisCommunicationStatus, CrisisContinuityImpactStatus};
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Crisis\{AddCrisisLinkRequest, AssignCrisisTeamRequest, MarkCrisisCommunicationSentRequest, StoreCrisisActionRequest, StoreCrisisCaseRequest, StoreCrisisCommunicationRequest, StoreCrisisContinuityImpactRequest, StoreCrisisDecisionRequest, StoreCrisisReviewRequest, StoreCrisisRoleRequest, StoreCrisisSituationReportRequest, UpdateCrisisActionRequest, UpdateCrisisCaseStatusRequest, UpdateCrisisContinuityImpactRequest};
@@ -39,19 +40,18 @@ class CrisisCaseController extends Controller {
     public function index(Request $request): View {
         Gate::authorize('viewAny', CrisisCase::class);
 
-        $status = $request->string('status')->toString();
-        $statusFilter = in_array($status, CrisisCase::STATUSES, true) ? $status : '';
+        $statusFilter = CrisisCaseStatus::tryFrom($request->string('status')->toString());
 
         return view('crisis.index', [
             'cases' => CrisisCase::query()
                 ->with('responsible')
-                ->when($statusFilter !== '', fn($q) => $q->where('status', $statusFilter))
+                ->when($statusFilter !== null, fn($q) => $q->where('status', $statusFilter))
                 ->orderByDesc('id')
                 ->paginate(25)
                 ->withQueryString(),
-            'activeCount' => CrisisCase::query()->whereIn('status', CrisisCase::ACTIVE_STATUSES)->count(),
+            'activeCount' => CrisisCase::query()->whereIn('status', CrisisCaseStatus::active())->count(),
             'overdueActions' => \App\Models\Crisis\CrisisAction::query()
-                ->whereIn('status', ['open', 'in_progress'])
+                ->whereIn('status', CrisisActionStatus::pending())
                 ->whereNotNull('due_at')
                 ->where('due_at', '<', now())
                 ->count(),
@@ -59,8 +59,8 @@ class CrisisCaseController extends Controller {
                 ->whereNotNull('next_due_on')
                 ->where('next_due_on', '<', DateRange::dayAfter(now()->addDays(30)))
                 ->count(),
-            'statuses' => CrisisCase::STATUSES,
-            'filters' => ['status' => $statusFilter],
+            'statuses' => CrisisCaseStatus::options(),
+            'filters' => ['status' => $statusFilter->value ?? ''],
         ]);
     }
 
@@ -79,7 +79,7 @@ class CrisisCaseController extends Controller {
         $case = CrisisCase::query()->create([
             ...$data,
             'organization_id' => $this->currentOrganization()->id,
-            'status' => 'reported',
+            'status' => CrisisCaseStatus::Reported,
             'responsible_user_id' => $actor->id,
             'created_by' => $actor->id,
         ]);
@@ -109,10 +109,12 @@ class CrisisCaseController extends Controller {
 
     public function activate(CrisisCase $case): RedirectResponse {
         Gate::authorize('approve', $case);
-        if (! in_array($case->status, ['reported', 'assessed'], true)) {
-            return back()->with('error', __('Nur gemeldete/bewertete Krisen werden aktiviert.'));
+        if (! $case->canBeActivated()) {
+            return back()->with('error', $case->activated_at !== null
+                ? __('Die Akte wurde bereits aktiviert.')
+                : __('Nur gemeldete/bewertete Krisen werden aktiviert.'));
         }
-        $case->update(['status' => 'activated', 'activated_at' => now()]);
+        $case->update(['status' => CrisisCaseStatus::Activated, 'activated_at' => now()]);
         $case->audit('crisis.activated', []);
 
         return back()->with('status', __('Krise aktiviert — Meldefristen laufen ab jetzt.'));
@@ -120,18 +122,23 @@ class CrisisCaseController extends Controller {
 
     public function updateStatus(UpdateCrisisCaseStatusRequest $request, CrisisCase $case): RedirectResponse {
         Gate::authorize('update', $case);
-        $data = $request->validated();
-        $case->update(['status' => $data['status']]);
+        $target = CrisisCaseStatus::from($request->validated()['status']);
+
+        // Gleicher Stand ist kein Übergang: ein doppelt gesendetes Formular bleibt ohne Wirkung.
+        if ($target !== $case->status && ! $case->status->canTransitionTo($target)) {
+            return back()->with('error', __('Statuswechsel von :from nach :to ist nicht zulässig.', ['from' => $case->status->label(), 'to' => $target->label()]));
+        }
+        $case->update(['status' => $target]);
 
         return back()->with('status', __('Status aktualisiert.'));
     }
 
     public function allClear(CrisisCase $case): RedirectResponse {
         Gate::authorize('approve', $case);
-        if (! $case->isActive()) {
+        if (! $case->status->canTransitionTo(CrisisCaseStatus::AllClear)) {
             return back()->with('error', __('Nur aktive Krisen werden entwarnt.'));
         }
-        $case->update(['status' => 'all_clear', 'all_clear_at' => now()]);
+        $case->update(['status' => CrisisCaseStatus::AllClear, 'all_clear_at' => now()]);
         $case->audit('crisis.all_clear', []);
 
         return back()->with('status', __('Entwarnung dokumentiert.'));
@@ -142,7 +149,10 @@ class CrisisCaseController extends Controller {
         if ($case->review()->doesntExist()) {
             return back()->with('error', __('Vor dem Abschluss braucht die Krise eine Nachbereitung.'));
         }
-        $case->update(['status' => 'closed', 'closed_at' => now()]);
+        if (! $case->status->canTransitionTo(CrisisCaseStatus::Closed)) {
+            return back()->with('error', __('Statuswechsel von :from nach :to ist nicht zulässig.', ['from' => $case->status->label(), 'to' => CrisisCaseStatus::Closed->label()]));
+        }
+        $case->update(['status' => CrisisCaseStatus::Closed, 'closed_at' => now()]);
         $case->audit('crisis.closed', []);
 
         return back()->with('status', __('Krisenakte geschlossen.'));
@@ -256,7 +266,7 @@ class CrisisCaseController extends Controller {
         $case->actions()->create([
             'organization_id' => $case->organization_id,
             ...$data,
-            'status' => 'open',
+            'status' => CrisisActionStatus::Open,
         ]);
 
         return back()->with('status', __('Maßnahme erfasst.'));
@@ -267,10 +277,11 @@ class CrisisCaseController extends Controller {
         abort_unless($action->crisis_case_id === $case->id, 404);
         $data = $request->validated();
 
+        $status = CrisisActionStatus::from($data['status']);
         $action->update([
-            'status' => $data['status'],
+            'status' => $status,
             'evidence_note' => $data['evidence_note'] ?? $action->evidence_note,
-            'escalated_at' => $data['status'] === 'open' && $action->due_at !== null && $action->due_at->isPast() ? now() : $action->escalated_at,
+            'escalated_at' => $status === CrisisActionStatus::Open && $action->due_at !== null && $action->due_at->isPast() ? now() : $action->escalated_at,
         ]);
 
         return back()->with('status', __('Maßnahme aktualisiert.'));
@@ -285,7 +296,7 @@ class CrisisCaseController extends Controller {
         $case->communications()->create([
             'organization_id' => $case->organization_id,
             ...$data,
-            'status' => 'draft',
+            'status' => CrisisCommunicationStatus::Draft,
             'created_by' => (int) Auth::id(),
         ]);
 
@@ -295,14 +306,14 @@ class CrisisCaseController extends Controller {
     public function approveCommunication(CrisisCase $case, CrisisCommunication $communication): RedirectResponse {
         Gate::authorize('approve', $case);
         abort_unless($communication->crisis_case_id === $case->id, 404);
-        if ($communication->status !== 'draft') {
+        if (! $communication->status->canTransitionTo(CrisisCommunicationStatus::Approved)) {
             return back()->with('error', __('Nur Entwürfe werden freigegeben.'));
         }
         if ((int) $communication->created_by === (int) Auth::id()) {
             return back()->with('error', __('Selbstfreigabe ist nicht zulässig.'));
         }
 
-        $communication->update(['status' => 'approved', 'approved_by' => (int) Auth::id(), 'approved_at' => now()]);
+        $communication->update(['status' => CrisisCommunicationStatus::Approved, 'approved_by' => (int) Auth::id(), 'approved_at' => now()]);
         $case->audit('crisis.communication_approved', ['audience' => $communication->audience]);
 
         return back()->with('status', __('Kommunikation freigegeben.'));
@@ -311,12 +322,12 @@ class CrisisCaseController extends Controller {
     public function markCommunicationSent(MarkCrisisCommunicationSentRequest $request, CrisisCase $case, CrisisCommunication $communication): RedirectResponse {
         Gate::authorize('update', $case);
         abort_unless($communication->crisis_case_id === $case->id, 404);
-        if ($communication->status !== 'approved') {
+        if (! $communication->status->canTransitionTo(CrisisCommunicationStatus::Sent)) {
             return back()->with('error', __('Aussendung erst nach Freigabe.'));
         }
         $data = $request->validated();
 
-        $communication->update(['status' => 'sent', 'channel' => $data['channel'], 'sent_at' => now()]);
+        $communication->update(['status' => CrisisCommunicationStatus::Sent, 'channel' => $data['channel'], 'sent_at' => now()]);
         $case->audit('crisis.communication_sent', ['audience' => $communication->audience, 'channel' => $data['channel']]);
 
         return back()->with('status', __('Aussendung dokumentiert.'));
@@ -331,7 +342,7 @@ class CrisisCaseController extends Controller {
         $case->continuityImpacts()->create([
             'organization_id' => $case->organization_id,
             ...$data,
-            'status' => 'down',
+            'status' => CrisisContinuityImpactStatus::Down,
         ]);
 
         return back()->with('status', __('Kritischen Prozess erfasst.'));
@@ -383,7 +394,7 @@ class CrisisCaseController extends Controller {
 
     public function storeReview(StoreCrisisReviewRequest $request, CrisisCase $case): RedirectResponse {
         Gate::authorize('update', $case);
-        if (! in_array($case->status, ['all_clear', 'post_review'], true)) {
+        if ($case->status !== CrisisCaseStatus::PostReview && ! $case->status->canTransitionTo(CrisisCaseStatus::PostReview)) {
             return back()->with('error', __('Nachbereitung erst nach der Entwarnung.'));
         }
         if ($case->review()->exists()) {
@@ -398,7 +409,7 @@ class CrisisCaseController extends Controller {
             'reviewed_by' => (int) Auth::id(),
             'reviewed_at' => now(),
         ]);
-        $case->update(['status' => 'post_review']);
+        $case->update(['status' => CrisisCaseStatus::PostReview]);
         $case->audit('crisis.reviewed', []);
 
         return back()->with('status', __('Nachbereitung dokumentiert.'));

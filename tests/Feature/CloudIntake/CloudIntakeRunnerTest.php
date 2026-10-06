@@ -11,6 +11,7 @@
 namespace Tests\Feature\CloudIntake;
 
 use App\Enums\CloudIntake\{CloudIntakeItemStatus, CloudIntakeRouteTarget};
+use App\Enums\Integration\IntegrationInboxStatus;
 use App\Models\CloudIntake\{CloudDocumentConnection, CloudDocumentItem, CloudDocumentRoute};
 use App\Models\Customer\Customer;
 use App\Models\Document\{Document, DocumentVersion};
@@ -114,7 +115,7 @@ class CloudIntakeRunnerTest extends TestCase {
 
         $inbox = IntegrationInboxItem::query()->sole();
         $this->assertSame('cloud_intake', $inbox->source);
-        $this->assertSame(IntegrationInboxItem::STATUS_OPEN, $inbox->status);
+        $this->assertSame(IntegrationInboxStatus::Open, $inbox->status);
     }
 
     public function test_new_revision_creates_version_proposal_or_auto_version(): void {

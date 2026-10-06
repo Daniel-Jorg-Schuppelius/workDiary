@@ -16,8 +16,7 @@
 @section('title', __('accounting.budget.title'))
 @section('nav-title', __('accounting.budget.title'))
 
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
     @php
@@ -47,12 +46,7 @@
                     <x-button type="submit" tone="ghost" size="sm">{{ __('accounting.budget.action.copy_previous') }}</x-button>
                 </x-action-form>
             @endif
-            <x-action-menu icon="download" :label="__('Export')">
-                <x-icon-btn icon="download" size="sm" tone="ghost" show-label
-                            :href="route('reports.accounting.budget.index', $query + ['export' => 'csv'])" :label="__('CSV')" />
-                <x-icon-btn icon="table_view" size="sm" tone="ghost" show-label
-                            :href="route('reports.accounting.budget.index', $query + ['export' => 'xlsx'])" :label="__('Excel')" />
-            </x-action-menu>
+            <x-report-export :url="fn (string $format) => route('reports.accounting.budget.index', $query + ['export' => $format])" :formats="['csv', 'xlsx']" tone="ghost" />
             <x-icon-btn icon="analytics" size="sm" tone="ghost" show-label
                         :href="route('reports.accounting.bwa', ['compare' => 'budget'])" :label="__('accounting.reports.card.bwa.title')" />
         </x-slot:actions>

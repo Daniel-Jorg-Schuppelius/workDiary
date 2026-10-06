@@ -13,7 +13,7 @@
 --}}
 <x-card :title="__('Timeline')" icon="timeline" :count="count($timeline)">
     @if ($timeline === [])
-        <p class="text-sm text-muted">{{ __('Noch keine Ereignisse zu diesem Projekt.') }}</p>
+        <x-empty-state icon="timeline" :title="__('Noch keine Ereignisse zu diesem Projekt.')" compact />
     @else
         <ul class="divide-y divide-base-300 text-sm">
             @foreach ($timeline as $item)
@@ -40,9 +40,10 @@
         </ul>
         @if ($timelineHasMore)
             <div class="mt-3 text-center">
-                <a class="btn btn-ghost btn-sm" href="{{ route('projects.show', ['project' => $project, 'tab' => 'timeline', 'toffset' => $timelineOffset + 50]) }}">
+                <x-button :href="route('projects.show', ['project' => $project, 'tab' => 'timeline', 'toffset' => $timelineOffset + 50])"
+                        tone="ghost">
                     {{ __('Ältere Ereignisse anzeigen') }}
-                </a>
+                </x-button>
             </div>
         @endif
     @endif

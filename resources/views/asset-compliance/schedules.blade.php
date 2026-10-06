@@ -51,12 +51,12 @@
                     <td>
                         {{ $schedule->inspector->name ?? $schedule->externalContact->name ?? '—' }}
                         @if ($schedule->external_contact_id !== null)
-                            <span class="badge badge-outline badge-sm">{{ __('extern') }}</span>
+                            <x-status-badge tone="plain" outline>{{ __('extern') }}</x-status-badge>
                             @can('update', $schedule)
-                                <a class="btn btn-xs btn-ghost" data-entry-modal-trigger
-                                   href="{{ route('external.create', ['type' => 'inspection', 'id' => $schedule->sqid]) }}">
+                                <x-button :href="route('external.create', ['type' => 'inspection', 'id' => $schedule->sqid])" tone="ghost"
+                                        size="xs" data-entry-modal-trigger>
                                     {{ __('Zugang einladen') }}
-                                </a>
+                                </x-button>
                             @endcan
                         @endif
                     </td>
@@ -105,7 +105,7 @@
                         <option value="{{ $contact->sqid }}">{{ $contact->name }}</option>
                     @endforeach
                 </x-select-field>
-                <button type="submit" class="btn btn-sm btn-primary">{{ __('Termin planen') }}</button>
+                <x-button type="submit">{{ __('Termin planen') }}</x-button>
             </form>
         </x-card>
     @endcan

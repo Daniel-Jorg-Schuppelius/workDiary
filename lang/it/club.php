@@ -1304,6 +1304,7 @@ return [
             'record_result' => 'Registra risultato',
             'record_performance' => 'Registra prestazione',
             'correct_performance' => 'Correggi prestazione',
+            'delete_performance' => 'Elimina prestazione',
             'confirm' => 'Conferma',
             'grant_start_right' => 'Documenta diritto di partenza',
             'revoke_start_right' => 'Rimuovi diritto',
@@ -1360,6 +1361,7 @@ return [
         ],
         'confirm' => [
             'delete_requirement' => 'Eliminare il requisito «:name»?',
+            'delete_performance' => 'Eliminare la prestazione :discipline del :date? Non conterà più per i primati.',
         ],
         'flash' => [
             'created' => 'Gara creata.',
@@ -1666,6 +1668,7 @@ return [
         ],
         'error' => [
             'claim_not_open' => 'Il credito non è aperto.',
+            'credit_already_applied' => 'Il credito di questo pagamento bancario è già stato compensato con dei crediti: l’assegnazione non può quindi essere annullata.',
             'not_compensatable' => 'Questa registrazione non può essere compensata.',
             'already_compensated' => 'Questo pagamento è già stato compensato.',
             'not_overdue' => 'Solo i crediti scaduti possono essere sollecitati.',

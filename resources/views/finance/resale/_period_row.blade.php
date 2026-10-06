@@ -32,7 +32,7 @@
     <td class="whitespace-nowrap tabular-nums">
         {{ $period->label() }}
         @if ($upcoming)
-            <span class="badge badge-ghost badge-xs ml-1">{{ __('resale.periods.upcoming') }}</span>
+            <x-status-badge size="xs" class="ml-1">{{ __('resale.periods.upcoming') }}</x-status-badge>
         @endif
     </td>
     <td class="text-right tabular-nums">{{ $period->quantity }}</td>

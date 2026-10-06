@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Invoicing;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Enums\Invoicing\{RetentionBase, RetentionKind, RetentionStatus};
 use App\Models\Invoicing\{Invoice, InvoiceRetention};
 use App\Models\Platform\User;
@@ -160,6 +161,6 @@ class RetentionService {
 
     /** Nur solange der Beleg fachlich änderbar ist (Entwurf/Pro-forma). */
     private function isMutable(Invoice $invoice): bool {
-        return $invoice->status === Invoice::STATUS_DRAFT;
+        return $invoice->status === InvoiceStatus::Draft;
     }
 }

@@ -17,6 +17,7 @@ use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasJo
 use App\Models\Contracts\DamageCaseSubject;
 use App\Models\Platform\User;
 use CommonToolkit\Enums\CurrencyCode;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphTo};
 
@@ -95,8 +96,6 @@ class DamageCase extends Model {
         $settled = (string) $this->settled_amount;
         /** @var numeric-string $deductible */
         $deductible = (string) ($this->deductible_amount ?? '0');
-        $net = bcsub($settled, $deductible, 2);
-
-        return bccomp($net, '0', 2) < 0 ? '0.00' : $net;
+        return NumberHelper::maxPrecise(NumberHelper::subtractPrecise($settled, $deductible, 2), '0.00', 2);
     }
 }

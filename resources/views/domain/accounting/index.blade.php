@@ -9,6 +9,7 @@
 @extends('layouts.app')
 @section('title', __('domain.section.accounting') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('domain.section.accounting'))
+@include('partials.page-fill')
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('domain.accounting.subtitle')">
@@ -25,7 +26,7 @@
         </x-filter-field>
     </x-filter-bar>
 
-    <x-table size="sm" :caption="__('domain.section.accounting')">
+    <x-table scroll="flex" size="sm" :caption="__('domain.section.accounting')">
         <x-slot:head>
             <tr>
                 <x-table.th>{{ __('domain.accounting.date') }}</x-table.th>
@@ -37,8 +38,8 @@
             </tr>
         </x-slot:head>
         @forelse ($entries as $entry)
-            <tr>
-                <td class="tabular-nums">{{ $entry->entry_date?->format('d.m.Y') ?? '—' }}</td>
+            <tr class="hover">
+                <td class="tabular-nums">{{ $entry->entry_date?->fdate() ?? '—' }}</td>
                 <td>{{ $entry->type ?? '—' }}</td>
                 <td>{{ $entry->description ?? '—' }}</td>
                 <td>{{ $entry->customer?->name ?? '—' }}</td>

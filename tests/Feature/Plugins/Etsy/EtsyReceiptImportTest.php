@@ -10,12 +10,14 @@
 
 namespace Tests\Feature\Plugins\Etsy;
 
+use App\Enums\Integration\{ExternalArticleSyncStatus, IntegrationInboxStatus, MarketplaceInboxStatus};
 use App\Models\Customer\Customer;
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use App\Models\Platform\{Organization, PluginSetting, User};
 use App\Plugins\Etsy\EtsyPlugin;
 use App\Plugins\Etsy\Models\{EtsyConnection, EtsyReceipt};
 use App\Plugins\Etsy\Services\EtsyReceiptImportService;
+use App\Plugins\Support\OAuthConnectionStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Psr\Http\Message\RequestInterface;
 use Tests\Concerns\WithOrganization;
@@ -57,7 +59,7 @@ class EtsyReceiptImportTest extends TestCase {
             'etsy_user_id' => 12345,
             'access_token' => '12345.tok',
             'refresh_token' => 'ref-1',
-            'status' => EtsyConnection::STATUS_ACTIVE,
+            'status' => OAuthConnectionStatus::Active,
             'webhook_token' => 'hook-123',
         ]);
     }
@@ -127,7 +129,7 @@ class EtsyReceiptImportTest extends TestCase {
         $this->assertSame('4.90', $row->total_shipping?->getAmount());
         $this->assertSame('Max Muster', data_get($row->buyer, 'name'));
         $this->assertSame('SKU-1', data_get($row->items, '0.sku'));
-        $this->assertSame(EtsyReceipt::INBOX_OPEN, $row->inbox_status);
+        $this->assertSame(MarketplaceInboxStatus::Open, $row->inbox_status);
         $this->assertNull($row->customer_id);
         // Datensparsamkeit: Freitexte und PII-Duplikate nicht im Roh-Rest.
         $this->assertNull(data_get($row->raw, 'message_from_buyer'));
@@ -136,7 +138,7 @@ class EtsyReceiptImportTest extends TestCase {
         // Kein Blind-Import: Käufer landen als Inbox-Vorschläge.
         $this->assertSame(2, IntegrationInboxItem::query()
             ->where('plugin_id', EtsyPlugin::ID)
-            ->where('status', IntegrationInboxItem::STATUS_OPEN)
+            ->where('status', IntegrationInboxStatus::Open)
             ->count());
         $this->assertSame(0, Customer::query()->count());
     }
@@ -164,7 +166,7 @@ class EtsyReceiptImportTest extends TestCase {
         $this->assertSame(0, $result['staged']);
         $row = EtsyReceipt::query()->where('receipt_id', 902)->firstOrFail();
         $this->assertNull($row->buyer_external_id);
-        $this->assertSame(EtsyReceipt::INBOX_OPEN, $row->inbox_status);
+        $this->assertSame(MarketplaceInboxStatus::Open, $row->inbox_status);
         $this->assertSame(0, IntegrationInboxItem::query()->where('plugin_id', EtsyPlugin::ID)->count());
     }
 
@@ -195,7 +197,7 @@ class EtsyReceiptImportTest extends TestCase {
 
         $this->assertSame(1, $result['linked']);
         $this->assertSame(2, EtsyReceipt::query()->where('customer_id', $customer->id)->count());
-        $this->assertSame(0, EtsyReceipt::query()->where('inbox_status', EtsyReceipt::INBOX_OPEN)->count());
+        $this->assertSame(0, EtsyReceipt::query()->where('inbox_status', MarketplaceInboxStatus::Open)->count());
     }
 
     public function test_checkpoint_uses_min_last_modified_and_advances(): void {
@@ -252,14 +254,14 @@ class EtsyReceiptImportTest extends TestCase {
             ->where('external_id', '111')
             ->firstOrFail();
         $this->assertSame($variant->id, (int) $mapped->article_variant_id);
-        $this->assertSame('synced', $mapped->sync_status);
+        $this->assertSame(ExternalArticleSyncStatus::Synced, $mapped->sync_status);
 
         $pending = \App\Models\Integration\ExternalArticleMapping::query()
             ->where('plugin_id', EtsyPlugin::ID)
             ->where('external_id', '222')
             ->firstOrFail();
         $this->assertNull($pending->article_variant_id);
-        $this->assertSame('pending', $pending->sync_status);
+        $this->assertSame(ExternalArticleSyncStatus::Pending, $pending->sync_status);
     }
 
     public function test_admin_page_lists_receipts(): void {

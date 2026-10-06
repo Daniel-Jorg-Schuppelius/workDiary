@@ -12,6 +12,7 @@ namespace App\Plugins\GoogleCalendar\Models;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasConnectionHealth};
 use App\Plugins\Support\Calendar\RemoteCalendarConnection;
+use App\Plugins\Support\OAuthConnectionStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
@@ -31,7 +32,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $scopes
  * @property string|null $calendar_id
  * @property string|null $calendar_name
- * @property string $status
+ * @property OAuthConnectionStatus $status
  * @property Carbon|null $last_published_at
  * @property bool $two_way
  * @property string|null $sync_token
@@ -41,10 +42,6 @@ class GoogleCalendarConnection extends Model implements RemoteCalendarConnection
     use Auditable;
     use BelongsToOrganization;
     use HasConnectionHealth;
-
-    public const STATUS_ACTIVE = 'active';
-
-    public const STATUS_DISCONNECTED = 'disconnected';
 
     protected $table = 'google_calendar_connections';
 
@@ -76,6 +73,7 @@ class GoogleCalendarConnection extends Model implements RemoteCalendarConnection
         'access_token' => 'encrypted',
         'refresh_token' => 'encrypted',
         'token_expires_at' => 'datetime',
+        'status' => OAuthConnectionStatus::class,
         'last_published_at' => 'datetime',
         'two_way' => 'boolean',
         'last_imported_at' => 'datetime',
@@ -87,7 +85,7 @@ class GoogleCalendarConnection extends Model implements RemoteCalendarConnection
 
     /** Betriebsbereit: verbunden, Token vorhanden und nicht auto-deaktiviert (MVP-178). */
     public function isActive(): bool {
-        return $this->status === self::STATUS_ACTIVE
+        return $this->status === OAuthConnectionStatus::Active
             && trim((string) $this->access_token) !== ''
             && $this->disabled_at === null;
     }

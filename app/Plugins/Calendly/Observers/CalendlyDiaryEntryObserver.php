@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Calendly\Observers;
 
+use App\Enums\Calendar\AppointmentRequestStatus;
 use App\Enums\Diary\Status;
 use App\Models\Calendar\AppointmentRequest;
 use App\Models\Diary\DiaryEntry;
@@ -35,7 +36,7 @@ class CalendlyDiaryEntryObserver {
         $request = AppointmentRequest::query()->withoutGlobalScopes()
             ->where('organization_id', $entry->organization_id)
             ->where('source', AppointmentRequest::SOURCE_CALENDLY)
-            ->where('status', AppointmentRequest::STATUS_CONFIRMED)
+            ->where('status', AppointmentRequestStatus::Confirmed)
             ->where('diary_entry_id', $entry->id)
             ->first();
         if (! $request instanceof AppointmentRequest) {

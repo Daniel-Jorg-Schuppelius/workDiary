@@ -19,7 +19,7 @@ use App\Enums\Contracts\HasLabel;
  * Steuert, was der {@see \App\Services\Integration\IntegrationResolver} tut, wenn
  * ein Remote-Datensatz keinem bestehenden lokalen Datensatz eindeutig zugeordnet
  * werden kann. Verallgemeinert die bisherige Lexoffice-spezifische
- * {@see \App\Plugins\Lexoffice\LexofficeMatchPolicy}.
+ * {@see \App\Plugins\Lexoffice\Enums\LexofficeMatchPolicy}.
  */
 enum ImportMatchPolicy: string implements HasLabel {
     use HasOptions;

@@ -93,9 +93,9 @@
                                 </td>
                                 <td>
                                     @if ($src['overdue'])
-                                        <span class="badge badge-error badge-sm">{{ __('backup.badge.overdue') }}</span>
+                                        <x-status-badge tone="error">{{ __('backup.badge.overdue') }}</x-status-badge>
                                     @else
-                                        <span class="badge badge-success badge-sm">{{ __('backup.badge.fresh') }}</span>
+                                        <x-status-badge tone="success">{{ __('backup.badge.fresh') }}</x-status-badge>
                                     @endif
                                 </td>
                             </tr>
@@ -114,14 +114,14 @@
     <x-card :title="__('backup.section.restore_register')" icon="restore">
         <div class="mb-3 flex flex-wrap items-center gap-2 text-sm">
             @if ($restore['last_passed_on'] !== null)
-                <span class="badge {{ $restore['overdue'] ? 'badge-warning' : 'badge-success' }} badge-sm">
+                <x-status-badge :tone="$restore['overdue'] ? 'warning' : 'success'">
                     {{ __('backup.field.last_passed') }}: {{ $restore['last_passed_on']->translatedFormat('d.m.Y') }}
                     @if ($restore['days_since'] !== null)
                         ({{ __('backup.value.days_ago', ['n' => $restore['days_since']]) }})
                     @endif
-                </span>
+                </x-status-badge>
             @else
-                <span class="badge badge-warning badge-sm">{{ __('backup.field.no_passed_test') }}</span>
+                <x-status-badge tone="warning">{{ __('backup.field.no_passed_test') }}</x-status-badge>
             @endif
         </div>
 
@@ -149,7 +149,7 @@
                                 <td class="text-sm">{{ $test->tested_on?->translatedFormat('d.m.Y') ?? '—' }}</td>
                                 <td class="font-mono text-xs">{{ $test->source }}</td>
                                 <td>
-                                    <span class="badge badge-{{ $test->result->tone() }} badge-sm">{{ $test->result->label() }}</span>
+                                    <x-status-badge :tone="$test->result->tone()">{{ $test->result->label() }}</x-status-badge>
                                 </td>
                                 <td class="text-sm text-base-content/70">{{ $test->scope ?? '—' }}</td>
                                 <td class="text-right font-mono text-xs">

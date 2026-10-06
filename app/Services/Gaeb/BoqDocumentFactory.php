@@ -18,7 +18,7 @@ use App\Services\Takeoff\TakeoffService;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;
 use ERechnungToolkit\Entities\Gaeb\{GaebBoq, GaebCatalog, GaebCatalogAssignment, GaebChangeOrder, GaebCostApproach, GaebCostType, GaebItem, GaebQuantitySplit, GaebSection, GaebSubDescription, GaebTextComplement, GaebTotals, GaebUpComponent};
-use ERechnungToolkit\Enums\{GaebAlternativeBidStatus, GaebChangeOrderInitiator, GaebChangeOrderPhase, GaebChangeOrderStatus, GaebItemType, GaebMarkupType};
+use ERechnungToolkit\Enums\{GaebChangeOrderInitiator, GaebChangeOrderPhase, GaebChangeOrderStatus, GaebItemType, GaebMarkupType};
 
 /**
  * Übersetzt ein gespeichertes Leistungsverzeichnis in das formatneutrale
@@ -138,9 +138,7 @@ class BoqDocumentFactory {
             discountPercent: $item->discount_percent,
             vatRate: $item->vat_rate,
             bidderComment: $item->bidder_comment,
-            alternativeBidStatus: $item->alternative_bid_status !== null
-                ? GaebAlternativeBidStatus::from($item->alternative_bid_status)
-                : null,
+            alternativeBidStatus: $item->alternative_bid_status,
             externalId: $item->external_id,
             position: $item->position,
             catalogAssignments: $this->assignments($item->catalogAssignments),

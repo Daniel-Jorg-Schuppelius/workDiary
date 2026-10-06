@@ -10,10 +10,10 @@
 
 namespace App\Plugins\Lexoffice\Services;
 
-use APIToolkit\API\Authentication\BearerAuthentication;
 use App\Models\Material\Material;
-use App\Plugins\Lexoffice\{LexofficeConfig, LexofficePlugin};
-use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
+use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
+use App\Plugins\Lexoffice\LexofficeConfig;
+use App\Plugins\Support\PluginApiClient;
 use App\Services\Material\MaterialProviderInterface;
 use Illuminate\Support\Collection;
 
@@ -30,6 +30,7 @@ class LexofficeMaterialProvider implements MaterialProviderInterface {
     public function __construct(
         protected string $apiKey,
         protected string $baseUrl = 'https://api.lexoffice.io/v1',
+        protected ?float $requestInterval = null,
     ) {}
 
     public function name(): string {
@@ -112,11 +113,6 @@ class LexofficeMaterialProvider implements MaterialProviderInterface {
     }
 
     protected function api(): PluginApiClient {
-        if ($this->api === null) {
-            $this->api = app(PluginHttpFactory::class)->client(LexofficePlugin::ID, $this->baseUrl, LexofficeConfig::requestInterval());
-            $this->api->setAuthentication(new BearerAuthentication($this->apiKey));
-        }
-
-        return $this->api;
+        return $this->api ??= app(LexofficeClientFactory::class)->make($this->apiKey, $this->baseUrl, $this->requestInterval);
     }
 }

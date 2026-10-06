@@ -41,12 +41,12 @@
                 <header class="flex flex-wrap items-center gap-2 text-xs">
                     <x-icon name="smart_toy" class="text-info" />
                     <span class="font-semibold">{{ __('ai.suggestion.classification_title') }}</span>
-                    <span class="badge badge-outline badge-xs font-mono">{{ $aiClassify->provider }}</span>
+                    <x-status-badge tone="plain" size="xs" outline class="font-mono">{{ $aiClassify->provider }}</x-status-badge>
                     @if ($aiClassify->fallback_used)
-                        <span class="badge badge-warning badge-xs" title="{{ __('ai.suggestion.fallback_hint') }}">{{ __('ai.suggestion.fallback') }}</span>
+                        <x-status-badge tone="warning" size="xs" title="{{ __('ai.suggestion.fallback_hint') }}">{{ __('ai.suggestion.fallback') }}</x-status-badge>
                     @endif
                     @if ($aiClassify->from_cache)
-                        <span class="badge badge-ghost badge-xs">{{ __('ai.suggestion.cached') }}</span>
+                        <x-status-badge size="xs">{{ __('ai.suggestion.cached') }}</x-status-badge>
                     @endif
                 </header>
                 <div class="flex flex-wrap items-center gap-2">

@@ -12,10 +12,12 @@ declare(strict_types=1);
 
 namespace App\Plugins\JtlWawi\Console;
 
-use App\Models\Platform\{Organization, PluginSetting};
+use App\Models\Platform\Organization;
+use App\Plugins\JtlWawi\Enums\JtlConnectionStatus;
 use App\Plugins\JtlWawi\JtlWawiPlugin;
 use App\Plugins\JtlWawi\Models\JtlConnection;
 use App\Plugins\JtlWawi\Services\JtlSyncService;
+use App\Plugins\Support\Console\ChecksPluginSwitch;
 use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Console\Command;
 use Throwable;
@@ -27,12 +29,14 @@ use Throwable;
  * Organisation stoppen die anderen nicht.
  */
 class JtlSyncCommand extends Command {
+    use ChecksPluginSwitch;
+
     protected $signature = 'jtl:sync {--org= : Nur diese Organisation (ID) synchronisieren}';
 
     protected $description = 'Synchronisiert Lager-, Artikel- und Bestandsprojektionen aus JTL-Wawi.';
 
     public function handle(JtlSyncService $sync): int {
-        $query = JtlConnection::withoutGlobalScopes()->where('status', JtlConnection::STATUS_ACTIVE);
+        $query = JtlConnection::withoutGlobalScopes()->where('status', JtlConnectionStatus::Active);
         if ($this->option('org') !== null) {
             $query->where('organization_id', (int) $this->option('org'));
         }
@@ -45,9 +49,7 @@ class JtlSyncCommand extends Command {
                 continue;
             }
 
-            $setting = PluginSetting::forOrganization($organization->id, JtlWawiPlugin::ID);
-            $enabled = $setting->exists ? (bool) $setting->enabled : (bool) config('plugins.' . JtlWawiPlugin::ID . '.enabled', false);
-            if (! $enabled) {
+            if (! $this->pluginEnabledFor(JtlWawiPlugin::ID, (int) $organization->id)) {
                 continue;
             }
 

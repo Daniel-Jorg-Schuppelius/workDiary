@@ -10,10 +10,11 @@
 
 namespace Tests\Feature\Security;
 
-use App\Models\Auth\RemotePendingSession;
 use App\Models\Location\LocationDeviceToken;
 use App\Models\Platform\User;
 use App\Models\Time\AttendanceTerminal;
+use App\Plugins\RemoteSupport\Enums\RemotePendingSessionStatus;
+use App\Plugins\RemoteSupport\Models\RemotePendingSession;
 use App\Services\Security\SessionManagementService;
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
@@ -268,6 +269,8 @@ class SessionManagementTest extends TestCase {
 
     public function test_index_lists_remote_support_history_readonly(): void {
         $admin = User::factory()->admin()->create();
+        // Die Historie liefert das Fernwartungs-Plugin über seinen Vertrag — ohne aktives Plugin bleibt der Abschnitt leer.
+        config(['plugins.remote-support.enabled' => true]);
         RemotePendingSession::create([
             'organization_id' => $admin->organization_id,
             'provider' => 'teamviewer',
@@ -276,7 +279,7 @@ class SessionManagementTest extends TestCase {
             'session_id' => 'sess-1',
             'started_at' => now()->subHour(),
             'ended_at' => now(),
-            'status' => RemotePendingSession::STATUS_OPEN,
+            'status' => RemotePendingSessionStatus::Open,
         ]);
 
         $this->actingAs($admin)
@@ -284,6 +287,65 @@ class SessionManagementTest extends TestCase {
             ->assertOk()
             ->assertSee(__('sessions.section.remote_support'))
             ->assertSee('Kundenrechner-Nord');
+    }
+
+    // ===== Blätternde Nutzerliste (Konsolidierungs-Audit 2026-10, vierte Runde) =====
+
+    public function test_index_pages_users_while_totals_count_all_members(): void {
+        $admin = User::factory()->admin()->create();
+        $members = [];
+        for ($i = 1; $i <= SessionManagementService::PER_PAGE + 1; $i++) {
+            $member = User::factory()->user()->create([
+                'organization_id' => $admin->organization_id,
+                'name' => sprintf('Mitglied %02d', $i),
+            ]);
+            $member->createToken('Token ' . $i);
+            $members[] = $member;
+        }
+
+        $first = $this->actingAs($admin)->get(route('admin.sessions.index'))
+            ->assertOk()
+            ->assertSee('Mitglied 20')
+            ->assertDontSee('Mitglied 21');
+        $overview = $first->viewData('overview');
+        $this->assertSame(21, $overview['totals']['users']);
+        $this->assertSame(21, $overview['totals']['tokens']);
+        $this->assertSame(21, $overview['users']->total());
+        $this->assertCount(20, $overview['users']->items());
+
+        $this->actingAs($admin)->get(route('admin.sessions.index', ['page' => 2]))
+            ->assertOk()
+            ->assertSee('Mitglied 21')
+            ->assertDontSee('Mitglied 20');
+
+        // Der Live-Endpunkt zählt unabhängig von der Seite über alle Mitglieder.
+        $this->actingAs($admin)->getJson(route('admin.sessions.data'))->assertOk()->assertJsonPath('totals.users', 21);
+
+        $tokenId = (int) $members[20]->tokens()->firstOrFail()->getKey();
+        $this->actingAs($admin)
+            ->delete(route('admin.sessions.tokens.destroy', ['tokenSqid' => Sqid::encode(\Laravel\Sanctum\PersonalAccessToken::class, $tokenId)]))
+            ->assertRedirect(route('admin.sessions.index', ['page' => 2]));
+    }
+
+    public function test_online_members_come_first_before_the_page_is_cut(): void {
+        config(['session.driver' => 'database']);
+
+        $admin = User::factory()->admin()->create();
+        for ($i = 1; $i <= SessionManagementService::PER_PAGE; $i++) {
+            User::factory()->user()->create([
+                'organization_id' => $admin->organization_id,
+                'name' => sprintf('Aaron %02d', $i),
+            ])->createToken('Offline');
+        }
+        $online = User::factory()->user()->create(['organization_id' => $admin->organization_id, 'name' => 'Zora Online']);
+        $this->seedSession($online->id);
+
+        $users = $this->actingAs($admin)->get(route('admin.sessions.index'))->assertOk()->viewData('overview')['users'];
+        $names = array_column($users->items(), 'name');
+
+        $this->assertSame('Zora Online', $names[0]);
+        $this->assertCount(SessionManagementService::PER_PAGE, $names);
+        $this->assertNotContains('Aaron 20', $names);
     }
 
     private function seedLocationDevice(int $organizationId, int $userId, string $label): int {

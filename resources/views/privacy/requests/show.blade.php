@@ -28,19 +28,19 @@
                         <x-status-badge :tone="$request->isOverdue() ? 'error' : 'ghost'" size="sm">{{ $request->status->label() }}</x-status-badge>
                         @if ($request->deadline_at)
                             <span class="text-sm {{ $request->isOverdue() ? 'text-error font-semibold' : 'text-base-content/70' }}">
-                                {{ __('Frist') }}: {{ $request->deadline_at->format('d.m.Y') }}
+                                {{ __('Frist') }}: {{ $request->deadline_at->fdate() }}
                             </span>
                         @endif
                     </div>
                     @if ($request->isFromPortal())
-                        <div class="alert alert-info text-sm">
+                        <div role="status" class="alert alert-info text-sm">
                             <span>{{ __('dsar.internal.portal_banner') }}</span>
                         </div>
                         <p class="text-sm">
                             <span class="font-semibold">{{ __('dsar.internal.contact_email') }}:</span>
                             {{ $request->contact_email_ciphertext ?? '—' }}
                             @if ($request->contact_email_confirmed_at)
-                                <x-status-badge tone="success" size="sm">{{ __('dsar.internal.email_confirmed', ['date' => $request->contact_email_confirmed_at->format('d.m.Y')]) }}</x-status-badge>
+                                <x-status-badge tone="success" size="sm">{{ __('dsar.internal.email_confirmed', ['date' => $request->contact_email_confirmed_at->fdate()]) }}</x-status-badge>
                             @else
                                 <x-status-badge tone="ghost" size="sm">{{ __('dsar.internal.email_unconfirmed') }}</x-status-badge>
                             @endif
@@ -65,7 +65,7 @@
                         </x-card>
                     @else
                         <x-card>
-                            <p class="text-xs text-success">{{ __('Identität bestätigt') }} ({{ $request->identity_verified_at->format('d.m.Y') }})</p>
+                            <p class="text-xs text-success">{{ __('Identität bestätigt') }} ({{ $request->identity_verified_at->fdate() }})</p>
                         </x-card>
                     @endunless
                 @endcan
@@ -130,7 +130,8 @@
                             <form method="post" action="{{ route('dataprotection.requests.decide', $request) }}" class="space-y-1">
                                 @csrf
                                 <x-input-field name="decision" :label="__('Entscheidung')">
-                                    <select id="decision" name="decision" class="select select-bordered w-full">
+                                    <select id="decision" name="decision" class="select select-bordered w-full" required>
+                                        <option value="" selected disabled>{{ __('Bitte wählen') }}</option>
                                         <option value="granted">{{ __('Stattgegeben') }}</option>
                                         <option value="partially">{{ __('Teilweise') }}</option>
                                         <option value="rejected">{{ __('Abgelehnt') }}</option>

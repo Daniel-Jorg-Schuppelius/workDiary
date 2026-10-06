@@ -14,7 +14,8 @@ use App\Console\Concerns\IteratesOrganizations;
 use App\Models\Integration\ExternalReference;
 use App\Models\Platform\Organization;
 use App\Models\Time\TimeEntry;
-use App\Plugins\RemoteSupport\{RemoteSessionImporter, RemoteSupportPlugin};
+use App\Plugins\RemoteSupport\RemoteSupportPlugin;
+use App\Plugins\RemoteSupport\Services\RemoteSessionImporter;
 use Illuminate\Console\Command;
 
 /**

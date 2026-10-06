@@ -10,8 +10,7 @@
 
 @section('title', __('Teams'))
 @section('nav-title', __('Teams'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('Operative Arbeits-Teams verwalten – Mitglieder, Teamleiter und zugewiesene Aufträge.')">

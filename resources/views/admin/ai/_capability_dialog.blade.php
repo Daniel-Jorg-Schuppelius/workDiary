@@ -42,9 +42,9 @@
                            @checked(in_array((int) $connection->id, array_map('intval', (array) ($setting?->allowed_connection_ids ?? [])), true))>
                     <span class="label-text">
                         {{ $connection->name }}
-                        <span class="badge badge-{{ $connection->is_local ? 'success' : 'warning' }} badge-xs align-middle">
+                        <x-status-badge :tone="$connection->is_local ? 'success' : 'warning'" size="xs" class="align-middle">
                             {{ $connection->is_local ? __('ai.field.local') : __('ai.field.cloud') }}
-                        </span>
+                        </x-status-badge>
                     </span>
                 </label>
             @empty

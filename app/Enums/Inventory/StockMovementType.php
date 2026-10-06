@@ -33,6 +33,8 @@ enum StockMovementType: string implements HasLabel {
     case Scrap = 'scrap';                           // Ausschuss (−physical)
     case Correction = 'correction';                 // Inventurdifferenz/Gegenbuchung
     case FinishedGoodReceipt = 'finished_good_receipt'; // Zugang Fertigerzeugnis (+physical)
+    case LotBlock = 'lot_block';                    // Chargensperre (+blocked, Ware bleibt liegen)
+    case LotRelease = 'lot_release';                // Chargenfreigabe (−blocked)
 
     public function label(): string {
         return __('inventory.movement.' . $this->value);

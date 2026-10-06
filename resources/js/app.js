@@ -21,9 +21,11 @@ import { initOfflineSync } from "./offline-sync.js";
 import { initVideoPositions } from "./video-position.js";
 import { initVideoQuality } from "./video-quality.js";
 import { initNfc } from "./nfc.js";
+import { initDialogForms } from "./dialog-forms.js";
 import { __ } from "./i18n.js";
 import { html, setHtml, safeUrl, sameOriginPath, trustedServerHtml } from "./lib/html.js";
 import { postJson, request } from "./lib/http.js";
+import { toMinutes } from "./lib/time.js";
 import {
     DRAG_MEDIA_QUERY,
     baseRect,
@@ -47,6 +49,7 @@ import "./agile-backlog.js";
 import "./dashboard-customize.js";
 import "./workspace-editor.js";
 import "./kanban.js";
+import "./tour-stops.js";
 import "./layout.js";
 import "./oauth-popup.js";
 import "./action-menu.js";
@@ -820,6 +823,8 @@ document.addEventListener("click", (event) => {
     //                      sie automatisch gewählt; ungültige Auswahl wird geleert.
     //  - Kind-Wechsel    → setzt den (eindeutigen) Eltern-Wert aus data-parent.
     // Leeres data-parent = "passt zu jedem Elternwert" (z. B. Org-Projekt).
+    // `data-depends-autoselect="off"`: die leere Option bleibt gewählt, auch wenn
+    // nur eine passt (Charge der Entnahme: leer = FEFO).
     const bindDependentSelects = (root) => {
         if (!root) return;
         root.querySelectorAll("select[data-depends-on]").forEach((child) => {
@@ -858,6 +863,7 @@ document.addEventListener("click", (event) => {
                 }
                 if (
                     autoSelectSingle &&
+                    child.dataset.dependsAutoselect !== "off" &&
                     !child.value &&
                     pv !== "" &&
                     visible.length === 1
@@ -883,11 +889,13 @@ document.addEventListener("click", (event) => {
         });
     };
     if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", () =>
-            bindDependentSelects(document),
-        );
+        document.addEventListener("DOMContentLoaded", () => {
+            bindDependentSelects(document);
+            initDialogForms(document);
+        });
     } else {
         bindDependentSelects(document);
+        initDialogForms(document);
     }
 
     const initDynamicFields = (root) => {
@@ -906,6 +914,7 @@ document.addEventListener("click", (event) => {
         // Inline-<script>-Tags aus AJAX-Inhalten führt der Browser nicht aus.
         // Stattdessen binden wir hier die Listener für bekannte Form-Bausteine.
         bindRangeLinks(root);
+        initDialogForms(root);
 
         root.querySelectorAll("[data-time-mode-toggle]").forEach((toggle) => {
             const form = toggle.closest("form");
@@ -916,15 +925,6 @@ document.addEventListener("click", (event) => {
             const panes = form.querySelectorAll("[data-time-mode-pane]");
             const hhmm = form.querySelector("[data-time-hhmm]");
             const hidden = form.querySelector("[data-time-minutes]");
-
-            const toMinutes = (val) => {
-                const parts = String(val || "").split(":");
-                if (parts.length !== 2) return null;
-                const h = parseInt(parts[0], 10);
-                const m = parseInt(parts[1], 10);
-                if (isNaN(h) || isNaN(m) || m < 0 || m > 59) return null;
-                return h * 60 + m;
-            };
 
             const applyMode = (mode) => {
                 panes.forEach((p) => {

@@ -13,12 +13,13 @@ namespace Tests\Feature\Plugins;
 use App\Enums\Asset\AssetClass;
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\Asset\Asset;
-use App\Models\Auth\RemotePendingSession;
 use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Platform\User;
 use App\Models\Time\TimeEntry;
-use App\Plugins\RemoteSupport\Providers\TeamViewerClient;
-use App\Plugins\RemoteSupport\{RemoteDeviceRegistry, RemotePendingAssignmentService, RemoteSessionImporter, RemoteSupportSuggestionService};
+use App\Plugins\RemoteSupport\Api\TeamViewerClient;
+use App\Plugins\RemoteSupport\Enums\RemotePendingSessionStatus;
+use App\Plugins\RemoteSupport\Models\RemotePendingSession;
+use App\Plugins\RemoteSupport\Services\{RemoteDeviceRegistry, RemotePendingAssignmentService, RemoteSessionImporter, RemoteSupportSuggestionService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -51,7 +52,7 @@ class RemoteSupportSuggestionTest extends TestCase {
             'session_id' => $sessionId,
             'started_at' => $start,
             'ended_at' => $end,
-            'status' => RemotePendingSession::STATUS_OPEN,
+            'status' => RemotePendingSessionStatus::Open,
         ]);
     }
 

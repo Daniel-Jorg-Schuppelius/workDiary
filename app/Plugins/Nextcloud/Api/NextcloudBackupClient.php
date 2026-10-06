@@ -12,6 +12,7 @@ namespace App\Plugins\Nextcloud\Api;
 
 use App\Models\Backup\BackupTargetConnection;
 use App\Plugins\Nextcloud\Contracts\NextcloudTransportFactory;
+use App\Plugins\Nextcloud\Exceptions\NextcloudNotFoundException;
 use App\Plugins\Support\Backup\{BackupAccount, BackupRemoteObject};
 use Psr\Http\Message\StreamInterface;
 use RuntimeException;

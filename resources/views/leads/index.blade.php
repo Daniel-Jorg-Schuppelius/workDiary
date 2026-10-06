@@ -11,8 +11,7 @@
 
 @section('title', __('Leads'))
 @section('nav-title', __('Leads'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @php
     use App\Enums\Sales\{LeadSource, LeadStatus};
@@ -69,7 +68,7 @@
                     <td>
                         <a class="link link-hover font-medium" href="{{ route('leads.show', $lead) }}">{{ $lead->displayName() }}</a>
                         @if ($lead->anonymized_at)
-                            <span class="badge badge-ghost badge-xs align-middle">{{ __('anonymisiert') }}</span>
+                            <x-status-badge size="xs" class="align-middle">{{ __('anonymisiert') }}</x-status-badge>
                         @endif
                     </td>
                     <td class="text-sm text-base-content/70">
@@ -79,7 +78,7 @@
                     <td class="text-sm">{{ $lead->source->label() }}</td>
                     <td><x-status-badge :tone="$lead->status->tone()" size="sm">{{ $lead->status->label() }}</x-status-badge></td>
                     <td class="text-sm">{{ $lead->responsible?->name ?? '—' }}</td>
-                    <td class="whitespace-nowrap text-sm">{{ $lead->last_contact_at?->format('d.m.Y') ?? '—' }}</td>
+                    <td class="whitespace-nowrap text-sm">{{ $lead->last_contact_at?->fdate() ?? '—' }}</td>
                 </tr>
             @endforeach
         </x-table>

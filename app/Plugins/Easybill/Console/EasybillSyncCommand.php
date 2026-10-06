@@ -13,9 +13,9 @@ declare(strict_types=1);
 namespace App\Plugins\Easybill\Console;
 
 use App\Console\Concerns\IteratesOrganizations;
-use App\Models\Platform\PluginSetting;
 use App\Plugins\Easybill\EasybillPlugin;
 use App\Plugins\Easybill\Services\EasybillDocumentPullService;
+use App\Plugins\Support\Console\ChecksPluginSwitch;
 use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Console\Command;
 use Throwable;
@@ -27,6 +27,7 @@ use Throwable;
  * einer Organisation stoppen die anderen nicht.
  */
 class EasybillSyncCommand extends Command {
+    use ChecksPluginSwitch;
     use IteratesOrganizations;
 
     protected $signature = 'easybill:sync {--org= : Nur diese Organisation (ID) abrufen}';
@@ -38,6 +39,9 @@ class EasybillSyncCommand extends Command {
         // Org den currentOrganization-Kontext (inkl. Restore).
         $failures = $this->forEachOrganization(
             function (\App\Models\Platform\Organization $organization) use ($pull): void {
+                if (! $this->pluginEnabledFor(EasybillPlugin::ID, (int) $organization->id)) {
+                    return;
+                }
                 $counters = $pull->pull((int) $organization->id);
                 $this->info(sprintf('Org %d: %s', $organization->id, JsonHelper::encode($counters)));
             },
@@ -46,11 +50,6 @@ class EasybillSyncCommand extends Command {
                 report($e);
             },
             option: 'org',
-            scope: fn($query) => $query->whereIn('id', PluginSetting::query()
-                ->withoutGlobalScopes()
-                ->where('plugin_id', EasybillPlugin::ID)
-                ->where('enabled', true)
-                ->select('organization_id')),
         );
 
         return $failures === 0 ? self::SUCCESS : self::FAILURE;

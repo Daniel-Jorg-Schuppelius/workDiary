@@ -8,8 +8,8 @@
 --}}
 {{-- Gemeinsame Vorschau-/Ergebnistabelle des Workspace-Imports (Ordner & API).
      MVP-509: Einbenutzer-Modus und ungelöste Benutzer sind deutlich sichtbar. --}}
-@if (($summary['user_mode'] ?? null) === \App\Plugins\Toggl\TogglExportImporter::USER_SINGLE)
-    <div class="alert alert-info mb-3 text-sm">
+@if (($summary['user_mode'] ?? null) === \App\Plugins\Toggl\Services\TogglExportImporter::USER_SINGLE)
+    <div role="status" class="alert alert-info mb-3 text-sm">
         {{ $summary['dry_run']
             ? __('Einbenutzer-Modus: Alle Zeiten würden :name zugeordnet.', ['name' => $summary['single_user_name'] ?? __('dem Standard-Benutzer')])
             : __('Einbenutzer-Modus: Alle Zeiten wurden :name zugeordnet.', ['name' => $summary['single_user_name'] ?? __('dem Standard-Benutzer')]) }}
@@ -17,7 +17,7 @@
 @endif
 
 @if ((int) ($summary['totals']['entries_unresolved_user'] ?? 0) > 0)
-    <div class="alert alert-warning mb-3 text-sm">
+    <div role="alert" class="alert alert-warning mb-3 text-sm">
         <div>
             <p class="font-semibold">
                 {{ __(':n Einträge ohne zuordenbaren Benutzer — nicht gebucht.', ['n' => (int) $summary['totals']['entries_unresolved_user']]) }}
@@ -34,44 +34,40 @@
     </div>
 @endif
 
-<div class="overflow-x-auto">
-    <table class="table table-sm">
-        <thead>
-            <tr>
-                <th>{{ __('Workspace') }}</th>
-                <th>{{ __('Modus') }}</th>
-                <th class="text-right">{{ __('Kunden (neu/wiederv.)') }}</th>
-                <th class="text-right">{{ __('Fremdkunden (neu/wiederv.)') }}</th>
-                <th class="text-right">{{ __('Projekte (neu/wiederv.)') }}</th>
-                <th class="text-right">{{ __('Benutzer neu') }}</th>
-                <th class="text-right">{{ __('Zeiten (gebucht/übersprungen)') }}</th>
-                <th class="text-right">{{ __('Ohne Benutzer') }}</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach ($summary['workspaces'] as $w)
-                <tr>
-                    <td>{{ $w['workspace'] }}@isset($w['customer'])<span class="text-muted"> → {{ $w['customer'] }}</span>@endisset</td>
-                    <td>{{ $w['mode'] }}</td>
-                    <td class="text-right">{{ $w['customers_created'] }} / {{ $w['customers_reused'] }}</td>
-                    <td class="text-right">{{ $w['foreign_customers_created'] }} / {{ $w['foreign_customers_reused'] }}</td>
-                    <td class="text-right">{{ $w['projects_created'] }} / {{ $w['projects_reused'] }}</td>
-                    <td class="text-right">{{ $w['users_created'] }}</td>
-                    <td class="text-right">{{ $w['entries_created'] }} / {{ $w['entries_skipped'] }}</td>
-                    <td class="text-right">{{ $w['entries_unresolved_user'] ?? 0 }}</td>
-                </tr>
-            @endforeach
-        </tbody>
-        <tfoot>
-            <tr class="font-semibold">
-                <td colspan="2">{{ __('Summe') }}</td>
-                <td class="text-right">{{ $summary['totals']['customers_created'] }} / {{ $summary['totals']['customers_reused'] }}</td>
-                <td class="text-right">{{ $summary['totals']['foreign_customers_created'] }} / {{ $summary['totals']['foreign_customers_reused'] }}</td>
-                <td class="text-right">{{ $summary['totals']['projects_created'] }} / {{ $summary['totals']['projects_reused'] }}</td>
-                <td class="text-right">{{ $summary['totals']['users_created'] }}</td>
-                <td class="text-right">{{ $summary['totals']['entries_created'] }} / {{ $summary['totals']['entries_skipped'] }}</td>
-                <td class="text-right">{{ $summary['totals']['entries_unresolved_user'] ?? 0 }}</td>
-            </tr>
-        </tfoot>
-    </table>
-</div>
+<x-table bare>
+    <x-slot:head>
+        <tr>
+            <th>{{ __('Workspace') }}</th>
+            <th>{{ __('Modus') }}</th>
+            <th class="text-right">{{ __('Kunden (neu/wiederv.)') }}</th>
+            <th class="text-right">{{ __('Fremdkunden (neu/wiederv.)') }}</th>
+            <th class="text-right">{{ __('Projekte (neu/wiederv.)') }}</th>
+            <th class="text-right">{{ __('Benutzer neu') }}</th>
+            <th class="text-right">{{ __('Zeiten (gebucht/übersprungen)') }}</th>
+            <th class="text-right">{{ __('Ohne Benutzer') }}</th>
+        </tr>
+    </x-slot:head>
+    <x-slot:foot>
+        <tr class="font-semibold">
+            <td colspan="2">{{ __('Summe') }}</td>
+            <td class="text-right">{{ $summary['totals']['customers_created'] }} / {{ $summary['totals']['customers_reused'] }}</td>
+            <td class="text-right">{{ $summary['totals']['foreign_customers_created'] }} / {{ $summary['totals']['foreign_customers_reused'] }}</td>
+            <td class="text-right">{{ $summary['totals']['projects_created'] }} / {{ $summary['totals']['projects_reused'] }}</td>
+            <td class="text-right">{{ $summary['totals']['users_created'] }}</td>
+            <td class="text-right">{{ $summary['totals']['entries_created'] }} / {{ $summary['totals']['entries_skipped'] }}</td>
+            <td class="text-right">{{ $summary['totals']['entries_unresolved_user'] ?? 0 }}</td>
+        </tr>
+    </x-slot:foot>
+    @foreach ($summary['workspaces'] as $w)
+        <tr>
+            <td>{{ $w['workspace'] }}@isset($w['customer'])<span class="text-muted"> → {{ $w['customer'] }}</span>@endisset</td>
+            <td>{{ $w['mode'] }}</td>
+            <td class="text-right">{{ $w['customers_created'] }} / {{ $w['customers_reused'] }}</td>
+            <td class="text-right">{{ $w['foreign_customers_created'] }} / {{ $w['foreign_customers_reused'] }}</td>
+            <td class="text-right">{{ $w['projects_created'] }} / {{ $w['projects_reused'] }}</td>
+            <td class="text-right">{{ $w['users_created'] }}</td>
+            <td class="text-right">{{ $w['entries_created'] }} / {{ $w['entries_skipped'] }}</td>
+            <td class="text-right">{{ $w['entries_unresolved_user'] ?? 0 }}</td>
+        </tr>
+    @endforeach
+</x-table>

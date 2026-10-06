@@ -78,6 +78,18 @@
                                 </select>
                             </div>
                         @endif
+                        @if ($lotOptions !== [])
+                            {{-- Charge der Entnahme: leer = FEFO; Optionen nach der gewählten Variante gefiltert. --}}
+                            <div class="fieldset">
+                                <label for="movement-lot" class="fieldset-label">{{ __('inventory.field.lot_for_issue') }}</label>
+                                <select id="movement-lot" name="lot" class="select select-sm select-bordered" data-depends-on="variant" data-depends-autoselect="off">
+                                    <option value="">{{ __('inventory.field.lot_fefo') }}</option>
+                                    @foreach ($lotOptions as [$lot, $lotBalance])
+                                        <option value="{{ $lot->sqid }}" data-parent="{{ $lot->variant?->sqid }}">{{ $lot->lot_no }}@if ($lot->best_before) · {{ __('inventory.lot.best_before') }} {{ $lot->best_before->fdate() }}@endif — {{ $lotBalance->getValue() }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        @endif
                         <div class="fieldset">
                             <label for="qty" class="fieldset-label">{{ __('inventory.field.quantity') }}</label>
                             <input id="qty" name="qty" type="number" step="0.0001" min="0.0001" required class="input input-sm input-bordered w-28">
@@ -119,6 +131,7 @@
                         <th class="text-right">{{ __('inventory.field.physical') }}</th>
                         @if ($bins->isNotEmpty())<th>{{ __('inventory.field.bin') }}</th>@endif
                         <th class="text-right">{{ __('inventory.field.reserved') }}</th>
+                        @if ($showBlocked)<th class="text-right">{{ __('inventory.state.blocked') }}</th>@endif
                         <th class="text-right">{{ __('inventory.overview.avg') }}</th>
                         <th class="text-right">{{ __('inventory.overview.value') }}</th>
                     </tr>
@@ -133,20 +146,24 @@
                         @if ($bins->isNotEmpty())
                             <td class="font-mono text-xs">
                                 @forelse ($row['bins'] as $code => $sum)
-                                    <span class="badge badge-sm badge-ghost mr-1">{{ $code }}: {{ $sum }}</span>
+                                    <x-status-badge class="mr-1">{{ $code }}: {{ $sum }}</x-status-badge>
                                 @empty
                                     —
                                 @endforelse
                             </td>
                         @endif
                         <td class="text-right tabular-nums">{{ $row['reserved'] }}</td>
+                        @if ($showBlocked)
+                            <td class="text-right tabular-nums">{{ $row['blocked'] ?? '—' }}</td>
+                        @endif
                         <td class="text-right tabular-nums">{{ $row['avg'] }}</td>
                         <td class="text-right tabular-nums">{{ $row['value'] }}</td>
                     </tr>
                 @empty
-                    <x-table.empty :colspan="$bins->isNotEmpty() ? 8 : 7" :title="__('inventory.empty.stock')" />
+                    <x-table.empty :colspan="7 + ($bins->isNotEmpty() ? 1 : 0) + ($showBlocked ? 1 : 0)" :title="__('inventory.empty.stock')" />
                 @endforelse
             </x-table>
+            <x-pagination :paginator="$rows" standing />
 
             {{-- Aktive Reservierungen --}}
             <x-card>
@@ -169,7 +186,7 @@
                                 @if ($canPost)
                                     <form method="POST" action="{{ route('inventory.reservations.release', $reservation) }}">
                                         @csrf
-                                        <button type="submit" class="btn btn-xs">{{ __('inventory.overview.release') }}</button>
+                                        <x-button type="submit" tone="plain" size="xs">{{ __('inventory.overview.release') }}</x-button>
                                     </form>
                                 @endif
                             </td>
@@ -228,7 +245,7 @@
                             <label for="reorder_point" class="fieldset-label">{{ __('inventory.overview.reorder_point') }}</label>
                             <input id="reorder_point" name="reorder_point" type="number" step="0.0001" min="0" value="0" required class="input input-sm input-bordered w-24">
                         </div>
-                        <button type="submit" class="btn btn-sm">{{ __('inventory.overview.set_levels') }}</button>
+                        <x-button type="submit" tone="plain">{{ __('inventory.overview.set_levels') }}</x-button>
                     </form>
                 </x-card>
             @endif

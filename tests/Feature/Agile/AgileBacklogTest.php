@@ -169,6 +169,91 @@ final class AgileBacklogTest extends TestCase {
         $this->assertSame(0, \App\Models\Agile\AgileAcceptanceCriterion::query()->count());
     }
 
+    public function test_backlog_offers_the_edit_dialog(): void {
+        $item = app(AgileWorkItemService::class)->create($this->board, ['title' => 'Anmeldung', 'item_type' => 'story', 'story_points' => 3], $this->lead);
+        $project = $this->board->project()->firstOrFail();
+
+        $this->actingAs($this->lead)->get(route('agile.backlog', $project))
+            ->assertOk()
+            ->assertSee(route('agile.items.edit', [$project, $item]), false);
+
+        $this->actingAs($this->lead)->get(route('agile.items.edit', [$project, $item]))
+            ->assertOk()
+            ->assertSee(route('agile.items.update', [$project, $item]), false)
+            ->assertSee('Anmeldung')
+            ->assertSee('value="epic"', false)
+            ->assertSee('value="3"', false);
+    }
+
+    public function test_item_update_changes_type_and_points_via_http(): void {
+        $item = app(AgileWorkItemService::class)->create($this->board, ['title' => 'Anmeldung', 'item_type' => 'story', 'story_points' => 3], $this->lead);
+        $project = $this->board->project()->firstOrFail();
+
+        $this->actingAs($this->lead)
+            ->patch(route('agile.items.update', [$project, $item]), ['item_type' => 'bug', 'story_points' => 8])
+            ->assertRedirect(route('agile.backlog', $project))
+            ->assertSessionHas('success', __('Arbeitselement aktualisiert.'));
+
+        $item->refresh();
+        $this->assertSame(\App\Enums\Agile\AgileItemType::Bug, $item->item_type);
+        $this->assertSame(8, (int) $item->story_points);
+        $event = AgileEvent::query()->where('event', 'points.changed')->firstOrFail();
+        $this->assertSame(['from' => 3, 'to' => 8], $event->payload);
+
+        // Leeres Feld des Dialogs nimmt die Schätzung zurück.
+        $this->actingAs($this->lead)
+            ->patch(route('agile.items.update', [$project, $item]), ['item_type' => 'bug', 'story_points' => ''])
+            ->assertRedirect(route('agile.backlog', $project));
+        $this->assertNull($item->refresh()->story_points);
+
+        $this->actingAs($this->lead)
+            ->patch(route('agile.items.update', [$project, $item]), ['item_type' => 'feature', 'story_points' => 0])
+            ->assertSessionHasErrors(['item_type', 'story_points']);
+    }
+
+    /** Der Dialog bietet keine Typen an, die die Epic-Regeln der Zuordnung brächen. */
+    public function test_edit_dialog_limits_the_types_inside_an_epic_hierarchy(): void {
+        $service = app(AgileWorkItemService::class);
+        $epic = $service->create($this->board, ['title' => 'Epos', 'item_type' => 'epic'], $this->lead);
+        $story = $service->create($this->board, ['title' => 'Kind', 'item_type' => 'story'], $this->lead);
+        $service->assignEpic($story, $epic, $this->lead);
+        $project = $this->board->project()->firstOrFail();
+
+        $this->actingAs($this->lead)->get(route('agile.items.edit', [$project, $story]))
+            ->assertOk()
+            ->assertSee('value="story"', false)
+            ->assertDontSee('value="epic"', false);
+
+        $this->actingAs($this->lead)->get(route('agile.items.edit', [$project, $epic]))
+            ->assertOk()
+            ->assertSee('value="epic"', false)
+            ->assertDontSee('value="story"', false);
+    }
+
+    public function test_item_edit_needs_the_prioritize_right_the_own_project_and_organization(): void {
+        $item = app(AgileWorkItemService::class)->create($this->board, ['title' => 'Anmeldung', 'item_type' => 'story'], $this->lead);
+        $project = $this->board->project()->firstOrFail();
+
+        // Rolle „user" arbeitet auf dem Board, priorisiert aber nicht.
+        $member = User::factory()->user()->create(['organization_id' => $this->board->organization_id]);
+        $this->actingAs($member)->get(route('agile.items.edit', [$project, $item]))->assertForbidden();
+        $this->actingAs($member)->patch(route('agile.items.update', [$project, $item]), ['item_type' => 'bug'])->assertForbidden();
+
+        // Element eines anderen Projekts derselben Organisation.
+        $otherProject = Project::factory()->create(['organization_id' => $this->board->organization_id]);
+        app(AgileBoardService::class)->activate($otherProject, actor: $this->lead);
+        $this->actingAs($this->lead)->get(route('agile.items.edit', [$otherProject, $item]))->assertNotFound();
+        $this->actingAs($this->lead)->patch(route('agile.items.update', [$otherProject, $item]), ['item_type' => 'bug'])->assertNotFound();
+
+        // Fremde Organisation: Projekt und Element lösen gar nicht erst auf.
+        $foreignOrg = Organization::factory()->create();
+        $foreignLead = User::factory()->teamleitung()->create(['organization_id' => $foreignOrg->id]);
+        $this->actingAs($foreignLead)->get(route('agile.items.edit', [$project, $item]))->assertNotFound();
+        $this->actingAs($foreignLead)->patch(route('agile.items.update', [$project, $item]), ['item_type' => 'bug'])->assertNotFound();
+
+        $this->assertSame(\App\Enums\Agile\AgileItemType::Story, $item->refresh()->item_type);
+    }
+
     public function test_points_change_records_event(): void {
         $item = app(AgileWorkItemService::class)->create($this->board, ['title' => 'A'], $this->lead);
 

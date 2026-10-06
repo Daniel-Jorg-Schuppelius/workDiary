@@ -22,7 +22,7 @@
 @endphp
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar :subtitle="__('club.subtitle.member_show', ['no' => $member->displayNo(), 'joined' => $member->joined_on->format('d.m.Y')])"
+        <x-page-toolbar :subtitle="__('club.subtitle.member_show', ['no' => $member->displayNo(), 'joined' => $member->joined_on->fdate()])"
                         :badge="$hasLeft ? __('club.label.left') : $member->kind->label()"
                         :badgeTone="$hasLeft ? 'ghost' : $member->kind->tone()"
                         back-route="club.members.index" :back-label="__('club.action.back')">
@@ -55,7 +55,7 @@
                     <x-detail-grid.row :label="__('club.field.name')" :value="$member->fullName()" />
                     <x-detail-grid.row :label="__('club.field.birth_date')">
                         @if ($member->birth_date)
-                            {{ $member->birth_date->format('d.m.Y') }}
+                            {{ $member->birth_date->fdate() }}
                             <span class="text-muted">· {{ trans_choice('club.label.age_years', $age ?? 0, ['age' => $age ?? 0]) }}</span>
                         @else
                             <span class="text-muted">{{ __('club.label.without_birth_date') }}</span>
@@ -67,9 +67,9 @@
                     <x-detail-grid.row :label="__('club.field.kind')">
                         <x-status-badge :tone="$member->kind->tone()" size="sm">{{ $member->kind->label() }}</x-status-badge>
                     </x-detail-grid.row>
-                    <x-detail-grid.row :label="__('club.field.joined_on')" :value="$member->joined_on->format('d.m.Y')" />
+                    <x-detail-grid.row :label="__('club.field.joined_on')" :value="$member->joined_on->fdate()" />
                     @if ($member->left_on)
-                        <x-detail-grid.row :label="__('club.field.left_on')" :value="$member->left_on->format('d.m.Y')" />
+                        <x-detail-grid.row :label="__('club.field.left_on')" :value="$member->left_on->fdate()" />
                     @endif
                     <x-detail-grid.row :label="__('club.field.user')" :value="$member->user?->name ?? __('club.label.no_account')" />
                     @if ($member->notes)
@@ -99,8 +99,8 @@
                                 @endif
                             </td>
                             <td><x-status-badge :tone="$membership->status->tone()" size="sm">{{ $membership->status->label() }}</x-status-badge></td>
-                            <td class="text-sm">{{ $membership->valid_from->format('d.m.Y') }}</td>
-                            <td class="text-sm">{{ $membership->valid_to?->format('d.m.Y') ?? __('club.label.open_end') }}</td>
+                            <td class="text-sm">{{ $membership->valid_from->fdate() }}</td>
+                            <td class="text-sm">{{ $membership->valid_to?->fdate() ?? __('club.label.open_end') }}</td>
                             <td class="text-sm text-base-content/70">{{ $membership->note ?? '–' }}</td>
                         </tr>
                     @empty
@@ -133,7 +133,7 @@
                 {{-- Beitrag (MVP-849): aktuelle Zuordnung; Details am Beitragskonto. --}}
                 <x-card :title="__('club.fees.card.member_fee')" icon="payments">
                     @if ($feeAssignment)
-                        <p class="text-sm"><strong>{{ $feeAssignment->tariff?->name }}</strong> <span class="text-xs text-muted">{{ $feeAssignment->valid_from->format('d.m.Y') }} – {{ $feeAssignment->valid_to?->format('d.m.Y') ?? __('club.label.open_end') }}</span></p>
+                        <p class="text-sm"><strong>{{ $feeAssignment->tariff?->name }}</strong> <span class="text-xs text-muted">{{ $feeAssignment->valid_from->fdate() }} – {{ $feeAssignment->valid_to?->fdate() ?? __('club.label.open_end') }}</span></p>
                         @if ($feeAssignment->account)
                             <a href="{{ route('club.fees.accounts.show', $feeAssignment->account) }}" class="link link-primary text-sm">{{ $feeAssignment->account->name }}</a>
                         @endif
@@ -148,7 +148,7 @@
                 <x-card :title="__('club.grading.title.member')" icon="military_tech" :count="$memberGrades->count()">
                     <ul class="space-y-1 text-sm">
                         @forelse ($memberGrades as $memberGrade)
-                            <li><span class="font-medium">{{ $memberGrade->grade?->name }}</span> <span class="text-xs text-muted">{{ $memberGrade->system?->discipline }} · {{ $memberGrade->obtained_on->format('d.m.Y') }}</span></li>
+                            <li><span class="font-medium">{{ $memberGrade->grade?->name }}</span> <span class="text-xs text-muted">{{ $memberGrade->system?->discipline }} · {{ $memberGrade->obtained_on->fdate() }}</span></li>
                         @empty
                             <li class="text-muted">{{ __('club.grading.label.no_grade') }}</li>
                         @endforelse
@@ -163,14 +163,14 @@
                     @if ($bests->isNotEmpty())
                         <ul class="mb-2 space-y-1 text-sm">
                             @foreach ($bests as $best)
-                                <li><span class="font-medium">{{ $best->discipline_code }}</span> {{ $best->formattedValue() }} <span class="text-xs text-muted">{{ $best->profile?->name }} · {{ $best->performed_on->format('d.m.Y') }} · {{ __('club.competitions.label.best') }}</span></li>
+                                <li><span class="font-medium">{{ $best->discipline_code }}</span> {{ $best->formattedValue() }} <span class="text-xs text-muted">{{ $best->profile?->name }} · {{ $best->performed_on->fdate() }} · {{ __('club.competitions.label.best') }}</span></li>
                             @endforeach
                         </ul>
                     @endif
                     <ul class="space-y-1 text-sm">
                         @forelse ($performances as $performance)
                             <li class="flex flex-wrap items-center gap-2">
-                                <span class="tabular-nums">{{ $performance->performed_on->format('d.m.Y') }}</span>
+                                <span class="tabular-nums">{{ $performance->performed_on->fdate() }}</span>
                                 <span>{{ $performance->discipline_code }} {{ $performance->formattedValue() }}@if ($performance->placement) · {{ __('club.competitions.label.place', ['no' => $performance->placement]) }}@endif</span>
                                 @if ($performance->event)<span class="text-xs text-muted">{{ $performance->event->title }}</span>@endif
                                 @if ($performance->isConfirmed())
@@ -186,6 +186,14 @@
                                 @if ($canRecordPerformance)
                                     <x-icon-btn icon="edit" tone="ghost" size="xs" data-entry-modal-trigger :href="route('club.members.performances.edit', [$member, $performance])" :label="__('club.competitions.action.correct_performance')" />
                                 @endif
+                                @can('delete', $performance)
+                                    <x-action-form :action="route('club.members.performances.destroy', [$member, $performance])" method="DELETE"
+                                                   :confirm="__('club.competitions.confirm.delete_performance', ['discipline' => $performance->discipline_code . ' ' . $performance->formattedValue(), 'date' => $performance->performed_on->fdate()])"
+                                                   confirm-icon="delete" confirm-tone="error"
+                                                   :confirm-label="__('club.competitions.action.delete_performance')">
+                                        <x-icon-btn type="submit" icon="delete" tone="error" size="xs" :label="__('club.competitions.action.delete_performance')" />
+                                    </x-action-form>
+                                @endcan
                             </li>
                         @empty
                             <li class="text-muted">{{ __('club.competitions.empty.performances') }}</li>
@@ -202,7 +210,7 @@
                             <li class="flex flex-wrap items-center gap-2 {{ $right->isValidOn($today) ? '' : 'opacity-60' }}">
                                 <span class="font-medium">{{ $right->profile?->name ?? __('club.competitions.label.all_profiles') }}</span>
                                 @if ($right->reference)<span class="font-mono text-xs">{{ $right->reference }}</span>@endif
-                                <span class="text-xs text-muted">{{ $right->valid_from->format('d.m.Y') }}@if ($right->valid_to) – {{ $right->valid_to->format('d.m.Y') }}@endif</span>
+                                <span class="text-xs text-muted">{{ $right->valid_from->fdate() }}@if ($right->valid_to) – {{ $right->valid_to->fdate() }}@endif</span>
                                 @if ($canGrantStartRight)
                                     <x-action-form :action="route('club.members.startrights.destroy', [$member, $right])" method="DELETE" class="ml-auto">
                                         <x-icon-btn type="submit" icon="close" tone="ghost" size="xs" :label="__('club.competitions.action.revoke_start_right')" />
@@ -244,11 +252,11 @@
                         <div class="mt-1 text-base-content/70">{{ implode(' · ', array_filter([$guardian->email, $guardian->phone, implode(', ', $guardian->postalAddressLines())])) ?: '–' }}</div>
                         <div class="mt-1 flex flex-wrap gap-1">
                             @foreach ($guardian->permissionEnums() as $permission)
-                                <span class="badge badge-ghost badge-xs">{{ $permission->label() }}</span>
+                                <x-status-badge size="xs">{{ $permission->label() }}</x-status-badge>
                             @endforeach
                         </div>
                         @if ($guardian->valid_from || $guardian->valid_to)
-                            <div class="mt-1 text-xs text-muted">{{ $guardian->valid_from?->format('d.m.Y') ?? '…' }} – {{ $guardian->valid_to?->format('d.m.Y') ?? __('club.label.open_end') }}</div>
+                            <div class="mt-1 text-xs text-muted">{{ $guardian->valid_from?->fdate() ?? '…' }} – {{ $guardian->valid_to?->fdate() ?? __('club.label.open_end') }}</div>
                         @endif
                         @if ($canManage && ! $guardian->isRevoked())
                             <div class="mt-2 flex gap-1">
@@ -272,7 +280,7 @@
                     @foreach ($member->periods->sortByDesc('starts_on') as $period)
                         <li class="flex flex-wrap items-center gap-2">
                             <x-status-badge :tone="$period->kind->tone()" size="xs">{{ $period->kind->label() }}</x-status-badge>
-                            <span>{{ $period->starts_on->format('d.m.Y') }} – {{ $period->ends_on?->format('d.m.Y') ?? __('club.label.open_end') }}</span>
+                            <span>{{ $period->starts_on->fdate() }} – {{ $period->ends_on?->fdate() ?? __('club.label.open_end') }}</span>
                             @if ($period->note)
                                 <span class="text-muted">· {{ $period->note }}</span>
                             @endif

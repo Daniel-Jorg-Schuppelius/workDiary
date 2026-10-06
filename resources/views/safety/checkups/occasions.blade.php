@@ -11,8 +11,7 @@
 @extends('layouts.app')
 @section('title', __('safety.register.title.occasions'))
 @section('nav-title', __('safety.register.title.occasions'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('safety.register.subtitle.occasions')" back-route="safety.checkups.index" :back-label="__('safety.register.title.checkups')">
     <x-slot:actions>

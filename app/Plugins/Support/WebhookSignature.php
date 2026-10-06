@@ -53,7 +53,8 @@ final class WebhookSignature {
         return hash_equals($prefix . $digest, $provided);
     }
 
-    private static function reportInvalid(): void {
+    /** Auch für {@see SvixWebhookSignature} — ein Signal für jede abgelehnte Signatur. */
+    public static function reportInvalid(): void {
         try {
             app(\App\Services\Security\SecurityEventLogger::class)->log(
                 \App\Enums\Security\SecurityEventType::WebhookSignatureInvalid,
@@ -65,6 +66,15 @@ final class WebhookSignature {
     }
 
     /** Konstantzeit-Vergleich statischer Tokens; leer/fehlend ⇒ false. */
+    /** Zeitstempel (Unix-Sekunden) liegt im Fenster — schützt signierte Zustellungen vor späterem Wiedereinspielen. */
+    public static function timestampFresh(int|string $timestamp, int $maxSkewSeconds = 300): bool {
+        if (is_string($timestamp) && ! ctype_digit($timestamp)) {
+            return false;
+        }
+
+        return abs(now()->getTimestamp() - (int) $timestamp) <= $maxSkewSeconds;
+    }
+
     public static function tokenValid(?string $expected, ?string $provided): bool {
         if ($expected === null || $expected === '' || $provided === null || $provided === '') {
             return false;

@@ -12,8 +12,7 @@
 @extends('layouts.app')
 @section('title', __('training.title.courses'))
 @section('nav-title', __('training.title.courses'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('training.subtitle.courses')">
     <x-slot:actions>
@@ -27,7 +26,7 @@
 
     <x-filter-bar :action="route('training.courses.index')" :reset="route('training.courses.index')">
         <x-filter-field :label="__('training.kpi.mandatory')" for="flt-mandatory-count">
-            <span id="flt-mandatory-count" class="badge badge-ghost badge-sm">{{ $mandatoryCount }}</span>
+            <x-status-badge id="flt-mandatory-count">{{ $mandatoryCount }}</x-status-badge>
         </x-filter-field>
         <x-filter-field :label="__('training.filter.mandatory_only')" for="flt-mandatory" class="order-40">
             <input id="flt-mandatory" type="checkbox" name="mandatory" value="1" class="toggle toggle-sm" data-autosubmit @checked($onlyMandatory)>

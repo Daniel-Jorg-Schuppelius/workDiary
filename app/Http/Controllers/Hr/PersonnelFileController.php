@@ -19,6 +19,7 @@ use App\Models\Hr\PersonnelFileSubmission;
 use App\Models\Platform\User;
 use App\Services\Document\DocumentService;
 use App\Services\Hr\PersonnelFileService;
+use App\Support\SortableQuery;
 use Illuminate\Http\{RedirectResponse, Request, UploadedFile};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -35,19 +36,19 @@ class PersonnelFileController extends Controller {
         private readonly DocumentService $documents,
     ) {}
 
-    public function index(User $member): View {
+    public function index(Request $request, User $member): View {
         Gate::authorize('viewPersonnelFile', [Document::class, $member]);
 
-        return $this->render($member, selfView: false);
+        return $this->render($request, $member, selfView: false);
     }
 
     /** Eigenauskunft: die betroffene Person sieht ihre Akte lesend. */
-    public function mine(): View {
+    public function mine(Request $request): View {
         /** @var User $user */
         $user = Auth::user();
         Gate::authorize('viewPersonnelFile', [Document::class, $user]);
 
-        return $this->render($user, selfView: true);
+        return $this->render($request, $user, selfView: true);
     }
 
     public function create(User $member): View {
@@ -107,15 +108,21 @@ class PersonnelFileController extends Controller {
         $user = Auth::user();
         $this->service->acknowledge($document, $user);
 
-        return redirect()->route('account.personnel-file')->with('success', __('hr.personnel_file.flash.acknowledged'))->withFragment('document-' . $document->id);
+        return redirect()->toList('account.personnel-file')->with('success', __('hr.personnel_file.flash.acknowledged'))->withFragment('document-' . $document->id);
     }
 
-    private function render(User $member, bool $selfView): View {
-        $documents = Document::query()
+    private function render(Request $request, User $member, bool $selfView): View {
+        $query = Document::query()
             ->personnelFilesOf($member)
-            ->with(['currentVersion', 'creator:id,name'])
-            ->orderByDesc('updated_at')
-            ->get();
+            ->with(['currentVersion', 'creator:id,name']);
+        [$sort, $dir] = SortableQuery::apply($query, $request, [
+            'title' => 'title',
+            'category' => 'hr_category',
+            'valid_until' => 'valid_until',
+            'retention_until' => 'retention_until',
+            'updated_at' => 'updated_at',
+        ], 'title', 'asc');
+        $documents = $query->orderBy('title')->orderBy('id')->paginate(30)->withQueryString();
         $canCreate = ! $selfView && Gate::allows('createPersonnelFile', [Document::class, $member]);
         $submissions = PersonnelFileSubmission::query()->where('user_id', $member->id)
             ->when(! $selfView, fn ($query) => $query->where('status', PersonnelFileSubmissionStatus::Submitted->value))
@@ -131,6 +138,8 @@ class PersonnelFileController extends Controller {
             'submissions' => $selfView || ($canCreate && (int) $member->id !== (int) Auth::id()) ? $submissions : collect(),
             'selfView' => $selfView,
             'canCreate' => $canCreate,
+            'sort' => $sort,
+            'dir' => $dir,
         ]);
     }
 }

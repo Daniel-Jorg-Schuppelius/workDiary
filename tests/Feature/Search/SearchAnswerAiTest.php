@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Search;
 
+use App\Enums\Ai\AiTextSuggestionStatus;
 use App\Enums\User\Permission;
 use App\Models\Ai\{AiCapabilitySetting, AiProviderConnection, AiTextSuggestion};
 use App\Models\Customer\{Customer, ForeignCustomer};
@@ -93,7 +94,7 @@ final class SearchAnswerAiTest extends TestCase {
         $this->actingAs($colleague)->post(route('ai.assist.reject', $suggestion))->assertNotFound();
 
         $this->actingAs($this->admin)->post(route('ai.assist.reject', $suggestion))->assertSessionHas('success');
-        $this->assertNotSame(AiTextSuggestion::STATUS_PROPOSED, $suggestion->fresh()->status);
+        $this->assertNotSame(AiTextSuggestionStatus::Proposed, $suggestion->fresh()->status);
     }
 
     public function test_without_hits_the_provider_is_not_called(): void {

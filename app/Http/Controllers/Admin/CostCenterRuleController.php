@@ -33,7 +33,8 @@ class CostCenterRuleController extends Controller {
             ->with(['user:id,name', 'team:id,name', 'costCenter:id,code,label'])
             ->orderByDesc('priority')
             ->orderBy('id')
-            ->get();
+            ->paginate(25)
+            ->withQueryString();
 
         return view('admin.cost-center-rules.index', [
             'rules' => $rules,
@@ -57,7 +58,7 @@ class CostCenterRuleController extends Controller {
 
         CostCenterRule::query()->create($this->validated($request));
 
-        return redirect()->route('admin.cost-center-rules.index')
+        return redirect()->toList('admin.cost-center-rules.index')
             ->with('success', __('costcenter.flash.created'));
     }
 
@@ -77,7 +78,7 @@ class CostCenterRuleController extends Controller {
 
         $costCenterRule->update($this->validated($request));
 
-        return redirect()->route('admin.cost-center-rules.index')
+        return redirect()->toList('admin.cost-center-rules.index')
             ->with('success', __('costcenter.flash.updated'));
     }
 
@@ -86,7 +87,7 @@ class CostCenterRuleController extends Controller {
 
         $costCenterRule->delete();
 
-        return redirect()->route('admin.cost-center-rules.index')
+        return redirect()->toList('admin.cost-center-rules.index')
             ->with('success', __('costcenter.flash.deleted'));
     }
 

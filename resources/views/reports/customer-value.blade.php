@@ -22,13 +22,13 @@
     $hhiTone = $hhi === null ? 'neutral'
         : ($hhi > \App\Services\Reporting\CustomerValueReportBuilder::HHI_HIGH ? 'error'
         : ($hhi >= \App\Services\Reporting\CustomerValueReportBuilder::HHI_MODERATE ? 'warning' : 'success'));
-    $segmentBadge = [
-        'champion' => 'badge-success',
-        'loyal' => 'badge-info',
-        'potential' => 'badge-ghost',
-        'new' => 'badge-primary',
-        'at_risk' => 'badge-warning',
-        'inactive' => 'badge-ghost',
+    $segmentTone = [
+        'champion' => 'success',
+        'loyal' => 'info',
+        'potential' => 'ghost',
+        'new' => 'primary',
+        'at_risk' => 'warning',
+        'inactive' => 'ghost',
     ];
 @endphp
 
@@ -36,17 +36,7 @@
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="__('RFM-Segmente, Umsatzkonzentration und gefährdete A-Kunden.')">
             <x-slot:actions>
-                <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
-                            :href="route('reports.customer-value', array_merge($linkParams, ['export' => 'pdf']))"
-                            show-label>PDF</x-icon-btn>
-                <x-action-menu icon="download" tone="outline" :label="__('Export')">
-                    <x-icon-btn icon="download" tone="outline" size="sm"
-                                :href="route('reports.customer-value', array_merge($linkParams, ['export' => 'csv']))"
-                                show-label>CSV</x-icon-btn>
-                    <x-icon-btn icon="table_view" tone="outline" size="sm"
-                                :href="route('reports.customer-value', array_merge($linkParams, ['export' => 'xlsx']))"
-                                show-label>Excel</x-icon-btn>
-                </x-action-menu>
+                <x-report-export :url="fn (string $format) => route('reports.customer-value', array_merge($linkParams, ['export' => $format]))" />
                 <x-help-button topic="reports.customer-value" />
             </x-slot:actions>
         </x-page-toolbar>
@@ -86,7 +76,7 @@
     <x-card class="mt-4">
         <h2 class="mb-2 font-['Space_Grotesk'] text-sm font-semibold">{{ __('Gefährdete A-Kunden') }}</h2>
         @if (count($riskRows) === 0)
-            <p class="text-sm text-muted">{{ __('Kein A-Kunde ist seit :days Tagen ohne Leistung — gut so.', ['days' => $riskDays]) }}</p>
+            <x-empty-state icon="check_circle" :title="__('Kein A-Kunde ist seit :days Tagen ohne Leistung — gut so.', ['days' => $riskDays])" compact />
         @else
             <x-table bare>
                 <x-slot:head>
@@ -117,9 +107,9 @@
         <div class="mb-2 flex flex-wrap items-center gap-3">
             <div class="text-xs text-muted">{{ __('Zeitraum') }}: {{ $label }}</div>
             @if ($segment !== null)
-                <span class="badge badge-sm {{ $segmentBadge[$segment] ?? 'badge-ghost' }}">
+                <x-status-badge :tone="$segmentTone[$segment] ?? 'ghost'">
                     {{ __('Segment') }}: {{ $segmentLabels[$segment] ?? $segment }}
-                </span>
+                </x-status-badge>
                 <a href="{{ route('reports.customer-value', $linkParams) }}#kundenliste" class="link text-xs">{{ __('Segmentfilter aufheben') }}</a>
             @endif
         </div>
@@ -132,12 +122,12 @@
                 {{ __('Jeder aktive Kunde erhält drei Quintil-Scores von 1 (unterstes Fünftel) bis 5 (oberstes Fünftel): R (Recency: je kürzer die letzte Leistung her ist, desto höher), F (Frequency: Aktivitätstage im Zeitraum) und M (Monetary: Erlös im Zeitraum). Die erste zutreffende Regel bestimmt das Segment:') }}
             </p>
             <ul class="mt-2 list-disc space-y-1 pl-5 text-base-content/70">
-                <li><span class="badge badge-ghost badge-sm">{{ $segmentLabels['inactive'] }}</span> — {{ __('keine Leistung im Zeitraum, oder R ≤ 2 ohne hohen Erlös') }}</li>
-                <li><span class="badge badge-primary badge-sm">{{ $segmentLabels['new'] }}</span> — {{ __('Erstleistung liegt im Zeitraum') }}</li>
-                <li><span class="badge badge-success badge-sm">{{ $segmentLabels['champion'] }}</span> — {{ __('R ≥ 4 und F ≥ 4 und M ≥ 4') }}</li>
-                <li><span class="badge badge-warning badge-sm">{{ $segmentLabels['at_risk'] }}</span> — {{ __('R ≤ 2 bei M ≥ 4 (umsatzstark, aber lange keine Leistung)') }}</li>
-                <li><span class="badge badge-info badge-sm">{{ $segmentLabels['loyal'] }}</span> — {{ __('F ≥ 3 (regelmäßige Leistung)') }}</li>
-                <li><span class="badge badge-ghost badge-sm">{{ $segmentLabels['potential'] }}</span> — {{ __('alle übrigen aktiven Kunden') }}</li>
+                <li><x-status-badge>{{ $segmentLabels['inactive'] }}</x-status-badge> — {{ __('keine Leistung im Zeitraum, oder R ≤ 2 ohne hohen Erlös') }}</li>
+                <li><x-status-badge tone="primary">{{ $segmentLabels['new'] }}</x-status-badge> — {{ __('Erstleistung liegt im Zeitraum') }}</li>
+                <li><x-status-badge tone="success">{{ $segmentLabels['champion'] }}</x-status-badge> — {{ __('R ≥ 4 und F ≥ 4 und M ≥ 4') }}</li>
+                <li><x-status-badge tone="warning">{{ $segmentLabels['at_risk'] }}</x-status-badge> — {{ __('R ≤ 2 bei M ≥ 4 (umsatzstark, aber lange keine Leistung)') }}</li>
+                <li><x-status-badge tone="info">{{ $segmentLabels['loyal'] }}</x-status-badge> — {{ __('F ≥ 3 (regelmäßige Leistung)') }}</li>
+                <li><x-status-badge>{{ $segmentLabels['potential'] }}</x-status-badge> — {{ __('alle übrigen aktiven Kunden') }}</li>
             </ul>
         </details>
 
@@ -166,7 +156,7 @@
                                 {{ $row['customerName'] }}
                             </a>
                         </td>
-                        <td><span class="badge badge-sm {{ $segmentBadge[$row['segment']] ?? 'badge-ghost' }}">{{ $segmentLabels[$row['segment']] ?? $row['segment'] }}</span></td>
+                        <td><x-status-badge :tone="$segmentTone[$row['segment']] ?? 'ghost'">{{ $segmentLabels[$row['segment']] ?? $row['segment'] }}</x-status-badge></td>
                         <td class="text-right tabular-nums">{{ $row['recencyDays'] ?? '—' }}</td>
                         <td class="text-right tabular-nums">{{ $row['frequencyDays'] }}</td>
                         <td class="text-right tabular-nums">{{ $eur($row['revenue']) }}</td>

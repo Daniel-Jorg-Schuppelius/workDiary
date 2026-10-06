@@ -13,10 +13,12 @@ declare(strict_types=1);
 namespace App\Plugins\Todoist\Services;
 
 use App\Contracts\Integration\IntegrationOutboxDispatcher;
+use App\Enums\Integration\IntegrationInboxStatus;
 use App\Enums\Task\{TaskPriority, TaskStatus};
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem, IntegrationOutboxEntry};
 use App\Models\Project\Task;
 use App\Plugins\Todoist\Api\TodoistApiClient;
+use App\Plugins\Todoist\Enums\TodoistProjectLinkStatus;
 use App\Plugins\Todoist\Models\{TodoistConnection, TodoistProjectLink};
 use App\Plugins\Todoist\TodoistPlugin;
 use CommonToolkit\Helper\Data\CryptoHelper;
@@ -67,7 +69,7 @@ class TodoistOutboxDispatcher implements IntegrationOutboxDispatcher {
         }
 
         $link = $this->resolveLink($task);
-        if ($link === null || ! $link->exportsToTodoist() || $link->status !== TodoistProjectLink::STATUS_ACTIVE) {
+        if ($link === null || ! $link->exportsToTodoist() || $link->status !== TodoistProjectLinkStatus::Active) {
             return true; // Exportrichtung nicht (mehr) aktiv
         }
 
@@ -160,7 +162,7 @@ class TodoistOutboxDispatcher implements IntegrationOutboxDispatcher {
         }
 
         $link = $this->resolveLink($task);
-        if ($link === null || ! $link->exportsToTodoist() || $link->status !== TodoistProjectLink::STATUS_ACTIVE) {
+        if ($link === null || ! $link->exportsToTodoist() || $link->status !== TodoistProjectLinkStatus::Active) {
             return true; // Exportrichtung nicht (mehr) aktiv → bewusst kein Transfer
         }
 
@@ -179,7 +181,7 @@ class TodoistOutboxDispatcher implements IntegrationOutboxDispatcher {
             ->where('organization_id', $entry->organization_id)
             ->where('plugin_id', TodoistPlugin::ID)
             ->where('dedupe_key', 'task-conflict:' . $reference->external_id)
-            ->where('status', IntegrationInboxItem::STATUS_OPEN)
+            ->where('status', IntegrationInboxStatus::Open)
             ->value('diff_fields') ?? []);
 
         // Nur von der Konfliktbasis abweichende Felder übertragen.

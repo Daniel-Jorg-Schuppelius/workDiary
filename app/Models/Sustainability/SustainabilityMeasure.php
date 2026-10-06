@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Sustainability;
 
+use App\Enums\Sustainability\SustainabilityMeasureStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
@@ -32,7 +33,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string|null $cost_estimate
  * @property int|null $responsible_user_id
  * @property \Illuminate\Support\Carbon|null $due_on
- * @property string $status
+ * @property SustainabilityMeasureStatus $status
  * @property string|null $evidence_note
  * @property string|null $effectiveness
  * @property string|null $effectiveness_note
@@ -43,8 +44,6 @@ class SustainabilityMeasure extends Model {
     use Auditable;
     use BelongsToOrganization;
     use HasSqid;
-
-    public const STATUSES = ['proposed', 'approved', 'in_progress', 'done', 'discarded'];
 
     protected $fillable = [
         'organization_id', 'assessment_id', 'title', 'description',
@@ -57,6 +56,7 @@ class SustainabilityMeasure extends Model {
     protected $casts = [
         'cost_estimate' => 'decimal:2',
         'due_on' => 'date',
+        'status' => SustainabilityMeasureStatus::class,
         'reviewed_at' => 'datetime',
     ];
 

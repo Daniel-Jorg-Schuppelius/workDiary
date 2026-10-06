@@ -127,7 +127,8 @@ final class XlsxExport {
         foreach ($headers as $label) {
             $letter = Coordinate::stringFromColumnIndex($col);
             $coord = $letter . '1';
-            $sheet->setCellValue($coord, (string) $label);
+            // Ausdrücklich Text: der Standard-Binder macht aus `=…` eine Formelzelle (xi-3).
+            $sheet->getCell($coord)->setValueExplicit((string) $label, DataType::TYPE_STRING);
             $sheet->getStyle($coord)->getFont()->setBold(true);
             $col++;
         }

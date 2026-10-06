@@ -30,6 +30,7 @@ use Illuminate\Support\Carbon;
  * @property string $zone
  * @property string $zone_hash
  * @property array<string, mixed>|null $soa
+ * @property list<string>|null $unparsed_records Rohzeilen, die sich nicht deuten lassen (unbekannter Typ)
  * @property string|null $revision
  * @property string|null $raw_hash
  * @property Carbon|null $synced_at
@@ -49,6 +50,7 @@ class DomainDnsZoneProjection extends Model {
         'zone',
         'zone_hash',
         'soa',
+        'unparsed_records',
         'revision',
         'raw_hash',
         'synced_at',
@@ -57,6 +59,7 @@ class DomainDnsZoneProjection extends Model {
     /** @var array<string, string> */
     protected $casts = [
         'soa' => 'array',
+        'unparsed_records' => 'array',
         'synced_at' => 'datetime',
     ];
 

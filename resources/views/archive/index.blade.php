@@ -9,6 +9,7 @@
 @extends('layouts.app')
 @section('title', __('Archiv') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('Archiv'))
+@include('partials.page-fill')
 
 @section('content')
     @php
@@ -139,165 +140,7 @@
             @endforeach
         </div>
 
-        {{-- Tabellenbereich --}}
-        <div class="flex-1 min-h-0 overflow-auto rounded-box border border-base-300 bg-base-100 shadow-xs">
-            @if ($tab === 'urlaub')
-                <?php $p = array_merge($filters ?? [], ['tab' => 'urlaub']); ?>
-                <x-table table-sort="server" :route="route('archive.index')" :current-sort="$sort ?? null" :current-dir="$dir ?? 'desc'" :sort-params="$p" pin-rows bare scroll="none">
-                    <x-slot:head>
-                        <tr class="bg-base-200">
-                            @if ($isAdmin)
-                                <x-table.th sort="mitarbeiter" class="w-32">{{ __('Mitarbeiter') }}</x-table.th>
-                            @endif
-                            <x-table.th sort="typ">{{ __('Typ') }}</x-table.th>
-                            <x-table.th sort="start" class="w-28 whitespace-nowrap">{{ __('Von') }}</x-table.th>
-                            <x-table.th sort="end" default="desc" class="w-28 whitespace-nowrap">{{ __('Bis') }}</x-table.th>
-                            <x-table.th sort="status">{{ __('Status') }}</x-table.th>
-                            <th class="max-w-xs">{{ __('Notiz') }}</th>
-                        </tr>
-                    </x-slot:head>
-                    @forelse ($vacationEntries as $v)
-                        @php
-                            $statusBadge = match ($v->status) {
-                                VacationStatus::Approved  => 'badge-success',
-                                VacationStatus::Rejected  => 'badge-error',
-                                VacationStatus::Cancelled => 'badge-ghost',
-                                default                   => 'badge-neutral',
-                            };
-                            $statusLabel = match ($v->status) {
-                                VacationStatus::Approved  => __('Abgelaufen'),
-                                VacationStatus::Rejected  => __('Abgelehnt'),
-                                VacationStatus::Cancelled => __('Storniert'),
-                                default                   => $v->statusLabel(),
-                            };
-                            $typeLabel = $v->typeLabel();
-                        @endphp
-                        <tr class="hover">
-                            @if ($isAdmin)
-                                <td class="whitespace-nowrap">{{ $v->user?->name ?? '—' }}</td>
-                            @endif
-                            <td class="whitespace-nowrap">{{ $typeLabel }}</td>
-                            <td class="whitespace-nowrap text-xs text-base-content/70">{{ $v->start_date->fdate() }}</td>
-                            <td class="whitespace-nowrap text-xs text-base-content/70">{{ $v->end_date->fdate() }}</td>
-                            <td><span class="badge badge-sm {{ $statusBadge }}">{{ $statusLabel }}</span></td>
-                            <td class="max-w-xs truncate text-sm text-base-content/70">{{ $v->note ?? '—' }}</td>
-                        </tr>
-                    @empty
-                        <x-table.empty icon="beach_access" :colspan="$isAdmin ? 6 : 5" :title="__('Keine Einträge')" compact />
-                    @endforelse
-                </x-table>
-            @elseif ($tab === 'diary')
-                <?php $p = array_merge($filters ?? [], ['tab' => 'diary']); ?>
-                <x-table table-sort="server" :route="route('archive.index')" :current-sort="$sort ?? null" :current-dir="$dir ?? 'desc'" :sort-params="$p" pin-rows bare scroll="none">
-                    <x-slot:head>
-                        <tr class="bg-base-200">
-                            <x-table.th sort="mitarbeiter" class="w-32">{{ __('Mitarbeiter') }}</x-table.th>
-                            <x-table.th sort="status" class="w-24 text-center">{{ __('Status') }}</x-table.th>
-                            <x-table.th sort="start" class="w-28 whitespace-nowrap">{{ __('Von') }}</x-table.th>
-                            <x-table.th sort="end" class="w-28 whitespace-nowrap">{{ __('Bis') }}</x-table.th>
-                            <x-table.th sort="archived" default="desc" class="w-36 whitespace-nowrap">{{ __('Archiviert am') }}</x-table.th>
-                            <th>{{ __('Inhalt') }}</th>
-                        </tr>
-                    </x-slot:head>
-                    @forelse ($diaryEntries as $entry)
-                        <tr class="hover">
-                            <td class="whitespace-nowrap">{{ $entry->user?->name ?? '—' }}</td>
-                            <td class="text-center">
-                                <span @class([
-                                    'badge badge-sm',
-                                    'badge-success' => $entry->statusTone() === 'done',
-                                    'badge-info'    => $entry->statusTone() === 'progress',
-                                    'badge-warning' => $entry->statusTone() === 'open',
-                                    'badge-error'   => $entry->statusTone() === 'alert',
-                                    'badge-ghost'   => $entry->statusTone() === 'neutral',
-                                ])>{{ $entry->statusLabel() }}</span>
-                            </td>
-                            <td class="whitespace-nowrap text-xs text-base-content/70">{{ $entry->start_at?->fdatetime() ?? '—' }}</td>
-                            <td class="whitespace-nowrap text-xs text-base-content/70">{{ $entry->end_at?->fdatetime() ?? '—' }}</td>
-                            <td class="whitespace-nowrap text-xs text-base-content/70">{{ $entry->archived_at?->fdate() ?? '—' }}</td>
-                            <td class="text-sm">{{ \CommonToolkit\Helper\Data\StringHelper::truncate($entry->content ?? '', 160) }}</td>
-                        </tr>
-                    @empty
-                        <x-table.empty icon="menu_book" :colspan="6" :title="__('Keine Einträge')" compact />
-                    @endforelse
-                </x-table>
-            @elseif ($tab === 'bereitschaft')
-                <?php $p = array_merge($filters ?? [], ['tab' => 'bereitschaft']); ?>
-                <x-table table-sort="server" :route="route('archive.index')" :current-sort="$sort ?? null" :current-dir="$dir ?? 'desc'" :sort-params="$p" pin-rows bare scroll="none">
-                    <x-slot:head>
-                        <tr class="bg-base-200">
-                            <x-table.th sort="mitarbeiter" class="w-32">{{ __('Mitarbeiter') }}</x-table.th>
-                            <x-table.th sort="start" class="w-28 whitespace-nowrap">{{ __('Von') }}</x-table.th>
-                            <x-table.th sort="end" default="desc" class="w-28 whitespace-nowrap">{{ __('Bis') }}</x-table.th>
-                            <th>{{ __('Dauer') }}</th>
-                            <th>{{ __('Notiz') }}</th>
-                        </tr>
-                    </x-slot:head>
-                    @forelse ($shiftEntries as $entry)
-                        @php
-                            $duration = ($entry->start_at && $entry->end_at)
-                                ? ((int) $entry->start_at->copy()->startOfDay()->diffInDays($entry->end_at->copy()->startOfDay()) + 1)
-                                : null;
-                        @endphp
-                        <tr class="hover">
-                            <td class="whitespace-nowrap">{{ $entry->user?->name ?? '—' }}</td>
-                            <td class="whitespace-nowrap text-xs">{{ $entry->start_at?->fdatetime() ?? '—' }}</td>
-                            <td class="whitespace-nowrap text-xs">{{ $entry->end_at?->fdatetime() ?? '—' }}</td>
-                            <td class="text-xs text-base-content/70">
-                                {{ $duration !== null ? trans_choice('{1} :n Tag|[2,*] :n Tage', $duration, ['n' => $duration]) : '—' }}
-                            </td>
-                            <td class="max-w-xs truncate text-sm">{{ $entry->note ?? '—' }}</td>
-                        </tr>
-                    @empty
-                        <x-table.empty icon="notifications_active" :colspan="5" :title="__('Keine Einträge')" compact />
-                    @endforelse
-                </x-table>
-            @else
-                <?php $p = array_merge($filters ?? [], ['tab' => 'notdienst']); ?>
-                <x-table table-sort="server" :route="route('archive.index')" :current-sort="$sort ?? null" :current-dir="$dir ?? 'desc'" :sort-params="$p" pin-rows bare scroll="none">
-                    <x-slot:head>
-                        <tr class="bg-base-200">
-                            <x-table.th sort="mitarbeiter" class="w-32">{{ __('Mitarbeiter') }}</x-table.th>
-                            <x-table.th sort="start" class="w-28 whitespace-nowrap">{{ __('Von') }}</x-table.th>
-                            <x-table.th sort="end" default="desc" class="w-28 whitespace-nowrap">{{ __('Bis') }}</x-table.th>
-                            <th>{{ __('Dauer') }}</th>
-                            <th>{{ __('Grund') }}</th>
-                        </tr>
-                    </x-slot:head>
-                    @forelse ($assignmentEntries as $entry)
-                        @php
-                            $duration = ($entry->start_at && $entry->end_at)
-                                ? ((int) $entry->start_at->copy()->startOfDay()->diffInDays($entry->end_at->copy()->startOfDay()) + 1)
-                                : null;
-                        @endphp
-                        <tr class="hover">
-                            <td class="whitespace-nowrap">{{ $entry->user?->name ?? '—' }}</td>
-                            <td class="whitespace-nowrap text-xs">{{ $entry->start_at?->fdatetime() ?? '—' }}</td>
-                            <td class="whitespace-nowrap text-xs">{{ $entry->end_at?->fdatetime() ?? '—' }}</td>
-                            <td class="text-xs text-base-content/70">
-                                {{ $duration !== null ? trans_choice('{1} :n Tag|[2,*] :n Tage', $duration, ['n' => $duration]) : '—' }}
-                            </td>
-                            <td class="max-w-xs truncate text-sm">{{ $entry->reason ?? '—' }}</td>
-                        </tr>
-                    @empty
-                        <x-table.empty icon="medical_services" :colspan="5" :title="__('Keine Einträge')" compact />
-                    @endforelse
-                </x-table>
-            @endif
-        </div>
-
-        {{-- Paginierung --}}
-        @php
-            $activePaginator = match ($tab) {
-                'bereitschaft' => $shiftEntries,
-                'notdienst'    => $assignmentEntries,
-                'urlaub'       => $vacationEntries,
-                default        => $diaryEntries,
-            };
-        @endphp
-        <x-pagination :paginator="$activePaginator" standing />
-
-        {{-- Admin: Archivierung starten --}}
+        {{-- Admin: Archivierung starten — vor der Voll-Höhe-Tabelle, darunter läge sie unter dem Fold. --}}
         @if ($isAdmin)
             <details class="flex-none rounded-box border border-base-300 bg-base-200">
                 <summary class="cursor-pointer px-4 py-2 text-sm font-semibold">
@@ -317,6 +160,28 @@
                 </form>
             </details>
         @endif
+
+        {{-- Je Reiter eine Teilvorlage: so bleibt die Voll-Höhe-Tabelle das letzte Element der Seite. --}}
+        @if ($tab === 'urlaub')
+            @include('archive._tab_urlaub')
+        @elseif ($tab === 'diary')
+            @include('archive._tab_diary')
+        @elseif ($tab === 'bereitschaft')
+            @include('archive._tab_bereitschaft')
+        @else
+            @include('archive._tab_notdienst')
+        @endif
+
+        {{-- Paginierung --}}
+        @php
+            $activePaginator = match ($tab) {
+                'bereitschaft' => $shiftEntries,
+                'notdienst'    => $assignmentEntries,
+                'urlaub'       => $vacationEntries,
+                default        => $diaryEntries,
+            };
+        @endphp
+        <x-pagination :paginator="$activePaginator" standing />
 
     </x-index-page>
 @endsection

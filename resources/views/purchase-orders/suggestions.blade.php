@@ -9,8 +9,7 @@
 @extends('layouts.app')
 @section('title', __('procurement.ui.suggestions_title') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('procurement.ui.suggestions_title'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('procurement.subtitle')">

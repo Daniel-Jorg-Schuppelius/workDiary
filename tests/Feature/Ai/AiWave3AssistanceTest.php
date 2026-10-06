@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Ai;
 
+use App\Enums\Ai\AiTextSuggestionStatus;
 use App\Enums\Document\DocumentType;
 use App\Enums\Import\{ImportEntity, ImportRunState};
 use App\Enums\User\Permission;
@@ -252,7 +253,7 @@ class AiWave3AssistanceTest extends TestCase {
             ['header' => 'Bezeichnung des Betriebs', 'target' => 'name'],
         ]])->assertSessionHas('success');
 
-        $this->assertSame(AiTextSuggestion::STATUS_ACCEPTED, $suggestion->fresh()?->status);
+        $this->assertSame(AiTextSuggestionStatus::Accepted, $suggestion->fresh()?->status);
         $this->assertTrue(\App\Models\Audit\AuditLog::query()->where('event', 'ai.suggestion_decided')->where('changes->decision', 'accepted')->exists());
         $this->assertSame(ImportRunState::AwaitingApproval, ImportRun::query()->latest('id')->firstOrFail()->state);
     }

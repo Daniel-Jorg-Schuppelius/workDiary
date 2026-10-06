@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers\Finance;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Invoicing\Invoice;
 use App\Services\Invoicing\{DunningException, DunningService};
@@ -122,7 +123,7 @@ class DunningRunController extends Controller {
     private function partition(): array {
         $today = CarbonImmutable::today();
         $invoices = Invoice::query()
-            ->whereIn('status', [Invoice::STATUS_ISSUED, Invoice::STATUS_PARTIALLY_PAID])
+            ->whereIn('status', [InvoiceStatus::Issued, InvoiceStatus::PartiallyPaid])
             ->whereNotNull('due_on')
             ->whereDate('due_on', '<', $today->toDateString())
             ->with(['customer.organization'])

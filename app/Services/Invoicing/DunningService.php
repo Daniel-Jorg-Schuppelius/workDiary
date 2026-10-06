@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Invoicing;
 
+use App\Enums\Document\DocumentDispatchStatus;
 use App\Mail\DunningMail;
 use App\Models\Document\DocumentDispatch;
 use App\Models\Finance\CashEntry;
@@ -129,11 +130,15 @@ final class DunningService {
         return $this->openAmount($invoice)->plus(Money::ofFloat($extra, $invoice->documentCurrency()));
     }
 
-    /** Bereits gezahlt: Zahlungszuordnungen plus Bareinnahmen der Kasse (MVP-875 zeigt sie im Mahnschreiben). */
+    /**
+     * Bereits gezahlt: Zahlungszuordnungen plus Bareinnahmen der Kasse (MVP-875 zeigt sie im Mahnschreiben).
+     * Stornierte Bareinnahmen zählen nicht — das Storno trägt keinen Rechnungsbezug (Sicherheitsaudit 2026-10-04, li-1).
+     */
     public function paidAmount(Invoice $invoice): Money {
         $cash = (float) CashEntry::query()
             ->where('invoice_id', $invoice->id)
             ->where('direction', CashEntry::DIRECTION_IN)
+            ->whereDoesntHave('reversal')
             ->sum('amount');
 
         return Money::ofFloat(round($this->reconciliation->allocatedSum($invoice) + $cash, 2), $invoice->documentCurrency());
@@ -298,7 +303,7 @@ final class DunningService {
                 'document_id' => $invoice->id,
                 'channel' => DocumentDispatch::CHANNEL_EMAIL,
                 'format' => 'pdf',
-                'status' => 'queued',
+                'status' => DocumentDispatchStatus::Queued,
                 'recipient' => $email,
                 'sha256' => null,
                 'meta' => $meta,

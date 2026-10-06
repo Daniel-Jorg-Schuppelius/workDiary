@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\BuchhaltungsButler\Observers;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Invoicing\Invoice;
 use App\Plugins\BuchhaltungsButler\{BhbConfig, BuchhaltungsButlerPlugin};
 use App\Plugins\BuchhaltungsButler\Services\BhbOutboxDispatcher;
@@ -29,7 +30,7 @@ use App\Services\Integration\IntegrationOutboxService;
 class BhbInvoiceObserver {
     public function saved(Invoice $invoice): void {
         // Nur beim Eintritt in „ausgestellt" (Erstellung oder Statuswechsel).
-        if ($invoice->status !== Invoice::STATUS_ISSUED) {
+        if ($invoice->status !== InvoiceStatus::Issued) {
             return;
         }
         if (! $invoice->wasRecentlyCreated && ! array_key_exists('status', $invoice->getChanges())) {

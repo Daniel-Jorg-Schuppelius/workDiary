@@ -129,7 +129,7 @@ class FormTemplateController extends Controller {
         $this->service->deleteTemplate($template, $actor);
 
         return redirect()
-            ->route('form-templates.index')
+            ->toList('form-templates.index')
             ->with('success', __('form.flash.template_deleted'));
     }
 

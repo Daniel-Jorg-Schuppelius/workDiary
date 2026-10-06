@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Invoicing;
 
 use App\Enums\Article\ArticleType;
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Article\{Article, ArticleVariant};
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\{Invoice, InvoiceItem};
@@ -67,7 +68,7 @@ final class FreeInvoiceTest extends TestCase {
         $first = $this->actingAs($this->admin)->post(route('invoices.store'), $this->manualPayload(['draft_token' => $token]));
         $first->assertRedirect();
         $invoice = Invoice::query()->latest('id')->firstOrFail();
-        $this->assertSame(Invoice::STATUS_DRAFT, $invoice->status);
+        $this->assertSame(InvoiceStatus::Draft, $invoice->status);
         $this->assertSame(Invoice::TYPE_INVOICE, $invoice->type);
         $this->assertStringStartsWith('R', (string) $invoice->number);
         $this->assertSame(0, $invoice->items()->count());
@@ -94,7 +95,7 @@ final class FreeInvoiceTest extends TestCase {
         $invoice = $this->draft();
 
         $this->actingAs($this->admin)->post(route('invoices.issue', $invoice))->assertSessionHas('error');
-        $this->assertSame(Invoice::STATUS_DRAFT, $invoice->refresh()->status);
+        $this->assertSame(InvoiceStatus::Draft, $invoice->refresh()->status);
 
         try {
             app(InvoiceIssueService::class)->issue($invoice);
@@ -102,13 +103,13 @@ final class FreeInvoiceTest extends TestCase {
         } catch (InvoiceIssueException $e) {
             $this->assertSame(InvoiceIssueException::REASON_EMPTY, $e->reason);
         }
-        $this->assertSame(Invoice::STATUS_DRAFT, $invoice->refresh()->status);
+        $this->assertSame(InvoiceStatus::Draft, $invoice->refresh()->status);
 
         $this->actingAs($this->admin)->get(route('invoices.show', $invoice))->assertOk()->assertSee(__('invoicing.free.hint.empty_draft'));
 
         $this->actingAs($this->admin)->post(route('invoices.items.store', $invoice), ['description' => 'Montage pauschal', 'quantity' => '1', 'unit' => 'pausch.', 'unit_price' => '120.00'])->assertRedirect();
         $this->actingAs($this->admin)->post(route('invoices.issue', $invoice))->assertSessionMissing('error');
-        $this->assertSame(Invoice::STATUS_ISSUED, $invoice->refresh()->status);
+        $this->assertSame(InvoiceStatus::Issued, $invoice->refresh()->status);
     }
 
     public function test_article_material_and_flat_service_combine_to_the_documented_totals_with_frozen_snapshots(): void {
@@ -159,7 +160,7 @@ final class FreeInvoiceTest extends TestCase {
         $invoice->update(['buyer_reference' => '04011000-12345-67']);
 
         $this->actingAs($this->admin)->post(route('invoices.issue', $invoice))->assertSessionMissing('error');
-        $this->assertSame(Invoice::STATUS_ISSUED, $invoice->refresh()->status);
+        $this->assertSame(InvoiceStatus::Issued, $invoice->refresh()->status);
         $this->actingAs($this->admin)->get(route('invoices.pdf', $invoice))->assertOk();
         $xml = $this->actingAs($this->admin)->get(route('invoices.einvoice', $invoice))->assertOk()->getContent();
         $this->assertStringContainsString('833.00', (string) $xml);

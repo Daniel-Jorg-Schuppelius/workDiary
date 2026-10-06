@@ -15,6 +15,7 @@ use App\Plugins\{PluginDiscovery, PluginHealth};
 use App\Plugins\Sharepoint\Api\{SharepointDriveClient, SharepointOAuth};
 use App\Plugins\Sharepoint\Models\SharepointConnection;
 use App\Plugins\Sharepoint\SharepointPlugin;
+use App\Plugins\Support\OAuthConnectionStatus;
 use GuzzleHttp\{Client as GuzzleClient, HandlerStack};
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\Psr7\Response as Psr7Response;
@@ -93,7 +94,7 @@ final class SharepointConnectionTest extends TestCase {
         return SharepointConnection::query()->create($attributes + [
             'organization_id' => $this->organization->id,
             'access_token' => 'secret-token-123',
-            'status' => SharepointConnection::STATUS_ACTIVE,
+            'status' => OAuthConnectionStatus::Active,
         ]);
     }
 
@@ -128,7 +129,7 @@ final class SharepointConnectionTest extends TestCase {
         $response->assertRedirect(route('admin.sharepoint.index'))->assertSessionHas('success');
 
         $connection = SharepointConnection::query()->firstOrFail();
-        $this->assertSame(SharepointConnection::STATUS_ACTIVE, $connection->status);
+        $this->assertSame(OAuthConnectionStatus::Active, $connection->status);
         $this->assertSame('secret-token-123', $connection->access_token); // entschlüsselt über Cast
         $this->assertSame('refresh-token-456', $connection->refresh_token);
         $this->assertNotNull($connection->token_expires_at);
@@ -265,5 +266,33 @@ final class SharepointConnectionTest extends TestCase {
 
     public function test_health_degraded_without_connection(): void {
         $this->assertSame(PluginHealth::STATUS_DEGRADED, (new SharepointPlugin())->healthCheck()->status);
+    }
+
+    /** Trennen: Seite bietet danach wieder das Verbinden an, der Health-Check meldet „keine Verbindung". */
+    public function test_disconnect_marks_the_connection_disconnected(): void {
+        $connection = $this->connection(['refresh_token' => 'refresh-token-1']);
+
+        $this->actingAs($this->admin)->get(route('admin.sharepoint.index'))
+            ->assertOk()
+            ->assertSee(route('admin.sharepoint.disconnect'), false)
+            ->assertDontSee(route('admin.sharepoint.oauth.start'), false);
+
+        $this->actingAs($this->admin)->post(route('admin.sharepoint.disconnect'))
+            ->assertRedirect()->assertSessionHas('success');
+
+        $fresh = $connection->fresh();
+        $this->assertInstanceOf(SharepointConnection::class, $fresh);
+        $this->assertSame(OAuthConnectionStatus::Disconnected, $fresh->status);
+        $this->assertNull($fresh->access_token);
+        $this->assertFalse($fresh->isActive());
+
+        $this->actingAs($this->admin)->get(route('admin.sharepoint.index'))
+            ->assertOk()
+            ->assertSee(route('admin.sharepoint.oauth.start'), false)
+            ->assertDontSee(route('admin.sharepoint.disconnect'), false);
+
+        $health = (new SharepointPlugin())->healthCheck();
+        $this->assertSame(PluginHealth::STATUS_DEGRADED, $health->status);
+        $this->assertSame(__('sharepoint::sharepoint.health.no_connection'), $health->message);
     }
 }

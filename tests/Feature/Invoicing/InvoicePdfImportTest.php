@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Invoicing;
 
-use App\Enums\Invoicing\InvoiceDeliveryFormat;
+use App\Enums\Invoicing\{InvoiceDeliveryFormat, InvoiceStatus};
 use App\Models\Customer\Customer;
 use App\Models\Document\Document;
 use App\Models\Invoicing\Invoice;
@@ -58,7 +58,7 @@ final class InvoicePdfImportTest extends TestCase {
         $response->assertRedirect(route('invoices.show', $invoice));
         $this->assertSame('PDF-2026-17', $invoice->number);
         $this->assertSame('file_import', $invoice->number_source);
-        $this->assertSame(Invoice::STATUS_DRAFT, $invoice->status);
+        $this->assertSame(InvoiceStatus::Draft, $invoice->status);
         $this->assertSame('2026-08-14', $invoice->issued_on?->toDateString());
         $this->assertSame('2026-08-28', $invoice->due_on?->toDateString());
         $this->assertSame(InvoiceDeliveryFormat::Zugferd, $invoice->delivery_format);
@@ -90,7 +90,7 @@ final class InvoicePdfImportTest extends TestCase {
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
             'number' => 'R2026-0010',
-            'status' => Invoice::STATUS_DRAFT,
+            'status' => InvoiceStatus::Draft,
             'currency' => 'EUR',
             'tax_rate' => '19.00',
             'created_by' => $this->admin->id,
@@ -374,7 +374,7 @@ final class InvoicePdfImportTest extends TestCase {
             'organization_id' => $sourceOrg->id,
             'customer_id' => $customer->id,
             'number' => 'ER-2026-0042',
-            'status' => Invoice::STATUS_ISSUED,
+            'status' => InvoiceStatus::Issued,
             'issued_on' => '2026-06-01',
             'due_on' => '2026-06-15',
             'currency' => 'EUR',

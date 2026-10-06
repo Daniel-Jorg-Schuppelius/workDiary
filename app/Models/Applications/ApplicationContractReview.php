@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Applications;
 
+use App\Enums\Applications\ApplicationContractReviewStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -26,7 +27,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $negotiation_id
  * @property string $label
  * @property string $severity
- * @property string $status
+ * @property ApplicationContractReviewStatus $status
  * @property string|null $note
  * @property int|null $resolved_by
  * @property \Illuminate\Support\Carbon|null $resolved_at
@@ -38,15 +39,16 @@ class ApplicationContractReview extends Model {
 
     public const SEVERITIES = ['info', 'important', 'blocker'];
 
-    public const STATUSES = ['open', 'resolved', 'accepted'];
-
     protected $fillable = [
         'organization_id', 'negotiation_id', 'label', 'severity', 'status',
         'note', 'resolved_by', 'resolved_at',
     ];
 
     /** @var array<string, string> */
-    protected $casts = ['resolved_at' => 'datetime'];
+    protected $casts = [
+        'status' => ApplicationContractReviewStatus::class,
+        'resolved_at' => 'datetime',
+    ];
 
     /** @return BelongsTo<ApplicationContractNegotiation, $this> */
     public function negotiation(): BelongsTo {

@@ -46,7 +46,7 @@ class OpenMasterdataProductMapper {
             'gtin' => $product->string('gtin'),
             'matchcode' => $product->string('basic.matchcode'),
             'manufacturer_no' => $product->string('manufacturerPid'),
-            'product_url' => $product->string('additional.deepLink'),
+            'product_url' => $this->url($product->string('additional.deepLink')),
             'image_url' => $this->mainPicture($product),
             'datasheet_url' => $this->mainDocument($product),
             'purchase_price' => $effective['value'] ?? null,
@@ -55,7 +55,7 @@ class OpenMasterdataProductMapper {
             'price_unit_amount' => $effective['basis'] ?? null,
             'price_type' => $net !== null ? 'net' : ($list !== null ? 'list' : ($product->get('basic.priceOnDemand') === true ? 'on_request' : null)),
             'unit' => $effective['unit'] ?? $product->string('additional.minOrderUnit'),
-            'pack_size' => $this->decimal($product->string('additional.minOrderQuantity')) ?? '1',
+            'pack_size' => NumberHelper::normalizeDecimalStringOrNull($product->string('additional.minOrderQuantity')) ?? '1',
             'base_qty' => '1',
             'discount_group' => $product->string('additional.discoundGroupIdManufacturer') ?? $product->string('additional.discountGroupIdManufacturer'),
             'lead_time_days' => $this->int($product->get('logistics.standardDeliveryPeriod')),
@@ -83,7 +83,7 @@ class OpenMasterdataProductMapper {
 
     /** @return array{value: string, currency: string, basis: int, unit: ?string}|null */
     private function price(OpenMasterdataProduct $product, string $path): ?array {
-        $value = $this->decimal($product->string($path . '.value'));
+        $value = NumberHelper::normalizeDecimalStringOrNull($product->string($path . '.value'));
         if ($value === null) {
             return null;
         }
@@ -125,7 +125,7 @@ class OpenMasterdataProductMapper {
             'omd_product_type' => $product->string('basic.productType'),
             'omd_series' => $product->string('basic.serie'),
             'omd_model' => $product->string('basic.modelNumber'),
-            'omd_rrp' => $this->decimal($product->string('prices.rrp.value') ?? $product->string('basic.rrp.value')),
+            'omd_rrp' => NumberHelper::normalizeDecimalStringOrNull($product->string('prices.rrp.value') ?? $product->string('basic.rrp.value')),
             'omd_tax_code' => $product->string('prices.taxCode'),
             'omd_commodity_number' => $product->string('logistics.commodityNumber'),
             'omd_country_of_origin' => $product->string('logistics.countryOfOrigin'),
@@ -191,10 +191,6 @@ class OpenMasterdataProductMapper {
         $url = is_string($value) ? trim($value) : '';
 
         return str_starts_with($url, 'https://') || str_starts_with($url, 'http://') ? $url : null;
-    }
-
-    private function decimal(?string $value): ?string {
-        return $value === null ? null : NumberHelper::normalizeDecimalStringOrNull($value);
     }
 
     private function int(mixed $value): ?int {

@@ -17,6 +17,7 @@ use App\Plugins\Lexoffice\Jobs\{SyncContactsJob, SyncVouchersJob};
 use App\Plugins\Lexoffice\LexofficeConfig;
 use App\Plugins\Lexoffice\Models\LexofficeWebhookDelivery;
 use App\Plugins\Support\{RecordsWebhookDeliveries, WebhookSignature};
+use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Http\{JsonResponse, Request};
 
 /**
@@ -54,6 +55,10 @@ class LexofficeWebhookController extends Controller {
         if ($publicKey !== '' && ! $this->rsaSignatureValid($raw, (string) $request->header('X-Lxo-Signature', ''), $publicKey)) {
             return response()->json(['status' => 'invalid_signature'], 403);
         }
+        // Gesperrter Mandant: nichts verarbeiten (Entscheidung 2026-10-05) — erst nach der Signaturprüfung, kein Rückschluss von außen.
+        if (\App\Plugins\Support\PluginTenantGate::blocks($organization)) {
+            return \App\Plugins\Support\PluginTenantGate::refusal();
+        }
 
         /** @var array<string, mixed> $payload */
         $payload = (array) json_decode($raw, true);
@@ -61,7 +66,7 @@ class LexofficeWebhookController extends Controller {
         $resourceId = isset($payload['resourceId']) ? (string) $payload['resourceId'] : '';
 
         $delivery = $this->recordDelivery(fn (): LexofficeWebhookDelivery => LexofficeWebhookDelivery::query()->create([
-            'delivery_hash' => $this->deliveryHash($raw),
+            'delivery_hash' => CryptoHelper::hash($raw),
             'event_type' => $eventType !== '' ? $eventType : null,
             'resource_id' => $resourceId !== '' ? $resourceId : null,
             'organization_id' => $organization,

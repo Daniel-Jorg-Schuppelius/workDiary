@@ -12,6 +12,7 @@ namespace Tests\Feature\Plugins\Msgraph;
 
 use App\Models\Platform\{Organization, User};
 use App\Plugins\Msgraph\Api\MsgraphMailOAuth;
+use App\Plugins\Msgraph\Enums\MsgraphConnectionStatus;
 use App\Plugins\Msgraph\Models\MsgraphMailConnection;
 use GuzzleHttp\{Client as GuzzleClient, HandlerStack};
 use GuzzleHttp\Handler\MockHandler;
@@ -63,7 +64,7 @@ final class MsgraphMailTest extends TestCase {
         return MsgraphMailConnection::query()->create($attributes + [
             'organization_id' => $this->organization->id,
             'access_token' => 'secret-token-1',
-            'status' => MsgraphMailConnection::STATUS_ACTIVE,
+            'status' => MsgraphConnectionStatus::Active,
         ]);
     }
 
@@ -98,7 +99,7 @@ final class MsgraphMailTest extends TestCase {
             ->assertSessionHas('success');
 
         $connection = MsgraphMailConnection::query()->firstOrFail();
-        $this->assertSame(MsgraphMailConnection::STATUS_ACTIVE, $connection->status);
+        $this->assertSame(MsgraphConnectionStatus::Active, $connection->status);
         $this->assertSame('mail-token-123', $connection->access_token);
         $this->assertSame('Max Beispiel <max@firma.example>', $connection->account_label);
 
@@ -144,6 +145,20 @@ final class MsgraphMailTest extends TestCase {
         $this->assertSame(0, (int) $fresh->consecutive_failures);
     }
 
+    public function test_disconnect_marks_the_mail_connection_disconnected(): void {
+        $connection = $this->connection(['refresh_token' => 'refresh-token-1']);
+        $this->assertTrue($connection->isActive());
+
+        $this->actingAs($this->admin)->post(route('admin.msgraph.mail.disconnect'))
+            ->assertRedirect()->assertSessionHas('success');
+
+        $fresh = $connection->fresh();
+        $this->assertInstanceOf(MsgraphMailConnection::class, $fresh);
+        $this->assertSame(MsgraphConnectionStatus::Disconnected, $fresh->status);
+        $this->assertNull($fresh->access_token);
+        $this->assertFalse($fresh->isActive());
+    }
+
     public function test_transport_uses_shared_mailbox_from_address_and_sent_items_flag(): void {
         $this->connection(['from_address' => 'rechnung@firma.example', 'save_to_sent_items' => false]);
         $fake = FakePluginHttp::fake([
@@ -168,7 +183,7 @@ final class MsgraphMailTest extends TestCase {
         MsgraphMailConnection::query()->create([
             'organization_id' => $otherOrg->id,
             'access_token' => 'secret-token-2',
-            'status' => MsgraphMailConnection::STATUS_ACTIVE,
+            'status' => MsgraphConnectionStatus::Active,
         ]);
 
         $fake = FakePluginHttp::fake([
@@ -204,7 +219,7 @@ final class MsgraphMailTest extends TestCase {
         MsgraphMailConnection::query()->create([
             'organization_id' => $otherOrg->id,
             'access_token' => 'secret-token-2',
-            'status' => MsgraphMailConnection::STATUS_ACTIVE,
+            'status' => MsgraphConnectionStatus::Active,
         ]);
 
         $fake = FakePluginHttp::fake([
@@ -226,7 +241,7 @@ final class MsgraphMailTest extends TestCase {
         $reference = MsgraphMailConnection::query()->create([
             'organization_id' => $otherOrg->id,
             'access_token' => 'secret-token-2',
-            'status' => MsgraphMailConnection::STATUS_ACTIVE,
+            'status' => MsgraphConnectionStatus::Active,
         ]);
 
         $fake = FakePluginHttp::fake([

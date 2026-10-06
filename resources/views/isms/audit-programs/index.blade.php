@@ -43,25 +43,19 @@
                         <p class="text-xs text-muted">
                             {{ $program->scope?->name }} ·
                             {{ trim(($program->norm ?? '—') . ' ' . ($program->edition ?? '')) }} ·
-                            {{ __(':years Jahre ab :start', ['years' => $program->cycle_years, 'start' => $program->starts_on->format('d.m.Y')]) }}
+                            {{ __(':years Jahre ab :start', ['years' => $program->cycle_years, 'start' => $program->starts_on->fdate()]) }}
                         </p>
                     </div>
                     <span class="inline-flex items-center gap-2">
-                        @if ($program->status === 'active')
-                            <x-status-badge tone="success" size="sm">{{ __('aktiv') }}</x-status-badge>
-                        @elseif ($program->status === 'completed')
-                            <x-status-badge tone="info" size="sm">{{ __('abgeschlossen') }}</x-status-badge>
-                        @else
-                            <x-status-badge tone="neutral" size="sm">{{ __('abgebrochen') }}</x-status-badge>
-                        @endif
+                        <x-status-badge :tone="$program->status->tone()" size="sm">{{ $program->status->label() }}</x-status-badge>
                         @if ($canManage)
                             <form method="POST" action="{{ route('isms.audit-programs.update', $program) }}">
                                 @csrf @method('PUT')
                                 <select name="status" class="select select-xs select-bordered" data-autosubmit>
                                     <option value="">{{ __('Status …') }}</option>
-                                    <option value="active">{{ __('aktiv') }}</option>
-                                    <option value="completed">{{ __('abgeschlossen') }}</option>
-                                    <option value="cancelled">{{ __('abgebrochen') }}</option>
+                                    @foreach (\App\Enums\Isms\IsmsAuditProgramStatus::options() as $value => $label)
+                                        <option value="{{ $value }}">{{ $label }}</option>
+                                    @endforeach
                                 </select>
                             </form>
                             <form method="POST" action="{{ route('isms.audit-programs.destroy', $program) }}">
@@ -80,6 +74,7 @@
                                 {{ __('Jahr :n', ['n' => $year]) }} ({{ $program->starts_on->copy()->addYears($year - 1)->format('Y') }})
                             </p>
                             @if ($yearAudits === [])
+                                {{-- raw-markup-ok: Jahresfeld im Zyklusraster: einzeiliger Platzhalter in schmaler Zelle --}}
                                 <p class="text-xs text-muted">{{ __('Kein Audit geplant.') }}</p>
                             @else
                                 <ul class="space-y-1 text-sm">
@@ -87,7 +82,7 @@
                                         <li>
                                             <span class="font-mono text-xs text-muted">{{ $audit->audit_no }}</span>
                                             {{ $audit->title }}
-                                            <span class="text-xs text-muted">({{ $audit->status->label() }}@if ($audit->planned_on), {{ $audit->planned_on->format('d.m.Y') }}@endif)</span>
+                                            <span class="text-xs text-muted">({{ $audit->status->label() }}@if ($audit->planned_on), {{ $audit->planned_on->fdate() }}@endif)</span>
                                         </li>
                                     @endforeach
                                 </ul>

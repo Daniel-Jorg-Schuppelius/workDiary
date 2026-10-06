@@ -109,6 +109,11 @@ return [
         'on_documents' => 'Payment link on the invoice and in the email',
         'on_documents_hint' => 'When switched off, online payment remains available in the customer portal.',
     ],
+    'approvals' => [
+        'step_roles_hint' => 'Approval steps of a contract negotiation appear under “Approvals” for the role assigned to their step kind. Approval on the record remains possible.',
+        'step_role' => ':kind: responsible role',
+        'default_role' => 'Default (:role)',
+    ],
     'mcp' => [
         'heading' => 'AI assistants (MCP)',
         'description' => 'AI assistants such as Claude or ChatGPT can connect with the consent of individual users and read or create drafts with their permissions.',

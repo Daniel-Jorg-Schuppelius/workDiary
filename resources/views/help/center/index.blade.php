@@ -153,7 +153,7 @@
                     </span>
                     <span class="text-xs leading-relaxed text-muted">{{ $section['description'] }}</span>
                     <span class="mt-auto flex items-center justify-between pt-1">
-                        <span class="badge badge-ghost badge-sm">{{ trans_choice(':count Artikel|:count Artikel', $section['count'], ['count' => $section['count']]) }}</span>
+                        <x-status-badge>{{ trans_choice(':count Artikel|:count Artikel', $section['count'], ['count' => $section['count']]) }}</x-status-badge>
                         <x-icon name="chevron_right" class="text-primary transition-transform group-hover:translate-x-0.5" />
                     </span>
                 </a>

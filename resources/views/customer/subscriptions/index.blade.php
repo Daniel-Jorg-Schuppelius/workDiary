@@ -50,7 +50,7 @@
                 <td>
                     {{ $subscription->holderLabel() }}
                     @if ($subscription->foreignCustomer !== null)
-                        <span class="badge badge-ghost badge-xs">{{ __('resale_portal.holder.end_customer') }}</span>
+                        <x-status-badge size="xs">{{ __('resale_portal.holder.end_customer') }}</x-status-badge>
                     @endif
                 </td>
                 <td class="text-right tabular-nums">{{ $subscription->quantity }}</td>

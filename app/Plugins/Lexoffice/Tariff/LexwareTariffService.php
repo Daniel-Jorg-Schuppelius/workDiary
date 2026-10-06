@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Lexoffice\Tariff;
 
+use App\Enums\Invoicing\InvoiceScheduleStatus;
 use App\Models\Invoicing\InvoiceSchedule;
 use App\Models\Platform\{Organization, User};
 use App\Plugins\Lexoffice\Enums\{LexofficeHandoverStatus, LexwareFeature, LexwarePlan};
@@ -89,7 +90,7 @@ class LexwareTariffService {
         return [
             'active_schedules' => InvoiceSchedule::query()
                 ->where('organization_id', $organization->id)
-                ->where('status', 'active')
+                ->where('status', InvoiceScheduleStatus::Active)
                 ->count(),
             'open_handovers' => LexofficeInvoiceHandover::query()
                 ->where('organization_id', $organization->id)

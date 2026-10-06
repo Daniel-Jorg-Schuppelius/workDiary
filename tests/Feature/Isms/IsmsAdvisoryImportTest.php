@@ -98,6 +98,16 @@ class IsmsAdvisoryImportTest extends TestCase {
         $this->assertSame(1, IsmsVulnerability::query()->count());
     }
 
+    public function test_index_lists_imported_advisories(): void {
+        Storage::fake('local');
+        $admin = User::factory()->admin()->create();
+        app()->instance('currentOrganization', $admin->organization);
+        $advisory = app(AdvisoryImportService::class)->importCsaf($this->fixture('csaf-known-affected.json'), $admin->organization, $admin);
+
+        $response = $this->actingAs($admin)->get(route('isms.advisories.index'))->assertOk();
+        $this->assertSame([$advisory->id], collect($response->viewData('advisories')->items())->pluck('id')->all());
+    }
+
     public function test_invalid_json_is_rejected(): void {
         Storage::fake('local');
         $admin = User::factory()->admin()->create();

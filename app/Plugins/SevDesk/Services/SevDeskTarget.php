@@ -19,7 +19,7 @@ use App\Models\Integration\ExternalReference;
 use App\Plugins\SevDesk\Api\{SevDeskClient, SevDeskClientFactory};
 use App\Plugins\SevDesk\{SevDeskConfig, SevDeskPlugin};
 use App\Services\Finance\BillingPositionBuilder;
-use App\Services\Finance\Targets\Concerns\{LoadsBillingSources, ReconcilesByMarker};
+use App\Services\Finance\Targets\Concerns\{LoadsBillingSources, ProjectsContactReference, ReconcilesByMarker};
 use App\Services\Finance\Targets\{FacturationTarget, TargetResult};
 use CommonToolkit\Helper\Data\NumberHelper;
 use GuzzleHttp\Exception\ConnectException;
@@ -44,6 +44,7 @@ use RuntimeException;
  */
 class SevDeskTarget implements FacturationTarget {
     use LoadsBillingSources;
+    use ProjectsContactReference;
     use ReconcilesByMarker;
 
     public const EXT_TYPE_INVOICE = 'sevdesk_invoice';
@@ -210,29 +211,16 @@ class SevDeskTarget implements FacturationTarget {
         /** @var Customer $customer */
         $customer = $transfer->customer;
 
-        $existing = ExternalReference::query()
-            ->forPlugin($transfer->organization_id, SevDeskPlugin::ID, self::EXT_TYPE_CONTACT)
-            ->forReferenceable($customer)
-            ->first();
-        if ($existing instanceof ExternalReference) {
-            return $existing;
-        }
-
         $number = trim((string) $customer->number);
 
-        // Matching über die Kundennummer (dokumentierter /Contact-Filter).
-        $matched = null;
-        if ($number !== '') {
-            foreach ($client->contactsByCustomerNumber($number) as $row) {
-                if (is_array($row) && (string) ($row['customerNumber'] ?? '') === $number && ! empty($row['id'] ?? null)) {
-                    $matched = $row;
-                    break;
-                }
-            }
-        }
-
-        if ($matched === null) {
-            $payload = array_filter([
+        return $this->projectContact(
+            $customer,
+            (int) $transfer->organization_id,
+            SevDeskPlugin::ID,
+            self::EXT_TYPE_CONTACT,
+            // Matching über die Kundennummer (dokumentierter /Contact-Filter).
+            fn(): ?array => $number !== '' ? self::rowByNumber($client->contactsByCustomerNumber($number), 'customerNumber', $number) : null,
+            fn(): array => $client->createContact(array_filter([
                 'objectName' => 'Contact',
                 'mapAll' => true,
                 'name' => (string) $customer->name,
@@ -241,34 +229,8 @@ class SevDeskTarget implements FacturationTarget {
                     'id' => (int) config('plugins.sevdesk.contact_category_id', 3),
                     'objectName' => 'Category',
                 ],
-            ], static fn($value): bool => $value !== null);
-
-            try {
-                $matched = $client->createContact($payload);
-            } catch (ConnectException) {
-                // Ausgang unklar — nächster Lauf findet den Kontakt über die
-                // Kundennummer wieder, statt ihn doppelt anzulegen.
-                throw new RuntimeException((string) __('sevdesk::finance.error.sevdesk_outcome_unclear'));
-            }
-        }
-
-        $contactId = (string) ($matched['id'] ?? '');
-        if ($contactId === '') {
-            throw new RuntimeException('sevDesk contact projection returned no id.');
-        }
-
-        return ExternalReference::updateOrCreate(
-            [
-                'plugin_id' => SevDeskPlugin::ID,
-                'external_type' => self::EXT_TYPE_CONTACT,
-                'referenceable_type' => $customer->getMorphClass(),
-                'referenceable_id' => $customer->getKey(),
-            ],
-            [
-                'organization_id' => $transfer->organization_id,
-                'external_id' => $contactId,
-                'synced_at' => now(),
-            ],
+            ], static fn($value): bool => $value !== null)),
+            (string) __('sevdesk::finance.error.sevdesk_outcome_unclear'),
         );
     }
 

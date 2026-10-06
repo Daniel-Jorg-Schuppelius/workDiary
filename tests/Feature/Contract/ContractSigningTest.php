@@ -364,6 +364,49 @@ final class ContractSigningTest extends TestCase {
         $this->actingAs($portalUser->fresh(), 'customer')->get(route('customer.agreements.index'))->assertNotFound();
     }
 
+    public function test_portal_lists_and_serves_the_bound_files_of_a_released_revision_only(): void {
+        $revision = $this->signedRevision();
+        $item = $revision->manifestItems()->firstOrFail();
+        $fileRoute = route('customer.agreements.file', ['revision' => $revision->sqid, 'item' => $item->sort]);
+
+        $this->allowPortal($this->customer, ['agreements']);
+        $portalUser = User::factory()->kunde((int) $this->customer->id, (int) $this->organization->id)->create(['organization_id' => $this->organization->id]);
+
+        // Unterzeichnet, aber nicht freigegeben: kein Link, kein Abruf.
+        $this->actingAs($portalUser, 'customer')->get(route('customer.agreements.index'))->assertOk()->assertDontSee($fileRoute, false);
+        $this->actingAs($portalUser, 'customer')->get($fileRoute)->assertNotFound();
+
+        $this->actingAs($this->admin)->post(route('contracts.signing.portal-release', $revision))->assertRedirect();
+
+        $this->actingAs($portalUser, 'customer')->get(route('customer.agreements.index'))
+            ->assertOk()
+            ->assertSee($fileRoute, false)
+            ->assertSee($item->original_name);
+        $response = $this->actingAs($portalUser, 'customer')->get($fileRoute)->assertOk();
+        $this->assertSame(self::PDF, $response->getContent());
+        $this->assertStringContainsString('attachment', (string) $response->headers->get('Content-Disposition'));
+        $this->assertStringContainsString($item->original_name, (string) $response->headers->get('Content-Disposition'));
+
+        // Position, die das Manifest nicht kennt.
+        $this->actingAs($portalUser, 'customer')->get(route('customer.agreements.file', ['revision' => $revision->sqid, 'item' => $item->sort + 50]))->assertNotFound();
+
+        // Anderer Kunde derselben Organisation und ein Kunde einer fremden Organisation: 404.
+        $other = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        $this->allowPortal($other, ['agreements']);
+        $otherUser = User::factory()->kunde((int) $other->id, (int) $this->organization->id)->create(['organization_id' => $this->organization->id]);
+        $this->actingAs($otherUser, 'customer')->get($fileRoute)->assertNotFound();
+
+        $foreignOrg = \App\Models\Platform\Organization::factory()->create();
+        $foreignCustomer = Customer::factory()->create(['organization_id' => $foreignOrg->id]);
+        $this->allowPortal($foreignCustomer, ['agreements']);
+        $foreignUser = User::factory()->kunde((int) $foreignCustomer->id, (int) $foreignOrg->id)->create(['organization_id' => $foreignOrg->id]);
+        $this->actingAs($foreignUser, 'customer')->get($fileRoute)->assertNotFound();
+
+        // Ohne Capability 404 — frische Instanz, die Kundenrelation ist am User gecacht.
+        $this->allowPortal($this->customer, ['documents']);
+        $this->actingAs($portalUser->fresh(), 'customer')->get($fileRoute)->assertNotFound();
+    }
+
     // ── 11: Löschschutz ─────────────────────────────────────────────────────
 
     public function test_bound_document_versions_survive_delete_paths(): void {

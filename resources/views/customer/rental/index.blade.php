@@ -15,7 +15,7 @@
     <div class="flex flex-wrap items-center justify-between gap-2">
         <h1 class="text-xl font-semibold">{{ __('Meine Leihgeräte') }}</h1>
         @if (app(\App\Services\CustomerPortal\PortalVisibility::class)->allows(auth('customer')->user()?->customer, \App\Enums\CustomerPortal\PortalCapability::RentalRequests))
-            <a href="{{ route('customer.rentals.requests.index') }}" class="btn btn-sm btn-outline">{{ __('Verleih-Anfrage stellen') }}</a>
+            <x-button :href="route('customer.rentals.requests.index')" tone="outline">{{ __('Verleih-Anfrage stellen') }}</x-button>
         @endif
     </div>
 
@@ -34,7 +34,7 @@
                 <td><a class="link font-mono" href="{{ route('customer.rentals.show', $case) }}">{{ $case->number }}</a></td>
                 <td>{{ $case->caseAssets->map(fn($ca) => $ca->asset?->name)->filter()->implode(', ') ?: '—' }}</td>
                 <td>{{ $case->starts_at->fdate() }} – {{ $case->ends_at->fdate() }}</td>
-                <td><span class="badge badge-outline">{{ $case->status->label() }}</span></td>
+                <td><x-status-badge tone="plain" size="md" outline>{{ $case->status->label() }}</x-status-badge></td>
             </tr>
         @empty
             <x-table.empty :colspan="4" :title="__('Keine Verleihvorgänge vorhanden.')" />

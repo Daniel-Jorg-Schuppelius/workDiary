@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Mail;
 
 use App\Enums\DocumentDesign\RenderDocumentKind;
+use App\Mail\Concerns\TracksDocumentDispatch;
 use App\Models\Customer\Customer;
 use App\Models\Document\DocumentDispatch;
 use App\Services\Document\DocumentMailService;
@@ -20,7 +21,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Mail\Mailable;
-use Illuminate\Mail\Mailables\{Attachment, Content, Envelope, Headers};
+use Illuminate\Mail\Mailables\{Attachment, Content, Envelope};
 use Illuminate\Queue\SerializesModels;
 
 /**
@@ -37,6 +38,7 @@ use Illuminate\Queue\SerializesModels;
  */
 class DocumentMail extends Mailable implements ShouldQueue {
     use Queueable, SerializesModels;
+    use TracksDocumentDispatch;
 
     public function __construct(
         public Model $document,
@@ -55,24 +57,6 @@ class DocumentMail extends Mailable implements ShouldQueue {
 
     public function envelope(): Envelope {
         return new Envelope(subject: $this->renderedSubject);
-    }
-
-    public function headers(): Headers {
-        return new Headers(text: array_filter([
-            \App\Listeners\RecordInvoiceMailDelivery::HEADER => $this->dispatchId !== null ? (string) $this->dispatchId : null,
-        ]));
-    }
-
-    /** Queue-Fehlschlag → Zustellnachweis auf failed (wie InvoiceMail). */
-    public function failed(\Throwable $exception): void {
-        if ($this->dispatchId === null) {
-            return;
-        }
-        $dispatch = DocumentDispatch::query()->withoutGlobalScopes()->find($this->dispatchId);
-        $dispatch?->forceFill([
-            'status' => 'failed',
-            'meta' => [...(array) $dispatch->meta, 'error' => mb_substr($exception->getMessage(), 0, 500)],
-        ])->save();
     }
 
     public function content(): Content {

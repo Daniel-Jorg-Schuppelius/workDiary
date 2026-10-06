@@ -13,13 +13,13 @@ declare(strict_types=1);
 namespace App\Mail;
 
 use App\Listeners\RecordInvoiceMailDelivery;
+use App\Mail\Concerns\TracksDocumentDispatch;
 use App\Models\Customer\Customer;
-use App\Models\Document\DocumentDispatch;
 use App\Models\Inventory\{Recall, RecallItem};
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
-use Illuminate\Mail\Mailables\{Content, Envelope, Headers};
+use Illuminate\Mail\Mailables\{Content, Envelope};
 use Illuminate\Queue\SerializesModels;
 
 /**
@@ -30,6 +30,7 @@ use Illuminate\Queue\SerializesModels;
 class RecallNoticeMail extends Mailable implements ShouldQueue {
     use Queueable;
     use SerializesModels;
+    use TracksDocumentDispatch;
 
     public function __construct(
         public readonly int $recallId,
@@ -41,10 +42,6 @@ class RecallNoticeMail extends Mailable implements ShouldQueue {
 
     public function envelope(): Envelope {
         return new Envelope(subject: (string) __('recall.mail.subject', ['title' => $this->recall()->title, 'number' => (string) $this->recall()->number]));
-    }
-
-    public function headers(): Headers {
-        return new Headers(text: [RecordInvoiceMailDelivery::HEADER => (string) $this->dispatchId]);
     }
 
     public function content(): Content {
@@ -69,11 +66,6 @@ class RecallNoticeMail extends Mailable implements ShouldQueue {
         }
 
         return new Content(view: 'mail.document', text: 'mail.document-text', with: ['html' => nl2br(e($text)), 'text' => $text]);
-    }
-
-    public function failed(\Throwable $exception): void {
-        $dispatch = DocumentDispatch::query()->withoutGlobalScopes()->find($this->dispatchId);
-        $dispatch?->forceFill(['status' => 'failed', 'meta' => [...(array) $dispatch->meta, 'error' => mb_substr($exception->getMessage(), 0, 500)]])->save();
     }
 
     private function recall(): Recall {

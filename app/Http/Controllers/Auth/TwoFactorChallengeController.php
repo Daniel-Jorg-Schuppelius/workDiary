@@ -10,8 +10,8 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Enums\Auth\TwoFactorType;
 use App\Http\Controllers\Auth\Concerns\{CompletesLogin, ResolvesWorkMode};
+use App\Http\Controllers\Auth\Concerns\SendsEmailOtpChallenge;
 use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
 use App\Services\Auth\{EmailOtpService, TwoFactorService, WebAuthnService};
@@ -27,6 +27,8 @@ class TwoFactorChallengeController extends Controller {
     use CompletesLogin;
 
     use ResolvesWorkMode;
+
+    use SendsEmailOtpChallenge;
 
     private const MAX_ATTEMPTS = 5;
 
@@ -113,31 +115,14 @@ class TwoFactorChallengeController extends Controller {
             ->where('type', \App\Enums\Auth\TwoFactorType::Webauthn->value)->whereNotNull('confirmed_at')->exists();
     }
 
-    /** Sendet einen E-Mail-Einmalcode an die geparkte Identität. */
-    public function email(Request $request): RedirectResponse {
-        $user = $this->parkedUser($request);
-        if (! $user instanceof User) {
-            return redirect()->route('login');
-        }
-        if (! $this->hasEmailFactor($user) || ! $this->emailOtp->canSend($user)) {
-            return back()->withErrors(['email_code' => __('Code konnte nicht gesendet werden.')]);
-        }
-        if (! $this->emailOtp->send($user)) {
-            return back()->withErrors(['email_code' => __('E-Mail-Versand fehlgeschlagen — Mailserver nicht erreichbar oder falsch konfiguriert. Bitte informieren Sie Ihre Administration.')]);
-        }
-
-        return back()->with('success', __('Code an Ihre E-Mail gesendet.'));
+    private function loginRoute(): string {
+        return 'login';
     }
 
     private function parkedUser(Request $request): ?User {
         $userId = $request->session()->get('auth.2fa.id');
 
         return $userId !== null ? User::query()->whereKey($userId)->first() : null;
-    }
-
-    private function hasEmailFactor(User $user): bool {
-        return $user->twoFactorCredentials()
-            ->where('type', TwoFactorType::Email->value)->whereNotNull('confirmed_at')->exists();
     }
 
     public function store(Request $request): RedirectResponse {

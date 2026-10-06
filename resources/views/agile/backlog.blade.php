@@ -8,7 +8,7 @@
 --}}
 
 {{-- Produkt-Backlog (Feature 064, MVP-140): Rangliste mit Filtern,
-     Hoch/Runter-Aktionen (A11y — Drag dockt später am selben Endpoint an),
+     Hoch/Runter-Aktionen (A11y) und Ziehen am selben Endpoint,
      Punkte/Typ und Akzeptanzkriterien. Bewusst „Produkt-Backlog" (die
      Diary-Vokabel „Backlog" meint den Scheduling-Modus). --}}
 
@@ -98,16 +98,26 @@
                     </tr>
                 </x-slot:head>
                 @foreach ($items as $index => $item)
-                    {{-- Drag-&-Drop (W4.2) haengt am selben rerank-Endpunkt wie die
-                         Hoch/Runter-Buttons; die bleiben als Tastatur-/A11y-Pfad. --}}
+                    {{-- Ziehen (W4.2, resources/js/agile-backlog.js) haengt am selben
+                         rerank-Endpunkt wie die Hoch/Runter-Buttons; die bleiben als
+                         Tastatur-/A11y-Pfad. Maus: ganze Zeile; Finger/Stift: Griff. --}}
                     <tr data-backlog-row
                         data-sqid="{{ $item->sqid }}"
                         data-lock-version="{{ $item->lock_version }}"
                         data-rerank-url="{{ route('agile.items.rerank', [$project, $item]) }}"
                         data-can-prioritize="{{ $canPrioritize ? '1' : '0' }}"
-                        @if ($canPrioritize) draggable="true" @endif
                         @if ($item->isBlocked()) class="bg-error/5" @endif>
-                        <td class="tabular-nums text-sm text-muted">{{ $index + 1 }}</td>
+                        <td class="tabular-nums text-sm text-muted">
+                            <span class="inline-flex items-center gap-1">
+                                @if ($canPrioritize)
+                                    <span class="cursor-grab touch-none select-none" data-backlog-handle
+                                          title="{{ __('Zum Sortieren ziehen') }}" aria-hidden="true">
+                                        <x-icon name="drag_indicator" class="text-[1.1rem]" />
+                                    </span>
+                                @endif
+                                {{ $index + 1 }}
+                            </span>
+                        </td>
                         <td>
                             {{ $item->task?->title ?? '—' }}
                             @if ($item->isBlocked())
@@ -140,6 +150,10 @@
                         <td class="text-right">
                             @if ($canPrioritize)
                                 <div class="flex justify-end gap-1">
+                                    <x-icon-btn icon="edit" tone="ghost" size="xs"
+                                                data-entry-modal-trigger
+                                                :href="route('agile.items.edit', [$project, $item])"
+                                                :label="__('Bearbeiten')" />
                                     @if ($index > 0)
                                         <form method="POST" action="{{ route('agile.items.rerank', [$project, $item]) }}">
                                             @csrf @method('PATCH')

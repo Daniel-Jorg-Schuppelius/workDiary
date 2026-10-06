@@ -14,6 +14,8 @@ namespace App\Plugins\SevDesk\Console;
 
 use App\Models\Platform\Organization;
 use App\Plugins\SevDesk\Services\SevDeskVoucherPullService;
+use App\Plugins\SevDesk\SevDeskPlugin;
+use App\Plugins\Support\Console\ChecksPluginSwitch;
 use Illuminate\Console\Command;
 use Throwable;
 
@@ -22,6 +24,8 @@ use Throwable;
  * direkt in der Buchhaltung entstanden sind, in die Belegliste.
  */
 class SevDeskPullVouchersCommand extends Command {
+    use ChecksPluginSwitch;
+
     protected $signature = 'sevdesk:pull-vouchers
         {--organization= : ID einer einzelnen Organisation, sonst alle}
         {--pages=2 : Anzahl abzurufender Seiten (je 50 Belege, jüngste zuerst)}';
@@ -39,6 +43,9 @@ class SevDeskPullVouchersCommand extends Command {
             ->get();
 
         foreach ($organizations as $organization) {
+            if (! $this->pluginEnabledFor(SevDeskPlugin::ID, (int) $organization->id)) {
+                continue;
+            }
             try {
                 $result = $pull->pull((int) $organization->id, $pages);
                 foreach ($totals as $key => $value) {

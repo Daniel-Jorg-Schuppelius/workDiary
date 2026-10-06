@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Invoicing;
 
+use App\Enums\Document\DocumentDispatchStatus;
 use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Mail\DocumentMail;
 use App\Models\Article\{Article, ArticleVariant};
@@ -119,6 +120,30 @@ class DocumentMailTest extends TestCase {
 
     // ── Versand je Belegart ──────────────────────────────────────────────
 
+    /** Konsolidierungs-Audit 2026-10, k4-03: mehrere Adressen in einem Feld teilt der Server auf (das Dialog-Skript lief nie). */
+    public function test_recipient_fields_accept_several_addresses_in_one_value(): void {
+        $quote = $this->approvedQuote();
+
+        $this->actingAs($this->admin)->post(route('quotes.mail', $quote), [
+            'to' => ['kunde@example.test, einkauf@example.test'],
+            'cc' => ['leitung@example.test; buchhaltung@example.test'],
+            'bcc' => [''],
+        ])->assertRedirect(route('quotes.show', $quote));
+
+        Mail::assertQueued(DocumentMail::class, fn (DocumentMail $mail): bool => $mail->hasTo('kunde@example.test')
+            && $mail->hasTo('einkauf@example.test')
+            && $mail->hasCc('leitung@example.test')
+            && $mail->hasCc('buchhaltung@example.test'));
+    }
+
+    public function test_dialog_fragments_carry_no_inline_scripts(): void {
+        foreach (['invoices/_send_dialog', 'documents/_send_dialog', 'admin/classification-requirements/_form_dialog', 'expenses/_form_body'] as $view) {
+            $source = (string) file_get_contents(resource_path('views/' . $view . '.blade.php'));
+            $this->assertStringNotContainsString('<script', $source, $view);
+            $this->assertStringNotContainsString("@push('scripts')", $source, $view);
+        }
+    }
+
     public function test_quote_mail_queues_pdf_writes_dispatch_and_audit(): void {
         $quote = $this->approvedQuote();
 
@@ -136,7 +161,7 @@ class DocumentMailTest extends TestCase {
 
         $dispatch = DocumentDispatch::query()->forDocument(RenderDocumentKind::Quote, (int) $quote->id)->firstOrFail();
         $this->assertSame(DocumentDispatch::CHANNEL_EMAIL, $dispatch->channel);
-        $this->assertSame('queued', $dispatch->status);
+        $this->assertSame(DocumentDispatchStatus::Queued, $dispatch->status);
         $this->assertSame('kunde@example.test', $dispatch->recipient);
         $this->assertNotNull($dispatch->sha256, 'PDF-Hash wird beim Anhang-Rendern festgehalten.');
 

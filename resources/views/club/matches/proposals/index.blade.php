@@ -10,8 +10,7 @@
 @extends('layouts.app')
 @section('title', __('club.matches.title.proposals'))
 @section('nav-title', __('club.matches.title.proposals'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('club.matches.subtitle.proposals')"
               back-route="club.matches.index" :back-label="__('club.action.back')">
@@ -56,9 +55,9 @@
         </x-slot:head>
         @forelse ($proposals as $proposal)
             <tr class="hover {{ $proposal->isOpen() ? '' : 'opacity-70' }}">
-                <td class="whitespace-nowrap text-sm tabular-nums">{{ $proposal->starts_at->orgTz()->format('d.m.Y H:i') }}@if ($proposal->ends_at)–{{ $proposal->ends_at->orgTz()->format('H:i') }}@endif</td>
+                <td class="whitespace-nowrap text-sm tabular-nums">{{ $proposal->starts_at->fdatetime() }}@if ($proposal->ends_at)–{{ $proposal->ends_at->orgTz()->format('H:i') }}@endif</td>
                 <td class="text-sm">{{ $proposal->team?->name }}</td>
-                <td class="font-medium">{{ $proposal->opponent_name }} <span class="badge badge-ghost badge-xs">{{ $proposal->is_home ? __('club.matches.label.home') : __('club.matches.label.away') }}</span>
+                <td class="font-medium">{{ $proposal->opponent_name }} <x-status-badge size="xs">{{ $proposal->is_home ? __('club.matches.label.home') : __('club.matches.label.away') }}</x-status-badge>
                     @if ($proposal->duplicateEvent)
                         <span class="block text-xs text-warning">{{ __('club.matches.label.duplicate_of', ['title' => $proposal->duplicateEvent->title]) }}</span>
                     @endif

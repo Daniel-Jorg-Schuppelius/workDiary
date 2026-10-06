@@ -10,6 +10,7 @@
 
 namespace Database\Factories\Investments;
 
+use App\Enums\Investments\InvestmentCaseStatus;
 use App\Models\Investments\InvestmentCase;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -26,7 +27,7 @@ class InvestmentCaseFactory extends Factory {
             'title' => 'Ersatzbeschaffung ' . fake()->words(2, true),
             'category' => 'machine',
             'urgency' => 'medium',
-            'status' => 'idea',
+            'status' => InvestmentCaseStatus::Idea,
             'created_by' => null,
         ];
     }

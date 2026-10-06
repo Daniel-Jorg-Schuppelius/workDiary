@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Inventory;
 
 use App\Enums\Claims\ClaimSource;
+use App\Enums\Document\DocumentDispatchStatus;
 use App\Enums\Inventory\{RecallItemStatus, RecallStatus, SerialStatus};
 use App\Enums\Numbering\NumberScope;
 use App\Mail\RecallNoticeMail;
@@ -216,7 +217,7 @@ final class RecallService {
                     'document_kind' => Recall::DOCUMENT_KIND,
                     'document_id' => $recall->id,
                     'channel' => DocumentDispatch::CHANNEL_EMAIL,
-                    'status' => 'queued',
+                    'status' => DocumentDispatchStatus::Queued,
                     'recipient' => $email,
                     'meta' => ['customer_id' => $customer->id, 'item_ids' => $items->pluck('id')->all()],
                     'created_by' => $actor->id,

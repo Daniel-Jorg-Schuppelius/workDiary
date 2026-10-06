@@ -11,8 +11,7 @@
 
 @section('title', __('Offline-Synchronisierung'))
 @section('nav-title', __('Offline-Synchronisierung'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @php
     /** @var \Illuminate\Contracts\Pagination\LengthAwarePaginator $commands */
@@ -66,8 +65,8 @@
                 <tr class="hover">
                     {{-- captured_at = Gerätezeit der Offline-Erfassung; die Spanne
                          zur Übertragung ist die Offline-Latenz. --}}
-                    <td class="whitespace-nowrap text-sm">{{ $command->captured_at?->orgTz()->format('d.m.Y H:i') ?? '—' }}</td>
-                    <td class="whitespace-nowrap text-sm">{{ $command->created_at?->orgTz()->format('d.m.Y H:i') }}</td>
+                    <td class="whitespace-nowrap text-sm">{{ $command->captured_at?->fdatetime() ?? '—' }}</td>
+                    <td class="whitespace-nowrap text-sm">{{ $command->created_at?->fdatetime() }}</td>
                     <td class="text-sm">{{ $command->user?->name ?? '—' }}</td>
                     <td class="font-mono text-xs">{{ $command->type }}</td>
                     <td><x-status-badge :tone="$command->result_status->tone()" size="sm">{{ $command->result_status->label() }}</x-status-badge></td>

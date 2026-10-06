@@ -98,7 +98,7 @@ class TrainingAssignmentController extends Controller {
         $service->assignManually($this->currentOrganization(), $user, $course, $data['due_at'] ?? null);
 
         return redirect()
-            ->route('training.assignments.index')
+            ->toList('training.assignments.index')
             ->with('success', __('training.flash.assignment_created'));
     }
 
@@ -108,7 +108,7 @@ class TrainingAssignmentController extends Controller {
         $assignment->delete();
 
         return redirect()
-            ->route('training.assignments.index')
+            ->toList('training.assignments.index')
             ->with('success', __('training.flash.assignment_deleted'));
     }
 }

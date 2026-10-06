@@ -16,8 +16,9 @@ use APIToolkit\Entities\ID;
 use APIToolkit\Exceptions\ApiException;
 use App\Models\Customer\Customer;
 use App\Plugins\{AbstractPlugin, PluginHealth};
-use App\Plugins\Contracts\{ContactSyncer, Plugin};
+use App\Plugins\Contracts\{ContactSyncer, Plugin, PluginCapability};
 use App\Plugins\OrgaMax\Api\OrgaMaxClientFactory;
+use App\Plugins\OrgaMax\Enums\OrgaMaxConnectionStatus;
 use App\Plugins\OrgaMax\Models\OrgaMaxConnection;
 use App\Services\Finance\Accounting\ContactPushService;
 use Orgamax\API\Endpoints\CustomersEndpoint;
@@ -56,14 +57,16 @@ class OrgaMaxPlugin extends AbstractPlugin implements ContactSyncer {
         return __('Bindet orgaMAX Buchhaltung über die offizielle OpenAPI an: Kunden-/Lieferanten-/Artikelprojektion, Faktura-Übergabe als orgaMAX-Auftrag sowie Rechnungs-, Zahlungs- und PDF-Projektion. Nicht für orgaMAX ERP.');
     }
 
-    /** @return array<int, \App\Plugins\Contracts\PluginCapability> */
     /**
-     * Bewusst leer: Belegübergabe läuft über die
+     * Angekündigt wird, was die Klasse selbst implementiert (Kontakt-Push).
+     * Die Belegübergabe läuft über die
      * {@see \App\Services\Finance\Targets\FacturationTargetRegistry}
      * (Audit 2026-08, W1.6).
+     *
+     * @return array<int, PluginCapability>
      */
     public function capabilities(): array {
-        return [];
+        return [PluginCapability::ContactSync];
     }
 
     /** @return array{route: string, label: string, icon: string}|null */
@@ -148,10 +151,10 @@ class OrgaMaxPlugin extends AbstractPlugin implements ContactSyncer {
         if (! $connection instanceof OrgaMaxConnection) {
             return PluginHealth::degraded(__('Keine orgaMAX-Verbindung hinterlegt.'), 'not_configured');
         }
-        if ($connection->status === OrgaMaxConnection::STATUS_BLOCKED) {
+        if ($connection->status === OrgaMaxConnectionStatus::Blocked) {
             return PluginHealth::failing(__('Verbindung blockiert (:reason) — Details im orgaMAX-Admin.', ['reason' => (string) $connection->blocked_reason]), 'blocked');
         }
-        if (in_array($connection->status, [OrgaMaxConnection::STATUS_PENDING_CALLBACK, OrgaMaxConnection::STATUS_PENDING_CONFIRMATION], true)) {
+        if (in_array($connection->status, [OrgaMaxConnectionStatus::PendingCallback, OrgaMaxConnectionStatus::PendingConfirmation], true)) {
             return PluginHealth::degraded(__('Verbindung wartet auf Callback bzw. Kontobestätigung.'), 'pending');
         }
         if (! $connection->isActive()) {

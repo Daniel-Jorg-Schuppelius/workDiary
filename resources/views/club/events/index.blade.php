@@ -14,8 +14,7 @@
 @extends('layouts.app')
 @section('title', __('club.events.title.index'))
 @section('nav-title', __('club.events.title.index'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('club.events.subtitle.index')">
     <x-slot:actions>
@@ -70,7 +69,7 @@
             @php($details = $event->clubDetails)
             <tr class="hover {{ $event->cancelled_at ? 'opacity-60' : '' }}">
                 <td class="whitespace-nowrap text-sm tabular-nums">
-                    {{ $event->started_at->orgTz()->format('d.m.Y H:i') }}–{{ $event->ended_at->orgTz()->format('H:i') }}
+                    {{ $event->started_at->fdatetime() }}–{{ $event->ended_at->orgTz()->format('H:i') }}
                     @if ($event->series_id !== null || $event->recurrence_rule)
                         <x-icon name="repeat" class="text-muted" />
                     @endif
@@ -78,7 +77,7 @@
                 <td class="font-medium">
                     <a href="{{ route('club.events.show', $event) }}" class="link link-hover">{{ $event->title }}</a>
                     @if ($details)
-                        <span class="badge badge-ghost badge-xs">{{ $details->kind->label() }}</span>
+                        <x-status-badge size="xs">{{ $details->kind->label() }}</x-status-badge>
                     @endif
                 </td>
                 <td class="text-sm">
@@ -86,7 +85,7 @@
                         <span class="text-muted">{{ __('club.events.label.all_members') }}</span>
                     @else
                         @forelse ($event->clubGroups as $group)
-                            <span class="badge badge-ghost badge-sm">{{ $group->name }}</span>
+                            <x-status-badge>{{ $group->name }}</x-status-badge>
                         @empty
                             <span class="text-muted">–</span>
                         @endforelse
@@ -97,7 +96,7 @@
                 <td class="text-center text-sm tabular-nums">
                     {{ $event->registered_count }}@if ($event->max_participants !== null) / {{ $event->max_participants }}@endif
                     @if ($event->waitlisted_count > 0)
-                        <span class="badge badge-warning badge-xs">+{{ $event->waitlisted_count }}</span>
+                        <x-status-badge tone="warning" size="xs">+{{ $event->waitlisted_count }}</x-status-badge>
                     @endif
                 </td>
                 <td><x-status-badge :tone="$event->status->tone()" size="sm">{{ $event->status->label() }}</x-status-badge></td>

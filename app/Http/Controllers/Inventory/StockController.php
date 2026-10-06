@@ -10,15 +10,16 @@
 
 namespace App\Http\Controllers\Inventory;
 
-use App\Enums\Inventory\OwnershipType;
+use App\Enums\Inventory\{OwnershipType, StockState};
 use App\Enums\User\Permission as P;
 use App\Http\Controllers\Controller;
 use App\Models\Article\ArticleVariant;
 use App\Models\Customer\Customer;
-use App\Models\Inventory\{StockLevelSetting, StockMovement, StockReservation, Warehouse, WarehouseBin};
-use App\Services\Inventory\{CustomerStockAllocationService, InventoryLedger, ReservationService, StockLevelService, ValuationService};
+use App\Models\Inventory\{StockLevelSetting, StockLot, StockMovement, StockReservation, Warehouse, WarehouseBin};
+use App\Services\Inventory\{CustomerStockAllocationService, InventoryLedger, LotStockReader, ReservationService, StockLevelService, ValuationService};
 use App\Support\{ErrorText, Sqid};
 use App\Support\MorphMap;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -34,6 +35,7 @@ class StockController extends Controller {
         private readonly ValuationService $valuation,
         private readonly ReservationService $reservations,
         private readonly StockLevelService $levels,
+        private readonly LotStockReader $lotStock,
     ) {}
 
     public function index(Request $request): View {
@@ -45,10 +47,11 @@ class StockController extends Controller {
             ? $warehouses->firstWhere('id', $selectedId)
             : $warehouses->first();
 
-        $rows = [];
+        $rows = null;
         $reservations = collect();
         $belowReorder = collect();
         $bins = collect();
+        $lotOptions = [];
         if ($selected instanceof Warehouse) {
             // Lagerplätze (MVP-706): Spalte + Buchungsauswahl nur, wenn das Lager welche hat.
             $bins = $selected->bins()->get();
@@ -70,25 +73,30 @@ class StockController extends Controller {
             $balances = $this->ledger->balancesByVariant($selected);
             $valuations = $this->valuation->summariesForWarehouse($selected);
 
-            $variants = ArticleVariant::query()->with('article')->whereIn('id', $variantIds)->get();
-            foreach ($variants as $variant) {
-                $level = $levelByVariant[$variant->id] ?? null;
-                $variantBalances = $balances[(int) $variant->id] ?? [];
-                $rows[] = [
-                    'variant' => $variant,
-                    'available' => InventoryLedger::availableFromBalances($variantBalances),
-                    'physical' => bcadd($variantBalances[\App\Enums\Inventory\StockState::Physical->value] ?? '0', '0', InventoryLedger::SCALE),
-                    'reserved' => bcadd($variantBalances[\App\Enums\Inventory\StockState::Reserved->value] ?? '0', '0', InventoryLedger::SCALE),
-                    'avg' => $valuations[(int) $variant->id]['avg'] ?? '0',
-                    'value' => $valuations[(int) $variant->id]['value'] ?? '0',
-                    'reorder' => $level?->reorder_point,
-                    // bin_code → physischer Saldo (0 = ohne Platz wird nicht gelistet).
-                    'bins' => collect($binBalances[(int) $variant->id] ?? [])
-                        ->filter(fn (string $sum, int $binId): bool => $binId > 0 && bccomp($sum, '0', InventoryLedger::SCALE) !== 0)
-                        ->mapWithKeys(fn (string $sum, int $binId): array => [(string) ($binsById[$binId]->code ?? $binId) => $sum])
-                        ->all(),
-                ];
-            }
+            $rows = ArticleVariant::query()->with('article')->whereIn('id', $variantIds)->orderBy('id')
+                ->paginate(50)->withQueryString()
+                ->through(function (ArticleVariant $variant) use ($levelByVariant, $balances, $valuations, $binBalances, $binsById): array {
+                    $level = $levelByVariant[$variant->id] ?? null;
+                    $variantBalances = $balances[(int) $variant->id] ?? [];
+                    $blocked = bcadd($variantBalances[StockState::Blocked->value] ?? '0', '0', InventoryLedger::SCALE);
+
+                    return [
+                        'variant' => $variant,
+                        'available' => InventoryLedger::availableFromBalances($variantBalances),
+                        'physical' => bcadd($variantBalances[StockState::Physical->value] ?? '0', '0', InventoryLedger::SCALE),
+                        'reserved' => bcadd($variantBalances[StockState::Reserved->value] ?? '0', '0', InventoryLedger::SCALE),
+                        // Gesperrt (Chargensperre, Quarantäne) nur, wenn ungleich null.
+                        'blocked' => bccomp($blocked, '0', InventoryLedger::SCALE) !== 0 ? $blocked : null,
+                        'avg' => $valuations[(int) $variant->id]['avg'] ?? '0',
+                        'value' => $valuations[(int) $variant->id]['value'] ?? '0',
+                        'reorder' => $level?->reorder_point,
+                        // bin_code → physischer Saldo (0 = ohne Platz wird nicht gelistet).
+                        'bins' => collect($binBalances[(int) $variant->id] ?? [])
+                            ->filter(fn (string $sum, int $binId): bool => $binId > 0 && bccomp($sum, '0', InventoryLedger::SCALE) !== 0)
+                            ->mapWithKeys(fn (string $sum, int $binId): array => [(string) ($binsById[$binId]->code ?? $binId) => $sum])
+                            ->all(),
+                    ];
+                });
 
             $reservations = StockReservation::query()
                 ->where('warehouse_id', $selected->id)
@@ -98,6 +106,10 @@ class StockController extends Controller {
                 ->get();
 
             $belowReorder = $this->levels->belowReorder($selected);
+
+            // Chargenauswahl der Entnahme: aktive Chargen mit Bestand in diesem Lager, gefiltert nach der gewählten Variante.
+            $lotOptions = $this->lotStock->issuableIn($selected);
+            (new EloquentCollection(array_column($lotOptions, 0)))->load('variant');
         }
 
         return view('inventory.index', [
@@ -107,6 +119,8 @@ class StockController extends Controller {
             'reservations' => $reservations,
             'belowReorder' => $belowReorder,
             'bins' => $bins,
+            'lotOptions' => $lotOptions,
+            'showBlocked' => $rows !== null && collect($rows->items())->contains(fn (array $row): bool => $row['blocked'] !== null),
             'canPost' => Auth::user()?->can(P::InventoryPost->value) ?? false,
             'canConfigure' => Auth::user()?->can(P::InventoryConfigure->value) ?? false,
             'pickerVariants' => ArticleVariant::query()->with('article')
@@ -156,6 +170,7 @@ class StockController extends Controller {
             'allow_negative' => ['sometimes', 'boolean'],
             'cost_customer' => ['nullable', 'string'],
             'bin' => ['nullable', 'string'],
+            'lot' => ['nullable', 'string'],
         ]);
 
         $warehouse = Warehouse::query()->findOrFail(Sqid::decodeOrNumeric(Warehouse::class, $data['warehouse']));
@@ -173,6 +188,16 @@ class StockController extends Controller {
         $qty = (string) $data['qty'];
         $actor = Auth::id() !== null ? (int) Auth::id() : null;
 
+        // Charge nur für die Entnahme (leer = FEFO); dass sie zur Variante gehört und aktiv ist, prüft die Zuteilung.
+        $lot = null;
+        if ((string) $data['movement'] === 'issue' && ! empty($data['lot'])) {
+            $lotId = Sqid::decodeOrNumeric(StockLot::class, (string) $data['lot']);
+            $lot = $lotId !== null ? StockLot::query()->find($lotId) : null;
+            if (! $lot instanceof StockLot) {
+                return back()->with('error', __('inventory.lot.flash.unknown'));
+            }
+        }
+
         // Eigenbestand-Abgang, der zugleich Materialkosten auf einen Kunden
         // bucht (gleiche Buchung wie in der Kundenakte): nur bei movement=issue
         // und Eigenbestand — sonst normaler Abgang.
@@ -186,12 +211,14 @@ class StockController extends Controller {
             return back()->with('error', __('inventory.error.bin_with_customer'));
         }
 
-        // Vollaudit 2026-07 (M19, E2): chargen-/serienpflichtige Artikel nicht
-        // still als anonymer Bestand buchen (Reservierung/Freigabe bleibt zulässig).
+        // Vollaudit 2026-07 (M19, E2): chargen-/serienpflichtige Artikel nicht still als anonymer Bestand buchen.
+        // Zugang nur über den Wareneingang, Serien gar nicht; die Entnahme chargenpflichtiger Artikel muss ganz
+        // aus Chargen kommen (gewählt oder FEFO). Reservierung/Freigabe bleibt zulässig.
         $article = $variant->article;
+        $lotTracked = (bool) ($article->batch_required ?? false);
         if (
             in_array((string) $data['movement'], ['receipt', 'issue'], true)
-            && (($article->batch_required ?? false) || ($article->serial_required ?? false))
+            && (($article->serial_required ?? false) || ($lotTracked && (string) $data['movement'] === 'receipt'))
         ) {
             return back()->with('error', __('inventory.error.tracked_article_manual_move'));
         }
@@ -215,8 +242,8 @@ class StockController extends Controller {
             match ((string) $data['movement']) {
                 'receipt' => $this->ledger->receipt($variant, $warehouse, $qty, $ownership, actorUserId: $actor, bin: $bin),
                 'issue' => $costCustomer instanceof Customer && $ownership === OwnershipType::Own
-                    ? app(CustomerStockAllocationService::class)->issueForCustomer($costCustomer, $variant, $warehouse, $qty, actorUserId: $actor)
-                    : $this->ledger->issue($variant, $warehouse, $qty, $ownership, allowNegative: $allowNegative, actorUserId: $actor, bin: $bin),
+                    ? app(CustomerStockAllocationService::class)->issueForCustomer($costCustomer, $variant, $warehouse, $qty, actorUserId: $actor, lot: $lot, requireLot: $lotTracked)
+                    : $this->ledger->issue($variant, $warehouse, $qty, $ownership, allowNegative: $allowNegative, actorUserId: $actor, bin: $bin, lot: $lot, requireLot: $lotTracked),
                 'reserve' => $this->ledger->reserve($variant, $warehouse, $qty, $ownership, actorUserId: $actor, bin: $bin),
                 'release' => $this->ledger->releaseReservation($variant, $warehouse, $qty, $ownership, actorUserId: $actor, bin: $bin),
                 default => throw new RuntimeException('Unbekannte Bewegungsart.'),

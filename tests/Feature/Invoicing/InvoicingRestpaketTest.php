@@ -10,6 +10,8 @@
 
 namespace Tests\Feature\Invoicing;
 
+use App\Enums\Invoicing\InvoiceStatus;
+use App\Enums\Sales\QuoteStatus;
 use App\Mail\DunningMail;
 use App\Models\Customer\Customer;
 use App\Models\Document\DocumentDispatch;
@@ -52,7 +54,7 @@ final class InvoicingRestpaketTest extends TestCase {
             'organization_id' => $this->org->id,
             'customer_id' => $this->customer->id,
             'number' => 'R2026-7001',
-            'status' => Invoice::STATUS_ISSUED,
+            'status' => InvoiceStatus::Issued,
             'type' => Invoice::TYPE_INVOICE,
             'tax_rate' => '19.00',
             'total' => '119.00',
@@ -121,7 +123,7 @@ final class InvoicingRestpaketTest extends TestCase {
 
         // Keine Ausstellung, keine E-Rechnung für Pro-forma.
         $this->actingAs($this->user)->post(route('invoices.issue', $proforma))->assertSessionHas('error');
-        $this->assertSame(Invoice::STATUS_DRAFT, $proforma->fresh()->status);
+        $this->assertSame(InvoiceStatus::Draft, $proforma->fresh()->status);
         $this->actingAs($this->user)->get(route('invoices.einvoice', $proforma))->assertNotFound();
         $this->actingAs($this->user)->get(route('invoices.zugferd', $proforma))->assertNotFound();
 
@@ -138,7 +140,7 @@ final class InvoicingRestpaketTest extends TestCase {
             'organization_id' => $this->org->id,
             'customer_id' => $this->customer->id,
             'number' => 'R2026-7002',
-            'status' => Invoice::STATUS_DRAFT,
+            'status' => InvoiceStatus::Draft,
             'type' => Invoice::TYPE_INVOICE,
             'tax_rate' => '0.00',
         ]);
@@ -187,12 +189,12 @@ final class InvoicingRestpaketTest extends TestCase {
             'decision' => 'accept',
             'item_ids' => $quote->items()->get()->map(fn ($item): string => $item->sqid)->all(),
         ])->assertRedirect();
-        $this->assertSame('accepted', $quote->fresh()->status);
+        $this->assertSame(QuoteStatus::Accepted, $quote->fresh()->status);
 
         // Überführung in eine Entwurfsrechnung.
         $this->actingAs($this->user)->post(route('quotes.convert', $quote))->assertRedirect();
         $invoice = Invoice::query()->where('quote_id', $quote->id)->firstOrFail();
-        $this->assertSame(Invoice::STATUS_DRAFT, $invoice->status);
+        $this->assertSame(InvoiceStatus::Draft, $invoice->status);
         $this->assertEqualsWithDelta(180.0, $invoice->subtotal?->toFloat(), 0.01);
     }
 

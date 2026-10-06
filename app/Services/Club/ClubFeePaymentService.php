@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Club;
 
 use App\Enums\Club\{ClubFeeClaimStatus, ClubFeePaymentMethod, ClubFeePaymentSource};
+use App\Enums\Document\DocumentDispatchStatus;
 use App\Enums\Finance\{MandateStatus, PaymentRunKind, PaymentRunStatus};
 use App\Models\Club\{ClubFeeAccount, ClubFeeClaim, ClubFeeDunning, ClubFeePayment};
 use App\Models\Document\DocumentDispatch;
@@ -23,6 +24,7 @@ use App\Services\Concerns\AssertsStatusTransition;
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use CommonToolkit\ValueObjects\Money;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\{DB, Mail};
 use Illuminate\Validation\ValidationException;
@@ -249,6 +251,12 @@ class ClubFeePaymentService {
                     continue;
                 }
                 $claim = $payment->club_fee_claim_id !== null ? $payment->claim()->first() : null;
+                // Guthaben aus dieser Bankzahlung, das schon mit Forderungen verrechnet ist, bliebe sonst
+                // verrechnet stehen, während das Geld zurückgeht (li-9).
+                $account = $payment->account;
+                if ($claim === null && $account !== null && $this->creditBalance($account)->lessThan($payment->amount)) {
+                    throw ValidationException::withMessages(['allocation' => __('club.fees.error.credit_already_applied')]);
+                }
                 $payment->audit('club.fee.paymentReverted', ['allocation_id' => $allocation->id]);
                 $payment->delete();
                 if ($claim !== null) {
@@ -330,7 +338,7 @@ class ClubFeePaymentService {
             'document_id' => $claim->id,
             'channel' => DocumentDispatch::CHANNEL_EMAIL,
             'format' => 'pdf',
-            'status' => 'queued',
+            'status' => DocumentDispatchStatus::Queued,
             'recipient' => $email,
             'meta' => ['dunning_id' => $dunning->id, 'level' => $dunning->level],
             'created_by' => $actor?->id,
@@ -479,6 +487,24 @@ class ClubFeePaymentService {
         });
     }
 
+    /**
+     * Beitragseinzüge: Lastschriftläufe, deren Positionen ein Mandat, aber keinen Rechnungsbezug tragen.
+     * Überweisungsläufe und Lastschriften der Faktura gehören dem Finanzmodul (Sicherheitsaudit 2026-10-04, authz-a-2).
+     *
+     * @return Builder<PaymentRun>
+     */
+    public function collectionRuns(): Builder {
+        return PaymentRun::query()
+            ->where('kind', PaymentRunKind::DirectDebit->value)
+            ->whereHas('items')
+            ->whereDoesntHave('items', fn (Builder $item) => $item->where(fn (Builder $foreign) => $foreign
+                ->whereNull('sepa_mandate_id')->orWhereNotNull('invoice_id')->orWhereNotNull('incoming_einvoice_id')));
+    }
+
+    public function isCollectionRun(PaymentRun $run): bool {
+        return $this->collectionRuns()->whereKey($run->id)->exists();
+    }
+
     /** Abbruch vor dem Export: Reservierungen lösen; ein neuer Versuch erhält später eine neue Referenz. */
     public function cancelCollectionRun(PaymentRun $run): PaymentRun {
         return DB::transaction(function () use ($run): PaymentRun {
@@ -507,11 +533,17 @@ class ClubFeePaymentService {
                 if ($claim === null || $claim->account === null) {
                     continue;
                 }
-                $this->createPayment($claim->account, $claim, Money::of((string) $item->amount, $claim->currency), $paidOn, ClubFeePaymentMethod::Sepa, ClubFeePaymentSource::Sepa, [
-                    'reference' => $item->end_to_end_id,
-                    'payment_run_item_id' => $item->id,
-                    'created_by_user_id' => $actor->id,
-                ]);
+                $collected = Money::of((string) $item->amount, $claim->currency);
+                $open = $claim->openAmount();
+                $toClaim = $open->isPositive() ? Money::min($open, $collected) : $collected->minus($collected);
+                $extra = ['reference' => $item->end_to_end_id, 'payment_run_item_id' => $item->id, 'created_by_user_id' => $actor->id];
+                if ($toClaim->isPositive()) {
+                    $this->createPayment($claim->account, $claim, $toClaim, $paidOn, ClubFeePaymentMethod::Sepa, ClubFeePaymentSource::Sepa, $extra);
+                }
+                // Zwischen Export und Einzug schon anders bezahlt: der eingezogene Betrag steht dem Konto als Guthaben zu.
+                if ($collected->minus($toClaim)->isPositive()) {
+                    $this->createPayment($claim->account, null, $collected->minus($toClaim), $paidOn, ClubFeePaymentMethod::Sepa, ClubFeePaymentSource::Sepa, $extra);
+                }
                 $claim->update(['payment_run_item_id' => null]);
                 $count++;
             }
@@ -560,8 +592,16 @@ class ClubFeePaymentService {
             $this->assertStatusTransition($claim->status, $target);
             $values['status'] = $target->value;
         }
-        if ($target === ClubFeeClaimStatus::Paid) {
-            $values['payment_run_item_id'] = null;
+        if ($target === ClubFeeClaimStatus::Paid && $claim->payment_run_item_id !== null) {
+            // Im Entwurf fällt die Position aus dem Einzug. Nach der Freigabe bleibt der Zeiger stehen:
+            // die Lastschrift läuft, und die Einzugsbuchung weist den Betrag dann als Guthaben aus (li-9).
+            $item = PaymentRunItem::query()->find($claim->payment_run_item_id);
+            if ($item === null || $item->run?->isDraft() === true) {
+                if ($item !== null) {
+                    $this->paymentRuns->removeItem($item);
+                }
+                $values['payment_run_item_id'] = null;
+            }
         }
         $claim->update($values);
     }

@@ -14,15 +14,17 @@ namespace App\Services\Inventory;
 
 use App\Enums\Inventory\{OwnershipType, ScanAction, StockMovementType, StockState};
 use App\Models\Article\ArticleVariant;
-use App\Models\Inventory\{StockMovement, Warehouse};
+use App\Models\Inventory\{StockLot, StockMovement, Warehouse};
 use App\Support\DecimalQty;
+use CommonToolkit\ValueObjects\Decimal;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
 /**
  * Mobile Bestandsbuchung per Scan (Feature 048, E5): löst den Code zur Variante
  * auf und bucht die gewählte Aktion (Eingang/Entnahme/Umlagerung) gegen das
- * append-only Journal. Entnahme und Umlagerung prüfen die Verfügbarkeit.
+ * append-only Journal. Entnahme und Umlagerung prüfen die Verfügbarkeit; die
+ * Umlagerung nimmt ihre Chargen mit (E4).
  */
 class ScanActionService {
     public const SCALE = 4;
@@ -30,10 +32,17 @@ class ScanActionService {
     public function __construct(
         private readonly BarcodeResolver $resolver,
         private readonly InventoryLedger $ledger,
+        private readonly LotStockReader $lotStock,
     ) {}
 
-    /** @param array{actor?: int|null, target?: Warehouse|null} $options */
-    public function book(string $code, ScanAction $action, Warehouse $warehouse, string $qty, array $options = []): StockMovement {
+    /**
+     * Der Eingang liefert die gebuchte Bewegung, Entnahme und Umlagerung ihren
+     * Abgang (je Charge eine Bewegung). Ein gescannter Chargencode bucht genau
+     * diese Charge.
+     *
+     * @param array{actor?: int|null, target?: Warehouse|null} $options
+     */
+    public function book(string $code, ScanAction $action, Warehouse $warehouse, string $qty, array $options = []): StockMovement|StockIssue {
         $match = $this->resolver->resolve($code);
         $variant = $match->variant;
         if (! $variant instanceof ArticleVariant) {
@@ -55,30 +64,42 @@ class ScanActionService {
 
         return match ($action) {
             ScanAction::Receipt => $this->ledger->receipt($variant, $warehouse, $qty, actorUserId: $actor),
-            ScanAction::Issue => $this->ledger->issue($variant, $warehouse, $qty, actorUserId: $actor),
-            ScanAction::Transfer => $this->transfer($variant, $warehouse, $options['target'] ?? null, $qty, $actor),
+            ScanAction::Issue => $this->ledger->issue($variant, $warehouse, $qty, actorUserId: $actor, lot: $match->lot),
+            ScanAction::Transfer => $this->transfer($variant, $warehouse, $options['target'] ?? null, $qty, $actor, $match->lot),
         };
     }
 
-    /** @param numeric-string $qty */
-    private function transfer(ArticleVariant $variant, Warehouse $from, ?Warehouse $to, string $qty, ?int $actor): StockMovement {
+    /**
+     * Umlagerung je Charge: die Menge wird wie ein Abgang zugeteilt (gescannte
+     * Charge, sonst FEFO, Rest ohne Charge) und je Teil mit derselben Charge
+     * im Ziel-Lager zugebucht — dort bleibt sie pickbar.
+     *
+     * @param numeric-string $qty
+     */
+    private function transfer(ArticleVariant $variant, Warehouse $from, ?Warehouse $to, string $qty, ?int $actor, ?StockLot $scanned): StockIssue {
         if (! $to instanceof Warehouse) {
             throw new RuntimeException('Umlagerung ohne Ziel-Lager.');
         }
-        if (bccomp($this->ledger->available($variant, $from), $qty, self::SCALE) < 0) {
-            throw new RuntimeException('Umlagerung übersteigt den verfügbaren Bestand.');
-        }
 
-        return DB::transaction(function () use ($variant, $from, $to, $qty, $actor): StockMovement {
-            $this->ledger->post(new StockPosting(
-                $variant, $from, StockState::Physical, bcmul($qty, '-1', self::SCALE), StockMovementType::TransferOut,
-                OwnershipType::Own, actorUserId: $actor,
-            ));
+        return DB::transaction(function () use ($variant, $from, $to, $qty, $actor, $scanned): StockIssue {
+            // Prüfung und Zuteilung in derselben Transaktion: beide sperren den Bestand gegen parallele Abgänge.
+            if (Decimal::of($this->ledger->availableForUpdate($variant, $from), self::SCALE)->lessThan(Decimal::of($qty, self::SCALE))) {
+                throw new RuntimeException('Umlagerung übersteigt den verfügbaren Bestand.');
+            }
 
-            return $this->ledger->post(new StockPosting(
-                $variant, $to, StockState::Physical, $qty, StockMovementType::TransferIn,
-                OwnershipType::Own, actorUserId: $actor,
-            ));
+            $leaving = [];
+            foreach ($this->lotStock->allocate($variant, $from, $qty, explicit: $scanned, ownership: OwnershipType::Own)->parts as ['lot' => $lot, 'qty' => $partQty]) {
+                $leaving[] = $this->ledger->post(new StockPosting(
+                    $variant, $from, StockState::Physical, DecimalQty::negative($partQty), StockMovementType::TransferOut,
+                    OwnershipType::Own, actorUserId: $actor, stockLotId: $lot?->id,
+                ))->setRelation('lot', $lot);
+                $this->ledger->post(new StockPosting(
+                    $variant, $to, StockState::Physical, $partQty, StockMovementType::TransferIn,
+                    OwnershipType::Own, actorUserId: $actor, stockLotId: $lot?->id,
+                ));
+            }
+
+            return new StockIssue($leaving);
         });
     }
 }

@@ -14,7 +14,9 @@ namespace App\Plugins\Fritzbox\Sources;
 
 use App\Support\Toolkit\CsvFacade;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Enums\DateTimeFormat;
 use CommonToolkit\Helper\Data\CSV\StringHelper as CsvStringHelper;
+use CommonToolkit\Helper\Data\DateHelper;
 use CommonToolkit\Helper\Data\{PhoneNumberHelper, StringHelper};
 use CommonToolkit\ValueObjects\Duration;
 use InvalidArgumentException;
@@ -27,9 +29,6 @@ use RuntimeException;
  * übersprungen statt den Import abzubrechen.
  */
 class FritzboxCsvParser {
-    /** FRITZ!OS exportiert 2-stellige Jahre; ältere Firmware teils 4-stellig. */
-    private const DATE_FORMATS = ['d.m.y H:i', 'd.m.Y H:i'];
-
     /** Header-Spalte → Feldname (DE + EN-Export). */
     private const HEADER_ALIASES = [
         'Typ' => 'type',
@@ -142,19 +141,12 @@ class FritzboxCsvParser {
         );
     }
 
+    /** FRITZ!OS exportiert `d.m.y H:i`; ältere Firmware das Jahr teils vierstellig. */
     private function parseDate(string $value, string $timezone): ?CarbonImmutable {
-        foreach (self::DATE_FORMATS as $format) {
-            try {
-                $parsed = CarbonImmutable::createFromFormat($format, $value, $timezone);
-                if ($parsed instanceof CarbonImmutable) {
-                    return $parsed->setTimezone('UTC');
-                }
-            } catch (\Throwable) {
-                // nächstes Format versuchen
-            }
-        }
+        $iso = DateHelper::normalizeToIso(trim($value), DateTimeFormat::DE);
 
-        return null;
+        // Nur Wanduhrzeit mit Uhrzeit (`Y-m-d H:i:s`): kein reines Datum, kein Offset.
+        return $iso === null || strlen($iso) !== 19 ? null : CarbonImmutable::parse($iso, $timezone)->setTimezone('UTC');
     }
 
     /** FRITZ!Box-Dauer ist `H:MM` (Stunden:Minuten), nicht Minuten:Sekunden. */

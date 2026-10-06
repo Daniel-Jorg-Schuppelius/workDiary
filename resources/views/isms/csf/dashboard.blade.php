@@ -99,11 +99,7 @@
                                         'mapped' => __('isms.csf.source_mapped'),
                                         default => __('isms.csf.source_none'),
                                     };
-                                    $sourceTone = match ($function['mode']) {
-                                        'direct' => 'badge-info',
-                                        'mapped' => 'badge-ghost',
-                                        default => 'badge-ghost',
-                                    };
+                                    $sourceTone = $function['mode'] === 'direct' ? 'info' : 'ghost';
                                     $sourceHint = match ($function['mode']) {
                                         'direct' => __('isms.csf.source_direct_hint'),
                                         'mapped' => __('isms.csf.source_mapped_hint'),
@@ -116,7 +112,7 @@
                                         <span class="font-medium">{{ $function['title'] }}</span>
                                     </td>
                                     <td>
-                                        <span class="badge badge-sm {{ $sourceTone }}" @if ($sourceHint !== '') title="{{ $sourceHint }}" @endif>{{ $sourceLabel }}</span>
+                                        <x-status-badge :tone="$sourceTone" :title="$sourceHint !== '' ? $sourceHint : null">{{ $sourceLabel }}</x-status-badge>
                                     </td>
                                     <td>
                                         @if ($function['mode'] === 'none')

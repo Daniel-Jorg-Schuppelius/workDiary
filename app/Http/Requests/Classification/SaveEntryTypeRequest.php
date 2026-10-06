@@ -59,7 +59,7 @@ class SaveEntryTypeRequest extends BaseFormRequest {
             ],
             'label' => ['required', 'string', 'max:120'],
             'icon' => ['required', 'string', 'max:64'],
-            'color' => ['required', 'string', 'max:16'],
+            'color' => ['required', 'string', 'max:16', new \App\Rules\ColorValue],
             'description' => ['nullable', 'string', 'max:255'],
             'sort' => ['nullable', 'integer', 'min:0', 'max:9999'],
             'is_active' => ['boolean'],

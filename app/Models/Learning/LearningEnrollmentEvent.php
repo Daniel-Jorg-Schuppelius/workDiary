@@ -10,6 +10,7 @@
 
 namespace App\Models\Learning;
 
+use App\Enums\Learning\LearningEnrollmentStatus;
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
 use App\Models\Journal\JournalEntry;
 use App\Models\Platform\User;
@@ -23,8 +24,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $id
  * @property int $organization_id
  * @property int $learning_enrollment_id
- * @property string|null $from_status
- * @property string $to_status
+ * @property LearningEnrollmentStatus|null $from_status
+ * @property LearningEnrollmentStatus $to_status
  * @property int|null $actor_user_id
  * @property string|null $reason
  */
@@ -49,6 +50,8 @@ class LearningEnrollmentEvent extends JournalEntry {
     /** @var array<string, string> */
     protected $casts = [
         'payload' => 'array',
+        'from_status' => LearningEnrollmentStatus::class,
+        'to_status' => LearningEnrollmentStatus::class,
     ];
 
     /** @return BelongsTo<LearningEnrollment, $this> */

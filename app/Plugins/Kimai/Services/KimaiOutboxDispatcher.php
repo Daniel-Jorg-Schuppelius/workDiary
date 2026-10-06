@@ -14,8 +14,8 @@ namespace App\Plugins\Kimai\Services;
 
 use App\Models\Integration\IntegrationOutboxEntry;
 use App\Models\Platform\Organization;
-use App\Plugins\Kimai\{KimaiConfig, KimaiExportService, KimaiPlugin};
-use App\Plugins\Kimai\Sources\KimaiApiClient;
+use App\Plugins\Kimai\Api\KimaiApiClient;
+use App\Plugins\Kimai\{KimaiConfig, KimaiPlugin};
 use App\Plugins\Support\{MirrorsCreatedEntries, RemoteTimeWriter, TimeWritebackDispatcher};
 use App\Support\Tz;
 
@@ -23,7 +23,7 @@ use App\Support\Tz;
  * Rückrichtung nach Kimai (PATCH/DELETE auf `/api/timesheets/{id}`).
  *
  * Betrifft nur **importierte** Zeiten; die Rückbuchung neu erfasster Zeiten
- * bleibt der Export ({@see \App\Plugins\Kimai\KimaiExportService}, Flag
+ * bleibt der Export ({@see \App\Plugins\Kimai\Services\KimaiExportService}, Flag
  * `export_enabled`).
  */
 class KimaiOutboxDispatcher extends TimeWritebackDispatcher implements MirrorsCreatedEntries {

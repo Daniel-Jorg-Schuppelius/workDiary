@@ -57,10 +57,10 @@
                 <div class="mb-2 text-xs uppercase tracking-wider text-muted">{{ __('Verteilung nach Tätigkeit') }}</div>
                 <div class="flex flex-wrap gap-2">
                     @foreach ($period->byActivity as $type => $minutes)
-                        <span class="badge badge-outline gap-2 px-3 py-3">
+                        <x-status-badge tone="plain" size="md" outline class="gap-2 px-3 py-3">
                             <strong>{{ \App\Models\Time\TimeEntry::activityLabel($type) }}</strong>
                             <span>{{ $fmt((int) $minutes) }} h</span>
-                        </span>
+                        </x-status-badge>
                     @endforeach
                 </div>
             </x-card>

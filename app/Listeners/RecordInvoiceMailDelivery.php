@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
+use App\Enums\Document\DocumentDispatchStatus;
 use App\Models\Document\DocumentDispatch;
 use Illuminate\Mail\Events\MessageSent;
 
@@ -39,7 +40,7 @@ class RecordInvoiceMailDelivery {
         }
 
         $dispatch->forceFill([
-            'status' => 'sent',
+            'status' => DocumentDispatchStatus::Sent,
             'meta' => [
                 ...(array) $dispatch->meta,
                 'message_id' => (string) $event->message->getHeaders()->get('Message-ID')?->getBodyAsString(),

@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Investments;
 
+use App\Enums\Investments\{InvestmentBudgetRequestStatus, InvestmentCaseStatus, InvestmentDeviationStatus};
 use App\Enums\User\UserRole;
 use App\Models\Investments\InvestmentCase;
 use App\Models\Platform\{Organization, User};
@@ -60,7 +61,7 @@ final class InvestmentLifecycleTest extends TestCase {
 
         $request = $service->submitBudget($case, ['amount' => '5000.00'], $this->admin);
         $this->assertSame(1, $request->approvals()->count(), 'Unter der Schwelle genügt eine Stufe.');
-        $this->assertSame('in_approval', $case->fresh()->status);
+        $this->assertSame(InvestmentCaseStatus::InApproval, $case->fresh()->status);
 
         // Selbstfreigabe-Sperre: Antragsteller darf nicht freigeben.
         try {
@@ -72,9 +73,9 @@ final class InvestmentLifecycleTest extends TestCase {
         $result = $service->approveBudget($request, $this->second);
         $this->assertSame('approved_all', $result);
         $fresh = $request->fresh();
-        $this->assertSame('approved', $fresh->status);
+        $this->assertSame(InvestmentBudgetRequestStatus::Approved, $fresh->status);
         $this->assertSame('5000.00', (string) data_get($fresh->snapshot, 'amount'));
-        $this->assertSame('approved', $case->fresh()->status);
+        $this->assertSame(InvestmentCaseStatus::Approved, $case->fresh()->status);
     }
 
     public function test_budget_at_threshold_requires_four_eyes_chain(): void {
@@ -95,7 +96,7 @@ final class InvestmentLifecycleTest extends TestCase {
         }
 
         $this->assertSame('approved_all', $service->approveBudget($request->fresh(), $this->third));
-        $this->assertSame('approved', $request->fresh()->status);
+        $this->assertSame(InvestmentBudgetRequestStatus::Approved, $request->fresh()->status);
     }
 
     public function test_supplement_requires_approved_budget_deviation_and_supersedes(): void {
@@ -131,7 +132,7 @@ final class InvestmentLifecycleTest extends TestCase {
 
         $supplement = $service->supplementBudget($case->refresh(), $deviation->refresh(), ['amount' => '6500.00'], $this->admin);
         $this->assertSame(2, $supplement->version);
-        $this->assertSame('superseded', $request->fresh()->status, 'Alter genehmigter Stand bleibt als superseded erhalten.');
+        $this->assertSame(InvestmentBudgetRequestStatus::Superseded, $request->fresh()->status, 'Alter genehmigter Stand bleibt als superseded erhalten.');
         $service->approveBudget($supplement, $this->second);
         $this->assertSame('6500.00', (string) $case->refresh()->approvedBudget()?->amount);
     }
@@ -234,13 +235,164 @@ final class InvestmentLifecycleTest extends TestCase {
         $this->actingAs($accounting)->post(route('investments.review.store', $case), [
             'benefit_result' => 'Ausfallzeiten halbiert.',
         ])->assertSessionHas('success');
-        $this->assertSame('post_review', $case->fresh()->status);
+        $this->assertSame(InvestmentCaseStatus::PostReview, $case->fresh()->status);
 
         // Fremde Org: 404.
         $otherOrg = Organization::factory()->create();
         $foreign = User::factory()->admin()->create(['organization_id' => $otherOrg->id]);
         app()->instance('currentOrganization', $otherOrg);
         $this->actingAs($foreign)->get(route('investments.show', $case))->assertNotFound();
+    }
+
+    // ── Zurückstellen, Wieder aufnehmen, Ablehnung endgültig (Konsolidierungs-Audit 2026-10, vierte Runde) ──
+
+    private function showPage(InvestmentCase $case): string {
+        return (string) $this->actingAs($this->admin)->get(route('investments.show', $case))->assertOk()->getContent();
+    }
+
+    public function test_deferring_remembers_the_phase_and_resuming_leads_back_to_it(): void {
+        $case = $this->makeCase();
+        $html = $this->showPage($case);
+        $this->assertStringContainsString('<input type="hidden" name="status" value="deferred">', $html);
+        $this->assertStringContainsString(e(__('Zurückstellen')), $html);
+        $this->assertStringNotContainsString('<option value="deferred"', $html);
+        $this->assertStringNotContainsString(e(__('Wieder aufnehmen')), $html);
+
+        $this->actingAs($this->admin)->post(route('investments.status', $case), ['status' => 'deferred'])
+            ->assertSessionHas('success', (string) __('Akte zurückgestellt.'));
+        $case->refresh();
+        $this->assertSame(InvestmentCaseStatus::Deferred, $case->status);
+        $this->assertSame(InvestmentCaseStatus::Comparison, $case->deferred_from_status);
+
+        // Zurückgestellt: statt des Selects der Knopf „Wieder aufnehmen“ mit der gemerkten Phase.
+        $html = $this->showPage($case);
+        $this->assertStringContainsString('<input type="hidden" name="status" value="comparison">', $html);
+        $this->assertStringContainsString(e(__('Wieder aufnehmen')), $html);
+        $this->assertStringNotContainsString('<select name="status"', $html);
+        $this->assertStringNotContainsString('name="status" value="deferred"', $html);
+
+        // Nur die gemerkte Phase führt zurück.
+        $this->actingAs($this->admin)->post(route('investments.status', $case), ['status' => 'idea'])->assertSessionHas('error');
+        $this->assertSame(InvestmentCaseStatus::Deferred, $case->fresh()->status);
+        $this->actingAs($this->admin)->post(route('investments.status', $case), ['status' => 'comparison'])
+            ->assertSessionHas('success', (string) __('Akte wieder aufgenommen.'));
+        $case->refresh();
+        $this->assertSame(InvestmentCaseStatus::Comparison, $case->status);
+        $this->assertNull($case->deferred_from_status);
+    }
+
+    public function test_legacy_deferred_case_without_phase_resumes_into_the_idea(): void {
+        $case = InvestmentCase::query()->create([
+            'organization_id' => $this->organization->id,
+            'title' => 'Altbestand ohne Phase',
+            'category' => 'it',
+            'status' => 'deferred',
+            'created_by' => $this->admin->id,
+        ]);
+        $this->assertNull($case->fresh()->deferred_from_status);
+        $this->assertStringContainsString('<input type="hidden" name="status" value="idea">', $this->showPage($case));
+
+        $this->actingAs($this->admin)->post(route('investments.status', $case), ['status' => 'comparison'])->assertSessionHas('error');
+        $this->actingAs($this->admin)->post(route('investments.status', $case), ['status' => 'idea'])->assertSessionHas('success');
+        $this->assertSame(InvestmentCaseStatus::Idea, $case->fresh()->status);
+    }
+
+    public function test_defer_button_appears_only_in_planning(): void {
+        foreach (InvestmentCaseStatus::cases() as $status) {
+            $case = InvestmentCase::query()->create([
+                'organization_id' => $this->organization->id,
+                'title' => 'Akte ' . $status->value,
+                'category' => 'it',
+                'status' => $status,
+                'created_by' => $this->admin->id,
+            ]);
+            $html = $this->showPage($case);
+            if ($status->isPlanning()) {
+                $this->assertStringContainsString('name="status" value="deferred"', $html, $status->value);
+            } else {
+                $this->assertStringNotContainsString('name="status" value="deferred"', $html, $status->value);
+            }
+            if ($status !== InvestmentCaseStatus::Deferred) {
+                $this->assertStringNotContainsString(e(__('Wieder aufnehmen')), $html, $status->value);
+            }
+        }
+    }
+
+    public function test_a_rejected_case_stays_rejected(): void {
+        $case = InvestmentCase::query()->create([
+            'organization_id' => $this->organization->id,
+            'title' => 'Abgelehnter Kran',
+            'category' => 'machine',
+            'status' => 'rejected',
+            'created_by' => $this->admin->id,
+        ]);
+        $entries = $case->auditLogs()->count();
+
+        // Statusform: Handpflege-Ziele mit Meldung, Freigabe-/Endstände schon in der Validierung.
+        foreach (InvestmentCaseStatus::manual() as $target) {
+            $this->actingAs($this->admin)->post(route('investments.status', $case), ['status' => $target->value])
+                ->assertSessionHas('error', (string) __('Statuswechsel von :from nach :to ist nicht zulässig.', ['from' => InvestmentCaseStatus::Rejected->label(), 'to' => $target->label()]))
+                ->assertSessionMissing('success');
+        }
+        foreach (['in_approval', 'approved', 'cancelled', 'post_review', 'rejected'] as $target) {
+            $this->actingAs($this->admin)->post(route('investments.status', $case), ['status' => $target])->assertSessionHasErrors('status');
+        }
+
+        // Kein neuer Budgetantrag, kein Zurückstellen, kein Wiederaufnehmen.
+        $this->actingAs($this->admin)->post(route('investments.budget.submit', $case), ['amount' => '1000.00', 'cost_kind' => 'purchase', 'financing' => 'cash'])
+            ->assertSessionHas('error', (string) __('Budgetanträge sind nur in der Planungsphase möglich.'));
+        $this->assertSame(0, $case->budgetRequests()->count());
+        $service = app(InvestmentService::class);
+        try {
+            $service->defer($case->fresh());
+            $this->fail('Eine abgelehnte Akte wurde zurückgestellt.');
+        } catch (\RuntimeException $e) {
+            $this->assertSame((string) __('Zurückstellen ist nur in der Planungsphase möglich.'), $e->getMessage());
+        }
+        try {
+            $service->resume($case->fresh());
+            $this->fail('Eine abgelehnte Akte wurde wieder aufgenommen.');
+        } catch (\RuntimeException $e) {
+            $this->assertSame((string) __('Nur eine zurückgestellte Akte lässt sich wieder aufnehmen.'), $e->getMessage());
+        }
+
+        // Auch der Abbruch über eine genehmigte Abweichung führt nicht aus „abgelehnt“ heraus.
+        $deviation = $case->deviations()->create([
+            'organization_id' => $this->organization->id,
+            'kind' => 'cancellation',
+            'description' => 'Doch nicht nötig',
+            'status' => 'open',
+            'created_by' => $this->admin->id,
+        ]);
+        $this->actingAs($this->second)->post(route('investments.deviations.decide', [$case, $deviation]), ['decision' => 'approved'])
+            ->assertSessionHas('error', (string) __('Eine abgelehnte Akte bleibt abgelehnt.'));
+        $this->assertSame(InvestmentDeviationStatus::Open, $deviation->fresh()->status);
+
+        $this->assertSame(InvestmentCaseStatus::Rejected, $case->fresh()->status);
+        $this->assertSame($entries, $case->auditLogs()->count(), 'Keine Änderung, kein Protokolleintrag.');
+        $this->assertStringNotContainsString('name="status"', $this->showPage($case));
+    }
+
+    public function test_deviation_decision_starts_empty_and_requires_a_choice(): void {
+        $service = app(InvestmentService::class);
+        $case = $this->makeCase();
+        $service->approveBudget($service->submitBudget($case, ['amount' => '5000.00'], $this->admin), $this->second);
+        $deviation = $case->deviations()->create([
+            'organization_id' => $this->organization->id,
+            'kind' => 'budget',
+            'description' => 'Lieferant erhöht Preis',
+            'amount_delta' => '500.00',
+            'status' => 'open',
+            'created_by' => $this->admin->id,
+        ]);
+
+        $html = (string) $this->actingAs($this->second)->get(route('investments.show', $case))->assertOk()->getContent();
+        $this->assertStringContainsString('<option value="" selected disabled>' . e(__('Bitte wählen')) . '</option>', $html);
+        $this->assertStringNotContainsString('<option value="approved" selected', $html);
+
+        $this->actingAs($this->second)->post(route('investments.deviations.decide', [$case, $deviation]), ['note' => 'ohne Wahl'])
+            ->assertSessionHasErrors('decision');
+        $this->assertSame(InvestmentDeviationStatus::Open, $deviation->fresh()->status);
     }
 
     public function test_report_renders_and_exports(): void {

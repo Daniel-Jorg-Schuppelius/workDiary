@@ -10,8 +10,10 @@
 
 namespace Tests\Feature\Plugins;
 
+use App\Enums\Plugin\PluginHealthStatus;
 use App\Models\Platform\{Organization, PluginSetting, PluginState};
-use App\Plugins\Lexoffice\{LexofficeMapper, LexofficePlugin, LexofficeService};
+use App\Plugins\Lexoffice\LexofficePlugin;
+use App\Plugins\Lexoffice\Services\{LexofficeMapper, LexofficeService};
 use App\Plugins\PluginHealth;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Support\FakePluginHttp;
@@ -85,6 +87,6 @@ class LexofficeHealthCheckOrgTest extends TestCase {
             ->first();
 
         $this->assertNotNull($state);
-        $this->assertSame(PluginHealth::STATUS_OK, $state->last_health_status);
+        $this->assertSame(PluginHealthStatus::Ok, $state->last_health_status);
     }
 }

@@ -41,30 +41,18 @@
         </div>
 
         <x-card :title="__('Lage')">
-            <dl class="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-2 text-sm">
+            <x-detail-grid layout="cells" :cols="3">
                 @if ($floor->building?->site?->customer)
-                    <div>
-                        <dt class="text-muted">{{ __('Kunde') }}</dt>
-                        <dd>{{ $floor->building->site->customer->name }}</dd>
-                    </div>
+                    <x-detail-grid.row :label="__('Kunde')">{{ $floor->building->site->customer->name }}</x-detail-grid.row>
                 @endif
                 @if ($floor->building?->site)
-                    <div>
-                        <dt class="text-muted">{{ __('Standort') }}</dt>
-                        <dd><a class="link link-hover" href="{{ route('sites.show', $floor->building->site) }}">{{ $floor->building->site->name }}</a></dd>
-                    </div>
+                    <x-detail-grid.row :label="__('Standort')"><a class="link link-hover" href="{{ route('sites.show', $floor->building->site) }}">{{ $floor->building->site->name }}</a></x-detail-grid.row>
                 @endif
-                <div>
-                    <dt class="text-muted">{{ __('BGF (m²)') }}</dt>
-                    <dd>{{ $floor->gross_area_m2 !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $floor->gross_area_m2, 1, withThousandsSeparator: true) : '—' }}</dd>
-                </div>
+                <x-detail-grid.row :label="__('BGF (m²)')">{{ $floor->gross_area_m2 !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $floor->gross_area_m2, 1, withThousandsSeparator: true) : '—' }}</x-detail-grid.row>
                 @if ($floor->notes)
-                    <div class="md:col-span-3">
-                        <dt class="text-muted">{{ __('Notizen') }}</dt>
-                        <dd class="whitespace-pre-line">{{ $floor->notes }}</dd>
-                    </div>
+                    <x-detail-grid.row :label="__('Notizen')" full class="whitespace-pre-line">{{ $floor->notes }}</x-detail-grid.row>
                 @endif
-            </dl>
+            </x-detail-grid>
         </x-card>
 
         <x-card :title="__('Räume') . ' (' . $rooms->count() . ')'" padding="p-0">

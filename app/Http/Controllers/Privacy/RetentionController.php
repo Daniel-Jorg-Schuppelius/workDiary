@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Privacy;
 
+use App\Enums\Privacy\RetentionProposalStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
 use App\Models\Privacy\{ComplianceFinding, RetentionProposal};
@@ -38,7 +39,7 @@ class RetentionController extends Controller {
         Gate::authorize('viewAny', ComplianceFinding::class);
 
         $proposals = RetentionProposal::query()
-            ->whereIn('status', [RetentionProposal::STATUS_PENDING, RetentionProposal::STATUS_APPROVED])
+            ->whereIn('status', [RetentionProposalStatus::Pending, RetentionProposalStatus::Approved])
             ->orderBy('area')
             ->orderBy('retention_until')
             ->paginate(50);
@@ -110,7 +111,7 @@ class RetentionController extends Controller {
         $held = 0;
         RetentionProposal::query()
             ->where('area', $data['area'])
-            ->where('status', RetentionProposal::STATUS_APPROVED)
+            ->where('status', RetentionProposalStatus::Approved)
             ->orderBy('id')
             ->get()
             ->each(function (RetentionProposal $proposal) use ($actor, &$count, &$held): void {

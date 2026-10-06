@@ -15,7 +15,6 @@ namespace App\Plugins\Lexoffice\Services;
 use App\Enums\User\Permission;
 use App\Models\Platform\Organization;
 use App\Plugins\Lexoffice\Models\LexofficeVoucher;
-use App\Plugins\Lexoffice\VoucherTypes;
 use App\Services\Billing\Purchase\{PurchaseDocument, PurchaseDocumentSource};
 use App\Support\Query\DateRange;
 use App\Support\Sqid;

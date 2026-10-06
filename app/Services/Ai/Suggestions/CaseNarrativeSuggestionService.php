@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Ai\Suggestions;
 
+use App\Enums\Ai\AiTextSuggestionStatus;
 use App\Models\Ai\AiTextSuggestion;
 use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\{Organization, User};
@@ -134,7 +135,7 @@ class CaseNarrativeSuggestionService {
             'body' => $text,
         ]);
 
-        $this->markDecided($suggestion, $edited ? AiTextSuggestion::STATUS_EDITED : AiTextSuggestion::STATUS_ACCEPTED, $user);
+        $this->markDecided($suggestion, $edited ? AiTextSuggestionStatus::Edited : AiTextSuggestionStatus::Accepted, $user);
         $this->auditDecision($suggestion, $edited ? 'edited' : 'accepted', $user);
 
         return $edited;

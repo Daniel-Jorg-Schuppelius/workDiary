@@ -1304,6 +1304,7 @@ return [
             'record_result' => 'Record result',
             'record_performance' => 'Record performance',
             'correct_performance' => 'Correct performance',
+            'delete_performance' => 'Delete performance',
             'confirm' => 'Confirm',
             'grant_start_right' => 'Document start right',
             'revoke_start_right' => 'Remove start right',
@@ -1360,6 +1361,7 @@ return [
         ],
         'confirm' => [
             'delete_requirement' => 'Delete requirement “:name”?',
+            'delete_performance' => 'Delete the performance :discipline of :date? It will no longer count towards the personal bests.',
         ],
         'flash' => [
             'created' => 'Competition created.',
@@ -1666,6 +1668,7 @@ return [
         ],
         'error' => [
             'claim_not_open' => 'The claim is not open.',
+            'credit_already_applied' => 'The credit from this bank payment has already been applied to claims — the allocation can therefore not be undone.',
             'not_compensatable' => 'This booking cannot be compensated.',
             'already_compensated' => 'This payment was already compensated.',
             'not_overdue' => 'Only overdue claims can be dunned.',

@@ -11,6 +11,7 @@
 namespace App\Plugins\Msgraph\Models;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasConnectionHealth};
+use App\Plugins\Msgraph\Enums\MsgraphConnectionStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
@@ -28,17 +29,13 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $token_expires_at
  * @property string|null $scopes
  * @property string|null $account_label
- * @property string $status
+ * @property MsgraphConnectionStatus $status
  * @property Carbon|null $last_sync_at
  */
 class MsgraphTaskConnection extends Model {
     use Auditable;
     use BelongsToOrganization;
     use HasConnectionHealth;
-
-    public const STATUS_ACTIVE = 'active';
-
-    public const STATUS_DISCONNECTED = 'disconnected';
 
     protected $table = 'msgraph_task_connections';
 
@@ -64,6 +61,7 @@ class MsgraphTaskConnection extends Model {
         'access_token' => 'encrypted',
         'refresh_token' => 'encrypted',
         'token_expires_at' => 'datetime',
+        'status' => MsgraphConnectionStatus::class,
         'last_sync_at' => 'datetime',
         'last_error_at' => 'datetime',
         'disabled_at' => 'datetime',
@@ -73,7 +71,7 @@ class MsgraphTaskConnection extends Model {
 
     /** Betriebsbereit: verbunden, Token vorhanden und nicht auto-deaktiviert (MVP-178). */
     public function isActive(): bool {
-        return $this->status === self::STATUS_ACTIVE
+        return $this->status === MsgraphConnectionStatus::Active
             && trim((string) $this->access_token) !== ''
             && $this->disabled_at === null;
     }

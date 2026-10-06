@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Sustainability;
 
+use App\Enums\Sustainability\SustainabilityAssessmentStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
@@ -28,7 +29,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphTo};
  * @property int|null $subject_id
  * @property string $subject_label
  * @property int $version
- * @property string $status
+ * @property SustainabilityAssessmentStatus $status
  * @property string|null $summary
  * @property string|null $total_score
  * @property string|null $rating
@@ -51,6 +52,7 @@ class SustainabilityAssessment extends Model {
     /** @var array<string, string> */
     protected $casts = [
         'version' => 'integer',
+        'status' => SustainabilityAssessmentStatus::class,
         'total_score' => 'decimal:2',
         'snapshot' => 'array',
         'assessed_at' => 'datetime',
@@ -72,6 +74,6 @@ class SustainabilityAssessment extends Model {
     }
 
     public function isFinal(): bool {
-        return $this->status === 'final';
+        return $this->status === SustainabilityAssessmentStatus::Final;
     }
 }

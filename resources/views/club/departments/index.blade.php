@@ -13,8 +13,7 @@
 @extends('layouts.app')
 @section('title', __('club.title.departments'))
 @section('nav-title', __('club.title.departments'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('club.subtitle.departments')">
     <x-slot:actions>

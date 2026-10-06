@@ -12,8 +12,7 @@
 @extends('layouts.app')
 @section('title', __('safety.register.title.checkups'))
 @section('nav-title', __('safety.register.title.checkups'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('safety.register.subtitle.checkups')">
     <x-slot:actions>
@@ -36,7 +35,7 @@
             </select>
         </x-filter-field>
         <x-filter-field :label="__('safety.register.kpi.checkup_due')" for="flt-due-count">
-            <span id="flt-due-count" class="badge {{ $dueCount > 0 ? 'badge-error' : 'badge-ghost' }} badge-sm">{{ $dueCount }}</span>
+            <x-status-badge id="flt-due-count" :tone="$dueCount > 0 ? 'error' : 'ghost'">{{ $dueCount }}</x-status-badge>
         </x-filter-field>
         <x-filter-field :label="__('safety.register.filter.due_only')" for="flt-due" class="order-40">
             <input id="flt-due" type="checkbox" name="due" value="1" class="toggle toggle-sm" data-autosubmit @checked($onlyDue)>
@@ -60,8 +59,8 @@
                 <td class="font-medium">{{ $checkup->user?->name ?? '–' }}</td>
                 <td><x-status-badge :tone="$checkup->kind->tone()" size="sm" outline>{{ $checkup->kind->label() }}</x-status-badge></td>
                 <td class="text-sm text-base-content/70">{{ $checkup->occasion ?? '–' }}</td>
-                <td class="text-sm">{{ $checkup->performed_on->format('d.m.Y') }}</td>
-                <td class="text-sm {{ $checkup->isDueOverdue() ? 'text-error font-semibold' : 'text-base-content/70' }}">{{ $checkup->next_due_on?->format('d.m.Y') ?? '–' }}</td>
+                <td class="text-sm">{{ $checkup->performed_on->fdate() }}</td>
+                <td class="text-sm {{ $checkup->isDueOverdue() ? 'text-error font-semibold' : 'text-base-content/70' }}">{{ $checkup->next_due_on?->fdate() ?? '–' }}</td>
                 <td>
                     <x-status-badge :tone="$checkup->certificate_on_file ? 'success' : 'warning'" size="sm">
                         {{ $checkup->certificate_on_file ? __('Ja') : __('Nein') }}

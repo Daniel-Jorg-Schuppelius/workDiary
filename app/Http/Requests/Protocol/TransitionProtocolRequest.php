@@ -35,7 +35,6 @@ class TransitionProtocolRequest extends BaseFormRequest {
                 'signature.signer_name' => ['required', 'string', 'max:120'],
                 'signature.signer_email' => ['nullable', 'email', 'max:180'],
                 'signature.method' => ['required', 'string', \Illuminate\Validation\Rule::enum(ProtocolSignatureMethod::class)],
-                'signature.signature_image_path' => ['nullable', 'string', 'max:255'],
             ] : [],
             default => [],
         };

@@ -10,6 +10,7 @@
 
 namespace Database\Factories\Survey;
 
+use App\Enums\Survey\SurveyInvitationStatus;
 use App\Models\Survey\{Survey, SurveyInvitation};
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -29,7 +30,7 @@ class SurveyInvitationFactory extends Factory {
             // Klartext-Token wird nie gespeichert — der Hash genügt (sha512 = 128 Zeichen).
             'token_hash' => hash('sha512', fake()->unique()->uuid()),
             'expires_at' => now()->addDays(14),
-            'status' => SurveyInvitation::STATUS_CREATED,
+            'status' => SurveyInvitationStatus::Created,
         ];
     }
 }

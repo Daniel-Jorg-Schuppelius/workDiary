@@ -409,6 +409,7 @@ return [
         'focus_on' => 'Modo concentración',
         'focus_off' => 'Mostrar barra lateral',
         'duplicate' => 'Duplicar',
+        'delete_course' => 'Eliminar curso',
         'import_learndash' => 'Importación de LearnDash',
         'import' => 'Importar',
         'gradebook' => 'Libro de calificaciones',
@@ -643,6 +644,7 @@ return [
     ],
     'help' => [
         'course_tags' => 'Separe varias con comas. Las etiquetas también se pueden cambiar tras la publicación.',
+        'enroll_by_operator' => 'La inscripción la realiza su persona de contacto.',
         'course_competency' => 'Quien completa el curso obtiene este nivel en la matriz de competencias. Repetirlo nunca lo rebaja.',
         'max_level' => 'Niveles de 1 hasta este valor, p. ej. 1 conocimientos básicos … 4 puede formar a otros.',
         'assessment' => 'La evaluación de un responsable puede también rebajar un nivel; completar cursos nunca lo hace.',
@@ -789,6 +791,7 @@ return [
         'booking_without_course' => 'Falta el curso de esta reserva.',
         'booking_requires_release' => 'Un curso solo puede reservarse tras publicarse.',
         'course_not_bookable' => 'Este curso no está marcado como reservable.',
+        'self_enroll_requires_open' => 'La autoinscripción solo es posible en cursos abiertos.',
         'booking_reject_reason' => 'Un rechazo necesita un motivo.',
         'booking_already_billed' => 'Una reserva facturada no se cancela aquí: corresponde a facturación.',
         'booking_not_billable' => 'Esta reserva no tiene partida abierta.',
@@ -1029,6 +1032,7 @@ return [
     ],
     'confirm' => [
         'duplicate' => '¿Duplicar este curso como nuevo borrador?',
+        'delete_course' => '¿Eliminar definitivamente el borrador del curso «:title»? Se perderán sus secciones y unidades.',
         'delete_note' => '¿Eliminar realmente esta nota?',
         'detach_question' => '¿Quitar esta pregunta de la prueba? Permanece en el banco.',
         'delete_category' => '¿Eliminar esta categoría?',

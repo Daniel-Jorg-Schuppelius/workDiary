@@ -40,22 +40,15 @@
     <x-card class="flex flex-col gap-3">
         <div class="flex items-center justify-between gap-3">
             <h2 class="font-['Space_Grotesk'] text-lg font-semibold text-base-content">{{ __('onboarding.page.progress_label') }}</h2>
-            <span class="badge {{ $checklist['all_required_done'] ? 'badge-success' : 'badge-primary' }} badge-outline">
+            <x-status-badge :tone="$checklist['all_required_done'] ? 'success' : 'primary'" size="md" outline>
                 {{ $checklist['progress_percent'] }} %
-            </span>
+            </x-status-badge>
         </div>
         <progress class="progress {{ $checklist['all_required_done'] ? 'progress-success' : 'progress-primary' }} w-full" value="{{ $checklist['progress_percent'] }}" max="100"></progress>
     </x-card>
 
     <div class="grid grid-cols-1 gap-4">
         @foreach ($checklist['steps'] as $step)
-            @php
-                $stateBadge = match ($step['state']) {
-                    'done' => ['class' => 'badge-success', 'label' => __('onboarding.page.badge_done')],
-                    'skipped' => ['class' => 'badge-ghost', 'label' => __('onboarding.page.badge_skipped')],
-                    default => ['class' => 'badge-warning', 'label' => __('onboarding.page.badge_open')],
-                };
-            @endphp
             <x-card as="article" class="flex flex-col gap-3">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div class="min-w-0">
@@ -72,16 +65,16 @@
                         @if (! empty($step['description']))
                             <p class="mt-1 text-sm text-base-content/70">{{ $step['description'] }}</p>
                         @endif
-                        @if ($step['state'] === 'skipped' && ! empty($step['skipped_reason']))
+                        @if ($step['state'] === \App\Enums\Platform\OnboardingStepState::Skipped && ! empty($step['skipped_reason']))
                             <p class="mt-1 text-xs text-muted">
                                 {{ __('onboarding.page.badge_skipped') }}: {{ $step['skipped_reason'] }}
                             </p>
                         @endif
                     </div>
 
-                    <span class="badge {{ $stateBadge['class'] }} badge-outline">
-                        {{ $stateBadge['label'] }}
-                    </span>
+                    <x-status-badge :tone="$step['state']->tone()" size="md" outline>
+                        {{ $step['state']->label() }}
+                    </x-status-badge>
                 </div>
 
                 <div class="flex items-center justify-end gap-3 border-t border-base-300/70 pt-3">

@@ -68,7 +68,7 @@ class EventCategoryController extends Controller {
     private function validateCategory(Request $request): array {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:160'],
-            'color' => ['nullable', 'string', 'max:9'],
+            'color' => ['nullable', 'string', 'max:9', new \App\Rules\ColorValue],
             'description' => ['nullable', 'string', 'max:1000'],
             'requires_certificate' => ['sometimes', 'boolean'],
             'certificate_valid_months' => ['nullable', 'integer', 'min:1', 'max:120'],

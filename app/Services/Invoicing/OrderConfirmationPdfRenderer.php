@@ -33,7 +33,7 @@ class OrderConfirmationPdfRenderer {
 
     /** PDF-Bytes der Auftragsbestätigung (A4). */
     public function output(Quote $quote): string {
-        if (! in_array($quote->status, ['accepted', 'partially_accepted'], true)) {
+        if (! $quote->status->isWon()) {
             throw new RuntimeException((string) __('Nur angenommene Angebote können bestätigt werden.'));
         }
         $quote->loadMissing(['items', 'customer', 'organization']);

@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Applications;
 
+use App\Enums\Applications\ApplicationOpportunityStatus;
 use App\Enums\User\UserRole;
 use App\Models\Applications\ApplicationOpportunity;
 use App\Models\Customer\Customer;
@@ -53,7 +54,7 @@ final class TenderLifecycleTest extends TestCase {
         ])->assertRedirect();
 
         $opportunity = ApplicationOpportunity::query()->firstOrFail();
-        $this->assertSame('captured', $opportunity->status);
+        $this->assertSame(ApplicationOpportunityStatus::Captured, $opportunity->status);
 
         // Pflicht-Anforderung offen → Einreichung blockiert (auch nach Go).
         $this->actingAs($lead)->post(route('tenders.requirements.store', $opportunity), [
@@ -77,7 +78,7 @@ final class TenderLifecycleTest extends TestCase {
         $submission = $service->submit($opportunity->refresh(), 'portal', 'Erstabgabe', $admin);
         $this->assertSame(1, $submission->version);
         $this->assertSame(hash('sha256', (string) json_encode($submission->snapshot)), $submission->sha256);
-        $this->assertSame('submitted', $opportunity->fresh()->status);
+        $this->assertSame(ApplicationOpportunityStatus::Submitted, $opportunity->fresh()->status);
 
         // Zuschlag + Überführung in ein NEUES Projekt.
         $service->decide($opportunity->refresh(), 'won', null, $admin);
@@ -97,15 +98,57 @@ final class TenderLifecycleTest extends TestCase {
 
         $service = app(TenderService::class);
         try {
-            $service->decide($opportunity, 'lost', null, $admin);
+            $service->decide($opportunity->refresh(), 'lost', null, $admin);
             $this->fail('Verlust ohne Grund akzeptiert.');
-        } catch (\RuntimeException) {
+        } catch (\RuntimeException $e) {
+            // Ohne refresh() trug die Akte keinen Status und scheiterte als „bereits entschieden“.
+            $this->assertSame(__('Verlust/Rückzug braucht einen Grund (Auswertung).'), $e->getMessage());
         }
 
         $service->decideGo($opportunity->refresh(), 'no_go', 'Kapazität fehlt', $admin);
         $fresh = $opportunity->fresh();
-        $this->assertSame('withdrawn', $fresh->status);
+        $this->assertSame(ApplicationOpportunityStatus::Withdrawn, $fresh->status);
         $this->assertSame('Kapazität fehlt', $fresh->loss_reason);
+    }
+
+    /** Der Bearbeitungsstand lässt sich an der Akte setzen — solange sie offen ist und nur mit Führungsrecht. */
+    public function test_working_status_is_set_from_the_file(): void {
+        $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+        $opportunity = ApplicationOpportunity::query()->create([
+            'organization_id' => $this->organization->id,
+            'title' => 'Statusakte',
+            'kind' => 'tender',
+            'created_by' => $admin->id,
+        ]);
+
+        $lead = $this->userWithRole(UserRole::Teamleitung->value);
+        $this->actingAs($lead)->get(route('tenders.show', $opportunity))->assertOk()
+            ->assertSee(route('tenders.status', $opportunity), false)
+            ->assertSee('id="tender-status"', false);
+
+        $this->actingAs($lead)->from(route('tenders.show', $opportunity))
+            ->post(route('tenders.status', $opportunity), ['status' => 'in_progress'])
+            ->assertRedirect(route('tenders.show', $opportunity))
+            ->assertSessionHas('success');
+        $this->assertSame(ApplicationOpportunityStatus::InProgress, $opportunity->fresh()->status);
+
+        // Entscheidungen laufen nicht über den Bearbeitungsstand.
+        $this->actingAs($lead)->post(route('tenders.status', $opportunity), ['status' => 'won'])
+            ->assertSessionHasErrors('status');
+
+        // Lesende Rolle: kein Formular, kein Zugriff.
+        $accounting = $this->userWithRole(UserRole::Buchhaltung->value);
+        $this->actingAs($accounting)->get(route('tenders.show', $opportunity))->assertOk()
+            ->assertDontSee(route('tenders.status', $opportunity), false);
+        $this->actingAs($accounting)->post(route('tenders.status', $opportunity), ['status' => 'screened'])->assertForbidden();
+
+        // Entschiedene Akte: kein Formular mehr, der Stand bleibt.
+        app(TenderService::class)->decideGo($opportunity->refresh(), 'no_go', 'Kapazität fehlt', $admin);
+        $this->actingAs($lead)->get(route('tenders.show', $opportunity))->assertOk()
+            ->assertDontSee(route('tenders.status', $opportunity), false);
+        $this->actingAs($lead)->post(route('tenders.status', $opportunity), ['status' => 'screened'])
+            ->assertSessionHas('error');
+        $this->assertSame(ApplicationOpportunityStatus::Withdrawn, $opportunity->fresh()->status);
     }
 
     public function test_access_is_permission_and_tenant_scoped(): void {

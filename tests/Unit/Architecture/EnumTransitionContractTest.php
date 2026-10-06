@@ -27,7 +27,7 @@ use Tests\Unit\Architecture\Concerns\ScansSourceTree;
  *    die eine Stelle für Meldung und Semantik.
  * 3. Übergangstabellen und -prüfer stehen nur im Enum (MVP-872): außerhalb
  *    `app/Enums`, `app/Plugins/<Plugin>/Enums` und der Guard-Traits keine Methode `canTransition`,
- *    `transitionTo`, `assertTransition`, `isTransitionAllowed`,
+ *    `transitionTo`, `assertTransition`, `isTransitionAllowed`, `assertStatus`,
  *    `allowedTransitions` und keine Konstante `*TRANSITIONS`.
  */
 class EnumTransitionContractTest extends TestCase {
@@ -72,24 +72,41 @@ class EnumTransitionContractTest extends TestCase {
             . "bzw. AssertsValidatedTransition (ValidationException, Message-Key-Parameter) nutzen.\n\n" . implode("\n", $violations));
     }
 
+    /**
+     * Dieselbe Regel unter anderem Namen (Konsolidierungs-Audit 2026-10, k3-9):
+     * `assertStatus($x, [erlaubte Ausgangszustände])` ist eine Übergangstabelle,
+     * verteilt über die Aufrufer. Bestand, nur schrumpfen.
+     *
+     * @var array<string, string> Datei => Nachziehpunkt
+     */
+    private const STATUS_GUARD_ALLOW = [
+    ];
+
     public function test_transition_tables_live_in_the_enums(): void {
         $violations = [];
+        $seen = [];
         foreach ($this->phpFiles('app') as $file) {
             $relative = $this->relativePath($file);
             if (str_starts_with($relative, 'app/Enums/') || str_starts_with($relative, 'app/Services/Concerns/') || preg_match('#^app/Plugins/[^/]+/Enums/#', $relative) === 1) {
                 continue;
             }
             $source = $this->stripComments((string) file_get_contents($file));
-            $pattern = '/function\s+(canTransition|transitionTo|assertTransition|isTransitionAllowed|allowedTransitions)\s*\(|const\s+\w*TRANSITIONS\b/';
+            $pattern = '/function\s+(canTransition|transitionTo|assertTransition|isTransitionAllowed|allowedTransitions|assertStatus)\s*\(|const\s+\w*TRANSITIONS\b/';
             if (preg_match_all($pattern, $source, $matches, PREG_OFFSET_CAPTURE) === 0) {
                 continue;
             }
             foreach ($matches[0] as [$hit, $offset]) {
+                if (str_contains($hit, 'assertStatus') && isset(self::STATUS_GUARD_ALLOW[$relative])) {
+                    $seen[$relative] = true;
+
+                    continue;
+                }
                 $violations[] = sprintf('%s:%d %s', $relative, $this->lineOf($source, $offset), trim($hit));
             }
         }
 
         $this->assertSame([], $violations, "Übergangstabelle gehört ins Status-Enum (HasStatusTransitions::allowedTransitions()),\n"
             . "die Prüfung in AssertsStatusTransition/AssertsValidatedTransition oder \$status->canTransitionTo().\n\n" . implode("\n", $violations));
+        $this->assertSame([], array_values(array_diff(array_keys(self::STATUS_GUARD_ALLOW), array_keys($seen))), 'Erledigte Einträge aus STATUS_GUARD_ALLOW streichen.');
     }
 }

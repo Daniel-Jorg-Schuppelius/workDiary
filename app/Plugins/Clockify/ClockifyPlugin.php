@@ -12,8 +12,9 @@ namespace App\Plugins\Clockify;
 
 use App\Models\Platform\Organization;
 use App\Plugins\{AbstractPlugin, PluginHealth};
+use App\Plugins\Clockify\Api\ClockifyApiClient;
 use App\Plugins\Clockify\Exceptions\ClockifyApiException;
-use App\Plugins\Clockify\Sources\ClockifyApiClient;
+use App\Plugins\Clockify\Services\{ClockifyGroupBooker, ClockifyImportService};
 use App\Plugins\Contracts\{Plugin, PluginCapability, TimeImporter};
 
 /**

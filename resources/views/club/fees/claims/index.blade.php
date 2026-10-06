@@ -10,8 +10,7 @@
 @extends('layouts.app')
 @section('title', __('club.fees.title.claims'))
 @section('nav-title', __('club.fees.title.claims'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('club.fees.subtitle.claims')">
     <x-slot:actions>
@@ -61,8 +60,8 @@
                     @if ($claim->isCorrection())<x-status-badge tone="info" size="xs" :label="__('club.fees.label.correction_of', ['number' => $claim->correctedClaim?->number ?? ''])" />@endif
                 </td>
                 <td class="text-sm">{{ $claim->account?->name }}</td>
-                <td class="whitespace-nowrap text-sm tabular-nums">{{ $claim->period_start->format('d.m.Y') }} – {{ $claim->period_end->format('d.m.Y') }}</td>
-                <td class="whitespace-nowrap text-sm tabular-nums {{ $claim->isOverdue($today) ? 'text-error font-medium' : '' }}">{{ $claim->due_on->format('d.m.Y') }}</td>
+                <td class="whitespace-nowrap text-sm tabular-nums">{{ $claim->period_start->fdate() }} – {{ $claim->period_end->fdate() }}</td>
+                <td class="whitespace-nowrap text-sm tabular-nums {{ $claim->isOverdue($today) ? 'text-error font-medium' : '' }}">{{ $claim->due_on->fdate() }}</td>
                 <td>
                     <x-status-badge :tone="$claim->status->tone()" size="sm">{{ $claim->status->label() }}</x-status-badge>
                     @if ($claim->isOverdue($today))<x-status-badge tone="error" size="xs" :label="__('club.fees.label.overdue')" />@endif

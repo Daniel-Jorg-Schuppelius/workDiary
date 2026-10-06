@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Reporting;
 
+use App\Enums\Location\LocationVisitStatus;
 use App\Models\Customer\Customer;
 use App\Models\Diary\DiaryEntry;
 use App\Models\Facility\Site;
@@ -360,7 +361,7 @@ class PlanIstReportBuilderTest extends TestCase {
             'is_active' => true,
         ]);
 
-        $visit = function (User $user, CustomerGeofence $g, string $enteredAt, ?int $minutes, string $status): void {
+        $visit = function (User $user, CustomerGeofence $g, string $enteredAt, ?int $minutes, LocationVisitStatus $status): void {
             LocationVisit::create([
                 'organization_id' => $this->organization->id,
                 'user_id' => $user->id,
@@ -374,11 +375,11 @@ class PlanIstReportBuilderTest extends TestCase {
             ]);
         };
 
-        $visit($a, $g1, '2024-01-15 08:00:00', 90, LocationVisit::STATUS_CLOSED);
-        $visit($b, $g1, '2024-01-15 09:00:00', 30, LocationVisit::STATUS_CLOSED);
-        $visit($a, $g2, '2024-01-16 08:00:00', 45, LocationVisit::STATUS_CLOSED);
-        $visit($a, $g1, '2024-01-16 10:00:00', null, LocationVisit::STATUS_OPEN); // offen → zählt nicht
-        $visit($a, $g1, '2024-02-05 08:00:00', 60, LocationVisit::STATUS_CLOSED); // außerhalb
+        $visit($a, $g1, '2024-01-15 08:00:00', 90, LocationVisitStatus::Closed);
+        $visit($b, $g1, '2024-01-15 09:00:00', 30, LocationVisitStatus::Closed);
+        $visit($a, $g2, '2024-01-16 08:00:00', 45, LocationVisitStatus::Closed);
+        $visit($a, $g1, '2024-01-16 10:00:00', null, LocationVisitStatus::Open); // offen → zählt nicht
+        $visit($a, $g1, '2024-02-05 08:00:00', 60, LocationVisitStatus::Closed); // außerhalb
 
         $from = CarbonImmutable::create(2024, 1, 1) ?? CarbonImmutable::now();
         $to = CarbonImmutable::create(2024, 1, 31) ?? CarbonImmutable::now();

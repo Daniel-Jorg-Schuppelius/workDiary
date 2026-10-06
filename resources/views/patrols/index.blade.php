@@ -11,8 +11,7 @@
 
 @section('title', __('Wächterrundgänge'))
 @section('nav-title', __('Rundgänge'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('Kontrollpunkte mit Soll-Fenstern und Scan-Nachweis — der belastbare Beleg gegenüber Auftraggebern.')">
@@ -24,7 +23,7 @@
     </x-slot:actions>
 
     @if ($openRuns->isNotEmpty())
-        <div class="alert alert-info text-sm">
+        <div role="status" class="alert alert-info text-sm">
             <x-icon name="directions_walk" />
             <div>
                 @foreach ($openRuns as $run)
@@ -53,7 +52,7 @@
                 <tr class="hover">
                     <td>
                         <a class="link link-hover font-medium" href="{{ route('patrols.show', $route) }}">{{ $route->name }}</a>
-                        @unless ($route->active)<span class="badge badge-ghost badge-xs align-middle">{{ __('inaktiv') }}</span>@endunless
+                        @unless ($route->active)<x-status-badge size="xs" class="align-middle">{{ __('inaktiv') }}</x-status-badge>@endunless
                     </td>
                     <td class="text-sm">{{ $route->site?->name ?? '—' }}</td>
                     <td class="text-sm tabular-nums">{{ $route->checkpoints_count }}</td>

@@ -21,7 +21,7 @@
     @else
         <x-empty-state icon="map" :title="__('crisis.room.no_markers')" compact />
     @endif
-    @if ($canManage && ! in_array($case->status, ['closed', 'discarded'], true))
+    @if ($canManage)
         <form method="POST" action="{{ route('crisis.room.points.store', $case) }}" class="mt-3 grid gap-2 sm:grid-cols-5" data-entry-form>
             @csrf
             <x-input-field name="label" :label="__('crisis.room.field.label')" required />
@@ -32,7 +32,7 @@
             </x-select-field>
             <x-input-field name="lat" type="number" step="0.0000001" :label="__('crisis.room.field.lat')" required />
             <x-input-field name="lng" type="number" step="0.0000001" :label="__('crisis.room.field.lng')" required />
-            <div class="flex items-end"><button type="submit" class="btn btn-sm">{{ __('crisis.room.add_point') }}</button></div>
+            <div class="flex items-end"><x-button type="submit" tone="plain">{{ __('crisis.room.add_point') }}</x-button></div>
         </form>
     @endif
     @if ($roomPoints->isNotEmpty())

@@ -12,11 +12,13 @@ declare(strict_types=1);
 
 namespace App\Plugins\Msgraph\Services;
 
+use App\Enums\Integration\IntegrationInboxStatus;
 use App\Enums\Task\{TaskPriority, TaskStatus};
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use App\Models\Platform\Organization;
 use App\Models\Project\Task;
 use App\Plugins\Msgraph\Api\MsgraphTodoClient;
+use App\Plugins\Msgraph\Enums\MsgraphTaskListLinkStatus;
 use App\Plugins\Msgraph\Models\{MsgraphTaskConnection, MsgraphTaskListLink};
 use App\Plugins\Msgraph\MsgraphPlugin;
 use App\Plugins\Msgraph\Observers\MsgraphTodoTaskObserver;
@@ -63,7 +65,7 @@ class MsgraphTodoSyncService extends AbstractTaskSyncService {
         $links = MsgraphTaskListLink::query()
             ->withoutGlobalScopes()
             ->where('organization_id', $organization->id)
-            ->where('status', MsgraphTaskListLink::STATUS_ACTIVE)
+            ->where('status', MsgraphTaskListLinkStatus::Active)
             ->get();
 
         foreach ($links as $link) {
@@ -391,7 +393,7 @@ class MsgraphTodoSyncService extends AbstractTaskSyncService {
             ->where('organization_id', $link->organization_id)
             ->where('plugin_id', MsgraphPlugin::ID)
             ->where('dedupe_key', $this->dedupePrefix() . '-conflict:' . $reference->external_id)
-            ->where('status', IntegrationInboxItem::STATUS_OPEN)
+            ->where('status', IntegrationInboxStatus::Open)
             ->exists();
         if ($hasOpenConflict) {
             return null;

@@ -16,8 +16,10 @@
         <p>{{ __('Bewahren Sie die folgenden Zugangsdaten sicher auf. Sie werden nur EINMAL angezeigt und können NICHT wiederhergestellt werden. Mit ihnen rufen Sie das geschützte Postfach auf und kommunizieren – auch anonym – mit der Meldestelle.') }}</p>
 
         <dl class="wb-credentials">
+            {{-- raw-markup-ok: öffentliches Hinweisgeber-Formular mit eigenem Stylesheet (whistleblowing.css), ohne App-CSS --}}
             <dt>{{ __('Fallnummer') }}</dt>
             <dd><code>{{ $caseNumber }}</code></dd>
+            {{-- raw-markup-ok: öffentliches Hinweisgeber-Formular mit eigenem Stylesheet (whistleblowing.css), ohne App-CSS --}}
             <dt>{{ __('Geheimnis (Zugang zum Postfach)') }}</dt>
             <dd><code>{{ $secret }}</code></dd>
         </dl>

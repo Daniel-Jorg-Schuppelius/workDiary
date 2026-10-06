@@ -44,7 +44,7 @@
     </div>
     <input type="hidden" name="signature" x-ref="sigInput">
     <div class="flex items-center justify-between gap-2">
-        <button type="button" class="btn btn-ghost btn-xs" @click="clear()">{{ __('contract-signing.action.clear_signature') }}</button>
+        <x-button tone="ghost" size="xs" @click="clear()">{{ __('contract-signing.action.clear_signature') }}</x-button>
         <span class="text-xs text-muted" x-show="hasSignature">{{ __('contract-signing.hint.signature_captured') }}</span>
     </div>
 </div>

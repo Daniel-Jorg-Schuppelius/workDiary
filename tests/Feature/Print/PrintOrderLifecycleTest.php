@@ -14,6 +14,7 @@ namespace Tests\Feature\Print;
 
 use App\Enums\Asset\AssetBlockReason;
 use App\Enums\Print\{PreflightStatus, PrintOrderStatus};
+use App\Enums\Print\PrintQcStatus;
 use App\Exceptions\AssetNotUsableException;
 use App\Models\Article\Article;
 use App\Models\Asset\Asset;
@@ -108,7 +109,7 @@ class PrintOrderLifecycleTest extends TestCase {
 
         $settings = (array) $this->organization->refresh()->settings;
         $this->assertSame('druck-kopiershop', $settings['branch_profile_code'] ?? null);
-        $this->assertTrue($this->service()->isPrintProfileActive($this->organization));
+        $this->assertTrue($this->organization->hasBranchProfile(\App\Services\Print\PrintOrderService::PROFILE_CODE));
     }
 
     public function test_approval_requires_file_and_clean_preflight_and_freezes_snapshot(): void {
@@ -242,10 +243,10 @@ class PrintOrderLifecycleTest extends TestCase {
         $this->service()->startProduction($order->refresh(), null, $this->actor);
 
         // QK: Nacharbeit → zurück in Produktion → bestanden → bereit.
-        $this->service()->qualityCheck($order->refresh(), PrintOrder::QC_REWORK, 'Farbabweichung Andruck', $this->actor);
+        $this->service()->qualityCheck($order->refresh(), PrintQcStatus::Rework, 'Farbabweichung Andruck', $this->actor);
         $this->assertSame(PrintOrderStatus::Rework, $order->refresh()->status);
         $this->service()->resumeProduction($order, $this->actor);
-        $this->service()->qualityCheck($order->refresh(), PrintOrder::QC_PASSED, null, $this->actor);
+        $this->service()->qualityCheck($order->refresh(), PrintQcStatus::Passed, null, $this->actor);
         $this->assertSame(PrintOrderStatus::Ready, $order->refresh()->status);
 
         // Abholung braucht einen Übergabenachweis.

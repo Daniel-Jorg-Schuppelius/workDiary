@@ -12,6 +12,7 @@ namespace Tests\Feature\Finance;
 
 use App\Enums\Expense\ExpenseStatus;
 use App\Enums\Finance\{AccountType, AccountingEntryStatus, PostingAccountRole, PostingSourceKind, ProfitDetermination};
+use App\Enums\Invoicing\{IncomingEInvoiceStatus, InvoiceStatus};
 use App\Models\Accounting\{AccountingAccount, AccountingEntry, AccountingPostingRule};
 use App\Models\Customer\Customer;
 use App\Models\Finance\{CashEntry, CashRegister};
@@ -106,7 +107,7 @@ class AccountingInboxTest extends TestCase {
             'organization_id' => $this->org->id,
             'customer_id' => $customer->id,
             'number' => 'RE-2026-001',
-            'status' => Invoice::STATUS_ISSUED,
+            'status' => InvoiceStatus::Issued,
             'issued_on' => $this->startsOn->addMonth()->toDateString(),
             'currency' => 'EUR',
             'subtotal' => '100.00',
@@ -245,7 +246,7 @@ class AccountingInboxTest extends TestCase {
             'sha256' => hash('sha256', 'incoming-1'),
             'source' => 'upload',
             'received_at' => now(),
-            'status' => IncomingEInvoice::STATUS_APPROVED,
+            'status' => IncomingEInvoiceStatus::Approved,
             'invoice_number' => 'ER-77',
             'seller_name' => 'Lieferant GmbH',
             'issue_date' => $this->startsOn->addMonth()->toDateString(),

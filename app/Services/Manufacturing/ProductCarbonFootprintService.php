@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Manufacturing;
 
 use App\Models\Article\{Article, ArticleVariant};
+use CommonToolkit\Helper\Data\NumberHelper;
 
 /**
  * Product Carbon Footprint (MVP-960) je Stück: Zukaufteile der aufgelösten
@@ -57,18 +58,18 @@ class ProductCarbonFootprintService {
                 if ($kg === null) {
                     $missing[] = $component;
                 } else {
-                    $material = bcadd($material, $kg, self::SCALE);
+                    $material = NumberHelper::addPrecise($material, $kg, self::SCALE);
                 }
             } elseif ($kg !== null) {
-                $process = bcadd($process, $kg, self::SCALE);
+                $process = NumberHelper::addPrecise($process, $kg, self::SCALE);
             }
             $lines[] = ['article' => $component, 'level' => $row['level'], 'quantity' => $row['gross'], 'source' => $row['source'], 'factor' => $factor, 'kg' => $kg];
         }
 
         return [
-            'total_kg' => bcadd($material, $process, self::SCALE),
-            'material_kg' => bcadd($material, '0', self::SCALE),
-            'process_kg' => bcadd($process, '0', self::SCALE),
+            'total_kg' => NumberHelper::addPrecise($material, $process, self::SCALE),
+            'material_kg' => NumberHelper::roundPrecise($material, self::SCALE),
+            'process_kg' => NumberHelper::roundPrecise($process, self::SCALE),
             'lines' => $lines,
             'missing' => array_values(array_unique($missing, SORT_REGULAR)),
             'complete' => $missing === [],
@@ -81,6 +82,6 @@ class ProductCarbonFootprintService {
      * @return numeric-string|null
      */
     private function perUnit(?string $factor, string $quantity): ?string {
-        return $factor === null ? null : bcmul($factor, $quantity, self::SCALE);
+        return $factor === null ? null : NumberHelper::multiplyPrecise($factor, $quantity, self::SCALE);
     }
 }

@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sales;
 
+use App\Enums\Sales\QuoteStatus;
 use App\Models\Customer\Customer;
 use App\Models\Platform\{Organization, User};
 use App\Models\Sales\Quote;
@@ -40,7 +41,7 @@ final class QuoteWinRateTest extends TestCase {
     }
 
     /** @param array<string, mixed> $attributes */
-    private function quote(Customer $customer, string $number, string $status, string $net, array $attributes = []): Quote {
+    private function quote(Customer $customer, string $number, QuoteStatus $status, string $net, array $attributes = []): Quote {
         return Quote::query()->create($attributes + [
             'organization_id' => $this->org->id, 'customer_id' => $customer->id, 'number' => $number, 'version' => 1,
             'status' => $status, 'subtotal' => $net, 'tax_amount' => '0.00', 'total' => $net, 'created_by' => $this->admin->id,
@@ -51,13 +52,13 @@ final class QuoteWinRateTest extends TestCase {
         $alpha = Customer::factory()->create(['organization_id' => $this->org->id, 'name' => 'Alpha GmbH', 'company' => null]);
         $beta = Customer::factory()->create(['organization_id' => $this->org->id, 'name' => 'Beta KG', 'company' => null]);
 
-        $first = $this->quote($alpha, 'AN-1', 'rejected', '900.00', ['decided_at' => '2026-05-02 10:00:00']);
-        $this->quote($alpha, 'AN-1', 'accepted', '1000.00', ['version' => 2, 'previous_version_id' => $first->id, 'decided_at' => '2026-05-10 10:00:00', 'follow_up_user_id' => $this->seller->id]);
-        $this->quote($beta, 'AN-2', 'rejected', '500.00', ['decided_at' => '2026-05-20 10:00:00']);
-        $this->quote($beta, 'AN-3', 'sent', '300.00', ['valid_until' => '2026-06-01']);
-        $this->quote($alpha, 'AN-4', 'expired', '200.00', ['valid_until' => '2026-05-15']);
-        $this->quote($alpha, 'AN-5', 'sent', '700.00', ['valid_until' => '2026-07-31']);
-        $this->quote($beta, 'AN-6', 'accepted', '800.00', ['decided_at' => '2026-03-01 10:00:00']);
+        $first = $this->quote($alpha, 'AN-1', QuoteStatus::Rejected, '900.00', ['decided_at' => '2026-05-02 10:00:00']);
+        $this->quote($alpha, 'AN-1', QuoteStatus::Accepted, '1000.00', ['version' => 2, 'previous_version_id' => $first->id, 'decided_at' => '2026-05-10 10:00:00', 'follow_up_user_id' => $this->seller->id]);
+        $this->quote($beta, 'AN-2', QuoteStatus::Rejected, '500.00', ['decided_at' => '2026-05-20 10:00:00']);
+        $this->quote($beta, 'AN-3', QuoteStatus::Sent, '300.00', ['valid_until' => '2026-06-01']);
+        $this->quote($alpha, 'AN-4', QuoteStatus::Expired, '200.00', ['valid_until' => '2026-05-15']);
+        $this->quote($alpha, 'AN-5', QuoteStatus::Sent, '700.00', ['valid_until' => '2026-07-31']);
+        $this->quote($beta, 'AN-6', QuoteStatus::Accepted, '800.00', ['decided_at' => '2026-03-01 10:00:00']);
 
         $result = app(QuoteWinRateReport::class)->build($this->org->id, CarbonImmutable::create(2026, 5, 1), CarbonImmutable::create(2026, 6, 30));
 

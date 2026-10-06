@@ -51,7 +51,7 @@
                         @if ($reconnectActions[$connection->id] ?? null)
                             <x-ui-action :action="$reconnectActions[$connection->id]" show-label />
                         @endif
-                        <a href="{{ route('admin.backup-targets.cleanup.preview', $connection) }}" class="btn btn-ghost btn-xs">{{ __('backup_targets.cleanup') }}</a>
+                        <x-button :href="route('admin.backup-targets.cleanup.preview', $connection)" tone="ghost" size="xs">{{ __('backup_targets.cleanup') }}</x-button>
                         <x-action-form :action="route('admin.backup-targets.disconnect', $connection)"
                               method="DELETE"
                               :confirm="__('backup_targets.disconnect_confirm')"
@@ -85,8 +85,8 @@
     <x-card class="flex flex-col gap-3">
         <h3 class="card-title text-base">{{ __('backup_targets.generations.title') }}</h3>
 
-        @if ($generations->isEmpty())
-            <p class="text-sm text-muted">{{ __('backup_targets.generations.empty') }}</p>
+        @if ($generations->total() === 0)
+            <x-empty-state icon="backup" :title="__('backup_targets.generations.empty')" compact />
         @else
             <x-table bare>
                 <x-slot:head>
@@ -123,9 +123,9 @@
                                 <td>
                                     <form method="POST" action="{{ route('admin.backup-targets.generations.hold', $generation) }}" class="leading-none">
                                         @csrf
-                                        <button type="submit" class="btn btn-ghost btn-xs {{ $generation->legal_hold ? 'text-warning' : '' }}">
+                                        <x-button type="submit" tone="ghost" size="xs" :class="$generation->legal_hold ? 'text-warning' : null">
                                             {{ $generation->legal_hold ? __('backup_targets.generations.hold_release_action') : __('backup_targets.generations.hold_set_action') }}
-                                        </button>
+                                        </x-button>
                                     </form>
                                 </td>
                                 <td class="text-right">
@@ -139,6 +139,7 @@
                             </tr>
                         @endforeach
             </x-table>
+            <x-pagination :paginator="$generations" standing />
         @endif
     </x-card>
 </x-index-page>

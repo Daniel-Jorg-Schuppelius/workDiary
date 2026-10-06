@@ -92,9 +92,9 @@
                 <ul class="space-y-1 text-sm">
                     @foreach (\App\Services\Ai\Suggestions\ImportMappingSuggestionService::mappingValues($aiMapping) as $aiPair)
                         <li class="flex flex-wrap items-center gap-2">
-                            <span class="badge badge-ghost badge-sm font-mono">{{ $aiPair['header'] }}</span>
+                            <x-status-badge class="font-mono">{{ $aiPair['header'] }}</x-status-badge>
                             <x-icon name="arrow_forward" class="text-muted" />
-                            <span class="badge badge-info badge-sm font-mono">{{ $aiPair['column'] }}</span>
+                            <x-status-badge tone="info" class="font-mono">{{ $aiPair['column'] }}</x-status-badge>
                         </li>
                     @endforeach
                 </ul>
@@ -119,7 +119,7 @@
                 @foreach ($columnMapping['headers'] as $i => $header)
                     <div class="flex flex-wrap items-center gap-2">
                         <input type="hidden" name="columns[{{ $i }}][header]" value="{{ $header }}">
-                        <span class="badge badge-ghost badge-sm font-mono">{{ $header }}</span>
+                        <x-status-badge class="font-mono">{{ $header }}</x-status-badge>
                         <x-icon name="arrow_forward" class="text-muted" />
                         <select name="columns[{{ $i }}][target]" class="select select-sm select-bordered"
                                 aria-label="{{ __('import.columns.target_for', ['header' => $header]) }}">
@@ -153,7 +153,7 @@
                 @foreach ($pendingValues as $i => $value)
                     <div class="flex flex-wrap items-center gap-2">
                         <input type="hidden" name="mappings[{{ $i }}][value]" value="{{ $value }}">
-                        <span class="badge badge-ghost font-mono">{{ $value }}</span>
+                        <x-status-badge size="md" class="font-mono">{{ $value }}</x-status-badge>
                         <select name="mappings[{{ $i }}][action]" class="select select-sm select-bordered">
                             <option value="user">{{ __('Benutzer zuordnen') }}</option>
                             <option value="ignore">{{ __('Zeilen überspringen') }}</option>
@@ -180,7 +180,7 @@
                 @foreach ($pendingValues as $i => $value)
                     <div class="flex flex-wrap items-center gap-2">
                         <input type="hidden" name="mappings[{{ $i }}][value]" value="{{ $value }}">
-                        <span class="badge badge-ghost font-mono">{{ $value }}</span>
+                        <x-status-badge size="md" class="font-mono">{{ $value }}</x-status-badge>
                         <select name="mappings[{{ $i }}][action]" class="select select-sm select-bordered">
                             <option value="new">{{ __('Als neues Tag anlegen') }}</option>
                             <option value="tag">{{ __('Bestehendem Tag zuordnen') }}</option>

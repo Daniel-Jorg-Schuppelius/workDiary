@@ -160,6 +160,83 @@ final class HelpdeskRoutingSlaTest extends TestCase {
         $this->assertTrue($contract->is_default);
     }
 
+    private function routingRule(?Organization $org = null): TicketRoutingRule {
+        return TicketRoutingRule::query()->create([
+            'organization_id' => ($org ?? $this->org)->id,
+            'name' => 'Störungen hoch',
+            'position' => 5,
+            'conditions' => ['kind' => 'incident'],
+            'actions' => ['set_priority' => 'high'],
+        ]);
+    }
+
+    public function test_rule_list_offers_the_edit_dialog(): void {
+        $rule = $this->routingRule();
+
+        $this->actingAs($this->agent)->get(route('helpdesk.routing.index'))
+            ->assertOk()
+            ->assertSee(route('helpdesk.routing.edit', $rule), false);
+
+        $this->actingAs($this->agent)->get(route('helpdesk.routing.edit', $rule))
+            ->assertOk()
+            ->assertSee(route('helpdesk.routing.update', $rule), false)
+            ->assertSee('Störungen hoch')
+            ->assertSee('set_priority');
+    }
+
+    public function test_rule_update_saves_the_changes_and_raises_the_version(): void {
+        $rule = $this->routingRule();
+
+        $this->actingAs($this->agent)
+            ->patch(route('helpdesk.routing.update', $rule), [
+                'name' => 'Störungen dringend',
+                'position' => 2,
+                'conditions' => '{"kind": "incident", "priority": "normal"}',
+                'actions' => '{"set_priority": "urgent"}',
+                'active' => '0',
+            ])
+            ->assertRedirect(route('helpdesk.routing.index'))
+            ->assertSessionHas('success', __('Regel gespeichert.'));
+
+        $rule->refresh();
+        $this->assertSame('Störungen dringend', $rule->name);
+        $this->assertSame(2, $rule->position);
+        $this->assertSame(['kind' => 'incident', 'priority' => 'normal'], $rule->conditions);
+        $this->assertSame(['set_priority' => 'urgent'], $rule->actions);
+        $this->assertFalse($rule->active);
+        $this->assertSame(2, $rule->version);
+    }
+
+    public function test_rule_update_rejects_invalid_json(): void {
+        $rule = $this->routingRule();
+
+        $this->actingAs($this->agent)
+            ->patch(route('helpdesk.routing.update', $rule), [
+                'name' => 'Kaputt',
+                'position' => 1,
+                'conditions' => '{kind: incident',
+                'actions' => '{"set_priority": "high"}',
+            ])
+            ->assertSessionHasErrors('conditions');
+
+        $this->assertSame('Störungen hoch', $rule->refresh()->name);
+        $this->assertSame(1, $rule->version);
+    }
+
+    public function test_rule_edit_needs_the_queue_right_and_the_own_organization(): void {
+        $rule = $this->routingRule();
+        $plain = User::factory()->user()->create(['organization_id' => $this->org->id]);
+        $payload = ['name' => 'Fremd', 'position' => 1, 'conditions' => '{}', 'actions' => '{}'];
+
+        $this->actingAs($plain)->get(route('helpdesk.routing.edit', $rule))->assertForbidden();
+        $this->actingAs($plain)->patch(route('helpdesk.routing.update', $rule), $payload)->assertForbidden();
+
+        $foreign = $this->routingRule(Organization::factory()->create());
+        $this->actingAs($this->agent)->get(route('helpdesk.routing.edit', $foreign))->assertNotFound();
+        $this->actingAs($this->agent)->patch(route('helpdesk.routing.update', $foreign), $payload)->assertNotFound();
+        $this->assertSame('Störungen hoch', $foreign->refresh()->name);
+    }
+
     public function test_waiting_scan_notifies_owner_once(): void {
         $ticket = ServiceTicket::factory()->create([
             'organization_id' => $this->org->id,

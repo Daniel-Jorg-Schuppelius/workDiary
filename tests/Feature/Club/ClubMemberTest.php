@@ -190,14 +190,20 @@ class ClubMemberTest extends TestCase {
         $this->actingAs($lead)->get(route('club.members.show', $inOther))->assertForbidden();
     }
 
-    public function test_guardian_sees_only_assigned_children_until_revoked(): void {
+    /**
+     * Sicherheitsaudit 2026-10-04, authz-a-9: die Verwaltungsseite zeigt interne
+     * Vermerke und die Kontaktdaten anderer Vertretungen — Vertretung und
+     * Mitglied arbeiten deshalb nur in „Mein Verein“.
+     */
+    public function test_guardian_uses_my_club_not_the_administration_page(): void {
         $admin = $this->orgAdmin();
         $parent = $this->orgUser();
         $childA = ClubMember::factory()->create(['last_name' => 'Kind A']);
         $childB = ClubMember::factory()->create(['last_name' => 'Kind B']);
         $guardian = $this->members()->addGuardian($childA, ['name' => 'Elternteil', 'user_id' => $parent->id, 'permissions' => ['register']], $admin);
 
-        $this->actingAs($parent)->get(route('club.members.show', $childA))->assertOk();
+        $this->actingAs($parent)->get(route('club.my.index'))->assertOk()->assertSee('Kind A');
+        $this->actingAs($parent)->get(route('club.members.show', $childA))->assertForbidden();
         $this->actingAs($parent)->get(route('club.members.show', $childB))->assertForbidden();
         $this->actingAs($parent)->get(route('club.members.index'))->assertForbidden();
 
@@ -223,13 +229,14 @@ class ClubMemberTest extends TestCase {
         $this->actingAs($admin)->get(route('club.proposals.index'))->assertOk();
     }
 
-    public function test_member_sees_own_record_via_linked_account(): void {
+    public function test_member_uses_my_club_not_the_administration_page(): void {
         $admin = $this->orgAdmin();
         $self = $this->orgUser();
         $member = $this->members()->create($this->organization, $admin, ['first_name' => 'Ich', 'last_name' => 'Selbst', 'user_id' => $self->id]);
         $other = ClubMember::factory()->create();
 
-        $this->actingAs($self)->get(route('club.members.show', $member))->assertOk();
+        $this->actingAs($self)->get(route('club.my.index'))->assertOk()->assertSee('Selbst');
+        $this->actingAs($self)->get(route('club.members.show', $member))->assertForbidden();
         $this->actingAs($self)->get(route('club.members.show', $other))->assertForbidden();
     }
 }

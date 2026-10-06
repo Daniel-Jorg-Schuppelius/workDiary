@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Invoicing;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Enums\Invoicing\{RetentionBase, RetentionKind};
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\{Invoice, InvoiceRetention};
@@ -43,7 +44,7 @@ final class FinalInvoiceRetentionTest extends TestCase {
     private function draft(string $net = '1000.00'): Invoice {
         $invoice = Invoice::query()->create([
             'organization_id' => $this->org->id, 'customer_id' => $this->customer->id, 'number' => 'R-' . uniqid(),
-            'status' => Invoice::STATUS_DRAFT, 'type' => Invoice::TYPE_INVOICE, 'currency' => 'EUR', 'tax_rate' => '19.00',
+            'status' => InvoiceStatus::Draft, 'type' => Invoice::TYPE_INVOICE, 'currency' => 'EUR', 'tax_rate' => '19.00',
         ]);
         $invoice->items()->create(['organization_id' => $this->org->id, 'description' => 'Gesamtleistung', 'quantity' => '1', 'unit' => 'pausch.', 'unit_price' => $net, 'position' => 1]);
         $invoice->load('items');
@@ -55,7 +56,7 @@ final class FinalInvoiceRetentionTest extends TestCase {
 
     private function issuedDownPayment(string $net): Invoice {
         $dp = app(InvoiceGenerator::class)->downPaymentFor($this->customer, null, 'Abschlag', $net);
-        $dp->update(['status' => Invoice::STATUS_ISSUED, 'issued_on' => now()]);
+        $dp->update(['status' => InvoiceStatus::Issued, 'issued_on' => now()]);
 
         return $dp->fresh();
     }

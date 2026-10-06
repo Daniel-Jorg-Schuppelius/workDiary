@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Lexoffice\Services;
 
-use App\Plugins\Lexoffice\{LexofficePlugin, VoucherTypes};
+use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\Lexoffice\Models\{LexofficePostingCategory, LexofficeVoucher, LexofficeVoucherCategory};
 use App\Services\Billing\Contracts\ExternalPurchaseSource;
 use App\Services\Billing\Dto\{ExternalCategorySpend, ExternalPurchase};

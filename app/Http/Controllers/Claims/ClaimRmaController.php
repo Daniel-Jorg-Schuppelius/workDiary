@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Claims;
 
 use App\Enums\Claims\ClaimRmaDisposition;
+use App\Enums\Inventory\StockState;
 use App\Http\Controllers\Controller;
 use App\Models\Claims\{ClaimCase, ClaimInspection, ClaimRmaReturn};
 use App\Models\Shipping\Shipment;
@@ -73,7 +74,7 @@ class ClaimRmaController extends Controller {
         $data = $request->validate([
             'warehouse_id' => ['nullable', 'integer', new ExistsInCurrentOrganization('warehouses')],
             'qty' => ['nullable', 'numeric', 'min:0.0001'],
-            'stock_state' => ['required', Rule::in(ClaimRmaService::QUARANTINE_STATES)],
+            'stock_state' => ['required', Rule::enum(StockState::class)->only(StockState::quarantine())],
             'condition_note' => ['nullable', 'string', 'max:4000'],
         ]);
 

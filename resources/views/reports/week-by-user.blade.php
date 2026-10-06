@@ -27,17 +27,7 @@
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="__('Stunden je Mitarbeiter und Tag in der ausgewählten Kalenderwoche.')">
             <x-slot:actions>
-                <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
-                            :href="route('reports.week-by-user', array_merge($linkParams, ['export' => 'pdf']))"
-                            show-label>PDF</x-icon-btn>
-                <x-action-menu icon="download" tone="outline" :label="__('Export')">
-                    <x-icon-btn icon="download" tone="outline" size="sm"
-                                :href="route('reports.week-by-user', array_merge($linkParams, ['export' => 'csv']))"
-                                show-label>CSV</x-icon-btn>
-                    <x-icon-btn icon="table_chart" tone="outline" size="sm"
-                                :href="route('reports.week-by-user', array_merge($linkParams, ['export' => 'xlsx']))"
-                                show-label>XLSX</x-icon-btn>
-                </x-action-menu>
+                <x-report-export :url="fn (string $format) => route('reports.week-by-user', array_merge($linkParams, ['export' => $format]))" />
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
@@ -69,7 +59,7 @@
     </div>
 
     @if ($weeksTruncated ?? false)
-        <div class="alert alert-warning text-sm">
+        <div role="alert" class="alert alert-warning text-sm">
             <span>{{ __('Der gewählte Zeitraum umfasst :total Wochen — es werden nur die ersten :shown Tabs angezeigt. Bitte engere die Auswahl im Header ein.', ['total' => $totalWeeks, 'shown' => count($weekTabs)]) }}</span>
         </div>
     @endif

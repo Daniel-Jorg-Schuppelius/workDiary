@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\Integration\IntegrationInboxStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Integration\IntegrationInboxItem;
@@ -39,7 +40,7 @@ class IntegrationInboxController extends Controller {
         $user = $this->authorizeBilling();
         $organization = $this->organizationOf($user);
 
-        $status = (string) $request->input('status', IntegrationInboxItem::STATUS_OPEN);
+        $status = (string) $request->input('status', IntegrationInboxStatus::Open->value);
         $caseType = (string) $request->input('case', 'all');
         $plugin = (string) $request->input('plugin', 'all');
         $target = (string) $request->input('target', 'all');
@@ -75,7 +76,7 @@ class IntegrationInboxController extends Controller {
         $pluginOpenCounts = IntegrationInboxItem::query()
             ->where('organization_id', $user->organization_id)
             ->whereNull('group_key')
-            ->where('status', IntegrationInboxItem::STATUS_OPEN)
+            ->where('status', IntegrationInboxStatus::Open)
             ->selectRaw('plugin_id, COUNT(*) AS aggregate')
             ->groupBy('plugin_id')
             ->pluck('aggregate', 'plugin_id')
@@ -83,7 +84,7 @@ class IntegrationInboxController extends Controller {
 
         // Offene Zeit-Import-Gruppen je Plugin (nur wenn Status-Filter sie zeigt).
         $groups = collect();
-        if (in_array($status, [IntegrationInboxItem::STATUS_OPEN, 'all'], true)) {
+        if (in_array($status, [IntegrationInboxStatus::Open->value, 'all'], true)) {
             foreach ($bookers->pluginIds() as $pid) {
                 if ($plugin !== 'all' && $plugin !== $pid) {
                     continue;
@@ -393,7 +394,7 @@ class IntegrationInboxController extends Controller {
     private function openCount(User $user): int {
         return IntegrationInboxItem::query()
             ->where('organization_id', $user->organization_id)
-            ->where('status', IntegrationInboxItem::STATUS_OPEN)
+            ->where('status', IntegrationInboxStatus::Open)
             ->count();
     }
 }

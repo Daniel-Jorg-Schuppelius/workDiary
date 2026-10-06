@@ -13,9 +13,10 @@
 @extends('layouts.app')
 @section('title', __('Probleme'))
 @section('nav-title', __('Probleme'))
+@include('partials.page-fill')
 
 @section('content')
-    <x-index-page :subtitle="__('Ursachen hinter Incidents — Known Errors, Workarounds und Wirksamkeitsprüfung.')">
+    <x-index-page overflow="clip" :subtitle="__('Ursachen hinter Incidents — Known Errors, Workarounds und Wirksamkeitsprüfung.')">
         <x-slot:actions>
             @if ($canManage)
                 <x-icon-btn icon="add" tone="primary" size="sm"
@@ -38,7 +39,7 @@
             </select>
         </x-filter-bar>
 
-        <x-table :zebra="true">
+        <x-table scroll="flex" :zebra="true">
             <x-slot:head>
                 <tr>
                     <th>{{ __('Titel') }}</th>
@@ -50,7 +51,6 @@
                     <th class="w-24 text-right">{{ __('Aktion') }}</th>
                 </tr>
             </x-slot:head>
-            <tbody>
                 @forelse ($problems as $problem)
                     @php
                         $due = $problem->effectiveness_check_due_at;
@@ -82,7 +82,6 @@
                 @empty
                     <x-table.empty :colspan="7" icon="troubleshoot" :title="__('Noch keine Probleme erfasst')" compact />
                 @endforelse
-            </tbody>
         </x-table>
 
         <x-pagination :paginator="$problems" standing />

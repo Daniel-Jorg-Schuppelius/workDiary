@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Sales;
 
+use App\Enums\Sales\QuoteStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
 use App\Models\Sales\Quote;
@@ -48,7 +49,7 @@ class QuoteFollowUpController extends Controller {
 
         $base = fn () => Quote::query()
             ->with(['customer:id,name,company', 'followUpUser:id,name'])
-            ->whereIn('status', ['approved', 'sent']);
+            ->whereIn('status', QuoteStatus::pending());
 
         // Nur die eigenen? Bewusst als Filter, nicht als Zwang: Wer vertritt,
         // muss die Angebote der Kollegin sehen können.
@@ -82,7 +83,7 @@ class QuoteFollowUpController extends Controller {
 
         // Ohne Termin: die stille Lücke — versandt, aber niemand hat einen
         // Nachfasstermin gesetzt.
-        $untracked = $scope($base()->where('status', 'sent')->whereNull('follow_up_at'))
+        $untracked = $scope($base()->where('status', QuoteStatus::Sent)->whereNull('follow_up_at'))
             ->orderByDesc('id')
             ->limit(50)
             ->get();
@@ -121,6 +122,13 @@ class QuoteFollowUpController extends Controller {
         }
 
         return back()->with('status', __('quotes.follow_up.recorded'));
+    }
+
+    /** Dialog-Fragment „Nachfasstermin setzen". */
+    public function scheduleDialog(Quote $quote): View {
+        Gate::authorize('followUp', $quote);
+
+        return view('quotes._follow_up_schedule_dialog', ['quote' => $quote]);
     }
 
     /** Nachfasstermin setzen/verschieben, ohne ein Ergebnis zu protokollieren. */

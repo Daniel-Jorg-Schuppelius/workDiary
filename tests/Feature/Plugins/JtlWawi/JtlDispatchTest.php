@@ -15,6 +15,7 @@ use App\Jobs\Inventory\InventoryOutboxDeliveryJob;
 use App\Models\Article\{Article, ArticleVariant};
 use App\Models\Integration\ExternalArticleMapping;
 use App\Models\Inventory\Warehouse;
+use App\Plugins\JtlWawi\Enums\JtlConnectionStatus;
 use App\Plugins\JtlWawi\Models\{JtlConnection, JtlStockSnapshot, JtlWarehouseMapping};
 use App\Plugins\JtlWawi\Services\{JtlWawiInventoryProvider, JtlWawiOutboxDispatcher};
 use App\Services\Inventory\{InventoryLedger, InventoryOutboxService, InventoryProviderResolver, ReadOnlyInventoryProvider};
@@ -54,7 +55,7 @@ final class JtlDispatchTest extends TestCase {
             'api_version' => '2.0',
             'allow_private_network' => true,
             'api_key' => 'KEY-TEST',
-            'status' => JtlConnection::STATUS_ACTIVE,
+            'status' => JtlConnectionStatus::Active,
         ]);
 
         $article = Article::factory()->create(['organization_id' => $this->organization->id]);

@@ -29,6 +29,18 @@ return [
         'create' => 'Registra fideiussione',
         'edit' => 'Modifica fideiussione',
         'returned' => 'Documento restituito',
+        'drawn' => 'Registra come escussa',
+        'secure' => 'Sostituisci ritenuta',
+    ],
+    'confirm' => [
+        'drawn' => 'Registrare l’escussione della fideiussione :reference? In seguito non vale più come garanzia e la registrazione non può essere annullata.',
+    ],
+    'secure' => [
+        'title' => 'Sostituire la ritenuta a garanzia',
+        'hint' => 'La fideiussione prende il posto della ritenuta; l’importo trattenuto si considera così pagato. Sono proposte solo le ritenute aperte coperte dall’importo della fideiussione.',
+        'retention' => 'Ritenuta a garanzia',
+        'submit' => 'Sostituisci',
+        'empty' => 'Non c’è alcuna ritenuta aperta coperta da questa fideiussione.',
     ],
     'kpi' => [
         'issued' => 'Prestate (attive)',

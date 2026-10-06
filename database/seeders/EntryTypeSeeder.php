@@ -12,6 +12,7 @@ namespace Database\Seeders;
 
 use App\Models\Classification\EntryType;
 use App\Models\Platform\Organization;
+use App\Support\BranchProfileFiles;
 use Illuminate\Database\Seeder;
 
 class EntryTypeSeeder extends Seeder {
@@ -56,10 +57,8 @@ class EntryTypeSeeder extends Seeder {
      */
     public static function defaultSlugsFor(?string $profileCode): array {
         if ($profileCode !== null && $profileCode !== '') {
-            $path = database_path("data/branchprofiles/{$profileCode}.php");
-            if (is_file($path)) {
-                /** @var array<string, mixed> $profile */
-                $profile = require $path;
+            $profile = BranchProfileFiles::profile($profileCode);
+            if ($profile !== null) {
                 $slugs = array_values(array_filter(
                     (array) ($profile['entry_type_defaults'] ?? []),
                     'is_string'

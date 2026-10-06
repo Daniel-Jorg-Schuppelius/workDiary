@@ -128,7 +128,7 @@ class LearningCourseOptionsTest extends TestCase {
     }
 
     public function test_freischaltplan_sperrt_externe_und_portal(): void {
-        [$course, $unit] = $this->course(['audiences' => [LearningAudience::Customer->value, LearningAudience::External->value]], ['release_rule' => ['after_days' => 2]]);
+        [$course, $unit] = $this->course(['access_kind' => 'open', 'audiences' => [LearningAudience::Customer->value, LearningAudience::External->value]], ['release_rule' => ['after_days' => 2]]);
 
         $external = ExternalParticipant::factory()->create(['organization_id' => $this->organization->id]);
         $externalEnrollment = app(LearningEnrollmentService::class)->enroll($course, $external);
@@ -258,7 +258,7 @@ class LearningCourseOptionsTest extends TestCase {
     // ── Fenster und Grenze ───────────────────────────────────────────────
 
     public function test_fenster_und_teilnehmergrenze_gelten_fuer_die_selbsteinschreibung(): void {
-        [$closed] = $this->course(['title' => 'Abgelaufen', 'available_until' => now()->subDay()->toDateString(), 'audiences' => [LearningAudience::Customer->value]]);
+        [$closed] = $this->course(['title' => 'Abgelaufen', 'access_kind' => 'open', 'available_until' => now()->subDay()->toDateString(), 'audiences' => [LearningAudience::Customer->value]]);
         $portalUser = $this->portalUser();
 
         $this->actingAs($portalUser, 'customer')
@@ -276,7 +276,7 @@ class LearningCourseOptionsTest extends TestCase {
         $assigned = app(LearningEnrollmentService::class)->enroll($closed, $this->learner());
         $this->assertSame(LearningEnrollmentStatus::Assigned, $assigned->status);
 
-        [$limited] = $this->course(['title' => 'Begrenzt', 'max_enrollments' => 1]);
+        [$limited] = $this->course(['title' => 'Begrenzt', 'access_kind' => 'open', 'max_enrollments' => 1]);
         app(LearningEnrollmentService::class)->enroll($limited, $this->learner(), ['source' => 'self']);
         try {
             app(LearningEnrollmentService::class)->enroll($limited, $this->learner(), ['source' => 'self']);

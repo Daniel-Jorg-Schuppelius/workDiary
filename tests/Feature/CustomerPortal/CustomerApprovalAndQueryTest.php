@@ -129,7 +129,7 @@ class CustomerApprovalAndQueryTest extends TestCase {
     public function test_internal_user_can_answer_query_and_customer_sees_it(): void {
         [$creator, $protocol] = $this->makeReviewProtocol();
         $token = $this->issueToken($creator, $protocol);
-        $record = app(ProtocolSignatureTokenService::class)->find($token);
+        $record = ProtocolSignatureToken::findByAccessToken($token);
 
         $query = app(CustomerQueryService::class)->raise($protocol, [
             'organization_id' => (int) $protocol->organization_id,
@@ -157,7 +157,7 @@ class CustomerApprovalAndQueryTest extends TestCase {
         $tokenA = $this->issueToken($creatorA, $protocolA);
 
         [$creatorB, $protocolB] = $this->makeReviewProtocol();
-        $recordB = app(ProtocolSignatureTokenService::class)->find($this->issueToken($creatorB, $protocolB));
+        $recordB = ProtocolSignatureToken::findByAccessToken($this->issueToken($creatorB, $protocolB));
 
         // Rückfrage am fremden Vorgang B.
         app(CustomerQueryService::class)->raise($protocolB, [

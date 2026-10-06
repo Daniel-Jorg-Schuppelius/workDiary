@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\JtlWawi\Services;
 
 use App\Plugins\JtlWawi\Api\JtlGatewayFactory;
+use App\Plugins\JtlWawi\Enums\{JtlConnectionStatus, JtlRegistrationStatus};
 use App\Plugins\JtlWawi\JtlWawiPlugin;
 use App\Plugins\JtlWawi\Models\JtlConnection;
 use Illuminate\Support\Str;
@@ -35,9 +36,9 @@ use RuntimeException;
  */
 class JtlRegistrationService {
     private const STATUS_MAP = [
-        0 => JtlConnection::REGISTRATION_PENDING,
-        1 => JtlConnection::REGISTRATION_REJECTED,
-        2 => JtlConnection::REGISTRATION_ACCEPTED,
+        0 => JtlRegistrationStatus::Pending,
+        1 => JtlRegistrationStatus::Rejected,
+        2 => JtlRegistrationStatus::Accepted,
     ];
 
     /** 1×1 transparentes PNG — die API-Doku führt appIcon als Registrierungsfeld. */
@@ -77,8 +78,8 @@ class JtlRegistrationService {
 
         $connection->forceFill([
             'registration_id' => $registrationId,
-            'registration_status' => self::STATUS_MAP[(int) ($result['status'] ?? 0)] ?? JtlConnection::REGISTRATION_PENDING,
-            'status' => JtlConnection::STATUS_PENDING_REGISTRATION,
+            'registration_status' => self::STATUS_MAP[(int) ($result['status'] ?? 0)] ?? JtlRegistrationStatus::Pending,
+            'status' => JtlConnectionStatus::PendingRegistration,
             'last_error' => null,
         ])->save();
     }
@@ -87,7 +88,7 @@ class JtlRegistrationService {
      * Registrierungsstatus abholen; bei Freigabe API-Key + Scopes speichern
      * und Scope-Preflight anwenden. Gibt den Registrierungsstatus zurück.
      */
-    public function check(JtlConnection $connection): string {
+    public function check(JtlConnection $connection): JtlRegistrationStatus {
         if ($connection->registration_id === null || trim((string) $connection->challenge_code) === '') {
             throw new RuntimeException('JTL-Wawi: Keine laufende Registrierung — zuerst die Registrierung starten.');
         }
@@ -98,12 +99,12 @@ class JtlRegistrationService {
         );
 
         $apiKey = trim((string) data_get($result, 'token.apiKey', ''));
-        $status = self::STATUS_MAP[(int) data_get($result, 'requestStatusInfo.status', 0)] ?? JtlConnection::REGISTRATION_PENDING;
+        $status = self::STATUS_MAP[(int) data_get($result, 'requestStatusInfo.status', 0)] ?? JtlRegistrationStatus::Pending;
         if ($apiKey !== '') {
-            $status = JtlConnection::REGISTRATION_ACCEPTED;
+            $status = JtlRegistrationStatus::Accepted;
         }
 
-        if ($status === JtlConnection::REGISTRATION_ACCEPTED && $apiKey !== '') {
+        if ($status === JtlRegistrationStatus::Accepted && $apiKey !== '') {
             $scopes = array_values(array_map('strval', (array) ($result['grantedScopes'] ?? [])));
             $connection->forceFill([
                 'api_key' => $apiKey,
@@ -115,10 +116,10 @@ class JtlRegistrationService {
         } else {
             $connection->forceFill([
                 'registration_status' => $status,
-                'status' => $status === JtlConnection::REGISTRATION_REJECTED
-                    ? JtlConnection::STATUS_BLOCKED
-                    : JtlConnection::STATUS_PENDING_REGISTRATION,
-                'blocked_reason' => $status === JtlConnection::REGISTRATION_REJECTED ? 'registration_rejected' : null,
+                'status' => $status === JtlRegistrationStatus::Rejected
+                    ? JtlConnectionStatus::Blocked
+                    : JtlConnectionStatus::PendingRegistration,
+                'blocked_reason' => $status === JtlRegistrationStatus::Rejected ? 'registration_rejected' : null,
             ])->save();
         }
 
@@ -131,7 +132,7 @@ class JtlRegistrationService {
 
         if ($check['ok'] || $check['unknown']) {
             $connection->forceFill([
-                'status' => JtlConnection::STATUS_ACTIVE,
+                'status' => JtlConnectionStatus::Active,
                 'blocked_reason' => null,
             ])->save();
 
@@ -139,7 +140,7 @@ class JtlRegistrationService {
         }
 
         $connection->forceFill([
-            'status' => JtlConnection::STATUS_BLOCKED,
+            'status' => JtlConnectionStatus::Blocked,
             'blocked_reason' => 'missing_scopes',
         ])->save();
     }

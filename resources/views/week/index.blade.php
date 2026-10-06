@@ -9,8 +9,7 @@
 @extends('layouts.app')
 @section('title', __('Wochenansicht') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('Wochenansicht'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @php
     $hours = range(0, 23);
@@ -100,7 +99,7 @@
 
     {{-- Truncation-Hinweis --}}
     @if ($weeksTruncated)
-        <div class="alert alert-warning text-sm">
+        <div role="alert" class="alert alert-warning text-sm">
             <span>
                 {{ __('Der gewählte Zeitraum umfasst :total Wochen — es werden nur die ersten :shown angezeigt. Bitte engere die Auswahl im Header ein.', [
                     'total' => $totalWeeks,
@@ -126,7 +125,7 @@
 
     {{-- Wochen-Grids --}}
     @if ($weekCount === 0)
-        <div class="alert alert-info">
+        <div role="status" class="alert alert-info">
             <span>{{ __('Keine Wochen im gewählten Zeitraum.') }}</span>
         </div>
     @elseif ($weekCount === 1)

@@ -148,13 +148,13 @@
 
 @section('nav')
     @foreach ($sections as $anchor => $label)
-        <a href="#{{ $anchor }}" class="btn btn-ghost btn-sm font-medium">{{ $label }}</a>
+        <x-button :href="'#' . $anchor" tone="ghost" class="font-medium">{{ $label }}</x-button>
     @endforeach
 @endsection
 
 @section('content')
     {{-- Hero; isolate hält die -z-10-Hintergründe innerhalb der Karte. --}}
-    <section class="relative isolate overflow-hidden rounded-box border border-base-300 bg-base-100 px-6 py-16 text-center shadow-xs sm:px-12 sm:py-20">
+    <x-card as="section" padding="px-6 py-16 sm:px-12 sm:py-20" class="relative isolate overflow-hidden text-center">
         <div class="pointer-events-none absolute inset-0 -z-10" aria-hidden="true"
              style="background:
                 radial-gradient(42rem 24rem at 50% -12%, color-mix(in oklab, var(--color-primary) 24%, transparent), transparent 70%),
@@ -196,17 +196,18 @@
         <dl class="mx-auto mt-12 grid max-w-3xl grid-cols-2 gap-3 sm:grid-cols-4">
             @foreach ($stats as $stat)
                 <div class="flex flex-col-reverse gap-1 rounded-box border border-base-300 bg-base-100/80 px-4 py-4 backdrop-blur-sm">
+                    {{-- raw-markup-ok: Kennzahl-Kachel der Startseite: Zahl groß über dem Label (flex-col-reverse), eigene Kachelfläche --}}
                     <dt class="text-xs font-medium uppercase tracking-wider text-muted">{{ $stat['label'] }}</dt>
                     <dd class="font-['Space_Grotesk'] text-3xl font-bold text-primary">{{ $stat['value'] }}</dd>
                 </div>
             @endforeach
         </dl>
-    </section>
+    </x-card>
 
     {{-- Feature-Übersicht --}}
     <section id="funktionen" class="mt-20 scroll-mt-24">
         <div class="text-center">
-            <div class="badge badge-ghost badge-sm uppercase tracking-[0.24em]">{{ __('Funktionen') }}</div>
+            <x-status-badge class="uppercase tracking-[0.24em]">{{ __('Funktionen') }}</x-status-badge>
             <h2 class="mt-3 font-['Space_Grotesk'] text-3xl font-bold tracking-tight text-base-content">{{ __('Alles, was der Betrieb braucht') }}</h2>
             <p class="mx-auto mt-3 max-w-2xl text-base text-base-content/70">{{ __('Vom ersten Eintrag im Feld bis zur fertigen Rechnung – durchgängig in einer Oberfläche.') }}</p>
         </div>
@@ -222,13 +223,13 @@
 
                     <div class="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
                         @foreach ($group['items'] as $feature)
-                            <article class="group rounded-box border border-base-300 bg-base-100 p-6 shadow-xs transition motion-safe:hover:-translate-y-0.5 hover:shadow-md {{ $group['hover'] }}">
+                            <x-card as="article" padding="p-6" class="group transition motion-safe:hover:-translate-y-0.5 hover:shadow-md {{ $group['hover'] }}">
                                 <div class="flex size-12 items-center justify-center rounded-box transition {{ $group['tile'] }}">
                                     <x-icon :name="$feature['icon']" size="1.6rem" />
                                 </div>
                                 <h4 class="mt-4 font-['Space_Grotesk'] text-lg font-semibold text-base-content">{{ $feature['title'] }}</h4>
                                 <p class="mt-2 text-sm text-base-content/70">{{ $feature['text'] }}</p>
-                            </article>
+                            </x-card>
                         @endforeach
                     </div>
                 </div>
@@ -237,9 +238,9 @@
     </section>
 
     {{-- Branchenprofile --}}
-    <section id="branchen" class="mt-20 scroll-mt-24 rounded-box border border-base-300 bg-base-100 p-8 shadow-xs sm:p-10">
+    <x-card as="section" padding="p-8 sm:p-10" class="mt-20 scroll-mt-24" id="branchen">
         <div class="text-center">
-            <div class="badge badge-ghost badge-sm uppercase tracking-[0.24em]">{{ __('Branchen') }}</div>
+            <x-status-badge class="uppercase tracking-[0.24em]">{{ __('Branchen') }}</x-status-badge>
             <h2 class="mt-3 font-['Space_Grotesk'] text-3xl font-bold tracking-tight text-base-content">{{ __('Vorkonfiguriert für Ihre Branche') }}</h2>
             <p class="mx-auto mt-3 max-w-2xl text-base text-base-content/70">{{ __('Branchenprofile bringen Auftragsarten, Tätigkeiten, Anforderungen und Abläufe mit – als Startpunkt, den Sie frei anpassen.') }}</p>
         </div>
@@ -254,19 +255,19 @@
                 </li>
             @endforeach
         </ul>
-    </section>
+    </x-card>
 
     {{-- Integrationen --}}
     <section id="integrationen" class="mt-20 scroll-mt-24">
         <div class="text-center">
-            <div class="badge badge-ghost badge-sm uppercase tracking-[0.24em]">{{ __('Integrationen') }}</div>
+            <x-status-badge class="uppercase tracking-[0.24em]">{{ __('Integrationen') }}</x-status-badge>
             <h2 class="mt-3 font-['Space_Grotesk'] text-3xl font-bold tracking-tight text-base-content">{{ __('Spricht mit Ihren Systemen') }}</h2>
             <p class="mx-auto mt-3 max-w-2xl text-base text-base-content/70">{{ __('Buchhaltung, Cloud-Speicher, Aufgaben- und Ticketsysteme anbinden – Import-Drehscheibe, REST-API und Webhooks inklusive.') }}</p>
         </div>
 
         <div class="mt-9 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
             @foreach ($integrations as $group)
-                <div class="rounded-box border border-base-300 bg-base-100 p-6 shadow-xs">
+                <x-card padding="p-6">
                     <div class="flex items-center gap-3">
                         <div class="flex size-9 shrink-0 items-center justify-center rounded-box bg-primary/10 text-primary">
                             <x-icon :name="$group['icon']" size="1.2rem" />
@@ -275,10 +276,10 @@
                     </div>
                     <div class="mt-4 flex flex-wrap gap-2">
                         @foreach ($group['items'] as $item)
-                            <span class="badge badge-ghost border border-base-300">{{ $item }}</span>
+                            <x-status-badge size="md" class="border border-base-300">{{ $item }}</x-status-badge>
                         @endforeach
                     </div>
-                </div>
+                </x-card>
             @endforeach
         </div>
 
@@ -286,16 +287,16 @@
             <h3 class="text-xs font-semibold uppercase tracking-[0.18em] text-muted">{{ __('Formate & Standards') }}</h3>
             <div class="mx-auto mt-3 flex max-w-4xl flex-wrap justify-center gap-2">
                 @foreach ($standards as $standard)
-                    <span class="badge badge-outline badge-primary">{{ $standard }}</span>
+                    <x-status-badge tone="primary" size="md" outline>{{ $standard }}</x-status-badge>
                 @endforeach
             </div>
         </div>
     </section>
 
     {{-- Plattform-Eigenschaften --}}
-    <section id="plattform" class="mt-20 scroll-mt-24 rounded-box border border-base-300 bg-base-100 p-8 shadow-xs sm:p-10">
+    <x-card as="section" padding="p-8 sm:p-10" class="mt-20 scroll-mt-24" id="plattform">
         <div class="text-center">
-            <div class="badge badge-ghost badge-sm uppercase tracking-[0.24em]">{{ __('Plattform') }}</div>
+            <x-status-badge class="uppercase tracking-[0.24em]">{{ __('Plattform') }}</x-status-badge>
             <h2 class="mt-3 font-['Space_Grotesk'] text-3xl font-bold tracking-tight text-base-content">{{ __('Sicher, nachvollziehbar, einsatzbereit') }}</h2>
         </div>
 
@@ -312,23 +313,23 @@
                 </div>
             @endforeach
         </div>
-    </section>
+    </x-card>
 
     {{-- So arbeiten Sie damit --}}
     <section class="mt-20">
         <div class="text-center">
-            <div class="badge badge-ghost badge-sm uppercase tracking-[0.24em]">{{ __('Workflow') }}</div>
+            <x-status-badge class="uppercase tracking-[0.24em]">{{ __('Workflow') }}</x-status-badge>
             <h2 class="mt-3 font-['Space_Grotesk'] text-3xl font-bold tracking-tight text-base-content">{{ __('So arbeiten Sie damit') }}</h2>
         </div>
 
         <ol class="mt-14 grid gap-x-6 gap-y-12 md:grid-cols-2 xl:grid-cols-4">
             @foreach ($steps as $index => $step)
-                <li class="relative flex flex-col items-center rounded-box border border-base-300 bg-base-100 px-6 pb-6 pt-10 text-center shadow-xs">
+                <x-card as="li" padding="px-6 pb-6 pt-10" class="relative flex flex-col items-center text-center">
                     <span class="absolute -top-5 flex size-10 items-center justify-center rounded-full bg-primary font-['Space_Grotesk'] text-base font-bold text-primary-content ring-4 ring-base-200">{{ $index + 1 }}</span>
                     <x-icon :name="$step['icon']" size="1.6rem" class="text-primary" />
                     <h3 class="mt-2 font-['Space_Grotesk'] text-lg font-semibold text-base-content">{{ $step['title'] }}</h3>
                     <p class="mt-2 text-sm text-base-content/70">{{ $step['text'] }}</p>
-                </li>
+                </x-card>
             @endforeach
         </ol>
     </section>

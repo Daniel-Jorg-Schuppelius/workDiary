@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Investments;
 
 use App\Enums\Investments\InvestmentOrigin;
+use App\Http\Controllers\Concerns\ChecksTenantPublicSurfaces;
 use App\Http\Controllers\Controller;
 use App\Models\Platform\Organization;
 use App\Services\Investments\InvestmentProposalService;
@@ -22,6 +23,8 @@ use Illuminate\View\View;
 
 /** Öffentliches Formular für Investitionsvorschläge (MVP-936); ohne gültigen, freigeschalteten Link 404. */
 class PublicInvestmentProposalController extends Controller {
+    use ChecksTenantPublicSurfaces;
+
     public function __construct(
         private readonly InvestmentProposalService $proposals,
         private readonly ModuleStatusResolver $modules,
@@ -43,6 +46,7 @@ class PublicInvestmentProposalController extends Controller {
     private function organization(string $token): Organization {
         $organization = $this->proposals->resolve($token);
         abort_unless($organization instanceof Organization && $this->modules->isActiveFor($organization, 'module.investments'), 404);
+        $this->assertTenantPublicSurfacesAvailable($organization);
 
         return $organization;
     }

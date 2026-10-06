@@ -50,16 +50,10 @@
                 <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('security.section.sessions') }}</h2>
             </header>
             @if (($sessions['available'] ?? false) === true)
-                <dl class="grid grid-cols-1 gap-1 text-sm">
-                    <div class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1">
-                        <dt class="text-muted">{{ __('security.field.sessions_total') }}</dt>
-                        <dd class="font-mono text-xs">{{ $sessions['total'] ?? 0 }}</dd>
-                    </div>
-                    <div class="flex items-baseline justify-between gap-2">
-                        <dt class="text-muted">{{ __('security.field.sessions_active') }}</dt>
-                        <dd class="font-mono text-xs">{{ $sessions['active'] ?? 0 }}</dd>
-                    </div>
-                </dl>
+                <x-detail-grid layout="split" divided>
+                    <x-detail-grid.row :label="__('security.field.sessions_total')" class="font-mono text-xs">{{ $sessions['total'] ?? 0 }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('security.field.sessions_active')" class="font-mono text-xs">{{ $sessions['active'] ?? 0 }}</x-detail-grid.row>
+                </x-detail-grid>
             @else
                 <p class="text-sm italic text-muted">
                     {{ __('security.hint.sessions_driver', ['driver' => $sessions['driver'] ?? config('session.driver')]) }}
@@ -73,20 +67,11 @@
                 <x-icon name="encrypted" />
                 <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('security.section.two_factor') }}</h2>
             </header>
-            <dl class="grid grid-cols-1 gap-1 text-sm">
-                <div class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1">
-                    <dt class="text-muted">{{ __('security.field.users_total') }}</dt>
-                    <dd class="font-mono text-xs">{{ $twoFactor['users_total'] ?? 0 }}</dd>
-                </div>
-                <div class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1">
-                    <dt class="text-muted">{{ __('security.field.users_with_2fa') }}</dt>
-                    <dd class="font-mono text-xs">{{ $twoFactor['users_with_2fa'] ?? 0 }}</dd>
-                </div>
-                <div class="flex items-baseline justify-between gap-2">
-                    <dt class="text-muted">{{ __('security.field.credentials') }}</dt>
-                    <dd class="font-mono text-xs">{{ $twoFactor['credentials'] ?? 0 }}</dd>
-                </div>
-            </dl>
+            <x-detail-grid layout="split" divided>
+                <x-detail-grid.row :label="__('security.field.users_total')" class="font-mono text-xs">{{ $twoFactor['users_total'] ?? 0 }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('security.field.users_with_2fa')" class="font-mono text-xs">{{ $twoFactor['users_with_2fa'] ?? 0 }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('security.field.credentials')" class="font-mono text-xs">{{ $twoFactor['credentials'] ?? 0 }}</x-detail-grid.row>
+            </x-detail-grid>
             <p class="text-xs italic text-muted">{{ __('security.hint.two_factor') }}</p>
         </x-card>
 
@@ -96,37 +81,27 @@
                 <x-icon name="hub" />
                 <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('security.section.integrations') }}</h2>
             </header>
-            <dl class="grid grid-cols-1 gap-1 text-sm">
-                <div class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1">
-                    <dt class="text-muted">{{ __('security.field.plugins_active') }}</dt>
-                    <dd class="font-mono text-xs">{{ $integrations['count'] ?? 0 }}</dd>
-                </div>
-                <div class="flex items-baseline justify-between gap-2">
-                    <dt class="text-muted">{{ __('security.field.external_references') }}</dt>
-                    <dd class="font-mono text-xs">{{ $integrations['references'] ?? 0 }}</dd>
-                </div>
-            </dl>
+            <x-detail-grid layout="split" divided>
+                <x-detail-grid.row :label="__('security.field.plugins_active')" class="font-mono text-xs">{{ $integrations['count'] ?? 0 }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('security.field.external_references')" class="font-mono text-xs">{{ $integrations['references'] ?? 0 }}</x-detail-grid.row>
+            </x-detail-grid>
             @if (! empty($integrations['plugins']))
                 <div class="flex flex-wrap gap-1">
                     @foreach ($integrations['plugins'] as $pluginId)
-                        <span class="badge badge-outline badge-sm font-mono">{{ $pluginId }}</span>
+                        <x-status-badge tone="plain" outline class="font-mono">{{ $pluginId }}</x-status-badge>
                     @endforeach
                 </div>
             @else
                 <p class="text-sm italic text-muted">{{ __('security.empty.integrations') }}</p>
             @endif
             {{-- KI-Dienste (Feature 025): aktive Provider-Verbindungen, nie Schlüssel. --}}
-            <dl class="grid grid-cols-1 gap-1 text-sm">
-                <div class="flex items-baseline justify-between gap-2 border-t border-base-200/70 pt-1">
-                    <dt class="text-muted">{{ __('ai.security.active_connections') }}</dt>
-                    <dd class="font-mono text-xs">{{ $integrations['ai_count'] ?? 0 }}</dd>
-                </div>
-            </dl>
+            <x-detail-grid layout="split" class="border-t border-base-200/70 pt-1">
+                <x-detail-grid.row :label="__('ai.security.active_connections')" class="font-mono text-xs">{{ $integrations['ai_count'] ?? 0 }}</x-detail-grid.row>
+            </x-detail-grid>
             @if (! empty($integrations['ai_connections']))
                 <div class="flex flex-wrap gap-1">
                     @foreach ($integrations['ai_connections'] as $ai)
-                        <span class="badge badge-outline badge-sm font-mono"
-                              title="{{ $ai['name'] }}">{{ $ai['provider'] }} ({{ $ai['local'] ? __('ai.field.local') : __('ai.field.cloud') }})</span>
+                        <x-status-badge tone="plain" outline class="font-mono" title="{{ $ai['name'] }}">{{ $ai['provider'] }} ({{ $ai['local'] ? __('ai.field.local') : __('ai.field.cloud') }})</x-status-badge>
                     @endforeach
                 </div>
             @endif
@@ -156,7 +131,7 @@
                                     @if (! empty($token['abilities']))
                                         <div class="flex flex-wrap gap-1">
                                             @foreach ($token['abilities'] as $ability)
-                                                <span class="badge badge-ghost badge-xs font-mono">{{ $ability }}</span>
+                                                <x-status-badge size="xs" class="font-mono">{{ $ability }}</x-status-badge>
                                             @endforeach
                                         </div>
                                     @else
@@ -191,7 +166,7 @@
                                 <tr>
                                     <td class="text-xs">
                                         @if ($session['is_active'] ?? false)
-                                            <span class="badge badge-success badge-xs mr-1">{{ __('security.status.active') }}</span>
+                                            <x-status-badge tone="success" size="xs" class="mr-1">{{ __('security.status.active') }}</x-status-badge>
                                         @endif
                                         {{ $session['user'] }}
                                     </td>
@@ -280,10 +255,9 @@
             @if ($isPlatformOperator)
                 <form method="POST" action="{{ route('admin.security.advisories.pull') }}">
                     @csrf
-                    <button type="submit" class="btn btn-primary btn-xs">
-                        <x-icon name="refresh" class="text-sm" />
+                    <x-button type="submit" size="xs" icon="refresh" icon-size="0.875rem">
                         {{ __('security.action.pull_advisories') }}
-                    </button>
+                    </x-button>
                 </form>
             @endif
         </div>
@@ -303,14 +277,13 @@
                                 <td>
                                     @php
                                         $advisoryTone = match ($advisory->severity) {
-                                            'critical' => 'badge-error',
-                                            'high' => 'badge-error badge-outline',
-                                            'medium' => 'badge-warning',
-                                            'low' => 'badge-info',
-                                            default => 'badge-ghost',
+                                            'critical', 'high' => 'error',
+                                            'medium' => 'warning',
+                                            'low' => 'info',
+                                            default => 'ghost',
                                         };
                                     @endphp
-                                    <span class="badge badge-sm {{ $advisoryTone }}">{{ $advisory->severity }}</span>
+                                    <x-status-badge :tone="$advisoryTone" :outline="$advisory->severity === 'high'">{{ $advisory->severity }}</x-status-badge>
                                 </td>
                                 <td class="font-mono text-xs">{{ $advisory->package . '@' . $advisory->installed_version }}</td>
                                 <td class="text-xs">
@@ -329,9 +302,7 @@
                                                    class="input input-bordered input-xs w-56"
                                                    placeholder="{{ __('security.field.statement_placeholder') }}"
                                                    value="{{ $advisory->statement }}">
-                                            <button type="submit" class="btn btn-ghost btn-xs" title="{{ __('Speichern') }}">
-                                                <x-icon name="save" class="text-sm" />
-                                            </button>
+                                            <x-icon-btn icon="save" icon-size="0.875rem" type="submit" :label="__('Speichern')" />
                                         </form>
                                     @else
                                         <span class="text-xs">{{ $advisory->statement ?? '—' }}</span>
@@ -349,9 +320,9 @@
     <x-card :title="__('security.section.encryption')">
         <div class="mb-3 flex flex-wrap items-center gap-2">
             @if ($encryption['app_key_set'] ?? false)
-                <span class="badge badge-success badge-sm">{{ __('security.status.app_key_set') }}</span>
+                <x-status-badge tone="success">{{ __('security.status.app_key_set') }}</x-status-badge>
             @else
-                <span class="badge badge-error badge-sm">{{ __('security.status.app_key_missing') }}</span>
+                <x-status-badge tone="error">{{ __('security.status.app_key_missing') }}</x-status-badge>
             @endif
             <code class="text-xs">php artisan {{ $encryption['command'] ?? 'security:encrypt-existing' }}</code>
         </div>
@@ -372,7 +343,7 @@
                                 <td class="text-xs">
                                     <div class="flex flex-wrap gap-1">
                                         @foreach ($columns as $column)
-                                            <span class="badge badge-ghost badge-xs font-mono">{{ $column }}</span>
+                                            <x-status-badge size="xs" class="font-mono">{{ $column }}</x-status-badge>
                                         @endforeach
                                     </div>
                                 </td>

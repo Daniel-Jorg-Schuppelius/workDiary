@@ -15,7 +15,7 @@ namespace App\Http\Requests\Club;
 use App\Enums\Club\ClubEventVisibility;
 use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
-use App\Models\Club\{ClubDepartment, ClubGradingSystem};
+use App\Models\Club\{ClubDepartment, ClubGradingSystem, ClubGroup};
 use App\Models\Facility\Room;
 use App\Models\Platform\User;
 use App\Rules\ExistsInCurrentOrganization;
@@ -31,6 +31,7 @@ class SaveExamOfferRequest extends BaseFormRequest {
         'club_department_id' => ClubDepartment::class,
         'leader_user_id' => User::class,
         'room_id' => Room::class,
+        'club_group_ids' => ClubGroup::class,
     ];
 
     /** @return array<string, mixed> */
@@ -44,8 +45,8 @@ class SaveExamOfferRequest extends BaseFormRequest {
             'examiner_user_ids' => ['nullable', 'array'],
             'examiner_user_ids.*' => ['string', 'max:64'],
             'visibility' => ['required', 'string', Rule::enum(ClubEventVisibility::class)],
-            'club_group_ids' => ['nullable', 'array'],
-            'club_group_ids.*' => ['string', 'max:64'],
+            'club_group_ids' => ['nullable', 'array', 'max:50'],
+            'club_group_ids.*' => ['integer', new ExistsInCurrentOrganization('club_groups')],
             'club_department_id' => ['nullable', 'integer', new ExistsInCurrentOrganization('club_departments')],
             'started_at' => ['required', 'date'],
             'ended_at' => ['required', 'date', 'after:started_at'],

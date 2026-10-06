@@ -263,7 +263,11 @@ return [
         'indexationApplied' => 'Indexation appliquée',
         'indexationDismissed' => 'Indexation rejetée',
         'activated' => 'Contrat activé',
+        'approval_restarted' => 'Approbation du contrat relancée',
         'approved_step' => 'Étape d\'approbation du contrat accordée',
+        'delegated_step' => 'Étape d\'approbation du contrat déléguée',
+        'question_step' => 'Question sur l\'étape d\'approbation du contrat',
+        'rejected_step' => 'Étape d\'approbation du contrat refusée',
         'cancelled' => 'Contrat annulé',
         'concluded' => 'Contrat conclu',
         'ended' => 'Contrat terminé',
@@ -450,6 +454,7 @@ return [
     ],
     'integration' => [
         'changed' => 'Intégration activée/désactivée',
+        'conflict_resolved' => 'Conflit avec un système externe résolu',
         'data_ownership_changed' => 'Souveraineté des données modifiée',
         'inbox_resolved' => 'Élément de la boîte de réception résolu',
         'settings_changed' => 'Paramètres d\'intégration modifiés',
@@ -463,6 +468,11 @@ return [
     'inventory' => [
         'mode_changed' => 'Mode de gestion des stocks modifié',
         'negativeApproved' => 'Stock négatif approuvé',
+    ],
+    'stock_lot' => [
+        'blocked' => 'Lot bloqué',
+        'released' => 'Lot libéré',
+        'merged' => 'Lot fusionné',
     ],
     'investment' => [
         'budget_approved' => 'Budget d\'investissement approuvé',
@@ -685,6 +695,7 @@ return [
         'route_created' => 'Parcours de ronde créé',
         'started' => 'Ronde démarrée',
         'completed' => 'Ronde terminée',
+        'aborted' => 'Ronde interrompue',
     ],
     'payroll' => [
         'wage' => [
@@ -784,11 +795,13 @@ return [
         'interview_offered' => 'Créneaux d\'entretien proposés',
         'interview_chosen' => 'Créneau d\'entretien choisi',
         'application_decided' => 'Candidature tranchée',
+        'application_readmitted' => 'Candidature reprise du vivier de talents',
         'application_exported' => 'Candidature exportée',
         'application_received' => 'Candidature reçue',
         'document_attached' => 'Pièce de candidature jointe',
         'draft_invited' => 'Brouillon d\'employé invité',
         'onboarding_draft_created' => 'Brouillon d\'onboarding créé',
+        'posting_expired' => 'Offre d\'emploi expirée',
         'posting_paused' => 'Offre d\'emploi suspendue',
         'posting_published' => 'Offre d\'emploi publiée',
         'public_application_received' => 'Candidature publique reçue',

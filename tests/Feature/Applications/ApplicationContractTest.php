@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Applications;
 
+use App\Enums\Applications\{ApplicationContractNegotiationStatus, ApplicationOpportunityStatus};
 use App\Models\Applications\ApplicationOpportunity;
 use App\Models\Platform\User;
 use App\Services\Applications\{ContractNegotiationService, RecruitingService};
@@ -41,7 +42,7 @@ final class ApplicationContractTest extends TestCase {
             'organization_id' => $this->organization->id,
             'title' => 'Gewonnene Ausschreibung',
             'kind' => 'tender',
-            'status' => 'won',
+            'status' => ApplicationOpportunityStatus::Won,
             'created_by' => $this->admin->id,
         ]);
     }
@@ -75,7 +76,7 @@ final class ApplicationContractTest extends TestCase {
         $third = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
         $service->approve($negotiation->refresh(), $second);
         $service->approve($negotiation->refresh(), $third);
-        $this->assertSame('approved', $negotiation->fresh()->status);
+        $this->assertSame(ApplicationContractNegotiationStatus::Approved, $negotiation->fresh()->status);
 
         try {
             $service->conclude($negotiation->refresh(), 'concluded', null, $second);
@@ -105,7 +106,7 @@ final class ApplicationContractTest extends TestCase {
             'organization_id' => $this->organization->id,
             'title' => 'Noch offen',
             'kind' => 'tender',
-            'status' => 'in_progress',
+            'status' => ApplicationOpportunityStatus::InProgress,
             'created_by' => $this->admin->id,
         ]);
         try {

@@ -11,8 +11,7 @@
 
 @section('title', __('Monatsfreigaben'))
 @section('nav-title', __('Monatsfreigaben'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
     <x-index-page overflow="clip" :subtitle="__('Eigene Monate prüfen und einreichen.')">
@@ -22,25 +21,28 @@
                         show-label>{{ __('Aktuellen Monat öffnen') }}</x-icon-btn>
         </x-slot:actions>
 
-        @if ($closures->isEmpty())
+        @if ($closures->total() === 0)
             <x-empty-state framed
                 icon="calendar_month"
                 :title="__('Noch keine Monatsfreigaben')"
                 :message="__('Sobald Sie einen Monat öffnen, wird automatisch eine Freigabe als Entwurf angelegt.')" />
         @else
-            <x-table scroll="flex" :pinRows="true" table-sort="client">
+            <x-table scroll="flex" :pinRows="true" table-sort="server"
+                     :route="route('month-approval.index')"
+                     :current-sort="$sort"
+                     :current-dir="$dir">
                 <x-slot:head>
                     <tr>
-                        <x-table.th sort type="number">{{ __('Periode') }}</x-table.th>
-                        <x-table.th sort type="string">{{ __('Status') }}</x-table.th>
-                        <x-table.th sort type="number" align="right">{{ __('Tage offen') }}</x-table.th>
-                        <x-table.th sort type="number" align="right">{{ __('Warnungen') }}</x-table.th>
+                        <x-table.th sort="period" default>{{ __('Periode') }}</x-table.th>
+                        <x-table.th sort="status">{{ __('Status') }}</x-table.th>
+                        <x-table.th sort="days_open" align="right">{{ __('Tage offen') }}</x-table.th>
+                        <x-table.th sort="warnings" align="right">{{ __('Warnungen') }}</x-table.th>
                         <th class="text-right">{{ __('Aktion') }}</th>
                     </tr>
                 </x-slot:head>
                 @foreach ($closures as $c)
-                    <tr>
-                        <td class="font-medium" data-sort-value="{{ $c->period_year * 100 + $c->period_month }}">{{ $c->periodLabel() }}</td>
+                    <tr class="hover">
+                        <td class="font-medium">{{ $c->periodLabel() }}</td>
                         <td>
                             <x-status-badge :tone="$c->status->tone()" size="sm">{{ $c->status->label() }}</x-status-badge>
                         </td>
@@ -55,5 +57,7 @@
                 @endforeach
             </x-table>
         @endif
+
+        <x-pagination :paginator="$closures" standing />
     </x-index-page>
 @endsection

@@ -49,9 +49,7 @@ class SubmitDsarRequest extends BaseFormRequest {
     public function withValidator(Validator $validator): void {
         $validator->after(function (Validator $validator): void {
             foreach ($this->uploadedAttachments() as $file) {
-                $ext = strtolower($file->getClientOriginalExtension() ?: ($file->extension() ?? ''));
-                if (! in_array($ext, AttachmentController::ALLOWED_EXTENSIONS, true)
-                    || ! in_array($file->getMimeType() ?? '', AttachmentController::ALLOWED_MIMES, true)) {
+                if (! FileAttacher::accepts($file)) {
                     $validator->errors()->add('attachments', (string) __('Dateityp nicht erlaubt.'));
 
                     return;

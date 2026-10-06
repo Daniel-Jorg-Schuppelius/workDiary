@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Tenders;
 
+use App\Enums\Tenders\TenderNoticeMatchState;
 use App\Models\Tenders\{TenderFilterProfile, TenderNotice, TenderNoticeMatch};
 use CommonToolkit\Helper\Data\StringHelper;
 
@@ -65,7 +66,7 @@ final class TenderNoticeMatcher {
                     ],
                     [
                         'tender_filter_profile_id' => $profile->id,
-                        'state' => TenderNoticeMatch::STATE_NEW,
+                        'state' => TenderNoticeMatchState::New,
                     ],
                 );
 

@@ -36,7 +36,7 @@
              Vollansicht. Fokus-ausgeblendete Einträge sind unten markiert, bleiben
              hier aber direkt erreichbar. --}}
         @if ($focusActive)
-            <div class="alert alert-info mb-4 flex-wrap gap-2 rounded-2xl px-5 py-3 text-sm shadow-xs">
+            <div role="status" class="alert alert-info mb-4 flex-wrap gap-2 rounded-2xl px-5 py-3 text-sm shadow-xs">
                 <x-icon name="filter_alt" class="text-base" />
                 <span class="flex-1">{{ __('scope.functions.focus_banner', ['name' => $activeFocusLabel]) }}</span>
                 <form method="POST" action="{{ route('me.focus.switch', 'all') }}">
@@ -51,7 +51,7 @@
                 <div class="flex items-center gap-2 border-b border-base-300 px-4 py-3">
                     <h2 class="text-sm font-semibold uppercase tracking-wider opacity-60">{{ $section['label'] }}</h2>
                     @if ($section['hidden'])
-                        <span class="badge badge-neutral badge-sm">{{ __('scope.functions.state.hidden_section') }}</span>
+                        <x-status-badge tone="neutral">{{ __('scope.functions.state.hidden_section') }}</x-status-badge>
                         <form method="POST" action="{{ route('me.navigation.unhide') }}" class="ml-auto">
                             @csrf
                             <input type="hidden" name="key" value="{{ \App\Services\Navigation\NavigationRegistry::KEY_SECTION . $section['key'] }}">
@@ -71,15 +71,15 @@
                                         <span class="font-medium text-muted">{{ $entry['label'] }}</span>
                                     @endif
                                     @if ($entry['status'] === \App\Enums\Licensing\ModuleStatus::NotLicensed)
-                                        <span class="badge badge-ghost badge-sm">{{ __('Nicht lizenziert') }}</span>
+                                        <x-status-badge>{{ __('Nicht lizenziert') }}</x-status-badge>
                                     @elseif ($entry['status'] === \App\Enums\Licensing\ModuleStatus::InactiveByCustomer)
-                                        <span class="badge badge-neutral badge-sm">{{ __('scope.functions.state.org_disabled') }}</span>
+                                        <x-status-badge tone="neutral">{{ __('scope.functions.state.org_disabled') }}</x-status-badge>
                                     @elseif ($entry['status'] === \App\Enums\Licensing\ModuleStatus::Blocked)
-                                        <span class="badge badge-warning badge-sm">{{ __('Gesperrt') }}</span>
+                                        <x-status-badge tone="warning">{{ __('Gesperrt') }}</x-status-badge>
                                     @elseif ($entry['hidden'])
-                                        <span class="badge badge-neutral badge-sm">{{ __('scope.functions.state.hidden_by_me') }}</span>
+                                        <x-status-badge tone="neutral">{{ __('scope.functions.state.hidden_by_me') }}</x-status-badge>
                                     @elseif ($entry['in_focus_hidden'])
-                                        <span class="badge badge-info badge-sm">{{ __('scope.functions.in_focus_hidden') }}</span>
+                                        <x-status-badge tone="info">{{ __('scope.functions.in_focus_hidden') }}</x-status-badge>
                                     @endif
                                 </div>
                                 @if ($entry['status'] === \App\Enums\Licensing\ModuleStatus::NotLicensed && $entry['module_description'])

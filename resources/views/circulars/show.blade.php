@@ -38,7 +38,7 @@
         <x-card>
             <div class="flex flex-wrap items-center gap-2">
                 <x-status-badge :tone="$circular->isDraft() ? 'neutral' : 'success'" outline>
-                    {{ __('circular.status.' . $circular->status) }}
+                    {{ $circular->status->label() }}
                 </x-status-badge>
                 @if ($circular->is_mandatory)
                     <x-status-badge tone="warning" outline>{{ __('circular.mandatory_short') }}</x-status-badge>
@@ -86,8 +86,8 @@
                         <td class="font-medium">{{ $recipient->customer?->name ?? '—' }}</td>
                         <td>{{ $recipient->email ?: '—' }}</td>
                         <td>
-                            <x-status-badge :tone="$recipient->status === 'sent' ? 'success' : 'warning'" outline>
-                                {{ __('circular.recipient_status.' . $recipient->status) }}
+                            <x-status-badge :tone="$recipient->status === \App\Enums\Communication\CustomerCircularRecipientStatus::Sent ? 'success' : 'warning'" outline>
+                                {{ $recipient->status->label() }}
                             </x-status-badge>
                             @if ($recipient->reason)
                                 <span class="text-xs text-muted">{{ \App\Support\Trans::or('circular.reason.' . $recipient->reason, $recipient->reason) }}</span>

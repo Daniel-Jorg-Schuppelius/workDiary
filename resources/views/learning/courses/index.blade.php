@@ -12,8 +12,7 @@
 @extends('layouts.app')
 @section('title', __('learning.title.courses'))
 @section('nav-title', __('learning.title.courses'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('learning.subtitle.courses')">
     <x-slot:actions>
@@ -45,7 +44,7 @@
 
     <x-filter-bar :action="route('learning.courses.index')" :reset="route('learning.courses.index')">
         <x-filter-field :label="__('learning.kpi.released')" for="flt-released-count">
-            <span id="flt-released-count" class="badge badge-ghost badge-sm">{{ $releasedCount }}</span>
+            <x-status-badge id="flt-released-count">{{ $releasedCount }}</x-status-badge>
         </x-filter-field>
         <x-filter-field :label="__('learning.field.kind')" for="flt-kind">
             <select id="flt-kind" name="kind" class="select select-sm select-bordered" data-autosubmit>

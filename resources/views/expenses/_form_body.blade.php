@@ -24,7 +24,7 @@
                 </option>
             @endforeach
         </select>
-        <div data-meals-hint class="alert alert-info mt-2 hidden">
+        <div data-meals-hint role="status" class="alert alert-info mt-2 hidden">
             <x-icon name="restaurant_menu" />
             <div class="flex-1 text-sm">
                 {{ __('Für Verpflegung gilt im Regelfall die gesetzliche Pauschale (Verpflegungsmehraufwand). Tatsächliche Kosten sind hier nur abzurechnen, wenn ausdrücklich erlaubt.') }}
@@ -89,37 +89,3 @@
         @endif
     </div>
 @endif
-
-@push('scripts')
-<script @cspNonce>
-    (() => {
-        const root = document.currentScript.previousElementSibling?.closest('dialog') || document;
-        const catSelect = root.querySelector('[data-expense-category]');
-        const taxInput  = root.querySelector('[data-expense-tax-rate]');
-        const billable  = root.querySelector('[data-expense-billable]');
-        const mealsHint = root.querySelector('[data-meals-hint]');
-        if (! catSelect) return;
-        const refreshMealsHint = () => {
-            if (! mealsHint) return;
-            const opt = catSelect.options[catSelect.selectedIndex];
-            const isMeals = !! opt && opt.dataset.slug === 'meals';
-            mealsHint.classList.toggle('hidden', ! isMeals);
-        };
-        refreshMealsHint();
-        catSelect.addEventListener('change', () => {
-            const opt = catSelect.options[catSelect.selectedIndex];
-            if (! opt) return;
-            // Steuersatz nur befüllen, wenn Feld leer ist
-            if (taxInput && taxInput.value.trim() === '' && opt.dataset.taxRate) {
-                taxInput.value = opt.dataset.taxRate;
-            }
-            // Billable-Default nur beim Neuanlegen anwenden
-            if (billable && opt.dataset.billableDefault === '1' && ! billable.dataset.userTouched) {
-                billable.checked = true;
-            }
-            refreshMealsHint();
-        });
-        billable?.addEventListener('change', () => { billable.dataset.userTouched = '1'; });
-    })();
-</script>
-@endpush

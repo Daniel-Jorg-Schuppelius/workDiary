@@ -66,7 +66,7 @@
                     </div>
                 </div>
             @else
-                <p class="text-sm opacity-70">{{ __('Noch kein Snapshot vorhanden.') }}</p>
+                <x-empty-state icon="history" :title="__('Noch kein Snapshot vorhanden.')" compact />
             @endif
 
             @if ($days)

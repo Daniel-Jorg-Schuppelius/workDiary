@@ -73,7 +73,8 @@ abstract class GuardedTool extends Tool implements McpTool {
     /** @return array{0: User, 1: Organization}|null */
     private function actor(Request $request): ?array {
         $user = $request->user();
-        if (! $user instanceof User || ! $this->tokenAllows($user)) {
+        // Der Sanctum-Guard fragt die Kontosperre nicht ab — hier zählt sie für jedes Werkzeug (pub-2).
+        if (! $user instanceof User || ! $user->canLogin() || ! $this->tokenAllows($user)) {
             return null;
         }
         $organization = $user->organization;

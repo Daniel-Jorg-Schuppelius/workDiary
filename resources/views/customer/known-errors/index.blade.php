@@ -19,7 +19,7 @@
     </div>
 
     @forelse ($problems as $problem)
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 mb-3">
+        <x-card class="mb-3">
             <h2 class="font-semibold">{{ $problem->title }}</h2>
             @if ($problem->workaround)
                 <div class="mt-2 text-sm">
@@ -27,11 +27,11 @@
                     <p class="whitespace-pre-wrap">{{ $problem->workaround }}</p>
                 </div>
             @endif
-        </div>
+        </x-card>
     @empty
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 text-sm text-muted">
+        <x-card class="text-sm text-muted">
             {{ __('Derzeit sind keine bekannten Fehler dokumentiert.') }}
-        </div>
+        </x-card>
     @endforelse
 
     <x-pagination :paginator="$problems" standing />

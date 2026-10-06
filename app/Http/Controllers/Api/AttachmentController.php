@@ -10,12 +10,11 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Attachments\AttachmentController as WebAttachmentController;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\AttachmentResource;
-use App\Models\Asset\Asset;
 use App\Models\Attachments\Attachment;
-use App\Models\Communication\Comment;
-use App\Models\Diary\{DiaryEntry, EmergencyAssignment, OnCallShift};
+use App\Models\Travel\Expense;
 use App\Services\Attachments\FileAttacher;
 use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate, Storage};
@@ -23,29 +22,8 @@ use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class AttachmentController extends Controller {
-    private const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'txt', 'csv', 'log', 'zip', 'docx', 'xlsx'];
-
-    private const ALLOWED_MIMES = [
-        'image/jpeg',
-        'image/png',
-        'image/gif',
-        'image/webp',
-        'application/pdf',
-        'text/plain',
-        'text/csv',
-        'application/zip',
-        'application/x-zip-compressed',
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    ];
-
-    private const TYPE_MAP = [
-        'diary' => DiaryEntry::class,
-        'comment' => Comment::class,
-        'shift' => OnCallShift::class,
-        'assignment' => EmergencyAssignment::class,
-        'asset' => Asset::class,
-    ];
+    /** Dieselben Träger wie im Web — eine Liste für beide Wege (Konsolidierungs-Audit 2026-10, k3-7). */
+    private const TYPE_MAP = WebAttachmentController::TYPE_MAP;
 
     #[OA\Post(
         path: '/attachments/{type}/{id}',
@@ -53,7 +31,7 @@ class AttachmentController extends Controller {
         tags: ['Attachments'],
         security: [['bearerAuth' => ['attachments:write']]],
         parameters: [
-            new OA\Parameter(name: 'type', in: 'path', required: true, description: 'Trägerobjekt', schema: new OA\Schema(type: 'string', enum: ['diary', 'comment', 'shift', 'assignment', 'asset'])),
+            new OA\Parameter(name: 'type', in: 'path', required: true, description: 'Trägerobjekt', schema: new OA\Schema(type: 'string', enum: ['diary', 'comment', 'shift', 'assignment', 'task', 'customer', 'supplier', 'organization', 'user', 'asset', 'knowledge', 'service-ticket', 'expense', 'damage', 'recall', 'hazard-assessment', 'safety-instruction', 'takeoff'])),
             new OA\Parameter(name: 'id', in: 'path', required: true, description: 'Numerische ID des Trägerobjekts', schema: new OA\Schema(type: 'integer')),
         ],
         requestBody: new OA\RequestBody(required: true, content: new OA\MediaType(mediaType: 'multipart/form-data', schema: new OA\Schema(required: ['file'], properties: [
@@ -75,14 +53,25 @@ class AttachmentController extends Controller {
         // Anhängen erfordert das Bearbeiten-Recht am Trägerobjekt (nicht nur Sichtbarkeit).
         Gate::authorize('update', $parent);
 
-        $request->validate(['file' => ['required', 'file', 'max:' . FileAttacher::maxKb()]]);
+        // Belege an Auslagen: eigenes Limit und eigene MIME-Liste wie im Web (config/expenses.php).
+        $maxKb = $parent instanceof Expense
+            ? min(FileAttacher::maxKb(), max(1, (int) config('expenses.max_upload_mb', 10)) * 1024)
+            : FileAttacher::maxKb();
+
+        $request->validate(['file' => ['required', 'file', 'max:' . $maxKb]]);
         $file = $request->file('file');
+        if ($parent instanceof Expense) {
+            $expenseMimes = (array) config('expenses.allowed_mime_types', []);
+            if ($expenseMimes !== [] && ! in_array($file->getMimeType() ?? '', $expenseMimes, true)) {
+                return response()->json(['message' => __('Dateityp nicht erlaubt.')], 422);
+            }
+        }
         $ext = strtolower($file->getClientOriginalExtension() ?: ($file->extension() ?? ''));
-        if (! in_array($ext, self::ALLOWED_EXTENSIONS, true)) {
+        if (! in_array($ext, FileAttacher::ALLOWED_EXTENSIONS, true)) {
             return response()->json(['message' => __('Dateityp nicht erlaubt.')], 422);
         }
         $serverMime = $file->getMimeType() ?? '';
-        if (! in_array($serverMime, self::ALLOWED_MIMES, true)) {
+        if (! in_array($serverMime, FileAttacher::ALLOWED_MIMES, true)) {
             return response()->json(['message' => __('Dateityp nicht erlaubt.')], 422);
         }
         // Kanonische Ablage über FileAttacher (M46-Rest, Folgepunkt 2026-07-20);

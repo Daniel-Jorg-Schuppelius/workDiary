@@ -11,8 +11,7 @@
 
 @section('title', __('Supportzugriffe'))
 @section('nav-title', __('Supportzugriffe'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @php
     /** @var \App\Models\Platform\Organization $organization */

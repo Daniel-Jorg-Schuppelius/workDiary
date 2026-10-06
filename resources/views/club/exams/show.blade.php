@@ -39,16 +39,7 @@
         </x-page-toolbar>
     </x-slot:toolbar>
 
-    @if ($errors->any())
-        <div class="alert alert-error text-sm" role="alert">
-            <x-icon name="error" />
-            <ul class="list-inside list-disc">
-                @foreach ($errors->all() as $message)
-                    <li>{{ $message }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
+    <x-validation-errors />
 
     <div class="grid gap-4 lg:grid-cols-3">
         <div class="space-y-4 lg:col-span-2">
@@ -78,7 +69,7 @@
                             <td class="text-xs">
                                 @if ($candidate->checked_at)
                                     <x-status-badge :tone="$candidate->eligibility_met ? 'success' : 'warning'" size="xs" :label="$candidate->eligibility_met ? __('club.grading.label.eligible') : __('club.grading.label.not_eligible')" />
-                                    <span class="text-muted">{{ __('club.exams.label.checked_at', ['date' => $candidate->checked_at->orgTz()->format('d.m.Y H:i')]) }}</span>
+                                    <span class="text-muted">{{ __('club.exams.label.checked_at', ['date' => $candidate->checked_at->fdatetime()]) }}</span>
                                     <ul class="mt-1 space-y-0.5">
                                         @foreach ((array) ($report['items'] ?? []) as $item)
                                             <li class="flex items-center gap-1">
@@ -94,7 +85,7 @@
                             <td>
                                 <x-status-badge :tone="$candidate->status->tone()" size="sm">{{ $candidate->status->label() }}</x-status-badge>
                                 @if ($candidate->result_recorded_at)
-                                    <span class="block text-xs text-muted">{{ $candidate->result_recorded_at->orgTz()->format('d.m.Y H:i') }}@if ($candidate->resultBy) · {{ $candidate->resultBy->name }}@endif</span>
+                                    <span class="block text-xs text-muted">{{ $candidate->result_recorded_at->fdatetime() }}@if ($candidate->resultBy) · {{ $candidate->resultBy->name }}@endif</span>
                                     @if ($candidate->result_note)<span class="block text-xs text-muted">{{ $candidate->result_note }}</span>@endif
                                 @endif
                             </td>
@@ -140,16 +131,16 @@
 
         <div class="space-y-4">
             <x-card :title="__('club.exams.card.offer')" icon="info">
-                <dl class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
-                    <dt class="text-muted">{{ __('club.grading.field.system') }}</dt><dd>{{ $offer->system?->name }} · {{ $offer->system?->discipline }}</dd>
-                    <dt class="text-muted">{{ __('club.exams.field.version') }}</dt><dd>v{{ $offer->version?->version_no }} <span class="text-xs text-muted">({{ __('club.exams.hint.version_frozen') }})</span></dd>
-                    <dt class="text-muted">{{ __('club.exams.field.target_grades') }}</dt><dd>{{ $offer->targetGrades->pluck('name')->join(', ') }}</dd>
-                    <dt class="text-muted">{{ __('club.exams.field.examiners') }}</dt><dd>{{ $examiners->pluck('name')->join(', ') ?: '–' }}</dd>
+                <x-detail-grid>
+                    <x-detail-grid.row :label="__('club.grading.field.system')">{{ $offer->system?->name }} · {{ $offer->system?->discipline }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('club.exams.field.version')">v{{ $offer->version?->version_no }} <span class="text-xs text-muted">({{ __('club.exams.hint.version_frozen') }})</span></x-detail-grid.row>
+                    <x-detail-grid.row :label="__('club.exams.field.target_grades')">{{ $offer->targetGrades->pluck('name')->join(', ') }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('club.exams.field.examiners')">{{ $examiners->pluck('name')->join(', ') ?: '–' }}</x-detail-grid.row>
                     @if ($event)
-                        <dt class="text-muted">{{ __('club.events.field.groups') }}</dt><dd>{{ $event->clubGroups->pluck('name')->join(', ') ?: '–' }}</dd>
-                        <dt class="text-muted">{{ __('club.events.field.ends') }}</dt><dd>{{ $event->ended_at->orgTz()->format('d.m.Y H:i') }}</dd>
+                        <x-detail-grid.row :label="__('club.events.field.groups')">{{ $event->clubGroups->pluck('name')->join(', ') ?: '–' }}</x-detail-grid.row>
+                        <x-detail-grid.row :label="__('club.events.field.ends')">{{ $event->ended_at->fdatetime() }}</x-detail-grid.row>
                     @endif
-                </dl>
+                </x-detail-grid>
                 @if ($offer->notes)<p class="mt-2 whitespace-pre-line text-sm">{{ $offer->notes }}</p>@endif
             </x-card>
         </div>

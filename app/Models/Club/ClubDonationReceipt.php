@@ -14,6 +14,7 @@ namespace App\Models\Club;
 
 use App\Casts\MoneyCast;
 use App\Enums\Club\ClubDonationReceiptKind;
+use App\Models\Concerns\AppendOnly;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;
@@ -42,6 +43,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  */
 class ClubDonationReceipt extends Model {
+    use AppendOnly;
     use Auditable;
     use BelongsToOrganization;
     use HasSqid;

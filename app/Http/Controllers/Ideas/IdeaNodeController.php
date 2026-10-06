@@ -21,6 +21,7 @@ use App\Models\Project\{Project, Task};
 use App\Services\Attachments\FileAttacher;
 use App\Services\Ideas\{IdeaMapSyncService, IdeaNodeService, NodeConversionService};
 use App\Support\{ErrorText, Setting, SqidEncoder};
+use App\Support\MorphMap;
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\Rule;
@@ -315,7 +316,7 @@ class IdeaNodeController extends Controller {
 
         return [
             'kind' => (string) $reference->kind,
-            'type' => class_basename((string) $reference->target_type),
+            'type' => MorphMap::basename((string) $reference->target_type),
             'label' => (string) $label,
             'url' => $url,
         ];

@@ -25,15 +25,15 @@
                 </h2>
                 <div class="text-sm space-y-1 mt-2">
                     <p><span class="font-semibold">{{ __('Version') }}:</span> {{ $agreement->version }}</p>
-                    <p><span class="font-semibold">{{ __('Gültigkeit') }}:</span> {{ $agreement->valid_from?->format('d.m.Y') ?? '—' }} – {{ $agreement->valid_until?->format('d.m.Y') ?? '—' }}</p>
+                    <p><span class="font-semibold">{{ __('Gültigkeit') }}:</span> {{ $agreement->valid_from?->fdate() ?? '—' }} – {{ $agreement->valid_until?->fdate() ?? '—' }}</p>
                     <p><span class="font-semibold">{{ __('Datenkategorien') }}:</span> {{ $agreement->data_categories ?? '—' }}</p>
                     @if ($agreement->document_path)
                         <p><a class="link" href="{{ route('dataprotection.agreements.document', $agreement) }}">{{ __('Vertragsdokument') }}: {{ $agreement->document_name }}</a></p>
                     @endif
                     @if ($agreement->terminated_at)
-                        <p class="text-warning">{{ __('Gekündigt am') }} {{ $agreement->terminated_at->format('d.m.Y') }} —
+                        <p class="text-warning">{{ __('Gekündigt am') }} {{ $agreement->terminated_at->fdate() }} —
                             {{ __('Datenrückgabe') }}: {{ $agreement->data_return ?? 'offen' }}
-                            @if ($agreement->data_return_confirmed_at) ({{ $agreement->data_return_confirmed_at->format('d.m.Y') }}) @endif
+                            @if ($agreement->data_return_confirmed_at) ({{ $agreement->data_return_confirmed_at->fdate() }}) @endif
                         </p>
                     @endif
                 </div>

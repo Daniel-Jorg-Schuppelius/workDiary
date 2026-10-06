@@ -1304,6 +1304,7 @@ return [
             'record_result' => 'Saisir le résultat',
             'record_performance' => 'Saisir une performance',
             'correct_performance' => 'Corriger la performance',
+            'delete_performance' => 'Supprimer la performance',
             'confirm' => 'Confirmer',
             'grant_start_right' => 'Documenter la licence',
             'revoke_start_right' => 'Retirer la licence',
@@ -1360,6 +1361,7 @@ return [
         ],
         'confirm' => [
             'delete_requirement' => 'Supprimer l\'exigence « :name » ?',
+            'delete_performance' => 'Supprimer la performance :discipline du :date ? Elle ne comptera plus pour les meilleures performances.',
         ],
         'flash' => [
             'created' => 'Compétition créée.',
@@ -1666,6 +1668,7 @@ return [
         ],
         'error' => [
             'claim_not_open' => 'La créance n\'est pas ouverte.',
+            'credit_already_applied' => 'L’avoir issu de ce paiement bancaire est déjà imputé à des créances — l’affectation ne peut donc pas être annulée.',
             'not_compensatable' => 'Cette écriture ne peut pas être compensée.',
             'already_compensated' => 'Ce paiement a déjà été compensé.',
             'not_overdue' => 'Seules les créances en retard peuvent être relancées.',

@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Etsy\Services;
 
+use App\Enums\Integration\{ExternalArticleSyncStatus, MarketplaceInboxStatus};
 use App\Models\Article\ArticleVariant;
 use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalArticleMapping;
@@ -158,7 +159,7 @@ class EtsyReceiptImportService {
                 'ordered_at' => self::epochOrNull($receipt['created_timestamp'] ?? $receipt['create_timestamp'] ?? null),
                 'etsy_modified_at' => self::epochOrNull($receipt['updated_timestamp'] ?? $receipt['update_timestamp'] ?? null),
                 'customer_id' => $customer?->id,
-                'inbox_status' => $customer !== null ? EtsyReceipt::INBOX_LINKED : EtsyReceipt::INBOX_OPEN,
+                'inbox_status' => $customer !== null ? MarketplaceInboxStatus::Linked : MarketplaceInboxStatus::Open,
             ],
         );
 
@@ -204,7 +205,7 @@ class EtsyReceiptImportService {
                     'external_number' => $sku !== '' ? $sku : null,
                     'article_variant_id' => $variant?->id,
                     'article_id' => $variant?->article_id,
-                    'sync_status' => $variant !== null ? 'synced' : 'pending',
+                    'sync_status' => $variant !== null ? ExternalArticleSyncStatus::Synced : ExternalArticleSyncStatus::Pending,
                     'last_synced_at' => now(),
                 ],
             );
@@ -228,7 +229,6 @@ class EtsyReceiptImportService {
             $this->buyer($receipt) ?? [],
             'etsy',
             EtsyReceipt::class,
-            EtsyReceipt::INBOX_LINKED,
         );
         if ($customer === null) {
             $counters['staged']++;

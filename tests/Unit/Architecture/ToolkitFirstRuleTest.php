@@ -111,6 +111,59 @@ class ToolkitFirstRuleTest extends TestCase {
         ],
     ];
 
+    /**
+     * Muster, die das Gate lange nicht kannte (Konsolidierungs-Audit 2026-10,
+     * k1-15) und deren Bestand deshalb groß ist: Regel => [Muster, Toolkit-Ersatz].
+     * Der Bestand steht in `baselines/toolkit-first.php` und darf nur schrumpfen;
+     * neue Dateien kommen nicht dazu.
+     *
+     * @var array<string, array{0: string, 1: string}>
+     */
+    private const SHRINKING_RULES = [
+        'bc-math' => [
+            '/(?<![\w>:$])(?<!\w\\\\)(?<!function\s)bc(?:add|sub|mul|div|comp|mod|pow|sqrt)\s*\(/',
+            'Money / Percentage / Decimal (Wertobjekte des common-toolkits) bzw. NumberHelper::roundPrecise',
+        ],
+        'date-from-format' => [
+            '/\bcreateFromFormat\s*\(/',
+            'DateHelper::isDate/normalizeToIso/parse… — eine Datumsstrategie statt je Stelle ein Format',
+        ],
+        'country-size-2' => [
+            '/[\'"]size:2[\'"]/',
+            'Rule::enum(CountryCode::class) — „xx“ ist zwei Zeichen lang, aber kein Land',
+        ],
+    ];
+
+    public function test_known_legacy_patterns_only_shrink(): void {
+        /** @var array<string, list<string>> $baseline */
+        $baseline = require __DIR__ . '/baselines/toolkit-first.php';
+        $found = array_fill_keys(array_keys(self::SHRINKING_RULES), []);
+
+        foreach ($this->phpFiles('app') as $file) {
+            $relative = $this->relativePath($file);
+            $source = $this->withoutComments((string) file_get_contents($file));
+            foreach (self::SHRINKING_RULES as $rule => [$pattern]) {
+                if (preg_match($pattern, $source) === 1) {
+                    $found[$rule][] = $relative;
+                }
+            }
+        }
+
+        $new = [];
+        $done = [];
+        foreach (self::SHRINKING_RULES as $rule => [, $replacement]) {
+            foreach (array_diff($found[$rule], $baseline[$rule] ?? []) as $file) {
+                $new[] = sprintf('[%s] %s → %s', $rule, $file, $replacement);
+            }
+            foreach (array_diff($baseline[$rule] ?? [], $found[$rule]) as $file) {
+                $done[] = sprintf('[%s] %s', $rule, $file);
+            }
+        }
+
+        $this->assertSame([], $new, "Toolkit-first: neues Vorkommen eines Musters, das abgebaut wird:\n" . implode("\n", $new));
+        $this->assertSame([], $done, "Erledigt — aus baselines/toolkit-first.php streichen:\n" . implode("\n", $done));
+    }
+
     public function test_app_uses_the_toolkits_instead_of_raw_php(): void {
         $violations = [];
         foreach ($this->phpFiles('app') as $file) {

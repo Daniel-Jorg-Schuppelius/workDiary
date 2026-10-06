@@ -92,9 +92,9 @@
             </div>
         </x-form-group>
 
-        <div id="shift-dialog-error" class="alert alert-error alert-sm hidden text-sm"></div>
+        <div id="shift-dialog-error" role="alert" class="alert alert-error alert-sm hidden text-sm"></div>
 
-        <div id="shift-dialog-compliance" class="alert alert-warning alert-sm hidden flex-col items-start gap-2 text-sm">
+        <div id="shift-dialog-compliance" role="alert" class="alert alert-warning alert-sm hidden flex-col items-start gap-2 text-sm">
             <div class="font-semibold">{{ __('Compliance-Hinweise') }}</div>
             <ul id="shift-dialog-compliance-list" class="list-disc list-inside space-y-1"></ul>
             <label class="cursor-pointer label justify-start gap-2 hidden" id="shift-dialog-override-row">

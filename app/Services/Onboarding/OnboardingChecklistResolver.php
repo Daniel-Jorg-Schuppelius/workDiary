@@ -10,6 +10,7 @@
 
 namespace App\Services\Onboarding;
 
+use App\Enums\Platform\OnboardingStepState;
 use App\Enums\Protocol\ProtocolStatus;
 use App\Enums\User\UserRole;
 use App\Models\Audit\AuditLog;
@@ -54,7 +55,7 @@ class OnboardingChecklistResolver {
     ];
 
     /**
-     * @return array{steps:list<array{code:string,title:string,required:bool,done:bool,state:string,skipped_reason:?string}>, required_done:int, required_total:int, progress_percent:int, all_required_done:bool}
+     * @return array{steps:list<array{code:string,title:string,required:bool,done:bool,state:OnboardingStepState,skipped_reason:?string}>, required_done:int, required_total:int, progress_percent:int, all_required_done:bool}
      */
     public function forOrganization(Organization $organization, ?User $actor = null): array {
         $doneMap = $this->evaluate($organization);
@@ -71,7 +72,7 @@ class OnboardingChecklistResolver {
         $steps = array_map(
             function (array $step) use ($doneMap, $existingRows): array {
                 $existing = $existingRows->get($step['code']);
-                $manuallySkipped = $existing instanceof OnboardingProgress && $existing->state === 'skipped';
+                $manuallySkipped = $existing instanceof OnboardingProgress && $existing->state === OnboardingStepState::Skipped;
                 $done = (bool) ($doneMap[$step['code']] ?? false);
 
                 return [
@@ -79,7 +80,7 @@ class OnboardingChecklistResolver {
                     'title' => __('onboarding.step.' . $step['code'] . '.title'),
                     'required' => $step['required'],
                     'done' => $done,
-                    'state' => $done ? 'done' : ($manuallySkipped ? 'skipped' : 'open'),
+                    'state' => $done ? OnboardingStepState::Done : ($manuallySkipped ? OnboardingStepState::Skipped : OnboardingStepState::Open),
                     'skipped_reason' => $manuallySkipped ? $existing->skipped_reason : null,
                 ];
             },
@@ -219,7 +220,7 @@ class OnboardingChecklistResolver {
     }
 
     /**
-     * @param  list<array{code:string,title:string,required:bool,done:bool,state:string,skipped_reason:?string}>  $steps
+     * @param  list<array{code:string,title:string,required:bool,done:bool,state:OnboardingStepState,skipped_reason:?string}>  $steps
      * @param  \Illuminate\Support\Collection<string, OnboardingProgress>  $existingRows
      */
     private function syncProgressRows(Organization $organization, array $steps, $existingRows, ?User $actor, CarbonImmutable $now): void {
@@ -227,7 +228,7 @@ class OnboardingChecklistResolver {
             $existing = $existingRows->get($step['code']);
 
             // Manuell übersprungene Schritte nicht überschreiben, solange die Bedingung offen ist.
-            if ($existing instanceof OnboardingProgress && $existing->state === 'skipped' && ! $step['done']) {
+            if ($existing instanceof OnboardingProgress && $existing->state === OnboardingStepState::Skipped && ! $step['done']) {
                 continue;
             }
 
@@ -238,14 +239,14 @@ class OnboardingChecklistResolver {
                 OnboardingProgress::query()->withoutGlobalScopes()->updateOrCreate(
                     ['organization_id' => $organization->id, 'step_code' => $step['code']],
                     [
-                        'state' => 'done',
+                        'state' => OnboardingStepState::Done,
                         'done_at' => $doneAt,
                         'done_by_user_id' => $existing !== null ? ($existing->done_by_user_id ?? $actor?->id) : $actor?->id,
                         'skipped_reason' => null,
                     ]
                 );
 
-                if ($previousState !== 'done') {
+                if ($previousState !== OnboardingStepState::Done) {
                     $this->writeStepCompletedAudit($organization, $step['code'], $actor);
                 }
 
@@ -255,7 +256,7 @@ class OnboardingChecklistResolver {
             OnboardingProgress::query()->withoutGlobalScopes()->updateOrCreate(
                 ['organization_id' => $organization->id, 'step_code' => $step['code']],
                 [
-                    'state' => 'open',
+                    'state' => OnboardingStepState::Open,
                     'done_at' => null,
                     'done_by_user_id' => null,
                 ]
@@ -271,7 +272,7 @@ class OnboardingChecklistResolver {
         }
         foreach ($requiredCodes as $code) {
             $row = $existingRows->get($code);
-            if (! $row instanceof OnboardingProgress || $row->state !== 'done') {
+            if (! $row instanceof OnboardingProgress || $row->state !== OnboardingStepState::Done) {
                 return false;
             }
         }

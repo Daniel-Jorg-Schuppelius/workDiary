@@ -29,7 +29,7 @@
     @endif
 
     @if ($enrollment->status === \App\Enums\Learning\LearningEnrollmentStatus::Completed)
-        <div class="alert alert-success text-sm">
+        <div role="status" class="alert alert-success text-sm">
             <x-icon name="verified" />
             <span>{{ __('learning.external.completed') }}</span>
         </div>

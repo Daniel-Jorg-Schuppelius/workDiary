@@ -13,7 +13,9 @@ declare(strict_types=1);
 namespace App\Services\Invoicing;
 
 use App\Enums\Billing\DocumentLineKind;
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Enums\Numbering\NumberScope;
+use App\Enums\Sales\QuoteStatus;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
 use App\Models\Sales\Quote;
@@ -65,7 +67,7 @@ class QuoteService {
 
     /** Neue Version: Nach dem Versand wird nie geändert, sondern versioniert. */
     public function newVersion(Quote $quote, User $actor): Quote {
-        if (! in_array($quote->status, ['sent', 'rejected', 'expired'], true)) {
+        if (! $quote->status->isVersionable()) {
             throw new \RuntimeException((string) __('Nur versendete/abgelehnte/abgelaufene Angebote werden versioniert.'));
         }
 
@@ -73,7 +75,7 @@ class QuoteService {
             $next = $quote->replicate(['acceptance_token_hash', 'decided_at', 'decision_snapshot']);
             $next->version = $quote->version + 1;
             $next->previous_version_id = (int) $quote->id;
-            $next->status = 'draft';
+            $next->status = QuoteStatus::Draft;
             $next->created_by = (int) $actor->id;
             $next->save();
 
@@ -90,10 +92,10 @@ class QuoteService {
     }
 
     public function approve(Quote $quote, User $actor): Quote {
-        if ($quote->status !== 'draft') {
+        if (! $quote->status->canTransitionTo(QuoteStatus::Approved)) {
             throw new \RuntimeException((string) __('Nur Entwürfe können freigegeben werden.'));
         }
-        $quote->update(['status' => 'approved']);
+        $quote->update(['status' => QuoteStatus::Approved]);
         $quote->audit('quote.approved', ['by' => $actor->id]);
 
         return $quote->refresh();
@@ -105,13 +107,13 @@ class QuoteService {
      * @return array{quote: Quote, acceptance_token: string}
      */
     public function send(Quote $quote, User $actor): array {
-        if (! in_array($quote->status, ['approved'], true)) {
+        if (! $quote->status->canTransitionTo(QuoteStatus::Sent)) {
             throw new \RuntimeException((string) __('Nur freigegebene Angebote können versendet werden.'));
         }
 
         $token = Str::random(48);
         $attributes = [
-            'status' => 'sent',
+            'status' => QuoteStatus::Sent,
             'acceptance_token_hash' => CryptoHelper::hash($token),
         ];
 
@@ -153,10 +155,10 @@ class QuoteService {
      */
     public function accept(Quote $quote, ?array $acceptedItemIds = null, ?string $token = null): Quote {
         if ($quote->isExpired()) {
-            $quote->update(['status' => 'expired']);
+            $quote->update(['status' => QuoteStatus::Expired]);
             throw new \RuntimeException((string) __('Die Bindefrist ist abgelaufen.'));
         }
-        if ($quote->status !== 'sent') {
+        if (! $quote->status->canTransitionTo(QuoteStatus::Accepted)) {
             throw new \RuntimeException((string) __('Nur versendete Angebote können angenommen werden.'));
         }
         if ($token !== null && CryptoHelper::hash($token) !== $quote->acceptance_token_hash) {
@@ -182,7 +184,7 @@ class QuoteService {
 
             $quote->load('items');
             $quote->recalculate();
-            $quote->status = $partial ? 'partially_accepted' : 'accepted';
+            $quote->status = $partial ? QuoteStatus::PartiallyAccepted : QuoteStatus::Accepted;
             $quote->decided_at = now();
             $quote->decision_snapshot = [
                 'items' => $quote->items->map(fn($item): array => [
@@ -215,10 +217,10 @@ class QuoteService {
     }
 
     public function reject(Quote $quote, ?string $reason = null): Quote {
-        if ($quote->status !== 'sent') {
+        if (! $quote->status->canTransitionTo(QuoteStatus::Rejected)) {
             throw new \RuntimeException((string) __('Nur versendete Angebote können abgelehnt werden.'));
         }
-        $quote->update(['status' => 'rejected', 'decided_at' => now()]);
+        $quote->update(['status' => QuoteStatus::Rejected, 'decided_at' => now()]);
         $quote->audit('quote.rejected', ['reason' => $reason]);
 
         return $quote->refresh();
@@ -230,7 +232,7 @@ class QuoteService {
      * bleibt unverändert (kein stiller Rückfluss).
      */
     public function convertToInvoice(Quote $quote, User $actor): Invoice {
-        if (! in_array($quote->status, ['accepted', 'partially_accepted'], true)) {
+        if (! $quote->status->isWon()) {
             throw new \RuntimeException((string) __('Nur angenommene Angebote werden überführt.'));
         }
 
@@ -251,7 +253,7 @@ class QuoteService {
                 'project_id' => $quote->project_id,
                 'quote_id' => $quote->id,
                 'number' => $this->numbers->next((int) $quote->organization_id, NumberScope::Invoice, now()),
-                'status' => Invoice::STATUS_DRAFT,
+                'status' => InvoiceStatus::Draft,
                 'type' => Invoice::TYPE_INVOICE,
                 'tax_rate' => $tax['rate'],
                 'is_reverse_charge' => $tax['reverse_charge'],
@@ -318,7 +320,7 @@ class QuoteService {
                 'project_id' => $proforma->project_id,
                 'parent_invoice_id' => $proforma->id,
                 'number' => $this->numbers->next((int) $proforma->organization_id, NumberScope::Invoice, now()),
-                'status' => Invoice::STATUS_DRAFT,
+                'status' => InvoiceStatus::Draft,
                 'type' => Invoice::TYPE_INVOICE,
                 'tax_rate' => $proforma->tax_rate,
                 'is_reverse_charge' => (bool) $proforma->is_reverse_charge,

@@ -18,9 +18,10 @@
 
 @section('title', __('isms.title.reviews'))
 @section('nav-title', __('isms.title.reviews'))
+@include('partials.page-fill')
 
 @section('content')
-    <x-index-page :subtitle="__('isms.subtitle.reviews')">
+    <x-index-page overflow="clip" :subtitle="__('isms.subtitle.reviews')">
         <x-slot:actions>
             @if ($canManage)
                 <x-icon-btn icon="add" tone="primary" size="sm"
@@ -36,7 +37,7 @@
             <span>{{ __('isms.review.approval_rule') }}</span>
         </div>
 
-        <x-table>
+        <x-table scroll="flex">
             <x-slot:head>
                 <tr>
                     <th>{{ __('isms.field.review_no') }}</th>
@@ -52,14 +53,14 @@
                 @php /** @var \App\Models\Isms\IsmsManagementReview $review */ @endphp
                 <tr class="hover" id="isms-review-{{ $review->id }}">
                     <td class="font-mono text-sm">{{ $review->displayNo() }}</td>
-                    <td>{{ $review->held_on->format('d.m.Y') }}</td>
+                    <td>{{ $review->held_on->fdate() }}</td>
                     <td class="text-base-content/70">{{ optional($review->scope)->name ?? '—' }}</td>
                     <td class="max-w-64 truncate text-base-content/70" title="{{ $review->participants }}">{{ $review->participants }}</td>
                     <td><x-status-badge :tone="$review->status->tone()">{{ $review->status->label() }}</x-status-badge></td>
                     <td class="text-base-content/70">
                         @if ($review->isApproved())
                             {{ optional($review->approvedBy)->name ?? '—' }}
-                            <span class="block text-xs text-muted">{{ $review->approved_at?->orgTz()->format('d.m.Y H:i') }}</span>
+                            <span class="block text-xs text-muted">{{ $review->approved_at?->fdatetime() }}</span>
                         @else
                             —
                         @endif

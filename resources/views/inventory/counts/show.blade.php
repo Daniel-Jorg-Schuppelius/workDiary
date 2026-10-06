@@ -17,7 +17,7 @@
     <x-slot:toolbar>
         <x-page-toolbar :title="$count->warehouse?->name"
                         :badge="$count->status->label()" badgeTone="ghost"
-                        :subtitle="__('inventory.count_ui.counted_at') . ': ' . $count->counted_at?->orgTz()->format('d.m.Y H:i')"
+                        :subtitle="__('inventory.count_ui.counted_at') . ': ' . $count->counted_at?->fdatetime()"
                         :back="route('inventory.counts.index', ['warehouse' => $count->warehouse?->sqid])" :back-label="__('Zurück')">
             <x-slot:actions>
                 @if ($canCount && $count->status->isOpen())
@@ -82,7 +82,7 @@
         @if ($count->status->isOpen())
             <div class="flex flex-wrap gap-2">
                 @if ($canCount)
-                    <button type="submit" class="btn btn-sm">{{ __('inventory.count_ui.save') }}</button>
+                    <x-button type="submit" tone="plain">{{ __('inventory.count_ui.save') }}</x-button>
                 @endif
             </div>
         @endif

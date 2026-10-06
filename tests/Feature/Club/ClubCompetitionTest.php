@@ -244,4 +244,113 @@ class ClubCompetitionTest extends TestCase {
         $this->assertSame(ClubEntryStatus::NeedsReview, ClubCompetitionEntry::query()->where('event_id', $strict->id)->where('club_member_id', $novice->id)->firstOrFail()->status);
         $this->actingAs($this->orgUser())->get(route('club.competitions.index'))->assertForbidden();
     }
+
+    /** Löschen ist Sache der Vereinsverwaltung; die Gruppenleitung korrigiert nur. */
+    public function test_performance_can_be_deleted_from_the_member_page_by_the_administration_only(): void {
+        $athlete = $this->member();
+        $record = fn(string $value, ClubMember $member) => $this->competitions()->recordPerformance($member, ['club_sport_profile_id' => $this->athletics->id, 'discipline_code' => 'weit', 'value' => $value, 'performed_on' => '2026-09-01', 'confirm' => true], $this->admin);
+        $keep = $record('5,10', $athlete);
+        $wrong = $record('7,90', $athlete);
+        $deleteRoute = route('club.members.performances.destroy', [$athlete, $wrong]);
+        // Die Adresse ist Anfang der Korrektur-Adresse: nur das Formularziel belegt den Löschknopf.
+        $deleteForm = 'action="' . $deleteRoute . '"';
+
+        $this->actingAs($this->admin)->get(route('club.members.show', $athlete))
+            ->assertOk()
+            ->assertSee($deleteForm, false)
+            ->assertSee('action="' . route('club.members.performances.destroy', [$athlete, $keep]) . '"', false);
+
+        // Gruppenleitung der eigenen Gruppe: darf korrigieren, sieht und erreicht das Löschen nicht.
+        $lead = $this->userWithRole(UserRole::Teamleitung->value);
+        $this->group->update(['leader_user_id' => $lead->id]);
+        $this->actingAs($lead)->get(route('club.members.show', $athlete))
+            ->assertOk()
+            ->assertSee(route('club.members.performances.edit', [$athlete, $wrong]), false)
+            ->assertDontSee($deleteForm, false);
+        $this->actingAs($lead)->delete($deleteRoute)->assertForbidden();
+
+        // Die Leistung gehört zum Mitglied in der Adresse — sonst 404.
+        $other = $this->member();
+        $this->actingAs($this->admin)->delete(route('club.members.performances.destroy', [$other, $wrong]))->assertNotFound();
+        $this->assertNotNull($wrong->fresh());
+
+        $this->actingAs($this->admin)->delete($deleteRoute)
+            ->assertRedirect(route('club.members.show', $athlete))
+            ->assertSessionHas('success', __('club.competitions.flash.performance_deleted'));
+
+        $this->assertNull($wrong->fresh());
+        $this->assertSame('5.100', $this->competitions()->bests($athlete)->keyBy('discipline_code')->get('weit')?->value);
+        $this->assertDatabaseHas('audit_logs', [
+            'event' => 'club.competition.performanceDeleted',
+            'auditable_id' => $wrong->id,
+            'user_id' => $this->admin->id,
+        ]);
+    }
+
+    public function test_performance_of_another_organization_cannot_be_deleted(): void {
+        $athlete = $this->member();
+        $performance = $this->competitions()->recordPerformance($athlete, ['club_sport_profile_id' => $this->athletics->id, 'discipline_code' => 'weit', 'value' => '5,10', 'performed_on' => '2026-09-01', 'confirm' => true], $this->admin);
+        $route = route('club.members.performances.destroy', [$athlete, $performance]);
+
+        $foreignAdmin = $this->orgAdmin(['organization_id' => \App\Models\Platform\Organization::factory()->create()->id]);
+        $this->actingAs($foreignAdmin)->delete($route)->assertNotFound();
+
+        $this->assertNotNull($performance->fresh());
+    }
+
+    /**
+     * Sicherheitsaudit 2026-10-04, authz-a-3 und authz-a-4: die Gruppenleitung
+     * sieht in der Nachweisliste und bearbeitet bei den Leistungen nur
+     * Mitglieder ihrer Gruppen.
+     */
+    public function test_group_lead_is_limited_to_members_of_own_groups(): void {
+        $lead = $this->userWithRole(UserRole::Teamleitung->value);
+        $ownGroup = ClubGroup::factory()->create(['name' => 'Eigene Gruppe', 'leader_user_id' => $lead->id]);
+        $own = ClubMember::factory()->aged(15)->create(['last_name' => 'Eigenmann']);
+        app(ClubGroupService::class)->admit($ownGroup, $own, CarbonImmutable::today()->subMonth(), $this->admin);
+        $foreign = $this->member();
+        $foreign->update(['last_name' => 'Fremdberg']);
+
+        $record = fn(ClubMember $member) => $this->competitions()->recordPerformance($member, ['club_sport_profile_id' => $this->athletics->id, 'discipline_code' => 'weit', 'value' => '5,10', 'performed_on' => '2026-09-01', 'confirm' => false], $this->admin);
+        $foreignPerformance = $record($foreign);
+        $ownPerformance = $record($own);
+
+        $this->actingAs($lead)->post(route('club.members.performances.confirm', [$foreign, $foreignPerformance]))->assertForbidden();
+        $this->actingAs($lead)->put(route('club.members.performances.update', [$foreign, $foreignPerformance]), ['value' => '9,99'])->assertForbidden();
+        $this->assertNull($foreignPerformance->refresh()->confirmed_by_user_id);
+        $this->actingAs($lead)->post(route('club.members.performances.confirm', [$own, $ownPerformance]))->assertRedirect();
+        $this->assertSame($lead->id, $ownPerformance->refresh()->confirmed_by_user_id);
+
+        // Anforderung ohne Gruppe gilt für den ganzen Verein — die Leitung sieht trotzdem nur ihre Mitglieder.
+        $requirement = ClubAttendanceRequirement::query()->create(['organization_id' => $this->organization->id, 'name' => 'Nachweis', 'required_count' => 5, 'period_months' => 12]);
+        $this->actingAs($lead)->get(route('club.requirements.index', ['requirement' => $requirement->sqid]))
+            ->assertOk()->assertSee('Eigenmann')->assertDontSee('Fremdberg');
+        $csv = $this->actingAs($lead)->get(route('club.requirements.export', $requirement))->assertOk()->streamedContent();
+        $this->assertStringContainsString('Eigenmann', $csv);
+        $this->assertStringNotContainsString('Fremdberg', $csv);
+        $this->actingAs($this->admin)->get(route('club.requirements.index', ['requirement' => $requirement->sqid]))->assertSee('Fremdberg');
+    }
+
+    /** Die Nachweisliste blättert über die Mitgliederabfrage; der Export bleibt vollständig. */
+    public function test_requirement_report_pages_through_members_and_exports_all_of_them(): void {
+        foreach (range(1, 52) as $i) {
+            ClubMember::factory()->aged(30)->create(['last_name' => sprintf('Nachweis%02d', $i), 'first_name' => 'Anna']);
+        }
+        $requirement = ClubAttendanceRequirement::query()->create(['organization_id' => $this->organization->id, 'name' => 'Nachweis', 'required_count' => 1, 'period_months' => 12]);
+        $names = fn($response): array => collect($response->viewData('report')->items())->map(fn(array $row): string => $row['member']->last_name)->all();
+
+        $first = $this->actingAs($this->admin)->get(route('club.requirements.index', ['requirement' => $requirement->sqid]))->assertOk();
+        $this->assertSame(52, $first->viewData('report')->total());
+        $this->assertSame('Nachweis01', $names($first)[0]);
+        $this->assertCount(50, $names($first));
+        $first->assertSee('requirement=' . $requirement->sqid . '&amp;page=2', false);
+
+        $second = $this->actingAs($this->admin)->get(route('club.requirements.index', ['requirement' => $requirement->sqid, 'page' => 2]))->assertOk();
+        $this->assertSame(['Nachweis51', 'Nachweis52'], $names($second));
+        $this->assertSame(0, $second->viewData('report')->items()[0]['count']);
+
+        $csv = $this->actingAs($this->admin)->get(route('club.requirements.export', $requirement))->assertOk()->streamedContent();
+        $this->assertStringContainsString('Nachweis01', $csv);
+        $this->assertStringContainsString('Nachweis52', $csv);
+    }
 }

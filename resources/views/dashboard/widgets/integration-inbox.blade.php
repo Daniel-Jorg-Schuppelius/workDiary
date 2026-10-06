@@ -21,7 +21,7 @@
             @foreach ($perPlugin as $row)
                 <li class="flex items-center justify-between gap-3 rounded-box border border-base-300 bg-base-200 px-3 py-2">
                     <span class="min-w-0 truncate">{{ $row->plugin_id }}</span>
-                    <span class="badge badge-warning badge-sm tabular-nums">{{ $row->cnt }}</span>
+                    <x-status-badge tone="warning" class="tabular-nums">{{ $row->cnt }}</x-status-badge>
                 </li>
             @endforeach
         </ul>

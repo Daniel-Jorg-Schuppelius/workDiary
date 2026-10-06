@@ -27,7 +27,7 @@
     @if ($searched)
         @if ($serial === null)
             <x-card>
-                <div class="alert alert-error">
+                <div role="alert" class="alert alert-error">
                     <x-icon name="gpp_bad" />
                     {{ __('inventory.serial.verify.not_found') }}
                 </div>
@@ -37,14 +37,14 @@
                 <div class="flex items-center gap-2">
                     <x-icon name="verified" class="text-success" />
                     <span class="font-mono">{{ $serial->serial_no }}</span>
-                    <span class="badge badge-sm badge-ghost">{{ $serial->status->label() }}</span>
+                    <x-status-badge>{{ $serial->status->label() }}</x-status-badge>
                 </div>
-                <dl class="grid sm:grid-cols-2 gap-x-6 gap-y-2 text-sm mt-4">
-                    <div><dt class="opacity-60">{{ __('inventory.serial.field.article') }}</dt><dd>{{ $serial->article?->name }}</dd></div>
-                    <div><dt class="opacity-60">{{ __('inventory.serial.field.source') }}</dt><dd>{{ $serial->source->label() }}</dd></div>
-                    <div><dt class="opacity-60">{{ __('inventory.serial.field.customer') }}</dt><dd>{{ $serial->customer?->name ?? '—' }}</dd></div>
-                    <div><dt class="opacity-60">{{ __('inventory.serial.field.shipped_at') }}</dt><dd>{{ $serial->shipped_at?->format('d.m.Y') ?? '—' }}</dd></div>
-                </dl>
+                <x-detail-grid layout="cells" class="mt-4">
+                    <x-detail-grid.row :label="__('inventory.serial.field.article')">{{ $serial->article?->name }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('inventory.serial.field.source')">{{ $serial->source->label() }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('inventory.serial.field.customer')">{{ $serial->customer?->name ?? '—' }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('inventory.serial.field.shipped_at')">{{ $serial->shipped_at?->fdate() ?? '—' }}</x-detail-grid.row>
+                </x-detail-grid>
                 <a href="{{ route('serials.show', $serial) }}" class="link link-primary text-sm mt-3 inline-block">{{ __('Details') }} →</a>
             </x-card>
         @endif

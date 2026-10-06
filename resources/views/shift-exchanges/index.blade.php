@@ -32,10 +32,10 @@
                     @forelse ($pendingApproval as $exchange)
                         <tr class="hover">
                             <td class="whitespace-nowrap">
-                                {{ $exchange->scheduledShift?->date?->format('d.m.Y') }}
+                                {{ $exchange->scheduledShift?->date?->fdate() }}
                                 <span class="opacity-60">{{ $exchange->scheduledShift?->shiftType?->abbreviation }}</span>
                                 @if ($exchange->isSwap())
-                                    <span class="badge badge-xs badge-info">{{ __('schedule.exchange.swap') }}</span>
+                                    <x-status-badge tone="info" size="xs">{{ __('schedule.exchange.swap') }}</x-status-badge>
                                 @endif
                             </td>
                             <td>{{ $exchange->requester?->name }}</td>
@@ -75,7 +75,7 @@
                 @forelse ($mine as $exchange)
                     <tr class="hover">
                         <td class="whitespace-nowrap">
-                            {{ $exchange->scheduledShift?->date?->format('d.m.Y') }}
+                            {{ $exchange->scheduledShift?->date?->fdate() }}
                             <span class="opacity-60">{{ $exchange->scheduledShift?->shiftType?->abbreviation }}</span>
                         </td>
                         <td>{{ $exchange->requester?->name }}</td>
@@ -105,6 +105,8 @@
                 @endforelse
             </x-table>
         </x-form-group>
+
+        <x-pagination :paginator="$mine" standing />
 
     </x-index-page>
 @endsection

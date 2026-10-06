@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Finance;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Customer\Customer;
 use App\Models\Document\Document;
 use App\Models\Invoicing\{IncomingEInvoice, Invoice};
@@ -77,7 +78,7 @@ final class IncomingEInvoiceChannelsTest extends TestCase {
             'organization_id' => $this->organization->id,
             'customer_id' => $customer->id,
             'number' => $number,
-            'status' => Invoice::STATUS_ISSUED,
+            'status' => InvoiceStatus::Issued,
             'issued_on' => '2026-06-01',
             'due_on' => '2026-06-15',
             'currency' => 'EUR',

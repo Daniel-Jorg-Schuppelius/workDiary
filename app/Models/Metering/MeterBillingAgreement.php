@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Metering;
 
+use App\Enums\Metering\MeterBillingAgreementStatus;
 use App\Models\Asset\Asset;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Customer\Customer;
@@ -24,6 +25,7 @@ use Illuminate\Support\Carbon;
 /**
  * Abrechnungsvereinbarung je Kunde + Asset (Feature 116, MVP-605).
  *
+ * @property MeterBillingAgreementStatus $status
  * @property Carbon $next_run_on
  * Die Staffel kommt aus JSON und ist NICHT formgeprüft — der Rechner
  * normalisiert sie defensiv, statt sich auf eine Struktur zu verlassen, die
@@ -35,12 +37,6 @@ class MeterBillingAgreement extends Model {
     use Auditable;
     use BelongsToOrganization;
     use HasSqid;
-
-    public const STATUS_ACTIVE = 'active';
-
-    public const STATUS_PAUSED = 'paused';
-
-    public const STATUS_ENDED = 'ended';
 
     protected $fillable = [
         'organization_id',
@@ -69,6 +65,7 @@ class MeterBillingAgreement extends Model {
         'last_run_on' => 'date',
         'end_on' => 'date',
         'interval_count' => 'integer',
+        'status' => MeterBillingAgreementStatus::class,
     ];
 
     /** @var array<string, mixed> */
@@ -100,7 +97,7 @@ class MeterBillingAgreement extends Model {
     }
 
     public function isRunnable(): bool {
-        return $this->status === self::STATUS_ACTIVE
+        return $this->status === MeterBillingAgreementStatus::Active
             && ($this->end_on === null || ! $this->end_on->isPast());
     }
 

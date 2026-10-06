@@ -121,7 +121,7 @@
 
             @cannot('deliver', $export)
                 @cannot('reject', $export)
-                    <p class="text-sm text-muted">{{ __('Keine weiteren Aktionen verfügbar.') }}</p>
+                    <x-empty-state icon="block" :title="__('Keine weiteren Aktionen verfügbar.')" compact />
                 @endcannot
             @endcannot
         </x-card>
@@ -131,7 +131,7 @@
         <h3 class="card-title text-base">{{ __('Summen pro Lohnart') }}</h3>
         @php $totals = $export->totals ?? []; @endphp
         @if (empty($totals))
-            <p class="text-sm text-muted">{{ __('Keine Summen verfügbar.') }}</p>
+            <x-empty-state icon="functions" :title="__('Keine Summen verfügbar.')" compact />
         @else
             <x-table table-sort="client">
                 <x-slot:head>
@@ -170,7 +170,7 @@
     <x-card class="flex flex-col gap-2">
         <h3 class="card-title text-base">{{ __('surcharge.title.export_summary') }}</h3>
         @if ($userWageSummary->isEmpty())
-            <p class="text-sm text-muted">{{ __('Keine Summen verfügbar.') }}</p>
+            <x-empty-state icon="functions" :title="__('Keine Summen verfügbar.')" compact />
         @else
             <x-table table-sort="client">
                 <x-slot:head>

@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\AssetCompliance;
 
 use App\Enums\AssetCompliance\{AssetInspectionOrderStatus, AssetInspectionResult};
+use App\Http\Controllers\Concerns\ChecksTenantPublicSurfaces;
 use App\Http\Controllers\Controller;
 use App\Models\AssetCompliance\AssetInspectionOrder;
 use App\Models\Platform\Organization;
@@ -25,6 +26,8 @@ use Illuminate\View\View;
 
 /** Link des Prüfdienstleisters (MVP-938): Angebot abgeben, Ergebnisse melden. */
 class PublicInspectionOrderController extends Controller {
+    use ChecksTenantPublicSurfaces;
+
     public function __construct(private readonly InspectionOrderService $orders) {}
 
     public function show(string $token): View {
@@ -69,7 +72,10 @@ class PublicInspectionOrderController extends Controller {
     }
 
     private function order(string $token): AssetInspectionOrder {
-        return $this->orders->resolve($token) ?? abort(404);
+        $order = $this->orders->resolve($token) ?? abort(404);
+        $this->assertTenantPublicSurfacesAvailable((int) $order->organization_id);
+
+        return $order;
     }
 
     private function organization(AssetInspectionOrder $order): Organization {

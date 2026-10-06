@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\OrgaMax\Api;
 
 use APIToolkit\Exceptions\{ApiException, UnauthorizedException};
+use App\Plugins\OrgaMax\Enums\OrgaMaxConnectionStatus;
 use App\Plugins\OrgaMax\Models\OrgaMaxConnection;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Support\Carbon;
@@ -102,7 +103,7 @@ class OrgaMaxTokenService {
 
     private function block(OrgaMaxConnection $connection, string $reason): void {
         $connection->forceFill([
-            'status' => OrgaMaxConnection::STATUS_BLOCKED,
+            'status' => OrgaMaxConnectionStatus::Blocked,
             'blocked_reason' => $reason,
         ])->save();
     }

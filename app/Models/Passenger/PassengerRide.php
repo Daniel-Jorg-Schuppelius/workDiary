@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Passenger;
 
-use App\Enums\Passenger\{RideOperationMode, RideOrderChannel, RidePriceKind, RideStatus};
+use App\Enums\Passenger\{RideOperationMode, RideOrderChannel, RidePriceKind, RideSettlementStatus, RideStatus};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Diary\DiaryEntry;
 use App\Models\Fleet\Vehicle;
@@ -69,7 +69,7 @@ use Illuminate\Support\Carbon;
  * @property CurrencyCode $currency
  * @property array<string, mixed>|null $tax_context
  * @property string|null $payment_method
- * @property string $settlement_status
+ * @property RideSettlementStatus $settlement_status
  * @property Carbon|null $order_received_at
  * @property Carbon|null $returned_to_base_at
  * @property Carbon|null $anonymized_at
@@ -81,12 +81,6 @@ class PassengerRide extends Model {
     use HasFactory;
 
     use HasSqid;
-
-    public const SETTLEMENT_OPEN = 'open';
-
-    public const SETTLEMENT_SETTLED = 'settled';
-
-    public const SETTLEMENT_WAIVED = 'waived';
 
     protected $fillable = [
         'organization_id',
@@ -156,6 +150,7 @@ class PassengerRide extends Model {
         'order_channel' => RideOrderChannel::class,
         'status' => RideStatus::class,
         'price_kind' => RidePriceKind::class,
+        'settlement_status' => RideSettlementStatus::class,
         'currency' => CurrencyCode::class,
         // PII verschlüsselt at-rest (Konzept §11). Leere Strings NIE speichern
         // — "" bricht decrypt (Projektregel), deshalb überall ?: null.

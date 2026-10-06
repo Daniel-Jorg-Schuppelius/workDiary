@@ -9,7 +9,7 @@
   Hinweis im Importlauf (Slot `import-run.notice`, MVP-1041): Sitzungen ohne
   Geräte-Zuordnung liegen in der Fernwartungs-Inbox. Erwartet: $skipped.
 --}}
-<div class="alert alert-info">
+<div role="status" class="alert alert-info">
     <x-icon name="inbox" />
     <span>
         {{ __(':n Sitzungen konnten keinem Gerät zugeordnet werden und liegen in der Fernwartungs-Inbox. Ordnen Sie die Geräte-IDs einem Asset zu, um sie als Zeiteinträge zu buchen.', ['n' => $skipped]) }}

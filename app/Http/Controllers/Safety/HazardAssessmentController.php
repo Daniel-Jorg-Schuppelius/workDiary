@@ -178,7 +178,7 @@ class HazardAssessmentController extends Controller {
         $this->service->delete($assessment);
 
         return redirect()
-            ->route('safety.assessments.index')
+            ->toList('safety.assessments.index')
             ->with('success', __('safety.register.flash.assessment_deleted'));
     }
 

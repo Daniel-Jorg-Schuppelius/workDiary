@@ -66,11 +66,7 @@
                   enctype="multipart/form-data" autocomplete="on">
                 @csrf
                 <div class="space-y-4 px-6 py-5">
-                    @if ($errors->any())
-                        <div class="rounded-lg border border-error/30 bg-error/10 px-4 py-3 text-sm text-error">
-                            {{ __('js.dialog.check_input') }}
-                        </div>
-                    @endif
+                    <x-validation-errors />
 
                     @include('problem-reports._fields', [
                         'context' => $context,

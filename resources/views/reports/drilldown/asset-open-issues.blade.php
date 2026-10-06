@@ -22,50 +22,11 @@
                 @endif
             </x-slot:subtitle>
             <x-slot:actions>
-                <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
-                            :href="route('reports.assets.drilldown.open-issues', array_filter($filters + ['escalated' => $escalatedOnly ? 1 : null, 'export' => 'pdf'], fn($v) => $v !== null && $v !== ''))"
-                            show-label>PDF</x-icon-btn>
-                <x-action-menu icon="download" tone="outline" :label="__('Export')">
-                    <x-icon-btn icon="download" tone="outline" size="sm"
-                                :href="route('reports.assets.drilldown.open-issues', array_filter($filters + ['escalated' => $escalatedOnly ? 1 : null, 'export' => 'csv'], fn($v) => $v !== null && $v !== ''))"
-                                show-label>CSV</x-icon-btn>
-                    <x-icon-btn icon="table_view" tone="outline" size="sm"
-                                :href="route('reports.assets.drilldown.open-issues', array_filter($filters + ['escalated' => $escalatedOnly ? 1 : null, 'export' => 'xlsx'], fn($v) => $v !== null && $v !== ''))"
-                                show-label>Excel</x-icon-btn>
-                </x-action-menu>
+                @include('reports.drilldown._export_actions', ['route' => 'reports.assets.drilldown.open-issues', 'params' => $filters + ['escalated' => $escalatedOnly ? 1 : null]])
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
 
-    <x-card>
-        @if ($issues->isEmpty())
-            <x-empty-state icon="error_outline" :title="__('Keine offenen Punkte für diesen Drilldown gefunden.')" />
-        @else
-            <x-table bare table-sort="client">
-                <x-slot:head>
-                    <tr>
-                        <x-table.th sort type="number">{{ __('Asset') }}</x-table.th>
-                        <x-table.th sort type="string">{{ __('Titel') }}</x-table.th>
-                        <x-table.th sort type="string">{{ __('Status') }}</x-table.th>
-                        <x-table.th sort type="string">{{ __('Severity') }}</x-table.th>
-                        <x-table.th sort type="date">{{ __('Fällig') }}</x-table.th>
-                        <x-table.th sort type="string">{{ __('Zugewiesen') }}</x-table.th>
-                    </tr>
-                </x-slot:head>
-                @foreach ($issues as $issue)
-                    <tr>
-                        <td>#{{ $issue->subject_id }}</td>
-                        <td class="font-medium">{{ $issue->title }}</td>
-                        <td><x-status-badge tone="ghost" outline>{{ $issue->status->label() }}</x-status-badge></td>
-                        <td><x-status-badge tone="ghost" outline>{{ $issue->severity->label() }}</x-status-badge></td>
-                        <td>{{ $issue->due_at?->fdate() ?? '—' }}</td>
-                        <td>{{ $issue->assignee?->name ?? '—' }}</td>
-                    </tr>
-                @endforeach
-            </x-table>
-
-            <x-pagination :paginator="$issues" standing />
-        @endif
-    </x-card>
+    @include('reports.drilldown._open_issues_table', ['showAsset' => true])
 </x-page-shell>
 @endsection

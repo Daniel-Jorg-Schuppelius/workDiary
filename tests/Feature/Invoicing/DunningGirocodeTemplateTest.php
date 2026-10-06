@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Invoicing;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Mail\DunningMail;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\{Invoice, InvoiceMailTemplate};
@@ -44,7 +45,7 @@ final class DunningGirocodeTemplateTest extends TestCase {
 
         $this->invoice = Invoice::create([
             'organization_id' => $this->org->id, 'customer_id' => Customer::factory()->create(['organization_id' => $this->org->id])->id,
-            'number' => 'R2030-0042', 'status' => Invoice::STATUS_ISSUED, 'currency' => 'EUR', 'tax_rate' => '19.00',
+            'number' => 'R2030-0042', 'status' => InvoiceStatus::Issued, 'currency' => 'EUR', 'tax_rate' => '19.00',
             'issued_on' => now()->subDays(40), 'due_on' => now()->subDays(26), 'created_by' => $this->admin->id,
         ]);
         $this->invoice->items()->create(['organization_id' => $this->org->id, 'description' => 'Beratung', 'quantity' => '1.000', 'unit_price' => '100.0000', 'tax_rate' => '19.00', 'position' => 1]);
@@ -64,7 +65,7 @@ final class DunningGirocodeTemplateTest extends TestCase {
         $this->assertStringContainsString('R2030-0042', $payload);
         $this->assertStringContainsString('data:image/svg+xml', view('invoices.dunning-pdf', $data)->render());
 
-        $this->invoice->forceFill(['status' => Invoice::STATUS_PAID])->save();
+        $this->invoice->forceFill(['status' => InvoiceStatus::Paid])->save();
         $this->assertNull(app(DunningPdfRenderer::class)->viewData($this->invoice->refresh(), 2, null, 5.0)['girocode'], 'bezahlt: kein Code');
     }
 

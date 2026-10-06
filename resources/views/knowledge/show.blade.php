@@ -178,6 +178,6 @@
         <x-content-references :subject="$article" />
 
         {{-- ── Anhänge (Screenshots etc.) ────────────────────────────────── --}}
-        @include('attachments._panel', ['parent' => $article, 'parentType' => 'knowledge'])
+        <x-attachments-section id="attachments" :attachments="$article->attachments" upload-type="knowledge" :upload-id="$article->sqid" :can-upload="auth()->user()?->can('create', \App\Models\Attachments\Attachment::class) ?? false" details />
     </x-page-shell>
 @endsection

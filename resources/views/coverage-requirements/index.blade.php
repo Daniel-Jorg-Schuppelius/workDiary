@@ -9,8 +9,7 @@
 @extends('layouts.app')
 @section('title', __('Soll-Besetzung') . ' – ' . $dutyPlan->title)
 @section('nav-title', __('Soll-Besetzung'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 @section('content')
 <x-index-page overflow="clip" :subtitle="$dutyPlan->title . ' · ' . $dutyPlan->from_date->fdate() . ' – ' . $dutyPlan->to_date->fdate()"
               :back="route('duty-plans.show', $dutyPlan)" :back-label="__('Zurück')">
@@ -23,21 +22,25 @@
         @endcan
     </x-slot:actions>
 
-    @if ($requirements->isEmpty())
+    @if ($requirements->total() === 0)
         <x-empty-state framed
             icon="shield_person"
             :title="__('Noch keine Soll-Besetzungen für diesen Dienstplan definiert.')"
             :message="__('Hinweis: Ohne Anforderungen gilt die Mindestbesetzung des Dienstplans:') . ' ' . $dutyPlan->min_staff" />
     @else
-        <x-table scroll="flex" :pinRows="true" table-sort="client">
+        <x-table scroll="flex" :pinRows="true" table-sort="server"
+                 :route="route('duty-plans.coverage.index', $dutyPlan)"
+                 :current-sort="$sort"
+                 :current-dir="$dir">
             <x-slot:head>
                 <tr>
-                    <x-table.th sort type="string">{{ __('Schichttyp') }}</x-table.th>
-                    <x-table.th sort type="string">{{ __('Geltungsbereich') }}</x-table.th>
-                    <x-table.th sort type="number" align="center">{{ __('Min') }}</x-table.th>
-                    <x-table.th sort type="number" align="center">{{ __('Max') }}</x-table.th>
-                    <x-table.th sort type="string">{{ __('Qualifikationen') }}</x-table.th>
-                    <x-table.th sort type="string">{{ __('Notizen') }}</x-table.th>
+                    <x-table.th sort="shift">{{ __('Schichttyp') }}</x-table.th>
+                    <x-table.th sort="scope" default>{{ __('Geltungsbereich') }}</x-table.th>
+                    <x-table.th sort="min" align="center">{{ __('Min') }}</x-table.th>
+                    <x-table.th sort="max" align="center">{{ __('Max') }}</x-table.th>
+                    {{-- Qualifikationen liegen als JSON an der Regel — in der Datenbank nicht sortierbar. --}}
+                    <th>{{ __('Qualifikationen') }}</th>
+                    <x-table.th sort="notes">{{ __('Notizen') }}</x-table.th>
                     <th></th>
                 </tr>
             </x-slot:head>
@@ -49,12 +52,12 @@
                 $qualNames = \App\Models\Hr\Qualification::query()->pluck('name', 'id');
             @endphp
             @foreach ($requirements as $req)
-                    <tr>
+                    <tr class="hover">
                         <td>
                             @if ($req->shiftType)
-                                <span class="badge badge-sm" style="background-color:{{ $req->shiftType->color }};color:#fff;">
+                                <x-status-badge tone="plain" style="background-color:{{ $req->shiftType->color }};color:#fff;">
                                     {{ $req->shiftType->abbreviation }}
-                                </span>
+                                </x-status-badge>
                                 {{ $req->shiftType->name }}
                             @else
                                 <span class="text-muted">–</span>
@@ -79,10 +82,10 @@
                             @endif
                             {{-- MVP-530: zählbare Minima („≥2 Examiniert") --}}
                             @foreach ($req->qualificationMinima() as $qid => $needed)
-                                <span class="badge badge-sm badge-ghost whitespace-nowrap"
-                                      title="{{ __('Mindestens :n Personen mit dieser Qualifikation', ['n' => $needed]) }}">
+                                <x-status-badge class="whitespace-nowrap"
+                                        title="{{ __('Mindestens :n Personen mit dieser Qualifikation', ['n' => $needed]) }}">
                                     ≥{{ $needed }} {{ $qualNames[$qid] ?? ('#' . $qid) }}
-                                </span>
+                                </x-status-badge>
                             @endforeach
                             @if (empty($req->required_qualification_ids) && $req->qualificationMinima() === [])
                                 <span class="text-muted">–</span>
@@ -110,5 +113,7 @@
                 @endforeach
         </x-table>
     @endif
+
+    <x-pagination :paginator="$requirements" standing />
 </x-index-page>
 @endsection

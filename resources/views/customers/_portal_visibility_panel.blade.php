@@ -58,7 +58,7 @@
                     @foreach ($unavailableCaps as $cap)
                         <label class="label justify-start gap-2 py-1 opacity-50" title="{{ __('Modul nicht lizenziert') }}">
                             <input type="checkbox" class="checkbox checkbox-sm" disabled>
-                            <span class="text-sm">{{ $cap->label() }} <span class="badge badge-xs badge-ghost">{{ __('nicht lizenziert') }}</span></span>
+                            <span class="text-sm">{{ $cap->label() }} <x-status-badge size="xs">{{ __('nicht lizenziert') }}</x-status-badge></span>
                         </label>
                     @endforeach
                 </div>

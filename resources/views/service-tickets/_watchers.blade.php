@@ -12,7 +12,7 @@
 
 <x-card :title="__('Beobachter')" icon="visibility">
     @if ($ticket->watchers->isEmpty())
-        <p class="text-sm text-muted">{{ __('Noch keine Beobachter.') }}</p>
+        <x-empty-state icon="visibility_off" :title="__('Noch keine Beobachter.')" compact />
     @else
         <ul class="space-y-1 text-sm">
             @foreach ($ticket->watchers as $watcher)

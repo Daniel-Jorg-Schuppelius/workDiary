@@ -117,9 +117,10 @@
                     @can('create', \App\Models\Classification\Classification::class)
                         @if ($orgRows->isNotEmpty())
                             <div class="flex justify-end">
-                                <button type="submit" form="classification-reorder-{{ $domain->value }}" class="btn btn-sm btn-outline gap-2">
-                                    <x-icon name="swap_vert" /> {{ __('Reihenfolge speichern') }}
-                                </button>
+                                <x-button type="submit" tone="outline" icon="swap_vert" class="gap-2"
+                                        form="classification-reorder-{{ $domain->value }}">
+                                    {{ __('Reihenfolge speichern') }}
+                                </x-button>
                             </div>
                         @endif
                     @endcan

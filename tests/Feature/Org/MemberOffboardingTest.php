@@ -13,10 +13,13 @@ declare(strict_types=1);
 namespace Tests\Feature\Org;
 
 use App\Models\Asset\{Asset, AssetAssignment};
+use App\Models\Communication\Comment;
+use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\{Organization, User};
 use App\Models\Project\{Project, Task};
 use App\Models\Time\TimeEntry;
 use App\Services\Org\UserOffboardingService;
+use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
@@ -108,6 +111,25 @@ final class MemberOffboardingTest extends TestCase {
 
         $this->assertNotNull(User::query()->find($member->id));
         $this->assertNotNull(TimeEntry::query()->where('user_id', $member->id)->first());
+    }
+
+    /** Entscheidung 2026-10-05: Kommentare, Krisenraum-Anwesenheit und die zwei Personalakten-Tabellen sind Nachweise. */
+    public function test_comments_and_presences_count_as_evidence(): void {
+        $service = app(UserOffboardingService::class);
+        $tables = (new \ReflectionClass($service))->getConstant('EVIDENCE_TABLES');
+        foreach (['personnel_file_submissions', 'personnel_file_acknowledgements', 'comments', 'crisis_room_presences'] as $table) {
+            $this->assertSame('user_id', $tables[$table] ?? null, $table . ' fehlt in den Nachweistabellen.');
+        }
+
+        $member = $this->member();
+        $this->assertFalse($service->hasEvidence($member));
+
+        $entry = DiaryEntry::factory()->create(['organization_id' => $this->org->id, 'user_id' => $this->admin->id]);
+        Comment::factory()->for($member)->create(['commentable_type' => MorphMap::alias(DiaryEntry::class), 'commentable_id' => $entry->id, 'body' => 'Rückfrage zum Auftrag']);
+
+        $this->assertTrue($service->hasEvidence($member));
+        $this->actingAs($this->admin)->delete(route('org.members.destroy', $member))->assertRedirect();
+        $this->assertNotNull(User::query()->find($member->id));
     }
 
     public function test_destroy_without_evidence_still_works(): void {

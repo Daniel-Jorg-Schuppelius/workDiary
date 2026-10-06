@@ -14,7 +14,7 @@
     <div class="mx-auto w-full max-w-4xl">
         <h1 class="font-['Space_Grotesk'] text-3xl font-bold tracking-tight text-base-content">{{ $title }}</h1>
 
-        <section class="mt-8 rounded-box border border-base-300 bg-base-100 p-6 shadow-xs sm:p-8">
+        <x-card as="section" padding="p-6 sm:p-8" class="mt-8">
             @if ($content !== null)
                 {{-- Betreiber-Klartext: escaped + Zeilenumbrüche erhalten. --}}
                 <div class="whitespace-pre-line text-sm leading-relaxed text-base-content/90">{{ $content }}</div>
@@ -54,6 +54,6 @@
                     </div>
                 </div>
             @endif
-        </section>
+        </x-card>
     </div>
 @endsection

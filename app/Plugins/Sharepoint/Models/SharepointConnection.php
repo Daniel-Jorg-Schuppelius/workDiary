@@ -12,6 +12,7 @@ namespace App\Plugins\Sharepoint\Models;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasConnectionHealth};
 use App\Plugins\Support\Mirror\{MirrorConnection, MirrorsDocumentFolders};
+use App\Plugins\Support\OAuthConnectionStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
@@ -39,7 +40,7 @@ use Illuminate\Support\Carbon;
  * @property array<string, string>|null $folder_map
  * @property array<int, string>|null $sources
  * @property bool $active
- * @property string $status
+ * @property OAuthConnectionStatus $status
  * @property Carbon|null $last_mirrored_at
  */
 class SharepointConnection extends Model implements MirrorConnection {
@@ -47,10 +48,6 @@ class SharepointConnection extends Model implements MirrorConnection {
     use BelongsToOrganization;
     use HasConnectionHealth;
     use MirrorsDocumentFolders;
-
-    public const STATUS_ACTIVE = 'active';
-
-    public const STATUS_DISCONNECTED = 'disconnected';
 
     /** Tabellenname explizit (defensiv, konsistent zur Migration). */
     protected $table = 'sharepoint_connections';
@@ -87,6 +84,7 @@ class SharepointConnection extends Model implements MirrorConnection {
         'folder_map' => 'array',
         'sources' => 'array',
         'active' => 'boolean',
+        'status' => OAuthConnectionStatus::class,
         'last_mirrored_at' => 'datetime',
         'last_error_at' => 'datetime',
         'disabled_at' => 'datetime',
@@ -100,7 +98,7 @@ class SharepointConnection extends Model implements MirrorConnection {
      */
     public function isActive(): bool {
         return $this->active
-            && $this->status === self::STATUS_ACTIVE
+            && $this->status === OAuthConnectionStatus::Active
             && trim((string) $this->access_token) !== ''
             && trim((string) $this->drive_id) !== ''
             && $this->disabled_at === null;

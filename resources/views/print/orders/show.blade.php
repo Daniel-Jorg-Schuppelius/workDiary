@@ -14,7 +14,6 @@
 @section('content')
 @php
     use App\Enums\Print\{PreflightStatus, PrintOrderStatus, PrintOutputKind};
-    use App\Models\Print\PrintOrder;
     $status = $order->status;
     $mo = $order->manufacturingOrder;
 @endphp
@@ -173,7 +172,7 @@
             <x-detail-grid class="grid-cols-2">
                 <x-detail-grid.row :label="__('print.field.machine')">{{ $order->asset->name ?? '—' }}</x-detail-grid.row>
                 <x-detail-grid.row :label="__('print.field.production_started_at')">{{ optional($order->production_started_at)->fdatetime() }}</x-detail-grid.row>
-                <x-detail-grid.row :label="__('print.field.qc_status')">{{ $order->qc_status !== null ? __('print.qc.' . $order->qc_status) : null }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('print.field.qc_status')">{{ $order->qc_status?->label() }}</x-detail-grid.row>
                 <x-detail-grid.row :label="__('print.field.qc_by')">{{ $order->qcChecker->name ?? null }}</x-detail-grid.row>
                 <x-detail-grid.row :label="__('print.field.qc_note')">{{ $order->qc_note }}</x-detail-grid.row>
                 <x-detail-grid.row :label="__('print.field.issued_at')">{{ optional($order->issued_at)->fdatetime() }}</x-detail-grid.row>
@@ -206,9 +205,9 @@
                     <form method="POST" action="{{ route('print-orders.quality-check', $order) }}" class="mt-3 flex flex-wrap items-end gap-2 text-sm">
                         @csrf
                         <select name="result" class="select select-sm select-bordered" required aria-label="{{ __('print.field.qc_status') }}">
-                            <option value="{{ PrintOrder::QC_PASSED }}">{{ __('print.qc.passed') }}</option>
-                            <option value="{{ PrintOrder::QC_REWORK }}">{{ __('print.qc.rework') }}</option>
-                            <option value="{{ PrintOrder::QC_BLOCKED }}">{{ __('print.qc.blocked') }}</option>
+                            @foreach (\App\Enums\Print\PrintQcStatus::cases() as $qcResult)
+                                <option value="{{ $qcResult->value }}">{{ $qcResult->label() }}</option>
+                            @endforeach
                         </select>
                         <input type="text" name="note" placeholder="{{ __('print.field.qc_note') }}" class="input input-sm input-bordered w-64" aria-label="{{ __('print.field.qc_note') }}">
                         <button type="submit" class="btn btn-sm btn-primary">{{ __('print.orders.action.quality_check') }}</button>

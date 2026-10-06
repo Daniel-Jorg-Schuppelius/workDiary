@@ -11,9 +11,10 @@
 
 @section('title', __('reporting.target.title'))
 @section('nav-title', __('reporting.target.title'))
+@include('partials.page-fill')
 
 @section('content')
-<x-index-page :subtitle="__('reporting.target.subtitle')">
+<x-index-page overflow="clip" :subtitle="__('reporting.target.subtitle')">
     <x-slot:actions>
         <x-icon-btn icon="add" tone="primary" size="sm"
                     data-entry-modal-trigger
@@ -31,7 +32,7 @@
         };
     @endphp
 
-    <x-table>
+    <x-table scroll="flex">
         <x-slot:head>
             <tr>
                 <th>{{ __('reporting.target.metric_label') }}</th>
@@ -49,8 +50,8 @@
                 <td>{{ $fmtScope($t) }}</td>
                 <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $t->target_value, 2, withThousandsSeparator: true) }}</td>
                 <td>{{ $t->period?->label() ?? '–' }}</td>
-                <td>{{ $t->valid_from?->format('d.m.Y') ?? '–' }}</td>
-                <td>{{ $t->valid_until?->format('d.m.Y') ?? '–' }}</td>
+                <td>{{ $t->valid_from?->fdate() ?? '–' }}</td>
+                <td>{{ $t->valid_until?->fdate() ?? '–' }}</td>
                 <td class="text-right">
                     <div class="flex justify-end gap-1">
                         <x-icon-btn icon="edit"

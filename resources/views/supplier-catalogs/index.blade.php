@@ -9,8 +9,7 @@
 @extends('layouts.app')
 @section('title', __('procurement.catalog.title') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('procurement.catalog.title'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('procurement.catalog.subtitle')">
@@ -41,9 +40,9 @@
                     <tr @class(['hover', 'opacity-50' => ! $source->active])>
                         <td><a href="{{ route('supplier-catalogs.show', $source) }}" class="link link-hover font-medium">{{ $source->name }}</a></td>
                         <td>{{ $source->supplier?->name }}</td>
-                        <td><span class="badge badge-sm badge-ghost">{{ $source->format->label() }}</span></td>
+                        <td><x-status-badge>{{ $source->format->label() }}</x-status-badge></td>
                         <td class="text-right tabular-nums">{{ $source->items_count }}</td>
-                        <td class="text-sm opacity-70">{{ $source->last_imported_at?->orgTz()->format('d.m.Y H:i') ?: '—' }}</td>
+                        <td class="text-sm opacity-70">{{ $source->last_imported_at?->fdatetime() ?: '—' }}</td>
                         <td class="text-right">
                             <div class="flex justify-end gap-1">
                                 <x-icon-btn icon="edit" size="xs" data-entry-modal-trigger

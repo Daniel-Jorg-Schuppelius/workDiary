@@ -12,9 +12,10 @@ declare(strict_types=1);
 
 namespace App\Models\Survey;
 
+use App\Enums\Survey\SurveyInvitationStatus;
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
+use App\Models\Concerns\HasAccessToken;
 use App\Models\Customer\Customer;
-use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -38,20 +39,15 @@ use Illuminate\Support\Carbon;
  * @property string $token_hash
  * @property Carbon $expires_at
  * @property Carbon|null $sent_at
- * @property string $status
+ * @property SurveyInvitationStatus $status
  * @property Carbon|null $responded_at
  */
 class SurveyInvitation extends Model {
     use BelongsToOrganization;
+    use HasAccessToken;
     /** @use HasFactory<\Database\Factories\Survey\SurveyInvitationFactory> */
     use HasFactory;
     use HasSqid;
-
-    public const STATUS_CREATED = 'created';
-
-    public const STATUS_SENT = 'sent';
-
-    public const STATUS_RESPONDED = 'responded';
 
     /** Die gehashte Kennung nie serialisieren. */
     protected $hidden = ['token_hash'];
@@ -67,11 +63,8 @@ class SurveyInvitation extends Model {
         'expires_at' => 'datetime',
         'sent_at' => 'datetime',
         'responded_at' => 'datetime',
+        'status' => SurveyInvitationStatus::class,
     ];
-
-    public static function hashToken(string $token): string {
-        return CryptoHelper::hash($token);
-    }
 
     /** @return BelongsTo<Survey, $this> */
     public function survey(): BelongsTo {
@@ -84,6 +77,6 @@ class SurveyInvitation extends Model {
     }
 
     public function isUsable(): bool {
-        return $this->status !== self::STATUS_RESPONDED && $this->expires_at->isFuture();
+        return $this->status->canTransitionTo(SurveyInvitationStatus::Responded) && $this->expires_at->isFuture();
     }
 }

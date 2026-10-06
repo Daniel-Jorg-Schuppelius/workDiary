@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Isms;
 
+use App\Enums\Isms\IsmsAuditProgramStatus;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Isms\{IsmsAudit, IsmsAuditProgram, IsmsScope};
@@ -79,7 +80,7 @@ class AuditProgramController extends Controller {
 
         $program = IsmsAuditProgram::query()->create([
             'organization_id' => $this->currentOrganization()->id,
-            'status' => 'active',
+            'status' => IsmsAuditProgramStatus::Active,
             ...$data,
         ]);
         $program->audit('isms.audit_program.created', ['name' => $program->name]);
@@ -97,7 +98,7 @@ class AuditProgramController extends Controller {
         }
 
         $data = $request->validate([
-            'status' => ['nullable', 'in:active,completed,cancelled'],
+            'status' => ['nullable', Rule::enum(IsmsAuditProgramStatus::class)],
             'attach_audit_id' => [
                 'nullable', 'integer',
                 Rule::exists('isms_audits', 'id')->where('organization_id', $this->currentOrganization()->id),

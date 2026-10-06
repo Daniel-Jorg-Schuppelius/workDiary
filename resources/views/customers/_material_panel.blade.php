@@ -74,9 +74,9 @@
                     <td class="text-sm">
                         {{ $allocation->description ?? '—' }}
                         @if (\App\Support\MorphMap::is($allocation->source_type, \App\Models\Inventory\StockMovement::class))
-                            <span class="badge badge-ghost badge-xs align-middle">{{ __('customer-material.source_stock') }}</span>
+                            <x-status-badge size="xs" class="align-middle">{{ __('customer-material.source_stock') }}</x-status-badge>
                         @elseif ($allocation->source_type !== null)
-                            <span class="badge badge-ghost badge-xs align-middle">{{ __('customer-material.voucher') }}</span>
+                            <x-status-badge size="xs" class="align-middle">{{ __('customer-material.voucher') }}</x-status-badge>
                         @endif
                     </td>
                     <td class="text-sm text-base-content/70">{{ $allocation->project?->name ?? '—' }}</td>

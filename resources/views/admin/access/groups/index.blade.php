@@ -11,8 +11,7 @@
 
 @section('title', __('access.title.groups'))
 @section('nav-title', __('access.title.groups'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('Gruppen für Berechtigungs-Bündelung verwalten.')">

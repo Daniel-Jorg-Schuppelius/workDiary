@@ -10,8 +10,7 @@
 
 @section('title', __('Stellen') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('Stellen'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('Stellenbedarf, Veröffentlichungen und Bewerbungsstände.')">
@@ -31,7 +30,7 @@
             <select id="req-status" name="status" class="select select-sm select-bordered w-44" aria-label="{{ __('Status') }}">
                 <option value="">{{ __('Alle Status') }}</option>
                 @foreach ($statuses as $s)
-                    <option value="{{ $s }}" @selected(($filters['status'] ?? '') === $s)>{{ __("values.$s") }}</option>
+                    <option value="{{ $s->value }}" @selected(($filters['status'] ?? '') === $s->value)>{{ $s->label() }}</option>
                 @endforeach
             </select>
         </x-filter-field>
@@ -56,7 +55,7 @@
             <tr class="hover">
                 <td><a href="{{ route('recruiting.requisitions.show', $requisition) }}" class="link link-hover font-medium">{{ $requisition->title }}</a></td>
                 <td>{{ $requisition->department ?? '—' }}</td>
-                <td><x-status-badge :tone="$requisition->statusTone()" size="sm">{{ __("values.{$requisition->status}") }}</x-status-badge></td>
+                <td><x-status-badge :tone="$requisition->status->tone()" size="sm">{{ $requisition->status->label() }}</x-status-badge></td>
                 <td class="text-right tabular-nums">{{ $requisition->applications_count }}</td>
                 <td class="tabular-nums">{{ optional($requisition->target_start_on)->fdate() ?? '—' }}</td>
                 <td class="text-right"><x-icon-btn icon="visibility" tone="ghost" size="xs" :href="route('recruiting.requisitions.show', $requisition)" :label="__('Anzeigen')" /></td>

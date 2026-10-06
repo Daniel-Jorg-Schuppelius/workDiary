@@ -12,6 +12,9 @@ declare(strict_types=1);
 
 namespace App\Services\Ai\Suggestions;
 
+use App\Enums\Ai\AiTextSuggestionStatus;
+use App\Enums\Invoicing\InvoiceStatus;
+use App\Enums\Sales\QuoteStatus;
 use App\Models\Ai\AiTextSuggestion;
 use App\Models\Finance\{BillingTransfer, BillingTransferPosition};
 use App\Models\Invoicing\{Invoice, InvoiceItem};
@@ -231,7 +234,7 @@ class ItemTextSuggestionService implements ItemTextSuggester {
 
     /** Angebotsposition (MVP-405) — nur im Entwurf. */
     public function suggestForQuoteItem(Quote $quote, QuoteItem $item, ?User $user, ?int $connectionId = null): AiTextSuggestion {
-        if ($quote->status !== 'draft') {
+        if ($quote->status !== QuoteStatus::Draft) {
             throw new AiException((string) __('ai.error.only_quote_draft'));
         }
 
@@ -262,7 +265,7 @@ class ItemTextSuggestionService implements ItemTextSuggester {
         $subject = $suggestion->subject;
         if ($subject instanceof InvoiceItem) {
             $this->assertInvoiceDraft($subject->invoice);
-        } elseif ($subject instanceof QuoteItem && $subject->quote?->status !== 'draft') {
+        } elseif ($subject instanceof QuoteItem && $subject->quote?->status !== QuoteStatus::Draft) {
             throw new AiException((string) __('ai.error.position_not_draft'));
         } elseif ($subject instanceof BillingTransferPosition) {
             $this->assertTransferOpen($subject->transfer);
@@ -281,7 +284,7 @@ class ItemTextSuggestionService implements ItemTextSuggester {
         ])->save();
 
         $suggestion->forceFill([
-            'status' => $edited ? AiTextSuggestion::STATUS_EDITED : AiTextSuggestion::STATUS_ACCEPTED,
+            'status' => $edited ? AiTextSuggestionStatus::Edited : AiTextSuggestionStatus::Accepted,
             'decided_by_user_id' => $user?->getKey(),
             'decided_at' => Carbon::now(),
         ])->save();
@@ -305,8 +308,8 @@ class ItemTextSuggestionService implements ItemTextSuggester {
             ->withoutGlobalScopes()
             ->where('subject_type', $subjectType)
             ->whereIn('subject_id', $subjectIds)
-            ->where('status', AiTextSuggestion::STATUS_PROPOSED)
-            ->update(['status' => AiTextSuggestion::STATUS_EXPIRED]);
+            ->where('status', AiTextSuggestionStatus::Proposed)
+            ->update(['status' => AiTextSuggestionStatus::Expired]);
     }
 
     private function invokeAndStore(
@@ -350,7 +353,7 @@ class ItemTextSuggestionService implements ItemTextSuggester {
             ->where('organization_id', $organizationId)
             ->where('subject_type', $subjectType)
             ->where('subject_id', $subjectId)
-            ->where('status', AiTextSuggestion::STATUS_PROPOSED)
+            ->where('status', AiTextSuggestionStatus::Proposed)
             ->delete();
 
         return AiTextSuggestion::query()->create([
@@ -360,7 +363,7 @@ class ItemTextSuggestionService implements ItemTextSuggester {
             'capability' => $result->capability,
             'original' => $original,
             'suggestion' => $text,
-            'status' => AiTextSuggestion::STATUS_PROPOSED,
+            'status' => AiTextSuggestionStatus::Proposed,
             'connection_id' => $result->connectionId,
             'provider' => $result->provider->value,
             'fallback_used' => $result->fallbackUsed,
@@ -380,7 +383,7 @@ class ItemTextSuggestionService implements ItemTextSuggester {
     }
 
     private function assertInvoiceDraft(?Invoice $invoice): void {
-        if ($invoice === null || $invoice->status !== Invoice::STATUS_DRAFT) {
+        if ($invoice === null || $invoice->status !== InvoiceStatus::Draft) {
             throw new AiException((string) __('ai.error.only_invoice_draft'));
         }
     }

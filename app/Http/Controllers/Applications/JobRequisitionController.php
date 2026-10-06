@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Applications;
 
+use App\Enums\Applications\{JobPostingStatus, JobRequisitionStatus};
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Applications\{JobPosting, JobRequisition};
@@ -20,6 +21,7 @@ use App\Support\SortableQuery;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\Validation\Rule;
 
 /**
  * Stellenbedarf + Veröffentlichungskanäle (Feature 068, MVP-189).
@@ -30,12 +32,11 @@ class JobRequisitionController extends Controller {
     public function index(Request $request): View {
         Gate::authorize('viewAny', JobRequisition::class);
 
-        $status = $request->string('status')->toString();
-        $statusFilter = in_array($status, JobRequisition::STATUSES, true) ? $status : '';
+        $statusFilter = JobRequisitionStatus::tryFrom($request->string('status')->toString());
 
         $query = JobRequisition::query()
             ->withCount('applications')
-            ->when($statusFilter !== '', fn($q) => $q->where('status', $statusFilter));
+            ->when($statusFilter !== null, fn($q) => $q->where('status', $statusFilter));
 
         [$sort, $dir] = SortableQuery::apply($query, $request, [
             'title' => 'title',
@@ -48,8 +49,8 @@ class JobRequisitionController extends Controller {
 
         return view('applications.recruiting.requisitions.index', [
             'requisitions' => $query->paginate(25)->withQueryString(),
-            'statuses' => JobRequisition::STATUSES,
-            'filters' => ['status' => $statusFilter],
+            'statuses' => JobRequisitionStatus::cases(),
+            'filters' => ['status' => $statusFilter->value ?? ''],
             'sort' => $sort,
             'dir' => $dir,
         ]);
@@ -104,8 +105,8 @@ class JobRequisitionController extends Controller {
 
     public function updateStatus(Request $request, JobRequisition $requisition): RedirectResponse {
         Gate::authorize('update', $requisition);
-        $data = $request->validate(['status' => ['required', 'in:' . implode(',', JobRequisition::STATUSES)]]);
-        $requisition->update(['status' => $data['status']]);
+        $data = $request->validate(['status' => ['required', Rule::enum(JobRequisitionStatus::class)]]);
+        $requisition->update(['status' => JobRequisitionStatus::from($data['status'])]);
 
         return back()->with('success', __('Status aktualisiert.'));
     }
@@ -126,7 +127,7 @@ class JobRequisitionController extends Controller {
             'url' => $data['url'] ?? null,
             'published_at' => now(),
             'expires_at' => $data['expires_at'] ?? null,
-            'status' => 'published',
+            'status' => JobPostingStatus::Published,
         ]);
 
         return back()->with('success', __('Veröffentlichung dokumentiert.'));
@@ -135,9 +136,21 @@ class JobRequisitionController extends Controller {
     public function closePosting(JobRequisition $requisition, JobPosting $posting): RedirectResponse {
         Gate::authorize('update', $requisition);
         abort_unless($posting->job_requisition_id === $requisition->id, 404);
-        $posting->update(['status' => 'closed']);
+        if ($posting->status->canTransitionTo(JobPostingStatus::Closed)) {
+            $posting->update(['status' => JobPostingStatus::Closed]);
+        }
 
         return back()->with('success', __('Veröffentlichung geschlossen.'));
+    }
+
+    /** Dialog zur Karriereseite: öffentliche Inhalte und Fristen, vorbelegt aus der bestehenden Veröffentlichung. */
+    public function editCareer(JobRequisition $requisition): View {
+        Gate::authorize('update', $requisition);
+
+        return view('applications.recruiting.requisitions._career_dialog', [
+            'requisition' => $requisition,
+            'posting' => $requisition->postings()->where('channel', 'website')->first() ?? new JobPosting(),
+        ]);
     }
 
     /**
@@ -156,7 +169,9 @@ class JobRequisitionController extends Controller {
             'public_requirements' => ['nullable', 'string', 'max:10000'],
             'public_benefits' => ['nullable', 'string', 'max:10000'],
             'work_location' => ['nullable', 'string', 'max:200'],
-            'application_deadline' => ['nullable', 'date'],
+            // Ein vergangenes Datum liefe beim nächsten Tageslauf sofort wieder ab.
+            'application_deadline' => ['nullable', 'date', 'after_or_equal:today'],
+            'expires_at' => ['nullable', 'date', 'after_or_equal:today'],
         ]);
 
         /** @var JobPosting $posting */
@@ -171,9 +186,10 @@ class JobRequisitionController extends Controller {
             'public_benefits' => $data['public_benefits'] ?? null,
             'work_location' => $data['work_location'] ?? null,
             'application_deadline' => $data['application_deadline'] ?? null,
+            'expires_at' => $data['expires_at'] ?? null,
         ]);
         $posting->public_slug = $posting->ensurePublicSlug($data['public_title']);
-        $posting->status = 'published';
+        $posting->status = JobPostingStatus::Published;
         $posting->published_at ??= now();
         $posting->save();
         $posting->audit('recruiting.posting_published', ['slug' => $posting->public_slug]);
@@ -188,8 +204,8 @@ class JobRequisitionController extends Controller {
     public function pauseCareer(JobRequisition $requisition): RedirectResponse {
         Gate::authorize('update', $requisition);
         $posting = $requisition->postings()->where('channel', 'website')->first();
-        if ($posting instanceof JobPosting && $posting->status === 'published') {
-            $posting->update(['status' => 'paused']);
+        if ($posting instanceof JobPosting && $posting->status->canTransitionTo(JobPostingStatus::Paused)) {
+            $posting->update(['status' => JobPostingStatus::Paused]);
             $posting->audit('recruiting.posting_paused', []);
         }
 

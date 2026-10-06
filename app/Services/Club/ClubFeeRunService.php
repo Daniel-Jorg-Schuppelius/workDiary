@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Club;
 
 use App\Enums\Club\{ClubFeeClaimStatus, ClubFeeRunStatus};
+use App\Enums\Document\DocumentDispatchStatus;
 use App\Enums\Finance\BillingMode;
 use App\Models\Club\{ClubFeeAccount, ClubFeeClaim, ClubFeeClaimItem, ClubFeeRun};
 use App\Models\Document\DocumentDispatch;
@@ -276,7 +277,7 @@ class ClubFeeRunService {
             'document_id' => $claim->id,
             'channel' => DocumentDispatch::CHANNEL_EMAIL,
             'format' => 'pdf',
-            'status' => 'queued',
+            'status' => DocumentDispatchStatus::Queued,
             'recipient' => $email,
             'created_by' => $actor !== null ? $actor->id : Auth::id(),
         ]);
@@ -294,7 +295,7 @@ class ClubFeeRunService {
             'document_id' => $claim->id,
             'channel' => DocumentDispatch::CHANNEL_DOWNLOAD,
             'format' => 'pdf',
-            'status' => 'sent',
+            'status' => DocumentDispatchStatus::Sent,
             'created_by' => $actor?->id,
         ]);
     }

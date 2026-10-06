@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Integration\Match;
 
+use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Database\Eloquent\Builder;
 
 /**
@@ -40,7 +41,7 @@ class FuzzyField extends MatchStrategy {
         $best = 0.0;
         foreach ($this->fieldNames as $fa) {
             foreach ($this->fieldNames as $fb) {
-                $best = max($best, Normalize::similarity(
+                $best = max($best, StringHelper::similarity(
                     Normalize::text($a[$fa] ?? null),
                     Normalize::text($b[$fb] ?? null),
                 ));

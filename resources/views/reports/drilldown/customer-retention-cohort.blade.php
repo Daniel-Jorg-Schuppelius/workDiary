@@ -28,14 +28,7 @@
         <x-page-toolbar :subtitle="__('Kunden mit Erstleistung im Jahr :year', ['year' => $cohort]) . ($year !== null ? ' · ' . __('Aktivität im Jahr :year', ['year' => $year]) : '') . ' · ' . $label"
                         :back="route('reports.customer-retention', $backParams)" :back-label="__('Zur Kundenbindung')">
             <x-slot:actions>
-                <x-action-menu icon="download" tone="outline" :label="__('Export')">
-                    <x-icon-btn icon="download" tone="outline" size="sm"
-                                :href="route('reports.customer-retention.drilldown', array_merge($selfParams, ['export' => 'csv']))"
-                                show-label>CSV</x-icon-btn>
-                    <x-icon-btn icon="table_view" tone="outline" size="sm"
-                                :href="route('reports.customer-retention.drilldown', array_merge($selfParams, ['export' => 'xlsx']))"
-                                show-label>Excel</x-icon-btn>
-                </x-action-menu>
+                <x-report-export :url="fn (string $format) => route('reports.customer-retention.drilldown', array_merge($selfParams, ['export' => $format]))" :formats="['csv', 'xlsx']" />
                 <x-help-button topic="reports.customer-retention" />
             </x-slot:actions>
         </x-page-toolbar>
@@ -66,9 +59,9 @@
                         @if ($year !== null)
                             <td class="text-right">
                                 @if ($row['activeInYear'])
-                                    <span class="badge badge-success badge-sm">{{ __('ja') }}</span>
+                                    <x-status-badge tone="success">{{ __('ja') }}</x-status-badge>
                                 @else
-                                    <span class="badge badge-ghost badge-sm">{{ __('nein') }}</span>
+                                    <x-status-badge>{{ __('nein') }}</x-status-badge>
                                 @endif
                             </td>
                         @endif

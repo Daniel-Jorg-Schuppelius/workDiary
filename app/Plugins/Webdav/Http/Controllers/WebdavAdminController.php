@@ -77,7 +77,7 @@ class WebdavAdminController extends Controller {
             'base_url' => rtrim($baseUrl, '/'),
             'username' => (string) $data['username'],
             'default_folder' => trim((string) $data['default_folder'], '/'),
-            'folder_map' => $this->buildFolderMap($request),
+            'folder_map' => WebdavConnection::folderMapFromInput((array) $request->input('folder_type', []), (array) $request->input('folder_path', [])),
             // Nur bekannte Quellen; leer = nur document (Default via Model).
             'sources' => array_values(array_intersect(WebdavConnection::SOURCES, (array) ($data['sources'] ?? []))),
             'active' => (bool) ($data['active'] ?? false),
@@ -125,27 +125,5 @@ class WebdavAdminController extends Controller {
         }
 
         return back()->with('success', __('webdav::webdav.flash.disconnected'));
-    }
-
-    /**
-     * Baut die Dokumenttyp→Ordner-Map aus paarigen Formularzeilen (nur gültige Typen).
-     *
-     * @return array<string, string>
-     */
-    private function buildFolderMap(Request $request): array {
-        $types = (array) $request->input('folder_type', []);
-        $paths = (array) $request->input('folder_path', []);
-        $valid = array_map(static fn (DocumentType $t): string => $t->value, DocumentType::cases());
-
-        $map = [];
-        foreach ($types as $i => $type) {
-            $type = is_string($type) ? $type : '';
-            $path = isset($paths[$i]) && is_string($paths[$i]) ? trim($paths[$i], '/') : '';
-            if ($type !== '' && $path !== '' && in_array($type, $valid, true)) {
-                $map[$type] = $path;
-            }
-        }
-
-        return $map;
     }
 }

@@ -39,13 +39,12 @@
                     <th class="w-32 text-right">{{ __('Aktion') }}</th>
                 </tr>
             </x-slot:head>
-            <tbody>
                 @forelse ($tokens as $token)
                     <tr class="hover">
                         <td class="font-semibold">{{ $token->name }}</td>
                         <td class="text-xs">
                             @if (in_array('*', (array) $token->abilities, true))
-                                <span class="badge badge-warning badge-sm" title="{{ __('Für eingeschränkten Zugriff neu ausstellen.') }}">{{ __('Voller Zugriff') }}</span>
+                                <x-status-badge tone="warning" title="{{ __('Für eingeschränkten Zugriff neu ausstellen.') }}">{{ __('Voller Zugriff') }}</x-status-badge>
                             @else
                                 {{ implode(', ', (array) $token->abilities) }}
                             @endif
@@ -64,7 +63,6 @@
                 @empty
                     <x-table.empty icon="key" :colspan="5" :title="__('Keine API-Token vorhanden')" compact />
                 @endforelse
-            </tbody>
         </x-table>
     </x-index-page>
 @endsection

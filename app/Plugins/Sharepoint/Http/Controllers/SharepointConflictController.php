@@ -12,57 +12,17 @@ declare(strict_types=1);
 
 namespace App\Plugins\Sharepoint\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use App\Models\Integration\IntegrationInboxItem;
-use App\Models\Platform\User;
-use App\Plugins\Sharepoint\{SharepointMirrorTarget, SharepointPlugin};
-use App\Plugins\Support\Mirror\DocumentConflictResolver;
-use App\Support\ErrorText;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Auth;
-use Throwable;
+use App\Plugins\Sharepoint\Services\SharepointMirrorTarget;
+use App\Plugins\Sharepoint\SharepointPlugin;
+use App\Plugins\Support\Mirror\{MirrorConflictController, MirrorTarget};
 
-/**
- * Auflösung eines SharePoint-Spiegelkonflikts aus der Zuordnungs-Inbox
- * (MVP-330, Bauturbo A10; Semantik = WebDAV Rang 18): drei Aktionen
- * (überschreiben / als Version importieren / Spiegelung trennen).
- * Autorisierung wie die übrige Inbox (canManageBilling + Org-Grenze +
- * offener Eintrag); die Fachlogik + der auditierte Abschluss liegen im
- * gemeinsamen {@see DocumentConflictResolver}.
- */
-class SharepointConflictController extends Controller {
-    public function __construct(private readonly DocumentConflictResolver $resolver) {}
-
-    public function overwrite(IntegrationInboxItem $item): RedirectResponse {
-        return $this->run($item, fn () => $this->resolver->overwrite(new SharepointMirrorTarget(), $item), __('sharepoint::sharepoint.conflict.flash.overwritten'));
+/** Auflösung eines SharePoint-Spiegelkonflikts aus der Zuordnungs-Inbox. */
+class SharepointConflictController extends MirrorConflictController {
+    protected function target(): MirrorTarget {
+        return new SharepointMirrorTarget();
     }
 
-    public function import(IntegrationInboxItem $item): RedirectResponse {
-        return $this->run($item, fn () => $this->resolver->importAsVersion(new SharepointMirrorTarget(), $item), __('sharepoint::sharepoint.conflict.flash.imported'));
-    }
-
-    public function detach(IntegrationInboxItem $item): RedirectResponse {
-        return $this->run($item, fn () => $this->resolver->detach(new SharepointMirrorTarget(), $item), __('sharepoint::sharepoint.conflict.flash.detached'));
-    }
-
-    private function run(IntegrationInboxItem $item, callable $action, string $success): RedirectResponse {
-        $this->guard($item);
-
-        try {
-            $action();
-        } catch (Throwable $e) {
-            return back()->with('error', __('sharepoint::sharepoint.conflict.flash.failed', ['reason' => ErrorText::for($e)]));
-        }
-
-        return back()->with('success', $success);
-    }
-
-    private function guard(IntegrationInboxItem $item): void {
-        /** @var User $user */
-        $user = Auth::user();
-        abort_unless($user->canManageBilling(), 403);
-        abort_unless($item->organization_id === $user->organization_id, 404);
-        abort_unless($item->plugin_id === SharepointPlugin::ID && $item->case_type === IntegrationInboxItem::CASE_CONFLICT, 404);
-        abort_unless($item->isOpen(), 422);
+    protected function pluginId(): string {
+        return SharepointPlugin::ID;
     }
 }

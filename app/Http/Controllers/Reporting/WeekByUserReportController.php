@@ -13,7 +13,7 @@ namespace App\Http\Controllers\Reporting;
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, ResolvesStandardReportFilters, WritesReportCsv};
+use App\Http\Controllers\Reporting\Concerns\{BuildsUserPeriodMatrix, RendersReportPdf, ResolvesReportScope, ResolvesStandardReportFilters, WritesReportCsv};
 use App\Models\Platform\User;
 use App\Models\Time\TimeEntry;
 use App\Support\Query\DateRange;
@@ -35,6 +35,7 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  * Implementierung, kein Code-Reuse.
  */
 class WeekByUserReportController extends Controller {
+    use BuildsUserPeriodMatrix;
     use RendersReportPdf;
     use ResolvesGlobalDateRange;
     use ResolvesReportScope;
@@ -152,7 +153,7 @@ class WeekByUserReportController extends Controller {
         $weekLabel = sprintf('KW %02d / %d', $week, $year);
 
         $exportFilters = array_merge(['year' => $year, 'week' => $week, 'scope' => $scope], $filters->toAuditArray());
-        $heatmapRows = $this->heatmapRows($byUser, $users, $dayLabels);
+        $heatmapRows = $this->heatmapRows($byUser, $users, 'days');
 
         if ($request->query('export') === 'csv') {
             return $this->exportCsv($byUser, $users, $dayLabels, $dayTotals, $weekTotal, $weekRate, $year, $week, $exportFilters, $request);
@@ -190,27 +191,6 @@ class WeekByUserReportController extends Controller {
     }
 
     /**
-     * Heatmap-Zeilen User × Wochentag (Minuten; Anzeige h:mm via format-Prop).
-     *
-     * @param  array<int, array{days: array<int, int>, total: int, rate: float}>  $byUser
-     * @param  Collection<int, User>  $users
-     * @param  array<int, string>  $dayLabels
-     * @return list<array{label: string, cells: list<array{value: int}>}>
-     */
-    private function heatmapRows(array $byUser, $users, array $dayLabels): array {
-        $rows = [];
-        foreach ($byUser as $uid => $row) {
-            $userModel = $users->get($uid);
-            $rows[] = [
-                'label' => $userModel instanceof User ? $userModel->name : '#' . $uid,
-                'cells' => array_map(fn(int $minutes): array => ['value' => $minutes], array_values($row['days'])),
-            ];
-        }
-
-        return $rows;
-    }
-
-    /**
      * Stunden je User nach Art (gestapelte Säulen).
      *
      * @param  array<int, array{days: array<int, int>, total: int, rate: float}>  $byUser
@@ -235,36 +215,6 @@ class WeekByUserReportController extends Controller {
     /**
      * @param  array<int, array{days: array<int, int>, total: int, rate: float}>  $byUser
      * @param  Collection<int, User>  $users
-     * @param  array<int, int>  $dayTotals
-     * @return list<list<int|float|string|null>>
-     */
-    private function buildRows(array $byUser, $users, array $dayTotals, int $weekTotal, float $weekRate): array {
-        $rows = [];
-        foreach ($byUser as $uid => $row) {
-            $userModel = $users->get($uid);
-            $name = $userModel instanceof User ? $userModel->name : '#' . $uid;
-            $cols = [(string) $name];
-            foreach ($row['days'] as $m) {
-                $cols[] = (int) $m;
-            }
-            $cols[] = (int) $row['total'];
-            $cols[] = (float) $row['rate'];
-            $rows[] = $cols;
-        }
-        $totalRow = ['Gesamt'];
-        foreach ($dayTotals as $m) {
-            $totalRow[] = (int) $m;
-        }
-        $totalRow[] = (int) $weekTotal;
-        $totalRow[] = (float) $weekRate;
-        $rows[] = $totalRow;
-
-        return $rows;
-    }
-
-    /**
-     * @param  array<int, array{days: array<int, int>, total: int, rate: float}>  $byUser
-     * @param  Collection<int, User>  $users
      * @param  array<int, string>  $dayLabels
      * @param  array<int, int>  $dayTotals
      */
@@ -278,7 +228,7 @@ class WeekByUserReportController extends Controller {
     private function exportCsv(array $byUser, $users, array $dayLabels, array $dayTotals, int $weekTotal, float $weekRate, int $year, int $week, array $exportFilters, Request $request): Response {
         $filename = sprintf('woche_%04d-W%02d.csv', $year, $week);
         $rows = [array_merge(['Mitarbeiter'], $dayLabels, ['Wochensumme', 'Erloes'])];
-        foreach ($this->buildRows($byUser, $users, $dayTotals, $weekTotal, $weekRate) as $row) {
+        foreach ($this->buildRows($byUser, $users, 'days', $dayTotals, $weekTotal, $weekRate) as $row) {
             $rows[] = array_map(static fn($v) => is_float($v) ? NumberHelper::toGermanFormat($v, 2, withThousandsSeparator: true) : $v, $row);
         }
 
@@ -295,7 +245,7 @@ class WeekByUserReportController extends Controller {
         $filename = sprintf('woche_%04d-W%02d.xlsx', $year, $week);
         $headers = array_merge(['Mitarbeiter'], array_values($dayLabels), ['Wochensumme', 'Erloes']);
 
-        return XlsxExport::streamFromArray($filename, $headers, $this->buildRows($byUser, $users, $dayTotals, $weekTotal, $weekRate));
+        return XlsxExport::streamFromArray($filename, $headers, $this->buildRows($byUser, $users, 'days', $dayTotals, $weekTotal, $weekRate));
     }
 
     /**

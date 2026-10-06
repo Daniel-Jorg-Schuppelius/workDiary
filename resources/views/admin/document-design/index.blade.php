@@ -93,7 +93,7 @@
                             @foreach ($profiles as $profile)
                                 <tr>
                                     <td class="font-medium">{{ $profile->name }}</td>
-                                    <td><span class="badge badge-sm badge-{{ $profile->status->tone() === 'success' ? 'success' : 'ghost' }}">{{ $profile->status->label() }}</span></td>
+                                    <td><x-status-badge :tone="$profile->status->tone() === 'success' ? 'success' : 'ghost'">{{ $profile->status->label() }}</x-status-badge></td>
                                     <td class="text-sm text-base-content/70">
                                         {{ collect($profile->document_kinds ?? [])->map(fn($k) => \App\Enums\DocumentDesign\RenderDocumentKind::tryFrom($k)?->label())->filter()->join(', ') ?: '—' }}
                                     </td>
@@ -157,7 +157,7 @@
                                     <td>{{ $asset->page_role->label() }}</td>
                                     <td class="uppercase text-sm">{{ $asset->source_type }}</td>
                                     <td>
-                                        <span class="badge badge-sm badge-{{ $asset->status->tone() === 'success' ? 'success' : ($asset->status->tone() === 'warning' ? 'warning' : 'ghost') }}">{{ $asset->status->label() }}</span>
+                                        <x-status-badge :tone="$asset->status->tone() === 'success' ? 'success' : ($asset->status->tone() === 'warning' ? 'warning' : 'ghost')">{{ $asset->status->label() }}</x-status-badge>
                                         @if ($asset->review_notes)
                                             <div class="text-xs text-muted">{{ implode(' ', $asset->review_notes) }}</div>
                                         @endif

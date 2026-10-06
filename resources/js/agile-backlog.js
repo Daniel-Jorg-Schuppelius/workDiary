@@ -8,25 +8,23 @@
  */
 
 import { submitForm } from "./lib/http.js";
+import { pointerSort, predecessorIndex } from "./lib/pointer-sort.js";
 
 /**
- * Drag-&-Drop-Umsortierung des Agile-Backlogs (Audit 2026-08, W4.2).
+ * Umsortieren des Agile-Backlogs per Ziehen (Audit 2026-08, W4.2) über
+ * lib/pointer-sort.js: mit der Maus an der ganzen Zeile, mit Finger und Stift
+ * am Griff in der Rang-Spalte.
  *
- * Der Server-Endpunkt (`agile.items.rerank`) war seit MVP-Bau vorbereitet —
- * er nimmt den Sqid des neuen Vorgaengers (`after`, leer = Spitze) und die
- * `lock_version` fuer optimistisches Sperren. Bisher bedienten ihn nur die
- * Hoch-/Runter-Buttons; die bleiben als Tastatur-/A11y-Pfad erhalten.
+ * Der Server-Endpunkt (`agile.items.rerank`) nimmt den Sqid des neuen
+ * Vorgaengers (`after`, leer = Spitze) und die `lock_version` fuer
+ * optimistisches Sperren. Die Hoch-/Runter-Buttons der Zeile bedienen
+ * denselben Endpunkt und bleiben der Tastatur-/A11y-Pfad.
  *
- * Die Zeile wird beim Drop NICHT lokal umsortiert: der Server ist die
+ * Die Zeile wird beim Ablegen NICHT lokal umsortiert: der Server ist die
  * Wahrheit (Rang, Sperrversion, Blockierungen), das Formular-POST laedt die
  * Seite ohnehin neu. Das vermeidet ein Auseinanderlaufen von Anzeige und
  * Datenstand bei abgelehnten Zuegen.
  */
-
-/** @param {string} url @param {Record<string,string>} fields */
-function submitRerank(url, fields) {
-    submitForm(url, fields || {}, "PATCH");
-}
 
 function init() {
     const body = /** @type {HTMLElement | null} */ (
@@ -34,85 +32,31 @@ function init() {
     );
     if (!body) return;
 
-    /** @type {HTMLElement | null} */
-    let dragRow = null;
-
-    const clearMarkers = () => {
-        body
-            .querySelectorAll("[data-backlog-row]")
-            .forEach((row) => row.classList.remove("outline", "outline-primary"));
-    };
-
-    body.addEventListener("dragstart", (event) => {
-        const row = /** @type {HTMLElement | null} */ (
-            event.target instanceof Element
-                ? event.target.closest("[data-backlog-row]")
-                : null
-        );
-        if (!row || row.dataset.canPrioritize !== "1") return;
-        dragRow = row;
-        row.classList.add("opacity-50");
-        if (event.dataTransfer) {
-            event.dataTransfer.effectAllowed = "move";
-            try {
-                event.dataTransfer.setData("text/plain", row.dataset.sqid || "");
-            } catch (_e) {
-                /* ältere Engines */
-            }
-        }
-    });
-
-    body.addEventListener("dragend", () => {
-        dragRow?.classList.remove("opacity-50");
-        dragRow = null;
-        clearMarkers();
-    });
-
-    body.addEventListener("dragover", (event) => {
-        if (!dragRow) return;
-        const row = /** @type {HTMLElement | null} */ (
-            event.target instanceof Element
-                ? event.target.closest("[data-backlog-row]")
-                : null
-        );
-        if (!row || row === dragRow) return;
-        event.preventDefault();
-        if (event.dataTransfer) event.dataTransfer.dropEffect = "move";
-        clearMarkers();
-        row.classList.add("outline", "outline-primary");
-    });
-
-    body.addEventListener("drop", (event) => {
-        event.preventDefault();
-        const target = /** @type {HTMLElement | null} */ (
-            event.target instanceof Element
-                ? event.target.closest("[data-backlog-row]")
-                : null
-        );
-        const row = dragRow;
-        dragRow = null;
-        clearMarkers();
-        row?.classList.remove("opacity-50");
-        if (!row || !target || row === target) return;
-
-        // Ziel-Position: wird die Zeile nach oben gezogen, landet sie VOR der
-        // Zielzeile (Vorgaenger = deren Vorgaenger); nach unten gezogen, landet
-        // sie hinter der Zielzeile.
-        const rows = Array.from(body.querySelectorAll("[data-backlog-row]"));
-        const fromIndex = rows.indexOf(row);
-        const toIndex = rows.indexOf(target);
-        const after =
-            toIndex < fromIndex
-                ? /** @type {HTMLElement | undefined} */ (rows[toIndex - 1])
-                      ?.dataset.sqid || ""
-                : target.dataset.sqid || "";
-
-        const url = row.dataset.rerankUrl;
-        if (!url) return;
-        submitRerank(url, {
-            after,
-            lock_version: row.dataset.lockVersion || "",
-        });
+    pointerSort(body, {
+        item: "[data-backlog-row]",
+        handle: "[data-backlog-handle]",
+        mouseAnywhere: true,
+        // Nach oben gezogen landet die Zeile VOR der Zielzeile, nach unten
+        // gezogen dahinter — die Marke umrahmt die ganze Zielzeile.
+        side: "direction",
+        canDrag: (row) => row.dataset.canPrioritize === "1",
+        draggingClass: ["opacity-50"],
+        targetClass: ["outline", "outline-primary"],
+        onDrop: ({ item, list, from, to }) => {
+            const url = item.dataset.rerankUrl;
+            if (!url) return;
+            const rows = /** @type {NodeListOf<HTMLElement>} */ (
+                list.querySelectorAll("[data-backlog-row]")
+            );
+            submitForm(
+                url,
+                {
+                    after: rows[predecessorIndex(from, to)]?.dataset.sqid || "",
+                    lock_version: item.dataset.lockVersion || "",
+                },
+                "PATCH",
+            );
+        },
     });
 }
 

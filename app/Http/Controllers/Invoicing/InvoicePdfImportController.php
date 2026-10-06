@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Invoicing;
 
 use App\Enums\Document\DocumentType;
-use App\Enums\Invoicing\InvoiceDeliveryFormat;
+use App\Enums\Invoicing\{InvoiceDeliveryFormat, InvoiceStatus};
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Document\DocumentController;
 use App\Models\Customer\Customer;
@@ -178,7 +178,7 @@ class InvoicePdfImportController extends Controller {
                 'number' => $number,
                 'external_number' => $numberAlreadyUsed ? $detectedNumber : null,
                 'number_source' => 'file_import',
-                'status' => Invoice::STATUS_DRAFT,
+                'status' => InvoiceStatus::Draft,
                 'issued_on' => $extracted['issued_on'] ?? null,
                 'due_on' => $extracted['due_on'] ?? null,
                 'currency' => $currency->value,

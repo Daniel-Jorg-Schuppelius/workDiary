@@ -62,7 +62,7 @@
                     <div class="flex flex-wrap items-center justify-between gap-2">
                         <div>
                             <div class="font-medium">
-                                {{ $transaction->booking_date->format('d.m.Y') }} ·
+                                {{ $transaction->booking_date->fdate() }} ·
                                 <span class="{{ $transaction->isCredit() ? 'text-success' : 'text-base-content' }}">
                                     {{ $transaction->isCredit() ? '+' : '−' }}{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $transaction->amount, 2, withThousandsSeparator: true) }} {{ $transaction->currency->value }}
                                 </span>
@@ -77,9 +77,9 @@
                         <div class="flex items-center gap-2">
                             @if ($transaction->isReturnCandidate())
                                 {{-- Rückläufer-Kennzeichen (MVP-334): RVSL bzw. ISO-Rückgabegrund. --}}
-                                <span class="badge badge-error badge-outline badge-sm">
+                                <x-status-badge tone="error" outline>
                                     {{ __('bank.return.badge') }}@if ($transaction->return_reason) · {{ $transaction->return_reason }}@endif
-                                </span>
+                                </x-status-badge>
                             @endif
                             <x-status-badge :tone="$transaction->match_status->tone()" :label="$transaction->match_status->label()" />
                             {{-- Buchungsstand aus dem Journal gelesen (MVP-681) — die Bankseite führt keinen eigenen. --}}
@@ -147,7 +147,7 @@
                                 @endphp
                                 <div class="text-sm font-medium mb-1">
                                     {{ __('bank.split.title') }}
-                                    <span class="badge badge-ghost badge-xs">{{ count($txSplit) }}</span>
+                                    <x-status-badge size="xs">{{ count($txSplit) }}</x-status-badge>
                                 </div>
                                 {{-- Logik in Alpine.data("reconciliationSplit") (components.js) — CSP-Build-konform. --}}
                                 <form method="POST" action="{{ route('finance.reconciliation.confirm', $transaction->sqid) }}"
@@ -177,10 +177,10 @@
                                                         @endif
                                                         @if ($splitRow['suggestion'] !== null)
                                                             @foreach ($splitRow['suggestion']['reasons'] as $reason)
-                                                                <span class="badge badge-xs badge-ghost">{{ __('bank.reason.' . $reason) }}</span>
+                                                                <x-status-badge size="xs">{{ __('bank.reason.' . $reason) }}</x-status-badge>
                                                             @endforeach
                                                         @else
-                                                            <span class="badge badge-xs badge-warning badge-outline">{{ __('bank.split.no_match') }}</span>
+                                                            <x-status-badge tone="warning" size="xs" outline>{{ __('bank.split.no_match') }}</x-status-badge>
                                                         @endif
                                                     </span>
                                                 </label>
@@ -240,7 +240,7 @@
                                                         <span class="font-medium">{{ $targetLabel }}</span>
                                                         · {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($suggestion['open_amount'], 2, withThousandsSeparator: true) }}
                                                         @foreach ($suggestion['reasons'] as $reason)
-                                                            <span class="badge badge-xs badge-ghost">{{ __('bank.reason.' . $reason) }}</span>
+                                                            <x-status-badge size="xs">{{ __('bank.reason.' . $reason) }}</x-status-badge>
                                                         @endforeach
                                                     </span>
                                                 </label>
@@ -289,7 +289,7 @@
                                                     · {{ $detail['end_to_end_id'] }}
                                                 @endif
                                                 @if (! empty($detail['return_reason']))
-                                                    · <span class="badge badge-error badge-outline badge-xs">{{ $detail['return_reason'] }}</span>
+                                                    · <x-status-badge tone="error" size="xs" outline>{{ $detail['return_reason'] }}</x-status-badge>
                                                 @endif
                                             </div>
                                             <div class="space-y-1">
@@ -302,7 +302,7 @@
                                                         {{ \App\Support\EntityType::label($allocation->allocatable_type) }} #{{ $allocation->allocatable_id }}
                                                         · {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $allocation->amount, 2, withThousandsSeparator: true) }}
                                                         @foreach ($origin['reasons'] as $reason)
-                                                            <span class="badge badge-xs badge-ghost">{{ __('bank.return.reason.' . $reason) }}</span>
+                                                            <x-status-badge size="xs">{{ __('bank.return.reason.' . $reason) }}</x-status-badge>
                                                         @endforeach
                                                     </label>
                                                 @endforeach
@@ -337,7 +337,7 @@
                                                     {{ \App\Support\EntityType::label($allocation->allocatable_type) }} #{{ $allocation->allocatable_id }}
                                                     · {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $allocation->amount, 2, withThousandsSeparator: true) }}
                                                     @foreach ($origin['reasons'] as $reason)
-                                                        <span class="badge badge-xs badge-ghost">{{ __('bank.return.reason.' . $reason) }}</span>
+                                                        <x-status-badge size="xs">{{ __('bank.return.reason.' . $reason) }}</x-status-badge>
                                                     @endforeach
                                                 </label>
                                             @endforeach

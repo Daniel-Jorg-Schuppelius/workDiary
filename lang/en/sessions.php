@@ -36,9 +36,6 @@ return [
     ],
 
     'section' => [
-        'sessions' => 'Web/app sessions',
-        'tokens' => 'API tokens',
-        'devices' => 'Location devices',
         'terminals' => 'Attendance terminals',
         'remote_support' => 'Recent remote support',
     ],
@@ -58,6 +55,13 @@ return [
         'remote' => 'Identifier',
         'started' => 'Started',
         'ended' => 'Ended',
+        'kind' => 'Type',
+    ],
+
+    'kind' => [
+        'session' => 'Web/app session',
+        'token' => 'API token',
+        'device' => 'Location device',
     ],
 
     'terminal' => [

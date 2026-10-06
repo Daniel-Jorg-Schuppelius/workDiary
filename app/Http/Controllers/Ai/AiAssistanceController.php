@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Ai;
 
 use App\Enums\User\Permission;
-use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
+use App\Http\Controllers\Concerns\{RequiresPlatformOperator, ResolvesCurrentOrganization};
 use App\Http\Controllers\Controller;
 use App\Models\Ai\AiTextSuggestion;
 use App\Models\Communication\CommunicationNote;
@@ -47,6 +47,8 @@ use Illuminate\Support\Facades\{Auth, Gate};
  * gelesen und verworfen, die Entscheidung wird auditiert.
  */
 class AiAssistanceController extends Controller {
+    use RequiresPlatformOperator;
+
     use ResolvesCurrentOrganization;
     public function __construct(
         private readonly DocumentTranslationSuggestionService $documentTexts,
@@ -143,6 +145,8 @@ class AiAssistanceController extends Controller {
     /** Health-Block des Supportberichts erklären (PII-frei per Whitelist). */
     public function supportDiagnose(): RedirectResponse {
         Gate::authorize(Permission::PlatformSupportExport->value);
+        // Der Bericht beschreibt die Installation, nicht den Mandanten (authz-b-7).
+        $this->assertPlatformOperator();
         $this->authorizeAiUse();
 
         return $this->guarded(function (): string {

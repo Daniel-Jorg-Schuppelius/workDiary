@@ -38,11 +38,11 @@
     </form>
 
     <x-slot:actions>
-        <button type="button" class="btn btn-ghost gap-2" data-entry-modal-close>
-            <x-icon name="close" /> {{ __('Abbrechen') }}
-        </button>
-        <button type="submit" form="gobd-check-form" class="btn btn-primary gap-2">
-            <x-icon name="fact_check" /> {{ __('gobd.preflight.check') }}
-        </button>
+        <x-button tone="ghost" size="md" icon="close" class="gap-2" data-entry-modal-close>
+            {{ __('Abbrechen') }}
+        </x-button>
+        <x-button type="submit" size="md" icon="fact_check" class="gap-2" form="gobd-check-form">
+            {{ __('gobd.preflight.check') }}
+        </x-button>
     </x-slot:actions>
 </x-modal>

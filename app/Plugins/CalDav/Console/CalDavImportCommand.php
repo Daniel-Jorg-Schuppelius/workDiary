@@ -12,54 +12,38 @@ declare(strict_types=1);
 
 namespace App\Plugins\CalDav\Console;
 
+use App\Plugins\CalDav\CalDavPlugin;
 use App\Plugins\CalDav\Models\CalDavConnection;
 use App\Plugins\CalDav\Services\CalDavCalendarImportService;
-use Illuminate\Console\Command;
-use Throwable;
+use App\Plugins\Support\Calendar\Console\CalendarImportCommand;
+use App\Plugins\Support\Calendar\RemoteCalendarConnection;
 
 /**
  * Kalender-Rückimport CalDAV (Feature 121, MVP-610b): Delta aller Anbindungen
  * mit `two_way`-Opt-in → Integrations-Inbox-Fälle. Fehler zählen auf die
  * Verbindungs-Gesundheit.
+ *
+ * @extends CalendarImportCommand<CalDavConnection>
  */
-class CalDavImportCommand extends Command {
+class CalDavImportCommand extends CalendarImportCommand {
     protected $signature = 'caldav:import
         {--organization= : ID einer einzelnen Organisation, sonst alle}';
 
     protected $description = 'Importiert Änderungen aus den CalDAV-Kalendern als Integrations-Inbox-Vorschläge (Zwei-Wege, Opt-in).';
 
-    public function handle(CalDavCalendarImportService $import): int {
-        $orgOption = $this->option('organization');
-        $failed = 0;
-        $totals = ['proposals' => 0, 'conflicts' => 0, 'deleted' => 0];
+    protected function pluginId(): string {
+        return CalDavPlugin::ID;
+    }
 
-        $connections = CalDavConnection::query()
-            ->withoutGlobalScopes()
-            ->where('two_way', true)
-            ->when(is_numeric($orgOption), fn ($q) => $q->where('organization_id', (int) $orgOption))
-            ->get();
+    protected function connectionModel(): string {
+        return CalDavConnection::class;
+    }
 
-        foreach ($connections as $connection) {
-            try {
-                $result = $import->run($connection);
-                foreach ($totals as $key => $value) {
-                    $totals[$key] = $value + $result[$key];
-                }
-                $connection->recordConnectionSuccess();
-            } catch (Throwable $e) {
-                $failed++;
-                $connection->recordConnectionFailure(class_basename($e));
-            }
-        }
+    protected function import(RemoteCalendarConnection $connection): array {
+        return app(CalDavCalendarImportService::class)->run($connection);
+    }
 
-        $this->info(sprintf(
-            'CalDAV-Rückimport: %d Vorschläge, %d Konflikte, %d Lösch-Hinweise, %d Fehler',
-            $totals['proposals'],
-            $totals['conflicts'],
-            $totals['deleted'],
-            $failed,
-        ));
-
-        return $failed > 0 ? self::FAILURE : self::SUCCESS;
+    protected function label(): string {
+        return 'CalDAV-Rückimport';
     }
 }

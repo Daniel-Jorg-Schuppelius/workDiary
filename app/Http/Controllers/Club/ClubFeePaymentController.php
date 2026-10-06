@@ -184,7 +184,7 @@ class ClubFeePaymentController extends Controller {
         return view('club.fees.collections.index', [
             'proposals' => $proposals,
             'bankAccounts' => BankAccount::query()->where('is_active', true)->orderBy('label')->get(),
-            'runs' => PaymentRun::query()->where('kind', \App\Enums\Finance\PaymentRunKind::DirectDebit->value)->whereHas('items', fn($q) => $q->whereNotNull('sepa_mandate_id')->whereNull('incoming_einvoice_id'))->orderByDesc('id')->limit(20)->get(),
+            'runs' => $this->payments->collectionRuns()->orderByDesc('id')->limit(20)->get(),
             'formatsAvailable' => FinancialFormatsSupport::isAvailable(),
             'today' => CarbonImmutable::today(),
             'canManage' => Gate::allows('create', ClubFeeAccount::class),
@@ -212,6 +212,7 @@ class ClubFeePaymentController extends Controller {
 
     public function cancelCollection(PaymentRun $run): RedirectResponse {
         Gate::authorize('create', ClubFeeAccount::class);
+        abort_unless($this->payments->isCollectionRun($run), 404);
         $this->payments->cancelCollectionRun($run);
 
         return redirect()->route('club.fees.collections.index')->with('success', __('club.fees.flash.collection_cancelled'));
@@ -219,6 +220,7 @@ class ClubFeePaymentController extends Controller {
 
     public function settleCollection(Request $request, PaymentRun $run): RedirectResponse {
         Gate::authorize('create', ClubFeeAccount::class);
+        abort_unless($this->payments->isCollectionRun($run), 404);
         $data = $request->validate(['paid_on' => ['required', 'date']]);
         /** @var User $actor */
         $actor = Auth::user();

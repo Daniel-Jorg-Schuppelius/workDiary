@@ -138,6 +138,10 @@ die letzte Migration von Kern und Plugins). Kerngruppen und `lang/*.json`
 behalten nur, was Kern, Plugin-Plattform oder mehrere Plugins nutzen (Gate
 `PluginTextsRuleTest`). Gemischte Migrationen (Kern- und Plugin-Tabellen)
 bleiben in `database/migrations`.
+In der Paketwurzel liegen nur `<Name>Plugin`, `<Name>ServiceProvider`, die
+Config-Klasse, `config.php` und `routes.php`; Dienste in `Services`,
+API-Clients (`*Client`, `*ClientFactory`) in `Api`, Exceptions in `Exceptions`
+(Gate `PluginPackageLayoutRuleTest`).
 
 ## Modulgrenzen: Contracts, Events, Erweiterungspunkte (MVP-863)
 
@@ -162,7 +166,10 @@ Welle 4 leer; ein neuer Verstoß wird gelöst, nicht eingetragen.
   `CloudIntakeHandler`, `RetentionPolicyProvider`, `MailIntakeHandler`,
   `OffboardingStep`, `NavigationCondition`, `PluginCapabilitySource`,
   `MirrorPdfRenderer`, `RuleAction`, `RuleTrigger` (Automationsregeln), `EarlyWarningSource`,
-  `PortalNoticeSource` (Hinweise im Kundenportal). Neue Scans, Specs, Quellen,
+  `PortalNoticeSource` (Hinweise im Kundenportal), `ArticleConflictHandler`
+  (Artikelkonflikt: Fremdstand übernehmen, Plugins tragen sich per `contribute()` ein),
+  `ApprovalInboxSubject` (Gegenstand im Genehmigungs-Eingang; entschieden wird auf dem
+  Weg des Gegenstands, Zuständigkeit über `ApprovalResponsibility`). Neue Scans, Specs, Quellen,
   Demo-Blöcke, Löschbereiche usw. **nie** in eine feste Liste, sondern ins
   Manifest des Moduls. Plugins haben kein Manifest und tragen sich beim Booten
   über `ModuleRegistry::contribute(Interface, Klasse)` ein (MVP-1045) — nie

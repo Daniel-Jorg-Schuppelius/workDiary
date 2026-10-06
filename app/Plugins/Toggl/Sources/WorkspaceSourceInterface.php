@@ -12,7 +12,7 @@ namespace App\Plugins\Toggl\Sources;
 
 /**
  * Quellen-Abstraktion für genau einen Toggl-Workspace. Entkoppelt den
- * {@see \App\Plugins\Toggl\TogglExportImporter} von der konkreten Herkunft der
+ * {@see \App\Plugins\Toggl\Services\TogglExportImporter} von der konkreten Herkunft der
  * Daten: ein Workspace-Export-Ordner ({@see FolderWorkspaceSource}) oder die
  * Toggl-API ({@see ApiWorkspaceSource}). Beide Implementierungen liefern die
  * Stammdaten im identischen Format wie der {@see TogglWorkspaceReader}.

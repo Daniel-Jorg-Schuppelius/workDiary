@@ -21,20 +21,20 @@
         @if ($incident->authority_deadline_at)
             <div class="alert {{ $incident->isDeadlineBreached() ? 'alert-error' : 'alert-warning' }}">
                 @if ($isProcessor)
-                    {{ __('72-h-Frist (Kunde meldet der Behörde)') }}: {{ $incident->authority_deadline_at->orgTz()->format('d.m.Y H:i') }} — {{ __('ihr informiert den Verantwortlichen/Kunden unverzüglich') }}
-                    @if ($incident->controller_notified_at) — {{ __('Kunde informiert am') }} {{ $incident->controller_notified_at->orgTz()->format('d.m.Y H:i') }} @endif
+                    {{ __('72-h-Frist (Kunde meldet der Behörde)') }}: {{ $incident->authority_deadline_at->fdatetime() }} — {{ __('ihr informiert den Verantwortlichen/Kunden unverzüglich') }}
+                    @if ($incident->controller_notified_at) — {{ __('Kunde informiert am') }} {{ $incident->controller_notified_at->fdatetime() }} @endif
                 @else
-                    {{ __('72-h-Meldefrist') }}: {{ $incident->authority_deadline_at->orgTz()->format('d.m.Y H:i') }}
-                    @if ($incident->authority_notified_at) — {{ __('Behörde gemeldet am') }} {{ $incident->authority_notified_at->orgTz()->format('d.m.Y H:i') }} @endif
+                    {{ __('72-h-Meldefrist') }}: {{ $incident->authority_deadline_at->fdatetime() }}
+                    @if ($incident->authority_notified_at) — {{ __('Behörde gemeldet am') }} {{ $incident->authority_notified_at->fdatetime() }} @endif
                 @endif
             </div>
         @endif
 
         @if ($incident->own_infrastructure_affected)
-            <div class="alert alert-warning text-sm">{{ __('Eigene Infrastruktur mitbetroffen – ggf. zusätzlich einen eigenen Meldefall (als Verantwortlicher) prüfen.') }}</div>
+            <div role="alert" class="alert alert-warning text-sm">{{ __('Eigene Infrastruktur mitbetroffen – ggf. zusätzlich einen eigenen Meldefall (als Verantwortlicher) prüfen.') }}</div>
         @endif
         @if ($authorityRecommendation)
-            <div class="alert alert-info text-sm">
+            <div role="status" class="alert alert-info text-sm">
                 <x-icon name="location_on" />
                 <span>
                     {{ __('Bundesland-Vorschlag anhand der :source-PLZ :postal: :state.', [
@@ -69,13 +69,14 @@
                 <x-card class="space-y-2">
                     <form method="post" action="{{ route('dataprotection.incidents.assess', $incident) }}" class="space-y-1">
                         @csrf
-                        <select name="risk_level" class="select select-sm select-bordered w-full">
+                        <select name="risk_level" class="select select-sm select-bordered w-full" required aria-label="{{ __('Risikoeinstufung') }}">
+                            <option value="" selected disabled>{{ __('Bitte wählen') }}</option>
                             <option value="low">{{ __('Geringes Risiko') }}</option>
                             <option value="medium">{{ __('Mittleres Risiko') }}</option>
                             <option value="high">{{ __('Hohes Risiko') }}</option>
                         </select>
                         <textarea aria-label="{{ __('Sofortmaßnahmen') }}" name="measures" rows="2" class="textarea textarea-sm textarea-bordered w-full" placeholder="{{ __('Sofortmaßnahmen') }}"></textarea>
-                        <button class="btn btn-sm w-full">{{ __('Bewertung speichern') }}</button>
+                        <x-button type="submit" tone="plain" class="w-full">{{ __('Bewertung speichern') }}</x-button>
                     </form>
                     @if ($isProcessor)
                         {{-- AV-Vorfall (Art. 33 Abs. 2): Verantwortlichen/Kunden informieren --}}
@@ -91,7 +92,7 @@
                             @csrf
                             <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="authority" value="1" class="checkbox checkbox-sm"> {{ __('Behörde melden') }}</label>
                             <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="subjects" value="1" class="checkbox checkbox-sm"> {{ __('Betroffene benachrichtigen') }}</label>
-                            <button class="btn btn-sm w-full">{{ __('Meldeentscheidung') }}</button>
+                            <x-button type="submit" tone="plain" class="w-full">{{ __('Meldeentscheidung') }}</x-button>
                         </form>
                     @endif
                     @if ($incident->status->isOpen())
@@ -111,12 +112,12 @@
             <ul class="space-y-1">
                 @forelse ($incident->measures as $m)
                     <li class="flex items-center justify-between text-sm rounded-box border border-base-300 px-3 py-2">
-                        <span>{{ $m->title }} @if ($m->due_at)<span class="{{ $m->isOverdue() ? 'text-error' : 'text-muted' }}">({{ __('bis') }} {{ $m->due_at->format('d.m.Y') }})</span>@endif</span>
-                        @if ($m->status === 'done')
+                        <span>{{ $m->title }} @if ($m->due_at)<span class="{{ $m->isOverdue() ? 'text-error' : 'text-muted' }}">({{ __('bis') }} {{ $m->due_at->fdate() }})</span>@endif</span>
+                        @if ($m->status === \App\Enums\Privacy\MeasureStatus::Done)
                             <x-status-badge tone="success" size="sm">{{ __('erledigt') }}</x-status-badge>
                         @else
                             @can('update', $incident)
-                                <form method="post" action="{{ route('dataprotection.incidents.measure.complete', [$incident, $m]) }}">@csrf <button class="btn btn-xs">{{ __('Erledigt') }}</button></form>
+                                <form method="post" action="{{ route('dataprotection.incidents.measure.complete', [$incident, $m]) }}">@csrf <x-button type="submit" tone="plain" size="xs">{{ __('Erledigt') }}</x-button></form>
                             @endcan
                         @endif
                     </li>
@@ -169,7 +170,7 @@
                         <strong>{{ __('Dokumentierte Meldung') }}:</strong>
                         {{ $incident->authority_name ?? '—' }} ·
                         {{ $incident->authority_report_type === 'follow_up' ? __('Folgemeldung') : __('Erstmeldung') }} ·
-                        {{ $incident->authority_notified_at->orgTz()->format('d.m.Y H:i') }}
+                        {{ $incident->authority_notified_at->fdatetime() }}
                         @if ($incident->authority_report_reference) · {{ __('Kennung') }}: {{ $incident->authority_report_reference }} @endif
                         @if ($incident->authority_case_number) · {{ __('Aktenzeichen') }}: {{ $incident->authority_case_number }} @endif
                     </div>
@@ -204,7 +205,7 @@
                     @if ($incident->subjects_notified_at)
                         <div class="rounded-box bg-base-200 p-3 text-sm">
                             <strong>{{ __('Betroffene benachrichtigt') }}:</strong>
-                            {{ $incident->subjects_notified_at->orgTz()->format('d.m.Y H:i') }}
+                            {{ $incident->subjects_notified_at->fdatetime() }}
                         </div>
                     @elseif ($incident->status !== \App\Enums\Privacy\IncidentStatus::Closed)
                         @can('update', $incident)
@@ -251,7 +252,7 @@
                 <form method="post" action="{{ route('dataprotection.incidents.attach', $incident) }}" enctype="multipart/form-data" class="flex gap-2 pt-2">
                     @csrf
                     <input type="file" name="file" class="file-input file-input-sm file-input-bordered flex-1" required>
-                    <button class="btn btn-sm">{{ __('Hochladen') }}</button>
+                    <x-button type="submit" tone="plain">{{ __('Hochladen') }}</x-button>
                 </form>
             @endcan
         </x-card>

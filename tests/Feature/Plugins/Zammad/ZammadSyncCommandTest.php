@@ -29,6 +29,7 @@ final class ZammadSyncCommandTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
+        config()->set('plugins.zammad.enabled', true);
     }
 
     /**

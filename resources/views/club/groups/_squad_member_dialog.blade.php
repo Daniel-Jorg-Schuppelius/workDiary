@@ -47,7 +47,7 @@
             <x-input-field name="guest_origin" :label="__('club.teams.field.guest_origin')" maxlength="120" span="2" :value="old('guest_origin', $entry->guest_origin)" :hint="__('club.teams.hint.guest_origin')" />
         @endif
         @if ($isEdit)
-            <x-input-field name="valid_to" type="date" :label="__('club.field.valid_to')" :value="old('valid_to', $entry->valid_to?->toDateString())" :hint="__('club.field.valid_from') . ': ' . $entry->valid_from->format('d.m.Y')" />
+            <x-input-field name="valid_to" type="date" :label="__('club.field.valid_to')" :value="old('valid_to', $entry->valid_to?->toDateString())" :hint="__('club.field.valid_from') . ': ' . $entry->valid_from->fdate()" />
         @else
             <x-date-range class="md:col-span-2" layout="split" form-control from-name="valid_from" to-name="valid_to"
                           :from-label="__('club.field.valid_from')" :to-label="__('club.field.valid_to')"

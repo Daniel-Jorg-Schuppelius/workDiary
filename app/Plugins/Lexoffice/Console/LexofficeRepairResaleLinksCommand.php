@@ -14,9 +14,8 @@ namespace App\Plugins\Lexoffice\Console;
 
 use App\Console\Concerns\IteratesOrganizations;
 use App\Models\Reselling\ResalePeriodLink;
-use App\Plugins\Lexoffice\LexofficeVoucherLineSync;
 use App\Plugins\Lexoffice\Models\{LexofficeVoucher, LexofficeVoucherLine};
-use App\Plugins\Lexoffice\Services\LexofficeArticleCatalogSource;
+use App\Plugins\Lexoffice\Services\{LexofficeArticleCatalogSource, LexofficeVoucherLineSync};
 use App\Services\Platform\Catalog\ArticleCatalog;
 use Illuminate\Console\Command;
 use Illuminate\Database\Query\Builder as QueryBuilder;

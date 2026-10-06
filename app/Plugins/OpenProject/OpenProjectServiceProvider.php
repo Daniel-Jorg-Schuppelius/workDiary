@@ -11,7 +11,7 @@
 namespace App\Plugins\OpenProject;
 
 use App\Plugins\OpenProject\Console\{OpenProjectPushCommand, OpenProjectSyncCommand};
-use App\Plugins\OpenProject\Services\{OpenProjectExportService, OpenProjectImportService, OpenProjectOutboxDispatcher, OpenProjectStructureSync};
+use App\Plugins\OpenProject\Services\{OpenProjectExportService, OpenProjectGroupBooker, OpenProjectImportService, OpenProjectOutboxDispatcher, OpenProjectStructureSync};
 use App\Plugins\Support\PluginServiceProviderBase;
 use App\Services\Integration\{InboxGroupBookerRegistry, IntegrationOutboxDispatcherResolver};
 

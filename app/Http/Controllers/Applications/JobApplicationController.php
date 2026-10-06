@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Applications;
 
+use App\Enums\Applications\{JobApplicationStatus, JobRequisitionStatus};
 use App\Enums\Document\DocumentType;
 use App\Http\Controllers\Concerns\WritesContactDetails;
 use App\Http\Controllers\Controller;
@@ -20,10 +21,11 @@ use App\Models\Applications\{EmployeeDraft, JobApplication, JobRequisition};
 use App\Models\Platform\User;
 use App\Services\Applications\RecruitingService;
 use App\Services\Document\DocumentService;
-use App\Support\{ErrorText, SortableQuery};
+use App\Support\{ErrorText, SortableQuery, Tz};
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\Validation\Rule;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 /**
@@ -40,12 +42,11 @@ class JobApplicationController extends Controller {
     public function index(Request $request): View {
         Gate::authorize('viewAny', JobApplication::class);
 
-        $status = $request->string('status')->toString();
-        $statusFilter = in_array($status, JobApplication::STATUSES, true) ? $status : '';
+        $statusFilter = JobApplicationStatus::tryFrom($request->string('status')->toString());
 
         $query = JobApplication::query()
             ->with(['requisition', 'responsible'])
-            ->when($statusFilter !== '', fn($q) => $q->where('status', $statusFilter));
+            ->when($statusFilter !== null, fn($q) => $q->where('status', $statusFilter));
 
         [$sort, $dir] = SortableQuery::apply($query, $request, [
             'candidate' => 'candidate_name',
@@ -56,8 +57,8 @@ class JobApplicationController extends Controller {
 
         return view('applications.recruiting.applications.index', [
             'applications' => $query->paginate(25)->withQueryString(),
-            'statuses' => JobApplication::STATUSES,
-            'filters' => ['status' => $statusFilter],
+            'statuses' => JobApplicationStatus::cases(),
+            'filters' => ['status' => $statusFilter->value ?? ''],
             'sort' => $sort,
             'dir' => $dir,
         ]);
@@ -67,7 +68,7 @@ class JobApplicationController extends Controller {
         Gate::authorize('create', JobApplication::class);
 
         return view('applications.recruiting.applications._form_dialog', [
-            'requisitions' => JobRequisition::query()->whereIn('status', ['draft', 'open'])->orderBy('title')->get(['id', 'title']),
+            'requisitions' => JobRequisition::query()->whereIn('status', [JobRequisitionStatus::Draft, JobRequisitionStatus::Open])->orderBy('title')->get(['id', 'title']),
             'users' => User::inCurrentOrganization()->orderBy('name')->get(['id', 'name']),
         ]);
     }
@@ -104,7 +105,7 @@ class JobApplicationController extends Controller {
         Gate::authorize('view', $application);
         // `uploads` sind die ueber den oeffentlichen Karrierebereich
         // eingereichten Unterlagen; sie blieben bis `MVP-795` unerreichbar.
-        $application->load(['requisition', 'posting', 'documents.document', 'uploads', 'interviews.interviewer', 'reviews.reviewer', 'negotiations.versions', 'negotiations.reviewItems', 'negotiations.approvals', 'employeeDraft', 'responsible']);
+        $application->load(['requisition', 'posting', 'documents.document', 'uploads', 'interviews.interviewer', 'reviews.reviewer', 'negotiations.versions', 'negotiations.reviewItems', 'negotiations.approvals.decidedBy:id,name', 'employeeDraft', 'responsible']);
 
         return view('applications.recruiting.applications.show', [
             'application' => $application,
@@ -118,12 +119,12 @@ class JobApplicationController extends Controller {
     public function updateStatus(Request $request, JobApplication $application): RedirectResponse {
         Gate::authorize('update', $application);
         $data = $request->validate([
-            'status' => ['required', 'in:screened,interview_planned,interviewed,task_open'],
+            'status' => ['required', Rule::enum(JobApplicationStatus::class)->only(JobApplicationStatus::working())],
         ]);
-        if (! in_array($application->status, JobApplication::PIPELINE_STATUSES, true)) {
+        if (! $application->status->inPipeline()) {
             return back()->with('error', __('Die Akte ist bereits entschieden.'));
         }
-        $application->update(['status' => $data['status']]);
+        $application->update(['status' => JobApplicationStatus::from($data['status'])]);
 
         return back()->with('success', __('Status aktualisiert.'));
     }
@@ -140,15 +141,11 @@ class JobApplicationController extends Controller {
             'notes' => ['nullable', 'string', 'max:5000'],
         ]);
 
-        $application->interviews()->create([
-            'organization_id' => $application->organization_id,
-            'scheduled_at' => $data['scheduled_at'],
-            'mode' => $data['mode'],
-            'interviewer_id' => $data['interviewer_id'] ?? null,
-            'status' => 'planned',
-            'notes' => trim((string) ($data['notes'] ?? '')) ?: null,
-        ]);
-        $application->update(['status' => 'interview_planned']);
+        try {
+            $this->recruiting->planInterview($application, Tz::parse((string) $data['scheduled_at']), (string) $data['mode'], isset($data['interviewer_id']) ? (int) $data['interviewer_id'] : null, $data['notes'] ?? null);
+        } catch (\RuntimeException $e) {
+            return back()->with('error', ErrorText::for($e));
+        }
 
         return back()->with('success', __('Gespräch geplant.'));
     }
@@ -161,12 +158,11 @@ class JobApplicationController extends Controller {
             'notes' => ['nullable', 'string', 'max:5000'],
         ]);
 
-        $interview->update([
-            'status' => 'done',
-            'rating' => $data['rating'] ?? null,
-            'notes' => trim((string) ($data['notes'] ?? '')) ?: $interview->notes,
-        ]);
-        $application->update(['status' => 'interviewed']);
+        try {
+            $this->recruiting->completeInterview($application, $interview, isset($data['rating']) ? (int) $data['rating'] : null, $data['notes'] ?? null);
+        } catch (\RuntimeException $e) {
+            return back()->with('error', ErrorText::for($e));
+        }
 
         return back()->with('success', __('Gespräch dokumentiert.'));
     }
@@ -229,6 +225,22 @@ class JobApplicationController extends Controller {
         }
 
         return back()->with('success', __('Entscheidung dokumentiert.'));
+    }
+
+    /** Aufnahme aus dem Talentpool — die einzige Ausnahme von „entschieden ist endgültig“. */
+    public function readmit(Request $request, JobApplication $application): RedirectResponse {
+        Gate::authorize('decide', $application);
+        $data = $request->validate([
+            'note' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        try {
+            $this->recruiting->readmit($application, $this->actor(), $data['note'] ?? null);
+        } catch (\RuntimeException $e) {
+            return back()->with('error', ErrorText::for($e));
+        }
+
+        return redirect()->route('recruiting.applications.show', $application)->with('success', __('Bewerbung aus dem Talentpool aufgenommen.'));
     }
 
     /** Auskunft/Export (Art. 15 DSGVO): strukturierte JSON-Kopie. */

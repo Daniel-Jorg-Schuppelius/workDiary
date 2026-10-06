@@ -111,7 +111,7 @@ class QuoteController extends Controller {
      */
     public function orderConfirmationPdf(Quote $quote): \Symfony\Component\HttpFoundation\Response {
         Gate::authorize('view', $quote);
-        abort_unless(in_array($quote->status, ['accepted', 'partially_accepted'], true), 422, (string) __('Nur angenommene Angebote können bestätigt werden.'));
+        abort_unless($quote->status->isWon(), 422, (string) __('Nur angenommene Angebote können bestätigt werden.'));
 
         $bytes = app(\App\Services\Invoicing\OrderConfirmationPdfRenderer::class)->output($quote);
 
@@ -334,7 +334,7 @@ class QuoteController extends Controller {
         return view('quotes.portal', [
             'quote' => $quote,
             'token' => (string) $request->query('token'),
-            'decided' => in_array($quote->status, ['accepted', 'partially_accepted', 'rejected'], true),
+            'decided' => $quote->status->isDecided(),
         ]);
     }
 

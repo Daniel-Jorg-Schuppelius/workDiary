@@ -36,7 +36,7 @@
                     <x-status-badge tone="warning">{{ __('Pflicht') }}</x-status-badge>
                 @endif
                 @if ($event->category)
-                    <span class="badge" style="background:{{ $event->category->color ?? '#999' }};color:#fff">{{ $event->category->name }}</span>
+                    <x-status-badge tone="plain" size="md" style="background:{{ $event->category->color ?? '#999' }};color:#fff">{{ $event->category->name }}</x-status-badge>
                 @endif
                 <span class="opacity-70">{{ $event->visibility?->label() }}</span>
             </div>
@@ -91,7 +91,7 @@
                         </div>
                     </div>
                 @empty
-                    <p class="text-sm opacity-70">{{ __('Keine Räume gebucht.') }}</p>
+                    <x-empty-state icon="meeting_room" :title="__('Keine Räume gebucht.')" compact />
                 @endforelse
             </x-card>
         </div>

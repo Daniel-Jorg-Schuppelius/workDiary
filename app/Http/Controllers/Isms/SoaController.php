@@ -11,8 +11,8 @@
 namespace App\Http\Controllers\Isms;
 
 use App\Http\Controllers\Controller;
-use App\Models\Isms\{IsmsApplicabilityStatement, IsmsRequirement, IsmsScope};
-use App\Support\SqidEncoder;
+use App\Http\Controllers\Isms\Concerns\ResolvesIsmsScope;
+use App\Models\Isms\{IsmsApplicabilityStatement, IsmsRequirement};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -27,14 +27,12 @@ use Illuminate\View\View;
  * Standalone-Ansicht erreichbar (Muster: Fallakte).
  */
 class SoaController extends Controller {
-    public function __construct(
-        private readonly SqidEncoder $sqids,
-    ) {}
+    use ResolvesIsmsScope;
 
     public function __invoke(Request $request): View {
         Gate::authorize('viewAny', IsmsRequirement::class);
 
-        $scope = $this->resolveScope($request->query('scope'));
+        $scope = $this->scopeForView($request->query('scope'));
         $normFilter = $this->parseNormFilter((string) $request->query('norm', 'all'));
         [$norm, $edition] = $normFilter ?? [null, null];
 
@@ -71,23 +69,6 @@ class SoaController extends Controller {
         return $request->boolean('print')
             ? view('isms.soa', $data)
             : view('isms._soa_dialog', $data);
-    }
-
-    /**
-     * Scope-Query-Param (Sqid) auflösen — ungültige oder fremde Werte
-     * (Org-Scope!) fallen auf den Default-Scope zurück.
-     */
-    private function resolveScope(mixed $sqid): ?IsmsScope {
-        if (is_string($sqid) && $sqid !== '') {
-            $id = $this->sqids->decode(IsmsScope::class, $sqid);
-            $scope = $id === null ? null : IsmsScope::query()->whereKey($id)->first();
-
-            if ($scope !== null) {
-                return $scope;
-            }
-        }
-
-        return IsmsScope::query()->where('is_default', true)->first();
     }
 
     /**

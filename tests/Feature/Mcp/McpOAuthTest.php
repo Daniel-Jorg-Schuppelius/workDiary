@@ -170,6 +170,20 @@ class McpOAuthTest extends TestCase {
         $this->post('/oauth/token', ['grant_type' => 'refresh_token', 'client_id' => $clientId, 'refresh_token' => $second['refresh_token']])->assertStatus(400);
     }
 
+    /** Sicherheitsaudit 2026-10-04, pub-2: ein deaktiviertes Konto tauscht keinen offenen Code, erneuert kein Token und ruft kein Werkzeug. */
+    public function test_deactivated_account_gets_no_tokens_and_no_tools(): void {
+        $clientId = $this->registerClient();
+        $tokens = $this->exchange($clientId, $this->code($clientId))->assertOk()->json();
+        $pendingCode = $this->code($clientId);
+        $this->assertNotSame([], $this->toolNames($tokens['access_token']));
+
+        $this->user->forceFill(['deactivated_at' => now()])->save();
+
+        $this->exchange($clientId, $pendingCode)->assertStatus(400);
+        $this->app['auth']->forgetGuards();
+        $this->post('/oauth/token', ['grant_type' => 'refresh_token', 'client_id' => $clientId, 'refresh_token' => $tokens['refresh_token']])->assertStatus(400);
+    }
+
     public function test_disabled_organization_and_untrusted_targets(): void {
         $clientId = $this->registerClient();
         $tokens = $this->exchange($clientId, $this->code($clientId))->assertOk()->json();

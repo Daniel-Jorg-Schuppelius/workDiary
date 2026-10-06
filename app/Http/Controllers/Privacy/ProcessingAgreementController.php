@@ -13,12 +13,13 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Privacy;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Privacy\Concerns\ManagesAgreementLinks;
 use App\Models\Privacy\{ProcessingActivity, ProcessingAgreement, Processor, Subprocessor};
 use App\Services\Privacy\AgreementService;
 use App\Support\Sqid;
 use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{Gate, Storage};
+use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
@@ -27,6 +28,8 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
  * Nachweis, Unterauftragsverarbeiter und Verknuepfung zu Verarbeitungstaetigkeiten.
  */
 class ProcessingAgreementController extends Controller {
+    use ManagesAgreementLinks;
+
     public function __construct(private readonly AgreementService $service) {}
 
     public function index(): View {
@@ -117,21 +120,8 @@ class ProcessingAgreementController extends Controller {
 
     public function syncActivities(Request $request, ProcessingAgreement $agreement): RedirectResponse {
         Gate::authorize('update', $agreement);
-        // Sqids aus dem Formular (Audit 2026-08, W3.3).
-        $data = $request->validate(['activity_ids' => ['array'], 'activity_ids.*' => ['string']]);
-        $requested = array_filter(array_map(
-            static fn (string $v): ?int => \App\Support\Sqid::decodeOrNumeric(ProcessingActivity::class, $v),
-            $data['activity_ids'] ?? [],
-        ));
 
-        // Nur Taetigkeiten der eigenen Org verknuepfen.
-        $valid = ProcessingActivity::query()
-            ->where('organization_id', $agreement->organization_id)
-            ->whereIn('id', $requested)
-            ->pluck('id')->all();
-        $agreement->activities()->sync($valid);
-
-        return back()->with('status', __('Verknüpfungen gespeichert.'));
+        return $this->syncAgreementActivities($request, $agreement);
     }
 
     public function storeSubprocessor(Request $request, ProcessingAgreement $agreement): RedirectResponse {
@@ -185,9 +175,7 @@ class ProcessingAgreementController extends Controller {
 
     public function downloadDocument(ProcessingAgreement $agreement): BinaryFileResponse {
         Gate::authorize('view', $agreement);
-        $path = $agreement->document_path;
-        abort_if($path === null || ! Storage::disk('local')->exists($path), 404);
 
-        return response()->download(Storage::disk('local')->path($path), $agreement->document_name ?? 'avv.pdf');
+        return $this->downloadAgreementDocument($agreement, 'avv.pdf');
     }
 }

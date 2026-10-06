@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\AssetFinance;
 
-use App\Enums\AssetFinance\AssetFinanceEndKind;
+use App\Enums\AssetFinance\{AssetFinanceEndKind, AssetFinanceEndProcessStatus};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
 use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
@@ -27,15 +27,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $organization_id
  * @property int $asset_finance_contract_id
  * @property AssetFinanceEndKind $kind
- * @property string $status
+ * @property AssetFinanceEndProcessStatus $status
  */
 class AssetFinanceEndProcess extends Model {
     use Auditable;
     use BelongsToOrganization;
     use HasAttachments;
     use HasSqid;
-
-    public const STATUSES = ['draft', 'in_progress', 'completed'];
 
     protected $fillable = [
         'organization_id', 'asset_finance_contract_id', 'kind', 'status',
@@ -47,6 +45,7 @@ class AssetFinanceEndProcess extends Model {
     /** @var array<string, string> */
     protected $casts = [
         'kind' => AssetFinanceEndKind::class,
+        'status' => AssetFinanceEndProcessStatus::class,
         'meter_value' => 'decimal:4',
         'operating_hours' => 'decimal:2',
         'follow_up_amount' => 'decimal:2',

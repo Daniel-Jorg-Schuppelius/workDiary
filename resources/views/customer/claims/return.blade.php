@@ -26,7 +26,7 @@
                     <x-select-field name="delivery_id" :label="__('claims.portal_return.field.delivery')">
                         <option value="">—</option>
                         @foreach ($deliveries as $delivery)
-                            <option value="{{ $delivery->sqid }}" @selected(old('delivery_id') === $delivery->sqid)>{{ $delivery->name_snapshot }} ({{ $delivery->sku_snapshot }}) — {{ $delivery->delivered_at?->format('d.m.Y') }}</option>
+                            <option value="{{ $delivery->sqid }}" @selected(old('delivery_id') === $delivery->sqid)>{{ $delivery->name_snapshot }} ({{ $delivery->sku_snapshot }}) — {{ $delivery->delivered_at?->fdate() }}</option>
                         @endforeach
                     </x-select-field>
                     @php($allSerials = collect($serials)->flatten()->unique()->values())

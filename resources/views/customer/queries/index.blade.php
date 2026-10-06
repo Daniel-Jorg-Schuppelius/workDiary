@@ -17,7 +17,7 @@
 
     <div class="space-y-3">
         @forelse ($queries as $query)
-            <div class="rounded-box border border-base-300 bg-base-100 p-4">
+            <x-card>
                 <div class="mb-2 flex flex-wrap items-center gap-2 text-xs text-muted">
                     <span class="font-medium text-base-content">{{ $query->subject !== null ? $subjects->label($query->subject) : __('(Vorgang nicht mehr verfügbar)') }}</span>
                     <span>·</span>
@@ -25,13 +25,13 @@
                     <span class="ms-auto">
                         @switch($query->status)
                             @case(\App\Enums\Customer\CustomerQueryStatus::Answered)
-                                <span class="badge badge-sm badge-success">{{ __('beantwortet') }}</span>
+                                <x-status-badge tone="success">{{ __('beantwortet') }}</x-status-badge>
                                 @break
                             @case(\App\Enums\Customer\CustomerQueryStatus::Closed)
-                                <span class="badge badge-sm badge-ghost">{{ __('geschlossen') }}</span>
+                                <x-status-badge>{{ __('geschlossen') }}</x-status-badge>
                                 @break
                             @default
-                                <span class="badge badge-sm badge-info">{{ __('offen') }}</span>
+                                <x-status-badge tone="info">{{ __('offen') }}</x-status-badge>
                         @endswitch
                     </span>
                 </div>
@@ -65,16 +65,13 @@
                 @if ($query->isOpen())
                     <form method="POST" action="{{ route('customer.queries.withdraw', $query) }}" class="mt-3">
                         @csrf
-                        <button type="submit" class="btn btn-ghost btn-xs">{{ __('Rückfrage zurückziehen') }}</button>
+                        <x-button type="submit" tone="ghost" size="xs">{{ __('Rückfrage zurückziehen') }}</x-button>
                     </form>
                 @endif
-            </div>
+            </x-card>
         @empty
-            <div class="rounded-box border border-base-300 bg-base-100 p-8 text-center">
-                <x-icon name="forum" class="mb-2 text-4xl text-muted" />
-                <p class="font-medium">{{ __('Noch keine Rückfragen.') }}</p>
-                <p class="mt-1 text-sm text-muted">{{ __('Stellen Sie Rückfragen direkt an freigegebenen Aufträgen, Zeiten oder Dokumenten.') }}</p>
-            </div>
+            <x-empty-state framed icon="forum" :title="__('Noch keine Rückfragen.')"
+                           :message="__('Stellen Sie Rückfragen direkt an freigegebenen Aufträgen, Zeiten oder Dokumenten.')" />
         @endforelse
     </div>
 

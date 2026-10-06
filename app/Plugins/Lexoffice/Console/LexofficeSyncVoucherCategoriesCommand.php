@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Plugins\Lexoffice\Console;
 
 use App\Console\Concerns\IteratesOrganizations;
-use App\Plugins\Lexoffice\{LexofficeConfig, LexofficeVoucherCategorySync};
+use App\Plugins\Lexoffice\LexofficeConfig;
+use App\Plugins\Lexoffice\Services\LexofficeVoucherCategorySync;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Support\Facades\Cache;
@@ -36,24 +37,20 @@ class LexofficeSyncVoucherCategoriesCommand extends Command {
             if ($config['enabled'] !== true || ! is_string($config['api_key']) || $config['api_key'] === '') {
                 continue;
             }
-            $lock = Cache::lock(LexofficeConfig::apiLockKey($org->id), 3600);
             try {
-                $lock->block(600);
+                Cache::lock(LexofficeConfig::apiLockKey((int) $org->id), 3600)->block(LexofficeConfig::API_LOCK_WAIT_SCHEDULED, function () use ($org, $config, $limit): void {
+                    try {
+                        $sync = new LexofficeVoucherCategorySync($config['api_key'], $config['base_url'], $config['request_interval']);
+                        do {
+                            $result = $sync->syncMissing($org, $limit);
+                            $this->line("Organisation #{$org->id} ({$org->name}): {$result['synced']} Belege, {$result['failed']} Fehler, {$result['remaining']} offen");
+                        } while ($this->option('all') && $result['remaining'] > 0 && $result['synced'] > 0);
+                    } catch (\Throwable $e) {
+                        $this->error("  Fehler: {$e->getMessage()}");
+                    }
+                });
             } catch (LockTimeoutException) {
                 $this->warn("Organisation #{$org->id} ({$org->name}): anderer Lexoffice-Lauf blockiert — übersprungen.");
-
-                continue;
-            }
-            try {
-                $sync = new LexofficeVoucherCategorySync($config['api_key'], $config['base_url'], LexofficeConfig::requestInterval($org->id));
-                do {
-                    $result = $sync->syncMissing($org, $limit);
-                    $this->line("Organisation #{$org->id} ({$org->name}): {$result['synced']} Belege, {$result['failed']} Fehler, {$result['remaining']} offen");
-                } while ($this->option('all') && $result['remaining'] > 0 && $result['synced'] > 0);
-            } catch (\Throwable $e) {
-                $this->error("  Fehler: {$e->getMessage()}");
-            } finally {
-                $lock->release();
             }
         }
 

@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\CustomerPortal;
 
+use App\Enums\Calendar\AppointmentRequestStatus;
 use App\Mail\AppointmentDecisionMail;
 use App\Models\Calendar\AppointmentRequest;
 use App\Models\Customer\Customer;
@@ -106,6 +107,6 @@ final class AppointmentDecisionMailTest extends TestCase {
 
         app(AppointmentRequestService::class)->confirm($request, $this->admin);
 
-        $this->assertSame(AppointmentRequest::STATUS_CONFIRMED, $request->fresh()?->status);
+        $this->assertSame(AppointmentRequestStatus::Confirmed, $request->fresh()?->status);
     }
 }

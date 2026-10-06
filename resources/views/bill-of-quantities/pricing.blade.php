@@ -19,7 +19,7 @@
 <x-index-page :subtitle="$bill->name" back-route="bill-of-quantities.show" :back-params="[$bill]" :back-label="__('gaeb.pricing.back')">
 
     @unless ($editable)
-        <div class="alert alert-info text-sm">{{ __('gaeb.pricing.locked') }}</div>
+        <div role="status" class="alert alert-info text-sm">{{ __('gaeb.pricing.locked') }}</div>
     @endunless
 
     <form method="POST" action="{{ route('bill-of-quantities.pricing.update', $bill) }}" data-entry-form>
@@ -46,7 +46,7 @@
                     @endphp
                     <tr>
                         <td class="whitespace-nowrap">{{ $item->reference_no }}</td>
-                        <td>{{ \Illuminate\Support\Str::limit((string) $item->short_text, 80) }}@if (! $item->type->isBillable()) <span class="badge badge-ghost badge-xs">{{ $item->type->label() }}</span>@endif</td>
+                        <td>{{ \Illuminate\Support\Str::limit((string) $item->short_text, 80) }}@if (! $item->type->isBillable()) <x-status-badge size="xs">{{ $item->type->label() }}</x-status-badge>@endif</td>
                         <td class="text-right tabular-nums whitespace-nowrap">{{ $item->quantity?->getNumericValue() !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $item->quantity->getNumericValue(), 3, trimTrailingZeros: true) : '—' }} {{ $item->unit }}</td>
                         @foreach ($kinds as $i => $kind)
                             <td class="text-right">
@@ -76,7 +76,7 @@
         </x-card>
         <x-validation-errors />
         @if ($editable && $items->isNotEmpty())
-            <div class="mt-3 flex justify-end"><button type="submit" class="btn btn-sm btn-primary">{{ __('Speichern') }}</button></div>
+            <div class="mt-3 flex justify-end"><x-button type="submit">{{ __('Speichern') }}</x-button></div>
         @endif
     </form>
 </x-index-page>

@@ -19,13 +19,13 @@
     $hhiTone = $hhi === null ? 'neutral'
         : ($hhi > \App\Services\Reporting\SupplierValueReportBuilder::HHI_HIGH ? 'error'
         : ($hhi >= \App\Services\Reporting\SupplierValueReportBuilder::HHI_MODERATE ? 'warning' : 'success'));
-    $segmentBadge = [
-        'strategic' => 'badge-success',
-        'core' => 'badge-info',
-        'occasional' => 'badge-ghost',
-        'new' => 'badge-primary',
-        'lapsed' => 'badge-warning',
-        'dormant' => 'badge-ghost',
+    $segmentTone = [
+        'strategic' => 'success',
+        'core' => 'info',
+        'occasional' => 'ghost',
+        'new' => 'primary',
+        'lapsed' => 'warning',
+        'dormant' => 'ghost',
     ];
 @endphp
 
@@ -33,17 +33,7 @@
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="__('RFM-Segmente, Ausgabenkonzentration und Klumpenrisiko im Einkauf.')">
             <x-slot:actions>
-                <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
-                            :href="route('reports.supplier-value', array_merge($linkParams, ['export' => 'pdf']))"
-                            show-label>PDF</x-icon-btn>
-                <x-action-menu icon="download" tone="outline" :label="__('Export')">
-                    <x-icon-btn icon="download" tone="outline" size="sm"
-                                :href="route('reports.supplier-value', array_merge($linkParams, ['export' => 'csv']))"
-                                show-label>CSV</x-icon-btn>
-                    <x-icon-btn icon="table_view" tone="outline" size="sm"
-                                :href="route('reports.supplier-value', array_merge($linkParams, ['export' => 'xlsx']))"
-                                show-label>Excel</x-icon-btn>
-                </x-action-menu>
+                <x-report-export :url="fn (string $format) => route('reports.supplier-value', array_merge($linkParams, ['export' => $format]))" />
                 <x-help-button topic="reports.supplier-value" />
             </x-slot:actions>
         </x-page-toolbar>
@@ -82,7 +72,7 @@
     <x-card class="mt-4">
         <h2 class="mb-2 font-['Space_Grotesk'] text-sm font-semibold">{{ __('Kritische A-Lieferanten (Klumpenrisiko)') }}</h2>
         @if (count($riskRows) === 0)
-            <p class="text-sm text-muted">{{ __('Kein Lieferant überschreitet den eingestellten Ausgabenanteil — gute Streuung.') }}</p>
+            <x-empty-state icon="check_circle" :title="__('Kein Lieferant überschreitet den eingestellten Ausgabenanteil — gute Streuung.')" compact />
         @else
             <x-table bare>
                 <x-slot:head>
@@ -113,9 +103,9 @@
         <div class="mb-2 flex flex-wrap items-center gap-3">
             <div class="text-xs text-muted">{{ __('Zeitraum') }}: {{ $label }}</div>
             @if ($segment !== null)
-                <span class="badge badge-sm {{ $segmentBadge[$segment] ?? 'badge-ghost' }}">
+                <x-status-badge :tone="$segmentTone[$segment] ?? 'ghost'">
                     {{ __('Segment') }}: {{ $segmentLabels[$segment] ?? $segment }}
-                </span>
+                </x-status-badge>
                 <a href="{{ route('reports.supplier-value', $linkParams) }}#lieferantenliste" class="link text-xs">{{ __('Segmentfilter aufheben') }}</a>
             @endif
         </div>
@@ -126,12 +116,12 @@
                 {{ __('Jeder aktive Lieferant erhält drei Quintil-Scores von 1 (unterstes Fünftel) bis 5 (oberstes Fünftel): R (Recency: je kürzer der letzte Beleg her ist, desto höher), F (Frequency: Belegtage im Zeitraum) und M (Monetary: Ausgaben im Zeitraum). Die erste zutreffende Regel bestimmt das Segment:') }}
             </p>
             <ul class="mt-2 list-disc space-y-1 pl-5 text-base-content/70">
-                <li><span class="badge badge-ghost badge-sm">{{ $segmentLabels['dormant'] }}</span> — {{ __('keine Belege im Zeitraum, oder R ≤ 2 ohne hohe Ausgaben') }}</li>
-                <li><span class="badge badge-primary badge-sm">{{ $segmentLabels['new'] }}</span> — {{ __('Erster Beleg liegt im Zeitraum') }}</li>
-                <li><span class="badge badge-success badge-sm">{{ $segmentLabels['strategic'] }}</span> — {{ __('R ≥ 4 und F ≥ 4 und M ≥ 4') }}</li>
-                <li><span class="badge badge-warning badge-sm">{{ $segmentLabels['lapsed'] }}</span> — {{ __('R ≤ 2 bei M ≥ 4 (ausgabenstark, aber lange keine Belege)') }}</li>
-                <li><span class="badge badge-info badge-sm">{{ $segmentLabels['core'] }}</span> — {{ __('F ≥ 3 (regelmäßige Beschaffung)') }}</li>
-                <li><span class="badge badge-ghost badge-sm">{{ $segmentLabels['occasional'] }}</span> — {{ __('alle übrigen aktiven Lieferanten') }}</li>
+                <li><x-status-badge>{{ $segmentLabels['dormant'] }}</x-status-badge> — {{ __('keine Belege im Zeitraum, oder R ≤ 2 ohne hohe Ausgaben') }}</li>
+                <li><x-status-badge tone="primary">{{ $segmentLabels['new'] }}</x-status-badge> — {{ __('Erster Beleg liegt im Zeitraum') }}</li>
+                <li><x-status-badge tone="success">{{ $segmentLabels['strategic'] }}</x-status-badge> — {{ __('R ≥ 4 und F ≥ 4 und M ≥ 4') }}</li>
+                <li><x-status-badge tone="warning">{{ $segmentLabels['lapsed'] }}</x-status-badge> — {{ __('R ≤ 2 bei M ≥ 4 (ausgabenstark, aber lange keine Belege)') }}</li>
+                <li><x-status-badge tone="info">{{ $segmentLabels['core'] }}</x-status-badge> — {{ __('F ≥ 3 (regelmäßige Beschaffung)') }}</li>
+                <li><x-status-badge>{{ $segmentLabels['occasional'] }}</x-status-badge> — {{ __('alle übrigen aktiven Lieferanten') }}</li>
             </ul>
         </details>
 
@@ -160,7 +150,7 @@
                                 {{ $row['supplierName'] }}
                             </a>
                         </td>
-                        <td><span class="badge badge-sm {{ $segmentBadge[$row['segment']] ?? 'badge-ghost' }}">{{ $segmentLabels[$row['segment']] ?? $row['segment'] }}</span></td>
+                        <td><x-status-badge :tone="$segmentTone[$row['segment']] ?? 'ghost'">{{ $segmentLabels[$row['segment']] ?? $row['segment'] }}</x-status-badge></td>
                         <td class="text-right tabular-nums">{{ $row['recencyDays'] ?? '—' }}</td>
                         <td class="text-right tabular-nums">{{ $row['frequencyDays'] }}</td>
                         <td class="text-right tabular-nums">{{ $eur($row['spend']) }}</td>

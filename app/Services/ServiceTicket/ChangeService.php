@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\ServiceTicket;
 
+use App\Enums\ServiceTicket\ChangeStatus;
 use App\Models\Approval\Approval;
 use App\Models\Asset\Asset;
 use App\Models\Platform\User;
@@ -64,7 +65,7 @@ class ChangeService {
                 'implementation_plan' => $attributes['implementation_plan'] ?? $template?->implementation_plan,
                 'test_plan' => $attributes['test_plan'] ?? $template?->test_plan,
                 'rollback_plan' => $attributes['rollback_plan'] ?? $template?->rollback_plan,
-                'status' => ($type === 'standard' || $approvalChain === []) ? 'approved' : 'pending_approval',
+                'status' => ($type === 'standard' || $approvalChain === []) ? ChangeStatus::Approved : ChangeStatus::PendingApproval,
                 'created_by' => $actor->id,
             ]);
 
@@ -86,9 +87,9 @@ class ChangeService {
             $outcome = app(ApprovalService::class)->decide($approval, $actor, $decision, $reason, (int) $change->created_by, $delegateUserId);
 
             if ($outcome === 'rejected') {
-                $change->update(['status' => 'cancelled', 'outcome' => 'cancelled']);
+                $change->update(['status' => ChangeStatus::Cancelled, 'outcome' => 'cancelled']);
             } elseif ($outcome === 'approved_all') {
-                $change->update(['status' => 'approved']);
+                $change->update(['status' => ChangeStatus::Approved]);
             }
 
             $change->audit('change.decided', ['step' => $approval->step, 'decision' => $decision]);
@@ -99,11 +100,11 @@ class ChangeService {
 
     /** Umsetzung starten — optional als ProcedureRun (subject=Change). */
     public function implement(Change $change, User $actor, ?int $procedureTemplateId = null): Change {
-        if ($change->status !== 'approved') {
+        if (! $change->status->canTransitionTo(ChangeStatus::Implementing)) {
             throw new \RuntimeException((string) __('Nur genehmigte Changes können umgesetzt werden.'));
         }
 
-        $change->update(['status' => 'implementing']);
+        $change->update(['status' => ChangeStatus::Implementing]);
 
         if ($procedureTemplateId !== null) {
             $template = \App\Models\Procedure\ProcedureTemplate::query()
@@ -125,7 +126,7 @@ class ChangeService {
         if (! in_array($outcome, Change::OUTCOMES, true)) {
             throw new \InvalidArgumentException("Unbekanntes Outcome: {$outcome}");
         }
-        if (! in_array($change->status, ['approved', 'implementing'], true)) {
+        if (! $change->status->canTransitionTo(ChangeStatus::Done)) {
             throw new \RuntimeException((string) __('Nur laufende Changes können abgeschlossen werden.'));
         }
         if ($change->change_type === 'emergency' && trim((string) ($pirNotes ?? $change->pir_notes)) === '') {
@@ -133,7 +134,7 @@ class ChangeService {
         }
 
         $change->update([
-            'status' => 'done',
+            'status' => ChangeStatus::Done,
             'outcome' => $outcome,
             'pir_notes' => $pirNotes ?? $change->pir_notes,
             'pir_done_at' => ($pirNotes ?? $change->pir_notes) !== null ? now() : null,

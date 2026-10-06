@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Invoicing;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\Organization;
@@ -44,7 +45,7 @@ class OnlinePaymentController extends Controller {
         return OrganizationContext::run($organization, function () use ($invoice, $payments): Response {
             $payments->refreshOpen($invoice);
 
-            return $this->page($invoice->refresh(), $invoice->status === Invoice::STATUS_PAID ? OnlinePaymentException::PAID : 'processing');
+            return $this->page($invoice->refresh(), $invoice->status === InvoiceStatus::Paid ? OnlinePaymentException::PAID : 'processing');
         });
     }
 

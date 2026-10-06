@@ -14,15 +14,14 @@ namespace App\Http\Controllers\Helpdesk;
 
 use App\Enums\User\Permission;
 use App\Http\Controllers\Attachments\AttachmentController;
+use App\Http\Controllers\Concerns\ValidatesUploadedFiles;
 use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
 use App\Models\ServiceTicket\ServiceTicket;
-use App\Services\Attachments\FileAttacher;
 use App\Services\ServiceTicket\TicketConversationService;
 use App\Support\ErrorText;
-use Illuminate\Http\{RedirectResponse, Request, UploadedFile};
+use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
-use Illuminate\Validation\ValidationException;
 
 /**
  * Konversation (Feature 065, MVP-152): GETRENNTE Aktionen für Antwort
@@ -32,6 +31,8 @@ use Illuminate\Validation\ValidationException;
  * Policy des {@see AttachmentController} (Whitelist/MIME/Größe).
  */
 class TicketConversationController extends Controller {
+    use ValidatesUploadedFiles;
+
     public function __construct(private readonly TicketConversationService $conversation) {}
 
     public function reply(Request $request, ServiceTicket $ticket): RedirectResponse {
@@ -77,30 +78,5 @@ class TicketConversationController extends Controller {
 
         return redirect()->route('service-tickets.show', $ticket)
             ->with('success', __('Notiz gespeichert.'));
-    }
-
-    /**
-     * Datei-Uploads nach der zentralen Policy des {@see AttachmentController}
-     * prüfen (Extension-Whitelist + Server-MIME via Fileinfo + Größenlimit).
-     *
-     * @return list<UploadedFile>
-     */
-    private function validatedUploads(Request $request): array {
-        $request->validate([
-            'files' => ['nullable', 'array', 'max:5'],
-            'files.*' => ['file', 'max:' . FileAttacher::maxKb()],
-        ]);
-
-        $files = array_values(array_filter((array) $request->file('files', []), fn($f) => $f instanceof UploadedFile));
-        foreach ($files as $file) {
-            $ext = strtolower($file->getClientOriginalExtension() ?: ($file->extension() ?? ''));
-            $serverMime = $file->getMimeType() ?? '';
-            if (! in_array($ext, AttachmentController::ALLOWED_EXTENSIONS, true)
-                || ! in_array($serverMime, AttachmentController::ALLOWED_MIMES, true)) {
-                throw ValidationException::withMessages(['files' => (string) __('Dateityp nicht erlaubt.')]);
-            }
-        }
-
-        return $files;
     }
 }

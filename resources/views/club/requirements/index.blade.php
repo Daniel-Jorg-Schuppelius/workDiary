@@ -8,13 +8,12 @@
 --}}
 {{--
   Nachweisliste (MVP-855): vom Verein konfigurierte Anforderungen (Anzahl bestätigter Anwesenheiten je Zeitraum),
-  Bericht je Mitglied zum Stichtag, CSV-Export. Variablen: $requirements, $selected, $asOf, $report, $canManage.
+  Bericht je Mitglied zum Stichtag, CSV-Export. Variablen: $requirements, $selected, $asOf, $report (Seite der Nachweisliste oder null), $canManage.
 --}}
 @extends('layouts.app')
 @section('title', __('club.competitions.title.requirements'))
 @section('nav-title', __('club.competitions.title.requirements'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('club.competitions.subtitle.requirements')">
     <x-slot:actions>
@@ -57,7 +56,7 @@
                 <th>{{ __('club.competitions.field.last_on') }}</th>
             </tr>
         </x-slot:head>
-        @forelse ($report as $row)
+        @forelse ($report ?? [] as $row)
             <tr class="hover">
                 <td class="font-medium"><a href="{{ route('club.members.show', $row['member']) }}" class="link link-hover">{{ $row['member']->fullName() }}</a> <span class="font-mono text-xs text-muted">{{ $row['member']->displayNo() }}</span></td>
                 <td class="text-center text-sm tabular-nums">{{ $row['count'] }}</td>
@@ -69,5 +68,6 @@
             <x-table.empty icon="fact_check" :colspan="5" :title="$selected ? __('club.competitions.empty.report') : __('club.competitions.empty.requirements')" :message="__('club.competitions.hint.requirements')" compact />
         @endforelse
     </x-table>
+    <x-pagination :paginator="$report" standing />
 </x-index-page>
 @endsection

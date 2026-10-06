@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Asset;
 
+use App\Enums\Asset\AssetComponentStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Article\Article;
 use App\Models\Asset\{Asset, AssetComponent};
@@ -91,8 +92,13 @@ class AssetComponentController extends Controller {
         Gate::authorize('update', $asset);
         abort_unless((int) $component->asset_id === (int) $asset->id, 404);
 
+        // Nur verbaute Teile: sonst überschriebe ein veralteter Klick Status und Ausbaudatum der Historie.
+        if (! $component->status->canTransitionTo(AssetComponentStatus::Removed)) {
+            return back()->with('error', __('asset.components.not_installed'));
+        }
+
         $component->forceFill([
-            'status' => AssetComponent::STATUS_REMOVED,
+            'status' => AssetComponentStatus::Removed,
             'removed_on' => now()->toDateString(),
         ])->save();
 

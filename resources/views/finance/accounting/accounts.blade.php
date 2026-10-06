@@ -15,13 +15,15 @@
 @section('title', __('accounting.ledger.accounts.title'))
 @section('nav-title', __('accounting.ledger.accounts.title'))
 
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
     <x-index-page overflow="clip" :subtitle="__('accounting.ledger.accounts.subtitle')">
         <x-slot:actions>
             @if ($canConfigure)
+                <x-icon-btn icon="upload" size="sm" tone="outline"
+                            data-open-dialog="accounts-import"
+                            :label="__('accounting.ledger.action.import')" />
                 <x-icon-btn icon="add" size="sm" tone="primary"
                             data-entry-modal-trigger
                             :href="route('finance.accounting.accounts.create')"
@@ -41,7 +43,7 @@
                             <option value="{{ $code }}">{{ $template['name'] }}</option>
                         @endforeach
                     </x-select-field>
-                    <button type="submit" class="btn btn-primary btn-sm">{{ __('accounting.template.action.apply') }}</button>
+                    <x-button type="submit">{{ __('accounting.template.action.apply') }}</x-button>
                 </form>
                 <p class="mt-2 text-xs text-muted">
                     {{ $hasAccounts ? __('accounting.template.hint_additive') : __('accounting.template.hint_first') }}
@@ -130,19 +132,19 @@
                     <td>
                         <div class="flex flex-wrap gap-1">
                             @if ($account->is_open_item)
-                                <span class="badge badge-sm badge-outline">{{ __('accounting.ledger.flag.open_item') }}</span>
+                                <x-status-badge tone="plain" outline>{{ __('accounting.ledger.flag.open_item') }}</x-status-badge>
                             @endif
                             @if ($account->is_bank)
-                                <span class="badge badge-sm badge-outline">{{ __('accounting.ledger.flag.bank') }}</span>
+                                <x-status-badge tone="plain" outline>{{ __('accounting.ledger.flag.bank') }}</x-status-badge>
                             @endif
                             @if ($account->is_cash)
-                                <span class="badge badge-sm badge-outline">{{ __('accounting.ledger.flag.cash') }}</span>
+                                <x-status-badge tone="plain" outline>{{ __('accounting.ledger.flag.cash') }}</x-status-badge>
                             @endif
                             @if ($account->is_clearing)
-                                <span class="badge badge-sm badge-outline">{{ __('accounting.ledger.flag.clearing') }}</span>
+                                <x-status-badge tone="plain" outline>{{ __('accounting.ledger.flag.clearing') }}</x-status-badge>
                             @endif
                             @unless ($account->is_active)
-                                <span class="badge badge-sm badge-ghost">{{ __('accounting.ledger.flag.inactive') }}</span>
+                                <x-status-badge>{{ __('accounting.ledger.flag.inactive') }}</x-status-badge>
                             @endunless
                         </div>
                     </td>
@@ -171,5 +173,17 @@
         </x-table>
 
         <x-pagination :paginator="$accounts" standing />
+
+        @if ($canConfigure)
+            <x-modal id="accounts-import" :embedded="false" icon="upload"
+                     :eyebrow="__('accounting.ledger.accounts.title')" :title="__('accounting.ledger.import.title')"
+                     :action="route('finance.accounting.accounts.import')" enctype="multipart/form-data"
+                     :submit-label="__('accounting.ledger.import.submit')">
+                <p class="text-sm text-base-content/70">{{ __('accounting.ledger.import.hint') }}</p>
+                <x-input-field name="file" id="accounts-import-file" type="file" accept=".csv,.txt" required
+                               :label="__('accounting.ledger.import.file')"
+                               :hint="__('accounting.ledger.import.columns', ['types' => implode(', ', array_column($types, 'value'))])" />
+            </x-modal>
+        @endif
     </x-index-page>
 @endsection

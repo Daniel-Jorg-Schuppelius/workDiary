@@ -24,11 +24,11 @@
             <tr>
                 <td>{{ $invoice->number }}</td>
                 <td class="whitespace-nowrap">{{ optional($invoice->issued_on)->fdate() }}</td>
-                <td>{{ __('values.' . $invoice->status) }}</td>
+                <td>{{ $invoice->status->label() }}</td>
                 <td class="text-right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($invoice->total?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td>
                 <td class="text-right">
                     @if ($payLinks->has($invoice->id))
-                        <a href="{{ $payLinks->get($invoice->id) }}" class="btn btn-sm btn-primary">{{ __('payments.portal.pay') }}</a>
+                        <x-button :href="$payLinks->get($invoice->id)">{{ __('payments.portal.pay') }}</x-button>
                     @endif
                 </td>
             </tr>

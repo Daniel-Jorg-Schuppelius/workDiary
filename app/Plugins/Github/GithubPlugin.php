@@ -15,7 +15,8 @@ namespace App\Plugins\Github;
 use App\Models\Platform\Organization;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{Plugin, PluginCapability, TaskSyncer};
-use App\Plugins\Github\Api\{GithubApiException, GithubClientFactory};
+use App\Plugins\Github\Api\GithubClientFactory;
+use App\Plugins\Github\Exceptions\GithubApiException;
 use App\Plugins\Github\Services\GithubIssueImporter;
 use Throwable;
 

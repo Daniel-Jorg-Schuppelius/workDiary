@@ -68,6 +68,7 @@
         {{-- Termintreue --}}
         <x-card :title="__('scorecard.metric_ontime')">
             @if (! $ontime['available'])
+                {{-- raw-markup-ok: Kennzahl-Kachel: Platzhalter für die fehlende Kennzahl, darunter der Quellenhinweis --}}
                 <p class="text-muted">{{ __('scorecard.no_data') }}</p>
                 <p class="text-xs text-muted">{{ __('scorecard.ontime_no_source') }}</p>
             @else
@@ -81,6 +82,7 @@
         {{-- Reklamationsquote --}}
         <x-card :title="__('scorecard.metric_complaints')">
             @if (! $complaints['available'])
+                {{-- raw-markup-ok: Kennzahl-Kachel: Platzhalter für die fehlende Kennzahl, darunter der Quellenhinweis --}}
                 <p class="text-muted">{{ __('scorecard.no_data') }}</p>
                 <p class="text-xs text-muted">{{ __('scorecard.complaints_no_source') }}</p>
             @else
@@ -94,6 +96,7 @@
         {{-- Preisentwicklung --}}
         <x-card :title="__('scorecard.metric_price')">
             @if (! $price['available'])
+                {{-- raw-markup-ok: Kennzahl-Kachel: Platzhalter für die fehlende Kennzahl, darunter der Quellenhinweis --}}
                 <p class="text-muted">{{ __('scorecard.no_data') }}</p>
                 <p class="text-xs text-muted">{{ __('scorecard.price_no_source') }}</p>
             @else
@@ -111,6 +114,7 @@
         {{-- ISMS-Qualität --}}
         <x-card :title="__('scorecard.metric_quality')">
             @if (! $quality['available'])
+                {{-- raw-markup-ok: Kennzahl-Kachel: Platzhalter für die fehlende Kennzahl, darunter der Quellenhinweis --}}
                 <p class="text-muted">{{ __('scorecard.no_data') }}</p>
                 <p class="text-xs text-muted">{{ __('scorecard.quality_no_source') }}</p>
             @else
@@ -125,16 +129,20 @@
         {{-- Regressverhalten (MVP-887) --}}
         <x-card :title="__('scorecard.metric_recourse')">
             @if (! $recourse['available'])
+                {{-- raw-markup-ok: Kennzahl-Kachel: Platzhalter für die fehlende Kennzahl, darunter der Quellenhinweis --}}
                 <p class="text-muted">{{ __('scorecard.no_data') }}</p>
                 <p class="text-xs text-muted">{{ __('scorecard.recourse_no_source') }}</p>
             @else
                 <p class="text-2xl font-semibold tabular-nums">{{ $recourse['acceptance_rate'] !== null ? round($recourse['acceptance_rate'] * 100) . ' %' : '—' }}</p>
                 <p class="text-xs text-muted">{{ __('scorecard.recourse_detail', ['answered' => $recourse['answered'], 'submitted' => $recourse['submitted']]) }}</p>
                 <dl class="mt-1 grid grid-cols-2 gap-x-2 text-xs">
+                    {{-- raw-markup-ok: Kennzahl-Kachel: Mini-Liste in text-xs mit zwei gleich breiten Spalten (enge Spalte) --}}
                     <dt class="text-muted">{{ __('scorecard.recourse_ontime') }}</dt>
                     <dd class="tabular-nums">{{ $recourse['response_ontime_rate'] !== null ? round($recourse['response_ontime_rate'] * 100) . ' %' : '—' }}</dd>
+                    {{-- raw-markup-ok: Kennzahl-Kachel: Mini-Liste in text-xs mit zwei gleich breiten Spalten (enge Spalte) --}}
                     <dt class="text-muted">{{ __('scorecard.recourse_recovery') }}</dt>
                     <dd class="tabular-nums">{{ $recourse['recovery_rate'] !== null ? round($recourse['recovery_rate'] * 100) . ' %' : '—' }}</dd>
+                    {{-- raw-markup-ok: Kennzahl-Kachel: Mini-Liste in text-xs mit zwei gleich breiten Spalten (enge Spalte) --}}
                     <dt class="text-muted">{{ __('scorecard.recourse_days') }}</dt>
                     <dd class="tabular-nums">{{ $recourse['avg_response_days'] ?? '—' }}</dd>
                 </dl>
@@ -146,6 +154,7 @@
         {{-- Bestell-Durchlaufzeit (MVP-888, nur Anzeige) --}}
         <x-card :title="__('scorecard.metric_lead_time')">
             @if (! $leadTime['available'])
+                {{-- raw-markup-ok: Kennzahl-Kachel: Platzhalter für die fehlende Kennzahl, darunter der Quellenhinweis --}}
                 <p class="text-muted">{{ __('scorecard.no_data') }}</p>
                 <p class="text-xs text-muted">{{ __('scorecard.ontime_no_source') }}</p>
             @else

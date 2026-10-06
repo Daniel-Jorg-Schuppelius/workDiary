@@ -33,7 +33,7 @@ class UtcTimeDisplayRuleTest extends TestCase {
     public function test_views_show_utc_times_in_local_time(): void {
         $violations = [];
 
-        foreach ([...$this->bladeFiles(), ...$this->bladeFiles('app/Plugins')] as $file) {
+        foreach ($this->bladeFiles() as $file) {
             $relative = $this->relativePath($file);
             if ($this->isAllowListed($relative, self::ALLOW_LIST)) {
                 continue;

@@ -23,7 +23,7 @@ class SaveActivityCategoryRequest extends BaseFormRequest {
             'activity_type' => ['required', Rule::enum(ActivityCategoryType::class)],
             'billable_default' => ['nullable', 'boolean'],
             'counts_as_work' => ['nullable', 'boolean'],
-            'color' => ['nullable', 'string', 'max:16'],
+            'color' => ['nullable', 'string', 'max:16', new \App\Rules\ColorValue],
             'icon' => ['nullable', 'string', 'max:32'],
             'sort_order' => ['nullable', 'integer', 'min:0', 'max:999'],
             'active' => ['nullable', 'boolean'],

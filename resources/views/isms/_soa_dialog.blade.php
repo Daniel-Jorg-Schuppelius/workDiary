@@ -77,9 +77,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr>
-                        <td colspan="6" class="text-muted">{{ __('isms.empty_requirements') }}</td>
-                    </tr>
+                    <x-table.empty :colspan="6" icon="rule" :title="__('isms.empty_requirements')" compact />
                 @endforelse
         </x-table>
     </div>

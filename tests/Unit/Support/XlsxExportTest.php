@@ -52,4 +52,17 @@ final class XlsxExportTest extends TestCase {
 
         @unlink($tmp);
     }
+
+    /** Sicherheitsaudit 2026-10-04, xi-3: eine Beschriftung, die mit `=` beginnt, wird keine Formel. */
+    public function test_header_labels_are_written_as_text_not_as_formulas(): void {
+        $tmp = tempnam(sys_get_temp_dir(), 'xlsx_');
+        $this->assertIsString($tmp);
+        ToolkitFile::write($tmp, XlsxExport::toString(['=1+1', 'Name'], [['x', 'y']]));
+
+        $cell = IOFactory::load($tmp)->getActiveSheet()->getCell('A1');
+        @unlink($tmp);
+
+        $this->assertSame(\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING, $cell->getDataType());
+        $this->assertSame('=1+1', $cell->getValue());
+    }
 }

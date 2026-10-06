@@ -74,7 +74,7 @@
         </div>
 
         {{-- Versionsübersicht --}}
-        <div class="rounded-box border border-base-300 bg-base-100 p-4">
+        <x-card>
             <h2 class="mb-2 text-sm font-semibold uppercase tracking-wide text-muted">{{ __('procedure.title.versions') }}</h2>
             <div class="flex flex-wrap gap-2">
                 @foreach ($versions as $v)
@@ -107,7 +107,7 @@
                     </form>
                 @endif
             </div>
-        </div>
+        </x-card>
 
         @if ($draft === null)
             <div class="rounded-box border border-warning/40 bg-warning/10 p-4 text-sm">

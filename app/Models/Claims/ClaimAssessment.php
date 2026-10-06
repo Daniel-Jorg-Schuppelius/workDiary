@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Claims;
 
-use App\Enums\Claims\{ClaimKind, ClaimVerdict};
+use App\Enums\Claims\{ClaimAssessmentStatus, ClaimKind, ClaimVerdict};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
@@ -30,7 +30,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property ClaimVerdict $verdict
  * @property string $justification
  * @property array<string, mixed>|null $snapshot
- * @property string $status
+ * @property ClaimAssessmentStatus $status
  * @property \Illuminate\Support\Carbon $assessed_at
  */
 class ClaimAssessment extends Model {
@@ -48,6 +48,7 @@ class ClaimAssessment extends Model {
         'claim_kind' => ClaimKind::class,
         'verdict' => ClaimVerdict::class,
         'snapshot' => 'array',
+        'status' => ClaimAssessmentStatus::class,
         'assessed_at' => 'datetime',
     ];
 

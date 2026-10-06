@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\DocumentDesign;
 
-use App\Enums\DocumentDesign\{InformationBlock, InformationBlockState, LetterheadPageRole, PageFormat, RenderDocumentFamily, RenderDocumentKind, RenderProfileStatus, TableStylePreset};
+use App\Enums\DocumentDesign\{InformationBlock, InformationBlockState, LetterheadPageRole, PageFormat, RenderDocumentFamily, RenderDocumentKind, RenderProfileStatus, RenderProfileVersionStatus, TableStylePreset};
 use App\Models\DocumentDesign\{DocumentRenderProfile, DocumentRenderProfileVersion, LetterheadAsset};
 use App\Models\Platform\{Organization, User};
 use CommonToolkit\Helper\Data\ColorHelper;
@@ -51,7 +51,7 @@ class RenderProfileService {
             $profile->versions()->create([
                 'organization_id' => $organization->id,
                 'version' => 1,
-                'status' => DocumentRenderProfileVersion::STATUS_DRAFT,
+                'status' => RenderProfileVersionStatus::Draft,
                 'layout' => self::defaultLayout(),
                 'block_rules' => self::defaultBlockRules(),
                 'table_style' => ['preset' => TableStylePreset::Clear->value, 'overrides' => []],
@@ -123,7 +123,7 @@ class RenderProfileService {
         if ($profile === null) {
             throw new RuntimeException('Profilversion ohne Profil.');
         }
-        if ($profile->versions()->where('status', DocumentRenderProfileVersion::STATUS_DRAFT)->exists()) {
+        if ($profile->versions()->where('status', RenderProfileVersionStatus::Draft)->exists()) {
             throw new RuntimeException(__('Es existiert bereits ein offener Entwurf.'));
         }
 
@@ -132,7 +132,7 @@ class RenderProfileService {
         return $profile->versions()->create([
             'organization_id' => $profile->organization_id,
             'version' => $next,
-            'status' => DocumentRenderProfileVersion::STATUS_DRAFT,
+            'status' => RenderProfileVersionStatus::Draft,
             'first_asset_id' => $source->first_asset_id,
             'following_asset_id' => $source->following_asset_id,
             'layout' => $source->layout,
@@ -154,7 +154,7 @@ class RenderProfileService {
         if ($profile === null) {
             throw new RuntimeException('Profilversion ohne Profil.');
         }
-        if (! $version->isDraft()) {
+        if (! $version->status->canTransitionTo(RenderProfileVersionStatus::Active)) {
             throw new RuntimeException(__('Nur Entwürfe können aktiviert werden.'));
         }
 
@@ -173,11 +173,11 @@ class RenderProfileService {
 
         DB::transaction(function () use ($version, $profile, $user): void {
             $profile->versions()
-                ->where('status', DocumentRenderProfileVersion::STATUS_ACTIVE)
-                ->update(['status' => DocumentRenderProfileVersion::STATUS_SUPERSEDED]);
+                ->where('status', RenderProfileVersionStatus::Active)
+                ->update(['status' => RenderProfileVersionStatus::Superseded]);
 
             $version->forceFill([
-                'status' => DocumentRenderProfileVersion::STATUS_ACTIVE,
+                'status' => RenderProfileVersionStatus::Active,
                 'activated_at' => now(),
                 'activated_by' => $user?->id,
                 'checksum' => CryptoHelper::hash(JsonHelper::encode([

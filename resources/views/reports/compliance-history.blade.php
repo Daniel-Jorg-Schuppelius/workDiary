@@ -119,12 +119,12 @@
                                             <input aria-label="{{ __('compliance.history.note_placeholder') }}" type="text" name="note" maxlength="5000"
                                                    class="input input-xs input-bordered w-40"
                                                    placeholder="{{ __('compliance.history.note_placeholder') }}">
-                                            <button class="btn btn-xs" type="submit" name="status" value="{{ $ackStatus }}">
+                                            <x-button type="submit" tone="plain" size="xs" name="status" value="{{ $ackStatus }}">
                                                 {{ __('compliance.history.btn.acknowledge') }}
-                                            </button>
-                                            <button class="btn btn-xs btn-warning" type="submit" name="status" value="{{ $accStatus }}">
+                                            </x-button>
+                                            <x-button type="submit" tone="warning" size="xs" name="status" value="{{ $accStatus }}">
                                                 {{ __('compliance.history.btn.accept') }}
-                                            </button>
+                                            </x-button>
                                         </form>
                                     </div>
                                 @endif

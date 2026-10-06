@@ -14,8 +14,9 @@ namespace App\Plugins\SevDesk;
 
 use App\Models\Customer\Customer;
 use App\Plugins\{AbstractPlugin, PluginHealth};
-use App\Plugins\Contracts\{ContactSyncer, Plugin};
-use App\Plugins\SevDesk\Api\{SevDeskApiException, SevDeskClient, SevDeskClientFactory};
+use App\Plugins\Contracts\{ContactSyncer, Plugin, PluginCapability};
+use App\Plugins\SevDesk\Api\{SevDeskClient, SevDeskClientFactory};
+use App\Plugins\SevDesk\Exceptions\SevDeskApiException;
 use App\Services\Finance\Accounting\ContactPushService;
 use Illuminate\Support\Facades\Cache;
 use RuntimeException;
@@ -54,16 +55,18 @@ class SevDeskPlugin extends AbstractPlugin implements ContactSyncer {
         return __('Übergibt bestätigte Abrechnungspositionen als Rechnungsentwurf an sevDesk (API-Token gegen my.sevdesk.de): Kontakt-Projektion, idempotente Übergabe mit Quellmarker, Erkennung der Buchhaltungs-Version 1.0/2.0 je Mandant.');
     }
 
-    /** @return array<int, \App\Plugins\Contracts\PluginCapability> Fähigkeiten hängen am FacturationTarget-Vertrag. */
     /**
-     * Bewusst leer: Die Fähigkeit dieses Plugins (Beleg-/Rechnungsübergabe) ist
-     * ein {@see \App\Services\Finance\Targets\FacturationTarget} und wird über
+     * Angekündigt wird, was die Klasse selbst implementiert (Kontakt-Push).
+     * Die Beleg-/Rechnungsübergabe bleibt ohne Capability: sie ist ein
+     * {@see \App\Services\Finance\Targets\FacturationTarget} und wird über
      * die {@see \App\Services\Finance\Targets\FacturationTargetRegistry} geführt.
      * Ein Capability-Case dafür brächte nur eine zweite Registry bzw. eine dünne
      * Delegation der Plugin-Klasse auf den Target-Service (Audit 2026-08, W1.6).
+     *
+     * @return array<int, PluginCapability>
      */
     public function capabilities(): array {
-        return [];
+        return [PluginCapability::ContactSync];
     }
 
     /**

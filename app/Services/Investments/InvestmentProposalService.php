@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Investments;
 
-use App\Enums\Investments\InvestmentOrigin;
+use App\Enums\Investments\{InvestmentCaseStatus, InvestmentOrigin};
 use App\Enums\Notification\NotificationEvent;
 use App\Models\Investments\InvestmentCase;
 use App\Models\Platform\{Organization, User};
@@ -48,7 +48,7 @@ class InvestmentProposalService extends OrganizationAccessToken {
                 'reason' => $data['reason'],
                 'category' => $data['category'],
                 'urgency' => $data['urgency'],
-                'status' => 'idea',
+                'status' => InvestmentCaseStatus::Idea,
                 'origin' => $origin->value,
                 'submitter_user_id' => $submitter?->id,
                 'submitter_name' => $submitter->name ?? ($data['submitter_name'] ?? null),

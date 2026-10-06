@@ -51,10 +51,8 @@ class DatevOnlineAdminController extends ConnectionOAuthController {
         $batches = DatevBookingBatch::query()
             ->where('organization_id', $organization->id)
             ->where('status', DatevBatchStatus::Exported->value)
-            ->latest('id')->limit(20)->get();
-        $transfers = DatevOnlineTransfer::query()
-            ->where('organization_id', $organization->id)
-            ->latest('id')->limit(200)->get();
+            ->latest('id')->paginate(20)->withQueryString();
+        $transfers = DatevOnlineTransfer::query()->where('organization_id', $organization->id);
 
         return view('datev-online::admin.index', [
             'configured' => DatevOnlineConfig::isConfigured((int) $organization->id),
@@ -63,8 +61,11 @@ class DatevOnlineAdminController extends ConnectionOAuthController {
             'clients' => $clients,
             'clientsError' => $clientsError,
             'batches' => $batches,
-            'batchTransfers' => $transfers->where('kind', DatevTransferKind::Extf)->keyBy('source_id'),
-            'documentTransfers' => $transfers->where('kind', '!=', DatevTransferKind::Extf)->take(30),
+            // Stand je Stapel der Seite gezielt laden — ein Fenster über alle Übertragungen verlor ihn hinter vielen Belegen.
+            'batchTransfers' => (clone $transfers)->where('kind', DatevTransferKind::Extf->value)
+                ->whereIn('source_id', $batches->pluck('id'))->get()->keyBy('source_id'),
+            'documentTransfers' => (clone $transfers)->where('kind', '!=', DatevTransferKind::Extf->value)
+                ->latest('id')->limit(30)->get(),
         ]);
     }
 

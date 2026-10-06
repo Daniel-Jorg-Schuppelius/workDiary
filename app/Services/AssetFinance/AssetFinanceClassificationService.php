@@ -14,6 +14,7 @@ namespace App\Services\AssetFinance;
 
 use App\Models\AssetFinance\AssetFinanceContract;
 use App\Models\Platform\User;
+use CommonToolkit\Helper\Data\NumberHelper;
 
 /**
  * IFRS-16-/HGB-Einschätzung (MVP-947) als vorbereitende Referenz ohne
@@ -35,7 +36,7 @@ final class AssetFinanceClassificationService {
 
         $ifrs16 = match (true) {
             $term !== null && $term <= 12 && $contract->purchase_option_amount === null => 'short_term',
-            $contract->asset_value_amount !== null && bccomp((string) $contract->asset_value_amount, self::LOW_VALUE_THRESHOLD, 2) <= 0 => 'low_value',
+            $contract->asset_value_amount !== null && NumberHelper::comparePrecise((string) $contract->asset_value_amount, self::LOW_VALUE_THRESHOLD, 2) <= 0 => 'low_value',
             default => 'right_of_use',
         };
 
@@ -52,7 +53,7 @@ final class AssetFinanceClassificationService {
             $hgb = 'lessee';
             $reasons[] = $ratio < 0.4 ? 'term_below_40' : 'term_above_90';
         } elseif ($contract->purchase_option_amount !== null && $contract->residual_value !== null
-            && bccomp((string) $contract->purchase_option_amount, (string) $contract->residual_value, 2) < 0) {
+            && NumberHelper::comparePrecise((string) $contract->purchase_option_amount, (string) $contract->residual_value, 2) < 0) {
             $hgb = 'lessee';
             $reasons[] = 'bargain_option';
         } else {

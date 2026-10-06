@@ -10,9 +10,11 @@
 
 namespace Tests\Feature\Plugins;
 
+use App\Enums\Task\TaskStatus;
 use App\Models\Integration\ExternalReference;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
+use App\Plugins\Todoist\Enums\{TodoistConnectionStatus, TodoistProjectLinkStatus};
 use App\Plugins\Todoist\Models\{TodoistConnection, TodoistProjectLink};
 use App\Plugins\Todoist\Services\TodoistPreflightService;
 use App\Plugins\Todoist\TodoistPlugin;
@@ -43,7 +45,7 @@ final class TodoistMappingTest extends TestCase {
         $this->connection = TodoistConnection::query()->create([
             'organization_id' => $this->organization->id,
             'access_token' => 'secret-token',
-            'status' => TodoistConnection::STATUS_ACTIVE,
+            'status' => TodoistConnectionStatus::Active,
         ]);
         config()->set('plugins.todoist.client_id', 'cid');
         config()->set('plugins.todoist.client_secret', 'sec');
@@ -65,7 +67,7 @@ final class TodoistMappingTest extends TestCase {
         ])->assertSessionHas('success');
 
         $link = TodoistProjectLink::query()->firstOrFail();
-        $this->assertSame(TodoistProjectLink::STATUS_DRAFT, $link->status);
+        $this->assertSame(TodoistProjectLinkStatus::Draft, $link->status);
         $this->assertSame($project->id, (int) $link->project_id);
         $this->assertTrue($link->importsFromTodoist());
         $this->assertTrue($link->exportsToTodoist());
@@ -179,13 +181,46 @@ final class TodoistMappingTest extends TestCase {
         ])->assertSessionHas('success');
 
         $this->assertSame(1, $link->sectionLinks()->count());
-        $this->assertSame('in_progress', $link->sectionLinks()->firstOrFail()->task_status);
+        $this->assertSame(TaskStatus::InProgress, $link->sectionLinks()->firstOrFail()->task_status);
 
         // Entfernen durch Leer-Auswahl.
         $this->actingAs($this->admin)->post(route('admin.todoist.links.sections', $link), [
             'sections' => ['s-1' => ['status' => '', 'name' => 'Doing']],
         ])->assertSessionHas('success');
         $this->assertSame(0, $link->sectionLinks()->count());
+    }
+
+    /** k3-10: die Vorprüfung wählt die gespeicherte Zuordnung vor; „erledigt“ bleibt als Ziel gesperrt. */
+    public function test_preflight_preselects_the_stored_section_status_and_done_is_not_assignable(): void {
+        $link = TodoistProjectLink::query()->create([
+            'organization_id' => $this->organization->id,
+            'todoist_project_id' => 'tp-1',
+            'target_kind' => TodoistProjectLink::KIND_GLOBAL_KANBAN,
+            'sync_mode' => TodoistProjectLink::MODE_TODOIST_TO_WORKDIARY,
+        ]);
+        $link->sectionLinks()->create(['organization_id' => $this->organization->id, 'todoist_section_id' => 's-1', 'name' => 'Doing', 'task_status' => TaskStatus::InProgress]);
+        FakePluginHttp::fake([
+            'https://api.todoist.com/api/v1/tasks*' => FakePluginHttp::response(['results' => [], 'next_cursor' => null]),
+            'https://api.todoist.com/api/v1/projects/tp-1/collaborators*' => FakePluginHttp::response(['results' => [], 'next_cursor' => null]),
+            'https://api.todoist.com/api/v1/sections*' => FakePluginHttp::response(['results' => [['id' => 's-1', 'name' => 'Doing'], ['id' => 's-2', 'name' => 'Später']], 'next_cursor' => null]),
+        ]);
+
+        $html = (string) $this->actingAs($this->admin)->get(route('admin.todoist.links.preflight', $link))->assertOk()->getContent();
+        $select = static function (string $sectionId) use ($html): string {
+            preg_match('/<select name="sections\[' . preg_quote($sectionId, '/') . '\]\[status\]".*?<\/select>/s', $html, $match);
+
+            return $match[0] ?? '';
+        };
+
+        $this->assertMatchesRegularExpression('/<option value="in_progress"\s+selected/', $select('s-1'));
+        $this->assertDoesNotMatchRegularExpression('/<option value="open"\s+selected/', $select('s-1'));
+        $this->assertNotSame('', $select('s-2'));
+        $this->assertStringNotContainsString('selected', $select('s-2'));
+
+        $this->actingAs($this->admin)->post(route('admin.todoist.links.sections', $link), [
+            'sections' => ['s-2' => ['status' => TaskStatus::Done->value, 'name' => 'Später']],
+        ])->assertSessionHasErrors('sections.s-2.status');
+        $this->assertSame(1, $link->sectionLinks()->count());
     }
 
     public function test_link_of_other_org_is_not_bindable(): void {

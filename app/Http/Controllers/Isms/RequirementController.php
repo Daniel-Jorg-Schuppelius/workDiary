@@ -12,11 +12,10 @@ namespace App\Http\Controllers\Isms;
 
 use App\Enums\Isms\{ControlImplementationStatus, RequirementSource};
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Isms\Concerns\StreamsRegisterExport;
+use App\Http\Controllers\Isms\Concerns\{ResolvesIsmsScope, StreamsRegisterExport};
 use App\Models\Isms\{IsmsApplicabilityStatement, IsmsRequirement, IsmsScope};
 use App\Models\Platform\User;
 use App\Services\Isms\{NormProfileRegistry, RegisterExportService, RequirementService};
-use App\Support\SqidEncoder;
 use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Collection;
@@ -35,6 +34,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  * Autorisierung über IsmsRequirementPolicy (isms.viewAny/view/manage).
  */
 class RequirementController extends Controller {
+    use ResolvesIsmsScope;
+
     use StreamsRegisterExport;
 
     /** Trennzeichen des kombinierten Norm-Filterwerts "norm|edition". */
@@ -43,7 +44,6 @@ class RequirementController extends Controller {
     public function __construct(
         private readonly RequirementService $service,
         private readonly NormProfileRegistry $registry,
-        private readonly SqidEncoder $sqids,
         private readonly RegisterExportService $exports,
     ) {}
 
@@ -55,7 +55,7 @@ class RequirementController extends Controller {
             ->orderBy('name')
             ->get();
 
-        $scope = $this->resolveScope($request->query('scope'), $scopes);
+        $scope = $this->scopeForView($request->query('scope'), $scopes);
         $normOptions = $this->normOptions();
 
         $filters = [
@@ -142,7 +142,7 @@ class RequirementController extends Controller {
     public function export(Request $request): StreamedResponse {
         Gate::authorize('viewAny', IsmsRequirement::class);
 
-        $scope = $this->resolveScope($request->query('scope'), null);
+        $scope = $this->scopeForView($request->query('scope'));
         abort_if($scope === null, 404);
 
         return $this->streamRegisterExport(
@@ -196,7 +196,7 @@ class RequirementController extends Controller {
         $this->service->delete($requirement, $actor);
 
         return redirect()
-            ->route('isms.requirements.index')
+            ->toList('isms.requirements.index')
             ->with('success', __('isms.flash.requirement_deleted'));
     }
 
@@ -212,7 +212,7 @@ class RequirementController extends Controller {
             'scope' => ['nullable', 'string', 'max:64'],
         ]);
 
-        $scope = $this->resolveScope($data['scope'] ?? null, null);
+        $scope = $this->scopeOrDefault($data['scope'] ?? null);
 
         /** @var User $actor */
         $actor = Auth::user();
@@ -237,7 +237,7 @@ class RequirementController extends Controller {
             'scope' => ['nullable', 'string', 'max:64'],
         ]);
 
-        $scope = $this->resolveScope($data['scope'] ?? null, null);
+        $scope = $this->scopeOrDefault($data['scope'] ?? null);
 
         /** @var User $actor */
         $actor = Auth::user();
@@ -324,32 +324,6 @@ class RequirementController extends Controller {
             ],
             'title' => ['required', 'string', 'min:3', 'max:180'],
         ]);
-    }
-
-    /**
-     * Löst den Scope-Query-/Formularparameter (Sqid) auf — ungültige,
-     * fremde (Org-Scope!) oder fehlende Werte fallen auf den Default-Scope
-     * zurück.
-     *
-     * @param  Collection<int, IsmsScope>|null  $scopes  bereits geladene Scopes (optional)
-     */
-    private function resolveScope(mixed $sqid, ?Collection $scopes): ?IsmsScope {
-        if (is_string($sqid) && $sqid !== '') {
-            $id = $this->sqids->decode(IsmsScope::class, $sqid);
-            $scope = $id === null
-                ? null
-                : ($scopes !== null
-                    ? $scopes->firstWhere('id', $id)
-                    : IsmsScope::query()->whereKey($id)->first());
-
-            if ($scope !== null) {
-                return $scope;
-            }
-        }
-
-        return $scopes !== null
-            ? $scopes->firstWhere('is_default', true)
-            : IsmsScope::query()->where('is_default', true)->first();
     }
 
     /**

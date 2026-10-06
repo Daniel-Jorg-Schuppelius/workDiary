@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Privacy;
 
+use App\Enums\Privacy\RetentionProposalStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
@@ -30,7 +31,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphTo};
  * @property int $subject_id
  * @property \Illuminate\Support\Carbon $retention_until
  * @property string $reason
- * @property string $status
+ * @property RetentionProposalStatus $status
  * @property int|null $decided_by
  * @property \Illuminate\Support\Carbon|null $decided_at
  */
@@ -38,14 +39,6 @@ class RetentionProposal extends Model {
     use Auditable;
     use BelongsToOrganization;
     use HasSqid;
-
-    public const STATUS_PENDING = 'pending';
-
-    public const STATUS_APPROVED = 'approved';
-
-    public const STATUS_REJECTED = 'rejected';
-
-    public const STATUS_PURGED = 'purged';
 
     protected $fillable = [
         'organization_id',
@@ -61,6 +54,7 @@ class RetentionProposal extends Model {
 
     /** @var array<string, string> */
     protected $casts = [
+        'status' => RetentionProposalStatus::class,
         'retention_until' => 'date',
         'decided_at' => 'datetime',
     ];

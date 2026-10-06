@@ -7,13 +7,14 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
 @props([
-    'tone'    => 'primary',   // primary | secondary | success | warning | info | error | ghost | outline | neutral
+    'tone'    => 'primary',   // primary | secondary | success | warning | info | error | ghost | outline | neutral | plain (ohne Tonklasse)
     'size'    => 'sm',        // xs | sm | md | lg
     'href'    => null,        // wenn gesetzt → <a>, sonst <button>
     'type'    => 'button',    // button | submit | reset
     'icon'    => null,        // optionales führendes Material-Symbol
     'iconTrailing' => null,   // optionales nachgestelltes Material-Symbol
     'iconFilled' => false,
+    'iconSize' => null,       // abweichende Icon-Größe (CSS-Länge, z. B. "1rem")
     'block'   => false,       // volle Breite (btn-block)
     'loading' => false,       // statischer Lade-Spinner (z. B. Server-gerendert)
     'disabled' => false,
@@ -51,6 +52,7 @@
         'ghost'     => 'btn-ghost',
         'outline'   => 'btn-outline',
         'neutral'   => 'btn-neutral',
+        'plain'     => '',
         default     => 'btn-primary',
     };
 
@@ -69,11 +71,11 @@
         @if ($loading)
             <span class="loading loading-spinner loading-xs" aria-hidden="true"></span>
         @elseif ($icon)
-            <x-icon :name="$icon" :filled="$iconFilled" />
+            <x-icon :name="$icon" :filled="$iconFilled" :size="$iconSize" />
         @endif
         <span>{{ $slot }}</span>
         @if ($iconTrailing)
-            <x-icon :name="$iconTrailing" :filled="$iconFilled" />
+            <x-icon :name="$iconTrailing" :filled="$iconFilled" :size="$iconSize" />
         @endif
     </a>
 @else
@@ -84,11 +86,11 @@
         @if ($loading)
             <span class="loading loading-spinner loading-xs" aria-hidden="true"></span>
         @elseif ($icon)
-            <x-icon :name="$icon" :filled="$iconFilled" />
+            <x-icon :name="$icon" :filled="$iconFilled" :size="$iconSize" />
         @endif
         <span>{{ $slot }}</span>
         @if ($iconTrailing)
-            <x-icon :name="$iconTrailing" :filled="$iconFilled" />
+            <x-icon :name="$iconTrailing" :filled="$iconFilled" :size="$iconSize" />
         @endif
     </button>
 @endif

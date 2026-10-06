@@ -40,7 +40,7 @@ class MaintenanceWindowController extends Controller {
         // MaintenanceWindow trägt keinen OrganizationScope: ohne Filter listete
         // die Seite die Fenster **aller** Mandanten (S-02). Der Betreiber
         // braucht diese Sicht, ein Org-Admin nur seine eigene.
-        $query = MaintenanceWindow::query()->orderByDesc('starts_at');
+        $query = MaintenanceWindow::query()->orderByDesc('starts_at')->orderByDesc('id');
 
         if (! $this->isPlatformOperator()) {
             $organization = app()->bound('currentOrganization') ? app('currentOrganization') : null;

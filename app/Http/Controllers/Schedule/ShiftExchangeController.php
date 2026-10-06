@@ -44,7 +44,9 @@ class ShiftExchangeController extends Controller {
                 $q->where('requested_by_user_id', $auth->id)
                     ->orWhere('target_user_id', $auth->id);
             })
-            ->get();
+            ->orderByDesc('id')
+            ->paginate(25)
+            ->withQueryString();
 
         $pendingApproval = $canApprove
             ? (clone $base)->open()->get()
@@ -77,7 +79,7 @@ class ShiftExchangeController extends Controller {
             return back()->with('error', $e->getMessage());
         }
 
-        return redirect()->route('schedule.exchanges.index')
+        return redirect()->toList('schedule.exchanges.index')
             ->with('success', __('schedule.exchange.requested'));
     }
 
@@ -131,6 +133,6 @@ class ShiftExchangeController extends Controller {
             return back()->with('error', $e->getMessage());
         }
 
-        return redirect()->route('schedule.exchanges.index')->with('success', __($successKey));
+        return redirect()->toList('schedule.exchanges.index')->with('success', __($successKey));
     }
 }

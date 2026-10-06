@@ -14,7 +14,6 @@ namespace App\Enums\Search;
 
 use App\Enums\Concerns\HasOptions;
 use App\Enums\Contracts\HasLabel;
-use App\Models\Auth\RemotePendingSession;
 use App\Models\Communication\CommunicationNote;
 use App\Models\Diary\{DiaryEntry, OpenIssue};
 use App\Models\Document\Document;
@@ -22,6 +21,7 @@ use App\Models\Knowledge\KnowledgeArticle;
 use App\Models\Protocol\Protocol;
 use App\Models\ServiceTicket\ServiceTicket;
 use App\Models\Time\{TimeEntry, Timesheet};
+use App\Support\MorphMap;
 
 /**
  * Quellen des Tätigkeitsindex (Feature 153). Der Wert steht in
@@ -75,7 +75,8 @@ enum SearchSourceType: string implements HasLabel {
             self::OpenIssue => OpenIssue::class,
             self::CommunicationNote => CommunicationNote::class,
             self::KnowledgeArticle => KnowledgeArticle::class,
-            self::RemoteSession => RemotePendingSession::class,
+            // Das Modell liegt im Fernwartungs-Plugin; der Kern kennt nur den Alias.
+            self::RemoteSession => MorphMap::aliases()['remote_pending_sessions'],
             self::LearningCourse => \App\Models\Learning\LearningCourse::class,
             self::Document => Document::class,
         };

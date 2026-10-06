@@ -97,6 +97,18 @@ class RecipeMenuTest extends TestCase {
         $this->get(route('recipe-menus.index'))->assertStatus(423);
     }
 
+    /** Konsolidierungs-Audit 2026-10 (k4-14): die Menüliste blättert, jüngste zuerst. */
+    public function test_menus_page(): void {
+        $this->activateParty();
+        foreach (range(1, 26) as $i) {
+            RecipeMenu::query()->create(['organization_id' => $this->organization->id, 'name' => sprintf('Menü %02d', $i), 'created_by' => $this->admin->id]);
+        }
+
+        $first = $this->get(route('recipe-menus.index'))->assertOk()->assertSee('Menü 26')->assertDontSee('Menü 01');
+        $this->assertSame(26, $first->viewData('menus')->total());
+        $this->get(route('recipe-menus.index', ['page' => 2]))->assertOk()->assertSee('Menü 01')->assertDontSee('Menü 26');
+    }
+
     public function test_menu_aggregates_demands_by_guest_count_without_duplicating_positions(): void {
         $this->activateParty();
         $rice = Article::factory()->create(['organization_id' => $this->organization->id, 'number' => 'REIS', 'name' => 'Reis', 'base_unit' => 'kg']);

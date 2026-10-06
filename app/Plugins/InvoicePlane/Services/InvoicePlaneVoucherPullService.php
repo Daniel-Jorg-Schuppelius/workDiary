@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\InvoicePlane\Services;
 
 use App\Enums\Billing\{DocumentDirection, DocumentKind};
+use App\Enums\Finance\AccountingVoucherState;
 use App\Plugins\InvoicePlane\Schema\VoucherReaderFactory;
 use App\Services\Finance\Accounting\Vouchers\{MirroredVoucher, VoucherMirror, VoucherPuller};
 
@@ -50,11 +51,11 @@ class InvoicePlaneVoucherPullService implements VoucherPuller {
 
     /** InvoicePlane-Statuskatalog → normalisierter Belegzustand. */
     private const STATES = [
-        1 => 'draft',
-        2 => 'open',
-        3 => 'open',
-        4 => 'paid',
-        5 => 'open',
+        1 => AccountingVoucherState::Draft,
+        2 => AccountingVoucherState::Open,
+        3 => AccountingVoucherState::Open,
+        4 => AccountingVoucherState::Paid,
+        5 => AccountingVoucherState::Open,
     ];
 
     public function __construct(
@@ -114,7 +115,7 @@ class InvoicePlaneVoucherPullService implements VoucherPuller {
             kind: $isCredit ? DocumentKind::CreditNote : DocumentKind::Invoice,
             rawType: $isCredit ? 'creditinvoice' : 'invoice',
             rawStatus: $statusId > 0 ? (string) $statusId : null,
-            state: self::STATES[$statusId] ?? 'open',
+            state: self::STATES[$statusId] ?? AccountingVoucherState::Open,
             number: trim((string) ($row['invoice_number'] ?? '')) ?: null,
             date: VoucherMirror::date($row['invoice_date_created'] ?? null),
             dueDate: VoucherMirror::date($row['invoice_date_due'] ?? null),

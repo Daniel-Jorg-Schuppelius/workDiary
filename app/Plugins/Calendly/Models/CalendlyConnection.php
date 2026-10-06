@@ -11,6 +11,7 @@
 namespace App\Plugins\Calendly\Models;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasConnectionHealth};
+use App\Plugins\Calendly\Enums\CalendlyConnectionStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
@@ -30,7 +31,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $scopes
  * @property string|null $calendly_user_uri
  * @property string|null $calendly_organization_uri
- * @property string $status
+ * @property CalendlyConnectionStatus $status
  * @property Carbon|null $last_synced_at
  * @property int|null $connected_by
  */
@@ -38,10 +39,6 @@ class CalendlyConnection extends Model {
     use Auditable;
     use BelongsToOrganization;
     use HasConnectionHealth;
-
-    public const STATUS_ACTIVE = 'active';
-
-    public const STATUS_DISCONNECTED = 'disconnected';
 
     protected $table = 'calendly_connections';
 
@@ -73,11 +70,12 @@ class CalendlyConnection extends Model {
         'disabled_at' => 'datetime',
         'connected_at' => 'datetime',
         'disconnected_at' => 'datetime',
+        'status' => CalendlyConnectionStatus::class,
     ];
 
     /** Betriebsbereit: verbunden, Token vorhanden und nicht auto-deaktiviert. */
     public function isActive(): bool {
-        return $this->status === self::STATUS_ACTIVE
+        return $this->status === CalendlyConnectionStatus::Active
             && trim((string) $this->access_token) !== ''
             && $this->disabled_at === null;
     }

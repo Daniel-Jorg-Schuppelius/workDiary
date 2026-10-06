@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
-use App\Enums\Learning\{LearningCourseStatus, LearningEnrollmentSource, LearningEnrollmentStatus};
+use App\Enums\Learning\{LearningAudience, LearningCourseStatus, LearningEnrollmentSource, LearningEnrollmentStatus};
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\{LearningCertificateResource, LearningCourseResource, LearningEnrollmentResource};
@@ -183,7 +183,8 @@ class LearningApiController extends Controller {
     public function enroll(Request $request, LearningCourse $course): JsonResponse {
         /** @var User $user */
         $user = $request->user();
-        abort_unless($course->status === LearningCourseStatus::Released, 404);
+        // Wie im Portal: ein Kurs außerhalb der eigenen Zielgruppe ist für die Person nicht vorhanden.
+        abort_unless($course->status === LearningCourseStatus::Released && $course->servesAudience(LearningAudience::Internal), 404);
 
         $existing = LearningEnrollment::query()
             ->where('learning_course_id', $course->id)

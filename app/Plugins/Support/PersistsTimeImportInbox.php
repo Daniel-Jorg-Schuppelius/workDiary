@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Support;
 
+use App\Enums\Integration\IntegrationInboxStatus;
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use App\Models\Platform\{Organization, User};
 use App\Models\Time\TimeEntry;
@@ -77,7 +78,7 @@ trait PersistsTimeImportInbox {
             'external_id' => $entryKey,
             'dedupe_key' => $dedupeKey,
             'case_type' => IntegrationInboxItem::CASE_UNMATCHED,
-            'status' => IntegrationInboxItem::STATUS_OPEN,
+            'status' => IntegrationInboxStatus::Open,
         ]);
     }
 
@@ -88,13 +89,13 @@ trait PersistsTimeImportInbox {
         return IntegrationInboxItem::query()
             ->where('organization_id', $organization->id)
             ->where('plugin_id', $this->pluginId())
-            ->where('status', IntegrationInboxItem::STATUS_OPEN)
+            ->where('status', IntegrationInboxStatus::Open)
             ->whereNotNull('group_key')
             ->orderByDesc('occurred_at')
             ->get();
     }
 
-    protected function resolveItem(IntegrationInboxItem $item, string $status, ?TimeEntry $timeEntry): void {
+    protected function resolveItem(IntegrationInboxItem $item, IntegrationInboxStatus $status, ?TimeEntry $timeEntry): void {
         $item->update([
             'status' => $status,
             'resolved_to_type' => $timeEntry?->getMorphClass(),
@@ -102,6 +103,24 @@ trait PersistsTimeImportInbox {
             'resolved_by' => Auth::id(),
             'resolved_at' => now(),
         ]);
+    }
+
+    /**
+     * Schließt offene Inbox-Fälle eines Eintrags, sobald er (auf welchem Weg
+     * auch immer) gebucht wurde — sonst bliebe z. B. ein Benutzer-Fall offen,
+     * obwohl der Folgelauf nach gepflegter Zuordnung längst gebucht hat.
+     */
+    protected function closePendingItems(Organization $organization, string $entryKey, TimeEntry $timeEntry): void {
+        $items = IntegrationInboxItem::query()
+            ->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
+            ->where('plugin_id', $this->pluginId())
+            ->where('dedupe_key', $this->entryExternalType() . ':' . $entryKey)
+            ->where('status', IntegrationInboxStatus::Open)
+            ->get();
+        foreach ($items as $item) {
+            $this->resolveItem($item, IntegrationInboxStatus::ResolvedCreated, $timeEntry);
+        }
     }
 
     /**

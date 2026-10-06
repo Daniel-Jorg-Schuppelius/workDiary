@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Api;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\{Organization, User};
@@ -45,7 +46,7 @@ final class InvoiceReadApiTest extends TestCase {
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
             'number' => 'R2026-' . str_pad((string) ++self::$number, 4, '0', STR_PAD_LEFT),
-            'status' => Invoice::STATUS_ISSUED,
+            'status' => InvoiceStatus::Issued,
             'type' => Invoice::TYPE_INVOICE,
             'tax_rate' => '19.00',
             'issued_on' => '2026-08-01',
@@ -63,7 +64,7 @@ final class InvoiceReadApiTest extends TestCase {
 
     public function test_index_filters_status_customer_and_paginates(): void {
         $this->invoice();
-        $paid = $this->invoice(['status' => Invoice::STATUS_PAID, 'paid_on' => '2026-08-10']);
+        $paid = $this->invoice(['status' => InvoiceStatus::Paid, 'paid_on' => '2026-08-10']);
         $otherCustomer = Customer::factory()->create(['organization_id' => $this->organization->id]);
         $this->invoice(['customer_id' => $otherCustomer->id]);
         Sanctum::actingAs($this->accountant, ['invoices:read']);

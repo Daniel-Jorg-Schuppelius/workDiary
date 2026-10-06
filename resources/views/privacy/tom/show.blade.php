@@ -42,7 +42,7 @@
                     <tr>
                         <td>v{{ $v->version_no }}</td>
                         <td class="text-sm">{{ $v->note ?? '—' }}</td>
-                        <td class="text-sm">{{ $v->approved_at?->format('d.m.Y') ?? __('Entwurf') }}</td>
+                        <td class="text-sm">{{ $v->approved_at?->fdate() ?? __('Entwurf') }}</td>
                         <td class="text-right">
                             @can('update', $measure)
                                 @unless ($v->approved_at)
@@ -96,7 +96,7 @@
                     <select name="activity_id" class="select select-sm select-bordered flex-1">
                         @foreach ($activities as $a)<option value="{{ $a->sqid }}">{{ $a->name }}</option>@endforeach
                     </select>
-                    <button class="btn btn-sm">{{ __('Zuordnen') }}</button>
+                    <x-button type="submit" tone="plain">{{ __('Zuordnen') }}</x-button>
                 </form>
             @endcan
         </x-card>
@@ -110,9 +110,9 @@
                 <ul class="text-sm space-y-1">
                     @foreach ($measure->reviews as $r)
                         <li class="rounded-box border border-base-300 px-3 py-2">
-                            {{ $r->reviewed_at?->format('d.m.Y') }} — <span class="font-semibold">{{ $r->result->label() }}</span>
+                            {{ $r->reviewed_at?->fdate() }} — <span class="font-semibold">{{ $r->result->label() }}</span>
                             @if ($r->deviation) · {{ $r->deviation }} @endif
-                            @if ($r->due_at) <span class="text-muted">({{ __('Folgemaßnahme bis') }} {{ $r->due_at->format('d.m.Y') }})</span> @endif
+                            @if ($r->due_at) <span class="text-muted">({{ __('Folgemaßnahme bis') }} {{ $r->due_at->fdate() }})</span> @endif
                         </li>
                     @endforeach
                 </ul>
@@ -154,9 +154,9 @@
                             <span class="inline-flex items-center gap-2">
                                 @if ($attachment->valid_until)
                                     @if ($attachment->valid_until->isPast())
-                                        <x-status-badge tone="error" size="xs">{{ __('abgelaufen am :date', ['date' => $attachment->valid_until->format('d.m.Y')]) }}</x-status-badge>
+                                        <x-status-badge tone="error" size="xs">{{ __('abgelaufen am :date', ['date' => $attachment->valid_until->fdate()]) }}</x-status-badge>
                                     @else
-                                        <x-status-badge tone="info" size="xs">{{ __('gültig bis :date', ['date' => $attachment->valid_until->format('d.m.Y')]) }}</x-status-badge>
+                                        <x-status-badge tone="info" size="xs">{{ __('gültig bis :date', ['date' => $attachment->valid_until->fdate()]) }}</x-status-badge>
                                     @endif
                                 @endif
                                 @can('update', $measure)

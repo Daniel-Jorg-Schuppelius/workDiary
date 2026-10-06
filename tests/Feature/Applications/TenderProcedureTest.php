@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Applications;
 
-use App\Enums\Applications\TenderProcedureType;
+use App\Enums\Applications\{ApplicationOpportunityStatus, TenderProcedureType};
 use App\Models\Applications\ApplicationOpportunity;
 use App\Models\Platform\User;
 use ERechnungToolkit\Enums\GaebAwardCategory;
@@ -128,7 +128,7 @@ final class TenderProcedureTest extends TestCase {
             'organization_id' => $this->organization->id,
             'title' => 'Neubau Kita — Rohbau',
             'kind' => 'tender',
-            'status' => 'in_progress',
+            'status' => ApplicationOpportunityStatus::InProgress,
             'submission_deadline' => now()->addDays(2)->toDateString(),
             'responsible_user_id' => $this->admin->id,
             'created_by' => $this->admin->id,
@@ -157,7 +157,7 @@ final class TenderProcedureTest extends TestCase {
             'organization_id' => $this->organization->id,
             'title' => 'Sanierung Turnhalle',
             'kind' => 'tender',
-            'status' => 'submitted',
+            'status' => ApplicationOpportunityStatus::Submitted,
             'binding_until' => now()->addDays(3)->toDateString(),
             'responsible_user_id' => $this->admin->id,
             'created_by' => $this->admin->id,
@@ -191,7 +191,7 @@ final class TenderProcedureTest extends TestCase {
             'organization_id' => $this->organization->id,
             'title' => 'Neubau Kita',
             'kind' => 'tender',
-            'status' => 'submitted',
+            'status' => ApplicationOpportunityStatus::Submitted,
             'bill_of_quantity_id' => $boq->id,
             'created_by' => $this->admin->id,
         ]);
@@ -217,7 +217,7 @@ final class TenderProcedureTest extends TestCase {
             ['bill_of_quantity_id' => $boq->id, 'created_by' => $this->admin->id],
         );
 
-        $this->assertSame('won', $tender->fresh()->status);
+        $this->assertSame(ApplicationOpportunityStatus::Won, $tender->fresh()->status);
     }
 
     /** Die Detailansicht zeigt das Verfahren, sobald eines erfasst ist. */
@@ -226,7 +226,7 @@ final class TenderProcedureTest extends TestCase {
             'organization_id' => $this->organization->id,
             'title' => 'Neubau Kita',
             'kind' => 'tender',
-            'status' => 'captured',
+            'status' => ApplicationOpportunityStatus::Captured,
             'awarding_body' => 'Stadt Bonn',
             'procedure_type' => TenderProcedureType::RestrictedInvitationWithCall,
             'above_threshold' => false,

@@ -42,12 +42,7 @@
           x-data="quizRunner()" data-quiz-runner data-options="{{ json_encode($runnerOptions) }}">
         @csrf
         <div class="space-y-4">
-            @if ($errors->any())
-                <div class="alert alert-error text-sm" role="alert">
-                    <x-icon name="error" />
-                    <span>{{ $errors->first() }}</span>
-                </div>
-            @endif
+            <x-validation-errors first />
 
             @if ($attempt->expires_at)
                 {{-- Die verbleibende Zeit ist eine Statusinformation, keine
@@ -66,11 +61,11 @@
             {{-- Fragenübersicht mit Sprungmarken: beantwortet / gemerkt / offen. --}}
             <nav class="flex flex-wrap gap-1" aria-label="{{ __('learning.field.question_overview') }}" data-quiz-overview>
                 @foreach ($questions as $index => $question)
-                    <button type="button" class="btn btn-xs" :class="overviewClass({{ (int) $question['id'] }})"
+                    <x-button tone="plain" size="xs" ::class="overviewClass({{ (int) $question['id'] }})"
                             @click="goTo({{ $index }})"
-                            :aria-current="isCurrent({{ $index }}) ? 'step' : null">
+                            ::aria-current="isCurrent({{ $index }}) ? 'step' : null">
                         {{ $index + 1 }}
-                    </button>
+                    </x-button>
                 @endforeach
                 <span class="ml-2 self-center text-xs text-muted" x-text="progressLabel()"></span>
             </nav>

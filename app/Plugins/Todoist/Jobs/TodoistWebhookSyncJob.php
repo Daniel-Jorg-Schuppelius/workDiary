@@ -14,6 +14,7 @@ namespace App\Plugins\Todoist\Jobs;
 
 use App\Jobs\Concerns\RetriesTransientFailures;
 use App\Models\Platform\Organization;
+use App\Plugins\Todoist\Enums\TodoistProjectLinkStatus;
 use App\Plugins\Todoist\Models\{TodoistConnection, TodoistProjectLink, TodoistWebhookDelivery};
 use App\Plugins\Todoist\Services\TodoistImportService;
 use App\Plugins\Todoist\TodoistPlugin;
@@ -70,7 +71,7 @@ class TodoistWebhookSyncJob implements ShouldQueue {
         if ($connection instanceof TodoistConnection && $connection->isActive()) {
             $links = TodoistProjectLink::query()
                 ->where('organization_id', $org->id)
-                ->where('status', TodoistProjectLink::STATUS_ACTIVE)
+                ->where('status', TodoistProjectLinkStatus::Active)
                 ->when($this->todoistProjectId !== null && $this->todoistProjectId !== '',
                     fn ($q) => $q->where('todoist_project_id', $this->todoistProjectId))
                 ->get();

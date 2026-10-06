@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Timekeeping\Import;
 
 use App\Enums\Import\{ImportEntity, ImportErrorCode};
+use App\Enums\Integration\IntegrationInboxStatus;
 use App\Enums\TimeEntry\{TimeEntryActivityType, TimeEntryKind};
 use App\Models\Integration\{ImportValueMapping, IntegrationInboxItem};
 use App\Models\Platform\{Organization, User};
@@ -309,7 +310,7 @@ class ProjectTimeSpec extends AbstractEntitySpec implements HasMappableValues, I
             'dedupe_key' => $dedupeKey,
         ]);
         if (! $item->exists) {
-            $item->status = IntegrationInboxItem::STATUS_OPEN;
+            $item->status = IntegrationInboxStatus::Open;
         }
         $item->fill([
             'source' => 'csv',

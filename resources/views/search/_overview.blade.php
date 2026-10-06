@@ -36,7 +36,7 @@
                                 <span class="block text-xs text-muted">{{ $aggregate->periodLabel() }}</span>
                             @endif
                         </span>
-                        <span class="badge badge-sm shrink-0">{{ trans_choice('search.aggregate.hits', $aggregate->hits, ['count' => $aggregate->hits]) }}</span>
+                        <x-status-badge tone="plain" class="shrink-0">{{ trans_choice('search.aggregate.hits', $aggregate->hits, ['count' => $aggregate->hits]) }}</x-status-badge>
                     </li>
                 @endforeach
             </ul>
@@ -55,7 +55,7 @@
                                 <x-icon name="{{ $type->icon() }}" class="text-base text-muted" />
                                 {{ $type->label() }}
                             </span>
-                            <span class="badge badge-sm badge-ghost">{{ $result->typeCounts[$type->value] }}</span>
+                            <x-status-badge>{{ $result->typeCounts[$type->value] }}</x-status-badge>
                         </a>
                     </li>
                 @endforeach

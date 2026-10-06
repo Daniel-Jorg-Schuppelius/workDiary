@@ -9,9 +9,10 @@
 @extends('layouts.app')
 @section('title', __('textcorrections.title.index') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('textcorrections.title.index'))
+@include('partials.page-fill')
 
 @section('content')
-<x-index-page :subtitle="__('textcorrections.title.subtitle')">
+<x-index-page overflow="clip" :subtitle="__('textcorrections.title.subtitle')">
     <x-slot:actions>
         <form method="GET" action="{{ route('admin.text-corrections.index') }}" class="flex items-center gap-2">
             <input type="search" name="q" value="{{ $q }}" maxlength="190"
@@ -34,7 +35,7 @@
         <span>{{ __('textcorrections.notice') }}</span>
     </div>
 
-    <x-table :caption="__('textcorrections.title.index')">
+    <x-table scroll="flex" :caption="__('textcorrections.title.index')">
         <x-slot:head>
             <tr>
                 <x-table.th>{{ __('textcorrections.field.wrong') }}</x-table.th>

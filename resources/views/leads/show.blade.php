@@ -36,20 +36,19 @@
     <div class="grid gap-4 lg:grid-cols-3">
         <div class="space-y-4 lg:col-span-2">
             <x-card :title="__('Stammdaten')">
-                <dl class="grid gap-x-8 gap-y-1 text-sm sm:grid-cols-2">
-                    <div class="flex justify-between gap-4"><dt class="text-muted">{{ __('Firma') }}</dt><dd>{{ $lead->company ?? '—' }}</dd></div>
-                    <div class="flex justify-between gap-4"><dt class="text-muted">{{ __('Ansprechpartner') }}</dt><dd>{{ $lead->contact_name ?? '—' }}</dd></div>
-                    <div class="flex justify-between gap-4"><dt class="text-muted">{{ __('E-Mail') }}</dt><dd>{{ $lead->email ?? '—' }}</dd></div>
-                    <div class="flex justify-between gap-4"><dt class="text-muted">{{ __('Telefon') }}</dt><dd>{{ $lead->phone ?? '—' }}</dd></div>
-                    <div class="flex justify-between gap-4 sm:col-span-2"><dt class="text-muted">{{ __('Adresse') }}</dt><dd class="text-right">{{ implode(', ', $lead->postalAddressLines()) ?: '—' }}</dd></div>
-                    <div class="flex justify-between gap-4"><dt class="text-muted">{{ __('Quelle') }}</dt><dd>{{ $lead->source->label() }}</dd></div>
-                    <div class="flex justify-between gap-4"><dt class="text-muted">{{ __('Verantwortlich') }}</dt><dd>{{ $lead->responsible?->name ?? '—' }}</dd></div>
-                    <div class="flex justify-between gap-4"><dt class="text-muted">{{ __('Letzter Kontakt') }}</dt><dd>{{ $lead->last_contact_at?->orgTz()->format('d.m.Y H:i') ?? '—' }}</dd></div>
+                <x-detail-grid layout="split" :cols="2">
+                    <x-detail-grid.row :label="__('Firma')">{{ $lead->company ?? '—' }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('Ansprechpartner')">{{ $lead->contact_name ?? '—' }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('E-Mail')">{{ $lead->email ?? '—' }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('Telefon')">{{ $lead->phone ?? '—' }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('Adresse')" full class="text-right">{{ implode(', ', $lead->postalAddressLines()) ?: '—' }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('Quelle')">{{ $lead->source->label() }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('Verantwortlich')">{{ $lead->responsible?->name ?? '—' }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('Letzter Kontakt')">{{ $lead->last_contact_at?->fdatetime() ?? '—' }}</x-detail-grid.row>
                     @if ($lead->customer)
-                        <div class="flex justify-between gap-4"><dt class="text-muted">{{ __('Kunde') }}</dt>
-                            <dd><a class="link" href="{{ route('customers.show', $lead->customer) }}">{{ $lead->customer->name }}</a></dd></div>
+                        <x-detail-grid.row :label="__('Kunde')"><a class="link" href="{{ route('customers.show', $lead->customer) }}">{{ $lead->customer->name }}</a></x-detail-grid.row>
                     @endif
-                </dl>
+                </x-detail-grid>
                 @if ($lead->interest)
                     <p class="mt-3 whitespace-pre-line text-sm text-base-content/80">{{ $lead->interest }}</p>
                 @endif

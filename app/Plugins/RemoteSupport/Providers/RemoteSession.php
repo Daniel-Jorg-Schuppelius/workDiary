@@ -15,7 +15,7 @@ use Carbon\CarbonImmutable;
 /**
  * Normalisierte Repräsentation einer einzelnen Fernwartungs-Verbindung,
  * unabhängig vom konkreten Anbieter (AnyDesk/TeamViewer). Die Provider-Clients
- * mappen ihre Roh-Reports auf dieses DTO; {@see \App\Plugins\RemoteSupport\RemoteSessionImporter}
+ * mappen ihre Roh-Reports auf dieses DTO; {@see \App\Plugins\RemoteSupport\Services\RemoteSessionImporter}
  * verarbeitet ausschließlich diese Struktur.
  */
 final class RemoteSession {

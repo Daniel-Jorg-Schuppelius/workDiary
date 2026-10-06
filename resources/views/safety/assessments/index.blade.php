@@ -12,8 +12,7 @@
 @extends('layouts.app')
 @section('title', __('safety.register.title.assessments'))
 @section('nav-title', __('safety.register.title.assessments'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('safety.register.subtitle.assessments')">
     <x-slot:actions>
@@ -36,7 +35,7 @@
             </select>
         </x-filter-field>
         <x-filter-field :label="__('safety.register.kpi.review_due')" for="flt-review">
-            <span id="flt-review" class="badge {{ $reviewDueCount > 0 ? 'badge-error' : 'badge-ghost' }} badge-sm">{{ $reviewDueCount }}</span>
+            <x-status-badge id="flt-review" :tone="$reviewDueCount > 0 ? 'error' : 'ghost'">{{ $reviewDueCount }}</x-status-badge>
         </x-filter-field>
     </x-filter-bar>
 
@@ -62,7 +61,7 @@
                 <td class="text-center font-mono text-sm">v{{ $assessment->version }}</td>
                 <td class="text-center text-sm">{{ $assessment->items_count }}</td>
                 <td class="text-sm {{ $assessment->status === \App\Enums\Safety\HazardAssessmentStatus::Approved && $assessment->isReviewOverdue() ? 'text-error font-semibold' : 'text-base-content/70' }}">
-                    {{ $assessment->review_due_on?->format('d.m.Y') ?? '–' }}
+                    {{ $assessment->review_due_on?->fdate() ?? '–' }}
                 </td>
                 <td class="text-right">
                     <div class="flex justify-end gap-1">

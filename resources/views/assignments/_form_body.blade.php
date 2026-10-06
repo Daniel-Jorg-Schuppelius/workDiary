@@ -13,7 +13,7 @@
     $startAt = old('start_at', $assignment?->start_at?->orgTz()->format('Y-m-d\TH:i') ?? $prefillStartAt ?? '');
     $endAt = old('end_at', $assignment?->end_at?->orgTz()->format('Y-m-d\TH:i') ?? $prefillEndAt ?? '');
     $reason = old('reason', $assignment?->reason ?? '');
-    $selectedUser = (int) old('user_id', $assignment?->user_id ?? $prefillUserId ?? auth()->id());
+    $selectedUser = \App\Support\Sqid::decodeOrNumeric(\App\Models\Platform\User::class, old('user_id', $assignment?->user_id ?? $prefillUserId ?? auth()->id()));
     $selectedShift = (int) old('on_call_shift_id', $assignment?->on_call_shift_id ?? 0);
     $back = request()->query('_back') ?? url()->previous();
     $dialogUrl = ($isEdit ? route('assignments.edit', $assignment) : route('assignments.create')) . '?dialog=1';
@@ -28,7 +28,7 @@
     <x-form-group :legend="__('Mitarbeiter')" icon="person" tone="primary">
         <x-select-field name="user_id" :label="__('Mitarbeiter')" class="w-full">
             @foreach ($assignableUsers as $u)
-                <option value="{{ $u['id'] }}" @selected($selectedUser === (int) $u['id'])>{{ $u['name'] }}</option>
+                <option value="{{ \App\Support\Sqid::encode(\App\Models\Platform\User::class, $u['id']) }}" @selected($selectedUser === (int) $u['id'])>{{ $u['name'] }}</option>
             @endforeach
         </x-select-field>
     </x-form-group>

@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Privacy;
 
+use App\Enums\Applications\JobApplicationStatus;
 use App\Enums\Privacy\{DataSubjectKind, DataSubjectRequestType};
 use App\Models\Absence\{SickLeave, Vacation};
 use App\Models\Applications\JobApplication;
@@ -233,7 +234,7 @@ class SubjectDataExportTest extends TestCase {
         $application = JobApplication::create([
             'organization_id' => $org->id,
             'candidate_name' => 'Bernd Bewerber', 'email' => 'bernd@example.test', 'phone' => '+49 40 999',
-            'source' => 'website', 'status' => 'received',
+            'source' => 'website', 'status' => JobApplicationStatus::Received,
         ]);
         $payload = $exporter->build($dsr, DataSubjectKind::JobApplication, $application);
         $master = $this->section($payload, 'master_data');
@@ -305,7 +306,7 @@ class SubjectDataExportTest extends TestCase {
         Customer::factory()->create(['organization_id' => $org->id, 'name' => 'Andere AG']);
         Customer::factory()->count(25)->create(['organization_id' => $org->id]);
         $foreign = Customer::factory()->create(['organization_id' => Organization::factory()->create()->id, 'name' => 'Muster Fremd']);
-        $application = JobApplication::create(['organization_id' => $org->id, 'candidate_name' => 'Erika Mustermann', 'source' => 'website', 'status' => 'received']);
+        $application = JobApplication::create(['organization_id' => $org->id, 'candidate_name' => 'Erika Mustermann', 'source' => 'website', 'status' => JobApplicationStatus::Received]);
 
         $search = fn (string $kind, string $q) => $this->actingAs($officer)
             ->getJson(route('dataprotection.requests.subject-search', ['dsr' => $dsr, 'kind' => $kind, 'q' => $q]))

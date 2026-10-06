@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Supplier;
 
+use App\Http\Controllers\Concerns\ChecksTenantPublicSurfaces;
 use App\Http\Controllers\Controller;
 use App\Models\Platform\Organization;
 use App\Models\Supplier\SupplierQuestionnaireRequest;
@@ -22,6 +23,8 @@ use Illuminate\View\View;
 
 /** Öffentliches Ausfüllen der Selbstauskunft (MVP-937); ungültiger oder abgelaufener Link → 404. */
 class PublicSupplierQuestionnaireController extends Controller {
+    use ChecksTenantPublicSurfaces;
+
     public function __construct(private readonly SupplierQuestionnaireService $service) {}
 
     public function show(string $token): View {
@@ -42,7 +45,10 @@ class PublicSupplierQuestionnaireController extends Controller {
     }
 
     private function request(string $token): SupplierQuestionnaireRequest {
-        return $this->service->resolve($token) ?? abort(404);
+        $request = $this->service->resolve($token) ?? abort(404);
+        $this->assertTenantPublicSurfacesAvailable((int) $request->organization_id);
+
+        return $request;
     }
 
     private function organization(SupplierQuestionnaireRequest $request): Organization {

@@ -137,7 +137,7 @@ class MsgraphBackupClient {
         $paginator = new \APIToolkit\API\Pagination\CursorPaginator(function (?string $nextLink) use ($firstUrl): \APIToolkit\API\Pagination\CursorPage {
             $response = $nextLink === null
                 ? $this->api->getResponse($firstUrl, ['$select' => 'id,name,size,folder,lastModifiedDateTime', '$top' => 200])
-                : $this->api->getResponse($nextLink);
+                : $this->api->getFollowUp($nextLink);
             if ($response->status() === 404) {
                 return new \APIToolkit\API\Pagination\CursorPage([], null); // Prefix existiert (noch) nicht.
             }

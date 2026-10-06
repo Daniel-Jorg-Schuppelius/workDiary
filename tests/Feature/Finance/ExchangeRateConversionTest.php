@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Finance;
 
 use App\Enums\Finance\{AccountType, PostingAccountRole, PostingSourceKind, ProfitDetermination};
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Accounting\{AccountingExchangeRate, AccountingPostingRule};
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
@@ -64,7 +65,7 @@ final class ExchangeRateConversionTest extends TestCase {
     public function test_foreign_invoices_need_a_monthly_rate_and_are_converted_balanced(): void {
         $invoice = Invoice::query()->create([
             'organization_id' => $this->org->id, 'customer_id' => Customer::factory()->create(['organization_id' => $this->org->id])->id,
-            'number' => 'RE-USD-1', 'status' => Invoice::STATUS_ISSUED, 'issued_on' => '2026-03-02', 'due_on' => '2026-03-16', 'currency' => 'USD',
+            'number' => 'RE-USD-1', 'status' => InvoiceStatus::Issued, 'issued_on' => '2026-03-02', 'due_on' => '2026-03-16', 'currency' => 'USD',
             'subtotal' => '100.00', 'tax_amount' => '19.00', 'total' => '119.00', 'tax_breakdown' => [['rate' => '19.00', 'net' => '100.00', 'tax' => '19.00']],
         ])->refresh();
         $adapter = app(PostingSourceRegistry::class)->for(PostingSourceKind::SalesInvoice);

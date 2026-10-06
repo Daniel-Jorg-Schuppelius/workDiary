@@ -10,8 +10,7 @@
 @extends('layouts.app')
 @section('title', __('Legal Hold'))
 @section('nav-title', __('Legal Hold'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 @section('content')
     <x-index-page overflow="clip" :subtitle="__('Sperrvermerke für laufende Betroffenen- und Rechtsverfahren: Solange ein Vermerk aktiv ist, wird zu Person oder Kunde nichts gelöscht oder anonymisiert.')">
         @if ($canManage)
@@ -46,14 +45,14 @@
                     <td>{{ $hold->reference ?? '—' }}</td>
                     <td class="max-w-md whitespace-normal">{{ $canManage ? $hold->reason : '…' }}</td>
                     <td class="whitespace-nowrap">
-                        {{ $hold->placed_at->format('d.m.Y') }}
+                        {{ $hold->placed_at->fdate() }}
                         <span class="block text-xs text-muted">{{ $hold->placedBy?->name ?? '—' }}</span>
                     </td>
                     <td>
                         @if ($hold->isActive())
                             <x-status-badge tone="error" size="sm">{{ __('aktiv') }}</x-status-badge>
                         @else
-                            <x-status-badge tone="ghost" size="sm">{{ __('aufgehoben am :date', ['date' => $hold->released_at?->format('d.m.Y')]) }}</x-status-badge>
+                            <x-status-badge tone="ghost" size="sm">{{ __('aufgehoben am :date', ['date' => $hold->released_at?->fdate()]) }}</x-status-badge>
                         @endif
                     </td>
                     <td class="text-right">

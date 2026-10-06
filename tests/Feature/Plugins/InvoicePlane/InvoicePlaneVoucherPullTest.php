@@ -11,6 +11,7 @@
 namespace Tests\Feature\Plugins\InvoicePlane;
 
 use App\Enums\Billing\{DocumentDirection, DocumentKind};
+use App\Enums\Finance\AccountingVoucherState;
 use App\Models\Finance\AccountingVoucher;
 use App\Plugins\InvoicePlane\Schema\{NullVoucherReaderFactory, VoucherReader, VoucherReaderFactory};
 use App\Plugins\InvoicePlane\Services\InvoicePlaneVoucherPullService;
@@ -85,7 +86,7 @@ final class InvoicePlaneVoucherPullTest extends TestCase {
         $this->assertSame(DocumentDirection::Outgoing->value, $invoice->direction);
         $this->assertSame(DocumentKind::Invoice->value, $invoice->document_kind);
         // Status 2 (versendet) ist offen — „überfällig" wäre es auch.
-        $this->assertSame('open', $invoice->voucher_state);
+        $this->assertSame(AccountingVoucherState::Open, $invoice->voucher_state);
         $this->assertSame('119.00', (string) $invoice->total_amount);
         $this->assertSame('119.00', (string) $invoice->open_amount);
 
@@ -94,7 +95,7 @@ final class InvoicePlaneVoucherPullTest extends TestCase {
         $this->assertSame(DocumentKind::CreditNote->value, $credit->document_kind);
         $this->assertSame('12', $credit->cancels_external_id);
         $this->assertFalse($credit->is_cancellation);
-        $this->assertSame('paid', $credit->voucher_state);
+        $this->assertSame(AccountingVoucherState::Paid, $credit->voucher_state);
     }
 
     public function test_second_run_reads_incrementally_and_updates_instead_of_duplicating(): void {

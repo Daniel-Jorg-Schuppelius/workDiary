@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Privacy;
 
+use App\Enums\Privacy\DpiaStepStatus;
 use App\Models\Platform\User;
 use App\Models\Privacy\{Dpia, DpiaStep};
 use RuntimeException;
@@ -33,7 +34,7 @@ class DpiaWorkflowService {
                 [
                     'organization_id' => $dpia->organization_id,
                     'position' => $position,
-                    'status' => DpiaStep::STATUS_PENDING,
+                    'status' => DpiaStepStatus::Pending,
                 ],
             );
         }
@@ -44,14 +45,14 @@ class DpiaWorkflowService {
      * oder der Freigabe-Schritt ohne Ergebnis abgeschlossen werden soll.
      */
     public function complete(DpiaStep $step, User $actor, ?string $content, ?string $outcome = null, ?string $residualRisk = null): DpiaStep {
-        if ($step->isDone()) {
+        if (! $step->status->canTransitionTo(DpiaStepStatus::Done)) {
             return $step;
         }
 
         $openBefore = DpiaStep::query()
             ->where('dpia_id', $step->dpia_id)
             ->where('position', '<', $step->position)
-            ->where('status', '!=', DpiaStep::STATUS_DONE)
+            ->where('status', '!=', DpiaStepStatus::Done)
             ->exists();
         if ($openBefore) {
             throw new RuntimeException('Frühere DSFA-Schritte sind noch offen.');
@@ -76,7 +77,7 @@ class DpiaWorkflowService {
 
         $step->forceFill([
             'content' => $content,
-            'status' => DpiaStep::STATUS_DONE,
+            'status' => DpiaStepStatus::Done,
             'completed_by' => $actor->id,
             'completed_at' => now(),
         ])->save();
@@ -88,7 +89,7 @@ class DpiaWorkflowService {
     public function nextStep(Dpia $dpia): ?DpiaStep {
         return DpiaStep::query()
             ->where('dpia_id', $dpia->id)
-            ->where('status', '!=', DpiaStep::STATUS_DONE)
+            ->where('status', '!=', DpiaStepStatus::Done)
             ->orderBy('position')
             ->first();
     }

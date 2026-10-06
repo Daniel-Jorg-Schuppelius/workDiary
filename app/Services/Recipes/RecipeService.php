@@ -14,7 +14,6 @@ namespace App\Services\Recipes;
 
 use App\Enums\Classification\ClassificationDomain;
 use App\Models\Article\{Article, ArticleUnit};
-use App\Models\Platform\Organization;
 use App\Models\Procedure\{ProcedureTemplate, ProcedureTemplateVersion};
 use App\Models\Recipes\{RecipeMenu, RecipeProfile};
 use App\Services\Procedure\Bom\{BomResolver, MaterialDemandCalculator};
@@ -41,16 +40,6 @@ class RecipeService {
         private readonly BomResolver $bom,
         private readonly MaterialDemandCalculator $calculator,
     ) {}
-
-    /** Branchenprofil-Kontext (Muster {@see \App\Services\Ai\AiRoutingResolver}). */
-    public function isPartyserviceActive(Organization $organization): bool {
-        $settings = is_array($organization->settings) ? $organization->settings : [];
-        if (($settings['branch_profile_code'] ?? null) === self::PROFILE_CODE) {
-            return true;
-        }
-
-        return data_get($settings, 'branch_profile_versions.' . self::PROFILE_CODE) !== null;
-    }
 
     /** Aktuell veröffentlichte Rezeptversion eines Gerichts (Stichtag heute). */
     public function publishedVersionFor(ProcedureTemplate $template): ?ProcedureTemplateVersion {
@@ -228,7 +217,7 @@ class RecipeService {
         }
 
         $organization = $version->template?->organization;
-        if ($organization === null || ! $this->isPartyserviceActive($organization)) {
+        if ($organization === null || ! $organization->hasBranchProfile(self::PROFILE_CODE)) {
             return;
         }
 

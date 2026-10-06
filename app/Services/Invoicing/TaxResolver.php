@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Invoicing;
 
+use App\Enums\Finance\TaxRuleStatus;
 use App\Models\Customer\Customer;
 use App\Models\Finance\TaxRule;
 use App\Models\Platform\Organization;
@@ -132,7 +133,7 @@ class TaxResolver {
         foreach ([$organizationId, null] as $owner) {
             foreach (array_unique([$category, 'services']) as $lookupCategory) {
                 $rule = TaxRule::query()
-                    ->where('status', 'active')
+                    ->where('status', TaxRuleStatus::Active)
                     ->where('country', strtoupper($country))
                     ->where('category', $lookupCategory)
                     ->where('rate_type', $rateType)
@@ -156,7 +157,7 @@ class TaxResolver {
      */
     public function assertNoOverlap(TaxRule $candidate): void {
         $overlap = TaxRule::query()
-            ->where('status', 'active')
+            ->where('status', TaxRuleStatus::Active)
             ->whereKeyNot($candidate->id ?? 0)
             ->where('country', $candidate->country)
             ->where('category', $candidate->category)

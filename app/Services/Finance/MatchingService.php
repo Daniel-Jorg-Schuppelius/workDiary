@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Finance;
 
 use App\Enums\Finance\{AllocationKind, TransactionDirection};
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Finance\{BankTransaction, PaymentAllocation};
 use App\Models\Invoicing\Invoice;
 use App\Models\Travel\Expense;
@@ -177,7 +178,7 @@ class MatchingService {
 
         /** @var \Illuminate\Database\Eloquent\Collection<int, Invoice> $invoices */
         $invoices = Invoice::query()
-            ->whereNotIn('status', [Invoice::STATUS_PAID, Invoice::STATUS_CANCELLED])
+            ->whereNotIn('status', [InvoiceStatus::Paid, InvoiceStatus::Cancelled])
             ->where('type', Invoice::TYPE_INVOICE)
             ->get();
 

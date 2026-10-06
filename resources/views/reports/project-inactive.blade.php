@@ -15,14 +15,7 @@
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="__('Projekte ohne Zeiteinträge im Zeitraum — optional in einem Schritt archivieren.')">
             <x-slot:actions>
-                <x-action-menu icon="download" tone="outline" :label="__('Export')">
-                    <x-icon-btn icon="download" tone="outline" size="sm"
-                                :href="route('reports.project-inactive', array_merge($standardFilters->toQueryParams(), ['export' => 'csv']))"
-                                show-label>CSV</x-icon-btn>
-                    <x-icon-btn icon="table_chart" tone="outline" size="sm"
-                                :href="route('reports.project-inactive', array_merge($standardFilters->toQueryParams(), ['export' => 'xlsx']))"
-                                show-label>XLSX</x-icon-btn>
-                </x-action-menu>
+                <x-report-export :url="fn (string $format) => route('reports.project-inactive', array_merge($standardFilters->toQueryParams(), ['export' => $format]))" :formats="['csv', 'xlsx']" />
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>

@@ -12,9 +12,11 @@ declare(strict_types=1);
 
 namespace App\Plugins\JtlWawi\Services;
 
+use App\Enums\Integration\{ExternalArticleSyncStatus, IntegrationInboxStatus};
 use App\Models\Article\{Article, ArticleVariant};
 use App\Models\Integration\{ExternalArticleMapping, IntegrationInboxItem};
-use App\Plugins\JtlWawi\Api\{JtlApiException, JtlGatewayFactory};
+use App\Plugins\JtlWawi\Api\JtlGatewayFactory;
+use App\Plugins\JtlWawi\Exceptions\JtlApiException;
 use App\Plugins\JtlWawi\JtlWawiPlugin;
 use App\Plugins\JtlWawi\Models\JtlConnection;
 use App\Support\MorphMap;
@@ -135,7 +137,7 @@ class JtlArticleImporter {
                 'article_variant_id' => $variant->id,
                 'external_parent_id' => trim((string) ($row['parentItemId'] ?? '')) ?: null,
                 'external_number' => $sku !== '' ? mb_substr($sku, 0, 64) : null,
-                'sync_status' => 'linked',
+                'sync_status' => ExternalArticleSyncStatus::Linked,
                 'last_synced_at' => now(),
             ],
         );
@@ -143,8 +145,8 @@ class JtlArticleImporter {
         IntegrationInboxItem::query()
             ->where('organization_id', $connection->organization_id)
             ->where('dedupe_key', $this->dedupeKey($jtlItemId))
-            ->where('status', IntegrationInboxItem::STATUS_OPEN)
-            ->update(['status' => IntegrationInboxItem::STATUS_RESOLVED_LINKED, 'resolved_at' => now()]);
+            ->where('status', IntegrationInboxStatus::Open)
+            ->update(['status' => IntegrationInboxStatus::ResolvedLinked, 'resolved_at' => now()]);
 
         return 'linked';
     }
@@ -167,7 +169,7 @@ class JtlArticleImporter {
                 'article_variant_id' => null,
                 'external_parent_id' => null,
                 'external_number' => $sku !== '' ? mb_substr($sku, 0, 64) : null,
-                'sync_status' => $article !== null ? 'linked' : 'pending',
+                'sync_status' => $article !== null ? ExternalArticleSyncStatus::Linked : ExternalArticleSyncStatus::Pending,
                 'last_synced_at' => now(),
             ],
         );
@@ -187,7 +189,7 @@ class JtlArticleImporter {
                 'external_type' => 'item',
                 'external_id' => $jtlItemId,
                 'case_type' => $caseType,
-                'status' => IntegrationInboxItem::STATUS_OPEN,
+                'status' => IntegrationInboxStatus::Open,
                 'display_title' => trim((string) ($row['name'] ?? '')) !== '' ? (string) $row['name'] : $jtlItemId,
                 'display_subtitle' => trim('SKU ' . (string) ($row['sKU'] ?? '-') . ' · GTIN ' . ((string) data_get($row, 'identifiers.gtin') ?: '-')),
                 'remote_snapshot' => [

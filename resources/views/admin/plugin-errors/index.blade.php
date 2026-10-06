@@ -11,8 +11,7 @@
 
 @section('title', __('Plugin-Fehler'))
 @section('nav-title', __('Plugin-Fehler'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('Inbox für Plugin-Fehler aus Boot, Runtime und Healthchecks.')">
@@ -62,7 +61,7 @@
                 :title="__('Keine Treffer')"
                 :message="__('Der aktuelle Filter trifft keine Fehler.')">
                 <x-slot:action>
-                    <a href="{{ route('admin.plugin-errors.index') }}" class="btn btn-sm">{{ __('Filter zurücksetzen') }}</a>
+                    <x-button :href="route('admin.plugin-errors.index')" tone="plain">{{ __('Filter zurücksetzen') }}</x-button>
                 </x-slot:action>
             </x-empty-state>
         @else
@@ -80,9 +79,9 @@
             <input type="hidden" name="q" value="{{ $filters['q'] ?? '' }}">
         </form>
         <div class="flex flex-none items-center gap-2">
-            <button type="submit" form="bulk-ack-form" class="btn btn-sm">{{ __('Auswahl als gesehen markieren') }}</button>
-            <button type="submit" form="bulk-ack-form" name="all_filtered" value="1" class="btn btn-sm btn-ghost"
-                    title="{{ __('Quittiert alle offenen Fehler des aktuellen Filters (Plugin/Phase/Suche).') }}">{{ __('Alle gefilterten quittieren') }}</button>
+            <x-button type="submit" tone="plain" form="bulk-ack-form">{{ __('Auswahl als gesehen markieren') }}</x-button>
+            <x-button type="submit" tone="ghost" form="bulk-ack-form" name="all_filtered" value="1"
+                    title="{{ __('Quittiert alle offenen Fehler des aktuellen Filters (Plugin/Phase/Suche).') }}">{{ __('Alle gefilterten quittieren') }}</x-button>
         </div>
         <x-table scroll="flex" :pinRows="true" table-sort="server"
                  :route="route('admin.plugin-errors.index')" :current-sort="$sort" :current-dir="$dir"
@@ -109,7 +108,7 @@
                         @endunless
                     </td>
                     <td class="text-xs text-base-content/70 whitespace-nowrap" title="{{ $err->occurred_at->toDayDateTimeString() }}">
-                        {{ $err->occurred_at->orgTz()->format('d.m.Y H:i') }}
+                        {{ $err->occurred_at->fdatetime() }}
                         @if ($err->last_occurred_at && ! $err->last_occurred_at->equalTo($err->occurred_at))
                             <span class="block text-muted">{{ __('zuletzt :time', ['time' => $err->last_occurred_at->diffForHumans()]) }}</span>
                         @endif

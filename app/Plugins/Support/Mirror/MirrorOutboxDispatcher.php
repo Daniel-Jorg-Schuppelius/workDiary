@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\Support\Mirror;
 
 use App\Contracts\Integration\IntegrationOutboxDispatcher;
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Enums\Protocol\ProtocolStatus;
 use App\Models\Document\Document;
 use App\Models\Integration\IntegrationOutboxEntry;
@@ -93,7 +94,7 @@ class MirrorOutboxDispatcher implements IntegrationOutboxDispatcher {
 
         $invoice = Invoice::query()->withoutGlobalScopes()->find($entry->subject_id);
         // Nur finalisierte (gestellte) Rechnungen spiegeln — Status nochmals prüfen.
-        if (! $invoice instanceof Invoice || $invoice->status !== Invoice::STATUS_ISSUED) {
+        if (! $invoice instanceof Invoice || $invoice->status !== InvoiceStatus::Issued) {
             return true;
         }
 

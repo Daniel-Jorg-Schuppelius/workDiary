@@ -26,7 +26,7 @@ use App\Models\Sales\{Quote, QuoteItem};
 use App\Services\Ai\AiMemoryService;
 use App\Services\Ai\Exceptions\AiException;
 use App\Services\Ai\Suggestions\{ItemTextSuggestionService, ProtocolTextSuggestionService};
-use App\Support\Locales;
+use App\Support\{Locales, Sqid};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\Rule;
@@ -213,6 +213,7 @@ class AiSuggestionController extends Controller {
     public function learn(Request $request, AiMemoryService $memory): RedirectResponse {
         abort_unless(Gate::allows(Permission::AiUse->value), 403);
 
+        $request->merge(['customer_id' => Sqid::decodeOrNumeric(Customer::class, $request->input('customer_id'))]);
         $data = $request->validate([
             'entry_type' => ['required', 'string', 'in:glossary,example'],
             'term' => ['nullable', 'string', 'max:120', 'required_if:entry_type,glossary'],

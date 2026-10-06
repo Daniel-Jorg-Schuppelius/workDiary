@@ -47,7 +47,7 @@
             <p class="text-xs text-muted">{{ __('Median über :count erledigte Elemente (Arbeitszeit an der Gesamtdurchlaufzeit).', ['count' => $flowEfficiency->data['sample_size']]) }}</p>
         </x-card>
     @else
-        <div class="alert alert-warning">
+        <div role="alert" class="alert alert-warning">
             <x-icon name="data_alert" />
             <span>{{ __('Flow-Effizienz wird nicht berechnet: Spalten ohne Berichtsrolle (:columns). Bitte in den Board-Einstellungen klassifizieren.', ['columns' => implode(', ', $flowEfficiency->data['unclassified_columns'])]) }}</span>
         </div>

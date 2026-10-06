@@ -16,7 +16,7 @@ use App\Models\Invoicing\Invoice;
 use Carbon\Carbon;
 use CommonToolkit\ValueObjects\Decimal;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasOne};
 
 /**
  * Kassenbuch-Eintrag (MVP-414): append-only mit revisionssicherer
@@ -93,6 +93,15 @@ class CashEntry extends Model implements HashChainable {
     /** @return BelongsTo<CashEntry, $this> */
     public function reversalOf(): BelongsTo {
         return $this->belongsTo(CashEntry::class, 'reversal_of_id');
+    }
+
+    /**
+     * Storno-Gegenbuchung zu diesem Eintrag, falls er storniert wurde.
+     *
+     * @return HasOne<CashEntry, $this>
+     */
+    public function reversal(): HasOne {
+        return $this->hasOne(CashEntry::class, 'reversal_of_id');
     }
 
     /** Betrag mit Vorzeichen (Einnahme +, Ausgabe −) für Saldenbildung. */

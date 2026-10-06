@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Invoicing;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\{Organization, User};
@@ -41,7 +42,7 @@ final class CreditorReferenceTest extends TestCase {
     private function invoice(): Invoice {
         $invoice = Invoice::create([
             'organization_id' => $this->org->id, 'customer_id' => Customer::factory()->create(['organization_id' => $this->org->id])->id,
-            'number' => 'R2030-0007', 'status' => Invoice::STATUS_ISSUED, 'currency' => 'EUR', 'tax_rate' => '19.00',
+            'number' => 'R2030-0007', 'status' => InvoiceStatus::Issued, 'currency' => 'EUR', 'tax_rate' => '19.00',
             'created_by' => User::factory()->admin()->create(['organization_id' => $this->org->id])->id,
         ]);
         $invoice->items()->create(['organization_id' => $this->org->id, 'description' => 'Beratung', 'quantity' => '1.000', 'unit_price' => '100.0000', 'tax_rate' => '19.00', 'position' => 1]);

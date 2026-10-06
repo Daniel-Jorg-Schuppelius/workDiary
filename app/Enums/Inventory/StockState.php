@@ -51,4 +51,13 @@ enum StockState: string implements HasLabel {
             self::Physical, self::Damaged, self::Scrap => false,
         };
     }
+
+    /**
+     * Quarantäne-Zustände, in die ein Rückläufer (RMA) beim Wareneingang gebucht wird.
+     *
+     * @return list<self>
+     */
+    public static function quarantine(): array {
+        return [self::Quality, self::Blocked, self::Damaged];
+    }
 }

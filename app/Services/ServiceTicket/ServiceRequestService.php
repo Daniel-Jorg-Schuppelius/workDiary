@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\ServiceTicket;
 
+use App\Enums\ServiceTicket\ServiceRequestStatus;
 use App\Enums\ServiceTicket\{ServiceTicketKind, ServiceTicketSource};
 use App\Models\Approval\Approval;
 use App\Models\Diary\DiaryEntry;
@@ -153,14 +154,14 @@ class ServiceRequestService {
                     'fulfillment_config' => $item->fulfillment_config,
                     'approval_chain' => $chain,
                 ],
-                'status' => $chain === [] ? ServiceRequest::STATUS_APPROVED : ServiceRequest::STATUS_PENDING,
+                'status' => $chain === [] ? ServiceRequestStatus::Approved : ServiceRequestStatus::PendingApproval,
             ]);
 
             app(ApprovalService::class)->createChain($request, $chain);
 
             $request->audit('service_request.submitted', ['item' => $item->id, 'version' => $item->version]);
 
-            if ($request->status === ServiceRequest::STATUS_APPROVED) {
+            if ($request->status === ServiceRequestStatus::Approved) {
                 $this->fulfill($request, $requester);
             }
 
@@ -182,9 +183,9 @@ class ServiceRequestService {
             $outcome = app(ApprovalService::class)->decide($approval, $actor, $decision, $reason, $requesterId, $delegateUserId);
 
             if ($outcome === 'rejected') {
-                $request->update(['status' => ServiceRequest::STATUS_REJECTED]);
+                $request->update(['status' => ServiceRequestStatus::Rejected]);
             } elseif ($outcome === 'approved_all') {
-                $request->update(['status' => ServiceRequest::STATUS_APPROVED]);
+                $request->update(['status' => ServiceRequestStatus::Approved]);
                 $this->fulfill($request, $actor);
             }
 
@@ -199,7 +200,7 @@ class ServiceRequestService {
         if ($request->fulfilled_id !== null) {
             return $request; // idempotent
         }
-        if (! in_array($request->status, [ServiceRequest::STATUS_APPROVED, ServiceRequest::STATUS_FULFILLING], true)) {
+        if (! $request->status->canTransitionTo(ServiceRequestStatus::Done)) {
             throw new \RuntimeException((string) __('Nur genehmigte Requests können erfüllt werden.'));
         }
 
@@ -234,7 +235,7 @@ class ServiceRequestService {
         };
 
         $request->update([
-            'status' => ServiceRequest::STATUS_DONE,
+            'status' => ServiceRequestStatus::Done,
             'fulfilled_type' => $subject->getMorphClass(),
             'fulfilled_id' => $subject->getKey(),
         ]);

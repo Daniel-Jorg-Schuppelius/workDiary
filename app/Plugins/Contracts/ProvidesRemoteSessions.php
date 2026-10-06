@@ -24,4 +24,12 @@ interface ProvidesRemoteSessions {
      * @return array<int, int> Zeiteintrag-ID → Asset-ID
      */
     public function remoteSessionAssets(array $assetIds): array;
+
+    /**
+     * Letzte importierte Sitzungen der Organisation — reine Historie für die
+     * Sitzungsübersicht.
+     *
+     * @return list<array{provider: string, label: string, started_at: mixed, ended_at: mixed, status: string}>
+     */
+    public function recentRemoteSessions(int $organizationId, int $limit): array;
 }

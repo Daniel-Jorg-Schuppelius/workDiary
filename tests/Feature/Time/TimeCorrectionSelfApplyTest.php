@@ -141,4 +141,23 @@ class TimeCorrectionSelfApplyTest extends TestCase {
 
         $this->assertFalse($service->selfApplicable($req), 'Im Namen eines anderen → immer Genehmigung.');
     }
+
+    /** k4-07: „selbst nachgetragen“ fehlte in der Prüfsicht, „Angewendet“ in der eigenen. */
+    public function test_own_view_and_review_show_self_applied_and_applied_at(): void {
+        $org = Organization::factory()->create(['settings' => ['attendance' => ['self_correction' => 'self']]]);
+        $emp = User::factory()->create(['organization_id' => $org->id]);
+        app(PermissionRegistrar::class)->setPermissionsTeamId($org->id);
+        $admin = User::factory()->admin()->create(['organization_id' => $org->id]);
+
+        $req = $this->submittedSelfCorrection($org, $emp);
+        app(TimeCorrectionService::class)->selfApply($req);
+        $req->refresh();
+        $this->assertNotNull($req->applied_at);
+
+        foreach ([[$emp, 'corrections.show'], [$admin, 'admin.corrections.show']] as [$viewer, $route]) {
+            $this->actingAs($viewer)->get(route($route, $req))->assertOk()
+                ->assertSeeText(__('selbst nachgetragen'))
+                ->assertSeeText(__('Angewendet'));
+        }
+    }
 }

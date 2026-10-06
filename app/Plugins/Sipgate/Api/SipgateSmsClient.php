@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\Sipgate\Api;
 
 use APIToolkit\API\Authentication\BasicAuthentication;
-use App\Plugins\Sipgate\{SipgateConfig, SipgatePlugin};
+use App\Plugins\Sipgate\{SipgatePlugin};
 use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
 use App\Plugins\Support\Sms\SmsSendResult;
 
@@ -68,9 +68,5 @@ class SipgateSmsClient {
         }
 
         return $this->api;
-    }
-
-    public static function forOrganization(?int $organizationId = null): self {
-        return new self(SipgateConfig::resolve($organizationId));
     }
 }

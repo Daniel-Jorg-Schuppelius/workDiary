@@ -34,6 +34,11 @@ class ClubExamOfferPolicy {
         return $this->viewAny($user) || $offer->isExaminer($user);
     }
 
+    /** Alle Kandidaten sieht, wer das Register liest, graduiert oder prüft; die Gruppenleitung nur ihre Mitglieder (authz-a-3). */
+    public function viewAllCandidates(User $user, ClubExamOffer $offer): bool {
+        return $this->canReadRegister($user) || $this->canGrade($user) || $user->can(P::ClubExaminer->value) || $offer->isExaminer($user);
+    }
+
     public function create(User $user): bool {
         return $this->canGrade($user);
     }

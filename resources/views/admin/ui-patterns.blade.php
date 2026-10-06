@@ -24,8 +24,8 @@
             @foreach (['xs', 'sm', 'md', 'lg'] as $size)
                 <x-icon-btn icon="edit" :size="$size" :label="$size" />
             @endforeach
-            <button type="button" class="btn btn-sm btn-primary">btn-primary</button>
-            <button type="button" class="btn btn-sm">btn</button>
+            <x-button>btn-primary</x-button>
+            <x-button tone="plain">btn</x-button>
         </div>
         <p class="mt-2 text-xs text-muted"><code>&lt;x-icon-btn icon tone size show-label href type&gt;</code></p>
     </x-card>
@@ -116,8 +116,8 @@
             <x-detail-grid.row :label="__('ui_patterns.sample.name')">Alpha</x-detail-grid.row>
             <x-detail-grid.row :label="__('ui_patterns.sample.amount')">1.200,00 €</x-detail-grid.row>
         </x-detail-grid>
-        <div class="alert alert-info mt-3 text-sm">{{ __('ui_patterns.sample.alert') }}</div>
-        <div class="alert alert-warning mt-2 text-sm">{{ __('ui_patterns.sample.alert') }}</div>
+        <div role="status" class="alert alert-info mt-3 text-sm">{{ __('ui_patterns.sample.alert') }}</div>
+        <div role="alert" class="alert alert-warning mt-2 text-sm">{{ __('ui_patterns.sample.alert') }}</div>
         <x-empty-state icon="search_off" :title="__('ui_patterns.sample.empty')" :message="__('ui_patterns.sample.hint')" compact framed />
     </x-card>
 </x-index-page>

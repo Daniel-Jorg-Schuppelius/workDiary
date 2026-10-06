@@ -11,6 +11,7 @@
 namespace Tests\Feature\Finance;
 
 use App\Enums\Finance\{AccountType, PostingAccountRole, PostingSourceKind, ProfitDetermination};
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Accounting\{AccountingAccount, AccountingPostingRule, AccountingTaxCode};
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
@@ -113,7 +114,7 @@ class AccountingChartTemplateTest extends TestCase {
             'organization_id' => $this->org->id,
             'customer_id' => $customer->id,
             'number' => 'RE-2026-100',
-            'status' => Invoice::STATUS_ISSUED,
+            'status' => InvoiceStatus::Issued,
             'issued_on' => $this->startsOn->addMonth()->toDateString(),
             'currency' => 'EUR',
             'subtotal' => '100.00',

@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Asset;
 
+use App\Enums\Asset\AssetComponentStatus;
 use App\Models\Article\Article;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Inventory\StockSerial;
@@ -22,6 +23,7 @@ use Illuminate\Support\Carbon;
 /**
  * Verbautes Teil eines Assets (Feature 118, MVP-607).
  *
+ * @property AssetComponentStatus $status
  * @property Carbon|null $installed_on
  * @property Carbon|null $removed_on
  */
@@ -29,12 +31,6 @@ class AssetComponent extends Model {
     use Auditable;
     use BelongsToOrganization;
     use HasSqid;
-
-    public const STATUS_INSTALLED = 'installed';
-
-    public const STATUS_REMOVED = 'removed';
-
-    public const STATUS_REPLACED = 'replaced';
 
     protected $fillable = [
         'organization_id',
@@ -60,6 +56,7 @@ class AssetComponent extends Model {
         'installed_on' => 'date',
         'removed_on' => 'date',
         'replace_interval_months' => 'integer',
+        'status' => AssetComponentStatus::class,
     ];
 
     /** @var array<string, mixed> */
@@ -86,7 +83,7 @@ class AssetComponent extends Model {
     }
 
     public function isInstalled(): bool {
-        return $this->status === self::STATUS_INSTALLED;
+        return $this->status === AssetComponentStatus::Installed;
     }
 
     /**

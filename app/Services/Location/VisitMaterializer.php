@@ -10,6 +10,7 @@
 
 namespace App\Services\Location;
 
+use App\Enums\Location\{LocationPendingEntryStatus, LocationVisitStatus};
 use App\Models\Location\{CustomerGeofence, LocationPendingEntry, LocationVisit};
 use App\Models\Platform\User;
 use App\Models\Scopes\OrganizationScope;
@@ -33,7 +34,7 @@ class VisitMaterializer {
             ->withoutGlobalScope(OrganizationScope::class)
             ->where('organization_id', $user->organization_id)
             ->where('user_id', $user->id)
-            ->where('status', LocationVisit::STATUS_CLOSED)
+            ->where('status', LocationVisitStatus::Closed)
             ->where('materialized', false)
             ->with('geofence.customer')
             ->orderBy('entered_at')
@@ -73,7 +74,7 @@ class VisitMaterializer {
                 'ended_at' => $leftAt,
                 'minutes' => (int) ($visit->duration_min ?? $enteredAt->diffInMinutes($leftAt)),
                 'description' => $geofence->label,
-                'status' => LocationPendingEntry::STATUS_OPEN,
+                'status' => LocationPendingEntryStatus::Open,
             ]);
 
             $visit->forceFill(['materialized' => true])->save();
@@ -90,7 +91,7 @@ class VisitMaterializer {
      * @param array<string, mixed> $overrides
      */
     public function confirm(LocationPendingEntry $entry, User $resolver, array $overrides = []): TimeEntry {
-        if ($entry->status !== LocationPendingEntry::STATUS_OPEN) {
+        if (! $entry->status->canTransitionTo(LocationPendingEntryStatus::Imported)) {
             throw new \RuntimeException('Vorschlag ist bereits aufgelöst.');
         }
 
@@ -109,7 +110,7 @@ class VisitMaterializer {
             ]);
 
             $entry->forceFill([
-                'status' => LocationPendingEntry::STATUS_IMPORTED,
+                'status' => LocationPendingEntryStatus::Imported,
                 'time_entry_id' => $timeEntry->id,
                 'resolved_by' => $resolver->id,
                 'resolved_at' => Carbon::now(),
@@ -120,12 +121,12 @@ class VisitMaterializer {
     }
 
     public function dismiss(LocationPendingEntry $entry, User $resolver): void {
-        if ($entry->status !== LocationPendingEntry::STATUS_OPEN) {
+        if (! $entry->status->canTransitionTo(LocationPendingEntryStatus::Dismissed)) {
             return;
         }
 
         $entry->forceFill([
-            'status' => LocationPendingEntry::STATUS_DISMISSED,
+            'status' => LocationPendingEntryStatus::Dismissed,
             'resolved_by' => $resolver->id,
             'resolved_at' => Carbon::now(),
         ])->save();

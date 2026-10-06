@@ -14,7 +14,8 @@ namespace App\Services\Import\Specs\Concerns;
 
 use App\Support\Tz;
 use Carbon\CarbonImmutable;
-use Throwable;
+use CommonToolkit\Enums\DateTimeFormat;
+use CommonToolkit\Helper\Data\DateHelper;
 
 /**
  * Datums-/Zeit-Normalisierung für Zeiterfassungs-Specs (MVP-438).
@@ -26,26 +27,14 @@ use Throwable;
  * da der Import-Job ohne angemeldeten Nutzer läuft.
  */
 trait ParsesLocalDateTime {
-    /** @var list<string> */
-    private const IMPORT_DATE_FORMATS = ['Y-m-d', 'd.m.Y', 'd.m.y', 'd/m/Y', 'Y/m/d', 'm/d/Y'];
-
+    /** Deutsche Lesart wie in {@see ValidatesImportDates}; auch „1.2.2026“ ohne führende Null. */
     protected function normalizeImportDate(?string $value): ?string {
         if ($value === null || trim($value) === '') {
             return null;
         }
-        $value = trim($value);
-        foreach (self::IMPORT_DATE_FORMATS as $format) {
-            try {
-                $parsed = CarbonImmutable::createFromFormat('!' . $format, $value);
-            } catch (Throwable) {
-                continue;
-            }
-            if ($parsed instanceof CarbonImmutable && $parsed->format($format) === $value) {
-                return $parsed->format('Y-m-d');
-            }
-        }
+        $iso = DateHelper::normalizeToIso(trim($value), DateTimeFormat::DE);
 
-        return null;
+        return $iso === null ? null : substr($iso, 0, 10);
     }
 
     protected function normalizeImportTime(?string $value): ?string {

@@ -14,9 +14,11 @@ namespace App\Plugins\Todoist\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Plugins\Support\{RecordsWebhookDeliveries, WebhookSignature};
+use App\Plugins\Todoist\Enums\TodoistConnectionStatus;
 use App\Plugins\Todoist\Jobs\TodoistWebhookSyncJob;
 use App\Plugins\Todoist\Models\{TodoistConnection, TodoistWebhookDelivery};
 use App\Plugins\Todoist\TodoistConfig;
+use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Http\{JsonResponse, Request};
 
 /**
@@ -63,7 +65,7 @@ class TodoistWebhookController extends Controller {
 
         $deliveryId = (string) $request->header('X-Todoist-Delivery-ID', '');
         if ($deliveryId === '') {
-            $deliveryId = $this->deliveryHash($raw); // Fallback: inhaltsbasierte Dedup
+            $deliveryId = CryptoHelper::hash($raw); // Fallback: inhaltsbasierte Dedup
         }
 
         $delivery = $this->recordDelivery(fn (): TodoistWebhookDelivery => TodoistWebhookDelivery::query()->create([
@@ -79,8 +81,11 @@ class TodoistWebhookController extends Controller {
             ? collect()
             : TodoistConnection::query()->withoutGlobalScopes()
                 ->where('todoist_user_id', $todoistUserId)
-                ->where('status', TodoistConnection::STATUS_ACTIVE)
-                ->get();
+                ->where('status', TodoistConnectionStatus::Active)
+                ->get()
+                // Gesperrte Mandanten nehmen nichts an (Entscheidung 2026-10-05).
+                ->reject(static fn (TodoistConnection $connection): bool => \App\Plugins\Support\PluginTenantGate::blocks((int) $connection->organization_id))
+                ->values();
 
         if ($connections->isEmpty()) {
             // Korrekt signiert, aber keinem aktiven Anschluss zuordenbar —
@@ -113,7 +118,7 @@ class TodoistWebhookController extends Controller {
         if ($todoistUserId !== '') {
             $orgIds = TodoistConnection::query()->withoutGlobalScopes()
                 ->where('todoist_user_id', $todoistUserId)
-                ->where('status', TodoistConnection::STATUS_ACTIVE)
+                ->where('status', TodoistConnectionStatus::Active)
                 ->pluck('organization_id');
             foreach ($orgIds as $orgId) {
                 $secrets[] = TodoistConfig::resolve((int) $orgId)['client_secret'];

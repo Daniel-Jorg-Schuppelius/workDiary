@@ -14,14 +14,17 @@ namespace App\Plugins\RemoteSupport\Import;
 
 use App\Enums\Import\{ImportEntity, ImportErrorCode};
 use App\Models\Platform\Organization;
-use App\Plugins\RemoteSupport\Providers\{AnyDeskClient, RemoteSession};
-use App\Plugins\RemoteSupport\{RemoteSessionImporter, RemoteSupportConfig};
+use App\Plugins\RemoteSupport\Api\AnyDeskClient;
+use App\Plugins\RemoteSupport\Providers\RemoteSession;
+use App\Plugins\RemoteSupport\RemoteSupportConfig;
+use App\Plugins\RemoteSupport\Services\RemoteSessionImporter;
 use App\Services\Import\{ImportOutcome, ValidationIssue};
 use App\Services\Import\Specs\AbstractEntitySpec;
 use App\Support\Tz;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Enums\DateTimeFormat;
 use CommonToolkit\Helper\Data\CSV\StringHelper as CsvStringHelper;
-use CommonToolkit\Helper\Data\StringHelper;
+use CommonToolkit\Helper\Data\{DateHelper, StringHelper};
 
 /**
  * CSV-Import-Spezifikation für Fernwartungs-Sitzungen (AnyDesk-Export), eingebunden
@@ -37,9 +40,6 @@ use CommonToolkit\Helper\Data\StringHelper;
  * die deutschen/englischen Spaltennamen löst {@see headerAliases()} auf.
  */
 class RemoteSessionSpec extends AbstractEntitySpec {
-    /** Akzeptierte Datumsformate; AnyDesk exportiert „d.m.Y, H:i:s". */
-    private const DATE_FORMATS = ['d.m.Y, H:i:s', 'd.m.Y H:i:s', 'd.m.Y, H:i', 'Y-m-d H:i:s'];
-
     /** @var array<int, array<string, mixed>> Org-ID → aufgelöste Plugin-Config */
     private array $configCache = [];
 
@@ -164,16 +164,11 @@ class RemoteSessionSpec extends AbstractEntitySpec {
             return null;
         }
 
-        // Carbon wirft bei nicht passendem Format eine Exception (statt false).
-        foreach (self::DATE_FORMATS as $format) {
-            try {
-                return CarbonImmutable::createFromFormat($format, $value);
-            } catch (\Throwable) {
-                // nächstes Format versuchen
-            }
-        }
+        // AnyDesk exportiert „d.m.Y, H:i:s“ — das Komma kennt das Toolkit nicht.
+        $iso = DateHelper::normalizeToIso(str_replace(', ', ' ', $value), DateTimeFormat::DE);
 
-        return null;
+        // Nur Wanduhrzeit mit Uhrzeit (`Y-m-d H:i:s`): kein reines Datum, kein Offset.
+        return $iso === null || strlen($iso) !== 19 ? null : CarbonImmutable::parse($iso);
     }
 
     /**

@@ -32,9 +32,11 @@ dei nomi e DNS, fatture, cronologia e azioni. «Aggiorna» riconcilia lo stato
 del provider per quel dominio specifico.
 
 **DNS:** La zona viene letta su richiesta. Nell'interfaccia si possono aggiungere
-ed eliminare singoli record; la sostituzione dell'intera zona non è offerta di
-proposito, perché una sostituzione completa errata elimina tutti i record del
-dominio. Dopo una scrittura il sistema rileva gli scostamenti (conflitto DNS) e
+ed eliminare singoli record. «Sostituisci zona» compare solo dopo la lettura
+della zona: la finestra è precompilata con il suo stato e chiede conferma prima
+dell'invio, perché una sostituzione completa elimina ogni record mancante nel
+modulo. I record il cui tipo il modulo non può modificare restano invariati; un
+modulo vuoto viene rifiutato. Dopo una scrittura il sistema rileva gli scostamenti (conflitto DNS) e
 li rende visibili invece di sovrascriverli. I record MX/SRV richiedono una
 priorità.
 

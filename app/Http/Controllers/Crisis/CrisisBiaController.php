@@ -35,7 +35,7 @@ class CrisisBiaController extends Controller {
         Gate::authorize('viewAny', CrisisCase::class);
 
         return view('crisis.bia.index', [
-            'processes' => CrisisBusinessProcess::query()->with('owner')->orderByRaw("CASE criticality WHEN 'critical' THEN 0 WHEN 'high' THEN 1 WHEN 'medium' THEN 2 ELSE 3 END")->orderBy('name')->get(),
+            'processes' => CrisisBusinessProcess::query()->with('owner')->orderByRaw("CASE criticality WHEN 'critical' THEN 0 WHEN 'high' THEN 1 WHEN 'medium' THEN 2 ELSE 3 END")->orderBy('name')->orderBy('id')->paginate(25)->withQueryString(),
             'candidates' => Gate::allows('create', CrisisCase::class) ? $this->bia->candidates($this->currentOrganization()) : [],
             'canManage' => Gate::allows('create', CrisisCase::class),
         ]);
@@ -57,14 +57,14 @@ class CrisisBiaController extends Controller {
         Gate::authorize('create', CrisisCase::class);
         CrisisBusinessProcess::query()->create($this->validated($request) + ['organization_id' => $this->currentOrganization()->id, 'created_by' => $this->authUser()->id]);
 
-        return redirect()->route('crisis.bia.index')->with('success', __('crisis.bia.flash.saved'));
+        return redirect()->toList('crisis.bia.index')->with('success', __('crisis.bia.flash.saved'));
     }
 
     public function update(Request $request, CrisisBusinessProcess $process): RedirectResponse {
         Gate::authorize('create', CrisisCase::class);
         $process->update($this->validated($request));
 
-        return redirect()->route('crisis.bia.index')->with('success', __('crisis.bia.flash.saved'));
+        return redirect()->toList('crisis.bia.index')->with('success', __('crisis.bia.flash.saved'));
     }
 
     public function import(Request $request): RedirectResponse {

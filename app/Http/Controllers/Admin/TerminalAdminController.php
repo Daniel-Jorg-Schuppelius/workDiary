@@ -51,7 +51,8 @@ class TerminalAdminController extends Controller {
                 ->where('organization_id', $organization->id)
                 ->with('user:id,name')
                 ->orderByDesc('id')
-                ->get(),
+                ->paginate(25)
+                ->withQueryString(),
             'issuedUrl' => is_array(session('terminal_issued')) ? (session('terminal_issued')['url'] ?? null) : null,
             'issuedKioskUrl' => is_array(session('terminal_issued')) ? (session('terminal_issued')['kiosk_url'] ?? null) : null,
             // Terminal-PINs (MVP-803): wer eine hat, und ob sie gesperrt ist.

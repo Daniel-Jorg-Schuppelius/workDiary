@@ -15,8 +15,7 @@
 @section('title', __('accounting.open_items.title'))
 @section('nav-title', __('accounting.open_items.title'))
 
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
     <x-index-page overflow="clip" :subtitle="__('accounting.open_items.subtitle')">
@@ -58,7 +57,7 @@
                     <td>
                         {{ $item->due_date?->fdate() ?? '—' }}
                         @if (($item->ageInDays() ?? 0) > 0)
-                            <span class="ml-1 badge badge-xs badge-error">{{ __('accounting.open_items.overdue_days', ['days' => $item->ageInDays()]) }}</span>
+                            <x-status-badge tone="error" size="xs" class="ml-1">{{ __('accounting.open_items.overdue_days', ['days' => $item->ageInDays()]) }}</x-status-badge>
                         @endif
                     </td>
                     <td class="text-right font-mono">{{ $item->original_amount?->format() }}</td>

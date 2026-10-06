@@ -15,9 +15,10 @@
 
 @section('title', __('isms.title.controls'))
 @section('nav-title', __('isms.title.controls'))
+@include('partials.page-fill')
 
 @section('content')
-    <x-index-page :subtitle="__('isms.subtitle.controls')">
+    <x-index-page overflow="clip" :subtitle="__('isms.subtitle.controls')">
         <x-slot:actions>
             {{-- Direkt-Exporte (Feature 044, MVP 1): Datenstand = jetzt; „versioniert" leistet das Auditpaket. --}}
             <x-action-menu icon="download" tone="outline" :label="__('Export')">
@@ -51,7 +52,7 @@
             </x-filter-field>
         </x-filter-bar>
 
-        <x-table>
+        <x-table scroll="flex">
             <x-slot:head>
                 <tr>
                     <th>{{ __('isms.field.title') }}</th>
@@ -119,5 +120,7 @@
                                :message="$hasActiveFilters ? __('isms.empty_filtered') : __('isms.empty_controls')" />
             @endforelse
         </x-table>
+
+        <x-pagination :paginator="$controls" standing />
     </x-index-page>
 @endsection

@@ -38,10 +38,7 @@
                 <x-icon-btn icon="fact_check" size="sm" show-label
                             :href="route('bill-of-quantities.cost-estimate.export', [$bill, 'stage' => 'final'])"
                             :title="__('Kostenfeststellung als GAEB X51')">{{ __('Kostenfeststellung') }}</x-icon-btn>
-                <x-action-menu icon="download" :label="__('Export')">
-                    <x-icon-btn icon="download" size="sm" :href="route('bill-of-quantities.cost-groups', [$bill, 'level' => $pivot !== null ? 'all' : $level, 'export' => 'csv'])" show-label>{{ __('CSV') }}</x-icon-btn>
-                    <x-icon-btn icon="table_view" size="sm" :href="route('bill-of-quantities.cost-groups', [$bill, 'level' => $pivot !== null ? 'all' : $level, 'export' => 'xlsx'])" show-label>Excel</x-icon-btn>
-                </x-action-menu>
+                <x-report-export :url="fn (string $format) => route('bill-of-quantities.cost-groups', [$bill, 'level' => $pivot !== null ? 'all' : $level, 'export' => $format])" :formats="['csv', 'xlsx']" tone="ghost" />
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
@@ -177,7 +174,7 @@
                     {{ __('Budget aus :name (:stage, Stand :date). Der abgerechnete Stand fehlt bewusst — er liegt im führenden Faktura-System.', [
                         'name' => $lifecycle['estimate']->name,
                         'stage' => $lifecycle['estimate']->stageLabel(),
-                        'date' => $lifecycle['estimate']->determined_on->format('d.m.Y'),
+                        'date' => $lifecycle['estimate']->determined_on->fdate(),
                     ]) }}
                 @else
                     {{ __('Kein Budget hinterlegt: Es stammt aus einer Kostenermittlung am Projekt (X51-Import). Der abgerechnete Stand liegt im führenden Faktura-System.') }}

@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Policies\Sales;
 
+use App\Enums\Sales\QuoteStatus;
 use App\Models\Platform\User;
 use App\Models\Sales\Quote;
 
@@ -34,7 +35,7 @@ class QuotePolicy {
     }
 
     public function update(User $user, Quote $quote): bool {
-        return $user->canManageBilling() && $quote->status === 'draft';
+        return $user->canManageBilling() && $quote->status === QuoteStatus::Draft;
     }
 
     /**
@@ -46,19 +47,19 @@ class QuotePolicy {
      * dann, wenn `update` zu Recht schon gesperrt ist.
      */
     public function followUp(User $user, Quote $quote): bool {
-        return $user->canManageBilling() && in_array($quote->status, ['approved', 'sent'], true);
+        return $user->canManageBilling() && $quote->status->isPending();
     }
 
     public function delete(User $user, Quote $quote): bool {
-        return $user->canManageBilling() && $quote->status === 'draft';
+        return $user->canManageBilling() && $quote->status === QuoteStatus::Draft;
     }
 
     public function approve(User $user, Quote $quote): bool {
-        return $user->canManageBilling() && $quote->status === 'draft';
+        return $user->canManageBilling() && $quote->status->canTransitionTo(QuoteStatus::Approved);
     }
 
     public function send(User $user, Quote $quote): bool {
-        return $user->canManageBilling() && $quote->status === 'approved';
+        return $user->canManageBilling() && $quote->status->canTransitionTo(QuoteStatus::Sent);
     }
 
     /** Interne Entscheidung (Annahme/Ablehnung dokumentieren) + Versionierung. */
@@ -68,6 +69,6 @@ class QuotePolicy {
 
     public function convert(User $user, Quote $quote): bool {
         return $user->canManageBilling()
-            && in_array($quote->status, ['accepted', 'partially_accepted'], true);
+            && $quote->status->isWon();
     }
 }

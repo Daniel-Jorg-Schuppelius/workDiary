@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Location;
 
+use App\Enums\Location\LocationVisitStatus;
 use App\Models\Customer\Customer;
 use App\Models\Location\{CustomerGeofence, LocationPoint, LocationVisit};
 use App\Models\Platform\User;
@@ -85,7 +86,7 @@ class LocationEngineTest extends TestCase {
         $this->assertCount(1, $visits);
 
         $visit = $visits->first();
-        $this->assertSame(LocationVisit::STATUS_CLOSED, $visit->status);
+        $this->assertSame(LocationVisitStatus::Closed, $visit->status);
         $this->assertSame(30, $visit->duration_min);
         $this->assertSame(7, $visit->sample_count);
         $this->assertSame($this->geofence->id, $visit->customer_geofence_id);

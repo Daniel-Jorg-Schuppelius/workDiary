@@ -11,9 +11,10 @@
 
 @section('title', __('bank.title.index'))
 @section('nav-title', __('bank.title.menu'))
+@include('partials.page-fill')
 
 @section('content')
-    <x-index-page :subtitle="__('bank.subtitle.index')"
+    <x-index-page overflow="clip" :subtitle="__('bank.subtitle.index')"
                   :badge="$importAvailable ? null : __('bank.import.error.unavailable_badge')"
                   badge-tone="warning"
                   :badge-title="$importAvailable ? null : \App\Services\Billing\FinancialFormatsSupport::unavailableMessage('bank.import.error.unavailable')">
@@ -33,7 +34,7 @@
             @endcan
         </x-slot:actions>
 
-        <div class="grid grid-cols-2 gap-3 mb-4 sm:max-w-md">
+        <div class="grid flex-none grid-cols-2 gap-3 sm:max-w-md">
             <x-card>
                 <div class="text-sm text-muted">{{ __('bank.field.open') }}</div>
                 <div class="text-2xl font-semibold text-warning">{{ $totals['open'] }}</div>
@@ -44,7 +45,7 @@
             </x-card>
         </div>
 
-        <x-table>
+        <x-table scroll="flex">
             <x-slot:head>
                 <tr>
                     <x-table.th>{{ __('bank.field.imported_at') }}</x-table.th>
@@ -59,13 +60,13 @@
             </x-slot:head>
 
             @forelse ($statements as $statement)
-                <tr>
-                    <td>{{ $statement->created_at?->orgTz()->format('d.m.Y H:i') }}</td>
+                <tr class="hover">
+                    <td>{{ $statement->created_at?->fdatetime() }}</td>
                     <td><x-status-badge :tone="$statement->source_format->tone()" :label="$statement->source_format->label()" /></td>
                     <td>{{ $statement->bankAccount?->label ?? '—' }}</td>
                     <td>
                         @if ($statement->period_from && $statement->period_to)
-                            {{ $statement->period_from->format('d.m.Y') }} – {{ $statement->period_to->format('d.m.Y') }}
+                            {{ $statement->period_from->fdate() }} – {{ $statement->period_to->fdate() }}
                         @else
                             —
                         @endif

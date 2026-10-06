@@ -10,12 +10,11 @@
 @extends('layouts.app')
 @section('title', __('club.matches.title.index'))
 @section('nav-title', __('club.matches.title.index'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('club.matches.subtitle.index')">
     <x-slot:actions>
-        <x-icon-btn icon="upload_file" tone="outline" size="sm" :href="route('club.matches.proposals.index')" show-label>{{ __('club.matches.title.proposals') }}@if ($openProposals > 0) <span class="badge badge-warning badge-xs">{{ $openProposals }}</span>@endif</x-icon-btn>
+        <x-icon-btn icon="upload_file" tone="outline" size="sm" :href="route('club.matches.proposals.index')" show-label>{{ __('club.matches.title.proposals') }}@if ($openProposals > 0) <x-status-badge tone="warning" size="xs">{{ $openProposals }}</x-status-badge>@endif</x-icon-btn>
         @if ($canManage)
             <x-icon-btn icon="add" tone="primary" size="sm" data-entry-modal-trigger :href="route('club.matches.create')" show-label>{{ __('club.matches.action.create') }}</x-icon-btn>
         @endif
@@ -65,11 +64,11 @@
         @forelse ($events as $event)
             @php($match = $event->clubMatch)
             <tr class="hover {{ $event->cancelled_at ? 'opacity-60' : '' }}">
-                <td class="whitespace-nowrap text-sm tabular-nums">{{ $event->started_at->orgTz()->format('d.m.Y H:i') }}</td>
+                <td class="whitespace-nowrap text-sm tabular-nums">{{ $event->started_at->fdatetime() }}</td>
                 <td class="text-sm">{{ $match?->team?->name ?? '–' }}@if ($match?->season) <span class="block text-xs text-muted">{{ $match->season->name }}</span>@endif</td>
                 <td class="font-medium">
                     <a href="{{ route('club.matches.show', $event) }}" class="link link-hover">{{ $match?->opponent_name }}</a>
-                    <span class="badge badge-ghost badge-xs">{{ $match?->is_home ? __('club.matches.label.home') : __('club.matches.label.away') }}</span>
+                    <x-status-badge size="xs">{{ $match?->is_home ? __('club.matches.label.home') : __('club.matches.label.away') }}</x-status-badge>
                 </td>
                 <td class="text-sm">{{ $match?->competition ?? '–' }}</td>
                 <td class="text-sm">{{ $match?->venue ?? $event->rooms->pluck('name')->implode(', ') ?: '–' }}</td>

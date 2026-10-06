@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Passenger;
 
 use App\Enums\Passenger\{RideOperationMode, RideStatus};
+use App\Enums\Passenger\ShiftSettlementStatus;
 use App\Models\Finance\{CashEntry, CashRegister};
 use App\Models\Passenger\{PassengerRide, PassengerShiftSettlement};
 use App\Models\Platform\User;
@@ -145,7 +146,7 @@ class PassengerRetentionAndCashTest extends TestCase {
         $this->assertNull($settlement->refresh()->cash_entry_id);
 
         $this->post(route('passenger-settlements.close', $settlement))->assertRedirect(route('passenger-settlements.index'));
-        $this->assertSame(PassengerShiftSettlement::STATUS_BALANCED, $settlement->refresh()->status);
+        $this->assertSame(ShiftSettlementStatus::Balanced, $settlement->refresh()->status);
 
         $this->post(route('passenger-settlements.cash-entry', $settlement), [
             'cash_register_id' => $register->sqid,
@@ -174,7 +175,7 @@ class PassengerRetentionAndCashTest extends TestCase {
             'shift_date' => now()->toDateString(),
             'meter_total' => '100.00',
             'cash_total' => '100.00',
-            'status' => PassengerShiftSettlement::STATUS_BALANCED,
+            'status' => ShiftSettlementStatus::Balanced,
         ]);
 
         config(['license.feature_overrides' => ['module.kasse' => false]]);

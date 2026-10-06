@@ -19,7 +19,7 @@
     :submit-label="__('club.action.save')">
     <x-form-group :legend="__('club.competitions.card.performances')" icon="timer" tone="primary" cols="2" :description="$isEdit ? __('club.competitions.hint.correct') : __('club.competitions.hint.performance')">
         @if ($isEdit)
-            <p class="text-sm md:col-span-2">{{ $performance->profile?->name }} · {{ $performance->discipline_code }} · {{ $performance->performed_on->format('d.m.Y') }}</p>
+            <p class="text-sm md:col-span-2">{{ $performance->profile?->name }} · {{ $performance->discipline_code }} · {{ $performance->performed_on->fdate() }}</p>
         @else
             <x-select-field name="club_sport_profile_id" :label="__('club.teams.field.profile')" required>
                 <option value="">–</option>

@@ -35,15 +35,15 @@
     {{-- Rechnungskopf --}}
     <x-card>
         <h2 class="font-semibold mb-3">{{ __('procurement.reconcile.invoice_header') }}</h2>
-        <dl class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-            <div><dt class="opacity-60">{{ __('procurement.reconcile.number') }}</dt><dd class="font-medium">{{ $invoice->getNumber() }}</dd></div>
-            <div><dt class="opacity-60">{{ __('procurement.reconcile.doc_type') }}</dt><dd>{{ $invoice->isCreditNote() ? __('procurement.reconcile.credit_note') : __('procurement.reconcile.invoice') }}</dd></div>
-            <div><dt class="opacity-60">{{ __('procurement.reconcile.date') }}</dt><dd>{{ $invoice->getDate()->format('d.m.Y') }}</dd></div>
-            <div><dt class="opacity-60">{{ __('procurement.reconcile.due_date') }}</dt><dd>{{ $invoice->getDueDate()?->format('d.m.Y') ?? '—' }}</dd></div>
-            <div><dt class="opacity-60">{{ __('procurement.reconcile.net') }}</dt><dd class="tabular-nums">{{ $money($invoice->getNetTotal()) }}</dd></div>
-            <div><dt class="opacity-60">{{ __('procurement.reconcile.vat') }}</dt><dd class="tabular-nums">{{ $money($invoice->getVatAmount()) }}</dd></div>
-            <div><dt class="opacity-60">{{ __('procurement.reconcile.gross') }}</dt><dd class="tabular-nums font-medium">{{ $money($invoice->getGrossTotal()) }}</dd></div>
-        </dl>
+        <x-detail-grid layout="cells" :cols="4">
+            <x-detail-grid.row :label="__('procurement.reconcile.number')" class="font-medium">{{ $invoice->getNumber() }}</x-detail-grid.row>
+            <x-detail-grid.row :label="__('procurement.reconcile.doc_type')">{{ $invoice->isCreditNote() ? __('procurement.reconcile.credit_note') : __('procurement.reconcile.invoice') }}</x-detail-grid.row>
+            <x-detail-grid.row :label="__('procurement.reconcile.date')">{{ $invoice->getDate()->format('d.m.Y') }}</x-detail-grid.row>
+            <x-detail-grid.row :label="__('procurement.reconcile.due_date')">{{ $invoice->getDueDate()?->format('d.m.Y') ?? '—' }}</x-detail-grid.row>
+            <x-detail-grid.row :label="__('procurement.reconcile.net')" class="tabular-nums">{{ $money($invoice->getNetTotal()) }}</x-detail-grid.row>
+            <x-detail-grid.row :label="__('procurement.reconcile.vat')" class="tabular-nums">{{ $money($invoice->getVatAmount()) }}</x-detail-grid.row>
+            <x-detail-grid.row :label="__('procurement.reconcile.gross')" class="tabular-nums font-medium">{{ $money($invoice->getGrossTotal()) }}</x-detail-grid.row>
+        </x-detail-grid>
     </x-card>
 
     {{-- Positionsabgleich --}}
@@ -88,14 +88,16 @@
 
         {{-- Summenvergleich --}}
         <div class="mt-4 flex justify-end">
-            <dl class="text-sm w-full max-w-xs space-y-1">
-                <div class="flex justify-between"><dt class="opacity-60">{{ __('procurement.reconcile.invoice_net_total') }}</dt><dd class="tabular-nums">{{ $money($result['totals']['invoice_net']) }}</dd></div>
-                <div class="flex justify-between"><dt class="opacity-60">{{ __('procurement.reconcile.order_net_total') }}</dt><dd class="tabular-nums">{{ $money($result['totals']['order_net']) }}</dd></div>
-                <div class="flex justify-between border-t pt-1 font-medium">
-                    <dt>{{ __('procurement.reconcile.totals') }}</dt>
-                    <dd><x-status-badge :tone="$result['totals']['matches'] ? 'success' : 'warning'">{{ $result['totals']['matches'] ? __('procurement.reconcile.match_short') : __('procurement.reconcile.diff_short') }}</x-status-badge></dd>
-                </div>
-            </dl>
+            <div class="w-full max-w-xs">
+                <x-detail-grid layout="split">
+                    <x-detail-grid.row :label="__('procurement.reconcile.invoice_net_total')" class="tabular-nums">{{ $money($result['totals']['invoice_net']) }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('procurement.reconcile.order_net_total')" class="tabular-nums">{{ $money($result['totals']['order_net']) }}</x-detail-grid.row>
+                </x-detail-grid>
+                {{-- Summenzeile: eigene Liste, damit Linie und Gewicht an der Zeile hängen --}}
+                <x-detail-grid layout="split" class="mt-1 border-t pt-1 font-medium">
+                    <x-detail-grid.row :label="__('procurement.reconcile.totals')"><x-status-badge :tone="$result['totals']['matches'] ? 'success' : 'warning'">{{ $result['totals']['matches'] ? __('procurement.reconcile.match_short') : __('procurement.reconcile.diff_short') }}</x-status-badge></x-detail-grid.row>
+                </x-detail-grid>
+            </div>
         </div>
     </x-card>
 </x-page-shell>

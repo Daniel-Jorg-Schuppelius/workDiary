@@ -73,16 +73,19 @@ class CommunicationNoteVisibilityTest extends TestCase {
         $this->assertTrue($admin->can('view', $note), 'Org-Admin sieht vertrauliche Notizen');
     }
 
-    public function test_policy_allows_view_of_normal_note_to_org_members(): void {
+    /** Die Notiz folgt ihrem Träger (Sicherheitsaudit 2026-10-04, authz-b-6). */
+    public function test_policy_allows_view_of_normal_note_to_members_who_may_open_the_order(): void {
         $author = User::factory()->user()->create();
-        $other = User::factory()->user()->create(['organization_id' => $author->organization_id]);
-        $entry = DiaryEntry::factory()->for($author)->create();
+        $assigned = User::factory()->user()->create(['organization_id' => $author->organization_id]);
+        $third = User::factory()->user()->create(['organization_id' => $author->organization_id]);
+        $entry = DiaryEntry::factory()->for($author)->create(['assigned_user_id' => $assigned->id]);
         $note = CommunicationNote::factory()->for($entry, 'notable')->create([
             'organization_id' => $author->organization_id,
             'created_by_user_id' => $author->id,
         ]);
 
-        $this->assertTrue($other->can('view', $note));
+        $this->assertTrue($assigned->can('view', $note), 'Zugewiesene öffnen den Auftrag und damit seine Notiz');
+        $this->assertFalse($third->can('view', $note), 'Ohne Zugang zum Auftrag bleibt auch die Notiz zu');
     }
 
     public function test_marking_confidential_forces_internal_visibility_and_audits(): void {

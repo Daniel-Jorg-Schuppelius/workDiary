@@ -21,7 +21,7 @@
                 <p>{{ $posting->public_summary }}</p>
             @endif
             @if($posting->application_deadline)
-                <p class="muted">{{ __('Bewerbungsschluss') }}: {{ $posting->application_deadline->format('d.m.Y') }}</p>
+                <p class="muted">{{ __('Bewerbungsschluss') }}: {{ $posting->application_deadline->fdate() }}</p>
             @endif
         </div>
     @empty

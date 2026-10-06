@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Metering;
 
+use App\Enums\Invoicing\InvoiceStatus;
+use App\Enums\Metering\MeterBillingAgreementStatus;
 use App\Models\Asset\MeterReading;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
@@ -55,7 +57,7 @@ class MeterBillingService {
 
         $agreements = MeterBillingAgreement::query()
             ->withoutGlobalScopes()
-            ->where('status', MeterBillingAgreement::STATUS_ACTIVE)
+            ->where('status', MeterBillingAgreementStatus::Active)
             ->whereDate('next_run_on', '<=', $today->toDateString())
             ->with(['customer', 'asset'])
             ->get();
@@ -110,7 +112,7 @@ class MeterBillingService {
                 'last_run_on' => $periodEnd->toDateString(),
                 'next_run_on' => $next->toDateString(),
                 'status' => $agreement->end_on !== null && $next->greaterThan(CarbonImmutable::parse($agreement->end_on->toDateString()))
-                    ? MeterBillingAgreement::STATUS_ENDED
+                    ? MeterBillingAgreementStatus::Ended
                     : $agreement->status,
             ])->save();
             $agreement->refresh();
@@ -270,7 +272,7 @@ class MeterBillingService {
                 'customer_id' => $customer->id,
                 'project_id' => $agreement->project_id,
                 'number' => $this->generator->nextNumber((int) $agreement->organization_id, $periodEnd),
-                'status' => Invoice::STATUS_DRAFT,
+                'status' => InvoiceStatus::Draft,
                 'type' => Invoice::TYPE_INVOICE,
                 'currency' => $customer->currency,
                 'tax_rate' => $tax['rate'],

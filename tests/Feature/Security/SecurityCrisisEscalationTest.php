@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Security;
 
+use App\Enums\Crisis\CrisisCaseStatus;
 use App\Enums\Security\SecurityEventType;
 use App\Models\Auth\SecurityEvent;
 use App\Models\Crisis\CrisisCase;
@@ -65,7 +66,7 @@ class SecurityCrisisEscalationTest extends TestCase {
         $this->assertSame('security', $case->category);
         $this->assertSame('critical', $case->severity);
         $this->assertSame('security:auth_failed_mass', $case->trigger_source);
-        $this->assertSame('activated', $case->status);
+        $this->assertSame(CrisisCaseStatus::Activated, $case->status);
 
         // Zweiter Lauf mit weiter aktiver Sperre: kein zweiter Fall.
         $this->artisan('security:evaluate')->assertSuccessful();
@@ -76,7 +77,7 @@ class SecurityCrisisEscalationTest extends TestCase {
         $this->artisan('security:evaluate')->assertSuccessful();
 
         $case->refresh();
-        $this->assertSame('all_clear', $case->status);
+        $this->assertSame(CrisisCaseStatus::AllClear, $case->status);
         $this->assertNotNull($case->all_clear_at);
         $this->assertSame(1, CrisisCase::query()->withoutGlobalScopes()->count());
     }

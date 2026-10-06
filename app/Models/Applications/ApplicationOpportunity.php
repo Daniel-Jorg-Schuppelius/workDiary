@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Applications;
 
-use App\Enums\Applications\TenderProcedureType;
+use App\Enums\Applications\{ApplicationOpportunityStatus, TenderProcedureType};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
@@ -35,7 +35,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphMany};
  * @property int|null $project_id
  * @property int|null $quote_id
  * @property int|null $bill_of_quantity_id
- * @property string $status
+ * @property ApplicationOpportunityStatus $status
  * @property \Illuminate\Support\Carbon|null $question_deadline
  * @property \Illuminate\Support\Carbon|null $submission_deadline
  * @property \Illuminate\Support\Carbon|null $decision_expected_on
@@ -58,11 +58,6 @@ class ApplicationOpportunity extends Model {
 
     public const KINDS = ['inquiry', 'tender', 'participation', 'framework', 'direct', 'recurring'];
 
-    public const STATUSES = ['captured', 'screened', 'in_progress', 'question', 'submitted', 'post_submission', 'won', 'lost', 'withdrawn', 'archived'];
-
-    /** Offene (Pipeline-)Status — Entscheidungen sind endgültig. */
-    public const OPEN_STATUSES = ['captured', 'screened', 'in_progress', 'question', 'submitted', 'post_submission'];
-
     protected $fillable = [
         'organization_id', 'title', 'kind', 'source', 'customer_id', 'project_id',
         'quote_id', 'bill_of_quantity_id', 'status', 'question_deadline',
@@ -78,6 +73,7 @@ class ApplicationOpportunity extends Model {
 
     /** @var array<string, string> */
     protected $casts = [
+        'status' => ApplicationOpportunityStatus::class,
         'question_deadline' => 'date',
         'submission_deadline' => 'date',
         'decision_expected_on' => 'date',
@@ -144,19 +140,6 @@ class ApplicationOpportunity extends Model {
     }
 
     public function isOpen(): bool {
-        return in_array($this->status, self::OPEN_STATUSES, true);
-    }
-
-    /** DaisyUI badge tone */
-    public function statusTone(): string {
-        return match ($this->status) {
-            'won' => 'success',
-            'lost' => 'error',
-            'question' => 'warning',
-            'in_progress' => 'primary',
-            'submitted', 'post_submission' => 'info',
-            'withdrawn', 'archived' => 'neutral',
-            default => 'ghost',
-        };
+        return in_array($this->status, ApplicationOpportunityStatus::open(), true);
     }
 }

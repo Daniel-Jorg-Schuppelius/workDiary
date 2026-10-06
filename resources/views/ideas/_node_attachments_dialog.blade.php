@@ -12,7 +12,7 @@
          :action="$canUpload ? route('ideas.nodes.attachments.store', [$map, $node]) : null" method="POST" enctype="multipart/form-data"
          :form-data="['data-entry-form' => '']" :submit-label="$canUpload ? __('ideas.attachments.action.add') : null">
     @if ($attachments->isEmpty())
-        <p class="text-sm text-muted">{{ __('ideas.attachments.empty') }}</p>
+        <x-empty-state icon="attach_file" :title="__('ideas.attachments.empty')" compact />
     @else
         <ul class="max-h-80 space-y-2 overflow-y-auto">
             @foreach ($attachments as $attachment)

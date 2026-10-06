@@ -20,6 +20,7 @@ use App\Models\Integration\IntegrationInboxItem;
 use App\Models\Inventory\Warehouse;
 use App\Models\Platform\{Organization, User};
 use App\Plugins\JtlWawi\Api\JtlUrlGuard;
+use App\Plugins\JtlWawi\Enums\{JtlConnectionStatus, JtlRegistrationStatus};
 use App\Plugins\JtlWawi\JtlWawiPlugin;
 use App\Plugins\JtlWawi\Models\{JtlConnection, JtlWarehouseMapping};
 use App\Plugins\JtlWawi\Services\{JtlRegistrationService, JtlScopePreflight, JtlSyncService, JtlTakeoverService};
@@ -55,11 +56,7 @@ class JtlAdminController extends Controller {
             ->orderBy('name')
             ->get();
 
-        $openInbox = IntegrationInboxItem::query()
-            ->where('organization_id', $organization->id)
-            ->where('plugin_id', JtlWawiPlugin::ID)
-            ->where('status', IntegrationInboxItem::STATUS_OPEN)
-            ->count();
+        $openInbox = IntegrationInboxItem::openCount((int) $organization->id, JtlWawiPlugin::ID);
         $linkedArticles = \App\Models\Integration\ExternalArticleMapping::query()
             ->where('organization_id', $organization->id)
             ->where('plugin_id', JtlWawiPlugin::ID)
@@ -125,7 +122,7 @@ class JtlAdminController extends Controller {
         }
 
         if ($isNew) {
-            $connection->status = JtlConnection::STATUS_DRAFT;
+            $connection->status = JtlConnectionStatus::Draft;
             $connection->connectedBy()->associate($user);
             $connection->connected_at = now();
         }
@@ -175,9 +172,9 @@ class JtlAdminController extends Controller {
         }
 
         return match ($status) {
-            JtlConnection::REGISTRATION_ACCEPTED => back()->with('success', __('jtl_wawi::jtl_wawi.flash.registration_accepted')),
-            JtlConnection::REGISTRATION_REJECTED => back()->with('error', __('jtl_wawi::jtl_wawi.flash.registration_rejected')),
-            default => back()->with('success', __('jtl_wawi::jtl_wawi.flash.registration_pending')),
+            JtlRegistrationStatus::Accepted => back()->with('success', __('jtl_wawi::jtl_wawi.flash.registration_accepted')),
+            JtlRegistrationStatus::Rejected => back()->with('error', __('jtl_wawi::jtl_wawi.flash.registration_rejected')),
+            JtlRegistrationStatus::Pending => back()->with('success', __('jtl_wawi::jtl_wawi.flash.registration_pending')),
         };
     }
 
@@ -200,7 +197,7 @@ class JtlAdminController extends Controller {
             'registration_id' => null,
             'registration_status' => null,
             'granted_scopes' => null,
-            'status' => JtlConnection::STATUS_DISCONNECTED,
+            'status' => JtlConnectionStatus::Disconnected,
             'blocked_reason' => null,
         ])->save();
 

@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Enums\Finance\TaxRuleStatus;
 use App\Models\Finance\TaxRule;
 use Illuminate\Database\Seeder;
 
@@ -61,7 +62,7 @@ class TaxRulesSeeder extends Seeder {
                 'valid_to' => $rule['valid_to'],
                 'source' => $rule['source'],
                 'note' => $rule['note'] ?? null,
-                'status' => 'active',
+                'status' => TaxRuleStatus::Active,
             ]);
         }
     }

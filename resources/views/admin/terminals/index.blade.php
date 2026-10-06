@@ -60,28 +60,28 @@
                                     <td class="text-muted">{{ $terminal->site?->name ?? '—' }}</td>
                                     <td>
                                         @if ($terminal->isActive())
-                                            <span class="badge badge-success badge-sm">{{ __('terminal.status.active') }}</span>
+                                            <x-status-badge tone="success">{{ __('terminal.status.active') }}</x-status-badge>
                                         @else
-                                            <span class="badge badge-ghost badge-sm">{{ __('terminal.status.inactive') }}</span>
+                                            <x-status-badge>{{ __('terminal.status.inactive') }}</x-status-badge>
                                         @endif
                                     </td>
                                     <td>
                                         <form method="POST" action="{{ route('admin.terminals.toggle-status') }}">
                                             @csrf
                                             <input type="hidden" name="terminal" value="{{ $terminal->sqid }}">
-                                            <button type="submit" class="btn btn-ghost btn-xs" title="{{ __('terminal.status_display.help') }}">
+                                            <x-button type="submit" tone="ghost" size="xs" title="{{ __('terminal.status_display.help') }}">
                                                 @if ($terminal->show_status)
-                                                    <span class="badge badge-info badge-sm">{{ __('terminal.status_display.on') }}</span>
+                                                    <x-status-badge tone="info">{{ __('terminal.status_display.on') }}</x-status-badge>
                                                 @else
-                                                    <span class="badge badge-ghost badge-sm">{{ __('terminal.status_display.off') }}</span>
+                                                    <x-status-badge>{{ __('terminal.status_display.off') }}</x-status-badge>
                                                 @endif
-                                            </button>
+                                            </x-button>
                                         </form>
                                     </td>
                                     <td class="text-muted">
                                         {{ $terminal->last_seen_at?->diffForHumans() ?? '—' }}
                                         @if (($terminal->last_buffer_size ?? 0) > 0)
-                                            <span class="badge badge-warning badge-sm" title="{{ __('terminal.buffer.help') }}">{{ __('terminal.buffer.label') }}: {{ $terminal->last_buffer_size }}</span>
+                                            <x-status-badge tone="warning" title="{{ __('terminal.buffer.help') }}">{{ __('terminal.buffer.label') }}: {{ $terminal->last_buffer_size }}</x-status-badge>
                                         @endif
                                     </td>
                                     <td class="text-right whitespace-nowrap">
@@ -89,12 +89,12 @@
                                             <form method="POST" action="{{ route('admin.terminals.rotate') }}" class="inline">
                                                 @csrf
                                                 <input type="hidden" name="terminal" value="{{ $terminal->sqid }}">
-                                                <button type="submit" class="btn btn-ghost btn-xs" title="{{ __('terminal.action.rotate_help') }}">{{ __('terminal.action.rotate') }}</button>
+                                                <x-button type="submit" tone="ghost" size="xs" title="{{ __('terminal.action.rotate_help') }}">{{ __('terminal.action.rotate') }}</x-button>
                                             </form>
                                             <form method="POST" action="{{ route('admin.terminals.disconnect') }}" class="inline">
                                                 @csrf
                                                 <input type="hidden" name="terminal" value="{{ $terminal->sqid }}">
-                                                <button type="submit" class="btn btn-ghost btn-xs text-error">{{ __('terminal.action.disable') }}</button>
+                                                <x-button type="submit" tone="ghost" size="xs" class="text-error">{{ __('terminal.action.disable') }}</x-button>
                                             </form>
                                         @endif
                                     </td>
@@ -112,7 +112,7 @@
                             :href="route('admin.terminals.badges.create')"
                             show-label>{{ __('terminal.action.assign') }}</x-icon-btn>
             </x-slot:actions>
-            @if ($badges->isEmpty())
+            @if ($badges->total() === 0)
                 <p class="text-sm text-muted">{{ __('terminal.no_badges') }}</p>
             @else
                 <x-table :bare="true">
@@ -131,9 +131,9 @@
                                     <td class="text-muted">{{ $badge->label ?? '—' }}</td>
                                     <td class="text-muted whitespace-nowrap">
                                         @if ($badge->valid_from || $badge->valid_until)
-                                            {{ $badge->valid_from?->format('d.m.Y') ?? '…' }}–{{ $badge->valid_until?->format('d.m.Y') ?? '…' }}
+                                            {{ $badge->valid_from?->fdate() ?? '…' }}–{{ $badge->valid_until?->fdate() ?? '…' }}
                                             @unless ($badge->isUsableOn(now()))
-                                                <span class="badge badge-warning badge-sm">{{ __('terminal.badge.outside_validity') }}</span>
+                                                <x-status-badge tone="warning">{{ __('terminal.badge.outside_validity') }}</x-status-badge>
                                             @endunless
                                         @else
                                             —
@@ -141,9 +141,9 @@
                                     </td>
                                     <td>
                                         @if ($badge->isActive())
-                                            <span class="badge badge-success badge-sm">{{ __('terminal.status.active') }}</span>
+                                            <x-status-badge tone="success">{{ __('terminal.status.active') }}</x-status-badge>
                                         @else
-                                            <span class="badge badge-error badge-sm">{{ __('terminal.status.revoked') }}</span>
+                                            <x-status-badge tone="error">{{ __('terminal.status.revoked') }}</x-status-badge>
                                         @endif
                                     </td>
                                     <td class="text-right">
@@ -151,13 +151,14 @@
                                             <form method="POST" action="{{ route('admin.terminals.badges.revoke') }}">
                                                 @csrf
                                                 <input type="hidden" name="badge" value="{{ $badge->sqid }}">
-                                                <button type="submit" class="btn btn-ghost btn-xs text-error">{{ __('terminal.action.revoke') }}</button>
+                                                <x-button type="submit" tone="ghost" size="xs" class="text-error">{{ __('terminal.action.revoke') }}</x-button>
                                             </form>
                                         @endif
                                     </td>
                                 </tr>
                             @endforeach
                 </x-table>
+                <x-pagination :paginator="$badges" standing />
             @endif
         </x-card>
         {{-- Terminal-PINs (MVP-803) --}}
@@ -170,7 +171,7 @@
             </x-slot:actions>
             <p class="mb-3 text-sm text-muted">{{ __('terminal.pin.intro') }}</p>
             @if ($pins->isEmpty())
-                <p class="text-sm text-muted">{{ __('terminal.pin.empty') }}</p>
+                <x-empty-state icon="pin" :title="__('terminal.pin.empty')" compact />
             @else
                 <x-table :bare="true">
                     <x-slot:head>
@@ -187,9 +188,9 @@
                             <td class="font-mono text-xs">{{ $pin->user?->personnel_number ?? '—' }}</td>
                             <td>
                                 @if ($pin->isLocked())
-                                    <span class="badge badge-error badge-sm">{{ __('terminal.pin.status.locked_until', ['time' => $pin->locked_until?->format('H:i')]) }}</span>
+                                    <x-status-badge tone="error">{{ __('terminal.pin.status.locked_until', ['time' => $pin->locked_until?->format('H:i')]) }}</x-status-badge>
                                 @else
-                                    <span class="badge badge-success badge-sm">{{ __('terminal.status.active') }}</span>
+                                    <x-status-badge tone="success">{{ __('terminal.status.active') }}</x-status-badge>
                                 @endif
                             </td>
                             <td class="text-right whitespace-nowrap">
@@ -197,13 +198,13 @@
                                     <form method="POST" action="{{ route('admin.terminals.pins.unlock') }}" class="inline">
                                         @csrf
                                         <input type="hidden" name="pin" value="{{ $pin->sqid }}">
-                                        <button type="submit" class="btn btn-ghost btn-xs">{{ __('terminal.pin.action.unlock') }}</button>
+                                        <x-button type="submit" tone="ghost" size="xs">{{ __('terminal.pin.action.unlock') }}</x-button>
                                     </form>
                                 @endif
                                 <x-action-form :action="route('admin.terminals.pins.remove')" class="inline"
                                                :confirm="__('terminal.pin.confirm.remove')" :confirm-label="__('terminal.pin.action.remove')" confirm-tone="error">
                                     <input type="hidden" name="pin" value="{{ $pin->sqid }}">
-                                    <button type="submit" class="btn btn-ghost btn-xs text-error">{{ __('terminal.pin.action.remove') }}</button>
+                                    <x-button type="submit" tone="ghost" size="xs" class="text-error">{{ __('terminal.pin.action.remove') }}</x-button>
                                 </x-action-form>
                             </td>
                         </tr>
@@ -221,7 +222,7 @@
             </x-slot:actions>
             <p class="mb-3 text-sm text-muted">{{ __('terminal.checkpoint.intro') }}</p>
             @if ($checkpoints->isEmpty())
-                <p class="text-sm text-muted">{{ __('terminal.checkpoint.empty') }}</p>
+                <x-empty-state icon="qr_code_2" :title="__('terminal.checkpoint.empty')" compact />
             @else
                 <x-table :bare="true">
                     <x-slot:head>
@@ -242,9 +243,9 @@
                             <td class="text-muted">{{ $checkpoint->radius_m !== null ? $checkpoint->radius_m . ' m' : '—' }}</td>
                             <td>
                                 @if ($checkpoint->active)
-                                    <span class="badge badge-success badge-sm">{{ __('terminal.status.active') }}</span>
+                                    <x-status-badge tone="success">{{ __('terminal.status.active') }}</x-status-badge>
                                 @else
-                                    <span class="badge badge-ghost badge-sm">{{ __('terminal.status.inactive') }}</span>
+                                    <x-status-badge>{{ __('terminal.status.inactive') }}</x-status-badge>
                                 @endif
                             </td>
                             <td class="text-right whitespace-nowrap">
@@ -252,9 +253,9 @@
                                 <form method="POST" action="{{ route('admin.terminals.checkpoints.toggle') }}" class="inline">
                                     @csrf
                                     <input type="hidden" name="checkpoint" value="{{ $checkpoint->sqid }}">
-                                    <button type="submit" class="btn btn-ghost btn-xs {{ $checkpoint->active ? 'text-error' : '' }}">
+                                    <x-button type="submit" tone="ghost" size="xs" :class="$checkpoint->active ? 'text-error' : null">
                                         {{ $checkpoint->active ? __('terminal.action.disable') : __('terminal.checkpoint.action.enable') }}
-                                    </button>
+                                    </x-button>
                                 </form>
                             </td>
                         </tr>

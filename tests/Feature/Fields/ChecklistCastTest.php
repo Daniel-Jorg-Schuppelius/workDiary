@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Fields;
 
+use App\Enums\Applications\JobApplicationStatus;
 use App\Enums\User\UserRole;
 use App\Models\Applications\{EmployeeDraft, JobApplication};
 use App\Models\Form\FormTemplate;
@@ -41,7 +42,7 @@ class ChecklistCastTest extends TestCase {
     private function acceptedApplication(): JobApplication {
         app(RecruitingService::class)->intake(['candidate_name' => 'Kim Beispiel', 'email' => 'kim@example.test', 'source' => 'website'], $this->user);
         $application = JobApplication::query()->firstOrFail();
-        JobApplication::query()->whereKey($application->id)->update(['status' => 'accepted']);
+        JobApplication::query()->whereKey($application->id)->update(['status' => JobApplicationStatus::Accepted]);
 
         return $application->fresh() ?? $application;
     }

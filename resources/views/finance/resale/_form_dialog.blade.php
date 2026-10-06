@@ -39,13 +39,13 @@
     :submit-label="$editing ? __('resale.dialog.submit_edit') : __('resale.dialog.submit_new')"
 >
     @if ($editing && $subscription->isImported())
-        <div class="alert alert-info text-sm"><span>{{ __('resale.edit_hint.imported') }}</span></div>
+        <div role="status" class="alert alert-info text-sm"><span>{{ __('resale.edit_hint.imported') }}</span></div>
     @endif
     @if ($editing && $subscription->isDomain())
-        <div class="alert alert-info text-sm"><span>{{ __('resale.edit_hint.domain') }}</span></div>
+        <div role="status" class="alert alert-info text-sm"><span>{{ __('resale.edit_hint.domain') }}</span></div>
     @endif
     @if ($parent !== null)
-        <div class="alert alert-info text-sm"><span>{{ __('resale.edit_hint.assignment', ['contract' => $parent->holderLabel() . ' · ' . $parent->identityLabel()]) }}</span></div>
+        <div role="status" class="alert alert-info text-sm"><span>{{ __('resale.edit_hint.assignment', ['contract' => $parent->holderLabel() . ' · ' . $parent->identityLabel()]) }}</span></div>
     @endif
     <div class="grid grid-cols-1 md:grid-cols-6 gap-3">
         <x-input-field name="label" :label="__('resale.field.label')" :value="$value('label')" required span="4" />

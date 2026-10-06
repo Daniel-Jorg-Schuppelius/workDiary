@@ -13,9 +13,10 @@ declare(strict_types=1);
 namespace App\Plugins\Billbee\Console;
 
 use App\Console\Concerns\IteratesOrganizations;
-use App\Models\Platform\{Organization, PluginSetting};
+use App\Models\Platform\Organization;
 use App\Plugins\Billbee\BillbeePlugin;
 use App\Plugins\Billbee\Services\{BillbeeArticleMappingService, BillbeeOrderImportService};
+use App\Plugins\Support\Console\ChecksPluginSwitch;
 use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Console\Command;
 use Throwable;
@@ -27,6 +28,7 @@ use Throwable;
  * Organisation stoppen die anderen nicht.
  */
 class BillbeeSyncCommand extends Command {
+    use ChecksPluginSwitch;
     use IteratesOrganizations;
 
     protected $signature = 'billbee:sync {--org= : Nur diese Organisation (ID) synchronisieren}';
@@ -39,6 +41,9 @@ class BillbeeSyncCommand extends Command {
         // Model-Erzeugungen tiefer im Callgraph verlieren so nie ihre Org.
         $failures = $this->forEachOrganization(
             function (Organization $organization) use ($orders, $mappings): void {
+                if (! $this->pluginEnabledFor(BillbeePlugin::ID, (int) $organization->id)) {
+                    return;
+                }
                 $counters = $orders->import($organization) + ['mapping' => $mappings->import($organization)];
                 $this->info(sprintf('Org %d: %s', $organization->id, JsonHelper::encode($counters)));
             },
@@ -47,11 +52,6 @@ class BillbeeSyncCommand extends Command {
                 report($e);
             },
             option: 'org',
-            scope: fn($query) => $query->whereIn('id', PluginSetting::query()
-                ->withoutGlobalScopes()
-                ->where('plugin_id', BillbeePlugin::ID)
-                ->where('enabled', true)
-                ->select('organization_id')),
         );
 
         return $failures === 0 ? self::SUCCESS : self::FAILURE;

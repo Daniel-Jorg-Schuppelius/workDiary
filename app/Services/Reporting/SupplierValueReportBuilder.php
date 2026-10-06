@@ -12,6 +12,7 @@ namespace App\Services\Reporting;
 
 use App\Models\Supplier\Supplier;
 use App\Services\Billing\Contracts\ExternalPurchases;
+use App\Services\Reporting\Support\ReportStatistics;
 use App\Support\ChartBucket;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
@@ -31,6 +32,9 @@ use Illuminate\Support\Collection;
  * bestimmt (Lieferantenfakten); nur die Zeitraum-Kennzahlen folgen dem Filter.
  */
 class SupplierValueReportBuilder {
+    /** Segmentnamen dieses Reports zu den Stufen von {@see ReportStatistics::rfmSegment()}. */
+    private const SEGMENTS = ['inactive' => 'dormant', 'new' => 'new', 'top' => 'strategic', 'lapsed' => 'lapsed', 'regular' => 'core', 'occasional' => 'occasional'];
+
     /** HHI-Ampelschwellen (Marktkonzentrations-Konvention, wie Kundenwert). */
     public const HHI_MODERATE = 1500;
 
@@ -73,15 +77,15 @@ class SupplierValueReportBuilder {
 
         // RFM-Quintile über die im Zeitraum aktiven Lieferanten.
         $active = $suppliers->filter(fn(Supplier $s): bool => ($voucherDays[(int) $s->id] ?? 0) > 0);
-        $rScores = $this->quintileScores(
+        $rScores = ReportStatistics::quintileScores(
             $active->mapWithKeys(fn(Supplier $s): array => [(int) $s->id => (float) ($recency[(int) $s->id] ?? 0)])->all(),
             higherIsBetter: false,
         );
-        $fScores = $this->quintileScores(
+        $fScores = ReportStatistics::quintileScores(
             $active->mapWithKeys(fn(Supplier $s): array => [(int) $s->id => (float) ($voucherDays[(int) $s->id] ?? 0)])->all(),
             higherIsBetter: true,
         );
-        $mScores = $this->quintileScores(
+        $mScores = ReportStatistics::quintileScores(
             $active->mapWithKeys(fn(Supplier $s): array => [(int) $s->id => (float) ($spend[(int) $s->id] ?? 0.0)])->all(),
             higherIsBetter: true,
         );
@@ -97,7 +101,8 @@ class SupplierValueReportBuilder {
             $r = $rScores[$sid] ?? null;
             $f = $fScores[$sid] ?? null;
             $m = $mScores[$sid] ?? null;
-            $segment = $this->segment($freq, $r, $f, $m, $firstActivity[$sid] ?? null, $from);
+            $first = $firstActivity[$sid] ?? null;
+            $segment = ReportStatistics::rfmSegment($freq !== 0, $first !== null && $first >= $from->toDateString(), $r, $f, $m, self::SEGMENTS);
             $segments[$segment]++;
 
             $rows[] = [
@@ -231,62 +236,7 @@ class SupplierValueReportBuilder {
         return [$first, $last];
     }
 
-    /**
-     * Quintil-Scores 1–5 über die Perzentil-Position des Werts; gleiche Werte
-     * erhalten denselben Score (stabil bei Bindungen).
-     *
-     * @param  array<int, float>  $values
-     * @return array<int, int>
-     */
-    private function quintileScores(array $values, bool $higherIsBetter): array {
-        $n = count($values);
-        if ($n === 0) {
-            return [];
-        }
-
-        $sorted = array_values($values);
-        sort($sorted);
-        $scores = [];
-        foreach ($values as $key => $value) {
-            $below = 0;
-            foreach ($sorted as $v) {
-                if ($v < $value) {
-                    $below++;
-                } else {
-                    break;
-                }
-            }
-            $score = min(5, (int) floor($below / $n * 5) + 1);
-            $scores[$key] = $higherIsBetter ? $score : 6 - $score;
-        }
-
-        return $scores;
-    }
-
     /** Sequenzielle Segment-Zuordnung (erste zutreffende Regel gewinnt). */
-    private function segment(int $frequencyDays, ?int $r, ?int $f, ?int $m, ?string $firstActivity, CarbonImmutable $from): string {
-        if ($frequencyDays === 0) {
-            return 'dormant';
-        }
-        if ($firstActivity !== null && $firstActivity >= $from->toDateString()) {
-            return 'new';
-        }
-        if (($r ?? 0) >= 4 && ($f ?? 0) >= 4 && ($m ?? 0) >= 4) {
-            return 'strategic';
-        }
-        if (($r ?? 0) <= 2 && ($m ?? 0) >= 4) {
-            return 'lapsed';
-        }
-        if (($r ?? 0) <= 2) {
-            return 'dormant';
-        }
-        if (($f ?? 0) >= 3) {
-            return 'core';
-        }
-
-        return 'occasional';
-    }
-
     /**
      * Ausgabenkonzentration (Klumpenrisiko im Einkauf).
      *
@@ -294,21 +244,14 @@ class SupplierValueReportBuilder {
      * @return array{totalSpend:float, top5Share:?float, top10Share:?float, hhi:?int, activeSuppliers:int}
      */
     private function concentration(array $rows): array {
-        $spends = collect($rows)->pluck('spend')->filter(static fn(float $v): bool => $v > 0)->sortDesc()->values();
-        $total = (float) $spends->sum();
-        $share = fn(Collection $part): ?float => $total > 0 ? round((float) $part->sum() / $total * 100, 1) : null;
-
-        $hhi = null;
-        if ($total > 0) {
-            $hhi = (int) round($spends->reduce(static fn(float $carry, float $v): float => $carry + (($v / $total * 100) ** 2), 0.0));
-        }
+        $concentration = ReportStatistics::concentration(array_column($rows, 'spend'));
 
         return [
-            'totalSpend' => round($total, 2),
-            'top5Share' => $share($spends->take(5)),
-            'top10Share' => $share($spends->take(10)),
-            'hhi' => $hhi,
-            'activeSuppliers' => $spends->count(),
+            'totalSpend' => $concentration['total'],
+            'top5Share' => $concentration['top5Share'],
+            'top10Share' => $concentration['top10Share'],
+            'hhi' => $concentration['hhi'],
+            'activeSuppliers' => $concentration['positive'],
         ];
     }
 }

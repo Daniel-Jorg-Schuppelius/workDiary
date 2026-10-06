@@ -17,6 +17,7 @@ use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Platform\TenantPlanRequest;
+use App\Rules\IsoCountryCode;
 use CommonToolkit\Helper\Data\VatNumberHelper;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
@@ -53,7 +54,7 @@ class BillingProfileController extends Controller {
             'street' => ['nullable', 'string', 'max:200'],
             'zip' => ['nullable', 'string', 'max:20'],
             'city' => ['nullable', 'string', 'max:120'],
-            'country' => ['nullable', 'string', 'size:2'],
+            'country' => ['nullable', 'string', 'max:2', new IsoCountryCode],
             'vat_id' => ['nullable', 'string', 'max:20', static function (string $attribute, mixed $value, \Closure $fail): void {
                 if (is_string($value) && $value !== '' && ! VatNumberHelper::isVatId($value)) {
                     $fail(__('platform_usage.billing_profile.invalid_vat'));
@@ -63,6 +64,9 @@ class BillingProfileController extends Controller {
         ]);
         if (isset($data['vat_id']) && $data['vat_id'] !== '') {
             $data['vat_id'] = VatNumberHelper::normalize($data['vat_id']);
+        }
+        if (isset($data['country'])) {
+            $data['country'] = strtoupper((string) $data['country']);
         }
         $organization = $this->currentOrganization();
         $settings = (array) ($organization->settings ?? []);

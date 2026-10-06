@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Migration;
 
-use App\Enums\Migration\MigrationDataArea;
+use App\Enums\Migration\{AccountingMigrationItemStatus, MigrationDataArea};
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -24,33 +24,13 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphTo};
  * idempotent — ein Wiederholungslauf setzt fort statt zu duplizieren.
  *
  * @property MigrationDataArea $data_area
+ * @property AccountingMigrationItemStatus $status
  */
 class AccountingMigrationItem extends Model {
     use BelongsToOrganization;
     /** @use HasFactory<\Database\Factories\Migration\AccountingMigrationItemFactory> */
     use HasFactory;
     use HasSqid;
-
-    /** Erkannt, noch nicht entschieden. */
-    public const STATUS_PENDING = 'pending';
-
-    /** Eindeutig zugeordnet (beide Fremd-IDs am selben lokalen Objekt). */
-    public const STATUS_MATCHED = 'matched';
-
-    /** Im Zielsystem angelegt/verknüpft. */
-    public const STATUS_TRANSFERRED = 'transferred';
-
-    /** Mehrdeutig oder verlustbehaftet — blockiert, Entscheidung nötig. */
-    public const STATUS_CONFLICT = 'conflict';
-
-    /** Bewusst übersprungen (z. B. archivierte Quelle). */
-    public const STATUS_SKIPPED = 'skipped';
-
-    /** Read-only Historie: bleibt im Quellsystem, wird nie nachgebaut. */
-    public const STATUS_HISTORIC = 'historic';
-
-    /** Schreibversuch mit unklarem Ausgang oder Fehler. */
-    public const STATUS_FAILED = 'failed';
 
     protected $fillable = [
         'organization_id',
@@ -73,6 +53,7 @@ class AccountingMigrationItem extends Model {
     /** @var array<string, string> */
     protected $casts = [
         'data_area' => MigrationDataArea::class,
+        'status' => AccountingMigrationItemStatus::class,
         'source_snapshot' => 'array',
         'diff' => 'array',
         'decided_at' => 'datetime',
@@ -90,6 +71,6 @@ class AccountingMigrationItem extends Model {
 
     /** Blockiert die Umschaltung? Konflikte und Fehler tun das. */
     public function blocksCutover(): bool {
-        return in_array($this->status, [self::STATUS_CONFLICT, self::STATUS_FAILED], true);
+        return in_array($this->status, [AccountingMigrationItemStatus::Conflict, AccountingMigrationItemStatus::Failed], true);
     }
 }

@@ -10,8 +10,7 @@
 @extends('layouts.app')
 @section('title', __('club.exams.title.index'))
 @section('nav-title', __('club.exams.title.index'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('club.exams.subtitle.index')">
     <x-slot:actions>
@@ -24,7 +23,7 @@
     <x-filter-bar :action="route('club.exams.index')" :reset="route('club.exams.index')">
         <div class="join" role="group" aria-label="{{ __('club.events.filter.period') }}">
             @foreach (['upcoming', 'range', 'past'] as $option)
-                <a href="{{ route('club.exams.index', ['period' => $option]) }}" class="btn btn-sm join-item {{ $period === $option ? 'btn-primary' : 'btn-outline' }}">{{ __('club.events.filter.period_' . $option) }}</a>
+                <x-button :href="route('club.exams.index', ['period' => $option])" :tone="$period === $option ? 'primary' : 'outline'" class="join-item">{{ __('club.events.filter.period_' . $option) }}</x-button>
             @endforeach
         </div>
     </x-filter-bar>
@@ -43,7 +42,7 @@
         </x-slot:head>
         @forelse ($offers as $offer)
             <tr class="hover">
-                <td class="whitespace-nowrap text-sm tabular-nums">{{ $offer->event?->started_at?->orgTz()->format('d.m.Y H:i') }}</td>
+                <td class="whitespace-nowrap text-sm tabular-nums">{{ $offer->event?->started_at?->fdatetime() }}</td>
                 <td class="font-medium">
                     <a href="{{ route('club.exams.show', $offer) }}" class="link link-hover">{{ $offer->event?->title }}</a>
                     @if ($offer->event?->isCancelled())<x-status-badge tone="error" size="xs" :label="__('club.events.label.cancelled')" />@endif
@@ -58,5 +57,6 @@
             <x-table.empty icon="workspace_premium" :colspan="7" :title="__('club.exams.empty.offers')" compact />
         @endforelse
     </x-table>
+    <x-pagination :paginator="$offers" standing />
 </x-index-page>
 @endsection

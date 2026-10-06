@@ -58,11 +58,11 @@
                                     @php $status = $row['status'][$qualification->id] ?? 'missing'; @endphp
                                     <td class="text-center">
                                         @if ($status === 'ok')
-                                            <span class="badge badge-success badge-sm gap-1"><x-icon name="check" class="text-xs" />{{ __('erfüllt') }}</span>
+                                            <x-status-badge tone="success" class="gap-1"><x-icon name="check" class="text-xs" />{{ __('erfüllt') }}</x-status-badge>
                                         @elseif ($status === 'expiring')
-                                            <span class="badge badge-warning badge-sm gap-1"><x-icon name="schedule" class="text-xs" />{{ __('läuft ab') }}</span>
+                                            <x-status-badge tone="warning" class="gap-1"><x-icon name="schedule" class="text-xs" />{{ __('läuft ab') }}</x-status-badge>
                                         @else
-                                            <span class="badge badge-error badge-sm gap-1"><x-icon name="close" class="text-xs" />{{ __('fehlt') }}</span>
+                                            <x-status-badge tone="error" class="gap-1"><x-icon name="close" class="text-xs" />{{ __('fehlt') }}</x-status-badge>
                                         @endif
                                     </td>
                                 @endforeach

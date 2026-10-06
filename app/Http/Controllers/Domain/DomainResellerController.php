@@ -33,7 +33,9 @@ class DomainResellerController extends Controller {
             ->withCount('domains')
             ->orderBy('depth')
             ->orderBy('external_user')
-            ->get();
+            ->orderBy('id')
+            ->paginate(25)
+            ->withQueryString();
 
         return view('domain.reseller.index', ['accounts' => $accounts]);
     }

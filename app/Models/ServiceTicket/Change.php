@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\ServiceTicket;
 
+use App\Enums\ServiceTicket\ChangeStatus;
 use App\Models\Approval\Approval;
 use App\Models\Asset\Asset;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
@@ -28,7 +29,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany, MorphMany}
  * @property int $organization_id
  * @property string $title
  * @property string $change_type
- * @property string $status
+ * @property ChangeStatus $status
  * @property string|null $outcome
  * @property string|null $rollback_plan
  * @property string|null $pir_notes
@@ -55,11 +56,12 @@ class Change extends Model {
         'window_from' => 'datetime',
         'window_to' => 'datetime',
         'template_snapshot' => 'array',
+        'status' => ChangeStatus::class,
         'pir_done_at' => 'datetime',
     ];
 
     /** @var array<string, mixed> */
-    protected $attributes = ['status' => 'draft', 'change_type' => 'normal'];
+    protected $attributes = ['status' => ChangeStatus::Draft->value, 'change_type' => 'normal'];
 
     /** @return MorphMany<Approval, $this> */
     public function approvals(): MorphMany {

@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Finance;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
@@ -95,7 +96,7 @@ class OpenTimesDigestCommandTest extends TestCase {
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
             'number' => 'R-0002',
-            'status' => Invoice::STATUS_ISSUED,
+            'status' => InvoiceStatus::Issued,
             'currency' => 'EUR',
             'tax_rate' => '19.00',
             'created_by' => $this->accountant->id,

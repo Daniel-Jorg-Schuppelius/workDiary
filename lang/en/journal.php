@@ -23,6 +23,8 @@ return [
         'ebics_suspended' => 'EBICS access suspended',
         'ebics_statements_fetched' => 'Statements fetched via EBICS',
         'ebics_payment_submitted' => 'Payment run submitted via EBICS',
+        'ebics_payment_started' => 'EBICS submission started',
+        'ebics_payment_aborted' => 'EBICS submission not carried out',
         'ebics_failed' => 'EBICS step failed',
         'analyzed' => 'Analysed',
         'blocked' => 'Blocked',

@@ -11,7 +11,7 @@
 namespace Tests\Feature\Finance;
 
 use App\Enums\Finance\{AccountType, PostingAccountRole, PostingSourceKind, ProfitDetermination};
-use App\Enums\Invoicing\OnlinePaymentStatus;
+use App\Enums\Invoicing\{InvoiceStatus, OnlinePaymentStatus};
 use App\Models\Accounting\AccountingPostingRule;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\{Invoice, OnlinePayment};
@@ -71,7 +71,7 @@ final class OnlinePaymentPostingTest extends TestCase {
             'organization_id' => $this->org->id,
             'customer_id' => Customer::factory()->create(['organization_id' => $this->org->id])->id,
             'number' => 'R-2026-0200',
-            'status' => Invoice::STATUS_PAID,
+            'status' => InvoiceStatus::Paid,
             'type' => Invoice::TYPE_INVOICE,
             'tax_rate' => '19.00',
             'total' => '119.00',
@@ -134,5 +134,27 @@ final class OnlinePaymentPostingTest extends TestCase {
         $this->assertSame([$paid->id], $ids);
         $this->assertSame([], app(OnlinePaymentAdapter::class)
             ->candidates($this->org, CarbonImmutable::parse('2026-07-01'), CarbonImmutable::parse('2026-07-31'))->all());
+    }
+
+    /**
+     * Sicherheitsaudit 2026-10-04, li-8: eine Erstattung nach dem Buchen
+     * erschien nie im Buchungseingang — der Satz galt als erledigt.
+     */
+    public function test_refund_after_posting_brings_the_payment_back_into_the_inbox(): void {
+        $inbox = app(\App\Services\Accounting\Posting\PostingInboxService::class);
+        $admin = User::query()->where('organization_id', $this->org->id)->firstOrFail();
+        $payment = $this->payment('0.00', null);
+        $from = CarbonImmutable::parse('2026-06-01');
+        $to = CarbonImmutable::parse('2026-06-30');
+
+        $entry = $inbox->prepare($this->org, app(OnlinePaymentAdapter::class)->proposalFor($this->org, $payment), $admin);
+        $inbox->post($entry, $admin);
+        $this->assertCount(0, $inbox->items($this->org, $from, $to, PostingSourceKind::OnlinePayment));
+
+        $payment->forceFill(['refunded_amount' => '19.00', 'status' => OnlinePaymentStatus::Refunded])->save();
+
+        $items = $inbox->items($this->org, $from, $to, PostingSourceKind::OnlinePayment);
+        $this->assertCount(1, $items);
+        $this->assertContains((string) __('accounting.inbox.blocker.changed_since_posting'), $items->first()['blockers']);
     }
 }

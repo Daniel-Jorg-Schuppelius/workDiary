@@ -251,7 +251,7 @@ class PassengerRideController extends Controller {
     /** Branchenprofil-Gate: 404 ohne installiertes Profil (Muster Recipes). */
     private function passengerOrganization(): Organization {
         $organization = $this->currentOrganization();
-        abort_unless($this->rides->isPassengerProfileActive($organization), 404);
+        abort_unless($organization->hasBranchProfile(PassengerRideService::PROFILE_CODE), 404);
 
         return $organization;
     }

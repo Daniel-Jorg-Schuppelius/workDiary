@@ -11,8 +11,7 @@
 
 @section('title', __('Meine Überstunden-Anträge'))
 @section('nav-title', __('Meine Überstunden-Anträge'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
     <x-index-page overflow="clip" :subtitle="__('Mehrarbeit über die Rahmenzeit hinaus beantragen und genehmigen lassen.')">

@@ -12,6 +12,9 @@
 @section('nav-title', __('Gerätepool'))
 
 @section('content')
+@php
+    $canManageProfiles = auth()->user()?->can('create', \App\Models\Rental\RentalCase::class) ?? false;
+@endphp
 <x-index-page :subtitle="__('Leihfähige Geräte und Maschinen mit Gerätegruppe, Pufferzeiten, Prüfpflicht und Standard-Preisliste.')">
     <x-validation-errors />
 
@@ -36,6 +39,9 @@
                     <th>{{ __('Prüfpflicht') }}</th>
                     <th>{{ __('Sperren') }}</th>
                     <th>{{ __('Preisliste') }}</th>
+                    @if ($canManageProfiles)
+                        <th class="text-right">{{ __('Aktionen') }}</th>
+                    @endif
                 </tr>
             </x-slot:head>
             @forelse ($profiles as $profile)
@@ -60,22 +66,30 @@
                     <td>{{ $profile->requires_inspection ? __('ja (blockt bei Überfälligkeit)') : __('nein') }}</td>
                     <td>
                         @if ($profile->asset !== null && $profile->asset->activeBlocks->isNotEmpty())
-                            <span class="badge badge-error badge-outline">{{ __('Gesperrt: :reason', ['reason' => $profile->asset->activeBlocks->first()->reason->label()]) }}</span>
+                            <x-status-badge tone="error" size="md" outline>{{ __('Gesperrt: :reason', ['reason' => $profile->asset->activeBlocks->first()->reason->label()]) }}</x-status-badge>
                         @else
                             —
                         @endif
                     </td>
                     <td>{{ $profile->defaultRateCard !== null ? $profile->defaultRateCard->name . ' (v' . $profile->defaultRateCard->version . ')' : '—' }}</td>
+                    @if ($canManageProfiles)
+                        <td class="text-right">
+                            <x-icon-btn icon="edit" tone="ghost"
+                                        data-entry-modal-trigger
+                                        :href="route('rental.profiles.edit', $profile)"
+                                        :label="__('Bearbeiten')" />
+                        </td>
+                    @endif
                 </tr>
             @empty
-                <x-table.empty :colspan="8" :title="__('Noch keine Verleihprofile — unten ein Asset leihfähig machen.')" compact />
+                <x-table.empty :colspan="$canManageProfiles ? 9 : 8" :title="__('Noch keine Verleihprofile — unten ein Asset leihfähig machen.')" compact />
             @endforelse
         </x-table>
     </x-card>
 
     <x-pagination :paginator="$profiles" standing />
 
-    @can('create', \App\Models\Rental\RentalCase::class)
+    @if ($canManageProfiles)
         <x-card :title="__('Asset leihfähig machen / Profil pflegen')">
             <form method="POST" action="{{ route('rental.profiles.store') }}" class="grid gap-3 sm:grid-cols-2">
                 @csrf
@@ -114,10 +128,10 @@
                 <x-textarea-field name="accessories" :label="__('Zubehör (eine Position je Zeile)')" rows="3">{{ is_array(old('accessories')) ? implode("\n", old('accessories')) : old('accessories') }}</x-textarea-field>
                 <x-textarea-field name="notes" :label="__('Notizen')" rows="3">{{ old('notes') }}</x-textarea-field>
                 <div class="sm:col-span-2">
-                    <button type="submit" class="btn btn-sm btn-primary">{{ __('Profil speichern') }}</button>
+                    <x-button type="submit">{{ __('Profil speichern') }}</x-button>
                 </div>
             </form>
         </x-card>
-    @endcan
+    @endif
 </x-index-page>
 @endsection

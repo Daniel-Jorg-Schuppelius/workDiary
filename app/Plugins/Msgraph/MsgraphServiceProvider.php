@@ -14,7 +14,7 @@ use App\Models\Project\Task;
 use App\Plugins\Msgraph\Api\{MsgraphMailOAuth, MsgraphOAuth};
 use App\Plugins\Msgraph\Mail\{MsgraphMailTransport, StampOrganizationMailHeader};
 use App\Plugins\Msgraph\Observers\MsgraphTodoTaskObserver;
-use App\Plugins\Msgraph\Services\{MsgraphOutboxDispatcher, MsgraphSeriesGroupBooker};
+use App\Plugins\Msgraph\Services\{MsgraphOutboxDispatcher, MsgraphPhoneContactSource, MsgraphSeriesGroupBooker};
 use App\Plugins\Support\PluginServiceProviderBase;
 use App\Services\Integration\{InboxGroupBookerRegistry, IntegrationOutboxDispatcherResolver};
 use Illuminate\Mail\Events\MessageSending;

@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Location;
 
+use App\Enums\Location\{LocationPendingEntryStatus, LocationVisitStatus};
 use App\Http\Controllers\Api\LocationController;
 use App\Models\Customer\Customer;
 use App\Models\Location\{CustomerGeofence, LocationDeviceToken, LocationPendingEntry, LocationPoint, LocationVisit};
@@ -121,13 +122,13 @@ class LocationIngestTest extends TestCase {
 
         // Sync-Queue: ProcessLocationBatch lief inline → ein geschlossener Besuch.
         $visit = LocationVisit::query()->firstOrFail();
-        $this->assertSame(LocationVisit::STATUS_CLOSED, $visit->status);
+        $this->assertSame(LocationVisitStatus::Closed, $visit->status);
         $this->assertSame(30, $visit->duration_min);
         $this->assertTrue($visit->materialized);
 
         // Review-Inbox: offener Vorschlag mit Kunde/Projekt.
         $pending = LocationPendingEntry::query()->firstOrFail();
-        $this->assertSame(LocationPendingEntry::STATUS_OPEN, $pending->status);
+        $this->assertSame(LocationPendingEntryStatus::Open, $pending->status);
         $this->assertSame(30, $pending->minutes);
         $this->assertSame($this->geofence->customer_id, $pending->customer_id);
         $this->assertNotNull($pending->project_id);
@@ -148,9 +149,29 @@ class LocationIngestTest extends TestCase {
         $this->assertSame($pending->project_id, $timeEntry->project_id);
 
         $pending->refresh();
-        $this->assertSame(LocationPendingEntry::STATUS_IMPORTED, $pending->status);
+        $this->assertSame(LocationPendingEntryStatus::Imported, $pending->status);
         $this->assertSame($timeEntry->id, $pending->time_entry_id);
         $this->assertSame($this->user->id, $pending->resolved_by);
+    }
+
+    /** Ein aufgelöster Vorschlag bleibt, wie er ist: kein zweites Buchen, kein nachträgliches Verwerfen. */
+    public function test_resolved_suggestion_is_final(): void {
+        $this->postJson("/api/location/ingest/{$this->token}", ['points' => $this->track()])->assertOk();
+
+        $materializer = app(VisitMaterializer::class);
+        $pending = LocationPendingEntry::query()->firstOrFail();
+        $materializer->confirm($pending, $this->user);
+
+        $materializer->dismiss($pending->refresh(), $this->user);
+        $this->assertSame(LocationPendingEntryStatus::Imported, $pending->refresh()->status);
+
+        try {
+            $materializer->confirm($pending, $this->user);
+            $this->fail('Ein übernommener Vorschlag darf nicht erneut gebucht werden.');
+        } catch (\RuntimeException $e) {
+            $this->assertSame('Vorschlag ist bereits aufgelöst.', $e->getMessage());
+        }
+        $this->assertSame(1, TimeEntry::query()->count());
     }
 
     public function test_second_ingest_does_not_duplicate_visit(): void {

@@ -21,7 +21,7 @@
         {{ __('Bitte gib einen kurzen Grund an. Der Eigentümer kann die Spese danach überarbeiten und erneut einreichen.') }}
     </p>
 
-    <div class="alert alert-info mt-3 text-sm">
+    <div role="status" class="alert alert-info mt-3 text-sm">
         <div>
             <div class="font-semibold">{{ $expense->user?->name }}</div>
             <div class="text-base-content/70">

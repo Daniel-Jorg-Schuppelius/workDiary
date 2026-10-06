@@ -10,9 +10,10 @@
 
 namespace App\Services\Finance;
 
-use App\Events\Invoicing\InvoicePaymentReceived;
+use App\Events\Invoicing\{InvoicePaymentReceived, InvoicePaymentReverted};
 use App\Models\Finance\{CashDailyClosing, CashEntry, CashRegister};
 use App\Models\Invoicing\Invoice;
+use App\Services\Invoicing\InvoiceSettlement;
 use Carbon\{Carbon, CarbonInterface};
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -26,6 +27,8 @@ use InvalidArgumentException;
  * mit TSE-Signatur.
  */
 class CashBookService implements \App\Services\Passenger\Contracts\CashBookPosting {
+    public function __construct(private readonly InvoiceSettlement $settlement) {}
+
     /**
      * Bareinnahme/-ausgabe erfassen.
      *
@@ -41,7 +44,16 @@ class CashBookService implements \App\Services\Passenger\Contracts\CashBookPosti
             throw new InvalidArgumentException((string) __('Kassenbetrag muss positiv sein (Richtung über die Buchungsrichtung).'));
         }
 
-        return DB::transaction(function () use ($register, $data, $bookedOn, $amount): CashEntry {
+        // Eine Bareinnahme gleicht nur einen Beleg aus, der Zahlungen annimmt — nie Entwurf, Storno oder Gutschrift
+        // (Sicherheitsaudit 2026-10-04, li-1).
+        $invoice = ($data['invoice_id'] ?? null) !== null && $data['direction'] === CashEntry::DIRECTION_IN
+            ? Invoice::query()->find($data['invoice_id'])
+            : null;
+        if ($invoice !== null && ! $this->settlement->isSettleable($invoice)) {
+            throw new InvalidArgumentException((string) __('Auf diese Rechnung lässt sich keine Zahlung buchen (Entwurf, storniert oder Gutschrift).'));
+        }
+
+        return DB::transaction(function () use ($register, $data, $bookedOn, $amount, $invoice): CashEntry {
             // Vollaudit 2026-07 (N1): gemeinsame Registersperre mit closeDay() —
             // Abschluss- und Bestandsprüfung erst NACH Sperrerwerb, sonst Race
             // Tagesabschluss vs. parallele Buchung.
@@ -69,8 +81,9 @@ class CashBookService implements \App\Services\Passenger\Contracts\CashBookPosti
                 'created_by' => $data['created_by'] ?? null,
             ]);
 
-            if ($entry->invoice_id !== null && $entry->direction === CashEntry::DIRECTION_IN) {
-                $this->applyInvoicePayment($entry);
+            if ($invoice !== null) {
+                $this->settlement->sync($invoice, $bookedOn);
+                InvoicePaymentReceived::dispatch($invoice);
             }
 
             return $entry;
@@ -94,31 +107,45 @@ class CashBookService implements \App\Services\Passenger\Contracts\CashBookPosti
         // Fehlbuchung — es muss auch dann möglich sein, wenn der rechnerische
         // Bestand dadurch vorübergehend unter den Ausweis fällt.
         return DB::transaction(function () use ($original, $register, $bookedOn, $reason, $userId): CashEntry {
-            // Vollaudit 2026-07 (N1): Sperre + Prüfungen innerhalb der Transaktion.
-            $this->lockRegister($register);
-            $this->assertNotClosed($register, $bookedOn);
+            $reversal = $this->writeReversal($original, $register, $bookedOn, $reason, $userId);
 
-            $alreadyReversed = CashEntry::query()
-                ->where('reversal_of_id', $original->id)
-                ->exists();
-            if ($alreadyReversed) {
-                throw new InvalidArgumentException((string) __('Dieser Eintrag wurde bereits storniert.'));
+            // Die stornierte Einnahme deckt die Rechnung nicht mehr: Zahlstatus neu bestimmen.
+            $invoice = $original->direction === CashEntry::DIRECTION_IN && $original->invoice_id !== null
+                ? Invoice::query()->find($original->invoice_id)
+                : null;
+            if ($invoice !== null && $this->settlement->sync($invoice)->lowered()) {
+                InvoicePaymentReverted::dispatch($invoice);
             }
 
-            return CashEntry::create([
-                'organization_id' => $original->organization_id,
-                'cash_register_id' => $original->cash_register_id,
-                'seq_no' => $this->nextSeqNo($register),
-                'booked_on' => $bookedOn->toDateString(),
-                'direction' => $original->direction === CashEntry::DIRECTION_IN ? CashEntry::DIRECTION_OUT : CashEntry::DIRECTION_IN,
-                'amount' => $original->amount,
-                'tax_rate' => $original->tax_rate,
-                'purpose' => (string) __('Storno zu Beleg #:seq: :reason', ['seq' => $original->seq_no, 'reason' => $reason]),
-                'counterparty' => $original->counterparty,
-                'reversal_of_id' => $original->id,
-                'created_by' => $userId,
-            ]);
+            return $reversal;
         });
+    }
+
+    private function writeReversal(CashEntry $original, CashRegister $register, CarbonInterface $bookedOn, string $reason, ?int $userId): CashEntry {
+        // Vollaudit 2026-07 (N1): Sperre + Prüfungen innerhalb der Transaktion.
+        $this->lockRegister($register);
+        $this->assertNotClosed($register, $bookedOn);
+
+        $alreadyReversed = CashEntry::query()
+            ->where('reversal_of_id', $original->id)
+            ->exists();
+        if ($alreadyReversed) {
+            throw new InvalidArgumentException((string) __('Dieser Eintrag wurde bereits storniert.'));
+        }
+
+        return CashEntry::create([
+            'organization_id' => $original->organization_id,
+            'cash_register_id' => $original->cash_register_id,
+            'seq_no' => $this->nextSeqNo($register),
+            'booked_on' => $bookedOn->toDateString(),
+            'direction' => $original->direction === CashEntry::DIRECTION_IN ? CashEntry::DIRECTION_OUT : CashEntry::DIRECTION_IN,
+            'amount' => $original->amount,
+            'tax_rate' => $original->tax_rate,
+            'purpose' => (string) __('Storno zu Beleg #:seq: :reason', ['seq' => $original->seq_no, 'reason' => $reason]),
+            'counterparty' => $original->counterparty,
+            'reversal_of_id' => $original->id,
+            'created_by' => $userId,
+        ]);
     }
 
     /**
@@ -199,32 +226,5 @@ class CashBookService implements \App\Services\Passenger\Contracts\CashBookPosti
             ->withoutGlobalScopes()
             ->where('cash_register_id', $register->id)
             ->max('seq_no') + 1;
-    }
-
-    /**
-     * Barzahlung einer Rechnung über den bestehenden Zahlungsstatus-Pfad
-     * (status/paid_on sind nach Ausstellung bewusst änderbar — Lifecycle).
-     */
-    private function applyInvoicePayment(CashEntry $entry): void {
-        /** @var Invoice|null $invoice */
-        $invoice = Invoice::query()->find($entry->invoice_id);
-        if ($invoice === null || $invoice->status === Invoice::STATUS_PAID) {
-            return;
-        }
-
-        $paidCash = (float) CashEntry::query()
-            ->where('invoice_id', $invoice->id)
-            ->where('direction', CashEntry::DIRECTION_IN)
-            ->sum('amount');
-
-        if ($paidCash + 0.005 >= ($invoice->total?->toFloat() ?? 0.0)) {
-            $invoice->status = Invoice::STATUS_PAID;
-            $invoice->paid_on = \Illuminate\Support\Carbon::parse($entry->booked_on->toDateString());
-            $invoice->save();
-        } elseif ($invoice->status === Invoice::STATUS_ISSUED && $paidCash > 0) {
-            $invoice->status = Invoice::STATUS_PARTIALLY_PAID;
-            $invoice->save();
-        }
-        InvoicePaymentReceived::dispatch($invoice);
     }
 }

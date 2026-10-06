@@ -43,8 +43,8 @@
         <div class="mb-4 text-center font-mono text-5xl font-semibold tabular-nums" data-kiosk-clock aria-hidden="true">--:--</div>
 
         <div class="join mb-4 w-full" role="group" aria-label="{{ __('terminal.kiosk.mode') }}">
-            <button type="button" class="btn join-item flex-1 btn-primary" data-kiosk-mode-button="work" aria-pressed="true">{{ __('terminal.kiosk.mode_work') }}</button>
-            <button type="button" class="btn join-item flex-1" data-kiosk-mode-button="break" aria-pressed="false">{{ __('terminal.kiosk.mode_break') }}</button>
+            <x-button size="md" class="join-item flex-1" data-kiosk-mode-button="work" aria-pressed="true">{{ __('terminal.kiosk.mode_work') }}</x-button>
+            <x-button tone="plain" size="md" class="join-item flex-1" data-kiosk-mode-button="break" aria-pressed="false">{{ __('terminal.kiosk.mode_break') }}</x-button>
         </div>
 
         <form data-kiosk-form autocomplete="off">
@@ -61,11 +61,11 @@
                 <input id="kiosk-personnel" type="text" inputmode="numeric" autocomplete="off" class="input input-bordered" data-kiosk-personnel>
                 <label for="kiosk-pin" class="text-sm font-medium">{{ __('terminal.pin.field.pin') }}</label>
                 <input id="kiosk-pin" type="password" inputmode="numeric" autocomplete="off" class="input input-bordered" data-kiosk-pin>
-                <button type="submit" class="btn btn-primary">{{ __('terminal.kiosk.pin_submit') }}</button>
+                <x-button type="submit" size="md">{{ __('terminal.kiosk.pin_submit') }}</x-button>
             </form>
         </details>
 
-        <button type="button" class="btn btn-outline mt-3 hidden w-full" data-kiosk-nfc>{{ __('terminal.kiosk.nfc_start') }}</button>
+        <x-button tone="outline" size="md" class="mt-3 hidden w-full" data-kiosk-nfc>{{ __('terminal.kiosk.nfc_start') }}</x-button>
 
         <div class="mt-4 min-h-16" role="status" aria-live="polite" data-kiosk-result></div>
     </x-card>

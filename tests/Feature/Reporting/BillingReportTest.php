@@ -10,8 +10,10 @@
 
 namespace Tests\Feature\Reporting;
 
+use App\Enums\Invoicing\{IncomingEInvoiceStatus, InvoiceStatus};
 use App\Models\Customer\Customer;
-use App\Models\Invoicing\Invoice;
+use App\Models\Document\Document;
+use App\Models\Invoicing\{IncomingEInvoice, Invoice};
 use App\Models\Platform\User;
 use App\Models\Project\Project;
 use App\Models\Time\TimeEntry;
@@ -81,7 +83,7 @@ class BillingReportTest extends TestCase {
             'organization_id' => $this->organization->id,
             'customer_id' => $alpha->id,
             'number' => 'RE-1001',
-            'status' => Invoice::STATUS_ISSUED,
+            'status' => InvoiceStatus::Issued,
             'type' => Invoice::TYPE_INVOICE,
             'currency' => 'EUR',
             'tax_rate' => '19.00',
@@ -162,6 +164,33 @@ class BillingReportTest extends TestCase {
         $unbilled = $response->viewData('unbilled');
         $this->assertSame(1, $unbilled['count']);
         $this->assertSame(60, $unbilled['minutes']);
+    }
+
+    /** Eingangsrechnungen je Prüfstand: der Status ist ein Enum und wird über seinen Wert gruppiert. */
+    public function test_incoming_einvoices_are_grouped_by_status(): void {
+        $this->travelTo('2030-03-15 10:00:00');
+        foreach ([IncomingEInvoiceStatus::Approved, IncomingEInvoiceStatus::Approved, IncomingEInvoiceStatus::Rejected] as $index => $status) {
+            IncomingEInvoice::query()->create([
+                'organization_id' => $this->organization->id,
+                'document_id' => Document::factory()->create(['organization_id' => $this->organization->id])->id,
+                'sha256' => hash('sha256', 'eingang-' . $index),
+                'source' => 'upload',
+                'received_at' => now()->subDay(),
+                'status' => $status,
+                'summary' => ['gross' => 119.0],
+            ]);
+        }
+
+        $response = $this->getWithRange()->assertOk();
+
+        $this->assertSame(
+            ['approved' => ['count' => 2, 'gross' => 238.0], 'rejected' => ['count' => 1, 'gross' => 119.0]],
+            $response->viewData('einvoicing')['incoming'],
+        );
+        $response->assertSee(__('values.approved'))->assertSee(__('values.rejected'));
+
+        $csv = (string) $this->getWithRange(['export' => 'csv'])->assertOk()->getContent();
+        $this->assertStringContainsString('Eingang;approved;2', $csv);
     }
 
     public function test_csv_export_returns_csv_with_metadata(): void {

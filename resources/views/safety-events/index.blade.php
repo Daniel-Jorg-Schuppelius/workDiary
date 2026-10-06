@@ -9,8 +9,7 @@
 @extends('layouts.app')
 @section('title', __('safety.title.index'))
 @section('nav-title', __('safety.title.index'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('safety.subtitle.index')">
     <x-slot:actions>
@@ -72,7 +71,7 @@
                     </span>
                 </td>
                 <td><x-status-badge :tone="$event->severity->tone()" size="sm">{{ $event->severity->label() }}</x-status-badge></td>
-                <td class="text-sm">{{ $event->occurred_at?->orgTz()->format('d.m.Y H:i') }}</td>
+                <td class="text-sm">{{ $event->occurred_at?->fdatetime() }}</td>
                 <td class="text-sm text-base-content/70">{{ $event->location ?? '–' }}</td>
                 <td class="text-sm">{{ $event->reporter?->name ?? '–' }}</td>
                 <td><x-status-badge :tone="$event->status->tone()" size="sm">{{ $event->status->label() }}</x-status-badge></td>

@@ -26,7 +26,7 @@ use Illuminate\Support\Facades\{DB, Gate};
 class BillingAgreementController extends Controller {
     /** Modal-Fragment für Anlegen/Bearbeiten (data-entry-modal-trigger). */
     public function edit(Customer $customer): \Illuminate\View\View {
-        Gate::authorize('update', $customer);
+        Gate::authorize('manageBilling', $customer);
 
         $agreement = $customer->billingAgreement()->with('rates')->first();
         $categories = \App\Models\Classification\ActivityCategory::query()->active()->orderBy('label')->get();
@@ -67,7 +67,7 @@ class BillingAgreementController extends Controller {
         Customer $customer,
         CustomerAccountStatementService $statements
     ): RedirectResponse {
-        Gate::authorize('update', $customer);
+        Gate::authorize('manageBilling', $customer);
 
         DB::transaction(function () use ($request, $customer): void {
             /** @var CustomerBillingAgreement $agreement */

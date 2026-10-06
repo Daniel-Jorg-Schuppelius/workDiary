@@ -1,7 +1,7 @@
 ---
 title: "Nachhaltigkeit & ESG"
 topic: sustainability.overview
-version: 1
+version: 2
 audience: []
 modules:
     - module.sustainability
@@ -31,6 +31,12 @@ Bewertungen nebeneinander.
 Aufwand, Kosten, Frist, Nachweis und die Wirksamkeitsprüfung nach
 Umsetzung. Zielpfade (z. B. CO₂e bis 2030) interpolieren Sollwerte je
 Jahr und stellen sie den Ist-Werten gegenüber.
+
+**Listen:** Die Übersicht zeigt die jüngsten zehn Bewertungen und
+Maßnahmen und zählt jeweils die gesamte Menge. „Alle anzeigen“ öffnet je
+eine vollständige, sortierbare Liste. Die Maßnahmenliste lässt sich nach
+Status filtern; dort pflegen Sie auch den Status älterer Maßnahmen, die
+in der Übersicht nicht mehr erscheinen.
 
 **Bericht:** Kennzahlen mit Drilldown, Datenqualitätswarnungen,
 CSV-Export mit Methodikangabe und einfrierbarem

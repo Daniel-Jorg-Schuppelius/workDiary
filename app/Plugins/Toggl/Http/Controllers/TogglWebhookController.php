@@ -12,22 +12,15 @@ declare(strict_types=1);
 
 namespace App\Plugins\Toggl\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use App\Models\Integration\TimeTrackingWebhookDelivery;
-use App\Models\Platform\Organization;
-use App\Plugins\Support\{RecordsWebhookDeliveries, WebhookSignature};
-use App\Plugins\Support\TimeTracking\{TimeTrackingWebhookGate, WebhookImportJob};
+use App\Plugins\Support\TimeTracking\TimeTrackingWebhookController;
+use App\Plugins\Support\WebhookSignature;
 use App\Plugins\Toggl\TogglPlugin;
+use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Http\{JsonResponse, Request};
 
 /**
- * Sessionloser Toggl-Webhook (Feature 124, MVP-613).
- *
- * Reihenfolge ist sicherheitsrelevant:
- *  1. Workspace lesen und Mandant auflösen — ohne ihn gibt es kein Geheimnis.
- *  2. HMAC-SHA256 über den UNVERÄNDERTEN Raw-Body, konstantzeitlicher
- *     Vergleich, VOR jeder Verarbeitung.
- *  3. Dedup über die Delivery-ID, persistiert VOR der Verarbeitung.
+ * Toggl-Webhook: HMAC-SHA256 über den Raw-Body, Zustell-ID `event_id`.
+ * Ablauf und Reihenfolge stehen in der Basis.
  *
  * Toggl schickt beim Anlegen einer Subscription eine Prüfnachricht mit
  * `validation_code`; die wird unsigniert zurückgespiegelt — das ist der
@@ -36,70 +29,32 @@ use Illuminate\Http\{JsonResponse, Request};
  * Der Webhook ERSETZT das Polling nicht. Toggl sichert keine Zustellung zu;
  * ein verlorener Aufruf würde sonst einen Zeiteintrag kosten.
  */
-class TogglWebhookController extends Controller {
-    use RecordsWebhookDeliveries;
+class TogglWebhookController extends TimeTrackingWebhookController {
+    protected function pluginId(): string {
+        return TogglPlugin::ID;
+    }
 
-    public function __invoke(Request $request, TimeTrackingWebhookGate $gate): JsonResponse {
-        $raw = (string) $request->getContent();
-        /** @var array<string, mixed> $payload */
-        $payload = (array) json_decode($raw, true);
-
-        // Ping beim Anlegen der Subscription: Code zurückspiegeln.
+    protected function handshake(array $payload): ?JsonResponse {
         $validation = trim((string) ($payload['validation_code'] ?? ''));
-        if ($validation !== '') {
-            return response()->json(['validation_code' => $validation]);
-        }
 
-        // Alle Kandidaten prüfen, nicht nur den ersten (Sicherheitsscan
-        // 2026-08-23, S-57): teilen sich zwei Mandanten eine Workspace-ID,
-        // schnitt die erste Zeile die andere still vom Webhook ab — deren
-        // Geheimnis wurde nie geprüft. Entscheiden soll die Signatur.
-        $candidates = $gate->organizationsFor(TogglPlugin::ID, (string) ($payload['metadata']['workspace_id'] ?? ($payload['payload']['workspace_id'] ?? '')));
+        return $validation !== '' ? response()->json(['validation_code' => $validation]) : null;
+    }
 
-        $organization = null;
-        foreach ($candidates as $candidate) {
-            $secret = $gate->secretFor(TogglPlugin::ID, (int) $candidate->id);
-            if (WebhookSignature::hmacValid($raw, $secret, (string) $request->header('X-Webhook-Signature-256', ''), 'sha256', prefix: 'sha256=')) {
-                $organization = $candidate;
-                break;
-            }
-        }
+    protected function workspaceId(array $payload): string {
+        return (string) ($payload['metadata']['workspace_id'] ?? ($payload['payload']['workspace_id'] ?? ''));
+    }
 
-        if (! $organization instanceof Organization) {
-            // Unterschieden wird weiterhin zwischen „Workspace unbekannt"
-            // (ignoriert) und „bekannt, aber Signatur falsch" (401) — das
-            // braucht der absendende Dienst, um eine Fehlkonfiguration zu
-            // erkennen. Ein Orakel ist es nicht: die Workspace-ID steht in der
-            // Konfiguration des Absenders, sie ist kein Geheimnis.
-            return $candidates->isEmpty()
-                ? response()->json(['status' => 'ignored'])
-                : response()->json(['message' => 'invalid signature'], 401);
-        }
+    protected function signatureValid(Request $request, string $raw, ?string $secret): bool {
+        return WebhookSignature::hmacValid($raw, $secret, (string) $request->header('X-Webhook-Signature-256', ''), 'sha256', prefix: 'sha256=');
+    }
 
-        $deliveryId = trim((string) ($payload['event_id'] ?? ''));
-        if ($deliveryId === '') {
-            $deliveryId = $this->deliveryHash($raw);
-        }
+    protected function deliveryId(Request $request, array $payload, string $raw): string {
+        $eventId = trim((string) ($payload['event_id'] ?? ''));
 
-        $delivery = $this->recordDelivery(fn (): TimeTrackingWebhookDelivery => TimeTrackingWebhookDelivery::query()->create([
-            'plugin_id' => TogglPlugin::ID,
-            'delivery_id' => $deliveryId,
-            'event_name' => mb_substr((string) ($payload['metadata']['action'] ?? ''), 0, 128) ?: null,
-            'organization_id' => (int) $organization->id,
-            'received_at' => now(),
-        ]));
-        if ($delivery === null) {
-            return response()->json(['status' => 'duplicate']);
-        }
+        return $eventId !== '' ? $eventId : CryptoHelper::hash($raw);
+    }
 
-        // Entprellt: Ein Lauf je Zeiteintrag würde genau die Quote sprengen,
-        // die der Webhook entlasten soll.
-        if (! $gate->shouldRun(TogglPlugin::ID, (int) $organization->id)) {
-            return response()->json(['status' => 'debounced']);
-        }
-
-        WebhookImportJob::dispatch(TogglPlugin::ID, (int) $organization->id, (int) $delivery->id);
-
-        return response()->json(['status' => 'queued']);
+    protected function eventName(Request $request, array $payload): string {
+        return (string) ($payload['metadata']['action'] ?? '');
     }
 }

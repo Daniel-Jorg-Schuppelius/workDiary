@@ -11,6 +11,7 @@
 namespace App\Plugins\GoogleCalendar\Api;
 
 use APIToolkit\API\Authentication\OAuth2\OAuth2BearerAuthentication;
+use APIToolkit\API\Pagination\{CursorPage, CursorPaginator};
 use App\Plugins\GoogleCalendar\{GoogleCalendarConfig, GoogleCalendarPlugin};
 use App\Plugins\GoogleCalendar\Models\GoogleCalendarConnection;
 use App\Plugins\Support\Calendar\{RemoteCalendarEvent, RemoteCalendarGateway, RemoteCalendarItem};
@@ -198,26 +199,21 @@ class GoogleCalendarClient implements RemoteCalendarGateway {
      * @return list<array<string, mixed>>
      */
     public function eventsBetween(DateTimeInterface $from, DateTimeInterface $until): array {
-        $items = [];
-        $pageToken = null;
-        $pages = 0;
-        do {
-            $query = [
-                'singleEvents' => 'true', 'orderBy' => 'startTime', 'maxResults' => 250,
-                'timeMin' => $from->format('Y-m-d\TH:i:s\Z'), 'timeMax' => $until->format('Y-m-d\TH:i:s\Z'),
-            ];
-            if ($pageToken !== null) {
-                $query['pageToken'] = $pageToken;
-            }
-            $response = $this->api->getResponse($this->eventsUrl(), $query);
+        $query = [
+            'singleEvents' => 'true', 'orderBy' => 'startTime', 'maxResults' => 250,
+            'timeMin' => $from->format('Y-m-d\TH:i:s\Z'), 'timeMax' => $until->format('Y-m-d\TH:i:s\Z'),
+        ];
+        $paginator = new CursorPaginator(function (?string $pageToken) use ($query): CursorPage {
+            $response = $this->api->getResponse($this->eventsUrl(), $pageToken === null ? $query : $query + ['pageToken' => $pageToken]);
             if (! $response->successful()) {
                 throw new RuntimeException(sprintf('Google Calendar events.list antwortete mit HTTP %d.', $response->status()));
             }
-            /** @var array{items?: list<array<string, mixed>>, nextPageToken?: string} $data */
-            $data = (array) $response->json();
-            array_push($items, ...($data['items'] ?? []));
-            $pageToken = ($data['nextPageToken'] ?? '') !== '' ? (string) $data['nextPageToken'] : null;
-        } while ($pageToken !== null && ++$pages < 10);
+            $next = $response->json('nextPageToken');
+
+            return new CursorPage((array) $response->json('items', []), is_string($next) && $next !== '' ? $next : null);
+        }, maxPages: 10);
+        /** @var list<array<string, mixed>> $items */
+        $items = $paginator->toArray();
 
         return $items;
     }

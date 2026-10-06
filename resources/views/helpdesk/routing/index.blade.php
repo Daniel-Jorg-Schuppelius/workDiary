@@ -59,7 +59,6 @@
                     <th class="w-24 text-right">{{ __('Aktion') }}</th>
                 </tr>
             </x-slot:head>
-            <tbody>
                 @forelse ($rules as $rule)
                     <tr class="hover {{ $rule->active ? '' : 'opacity-50' }}">
                         <td class="text-right tabular-nums">{{ $rule->position }}</td>
@@ -68,19 +67,25 @@
                         <td class="font-mono text-xs">{{ json_encode($rule->actions, JSON_UNESCAPED_UNICODE) }}</td>
                         <td class="text-right tabular-nums">v{{ $rule->version }}</td>
                         <td class="text-right">
-                            <x-action-form :action="route('helpdesk.routing.destroy', $rule)"
-                                  method="DELETE"
-                                  data-confirm-title="{{ __('Regel löschen') }}"
-                                  :confirm="__('Die Regel wird entfernt (Protokolle bleiben).')"
-                                  :confirm-label="__('Löschen')">
-                                <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
-                            </x-action-form>
+                            <div class="flex justify-end gap-1">
+                                <x-icon-btn icon="edit" tone="ghost"
+                                            data-entry-modal-trigger
+                                            :href="route('helpdesk.routing.edit', $rule)"
+                                            :label="__('Bearbeiten')" />
+                                <x-action-form :action="route('helpdesk.routing.destroy', $rule)"
+                                      method="DELETE"
+                                      data-confirm-title="{{ __('Regel löschen') }}"
+                                      :confirm="__('Die Regel wird entfernt (Protokolle bleiben).')"
+                                      :confirm-label="__('Löschen')">
+                                    <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
+                                </x-action-form>
+                            </div>
                         </td>
                     </tr>
                 @empty
                     <x-table.empty :colspan="6" icon="alt_route" :title="__('Noch keine Routing-Regeln')" compact />
                 @endforelse
-            </tbody>
         </x-table>
+
     </x-index-page>
 @endsection

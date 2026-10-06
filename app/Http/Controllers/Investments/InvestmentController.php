@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Investments;
 
+use App\Enums\Investments\{InvestmentCaseStatus, InvestmentDeviationStatus};
+use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Investments\{AddInvestmentActualRequest, AddInvestmentDeviationRequest, AddInvestmentLinkRequest, AddInvestmentOptionRequest, DecideInvestmentDeviationRequest, RejectInvestmentBudgetRequest, SaveInvestmentCaseRequest, StoreCostCenterRequest, StoreInvestmentReviewRequest, SubmitInvestmentBudgetRequest, SupplementInvestmentBudgetRequest, UpdateInvestmentStatusRequest};
@@ -39,14 +41,13 @@ class InvestmentController extends Controller {
     public function index(Request $request): View {
         Gate::authorize('viewAny', InvestmentCase::class);
 
-        $status = $request->string('status')->toString();
-        $statusFilter = in_array($status, InvestmentCase::STATUSES, true) ? $status : '';
+        $statusFilter = InvestmentCaseStatus::tryFrom($request->string('status')->toString());
         $category = $request->string('category')->toString();
         $categoryFilter = in_array($category, InvestmentCase::CATEGORIES, true) ? $category : '';
 
         $query = InvestmentCase::query()
             ->with(['responsible', 'costCenter'])
-            ->when($statusFilter !== '', fn($q) => $q->where('status', $statusFilter))
+            ->when($statusFilter !== null, fn($q) => $q->where('status', $statusFilter))
             ->when($categoryFilter !== '', fn($q) => $q->where('category', $categoryFilter));
 
         [$sort, $dir] = SortableQuery::apply($query, $request, [
@@ -58,9 +59,9 @@ class InvestmentController extends Controller {
 
         return view('investments.index', [
             'cases' => $query->paginate(25)->withQueryString(),
-            'statuses' => InvestmentCase::STATUSES,
+            'statuses' => InvestmentCaseStatus::options(),
             'categories' => InvestmentCase::CATEGORIES,
-            'filters' => ['status' => $statusFilter, 'category' => $categoryFilter],
+            'filters' => ['status' => $statusFilter->value ?? '', 'category' => $categoryFilter],
             'sort' => $sort,
             'dir' => $dir,
         ]);
@@ -99,9 +100,9 @@ class InvestmentController extends Controller {
             // MVP-928: Lieferanten der Optionen und ihre Bewertung.
             'ratingSuppliers' => app(\App\Services\Investments\InvestmentSupplierRatingService::class)->suppliersFor($case),
             'supplierRatings' => \App\Models\Investments\InvestmentSupplierRating::query()->where('investment_case_id', $case->id)->get()->keyBy('supplier_id'),
-            'canRateSuppliers' => app(\App\Services\Investments\InvestmentSupplierRatingService::class)->isRateable($case),
+            'canRateSuppliers' => $case->status->isRateable(),
             // MVP-909: nur mit Anlagenbuchhaltung, genehmigtem Budget und ohne aktivierte Anlage.
-            'canCapitalize' => Gate::allows('update', $case) && $capitalizer->available() && $case->approvedBudget() !== null
+            'canCapitalize' => Gate::allows('update', $case) && Gate::allows(Permission::AccountingLedgerConfigure->value) && $capitalizer->available() && $case->approvedBudget() !== null
                 && ! $case->links->contains(static fn ($link): bool => $link->linkable instanceof \App\Models\Accounting\FixedAsset),
         ]);
     }
@@ -131,11 +132,31 @@ class InvestmentController extends Controller {
         Gate::authorize('update', $case);
         $data = $request->validated();
 
+        $status = InvestmentCaseStatus::from($data['status']);
+
+        // Gleicher Stand ist kein Wechsel: ein doppelt gesendetes Formular bleibt ohne Wirkung.
+        if ($status === $case->status) {
+            return back()->with('success', __('Status aktualisiert.'));
+        }
+        if (! in_array($status, $case->status->manualTargets($case->resumeTarget()), true)) {
+            return back()->with('error', __('Statuswechsel von :from nach :to ist nicht zulässig.', ['from' => $case->status->label(), 'to' => $status->label()]));
+        }
         // Umsetzung/Abschluss erst nach genehmigtem Budget.
-        if (in_array($data['status'], ['in_progress', 'completed'], true) && $case->approvedBudget() === null) {
+        if (in_array($status, [InvestmentCaseStatus::InProgress, InvestmentCaseStatus::Completed], true) && $case->approvedBudget() === null) {
             return back()->with('error', __('Umsetzung erst nach genehmigtem Budget.'));
         }
-        $case->update(['status' => $data['status']]);
+
+        if ($status === InvestmentCaseStatus::Deferred) {
+            $this->investments->defer($case);
+
+            return back()->with('success', __('Akte zurückgestellt.'));
+        }
+        if ($case->status === InvestmentCaseStatus::Deferred) {
+            $this->investments->resume($case);
+
+            return back()->with('success', __('Akte wieder aufgenommen.'));
+        }
+        $case->update(['status' => $status]);
 
         return back()->with('success', __('Status aktualisiert.'));
     }
@@ -165,8 +186,8 @@ class InvestmentController extends Controller {
             ...$data,
             'recurring_cost_yearly' => $data['recurring_cost_yearly'] ?? 0,
         ]);
-        if ($case->status === 'idea' || $case->status === 'screening') {
-            $case->update(['status' => 'comparison']);
+        if (in_array($case->status, [InvestmentCaseStatus::Idea, InvestmentCaseStatus::Screening], true)) {
+            $case->update(['status' => InvestmentCaseStatus::Comparison]);
         }
 
         return back()->with('success', __('Variante erfasst.'));
@@ -272,8 +293,8 @@ class InvestmentController extends Controller {
             'created_by' => (int) Auth::id(),
         ]);
         $case->audit('investment.linked', ['type' => $data['linkable_type'], 'id' => $target->getKey()]);
-        if ($case->status === 'approved') {
-            $case->update(['status' => 'in_progress']);
+        if ($case->status === InvestmentCaseStatus::Approved) {
+            $case->update(['status' => InvestmentCaseStatus::InProgress]);
         }
 
         return back()->with('success', __('Verknüpfung angelegt.'));
@@ -306,7 +327,7 @@ class InvestmentController extends Controller {
             'kind' => $data['kind'],
             'description' => $data['description'],
             'amount_delta' => $data['amount_delta'] ?? null,
-            'status' => 'open',
+            'status' => InvestmentDeviationStatus::Open,
             'created_by' => (int) Auth::id(),
         ]);
 
@@ -345,7 +366,7 @@ class InvestmentController extends Controller {
 
     public function storeReview(StoreInvestmentReviewRequest $request, InvestmentCase $case): RedirectResponse {
         Gate::authorize('update', $case);
-        if (! in_array($case->status, ['completed', 'cancelled'], true)) {
+        if (! $case->status->awaitsReview()) {
             return back()->with('error', __('Nachbewertung erst nach Abschluss oder Abbruch.'));
         }
         if ($case->review()->exists()) {
@@ -360,7 +381,7 @@ class InvestmentController extends Controller {
             'reviewed_by' => (int) Auth::id(),
             'reviewed_at' => now(),
         ]);
-        $case->update(['status' => 'post_review']);
+        $case->update(['status' => InvestmentCaseStatus::PostReview]);
         $case->audit('investment.reviewed', []);
 
         return back()->with('success', __('Nachbewertung dokumentiert.'));

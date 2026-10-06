@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Ai\Suggestions\Concerns;
 
+use App\Enums\Ai\AiTextSuggestionStatus;
 use App\Models\Ai\AiTextSuggestion;
 use App\Models\Audit\AuditLog;
 use App\Models\Platform\User;
@@ -32,7 +33,7 @@ trait DecidesSuggestions {
         }
 
         $suggestion->forceFill([
-            'status' => AiTextSuggestion::STATUS_REJECTED,
+            'status' => AiTextSuggestionStatus::Rejected,
             'decided_by_user_id' => $user?->getKey(),
             'decided_at' => Carbon::now(),
         ])->save();
@@ -60,7 +61,7 @@ trait DecidesSuggestions {
             ->where('subject_type', $subject->getMorphClass())
             ->where('subject_id', (int) $subject->getKey())
             ->where('capability', $capability)
-            ->where('status', AiTextSuggestion::STATUS_PROPOSED)
+            ->where('status', AiTextSuggestionStatus::Proposed)
             ->delete();
 
         return AiTextSuggestion::query()->create([
@@ -70,7 +71,7 @@ trait DecidesSuggestions {
             'capability' => $result->capability,
             'original' => $original,
             'suggestion' => $text,
-            'status' => AiTextSuggestion::STATUS_PROPOSED,
+            'status' => AiTextSuggestionStatus::Proposed,
             'connection_id' => $result->connectionId,
             'provider' => $result->provider->value,
             'fallback_used' => $result->fallbackUsed,
@@ -79,7 +80,7 @@ trait DecidesSuggestions {
         ]);
     }
 
-    protected function markDecided(AiTextSuggestion $suggestion, string $status, ?User $user): void {
+    protected function markDecided(AiTextSuggestion $suggestion, AiTextSuggestionStatus $status, ?User $user): void {
         $suggestion->forceFill([
             'status' => $status,
             'decided_by_user_id' => $user?->getKey(),

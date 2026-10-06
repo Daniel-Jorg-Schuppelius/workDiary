@@ -41,19 +41,19 @@
             <a role="tab" href="#" class="tab gap-2" :class="tabClass('ids')" @click.prevent="setTab('ids')">
                 {{ __('Unzugeordnete Geräte') }}
                 @if ($groups->total() > 0)
-                    <span class="badge badge-sm badge-neutral">{{ $groups->total() }}</span>
+                    <x-status-badge tone="neutral">{{ $groups->total() }}</x-status-badge>
                 @endif
             </a>
             <a role="tab" href="#" class="tab gap-2" :class="tabClass('sessions')" @click.prevent="setTab('sessions')">
                 {{ __('Sitzungen zuordnen') }}
                 @if ($sharedSessionCount > 0)
-                    <span class="badge badge-sm badge-primary">{{ $sharedSessionCount }}</span>
+                    <x-status-badge tone="primary">{{ $sharedSessionCount }}</x-status-badge>
                 @endif
             </a>
         </div>
 
     <div x-show="isTab('ids')">
-    <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+    <x-card>
 
         @if ($groups->total() === 0)
             <p class="rounded-box border border-base-300 p-6 text-center text-sm text-muted">
@@ -98,10 +98,7 @@
                             @csrf
                             <input type="hidden" name="provider" value="{{ $group->provider }}">
                             <input type="hidden" name="remote_id" value="{{ $group->remote_id }}">
-                            <button type="submit" class="btn btn-ghost btn-sm btn-square text-muted hover:text-error"
-                                    title="{{ __('Verwerfen') }}" aria-label="{{ __('Verwerfen') }}">
-                                <x-icon name="delete" />
-                            </button>
+                            <x-icon-btn icon="delete" size="sm" type="submit" :label="__('Verwerfen')" class="btn-square text-muted hover:text-error" />
                         </form>
 
                         <div class="mb-3 pr-10">
@@ -145,9 +142,9 @@
                                             @endif
                                         @endif
                                     </span>
-                                    <button type="button" class="btn btn-xs btn-primary ml-auto" @click="apply()">
-                                        <x-icon name="magic_button" class="text-[1rem]" />{{ __('Übernehmen') }}
-                                    </button>
+                                    <x-button size="xs" icon="magic_button" icon-size="1rem" class="ml-auto" @click="apply()">
+                                        {{ __('Übernehmen') }}
+                                    </x-button>
                                 </div>
                                 <ul class="mt-1.5 list-disc pl-6 text-xs text-base-content/70">
                                     @foreach ($sug->reasons as $reason)
@@ -191,9 +188,9 @@
                                             <span class="text-xs font-medium">{{ __('Mehrkundengerät') }}</span>
                                             <x-icon name="help" class="text-[1rem] text-muted" />
                                         </label>
-                                        <button type="submit" class="btn btn-sm btn-primary">
-                                            <x-icon name="link" class="text-[1.1rem]" />{{ __('Zuordnen') }}
-                                        </button>
+                                        <x-button type="submit" icon="link" icon-size="1.1rem">
+                                            {{ __('Zuordnen') }}
+                                        </x-button>
                                     </div>
                                 </form>
                             </div>
@@ -246,9 +243,9 @@
                                             <span class="text-xs font-medium">{{ __('Mehrkundengerät') }}</span>
                                             <x-icon name="help" class="text-[1rem] text-muted" />
                                         </label>
-                                        <button type="submit" class="btn btn-sm btn-primary">
-                                            <x-icon name="add" class="text-[1.1rem]" />{{ __('Anlegen & zuordnen') }}
-                                        </button>
+                                        <x-button type="submit" icon="add" icon-size="1.1rem">
+                                            {{ __('Anlegen & zuordnen') }}
+                                        </x-button>
                                     </div>
                                 </form>
                             </div>
@@ -257,11 +254,11 @@
                 @endforeach
             </div>
         @endif
-    </div>
+    </x-card>
     </div>
 
     <div x-show="isTab('sessions')" x-cloak>
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+        <x-card>
             <div class="mb-3">
                 <h2 class="font-['Space_Grotesk'] text-lg font-semibold">{{ __('Mehrkundengeräte – Sitzungen zuordnen') }}</h2>
                 <p class="text-sm text-muted">
@@ -295,68 +292,63 @@
                                 {{ trans_choice(':count Sitzung|:count Sitzungen', $device->sessions->count(), ['count' => $device->sessions->count()]) }}
                             </span>
                             @if ($device->sessions->count() > $visibleSessions->count())
-                                <span class="badge badge-sm badge-warning"
-                                      title="{{ __('Nach dem Buchen oder Verwerfen rücken ältere Sitzungen nach.') }}">
+                                <x-status-badge tone="warning" title="{{ __('Nach dem Buchen oder Verwerfen rücken ältere Sitzungen nach.') }}">
                                     {{ __('nur die neuesten :count angezeigt', ['count' => $visibleSessions->count()]) }}
-                                </span>
+                                </x-status-badge>
                             @endif
                             @if (($device->attempts ?? 0) > 0)
-                                <span class="badge badge-sm badge-ghost text-muted"
-                                      title="{{ __('Verbindungsversuche ohne Dauer (0 Sekunden) — sie ziehen beim Buchen den Beginn der folgenden Sitzung vor.') }}">
+                                <x-status-badge class="text-muted"
+                                        title="{{ __('Verbindungsversuche ohne Dauer (0 Sekunden) — sie ziehen beim Buchen den Beginn der folgenden Sitzung vor.') }}">
                                     {{ trans_choice(':count Verbindungsversuch|:count Verbindungsversuche', (int) $device->attempts, ['count' => $device->attempts]) }}
-                                </span>
+                                </x-status-badge>
                             @endif
                         </div>
 
-                        <div class="overflow-x-auto" x-ref="list">
-                            <table class="table table-sm">
-                                <thead>
-                                    <tr>
-                                        <th class="w-8">
-                                            <input type="checkbox" class="checkbox checkbox-sm"
-                                                   x-model="allChecked" @change="toggleAll()"
-                                                   aria-label="{{ __('Alle auswählen') }}">
-                                        </th>
-                                        <th>{{ __('Zeitraum') }}</th>
-                                        <th class="text-right">{{ __('Min.') }}</th>
-                                        <th>{{ __('Provider') }}</th>
-                                        <th>{{ __('Notiz') }}</th>
-                                        <th>{{ __('Vorschlag') }}</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($visibleSessions as $session)
-                                        @php $rowSug = $sessionSuggestions[$session->id] ?? null; @endphp
-                                        <tr @if ($rowSug !== null) data-suggest-customer="{{ $rowSug->customerSqid }}" data-suggest-foreign="{{ $rowSug->foreignSqid ?? '' }}" @endif>
-                                            <td>
-                                                <input type="checkbox" name="pending_ids[]" value="{{ $session->sqid }}"
-                                                       class="checkbox checkbox-sm"
-                                                       aria-label="{{ __('Sitzung auswählen') }}">
-                                            </td>
-                                            <td class="whitespace-nowrap text-sm">
-                                                {{ \Illuminate\Support\Carbon::parse($session->started_at)->orgTz()->isoFormat('L HH:mm') }}
-                                                – {{ \Illuminate\Support\Carbon::parse($session->ended_at)->orgTz()->isoFormat('HH:mm') }}
-                                            </td>
-                                            <td class="text-right text-sm">{{ $session->minutes() }}</td>
-                                            <td class="text-sm">{{ ucfirst($session->provider) }}</td>
-                                            <td class="text-sm text-base-content/70">{{ $session->note }}</td>
-                                            <td>
-                                                @if ($rowSug !== null)
-                                                    <button type="button"
-                                                            class="badge badge-sm badge-outline badge-primary cursor-pointer"
-                                                            data-suggest-customer="{{ $rowSug->customerSqid }}"
-                                                            data-suggest-foreign="{{ $rowSug->foreignSqid ?? '' }}"
-                                                            @click.prevent="applySuggestion($event)"
-                                                            title="{{ __('Überlappt :minutes Min. mit erfassten Zeiten dieses Kunden. Klick wählt den Kunden und markiert alle passenden Sitzungen.', ['minutes' => $rowSug->minutes]) }}">
-                                                        {{ $rowSug->customerName }}@if ($rowSug->foreignName !== null) → {{ $rowSug->foreignName }}@endif
-                                                    </button>
-                                                @endif
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
+                        <x-table bare x-ref="list">
+                            <x-slot:head>
+                                <tr>
+                                    <th class="w-8">
+                                        <input type="checkbox" class="checkbox checkbox-sm"
+                                               x-model="allChecked" @change="toggleAll()"
+                                               aria-label="{{ __('Alle auswählen') }}">
+                                    </th>
+                                    <th>{{ __('Zeitraum') }}</th>
+                                    <th class="text-right">{{ __('Min.') }}</th>
+                                    <th>{{ __('Provider') }}</th>
+                                    <th>{{ __('Notiz') }}</th>
+                                    <th>{{ __('Vorschlag') }}</th>
+                                </tr>
+                            </x-slot:head>
+                            @foreach ($visibleSessions as $session)
+                                @php $rowSug = $sessionSuggestions[$session->id] ?? null; @endphp
+                                <tr @if ($rowSug !== null) data-suggest-customer="{{ $rowSug->customerSqid }}" data-suggest-foreign="{{ $rowSug->foreignSqid ?? '' }}" @endif>
+                                    <td>
+                                        <input type="checkbox" name="pending_ids[]" value="{{ $session->sqid }}"
+                                               class="checkbox checkbox-sm"
+                                               aria-label="{{ __('Sitzung auswählen') }}">
+                                    </td>
+                                    <td class="whitespace-nowrap text-sm">
+                                        {{ \Illuminate\Support\Carbon::parse($session->started_at)->orgTz()->isoFormat('L HH:mm') }}
+                                        – {{ \Illuminate\Support\Carbon::parse($session->ended_at)->orgTz()->isoFormat('HH:mm') }}
+                                    </td>
+                                    <td class="text-right text-sm">{{ $session->minutes() }}</td>
+                                    <td class="text-sm">{{ ucfirst($session->provider) }}</td>
+                                    <td class="text-sm text-base-content/70">{{ $session->note }}</td>
+                                    <td>
+                                        @if ($rowSug !== null)
+                                            <button type="button"
+                                                    class="badge badge-sm badge-outline badge-primary cursor-pointer"
+                                                    data-suggest-customer="{{ $rowSug->customerSqid }}"
+                                                    data-suggest-foreign="{{ $rowSug->foreignSqid ?? '' }}"
+                                                    @click.prevent="applySuggestion($event)"
+                                                    title="{{ __('Überlappt :minutes Min. mit erfassten Zeiten dieses Kunden. Klick wählt den Kunden und markiert alle passenden Sitzungen.', ['minutes' => $rowSug->minutes]) }}">
+                                                {{ $rowSug->customerName }}@if ($rowSug->foreignName !== null) → {{ $rowSug->foreignName }}@endif
+                                            </button>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </x-table>
 
                         <div class="mt-3 flex flex-wrap items-end gap-2">
                             <label class="flex w-48 flex-col gap-1">
@@ -386,28 +378,25 @@
                                     </template>
                                 </select>
                             </label>
-                            <button type="submit" class="btn btn-sm btn-primary ml-auto">
-                                <x-icon name="schedule" class="text-[1.1rem]" />{{ __('Markierte buchen') }}
-                            </button>
-                            <button type="submit" formaction="{{ route('admin.remote-support.pending.assign-internal') }}"
-                                    class="btn btn-sm btn-ghost"
-                                    formnovalidate
+                            <x-button type="submit" icon="schedule" icon-size="1.1rem" class="ml-auto">
+                                {{ __('Markierte buchen') }}
+                            </x-button>
+                            <x-button type="submit" tone="ghost" icon="home_repair_service" icon-size="1.1rem"
+                                    formaction="{{ route('admin.remote-support.pending.assign-internal') }}" formnovalidate
                                     title="{{ __('Bucht die markierten Sitzungen ohne Kunden auf das Projekt „Interne Wartung“.') }}">
-                                <x-icon name="home_repair_service" class="text-[1.1rem]" />{{ __('Markierte intern buchen') }}
-                            </button>
-                            <button type="submit" formaction="{{ route('admin.remote-support.pending.dismiss-session') }}"
-                                    class="btn btn-sm btn-ghost text-error"
-                                    formnovalidate
-                                    data-confirm-dialog
+                                {{ __('Markierte intern buchen') }}
+                            </x-button>
+                            <x-button type="submit" tone="ghost" icon="delete" icon-size="1.1rem" class="text-error"
+                                    formaction="{{ route('admin.remote-support.pending.dismiss-session') }}" formnovalidate data-confirm-dialog
                                     data-confirm-message="{{ __('Markierte Sitzungen verwerfen? Sie werden nicht gebucht.') }}">
-                                <x-icon name="delete" class="text-[1.1rem]" />{{ __('Markierte verwerfen') }}
-                            </button>
+                                {{ __('Markierte verwerfen') }}
+                            </x-button>
                         </div>
                     </form>
                 @endforeach
             </div>
             @endif
-        </div>
+        </x-card>
     </div>
 
     {{-- Stehende Pagination-Panels, je Tab eines (Sichtbarkeit via tabs()/syncTabFooters). --}}

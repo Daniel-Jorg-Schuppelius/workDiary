@@ -14,16 +14,19 @@ namespace App\Http\Controllers\Privacy;
 
 use App\Enums\Privacy\AgreementStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Privacy\Concerns\ManagesAgreementLinks;
 use App\Models\Privacy\{JointControllerAgreement, ProcessingActivity, Processor};
 use App\Support\Sqid;
 use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{Gate, Storage};
+use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 /** Vereinbarungen gemeinsam Verantwortlicher (GVV, Art. 26) mit Zuständigkeitsmatrix. */
 class JointControllerAgreementController extends Controller {
+    use ManagesAgreementLinks;
+
     /** @var list<string> */
     private const MATRIX_KEYS = ['information_duties', 'data_subject_rights', 'incidents', 'authority_contact'];
 
@@ -112,28 +115,14 @@ class JointControllerAgreementController extends Controller {
 
     public function syncActivities(Request $request, JointControllerAgreement $gvv): RedirectResponse {
         Gate::authorize('update', $gvv);
-        // Sqids aus dem Formular (Audit 2026-08, W3.3); die org-gescopte
-        // Whitelist darunter bleibt die eigentliche Schutzlinie.
-        $data = $request->validate(['activity_ids' => ['array'], 'activity_ids.*' => ['string']]);
-        $requested = array_filter(array_map(
-            static fn (string $v): ?int => \App\Support\Sqid::decodeOrNumeric(ProcessingActivity::class, $v),
-            $data['activity_ids'] ?? [],
-        ));
-        $valid = ProcessingActivity::query()
-            ->where('organization_id', $gvv->organization_id)
-            ->whereIn('id', $requested)
-            ->pluck('id')->all();
-        $gvv->activities()->sync($valid);
 
-        return back()->with('status', __('Verknüpfungen gespeichert.'));
+        return $this->syncAgreementActivities($request, $gvv);
     }
 
     public function downloadDocument(JointControllerAgreement $gvv): BinaryFileResponse {
         Gate::authorize('view', $gvv);
-        $path = $gvv->document_path;
-        abort_if($path === null || ! Storage::disk('local')->exists($path), 404);
 
-        return response()->download(Storage::disk('local')->path($path), $gvv->document_name ?? 'gvv.pdf');
+        return $this->downloadAgreementDocument($gvv, 'gvv.pdf');
     }
 
     /** @return array<string, string> */

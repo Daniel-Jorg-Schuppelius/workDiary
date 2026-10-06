@@ -8,11 +8,14 @@ use App\Models\Customer\Customer;
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use App\Models\Platform\{PluginSetting, User};
 use App\Models\Time\TimeEntry;
-use App\Plugins\Fritzbox\{FritzboxImportService, FritzboxPlugin};
+use App\Plugins\Fritzbox\FritzboxPlugin;
+use App\Plugins\Fritzbox\Services\FritzboxImportService;
 use App\Plugins\Fritzbox\Sources\FritzboxCall;
-use App\Plugins\Lexoffice\{LexofficePhoneContactSource, LexofficePlugin};
+use App\Plugins\Lexoffice\LexofficePlugin;
+use App\Plugins\Lexoffice\Services\LexofficePhoneContactSource;
+use App\Plugins\Msgraph\Enums\MsgraphConnectionStatus;
 use App\Plugins\Msgraph\Models\MsgraphContactConnection;
-use App\Plugins\Msgraph\MsgraphPhoneContactSource;
+use App\Plugins\Msgraph\Services\MsgraphPhoneContactSource;
 use App\Services\Contacts\{ExternalPhoneContactDirectory, ExternalPhoneContactSource};
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -73,7 +76,7 @@ final class FritzboxExternalContactMatchingTest extends TestCase {
         MsgraphContactConnection::query()->create([
             'organization_id' => $this->organization->id,
             'access_token' => 'access-token',
-            'status' => MsgraphContactConnection::STATUS_ACTIVE,
+            'status' => MsgraphConnectionStatus::Active,
         ]);
         FakePluginHttp::fake([
             'https://graph.microsoft.com/v1.0/me/contacts*' => FakePluginHttp::response([

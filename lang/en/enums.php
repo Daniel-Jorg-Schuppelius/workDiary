@@ -25,6 +25,9 @@ return [
         'command_status' => ['draft' => 'Draft', 'approved' => 'Approved', 'pending' => 'Pending', 'confirmed' => 'Confirmed', 'failed' => 'Failed', 'unknown' => 'Unclear', 'conflict' => 'Conflict'],
         'capability_area' => ['authentication' => 'Authentication', 'subuser' => 'Subuser', 'domains' => 'Domains', 'contacts' => 'Contacts', 'nameservers' => 'Nameservers', 'dns' => 'DNS zones', 'events' => 'Events', 'renewal' => 'Renewal', 'transfer' => 'Transfer', 'accounting' => 'Accounting', 'invoices' => 'Invoices'],
     ],
+    'approval' => [
+        'step-kind' => ['commercial' => 'Commercial', 'technical' => 'Technical', 'hr' => 'HR', 'management' => 'Management'],
+    ],
     'asset' => [
         'defect-severity' => [
             'low' => 'Low',

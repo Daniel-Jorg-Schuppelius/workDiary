@@ -30,7 +30,7 @@
                     <th class="text-right">{{ __('procurement.catalog.col.actions') }}</th>
                 </x-slot:head>
                 @foreach ($requests as $request)
-                    @php($open = $request->status === \App\Models\Article\PriceChangeRequest::STATUS_REQUESTED)
+                    @php($open = $request->status === \App\Enums\Article\PriceChangeRequestStatus::Requested)
                     <tr @class(['opacity-60' => ! $open])>
                         <td>
                             {{ $request->article?->name ?: '—' }}
@@ -41,12 +41,12 @@
                         <td class="text-right tabular-nums">{{ rtrim(rtrim((string) $request->margin_snapshot?->getNumericValue(), '0'), '.') }} %</td>
                         <td class="text-sm">
                             {{ $request->requestedBy?->name ?: '—' }}
-                            <div class="text-xs opacity-60">{{ $request->created_at?->orgTz()->format('d.m.Y H:i') }}</div>
+                            <div class="text-xs opacity-60">{{ $request->created_at?->fdatetime() }}</div>
                         </td>
                         <td>
-                            <span class="badge badge-sm">{{ __('procurement.approval.status.' . $request->status) }}</span>
+                            <x-status-badge tone="plain">{{ $request->status->label() }}</x-status-badge>
                             @if (! $open && $request->decidedBy)
-                                <div class="text-xs opacity-60 mt-0.5">{{ $request->decidedBy->name }} · {{ $request->decided_at?->orgTz()->format('d.m.Y H:i') }}</div>
+                                <div class="text-xs opacity-60 mt-0.5">{{ $request->decidedBy->name }} · {{ $request->decided_at?->fdatetime() }}</div>
                             @endif
                             @if ($request->decision_note)
                                 <div class="text-xs opacity-60">{{ $request->decision_note }}</div>

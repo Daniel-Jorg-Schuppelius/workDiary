@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Sustainability;
 
+use App\Enums\Sustainability\SustainabilityAssessmentStatus;
 use App\Models\Platform\User;
 use App\Models\Sustainability\{SustainabilityAssessment, SustainabilityCriterion};
 use Illuminate\Support\Facades\DB;
@@ -50,7 +51,7 @@ class SustainabilityAssessmentService {
                 'subject_id' => $subjectId,
                 'subject_label' => $subjectLabel,
                 'version' => $version,
-                'status' => 'draft',
+                'status' => SustainabilityAssessmentStatus::Draft,
                 'assessed_by' => $actor->id,
             ]);
 
@@ -74,7 +75,7 @@ class SustainabilityAssessmentService {
      * Datenqualität, vollständiger Item-/Methodik-Snapshot.
      */
     public function finalize(SustainabilityAssessment $assessment, User $actor): SustainabilityAssessment {
-        if ($assessment->isFinal()) {
+        if (! $assessment->status->canTransitionTo(SustainabilityAssessmentStatus::Final)) {
             throw new \RuntimeException((string) __('Die Bewertung ist bereits final — Änderungen laufen über eine neue Version.'));
         }
 
@@ -93,7 +94,7 @@ class SustainabilityAssessmentService {
         $worst = $scored->sortBy(fn($item): int => $qualityRank[$item->data_quality] ?? 1)->first();
 
         $assessment->update([
-            'status' => 'final',
+            'status' => SustainabilityAssessmentStatus::Final,
             'total_score' => (string) $score,
             'rating' => $rating,
             'data_quality' => $worst?->data_quality,
@@ -130,7 +131,7 @@ class SustainabilityAssessmentService {
         return DB::transaction(function () use ($assessment, $actor): SustainabilityAssessment {
             $next = $assessment->replicate(['status', 'total_score', 'rating', 'data_quality', 'snapshot', 'assessed_at']);
             $next->version = $assessment->version + 1;
-            $next->status = 'draft';
+            $next->status = SustainabilityAssessmentStatus::Draft;
             $next->assessed_by = $actor->id;
             $next->save();
 

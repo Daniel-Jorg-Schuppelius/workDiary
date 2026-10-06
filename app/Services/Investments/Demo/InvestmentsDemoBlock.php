@@ -59,7 +59,7 @@ final class InvestmentsDemoBlock implements DemoBlock {
                 'reason' => (string) __('Bestandsfahrzeug hat 280.000 km und steigende Reparaturkosten.'),
                 'objective' => (string) __('Ausfallsicherheit im Außendienst, geringere Werkstattkosten.'),
                 'urgency' => 'high',
-                'status' => 'comparison',
+                'status' => \App\Enums\Investments\InvestmentCaseStatus::Comparison,
                 'responsible_user_id' => $actor->id,
                 'created_by' => $actor->id,
             ]);

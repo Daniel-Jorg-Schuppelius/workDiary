@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Accounting\Posting\Adapters;
 
 use App\Enums\Finance\{PostingAccountRole, PostingSourceKind};
+use App\Enums\Invoicing\IncomingEInvoiceStatus;
 use App\Models\Invoicing\IncomingEInvoice;
 use App\Models\Platform\Organization;
 use App\Services\Accounting\Posting\{PostingProposal, PostingProposalLine};
@@ -38,7 +39,7 @@ class IncomingInvoiceAdapter extends AbstractPostingAdapter {
         /** @var Collection<int, Model> $invoices */
         $invoices = IncomingEInvoice::query()
             ->where('organization_id', $organization->id)
-            ->whereIn('status', [IncomingEInvoice::STATUS_APPROVED, IncomingEInvoice::STATUS_PAYMENT_RELEASED])
+            ->whereIn('status', [IncomingEInvoiceStatus::Approved, IncomingEInvoiceStatus::PaymentReleased])
             ->whereNotNull('issue_date')
             ->whereDate('issue_date', '>=', $from->toDateString())
             ->whereDate('issue_date', '<=', $to->toDateString())

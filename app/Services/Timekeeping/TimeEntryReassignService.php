@@ -129,6 +129,11 @@ class TimeEntryReassignService {
             $lockedLabels = [];
             foreach ($entries as $entry) {
                 $hard = $this->editPolicy->isHardLocked($entry);
+                // Auch der Monat des künftigen Besitzers zählt: sonst füllte die Neuzuordnung einen
+                // abgeschlossenen Monat nachträglich (Sicherheitsaudit 2026-10-04, li-5).
+                if (! $hard['locked'] && (int) $entry->user_id !== (int) $target->id && $this->editPolicy->isMonthClosedFor($target, $entry)) {
+                    $hard = ['locked' => true, 'reason' => TimeEntryEditPolicy::REASON_MONTH_CLOSED];
+                }
                 if ($hard['locked']) {
                     $lockedLabels[] = ($entry->date?->format(\App\Support\Formats::date()) ?? '#' . $entry->id)
                         . ' (' . $this->editPolicy->reasonLabel($hard['reason']) . ')';
@@ -150,6 +155,8 @@ class TimeEntryReassignService {
                 }
 
                 $entry->user_id = $target->id;
+                // Der Stundenzettel gehört dem bisherigen Besitzer — der Eintrag verlässt ihn.
+                $entry->timesheet_id = null;
                 // Geladene user-Relation verwerfen: der RateCalculator liest
                 // $entry->user — eine stale Relation rechnete den Kosten-
                 // Snapshot sonst mit dem BISHERIGEN Benutzer.

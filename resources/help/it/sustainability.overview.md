@@ -1,7 +1,7 @@
 ---
 title: "Sostenibilità ed ESG"
 topic: sustainability.overview
-version: 1
+version: 2
 audience: []
 modules:
     - module.sustainability
@@ -34,6 +34,12 @@ atteso, impegno, costi, scadenza, evidenza e la verifica di efficacia
 dopo l'attuazione. I percorsi obiettivo (ad es. CO₂e entro il 2030)
 interpolano i valori previsti per anno e li confrontano con i valori
 effettivi.
+
+**Elenchi:** la panoramica mostra le dieci valutazioni e misure più
+recenti e conta in ogni caso l'insieme completo. «Mostra tutti» apre per
+ciascuna un elenco completo e ordinabile. L'elenco delle misure può
+essere filtrato per stato; lì Lei aggiorna anche lo stato delle misure
+meno recenti che non compaiono più nella panoramica.
 
 **Report:** indicatori con drill-down, avvisi sulla qualità dei dati,
 export CSV con indicazione della metodologia e snapshot congelabile

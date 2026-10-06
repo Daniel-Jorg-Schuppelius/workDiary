@@ -22,17 +22,7 @@
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="__('DSO-Trend, Zahldauer und überfällige Forderungen — Verhaltenssicht auf lokale Rechnungen.')">
             <x-slot:actions>
-                <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
-                            :href="route('reports.payment-behavior', array_merge($linkParams, ['export' => 'pdf']))"
-                            show-label>PDF</x-icon-btn>
-                <x-action-menu icon="download" tone="outline" :label="__('Export')">
-                    <x-icon-btn icon="download" tone="outline" size="sm"
-                                :href="route('reports.payment-behavior', array_merge($linkParams, ['export' => 'csv']))"
-                                show-label>CSV</x-icon-btn>
-                    <x-icon-btn icon="table_view" tone="outline" size="sm"
-                                :href="route('reports.payment-behavior', array_merge($linkParams, ['export' => 'xlsx']))"
-                                show-label>Excel</x-icon-btn>
-                </x-action-menu>
+                <x-report-export :url="fn (string $format) => route('reports.payment-behavior', array_merge($linkParams, ['export' => $format]))" />
                 <x-help-button topic="reports.payment-behavior" />
             </x-slot:actions>
         </x-page-toolbar>
@@ -84,7 +74,7 @@
             <div class="mb-3 text-xs text-muted">{{ __('Zeitraum') }}: {{ $label }} · {{ __('Stichtag: Zeitraumende') }}</div>
 
             @if ($overdue === [])
-                <p class="text-sm text-muted">{{ __('Keine überfälligen offenen Rechnungen — gut so.') }}</p>
+                <x-empty-state icon="check_circle" :title="__('Keine überfälligen offenen Rechnungen — gut so.')" compact />
             @else
                 <x-table bare table-sort="client">
                     <x-slot:head>
@@ -103,11 +93,11 @@
                                     <a href="{{ route('invoices.show', \App\Support\Sqid::encode(\App\Models\Invoicing\Invoice::class, $row['invoiceId'])) }}" class="link link-hover">{{ $row['number'] }}</a>
                                 @else
                                     {{ $row['number'] }}
-                                    <span class="badge badge-ghost badge-xs ml-1">Lexoffice</span>
+                                    <x-status-badge size="xs" class="ml-1">Lexoffice</x-status-badge>
                                 @endif
                             </td>
                             <td>
-                                <a href="{{ route('invoices.index', ['customer' => \App\Support\Sqid::encode(\App\Models\Customer\Customer::class, $row['customerId']), 'status' => \App\Models\Invoicing\Invoice::STATUS_ISSUED]) }}" class="link link-hover">{{ $row['customerName'] }}</a>
+                                <a href="{{ route('invoices.index', ['customer' => \App\Support\Sqid::encode(\App\Models\Customer\Customer::class, $row['customerId']), 'status' => \App\Enums\Invoicing\InvoiceStatus::Issued]) }}" class="link link-hover">{{ $row['customerName'] }}</a>
                             </td>
                             <td class="text-right tabular-nums">{{ $row['dueOn'] }}</td>
                             <td class="text-right tabular-nums">{{ $row['daysOverdue'] }}</td>

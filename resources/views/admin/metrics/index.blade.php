@@ -43,16 +43,10 @@
                 <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('metrics.section.queue') }}</h2>
             </header>
             @if (($queue['available'] ?? false) === true)
-                <dl class="grid grid-cols-1 gap-1 text-sm">
-                    <div class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1">
-                        <dt class="text-muted">{{ __('metrics.field.queue_pending') }}</dt>
-                        <dd class="font-mono text-xs">{{ $queue['pending'] ?? '—' }}</dd>
-                    </div>
-                    <div class="flex items-baseline justify-between gap-2">
-                        <dt class="text-muted">{{ __('metrics.field.queue_failed') }}</dt>
-                        <dd class="font-mono text-xs">{{ $queue['failed'] ?? '—' }}</dd>
-                    </div>
-                </dl>
+                <x-detail-grid layout="split" divided>
+                    <x-detail-grid.row :label="__('metrics.field.queue_pending')" class="font-mono text-xs">{{ $queue['pending'] ?? '—' }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('metrics.field.queue_failed')" class="font-mono text-xs">{{ $queue['failed'] ?? '—' }}</x-detail-grid.row>
+                </x-detail-grid>
             @else
                 <p class="text-sm italic text-muted">{{ __('metrics.empty.queue') }}</p>
             @endif
@@ -88,7 +82,7 @@
                     <x-icon name="bug_report" />
                     <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('metrics.section.plugin_errors') }}</h2>
                 </div>
-                <span class="badge badge-outline {{ ($pluginErrors['count'] ?? 0) > 0 ? 'badge-warning' : 'badge-success' }}">{{ $pluginErrors['count'] ?? 0 }}</span>
+                <x-status-badge :tone="($pluginErrors['count'] ?? 0) > 0 ? 'warning' : 'success'" size="md" outline>{{ $pluginErrors['count'] ?? 0 }}</x-status-badge>
             </header>
             @if (count($pluginErrors['recent'] ?? []) > 0)
                 <ul class="space-y-1 text-xs text-base-content/70">
@@ -110,16 +104,11 @@
                 <x-icon name="sd_storage" />
                 <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('metrics.section.storage') }}</h2>
             </header>
-            <dl class="grid grid-cols-1 gap-1 text-sm">
+            <x-detail-grid layout="split" divided>
                 @foreach (['attachments' => __('metrics.field.attachments'), 'document_versions' => __('metrics.field.document_versions')] as $key => $label)
-                    <div class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1 last:border-0">
-                        <dt class="text-muted">{{ $label }}</dt>
-                        <dd class="font-mono text-xs">
-                            {{ $storage[$key]['count'] ?? 0 }} · {{ $fmtBytes((int) ($storage[$key]['bytes'] ?? 0)) }}
-                        </dd>
-                    </div>
+                    <x-detail-grid.row :label="$label" class="font-mono text-xs">{{ $storage[$key]['count'] ?? 0 }} · {{ $fmtBytes((int) ($storage[$key]['bytes'] ?? 0)) }}</x-detail-grid.row>
                 @endforeach
-            </dl>
+            </x-detail-grid>
             <p class="text-xs text-muted">{{ __('metrics.hint.storage_db_metadata') }}</p>
         </x-card>
 
@@ -143,14 +132,11 @@
                 <x-icon name="database" />
                 <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('metrics.section.module_counts') }}</h2>
             </header>
-            <dl class="grid grid-cols-1 gap-1 text-sm">
+            <x-detail-grid layout="split" divided>
                 @foreach ($moduleCounts as $module => $count)
-                    <div class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1 last:border-0">
-                        <dt class="text-muted">{{ __('metrics.module.' . $module) }}</dt>
-                        <dd class="font-mono text-xs">{{ $count }}</dd>
-                    </div>
+                    <x-detail-grid.row :label="__('metrics.module.' . $module)" class="font-mono text-xs">{{ $count }}</x-detail-grid.row>
                 @endforeach
-            </dl>
+            </x-detail-grid>
         </x-card>
     </div>
 

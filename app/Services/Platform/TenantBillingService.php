@@ -20,7 +20,6 @@ use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Support\Collection;
-use RoundingMode;
 
 /**
  * Nutzungsabrechnung je Mandant (MVP-956): Monatsstand je Organisation als
@@ -78,11 +77,11 @@ class TenantBillingService {
     public function price(int $users, int $activeUsers, int $bytes): string {
         $gigabytes = (string) (int) ceil($bytes / self::GIB);
         $sum = $this->decimal('platform_billing.base_fee');
-        $sum = bcadd($sum, bcmul((string) $users, $this->decimal('platform_billing.per_user'), 4), 4);
-        $sum = bcadd($sum, bcmul((string) $activeUsers, $this->decimal('platform_billing.per_active_user'), 4), 4);
-        $sum = bcadd($sum, bcmul($gigabytes, $this->decimal('platform_billing.per_gb'), 4), 4);
+        $sum = NumberHelper::addPrecise($sum, NumberHelper::multiplyPrecise((string) $users, $this->decimal('platform_billing.per_user'), 4), 4);
+        $sum = NumberHelper::addPrecise($sum, NumberHelper::multiplyPrecise((string) $activeUsers, $this->decimal('platform_billing.per_active_user'), 4), 4);
+        $sum = NumberHelper::addPrecise($sum, NumberHelper::multiplyPrecise($gigabytes, $this->decimal('platform_billing.per_gb'), 4), 4);
 
-        return bcround($sum, 2, RoundingMode::HalfAwayFromZero);
+        return NumberHelper::roundPrecise($sum, 2);
     }
 
     /** @return Collection<int, TenantUsageSnapshot> */

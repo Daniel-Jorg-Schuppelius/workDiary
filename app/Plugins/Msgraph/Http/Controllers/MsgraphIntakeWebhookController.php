@@ -59,6 +59,9 @@ class MsgraphIntakeWebhookController extends Controller {
             if (! WebhookSignature::tokenValid((string) ($connection->webhook_secret ?? ''), $clientState)) {
                 continue; // falsches clientState ⇒ still ignorieren, kein Oracle
             }
+            if (\App\Plugins\Support\PluginTenantGate::blocks((int) $connection->organization_id)) {
+                continue;
+            }
 
             $wake->signal((int) $connection->id);
         }

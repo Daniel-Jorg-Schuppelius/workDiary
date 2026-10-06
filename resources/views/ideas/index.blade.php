@@ -9,8 +9,7 @@
 @extends('layouts.app')
 @section('title', __('ideas.title.index') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('ideas.title.index'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('ideas.subtitle')">
@@ -33,10 +32,9 @@
 
     <div class="flex flex-none flex-wrap items-center gap-2">
         @foreach (['active', 'archived', 'trashed'] as $f)
-            <a href="{{ route('ideas.index', ['filter' => $f]) }}"
-               @class(['btn btn-xs', 'btn-primary' => $filter === $f, 'btn-ghost' => $filter !== $f])>
+            <x-button :href="route('ideas.index', ['filter' => $f])" :tone="$filter === $f ? 'primary' : 'ghost'" size="xs">
                 {{ __('ideas.filter.' . $f) }}
-            </a>
+            </x-button>
         @endforeach
     </div>
 
@@ -68,9 +66,9 @@
                             @endif
                         </td>
                         <td class="text-sm">{{ $map->owner?->name ?: '—' }}</td>
-                        <td><span class="badge badge-sm">{{ $map->visibility->label() }}</span></td>
+                        <td><x-status-badge tone="plain">{{ $map->visibility->label() }}</x-status-badge></td>
                         <td class="text-right tabular-nums">{{ $map->nodes_count }}</td>
-                        <td class="text-sm">{{ $map->updated_at?->orgTz()->format('d.m.Y H:i') }}</td>
+                        <td class="text-sm">{{ $map->updated_at?->fdatetime() }}</td>
                         <td class="text-right">
                             <div class="flex items-center justify-end gap-1">
                                 @if ($filter === 'trashed')

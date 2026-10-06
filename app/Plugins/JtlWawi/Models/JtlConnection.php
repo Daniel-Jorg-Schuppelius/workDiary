@@ -13,6 +13,7 @@ namespace App\Plugins\JtlWawi\Models;
 use App\Models\Concerns\{Auditable, BelongsToOrganization};
 use App\Models\Concerns\HasPrivateNetworkOptIn;
 use App\Models\Platform\User;
+use App\Plugins\JtlWawi\Enums\{JtlConnectionStatus, JtlRegistrationStatus};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -36,14 +37,14 @@ use Illuminate\Support\Carbon;
  * @property string|null $app_id
  * @property string|null $challenge_code
  * @property string|null $registration_id
- * @property string|null $registration_status
+ * @property JtlRegistrationStatus|null $registration_status
  * @property string|null $api_key
  * @property string|null $client_id
  * @property string|null $client_secret
  * @property string|null $access_token
  * @property Carbon|null $token_expires_at
  * @property array<int, string>|null $granted_scopes
- * @property string $status
+ * @property JtlConnectionStatus $status
  * @property string|null $blocked_reason
  * @property Carbon|null $stock_checkpoint_at
  * @property Carbon|null $article_checkpoint_at
@@ -64,22 +65,6 @@ class JtlConnection extends Model {
     public const MODE_ON_PREMISE = 'on_premise';
 
     public const MODE_CLOUD = 'cloud';
-
-    public const STATUS_DRAFT = 'draft';
-
-    public const STATUS_PENDING_REGISTRATION = 'pending_registration';
-
-    public const STATUS_ACTIVE = 'active';
-
-    public const STATUS_BLOCKED = 'blocked';
-
-    public const STATUS_DISCONNECTED = 'disconnected';
-
-    public const REGISTRATION_PENDING = 'pending';
-
-    public const REGISTRATION_REJECTED = 'rejected';
-
-    public const REGISTRATION_ACCEPTED = 'accepted';
 
     protected $table = 'jtl_connections';
 
@@ -133,6 +118,8 @@ class JtlConnection extends Model {
         'access_token' => 'encrypted',
         'token_expires_at' => 'datetime',
         'granted_scopes' => 'array',
+        'status' => JtlConnectionStatus::class,
+        'registration_status' => JtlRegistrationStatus::class,
         'stock_checkpoint_at' => 'datetime',
         'article_checkpoint_at' => 'datetime',
         'last_sync_at' => 'datetime',
@@ -151,7 +138,7 @@ class JtlConnection extends Model {
     }
 
     public function isActive(): bool {
-        return $this->status === self::STATUS_ACTIVE && $this->hasCredentials();
+        return $this->status === JtlConnectionStatus::Active && $this->hasCredentials();
     }
 
     public function hasCredentials(): bool {

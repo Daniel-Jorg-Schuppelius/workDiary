@@ -107,6 +107,10 @@ final class HelpdeskManifest extends Manifest {
             \App\Services\Mail\Contracts\MailIntakeHandler::class => [
                 \App\Services\ServiceTicket\Mail\TicketThreadMailIntakeHandler::class,
             ],
+            \App\Services\Approval\Contracts\ApprovalInboxSubject::class => [
+                \App\Services\ServiceTicket\Approvals\ServiceRequestInboxSubject::class,
+                \App\Services\ServiceTicket\Approvals\ChangeInboxSubject::class,
+            ],
         ];
     }
 

@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Models\Applications;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Concerns\HasAccessToken;
 use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -37,6 +38,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class JobInterviewOffer extends Model {
     use Auditable;
     use BelongsToOrganization;
+    use HasAccessToken;
     use HasSqid;
 
     protected $fillable = [

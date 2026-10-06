@@ -97,6 +97,11 @@ class StockMovement extends Model {
         return $this->belongsTo(WarehouseBin::class, 'bin_id');
     }
 
+    /** @return BelongsTo<StockLot, $this> */
+    public function lot(): BelongsTo {
+        return $this->belongsTo(StockLot::class, 'stock_lot_id');
+    }
+
     /** @return MorphTo<Model, $this> */
     public function source(): MorphTo {
         return $this->morphTo();

@@ -9,9 +9,10 @@
 
 @section('title', __('bank.title.accounts'))
 @section('nav-title', __('bank.title.accounts'))
+@include('partials.page-fill')
 
 @section('content')
-    <x-index-page :subtitle="__('bank.subtitle.accounts')">
+    <x-index-page overflow="clip" :subtitle="__('bank.subtitle.accounts')">
         <x-slot:actions>
             @can('create', \App\Models\Finance\BankAccount::class)
                 <x-icon-btn icon="add" tone="primary" size="sm"
@@ -21,7 +22,7 @@
             @endcan
         </x-slot:actions>
 
-        <x-table>
+        <x-table scroll="flex">
             <x-slot:head>
                 <tr>
                     <x-table.th>{{ __('bank.field.label') }}</x-table.th>
@@ -34,7 +35,7 @@
             </x-slot:head>
 
             @forelse ($accounts as $account)
-                <tr>
+                <tr class="hover">
                     <td class="font-medium">{{ $account->label }}</td>
                     <td class="font-mono text-sm">{{ $account->iban }}</td>
                     <td>{{ $account->bic ?? '—' }}</td>
@@ -62,5 +63,7 @@
                 <x-table.empty :colspan="6" :title="__('bank.empty.accounts')" />
             @endforelse
         </x-table>
+
+        <x-pagination :paginator="$accounts" standing />
     </x-index-page>
 @endsection

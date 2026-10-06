@@ -10,8 +10,7 @@
 @extends('layouts.app')
 @section('title', __('Veranstaltungen'))
 @section('nav-title', __('Veranstaltungen'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @php
     use App\Enums\Event\EventStatus;
@@ -111,7 +110,6 @@
                     <th class="w-32 text-right">{{ __('Aktion') }}</th>
                 </tr>
             </x-slot:head>
-            <tbody>
                 @forelse ($events as $event)
                     <tr class="hover">
                         <td class="font-semibold">
@@ -128,9 +126,9 @@
                         <td>{{ $event->event_type?->label() }}</td>
                         <td>
                             @if ($event->category)
-                                <span class="badge badge-sm" style="background:{{ $event->category->color ?? '#999' }};color:#fff">
+                                <x-status-badge tone="plain" style="background:{{ $event->category->color ?? '#999' }};color:#fff">
                                     {{ $event->category->name }}
-                                </span>
+                                </x-status-badge>
                             @endif
                         </td>
                         <td class="whitespace-nowrap">
@@ -178,7 +176,6 @@
                         icon="event"
                         :title="__('Keine Veranstaltungen gefunden')" compact />
                 @endforelse
-            </tbody>
         </x-table>
 
         <x-pagination :paginator="$events" standing />

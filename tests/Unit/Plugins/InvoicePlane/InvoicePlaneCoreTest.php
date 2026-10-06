@@ -13,8 +13,9 @@ declare(strict_types=1);
 namespace Tests\Unit\Plugins\InvoicePlane;
 
 use App\Plugins\InvoicePlane\Bridge\BridgeCommand;
-use App\Plugins\InvoicePlane\{InvoicePlaneConnectionException, InvoicePlaneConnectionGuard, InvoicePlanePreflight};
+use App\Plugins\InvoicePlane\Exceptions\InvoicePlaneConnectionException;
 use App\Plugins\InvoicePlane\Schema\SchemaReader;
+use App\Plugins\InvoicePlane\Services\{InvoicePlaneConnectionGuard, InvoicePlanePreflight};
 use DateTimeImmutable;
 use Tests\TestCase;
 

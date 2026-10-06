@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Procurement;
 
+use App\Enums\Article\PricingChangeAlertStatus;
 use App\Models\Article\{Article, PricingChangeAlert};
 use App\Models\Supplier\SupplierCatalogItem;
 use App\Services\Article\PriceSuggestionService;
@@ -88,7 +89,7 @@ class PriceChangeAlertService {
             'new_margin' => round($newMargin, 3),
             'min_margin' => $minMargin,
             'impacts' => $this->impacts->isEmpty($impacts) ? null : $impacts,
-            'status' => PricingChangeAlert::STATUS_OPEN,
+            'status' => PricingChangeAlertStatus::Open,
         ]);
     }
 
@@ -124,7 +125,7 @@ class PriceChangeAlertService {
             'new_margin' => null,
             'min_margin' => null,
             'impacts' => $impacts,
-            'status' => PricingChangeAlert::STATUS_OPEN,
+            'status' => PricingChangeAlertStatus::Open,
         ]);
     }
 }

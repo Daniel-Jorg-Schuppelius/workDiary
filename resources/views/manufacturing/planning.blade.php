@@ -55,9 +55,9 @@
                             <td style="padding-left: {{ 0.5 + ($line['level'] - 1) * 1.25 }}rem">{{ $articleNames[$line['article_id']] ?? $line['article_id'] }}</td>
                             <td class="text-center tabular-nums">{{ $line['level'] }}</td>
                             <td>
-                                <span class="badge badge-sm {{ $line['source'] === 'make' ? 'badge-primary' : '' }}">
+                                <x-status-badge :tone="$line['source'] === 'make' ? 'primary' : 'plain'">
                                     {{ __('manufacturing.planning.' . $line['source']) }}
-                                </span>
+                                </x-status-badge>
                             </td>
                             <td class="text-right tabular-nums">{{ $line['gross'] }}</td>
                             <td class="text-right tabular-nums">{{ $line['net'] }}</td>

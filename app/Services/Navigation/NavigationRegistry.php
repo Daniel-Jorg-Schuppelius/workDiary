@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Navigation;
 
+use App\Enums\Integration\IntegrationInboxStatus;
 use App\Enums\User\Permission;
 use App\Legacy\LegacyBridge;
 use App\Models\Platform\User;
@@ -1620,7 +1621,7 @@ class NavigationRegistry {
             'nav-badge:quote-followup:' . (int) $organizationId,
             self::BADGE_TTL,
             static fn (): int => \App\Models\Sales\Quote::query()
-                ->whereIn('status', ['approved', 'sent'])
+                ->whereIn('status', \App\Enums\Sales\QuoteStatus::pending())
                 ->whereNotNull('follow_up_at')
                 ->whereNull('followed_up_at')
                 ->where('follow_up_at', '<', \Illuminate\Support\Carbon::tomorrow()->startOfDay())
@@ -1649,7 +1650,7 @@ class NavigationRegistry {
         $today = \Illuminate\Support\Carbon::today()->toDateString();
 
         $invoices = \App\Models\Invoicing\Invoice::query()
-            ->whereIn('status', [\App\Models\Invoicing\Invoice::STATUS_ISSUED, \App\Models\Invoicing\Invoice::STATUS_PARTIALLY_PAID])
+            ->whereIn('status', [\App\Enums\Invoicing\InvoiceStatus::Issued, \App\Enums\Invoicing\InvoiceStatus::PartiallyPaid])
             ->whereNotNull('due_on')
             ->where('due_on', '<', $today)
             ->count();
@@ -1717,7 +1718,7 @@ class NavigationRegistry {
                 ['route' => 'inventory.lots', 'label' => __('inventory.lot.title'), 'icon' => 'inventory_2', 'modal' => false, 'matches' => ['inventory.lots*']],
                 ['route' => 'inventory.label-templates.index', 'label' => __('inventory.label_template.title'), 'icon' => 'label', 'modal' => false, 'matches' => ['inventory.label-templates.*']],
                 ['route' => 'projects.index', 'label' => __('Projekte'), 'icon' => 'folder_special', 'modal' => false, 'matches' => ['projects.*']],
-                ['route' => 'billing.feed', 'label' => __('billing.feed.title'), 'icon' => 'receipt_long', 'modal' => false, 'matches' => ['billing.feed', 'invoices.*', 'quotes.*', 'lexoffice.vouchers.*'], 'badge' => $this->overdueDocumentCount()],
+                ['route' => 'billing.feed', 'label' => __('billing.feed.title'), 'icon' => 'receipt_long', 'modal' => false, 'matches' => ['billing.feed', 'invoices.*', 'quotes.*', ...$this->pluginMatches('billing.feed')], 'badge' => $this->overdueDocumentCount()],
                 ['route' => 'finance.transfers.index', 'label' => __('finance.title.menu'), 'icon' => 'outbox', 'modal' => false, 'matches' => ['finance.transfers.*']],
                 ['route' => 'finance.reconciliation.index', 'label' => __('bank.title.menu'), 'icon' => 'account_balance', 'modal' => false, 'matches' => ['finance.reconciliation.*', 'finance.bank-accounts.*']],
                 ...$this->pluginNavItems('sales-billing'),
@@ -1836,6 +1837,8 @@ class NavigationRegistry {
                 }
                 if (Gate::allows(Permission::FinanceConfig->value)) {
                     $adminNavItems[] = ['route' => 'finance.bank-accounts.index', 'label' => __('bank.title.accounts'), 'icon' => 'account_balance', 'modal' => false];
+                    // Steuerregelmatrix (Phase 23, MVP-242): Katalogpflege, deshalb beim System und nicht im Tagesgeschäft.
+                    $adminNavItems[] = ['route' => 'finance.tax-rules.index', 'label' => __('Steuerregeln'), 'icon' => 'percent', 'modal' => false, 'matches' => ['finance.tax-rules.*']];
                     $adminNavItems[] = ['route' => 'admin.text-corrections.index', 'label' => __('textcorrections.title.index'), 'icon' => 'spellcheck', 'modal' => false, 'matches' => ['admin.text-corrections.*']];
                 }
                 if (Gate::allows(Permission::FormTemplateViewAny->value)) {
@@ -1856,7 +1859,7 @@ class NavigationRegistry {
                             self::BADGE_TTL,
                             static fn (): int => \App\Models\Integration\IntegrationInboxItem::query()
                                 ->where('organization_id', $iiOrg)
-                                ->where('status', \App\Models\Integration\IntegrationInboxItem::STATUS_OPEN)
+                                ->where('status', IntegrationInboxStatus::Open)
                                 ->count(),
                         )
                         : 0;
@@ -2014,6 +2017,8 @@ class NavigationRegistry {
             $userNavItems[] = ['route' => 'account.profile.edit', 'label' => __('Profil bearbeiten'), 'modal' => true];
             $userNavItems[] = ['route' => 'account.work-schedule', 'label' => __('Arbeitszeit-Modell'), 'modal' => true];
             $userNavItems[] = ['route' => 'account.calendar.show', 'label' => __('Kalender-Abo'), 'modal' => false];
+            // Gespeicherte Filter verwalten — die Seite war sonst nur per Adresse erreichbar.
+            $userNavItems[] = ['route' => 'filter-presets.index', 'label' => __('Gespeicherte Filter'), 'modal' => false];
             // Eigenauskunft Personalakte (Feature 141): eigene Akte lesend.
             $userNavItems[] = ['route' => 'account.personnel-file', 'label' => __('hr.personnel_file.nav'), 'modal' => false];
             // Eigene Unterweisungen mit Bestätigung und Vorsorgetermine (MVP-986).

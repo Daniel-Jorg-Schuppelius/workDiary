@@ -104,7 +104,7 @@
             </div>
 
             @if ($custom === [])
-                <p class="text-sm opacity-60 mt-2">{{ __('Noch keine eigenen Themes. Legen Sie eines an, um die Farbpalette Ihrer Organisation abzubilden.') }}</p>
+                <x-empty-state icon="palette" :message="__('Noch keine eigenen Themes. Legen Sie eines an, um die Farbpalette Ihrer Organisation abzubilden.')" compact class="mt-2" />
             @else
                 <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mt-2">
                     @foreach ($custom as $d)
@@ -155,10 +155,10 @@
             <p class="text-sm opacity-70">{{ __('Stehen allen Mitgliedern zur Auswahl und können als Standard gesetzt werden.') }}</p>
             <div class="flex flex-wrap gap-2 mt-2">
                 @foreach ($builtin as $t)
-                    <span class="badge badge-outline gap-1" data-theme="{{ $t['key'] }}">
+                    <x-status-badge tone="plain" size="md" outline class="gap-1" data-theme="{{ $t['key'] }}">
                         <span class="inline-block w-3 h-3 rounded-full" style="background:var(--color-primary)"></span>
                         {{ $t['label'] }}
-                    </span>
+                    </x-status-badge>
                 @endforeach
             </div>
         </div>

@@ -9,8 +9,7 @@
 @extends('layouts.app')
 @section('title', __('inventory.warehouses') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('inventory.warehouses'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('inventory.subtitle.warehouses')">
@@ -43,7 +42,7 @@
                 <tr>
                     <td class="font-medium">
                         <a href="{{ route('inventory.stock', ['warehouse' => $warehouse->sqid]) }}" class="link link-hover">{{ $warehouse->name }}</a>
-                        @if ($warehouse->is_default)<span class="badge badge-sm badge-primary ml-2">{{ __('inventory.field.default') }}</span>@endif
+                        @if ($warehouse->is_default)<x-status-badge tone="primary" class="ml-2">{{ __('inventory.field.default') }}</x-status-badge>@endif
                     </td>
                     <td class="font-mono text-sm">{{ $warehouse->code ?? '—' }}</td>
                     <td>
@@ -56,11 +55,11 @@
                     <td class="tabular-nums">{{ $warehouse->movements_count }}</td>
                     <td>
                         @if ($warehouse->blocked)
-                            <span class="badge badge-sm badge-warning">{{ __('inventory.state.blocked') }}</span>
+                            <x-status-badge tone="warning">{{ __('inventory.state.blocked') }}</x-status-badge>
                         @elseif ($warehouse->active)
-                            <span class="badge badge-sm badge-success">{{ __('article.status.active') }}</span>
+                            <x-status-badge tone="success">{{ __('article.status.active') }}</x-status-badge>
                         @else
-                            <span class="badge badge-sm badge-ghost">{{ __('article.status.retired') }}</span>
+                            <x-status-badge>{{ __('article.status.retired') }}</x-status-badge>
                         @endif
                     </td>
                     <td class="text-right">

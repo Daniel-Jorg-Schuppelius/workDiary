@@ -140,4 +140,20 @@ class FritzboxCsvParserTest extends TestCase {
         // 15.01.2026 10:00 CET (UTC+1) → 09:00 UTC.
         $this->assertSame('2026-01-15 09:00:00', $calls[0]->startedAt->format('Y-m-d H:i:s'));
     }
+
+    /** k1-05: ohne Überlaufprüfung wurde aus dem 31.02. still der 3. März. */
+    public function test_impossible_date_is_skipped_instead_of_rolling_over(): void {
+        $csv = implode("\r\n", [
+            'Typ;Datum;Name;Rufnummer;Landes-/Ortsnetzbereich;Nebenstelle;Eigene Rufnummer;Dauer',
+            '1;31.02.26 10:00;;030208477964;Berlin;;97911585;0:05',
+            '1;01.03.2026 10:00;;030208477964;Berlin;;97911585;0:05',
+            '1;01.03.26;;030208477964;Berlin;;97911585;0:05',
+            '',
+        ]);
+
+        $calls = $this->parser->parse($csv, 'Europe/Berlin');
+
+        $this->assertCount(1, $calls);
+        $this->assertSame('2026-03-01 09:00:00', $calls[0]->startedAt->format('Y-m-d H:i:s'));
+    }
 }

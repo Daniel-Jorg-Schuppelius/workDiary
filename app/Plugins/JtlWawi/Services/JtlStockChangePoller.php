@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\JtlWawi\Services;
 
+use App\Enums\Integration\IntegrationInboxStatus;
 use App\Models\Article\ArticleVariant;
 use App\Models\Integration\IntegrationInboxItem;
 use App\Plugins\JtlWawi\Api\JtlGatewayFactory;
@@ -118,7 +119,7 @@ class JtlStockChangePoller {
                 'external_type' => 'item',
                 'external_id' => $jtlItemId,
                 'case_type' => IntegrationInboxItem::CASE_UNMATCHED,
-                'status' => IntegrationInboxItem::STATUS_OPEN,
+                'status' => IntegrationInboxStatus::Open,
                 'display_title' => __('Unbekannter JTL-Artikel mit Bestandsänderung'),
                 'display_subtitle' => 'JTL-ID ' . $jtlItemId,
                 'remote_snapshot' => ['id' => $jtlItemId],

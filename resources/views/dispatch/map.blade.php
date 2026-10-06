@@ -11,8 +11,7 @@
 @section('title', __('Leitstellen-Karte'))
 @section('nav-title', __('Leitstellen-Karte'))
 
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
     <x-page-shell class="overflow-auto lg:overflow-clip">

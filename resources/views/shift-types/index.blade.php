@@ -10,8 +10,7 @@
 @extends('layouts.app')
 @section('title', __('Schichttypen'))
 @section('nav-title', __('Schichttypen'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
     <x-index-page overflow="clip" :subtitle="__('Schichttypen für Dienstpläne und Stempelungen verwalten.')">
@@ -28,14 +27,18 @@
                    placeholder="{{ __('Suche') }}" aria-label="{{ __('Suche') }}" />
         </x-filter-bar>
 
-        <x-table scroll="flex" :pinRows="true" :zebra="true" table-sort="client">
+        <x-table scroll="flex" :pinRows="true" :zebra="true" table-sort="server"
+                 :route="route('shift-types.index')"
+                 :current-sort="$sort"
+                 :current-dir="$dir"
+                 :sort-params="request()->except(['sort', 'dir', 'page'])">
                 <x-slot:head>
                     <tr>
-                        <x-table.th sort type="string" default="asc">{{ __('Name') }}</x-table.th>
-                        <x-table.th sort type="string">{{ __('Kürzel') }}</x-table.th>
-                        <x-table.th sort type="string">{{ __('Standardzeit') }}</x-table.th>
-                        <x-table.th sort type="string">{{ __('Status') }}</x-table.th>
-                        <x-table.th sort type="number" align="right">{{ __('Verwendet') }}</x-table.th>
+                        <x-table.th sort="name" default>{{ __('Name') }}</x-table.th>
+                        <x-table.th sort="abbreviation">{{ __('Kürzel') }}</x-table.th>
+                        <x-table.th sort="default_time">{{ __('Standardzeit') }}</x-table.th>
+                        <x-table.th sort="is_active">{{ __('Status') }}</x-table.th>
+                        <x-table.th sort="used" align="right">{{ __('Verwendet') }}</x-table.th>
                         <th class="w-32 text-right">{{ __('Aktion') }}</th>
                     </tr>
                 </x-slot:head>
@@ -75,5 +78,7 @@
                         <x-table.empty icon="work_history" :colspan="6" :title="__('Keine Einträge')" compact />
                     @endforelse
         </x-table>
+
+        <x-pagination :paginator="$types" standing />
     </x-index-page>
 @endsection

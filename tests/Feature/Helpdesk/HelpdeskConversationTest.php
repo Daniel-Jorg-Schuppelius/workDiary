@@ -10,7 +10,9 @@
 
 namespace Tests\Feature\Helpdesk;
 
+use App\Enums\Integration\IntegrationInboxStatus;
 use App\Enums\ServiceTicket\{ServiceTicketStatus, TicketMessageKind};
+use App\Enums\ServiceTicket\TicketMessageDeliveryStatus;
 use App\Jobs\ServiceTicketReplyMailJob;
 use App\Models\Integration\IntegrationInboxItem;
 use App\Models\Mail\EmailConnection;
@@ -118,7 +120,29 @@ final class HelpdeskConversationTest extends TestCase {
 
         (new ServiceTicketReplyMailJob($reply->id))->handle();
 
-        $this->assertSame('sent', $reply->fresh()->delivery_status);
+        $this->assertSame(TicketMessageDeliveryStatus::Sent, $reply->fresh()->delivery_status);
+    }
+
+    /** k3-10: Versandstand als Enum — wartend, nach dem letzten Fehlversuch gescheitert, Versandtes bleibt. */
+    public function test_delivery_status_is_queued_then_failed_and_sent_stays_sent(): void {
+        Mail::fake();
+        $ticket = $this->ticket();
+        $conversation = app(TicketConversationService::class);
+        // Die Sync-Queue der Tests versendet sofort; „wartend“ stellt der Test selbst her.
+        $sent = $conversation->reply($ticket, $this->agent, 'Antwort', ['kunde@acme.test']);
+        $queued = $conversation->reply($ticket, $this->agent, 'Zweite Antwort', ['kunde@acme.test']);
+        $queued->refresh()->forceFill(['delivery_status' => TicketMessageDeliveryStatus::Queued])->save();
+        $note = $conversation->note($ticket, $this->agent, 'Intern');
+
+        $this->assertSame(TicketMessageDeliveryStatus::Sent, $sent->fresh()->delivery_status);
+        $this->assertDatabaseHas('service_ticket_messages', ['id' => $queued->id, 'delivery_status' => TicketMessageDeliveryStatus::Queued->value]);
+        $this->assertNull($note->fresh()->delivery_status);
+
+        (new ServiceTicketReplyMailJob($sent->id))->failed(null);
+        (new ServiceTicketReplyMailJob($queued->id))->failed(null);
+
+        $this->assertSame(TicketMessageDeliveryStatus::Sent, $sent->fresh()->delivery_status);
+        $this->assertSame(TicketMessageDeliveryStatus::Failed, $queued->fresh()->delivery_status);
     }
 
     public function test_mail_threading_attaches_to_ticket_and_resumes_waiting(): void {
@@ -283,6 +307,6 @@ final class HelpdeskConversationTest extends TestCase {
         $this->assertSame((int) $queue->id, (int) $ticket->queue_id);
         $this->assertSame('email', $ticket->source->value);
         $this->assertSame(1, ServiceTicketMessage::query()->where('service_ticket_id', $ticket->id)->where('message_id', '<neu-1@kunde>')->count());
-        $this->assertNotSame(IntegrationInboxItem::STATUS_OPEN, $item->fresh()->status);
+        $this->assertNotSame(IntegrationInboxStatus::Open, $item->fresh()->status);
     }
 }

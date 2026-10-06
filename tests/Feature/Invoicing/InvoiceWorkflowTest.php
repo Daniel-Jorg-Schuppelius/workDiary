@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Invoicing;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\{Organization, User};
@@ -47,7 +48,7 @@ final class InvoiceWorkflowTest extends TestCase {
             'organization_id' => $this->org->id,
             'customer_id' => $this->customer->id,
             'number' => 'R2026-' . str_pad((string) ++self::$invoiceNo, 4, '0', STR_PAD_LEFT),
-            'status' => Invoice::STATUS_DRAFT,
+            'status' => InvoiceStatus::Draft,
             'type' => Invoice::TYPE_INVOICE,
             'tax_rate' => '19.00',
             ...$overrides,
@@ -73,13 +74,13 @@ final class InvoiceWorkflowTest extends TestCase {
         $invoice = $this->draft();
 
         $this->actingAs($this->user)->post(route('invoices.issue', $invoice));
-        $this->assertSame(Invoice::STATUS_DRAFT, $invoice->fresh()->status, 'Ohne Freigabe keine Ausstellung.');
+        $this->assertSame(InvoiceStatus::Draft, $invoice->fresh()->status, 'Ohne Freigabe keine Ausstellung.');
 
         $this->actingAs($this->user)->post(route('invoices.approve', $invoice))->assertRedirect();
         $this->assertNotNull($invoice->fresh()->approved_at);
 
         $this->actingAs($this->user)->post(route('invoices.issue', $invoice));
-        $this->assertSame(Invoice::STATUS_ISSUED, $invoice->fresh()->status);
+        $this->assertSame(InvoiceStatus::Issued, $invoice->fresh()->status);
     }
 
     /**
@@ -101,7 +102,7 @@ final class InvoiceWorkflowTest extends TestCase {
         ])->assertRedirect(route('invoices.show', $invoice));
 
         $fresh = $invoice->fresh();
-        $this->assertSame(Invoice::STATUS_ISSUED, $fresh->status);
+        $this->assertSame(InvoiceStatus::Issued, $fresh->status);
         $this->assertNotNull($fresh->party_snapshot);
         $this->assertNotNull($fresh->due_on);
         $this->assertIsArray($fresh->tax_context);
@@ -124,7 +125,7 @@ final class InvoiceWorkflowTest extends TestCase {
         ])->assertSessionHas('error');
 
         \Illuminate\Support\Facades\Mail::assertNothingQueued();
-        $this->assertSame(Invoice::STATUS_DRAFT, $invoice->fresh()->status, 'Ohne Freigabe verlässt keine Rechnung das Haus.');
+        $this->assertSame(InvoiceStatus::Draft, $invoice->fresh()->status, 'Ohne Freigabe verlässt keine Rechnung das Haus.');
     }
 
     public function test_mark_sent_issues_through_the_single_write_path(): void {
@@ -133,7 +134,7 @@ final class InvoiceWorkflowTest extends TestCase {
         $invoice->markSent();
 
         $fresh = $invoice->fresh();
-        $this->assertSame(Invoice::STATUS_ISSUED, $fresh->status);
+        $this->assertSame(InvoiceStatus::Issued, $fresh->status);
         $this->assertSame(1, (int) $fresh->sent_count);
         $this->assertIsArray($fresh->tax_context);
     }
@@ -150,11 +151,11 @@ final class InvoiceWorkflowTest extends TestCase {
     }
 
     public function test_dunning_only_for_overdue_and_capped(): void {
-        $notDue = $this->draft(['status' => Invoice::STATUS_ISSUED, 'issued_on' => now(), 'due_on' => now()->addWeek()]);
+        $notDue = $this->draft(['status' => InvoiceStatus::Issued, 'issued_on' => now(), 'due_on' => now()->addWeek()]);
         $this->actingAs($this->user)->post(route('invoices.dun', $notDue));
         $this->assertSame(0, (int) $notDue->fresh()->dunning_level, 'Nicht fällig → keine Mahnung.');
 
-        $overdue = $this->draft(['status' => Invoice::STATUS_ISSUED, 'issued_on' => now()->subMonth(), 'due_on' => now()->subWeek()]);
+        $overdue = $this->draft(['status' => InvoiceStatus::Issued, 'issued_on' => now()->subMonth(), 'due_on' => now()->subWeek()]);
         foreach ([1, 2, 3] as $level) {
             $this->actingAs($this->user)->post(route('invoices.dun', $overdue))->assertRedirect();
             $this->assertSame($level, (int) $overdue->fresh()->dunning_level);

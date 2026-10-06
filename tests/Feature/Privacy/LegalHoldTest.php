@@ -114,7 +114,7 @@ final class LegalHoldTest extends TestCase {
             app(RetentionScanService::class)->purge($proposal->fresh(), $admin);
         } finally {
             $this->assertNull($later->fresh()?->anonymized_at);
-            $this->assertSame(RetentionProposal::STATUS_APPROVED, $proposal->fresh()?->status);
+            $this->assertSame(\App\Enums\Privacy\RetentionProposalStatus::Approved, $proposal->fresh()?->status);
         }
     }
 

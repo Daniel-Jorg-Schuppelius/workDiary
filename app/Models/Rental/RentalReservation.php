@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Rental;
 
-use App\Enums\Rental\RentalReservationKind;
+use App\Enums\Rental\{RentalReservationKind, RentalReservationStatus};
 use App\Models\Asset\Asset;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\{Builder, Model};
@@ -29,7 +29,7 @@ use Illuminate\Support\Carbon;
  * @property int|null $rental_case_id
  * @property int $asset_id
  * @property RentalReservationKind $kind
- * @property string $status
+ * @property RentalReservationStatus $status
  * @property \Illuminate\Support\Carbon $starts_at
  * @property \Illuminate\Support\Carbon $ends_at
  * @property int $buffer_before_hours
@@ -40,8 +40,6 @@ class RentalReservation extends Model {
     use BelongsToOrganization;
     use HasSqid;
 
-    public const STATUSES = ['active', 'completed', 'cancelled'];
-
     protected $fillable = [
         'organization_id', 'rental_case_id', 'asset_id', 'kind', 'status',
         'starts_at', 'ends_at', 'buffer_before_hours', 'buffer_after_hours',
@@ -51,6 +49,7 @@ class RentalReservation extends Model {
     /** @var array<string, string> */
     protected $casts = [
         'kind' => RentalReservationKind::class,
+        'status' => RentalReservationStatus::class,
         'starts_at' => 'datetime',
         'ends_at' => 'datetime',
         'buffer_before_hours' => 'integer',
@@ -60,7 +59,7 @@ class RentalReservation extends Model {
 
     /** @param Builder<self> $query */
     public function scopeActive(Builder $query): void {
-        $query->where('status', 'active');
+        $query->where('status', RentalReservationStatus::Active);
     }
 
     /**

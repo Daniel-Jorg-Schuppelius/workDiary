@@ -10,8 +10,7 @@
 @extends('layouts.app')
 @section('title', __('club.resources.title.index'))
 @section('nav-title', __('club.resources.title.index'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('club.resources.subtitle.index')">
     <x-slot:actions>
@@ -41,7 +40,7 @@
                 <td class="font-medium" style="padding-left: {{ 0.75 + $row['depth'] * 1.25 }}rem;">
                     <x-icon :name="$resource->kind->icon()" class="mr-1 text-muted" />
                     <a href="{{ route('club.resources.show', $resource) }}" class="link link-hover">{{ $resource->name }}</a>
-                    @if ($closedIds->contains($resource->id))<span class="badge badge-warning badge-xs">{{ __('club.resources.label.closed_now') }}</span>@endif
+                    @if ($closedIds->contains($resource->id))<x-status-badge tone="warning" size="xs">{{ __('club.resources.label.closed_now') }}</x-status-badge>@endif
                 </td>
                 <td class="text-sm">{{ $resource->kind->label() }}</td>
                 <td class="text-center text-sm tabular-nums">{{ $resource->capacity }}</td>

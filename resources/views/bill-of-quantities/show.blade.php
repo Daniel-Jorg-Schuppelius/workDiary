@@ -54,7 +54,7 @@
                             @endforeach
                         </select>
                     </div>
-                    <button type="submit" class="btn btn-sm">{{ __('gaeb.workflow.status') }}</button>
+                    <x-button type="submit" tone="plain">{{ __('gaeb.workflow.status') }}</x-button>
                 </form>
             @endif
         </div>
@@ -80,23 +80,23 @@
                     <td class="font-mono text-sm whitespace-nowrap">{{ $item->reference_no }}</td>
                     <td>
                         {{ $item->short_text ?: '—' }}
-                        @if ($item->is_addendum)<span class="badge badge-xs badge-warning ml-1">N</span>@endif
+                        @if ($item->is_addendum)<x-status-badge tone="warning" size="xs" class="ml-1">N</x-status-badge>@endif
                         @foreach ($item->mappings as $map)
-                            <span class="badge badge-xs badge-ghost ml-1">{{ \App\Support\EntityType::label($map->mappable_type) }}</span>
+                            <x-status-badge size="xs" class="ml-1">{{ \App\Support\EntityType::label($map->mappable_type) }}</x-status-badge>
                         @endforeach
                     </td>
-                    <td><span class="badge badge-sm badge-ghost">{{ $item->type->label() }}</span></td>
+                    <td><x-status-badge>{{ $item->type->label() }}</x-status-badge></td>
                     <td class="text-right tabular-nums">{{ $item->quantity !== null ? rtrim(rtrim(\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($item->quantity?->getValue()->toFloat() ?? 0.0), 3, withThousandsSeparator: true), '0'), ',') : '—' }}</td>
                     <td class="text-right tabular-nums">{{ rtrim(rtrim(\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($item->executedQuantity(), 3, withThousandsSeparator: true), '0'), ',') }}</td>
                     <td class="text-right tabular-nums">{{ rtrim(rtrim(\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($item->remainingQuantity(), 3, withThousandsSeparator: true), '0'), ',') }}</td>
                     <td>{{ $item->unit ?: '—' }}</td>
                     <td class="text-right tabular-nums">{{ $item->unit_price !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($item->unit_price?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) : '—' }}</td>
-                    <td><span class="badge badge-sm badge-ghost">{{ $item->status->label() }}</span></td>
+                    <td><x-status-badge>{{ $item->status->label() }}</x-status-badge></td>
                     @if ($canManage)
                         <td>
                             <form method="POST" action="{{ route('bill-of-quantities.items.progress', $item) }}" class="flex items-center justify-end gap-1">@csrf
                                 <input aria-label="{{ __('Menge') }}" type="number" step="0.001" name="quantity" class="input input-bordered input-xs w-24" placeholder="0" required>
-                                <button type="submit" class="btn btn-xs btn-primary">+</button>
+                                <x-button type="submit" size="xs">+</x-button>
                             </form>
                         </td>
                     @endif
@@ -117,7 +117,7 @@
                 <input aria-label="{{ __('gaeb.columns.quantity') }}" type="number" step="0.001" name="quantity" class="input input-bordered input-sm w-24" placeholder="{{ __('gaeb.columns.quantity') }}">
                 <input aria-label="{{ __('gaeb.columns.unit') }}" type="text" name="unit" class="input input-bordered input-sm w-20" placeholder="{{ __('gaeb.columns.unit') }}">
                 <input aria-label="{{ __('gaeb.columns.unit_price') }}" type="number" step="0.01" name="unit_price" class="input input-bordered input-sm w-24" placeholder="{{ __('gaeb.columns.unit_price') }}">
-                <button type="submit" class="btn btn-sm">{{ __('gaeb.workflow.add_addendum') }}</button>
+                <x-button type="submit" tone="plain">{{ __('gaeb.workflow.add_addendum') }}</x-button>
             </form>
         </x-card>
     @endif
@@ -162,10 +162,10 @@
                 </x-slot:head>
                 @foreach ($imports as $import)
                     <tr>
-                        <td class="text-sm">{{ $import->created_at?->orgTz()->format('d.m.Y H:i') }}</td>
+                        <td class="text-sm">{{ $import->created_at?->fdatetime() }}</td>
                         <td>{{ $import->phase?->label() ?: '—' }}</td>
                         <td class="text-right tabular-nums">{{ $import->item_count }}</td>
-                        <td><span class="badge badge-sm badge-ghost">{{ $import->status->label() }}</span></td>
+                        <td><x-status-badge>{{ $import->status->label() }}</x-status-badge></td>
                     </tr>
                 @endforeach
             </x-table>

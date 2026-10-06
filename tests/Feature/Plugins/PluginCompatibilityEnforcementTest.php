@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Plugins;
 
+use App\Enums\Plugin\PluginHealthStatus;
 use App\Models\Platform\{PluginSetting, PluginState, User};
 use App\Plugins\Contracts\{Plugin, PluginCapability};
 use App\Plugins\{PluginDefaults, PluginHealth, PluginManager};
@@ -36,7 +37,7 @@ class PluginCompatibilityEnforcementTest extends TestCase {
         $this->artisan('plugin:healthcheck')->assertExitCode(1);
 
         $state = PluginState::query()->where('plugin_id', 'incompatible')->firstOrFail();
-        $this->assertSame(PluginHealth::STATUS_FAILING, $state->last_health_status);
+        $this->assertSame(PluginHealthStatus::Failing, $state->last_health_status);
         $this->assertSame(1, (int) $state->failure_count);
         $this->assertStringContainsString('2.0.0', (string) $state->last_health_message);
     }

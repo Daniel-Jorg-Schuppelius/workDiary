@@ -99,7 +99,7 @@ class PeriodClosingService {
 
     /** Vorläufiger Abschluss — reversibel ohne Wiedereröffnungsnachweis. */
     public function softClose(AccountingPeriod $period, User $actor): AccountingPeriod {
-        $this->assertStatus($period, [AccountingPeriodStatus::Open]);
+        $this->ensureTransition($period, AccountingPeriodStatus::SoftClosed);
 
         $period->update([
             'status' => AccountingPeriodStatus::SoftClosed,
@@ -113,7 +113,7 @@ class PeriodClosingService {
 
     /** Endgültiger Abschluss — danach nimmt die Periode keine Buchung mehr an. */
     public function close(AccountingPeriod $period, User $actor): AccountingPeriod {
-        $this->assertStatus($period, [AccountingPeriodStatus::Open, AccountingPeriodStatus::SoftClosed]);
+        $this->ensureTransition($period, AccountingPeriodStatus::Closed);
 
         $report = $this->preflight($period);
         if (! $report->isReady()) {
@@ -223,9 +223,8 @@ class PeriodClosingService {
             ->get();
     }
 
-    /** @param list<AccountingPeriodStatus> $allowed */
-    private function assertStatus(AccountingPeriod $period, array $allowed): void {
-        if (! in_array($period->status, $allowed, true)) {
+    private function ensureTransition(AccountingPeriod $period, AccountingPeriodStatus $target): void {
+        if (! $period->status->canTransitionTo($target)) {
             throw ValidationException::withMessages([
                 'status' => (string) __('accounting.closing.error.wrong_status', ['status' => $period->status->label()]),
             ]);

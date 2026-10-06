@@ -11,8 +11,9 @@
 namespace App\Plugins\OpenProject\Console;
 
 use App\Console\Concerns\IteratesOrganizations;
-use App\Plugins\OpenProject\OpenProjectConfig;
+use App\Plugins\OpenProject\{OpenProjectConfig, OpenProjectPlugin};
 use App\Plugins\OpenProject\Services\OpenProjectImportService;
+use App\Plugins\Support\Console\ChecksPluginSwitch;
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
 
@@ -23,6 +24,7 @@ use Illuminate\Console\Command;
  * manuell aus der Admin-UI.
  */
 class OpenProjectSyncCommand extends Command {
+    use ChecksPluginSwitch;
     use IteratesOrganizations;
 
     protected $signature = 'openproject:import ' . self::ORGANIZATION_OPTION . '
@@ -40,7 +42,7 @@ class OpenProjectSyncCommand extends Command {
 
         foreach ($organizations as $org) {
             $config = OpenProjectConfig::resolve($org->id);
-            if (! $config['enabled']) {
+            if (! $this->pluginEnabledFor(OpenProjectPlugin::ID, (int) $org->id)) {
                 continue;
             }
             if ($config['api_token'] === null || $config['base_url'] === null) {

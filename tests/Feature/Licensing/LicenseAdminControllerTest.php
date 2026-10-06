@@ -33,8 +33,8 @@ class LicenseAdminControllerTest extends TestCase {
             ->assertForbidden();
     }
 
-    public function test_index_renders_for_org_admin_with_three_sections(): void {
-        $admin = User::factory()->admin()->create();
+    public function test_index_renders_for_the_operator_with_three_sections(): void {
+        $admin = User::factory()->admin()->platformAdmin()->create();
 
         $this->actingAs($admin)
             ->get(route('admin.license.index'))

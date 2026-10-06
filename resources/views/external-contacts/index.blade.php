@@ -13,8 +13,7 @@
 @extends('layouts.app')
 @section('title', __('external.contact.title'))
 @section('nav-title', __('external.contact.title'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 <x-page-shell overflow="clip">
@@ -41,7 +40,7 @@
             @forelse ($contacts as $contact)
                 <tr class="hover">
                     <td class="font-medium">{{ $contact->name }}</td>
-                    <td><span class="badge badge-sm badge-ghost">{{ $contact->party->label() }}</span></td>
+                    <td><x-status-badge>{{ $contact->party->label() }}</x-status-badge></td>
                     <td>{{ $contact->role }}</td>
                     <td class="text-base-content/70">{{ $contact->email }}</td>
                     <td class="text-right">
@@ -51,7 +50,7 @@
                             <form method="POST" action="{{ route('external-contacts.destroy', $contact) }}"
                                   data-confirm-dialog data-confirm-message="{{ __('external.contact.confirm_delete') }}">
                                 @csrf @method('DELETE')
-                                <button type="submit" class="btn btn-xs btn-ghost text-error">{{ __('external.contact.delete') }}</button>
+                                <x-button type="submit" tone="ghost" size="xs" class="text-error">{{ __('external.contact.delete') }}</x-button>
                             </form>
                         </div>
                     </td>

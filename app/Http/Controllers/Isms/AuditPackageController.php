@@ -11,10 +11,10 @@
 namespace App\Http\Controllers\Isms;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Isms\Concerns\ResolvesIsmsScope;
 use App\Models\Isms\{IsmsAuditPackage, IsmsAuditPackageToken, IsmsScope};
 use App\Models\Platform\User;
 use App\Services\Isms\{AuditPackageService, ScopeService};
-use App\Support\SqidEncoder;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate, Storage};
 use Illuminate\View\View;
@@ -31,10 +31,11 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  * Prüfer-Download läuft separat über PublicAuditPackageController.
  */
 class AuditPackageController extends Controller {
+    use ResolvesIsmsScope;
+
     public function __construct(
         private readonly AuditPackageService $service,
         private readonly ScopeService $scopeService,
-        private readonly SqidEncoder $sqids,
     ) {}
 
     public function index(): View {
@@ -43,7 +44,8 @@ class AuditPackageController extends Controller {
         $packages = IsmsAuditPackage::query()
             ->with(['scope', 'finalizedBy:id,name', 'tokens' => fn($query) => $query->orderByDesc('id')])
             ->orderByDesc('package_no')
-            ->get();
+            ->paginate(25)
+            ->withQueryString();
 
         return view('isms.packages.index', [
             'packages' => $packages,
@@ -76,13 +78,13 @@ class AuditPackageController extends Controller {
 
         // Fehlender/ungültiger Scope fällt auf den Default-Scope zurück
         // (wird bei Bedarf angelegt — Muster ConformityController).
-        $scope = $this->resolveScope($data['scope'])
+        $scope = $this->scopeOrNull($data['scope'])
             ?? $this->scopeService->ensureDefaultScope((int) $creator->organization_id);
 
         $this->service->create($creator, $scope, $data);
 
         return redirect()
-            ->route('isms.packages.index')
+            ->toList('isms.packages.index')
             ->with('success', __('isms.flash.package_created'));
     }
 
@@ -95,7 +97,7 @@ class AuditPackageController extends Controller {
         $this->service->finalize($package, $actor);
 
         return redirect()
-            ->route('isms.packages.index')
+            ->toList('isms.packages.index')
             ->with('success', __('isms.flash.package_finalized'));
     }
 
@@ -105,12 +107,12 @@ class AuditPackageController extends Controller {
 
         if ($this->service->verify($package)) {
             return redirect()
-                ->route('isms.packages.index')
+                ->toList('isms.packages.index')
                 ->with('success', __('isms.flash.package_verified_ok', ['no' => $package->displayNo()]));
         }
 
         return redirect()
-            ->route('isms.packages.index')
+            ->toList('isms.packages.index')
             ->withErrors(['file_hash' => __('isms.flash.package_verified_mismatch', ['no' => $package->displayNo()])]);
     }
 
@@ -162,7 +164,7 @@ class AuditPackageController extends Controller {
         $issued = $this->service->createToken($package, $actor, $data['label'], (int) $data['days']);
 
         return redirect()
-            ->route('isms.packages.index')
+            ->toList('isms.packages.index')
             ->with('success', __('isms.flash.package_token_created', ['label' => $issued['model']->label]))
             // Der ausgehändigte Link zeigt die Webansicht (Feature 046,
             // Live-Prüferzugang) - der Datei-Download ist dort verlinkt.
@@ -184,17 +186,7 @@ class AuditPackageController extends Controller {
         $this->service->revokeToken($token, $actor);
 
         return redirect()
-            ->route('isms.packages.index')
+            ->toList('isms.packages.index')
             ->with('success', __('isms.flash.package_token_revoked'));
-    }
-
-    /**
-     * Löst den Scope-Formularparameter (Sqid) org-sicher auf — die
-     * org-gescopte Scope-Query sieht fremde Scopes nicht.
-     */
-    private function resolveScope(string $sqid): ?IsmsScope {
-        $id = $this->sqids->decode(IsmsScope::class, $sqid);
-
-        return $id === null ? null : IsmsScope::query()->whereKey($id)->first();
     }
 }

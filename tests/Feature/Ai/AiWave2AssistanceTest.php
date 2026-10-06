@@ -12,8 +12,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Ai;
 
+use App\Enums\Ai\AiTextSuggestionStatus;
 use App\Enums\Communication\{CommunicationDirection, CommunicationNoteType, CommunicationVisibility};
 use App\Enums\Customer\CustomerQueryStatus;
+use App\Enums\Sales\QuoteStatus;
 use App\Enums\User\Permission;
 use App\Models\Ai\{AiCapabilitySetting, AiProviderConnection, AiTextSuggestion};
 use App\Models\Audit\AuditLog;
@@ -93,7 +95,7 @@ class AiWave2AssistanceTest extends TestCase {
         return Quote::factory()->create([
             'organization_id' => $this->organization->id,
             'customer_id' => $customer->id,
-            'status' => 'draft',
+            'status' => QuoteStatus::Draft,
             'terms' => 'Es gelten unsere allgemeinen Geschäftsbedingungen.',
             'created_by' => $this->admin->id,
         ]);
@@ -135,7 +137,7 @@ class AiWave2AssistanceTest extends TestCase {
             ->assertSessionHas('success');
 
         $this->assertSame('Maintenance of the system.', $item->fresh()?->description);
-        $this->assertSame(AiTextSuggestion::STATUS_ACCEPTED, $suggestion->fresh()?->status);
+        $this->assertSame(AiTextSuggestionStatus::Accepted, $suggestion->fresh()?->status);
         $this->assertDatabaseHas('audit_logs', ['event' => 'ai.suggestion_decided']);
     }
 
@@ -235,7 +237,7 @@ class AiWave2AssistanceTest extends TestCase {
             ->post(route('ai.assist.reject', $suggestion))
             ->assertSessionHas('success');
 
-        $this->assertSame(AiTextSuggestion::STATUS_REJECTED, $suggestion->fresh()?->status);
+        $this->assertSame(AiTextSuggestionStatus::Rejected, $suggestion->fresh()?->status);
         $this->assertDatabaseHas('audit_logs', [
             'event' => 'ai.suggestion_decided',
             'auditable_id' => $suggestion->id,
@@ -450,6 +452,8 @@ class AiWave2AssistanceTest extends TestCase {
     public function test_support_diagnosis_explains_the_health_block(): void {
         $this->enable(SupportDiagnosisSuggestionService::CAPABILITY);
         $this->admin->givePermissionTo([Permission::PlatformSupportExport->value]);
+        // Der Bericht beschreibt die Installation — nur der Betreiber darf ihn auswerten lassen (authz-b-7).
+        $this->admin->forceFill(['is_platform_admin' => true])->save();
         $this->app->instance(\App\Services\Support\SupportHealthSummary::class, new class extends \App\Services\Support\SupportHealthSummary {
             public function collect(): array {
                 return [

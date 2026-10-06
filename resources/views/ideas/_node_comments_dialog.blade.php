@@ -12,12 +12,12 @@
          :action="$canComment ? route('ideas.nodes.comments.store', [$map, $node]) : null" method="POST"
          :form-data="['data-entry-form' => '']" :submit-label="$canComment ? __('ideas.comments.action.add') : null">
     @if ($comments->isEmpty())
-        <p class="text-sm text-muted">{{ __('ideas.comments.empty') }}</p>
+        <x-empty-state icon="forum" :title="__('ideas.comments.empty')" compact />
     @else
         <ul class="max-h-80 space-y-3 overflow-y-auto">
             @foreach ($comments as $comment)
                 <li class="rounded-box bg-base-200 p-3 text-sm">
-                    <div class="mb-1 text-xs text-muted">{{ $comment->user?->name ?? '—' }} · {{ $comment->created_at?->orgTz()->format('d.m.Y H:i') }}</div>
+                    <div class="mb-1 text-xs text-muted">{{ $comment->user?->name ?? '—' }} · {{ $comment->created_at?->fdatetime() }}</div>
                     <div class="whitespace-pre-line">{{ $comment->body }}</div>
                 </li>
             @endforeach

@@ -112,6 +112,11 @@ return [
         'on_documents' => 'Zahlungslink auf Rechnung und in der Mail',
         'on_documents_hint' => 'Ausgeschaltet bleibt die Online-Zahlung im Kundenportal möglich.',
     ],
+    'approvals' => [
+        'step_roles_hint' => 'Freigabestufen einer Vertragsverhandlung erscheinen unter „Genehmigungen“ bei der Rolle, die ihrer Stufenart zugeordnet ist. Die Freigabe an der Akte bleibt möglich.',
+        'step_role' => ':kind: zuständige Rolle',
+        'default_role' => 'Vorgabe (:role)',
+    ],
     'mcp' => [
         'heading' => 'KI-Assistenten (MCP)',
         'description' => 'KI-Assistenten wie Claude oder ChatGPT können sich mit Zustimmung einzelner Nutzer anbinden und mit deren Rechten lesen bzw. Entwürfe anlegen.',

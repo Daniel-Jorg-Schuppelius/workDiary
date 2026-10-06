@@ -79,7 +79,7 @@ class InvoicesSection extends AbstractGdpduSection {
             yield [
                 $this->str($inv->number),
                 $this->str($inv->type),
-                $this->str($inv->status),
+                $this->str($inv->status->value),
                 $this->date($inv->issued_on),
                 $this->date($inv->due_on),
                 $this->date($inv->paid_on),

@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Contract;
 
-use App\Enums\Contract\{ContractKind, ContractObligationKind, ContractPartnerType, ContractStatus, ContractTermKind, IndexationMethod};
+use App\Enums\Contract\{ContractKind, ContractObligationKind, ContractObligationStatus, ContractPartnerType, ContractStatus, ContractTermKind, IndexationMethod};
 use App\Enums\Notification\{NotificationChannel, NotificationEvent};
 use App\Models\AssetFinance\AssetFinanceContract;
 use App\Models\Contract\Contract;
@@ -185,7 +185,7 @@ final class ContractLifecycleTest extends TestCase {
 
         $service->scanObligations($this->organization);
 
-        $this->assertSame('missed', (string) $missed->fresh()->status);
+        $this->assertSame(ContractObligationStatus::Missed, $missed->fresh()->status);
         $this->assertDatabaseHas('notification_dispatch_log', [
             'event' => NotificationEvent::ContractDeadlineDue->value,
             'subject_id' => $warning->id,
@@ -251,9 +251,9 @@ final class ContractLifecycleTest extends TestCase {
 
         $service->completeObligation($obligation, $this->admin);
 
-        $this->assertSame('done', (string) $obligation->fresh()->status);
+        $this->assertSame(ContractObligationStatus::Done, $obligation->fresh()->status);
         $this->assertSame(2, $contract->obligations()->count());
-        $next = $contract->obligations()->where('status', 'open')->firstOrFail();
+        $next = $contract->obligations()->where('status', ContractObligationStatus::Open)->firstOrFail();
         $this->assertSame('2026-08-01', $next->due_on->toDateString());
         $this->assertTrue((bool) $next->recurring);
     }

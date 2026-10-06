@@ -185,6 +185,7 @@ class LearningCourseController extends Controller {
             'canEditContent' => Gate::allows('update', $course),
             'canEditMeta' => Gate::allows('updateMeta', $course),
             'canRelease' => Gate::allows('release', $course),
+            'canReopen' => Gate::allows('reopen', $course),
             'canDelete' => Gate::allows('delete', $course),
         ]);
     }
@@ -216,7 +217,7 @@ class LearningCourseController extends Controller {
         $course->delete();
 
         return redirect()
-            ->route('learning.courses.index')
+            ->toList('learning.courses.index')
             ->with('success', __('learning.flash.deleted'));
     }
 
@@ -1172,7 +1173,7 @@ class LearningCourseController extends Controller {
         );
 
         return redirect()
-            ->route('learning.courses.index')
+            ->toList('learning.courses.index')
             ->with('success', __($report['dry_run'] ? 'learning.flash.learndash_dry_run' : 'learning.flash.learndash_imported', [
                 'courses' => $report['courses'],
                 'units' => $report['units'],
@@ -1203,7 +1204,7 @@ class LearningCourseController extends Controller {
     }
 
     public function reopen(LearningCourse $course): RedirectResponse {
-        Gate::authorize('update', $course);
+        Gate::authorize('reopen', $course);
 
         $this->courses->reopen($course);
 

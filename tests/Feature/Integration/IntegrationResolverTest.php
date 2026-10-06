@@ -11,6 +11,7 @@
 namespace Tests\Feature\Integration;
 
 use App\Enums\Integration\{ConflictFieldPolicy, ImportMatchPolicy};
+use App\Enums\Integration\IntegrationInboxStatus;
 use App\Models\Customer\Customer;
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use App\Services\Integration\{IntegrationResolver, ResolveOutcome};
@@ -114,7 +115,7 @@ class IntegrationResolverTest extends TestCase {
         $item = $outcome->inboxItem;
         $this->assertNotNull($item);
         $this->assertSame(IntegrationInboxItem::CASE_UNMATCHED, $item->case_type);
-        $this->assertSame(IntegrationInboxItem::STATUS_OPEN, $item->status);
+        $this->assertSame(IntegrationInboxStatus::Open, $item->status);
         $this->assertSame((new Customer)->getMorphClass(), $item->target_type);
         // Inbox-First: NICHT blind angelegt.
         $this->assertSame(0, Customer::query()->where('name', 'Zeta Brandneu KG')->count());

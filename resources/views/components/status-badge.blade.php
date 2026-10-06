@@ -15,14 +15,15 @@
 ])
 
 @php
-    $tones = ['primary', 'secondary', 'accent', 'success', 'warning', 'error', 'info', 'ghost', 'neutral'];
+    // plain = ohne Tonklasse (daisyUI-Grundabzeichen, mit outline der reine Umriss).
+    $tones = ['primary', 'secondary', 'accent', 'success', 'warning', 'error', 'info', 'ghost', 'neutral', 'plain'];
     $tone = in_array($tone, $tones, true) ? $tone : 'ghost';
     $sizes = ['xs', 'sm', 'md', 'lg'];
     $size = in_array($size, $sizes, true) ? $size : 'sm';
     $classes = trim(implode(' ', array_filter([
         'badge',
         'badge-'.$size,
-        'badge-'.$tone,
+        $tone === 'plain' ? null : 'badge-'.$tone,
         $outline ? 'badge-outline' : null,
     ])));
     $iconIsSymbol = is_string($icon) && $icon !== '' && preg_match('/^[a-z0-9_]+$/', $icon) === 1;

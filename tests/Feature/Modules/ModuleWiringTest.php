@@ -141,7 +141,7 @@ class ModuleWiringTest extends TestCase {
         $this->assertSame([
             \App\Services\B2bCatalog\Mail\B2bOrderMailIntakeHandler::class,
             \App\Services\Invoicing\Mail\EInvoiceMailIntakeHandler::class,
-            \App\Plugins\Fritzbox\FritzboxCallReportMailHandler::class,
+            \App\Plugins\Fritzbox\Services\FritzboxCallReportMailHandler::class,
             \App\Services\ServiceTicket\Mail\TicketThreadMailIntakeHandler::class,
         ], array_map(static fn (object $handler): string => $handler::class, $handlers));
     }

@@ -18,14 +18,7 @@
         IntegrationInboxItem::CASE_CONFLICT  => __('Feld-Konflikt'),
         IntegrationInboxItem::CASE_AMBIGUOUS => __('Mehrdeutig'),
     ];
-    $statusLabels = [
-        IntegrationInboxItem::STATUS_OPEN              => __('Offen'),
-        IntegrationInboxItem::STATUS_RESOLVED_LINKED   => __('Zugeordnet'),
-        IntegrationInboxItem::STATUS_RESOLVED_CREATED  => __('Neu angelegt'),
-        IntegrationInboxItem::STATUS_RESOLVED_LOCAL    => __('Lokal behalten'),
-        IntegrationInboxItem::STATUS_RESOLVED_REMOTE   => __('Remote übernommen'),
-        IntegrationInboxItem::STATUS_DISMISSED         => __('Verworfen'),
-    ];
+    $statusLabels = \App\Enums\Integration\IntegrationInboxStatus::options();
 @endphp
 
 @section('content')
@@ -75,7 +68,7 @@
              haben Default „all". --}}
         @php
             $tabParams = array_filter([
-                'status' => $filters['status'] !== IntegrationInboxItem::STATUS_OPEN ? $filters['status'] : null,
+                'status' => $filters['status'] !== \App\Enums\Integration\IntegrationInboxStatus::Open->value ? $filters['status'] : null,
                 'case' => $filters['case'] !== 'all' ? $filters['case'] : null,
                 'target' => $filters['target'] !== 'all' ? $filters['target'] : null,
                 'target_search' => $filters['target_search'] !== '' ? $filters['target_search'] : null,
@@ -94,7 +87,7 @@
                    class="tab whitespace-nowrap gap-1.5 {{ $filters['plugin'] === $p ? 'tab-active' : '' }}">
                     {{ $pluginNames[$p] ?? $p }}
                     @if (($pluginOpenCounts[$p] ?? 0) > 0)
-                        <span class="badge badge-xs badge-warning tabular-nums">{{ $pluginOpenCounts[$p] }}</span>
+                        <x-status-badge tone="warning" size="xs" class="tabular-nums">{{ $pluginOpenCounts[$p] }}</x-status-badge>
                     @endif
                 </a>
             @endforeach
@@ -102,20 +95,12 @@
     @endif
 
     @if (($assignTargetsTruncated ?? []) !== [])
-        <div class="alert alert-warning mb-4 text-sm">
+        <div role="alert" class="alert alert-warning mb-4 text-sm">
             {{ __('Einige Zuordnungslisten sind auf :max Einträge gekürzt — das Suchfeld oben rechts grenzt die Auswahl ein.', ['max' => 1000]) }}
         </div>
     @endif
 
-    @if ($errors->any())
-        <div class="alert alert-error mb-4 text-sm">
-            <ul class="list-inside list-disc">
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
+    <x-validation-errors class="mb-4" />
 
     @if (! $groups->isEmpty())
         <div class="mb-4 space-y-4">
@@ -124,7 +109,7 @@
                 @php $form = $g['form'] ?? 'customer_project'; @endphp
                 <x-card>
                     <div class="mb-3 flex flex-wrap items-center gap-2">
-                        <span class="badge badge-sm badge-info">{{ $pluginNames[$g['plugin_id']] ?? $g['plugin_id'] }}</span>
+                        <x-status-badge tone="info">{{ $pluginNames[$g['plugin_id']] ?? $g['plugin_id'] }}</x-status-badge>
                         @if ($form === 'asset')
                             <span class="font-semibold">{{ $g['alias'] ?: $g['remote_id'] }}</span>
                             <span class="text-sm text-muted">· {{ $g['provider'] }}</span>
@@ -133,21 +118,22 @@
                         @elseif ($form === 'b2b_order')
                             <span class="font-semibold">{{ __('Bestellung') }} {{ $g['order_id'] }}</span>
                             <span class="text-sm text-muted">· {{ $g['customer_name'] ?? $g['buyer_name'] }}</span>
-                            <span class="badge badge-sm badge-outline">{{ $g['source'] }}</span>
+                            <x-status-badge tone="plain" outline>{{ $g['source'] }}</x-status-badge>
                         @elseif ($form === 'phone_number')
                             <span class="font-semibold">{{ $g['number'] }}</span>
                             @if ($g['name'] ?? null)<span class="text-sm text-muted">· {{ $g['name'] }}</span>@endif
                             @foreach (($g['contact_sources'] ?? []) as $contactSource)
-                                <span class="badge badge-sm badge-info" title="{{ __('Treffer aus einem externen Kontaktverzeichnis') }}">{{ $contactSource }}</span>
+                                <x-status-badge tone="info" title="{{ __('Treffer aus einem externen Kontaktverzeichnis') }}">{{ $contactSource }}</x-status-badge>
                             @endforeach
-                            @if ($g['shared'])<span class="badge badge-sm badge-outline" title="{{ __('Geteilte Nummer — Zuordnung gilt nur für diesen Anruf') }}">{{ __('geteilt') }}</span>@endif
+                            @if ($g['shared'])<x-status-badge tone="plain" outline
+                                    title="{{ __('Geteilte Nummer — Zuordnung gilt nur für diesen Anruf') }}">{{ __('geteilt') }}</x-status-badge>@endif
                         @elseif ($form === 'user')
                             <span class="font-semibold">{{ ($g['user_email'] ?? null) ? __('Unbekannter Benutzer: :email', ['email' => $g['user_email']]) : __('Einträge ohne Benutzersignal') }}</span>
-                            @if ($g['workspace_name'] ?? null)<span class="badge badge-sm badge-outline" title="{{ __('Workspace') }}">{{ $g['workspace_name'] }}</span>@endif
+                            @if ($g['workspace_name'] ?? null)<x-status-badge tone="plain" outline title="{{ __('Workspace') }}">{{ $g['workspace_name'] }}</x-status-badge>@endif
                         @else
                             <span class="font-semibold">{{ $g['project_name'] ?: __('(ohne Projekt)') }}</span>
                             @if ($g['client_name'] ?? null)<span class="text-sm text-muted">· {{ $g['client_name'] }}</span>@endif
-                            @if ($g['workspace_name'] ?? null)<span class="badge badge-sm badge-outline" title="{{ __('Workspace') }}">{{ $g['workspace_name'] }}</span>@endif
+                            @if ($g['workspace_name'] ?? null)<x-status-badge tone="plain" outline title="{{ __('Workspace') }}">{{ $g['workspace_name'] }}</x-status-badge>@endif
                         @endif
                         <span class="ml-auto text-xs text-muted">
                             @if ($form === 'b2b_order')
@@ -212,10 +198,10 @@
                                  den übrigen Kacheln (customer_project, Einzel-Items). --}}
                             <div class="ms-auto flex flex-wrap items-center justify-end gap-2">
                                 @if (($g['manage'] ?? null) instanceof \App\Support\Ui\UiAction)
-                                    <a href="{{ $g['manage']->url }}" class="btn btn-sm btn-ghost">{{ $g['manage']->label }}</a>
+                                    <x-button :href="$g['manage']->url" tone="ghost">{{ $g['manage']->label }}</x-button>
                                 @endif
-                                <button type="submit" form="{{ $dismissFormId }}" class="btn btn-sm btn-ghost">{{ __('Gruppe verwerfen') }}</button>
-                                <button type="submit" class="btn btn-sm btn-primary">{{ __('An Gerät binden & buchen') }}</button>
+                                <x-button type="submit" tone="ghost" form="{{ $dismissFormId }}">{{ __('Gruppe verwerfen') }}</x-button>
+                                <x-button type="submit">{{ __('An Gerät binden & buchen') }}</x-button>
                             </div>
                         </form>
                     @elseif ($form === 'phone_number')
@@ -254,16 +240,16 @@
                                  den übrigen Kacheln (customer_project, Einzel-Items). --}}
                             <div class="ms-auto flex flex-wrap items-center justify-end gap-2">
                                 @if (! $g['shared'])
-                                    <button type="submit" name="action" value="ignore" class="btn btn-sm btn-ghost"
-                                            data-confirm-dialog data-confirm-message="{{ __('Diese Nummer dauerhaft ignorieren? Künftige Anrufe werden nicht mehr importiert.') }}">{{ __('Nummer ignorieren') }}</button>
+                                    <x-button type="submit" tone="ghost" name="action" value="ignore" data-confirm-dialog
+                                            data-confirm-message="{{ __('Diese Nummer dauerhaft ignorieren? Künftige Anrufe werden nicht mehr importiert.') }}">{{ __('Nummer ignorieren') }}</x-button>
                                 @endif
-                                <button type="submit" form="{{ $dismissFormId }}" class="btn btn-sm btn-ghost"
-                                        title="{{ __('Nur diese Anrufe verwerfen — die Nummer taucht beim nächsten Import wieder auf.') }}">{{ __('Gruppe verwerfen') }}</button>
+                                <x-button type="submit" tone="ghost" form="{{ $dismissFormId }}"
+                                        title="{{ __('Nur diese Anrufe verwerfen — die Nummer taucht beim nächsten Import wieder auf.') }}">{{ __('Gruppe verwerfen') }}</x-button>
                                 @if (! $g['shared'])
-                                    <button type="submit" name="action" value="shared" class="btn btn-sm btn-outline"
-                                            title="{{ __('Künftige Anrufe dieser Nummer landen einzeln zur Zuordnung in der Inbox (z. B. Dienstleister-Hotline im Kundenauftrag).') }}">{{ __('Geteilte Nummer') }}</button>
+                                    <x-button type="submit" tone="outline" name="action" value="shared"
+                                            title="{{ __('Künftige Anrufe dieser Nummer landen einzeln zur Zuordnung in der Inbox (z. B. Dienstleister-Hotline im Kundenauftrag).') }}">{{ __('Geteilte Nummer') }}</x-button>
                                 @endif
-                                <button type="submit" name="action" value="assign" class="btn btn-sm btn-primary">{{ __('Zuordnen & buchen') }}</button>
+                                <x-button type="submit" name="action" value="assign">{{ __('Zuordnen & buchen') }}</x-button>
                             </div>
                         </form>
                     @elseif ($form === 'user')
@@ -282,8 +268,8 @@
                             </select>
                             <p class="w-full text-xs text-muted md:w-auto">{{ __('Die Zuordnung wird gemerkt; künftige Importe buchen diese Quell-E-Mail automatisch auf den gewählten Benutzer.') }}</p>
                             <div class="ms-auto flex flex-wrap items-center justify-end gap-2">
-                                <button type="submit" form="{{ $dismissFormId }}" class="btn btn-sm btn-ghost">{{ __('Gruppe verwerfen') }}</button>
-                                <button type="submit" class="btn btn-sm btn-primary">{{ __('Benutzer zuordnen und buchen') }}</button>
+                                <x-button type="submit" tone="ghost" form="{{ $dismissFormId }}">{{ __('Gruppe verwerfen') }}</x-button>
+                                <x-button type="submit">{{ __('Benutzer zuordnen und buchen') }}</x-button>
                             </div>
                         </form>
                     @elseif ($form === 'calendar_series')
@@ -313,8 +299,8 @@
                             {{-- Aktionen rechtsbündig, Primär-Aktion ganz rechts — wie auf
                                  den übrigen Kacheln (customer_project, Einzel-Items). --}}
                             <div class="ms-auto flex flex-wrap items-center justify-end gap-2">
-                                <button type="submit" form="{{ $dismissFormId }}" class="btn btn-sm btn-ghost">{{ __('Gruppe verwerfen') }}</button>
-                                <button type="submit" class="btn btn-sm btn-primary">{{ __('Als Auftrag buchen') }}</button>
+                                <x-button type="submit" tone="ghost" form="{{ $dismissFormId }}">{{ __('Gruppe verwerfen') }}</x-button>
+                                <x-button type="submit">{{ __('Als Auftrag buchen') }}</x-button>
                             </div>
                         </form>
                     @else
@@ -410,8 +396,8 @@
                         </fieldset>
 
                         <div class="md:col-span-full flex justify-end gap-2">
-                            <button type="submit" form="{{ $dismissFormId }}" class="btn btn-sm btn-ghost">{{ __('Gruppe verwerfen') }}</button>
-                            <button type="submit" class="btn btn-sm btn-primary">{{ __('Gruppe buchen') }}</button>
+                            <x-button type="submit" tone="ghost" form="{{ $dismissFormId }}">{{ __('Gruppe verwerfen') }}</x-button>
+                            <x-button type="submit">{{ __('Gruppe buchen') }}</x-button>
                         </div>
                     </form>
                     @endif
@@ -445,21 +431,21 @@
                 <x-card>
                     <div class="mb-2 flex flex-wrap items-center gap-2">
                         @php
-                            $caseBadge = match ($item->case_type) {
-                                IntegrationInboxItem::CASE_CONFLICT => 'badge-warning',
-                                IntegrationInboxItem::CASE_AMBIGUOUS => 'badge-info',
-                                default => 'badge-ghost',
+                            $caseTone = match ($item->case_type) {
+                                IntegrationInboxItem::CASE_CONFLICT => 'warning',
+                                IntegrationInboxItem::CASE_AMBIGUOUS => 'info',
+                                default => 'ghost',
                             };
                         @endphp
-                        <span class="badge badge-sm {{ $caseBadge }}">{{ $caseLabels[$item->case_type] ?? $item->case_type }}</span>
-                        <span class="badge badge-sm badge-outline">{{ $pluginNames[$item->plugin_id] ?? $item->plugin_id }}</span>
+                        <x-status-badge :tone="$caseTone">{{ $caseLabels[$item->case_type] ?? $item->case_type }}</x-status-badge>
+                        <x-status-badge tone="plain" outline>{{ $pluginNames[$item->plugin_id] ?? $item->plugin_id }}</x-status-badge>
                         @if ($targetLabel !== null)
-                            <span class="badge badge-sm badge-outline">{{ $targetLabel }}</span>
+                            <x-status-badge tone="plain" outline>{{ $targetLabel }}</x-status-badge>
                         @endif
                         @unless ($item->isOpen())
-                            <span class="badge badge-sm badge-success">{{ $statusLabels[$item->status] ?? $item->status }}</span>
+                            <x-status-badge tone="success">{{ $item->status->label() }}</x-status-badge>
                         @endunless
-                        <span class="ml-auto text-xs text-muted">{{ $item->created_at?->orgTz()->format('d.m.Y H:i') }}</span>
+                        <span class="ml-auto text-xs text-muted">{{ $item->created_at?->fdatetime() }}</span>
                     </div>
 
                     <div class="mb-3">
@@ -488,7 +474,7 @@
                     @endphp
                     @if ($timeEntry !== null)
                         <div class="mb-3 flex flex-wrap items-baseline gap-x-2 rounded bg-base-200/40 p-2 text-sm">
-                            <span class="font-medium tabular-nums">{{ $timeEntry->date?->format('d.m.Y') }}</span>
+                            <span class="font-medium tabular-nums">{{ $timeEntry->date?->fdate() }}</span>
                             @if ($timeEntry->started_at)
                                 <span class="tabular-nums">{{ $timeEntry->started_at->orgTz()->format('H:i') }}–{{ $timeEntry->ended_at?->orgTz()->format('H:i') ?? '…' }}</span>
                             @endif
@@ -563,7 +549,7 @@
                                             <option value="{{ $sqid }}">{{ $label }}</option>
                                         @endforeach
                                     </select>
-                                    <button class="join-item btn btn-sm btn-primary">{{ __('mail.inbox.book_action') }}</button>
+                                    <x-button type="submit" class="join-item">{{ __('mail.inbox.book_action') }}</x-button>
                                 </form>
                                 {{-- Mail → Service-Ticket (MVP-343): Queue des Eingangspostfachs,
                                      Kunde leer = automatisch erkannter Absender-Kunde. --}}
@@ -571,7 +557,7 @@
                                     <form method="POST" action="{{ route('admin.mail.inbox.book-ticket') }}">
                                         @csrf
                                         <input type="hidden" name="item" value="{{ $item->sqid }}">
-                                        <button class="btn btn-sm btn-outline">{{ __('mail.inbox.book_ticket_action') }}</button>
+                                        <x-button type="submit" tone="outline">{{ __('mail.inbox.book_ticket_action') }}</x-button>
                                     </form>
                                 @endfeature
                                 {{-- Anhang-Übernahme ins DMS (MVP-343): nur wenn beim Intake
@@ -584,7 +570,7 @@
                                     <form method="POST" action="{{ route('admin.mail.inbox.import-dms') }}">
                                         @csrf
                                         <input type="hidden" name="item" value="{{ $item->sqid }}">
-                                        <button class="btn btn-sm btn-outline">{{ __('mail.dms.action') }}</button>
+                                        <x-button type="submit" tone="outline">{{ __('mail.dms.action') }}</x-button>
                                     </form>
                                 @endif
                             @elseif ($conflictActions !== null && $conflictActions->replacesDefaultConflictActions($item))
@@ -598,18 +584,18 @@
                                 @endforeach
                                 <form method="POST" action="{{ route('admin.integration.inbox.accept-remote', $item) }}">
                                     @csrf
-                                    <button class="btn btn-sm btn-primary">{{ __('Remote übernehmen') }}</button>
+                                    <x-button type="submit">{{ __('Remote übernehmen') }}</x-button>
                                 </form>
                                 <form method="POST" action="{{ route('admin.integration.inbox.keep-local', $item) }}">
                                     @csrf
-                                    <button class="btn btn-sm btn-outline">{{ __('Lokal behalten') }}</button>
+                                    <x-button type="submit" tone="outline">{{ __('Lokal behalten') }}</x-button>
                                 </form>
                             @else
                                 @foreach ($candidates as $cand)
                                     <form method="POST" action="{{ route('admin.integration.inbox.assign', $item) }}">
                                         @csrf
                                         <input type="hidden" name="target" value="{{ $cand['sqid'] ?? '' }}">
-                                        <button class="btn btn-sm btn-primary">{{ __('Zuordnen:') }} {{ $cand['label'] ?? '?' }}</button>
+                                        <x-button type="submit">{{ __('Zuordnen:') }} {{ $cand['label'] ?? '?' }}</x-button>
                                     </form>
                                 @endforeach
 
@@ -627,25 +613,25 @@
                                                 @endforeach
                                             @endif
                                         </select>
-                                        <button class="join-item btn btn-sm">{{ __('Zuordnen') }}</button>
+                                        <x-button type="submit" tone="plain" class="join-item">{{ __('Zuordnen') }}</x-button>
                                     </form>
                                 @endif
 
                                 <form method="POST" action="{{ route('admin.integration.inbox.create', $item) }}"
                                       data-confirm-dialog data-confirm-message="{{ __('Als neuen Datensatz anlegen?') }}">
                                     @csrf
-                                    <button class="btn btn-sm btn-outline">{{ __('Neu anlegen') }}</button>
+                                    <x-button type="submit" tone="outline">{{ __('Neu anlegen') }}</x-button>
                                 </form>
                             @endif
 
                             <form method="POST" action="{{ route('admin.integration.inbox.dismiss', $item) }}">
                                 @csrf
-                                <button class="btn btn-sm btn-ghost">{{ __('Verwerfen') }}</button>
+                                <x-button type="submit" tone="ghost">{{ __('Verwerfen') }}</x-button>
                             </form>
                         </div>
                     @else
                         <div class="text-right text-xs text-muted">
-                            {{ $item->resolved_at?->orgTz()->format('d.m.Y H:i') }}
+                            {{ $item->resolved_at?->fdatetime() }}
                         </div>
                     @endif
                 </x-card>

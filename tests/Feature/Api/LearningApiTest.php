@@ -118,8 +118,11 @@ final class LearningApiTest extends TestCase {
     }
 
     public function test_self_enrollment_needs_write_ability_and_respects_course_rules(): void {
-        $course = $this->course('Brandschutz kompakt');
-        $closed = $this->course('Geschlossen', attributes: ['available_until' => now()->subDay()->toDateString()]);
+        $course = $this->course('Brandschutz kompakt', attributes: ['access_kind' => 'open']);
+        $closed = $this->course('Geschlossen', attributes: ['access_kind' => 'open', 'available_until' => now()->subDay()->toDateString()]);
+        // Sicherheitsaudit 2026-10-04, authz-b-5: Zugangsart und Zielgruppe gelten auch an der API.
+        $byOperator = $this->course('Nur durch den Betrieb');
+        $customersOnly = $this->course('Kundenkurs', attributes: ['access_kind' => 'open', 'audiences' => ['customer']]);
 
         Sanctum::actingAs($this->learner, ['learning:read']);
         $this->postJson(route('api.learning.courses.enroll', $course))->assertForbidden();
@@ -134,5 +137,8 @@ final class LearningApiTest extends TestCase {
         $this->assertSame($created->json('data.id'), $again->json('data.id'));
 
         $this->postJson(route('api.learning.courses.enroll', $closed))->assertUnprocessable();
+        $this->postJson(route('api.learning.courses.enroll', $byOperator))->assertUnprocessable();
+        $this->postJson(route('api.learning.courses.enroll', $customersOnly))->assertNotFound();
+        $this->assertSame(1, LearningEnrollment::query()->count());
     }
 }

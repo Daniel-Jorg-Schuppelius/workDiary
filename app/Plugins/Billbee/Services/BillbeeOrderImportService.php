@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Billbee\Services;
 
+use App\Enums\Integration\MarketplaceInboxStatus;
 use App\Models\Customer\Customer;
 use App\Models\Platform\Organization;
 use App\Plugins\Billbee\Api\BillbeeClientFactory;
@@ -104,7 +105,7 @@ class BillbeeOrderImportService {
                 'ordered_at' => self::dateOrNull($order['CreatedAt'] ?? null),
                 'billbee_modified_at' => self::dateOrNull($order['LastModifiedAt'] ?? $order['UpdatedAt'] ?? $order['CreatedAt'] ?? null),
                 'customer_id' => $customer?->id,
-                'inbox_status' => $customer !== null ? BillbeeOrder::INBOX_LINKED : BillbeeOrder::INBOX_OPEN,
+                'inbox_status' => $customer !== null ? MarketplaceInboxStatus::Linked : MarketplaceInboxStatus::Open,
             ],
         );
 
@@ -133,7 +134,6 @@ class BillbeeOrderImportService {
             $buyer,
             'billbee',
             BillbeeOrder::class,
-            BillbeeOrder::INBOX_LINKED,
         );
         if ($customer === null) {
             $counters['staged']++;

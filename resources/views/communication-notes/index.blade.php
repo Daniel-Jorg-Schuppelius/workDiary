@@ -12,7 +12,7 @@
 @extends('layouts.app')
 @section('title', __('communication.title.notes'))
 @section('nav-title', __('communication.title.notes'))
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @php
     /** @var \Illuminate\Pagination\LengthAwarePaginator<int, \App\Models\Communication\CommunicationNote> $notes */
@@ -97,7 +97,6 @@
                     <th class="w-32 text-right">{{ __('communication.field.actions') }}</th>
                 </tr>
             </x-slot:head>
-            <tbody>
                 @forelse ($notes as $note)
                     @php
                         $contextUrl = $contextUrls[$note->id] ?? null;
@@ -175,7 +174,6 @@
                 @empty
                     <x-table.empty :colspan="7" icon="sticky_note_2" :title="__('communication.empty_filtered')" compact />
                 @endforelse
-            </tbody>
         </x-table>
 
         <x-pagination :paginator="$notes" standing />

@@ -16,7 +16,7 @@
 
 
     <div class="flex flex-wrap items-center gap-2 text-sm">
-        <span class="badge badge-outline">{{ $case->status->label() }}</span>
+        <x-status-badge tone="plain" size="md" outline>{{ $case->status->label() }}</x-status-badge>
         <span>{{ $case->starts_at->fdatetime() }} – {{ $case->ends_at->fdatetime() }}</span>
     </div>
 
@@ -27,7 +27,7 @@
         @foreach ($case->caseAssets as $caseAsset)
             <tr class="hover">
                 <td>{{ $caseAsset->asset->name ?? '—' }}</td>
-                <td><span class="badge badge-outline">{{ __("values.{$caseAsset->status}") }}</span></td>
+                <td><x-status-badge tone="plain" size="md" outline>{{ $caseAsset->status->label() }}</x-status-badge></td>
             </tr>
         @endforeach
     </x-table>
@@ -47,7 +47,7 @@
                             @else
                                 <form method="POST" action="{{ route('customer.rentals.confirm', [$case, $report]) }}">
                                     @csrf
-                                    <button type="submit" class="btn btn-xs btn-primary">{{ __('Übergabe bestätigen') }}</button>
+                                    <x-button type="submit" size="xs">{{ __('Übergabe bestätigen') }}</x-button>
                                 </form>
                             @endif
                         </td>

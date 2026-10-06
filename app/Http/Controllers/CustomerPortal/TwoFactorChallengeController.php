@@ -10,7 +10,7 @@
 
 namespace App\Http\Controllers\CustomerPortal;
 
-use App\Enums\Auth\TwoFactorType;
+use App\Http\Controllers\Auth\Concerns\SendsEmailOtpChallenge;
 use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
 use App\Services\Auth\{EmailOtpService, TwoFactorService, WebAuthnService};
@@ -23,6 +23,8 @@ use Illuminate\View\View;
  * in der Session (auth.customer.2fa.id) und wird erst nach gültigem Code eingeloggt.
  */
 class TwoFactorChallengeController extends Controller {
+    use SendsEmailOtpChallenge;
+
     private const MAX_ATTEMPTS = 5;
 
     /** Zähler je Konto, unabhängig von der Adresse (Audit 2026-09-17, 2fa-1). */
@@ -86,19 +88,8 @@ class TwoFactorChallengeController extends Controller {
         return response()->json(['redirect' => route('customer.dashboard')]);
     }
 
-    public function email(Request $request): RedirectResponse {
-        $user = $this->parkedUser($request);
-        if (! $user instanceof User) {
-            return redirect()->route('customer.login');
-        }
-        if (! $this->hasEmailFactor($user) || ! $this->emailOtp->canSend($user)) {
-            return back()->withErrors(['email_code' => __('Code konnte nicht gesendet werden.')]);
-        }
-        if (! $this->emailOtp->send($user)) {
-            return back()->withErrors(['email_code' => __('E-Mail-Versand fehlgeschlagen — Mailserver nicht erreichbar oder falsch konfiguriert. Bitte informieren Sie Ihre Administration.')]);
-        }
-
-        return back()->with('success', __('Code an Ihre E-Mail gesendet.'));
+    private function loginRoute(): string {
+        return 'customer.login';
     }
 
     private function parkedUser(Request $request): ?User {
@@ -106,11 +97,6 @@ class TwoFactorChallengeController extends Controller {
         $user = $userId !== null ? User::query()->whereKey($userId)->first() : null;
 
         return ($user instanceof User && $user->isCustomer()) ? $user : null;
-    }
-
-    private function hasEmailFactor(User $user): bool {
-        return $user->twoFactorCredentials()
-            ->where('type', TwoFactorType::Email->value)->whereNotNull('confirmed_at')->exists();
     }
 
     public function store(Request $request): RedirectResponse {

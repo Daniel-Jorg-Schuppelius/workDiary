@@ -26,7 +26,7 @@
 
     <x-card :title="__('investment.financing.comparison')" :count="count($rows)">
         @if ($rows === [])
-            <p class="text-sm text-muted">{{ __('investment.financing.none') }}</p>
+            <x-empty-state icon="account_balance" :title="__('investment.financing.none')" compact />
         @else
             <x-table bare>
                 <x-slot:head>

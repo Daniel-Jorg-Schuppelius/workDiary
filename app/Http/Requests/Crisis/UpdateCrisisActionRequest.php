@@ -12,8 +12,9 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Crisis;
 
+use App\Enums\Crisis\CrisisActionStatus;
 use App\Http\Requests\BaseFormRequest;
-use App\Models\Crisis\CrisisAction;
+use Illuminate\Validation\Rule;
 
 /**
  * Validierung für die Statuspflege einer Maßnahme (MVP-216).
@@ -23,7 +24,7 @@ class UpdateCrisisActionRequest extends BaseFormRequest {
     /** @return array<string, mixed> */
     public function rules(): array {
         return [
-            'status' => ['required', 'in:' . implode(',', CrisisAction::STATUSES)],
+            'status' => ['required', Rule::enum(CrisisActionStatus::class)],
             'evidence_note' => ['nullable', 'string', 'max:1000'],
         ];
     }

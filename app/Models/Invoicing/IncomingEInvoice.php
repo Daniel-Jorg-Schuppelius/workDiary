@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Invoicing;
 
+use App\Enums\Invoicing\IncomingEInvoiceStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Document\Document;
 use App\Models\Finance\IncomingInvoiceRetention;
@@ -38,7 +39,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property \CommonToolkit\ValueObjects\Money|null $amount_tax
  * @property \CommonToolkit\ValueObjects\Money|null $amount_gross
  * @property \Illuminate\Support\Carbon $received_at
- * @property string $status
+ * @property IncomingEInvoiceStatus $status
  * @property int|null $decided_by
  * @property \Illuminate\Support\Carbon|null $decided_at
  * @property string|null $decision_note
@@ -61,16 +62,6 @@ class IncomingEInvoice extends Model {
     /** Eloquent würde zu incoming_e_invoices pluralisieren. */
     protected $table = 'incoming_einvoices';
 
-    public const STATUS_RECEIVED = 'received';
-
-    public const STATUS_APPROVED = 'approved';
-
-    public const STATUS_REJECTED = 'rejected';
-
-    public const STATUS_QUESTION = 'question';
-
-    public const STATUS_PAYMENT_RELEASED = 'payment_released';
-
     protected $fillable = [
         'organization_id', 'document_id', 'sha256', 'source', 'received_at',
         'status', 'decided_by', 'decided_at', 'decision_note', 'summary',
@@ -87,6 +78,7 @@ class IncomingEInvoice extends Model {
     /** @var array<string, string> */
     protected $casts = [
         'received_at' => 'datetime',
+        'status' => IncomingEInvoiceStatus::class,
         'decided_at' => 'datetime',
         'summary' => 'array',
         'transferred_at' => 'datetime',
@@ -139,20 +131,8 @@ class IncomingEInvoice extends Model {
         return $this->belongsTo(Document::class);
     }
 
-    /** Display-Label statt rohem Statuscode (Konvention: Codes nie roh in Views). */
     /** @return HasMany<IncomingInvoiceRetention, $this> Einbehalte (MVP-953) */
     public function retentions(): HasMany {
         return $this->hasMany(IncomingInvoiceRetention::class, 'incoming_einvoice_id')->orderBy('id');
-    }
-
-    public function statusLabel(): string {
-        return match ($this->status) {
-            self::STATUS_RECEIVED => (string) __('Empfangen'),
-            self::STATUS_APPROVED => (string) __('Fachlich freigegeben'),
-            self::STATUS_REJECTED => (string) __('Abgelehnt'),
-            self::STATUS_QUESTION => (string) __('Rückfrage'),
-            self::STATUS_PAYMENT_RELEASED => (string) __('Zahlung freigegeben'),
-            default => (string) $this->status,
-        };
     }
 }

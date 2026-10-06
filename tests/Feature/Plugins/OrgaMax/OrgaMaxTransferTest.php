@@ -19,6 +19,7 @@ use App\Models\Integration\ExternalReference;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
 use App\Models\Time\TimeEntry;
+use App\Plugins\OrgaMax\Enums\OrgaMaxConnectionStatus;
 use App\Plugins\OrgaMax\Models\OrgaMaxConnection;
 use App\Plugins\OrgaMax\OrgaMaxPlugin;
 use App\Plugins\OrgaMax\Services\OrgaMaxTarget;
@@ -82,7 +83,7 @@ class OrgaMaxTransferTest extends TestCase {
             'ownership_id' => 'own-1',
             'bearer_token' => 'token',
             'token_expires_at' => Carbon::now()->addHour(),
-            'status' => OrgaMaxConnection::STATUS_ACTIVE,
+            'status' => OrgaMaxConnectionStatus::Active,
             'capabilities' => ['billing' => ['enabled' => true, 'leader' => 'orgamax']],
         ]);
 

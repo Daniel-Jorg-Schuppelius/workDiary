@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Applications;
 
+use App\Enums\Applications\JobApplicationStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasContactAndBankDetails, HasSqid};
 use App\Models\Contracts\ContactDetailsHolder;
 use App\Models\Platform\User;
@@ -35,7 +36,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, HasOne, MorphMan
  * @property string|null $phone
  * @property string|null $email_hash
  * @property string $source
- * @property string $status
+ * @property JobApplicationStatus $status
  * @property \Illuminate\Support\Carbon|null $received_at
  * @property \Illuminate\Support\Carbon|null $consent_talent_pool_at
  * @property \Illuminate\Support\Carbon|null $consent_expires_on
@@ -55,11 +56,6 @@ class JobApplication extends Model implements ContactDetailsHolder {
     use HasContactAndBankDetails;
     use HasSqid;
 
-    public const STATUSES = ['received', 'screened', 'interview_planned', 'interviewed', 'task_open', 'offer', 'accepted', 'rejected', 'withdrawn', 'talent_pool', 'deleted'];
-
-    /** Aktive Pipeline-Status (vor der Entscheidung). */
-    public const PIPELINE_STATUSES = ['received', 'screened', 'interview_planned', 'interviewed', 'task_open', 'offer'];
-
     protected $fillable = [
         'organization_id', 'job_requisition_id', 'job_posting_id',
         'candidate_name', 'email', 'phone', 'email_hash', 'source', 'status',
@@ -78,6 +74,7 @@ class JobApplication extends Model implements ContactDetailsHolder {
         'email' => 'encrypted',
         'phone' => 'encrypted',
         'notes' => 'encrypted',
+        'status' => JobApplicationStatus::class,
         'received_at' => 'datetime',
         'consent_talent_pool_at' => 'datetime',
         'consent_expires_on' => 'date',
@@ -120,6 +117,15 @@ class JobApplication extends Model implements ContactDetailsHolder {
         return $this->hasMany(JobApplicationInterview::class, 'job_application_id')->orderBy('scheduled_at');
     }
 
+    /**
+     * Terminangebote an den Bewerber (MVP-925).
+     *
+     * @return HasMany<JobInterviewOffer, $this>
+     */
+    public function interviewOffers(): HasMany {
+        return $this->hasMany(JobInterviewOffer::class, 'job_application_id');
+    }
+
     /** @return HasMany<JobApplicationReview, $this> */
     public function reviews(): HasMany {
         return $this->hasMany(JobApplicationReview::class, 'job_application_id');
@@ -144,19 +150,14 @@ class JobApplication extends Model implements ContactDetailsHolder {
         return $this->anonymized_at !== null;
     }
 
-    /** DaisyUI badge tone */
-    public function statusTone(): string {
-        return match ($this->status) {
-            'screened' => 'info',
-            'interview_planned', 'interviewed' => 'primary',
-            'task_open' => 'warning',
-            'offer' => 'accent',
-            'accepted' => 'success',
-            'rejected' => 'error',
-            'talent_pool' => 'secondary',
-            'withdrawn', 'deleted' => 'neutral',
-            default => 'ghost',
-        };
+    /**
+     * Die Talentpool-Einwilligung trägt die Verarbeitung bis einschließlich
+     * ihres Ablauftags; ohne sie darf die Akte nicht wieder aufgenommen werden.
+     */
+    public function hasValidTalentPoolConsent(): bool {
+        return $this->consent_talent_pool_at !== null
+            && $this->consent_expires_on !== null
+            && $this->consent_expires_on->gte(now()->startOfDay());
     }
 
     /**

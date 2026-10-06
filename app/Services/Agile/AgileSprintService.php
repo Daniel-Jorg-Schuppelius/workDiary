@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Agile;
 
-use App\Enums\Agile\AgileColumnCategory;
+use App\Enums\Agile\{AgileColumnCategory, AgileSprintStatus};
 use App\Models\Agile\{AgileBoard, AgileEvent, AgileSprint, AgileSprintItem, AgileWorkItem};
 use App\Models\Platform\User;
 use Illuminate\Support\Facades\DB;
@@ -37,7 +37,7 @@ class AgileSprintService {
             'goal' => $attributes['goal'] ?? null,
             'starts_on' => $attributes['starts_on'] ?? null,
             'ends_on' => $attributes['ends_on'] ?? null,
-            'status' => AgileSprint::STATUS_PLANNED,
+            'status' => AgileSprintStatus::Planned,
             'created_by' => $actor?->id,
         ]);
 
@@ -112,10 +112,10 @@ class AgileSprintService {
             AgileBoard::query()->whereKey($sprint->board_id)->lockForUpdate()->firstOrFail();
 
             $fresh = AgileSprint::query()->whereKey($sprint->id)->firstOrFail();
-            if ($fresh->status !== AgileSprint::STATUS_PLANNED) {
+            if (! $fresh->status->canTransitionTo(AgileSprintStatus::Active)) {
                 throw new RuntimeException((string) __('Nur geplante Sprints können gestartet werden.'));
             }
-            if (AgileSprint::query()->where('board_id', $sprint->board_id)->where('status', AgileSprint::STATUS_ACTIVE)->exists()) {
+            if (AgileSprint::query()->where('board_id', $sprint->board_id)->where('status', AgileSprintStatus::Active)->exists()) {
                 throw new RuntimeException((string) __('Am Board läuft bereits ein aktiver Sprint.'));
             }
             if (trim((string) $fresh->goal) === '') {
@@ -149,7 +149,7 @@ class AgileSprintService {
             );
 
             $fresh->update([
-                'status' => AgileSprint::STATUS_ACTIVE,
+                'status' => AgileSprintStatus::Active,
                 'started_at' => now(),
                 'commitment_snapshot' => $commitment,
                 'capacity_snapshot' => $capacity,
@@ -176,7 +176,7 @@ class AgileSprintService {
     public function complete(AgileSprint $sprint, array $decisions, ?User $actor = null): AgileSprint {
         return DB::transaction(function () use ($sprint, $decisions, $actor): AgileSprint {
             $fresh = AgileSprint::query()->whereKey($sprint->id)->lockForUpdate()->firstOrFail();
-            if (! $fresh->isActive()) {
+            if (! $fresh->status->canTransitionTo(AgileSprintStatus::Completed)) {
                 throw new RuntimeException((string) __('Nur aktive Sprints können abgeschlossen werden.'));
             }
 
@@ -204,7 +204,7 @@ class AgileSprintService {
 
                 $target = AgileSprint::query()
                     ->where('board_id', $fresh->board_id)
-                    ->where('status', AgileSprint::STATUS_PLANNED)
+                    ->where('status', AgileSprintStatus::Planned)
                     ->find((int) $decision);
                 if ($target === null) {
                     throw new InvalidArgumentException((string) __('Folgesprint ist kein geplanter Sprint dieses Boards.'));
@@ -230,7 +230,7 @@ class AgileSprintService {
             ];
 
             $fresh->update([
-                'status' => AgileSprint::STATUS_COMPLETED,
+                'status' => AgileSprintStatus::Completed,
                 'completed_at' => now(),
                 'completion_snapshot' => $completion,
             ]);
@@ -251,12 +251,12 @@ class AgileSprintService {
 
         return DB::transaction(function () use ($sprint, $reason, $actor): AgileSprint {
             $fresh = AgileSprint::query()->whereKey($sprint->id)->lockForUpdate()->firstOrFail();
-            if ($fresh->isFinished()) {
+            if (! $fresh->status->canTransitionTo(AgileSprintStatus::Cancelled)) {
                 throw new RuntimeException((string) __('Der Sprint ist bereits abgeschlossen.'));
             }
 
             $fresh->update([
-                'status' => AgileSprint::STATUS_CANCELLED,
+                'status' => AgileSprintStatus::Cancelled,
                 'cancelled_at' => now(),
                 'cancel_reason' => trim($reason),
             ]);

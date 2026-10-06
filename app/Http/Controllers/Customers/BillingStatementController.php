@@ -33,7 +33,7 @@ class BillingStatementController extends Controller {
     public function show(Customer $customer, CustomerBillingStatement $statement, CustomerAccountStatementService $service): View {
         // Wie das Panel an der Kundenakte: Abrechnungsdaten (Sätze, Beträge)
         // sind nicht für jeden Org-Mitleser.
-        Gate::authorize('update', $customer);
+        Gate::authorize('manageBilling', $customer);
         $this->assertBelongsToCustomer($customer, $statement);
 
         $agreement = $statement->agreement()->firstOrFail();
@@ -51,7 +51,7 @@ class BillingStatementController extends Controller {
     }
 
     public function close(Customer $customer, CustomerBillingStatement $statement, CustomerAccountStatementService $service): RedirectResponse {
-        Gate::authorize('update', $customer);
+        Gate::authorize('manageBilling', $customer);
         $this->assertBelongsToCustomer($customer, $statement);
 
         /** @var User $actor */
@@ -63,7 +63,7 @@ class BillingStatementController extends Controller {
     }
 
     public function reopen(Customer $customer, CustomerBillingStatement $statement, CustomerAccountStatementService $service): RedirectResponse {
-        Gate::authorize('update', $customer);
+        Gate::authorize('manageBilling', $customer);
         $this->assertBelongsToCustomer($customer, $statement);
 
         /** @var User $actor */
@@ -75,7 +75,7 @@ class BillingStatementController extends Controller {
     }
 
     public function recalculate(Customer $customer, CustomerAccountStatementService $service): RedirectResponse {
-        Gate::authorize('update', $customer);
+        Gate::authorize('manageBilling', $customer);
 
         $agreement = $customer->billingAgreement()->firstOrFail();
         // reapplyRates statt recalculateOpen: der Knopf soll auch Zeiten

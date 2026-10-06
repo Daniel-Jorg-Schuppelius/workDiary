@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Gaeb;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
 use App\Services\Gaeb\GaebInvoiceExportService;
@@ -59,7 +60,7 @@ final class InvoiceGaebExportTest extends TestCase {
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
             'number' => $number,
-            'status' => Invoice::STATUS_ISSUED,
+            'status' => InvoiceStatus::Issued,
             'type' => $type,
             'currency' => 'EUR',
             'tax_rate' => '19.00',

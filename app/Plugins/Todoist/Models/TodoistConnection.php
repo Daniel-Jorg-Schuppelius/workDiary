@@ -12,6 +12,7 @@ namespace App\Plugins\Todoist\Models;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization};
 use App\Models\Platform\User;
+use App\Plugins\Todoist\Enums\TodoistConnectionStatus;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -31,7 +32,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $refresh_token
  * @property Carbon|null $token_expires_at
  * @property string|null $scopes
- * @property string $status
+ * @property TodoistConnectionStatus $status
  * @property bool $webhook_capable
  * @property string|null $sync_cursor
  * @property Carbon|null $last_sync_at
@@ -43,12 +44,6 @@ class TodoistConnection extends Model {
     use BelongsToOrganization;
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
-
-    public const STATUS_ACTIVE = 'active';
-
-    public const STATUS_PAUSED = 'paused';
-
-    public const STATUS_DISCONNECTED = 'disconnected';
 
     /**
      * Tokens (und der interne Cursor) erscheinen nie im Array-/JSON-Output —
@@ -84,6 +79,7 @@ class TodoistConnection extends Model {
         'access_token' => 'encrypted',
         'refresh_token' => 'encrypted',
         'token_expires_at' => 'datetime',
+        'status' => TodoistConnectionStatus::class,
         'webhook_capable' => 'boolean',
         'last_sync_at' => 'datetime',
         'last_full_sync_at' => 'datetime',
@@ -97,6 +93,6 @@ class TodoistConnection extends Model {
     }
 
     public function isActive(): bool {
-        return $this->status === self::STATUS_ACTIVE && trim((string) $this->access_token) !== '';
+        return $this->status === TodoistConnectionStatus::Active && trim((string) $this->access_token) !== '';
     }
 }

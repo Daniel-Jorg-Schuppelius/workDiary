@@ -1,0 +1,460 @@
+<?php
+/*
+ * Created on   : Tue May 26 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : LexofficeVoucherSync.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+namespace App\Plugins\Lexoffice\Services;
+
+use App\Models\Customer\Customer;
+use App\Models\Integration\ExternalReference;
+use App\Models\Platform\Organization;
+use App\Models\Supplier\Supplier;
+use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
+use App\Plugins\Lexoffice\Exceptions\LexofficeApiException;
+use App\Plugins\Lexoffice\{LexofficeConfig, LexofficePlugin};
+use App\Plugins\Lexoffice\Models\LexofficeVoucher;
+use App\Plugins\Support\PluginApiClient;
+use Illuminate\Support\Carbon;
+use RuntimeException;
+
+/**
+ * Zieht die Lexoffice-Belege (voucherlist) für alle verknüpften Kontakte einer
+ * Organisation und legt sie im lokalen Cache `lexoffice_vouchers` ab.
+ *
+ * Pro verknüpftem Kontakt (ExternalReference type='contact') wird die
+ * voucherlist mit `voucherType=any` und `voucherStatus=any` paginiert geladen.
+ * Die Zuordnung zu lokalen Kunden/Lieferanten erfolgt über die external_id des
+ * Kontakts — ein Kontakt mit Doppelrolle setzt sowohl customer_id als auch
+ * supplier_id.
+ *
+ * Verwendet den HTTP-Client direkt (analog Article-/Contact-Sync).
+ *
+ * Quelle: https://developers.lexoffice.io/docs/#voucherlist-endpoint
+ */
+class LexofficeVoucherSync {
+    private ?PluginApiClient $api = null;
+
+    private float $requestInterval;
+
+    /** Rechnungen, deren Positionen je Sync-Lauf nachgeladen werden (Ratenlimit). */
+    private const LINES_PER_RUN = 100;
+
+    /**
+     * @param  float|null  $requestInterval  Anfrageabstand in Sekunden; null = Einstellung der gebundenen Organisation.
+     *                                       Die Konsole bindet keinen Org-Kontext und reicht den Wert deshalb explizit durch.
+     */
+    public function __construct(
+        private readonly ?string $apiKey,
+        private readonly string $baseUrl = 'https://api.lexoffice.io/v1',
+        ?float $requestInterval = null,
+    ) {
+        $this->requestInterval = $requestInterval ?? LexofficeConfig::requestInterval();
+    }
+
+    private function api(): PluginApiClient {
+        // 429/5xx wiederholt der Client selbst (Retry-After/Backoff) — keine eigene Schleife.
+        return $this->api ??= app(LexofficeClientFactory::class)->make((string) $this->apiKey, $this->baseUrl, $this->requestInterval);
+    }
+
+    /**
+     * @return array{contacts: int, created: int, updated: int, archived: int, paid_dates: int, lines: int, categories: int, frozen?: bool, lines_error?: string, categories_error?: string}
+     */
+    public function sync(Organization $organization): array {
+        // G3 (MVP-690): Nach abgeschlossenem Buchhaltungswechsel mit Quelle
+        // Lexoffice ist der Spiegel eingefroren — der Sync würde den GoBD-
+        // Bestand gegen ein auslaufendes Konto abgleichen.
+        $completedMigration = \App\Models\Migration\AccountingMigrationRun::query()
+            ->where('organization_id', $organization->id)
+            ->where('source_plugin', 'lexoffice')
+            ->where('status', \App\Enums\Migration\AccountingMigrationStatus::Completed->value)
+            ->exists();
+        if ($completedMigration) {
+            return ['contacts' => 0, 'created' => 0, 'updated' => 0, 'archived' => 0, 'paid_dates' => 0, 'lines' => 0, 'categories' => 0, 'frozen' => true];
+        }
+
+        if ($this->apiKey === null || $this->apiKey === '') {
+            throw new RuntimeException('Lexoffice API key is not configured (LEXOFFICE_API_KEY).');
+        }
+
+        $contactMap = $this->buildContactMap($organization);
+
+        $created = 0;
+        $updated = 0;
+        /** @var array<int, string> $seen */
+        $seen = [];
+
+        foreach ($contactMap as $contactExternalId => $owners) {
+            foreach ($this->fetchVouchers($contactExternalId) as $item) {
+                if (! empty($item['id'])) {
+                    $seen[] = (string) $item['id'];
+                }
+                $verb = $this->upsertVoucherItem($organization->id, $contactExternalId, $owners, $item);
+                if ($verb === 'created') {
+                    $created++;
+                } elseif ($verb === 'updated') {
+                    $updated++;
+                }
+            }
+        }
+
+        $archived = $this->archiveMissing($organization, $seen);
+
+        $result = [
+            'contacts' => count($contactMap),
+            'created' => $created,
+            'updated' => $updated,
+            'archived' => (int) $archived,
+            'paid_dates' => $this->enrichPaidDates($organization->id),
+            'lines' => 0,
+            'categories' => 0,
+        ];
+        // Feature 152 (MVP-760): Positionen der neuen Rechnungen nachladen —
+        // je Lauf begrenzt, der Backfill läuft über lexoffice:sync-voucher-lines.
+        // Ein Fehler hier darf den Belegsync nicht als gescheitert melden
+        // (Review 2026-09-10, C8): nur melden, der Rest des Laufs steht.
+        try {
+            $result['lines'] = (new LexofficeVoucherLineSync((string) $this->apiKey, $this->baseUrl, $this->requestInterval))->syncMissing($organization, self::LINES_PER_RUN)['synced'];
+        } catch (\Throwable $e) {
+            $result['lines_error'] = class_basename($e) . ': ' . mb_substr($e->getMessage(), 0, 200);
+            \Illuminate\Support\Facades\Log::warning('LexofficeVoucherSync: Positions-Sync abgebrochen.', ['organization_id' => $organization->id, 'error' => $result['lines_error']]);
+        }
+        // MVP-905: Kategoriezeilen der Einkaufsbelege, gleiche Regeln wie die Positionen.
+        try {
+            $result['categories'] = (new LexofficeVoucherCategorySync((string) $this->apiKey, $this->baseUrl, $this->requestInterval))->syncMissing($organization, self::LINES_PER_RUN)['synced'];
+        } catch (\Throwable $e) {
+            $result['categories_error'] = class_basename($e) . ': ' . mb_substr($e->getMessage(), 0, 200);
+            \Illuminate\Support\Facades\Log::warning('LexofficeVoucherSync: Kategorie-Sync abgebrochen.', ['organization_id' => $organization->id, 'error' => $result['categories_error']]);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Zahlungsdaten nachladen (Phase-54-Nachtrag): Die voucherlist liefert
+     * KEIN paidDate — für bezahlte Belege ohne Zahlungsdatum wird es über
+     * den Payments-Endpunkt geholt. Damit kann der Zahlungsverhaltens-
+     * Report Zahldauer/DSO auch bei externer Rechnungshoheit rechnen.
+     * $limit deckelt die Zusatz-Requests je Lauf (Ratelimit 2 req/s);
+     * Rest folgt beim nächsten Sync. Fehler je Beleg (z. B. 404 für
+     * Belegarten ohne Zahlung) werden toleriert.
+     */
+    /**
+     * In Lexoffice nicht mehr sichtbare Belege archivieren. G3-Guard
+     * (MVP-690): Eine LEERE Antwort archiviert NICHTS — nach Kündigung/
+     * API-Ausfall wäre sonst der komplette GoBD-Spiegel „archiviert".
+     *
+     * @param  array<int, string>  $seen
+     */
+    public function archiveMissing(Organization $organization, array $seen): int {
+        if ($seen === []) {
+            if (LexofficeVoucher::query()->where('organization_id', $organization->id)->exists()) {
+                \Illuminate\Support\Facades\Log::warning('LexofficeVoucherSync: leere Belegliste — Archivierung übersprungen (Kündigung/API-Problem?).', [
+                    'organization_id' => $organization->id,
+                ]);
+            }
+
+            return 0;
+        }
+
+        return LexofficeVoucher::query()
+            ->where('organization_id', $organization->id)
+            ->where('archived', false)
+            ->whereNotIn('external_id', $seen)
+            ->update(['archived' => true]);
+    }
+
+    public function enrichPaidDates(int $organizationId, int $limit = 100): int {
+        $candidates = LexofficeVoucher::query()
+            ->where('organization_id', $organizationId)
+            ->where('voucher_status', 'paid')
+            ->whereNull('paid_date')
+            ->whereIn('voucher_type', VoucherTypes::REVENUE_WITH_CREDITS)
+            ->orderByDesc('voucher_date')
+            ->limit($limit)
+            ->get(['id', 'external_id']);
+
+        $enriched = 0;
+        foreach ($candidates as $voucher) {
+            $response = $this->api()->getResponse($this->baseUrl . '/payments/' . $voucher->external_id);
+            if (! $response->successful()) {
+                continue;
+            }
+
+            $paidDate = $response->json('paidDate');
+            if (! is_string($paidDate) || $paidDate === '') {
+                continue;
+            }
+
+            $voucher->forceFill(['paid_date' => substr($paidDate, 0, 10)])->save();
+            $enriched++;
+        }
+
+        return $enriched;
+    }
+
+    /**
+     * Synchronisiert die Lexoffice-Belege EINES Kontakts (Kunde oder Lieferant)
+     * on-demand — z. B. ausgelöst über den „Synchronisieren"-Button auf der
+     * Detailseite. Archiviert nur die nicht mehr sichtbaren Belege DIESES
+     * Kontakts (kontaktscoped, nicht org-weit).
+     *
+     * @return array{contacts: int, created: int, updated: int, archived: int, paid_dates: int}
+     */
+    public function syncFor(Customer|Supplier $owner): array {
+        if ($this->apiKey === null || $this->apiKey === '') {
+            throw new RuntimeException('Lexoffice API key is not configured (LEXOFFICE_API_KEY).');
+        }
+
+        $organizationId = (int) $owner->organization_id;
+
+        $ref = ExternalReference::query()
+            ->forPlugin($organizationId, LexofficePlugin::ID, LexofficePlugin::EXT_TYPE_CONTACT)
+            ->forReferenceable($owner)
+            ->first(['external_id']);
+
+        if ($ref === null) {
+            return ['contacts' => 0, 'created' => 0, 'updated' => 0, 'archived' => 0, 'paid_dates' => 0];
+        }
+
+        $contactExternalId = (string) $ref->external_id;
+        $owners = $this->ownersForContact($organizationId, $contactExternalId);
+
+        $created = 0;
+        $updated = 0;
+        /** @var array<int, string> $seen */
+        $seen = [];
+
+        foreach ($this->fetchVouchers($contactExternalId) as $item) {
+            if (! empty($item['id'])) {
+                $seen[] = (string) $item['id'];
+            }
+            $verb = $this->upsertVoucherItem($organizationId, $contactExternalId, $owners, $item);
+            if ($verb === 'created') {
+                $created++;
+            } elseif ($verb === 'updated') {
+                $updated++;
+            }
+        }
+
+        $archived = LexofficeVoucher::query()
+            ->where('organization_id', $organizationId)
+            ->where('contact_external_id', $contactExternalId)
+            ->where('archived', false)
+            ->when($seen !== [], fn (\Illuminate\Database\Eloquent\Builder $q) => $q->whereNotIn('external_id', $seen))
+            ->update(['archived' => true]);
+
+        return [
+            'contacts' => 1,
+            'created' => $created,
+            'updated' => $updated,
+            'archived' => (int) $archived,
+            'paid_dates' => $this->enrichPaidDates($organizationId),
+        ];
+    }
+
+    /**
+     * Legt einen einzelnen voucherlist-Eintrag an oder aktualisiert ihn.
+     *
+     * @param  array{customer_id: ?int, supplier_id: ?int}  $owners
+     * @param  array<string, mixed>  $item
+     * @return 'created'|'updated'|null  null, wenn der Eintrag keine id hat.
+     */
+    private function upsertVoucherItem(int $organizationId, string $contactExternalId, array $owners, array $item): ?string {
+        if (empty($item['id'])) {
+            return null;
+        }
+        $externalId = (string) $item['id'];
+
+        $attrs = $this->itemToAttrs($item) + [
+            'contact_external_id' => $contactExternalId,
+            'customer_id' => $owners['customer_id'],
+            'supplier_id' => $owners['supplier_id'],
+            'archived' => (bool) ($item['archived'] ?? false),
+            'payload' => $item,
+            'synced_at' => now(),
+        ];
+
+        $existing = LexofficeVoucher::query()
+            ->where('organization_id', $organizationId)
+            ->where('external_id', $externalId)
+            ->first();
+
+        if ($existing === null) {
+            LexofficeVoucher::create($attrs + [
+                'organization_id' => $organizationId,
+                'external_id' => $externalId,
+            ]);
+
+            return 'created';
+        }
+
+        $previousUpdatedDate = $existing->payload['updatedDate'] ?? null;
+        $existing->fill($attrs);
+        // Review 2026-09-10 (B20): Status/Betrag/updatedDate geändert (z. B.
+        // Entwurf finalisiert) → Positionen neu laden, sonst bleibt der
+        // Spiegel auf dem Entwurfsstand. Der Positions-Sync aktualisiert in place.
+        if ($existing->lines_synced_at !== null
+            && ($existing->isDirty(['voucher_status', 'total_amount']) || $previousUpdatedDate !== ($item['updatedDate'] ?? null))) {
+            $existing->lines_synced_at = null;
+        }
+        $existing->save();
+
+        return 'updated';
+    }
+
+    /**
+     * Ermittelt die lokalen Eigentümer (Kunde/Lieferant) eines Kontakts; ein
+     * Kontakt mit Doppelrolle setzt beide.
+     *
+     * @return array{customer_id: ?int, supplier_id: ?int}
+     */
+    private function ownersForContact(int $organizationId, string $contactExternalId): array {
+        $refs = ExternalReference::query()
+            ->forPlugin($organizationId, LexofficePlugin::ID, LexofficePlugin::EXT_TYPE_CONTACT)
+            ->forExternalId($contactExternalId)
+            ->get(['referenceable_type', 'referenceable_id']);
+
+        $owners = ['customer_id' => null, 'supplier_id' => null];
+        $customerMorph = (new Customer)->getMorphClass();
+        $supplierMorph = (new Supplier)->getMorphClass();
+
+        foreach ($refs as $ref) {
+            if ($ref->referenceable_type === $customerMorph) {
+                $owners['customer_id'] = (int) $ref->referenceable_id;
+            } elseif ($ref->referenceable_type === $supplierMorph) {
+                $owners['supplier_id'] = (int) $ref->referenceable_id;
+            }
+        }
+
+        return $owners;
+    }
+
+    /**
+     * Baut die Zuordnung Kontakt-external_id → lokale Kunden-/Lieferanten-ID.
+     *
+     * @return array<string, array{customer_id: ?int, supplier_id: ?int}>
+     */
+    private function buildContactMap(Organization $organization): array {
+        $refs = ExternalReference::query()
+            ->forPlugin($organization, LexofficePlugin::ID, LexofficePlugin::EXT_TYPE_CONTACT)
+            ->get(['external_id', 'referenceable_type', 'referenceable_id']);
+
+        $customerMorph = (new Customer)->getMorphClass();
+        $supplierMorph = (new Supplier)->getMorphClass();
+
+        /** @var array<string, array{customer_id: ?int, supplier_id: ?int}> $map */
+        $map = [];
+        foreach ($refs as $ref) {
+            $externalId = (string) $ref->external_id;
+            if (! isset($map[$externalId])) {
+                $map[$externalId] = ['customer_id' => null, 'supplier_id' => null];
+            }
+            if ($ref->referenceable_type === $customerMorph) {
+                $map[$externalId]['customer_id'] = (int) $ref->referenceable_id;
+            } elseif ($ref->referenceable_type === $supplierMorph) {
+                $map[$externalId]['supplier_id'] = (int) $ref->referenceable_id;
+            }
+        }
+
+        return $map;
+    }
+
+    /**
+     * Lädt alle Belege eines Kontakts (paginiert).
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function fetchVouchers(string $contactExternalId): array {
+        $page = 0;
+        $pageSize = 250;
+        /** @var array<int, array<string, mixed>> $all */
+        $all = [];
+
+        do {
+            $response = $this->requestVoucherlist($contactExternalId, $page, $pageSize);
+
+            /** @var array<string, mixed> $body */
+            $body = $response->json() ?? [];
+            foreach ((array) ($body['content'] ?? []) as $item) {
+                if (is_array($item)) {
+                    /** @var array<string, mixed> $item */
+                    $all[] = $item;
+                }
+            }
+
+            $totalPages = (int) ($body['totalPages'] ?? 1);
+            $page++;
+        } while ($page < $totalPages);
+
+        return $all;
+    }
+
+    /**
+     * Führt eine voucherlist-Anfrage aus. Drosselung und 429-Wiederholung
+     * (Retry-After/Backoff) übernimmt der Client; was danach noch scheitert,
+     * ist ein regulärer API-Fehler.
+     */
+    private function requestVoucherlist(string $contactExternalId, int $page, int $pageSize): \Illuminate\Http\Client\Response {
+        $response = $this->api()
+            ->getResponse($this->baseUrl . '/voucherlist', [
+                'voucherType' => 'any',
+                'voucherStatus' => 'any',
+                'contactId' => $contactExternalId,
+                'page' => $page,
+                'size' => $pageSize,
+            ]);
+
+        if (! $response->successful()) {
+            throw LexofficeApiException::fromResponse($response, __('Belege'), __('Belegliste filtern und abrufen'));
+        }
+
+        return $response;
+    }
+
+    /**
+     * @param  array<string, mixed>  $item
+     * @return array<string, mixed>
+     */
+    private function itemToAttrs(array $item): array {
+        return [
+            'voucher_type' => $this->str($item, 'voucherType'),
+            'voucher_status' => $this->str($item, 'voucherStatus'),
+            'voucher_number' => $this->str($item, 'voucherNumber'),
+            'voucher_date' => $this->date($item, 'voucherDate'),
+            'due_date' => $this->date($item, 'dueDate'),
+            'total_amount' => isset($item['totalAmount']) ? (float) $item['totalAmount'] : null,
+            'open_amount' => isset($item['openAmount']) ? (float) $item['openAmount'] : null,
+            'currency' => $this->str($item, 'currency') ?: 'EUR',
+        ];
+    }
+
+    /**
+     * @param  array<string, mixed>  $item
+     */
+    private function str(array $item, string $key): ?string {
+        $value = $item[$key] ?? null;
+
+        return is_scalar($value) && (string) $value !== '' ? (string) $value : null;
+    }
+
+    /**
+     * @param  array<string, mixed>  $item
+     */
+    private function date(array $item, string $key): ?string {
+        $value = $item[$key] ?? null;
+        if (! is_string($value) || $value === '') {
+            return null;
+        }
+
+        try {
+            return Carbon::parse($value)->toDateString();
+        } catch (\Throwable) {
+            return null;
+        }
+    }
+}

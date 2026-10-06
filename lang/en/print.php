@@ -155,7 +155,6 @@ return [
         'approval_stale' => 'The file was changed after approval — the order requires checking/approval again.',
         'machine_foreign' => 'The machine does not belong to this organisation.',
         'machine_inspection_overdue' => 'Machine with overdue mandatory inspection/calibration — production start not permitted.',
-        'qc_result_invalid' => 'Invalid QC result.',
         'invalid_transition' => 'Invalid status transition.',
         'invalid_transition_detail' => 'Invalid status transition: :from → :to.',
         'shipment_required' => 'Shipping hand-over requires an existing shipment.',

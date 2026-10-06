@@ -11,13 +11,12 @@
 
 @section('title', __('Angriffserkennung'))
 @section('nav-title', __('Angriffserkennung'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('Sicherheitsereignisse der letzten 24 Stunden, Schwellwert-Alarme und Verlauf.')">
     <div class="grid gap-3 lg:grid-cols-3 mb-3 shrink-0">
-        <div class="rounded-box border border-base-300 bg-base-100 p-3">
+        <x-card padding="p-3">
             <div class="text-xs uppercase tracking-wide text-muted mb-1">{{ __('Ereignisse (24 h)') }}</div>
             @forelse ($counts as $row)
                 <div class="flex justify-between text-xs py-0.5">
@@ -25,10 +24,10 @@
                     <span class="font-medium">{{ $row['count'] }}</span>
                 </div>
             @empty
-                <div class="text-sm text-muted">{{ __('Keine Ereignisse') }}</div>
+                <x-empty-state icon="shield" :title="__('Keine Ereignisse')" compact />
             @endforelse
-        </div>
-        <div class="rounded-box border border-base-300 bg-base-100 p-3">
+        </x-card>
+        <x-card padding="p-3">
             <div class="text-xs uppercase tracking-wide text-muted mb-1">{{ __('Auffällige IPs (24 h)') }}</div>
             @forelse ($topIps as $row)
                 <div class="flex justify-between text-xs py-0.5">
@@ -36,10 +35,10 @@
                     <span class="font-medium">{{ $row['count'] }}</span>
                 </div>
             @empty
-                <div class="text-sm text-muted">{{ __('Keine Ereignisse') }}</div>
+                <x-empty-state icon="shield" :title="__('Keine Ereignisse')" compact />
             @endforelse
-        </div>
-        <div class="rounded-box border border-base-300 bg-base-100 p-3">
+        </x-card>
+        <x-card padding="p-3">
             <div class="text-xs uppercase tracking-wide text-muted mb-1">{{ __('Schwellwert-Regeln') }}</div>
             @foreach ($alarms as $rule)
                 <div class="flex justify-between items-center text-xs py-0.5">
@@ -49,25 +48,25 @@
                     </x-status-badge>
                 </div>
             @endforeach
-        </div>
+        </x-card>
     </div>
 
     @if ($ipBanEnabled || $ipBans->isNotEmpty())
         {{-- Temporäre IP-Sperren (MVP-450): aktiv, mit vorzeitigem Entsperren. --}}
-        <div class="mb-3 shrink-0 rounded-box border border-base-300 bg-base-100 p-3">
+        <x-card padding="p-3" class="mb-3 shrink-0">
             <div class="mb-1 text-xs uppercase tracking-wide text-muted">{{ __('Gesperrte IP-Adressen') }}</div>
             @forelse ($ipBans as $ban)
                 <div class="flex flex-wrap items-center justify-between gap-2 py-0.5 text-xs">
-                    <span><code>{{ $ban->ip }}</code> <span class="text-muted">({{ __('Stufe :level', ['level' => $ban->level]) }} · <code>{{ $ban->reason }}</code> · {{ __('bis :time', ['time' => $ban->banned_until->orgTz()->format('d.m.Y H:i')]) }})</span></span>
+                    <span><code>{{ $ban->ip }}</code> <span class="text-muted">({{ __('Stufe :level', ['level' => $ban->level]) }} · <code>{{ $ban->reason }}</code> · {{ __('bis :time', ['time' => $ban->banned_until->fdatetime()]) }})</span></span>
                     <form method="POST" action="{{ route('admin.security-events.ip-bans.release', $ban) }}">
                         @csrf
                         <x-button type="submit" tone="ghost" size="sm" icon="lock_open">{{ __('Entsperren') }}</x-button>
                     </form>
                 </div>
             @empty
-                <div class="text-sm text-muted">{{ __('Keine aktiven Sperren') }}</div>
+                <x-empty-state icon="lock_open" :title="__('Keine aktiven Sperren')" compact />
             @endforelse
-        </div>
+        </x-card>
     @endif
 
     @if ($events->count() === 0)

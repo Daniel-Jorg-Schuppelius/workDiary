@@ -190,6 +190,25 @@ class OrganizationSettingsFormRulesTest extends TestCase {
         $this->assertRejected(['payments' => ['online' => ['provider' => 'Stripe Inc.']]], 'settings.payments.online.provider');
     }
 
+    /** Stufenart → Rolle (Entscheidung 2026-10-06) liegt in derselben Gruppe wie die Antragsstufen (MVP-531). */
+    public function test_approval_step_roles_and_stages_share_the_group(): void {
+        $registry = app(SettingsRegistry::class);
+        $this->assertSame('buchhaltung', $registry->effective('approvals.step_role.commercial', $this->organization)->value);
+
+        $this->actingAs($this->admin)->get(route('admin.organizations.edit', $this->organization))->assertOk()
+            ->assertSee(__('settings.approvals.step_role', ['kind' => \App\Enums\Approval\ApprovalStepKind::Hr->label()]))
+            ->assertSee(__('settings.approvals.default_role', ['role' => \App\Enums\User\UserRole::Personalverwaltung->label()]));
+
+        $this->assertAccepted(['approvals' => ['overtime_stages' => '2', 'step_role' => ['commercial' => 'teamleitung', 'hr' => '']]]);
+        $settings = (array) $this->organization->refresh()->settings;
+        $this->assertSame('teamleitung', $registry->effective('approvals.step_role.commercial', $this->organization)->value);
+        $this->assertSame('personalverwaltung', $registry->effective('approvals.step_role.hr', $this->organization)->value);
+        $this->assertSame('2', (string) data_get($settings, 'approvals.overtime_stages'));
+
+        $this->assertRejected(['approvals' => ['step_role' => ['technical' => 'chef']]], 'settings.approvals.step_role.technical');
+        $this->assertRejected(['approvals' => ['time_correction_stages' => '3']], 'settings.approvals.time_correction_stages');
+    }
+
     public function test_merge_semantics_of_empty_values(): void {
         // Override setzen …
         $this->assertAccepted(['pagination' => ['customers' => '30', 'tags' => '40']]);

@@ -9,8 +9,7 @@
 @extends('layouts.app')
 @section('title', __('manufacturing.order.title') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('manufacturing.order.title'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('manufacturing.order.subtitle')">
@@ -49,7 +48,7 @@
                     <td><a href="{{ route('manufacturing-orders.show', $order) }}" class="link link-hover font-mono">{{ $order->number ?? '—' }}</a></td>
                     <td>{{ $order->article?->name }}{{ $order->variant ? ' — ' . ($order->variant->name ?? $order->variant->option_signature) : '' }}</td>
                     <td class="text-right tabular-nums">{{ $order->target_qty?->getNumericValue() }} {{ $order->unit }}</td>
-                    <td><span class="badge badge-sm">{{ $order->status->label() }}</span></td>
+                    <td><x-status-badge tone="plain">{{ $order->status->label() }}</x-status-badge></td>
                 </tr>
             @endforeach
         </x-table>

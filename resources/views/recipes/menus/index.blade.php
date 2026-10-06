@@ -9,8 +9,7 @@
 @extends('layouts.app')
 @section('title', __('recipes.menu.title'))
 @section('nav-title', __('recipes.menu.title'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('recipes.menu.intro')">
@@ -36,16 +35,18 @@
         @foreach ($menus as $menu)
             <tr class="hover">
                 <td>{{ $menu->name }}</td>
-                <td>{{ $menu->event_date?->format('d.m.Y') ?? '—' }}</td>
+                <td>{{ $menu->event_date?->fdate() ?? '—' }}</td>
                 <td class="text-right">{{ $menu->guest_count ?? '—' }}</td>
                 <td class="text-right">{{ $menu->items_count }}</td>
                 <td class="text-right">
                     <div class="flex justify-end">
-                        <a href="{{ route('recipe-menus.show', $menu) }}" class="btn btn-xs btn-ghost">{{ __('recipes.menu.action.open') }}</a>
+                        <x-button :href="route('recipe-menus.show', $menu)" tone="ghost" size="xs">{{ __('recipes.menu.action.open') }}</x-button>
                     </div>
                 </td>
             </tr>
         @endforeach
     </x-table>
+
+    <x-pagination :paginator="$menus" standing />
 </x-index-page>
 @endsection

@@ -12,8 +12,7 @@
 @extends('layouts.app')
 @section('title', __('training.title.requirements'))
 @section('nav-title', __('training.title.requirements'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('training.subtitle.requirements')">
     <x-slot:actions>
@@ -41,7 +40,7 @@
             </select>
         </x-filter-field>
         <x-filter-field :label="__('training.kpi.active_requirements')" for="flt-active-count">
-            <span id="flt-active-count" class="badge badge-ghost badge-sm">{{ $activeCount }}</span>
+            <x-status-badge id="flt-active-count">{{ $activeCount }}</x-status-badge>
         </x-filter-field>
     </x-filter-bar>
 

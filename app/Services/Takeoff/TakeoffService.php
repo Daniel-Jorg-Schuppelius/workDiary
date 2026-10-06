@@ -63,7 +63,7 @@ final class TakeoffService {
         }
         $formula = $data['formula'] instanceof TakeoffFormula ? $data['formula'] : TakeoffFormula::from((string) $data['formula']);
         $values = self::cleanValues($formula, $data['values']);
-        $factor = trim((string) ($data['factor'] ?? '')) === '' ? '1' : self::decimal($data['factor']);
+        $factor = trim((string) ($data['factor'] ?? '')) === '' ? '1' : NumberHelper::normalizeDecimalStringOrNull($data['factor']);
         $quantity = $values === null || $factor === null ? null : $this->quantityOf($formula, $values, $factor);
         if ($values === null || $factor === null || $quantity === null) {
             throw new RuntimeException((string) __('takeoff.error.not_computable'));
@@ -181,7 +181,7 @@ final class TakeoffService {
     /** @param  array<int, string|null>  $values */
     private function gaebLine(TakeoffFormula $formula, array $values, string $factor, ?string $explanation): ?GaebTakeoffLine {
         $values = self::cleanValues($formula, $values);
-        $factor = self::decimal($factor);
+        $factor = NumberHelper::normalizeDecimalStringOrNull($factor);
         if ($values === null || $factor === null || count($values) < $formula->requiredValues()) {
             return null;
         }
@@ -219,7 +219,7 @@ final class TakeoffService {
 
                 continue;
             }
-            $decimal = self::decimal($value);
+            $decimal = NumberHelper::normalizeDecimalStringOrNull($value);
             if ($decimal === null) {
                 return null;
             }
@@ -227,11 +227,6 @@ final class TakeoffService {
         }
 
         return $formula->isExpression() ? array_slice($clean, 0, 1) : $clean;
-    }
-
-    /** @return numeric-string|null */
-    private static function decimal(?string $value): ?string {
-        return $value === null ? null : NumberHelper::normalizeDecimalStringOrNull($value);
     }
 
     /** REB-Darstellung: ganze Tausendstel mit vorangestelltem Vorzeichen. */

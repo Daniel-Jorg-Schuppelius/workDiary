@@ -41,7 +41,7 @@
 
 <div class="flex flex-col gap-3">
     {{-- Toolbar --}}
-    <div class="flex items-center justify-between gap-2 overflow-x-auto rounded-box border border-base-300 bg-base-100 p-3 shadow-xs">
+    <x-card padding="p-3" class="flex items-center justify-between gap-2 overflow-x-auto">
         <div class="flex shrink-0 items-center gap-2">
             {{-- Status-Filter --}}
             <div class="join">
@@ -49,8 +49,8 @@
                     $statusOpts = ['' => __('Alle')] + TaskStatus::options();
                 @endphp
                 @foreach ($statusOpts as $val => $lbl)
-                    <a href="{{ $baseQuery(['status' => $val ?: null, 'milestone' => $milestoneFilter ?: null]) }}"
-                       class="join-item btn btn-xs {{ $statusFilter === $val ? 'btn-primary' : 'btn-ghost' }}">{{ $lbl }}</a>
+                    <x-button :href="$baseQuery(['status' => $val ?: null, 'milestone' => $milestoneFilter ?: null])"
+                       :tone="$statusFilter === $val ? 'primary' : 'ghost'" size="xs" class="join-item">{{ $lbl }}</x-button>
                 @endforeach
             </div>
             {{-- Milestone-Filter --}}
@@ -73,7 +73,7 @@
                         :href="route('projects.tasks.create', $project)"
                         show-label>{{ __('Aufgabe') }}</x-icon-btn>
         @endcan
-    </div>
+    </x-card>
 
     @if ($filtered->isEmpty())
         <x-empty-state framed

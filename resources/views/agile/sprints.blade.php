@@ -50,15 +50,9 @@
     @else
         @foreach ($sprints as $sprint)
             <x-card>
-                @php([$statusTone, $statusLabel] = match ($sprint->status) {
-                    'active' => ['success', __('aktiv')],
-                    'completed' => ['info', __('abgeschlossen')],
-                    'cancelled' => ['error', __('abgebrochen')],
-                    default => ['neutral', __('geplant')],
-                })
                 <x-slot:title>
                     {{ $sprint->name }}
-                    <x-status-badge :tone="$statusTone" size="xs">{{ $statusLabel }}</x-status-badge>
+                    <x-status-badge :tone="$sprint->status->tone()" size="xs">{{ $sprint->status->label() }}</x-status-badge>
                 </x-slot:title>
 
                 <p class="text-sm text-base-content/70">
@@ -69,7 +63,7 @@
                 </p>
 
                 @if ($sprint->items->isEmpty())
-                    <p class="mt-2 text-xs text-muted">{{ __('Keine Elemente zugeordnet.') }}</p>
+                    <x-empty-state icon="checklist" :title="__('Keine Elemente zugeordnet.')" compact class="mt-2" />
                 @else
                     <ul class="mt-2 space-y-1">
                         @foreach ($sprint->items as $assignment)
@@ -78,7 +72,7 @@
                                 <span>
                                     {{ $workItem?->task?->title ?? '—' }}
                                     @if ($workItem?->story_points !== null)
-                                        <span class="badge badge-ghost badge-xs">{{ $workItem->story_points }} SP</span>
+                                        <x-status-badge size="xs">{{ $workItem->story_points }} SP</x-status-badge>
                                     @endif
                                     @if ($assignment->added_after_start)
                                         <x-status-badge tone="warning" size="xs">{{ __('nach Start') }}</x-status-badge>
@@ -110,7 +104,7 @@
                             <x-icon-btn icon="playlist_add" tone="outline" size="sm" type="submit" show-label>{{ __('Zuordnen') }}</x-icon-btn>
                         </form>
 
-                        @if ($sprint->status === 'planned')
+                        @if ($sprint->status === \App\Enums\Agile\AgileSprintStatus::Planned)
                             <form method="POST" action="{{ route('agile.sprints.start', [$project, $sprint]) }}" class="flex items-end gap-1">
                                 @csrf
                                 {{-- Kapazitätskorrektur (P10): optional, Begründung Pflicht. --}}
@@ -150,7 +144,7 @@
                                         <select name="decisions[{{ $assignment->work_item_id }}]" required class="select select-xs select-bordered">
                                             <option value="">{{ __('Bitte wählen…') }}</option>
                                             <option value="backlog">{{ __('Zurück ins Produkt-Backlog') }}</option>
-                                            @foreach ($sprints->where('status', 'planned') as $followUp)
+                                            @foreach ($sprints->where('status', \App\Enums\Agile\AgileSprintStatus::Planned) as $followUp)
                                                 <option value="{{ $followUp->sqid }}">{{ __('In Sprint :name', ['name' => $followUp->name]) }}</option>
                                             @endforeach
                                         </select>

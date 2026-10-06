@@ -72,6 +72,20 @@ class ClubDonation extends Model {
         'is_expense_waiver' => 'boolean',
     ];
 
+    protected static function booted(): void {
+        // Die Zuwendungsbestätigung ist ein Steuerbeleg: was sie bestätigt, ändert sich danach nicht mehr.
+        static::updating(function (self $donation): void {
+            if ($donation->getOriginal('club_donation_receipt_id') !== null) {
+                throw new \RuntimeException('Bestätigte Zuwendungen sind unveränderlich.');
+            }
+        });
+        static::deleting(function (self $donation): void {
+            if ($donation->club_donation_receipt_id !== null) {
+                throw new \RuntimeException('Bestätigte Zuwendungen dürfen nicht gelöscht werden.');
+            }
+        });
+    }
+
     /** @return BelongsTo<ClubMember, $this> */
     public function member(): BelongsTo {
         return $this->belongsTo(ClubMember::class, 'club_member_id');

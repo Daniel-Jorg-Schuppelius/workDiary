@@ -19,14 +19,7 @@
         <x-page-toolbar :subtitle="__('Konto-Umsätze je Kalenderwoche oder Monat nebeneinander; Excel exportiert alle Konten als je ein Arbeitsblatt.')">
             <x-slot:actions>
                 @if ($account !== null)
-                    <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
-                                :href="request()->fullUrlWithQuery(['export' => 'pdf'])" show-label>PDF</x-icon-btn>
-                    <x-action-menu icon="download" tone="outline" :label="__('Export')">
-                        <x-icon-btn icon="download" tone="outline" size="sm"
-                                    :href="request()->fullUrlWithQuery(['export' => 'csv'])" show-label>CSV</x-icon-btn>
-                        <x-icon-btn icon="table_view" tone="outline" size="sm"
-                                    :href="request()->fullUrlWithQuery(['export' => 'xlsx'])" show-label>Excel</x-icon-btn>
-                    </x-action-menu>
+                    <x-report-export :url="fn (string $format) => request()->fullUrlWithQuery(['export' => $format])" />
                 @endif
             </x-slot:actions>
         </x-page-toolbar>

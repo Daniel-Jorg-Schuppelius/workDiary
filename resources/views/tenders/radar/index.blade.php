@@ -10,8 +10,7 @@
 
 @section('title', __('Bekanntmachungs-Radar') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('Bekanntmachungs-Radar'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @php
     /** @var \Illuminate\Pagination\LengthAwarePaginator $matches */
@@ -71,7 +70,7 @@
                                 {{ $match->profile->name }}
                             @endif
                             @if ($notice?->published_on)
-                                · {{ $notice->published_on->format('d.m.Y') }}
+                                · {{ $notice->published_on->fdate() }}
                             @endif
                         </div>
                     </td>
@@ -91,7 +90,7 @@
                         @if ($notice?->submission_deadline)
                             {{-- Eine abgelaufene Frist ist kein Vorgang mehr: sichtbar machen, nicht verstecken. --}}
                             <span @class(['text-error font-medium' => $notice->submission_deadline->isPast()])>
-                                {{ $notice->submission_deadline->format('d.m.Y') }}
+                                {{ $notice->submission_deadline->fdate() }}
                             </span>
                         @else
                             —
@@ -105,12 +104,12 @@
                                             rel="noopener" :title="__('Bekanntmachung öffnen')" />
                             @endif
                             @if ($canManage)
-                                @if ($match->state === 'converted')
+                                @if ($match->state === \App\Enums\Tenders\TenderNoticeMatchState::Converted)
                                     @if ($match->opportunity)
                                         <x-icon-btn icon="gavel" size="sm" :href="route('tenders.show', $match->opportunity)"
                                                     :title="__('Vergabevorgang öffnen')" />
                                     @endif
-                                @elseif ($match->state === 'muted')
+                                @elseif ($match->state === \App\Enums\Tenders\TenderNoticeMatchState::Muted)
                                     <x-action-form :action="route('tender-radar.restore', $match)">
                                         <x-icon-btn icon="visibility" size="sm" type="submit" :title="__('Wieder einblenden')" />
                                     </x-action-form>

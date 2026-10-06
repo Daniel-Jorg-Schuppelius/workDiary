@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Sales\Reporting;
 
+use App\Enums\Sales\QuoteStatus;
 use App\Models\Sales\Quote;
 use App\Services\Reporting\Contracts\ProjectEconomicsDimension;
 use App\Services\Reporting\EconomicsReportBuilder;
@@ -40,7 +41,7 @@ final class QuoteCalculationEconomicsDimension implements ProjectEconomicsDimens
     public function build(CarbonImmutable $from, CarbonImmutable $to, int $projectId): array {
         $quotes = Quote::query()
             ->where('project_id', $projectId)
-            ->whereIn('status', ['accepted', 'partially_accepted'])
+            ->whereIn('status', QuoteStatus::won())
             ->with('items')
             ->get();
 

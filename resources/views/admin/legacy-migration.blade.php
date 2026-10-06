@@ -23,7 +23,7 @@
     </div>
 
     @if (! $stats['configured'])
-        <div class="alert alert-warning">
+        <div role="alert" class="alert alert-warning">
             <span>{{ __('Legacy-Datenbank nicht erreichbar oder nicht konfiguriert.') }}</span>
         </div>
     @else

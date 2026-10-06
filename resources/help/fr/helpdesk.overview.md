@@ -1,7 +1,7 @@
 ---
 title: "Helpdesk & Service Desk"
 topic: helpdesk.overview
-version: 1
+version: 2
 audience: []
 related:
     - open-issues
@@ -42,6 +42,16 @@ entrants — par exemple vers une file, avec une priorité ou une
 responsabilité — et sont appliquées dans un ordre défini. Un mode test
 vérifie une règle contre un ticket d'exemple et journalise le résultat
 sans rien modifier.
+
+**Approbations :** Les étapes d'approbation ouvertes des demandes de
+service, des changes et des négociations contractuelles sont regroupées
+sous « Approbations » — par dossier uniquement l'étape ouverte suivante et
+seulement pour les responsables : une personne, un rôle ou, pour les
+négociations contractuelles, le rôle que l'organisation associe au type
+d'étape (par défaut : commercial → Comptabilité, technique → Chef d'équipe,
+RH → Gestion du personnel). Approuver, refuser, poser une question et
+déléguer ont le même effet que sur le dossier ; un refus clôt le tour,
+l'auto-approbation reste bloquée.
 
 **Satisfaction & rapports :** Après la clôture, le client peut donner une
 courte évaluation dans le portail — une par ticket. Les rapports montrent

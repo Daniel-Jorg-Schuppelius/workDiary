@@ -14,11 +14,11 @@
     <div class="space-y-2 text-sm">
         <a href="{{ route('admin.operations.index') }}" class="flex items-center justify-between hover:underline">
             <span class="flex items-center gap-2"><x-icon name="task_alt" /> {{ __('operations.widget.open') }}</span>
-            <span class="badge {{ $openCount > 0 ? 'badge-warning' : 'badge-ghost' }}">{{ $openCount }}</span>
+            <x-status-badge :tone="$openCount > 0 ? 'warning' : 'ghost'" size="md">{{ $openCount }}</x-status-badge>
         </a>
 
         @if ($tasks->isEmpty())
-            <p class="text-xs text-muted">{{ __('operations.widget.empty') }}</p>
+            <x-empty-state icon="check_circle" :title="__('operations.widget.empty')" compact />
         @else
             <ul class="space-y-1">
                 @foreach ($tasks as $task)

@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers\CustomerPortal;
 
+use App\Http\Controllers\Concerns\ChecksTenantPublicSurfaces;
 use App\Http\Controllers\Controller;
 use App\Services\CustomerPortal\PortalAccessService;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -22,11 +23,14 @@ use Illuminate\View\View;
  * antworten neutral mit 404 — ohne zu verraten, ob oder wo ein Konto existiert.
  */
 class InvitationController extends Controller {
+    use ChecksTenantPublicSurfaces;
+
     public function __construct(private readonly PortalAccessService $service) {}
 
     public function show(string $token): View {
         $portalUser = $this->service->resolveInvite($token);
         abort_if($portalUser === null, 404);
+        $this->assertTenantPublicSurfacesAvailable((int) $portalUser->organization_id);
 
         return view('customer.invitation', [
             'portalUser' => $portalUser,
@@ -37,6 +41,7 @@ class InvitationController extends Controller {
     public function store(string $token, Request $request): RedirectResponse {
         $portalUser = $this->service->resolveInvite($token);
         abort_if($portalUser === null, 404);
+        $this->assertTenantPublicSurfacesAvailable((int) $portalUser->organization_id);
 
         $data = $request->validate([
             'password' => ['required', 'string', 'confirmed', Password::defaults()],

@@ -12,7 +12,9 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Crisis;
 
+use App\Enums\Crisis\CrisisCaseStatus;
 use App\Http\Requests\BaseFormRequest;
+use Illuminate\Validation\Rule;
 
 /**
  * Validierung für den manuellen Statuswechsel einer Krisenakte.
@@ -24,7 +26,7 @@ class UpdateCrisisCaseStatusRequest extends BaseFormRequest {
         return [
             // Aktivierung/Entwarnung/Abschluss laufen NUR über die
             // dedizierten Aktionen (activate/allClear/close).
-            'status' => ['required', 'in:assessed,in_progress,stabilized,recovery,discarded'],
+            'status' => ['required', Rule::enum(CrisisCaseStatus::class)->only(CrisisCaseStatus::stages())],
         ];
     }
 }

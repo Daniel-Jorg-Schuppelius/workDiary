@@ -14,11 +14,12 @@ namespace Tests\Feature\Asset;
 
 use App\Enums\Asset\AssetClass;
 use App\Models\Asset\Asset;
-use App\Models\Auth\RemotePendingSession;
 use App\Models\Customer\Customer;
 use App\Models\Platform\Organization;
-use App\Plugins\RemoteSupport\Providers\AnyDeskClient;
-use App\Plugins\RemoteSupport\RemoteDeviceRegistry;
+use App\Plugins\RemoteSupport\Api\AnyDeskClient;
+use App\Plugins\RemoteSupport\Enums\RemotePendingSessionStatus;
+use App\Plugins\RemoteSupport\Models\RemotePendingSession;
+use App\Plugins\RemoteSupport\Services\RemoteDeviceRegistry;
 use App\Services\Stammdaten\AssetMergeService;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -59,7 +60,7 @@ class AssetMergeTest extends TestCase {
             'session_id' => 'ad-merge-1',
             'started_at' => CarbonImmutable::parse('2026-07-20 09:00:00'),
             'ended_at' => CarbonImmutable::parse('2026-07-20 09:30:00'),
-            'status' => RemotePendingSession::STATUS_OPEN,
+            'status' => RemotePendingSessionStatus::Open,
         ]);
 
         app(AssetMergeService::class)->merge($source, $target, []);
@@ -131,5 +132,27 @@ class AssetMergeTest extends TestCase {
 
         $response->assertRedirect(route('assets.show', $target));
         $this->assertDatabaseMissing('assets', ['id' => $source->id]);
+    }
+
+    /** Konsolidierungs-Audit 2026-10, k3-3/k4-01: die Ablehnung des Dienstes ist ein Formularfehler, kein 500 — und die Seite zeigt ihn. */
+    public function test_rejected_merge_is_shown_as_form_error(): void {
+        $source = $this->makeAsset(['name' => 'Duplikat']);
+        $target = $this->makeAsset(['name' => 'Original']);
+        $this->mock(\App\Services\Stammdaten\AssetMergeService::class, function ($mock): void {
+            $mock->shouldReceive('merge')->andThrow(new \InvalidArgumentException('Kollision'));
+        });
+        $admin = $this->orgAdmin();
+        $compare = route('assets.merge.compare', ['source' => $source->sqid, 'target' => $target->sqid]);
+
+        $this->actingAs($admin)->from($compare)
+            ->post(route('assets.merge'), ['source' => $source->sqid, 'target' => $target->sqid])
+            ->assertRedirect($compare)
+            ->assertSessionHasErrors('source');
+        $this->assertDatabaseHas('assets', ['id' => $source->id]);
+
+        $this->actingAs($admin)->followingRedirects()->from($compare)
+            ->post(route('assets.merge'), ['source' => $source->sqid, 'target' => $target->sqid])
+            ->assertOk()
+            ->assertSee('role="alert"', false);
     }
 }

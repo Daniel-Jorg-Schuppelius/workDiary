@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Print;
 
-use App\Enums\Print\{PreflightStatus, PrintOrderStatus};
+use App\Enums\Print\{PreflightStatus, PrintOrderStatus, PrintQcStatus};
 use App\Models\Article\Article;
 use App\Models\Platform\User;
 use App\Models\Print\PrintOrder;
@@ -145,6 +145,34 @@ class PrintOrderUiTest extends TestCase {
             ->assertOk()
             ->assertSee('DIN A5')
             ->assertSee($order->status->label());
+    }
+
+    /** k3-10: QK-Ergebnis als Enum — Auswahl, Validierung und Anzeige lesen die drei Fälle. */
+    public function test_quality_check_offers_stores_and_shows_the_result(): void {
+        Storage::fake('local');
+        $this->activateProfile();
+        $article = Article::factory()->create(['organization_id' => $this->organization->id, 'manufacturable' => true]);
+        $manufacturingOrder = app(\App\Services\Manufacturing\ManufacturingOrderService::class)
+            ->createDraft($this->organization, $article, null, '10', 'Stk');
+        $order = app(PrintOrderService::class)->open($manufacturingOrder, $this->admin);
+        $order->forceFill(['status' => PrintOrderStatus::InProduction])->save();
+
+        $html = (string) $this->get(route('print-orders.show', $order))->assertOk()->getContent();
+        foreach (PrintQcStatus::cases() as $result) {
+            $this->assertStringContainsString('<option value="' . $result->value . '">' . e($result->label()) . '</option>', $html);
+        }
+
+        $this->post(route('print-orders.quality-check', $order), ['result' => 'unbekannt'])->assertSessionHasErrors('result');
+        $this->assertNull($order->refresh()->qc_status);
+
+        $this->post(route('print-orders.quality-check', $order), ['result' => PrintQcStatus::Rework->value, 'note' => 'Passer'])
+            ->assertRedirect(route('print-orders.show', $order));
+        $order->refresh();
+        $this->assertSame(PrintQcStatus::Rework, $order->qc_status);
+        $this->assertSame(PrintOrderStatus::Rework, $order->status);
+        $this->assertDatabaseHas('print_orders', ['id' => $order->id, 'qc_status' => PrintQcStatus::Rework->value]);
+
+        $this->get(route('print-orders.show', $order))->assertOk()->assertSee(PrintQcStatus::Rework->label());
     }
 
     public function test_foreign_organization_cannot_access_print_orders(): void {

@@ -24,6 +24,7 @@ use EbicsApi\Ebics\{EbicsBankLetter, EbicsClient};
 use EbicsApi\Ebics\Exceptions\NoDownloadDataAvailableException;
 use EbicsApi\Ebics\Factories\DocumentFactory;
 use EbicsApi\Ebics\Models\{Bank, Keyring, SignatureBankLetter, User, XmlDocument};
+use EbicsApi\Ebics\Models\EbicsClientOptions;
 use EbicsApi\Ebics\Models\X509\BankX509Generator;
 use EbicsApi\Ebics\Orders\{BTD, BTU, HIA, HPB, INI, SPR};
 use EbicsApi\Ebics\Services\ArrayKeyringManager;
@@ -131,7 +132,10 @@ class LibraryEbicsGateway implements EbicsGateway {
         $generator->setCertificateOptionsByBank($bank);
         $keyring->setCertificateGenerator($generator);
 
-        return new EbicsClient($bank, new User($connection->ebics_partner, $connection->ebics_user), $keyring);
+        // Eigene HTTP-Schicht: Zielprüfung beim Verbinden, Antwort ohne Entitätsauflösung (sf-1).
+        $options = (new EbicsClientOptions)->setHttpClient(new GuardedEbicsHttpClient);
+
+        return new EbicsClient($bank, new User($connection->ebics_partner, $connection->ebics_user), $keyring, $options);
     }
 
     private function store(EbicsConnection $connection, Keyring $keyring): void {

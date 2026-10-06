@@ -155,7 +155,6 @@ return [
         'approval_stale' => 'Die Datei wurde nach der Freigabe geändert — der Auftrag ist wieder prüf-/freigabepflichtig.',
         'machine_foreign' => 'Die Maschine gehört nicht zu dieser Organisation.',
         'machine_inspection_overdue' => 'Maschine mit überfälliger Pflichtprüfung/Kalibrierung — Produktionsstart nicht zulässig.',
-        'qc_result_invalid' => 'Unzulässiges QK-Ergebnis.',
         'invalid_transition' => 'Unzulässiger Statuswechsel.',
         'invalid_transition_detail' => 'Unzulässiger Statuswechsel: :from → :to.',
         'shipment_required' => 'Versand-Ausgabe braucht eine vorhandene Sendung.',

@@ -26,8 +26,7 @@
     $monthName = \DateTime::createFromFormat('!m', (string)$month)->format('F');
 @endphp
 @section('nav-title', __('Arbeitszeitkonto') . ' – ' . $monthName . ' ' . $year)
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 @section('content')
 @php
     $fmt = function (int $min): string {
@@ -85,19 +84,19 @@
             </select>
         @endif
 
-        <span class="badge badge-soft badge-{{ $scheduleType->badgeTone() }} gap-1">
+        <x-status-badge :tone="$scheduleType->badgeTone()" size="md" class="badge-soft gap-1">
             <x-icon :name="$scheduleType->icon()" class="text-sm" />
             {{ $scheduleType->label() }}
-        </span>
+        </x-status-badge>
 
         @if ($modelContext)
             <span class="text-xs text-muted">{{ $modelContext }}</span>
         @endif
 
         @if ($modelChanged)
-            <span class="badge badge-xs badge-ghost gap-1" title="{{ __('Im gewählten Monat wurde das Arbeitszeit-Modell gewechselt.') }}">
+            <x-status-badge size="xs" class="gap-1" title="{{ __('Im gewählten Monat wurde das Arbeitszeit-Modell gewechselt.') }}">
                 <x-icon name="sync_alt" class="text-xs" /> {{ __('Modellwechsel im Zeitraum') }}
-            </span>
+            </x-status-badge>
         @endif
     </x-card>
 
@@ -165,7 +164,7 @@
         @endif
     @else
         {{-- Vertrauensarbeitszeit: kein Soll/Saldo --}}
-        <div class="alert alert-warning alert-soft text-sm">
+        <div role="alert" class="alert alert-warning alert-soft text-sm">
             <x-icon name="handshake" />
             <span>{{ __('Vertrauensarbeitszeit – keine Sollzeiterfassung. Angezeigt wird die erfasste Anwesenheit.') }}</span>
         </div>
@@ -201,9 +200,9 @@
                 <td data-sort-value="{{ $carbonDate->format('Y-m-d') }}">
                     <span>{{ $carbonDate->translatedFormat('D, d.m.') }}</span>
                     @if ($isHoliday)
-                        <span class="badge badge-xs badge-error badge-soft ml-1" title="{{ $holidayName }}">{{ __('Feiertag') }}@if ($holidayName): {{ $holidayName }}@endif</span>
+                        <x-status-badge tone="error" size="xs" class="badge-soft ml-1" title="{{ $holidayName }}">{{ __('Feiertag') }}@if ($holidayName): {{ $holidayName }}@endif</x-status-badge>
                     @elseif ($isVacation)
-                        <span class="badge badge-xs badge-info badge-soft ml-1">{{ __('Urlaub') }}</span>
+                        <x-status-badge tone="info" size="xs" class="badge-soft ml-1">{{ __('Urlaub') }}</x-status-badge>
                     @endif
                 </td>
                 @if ($tracksTarget)

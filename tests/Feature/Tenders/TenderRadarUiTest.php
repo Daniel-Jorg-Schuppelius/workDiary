@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Tenders;
 
-use App\Enums\Applications\TenderProcedureType;
+use App\Enums\Applications\{ApplicationOpportunityStatus, TenderProcedureType};
+use App\Enums\Tenders\TenderNoticeMatchState;
 use App\Models\Applications\ApplicationOpportunity;
 use App\Models\Platform\{Organization, User};
 use App\Models\Tenders\{TenderFilterProfile, TenderNotice, TenderNoticeMatch};
@@ -59,7 +60,7 @@ final class TenderRadarUiTest extends TestCase {
         ], $attributes));
     }
 
-    private function match(?TenderNotice $notice = null, string $state = TenderNoticeMatch::STATE_NEW, ?int $organizationId = null): TenderNoticeMatch {
+    private function match(?TenderNotice $notice = null, TenderNoticeMatchState $state = TenderNoticeMatchState::New, ?int $organizationId = null): TenderNoticeMatch {
         return TenderNoticeMatch::query()->create([
             'organization_id' => $organizationId ?? $this->organization->id,
             'tender_notice_id' => ($notice ?? $this->notice())->id,
@@ -92,7 +93,7 @@ final class TenderRadarUiTest extends TestCase {
 
         $this->actingAs($this->admin)->post(route('tender-radar.mute', $match))->assertRedirect();
 
-        $this->assertSame(TenderNoticeMatch::STATE_MUTED, $match->refresh()->state);
+        $this->assertSame(TenderNoticeMatchState::Muted, $match->refresh()->state);
         $this->actingAs($this->admin)
             ->get(route('tender-radar.index'))
             ->assertDontSee('Neubau Kita — Rohbauarbeiten', escape: false);
@@ -168,7 +169,7 @@ final class TenderRadarUiTest extends TestCase {
     /** Die Verwerfungsquote steht am Profil — als Hinweis, nicht als Eingriff. */
     public function test_profile_list_shows_the_muted_share(): void {
         $profile = TenderFilterProfile::query()->create(['organization_id' => $this->organization->id, 'name' => 'Hochbau']);
-        foreach ([TenderNoticeMatch::STATE_NEW, TenderNoticeMatch::STATE_MUTED, TenderNoticeMatch::STATE_MUTED] as $state) {
+        foreach ([TenderNoticeMatchState::New, TenderNoticeMatchState::Muted, TenderNoticeMatchState::Muted] as $state) {
             $this->match(null, $state)->forceFill(['tender_filter_profile_id' => $profile->id])->save();
         }
 
@@ -191,11 +192,11 @@ final class TenderRadarUiTest extends TestCase {
     }
 
     public function test_muted_match_can_be_restored(): void {
-        $match = $this->match(state: TenderNoticeMatch::STATE_MUTED);
+        $match = $this->match(state: TenderNoticeMatchState::Muted);
 
         $this->actingAs($this->admin)->post(route('tender-radar.restore', $match))->assertRedirect();
 
-        $this->assertSame(TenderNoticeMatch::STATE_NEW, $match->refresh()->state);
+        $this->assertSame(TenderNoticeMatchState::New, $match->refresh()->state);
     }
 
     /** Die Übernahme belegt vor, was die Bekanntmachung hergibt. */
@@ -213,7 +214,7 @@ final class TenderRadarUiTest extends TestCase {
         $this->assertSame('https://oeffentlichevergabe.de/notice/1', $opportunity->notice_url);
 
         $match->refresh();
-        $this->assertSame(TenderNoticeMatch::STATE_CONVERTED, $match->state);
+        $this->assertSame(TenderNoticeMatchState::Converted, $match->state);
         $this->assertSame($opportunity->id, $match->application_opportunity_id);
     }
 
@@ -309,10 +310,10 @@ final class TenderRadarUiTest extends TestCase {
         (new \Database\Seeders\TenderDemoSeeder)->run($this->organization);
 
         $this->assertSame(1, TenderFilterProfile::query()->count());
-        $this->assertSame(1, TenderNoticeMatch::query()->where('state', TenderNoticeMatch::STATE_NEW)->count());
+        $this->assertSame(1, TenderNoticeMatch::query()->where('state', TenderNoticeMatchState::New)->count());
         $this->assertSame(2, ApplicationOpportunity::query()->count());
 
-        $lost = ApplicationOpportunity::query()->where('status', 'lost')->firstOrFail();
+        $lost = ApplicationOpportunity::query()->where('status', ApplicationOpportunityStatus::Lost)->firstOrFail();
         $this->assertSame(3, $lost->competitorBids()->count());
         $this->assertTrue($lost->competitorBids()->where('is_own', true)->exists());
 

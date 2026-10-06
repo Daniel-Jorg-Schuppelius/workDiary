@@ -11,6 +11,7 @@
 namespace App\Http\Controllers\Admin\Access;
 
 use App\Enums\User\{Permission as PermissionEnum, UserRole};
+use App\Http\Controllers\Admin\Access\Concerns\OffersAssignableRoles;
 use App\Http\Controllers\Concerns\{AuditsAccessChanges, ParsesIndexQuery, ResolvesCurrentOrganization};
 use App\Http\Controllers\Controller;
 use App\Models\Platform\{User, UserGroup};
@@ -26,6 +27,8 @@ use Spatie\Permission\Models\{Permission, Role};
  */
 class UserGroupController extends Controller {
     use AuditsAccessChanges;
+
+    use OffersAssignableRoles;
     use ParsesIndexQuery;
     use ResolvesCurrentOrganization;
 
@@ -68,7 +71,7 @@ class UserGroupController extends Controller {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:120'],
             'description' => ['nullable', 'string', 'max:500'],
-            'color' => ['nullable', 'string', 'max:16'],
+            'color' => ['nullable', 'string', 'max:16', new \App\Rules\ColorValue],
             'roles' => ['array'],
             'roles.*' => ['integer'],
             'permissions' => ['array'],
@@ -99,13 +102,7 @@ class UserGroupController extends Controller {
 
         // Hinzufügbare Mitglieder: alle User der Org, die nicht bereits in der Gruppe sind.
         $memberIds = $group->members->pluck('id')->all();
-        // TENANT-BYPASS: User-Sonderfall; Org-Filter explizit über group->organization_id (Group selbst tenant-scoped).
-        $addableUsers = User::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $group->organization_id)
-            ->whereNotIn('id', $memberIds)
-            ->orderBy('name')
-            ->get(['id', 'name']);
+        $addableUsers = User::addableTo((int) $group->organization_id, $memberIds);
 
         return view('admin.access.groups.show', compact('group', 'addableUsers'));
     }
@@ -130,7 +127,7 @@ class UserGroupController extends Controller {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:120'],
             'description' => ['nullable', 'string', 'max:500'],
-            'color' => ['nullable', 'string', 'max:16'],
+            'color' => ['nullable', 'string', 'max:16', new \App\Rules\ColorValue],
             'roles' => ['array'],
             'roles.*' => ['integer'],
             'permissions' => ['array'],
@@ -162,13 +159,7 @@ class UserGroupController extends Controller {
         Gate::authorize('update', $group);
 
         $memberIds = $group->members()->pluck('users.id')->all();
-        // TENANT-BYPASS: User-Sonderfall; Org-Filter explizit über group->organization_id.
-        $addableUsers = User::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $group->organization_id)
-            ->whereNotIn('id', $memberIds)
-            ->orderBy('name')
-            ->get(['id', 'name']);
+        $addableUsers = User::addableTo((int) $group->organization_id, $memberIds);
 
         return view('admin.access.groups._attach_member_dialog', compact('group', 'addableUsers'));
     }
@@ -214,37 +205,6 @@ class UserGroupController extends Controller {
         }
 
         return back()->with('success', __('access.flash.member_removed'));
-    }
-
-    /**
-     * Rollen, die einer Gruppe der aktuellen Organisation zugewiesen werden
-     * dürfen: alle Rollen mit team_id = NULL (global) oder team_id = aktuelle Org.
-     *
-     * @return \Illuminate\Database\Eloquent\Collection<int, Role>
-     */
-    private function availableRoles(): \Illuminate\Database\Eloquent\Collection {
-        $organization = $this->currentOrganization();
-        $teamForeign = config('permission.column_names.team_foreign_key', 'team_id');
-
-        $roles = Role::query()
-            ->where(function ($q) use ($teamForeign, $organization): void {
-                $q->whereNull($teamForeign)
-                    ->orWhere($teamForeign, $organization->id);
-            })
-            ->orderBy('name')
-            ->get();
-
-        // Eskalationsschutz: Die globale System-Rolle "admin" (plattformweit, auch
-        // org-übergreifend) darf ein delegierter access.manage-Verwalter nicht über
-        // eine Gruppe vergeben — nur ein echter Plattform-Admin sieht sie hier.
-        $auth = Auth::user();
-        if (! ($auth instanceof User && $auth->isAdmin())) {
-            $roles = $roles->reject(
-                fn (Role $r): bool => $r->name === UserRole::Admin->value && $r->getAttribute($teamForeign) === null
-            )->values();
-        }
-
-        return $roles;
     }
 
     /**

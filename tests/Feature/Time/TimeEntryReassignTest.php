@@ -114,6 +114,22 @@ class TimeEntryReassignTest extends TestCase {
         $this->assertSame($this->target->id, (int) $audit->first()->getAttribute('changes')['to_user_id']);
     }
 
+    /** Sicherheitsaudit 2026-10-04, li-5: der abgeschlossene Monat des Zielbenutzers nimmt keine Zeiten mehr an. */
+    public function test_reassign_into_a_closed_month_of_the_target_is_blocked(): void {
+        $owner = $this->orgUser();
+        $entry = $this->makeEntry($owner, ['date' => '2026-05-15']);
+        \App\Models\Time\MonthClosure::query()->create([
+            'organization_id' => $this->organization->id, 'user_id' => $this->target->id, 'period_year' => 2026, 'period_month' => 5,
+            'status' => \App\Enums\TimeApproval\MonthClosureStatus::Approved,
+        ]);
+
+        $this->actingAs($this->actor)
+            ->post(route('projects.time-entries.reassign', $this->project), $this->payload([$entry], $this->target))
+            ->assertSessionHasErrors('ids');
+
+        $this->assertSame($owner->id, $entry->fresh()->user_id);
+    }
+
     public function test_admin_can_reassign_without_explicit_permission(): void {
         $admin = $this->orgAdmin();
         $entry = $this->makeEntry($this->orgUser());

@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\AssetFinance;
 
-use App\Enums\AssetFinance\{AssetFinanceDeadlineKind, AssetFinanceEndKind, AssetFinanceUsageLimitKind};
+use App\Enums\AssetFinance\{AssetFinanceDeadlineKind, AssetFinanceDeadlineStatus, AssetFinanceEndKind, AssetFinanceEndProcessStatus, AssetFinanceUsageLimitKind};
+use App\Enums\Invoicing\IncomingEInvoiceStatus;
 use App\Http\Controllers\Controller;
 use App\Models\AssetFinance\{AssetFinanceContract, AssetFinanceDeadline, AssetFinanceEndProcess, AssetFinanceOption, AssetFinanceRateSchedule, AssetFinanceUsageLimit};
 use App\Models\Invoicing\IncomingEInvoice;
@@ -73,12 +74,30 @@ class AssetFinanceOperationsController extends Controller {
         Gate::authorize('update', $deadline->contract()->firstOrFail());
 
         $deadline->forceFill([
-            'status' => 'done',
+            'status' => AssetFinanceDeadlineStatus::Done,
             'done_at' => now(),
             'done_by' => $request->user()?->id,
         ])->save();
 
         return back()->with('status', __('Frist erledigt.'));
+    }
+
+    /** Dialog: Eingangsrechnung zur Ratenzeile wählen (MVP-274). */
+    public function linkScheduleDialog(AssetFinanceRateSchedule $schedule): View {
+        $contract = $schedule->contract()->firstOrFail();
+        Gate::authorize('finance', $contract);
+
+        return view('asset-finance._schedule_link_dialog', [
+            'schedule' => $schedule,
+            'contract' => $contract,
+            'invoices' => IncomingEInvoice::query()
+                ->where('status', '!=', IncomingEInvoiceStatus::Rejected)
+                ->orderByRaw('issue_date IS NULL, issue_date DESC')
+                ->orderByDesc('id')
+                // Auswahlliste, kein Register: die jüngsten Belege reichen für die Zuordnung einer Rate.
+                ->limit(300)
+                ->get(['id', 'invoice_number', 'seller_name', 'issue_date', 'amount_gross', 'currency']),
+        ]);
     }
 
     /** Ratenzeile mit Eingangsrechnung referenzieren (MVP-274, D11). */
@@ -176,7 +195,7 @@ class AssetFinanceOperationsController extends Controller {
 
         $contract->endProcesses()->create(array_merge($data, [
             'organization_id' => $contract->organization_id,
-            'status' => 'in_progress',
+            'status' => AssetFinanceEndProcessStatus::InProgress,
         ]));
 
         // Statusmodell: Akte tritt in die Endphase ein (außer Verlängerung).

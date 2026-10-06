@@ -10,8 +10,8 @@
 
 namespace App\Enums\Finance;
 
-use App\Enums\Concerns\HasOptions;
-use App\Enums\Contracts\HasLabel;
+use App\Enums\Concerns\{HasOptions, HasTransitions};
+use App\Enums\Contracts\HasStatusTransitions;
 
 /**
  * Zustand einer Buchungsperiode bzw. eines Geschäftsjahres (Feature 125,
@@ -23,8 +23,9 @@ use App\Enums\Contracts\HasLabel;
  * inhaltlich fertig, aber eine berechtigte Korrektur ist noch möglich, ohne
  * den Wiedereröffnungs-Nachweis auszulösen.
  */
-enum AccountingPeriodStatus: string implements HasLabel {
+enum AccountingPeriodStatus: string implements HasStatusTransitions {
     use HasOptions;
+    use HasTransitions;
 
     case Open = 'open';
     case SoftClosed = 'soft_closed';
@@ -50,5 +51,15 @@ enum AccountingPeriodStatus: string implements HasLabel {
     /** Endgültig geschlossen — Änderung nur nach nachgewiesener Wiedereröffnung. */
     public function isHardClosed(): bool {
         return $this === self::Closed;
+    }
+
+    /** @return list<self> */
+    public function allowedTransitions(): array {
+        return match ($this) {
+            self::Open => [self::SoftClosed, self::Closed],
+            self::SoftClosed => [self::Closed, self::Open],
+            // Nur über die nachgewiesene Wiedereröffnung.
+            self::Closed => [self::Open],
+        };
     }
 }

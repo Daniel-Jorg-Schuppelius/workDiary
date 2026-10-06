@@ -12,7 +12,9 @@ declare(strict_types=1);
 
 namespace App\Services\Peppol;
 
+use App\Enums\Document\DocumentDispatchStatus;
 use App\Enums\DocumentDesign\RenderDocumentKind;
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Document\DocumentDispatch;
 use App\Models\Invoicing\Invoice;
 use App\Plugins\Contracts\PeppolTransportProvider;
@@ -71,7 +73,7 @@ class PeppolInvoiceDispatcher {
 
         return $this->plugin()?->peppolAccessPoint($organizationId) !== null
             && PeppolParticipantService::forCustomer($invoice->customer) !== null
-            && in_array($invoice->status, [Invoice::STATUS_ISSUED, Invoice::STATUS_PAID], true)
+            && in_array($invoice->status, [InvoiceStatus::Issued, InvoiceStatus::Paid], true)
             && ! $invoice->isProforma()
             && ! $this->billingModes->effectiveFor($invoice->customer)->isExternal();
     }
@@ -90,7 +92,7 @@ class PeppolInvoiceDispatcher {
         if ($invoice->isProforma()) {
             throw new RuntimeException((string) __('peppol.error.proforma'));
         }
-        if (! in_array($invoice->status, [Invoice::STATUS_ISSUED, Invoice::STATUS_PAID], true)) {
+        if (! in_array($invoice->status, [InvoiceStatus::Issued, InvoiceStatus::Paid], true)) {
             throw new RuntimeException((string) __('peppol.error.not_issued'));
         }
 
@@ -162,7 +164,7 @@ class PeppolInvoiceDispatcher {
             $this->record($invoice, $receiver->canonical(), $ubl, null, [
                 'instance_identifier' => $sbdh->getInstanceIdentifier(),
                 'error_message' => mb_substr($e->getMessage(), 0, 500),
-            ], 'failed');
+            ], DocumentDispatchStatus::Failed);
 
             throw new RuntimeException((string) __('peppol.error.transport', ['message' => $e->getMessage()]), 0, $e);
         }
@@ -171,7 +173,7 @@ class PeppolInvoiceDispatcher {
             'instance_identifier' => $sbdh->getInstanceIdentifier(),
             'document_type' => $documentType->canonical(),
             'validator_scenario' => $validation->getScenarioName() ?? BisValidator::SCENARIO,
-        ], $receipt->isSuccess() ? 'sent' : ($receipt->getStatus()->isFinal() ? 'failed' : 'queued'));
+        ], $receipt->isSuccess() ? DocumentDispatchStatus::Sent : ($receipt->getStatus()->isFinal() ? DocumentDispatchStatus::Failed : DocumentDispatchStatus::Queued));
 
         $invoice->audit('invoice.peppolSent', [
             'participant' => $receiver->canonical(),
@@ -193,7 +195,7 @@ class PeppolInvoiceDispatcher {
     /**
      * @param  array<string, mixed>  $meta
      */
-    private function record(Invoice $invoice, string $recipient, string $ubl, ?TransportReceipt $receipt, array $meta, string $status): DocumentDispatch {
+    private function record(Invoice $invoice, string $recipient, string $ubl, ?TransportReceipt $receipt, array $meta, DocumentDispatchStatus $status): DocumentDispatch {
         if ($receipt !== null) {
             $meta += [
                 'message_id' => $receipt->getMessageId(),

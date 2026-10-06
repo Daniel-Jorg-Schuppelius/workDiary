@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Agile;
 
+use App\Enums\Agile\AgileSprintStatus;
 use App\Models\Agile\{AgileEvent, AgileSprint, AgileWorkItem};
 use App\Models\Platform\{Organization, User};
 use App\Models\Project\Project;
@@ -69,7 +70,7 @@ final class AgileSprintTest extends TestCase {
             $this->fail('Start ohne Element wurde akzeptiert.');
         } catch (\RuntimeException) {
         }
-        $this->assertSame(AgileSprint::STATUS_PLANNED, $sprint->fresh()->status);
+        $this->assertSame(AgileSprintStatus::Planned, $sprint->fresh()->status);
 
         // Ohne Ziel.
         $empty = $this->plannedSprint(['name' => 'Sprint 2', 'goal' => null]);
@@ -88,7 +89,7 @@ final class AgileSprintTest extends TestCase {
             $this->fail('Start mit ungültigem Zeitraum wurde akzeptiert.');
         } catch (\RuntimeException) {
         }
-        $this->assertSame(0, AgileSprint::query()->where('status', AgileSprint::STATUS_ACTIVE)->count());
+        $this->assertSame(0, AgileSprint::query()->where('status', AgileSprintStatus::Active)->count());
     }
 
     public function test_only_one_active_sprint_per_board(): void {
@@ -107,7 +108,7 @@ final class AgileSprintTest extends TestCase {
             $this->fail('Zweiter aktiver Sprint wurde zugelassen.');
         } catch (\RuntimeException) {
         }
-        $this->assertSame(1, AgileSprint::query()->where('status', AgileSprint::STATUS_ACTIVE)->count());
+        $this->assertSame(1, AgileSprint::query()->where('status', AgileSprintStatus::Active)->count());
 
         // Kein Wiederöffnen: abgeschlossener Sprint kann nicht erneut starten.
         $service->complete($first->fresh(), [(int) $itemA->id => 'backlog'], $this->lead);
@@ -164,7 +165,7 @@ final class AgileSprintTest extends TestCase {
             (int) $openB->id => (string) $followUp->id,
         ], $this->lead);
 
-        $this->assertSame(AgileSprint::STATUS_COMPLETED, $sprint->status);
+        $this->assertSame(AgileSprintStatus::Completed, $sprint->status);
         $this->assertSame(3, $sprint->completion_snapshot['done_points']);
         $this->assertSame(13, $sprint->completion_snapshot['open_points']);
         $this->assertSame(16, $sprint->completion_snapshot['committed_points']);
@@ -223,7 +224,7 @@ final class AgileSprintTest extends TestCase {
         $this->actingAs($this->lead)
             ->post(route('agile.sprints.start', [$this->project, $sprint]))
             ->assertRedirect(route('agile.sprints', $this->project));
-        $this->assertSame(AgileSprint::STATUS_ACTIVE, $sprint->fresh()->status);
+        $this->assertSame(AgileSprintStatus::Active, $sprint->fresh()->status);
 
         // Board mit Sprint-Kontext rendert nur Sprint-Items — beide Items
         // liegen in einer Spalte, nur das Sprint-Item erscheint gefiltert.
@@ -238,5 +239,27 @@ final class AgileSprintTest extends TestCase {
             ->assertOk()
             ->assertSee('HTTP-Story')
             ->assertDontSee('Nicht im Sprint');
+    }
+
+    /** Der Status ist ein Enum: Abzeichen, Start-Knopf und Folgesprint-Auswahl folgen dem Fall, nicht dem Rohwert. */
+    public function test_sprint_page_follows_the_status_enum(): void {
+        $service = app(AgileSprintService::class);
+
+        $planned = $this->plannedSprint(['name' => 'Sprint Plan']);
+        $active = $this->plannedSprint(['name' => 'Sprint Lauf']);
+        $service->assign($active, $this->item('Offene Story'), $this->lead);
+        $service->start($active, $this->lead);
+        $cancelled = $this->plannedSprint(['name' => 'Sprint Stopp']);
+        $service->cancel($cancelled, 'Kein Bedarf', $this->lead);
+
+        $response = $this->actingAs($this->lead)->get(route('agile.sprints', $this->project))->assertOk();
+
+        $response->assertSeeInOrder(['Sprint Stopp', 'abgebrochen', 'Sprint Lauf', 'aktiv', 'Sprint Plan', 'geplant']);
+        $response->assertSee(route('agile.sprints.start', [$this->project, $planned]), false);
+        $response->assertDontSee(route('agile.sprints.start', [$this->project, $active]), false);
+        $response->assertDontSee(route('agile.sprints.start', [$this->project, $cancelled]), false);
+        // Nur der geplante Sprint ist Folgesprint für das offene Element.
+        $response->assertSee('In Sprint Sprint Plan');
+        $response->assertDontSee('In Sprint Sprint Stopp');
     }
 }

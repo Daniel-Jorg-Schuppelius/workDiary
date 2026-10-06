@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\GoogleCalendar\Console;
 
-use App\Plugins\Contracts\CalendarPublisher;
+use App\Plugins\Contracts\{CalendarPublisher, Plugin};
 use App\Plugins\GoogleCalendar\GoogleCalendarPlugin;
 use App\Plugins\Support\Calendar\Console\CalendarPublishCommand;
 
@@ -27,7 +27,7 @@ class GoogleCalendarPublishCommand extends CalendarPublishCommand {
 
     protected $description = 'Publiziert WorkDiary-Termine idempotent in den verbundenen Google-Kalender.';
 
-    protected function plugin(): CalendarPublisher {
+    protected function plugin(): Plugin&CalendarPublisher {
         return new GoogleCalendarPlugin();
     }
 }

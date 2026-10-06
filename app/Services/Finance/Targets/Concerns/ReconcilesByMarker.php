@@ -21,7 +21,9 @@ use App\Models\Integration\ExternalReference;
  * Übergabenachweis-Datensatz waren in SevDesk/Easybill/OrgaMax wortgleich.
  * Der provider-spezifische Teil (findByMarker-Scan, Payload-Aufbau,
  * ConnectException→outcome_unclear-Fehlerschlüssel) bleibt bewusst in den
- * Targets — unterschiedliche Clients und Fehlersemantik.
+ * Targets — unterschiedliche Clients und Fehlersemantik. Lexoffice nutzt den
+ * Idempotenz-Lookup und schreibt seinen Nachweis selbst (eigene Nutzdatenform);
+ * Gate `FacturationTargetIdempotencyRuleTest`.
  */
 trait ReconcilesByMarker {
     /** Bereits übergeben? Harte Idempotenz je Transfer über den Nachweis. */

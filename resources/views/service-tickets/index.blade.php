@@ -11,8 +11,7 @@
 
 @section('title', __('Service-Tickets'))
 @section('nav-title', __('Service-Tickets'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('Service- & FM-Tickets mit SLA-Übersicht.')">
@@ -95,7 +94,7 @@
                         @endif
                     </td>
                     <td>
-                        <span class="badge badge-sm">{{ $ticket->priority->label() }}</span>
+                        <x-status-badge tone="plain">{{ $ticket->priority->label() }}</x-status-badge>
                     </td>
                     <td>
                         <x-status-badge size="sm" outline>{{ $ticket->status->label() }}</x-status-badge>

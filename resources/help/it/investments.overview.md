@@ -1,7 +1,7 @@
 ---
 title: "Pianificazione degli investimenti"
 topic: investments.overview
-version: 1
+version: 2
 audience: []
 modules:
     - module.investments
@@ -23,6 +23,12 @@ da sé. I budget approvati vengono congelati come snapshot — un aumento
 passa sempre attraverso una deviazione di budget approvata e
 un'integrazione (nuova richiesta, lo stato precedente resta conservato
 come «sostituito»).
+
+**Rinvio e rifiuto:** durante la pianificazione il fascicolo può essere
+messo in attesa con «Rinvia»; «Riprendi» lo riporta esattamente alla fase
+in cui si trovava. Il rifiuto di una richiesta di budget è definitivo: un
+fascicolo respinto resta respinto e non può essere né rinviato né
+ripresentato — un nuovo tentativo inizia con un nuovo fascicolo.
 
 **Attuazione e valori effettivi:** dopo l'approvazione vengono
 collegati progetto, ordine, asset, fattura in entrata o documento. La

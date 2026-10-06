@@ -34,6 +34,7 @@ class ReportTargetController extends Controller {
             ->with('creator:id,name')
             ->orderBy('metric')
             ->orderBy('scope')
+            ->orderBy('id')
             ->paginate((int) Setting::get('pagination.report_targets', 25))
             ->withQueryString();
 

@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Communication;
 
+use App\Enums\Communication\CustomerCircularRecipientStatus;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Communication\CustomerCircular;
@@ -41,8 +42,8 @@ class CustomerCircularController extends Controller {
             'circulars' => CustomerCircular::query()
                 ->withCount([
                     'recipients',
-                    'recipients as sent_count' => fn ($q) => $q->where('status', 'sent'),
-                    'recipients as skipped_count' => fn ($q) => $q->where('status', '!=', 'sent'),
+                    'recipients as sent_count' => fn ($q) => $q->where('status', CustomerCircularRecipientStatus::Sent),
+                    'recipients as skipped_count' => fn ($q) => $q->where('status', '!=', CustomerCircularRecipientStatus::Sent),
                 ])
                 ->orderByDesc('id')
                 ->paginate(25),

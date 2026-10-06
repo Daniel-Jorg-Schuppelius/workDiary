@@ -41,10 +41,12 @@ return [
         'fetch' => 'Auszüge jetzt abrufen',
         'suspend' => 'Zugang sperren',
         'submit' => 'Per EBICS einreichen',
+        'confirm_not_submitted' => 'Als nicht eingereicht bestätigen',
     ],
     'confirm' => [
         'suspend' => 'Zugang bei der Bank sperren? Danach braucht es neue Schlüssel und einen neuen Brief.',
         'submit' => 'Zahllauf jetzt per EBICS an die Bank senden? Die Freigabe erteilen Sie anschließend bei der Bank.',
+        'not_submitted' => 'Haben Sie bei der Bank geprüft, dass dieser Auftrag nicht vorliegt? Danach lässt sich der Zahllauf erneut einreichen.',
     ],
     'last_error' => 'Letzter Fehler: :error',
     'flash' => [
@@ -55,6 +57,7 @@ return [
         'suspended' => 'Zugang gesperrt.',
         'fetched' => ':statements Auszüge übernommen, :skipped bereits vorhanden.',
         'submitted' => 'Zahllauf eingereicht (Auftrag :order). Freigabe bitte bei der Bank erteilen.',
+        'submission_released' => 'Übermittlung als nicht erfolgt vermerkt. Der Zahllauf lässt sich erneut einreichen.',
     ],
     'error' => [
         'host_not_allowed' => 'Diese Adresse ist als Bankzugang nicht zulässig.',
@@ -67,6 +70,7 @@ return [
         'bank_rejected' => 'Die Bank hat den Auftrag abgelehnt.',
         'failed' => 'Die Verbindung zur Bank ist fehlgeschlagen.',
         'already_submitted' => 'Dieser Zahllauf wurde bereits per EBICS eingereicht.',
+        'outcome_unclear' => 'Der Ausgang der letzten Übermittlung ist unklar. Bitte zuerst bei der Bank prüfen, ob der Auftrag vorliegt.',
     ],
     'letter' => [
         'title' => 'EBICS-Initialisierungsbrief (INI/HIA)',
@@ -85,5 +89,6 @@ return [
     ],
     'run' => [
         'submitted' => 'Per EBICS eingereicht am :date (Auftrag :order).',
+        'unclear' => 'Übermittlung per EBICS am :date begonnen — Ausgang unklar.',
     ],
 ];

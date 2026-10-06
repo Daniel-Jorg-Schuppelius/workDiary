@@ -22,14 +22,14 @@
             <div class="flex flex-wrap items-center justify-between gap-2 border-b border-base-300 p-3">
                 <div class="flex flex-wrap items-center gap-2">
                     <span class="font-medium">{{ $profile->name }}</span>
-                    <span class="badge badge-outline">{{ $profile->inspection_kind->label() }}</span>
-                    <span class="badge badge-outline">{{ __('alle :n Monate', ['n' => $profile->interval_months]) }}</span>
-                    <span class="badge badge-outline">{{ $profile->blocking_mode->label() }}</span>
+                    <x-status-badge tone="plain" size="md" outline>{{ $profile->inspection_kind->label() }}</x-status-badge>
+                    <x-status-badge tone="plain" size="md" outline>{{ __('alle :n Monate', ['n' => $profile->interval_months]) }}</x-status-badge>
+                    <x-status-badge tone="plain" size="md" outline>{{ $profile->blocking_mode->label() }}</x-status-badge>
                     @if ($profile->requires_certificate)
-                        <span class="badge badge-info badge-outline">{{ __('Zertifikatspflicht') }}</span>
+                        <x-status-badge tone="info" size="md" outline>{{ __('Zertifikatspflicht') }}</x-status-badge>
                     @endif
                     @if ($profile->organization_id === null)
-                        <span class="badge badge-ghost badge-sm">{{ __('globale Vorlage') }}</span>
+                        <x-status-badge>{{ __('globale Vorlage') }}</x-status-badge>
                     @endif
                 </div>
                 @can('create', \App\Models\AssetCompliance\AssetComplianceProfile::class)
@@ -56,7 +56,7 @@
                                     <option value="{{ $contact->sqid }}">{{ $contact->name }}</option>
                                 @endforeach
                             </x-select-field>
-                            <button type="submit" class="btn btn-sm">{{ __('Zuweisen') }}</button>
+                            <x-button type="submit" tone="plain">{{ __('Zuweisen') }}</x-button>
                         </form>
                     </details>
                 @endcan
@@ -85,7 +85,7 @@
                         <x-input-field name="limit_min" type="number" step="0.0001" :label="__('Min')" />
                         <x-input-field name="limit_max" type="number" step="0.0001" :label="__('Max')" />
                         <x-input-field name="unit" :label="__('Einheit')" />
-                        <button type="submit" class="btn btn-sm">{{ __('Ergänzen') }}</button>
+                        <x-button type="submit" tone="plain">{{ __('Ergänzen') }}</x-button>
                     </form>
                 @endif
             @endcan
@@ -121,7 +121,7 @@
                 </div>
                 <x-input-field name="default_authority" :label="__('Standard-Prüfstelle')" span="2" />
                 <div class="sm:col-span-3">
-                    <button type="submit" class="btn btn-sm btn-primary">{{ __('Profil anlegen') }}</button>
+                    <x-button type="submit">{{ __('Profil anlegen') }}</x-button>
                 </div>
             </form>
         </x-card>
@@ -136,7 +136,7 @@
                     <td>{{ $norm->jurisdiction }}</td>
                     <td>
                         @if ($norm->source_url !== null)
-                            <a class="link" href="{{ $norm->source_url }}" target="_blank" rel="noopener">{{ $norm->norm_label }}</a>
+                            <x-external-link :url="$norm->source_url" :label="$norm->norm_label" />
                         @else
                             {{ $norm->norm_label }}
                         @endif

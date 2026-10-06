@@ -43,7 +43,7 @@
             <x-card>
                 <div class="flex flex-wrap items-center gap-2 mb-3">
                     <h3 class="font-semibold text-lg">{{ $account->name }}</h3>
-                    <span class="badge badge-ghost badge-sm font-mono">{{ $account->code }}</span>
+                    <x-status-badge class="font-mono">{{ $account->code }}</x-status-badge>
                     <x-status-badge :tone="$account->is_active ? 'success' : 'ghost'" size="sm">
                         {{ $account->is_active ? __('aktiv') : __('inaktiv') }}
                     </x-status-badge>
@@ -58,9 +58,9 @@
                     </span>
                     <form method="POST" action="{{ route('admin.time-accounts.toggle', $account) }}" class="ml-auto">
                         @csrf
-                        <button type="submit" class="btn btn-xs btn-ghost">
+                        <x-button type="submit" tone="ghost" size="xs">
                             {{ $account->is_active ? __('Deaktivieren') : __('Aktivieren') }}
-                        </button>
+                        </x-button>
                     </form>
                 </div>
 
@@ -114,7 +114,7 @@
                         <input id="ta-{{ $account->sqid }}-factor" type="number" step="0.0001" name="factor" value="1"
                                class="input input-sm input-bordered w-28" required>
                     </div>
-                    <button type="submit" class="btn btn-sm btn-outline">{{ __('Regel hinzufügen') }}</button>
+                    <x-button type="submit" tone="outline">{{ __('Regel hinzufügen') }}</x-button>
                 </form>
 
                 {{-- Sonderbuchung --}}
@@ -145,7 +145,7 @@
                         <input id="ta-{{ $account->sqid }}-note" type="text" name="note" minlength="5" maxlength="500"
                                class="input input-sm input-bordered w-full" required>
                     </div>
-                    <button type="submit" class="btn btn-sm btn-warning">{{ __('Buchen') }}</button>
+                    <x-button type="submit" tone="warning">{{ __('Buchen') }}</x-button>
                 </form>
             </x-card>
         @endforeach

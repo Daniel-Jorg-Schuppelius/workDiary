@@ -17,8 +17,7 @@ use App\Models\Diary\DiaryEntry;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Liefert und persistiert den Dispositionsstatus eines Auftrags, OHNE die
- * (WIP-) Modellklasse DiaryEntry anzufassen.
+ * Liefert und persistiert den Dispositionsstatus eines Auftrags.
  *
  * Auflösungs-Reihenfolge:
  *  1. Explizit gesetzte Spalte diary_entries.dispatch_status (manuelle
@@ -29,20 +28,13 @@ use Illuminate\Support\Facades\DB;
  *     dargestellt werden.
  *
  * Schreibzugriff erfolgt bewusst über den Query-Builder (DB::table), damit
- * keine Eloquent-Events/Casts der WIP-Klasse berührt werden.
+ * keine Eloquent-Events des Auftrags ausgelöst werden; gelesen wird über den
+ * Enum-Cast am Modell.
  */
 final class DispatchStatusResolver {
     /** Effektiver Dispositionsstatus (Spalte bevorzugt, sonst abgeleitet). */
     public function resolve(DiaryEntry $entry): DispatchStatus {
-        $stored = $entry->getAttribute('dispatch_status');
-        if (is_string($stored) && $stored !== '') {
-            $enum = DispatchStatus::tryFrom($stored);
-            if ($enum !== null) {
-                return $enum;
-            }
-        }
-
-        return $this->derive($entry);
+        return $entry->dispatch_status ?? $this->derive($entry);
     }
 
     /** Reine Ableitung aus vorhandenen Feldern (ignoriert die Spalte). */
@@ -102,7 +94,6 @@ final class DispatchStatusResolver {
         DB::table('diary_entries')->where('id', $entry->getKey())->update($update);
 
         // In-Memory aktuell halten, ohne Eloquent-Events der WIP-Klasse.
-        $entry->setAttribute('dispatch_status', $target->value);
         foreach ($update as $key => $value) {
             $entry->setAttribute($key, $value);
         }

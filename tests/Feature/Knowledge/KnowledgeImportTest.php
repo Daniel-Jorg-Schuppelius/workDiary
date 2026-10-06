@@ -21,6 +21,7 @@ use App\Plugins\Msgraph\Models\MsgraphOneNoteConnection;
 use App\Plugins\Msgraph\MsgraphConfig;
 use App\Plugins\Msgraph\Services\OneNoteNotebookReader;
 use App\Plugins\Support\Intake\{IntakeChangePage, IntakeItem};
+use App\Plugins\Support\OAuthConnectionStatus;
 use App\Services\Collections\Import\{KnowledgeImportService, ObsidianVaultReader};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\{BuildsPolicyActors, WithOrganization};
@@ -154,7 +155,7 @@ final class KnowledgeImportTest extends TestCase {
             'access_token' => 'token',
             'refresh_token' => 'refresh',
             'token_expires_at' => now()->addHour(),
-            'status' => MsgraphOneNoteConnection::STATUS_ACTIVE,
+            'status' => OAuthConnectionStatus::Active,
         ]);
         FakePluginHttp::fake([
             'https://graph.microsoft.com/v1.0/me/onenote/notebooks/nb-1/sections*' => FakePluginHttp::response(['value' => [['id' => 'sec-1', 'displayName' => 'Baustellen']]]),
@@ -191,7 +192,7 @@ final class KnowledgeImportTest extends TestCase {
             'access_token' => 'token',
             'refresh_token' => 'refresh',
             'token_expires_at' => now()->addHour(),
-            'status' => MsgraphOneNoteConnection::STATUS_ACTIVE,
+            'status' => OAuthConnectionStatus::Active,
         ]);
         FakePluginHttp::fake([
             'https://graph.microsoft.com/v1.0/me/onenote/notebooks/nb-1/sections*' => FakePluginHttp::response(['value' => [['id' => 'sec-1', 'displayName' => 'Baustellen']]]),

@@ -24,7 +24,7 @@
 <body>
     <div class="wrap">
         <h1>{{ __('b2b_catalog.public.error_title') }}</h1>
-        <div class="alert">{{ $message }}</div>
+        <div role="status" class="alert">{{ $message }}</div>
     </div>
 </body>
 </html>

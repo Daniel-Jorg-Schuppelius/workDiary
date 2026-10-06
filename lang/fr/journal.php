@@ -23,6 +23,8 @@ return [
         'ebics_suspended' => 'Accès EBICS bloqué',
         'ebics_statements_fetched' => 'Relevés récupérés par EBICS',
         'ebics_payment_submitted' => 'Lot de paiements envoyé par EBICS',
+        'ebics_payment_started' => 'Transmission EBICS commencée',
+        'ebics_payment_aborted' => 'Transmission EBICS non effectuée',
         'ebics_failed' => 'Étape EBICS échouée',
         'analyzed' => 'Analysé',
         'blocked' => 'Bloqué',

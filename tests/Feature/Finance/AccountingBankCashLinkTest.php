@@ -11,6 +11,7 @@
 namespace Tests\Feature\Finance;
 
 use App\Enums\Finance\{AccountType, AllocationKind, PostingAccountRole, PostingSourceKind, ProfitDetermination};
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Accounting\{AccountingAccount, AccountingPostingRule, AccountingTransfer};
 use App\Models\Customer\Customer;
 use App\Models\Finance\{BankStatement, BankTransaction, PaymentAllocation};
@@ -226,7 +227,7 @@ class AccountingBankCashLinkTest extends TestCase {
             'organization_id' => $this->org->id,
             'customer_id' => $customer->id,
             'number' => 'RE-CHF',
-            'status' => Invoice::STATUS_ISSUED,
+            'status' => InvoiceStatus::Issued,
             'issued_on' => $this->startsOn->addDays(5)->toDateString(),
             'currency' => 'EUR',
             'subtotal' => '100.00',
@@ -308,7 +309,7 @@ class AccountingBankCashLinkTest extends TestCase {
             'number' => 'RE-D3-' . ($posted ? 'P' : 'D'),
             'type' => Invoice::TYPE_INVOICE,
             'category' => Invoice::CATEGORY_SERVICE,
-            'status' => Invoice::STATUS_ISSUED,
+            'status' => InvoiceStatus::Issued,
             'issued_on' => $this->startsOn->addDays(5)->toDateString(),
             'currency' => 'EUR',
             'subtotal' => '100.00',

@@ -16,6 +16,7 @@ use App\Enums\Club\{ClubEventVisibility, ClubExamCandidateStatus, ClubParticipat
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Club\{AddExamCandidateRequest, SaveExamOfferRequest};
+use App\Models\Calendar\Event;
 use App\Models\Club\{ClubDepartment, ClubExamCandidate, ClubExamOffer, ClubGrade, ClubGradingSystem, ClubGroup, ClubMember};
 use App\Models\Facility\Room;
 use App\Models\Platform\User;
@@ -56,9 +57,10 @@ class ClubExamController extends Controller {
                     default => $event->where('ended_at', '>=', $now),
                 };
             })
-            ->get()
-            ->sortBy(fn(ClubExamOffer $offer) => $offer->event?->started_at)
-            ->values();
+            ->orderBy(Event::query()->select('started_at')->whereColumn('events.id', 'club_exam_offers.event_id'))
+            ->orderBy('id')
+            ->paginate(30)
+            ->withQueryString();
 
         return view('club.exams.index', [
             'offers' => $offers,
@@ -70,7 +72,11 @@ class ClubExamController extends Controller {
     public function show(ClubExamOffer $offer): View {
         Gate::authorize('view', $offer);
         $offer->load(['event.clubGroups:id,name', 'system', 'version', 'targetGrades']);
-        $candidates = $offer->candidates()->with(['member', 'targetGrade', 'resultBy:id,name', 'awardedGrade'])->get()
+        /** @var User $viewer */
+        $viewer = Auth::user();
+        $candidates = $offer->candidates()->with(['member', 'targetGrade', 'resultBy:id,name', 'awardedGrade'])
+            ->when(! Gate::allows('viewAllCandidates', $offer), fn($query) => $query->whereHas('member.activeGroupMemberships.group', fn($groups) => $groups->where('leader_user_id', $viewer->id)))
+            ->get()
             ->sortBy(fn(ClubExamCandidate $c) => $c->member?->last_name . ' ' . $c->member?->first_name)->values();
 
         return view('club.exams.show', [
@@ -244,7 +250,7 @@ class ClubExamController extends Controller {
     private function offerData(array $data): array {
         $data['target_grade_ids'] = $this->decodeList(ClubGrade::class, (array) ($data['target_grade_ids'] ?? []));
         $data['examiner_user_ids'] = $this->decodeList(User::class, (array) ($data['examiner_user_ids'] ?? []));
-        $data['club_group_ids'] = $this->decodeList(ClubGroup::class, (array) ($data['club_group_ids'] ?? []));
+        $data['club_group_ids'] = array_values(array_map('intval', (array) ($data['club_group_ids'] ?? [])));
         $tz = trim((string) ($data['timezone'] ?? ''));
         $tz = \App\Support\Tz::isValid($tz) && $tz !== 'UTC' ? $tz : \App\Support\Tz::current();
         foreach (['started_at', 'ended_at'] as $key) {

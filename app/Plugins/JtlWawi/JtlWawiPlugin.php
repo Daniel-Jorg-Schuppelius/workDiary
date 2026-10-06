@@ -14,7 +14,9 @@ namespace App\Plugins\JtlWawi;
 
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\Plugin;
-use App\Plugins\JtlWawi\Api\{JtlApiException, JtlGatewayFactory};
+use App\Plugins\JtlWawi\Api\JtlGatewayFactory;
+use App\Plugins\JtlWawi\Enums\JtlConnectionStatus;
+use App\Plugins\JtlWawi\Exceptions\JtlApiException;
 use App\Plugins\JtlWawi\Models\JtlConnection;
 use Throwable;
 
@@ -83,11 +85,11 @@ class JtlWawiPlugin extends AbstractPlugin {
             return PluginHealth::degraded(__('Keine JTL-Wawi-Verbindung hinterlegt.'), 'not_configured');
         }
 
-        if ($connection->status === JtlConnection::STATUS_PENDING_REGISTRATION) {
+        if ($connection->status === JtlConnectionStatus::PendingRegistration) {
             return PluginHealth::degraded(__('App-Registrierung wartet auf Freigabe in JTL-Wawi.'), 'registration_pending');
         }
 
-        if ($connection->status === JtlConnection::STATUS_BLOCKED) {
+        if ($connection->status === JtlConnectionStatus::Blocked) {
             return PluginHealth::failing(__('Verbindung blockiert (:reason) — Details im JTL-Admin.', ['reason' => (string) $connection->blocked_reason]), 'blocked');
         }
 

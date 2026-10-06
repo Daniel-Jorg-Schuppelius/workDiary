@@ -42,8 +42,8 @@
                 <td class="tabular-nums text-sm">{{ $document->customer_released_at?->fdate() ?? '—' }}</td>
                 <td class="text-right whitespace-nowrap">
                     @if ($canQuery)
-                        <a href="{{ route('customer.queries.create', ['subject_type' => 'document', 'subject' => $document->sqid]) }}"
-                           class="btn btn-ghost btn-xs">{{ __('Rückfrage') }}</a>
+                        <x-button :href="route('customer.queries.create', ['subject_type' => 'document', 'subject' => $document->sqid])"
+                                tone="ghost" size="xs">{{ __('Rückfrage') }}</x-button>
                     @endif
                     @if ($document->currentVersion !== null)
                         <x-button tone="outline" size="xs" icon="download"

@@ -14,6 +14,7 @@ namespace App\Services\Print;
 
 use App\Enums\AssetCompliance\AssetComplianceStatus;
 use App\Enums\Print\{PreflightStatus, PrintOrderStatus, PrintOutputKind};
+use App\Enums\Print\PrintQcStatus;
 use App\Models\Asset\Asset;
 use App\Models\Document\{Document, DocumentVersion};
 use App\Models\Manufacturing\ManufacturingOrder;
@@ -56,16 +57,6 @@ class PrintOrderService {
         private readonly AssetUsageGuard $assetGuard,
         private readonly AssetComplianceStatusProvider $compliance,
     ) {}
-
-    /** Profil installiert? (Muster RecipeService — Kontext-Gate der UI.) */
-    public function isPrintProfileActive(Organization $organization): bool {
-        $settings = is_array($organization->settings) ? $organization->settings : [];
-        if (($settings['branch_profile_code'] ?? null) === self::PROFILE_CODE) {
-            return true;
-        }
-
-        return data_get($settings, 'branch_profile_versions.' . self::PROFILE_CODE) !== null;
-    }
 
     /**
      * Druckauftrag zum bestehenden Fertigungsauftrag eröffnen (1:1).
@@ -291,10 +282,7 @@ class PrintOrderService {
      * Qualitätskontrolle gegen Freigabestand: Freigabe, Sperre oder
      * Nacharbeit — immer dokumentiert.
      */
-    public function qualityCheck(PrintOrder $order, string $result, ?string $note, User $actor): PrintOrder {
-        if (! in_array($result, [PrintOrder::QC_PASSED, PrintOrder::QC_REWORK, PrintOrder::QC_BLOCKED], true)) {
-            throw ValidationException::withMessages(['result' => (string) __('print.error.qc_result_invalid')]);
-        }
+    public function qualityCheck(PrintOrder $order, PrintQcStatus $result, ?string $note, User $actor): PrintOrder {
         if ($order->status === PrintOrderStatus::InProduction) {
             $this->assertValidatedTransition($order->status, PrintOrderStatus::QualityCheck, 'print.error.invalid_transition_detail');
             $order->forceFill(['status' => PrintOrderStatus::QualityCheck])->save();
@@ -304,9 +292,9 @@ class PrintOrderService {
         }
 
         $target = match ($result) {
-            PrintOrder::QC_PASSED => PrintOrderStatus::Ready,
-            PrintOrder::QC_REWORK => PrintOrderStatus::Rework,
-            default => PrintOrderStatus::QualityCheck, // Sperre: bleibt in QK
+            PrintQcStatus::Passed => PrintOrderStatus::Ready,
+            PrintQcStatus::Rework => PrintOrderStatus::Rework,
+            PrintQcStatus::Blocked => PrintOrderStatus::QualityCheck, // Sperre: bleibt in QK
         };
         if ($target !== PrintOrderStatus::QualityCheck) {
             $this->assertValidatedTransition($order->status, $target, 'print.error.invalid_transition_detail');
@@ -319,7 +307,7 @@ class PrintOrderService {
             'qc_by' => $actor->id,
             'qc_note' => trim((string) $note) ?: null,
         ])->save();
-        $order->audit('print.quality_checked', ['result' => $result, 'by' => $actor->id]);
+        $order->audit('print.quality_checked', ['result' => $result->value, 'by' => $actor->id]);
 
         return $order;
     }

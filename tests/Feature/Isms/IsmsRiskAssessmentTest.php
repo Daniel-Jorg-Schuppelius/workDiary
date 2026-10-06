@@ -184,6 +184,24 @@ class IsmsRiskAssessmentTest extends TestCase {
         $this->assertSame(1, $risk->assessments()->count(), 'Nur Bewertungsänderungen historisieren');
     }
 
+    /** Die Bewertungshistorie liegt in einem Partial der Risikoliste — die Liste zeigt sie je Risiko. */
+    public function test_index_shows_the_assessment_history_of_each_risk(): void {
+        $admin = User::factory()->admin()->create();
+        $risk = $this->makeRisk($admin);
+        $assessment = IsmsRiskAssessment::factory()->net()->approved($admin->id)->create([
+            'organization_id' => $admin->organization_id,
+            'isms_risk_id' => $risk->id,
+            'assessment_no' => 1,
+            'rationale' => 'Nach Workshop neu bewertet.',
+        ]);
+
+        $this->actingAs($admin)->get(route('isms.risks.index'))
+            ->assertOk()
+            ->assertSee('id="isms-assessment-' . $assessment->id . '"', false)
+            ->assertSee('Nach Workshop neu bewertet.')
+            ->assertSee('class="wd-surface min-h-0 flex flex-col lg:overflow-clip"', false);
+    }
+
     public function test_accepting_risk_requires_approved_net_assessment_with_valid_until(): void {
         $admin = User::factory()->admin()->create();
         $risk = $this->makeRisk($admin, ['status' => RiskStatus::Analyzed->value]);

@@ -16,7 +16,7 @@ use App\Models\Integration\{ExternalReference, ExternalReferenceAlias};
 use App\Models\Platform\User;
 use App\Models\Project\Project;
 use App\Models\Time\TimeEntry;
-use App\Plugins\Toggl\TogglExportImporter;
+use App\Plugins\Toggl\Services\TogglExportImporter;
 use App\Services\Stammdaten\{CustomerMergeService, ProjectMergeService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
@@ -463,7 +463,7 @@ class TogglExportImportTest extends TestCase {
         $anna = User::factory()->create(['organization_id' => $this->organization->id, 'email' => 'dev@example.com']);
         // Zweiter Workspace-Eintrag über eine gespeicherte Zuordnung (abweichende Toggl-Adresse).
         $mapped = User::factory()->create(['organization_id' => $this->organization->id, 'email' => 'intern@example.com']);
-        (new \App\Plugins\Toggl\TogglImportService)->rememberUserEmail($this->organization, 'extern@example.com', $mapped);
+        (new \App\Plugins\Toggl\Services\TogglImportService)->rememberUserEmail($this->organization, 'extern@example.com', $mapped);
         $this->writeCsv($this->base . '/OwnWs/Toggl_time_entries_2025-01-01_to_2025-12-31.csv', [
             ['Dev', 'dev@example.com', 'Acme', 'Website', '', 'Arbeit', 'No', '2025-01-02', '09:00:00', '2025-01-02', '10:00:00', '01:00:00', ''],
             ['Ext', 'extern@example.com', 'Acme', 'Website', '', 'Extern', 'No', '2025-01-03', '09:00:00', '2025-01-03', '10:00:00', '01:00:00', ''],

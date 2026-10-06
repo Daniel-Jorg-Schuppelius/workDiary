@@ -12,7 +12,7 @@
 @section('nav-title', __('Plugin-Fehler'))
 
 @section('content')
-<x-index-page :subtitle="__(':plugin · :phase · :time', ['plugin' => $error->plugin_id, 'phase' => $error->phase, 'time' => $error->occurred_at->orgTz()->format('d.m.Y H:i')])"
+<x-index-page :subtitle="__(':plugin · :phase · :time', ['plugin' => $error->plugin_id, 'phase' => $error->phase, 'time' => $error->occurred_at->fdatetime()])"
               back-route="admin.plugin-errors.index" :back-label="__('Zurück')">
     <x-slot:actions>
         @if ($newer)
@@ -66,7 +66,7 @@
             <div>
                 <div class="text-xs uppercase text-muted">{{ __('Bestätigt') }}</div>
                 <div class="text-sm">
-                    {{ $error->acknowledged_at?->orgTz()->format('d.m.Y H:i') }}
+                    {{ $error->acknowledged_at?->fdatetime() }}
                     @if ($error->acknowledger)
                         — {{ $error->acknowledger->name }}
                     @endif
@@ -83,7 +83,7 @@
             <div>
                 <div class="flex items-center justify-between">
                     <div class="text-xs uppercase text-muted">{{ __('Stacktrace') }}</div>
-                    <button type="button" class="btn btn-xs btn-ghost" data-copy-trace>{{ __('Kopieren') }}</button>
+                    <x-button tone="ghost" size="xs" data-copy-trace>{{ __('Kopieren') }}</x-button>
                 </div>
                 <pre class="text-xs bg-base-200 rounded p-2 overflow-auto max-h-150" data-trace-content>{{ $error->trace }}</pre>
             </div>

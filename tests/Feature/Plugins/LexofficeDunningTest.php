@@ -11,8 +11,9 @@
 namespace Tests\Feature\Plugins;
 
 use App\Models\Platform\User;
-use App\Plugins\Lexoffice\{LexofficeDunningService, LexofficePlugin};
+use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\Lexoffice\Models\LexofficeVoucher;
+use App\Plugins\Lexoffice\Services\LexofficeDunningService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Psr\Http\Message\RequestInterface;
 use RuntimeException;

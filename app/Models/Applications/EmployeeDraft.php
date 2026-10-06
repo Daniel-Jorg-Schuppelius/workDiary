@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Models\Applications;
 
 use App\Casts\FieldDocumentCast;
+use App\Enums\Applications\EmployeeDraftStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
@@ -33,7 +34,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property array<int, string>|null $qualifications
  * @property \App\Services\Fields\FieldDocument|null $checklist
  * @property string|null $note
- * @property string $status
+ * @property EmployeeDraftStatus $status
  * @property int|null $invited_user_id
  * @property int|null $created_by
  */
@@ -41,8 +42,6 @@ class EmployeeDraft extends Model {
     use Auditable;
     use BelongsToOrganization;
     use HasSqid;
-
-    public const STATUSES = ['draft', 'invited', 'discarded'];
 
     protected $fillable = [
         'organization_id', 'job_application_id', 'name', 'email',
@@ -55,6 +54,7 @@ class EmployeeDraft extends Model {
         'planned_start_on' => 'date',
         'qualifications' => 'array',
         'checklist' => FieldDocumentCast::class,
+        'status' => EmployeeDraftStatus::class,
     ];
 
     /** @return BelongsTo<JobApplication, $this> */

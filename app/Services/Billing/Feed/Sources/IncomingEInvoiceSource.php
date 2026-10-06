@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Billing\Feed\Sources;
 
 use App\Enums\Billing\{DocumentDirection, DocumentKind, DocumentOrigin};
-use App\Models\Invoicing\IncomingEInvoice;
+use App\Enums\Invoicing\IncomingEInvoiceStatus;
 use App\Services\Billing\DocumentFeedFilters;
 use App\Services\Billing\Feed\{DocumentFeedSource, FeedProjection};
 use Illuminate\Database\Query\Builder;
@@ -34,11 +34,11 @@ class IncomingEInvoiceSource implements DocumentFeedSource {
         }
 
         $state = FeedProjection::caseMap('incoming_einvoices.status', [
-            IncomingEInvoice::STATUS_REJECTED => 'cancelled',
-            IncomingEInvoice::STATUS_PAYMENT_RELEASED => 'paid',
+            IncomingEInvoiceStatus::Rejected->value => 'cancelled',
+            IncomingEInvoiceStatus::PaymentReleased->value => 'paid',
         ], 'open');
 
-        $sign = "CASE WHEN incoming_einvoices.status = '" . IncomingEInvoice::STATUS_REJECTED . "' THEN 0 ELSE 1 END";
+        $sign = "CASE WHEN incoming_einvoices.status = '" . IncomingEInvoiceStatus::Rejected->value . "' THEN 0 ELSE 1 END";
 
         return DB::table('incoming_einvoices')
             ->selectRaw(FeedProjection::columns([

@@ -10,6 +10,7 @@
 
 namespace Database\Factories\Sales;
 
+use App\Enums\Sales\QuoteStatus;
 use App\Models\Customer\Customer;
 use App\Models\Sales\Quote;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -27,7 +28,7 @@ class QuoteFactory extends Factory {
             'customer_id' => Customer::factory(),
             'number' => 'A-' . fake()->unique()->numerify('######'),
             'version' => 1,
-            'status' => 'draft',
+            'status' => QuoteStatus::Draft,
             'valid_until' => now()->addDays(30)->toDateString(),
             'created_by' => null,
         ];

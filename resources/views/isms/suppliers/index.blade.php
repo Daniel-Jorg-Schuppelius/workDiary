@@ -15,9 +15,10 @@
 
 @section('title', __('isms.title.suppliers'))
 @section('nav-title', __('isms.title.suppliers'))
+@include('partials.page-fill')
 
 @section('content')
-    <x-index-page :subtitle="__('isms.subtitle.suppliers')">
+    <x-index-page overflow="clip" :subtitle="__('isms.subtitle.suppliers')">
         <x-slot:actions>
             @if ($canManage)
                 <x-icon-btn icon="add" tone="primary" size="sm"
@@ -78,7 +79,7 @@
             </x-filter-field>
         </x-filter-bar>
 
-        <x-table>
+        <x-table scroll="flex">
             <x-slot:head>
                 <tr>
                     <th>{{ __('isms.field.assessment_no') }}</th>
@@ -137,7 +138,7 @@
                     <td><x-status-badge :tone="$assessment->risk_rating->tone()" outline>{{ $assessment->risk_rating->label() }}</x-status-badge></td>
                     <td><x-status-badge :tone="$assessment->status->tone()">{{ $assessment->status->label() }}</x-status-badge></td>
                     <td class="{{ $assessment->isReviewOverdue() ? 'text-warning font-semibold' : 'text-base-content/70' }}">
-                        {{ $assessment->next_review_on?->format('d.m.Y') ?? '—' }}
+                        {{ $assessment->next_review_on?->fdate() ?? '—' }}
                     </td>
                     <td class="text-right">
                         <div class="flex justify-end gap-1">

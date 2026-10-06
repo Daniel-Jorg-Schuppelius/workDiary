@@ -16,7 +16,7 @@
     method="POST"
     :submit-label="__('Abschließen')">
 
-    <div class="alert alert-warning text-sm">
+    <div role="alert" class="alert alert-warning text-sm">
         <span>{{ __('Nach dem Abschluss sind alle Buchungen bis einschließlich des Abschlussdatums festgeschrieben.') }}</span>
     </div>
 

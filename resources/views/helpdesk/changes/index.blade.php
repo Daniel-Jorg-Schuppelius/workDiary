@@ -14,9 +14,10 @@
 @extends('layouts.app')
 @section('title', __('Changes'))
 @section('nav-title', __('Changes'))
+@include('partials.page-fill')
 
 @section('content')
-    <x-index-page :subtitle="__('Geplante Änderungen mit Fenster, Plänen und Freigaben — kommende Fenster zuerst (CAB-Sicht).')">
+    <x-index-page overflow="clip" :subtitle="__('Geplante Änderungen mit Fenster, Plänen und Freigaben — kommende Fenster zuerst (CAB-Sicht).')">
         <x-slot:actions>
             @if ($canManage)
                 <x-icon-btn icon="library_books" size="sm"
@@ -52,7 +53,7 @@
             </select>
         </x-filter-bar>
 
-        <x-table :zebra="true">
+        <x-table scroll="flex" :zebra="true">
             <x-slot:head>
                 <tr>
                     <th>{{ __('Titel') }}</th>
@@ -65,7 +66,6 @@
                     <th class="w-24 text-right">{{ __('Aktion') }}</th>
                 </tr>
             </x-slot:head>
-            <tbody>
                 @forelse ($changes as $change)
                     <tr class="hover">
                         <td>
@@ -75,7 +75,7 @@
                             @endif
                         </td>
                         <td><x-status-badge tone="ghost" size="sm">{{ $typeLabels[$change->change_type] ?? $change->change_type }}</x-status-badge></td>
-                        <td><x-status-badge size="sm" outline>{{ $statusLabels[$change->status] ?? $change->status }}</x-status-badge></td>
+                        <td><x-status-badge size="sm" outline>{{ $change->status->label() }}</x-status-badge></td>
                         <td class="text-sm text-muted whitespace-nowrap">
                             @if ($change->window_from !== null)
                                 {{ $change->window_from->translatedFormat('d.m.Y H:i') }}
@@ -94,7 +94,6 @@
                 @empty
                     <x-table.empty :colspan="8" icon="published_with_changes" :title="__('Noch keine Changes erfasst')" compact />
                 @endforelse
-            </tbody>
         </x-table>
 
         <x-pagination :paginator="$changes" standing />

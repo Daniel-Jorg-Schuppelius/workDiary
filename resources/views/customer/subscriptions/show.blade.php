@@ -26,46 +26,30 @@
                 @endif
             </p>
         </div>
-        <a href="{{ route('customer.subscriptions.index') }}" class="btn btn-sm btn-ghost">{{ __('resale_portal.back') }}</a>
+        <x-button :href="route('customer.subscriptions.index')" tone="ghost">{{ __('resale_portal.back') }}</x-button>
     </div>
 
-    <dl class="grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2 lg:grid-cols-3 rounded-box border border-base-300 bg-base-100 p-4">
-        <div>
-            <dt class="text-xs text-muted">{{ __('resale_portal.field.holder') }}</dt>
-            <dd>
+    <x-card>
+        <x-detail-grid layout="cells" :cols="3" small-labels>
+            <x-detail-grid.row :label="__('resale_portal.field.holder')">
                 {{ $subscription->holderLabel() }}
                 @if ($subscription->foreignCustomer !== null)
-                    <span class="badge badge-ghost badge-xs">{{ __('resale_portal.holder.end_customer') }}</span>
+                    <x-status-badge size="xs">{{ __('resale_portal.holder.end_customer') }}</x-status-badge>
                 @endif
-            </dd>
-        </div>
-        <div>
-            <dt class="text-xs text-muted">{{ __('resale_portal.field.quantity') }}</dt>
-            <dd class="tabular-nums">{{ $subscription->quantity }}</dd>
-        </div>
-        <div>
-            <dt class="text-xs text-muted">{{ __('resale_portal.field.status') }}</dt>
-            <dd><x-status-badge size="xs" :tone="$subscription->status->tone()" :label="$subscription->status->label()" /></dd>
-        </div>
-        <div>
-            <dt class="text-xs text-muted">{{ __('resale_portal.field.term') }}</dt>
-            <dd class="tabular-nums">
+            </x-detail-grid.row>
+            <x-detail-grid.row :label="__('resale_portal.field.quantity')" class="tabular-nums">{{ $subscription->quantity }}</x-detail-grid.row>
+            <x-detail-grid.row :label="__('resale_portal.field.status')"><x-status-badge size="xs" :tone="$subscription->status->tone()" :label="$subscription->status->label()" /></x-detail-grid.row>
+            <x-detail-grid.row :label="__('resale_portal.field.term')" class="tabular-nums">
                 @if ($subscription->ends_on !== null)
                     {{ __('resale_portal.term.range', ['from' => $subscription->starts_on->fdate(), 'to' => $subscription->ends_on->fdate()]) }}
                 @else
                     {{ __('resale_portal.term.since', ['date' => $subscription->starts_on->fdate()]) }} · {{ __('resale_portal.term.running') }}
                 @endif
-            </dd>
-        </div>
-        <div>
-            <dt class="text-xs text-muted">{{ __('resale_portal.field.interval') }}</dt>
-            <dd>{{ __('resale_portal.interval.' . $subscription->interval->value) }} · {{ __('resale_portal.field.renewal') }}: {{ $subscription->renewal->label() }}</dd>
-        </div>
-        <div>
-            <dt class="text-xs text-muted">{{ __('resale_portal.field.next_period') }}</dt>
-            <dd class="tabular-nums">{{ $nextPeriod?->fdate() ?? __('resale_portal.next_period.none') }}</dd>
-        </div>
-    </dl>
+            </x-detail-grid.row>
+            <x-detail-grid.row :label="__('resale_portal.field.interval')">{{ __('resale_portal.interval.' . $subscription->interval->value) }} · {{ __('resale_portal.field.renewal') }}: {{ $subscription->renewal->label() }}</x-detail-grid.row>
+            <x-detail-grid.row :label="__('resale_portal.field.next_period')" class="tabular-nums">{{ $nextPeriod?->fdate() ?? __('resale_portal.next_period.none') }}</x-detail-grid.row>
+        </x-detail-grid>
+    </x-card>
 
     <div>
         <h2 class="text-lg font-medium">{{ __('resale_portal.periods.title') }}</h2>

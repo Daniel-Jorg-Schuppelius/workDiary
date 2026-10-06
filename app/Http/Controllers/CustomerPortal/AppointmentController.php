@@ -65,8 +65,8 @@ class AppointmentController extends Controller {
             ->where('organization_id', $portalUser->organization_id)
             ->where('portal_user_id', $portalUser->id)
             ->orderByDesc('id')
-            ->limit(20)
-            ->get();
+            ->paginate(25)
+            ->withQueryString();
 
         return view('customer.appointments.index', [
             'services' => $services,

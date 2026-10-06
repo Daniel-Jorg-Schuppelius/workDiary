@@ -37,7 +37,7 @@
                 </div>
             </x-card>
         @else
-            <div class="alert">{{ __('dsar.admin.not_created') }}</div>
+            <div role="status" class="alert">{{ __('dsar.admin.not_created') }}</div>
         @endif
 
         <x-card>

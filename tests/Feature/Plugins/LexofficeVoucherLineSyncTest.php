@@ -16,8 +16,10 @@ use App\Enums\Reselling\LinkOrigin;
 use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
 use App\Models\Reselling\{ResalePeriod, ResalePeriodLink, ResaleSubscription};
-use App\Plugins\Lexoffice\{LexofficeInvoiceParser, LexofficePlugin, LexofficeVoucherLineSync, LexofficeVoucherSync};
+use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
+use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\Lexoffice\Models\{LexofficeArticle, LexofficeVoucher, LexofficeVoucherLine};
+use App\Plugins\Lexoffice\Services\{LexofficeInvoiceParser, LexofficeVoucherLineSync, LexofficeVoucherSync};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Log\Events\MessageLogged;
 use Illuminate\Support\Facades\Log;
@@ -314,7 +316,7 @@ class LexofficeVoucherLineSyncTest extends TestCase {
         $this->assertNotNull($fine->fresh()?->lines_synced_at, '429 → Retry im Client → Erfolg');
         $this->assertSame(1, (int) $limited->fresh()?->lines_sync_attempts, 'nach erschöpften Wiederholungen ein normaler Fehlschlag');
         $requests = array_filter($fake->recorded(), static fn(array $entry): bool => str_ends_with((string) $entry['request']->getUri(), '/invoices/inv-429'));
-        $this->assertCount(LexofficeVoucherLineSync::MAX_RETRIES, $requests, 'keine zusätzliche Schleife über den Client-Retries');
+        $this->assertCount(LexofficeClientFactory::MAX_RETRIES, $requests, 'keine zusätzliche Schleife über den Client-Retries');
     }
 
     public function test_non_api_errors_are_isolated_per_voucher(): void {

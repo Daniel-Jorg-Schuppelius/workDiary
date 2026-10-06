@@ -27,6 +27,14 @@ Start patrol → scan tokens (camera scanner types as keyboard, or enter by
 hand) → complete. At most one patrol runs per route at a time; double scans
 count once.
 
+## Aborting
+
+A running patrol can be **aborted** — only with a **justification**. It then
+does not count as completed; confirmed checkpoints remain as evidence, and
+the report states the abort with reason, person and time. Open checkpoints go
+to the control centre as an **open issue**, just like a deviation. After
+that the route is free again.
+
 ## Deviations
 
 Missed points or scans outside the window are **shown, never smoothed** — and

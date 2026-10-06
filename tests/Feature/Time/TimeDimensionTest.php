@@ -11,6 +11,7 @@
 namespace Tests\Feature\Time;
 
 use App\Enums\User\Permission;
+use App\Http\Controllers\Admin\TimeDimensionAdminController;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
 use App\Models\Time\{TimeAllocation, TimeDimensionType, TimeDimensionValue, TimeEntry};
@@ -70,6 +71,39 @@ class TimeDimensionTest extends TestCase {
 
         $plain = $this->orgUser();
         $this->actingAs($plain)->get(route('admin.time-dimensions.index'))->assertForbidden();
+    }
+
+    public function test_index_pages_types_and_lists_all_values_of_a_type(): void {
+        for ($i = 1; $i <= TimeDimensionAdminController::PER_PAGE + 1; $i++) {
+            $type = TimeDimensionType::query()->create([
+                'organization_id' => $this->organization->id,
+                'code' => sprintf('typ-%02d', $i),
+                'name' => sprintf('Typ %02d', $i),
+                'enabled' => true,
+            ]);
+        }
+        // Der Typ auf Seite 2 trägt mehr Werte, als eine Seite Typen zeigt — sie bleiben vollständig.
+        foreach (range(1, 12) as $n) {
+            $type->values()->create(['organization_id' => $this->organization->id, 'name' => sprintf('Wert %02d', $n)]);
+        }
+
+        $first = $this->actingAs($this->admin)->get(route('admin.time-dimensions.index'))
+            ->assertOk()
+            ->assertSee('Typ 10')
+            ->assertDontSee('Typ 11');
+        $this->assertSame(11, $first->viewData('types')->total());
+        $this->assertCount(10, $first->viewData('types')->items());
+
+        $this->actingAs($this->admin)->get(route('admin.time-dimensions.index', ['page' => 2]))
+            ->assertOk()
+            ->assertSee('Typ 11')
+            ->assertSee('Wert 01')
+            ->assertSee('Wert 12')
+            ->assertDontSee('Typ 10');
+
+        $this->actingAs($this->admin)
+            ->post(route('admin.time-dimensions.values.store', $type), ['name' => 'Wert 13'])
+            ->assertRedirect(route('admin.time-dimensions.index', ['page' => 2]));
     }
 
     public function test_dialog_offers_only_valid_values_of_enabled_types(): void {

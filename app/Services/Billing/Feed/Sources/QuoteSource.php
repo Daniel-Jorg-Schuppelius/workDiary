@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Billing\Feed\Sources;
 
 use App\Enums\Billing\{DocumentDirection, DocumentKind, DocumentOrigin};
+use App\Enums\Sales\QuoteStatus;
 use App\Services\Billing\DocumentFeedFilters;
 use App\Services\Billing\Feed\{DocumentFeedSource, FeedProjection};
 use App\Support\Query\DateRange;
@@ -31,11 +32,11 @@ class QuoteSource implements DocumentFeedSource {
         }
 
         $state = FeedProjection::caseMap('quotes.status', [
-            'draft' => 'draft',
-            'accepted' => 'paid',
-            'partially_accepted' => 'paid',
-            'rejected' => 'cancelled',
-            'expired' => 'cancelled',
+            QuoteStatus::Draft->value => 'draft',
+            QuoteStatus::Accepted->value => 'paid',
+            QuoteStatus::PartiallyAccepted->value => 'paid',
+            QuoteStatus::Rejected->value => 'cancelled',
+            QuoteStatus::Expired->value => 'cancelled',
         ], 'open');
 
         return DB::table('quotes')

@@ -266,7 +266,7 @@ final class ManufacturingOrderControllerTest extends TestCase {
 
         $this->assertDatabaseHas('external_references', [
             'plugin_id' => \App\Plugins\Lexoffice\LexofficePlugin::ID,
-            'external_type' => \App\Plugins\Lexoffice\LexofficeOrderConfirmationService::EXT_TYPE_ORDER_CONFIRMATION,
+            'external_type' => \App\Plugins\Lexoffice\Services\LexofficeOrderConfirmationService::EXT_TYPE_ORDER_CONFIRMATION,
             'external_id' => 'lex-oc-1',
             'referenceable_id' => $order->id,
         ]);
@@ -330,7 +330,7 @@ final class ManufacturingOrderControllerTest extends TestCase {
 
         $this->assertDatabaseHas('external_references', [
             'plugin_id' => \App\Plugins\Lexoffice\LexofficePlugin::ID,
-            'external_type' => \App\Plugins\Lexoffice\LexofficeQuotationService::EXT_TYPE_QUOTATION,
+            'external_type' => \App\Plugins\Lexoffice\Services\LexofficeQuotationService::EXT_TYPE_QUOTATION,
             'external_id' => 'lex-q-1',
             'referenceable_id' => $order->id,
         ]);

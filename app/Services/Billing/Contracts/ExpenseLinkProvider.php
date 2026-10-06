@@ -30,7 +30,7 @@ use RuntimeException;
  *
  * Entscheid E8: Der aktive Auslagen-Push bleibt Lexoffice-only. Es gibt daher
  * bewusst genau EINE echte Implementierung
- * ({@see \App\Plugins\Lexoffice\LexofficeExpenseLinkProvider}) plus den
+ * ({@see \App\Plugins\Lexoffice\Services\LexofficeExpenseLinkProvider}) plus den
  * {@see \App\Services\Billing\NullExpenseLinkProvider} für Organisationen ohne
  * angebundene Buchhaltung — kein Provider heißt „keine Vorschläge, kein Push",
  * nicht „stiller Fehler".

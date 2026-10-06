@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Plugins;
 
+use App\Enums\Integration\IntegrationInboxStatus;
 use App\Models\Integration\IntegrationInboxItem;
 use App\Models\Platform\{PluginSetting, User};
 use App\Models\Project\Project;
@@ -187,10 +188,32 @@ class OpenProjectImportTest extends TestCase {
             'external_id' => 'openproject:te:222',
             'group_key' => 'project:9',
             'case_type' => IntegrationInboxItem::CASE_UNMATCHED,
-            'status' => IntegrationInboxItem::STATUS_OPEN,
+            'status' => IntegrationInboxStatus::Open->value,
         ]);
         $item = IntegrationInboxItem::query()->where('external_id', 'openproject:te:222')->first();
         $this->assertSame('Website', $item->remote_snapshot['project_name'] ?? null);
+    }
+
+    /** Konsolidierungs-Audit 2026-10, k2-03: nach gepflegter Zuordnung bucht der Folgelauf — der Inbox-Fall ist dann erledigt. */
+    public function test_follow_up_run_closes_the_inbox_case_once_the_project_is_mapped(): void {
+        $config = $this->enable();
+        $this->fakeApi(
+            projects: [['id' => 9, 'name' => 'Mystery', 'active' => true, '_links' => []]],
+            workPackages: [],
+            timeEntries: [$this->timeEntryPayload(222, 9, 'PT0H15M', '2026-05-26')],
+        );
+        $import = fn (): array => $this->service()->importFromApi($this->organization, $config, CarbonImmutable::parse('2026-05-25'), CarbonImmutable::parse('2026-05-27'));
+
+        $this->assertSame(1, $import()['unmatched']);
+        $item = IntegrationInboxItem::query()->where('external_id', 'openproject:te:222')->firstOrFail();
+        $this->assertSame(IntegrationInboxStatus::Open, $item->status);
+
+        $project = Project::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Intern', 'is_default' => false]);
+        app(\App\Plugins\OpenProject\Services\OpenProjectStructureSync::class)->linkProject($this->organization, '9', $project, 'Mystery');
+
+        $this->assertSame(1, $import()['created']);
+        $this->assertSame(IntegrationInboxStatus::ResolvedCreated, $item->fresh()->status);
+        $this->assertSame(TimeEntry::query()->firstOrFail()->id, (int) $item->fresh()->resolved_to_id);
     }
 
     public function test_create_missing_projects_auto_creates_and_books(): void {
@@ -257,7 +280,7 @@ class OpenProjectImportTest extends TestCase {
             'dedupe_key' => 'entry:openproject:te:900',
             'group_key' => 'project:42',
             'case_type' => IntegrationInboxItem::CASE_UNMATCHED,
-            'status' => IntegrationInboxItem::STATUS_OPEN,
+            'status' => IntegrationInboxStatus::Open,
             'remote_snapshot' => [
                 'entry_key' => 'openproject:te:900',
                 'project_external_id' => '42',
@@ -281,7 +304,7 @@ class OpenProjectImportTest extends TestCase {
         $this->assertNotNull($entry);
         $this->assertSame(90, $entry->minutes);
 
-        $this->assertSame(IntegrationInboxItem::STATUS_RESOLVED_CREATED, $item->fresh()->status);
+        $this->assertSame(IntegrationInboxStatus::ResolvedCreated, $item->fresh()->status);
         $this->assertSame($entry->id, $item->fresh()->resolved_to_id);
 
         // Projekt-Reference gemerkt → künftiger Import matcht automatisch.
@@ -307,7 +330,7 @@ class OpenProjectImportTest extends TestCase {
             'dedupe_key' => 'entry:openproject:te:777',
             'group_key' => 'project:7',
             'case_type' => IntegrationInboxItem::CASE_UNMATCHED,
-            'status' => IntegrationInboxItem::STATUS_OPEN,
+            'status' => IntegrationInboxStatus::Open,
             'remote_snapshot' => [
                 'entry_key' => 'openproject:te:777', 'project_external_id' => '7',
                 'project_name' => 'Neu OP', 'work_package_external_id' => null, 'work_package_subject' => null,

@@ -12,12 +12,14 @@ namespace Tests\Feature\Billing;
 
 use App\Enums\Billing\AccountPaymentSource;
 use App\Enums\Finance\BillingMode;
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Billing\{CustomerBillingAgreement, CustomerBillingRate};
 use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
 use App\Models\Invoicing\Invoice;
-use App\Plugins\Lexoffice\{LexofficeInvoiceService, LexofficePlugin};
+use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\Lexoffice\Models\LexofficeVoucher;
+use App\Plugins\Lexoffice\Services\LexofficeInvoiceService;
 use App\Plugins\Lexoffice\Services\Retainer\LexofficeRetainerVouchers;
 use App\Services\Billing\CustomerAccountStatementService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -64,7 +66,7 @@ class RetainerVoucherReconcilerTest extends TestCase {
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
             'number' => 'RE-2026-0001',
-            'status' => Invoice::STATUS_ISSUED,
+            'status' => InvoiceStatus::Issued,
             'type' => Invoice::TYPE_RETAINER,
             'currency' => 'EUR',
         ]);
@@ -108,7 +110,7 @@ class RetainerVoucherReconcilerTest extends TestCase {
         $this->assertTrue($payment->source === AccountPaymentSource::Lexoffice);
         $this->assertSame('550.00', $payment->amount?->getAmount());
         $this->assertSame('lex-voucher-uuid-1', $payment->source_reference);
-        $this->assertSame(Invoice::STATUS_PAID, $this->retainerInvoice->fresh()->status);
+        $this->assertSame(InvoiceStatus::Paid, $this->retainerInvoice->fresh()->status);
     }
 
     public function test_partial_then_full_payment_grows_idempotently(): void {
@@ -133,7 +135,7 @@ class RetainerVoucherReconcilerTest extends TestCase {
 
         $this->assertSame(1, $result['revoked']);
         $this->assertSame(0, $this->agreement->payments()->count());
-        $this->assertSame(Invoice::STATUS_CANCELLED, $this->retainerInvoice->fresh()->status);
+        $this->assertSame(InvoiceStatus::Cancelled, $this->retainerInvoice->fresh()->status);
     }
 
     public function test_voucher_without_retainer_invoice_is_ignored(): void {

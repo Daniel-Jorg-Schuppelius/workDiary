@@ -65,8 +65,7 @@
                             @if ($proposal['blocked'] !== null)
                                 <x-status-badge tone="error" outline>{{ __('sepa.blocked.' . $proposal['blocked']) }}</x-status-badge>
                                 @if ($proposal['blocked'] === 'iban_differs' && \Illuminate\Support\Facades\Gate::allows(\App\Enums\User\Permission::FinancePaymentRelease->value))
-                                    <button type="submit" class="btn btn-ghost btn-xs"
-                                            form="confirm-iban-{{ $invoice->sqid }}">{{ __('sepa.action.confirm_iban') }}</button>
+                                    <x-button type="submit" tone="ghost" size="xs" form="confirm-iban-{{ $invoice->sqid }}">{{ __('sepa.action.confirm_iban') }}</x-button>
                                 @endif
                             @elseif ($proposal['uses_discount'])
                                 <x-status-badge tone="success" outline>{{ __('sepa.discount_used', ['percent' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $proposal['discount_percent'], 2)]) }}</x-status-badge>
@@ -111,7 +110,7 @@
 
             @if ($proposals->isNotEmpty() || $retentions->isNotEmpty())
                 <div class="flex justify-end">
-                    <button type="submit" class="btn btn-primary btn-sm">{{ __('sepa.action.create_run') }}</button>
+                    <x-button type="submit">{{ __('sepa.action.create_run') }}</x-button>
                 </div>
             @endif
         </form>

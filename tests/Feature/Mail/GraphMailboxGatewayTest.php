@@ -12,6 +12,7 @@ namespace Tests\Feature\Mail;
 
 use App\Models\Mail\EmailConnection;
 use App\Models\Platform\User;
+use App\Plugins\Msgraph\Enums\MsgraphConnectionStatus;
 use App\Plugins\Msgraph\Models\MsgraphMailConnection;
 use App\Plugins\Msgraph\MsgraphPlugin;
 use App\Plugins\Msgraph\Services\MsgraphMailboxGateway;
@@ -43,7 +44,7 @@ final class GraphMailboxGatewayTest extends TestCase {
         return MsgraphMailConnection::query()->create([
             'organization_id' => $this->organization->id,
             'access_token' => 'mail-token',
-            'status' => MsgraphMailConnection::STATUS_ACTIVE,
+            'status' => MsgraphConnectionStatus::Active,
         ]);
     }
 

@@ -56,7 +56,7 @@ class RawStatusOutputRuleTest extends TestCase {
         ];
 
         $violations = [];
-        $files = array_merge($this->bladeFiles(), $this->filesUnder('app/Plugins', '/\.blade\.php$/'));
+        $files = $this->bladeFiles();
         foreach ($files as $file) {
             $relative = $this->relativePath($file);
             if ($this->isAllowListed($relative, self::ALLOW_LIST)) {

@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Invoicing;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\{Organization, User};
@@ -55,7 +56,7 @@ class InvoicePdfViewTest extends TestCase {
             'organization_id' => $this->org->id,
             'customer_id' => $this->customer->id,
             'number' => 'R2030-0001',
-            'status' => Invoice::STATUS_DRAFT,
+            'status' => InvoiceStatus::Draft,
             'currency' => 'EUR',
             'tax_rate' => '19.00',
             'created_by' => $this->user->id,

@@ -37,7 +37,7 @@
         @include('admin.demo._license_outlook', ['licenseOutlook' => $licenseOutlook])
 
         @if (! $alreadySeeded && ! $isEmpty)
-            <div class="alert alert-warning">
+            <div role="alert" class="alert alert-warning">
                 <x-icon name="warning" />
                 <span class="text-sm">
                     {{ __('Diese Organisation enthält bereits Echtdaten. Demo-Seeding ist hier nicht zulässig — lege einen frischen Mandanten an.') }}
@@ -59,12 +59,9 @@
                                   :label="__('Vollumfang vorführen')"
                                   :checked="$fullShowcase"
                                   :disabled="! $isEmpty" />
-                <button type="submit"
-                        class="btn btn-primary w-full md:w-auto"
-                        :disabled="! $isEmpty">
-                    <x-icon name="play_arrow" />
+                <x-button type="submit" size="md" icon="play_arrow" class="w-full md:w-auto" :disabled="! $isEmpty">
                     {{ __('Demo-Daten erzeugen') }}
-                </button>
+                </x-button>
             </form>
 
             @can(\App\Enums\User\Permission::PlatformDemoReset->value)
@@ -73,12 +70,9 @@
                       confirm-icon="refresh"
                       confirm-tone="warning"
                       :confirm-label="__('Zurücksetzen')">
-                    <button type="submit"
-                            class="btn btn-warning w-full md:w-auto"
-                            @disabled(! $alreadySeeded)>
-                        <x-icon name="refresh" />
+                    <x-button type="submit" tone="warning" size="md" icon="refresh" class="w-full md:w-auto" :disabled="! $alreadySeeded">
                         {{ __('Demo-Mandant zurücksetzen') }}
-                    </button>
+                    </x-button>
                 </x-action-form>
             @endcan
         </div>

@@ -14,23 +14,23 @@
 @section('content')
     <div class="mx-auto max-w-lg p-6">
         @if ($certificate === null)
-            <div class="alert alert-error">
+            <div role="alert" class="alert alert-error">
                 <x-icon name="error" />
                 <span>{{ __('learning.verify.unknown') }}</span>
             </div>
         @else
             @if ($certificate->isRevoked())
-                <div class="alert alert-error mb-4">
+                <div role="alert" class="alert alert-error mb-4">
                     <x-icon name="block" />
                     <span>{{ __('learning.verify.revoked') }}</span>
                 </div>
             @elseif ($certificate->isExpired())
-                <div class="alert alert-warning mb-4">
+                <div role="alert" class="alert alert-warning mb-4">
                     <x-icon name="schedule" />
                     <span>{{ __('learning.verify.expired') }}</span>
                 </div>
             @else
-                <div class="alert alert-success mb-4">
+                <div role="status" class="alert alert-success mb-4">
                     <x-icon name="verified" />
                     <span>{{ __('learning.verify.valid') }}</span>
                 </div>

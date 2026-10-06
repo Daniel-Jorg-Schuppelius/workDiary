@@ -11,8 +11,7 @@
 
 @section('title', __('Software'))
 @section('nav-title', __('Software'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @php
     /** @var \Illuminate\Pagination\LengthAwarePaginator $softwareItems */

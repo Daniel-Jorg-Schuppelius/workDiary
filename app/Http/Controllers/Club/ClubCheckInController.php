@@ -34,7 +34,7 @@ class ClubCheckInController extends Controller {
 
     public function show(Request $request, string $code): View {
         [$event, $subjects] = $this->resolve($request, $code);
-        $sheet = $this->attendance->sheetFor($event);
+        $sheet = $this->attendance->sheetOrDraft($event);
         $roster = $this->attendance->rosterFor($sheet, $event)->keyBy('id');
         $records = $sheet->records()->get()->keyBy('club_member_id');
 

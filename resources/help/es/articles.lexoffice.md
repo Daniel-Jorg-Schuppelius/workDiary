@@ -1,7 +1,7 @@
 ---
 title: "Productos y servicios de Lexoffice"
 topic: articles.lexoffice
-version: 1
+version: 2
 audience: []
 modules:
     - module.vertrieb
@@ -19,3 +19,12 @@ unidad, precio unitario neto y tipo impositivo, con búsqueda, filtros
 por tipo y estado, y una vista de detalle en diálogo. Con permisos
 suficientes puede iniciar la sincronización manualmente, siempre que
 Lexoffice esté configurado para la organización.
+
+La estrategia de conflicto de la configuración de Lexoffice (Lexoffice
+gana, local gana, revisión manual) se aplica también a la sincronización de
+artículos: con «revisión manual», los artículos modificados localmente cuyo
+estado difiere en Lexoffice aparecen como conflictos en la lista de
+conflictos del almacén (Almacén → Conflictos). Allí decide por artículo si
+se mantiene el estado local, se adopta el estado de Lexoffice o se descarta
+el conflicto. La sincronización manual informa del número de conflictos
+nuevos.

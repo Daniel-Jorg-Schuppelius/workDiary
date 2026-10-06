@@ -43,7 +43,7 @@
                 <x-slot:head><tr><th>{{ __('AVV-Schlüssel') }}</th><th class="text-right">{{ __('Geräte') }}</th><th class="text-right">{{ __('Gewicht (kg)') }}</th></tr></x-slot:head>
                 @forelse ($byWasteCode as $code => $row)
                     <tr>
-                        <td class="font-mono">{{ $code }} @if ($row['is_hazardous'])<span class="badge badge-error badge-xs align-middle">{{ __('gefährlich') }}</span>@endif</td>
+                        <td class="font-mono">{{ $code }} @if ($row['is_hazardous'])<x-status-badge tone="error" size="xs" class="align-middle">{{ __('gefährlich') }}</x-status-badge>@endif</td>
                         <td class="text-right font-mono">{{ $row['devices'] }}</td>
                         <td class="text-right font-mono">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['weight'], 1, withThousandsSeparator: true) }}</td>
                     </tr>

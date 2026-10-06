@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Invoicing;
 
 use App\Enums\Finance\ProfitDetermination;
+use App\Enums\Invoicing\{InvoiceScheduleStatus, InvoiceStatus};
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\{Invoice, InvoiceSchedule};
 use App\Models\Platform\{Organization, User};
@@ -51,7 +52,7 @@ final class CustomerPaymentTermsTest extends TestCase {
     private function draft(Customer $customer, array $attributes = []): Invoice {
         $invoice = Invoice::query()->create($attributes + [
             'organization_id' => $this->org->id, 'customer_id' => $customer->id, 'number' => 'R-' . random_int(1000, 9999),
-            'status' => Invoice::STATUS_DRAFT, 'type' => Invoice::TYPE_INVOICE, 'tax_rate' => '19.00',
+            'status' => InvoiceStatus::Draft, 'type' => Invoice::TYPE_INVOICE, 'tax_rate' => '19.00',
         ]);
         $invoice->items()->create(['organization_id' => $this->org->id, 'description' => 'Leistung', 'quantity' => '1', 'unit' => 'h', 'unit_price' => '100.00', 'position' => 1]);
 
@@ -122,7 +123,7 @@ final class CustomerPaymentTermsTest extends TestCase {
         $schedule = InvoiceSchedule::query()->create([
             'organization_id' => $this->org->id, 'customer_id' => $this->customer(['payment_terms_days' => 30])->id,
             'title' => 'Wartung', 'interval_unit' => 'month', 'interval_count' => 1, 'billing_period_mode' => 'previous',
-            'next_run_on' => '2026-03-05', 'status' => 'active', 'created_by' => $this->admin->id,
+            'next_run_on' => '2026-03-05', 'status' => InvoiceScheduleStatus::Active, 'created_by' => $this->admin->id,
         ]);
         $schedule->items()->create(['organization_id' => $this->org->id, 'position' => 1, 'description' => 'Wartung', 'quantity' => '1', 'unit' => 'x', 'unit_price' => '100.00', 'tax_rate' => '19.00']);
 

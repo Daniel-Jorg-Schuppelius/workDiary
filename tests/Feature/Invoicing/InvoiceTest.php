@@ -10,6 +10,8 @@
 
 namespace Tests\Feature\Invoicing;
 
+use App\Enums\Document\DocumentDispatchStatus;
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Enums\Project\ProjectStatus;
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Mail\InvoiceMail;
@@ -69,7 +71,7 @@ class InvoiceTest extends TestCase {
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
             'number' => 'R2030-0999',
-            'status' => Invoice::STATUS_DRAFT,
+            'status' => InvoiceStatus::Draft,
             'currency' => 'EUR',
             'tax_rate' => '19.00',
             'created_by' => $this->admin->id,
@@ -394,7 +396,7 @@ class InvoiceTest extends TestCase {
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
             'number' => 'R2030-0101',
-            'status' => Invoice::STATUS_DRAFT,
+            'status' => InvoiceStatus::Draft,
             'currency' => 'EUR',
             'tax_rate' => '19.00',
             'created_by' => $this->admin->id,
@@ -403,7 +405,7 @@ class InvoiceTest extends TestCase {
             'organization_id' => $this->organization->id,
             'customer_id' => $otherCustomer->id,
             'number' => 'R2030-0102',
-            'status' => Invoice::STATUS_DRAFT,
+            'status' => InvoiceStatus::Draft,
             'currency' => 'EUR',
             'tax_rate' => '19.00',
             'created_by' => $this->admin->id,
@@ -427,7 +429,7 @@ class InvoiceTest extends TestCase {
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
             'number' => 'R2030-0001',
-            'status' => Invoice::STATUS_DRAFT,
+            'status' => InvoiceStatus::Draft,
             'currency' => 'EUR',
             'tax_rate' => '19.00',
             'created_by' => $this->admin->id,
@@ -435,10 +437,10 @@ class InvoiceTest extends TestCase {
         $invoice->items()->create(['organization_id' => $this->organization->id, 'description' => 'Leistung', 'quantity' => '1', 'unit' => 'h', 'unit_price' => '100.00', 'position' => 1]);
 
         $this->postAsAdmin('invoices.issue', [], $invoice)->assertRedirect();
-        $this->assertSame(Invoice::STATUS_ISSUED, $invoice->fresh()?->status);
+        $this->assertSame(InvoiceStatus::Issued, $invoice->fresh()?->status);
 
         $this->postAsAdmin('invoices.pay', [], $invoice)->assertRedirect();
-        $this->assertSame(Invoice::STATUS_PAID, $invoice->fresh()?->status);
+        $this->assertSame(InvoiceStatus::Paid, $invoice->fresh()?->status);
     }
 
     public function test_pdf_export(): void {
@@ -446,7 +448,7 @@ class InvoiceTest extends TestCase {
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
             'number' => 'R2030-0002',
-            'status' => Invoice::STATUS_DRAFT,
+            'status' => InvoiceStatus::Draft,
             'currency' => 'EUR',
             'tax_rate' => '19.00',
             'created_by' => $this->admin->id,
@@ -470,7 +472,7 @@ class InvoiceTest extends TestCase {
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
             'number' => 'DRAFT-0001',
-            'status' => Invoice::STATUS_DRAFT,
+            'status' => InvoiceStatus::Draft,
             'currency' => 'EUR',
             'tax_rate' => '19.00',
             'created_by' => $this->admin->id,
@@ -498,7 +500,7 @@ class InvoiceTest extends TestCase {
         $this->postAsAdmin('invoices.lexoffice.publish', [], $invoice)->assertRedirect();
 
         $invoice->refresh();
-        $this->assertSame(Invoice::STATUS_ISSUED, $invoice->status);
+        $this->assertSame(InvoiceStatus::Issued, $invoice->status);
         $this->assertSame('RE-2030-007', $invoice->number);
         // B1 (Vollscan 2026-08-23): auch der Lexoffice-Push friert Partei-Snapshot
         // und Steuerkontext ein — vorher setzte er nur den Status.
@@ -508,7 +510,7 @@ class InvoiceTest extends TestCase {
 
         $this->assertDatabaseHas('external_references', [
             'plugin_id' => \App\Plugins\Lexoffice\LexofficePlugin::ID,
-            'external_type' => \App\Plugins\Lexoffice\LexofficeInvoiceService::EXT_TYPE_INVOICE,
+            'external_type' => \App\Plugins\Lexoffice\Services\LexofficeInvoiceService::EXT_TYPE_INVOICE,
             'referenceable_id' => $invoice->id,
             'external_id' => 'lex-inv-1',
         ]);
@@ -520,7 +522,7 @@ class InvoiceTest extends TestCase {
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
             'number' => 'ISSUED-0001',
-            'status' => Invoice::STATUS_ISSUED,
+            'status' => InvoiceStatus::Issued,
             'currency' => 'EUR',
             'tax_rate' => '19.00',
             'created_by' => $this->admin->id,
@@ -533,7 +535,7 @@ class InvoiceTest extends TestCase {
 
         $this->assertDatabaseMissing('external_references', [
             'referenceable_id' => $invoice->id,
-            'external_type' => \App\Plugins\Lexoffice\LexofficeInvoiceService::EXT_TYPE_INVOICE,
+            'external_type' => \App\Plugins\Lexoffice\Services\LexofficeInvoiceService::EXT_TYPE_INVOICE,
         ]);
     }
 
@@ -544,7 +546,7 @@ class InvoiceTest extends TestCase {
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
             'number' => 'LINKED-0001',
-            'status' => Invoice::STATUS_ISSUED,
+            'status' => InvoiceStatus::Issued,
             'currency' => 'EUR',
             'tax_rate' => '19.00',
             'created_by' => $this->admin->id,
@@ -553,7 +555,7 @@ class InvoiceTest extends TestCase {
         \App\Models\Integration\ExternalReference::create([
             'organization_id' => $this->organization->id,
             'plugin_id' => \App\Plugins\Lexoffice\LexofficePlugin::ID,
-            'external_type' => \App\Plugins\Lexoffice\LexofficeInvoiceService::EXT_TYPE_INVOICE,
+            'external_type' => \App\Plugins\Lexoffice\Services\LexofficeInvoiceService::EXT_TYPE_INVOICE,
             'referenceable_type' => $invoice->getMorphClass(),
             'referenceable_id' => $invoice->id,
             'external_id' => 'lex-inv-9',
@@ -570,7 +572,7 @@ class InvoiceTest extends TestCase {
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
             'number' => 'LINKED-0002',
-            'status' => Invoice::STATUS_ISSUED,
+            'status' => InvoiceStatus::Issued,
             'currency' => 'EUR',
             'tax_rate' => '19.00',
             'created_by' => $this->admin->id,
@@ -579,7 +581,7 @@ class InvoiceTest extends TestCase {
         \App\Models\Integration\ExternalReference::create([
             'organization_id' => $this->organization->id,
             'plugin_id' => \App\Plugins\Lexoffice\LexofficePlugin::ID,
-            'external_type' => \App\Plugins\Lexoffice\LexofficeInvoiceService::EXT_TYPE_INVOICE,
+            'external_type' => \App\Plugins\Lexoffice\Services\LexofficeInvoiceService::EXT_TYPE_INVOICE,
             'referenceable_type' => $invoice->getMorphClass(),
             'referenceable_id' => $invoice->id,
             'external_id' => 'lex-inv-9',
@@ -612,44 +614,44 @@ class InvoiceTest extends TestCase {
     // ────────────────────────────────────────────────────────────────────────
 
     public function test_cancel_draft_invoice(): void {
-        $invoice = $this->makeInvoice(Invoice::STATUS_DRAFT);
+        $invoice = $this->makeInvoice(InvoiceStatus::Draft);
 
         $this->postAsAdmin('invoices.cancel', ['reason' => 'Kunde widerruft'], $invoice)->assertRedirect();
 
         $invoice->refresh();
-        $this->assertSame(Invoice::STATUS_CANCELLED, $invoice->status);
+        $this->assertSame(InvoiceStatus::Cancelled, $invoice->status);
         $this->assertNotNull($invoice->cancelled_at);
         $this->assertSame($this->admin->id, $invoice->cancelled_by);
         $this->assertSame('Kunde widerruft', $invoice->cancel_reason);
     }
 
     public function test_cancel_issued_invoice(): void {
-        $invoice = $this->makeInvoice(Invoice::STATUS_ISSUED, [
+        $invoice = $this->makeInvoice(InvoiceStatus::Issued, [
             'issued_on' => now()->toDateString(),
             'due_on' => now()->addDays(14)->toDateString(),
         ]);
 
         $this->postAsAdmin('invoices.cancel', [], $invoice)->assertRedirect();
-        $this->assertSame(Invoice::STATUS_CANCELLED, $invoice->fresh()?->status);
+        $this->assertSame(InvoiceStatus::Cancelled, $invoice->fresh()?->status);
     }
 
     public function test_cancel_paid_invoice_is_forbidden(): void {
-        $invoice = $this->makeInvoice(Invoice::STATUS_PAID, [
+        $invoice = $this->makeInvoice(InvoiceStatus::Paid, [
             'issued_on' => now()->toDateString(),
             'paid_on' => now()->toDateString(),
         ]);
 
         $this->postAsAdmin('invoices.cancel', [], $invoice)->assertForbidden();
-        $this->assertSame(Invoice::STATUS_PAID, $invoice->fresh()?->status);
+        $this->assertSame(InvoiceStatus::Paid, $invoice->fresh()?->status);
     }
 
     public function test_credit_note_only_for_paid(): void {
-        $draft = $this->makeInvoice(Invoice::STATUS_DRAFT);
+        $draft = $this->makeInvoice(InvoiceStatus::Draft);
         $this->postAsAdmin('invoices.credit-note', [], $draft)->assertForbidden();
     }
 
     public function test_credit_note_creates_negative_invoice(): void {
-        $original = $this->makeInvoice(Invoice::STATUS_PAID, [
+        $original = $this->makeInvoice(InvoiceStatus::Paid, [
             'issued_on' => now()->subDays(5)->toDateString(),
             'paid_on' => now()->toDateString(),
         ]);
@@ -669,7 +671,7 @@ class InvoiceTest extends TestCase {
         $credit = Invoice::query()->where('parent_invoice_id', $original->id)->firstOrFail();
         $this->assertSame(Invoice::TYPE_CREDIT_NOTE, $credit->type);
         $this->assertStringStartsWith('G', $credit->number);
-        $this->assertSame(Invoice::STATUS_DRAFT, $credit->status);
+        $this->assertSame(InvoiceStatus::Draft, $credit->status);
         $this->assertSame(1, $credit->items()->count());
         /** @var \App\Models\Invoicing\InvoiceItem $item */
         $item = $credit->items()->first();
@@ -679,7 +681,7 @@ class InvoiceTest extends TestCase {
     }
 
     public function test_credit_note_cannot_be_created_twice(): void {
-        $original = $this->makeInvoice(Invoice::STATUS_PAID, [
+        $original = $this->makeInvoice(InvoiceStatus::Paid, [
             'issued_on' => now()->subDays(5)->toDateString(),
             'paid_on' => now()->toDateString(),
         ]);
@@ -694,7 +696,7 @@ class InvoiceTest extends TestCase {
     public function test_send_invoice_queues_mail_and_updates_status(): void {
         Mail::fake();
         $template = $this->makeDefaultTemplate();
-        $invoice = $this->makeInvoice(Invoice::STATUS_DRAFT);
+        $invoice = $this->makeInvoice(InvoiceStatus::Draft);
 
         $this->postAsAdmin('invoices.send', [
             'template_id' => $template->id,
@@ -712,7 +714,7 @@ class InvoiceTest extends TestCase {
         });
 
         $invoice->refresh();
-        $this->assertSame(Invoice::STATUS_ISSUED, $invoice->status);
+        $this->assertSame(InvoiceStatus::Issued, $invoice->status);
         $this->assertNotNull($invoice->sent_at);
         $this->assertSame(1, $invoice->sent_count);
         $this->assertNotNull($invoice->issued_on);
@@ -726,7 +728,7 @@ class InvoiceTest extends TestCase {
      */
     public function test_send_invoice_records_delivery_proof(): void {
         $template = $this->makeDefaultTemplate();
-        $invoice = $this->makeInvoice(Invoice::STATUS_DRAFT);
+        $invoice = $this->makeInvoice(InvoiceStatus::Draft);
 
         $this->postAsAdmin('invoices.send', [
             'template_id' => $template->id,
@@ -739,7 +741,7 @@ class InvoiceTest extends TestCase {
             ->latest('id')
             ->firstOrFail();
 
-        $this->assertSame('sent', $dispatch->status, 'MessageSent-Listener schreibt queued→sent.');
+        $this->assertSame(DocumentDispatchStatus::Sent, $dispatch->status, 'MessageSent-Listener schreibt queued→sent.');
         // Der array-Test-Mailer liefert keine Message-ID; belastbar sind
         // Status, Sendezeitpunkt und der PDF-Hash (aus den versendeten Bytes).
         $this->assertArrayHasKey('message_id', (array) $dispatch->meta);
@@ -749,7 +751,7 @@ class InvoiceTest extends TestCase {
 
     public function test_send_invoice_validates_emails(): void {
         $template = $this->makeDefaultTemplate();
-        $invoice = $this->makeInvoice(Invoice::STATUS_ISSUED);
+        $invoice = $this->makeInvoice(InvoiceStatus::Issued);
 
         $this->postAsAdmin('invoices.send', [
             'template_id' => $template->id,
@@ -759,7 +761,7 @@ class InvoiceTest extends TestCase {
 
     public function test_send_form_renders(): void {
         $this->makeDefaultTemplate();
-        $invoice = $this->makeInvoice(Invoice::STATUS_DRAFT);
+        $invoice = $this->makeInvoice(InvoiceStatus::Draft);
         $this->getAsAdmin('invoices.send.form', $invoice)->assertOk();
     }
 
@@ -767,7 +769,7 @@ class InvoiceTest extends TestCase {
     // Helpers
     // ────────────────────────────────────────────────────────────────────────
 
-    private function makeInvoice(string $status, array $overrides = []): Invoice {
+    private function makeInvoice(InvoiceStatus|string $status, array $overrides = []): Invoice {
         $invoice = Invoice::create(array_merge([
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
@@ -781,7 +783,7 @@ class InvoiceTest extends TestCase {
             'created_by' => $this->admin->id,
         ], $overrides));
         // Feature 160: Entwürfe ohne Position sind nicht mehr ausstellbar — die Position deckt die Summen (100/19/119).
-        if ($status === Invoice::STATUS_DRAFT) {
+        if ($status === InvoiceStatus::Draft) {
             $invoice->items()->create(['organization_id' => $this->organization->id, 'description' => 'Leistung', 'quantity' => '1', 'unit' => 'h', 'unit_price' => '100.00', 'amount' => '100.00', 'position' => 1]);
         }
 

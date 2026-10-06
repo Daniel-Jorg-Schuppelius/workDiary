@@ -91,25 +91,12 @@ class AssetDetailAssembler {
             ->filter(fn(Attachment $attachment): bool => Gate::forUser($user)->allows('view', $attachment))
             ->values();
 
-        $visibleDiaryIds = $diaryEntries->pluck('id')->all();
-        $visibleProtocolIds = $protocols->pluck('id')->all();
-        $visibleMaterialIds = $materialUsages->pluck('id')->all();
-        $visibleAttachmentIds = $attachments->pluck('id')->all();
-
-        $timelineEntries = collect($this->timeline->build($asset, 24))
-            ->filter(function (array $event) use ($visibleAttachmentIds, $visibleDiaryIds, $visibleMaterialIds, $visibleProtocolIds): bool {
-                $kind = (string) ($event['kind'] ?? '');
-                $payload = is_array($event['payload'] ?? null) ? $event['payload'] : [];
-                $id = (int) ($payload['id'] ?? 0);
-
-                return match ($kind) {
-                    'order.linked' => in_array($id, $visibleDiaryIds, true),
-                    'protocol.linked' => in_array($id, $visibleProtocolIds, true),
-                    'material.linked' => in_array($id, $visibleMaterialIds, true),
-                    'attachment.linked' => in_array($id, $visibleAttachmentIds, true),
-                    default => true,
-                };
-            })
+        $timelineEntries = collect($this->timeline->buildVisible($asset, 24, [
+            'orders' => $diaryEntries->pluck('id')->all(),
+            'protocols' => $protocols->pluck('id')->all(),
+            'materials' => $materialUsages->pluck('id')->all(),
+            'attachments' => $attachments->pluck('id')->all(),
+        ]))
             ->map(fn(array $event): array => $this->timelinePresenter->present($event))
             ->values();
 

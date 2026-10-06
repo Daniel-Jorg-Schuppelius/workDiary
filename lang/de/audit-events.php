@@ -263,7 +263,11 @@ return [
         'indexationApplied' => 'Indexanpassung übernommen',
         'indexationDismissed' => 'Indexanpassung verworfen',
         'activated' => 'Vertrag aktiviert',
+        'approval_restarted' => 'Vertragsfreigabe neu gestartet',
         'approved_step' => 'Vertrags-Freigabestufe erteilt',
+        'delegated_step' => 'Vertrags-Freigabestufe delegiert',
+        'question_step' => 'Rückfrage zur Vertrags-Freigabestufe',
+        'rejected_step' => 'Vertrags-Freigabestufe abgelehnt',
         'cancelled' => 'Vertrag storniert',
         'concluded' => 'Vertrag geschlossen',
         'ended' => 'Vertrag beendet',
@@ -450,6 +454,7 @@ return [
     ],
     'integration' => [
         'changed' => 'Integration aktiviert/deaktiviert',
+        'conflict_resolved' => 'Fremdsystem-Konflikt aufgelöst',
         'data_ownership_changed' => 'Datenhoheit geändert',
         'inbox_resolved' => 'Inbox-Eintrag aufgelöst',
         'settings_changed' => 'Integrations-Einstellungen geändert',
@@ -463,6 +468,11 @@ return [
     'inventory' => [
         'mode_changed' => 'Bestandsführungs-Modus geändert',
         'negativeApproved' => 'Negativbestand genehmigt',
+    ],
+    'stock_lot' => [
+        'blocked' => 'Charge gesperrt',
+        'released' => 'Charge freigegeben',
+        'merged' => 'Charge zusammengeführt',
     ],
     'investment' => [
         'budget_approved' => 'Investitionsbudget genehmigt',
@@ -685,6 +695,7 @@ return [
         'route_created' => 'Rundgangs-Route angelegt',
         'started' => 'Rundgang gestartet',
         'completed' => 'Rundgang abgeschlossen',
+        'aborted' => 'Rundgang abgebrochen',
     ],
     'payroll' => [
         'wage' => [
@@ -784,11 +795,13 @@ return [
         'interview_offered' => 'Gesprächstermine angeboten',
         'interview_chosen' => 'Gesprächstermin gewählt',
         'application_decided' => 'Bewerbung entschieden',
+        'application_readmitted' => 'Bewerbung aus dem Talentpool aufgenommen',
         'application_exported' => 'Bewerbung exportiert',
         'application_received' => 'Bewerbung eingegangen',
         'document_attached' => 'Bewerbungsunterlage angehängt',
         'draft_invited' => 'Mitarbeiter-Entwurf eingeladen',
         'onboarding_draft_created' => 'Onboarding-Entwurf erstellt',
+        'posting_expired' => 'Stellenanzeige abgelaufen',
         'posting_paused' => 'Stellenanzeige pausiert',
         'posting_published' => 'Stellenanzeige veröffentlicht',
         'public_application_received' => 'Öffentliche Bewerbung eingegangen',

@@ -33,7 +33,7 @@
     </x-slot:actions>
 
     @if ($connection?->last_error)
-        <div class="alert alert-error text-sm">{{ __('ebics.last_error', ['error' => $connection->last_error]) }}</div>
+        <div role="alert" class="alert alert-error text-sm">{{ __('ebics.last_error', ['error' => $connection->last_error]) }}</div>
     @endif
 
     <x-card :title="__('ebics.section.access')">
@@ -50,12 +50,12 @@
                 </div>
             </form>
         @else
-            <dl class="grid gap-2 text-sm md:grid-cols-2">
-                <div><dt class="text-muted">{{ __('ebics.field.host_url') }}</dt><dd class="break-all">{{ $connection->host_url }}</dd></div>
-                <div><dt class="text-muted">{{ __('ebics.field.ebics_host') }}</dt><dd>{{ $connection->ebics_host }}</dd></div>
-                <div><dt class="text-muted">{{ __('ebics.field.ebics_partner') }}</dt><dd>{{ $connection->ebics_partner }}</dd></div>
-                <div><dt class="text-muted">{{ __('ebics.field.ebics_user') }}</dt><dd>{{ $connection->ebics_user }}</dd></div>
-            </dl>
+            <x-detail-grid layout="cells">
+                <x-detail-grid.row :label="__('ebics.field.host_url')" class="break-all">{{ $connection->host_url }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('ebics.field.ebics_host')">{{ $connection->ebics_host }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('ebics.field.ebics_partner')">{{ $connection->ebics_partner }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('ebics.field.ebics_user')">{{ $connection->ebics_user }}</x-detail-grid.row>
+            </x-detail-grid>
         @endif
     </x-card>
 
@@ -85,7 +85,7 @@
                 <li>
                     {{ __('ebics.step.letter') }}
                     @if (in_array($status, [\App\Enums\Finance\EbicsConnectionStatus::Initialized, \App\Enums\Finance\EbicsConnectionStatus::Active], true))
-                        <a href="{{ route('finance.bank-accounts.ebics.letter', $account->sqid) }}" class="btn btn-sm btn-ghost mt-1">{{ __('ebics.action.letter') }}</a>
+                        <x-button :href="route('finance.bank-accounts.ebics.letter', $account->sqid)" tone="ghost" class="mt-1">{{ __('ebics.action.letter') }}</x-button>
                     @endif
                 </li>
                 <li>
@@ -100,7 +100,7 @@
                 </li>
             </ol>
             @if ($connection->isActive())
-                <p class="mt-3 text-sm text-muted">{{ __('ebics.hint.active', ['date' => $connection->statements_until?->format('d.m.Y') ?? '—']) }}</p>
+                <p class="mt-3 text-sm text-muted">{{ __('ebics.hint.active', ['date' => $connection->statements_until?->fdate() ?? '—']) }}</p>
             @endif
         </x-card>
 

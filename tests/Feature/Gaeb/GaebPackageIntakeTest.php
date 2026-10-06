@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Gaeb;
 
+use App\Enums\Applications\ApplicationOpportunityStatus;
 use App\Enums\Gaeb\GaebImportStatus;
 use App\Models\Applications\ApplicationOpportunity;
 use App\Models\Document\Document;
@@ -107,7 +108,7 @@ final class GaebPackageIntakeTest extends TestCase {
             'organization_id' => $this->organization->id,
             'title' => 'Neubau Kita',
             'kind' => 'tender',
-            'status' => 'in_progress',
+            'status' => ApplicationOpportunityStatus::InProgress,
             'created_by' => $this->admin->id,
         ]);
     }

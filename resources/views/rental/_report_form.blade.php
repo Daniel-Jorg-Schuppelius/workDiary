@@ -44,7 +44,7 @@
     <x-input-field name="photos[]" type="file" :label="__('Fotos')" multiple accept="image/*" />
     <x-textarea-field name="note" :label="__('Notiz')" rows="2"></x-textarea-field>
 
-    <button type="submit" class="btn btn-sm btn-primary">
+    <x-button type="submit">
         {{ $isReturn ? __('Rücknahme protokollieren') : __('Übergabe protokollieren') }}
-    </button>
+    </x-button>
 </form>

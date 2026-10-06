@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Manufacturing;
 
 use App\Enums\Finance\BillingMode;
-use App\Enums\Manufacturing\DeliveryFacturationStatus;
+use App\Enums\Manufacturing\{DeliveryFacturationStatus, DeliveryStockStatus};
 use App\Models\Article\{Article, ArticleVariant};
 use App\Models\Customer\Customer;
 use App\Models\Inventory\{StockDelivery, StockSerial, Warehouse};
@@ -63,14 +63,16 @@ class DeliveryService {
             // Lagerbuchung zuerst — schlägt sie fehl (Unterdeckung), entsteht keine Auslieferung. Abgang über das
             // aktive Bewertungsverfahren (Durchschnitt/FIFO/FEFO), damit der COGS-Kostensnapshot an der Bewegung steht.
             $organization = Organization::query()->find($variant->organization_id);
-            $issueMovement = $organization instanceof Organization
+            $issue = $organization instanceof Organization
                 ? ($this->valuation ?? app(InventoryValuationManager::class))->forVariant($variant, $organization)
                     ->issue($variant, $warehouse, $qty, $allowNegative, $createdBy)
                 : $this->ledger->issue($variant, $warehouse, $qty, allowNegative: $allowNegative);
 
-            // Standard-Buchungspfad → externe Outbox spiegeln, falls die Org extern führt.
+            // Standard-Buchungspfad → externe Outbox spiegeln, falls die Org extern führt (je Charge eine Bewegung).
             if ($organization instanceof Organization) {
-                ($this->mirror ?? app(ExternalStockMirror::class))->mirror($issueMovement, $organization);
+                foreach ($issue as $movement) {
+                    ($this->mirror ?? app(ExternalStockMirror::class))->mirror($movement, $organization);
+                }
             }
 
             $target = $customer !== null
@@ -93,7 +95,7 @@ class DeliveryService {
                 'name_snapshot' => $name,
                 'unit_price_snapshot' => $variant->effectiveSalePrice(),
                 'currency' => $variant->currency ?? 'EUR',
-                'stock_status' => 'delivered',
+                'stock_status' => DeliveryStockStatus::Delivered,
                 'facturation_status' => DeliveryFacturationStatus::Pending->value,
                 'facturation_target' => $target,
                 'delivered_at' => Carbon::now(),

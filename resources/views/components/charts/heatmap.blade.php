@@ -54,90 +54,74 @@
         fn(int $col): float => $rowList->sum(fn(array $r): float => (float) (($r['cells'][$col] ?? null)['value'] ?? 0))
     );
     $grandTotal = (float) $rowTotals->sum();
+    $empty = $rowList->isEmpty() || $maxCell <= 0;
 @endphp
 
-<figure class="wd-chart rounded-box border border-base-300 bg-base-100 p-3">
-    <figcaption>
-        <span class="font-['Space_Grotesk'] text-sm font-semibold">{{ $title }}</span>
-        <span class="ml-2 text-xs text-muted">
-            {{ $unit }}
-            @if ($computedAt) · {{ __('Stand:') }} {{ \Illuminate\Support\Carbon::parse($computedAt)->isoFormat('L LT') }} @endif
-        </span>
-    </figcaption>
-
-    @if ($note)
-        <p class="mt-1 text-xs text-muted">{{ $note }}</p>
-    @endif
-
-    @if ($rowList->isEmpty() || $maxCell <= 0)
-        <div class="wd-chart-empty">
-            <x-empty-state icon="grid_on" :title="__('Noch keine Daten für dieses Diagramm.')" compact />
-        </div>
-    @else
-        <div class="wd-chart-table mt-2 overflow-x-auto">
-            <table class="table table-xs w-full text-center tabular-nums">
-                <thead>
+<x-charts.frame :title="$title" :unit="$unit" :computed-at="$computedAt" :note="$note"
+                :empty="$empty" empty-icon="grid_on">
+    <div class="wd-chart-table mt-2 overflow-x-auto">
+        <table class="table table-xs w-full text-center tabular-nums">
+            <thead>
+                <tr>
+                    <th class="text-left font-semibold uppercase tracking-[0.12em] text-[0.65rem] text-muted">{{ $xLabel ?? '' }}</th>
+                    @foreach ($colLabels as $colLabel)
+                        <th class="px-1 font-semibold text-[0.65rem] text-muted">{{ $colLabel }}</th>
+                    @endforeach
+                    @if ($totals)
+                        <th class="bg-base-200 px-2 font-semibold uppercase tracking-[0.12em] text-[0.65rem] text-base-content/70">Σ</th>
+                    @endif
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($rowList as $rowIndex => $row)
                     <tr>
-                        <th class="text-left font-semibold uppercase tracking-[0.12em] text-[0.65rem] text-muted">{{ $xLabel ?? '' }}</th>
-                        @foreach ($colLabels as $colLabel)
-                            <th class="px-1 font-semibold text-[0.65rem] text-muted">{{ $colLabel }}</th>
-                        @endforeach
-                        @if ($totals)
-                            <th class="bg-base-200 px-2 font-semibold uppercase tracking-[0.12em] text-[0.65rem] text-base-content/70">Σ</th>
-                        @endif
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($rowList as $rowIndex => $row)
-                        <tr>
-                            <th class="whitespace-nowrap text-left font-semibold text-base-content/80">
-                                @if (!empty($row['url']))
-                                    <a href="{{ $row['url'] }}" class="link link-hover">{{ $row['label'] }}</a>
-                                @else
-                                    {{ $row['label'] }}
-                                @endif
-                            </th>
-                            @foreach ($row['cells'] ?? [] as $cell)
-                                @if ($cell === null)
-                                    <td class="bg-base-200/40 text-muted">·</td>
-                                @else
-                                    @php
-                                        $value = (float) ($cell['value'] ?? 0);
-                                        $text = $cell['label'] ?? $display($value);
-                                    @endphp
-                                    <td class="text-[0.65rem] {{ $cell['class'] ?? '' }}" style="{{ $intensity($value) }}"
-                                        @if (!empty($cell['title'])) title="{{ $cell['title'] }}" @endif>
-                                        @if (!empty($cell['url']) && $value > 0)
-                                            <a href="{{ $cell['url'] }}" tabindex="0" class="link link-hover"
-                                               aria-label="{{ $cell['title'] ?? ($row['label'] . ': ' . $text . ' ' . $unit) }}">{{ $text }}</a>
-                                        @else
-                                            {{ $text }}
-                                        @endif
-                                    </td>
-                                @endif
-                            @endforeach
-                            @if ($totals)
-                                <td class="bg-base-200 font-semibold {{ $rowTotals[$rowIndex] > 0 ? 'text-base-content' : 'text-muted' }}">
-                                    {{ $rowTotals[$rowIndex] > 0 ? $display($rowTotals[$rowIndex]) : '·' }}
+                        <th class="whitespace-nowrap text-left font-semibold text-base-content/80">
+                            @if (!empty($row['url']))
+                                <a href="{{ $row['url'] }}" class="link link-hover">{{ $row['label'] }}</a>
+                            @else
+                                {{ $row['label'] }}
+                            @endif
+                        </th>
+                        @foreach ($row['cells'] ?? [] as $cell)
+                            @if ($cell === null)
+                                <td class="bg-base-200/40 text-muted">·</td>
+                            @else
+                                @php
+                                    $value = (float) ($cell['value'] ?? 0);
+                                    $text = $cell['label'] ?? $display($value);
+                                @endphp
+                                <td class="text-[0.65rem] {{ $cell['class'] ?? '' }}" style="{{ $intensity($value) }}"
+                                    @if (!empty($cell['title'])) title="{{ $cell['title'] }}" @endif>
+                                    @if (!empty($cell['url']) && $value > 0)
+                                        <a href="{{ $cell['url'] }}" tabindex="0" class="link link-hover"
+                                           aria-label="{{ $cell['title'] ?? ($row['label'] . ': ' . $text . ' ' . $unit) }}">{{ $text }}</a>
+                                    @else
+                                        {{ $text }}
+                                    @endif
                                 </td>
                             @endif
-                        </tr>
-                    @endforeach
-                </tbody>
-                @if ($totals)
-                    <tfoot>
-                        <tr>
-                            <th class="bg-base-200 text-left text-[0.65rem] uppercase tracking-[0.12em] text-base-content/70">Σ</th>
-                            @foreach ($colTotals as $colTotal)
-                                <th class="bg-base-200 text-[0.65rem] {{ $colTotal > 0 ? 'text-base-content' : 'text-muted' }}">
-                                    {{ $colTotal > 0 ? $display($colTotal) : '' }}
-                                </th>
-                            @endforeach
-                            <th class="bg-primary/10 font-semibold text-primary">{{ $display($grandTotal) }}</th>
-                        </tr>
-                    </tfoot>
-                @endif
-            </table>
-        </div>
-    @endif
-</figure>
+                        @endforeach
+                        @if ($totals)
+                            <td class="bg-base-200 font-semibold {{ $rowTotals[$rowIndex] > 0 ? 'text-base-content' : 'text-muted' }}">
+                                {{ $rowTotals[$rowIndex] > 0 ? $display($rowTotals[$rowIndex]) : '·' }}
+                            </td>
+                        @endif
+                    </tr>
+                @endforeach
+            </tbody>
+            @if ($totals)
+                <tfoot>
+                    <tr>
+                        <th class="bg-base-200 text-left text-[0.65rem] uppercase tracking-[0.12em] text-base-content/70">Σ</th>
+                        @foreach ($colTotals as $colTotal)
+                            <th class="bg-base-200 text-[0.65rem] {{ $colTotal > 0 ? 'text-base-content' : 'text-muted' }}">
+                                {{ $colTotal > 0 ? $display($colTotal) : '' }}
+                            </th>
+                        @endforeach
+                        <th class="bg-primary/10 font-semibold text-primary">{{ $display($grandTotal) }}</th>
+                    </tr>
+                </tfoot>
+            @endif
+        </table>
+    </div>
+</x-charts.frame>

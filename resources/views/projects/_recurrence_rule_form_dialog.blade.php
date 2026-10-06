@@ -111,9 +111,10 @@
                         <input type="checkbox" name="byweekday[]" value="{{ $code }}"
                                @checked(in_array($code, (array) old('byweekday', $weekdays), true))
                                class="peer sr-only">
-                        <span class="badge badge-outline transition-colors peer-checked:bg-primary peer-checked:border-primary peer-checked:text-primary-content">
+                        <x-status-badge tone="plain" size="md" outline
+                                class="transition-colors peer-checked:bg-primary peer-checked:border-primary peer-checked:text-primary-content">
                             {{ __($code) }}
-                        </span>
+                        </x-status-badge>
                     </label>
                 @endforeach
             </div>

@@ -34,8 +34,6 @@ use Illuminate\Validation\Rule;
  * nur bei installiertem Branchenprofil erreichbar.
  */
 class RecipeController extends Controller {
-    public function __construct(private readonly RecipeService $recipes) {}
-
     /** Position anlegen oder (bei mitgegebener Position) aktualisieren. */
     public function storeMaterial(Request $request, ProcedureTemplate $template, ProcedureTemplateVersion $version): RedirectResponse {
         Gate::authorize('update', $template);
@@ -113,7 +111,7 @@ class RecipeController extends Controller {
         Gate::authorize('update', $template);
         $this->assertVersionOf($template, $version);
         $organization = $template->organization;
-        abort_unless($organization !== null && $this->recipes->isPartyserviceActive($organization), 404);
+        abort_unless($organization !== null && $organization->hasBranchProfile(RecipeService::PROFILE_CODE), 404);
 
         $codes = $this->allergenCodes($template);
         $data = $request->validate([
@@ -161,7 +159,7 @@ class RecipeController extends Controller {
         Gate::authorize('update', $template);
         $this->assertVersionOf($template, $version);
         $organization = $template->organization;
-        abort_unless($organization !== null && $this->recipes->isPartyserviceActive($organization), 404);
+        abort_unless($organization !== null && $organization->hasBranchProfile(RecipeService::PROFILE_CODE), 404);
         abort_unless($version->materialRequirements()->where('article_id', $article->id)->exists(), 404);
 
         $codes = $this->allergenCodes($template);

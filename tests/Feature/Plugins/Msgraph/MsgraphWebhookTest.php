@@ -12,6 +12,7 @@ namespace Tests\Feature\Plugins\Msgraph;
 
 use App\Models\Mail\EmailConnection;
 use App\Models\Project\Project;
+use App\Plugins\Msgraph\Enums\{MsgraphConnectionStatus, MsgraphTaskListLinkStatus};
 use App\Plugins\Msgraph\Jobs\{MsgraphCalendarWakeJob, MsgraphMailWakeJob, MsgraphTodoWakeJob};
 use App\Plugins\Msgraph\Models\{MsgraphConnection, MsgraphMailConnection, MsgraphTaskConnection, MsgraphTaskListLink};
 use App\Plugins\Msgraph\Services\MsgraphSubscriptionService;
@@ -49,7 +50,7 @@ final class MsgraphWebhookTest extends TestCase {
         return MsgraphConnection::query()->create($attributes + [
             'organization_id' => $this->organization->id,
             'access_token' => 'secret-token-1',
-            'status' => MsgraphConnection::STATUS_ACTIVE,
+            'status' => MsgraphConnectionStatus::Active,
             'two_way' => true,
         ]);
     }
@@ -59,7 +60,7 @@ final class MsgraphWebhookTest extends TestCase {
         $connection = MsgraphTaskConnection::query()->create([
             'organization_id' => $this->organization->id,
             'access_token' => 'secret-token-2',
-            'status' => MsgraphTaskConnection::STATUS_ACTIVE,
+            'status' => MsgraphConnectionStatus::Active,
         ]);
         $project = Project::factory()->create(['organization_id' => $this->organization->id]);
         $link = MsgraphTaskListLink::query()->create($linkAttributes + [
@@ -69,7 +70,7 @@ final class MsgraphWebhookTest extends TestCase {
             'target_kind' => MsgraphTaskListLink::KIND_PROJECT,
             'project_id' => $project->id,
             'sync_mode' => MsgraphTaskListLink::MODE_BIDIRECTIONAL,
-            'status' => MsgraphTaskListLink::STATUS_ACTIVE,
+            'status' => MsgraphTaskListLinkStatus::Active,
         ]);
 
         return [$connection, $link];
@@ -80,7 +81,7 @@ final class MsgraphWebhookTest extends TestCase {
         $mail = MsgraphMailConnection::query()->create([
             'organization_id' => $this->organization->id,
             'access_token' => 'mail-token',
-            'status' => MsgraphMailConnection::STATUS_ACTIVE,
+            'status' => MsgraphConnectionStatus::Active,
         ]);
         $mailbox = EmailConnection::query()->create($attributes + [
             'organization_id' => $this->organization->id,

@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Hr;
 
+use App\Enums\Applications\JobRequisitionStatus;
 use App\Models\Applications\JobRequisition;
 use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\{Organization, Team, User};
@@ -47,7 +48,7 @@ final class CapacityPlanningService {
 
     /** Offene Stellen der Organisation (Summe der gesuchten Personen), als Hinweis zur Kapazität. */
     public function openHeadcount(Organization $organization): int {
-        return (int) JobRequisition::query()->where('organization_id', $organization->id)->where('status', 'open')->sum('headcount');
+        return (int) JobRequisition::query()->where('organization_id', $organization->id)->where('status', JobRequisitionStatus::Open)->sum('headcount');
     }
 
     /**

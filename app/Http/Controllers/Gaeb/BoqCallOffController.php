@@ -36,7 +36,7 @@ class BoqCallOffController extends Controller {
 
         return view('bill-of-quantities.call-offs.index', [
             'bill' => $billOfQuantity,
-            'callOffs' => $billOfQuantity->callOffs()->with(['items.item', 'invoice'])->orderByDesc('number')->get(),
+            'callOffs' => $billOfQuantity->callOffs()->with(['items.item', 'invoice'])->orderByDesc('number')->orderByDesc('id')->paginate(25)->withQueryString(),
             'remaining' => $this->callOffs->remaining($billOfQuantity),
             'canManage' => Gate::allows(P::ProjectUpdate->value),
             'canInvoice' => Gate::allows(P::ProjectUpdate->value) && Gate::allows(P::InvoiceCreate->value),
@@ -75,7 +75,7 @@ class BoqCallOffController extends Controller {
         }
         $callOff = $this->callOffs->create($billOfQuantity, $data, $quantities, $this->authUser());
 
-        return redirect()->route('bill-of-quantities.call-offs.index', $billOfQuantity)
+        return redirect()->toList('bill-of-quantities.call-offs.index', [$billOfQuantity])
             ->with('success', __('gaeb.call_off.flash.created', ['number' => $callOff->number]));
     }
 

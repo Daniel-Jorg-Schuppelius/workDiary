@@ -9,8 +9,7 @@
 @extends('layouts.app')
 @section('title', __('Dienstleister'))
 @section('nav-title', __('Dienstleister & Vertragspartner'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 @section('content')
     <x-index-page overflow="clip" :subtitle="__('Dienstleister und Vertragspartner mit ihren Auftragsverarbeitungsverträgen verwalten.')">
         <x-slot:actions>

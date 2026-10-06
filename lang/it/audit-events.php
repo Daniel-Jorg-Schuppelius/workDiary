@@ -263,7 +263,11 @@ return [
         'indexationApplied' => 'Adeguamento all’indice applicato',
         'indexationDismissed' => 'Adeguamento all’indice scartato',
         'activated' => 'Contratto attivato',
+        'approval_restarted' => 'Approvazione del contratto riavviata',
         'approved_step' => 'Fase di approvazione del contratto concessa',
+        'delegated_step' => 'Fase di approvazione del contratto delegata',
+        'question_step' => 'Domanda sulla fase di approvazione del contratto',
+        'rejected_step' => 'Fase di approvazione del contratto respinta',
         'cancelled' => 'Contratto annullato',
         'concluded' => 'Contratto stipulato',
         'ended' => 'Contratto terminato',
@@ -450,6 +454,7 @@ return [
     ],
     'integration' => [
         'changed' => 'Integrazione attivata/disattivata',
+        'conflict_resolved' => 'Conflitto con sistema esterno risolto',
         'data_ownership_changed' => 'Titolarità dei dati modificata',
         'inbox_resolved' => 'Elemento della inbox risolto',
         'settings_changed' => 'Impostazioni di integrazione modificate',
@@ -463,6 +468,11 @@ return [
     'inventory' => [
         'mode_changed' => 'Modalità di gestione scorte modificata',
         'negativeApproved' => 'Scorta negativa approvata',
+    ],
+    'stock_lot' => [
+        'blocked' => 'Lotto bloccato',
+        'released' => 'Lotto sbloccato',
+        'merged' => 'Lotto unito',
     ],
     'investment' => [
         'budget_approved' => 'Budget di investimento approvato',
@@ -685,6 +695,7 @@ return [
         'route_created' => 'Percorso di ronda creato',
         'started' => 'Ronda avviata',
         'completed' => 'Ronda conclusa',
+        'aborted' => 'Ronda interrotta',
     ],
     'payroll' => [
         'wage' => [
@@ -784,11 +795,13 @@ return [
         'interview_offered' => 'Date di colloquio proposte',
         'interview_chosen' => 'Data di colloquio scelta',
         'application_decided' => 'Candidatura decisa',
+        'application_readmitted' => 'Candidatura riammessa dal talent pool',
         'application_exported' => 'Candidatura esportata',
         'application_received' => 'Candidatura ricevuta',
         'document_attached' => 'Documento di candidatura allegato',
         'draft_invited' => 'Bozza di dipendente invitata',
         'onboarding_draft_created' => 'Bozza di onboarding creata',
+        'posting_expired' => 'Annuncio di lavoro scaduto',
         'posting_paused' => 'Annuncio di lavoro sospeso',
         'posting_published' => 'Annuncio di lavoro pubblicato',
         'public_application_received' => 'Candidatura pubblica ricevuta',

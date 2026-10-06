@@ -12,7 +12,7 @@ namespace App\Plugins\Webdav;
 
 use App\Models\Backup\BackupTargetConnection;
 use App\Plugins\{AbstractPlugin, PluginHealth};
-use App\Plugins\Contracts\{BackupTarget, Plugin};
+use App\Plugins\Contracts\{BackupTarget, PluginCapability};
 use App\Plugins\Support\Backup\{BackupAccount, BackupRemoteObject};
 use App\Plugins\Webdav\Api\WebdavBackupClient;
 use App\Plugins\Webdav\Contracts\WebdavGatewayFactory;
@@ -56,15 +56,15 @@ class WebdavPlugin extends AbstractPlugin implements \App\Plugins\Contracts\Back
         return __('Spiegelt freigegebene Dokumente in eine externe WebDAV-Ablage (Nextcloud/ownCloud) — mit Übergabenachweis und Konfliktanzeige, ohne Rückkanal.');
     }
 
-    /** Ereignisgetriebenes Sink-Plugin ohne providerneutrale Sync-Capability. */
     /**
-     * Bewusst leer: Der Dokumentspiegel ist ein
+     * Angekündigt wird, was die Klasse selbst implementiert (Backup-Ziel). Der
+     * Dokumentspiegel bleibt ohne Capability: er ist ein
      * {@see \App\Plugins\Support\Mirror\MirrorTarget} und wird über den
      * {@see \App\Plugins\Support\Mirror\DocumentMirrorService} geführt
      * (Audit 2026-08, W1.6).
      */
     public function capabilities(): array {
-        return [];
+        return [PluginCapability::BackupTarget];
     }
 
     public function adminPanel(): ?array {

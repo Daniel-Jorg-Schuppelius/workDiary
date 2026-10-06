@@ -12,7 +12,7 @@ namespace Tests\Feature\CustomerPortal;
 
 use App\Enums\Learning\{LearningAudience, LearningEnrollmentStatus};
 use App\Models\Customer\Customer;
-use App\Models\Learning\{LearningCourse, LearningEnrollment};
+use App\Models\Learning\{LearningBooking, LearningCourse, LearningEnrollment};
 use App\Models\Platform\{Organization, User};
 use App\Services\Learning\LearningCourseService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -118,7 +118,7 @@ class PortalLearningTest extends TestCase {
     }
 
     public function test_selbsteinschreibung_und_abschluss(): void {
-        $course = $this->course();
+        $course = $this->course(['access_kind' => 'open']);
 
         $this->actingAs($this->portalUser, 'customer')
             ->post(route('customer.learning.enroll', $course))
@@ -142,8 +142,33 @@ class PortalLearningTest extends TestCase {
             ->assertNotFound();
     }
 
+    /** Sicherheitsaudit 2026-10-04, authz-b-5: selbst einschreiben nur in offene Kurse; buchbare laufen über die Buchung. */
+    public function test_selbsteinschreibung_nur_in_offene_kurse(): void {
+        foreach (['enrolled', 'bookable', 'closed'] as $kind) {
+            $course = $this->course(['title' => 'Kurs ' . $kind, 'access_kind' => $kind]);
+
+            $this->actingAs($this->portalUser, 'customer')
+                ->post(route('customer.learning.enroll', $course))
+                ->assertSessionHasErrors('course');
+        }
+        $this->assertSame(0, LearningEnrollment::query()->count());
+
+        $bookable = LearningCourse::query()->where('access_kind', 'bookable')->firstOrFail();
+        $this->actingAs($this->portalUser, 'customer')
+            ->post(route('customer.learning.book', $bookable))
+            ->assertRedirect(route('customer.learning.index'));
+        $this->assertSame(1, LearningBooking::query()->where('learning_course_id', $bookable->id)->count());
+        $this->assertSame(0, LearningEnrollment::query()->count());
+
+        $this->actingAs($this->portalUser, 'customer')
+            ->get(route('customer.learning.index'))
+            ->assertOk()
+            ->assertSee(route('customer.learning.book', $bookable), false)
+            ->assertDontSee(route('customer.learning.enroll', $bookable), false);
+    }
+
     public function test_fremde_einschreibung_ist_nicht_einsehbar(): void {
-        $course = $this->course();
+        $course = $this->course(['access_kind' => 'open']);
         $otherCustomer = Customer::factory()->create(['organization_id' => $this->organization->id]);
         $this->allowPortal($otherCustomer);
         $other = User::factory()->kunde((int) $otherCustomer->id, (int) $this->organization->id)->create();

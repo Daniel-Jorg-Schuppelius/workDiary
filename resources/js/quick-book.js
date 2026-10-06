@@ -2,12 +2,14 @@
 //
 // Progressive Enhancement über den No-JS-Fallback: jedes Block-Formular
 // (`.qb-form`) bleibt ohne JS ganz normal absendbar (Server-Redirect). Mit JS
-// kommen hinzu: (a) einen Block per Drag auf ein Projekt-Ziel ziehen, (b)
-// Ctrl/Cmd+Enter im Fokus-Formular = buchen + weiter. Beide Wege posten JSON
-// an denselben Endpunkt und laden danach die Seite neu (nächster offener Block
-// wird automatisch der erste).
+// kommen hinzu: (a) einen Block auf ein Projekt-Ziel ziehen (lib/pointer-sort.js:
+// Maus an der ganzen Zeile, Finger und Stift am Griff), (b) Ctrl/Cmd+Enter im
+// Fokus-Formular = buchen + weiter. Beide Wege posten JSON an denselben
+// Endpunkt und laden danach die Seite neu (nächster offener Block wird
+// automatisch der erste).
 
 import { postJson } from "./lib/http.js";
+import { pointerSort } from "./lib/pointer-sort.js";
 
 async function postBooking(url, payload) {
     return (await postJson(url, payload)).ok;
@@ -60,61 +62,28 @@ export function bindQuickBook() {
         form.requestSubmit();
     });
 
-    // (c) Drag eines Blocks auf ein Projekt-Ziel.
-    panel.addEventListener("dragstart", (event) => {
-        const block = /** @type {HTMLElement} */ (event.target).closest(
-            "[data-qb-block]",
-        );
-        if (!block) return;
-        event.dataTransfer.effectAllowed = "copy";
-        event.dataTransfer.setData(
-            "application/json",
-            JSON.stringify({
-                started_at: block.getAttribute("data-started-at"),
-                ended_at: block.getAttribute("data-ended-at"),
-            }),
-        );
-    });
+    // (c) Block auf ein Projekt-Ziel ziehen. Die Formularfelder der Zeile
+    // behalten ihre Zeigergesten (Standard-Ausnahmen des Bausteins).
+    pointerSort(panel, {
+        item: "[data-qb-block]",
+        handle: "[data-qb-handle]",
+        mouseAnywhere: true,
+        target: "[data-qb-target]",
+        axis: "both",
+        draggingClass: ["opacity-50"],
+        targetClass: ["qb-target-over"],
+        onDrop: async ({ item, target }) => {
+            const startedAt = item.getAttribute("data-started-at");
+            const endedAt = item.getAttribute("data-ended-at");
+            if (!startedAt || !endedAt) return;
 
-    panel.addEventListener("dragover", (event) => {
-        const target = /** @type {HTMLElement} */ (event.target).closest(
-            "[data-qb-target]",
-        );
-        if (!target) return;
-        event.preventDefault();
-        event.dataTransfer.dropEffect = "copy";
-        target.classList.add("qb-target-over");
-    });
-
-    panel.addEventListener("dragleave", (event) => {
-        const target = /** @type {HTMLElement} */ (event.target).closest(
-            "[data-qb-target]",
-        );
-        target?.classList.remove("qb-target-over");
-    });
-
-    panel.addEventListener("drop", async (event) => {
-        const target = /** @type {HTMLElement} */ (event.target).closest(
-            "[data-qb-target]",
-        );
-        if (!target) return;
-        event.preventDefault();
-        target.classList.remove("qb-target-over");
-
-        let block;
-        try {
-            block = JSON.parse(event.dataTransfer.getData("application/json"));
-        } catch {
-            return;
-        }
-        if (!block?.started_at || !block?.ended_at) return;
-
-        const ok = await postBooking(url, {
-            project: target.getAttribute("data-project"),
-            started_at: block.started_at,
-            ended_at: block.ended_at,
-        });
-        if (ok) window.location.reload();
+            const ok = await postBooking(url, {
+                project: target.getAttribute("data-project"),
+                started_at: startedAt,
+                ended_at: endedAt,
+            });
+            if (ok) window.location.reload();
+        },
     });
 }
 

@@ -11,7 +11,7 @@
 namespace App\Http\Controllers\B2bCatalog;
 
 use App\Enums\User\Permission as P;
-use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
+use App\Http\Controllers\Concerns\{ChecksTenantPublicSurfaces, ResolvesCurrentOrganization};
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Procurement\SupplierCatalogController;
 use App\Models\Inventory\Warehouse;
@@ -35,6 +35,8 @@ use RuntimeException;
  * laufen sitzungslos, da Cross-Site-POSTs kein Session-Cookie tragen.
  */
 class OciCartController extends Controller {
+    use ChecksTenantPublicSurfaces;
+
     use ResolvesCurrentOrganization;
 
     /**
@@ -181,6 +183,8 @@ class OciCartController extends Controller {
 
         $organization = Organization::query()->withoutGlobalScopes()->find($source->organization_id);
         abort_unless($organization instanceof Organization, 404);
+        // Sitzungsloser Rücksprung: die Sperre der angemeldeten Oberfläche greift hier nicht.
+        $this->assertTenantPublicSurfacesAvailable($organization);
         app()->instance('currentOrganization', $organization);
 
         $supplier = Supplier::query()->find($source->supplier_id);

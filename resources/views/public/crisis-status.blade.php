@@ -6,18 +6,7 @@
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
-<!doctype html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="light">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="robots" content="noindex, nofollow">
-<title>{{ __('crisis.status_page.public_title', ['org' => $orgName]) }}</title>
-@include('partials.font-bootstrap')
-@vite(['resources/css/app.css','resources/js/app.js'])
-</head>
-<body class="min-h-screen bg-base-200">
-<main class="max-w-2xl mx-auto p-4 flex flex-col gap-4">
+<x-public-page :title="__('crisis.status_page.public_title', ['org' => $orgName])" main="max-w-2xl mx-auto p-4 flex flex-col gap-4" icons>
     <x-card class="flex flex-col gap-1">
         <h1 class="card-title">{{ __('crisis.status_page.public_title', ['org' => $orgName]) }}</h1>
         <p class="text-sm opacity-70">{{ __('crisis.status_page.public_intro') }}</p>
@@ -31,6 +20,4 @@
     @else
         <x-portal-notices :notices="$notices" />
     @endif
-</main>
-</body>
-</html>
+</x-public-page>

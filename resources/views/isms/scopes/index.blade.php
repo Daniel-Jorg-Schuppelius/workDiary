@@ -15,9 +15,10 @@
 
 @section('title', __('isms.title.scopes'))
 @section('nav-title', __('isms.title.scopes'))
+@include('partials.page-fill')
 
 @section('content')
-    <x-index-page :subtitle="__('isms.subtitle.scopes')">
+    <x-index-page overflow="clip" :subtitle="__('isms.subtitle.scopes')">
         <x-slot:actions>
             @if ($canManage)
                 <x-icon-btn icon="add" tone="primary" size="sm"
@@ -27,7 +28,7 @@
             @endif
         </x-slot:actions>
 
-        <x-table>
+        <x-table scroll="flex">
             <x-slot:head>
                 <tr>
                     <th>{{ __('isms.field.name') }}</th>
@@ -78,5 +79,7 @@
                                :message="__('isms.empty_scopes')" />
             @endforelse
         </x-table>
+
+        <x-pagination :paginator="$scopes" standing />
     </x-index-page>
 @endsection

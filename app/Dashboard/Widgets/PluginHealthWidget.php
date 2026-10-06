@@ -14,6 +14,7 @@ namespace App\Dashboard\Widgets;
 
 use App\Dashboard\Widget;
 use App\Enums\Dashboard\WidgetGroup;
+use App\Enums\Plugin\PluginHealthStatus;
 use App\Models\Platform\{PluginState, User};
 use Illuminate\Contracts\View\View;
 
@@ -63,7 +64,7 @@ class PluginHealthWidget extends Widget {
             ->get();
 
         return view('dashboard.widgets.plugin-health', [
-            'failing' => $states->filter(fn (PluginState $s): bool => $s->last_health_status !== null && $s->last_health_status !== 'ok')->values(),
+            'failing' => $states->filter(fn (PluginState $s): bool => $s->last_health_status !== null && $s->last_health_status !== PluginHealthStatus::Ok)->values(),
             'total' => $states->count(),
         ]);
     }

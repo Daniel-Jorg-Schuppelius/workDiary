@@ -9,8 +9,7 @@
 @extends('layouts.app')
 @section('title', __('Stempelungen') . ' — WorkDiary')
 @section('nav-title', __('Stempelungen'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
     @php

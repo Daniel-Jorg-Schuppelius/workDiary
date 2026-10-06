@@ -37,7 +37,7 @@
                 <form method="POST" action="{{ route('admin.branch-profile-variants.destroy', $variant) }}" data-confirm-dialog data-confirm-message="{{ __('branch_profile.variant.confirm_delete') }}" data-confirm-tone="error">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" class="btn btn-sm btn-error btn-outline">{{ __('branch_profile.variant.delete') }}</button>
+                    <x-button type="submit" tone="error" class="btn-outline">{{ __('branch_profile.variant.delete') }}</x-button>
                 </form>
             </div>
         </div>

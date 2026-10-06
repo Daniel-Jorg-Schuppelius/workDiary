@@ -11,6 +11,7 @@
 namespace App\Models\Protocol;
 
 use App\Enums\Protocol\ProtocolSignatureRole;
+use App\Models\Concerns\HasAccessToken;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -36,6 +37,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $created_by_user_id
  */
 class ProtocolSignatureToken extends Model {
+    use HasAccessToken;
     protected $fillable = [
         'protocol_id',
         'role',

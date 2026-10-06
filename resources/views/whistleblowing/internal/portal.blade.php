@@ -46,7 +46,7 @@
                 </div>
             </x-card>
         @else
-            <div class="alert">{{ __('Es ist noch kein Meldeportal angelegt. Speichern Sie, um eines mit einem zufälligen Link zu erstellen.') }}</div>
+            <div role="status" class="alert">{{ __('Es ist noch kein Meldeportal angelegt. Speichern Sie, um eines mit einem zufälligen Link zu erstellen.') }}</div>
         @endif
 
         <x-card>

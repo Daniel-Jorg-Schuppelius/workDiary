@@ -649,6 +649,8 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::RecruitingManage,
             PermissionEnum::RecruitingDecide,
             PermissionEnum::RecruitingPrivacy,
+            // Genehmigungs-Eingang: HR-Stufen der Vertragsverhandlungen (Entscheidung 2026-10-06).
+            PermissionEnum::ServiceRequestApprove,
             // Trainingsmanagement (Feature 145): Schulungsplanung ist HR-Arbeit.
             PermissionEnum::TrainingViewAny,
             PermissionEnum::TrainingManage,
@@ -696,6 +698,8 @@ class PermissionsSeeder extends Seeder {
             // Feature 068: Wertpotenzial/Angebotsstände lesend (Forecast).
             PermissionEnum::TenderViewAny,
             PermissionEnum::TenderView,
+            // Genehmigungs-Eingang: kaufmännische Stufen der Vertragsverhandlungen (Entscheidung 2026-10-06).
+            PermissionEnum::ServiceRequestApprove,
             // Feature 069: Investitionsakten führen + freigeben (Controlling).
             PermissionEnum::InvestmentViewAny,
             PermissionEnum::InvestmentView,

@@ -71,4 +71,23 @@ final class InvestmentCapitalizeTest extends TestCase {
         $this->actingAs($this->admin)->get(route('investments.show', $this->case))->assertOk()->assertDontSee(route('investments.capitalize.create', $this->case), false);
         $this->actingAs($this->admin)->post(route('investments.capitalize.store', $this->case), ['name' => 'X', 'acquired_on' => '2026-09-01', 'acquisition_cost' => '1', 'useful_life_months' => 12])->assertNotFound();
     }
+
+    /**
+     * Sicherheitsaudit 2026-10-04, authz-a-8: die Anlage entsteht im
+     * Anlagenverzeichnis — ohne dessen Recht bleibt der Weg zu, und aktiviert
+     * wird höchstens das genehmigte Budget.
+     */
+    public function test_capitalizing_needs_the_accounting_right_and_stays_within_the_budget(): void {
+        $this->approve();
+        $manager = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+        $manager->givePermissionTo([\App\Enums\User\Permission::InvestmentManage->value, \App\Enums\User\Permission::InvestmentView->value]);
+        $payload = ['name' => 'Presse P200', 'acquired_on' => '2026-09-01', 'acquisition_cost' => '47500.00', 'useful_life_months' => 120];
+
+        $this->actingAs($manager)->get(route('investments.show', $this->case))->assertOk()->assertDontSee(route('investments.capitalize.create', $this->case), false);
+        $this->actingAs($manager)->post(route('investments.capitalize.store', $this->case), $payload)->assertForbidden();
+        $this->assertSame(0, FixedAsset::query()->count());
+
+        $this->actingAs($this->admin)->post(route('investments.capitalize.store', $this->case), ['acquisition_cost' => '50000.01'] + $payload)->assertSessionHasErrors('acquisition_cost');
+        $this->assertSame(0, FixedAsset::query()->count());
+    }
 }

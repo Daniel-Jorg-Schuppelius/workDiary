@@ -10,10 +10,12 @@
 
 namespace App\Plugins\Lexoffice\Http\Controllers;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Integration\ExternalReference;
 use App\Models\Invoicing\Invoice;
-use App\Plugins\Lexoffice\{LexofficeInvoiceService, LexofficePlugin};
+use App\Plugins\Lexoffice\LexofficePlugin;
+use App\Plugins\Lexoffice\Services\LexofficeInvoiceService;
 use App\Support\ErrorText;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
@@ -36,7 +38,7 @@ class LexofficeInvoiceController extends Controller {
             return back()->with('error', __('Lexoffice-Plugin ist nicht aktiviert oder API-Key fehlt.'));
         }
 
-        if ($invoice->status !== Invoice::STATUS_DRAFT) {
+        if ($invoice->status !== InvoiceStatus::Draft) {
             return back()->with('error', __('Nur Entwürfe können an Lexoffice übertragen werden.'));
         }
 

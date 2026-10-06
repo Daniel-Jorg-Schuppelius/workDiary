@@ -12,7 +12,9 @@ namespace App\Plugins\Lexoffice\Jobs;
 
 use App\Models\Customer\Customer;
 use App\Models\Supplier\Supplier;
-use App\Plugins\Lexoffice\{LexofficeConfig, LexofficeVoucherSync};
+use App\Plugins\Lexoffice\Jobs\Concerns\RunsUnderApiLock;
+use App\Plugins\Lexoffice\LexofficeConfig;
+use App\Plugins\Lexoffice\Services\LexofficeVoucherSync;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\{ShouldBeUnique, ShouldQueue};
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -32,12 +34,13 @@ class SyncOwnerVouchersJob implements ShouldBeUnique, ShouldQueue {
     use Dispatchable;
     use InteractsWithQueue;
     use Queueable;
+    use RunsUnderApiLock;
     use SerializesModels;
 
     /** Unter retry_after (90s) halten → kein Doppellauf durch Re-Reservierung. */
     public int $timeout = 60;
 
-    public int $tries = 2;
+    public int $maxExceptions = 2;
 
     /** @param 'customer'|'supplier' $kind */
     public function __construct(
@@ -52,7 +55,8 @@ class SyncOwnerVouchersJob implements ShouldBeUnique, ShouldQueue {
 
     public function handle(): void {
         $config = LexofficeConfig::resolve($this->organizationId);
-        if (! is_string($config['api_key']) || $config['api_key'] === '') {
+        // Abgeschaltet steht auch der Job — sonst liefe er mit einem Schlüssel aus der Installation weiter (S-28, k2-06).
+        if ($config['enabled'] !== true || ! is_string($config['api_key']) || $config['api_key'] === '') {
             return;
         }
 
@@ -64,6 +68,8 @@ class SyncOwnerVouchersJob implements ShouldBeUnique, ShouldQueue {
             return;
         }
 
-        (new LexofficeVoucherSync($config['api_key'], $config['base_url']))->syncFor($owner);
+        $this->underApiLock($this->organizationId, static function () use ($config, $owner): void {
+            (new LexofficeVoucherSync($config['api_key'], $config['base_url'], $config['request_interval']))->syncFor($owner);
+        });
     }
 }

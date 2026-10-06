@@ -12,11 +12,16 @@ declare(strict_types=1);
 
 namespace App\Services\Inventory;
 
+use App\Enums\Integration\ExternalConflictStatus;
 use App\Models\Article\ArticleVariant;
+use App\Models\Audit\AuditLog;
 use App\Models\Integration\PendingExternalConflict;
 use App\Models\Inventory\{StockMovement, Warehouse};
+use App\Modules\ModuleRegistry;
+use App\Services\Inventory\Contracts\ArticleConflictHandler;
+use App\Support\MorphMap;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\{DB, Request};
 use RuntimeException;
 
 /**
@@ -25,24 +30,61 @@ use RuntimeException;
  * fehlgeschlagen ist, wird hier fachlich ausgeglichen — entweder durch
  * bewusstes Beibehalten des lokalen Standes oder durch eine **Gegenbuchung**
  * (niemals per DB-Rollback). Der Konflikt wird damit geschlossen.
+ *
+ * Artikelkonflikte eines Fremdsystems (lokal geänderter Artikel, abweichender
+ * Fremdstand) haben drei Wege: lokal behalten (der Artikel bleibt zum Push
+ * vorgemerkt), den Stand des Fremdsystems übernehmen (über den
+ * {@see ArticleConflictHandler} des meldenden Plugins) oder verwerfen.
  */
 class InventoryConflictResolver {
     public const SCALE = 4;
 
-    public function __construct(private readonly InventoryLedger $ledger) {}
+    public function __construct(private readonly InventoryLedger $ledger, private readonly ModuleRegistry $registry) {}
 
     /**
-     * Behält den lokalen Bestand bei (externe Differenz akzeptiert) und schließt
-     * den Konflikt ohne Gegenbuchung.
+     * Behält den lokalen Stand bei und schließt den Konflikt: beim Bestand ohne
+     * Gegenbuchung (externe Differenz akzeptiert), beim Artikel bleibt die
+     * lokale Änderung zum nächsten Push vorgemerkt.
      */
     public function keepLocal(PendingExternalConflict $conflict, ?int $userId = null): void {
-        $this->guard($conflict);
+        $this->guard($conflict, ExternalConflictStatus::ResolvedLocal, [PendingExternalConflict::TYPE_INVENTORY_OUTBOX, PendingExternalConflict::TYPE_ARTICLE]);
+        $this->close($conflict, ExternalConflictStatus::ResolvedLocal, $userId);
+    }
 
-        $conflict->forceFill([
-            'status' => PendingExternalConflict::STATUS_RESOLVED_LOCAL,
-            'resolved_by' => $userId,
-            'resolved_at' => Carbon::now(),
-        ])->save();
+    /**
+     * Übernimmt den Stand des Fremdsystems in den lokalen Artikel — das Plugin,
+     * das den Konflikt gemeldet hat, holt und schreibt ihn. Scheitert das
+     * Fremdsystem, bleibt der Konflikt offen.
+     *
+     * @throws RuntimeException Ohne zuständigen Handler oder wenn das Plugin scheitert.
+     */
+    public function adoptRemote(PendingExternalConflict $conflict, ?int $userId = null): void {
+        $this->guard($conflict, ExternalConflictStatus::ResolvedRemote, [PendingExternalConflict::TYPE_ARTICLE]);
+
+        $handler = null;
+        foreach ($this->registry->extensions(ArticleConflictHandler::class) as $class) {
+            $candidate = app($class);
+            if ($candidate instanceof ArticleConflictHandler && $candidate->supports($conflict)) {
+                $handler = $candidate;
+                break;
+            }
+        }
+        if ($handler === null) {
+            throw new RuntimeException((string) __('inventory.conflict.error.no_handler', ['plugin' => $conflict->plugin_id]));
+        }
+
+        $handler->adoptRemote($conflict);
+        $this->close($conflict, ExternalConflictStatus::ResolvedRemote, $userId);
+    }
+
+    /**
+     * Schließt einen Artikelkonflikt ohne Abgleich: beide Stände bleiben, wie
+     * sie sind. Weicht der Artikel beim nächsten Abgleich weiter ab, meldet
+     * das Fremdsystem-Plugin einen neuen Konflikt.
+     */
+    public function dismiss(PendingExternalConflict $conflict, ?int $userId = null): void {
+        $this->guard($conflict, ExternalConflictStatus::Dismissed, [PendingExternalConflict::TYPE_ARTICLE]);
+        $this->close($conflict, ExternalConflictStatus::Dismissed, $userId);
     }
 
     /**
@@ -52,7 +94,7 @@ class InventoryConflictResolver {
      * @throws RuntimeException Wenn die zugrunde liegende Bewegung fehlt.
      */
     public function compensate(PendingExternalConflict $conflict, ?int $userId = null): StockMovement {
-        $this->guard($conflict);
+        $this->guard($conflict, ExternalConflictStatus::Compensated);
 
         return DB::transaction(function () use ($conflict, $userId): StockMovement {
             $movement = StockMovement::query()->withoutGlobalScopes()->find($conflict->referenceable_id);
@@ -83,22 +125,45 @@ class InventoryConflictResolver {
                 actorUserId: $userId,
             );
 
-            $conflict->forceFill([
-                'status' => PendingExternalConflict::STATUS_COMPENSATED,
-                'resolved_by' => $userId,
-                'resolved_at' => Carbon::now(),
-            ])->save();
+            $this->close($conflict, ExternalConflictStatus::Compensated, $userId);
 
             return $reversal;
         });
     }
 
-    private function guard(PendingExternalConflict $conflict): void {
-        if ($conflict->conflict_type !== 'inventory_outbox') {
-            throw new RuntimeException('Kein Inventory-Outbox-Konflikt.');
+    /** @param list<string> $types Konfliktarten, für die es diesen Weg gibt. */
+    private function guard(PendingExternalConflict $conflict, ExternalConflictStatus $target, array $types = [PendingExternalConflict::TYPE_INVENTORY_OUTBOX]): void {
+        if (! in_array($conflict->conflict_type, $types, true)) {
+            throw new RuntimeException((string) __('inventory.conflict.error.wrong_type'));
         }
-        if (! $conflict->isOpen()) {
-            throw new RuntimeException('Konflikt ist bereits aufgelöst.');
+        if (! $conflict->status->canTransitionTo($target)) {
+            throw new RuntimeException((string) __('inventory.conflict.error.already_resolved'));
         }
+    }
+
+    /** Eine Stelle für Stand, Person, Zeitpunkt und Protokoll jeder Entscheidung (ohne Schnappschuss-Inhalte). */
+    private function close(PendingExternalConflict $conflict, ExternalConflictStatus $status, ?int $userId): void {
+        $conflict->forceFill([
+            'status' => $status,
+            'resolved_by' => $userId,
+            'resolved_at' => Carbon::now(),
+        ])->save();
+
+        AuditLog::create([
+            'organization_id' => $conflict->organization_id,
+            'user_id' => $userId,
+            'event' => 'integration.conflict_resolved',
+            'auditable_type' => MorphMap::stableKey($conflict::class),
+            'auditable_id' => $conflict->getKey(),
+            'changes' => [
+                'status' => $status->value,
+                'conflict_type' => $conflict->conflict_type,
+                'plugin_id' => $conflict->plugin_id,
+                'external_id' => $conflict->external_id,
+                'diff_fields' => $conflict->diff_fields,
+            ],
+            'ip' => Request::ip(),
+            'user_agent' => substr((string) Request::userAgent(), 0, 255),
+        ]);
     }
 }

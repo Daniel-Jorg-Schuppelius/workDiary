@@ -10,8 +10,7 @@
 @extends('layouts.app')
 @section('title', __('club.fees.title.accounts'))
 @section('nav-title', __('club.fees.title.accounts'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('club.fees.subtitle.accounts')">
     <x-slot:actions>

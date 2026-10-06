@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Claims;
 
 use App\Enums\Claims\ClaimSource;
+use App\Enums\Manufacturing\DeliveryStockStatus;
 use App\Models\Asset\Asset;
 use App\Models\Claims\{ClaimCase, ClaimRmaReturn};
 use App\Models\Customer\Customer;
@@ -40,7 +41,7 @@ final class PortalReturnService {
     public function deliveries(Customer $customer): Collection {
         return StockDelivery::query()
             ->where('customer_id', $customer->id)
-            ->where('stock_status', 'delivered')
+            ->where('stock_status', DeliveryStockStatus::Delivered)
             ->orderByDesc('id')
             ->limit(100)
             ->get();

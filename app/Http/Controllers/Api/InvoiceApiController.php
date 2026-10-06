@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\InvoiceResource;
 use App\Models\Customer\Customer;
@@ -59,7 +60,7 @@ class InvoiceApiController extends Controller {
         $query = Invoice::query()
             ->when($request->filled('from'), fn($q) => $q->whereDate('issued_on', '>=', (string) $request->query('from')))
             ->when($request->filled('to'), fn($q) => $q->whereDate('issued_on', '<=', (string) $request->query('to')))
-            ->when(in_array((string) $request->query('status', ''), Invoice::STATUSES, true), fn($q) => $q->where('status', (string) $request->query('status')))
+            ->when(in_array((string) $request->query('status', ''), InvoiceStatus::values(), true), fn($q) => $q->where('status', (string) $request->query('status')))
             ->when($request->filled('type'), fn($q) => $q->where('type', (string) $request->query('type')))
             ->when($request->filled('customer'), fn($q) => $q->where('customer_id', Sqid::decodeOrAbort(Customer::class, (string) $request->query('customer'))))
             ->with('customer:id,name')

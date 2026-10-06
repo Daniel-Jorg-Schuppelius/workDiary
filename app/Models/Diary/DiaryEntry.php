@@ -10,7 +10,7 @@
 
 namespace App\Models\Diary;
 
-use App\Enums\Diary\{LocationMode, Mode, Priority, Status};
+use App\Enums\Diary\{DispatchStatus, LocationMode, Mode, Priority, Status};
 use App\Models\Asset\Asset;
 use App\Models\Classification\EntryType;
 use App\Models\Communication\Comment;
@@ -46,6 +46,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $content
  * @property string|null $response
  * @property Status $status
+ * @property DispatchStatus|null $dispatch_status
  * @property Priority|null $priority
  * @property Carbon|null $start_at
  * @property Carbon|null $end_at
@@ -177,6 +178,7 @@ class DiaryEntry extends Model implements CustomFieldSubject {
         'window_start_date' => 'date',
         'window_end_date' => 'date',
         'status' => Status::class,
+        'dispatch_status' => DispatchStatus::class,
         'accepted_at' => 'immutable_datetime',
         'started_at' => 'immutable_datetime',
         'paused_at' => 'immutable_datetime',

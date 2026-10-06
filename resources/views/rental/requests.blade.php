@@ -11,7 +11,7 @@
 
 @section('title', __('Verleih-Anfragen'))
 @section('nav-title', __('Verleih-Anfragen'))
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 <x-index-page :subtitle="__('Portal-Anfragen entscheiden — erst die Annahme legt Verleihakte (Entwurf) und Vormerkung an.')">
@@ -84,7 +84,7 @@
                                        class="input input-xs input-bordered w-40"
                                        aria-label="{{ __('Ablehnungsgrund') }}"
                                        placeholder="{{ __('Ablehnungsgrund (geht an den Kunden)') }}">
-                                <button type="submit" class="btn btn-ghost btn-xs text-error">{{ __('Ablehnen') }}</button>
+                                <x-button type="submit" tone="ghost" size="xs" class="text-error">{{ __('Ablehnen') }}</x-button>
                             </form>
                         </div>
                     @endif

@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Applications;
 
+use App\Enums\Applications\{JobApplicationInterviewStatus, JobApplicationStatus};
 use App\Mail\{InterviewConfirmedMail, InterviewOfferMail};
 use App\Models\Applications\{JobApplication, JobApplicationInterview, JobInterviewOffer};
 use App\Models\Platform\User;
@@ -29,6 +30,10 @@ use RuntimeException;
 final class InterviewOfferService {
     /** @param list<CarbonImmutable> $slots UTC */
     public function offer(JobApplication $application, array $slots, string $mode, int $durationMinutes, ?int $interviewerUserId, CarbonImmutable $expiresAt, User $actor): JobInterviewOffer {
+        // Auch das Terminangebot plant ein Gespräch: nur in der Pipeline.
+        if (! $application->status->inPipeline()) {
+            throw new RuntimeException((string) __('Die Akte ist bereits entschieden.'));
+        }
         $email = trim((string) $application->email);
         if (! EmailHelper::isEmail($email)) {
             throw new RuntimeException((string) __('recruiting.offer.error.no_email'));
@@ -60,13 +65,9 @@ final class InterviewOfferService {
 
     /** Offenes Angebot zum Klartext-Token, sonst null (unbekannt, abgelaufen, gewählt). */
     public function resolve(string $token): ?JobInterviewOffer {
-        if ($token === '') {
-            return null;
-        }
-        // TENANT-BYPASS: öffentlicher Link, Auflösung ausschließlich über den Abdruck.
-        $offer = JobInterviewOffer::query()->withoutGlobalScopes()->where('token_hash', CryptoHelper::hash($token))->first();
+        $offer = JobInterviewOffer::findByAccessToken($token);
 
-        return $offer instanceof JobInterviewOffer && $offer->isOpen() ? $offer : null;
+        return $offer !== null && $offer->isOpen() ? $offer : null;
     }
 
     public function choose(JobInterviewOffer $offer, int $slotIndex): JobApplicationInterview {
@@ -82,18 +83,20 @@ final class InterviewOfferService {
                 throw new RuntimeException((string) __('recruiting.offer.error.unavailable'));
             }
             $application = JobApplication::query()->withoutGlobalScopes()->findOrFail($offer->job_application_id);
+            // Entschieden ist endgültig — ein noch offener Link plant kein Gespräch mehr.
+            if (! $application->status->inPipeline()) {
+                throw new RuntimeException((string) __('recruiting.offer.error.unavailable'));
+            }
             $interview = JobApplicationInterview::query()->create([
                 'organization_id' => $offer->organization_id,
                 'job_application_id' => $application->id,
                 'scheduled_at' => CarbonImmutable::parse($slot),
                 'mode' => $offer->mode,
                 'interviewer_id' => $offer->interviewer_user_id,
-                'status' => 'planned',
+                'status' => JobApplicationInterviewStatus::Planned,
             ]);
             $locked->forceFill(['chosen_at' => now(), 'job_application_interview_id' => $interview->id])->save();
-            if (in_array($application->status, JobApplication::PIPELINE_STATUSES, true)) {
-                $application->forceFill(['status' => 'interview_planned'])->save();
-            }
+            $application->forceFill(['status' => JobApplicationStatus::InterviewPlanned])->save();
             $application->audit('recruiting.interview_chosen', ['interview_id' => $interview->id]);
             $email = trim((string) $application->email);
             if (EmailHelper::isEmail($email)) {

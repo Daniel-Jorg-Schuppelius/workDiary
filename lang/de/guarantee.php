@@ -29,6 +29,18 @@ return [
         'create' => 'Bürgschaft erfassen',
         'edit' => 'Bürgschaft bearbeiten',
         'returned' => 'Urkunde zurückerhalten',
+        'drawn' => 'Als gezogen vermerken',
+        'secure' => 'Einbehalt ablösen',
+    ],
+    'confirm' => [
+        'drawn' => 'Ziehung der Bürgschaft :reference vermerken? Sie gilt danach nicht mehr als Sicherheit, und der Vermerk lässt sich nicht zurücknehmen.',
+    ],
+    'secure' => [
+        'title' => 'Sicherheitseinbehalt ablösen',
+        'hint' => 'Die Bürgschaft tritt an die Stelle des Einbehalts; der einbehaltene Betrag gilt damit als ausgezahlt. Zur Auswahl stehen nur offene Einbehalte, die die Bürgschaft betragsmäßig deckt.',
+        'retention' => 'Sicherheitseinbehalt',
+        'submit' => 'Ablösen',
+        'empty' => 'Es gibt keinen offenen Einbehalt, den diese Bürgschaft deckt.',
     ],
     'kpi' => [
         'issued' => 'Gestellt (aktiv)',

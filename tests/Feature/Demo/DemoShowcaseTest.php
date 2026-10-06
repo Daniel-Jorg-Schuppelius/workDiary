@@ -92,14 +92,14 @@ final class DemoShowcaseTest extends TestCase {
         // Quelle) + ein aktiver; Historie liegt Wochen zurück (Reports).
         $completed = \App\Models\Agile\AgileSprint::query()
             ->where('organization_id', $organization->id)
-            ->where('status', \App\Models\Agile\AgileSprint::STATUS_COMPLETED)
+            ->where('status', \App\Enums\Agile\AgileSprintStatus::Completed)
             ->firstOrFail();
         $this->assertGreaterThan(0, (int) ($completed->completion_snapshot['done_points'] ?? 0));
         $this->assertSame(
             1,
             \App\Models\Agile\AgileSprint::query()
                 ->where('organization_id', $organization->id)
-                ->where('status', \App\Models\Agile\AgileSprint::STATUS_ACTIVE)->count(),
+                ->where('status', \App\Enums\Agile\AgileSprintStatus::Active)->count(),
         );
 
         $events = \App\Models\Agile\AgileEvent::query()->where('organization_id', $organization->id);

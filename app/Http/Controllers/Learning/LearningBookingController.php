@@ -58,7 +58,7 @@ class LearningBookingController extends Controller {
         $this->bookings->confirm($booking, $this->actor(), $note !== '' ? $note : null);
 
         return redirect()
-            ->route('learning.bookings.index')
+            ->toList('learning.bookings.index')
             ->with('success', __('learning.flash.booking_confirmed'));
     }
 
@@ -72,7 +72,7 @@ class LearningBookingController extends Controller {
         $this->bookings->reject($booking, $data['reason'], $this->actor());
 
         return redirect()
-            ->route('learning.bookings.index')
+            ->toList('learning.bookings.index')
             ->with('success', __('learning.flash.booking_rejected'));
     }
 
@@ -83,7 +83,7 @@ class LearningBookingController extends Controller {
         $this->bookings->markBilled($booking);
 
         return redirect()
-            ->route('learning.bookings.index')
+            ->toList('learning.bookings.index')
             ->with('success', __('learning.flash.booking_billed'));
     }
 

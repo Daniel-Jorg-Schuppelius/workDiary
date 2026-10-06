@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Reselling\Mirror;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Enums\Reselling\ResaleArticleRole;
 use App\Models\Article\Article;
 use App\Models\Customer\Customer;
@@ -54,7 +55,7 @@ final class LocalInvoiceMirrorSource implements InvoiceMirrorSource {
 
     private const KIND_CREDIT_NOTE = 'creditnote';
 
-    private const ISSUED = [Invoice::STATUS_ISSUED, Invoice::STATUS_PARTIALLY_PAID, Invoice::STATUS_PAID];
+    private const ISSUED = [InvoiceStatus::Issued, InvoiceStatus::PartiallyPaid, InvoiceStatus::Paid];
 
     private const NOT_INVOICES = [Invoice::TYPE_CREDIT_NOTE, Invoice::TYPE_CANCELLATION, Invoice::TYPE_PROFORMA];
 
@@ -184,7 +185,7 @@ final class LocalInvoiceMirrorSource implements InvoiceMirrorSource {
         // Nur Positionen ausgestellter Rechnungen — der Entwurfsbezug (draftLocal) ist kein Vorschlag des Laufs.
         $links->whereIn('linkable_id', InvoiceItem::query()->withoutGlobalScopes()->select('id')
             ->where('organization_id', $organization->id)
-            ->whereIn('invoice_id', Invoice::query()->withoutGlobalScopes()->select('id')->where('organization_id', $organization->id)->where('status', '!=', Invoice::STATUS_DRAFT)));
+            ->whereIn('invoice_id', Invoice::query()->withoutGlobalScopes()->select('id')->where('organization_id', $organization->id)->where('status', '!=', InvoiceStatus::Draft)));
     }
 
     public function draftBecameInvoice(Organization $organization, string $reference): bool {
@@ -192,7 +193,7 @@ final class LocalInvoiceMirrorSource implements InvoiceMirrorSource {
         return Invoice::query()->withoutGlobalScopes()
             ->where('organization_id', $organization->id)
             ->where('number', $reference)
-            ->where('status', '!=', Invoice::STATUS_DRAFT)
+            ->where('status', '!=', InvoiceStatus::Draft)
             ->exists();
     }
 
@@ -207,7 +208,7 @@ final class LocalInvoiceMirrorSource implements InvoiceMirrorSource {
     private function invoiceQuery(Organization $organization, ?array $recipientCustomerIds, ?CarbonImmutable $from, ?CarbonImmutable $to, string $kind): Builder {
         $query = Invoice::query()->withoutGlobalScopes()->where('organization_id', $organization->id);
         if ($kind === self::KIND_VOIDED) {
-            $query->whereNotIn('type', self::NOT_INVOICES)->where(static fn(Builder $w) => $w->where('status', Invoice::STATUS_CANCELLED)->orWhereNotNull('cancelled_at'));
+            $query->whereNotIn('type', self::NOT_INVOICES)->where(static fn(Builder $w) => $w->where('status', InvoiceStatus::Cancelled)->orWhereNotNull('cancelled_at'));
         } elseif ($kind === self::KIND_CREDIT_NOTE) {
             $query->where('type', Invoice::TYPE_CREDIT_NOTE)->whereIn('status', self::ISSUED);
         } else {
@@ -411,9 +412,9 @@ final class LocalInvoiceMirrorSource implements InvoiceMirrorSource {
 
     private static function status(Invoice $invoice): string {
         return match (true) {
-            $invoice->status === Invoice::STATUS_DRAFT => MirrorLine::STATUS_DRAFT,
-            $invoice->status === Invoice::STATUS_CANCELLED || $invoice->cancelled_at !== null => MirrorLine::STATUS_VOIDED,
-            $invoice->status === Invoice::STATUS_PAID => MirrorLine::STATUS_PAID,
+            $invoice->status === InvoiceStatus::Draft => MirrorLine::STATUS_DRAFT,
+            $invoice->status === InvoiceStatus::Cancelled || $invoice->cancelled_at !== null => MirrorLine::STATUS_VOIDED,
+            $invoice->status === InvoiceStatus::Paid => MirrorLine::STATUS_PAID,
             default => MirrorLine::STATUS_ISSUED,
         };
     }

@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Reporting;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Invoicing\{Invoice, InvoiceItem};
 use App\Services\Billing\Contracts\ExternalRevenue;
 use App\Support\Query\DateRange;
@@ -37,7 +38,7 @@ use Carbon\CarbonImmutable;
  */
 class ProductRevenueReportBuilder {
     /** Ausgestellt/(teil)bezahlt — Entwürfe und Stornos zählen nicht. */
-    public const STATUSES = [Invoice::STATUS_ISSUED, Invoice::STATUS_PARTIALLY_PAID, Invoice::STATUS_PAID];
+    public const STATUSES = [InvoiceStatus::Issued, InvoiceStatus::PartiallyPaid, InvoiceStatus::Paid];
 
     /**
      * Umsatztragende Belegarten; Gutschrift und Stornobeleg spiegeln die

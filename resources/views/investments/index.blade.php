@@ -10,8 +10,7 @@
 
 @section('title', __('Investitionen') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('Investitionen'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('Investitionsakten mit Varianten, Budgetantrag, Freigabe und Soll-Ist-Verfolgung.')">
@@ -33,8 +32,8 @@
         <x-filter-field :label="__('Status')" for="inv-status" class="shrink-0">
             <select id="inv-status" name="status" class="select select-sm select-bordered w-44" aria-label="{{ __('Status') }}">
                 <option value="">{{ __('Alle Status') }}</option>
-                @foreach ($statuses as $s)
-                    <option value="{{ $s }}" @selected(($filters['status'] ?? '') === $s)>{{ __("values.$s") }}</option>
+                @foreach ($statuses as $value => $label)
+                    <option value="{{ $value }}" @selected(($filters['status'] ?? '') === $value)>{{ $label }}</option>
                 @endforeach
             </select>
         </x-filter-field>
@@ -67,7 +66,7 @@
             <tr class="hover">
                 <td><a href="{{ route('investments.show', $case) }}" class="link link-hover font-medium">{{ $case->title }}</a></td>
                 <td>{{ __("values.{$case->category}") }}</td>
-                <td><x-status-badge :tone="$case->statusTone()" size="sm">{{ __("values.{$case->status}") }}</x-status-badge></td>
+                <td><x-status-badge :tone="$case->status->tone()" size="sm">{{ $case->status->label() }}</x-status-badge></td>
                 <td>{{ $case->costCenterDisplay() ?? '—' }}</td>
                 <td>{{ $case->responsible->name ?? '—' }}</td>
                 <td class="text-right"><x-icon-btn icon="visibility" tone="ghost" size="xs" :href="route('investments.show', $case)" :label="__('Anzeigen')" /></td>

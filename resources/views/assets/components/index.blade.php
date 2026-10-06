@@ -14,8 +14,7 @@
 
 @section('title', __('asset.components.title'))
 @section('nav-title', __('asset.components.title'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
     <x-index-page overflow="clip" :subtitle="$asset->name">
@@ -48,7 +47,7 @@
             {{-- Historie VOR der Voll-Höhe-Tabelle (scroll=flex): Inhalt unter
                  der flex-Tabelle läge unter dem Fold und bliebe unentdeckt.
                  Eingeklappt kostet sie eine Zeile. --}}
-            <details class="rounded-box border border-base-300 bg-base-100 shadow-xs">
+            <x-card as="details" padding="p-0">
                 <summary class="cursor-pointer px-4 py-3 text-sm font-medium">{{ __('asset.components.history.heading') }}</summary>
                 <div class="px-4 pb-4">
                     <x-table :bare="true">
@@ -60,17 +59,17 @@
                                 <th>{{ __('asset.components.column.status') }}</th>
                             </tr>
                         </x-slot:head>
-                        @foreach ($history->where('status', '!=', \App\Models\Asset\AssetComponent::STATUS_INSTALLED) as $part)
+                        @foreach ($history->where('status', '!=', \App\Enums\Asset\AssetComponentStatus::Installed) as $part)
                             <tr class="hover">
                                 <td>{{ $part->displayName() }}</td>
                                 <td>{{ optional($part->installed_on)->fdate() ?? '—' }}</td>
                                 <td>{{ optional($part->removed_on)->fdate() ?? '—' }}</td>
-                                <td>{{ __('asset.components.status.' . $part->status) }}</td>
+                                <td>{{ $part->status->label() }}</td>
                             </tr>
                         @endforeach
                     </x-table>
                 </div>
-            </details>
+            </x-card>
         @endif
 
         <x-table scroll="flex" :pin-rows="true" :zebra="true" table-sort="client">

@@ -32,28 +32,22 @@
                 <x-form-group :label="__('Abo-URL')" name="feed_url">
                     <div class="join w-full">
                         <input type="text" readonly value="{{ $url }}" class="input input-bordered join-item w-full font-mono text-xs">
-                        <button type="button" class="btn join-item" data-copy-text="{{ $url }}">
+                        <x-button tone="plain" size="md" class="join-item" data-copy-text="{{ $url }}">
                             {{ __('Kopieren') }}
-                        </button>
+                        </x-button>
                     </div>
                     <x-slot:hint>{{ __('Jetzt kopieren — der Link wird nicht gespeichert und ist später nicht mehr abrufbar.') }}</x-slot:hint>
                 </x-form-group>
             @else
-                <div class="alert alert-info text-sm">
+                <div role="status" class="alert alert-info text-sm">
                     {{ __('Ein Kalender-Link ist aktiv. Aus Sicherheitsgründen wird er nicht gespeichert und kann nicht erneut angezeigt werden — bei Verlust einen neuen erzeugen („Token rotieren").') }}
                 </div>
             @endif
 
-            <dl class="text-sm text-base-content/70">
-                <div class="flex gap-2">
-                    <dt>{{ __('Kennung des Links') }}:</dt>
-                    <dd class="font-mono">{{ $status['hint'] ?? '—' }}…</dd>
-                </div>
-                <div class="flex gap-2">
-                    <dt>{{ __('Erzeugt am') }}:</dt>
-                    <dd>{{ $issuedAt?->format('d.m.Y H:i') ?? '—' }}</dd>
-                </div>
-            </dl>
+            <x-detail-grid class="text-base-content/70">
+                <x-detail-grid.row :label="__('Kennung des Links') . ':'" class="font-mono">{{ $status['hint'] ?? '—' }}…</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Erzeugt am') . ':'">{{ $issuedAt?->format('d.m.Y H:i') ?? '—' }}</x-detail-grid.row>
+            </x-detail-grid>
 
             <div class="text-sm text-base-content/70">
                 <strong>{{ __('Hinweis Google:') }}</strong> {{ __('„Andere Kalender → Per URL hinzufügen" und obigen Link einfügen.') }}<br>

@@ -15,8 +15,6 @@
 @section('title', __('Rundgang: :name', ['name' => $run->route?->name]))
 @section('nav-title', __('Rundgang'))
 
-@php use App\Models\Patrol\PatrolRun; @endphp
-
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
@@ -24,9 +22,10 @@
             <div class="flex min-w-0 items-center gap-2">
                 <span class="truncate font-medium">{{ $run->route?->name }}</span>
                 <span class="text-sm text-muted">{{ __('gestartet :time', ['time' => $run->started_at->orgTz()->format('H:i')]) }}</span>
+                <x-status-badge class="shrink-0" :tone="$run->status === \App\Enums\Patrol\PatrolRunStatus::Aborted ? 'warning' : 'ghost'">{{ $run->status->label() }}</x-status-badge>
             </div>
             <x-slot:actions>
-                @if ($run->status !== PatrolRun::STATUS_RUNNING)
+                @if ($run->status !== \App\Enums\Patrol\PatrolRunStatus::Running)
                     <x-icon-btn icon="picture_as_pdf" size="sm"
                                 :href="route('patrols.runs.show', [$run, 'export' => 'pdf'])"
                                 show-label>{{ __('Bericht (PDF)') }}</x-icon-btn>
@@ -35,14 +34,24 @@
         </x-page-toolbar>
     </x-slot:toolbar>
 
-    @if ($run->status === PatrolRun::STATUS_RUNNING)
+    @if ($run->status === \App\Enums\Patrol\PatrolRunStatus::Aborted)
+        <div class="alert alert-warning text-sm" role="status">
+            <x-icon name="cancel" />
+            <div>
+                <p class="font-semibold">{{ __('Abgebrochen von :name am :date', ['name' => $run->abortedBy?->name ?? '—', 'date' => $run->finished_at?->fdatetime() ?? '—']) }}</p>
+                <p>{{ $run->abort_reason }}</p>
+            </div>
+        </div>
+    @endif
+
+    @if ($run->status === \App\Enums\Patrol\PatrolRunStatus::Running)
         <x-card>
             <form method="POST" action="{{ route('patrols.runs.scan', $run) }}" class="flex gap-2">
                 @csrf
                 <input type="text" name="token" required maxlength="64" autofocus autocomplete="off"
                        class="input input-bordered w-full font-mono"
                        placeholder="{{ __('Token scannen oder eingeben') }}" aria-label="{{ __('Token') }}">
-                <button type="submit" class="btn btn-primary shrink-0">{{ __('Bestätigen') }}</button>
+                <x-button type="submit" size="md" class="shrink-0">{{ __('Bestätigen') }}</x-button>
             </form>
         </x-card>
     @endif
@@ -69,7 +78,7 @@
                                 <span class="block text-warning">{{ $scan->delta_minutes > 0 ? '+' : '' }}{{ $scan->delta_minutes }} min</span>
                             @endunless
                         @else
-                            <span class="text-muted">{{ __('ausstehend') }}</span>
+                            <span class="text-muted">{{ $run->status === \App\Enums\Patrol\PatrolRunStatus::Aborted ? __('offen bei Abbruch') : __('ausstehend') }}</span>
                         @endif
                     </div>
                 </li>
@@ -77,7 +86,7 @@
         </ol>
     </x-card>
 
-    @if ($run->status === PatrolRun::STATUS_RUNNING)
+    @if ($run->status === \App\Enums\Patrol\PatrolRunStatus::Running)
         <x-card :title="__('Abschließen')">
             @if ($missed->isNotEmpty())
                 <p class="mb-2 text-sm text-warning">{{ __(':count Kontrollpunkte sind noch offen — der Abschluss braucht dann eine Begründung.', ['count' => $missed->count()]) }}</p>
@@ -85,7 +94,11 @@
             <form method="POST" action="{{ route('patrols.runs.complete', $run) }}" class="space-y-3">
                 @csrf
                 <x-input-field name="deviation_note" :label="__('Begründung bei Abweichungen')" />
-                <button type="submit" class="btn btn-primary btn-sm">{{ __('Rundgang abschließen') }}</button>
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <x-button type="submit">{{ __('Rundgang abschließen') }}</x-button>
+                    <x-button tone="ghost" icon="cancel" data-entry-modal-trigger
+                              :href="route('patrols.runs.abort.create', $run)">{{ __('Rundgang abbrechen') }}</x-button>
+                </div>
             </form>
         </x-card>
     @elseif ($run->deviation_note)

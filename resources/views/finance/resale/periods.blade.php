@@ -13,7 +13,7 @@
 @extends('layouts.app')
 @section('title', __('resale.periods.title'))
 @section('nav-title', __('resale.title.menu'))
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @php
     $canManage = auth()->user()?->can(\App\Enums\User\Permission::ResellingManage->value) ?? false;
@@ -92,7 +92,7 @@
             </select>
             @if ($filterCustomer !== null)
                 <input type="hidden" name="customer" value="{{ $filterCustomer->sqid }}">
-                <span class="badge badge-outline badge-sm">{{ $filterCustomer->name }}</span>
+                <x-status-badge tone="plain" outline>{{ $filterCustomer->name }}</x-status-badge>
             @endif
         </x-filter-bar>
 

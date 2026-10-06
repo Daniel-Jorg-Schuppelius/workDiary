@@ -12,13 +12,15 @@ namespace App\Plugins\RemoteSupport;
 
 use App\Enums\Import\ImportEntity;
 use App\Models\Asset\Asset;
-use App\Models\Auth\RemotePendingSession;
 use App\Models\Integration\{ExternalReference, ImportRun};
 use App\Models\Platform\{Organization, User};
 use App\Models\Time\TimeEntry;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{NavigationContributor, Plugin, PluginCapability, ProvidesRemoteSessions, SlotRenderer, TimeImporter};
-use App\Plugins\RemoteSupport\Providers\{AnyDeskClient, TeamViewerClient};
+use App\Plugins\RemoteSupport\Api\{AnyDeskClient, TeamViewerClient};
+use App\Plugins\RemoteSupport\Enums\RemotePendingSessionStatus;
+use App\Plugins\RemoteSupport\Models\RemotePendingSession;
+use App\Plugins\RemoteSupport\Services\{RemoteDeviceRegistry, RemotePendingAssignmentService, RemoteSessionImporter};
 use App\Services\Navigation\NavigationRegistry;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\{Cache, Route};
@@ -76,7 +78,7 @@ class RemoteSupportPlugin extends AbstractPlugin implements NavigationContributo
             NavigationRegistry::BADGE_TTL,
             static fn (): int => RemotePendingSession::query()
                 ->where('organization_id', $organizationId)
-                ->where('status', RemotePendingSession::STATUS_OPEN)
+                ->where('status', RemotePendingSessionStatus::Open)
                 ->count(),
         );
 
@@ -185,6 +187,23 @@ class RemoteSupportPlugin extends AbstractPlugin implements NavigationContributo
 
     public function remoteSessionsUrl(): string {
         return route('admin.remote-support.pending.index');
+    }
+
+    public function recentRemoteSessions(int $organizationId, int $limit): array {
+        return array_values(RemotePendingSession::query()
+            ->withoutGlobalScopes()
+            ->where('organization_id', $organizationId)
+            ->orderByDesc('started_at')
+            ->limit($limit)
+            ->get()
+            ->map(static fn(RemotePendingSession $s): array => [
+                'provider' => (string) $s->provider,
+                'label' => $s->alias !== null && $s->alias !== '' ? (string) $s->alias : (string) $s->remote_id,
+                'started_at' => $s->started_at,
+                'ended_at' => $s->ended_at,
+                'status' => $s->status->value,
+            ])
+            ->all());
     }
 
     /** Zuordnung aus den Sitzungsreferenzen (`payload.asset_id`). */

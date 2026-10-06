@@ -12,7 +12,9 @@ declare(strict_types=1);
 
 namespace App\Models\Applications;
 
+use App\Enums\Applications\JobPostingStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
@@ -43,7 +45,7 @@ use Illuminate\Support\Str;
  * @property string|null $url
  * @property \Illuminate\Support\Carbon|null $published_at
  * @property \Illuminate\Support\Carbon|null $expires_at
- * @property string $status
+ * @property JobPostingStatus $status
  * @property-read JobRequisition|null $requisition
  */
 class JobPosting extends Model {
@@ -52,10 +54,6 @@ class JobPosting extends Model {
     use HasSqid;
 
     public const CHANNELS = ['website', 'portal', 'agency', 'social', 'print', 'referral', 'other'];
-
-    // MVP-437: 'paused' ergänzt — pausierte Veröffentlichungen sind sichtbar
-    // (Vorschau), aber nicht bewerbbar.
-    public const STATUSES = ['draft', 'published', 'paused', 'expired', 'closed'];
 
     protected $fillable = [
         'organization_id', 'job_requisition_id', 'channel', 'reference', 'url',
@@ -67,6 +65,7 @@ class JobPosting extends Model {
 
     /** @var array<string, string> */
     protected $casts = [
+        'status' => JobPostingStatus::class,
         'published_at' => 'datetime',
         'expires_at' => 'date',
         'application_deadline' => 'date',
@@ -90,18 +89,20 @@ class JobPosting extends Model {
      * @return Builder<JobPosting>
      */
     public function scopePubliclyListed(Builder $query): Builder {
-        return $query->where('status', 'published')->whereNotNull('public_slug');
+        return $query->where('status', JobPostingStatus::Published)->whereNotNull('public_slug');
     }
 
     /**
-     * Öffentlich auffindbar (Detail/Vorschau): freigegeben ODER pausiert. Der
+     * Öffentlich auffindbar (Detail/Vorschau): freigegeben, pausiert ODER
+     * abgelaufen — ein geteilter Link soll nach Bewerbungsschluss nicht ins
+     * Leere führen. Der
      * Bewerbungsknopf richtet sich zusätzlich nach {@see isApplyable()}.
      *
      * @param  Builder<JobPosting>  $query
      * @return Builder<JobPosting>
      */
     public function scopePublicResolvable(Builder $query): Builder {
-        return $query->whereIn('status', ['published', 'paused'])->whereNotNull('public_slug');
+        return $query->whereIn('status', [JobPostingStatus::Published, JobPostingStatus::Paused, JobPostingStatus::Expired])->whereNotNull('public_slug');
     }
 
     /**
@@ -109,18 +110,28 @@ class JobPosting extends Model {
      * Bewerbungsschluss/Ablauf.
      */
     public function isApplyable(): bool {
-        if ($this->status !== 'published') {
-            return false;
-        }
-        $today = CarbonImmutable::today();
-        if ($this->application_deadline !== null && $this->application_deadline->lt($today)) {
-            return false;
-        }
-        if ($this->expires_at !== null && $this->expires_at->lt($today)) {
-            return false;
-        }
+        return $this->status === JobPostingStatus::Published && ! $this->isPastDue();
+    }
 
-        return true;
+    /** Bewerbungsschluss oder Ablaufdatum liegt vor heute. */
+    public function isPastDue(): bool {
+        $today = CarbonImmutable::today();
+
+        return ($this->application_deadline !== null && $this->application_deadline->lt($today))
+            || ($this->expires_at !== null && $this->expires_at->lt($today));
+    }
+
+    /**
+     * Dieselbe Regel wie {@see isPastDue()} als Abfrage — Grundlage des
+     * täglichen Laufs `recruiting:expire-postings`.
+     *
+     * @param  Builder<JobPosting>  $query
+     * @return Builder<JobPosting>
+     */
+    public function scopePastDue(Builder $query): Builder {
+        $today = DateRange::day(CarbonImmutable::today());
+
+        return $query->where(fn (Builder $q) => $q->where('expires_at', '<', $today)->orWhere('application_deadline', '<', $today));
     }
 
     /**

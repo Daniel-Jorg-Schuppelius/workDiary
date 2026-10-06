@@ -26,7 +26,7 @@
         @endforeach
 
         @if ($checklist['assets']->isEmpty() && $checklist['tasks']->isEmpty() && $checklist['open_attendances'] === 0 && $checklist['blockers'] === [])
-            <p class="text-sm text-muted">{{ __('Nichts offen — es gibt nichts zu übergeben.') }}</p>
+            <x-empty-state icon="task_alt" :title="__('Nichts offen — es gibt nichts zu übergeben.')" compact />
         @else
             <ul class="space-y-2 text-sm">
                 @if ($checklist['assets']->isNotEmpty())

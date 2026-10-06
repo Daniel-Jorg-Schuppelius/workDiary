@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Sharepoint\Console;
 
-use App\Plugins\Sharepoint\SharepointMirrorTarget;
+use App\Plugins\Sharepoint\Services\SharepointMirrorTarget;
 use App\Plugins\Support\Mirror\Console\MirrorBackfillCommand;
 use App\Plugins\Support\Mirror\MirrorTarget;
 

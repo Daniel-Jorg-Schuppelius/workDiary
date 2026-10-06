@@ -10,7 +10,7 @@
 
 namespace App\Services\Invoicing\EInvoice;
 
-use App\Enums\Invoicing\XRechnungSyntax;
+use App\Enums\Invoicing\{InvoiceStatus, XRechnungSyntax};
 use App\Models\Invoicing\{Invoice, InvoiceItem};
 use App\Models\Platform\Organization;
 use App\Services\Billing\DocumentTotalsCalculator;
@@ -82,7 +82,7 @@ class XRechnungGenerator {
         $customer = $invoice->customer;
 
         // Status: nur gestellte/bezahlte Rechnungen sind final genug.
-        if (! in_array($invoice->status, [Invoice::STATUS_ISSUED, Invoice::STATUS_PAID], true)) {
+        if (! in_array($invoice->status, [InvoiceStatus::Issued, InvoiceStatus::Paid], true)) {
             $errors[] = (string) __('invoicing.einvoice.error.status');
         }
 

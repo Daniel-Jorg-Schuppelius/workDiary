@@ -39,6 +39,36 @@
 
     <x-month-calendar :month="$month" :items-by-day="$itemsByDay" item-view="rental.partials._calendar_day" />
 
+    {{-- Fenster ohne Akte (Wartung, Reinigung, Transport, Vormerkung) lassen sich nur hier stornieren;
+         Rechteprüfung wie im Controller (create auf RentalCase). --}}
+    <x-card :title="__('Freie Belegungsfenster')" padding="p-0">
+        <x-table bare>
+            <x-slot:head>
+                <tr><th>{{ __('Gerät') }}</th><th>{{ __('Art') }}</th><th>{{ __('Zeitraum (inkl. Puffer)') }}</th><th>{{ __('Notiz') }}</th><th></th></tr>
+            </x-slot:head>
+            @forelse ($freeWindows as $window)
+                <tr>
+                    <td>{{ $window->asset->name ?? '—' }}</td>
+                    <td>{{ $window->kind->label() }}</td>
+                    <td>{{ $window->blockedFrom()->fdatetime() }} – {{ $window->blockedUntil()->fdatetime() }}</td>
+                    <td>{{ $window->note ?? '—' }}</td>
+                    <td class="text-right">
+                        @can('create', \App\Models\Rental\RentalCase::class)
+                            <x-action-form :action="route('rental.reservations.cancel', $window)"
+                                           :confirm="__('Das Belegungsfenster wird storniert und das Gerät im Kalender wieder freigegeben.')"
+                                           :confirm-label="__('Stornieren')" confirm-icon="event_busy">
+                                <x-icon-btn icon="event_busy" size="xs" tone="error" type="submit"
+                                            :title="__('Stornieren')" />
+                            </x-action-form>
+                        @endcan
+                    </td>
+                </tr>
+            @empty
+                <x-table.empty :colspan="5" :title="__('Keine freien Belegungsfenster im angezeigten Monat.')" compact />
+            @endforelse
+        </x-table>
+    </x-card>
+
     @can('create', \App\Models\Rental\RentalCase::class)
         <x-card :title="__('Belegungsfenster eintragen (Wartung/Reinigung/Transport/Vormerkung)')">
             <form method="POST" action="{{ route('rental.reservations.store') }}" class="flex flex-wrap items-end gap-2">
@@ -58,7 +88,7 @@
                 <x-input-field name="starts_at" type="datetime-local" :label="__('Beginn')" required />
                 <x-input-field name="ends_at" type="datetime-local" :label="__('Ende')" required />
                 <x-input-field name="note" :label="__('Notiz')" maxlength="255" />
-                <button type="submit" class="btn btn-sm btn-primary">{{ __('Eintragen') }}</button>
+                <x-button type="submit">{{ __('Eintragen') }}</x-button>
             </form>
         </x-card>
     @endcan

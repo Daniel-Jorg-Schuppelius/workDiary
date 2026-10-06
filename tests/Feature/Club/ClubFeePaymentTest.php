@@ -248,6 +248,22 @@ class ClubFeePaymentTest extends TestCase {
             $this->assertArrayHasKey('claim_ids', $e->errors());
         }
 
+        // Sicherheitsaudit 2026-10-04, authz-a-2: der Vereins-Einzug fasst nur Beitragsläufe an, nie Zahlläufe des Finanzmoduls.
+        $transfer = \App\Models\Finance\PaymentRun::query()->create([
+            'organization_id' => $this->organization->id, 'bank_account_id' => $bankAccount->id, 'kind' => \App\Enums\Finance\PaymentRunKind::CreditTransfer->value,
+            'status' => PaymentRunStatus::Draft->value, 'execution_date' => CarbonImmutable::today(), 'created_by' => $this->admin->id,
+        ]);
+        \App\Models\Finance\PaymentRunItem::query()->create([
+            'organization_id' => $this->organization->id, 'payment_run_id' => $transfer->id, 'party_name' => 'Lieferant GmbH',
+            'iban' => 'DE89370400440532013000', 'amount' => '100.00', 'reference' => 'RE-1',
+        ]);
+        $this->assertTrue($this->payments()->isCollectionRun($run));
+        $this->assertFalse($this->payments()->isCollectionRun($transfer));
+        $this->actingAs($this->admin)->post(route('club.fees.collections.cancel', $transfer))->assertNotFound();
+        $this->actingAs($this->admin)->post(route('club.fees.collections.settle', $transfer), ['paid_on' => '2026-06-01'])->assertNotFound();
+        $this->assertSame(PaymentRunStatus::Draft, $transfer->refresh()->status);
+        $this->assertSame([$run->id], $this->payments()->collectionRuns()->pluck('id')->all());
+
         $cancelled = $this->payments()->cancelCollectionRun($run);
         $this->assertSame(PaymentRunStatus::Cancelled, $cancelled->status);
         $this->assertNull($claim->refresh()->payment_run_item_id);
@@ -313,5 +329,29 @@ class ClubFeePaymentTest extends TestCase {
 
         $this->actingAs($lead)->get(route('club.fees.collections.index'))->assertForbidden();
         $this->actingAs($this->orgUser())->post(route('club.fees.payments.store', $this->account), ['amount' => '1', 'paid_on' => '2026-02-01', 'method' => 'cash'])->assertForbidden();
+    }
+
+    /**
+     * Sicherheitsaudit 2026-10-04, li-9: wird eine für den Einzug vorgemerkte
+     * Forderung anders bezahlt, fällt sie aus dem Entwurfslauf — sonst würde
+     * sie zusätzlich eingezogen.
+     */
+    public function test_paid_claim_leaves_the_draft_collection_run(): void {
+        [$claim] = $this->claims(1);
+        $claim->update(['due_on' => CarbonImmutable::today()->toDateString()]);
+        SepaMandate::query()->create([
+            'organization_id' => $this->organization->id, 'customer_id' => $this->account->customer_id, 'reference' => 'MNDT-MUSTER-2', 'kind' => MandateKind::Recurring->value,
+            'status' => MandateStatus::Active->value, 'signed_on' => '2026-01-10', 'iban' => 'DE02120300000000202051', 'bic' => 'BYLADEM1001', 'account_holder' => 'Familie Muster',
+        ]);
+        $bankAccount = BankAccount::factory()->create(['organization_id' => $this->organization->id]);
+        Setting::set('finance.sepa_creditor_id', 'DE98ZZZ09999999999', SettingScope::Organization, $this->organization);
+        $run = $this->payments()->createCollectionRun($bankAccount, $this->admin, [$claim->id]);
+        $this->assertSame(1, $run->items()->count());
+
+        $this->payments()->recordPayment($this->account, ['amount' => $claim->total->getAmount(), 'paid_on' => CarbonImmutable::today()->toDateString(), 'claim_id' => $claim->id], $this->admin);
+
+        $this->assertSame(ClubFeeClaimStatus::Paid, $claim->refresh()->status);
+        $this->assertNull($claim->payment_run_item_id);
+        $this->assertSame(0, $run->refresh()->items()->count(), 'Die bezahlte Forderung wird nicht mehr eingezogen.');
     }
 }

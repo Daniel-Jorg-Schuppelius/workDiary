@@ -56,14 +56,13 @@
                 ['route' => 'finance.accounting.journal.index', 'icon' => 'receipt_long', 'key' => 'journal'],
                 ['route' => 'finance.accounting.open-items.index', 'icon' => 'account_balance_wallet', 'key' => 'open_items'],
             ] as $card)
-                <a class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs hover:border-primary"
-                   href="{{ route($card['route']) }}">
+                <x-card as="a" class="hover:border-primary" href="{{ route($card['route']) }}">
                     <div class="flex items-center gap-2">
                         <x-icon :name="$card['icon']" class="text-[1.2rem]" />
                         <span class="font-medium">{{ __('accounting.reports.card.' . $card['key'] . '.title') }}</span>
                     </div>
                     <p class="mt-1 text-xs text-muted">{{ __('accounting.reports.card.' . $card['key'] . '.text') }}</p>
-                </a>
+                </x-card>
             @endforeach
         </div>
     </x-index-page>

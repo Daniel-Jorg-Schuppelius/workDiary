@@ -35,6 +35,15 @@
                         <x-icon-btn placement="menu" icon="content_copy" tone="outline" size="sm" type="submit" show-label>{{ __('learning.action.duplicate') }}</x-icon-btn>
                     </form>
                 @endcan
+                {{-- Nur ein nie freigegebener Entwurf (Policy); alles andere wird archiviert. --}}
+                @if ($canDelete)
+                    <x-action-form :action="route('learning.courses.destroy', $course)" method="DELETE"
+                                   :confirm="__('learning.confirm.delete_course', ['title' => $course->title])"
+                                   confirm-icon="delete" confirm-tone="error"
+                                   :confirm-label="__('learning.action.delete_course')">
+                        <x-icon-btn placement="danger" icon="delete" tone="error" size="sm" type="submit" show-label>{{ __('learning.action.delete_course') }}</x-icon-btn>
+                    </x-action-form>
+                @endif
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
@@ -314,7 +323,7 @@
                             <x-icon-btn icon="publish" tone="primary" size="sm" type="submit" show-label>{{ __('learning.action.release') }}</x-icon-btn>
                         </form>
                     @endif
-                    @if ($canEditMeta && $course->status === \App\Enums\Learning\LearningCourseStatus::Released)
+                    @if ($canReopen)
                         <form method="POST" action="{{ route('learning.courses.reopen', $course) }}">
                             @csrf
                             <x-icon-btn icon="lock_open" tone="outline" size="sm" type="submit" show-label>{{ __('learning.action.reopen') }}</x-icon-btn>

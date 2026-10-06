@@ -14,22 +14,9 @@
     @unless ($isDialog)
     <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div class="flex flex-wrap items-center gap-3">
-            <span @class([
-                'badge badge-sm',
-                'badge-success' => $diary->statusTone() === 'done',
-                'badge-info' => $diary->statusTone() === 'progress',
-                'badge-warning' => $diary->statusTone() === 'open',
-                'badge-error' => $diary->statusTone() === 'alert',
-                'badge-ghost' => $diary->statusTone() === 'neutral',
-            ])>{{ $diary->statusLabel() }}</span>
+            <x-status-badge :tone="$diary->status->badgeTone()">{{ $diary->statusLabel() }}</x-status-badge>
             @php($dispatchStatus = app(\App\Services\Dispatch\DispatchStatusResolver::class)->resolve($diary))
-            <span @class([
-                'badge badge-sm badge-outline',
-                'badge-success' => $dispatchStatus->tone() === 'done',
-                'badge-info' => $dispatchStatus->tone() === 'progress',
-                'badge-warning' => $dispatchStatus->tone() === 'open',
-                'badge-ghost' => $dispatchStatus->tone() === 'neutral',
-            ])>{{ __('dispatch.badge_prefix') }}: {{ $dispatchStatus->label() }}</span>
+            <x-status-badge :tone="$dispatchStatus->badgeTone()" outline>{{ __('dispatch.badge_prefix') }}: {{ $dispatchStatus->label() }}</x-status-badge>
             <span class="text-sm text-base-content/70">{{ optional($diary->user)->name ?? '—' }}</span>
             @if ($diary->is_archived)
                 <x-status-badge tone="neutral">{{ __('Archiviert') }}{{ $diary->archived_at ? ' · ' . $diary->archived_at->fdate() : '' }}</x-status-badge>
@@ -70,9 +57,9 @@
                 <p class="font-semibold">{{ __('classification.dataquality.heading') }}</p>
                 <div class="mt-1 flex flex-wrap gap-1.5">
                     @foreach ($dataQualityGaps as $gap)
-                        <span class="badge badge-sm {{ $gap['blocking'] ? 'badge-warning' : 'badge-ghost' }}">
+                        <x-status-badge :tone="$gap['blocking'] ? 'warning' : 'ghost'">
                             {{ __('classification.dataquality.missing', ['domain' => $gap['label']]) }}
-                        </span>
+                        </x-status-badge>
                     @endforeach
                 </div>
             </div>
@@ -153,7 +140,7 @@
 </article>
 
 @if (!empty($legacyEntry))
-    <section class="rounded-box border border-base-300 bg-base-100 p-6 shadow-xs">
+    <x-card as="section" padding="p-6">
         <p class="mb-4 font-['Space_Grotesk'] font-semibold text-base-content">Legacy-Original (tagebuch #{{ $legacyEntry->id }})</p>
         <div class="grid gap-4 md:grid-cols-2">
             <div>
@@ -168,19 +155,19 @@
             @endif
         </div>
         <p class="mt-4 text-xs text-muted">Autor: {{ optional($legacyEntry->author)->uname ?? '—' }} · gelesen={{ $legacyEntry->gelesen }}</p>
-    </section>
+    </x-card>
 @endif
 
-<section id="comments" class="rounded-box border border-base-300 bg-base-100 p-6 shadow-xs">
+<x-card as="section" padding="p-6" id="comments">
     @include('comments._thread', [
         'parent' => $diary,
         'storeRoute' => route('diary.comments.store', $diary),
     ])
-</section>
+</x-card>
 
 @include('communication-notes._panel', ['notable' => $diary, 'notableKind' => 'diary'])
 
-@include('attachments._panel', ['parent' => $diary, 'parentType' => 'diary'])
+<x-attachments-section id="attachments" :attachments="$diary->attachments" upload-type="diary" :upload-id="$diary->sqid" :can-upload="auth()->user()?->can('create', \App\Models\Attachments\Attachment::class) ?? false" details />
 
 @include('open-issues._panel', ['subject' => $diary, 'subjectKind' => 'diary'])
 

@@ -613,4 +613,21 @@ class User extends Authenticatable implements \Illuminate\Contracts\Translation\
     protected function searchableColumns(): array {
         return ['name', 'email'];
     }
+
+    /**
+     * Konten einer Organisation, die einer Gruppe oder einem Team noch nicht
+     * angehören — für die Auswahl „Mitglied hinzufügen".
+     *
+     * @param  array<int, int>  $memberIds
+     * @return \Illuminate\Database\Eloquent\Collection<int, self>
+     */
+    public static function addableTo(int $organizationId, array $memberIds): \Illuminate\Database\Eloquent\Collection {
+        // TENANT-BYPASS: User-Sonderfall; der Org-Filter steht ausdrücklich.
+        return self::query()
+            ->withoutGlobalScopes()
+            ->where('organization_id', $organizationId)
+            ->whereNotIn('id', $memberIds)
+            ->orderBy('name')
+            ->get(['id', 'name']);
+    }
 }

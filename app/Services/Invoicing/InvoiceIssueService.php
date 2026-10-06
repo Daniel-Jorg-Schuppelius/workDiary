@@ -10,6 +10,7 @@
 
 namespace App\Services\Invoicing;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Invoicing\Invoice;
 use App\Services\Integration\LifecycleWebhookPublisher;
 use App\Services\Invoicing\EInvoice\EInvoiceValidationService;
@@ -32,7 +33,7 @@ final class InvoiceIssueService {
 
     /** Würde dieser Beleg beim Ausstellen den Rechnungsstatus bekommen? */
     public function wouldIssue(Invoice $invoice): bool {
-        return $invoice->status === Invoice::STATUS_DRAFT && ! $invoice->isCreditNote() && ! $invoice->isProforma();
+        return $invoice->status === InvoiceStatus::Draft && ! $invoice->isCreditNote() && ! $invoice->isProforma();
     }
 
     /**
@@ -75,7 +76,7 @@ final class InvoiceIssueService {
      * @param  array<string, mixed>  $extra
      */
     public function issue(Invoice $invoice, array $extra = []): Invoice {
-        if ($invoice->status !== Invoice::STATUS_DRAFT) {
+        if ($invoice->status !== InvoiceStatus::Draft) {
             return $invoice;
         }
 
@@ -95,7 +96,7 @@ final class InvoiceIssueService {
         // Festgeschrieben, damit Fälligkeit und E-Rechnung dasselbe Ziel nennen (MVP-996).
         $paymentTermsDays = $invoice->effectivePaymentTermsDays();
         $invoice->update($extra + [
-            'status' => Invoice::STATUS_ISSUED,
+            'status' => InvoiceStatus::Issued,
             'payment_terms_days' => $paymentTermsDays,
             'issued_on' => $fromFile && $invoice->issued_on !== null ? $invoice->issued_on : ($invoice->issued_on ?? now()),
             'due_on' => $fromFile && $invoice->due_on !== null

@@ -10,9 +10,10 @@
 
 @section('title', __('Verleih'))
 @section('nav-title', __('Verleih'))
+@include('partials.page-fill')
 
 @section('content')
-<x-index-page :subtitle="__('Geräte- und Maschinenverleih mit Verfügbarkeit, Übergabe, Rücknahme, Kaution und Abrechnung.')">
+<x-index-page overflow="clip" :subtitle="__('Geräte- und Maschinenverleih mit Verfügbarkeit, Übergabe, Rücknahme, Kaution und Abrechnung.')">
     <x-slot:actions>
         @can('create', \App\Models\Rental\RentalCase::class)
             <x-icon-btn icon="add" tone="primary" size="sm"
@@ -49,40 +50,38 @@
     </x-filter-bar>
 
 
-    <x-card padding="p-0">
-        <x-table bare>
-            <x-slot:head>
-                <tr>
-                    <th>{{ __('Nummer') }}</th>
-                    <th>{{ __('Kunde') }}</th>
-                    <th>{{ __('Leihobjekte') }}</th>
-                    <th>{{ __('Zeitraum') }}</th>
-                    <th>{{ __('Status') }}</th>
-                    <th>{{ __('Verantwortlich') }}</th>
-                    <th></th>
-                </tr>
-            </x-slot:head>
-            @forelse ($cases as $case)
-                <tr>
-                    <td><a href="{{ route('rental.show', $case) }}" class="link font-mono">{{ $case->number }}</a></td>
-                    <td>{{ $case->customer->name ?? '—' }}</td>
-                    <td>{{ $case->caseAssets->map(fn($ca) => $ca->asset?->name)->filter()->implode(', ') ?: '—' }}</td>
-                    <td>
-                        @if ($case->status === \App\Enums\Rental\RentalCaseStatus::Overdue)
-                            <span class="text-error font-medium">{{ $case->starts_at->fdate() }} – {{ $case->ends_at->fdatetime() }}</span>
-                        @else
-                            {{ $case->starts_at->fdate() }} – {{ $case->ends_at->fdate() }}
-                        @endif
-                    </td>
-                    <td><x-status-badge size="md" outline>{{ $case->status->label() }}</x-status-badge></td>
-                    <td>{{ $case->responsible->name ?? '—' }}</td>
-                    <td class="text-right"><x-icon-btn icon="visibility" :href="route('rental.show', $case)" :label="__('Anzeigen')" /></td>
-                </tr>
-            @empty
-                <x-table.empty icon="forklift" :colspan="7" :title="__('Keine Verleihakten — leihfähige Geräte im Gerätepool pflegen und die erste Akte anlegen.')" compact />
-            @endforelse
-        </x-table>
-    </x-card>
+    <x-table scroll="flex">
+        <x-slot:head>
+            <tr>
+                <th>{{ __('Nummer') }}</th>
+                <th>{{ __('Kunde') }}</th>
+                <th>{{ __('Leihobjekte') }}</th>
+                <th>{{ __('Zeitraum') }}</th>
+                <th>{{ __('Status') }}</th>
+                <th>{{ __('Verantwortlich') }}</th>
+                <th></th>
+            </tr>
+        </x-slot:head>
+        @forelse ($cases as $case)
+            <tr class="hover">
+                <td><a href="{{ route('rental.show', $case) }}" class="link font-mono">{{ $case->number }}</a></td>
+                <td>{{ $case->customer->name ?? '—' }}</td>
+                <td>{{ $case->caseAssets->map(fn($ca) => $ca->asset?->name)->filter()->implode(', ') ?: '—' }}</td>
+                <td>
+                    @if ($case->status === \App\Enums\Rental\RentalCaseStatus::Overdue)
+                        <span class="text-error font-medium">{{ $case->starts_at->fdate() }} – {{ $case->ends_at->fdatetime() }}</span>
+                    @else
+                        {{ $case->starts_at->fdate() }} – {{ $case->ends_at->fdate() }}
+                    @endif
+                </td>
+                <td><x-status-badge size="md" outline>{{ $case->status->label() }}</x-status-badge></td>
+                <td>{{ $case->responsible->name ?? '—' }}</td>
+                <td class="text-right"><x-icon-btn icon="visibility" :href="route('rental.show', $case)" :label="__('Anzeigen')" /></td>
+            </tr>
+        @empty
+            <x-table.empty icon="forklift" :colspan="7" :title="__('Keine Verleihakten — leihfähige Geräte im Gerätepool pflegen und die erste Akte anlegen.')" compact />
+        @endforelse
+    </x-table>
 
     <x-pagination :paginator="$cases" standing />
 </x-index-page>

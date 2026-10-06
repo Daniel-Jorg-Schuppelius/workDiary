@@ -24,8 +24,10 @@ class UpdateWhistleblowingCaseStatusRequest extends BaseFormRequest {
     /** @return array<string, mixed> */
     public function rules(): array {
         return [
-            'to' => ['required', Rule::in(array_column(CaseStatus::cases(), 'value'))],
-            'reason' => ['nullable', 'string', 'max:5000'],
+            // „Gelöscht" ist kein wählbarer Status: Gelöscht wird nur über den Löschweg (Schlüsselvernichtung).
+            'to' => ['required', Rule::enum(CaseStatus::class)->except([CaseStatus::Deleted])],
+            // Ein Abschluss ohne Begründung endete sonst als Ausnahme im Dienst (HTTP 500).
+            'reason' => [Rule::requiredIf(fn (): bool => CaseStatus::tryFrom((string) $this->input('to'))?->isClosed() === true), 'nullable', 'string', 'max:5000'],
         ];
     }
 }

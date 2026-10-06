@@ -9,8 +9,7 @@
 @extends('layouts.app')
 @section('title', __('billing.feed.title') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('billing.feed.title'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @php
     use App\Enums\Billing\{DocumentDirection, DocumentKind, DocumentOrigin};
@@ -301,7 +300,7 @@
                 </td>
                 <td>{{ $row->contact_name ?: '—' }}</td>
                 <td>
-                    <span class="wd-badge badge badge-sm badge-ghost">{{ $origin?->label() ?? '—' }}</span>
+                    <x-status-badge class="wd-badge">{{ $origin?->label() ?? '—' }}</x-status-badge>
                 </td>
                 <td>
                     <x-status-badge :tone="$stateTone((string) $row->state)" size="sm">
@@ -315,9 +314,9 @@
                             <span class="ml-1 font-semibold text-error">+{{ $overdueDays }}&nbsp;{{ __('billing.feed.days_short') }}</span>
                         @endif
                         @if ((int) $row->dunning_level > 0)
-                            <span class="wd-badge badge badge-sm badge-warning ml-1">
+                            <x-status-badge tone="warning" class="wd-badge ml-1">
                                 {{ __('billing.feed.dunning_level', ['level' => (int) $row->dunning_level]) }}
-                            </span>
+                            </x-status-badge>
                         @endif
                     @else
                         <span class="text-muted">—</span>

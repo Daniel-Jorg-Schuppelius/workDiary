@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers\Article;
 
+use App\Enums\Article\PriceChangeRequestStatus;
 use App\Enums\Procurement\PriceRounding;
 use App\Enums\User\Permission as P;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
@@ -40,7 +41,7 @@ class PricingMarginRuleController extends Controller {
         return view('pricing-margin-rules.index', [
             'rules' => PricingMarginRule::query()->with('supplier')->orderByDesc('priority')->orderBy('name')->paginate(50),
             'approvalMode' => $this->currentOrganization()->pricingApprovalMode(),
-            'openApprovals' => PriceChangeRequest::query()->where('status', PriceChangeRequest::STATUS_REQUESTED)->count(),
+            'openApprovals' => PriceChangeRequest::query()->where('status', PriceChangeRequestStatus::Requested)->count(),
         ]);
     }
 

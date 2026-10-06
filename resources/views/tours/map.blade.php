@@ -11,8 +11,7 @@
 @section('title', __('Tourenkarte'))
 @section('nav-title', __('Tourenkarte'))
 
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
     <x-page-shell class="overflow-auto lg:overflow-clip">

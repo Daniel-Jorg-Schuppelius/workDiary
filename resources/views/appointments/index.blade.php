@@ -11,7 +11,7 @@
 
 @section('title', __('Terminanfragen'))
 @section('nav-title', __('Terminanfragen'))
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('Portal-Anfragen entscheiden — erst die Bestätigung erzeugt den Dispositions-Eintrag.')">

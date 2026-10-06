@@ -15,6 +15,7 @@ namespace App\Http\Controllers\Sales;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Sales\{CommissionAgent, CommissionRule};
+use App\Support\SortableQuery;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -23,11 +24,21 @@ use Illuminate\View\View;
 class CommissionAgentController extends Controller {
     use ResolvesCurrentOrganization;
 
-    public function index(): View {
+    public function index(Request $request): View {
         Gate::authorize('viewAny', CommissionRule::class);
 
+        $query = CommissionAgent::query();
+        [$sort, $dir] = SortableQuery::apply($query, $request, [
+            'name' => 'name',
+            'company' => 'company',
+            'email' => 'email',
+            'is_active' => 'is_active',
+        ], 'name', 'asc');
+
         return view('sales.commission-agents.index', [
-            'agents' => CommissionAgent::query()->orderByDesc('is_active')->orderBy('name')->get(),
+            'agents' => $query->orderBy('name')->orderBy('id')->paginate(50)->withQueryString(),
+            'sort' => $sort,
+            'dir' => $dir,
             'canManage' => Gate::allows('create', CommissionRule::class),
         ]);
     }
@@ -45,7 +56,7 @@ class CommissionAgentController extends Controller {
             'created_by' => $request->user()?->id,
         ]);
 
-        return redirect()->route('commission-agents.index')->with('success', __('commission.flash.agent_saved'));
+        return redirect()->toList('commission-agents.index')->with('success', __('commission.flash.agent_saved'));
     }
 
     public function edit(CommissionAgent $agent): View {
@@ -58,7 +69,7 @@ class CommissionAgentController extends Controller {
         Gate::authorize('create', CommissionRule::class);
         $agent->update($this->validated($request) + ['is_active' => $request->boolean('is_active')]);
 
-        return redirect()->route('commission-agents.index')->with('success', __('commission.flash.agent_saved'));
+        return redirect()->toList('commission-agents.index')->with('success', __('commission.flash.agent_saved'));
     }
 
     /** @return array{name: string, company: string|null, email: string|null, note: string|null} */

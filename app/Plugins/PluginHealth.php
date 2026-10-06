@@ -37,7 +37,11 @@ final class PluginHealth {
         public readonly ?int $latencyMs = null,
         /** Optionaler stabiler Maschinen-Code (z. B. 'http_401', 'rate_limited'). */
         public readonly ?string $code = null,
-    ) {}
+    ) {
+        // Eine Stufe außerhalb des Katalogs ist ein Plugin-Fehler: der Health-Dienst
+        // fängt ihn ab und meldet „failing“, statt sie in plugin_states zu schreiben.
+        PluginHealthStatus::from($status);
+    }
 
     public static function ok(string $message = '', ?string $code = null): self {
         return new self(self::STATUS_OK, $message, code: $code);

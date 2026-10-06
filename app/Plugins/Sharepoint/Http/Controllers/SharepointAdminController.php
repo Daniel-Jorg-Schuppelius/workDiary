@@ -17,6 +17,7 @@ use App\Plugins\Sharepoint\Models\SharepointConnection;
 use App\Plugins\Sharepoint\{SharepointConfig, SharepointPlugin};
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
 use App\Plugins\Support\{ConnectionOAuthController, PluginOAuthGrant};
+use App\Plugins\Support\OAuthConnectionStatus;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\View\View;
@@ -107,11 +108,11 @@ class SharepointAdminController extends ConnectionOAuthController {
     }
 
     protected function connectedStatus(): string {
-        return SharepointConnection::STATUS_ACTIVE;
+        return OAuthConnectionStatus::Active->value;
     }
 
     protected function disconnectedStatus(): string {
-        return SharepointConnection::STATUS_DISCONNECTED;
+        return OAuthConnectionStatus::Disconnected->value;
     }
 
     /** Wählt Site + Dokumentbibliothek (beides serverseitig über Graph validiert). */
@@ -178,7 +179,7 @@ class SharepointAdminController extends ConnectionOAuthController {
 
         $connection->forceFill([
             'default_folder' => trim((string) $data['default_folder'], '/'),
-            'folder_map' => $this->buildFolderMap($request),
+            'folder_map' => SharepointConnection::folderMapFromInput((array) $request->input('folder_type', []), (array) $request->input('folder_path', [])),
             // Nur bekannte Quellen; leer = nur document (Default via Trait).
             'sources' => array_values(array_intersect(SharepointConnection::SOURCES, (array) ($data['sources'] ?? []))),
             'active' => (bool) ($data['active'] ?? false),
@@ -202,27 +203,5 @@ class SharepointAdminController extends ConnectionOAuthController {
         $connection->audit('sharepoint.mirror_manual', ['by_user_id' => (int) $admin->id]);
 
         return back()->with('success', __('sharepoint::sharepoint.flash.mirror_done'));
-    }
-
-    /**
-     * Baut die Dokumenttyp→Ordner-Map aus paarigen Formularzeilen (nur gültige Typen).
-     *
-     * @return array<string, string>
-     */
-    private function buildFolderMap(Request $request): array {
-        $types = (array) $request->input('folder_type', []);
-        $paths = (array) $request->input('folder_path', []);
-        $valid = array_map(static fn (DocumentType $t): string => $t->value, DocumentType::cases());
-
-        $map = [];
-        foreach ($types as $i => $type) {
-            $type = is_string($type) ? $type : '';
-            $path = isset($paths[$i]) && is_string($paths[$i]) ? trim($paths[$i], '/') : '';
-            if ($type !== '' && $path !== '' && in_array($type, $valid, true)) {
-                $map[$type] = $path;
-            }
-        }
-
-        return $map;
     }
 }

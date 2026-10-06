@@ -42,26 +42,17 @@
         </div>
 
         <x-card :title="__('Stammdaten')">
-            <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 text-sm">
+            <x-detail-grid layout="cells">
                 @if ($building->code)
-                    <div>
-                        <dt class="text-muted">{{ __('Code') }}</dt>
-                        <dd class="font-mono">{{ $building->code }}</dd>
-                    </div>
+                    <x-detail-grid.row :label="__('Code')" class="font-mono">{{ $building->code }}</x-detail-grid.row>
                 @endif
                 @if ($building->year_built)
-                    <div>
-                        <dt class="text-muted">{{ __('Baujahr') }}</dt>
-                        <dd>{{ $building->year_built }}</dd>
-                    </div>
+                    <x-detail-grid.row :label="__('Baujahr')">{{ $building->year_built }}</x-detail-grid.row>
                 @endif
                 @if ($building->notes)
-                    <div class="md:col-span-2">
-                        <dt class="text-muted">{{ __('Notizen') }}</dt>
-                        <dd class="whitespace-pre-line">{{ $building->notes }}</dd>
-                    </div>
+                    <x-detail-grid.row :label="__('Notizen')" full class="whitespace-pre-line">{{ $building->notes }}</x-detail-grid.row>
                 @endif
-            </dl>
+            </x-detail-grid>
         </x-card>
 
         <x-card :title="__('Geschosse') . ' (' . $floors->count() . ')'" padding="p-0">

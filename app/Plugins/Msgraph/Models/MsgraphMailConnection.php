@@ -11,6 +11,7 @@
 namespace App\Plugins\Msgraph\Models;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasConnectionHealth};
+use App\Plugins\Msgraph\Enums\MsgraphConnectionStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
@@ -32,17 +33,13 @@ use Illuminate\Support\Carbon;
  * @property string|null $account_label
  * @property string|null $from_address
  * @property bool $save_to_sent_items
- * @property string $status
+ * @property MsgraphConnectionStatus $status
  * @property Carbon|null $last_sent_at
  */
 class MsgraphMailConnection extends Model {
     use Auditable;
     use BelongsToOrganization;
     use HasConnectionHealth;
-
-    public const STATUS_ACTIVE = 'active';
-
-    public const STATUS_DISCONNECTED = 'disconnected';
 
     protected $table = 'msgraph_mail_connections';
 
@@ -70,6 +67,7 @@ class MsgraphMailConnection extends Model {
         'access_token' => 'encrypted',
         'refresh_token' => 'encrypted',
         'token_expires_at' => 'datetime',
+        'status' => MsgraphConnectionStatus::class,
         'save_to_sent_items' => 'boolean',
         'last_sent_at' => 'datetime',
         'last_error_at' => 'datetime',
@@ -80,7 +78,7 @@ class MsgraphMailConnection extends Model {
 
     /** Betriebsbereit: verbunden, Token vorhanden und nicht auto-deaktiviert (MVP-178). */
     public function isActive(): bool {
-        return $this->status === self::STATUS_ACTIVE
+        return $this->status === MsgraphConnectionStatus::Active
             && trim((string) $this->access_token) !== ''
             && $this->disabled_at === null;
     }

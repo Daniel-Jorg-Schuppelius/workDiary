@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Crisis;
 
+use App\Enums\Crisis\CrisisCommunicationStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -27,7 +28,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $audience
  * @property string $subject
  * @property string $body
- * @property string $status
+ * @property CrisisCommunicationStatus $status
  * @property int|null $approved_by
  * @property \Illuminate\Support\Carbon|null $approved_at
  * @property string|null $channel
@@ -47,7 +48,7 @@ class CrisisCommunication extends Model {
     ];
 
     /** @var array<string, string> */
-    protected $casts = ['approved_at' => 'datetime', 'sent_at' => 'datetime'];
+    protected $casts = ['approved_at' => 'datetime', 'sent_at' => 'datetime', 'status' => CrisisCommunicationStatus::class];
 
     /** @return BelongsTo<CrisisCase, $this> */
     public function crisisCase(): BelongsTo {

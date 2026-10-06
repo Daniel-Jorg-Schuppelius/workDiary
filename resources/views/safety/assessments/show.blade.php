@@ -57,11 +57,11 @@
                     <x-detail-grid.row :label="__('safety.register.field.area')" :value="$assessment->area" />
                     <x-detail-grid.row :label="__('safety.register.field.activity')" :value="$assessment->activity ?? '–'" />
                     <x-detail-grid.row :label="__('safety.register.field.description')" :value="$assessment->description ?? '–'" />
-                    <x-detail-grid.row :label="__('safety.register.field.review_due_on')" :value="$assessment->review_due_on?->format('d.m.Y') ?? '–'" />
+                    <x-detail-grid.row :label="__('safety.register.field.review_due_on')" :value="$assessment->review_due_on?->fdate() ?? '–'" />
                     <x-detail-grid.row :label="__('safety.register.field.created_by')" :value="$assessment->createdBy?->name ?? '–'" />
                     @if ($assessment->approved_at)
                         <x-detail-grid.row :label="__('safety.register.field.approved_by')" :value="$assessment->approvedBy?->name ?? '–'" />
-                        <x-detail-grid.row :label="__('safety.register.field.approved_at')" :value="$assessment->approved_at->orgTz()->format('d.m.Y H:i')" />
+                        <x-detail-grid.row :label="__('safety.register.field.approved_at')" :value="$assessment->approved_at->fdatetime()" />
                     @endif
                     @if ($assessment->supersedes)
                         <x-detail-grid.row :label="__('safety.register.field.supersedes')">

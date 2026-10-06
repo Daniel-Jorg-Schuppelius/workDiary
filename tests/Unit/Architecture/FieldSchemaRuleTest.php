@@ -58,7 +58,6 @@ class FieldSchemaRuleTest extends TestCase {
         'app/Services/Protocol/Fields/' => 'Adapter Protokollpunkt → Feld (liest value_json).',
         'app/Services/Procedure/Fields/' => 'Adapter Prozedurschritt → Feld.',
         'resources/views/components/field-input.blade.php' => 'Eingabe je Typ.',
-        'resources/views/components/field-display.blade.php' => 'Anzeige je Typ.',
     ];
 
     public function test_field_type_catalogs_live_only_in_the_fields_module(): void {

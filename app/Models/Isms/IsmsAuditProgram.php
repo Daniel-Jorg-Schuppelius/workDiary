@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Isms;
 
+use App\Enums\Isms\IsmsAuditProgramStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\{Model, SoftDeletes};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
@@ -30,7 +31,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property string|null $edition
  * @property int $cycle_years
  * @property \Illuminate\Support\Carbon $starts_on
- * @property string $status
+ * @property IsmsAuditProgramStatus $status
  * @property string|null $notes
  */
 class IsmsAuditProgram extends Model {
@@ -57,6 +58,7 @@ class IsmsAuditProgram extends Model {
     protected $casts = [
         'starts_on' => 'date',
         'cycle_years' => 'integer',
+        'status' => IsmsAuditProgramStatus::class,
     ];
 
     /** @return BelongsTo<IsmsScope, $this> */

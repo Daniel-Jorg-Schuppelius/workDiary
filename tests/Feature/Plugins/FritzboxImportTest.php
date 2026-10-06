@@ -10,12 +10,14 @@
 
 namespace Tests\Feature\Plugins;
 
+use App\Enums\Integration\IntegrationInboxStatus;
 use App\Enums\TimeApproval\MonthClosureStatus;
 use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Integration\IntegrationInboxItem;
 use App\Models\Platform\User;
 use App\Models\Time\{MonthClosure, TimeEntry};
-use App\Plugins\Fritzbox\{FritzboxImportService, FritzboxPlugin};
+use App\Plugins\Fritzbox\FritzboxPlugin;
+use App\Plugins\Fritzbox\Services\FritzboxImportService;
 use App\Plugins\Fritzbox\Sources\FritzboxCall;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -119,7 +121,7 @@ class FritzboxImportTest extends TestCase {
 
         $items = IntegrationInboxItem::query()
             ->where('plugin_id', FritzboxPlugin::ID)
-            ->where('status', IntegrationInboxItem::STATUS_OPEN)
+            ->where('status', IntegrationInboxStatus::Open)
             ->get();
         $this->assertCount(2, $items);
         $this->assertSame(['+492219567000'], $items->pluck('group_key')->unique()->values()->all());
@@ -249,6 +251,6 @@ class FritzboxImportTest extends TestCase {
         $this->assertSame(2, $again['skipped']); // bekannter Anruf + <2-min-Anruf
         $this->assertSame(1, $again['pending']); // Inbox-Item bleibt idempotent offen
         $this->assertSame(1, TimeEntry::query()->withoutGlobalScopes()->count());
-        $this->assertSame(1, IntegrationInboxItem::query()->where('status', IntegrationInboxItem::STATUS_OPEN)->count());
+        $this->assertSame(1, IntegrationInboxItem::query()->where('status', IntegrationInboxStatus::Open)->count());
     }
 }

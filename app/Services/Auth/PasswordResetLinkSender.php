@@ -14,6 +14,7 @@ namespace App\Services\Auth;
 
 use App\Models\Platform\User;
 use App\Notifications\PasswordResetLink;
+use App\Support\CanonicalUrl;
 use Illuminate\Support\Facades\{DB, Hash};
 use Illuminate\Support\Str;
 
@@ -51,14 +52,6 @@ final class PasswordResetLinkSender {
      * gewinnt, solange sie gesetzt und nicht die lokale Entwicklungsadresse ist.
      */
     private function resetUrl(string $token, string $email): string {
-        $path = route('password.reset', ['token' => $token], absolute: false);
-        $configured = rtrim((string) config('app.url', ''), '/');
-        $host = parse_url($configured, PHP_URL_HOST);
-
-        $base = is_string($host) && $host !== '' && ! in_array($host, ['localhost', '127.0.0.1'], true)
-            ? $configured
-            : rtrim(url('/'), '/');
-
-        return $base . $path . '?email=' . urlencode($email);
+        return CanonicalUrl::route('password.reset', ['token' => $token]) . '?email=' . urlencode($email);
     }
 }

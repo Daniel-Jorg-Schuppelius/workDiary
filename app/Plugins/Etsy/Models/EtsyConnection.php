@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\Etsy\Models;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasConnectionHealth};
+use App\Plugins\Support\OAuthConnectionStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
@@ -37,7 +38,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $token_expires_at
  * @property Carbon|null $refresh_issued_at
  * @property string|null $scopes
- * @property string $status
+ * @property OAuthConnectionStatus $status
  * @property string|null $webhook_token
  * @property array<string, int|string>|null $checkpoints
  * @property Carbon|null $last_synced_at
@@ -48,10 +49,6 @@ class EtsyConnection extends Model {
     use Auditable;
     use BelongsToOrganization;
     use HasConnectionHealth;
-
-    public const STATUS_ACTIVE = 'active';
-
-    public const STATUS_DISCONNECTED = 'disconnected';
 
     protected $table = 'etsy_connections';
 
@@ -86,6 +83,7 @@ class EtsyConnection extends Model {
         'refresh_token' => 'encrypted',
         'token_expires_at' => 'datetime',
         'refresh_issued_at' => 'datetime',
+        'status' => OAuthConnectionStatus::class,
         'checkpoints' => 'array',
         'last_synced_at' => 'datetime',
         'last_sync_counters' => 'array',
@@ -110,7 +108,7 @@ class EtsyConnection extends Model {
 
     /** Betriebsbereit: verbunden, Token + Shop vorhanden, nicht auto-deaktiviert. */
     public function isActive(): bool {
-        return $this->status === self::STATUS_ACTIVE
+        return $this->status === OAuthConnectionStatus::Active
             && trim((string) $this->access_token) !== ''
             && $this->shop_id !== null
             && $this->disabled_at === null;

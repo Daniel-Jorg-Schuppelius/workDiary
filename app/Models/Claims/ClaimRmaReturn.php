@@ -35,7 +35,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property \Illuminate\Support\Carbon|null $received_at
  * @property string|null $serial_no
  * @property string|null $qty
- * @property string|null $stock_state
+ * @property \App\Enums\Inventory\StockState|null $stock_state
  * @property ClaimRmaDisposition|null $disposition
  * @property \Illuminate\Support\Carbon|null $disposed_at
  */
@@ -56,6 +56,7 @@ class ClaimRmaReturn extends Model {
     protected $casts = [
         'status' => ClaimRmaStatus::class,
         'disposition' => ClaimRmaDisposition::class,
+        'stock_state' => \App\Enums\Inventory\StockState::class,
         'expected_at' => 'date',
         'received_at' => 'datetime',
         'disposed_at' => 'datetime',

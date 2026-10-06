@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Plugins\Nextcloud;
 
-use App\Plugins\Nextcloud\Api\{NextcloudNotFoundException, NextcloudWebdavClient};
+use App\Plugins\Nextcloud\Api\NextcloudWebdavClient;
+use App\Plugins\Nextcloud\Exceptions\NextcloudNotFoundException;
 use App\Plugins\Support\PluginApiClient;
 use GuzzleHttp\{Client, HandlerStack, Middleware};
 use GuzzleHttp\Handler\MockHandler;

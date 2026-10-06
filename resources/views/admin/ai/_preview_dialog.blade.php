@@ -20,7 +20,7 @@
             <p class="text-xs text-muted">{{ __('ai.preview.data_classes_help') }}</p>
             <div class="mt-1 flex flex-wrap gap-1">
                 @forelse ($definition->dataClasses as $dataClass)
-                    <span class="badge badge-outline badge-sm font-mono">{{ $dataClass }}</span>
+                    <x-status-badge tone="plain" outline class="font-mono">{{ $dataClass }}</x-status-badge>
                 @empty
                     <span class="text-muted italic">—</span>
                 @endforelse
@@ -31,7 +31,7 @@
             <h4 class="font-semibold">{{ __('ai.preview.memory_scopes') }}</h4>
             <div class="mt-1 flex flex-wrap gap-1">
                 @forelse ($definition->memoryScopes as $scope)
-                    <span class="badge badge-outline badge-sm">{{ __('ai.field.scope_' . $scope) }}</span>
+                    <x-status-badge tone="plain" outline>{{ __('ai.field.scope_' . $scope) }}</x-status-badge>
                 @empty
                     <span class="text-muted italic">{{ __('ai.preview.no_memory') }}</span>
                 @endforelse
@@ -51,7 +51,7 @@
                 {{ $cloudAllowed ? __('ai.preview.cloud_allowed') : __('ai.preview.cloud_blocked') }}
             </p>
             @if ($unavailableReason !== null)
-                <div class="alert alert-warning mt-2 text-xs">
+                <div role="alert" class="alert alert-warning mt-2 text-xs">
                     <span>{{ __('ai.preview.unavailable_' . $unavailableReason) }}</span>
                 </div>
             @else
@@ -59,13 +59,13 @@
                     @foreach ($candidates as $candidate)
                         <li>
                             {{ $candidate->name }}
-                            <span class="badge badge-{{ $candidate->is_local ? 'success' : 'warning' }} badge-xs">
+                            <x-status-badge :tone="$candidate->is_local ? 'success' : 'warning'" size="xs">
                                 {{ $candidate->is_local ? __('ai.field.local') : __('ai.field.cloud') }}
-                            </span>
+                            </x-status-badge>
                             @if ($loop->first)
-                                <span class="badge badge-info badge-xs">{{ __('ai.preview.primary') }}</span>
+                                <x-status-badge tone="info" size="xs">{{ __('ai.preview.primary') }}</x-status-badge>
                             @else
-                                <span class="badge badge-ghost badge-xs">{{ __('ai.preview.fallback') }}</span>
+                                <x-status-badge size="xs">{{ __('ai.preview.fallback') }}</x-status-badge>
                             @endif
                         </li>
                     @endforeach

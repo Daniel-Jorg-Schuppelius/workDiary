@@ -11,8 +11,7 @@
 
 @section('title', __('CSV-Imports'))
 @section('nav-title', __('CSV-Imports'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('CSV-Imports für :org verwalten — Vorprüfung, Bestätigung & Verlauf.', ['org' => $organization->name])">
@@ -64,7 +63,7 @@
                     <td class="font-mono text-sm">#{{ $run->id }}</td>
                     <td>{{ $run->entity->label() }}</td>
                     <td class="font-mono text-xs">{{ $run->input_filename }}</td>
-                    <td><span class="badge badge-sm">{{ $run->state->label() }}</span></td>
+                    <td><x-status-badge tone="plain">{{ $run->state->label() }}</x-status-badge></td>
                     <td class="text-right tabular-nums">{{ $run->rows_total }}</td>
                     <td class="text-right tabular-nums">{{ $run->rows_created }} / {{ $run->rows_updated }} / {{ $run->rows_skipped }} / {{ $run->rows_failed }}</td>
                     <td class="text-sm">{{ $run->created_at?->orgTz()->format('Y-m-d H:i') }}</td>

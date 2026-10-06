@@ -20,8 +20,7 @@
         @endif
     </div>
 
-    <form method="POST" action="{{ route('customer.catalog.order', $item) }}"
-          class="rounded-box border border-base-300 bg-base-100 p-4 space-y-3">
+    <x-card as="form" class="space-y-3" method="POST" action="{{ route('customer.catalog.order', $item) }}">
         @csrf
 
         @forelse ($fields as $field)
@@ -30,6 +29,6 @@
             <p class="text-sm text-muted">{{ __('Für diese Leistung sind keine weiteren Angaben nötig.') }}</p>
         @endforelse
 
-        <button type="submit" class="btn btn-primary">{{ __('Bestellung absenden') }}</button>
-    </form>
+        <x-button type="submit" size="md">{{ __('Bestellung absenden') }}</x-button>
+    </x-card>
 @endsection

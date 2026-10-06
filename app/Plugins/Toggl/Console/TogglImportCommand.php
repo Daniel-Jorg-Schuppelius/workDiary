@@ -11,7 +11,9 @@
 namespace App\Plugins\Toggl\Console;
 
 use App\Console\Concerns\IteratesOrganizations;
-use App\Plugins\Toggl\{TogglConfig, TogglImportService};
+use App\Plugins\Support\Console\ChecksPluginSwitch;
+use App\Plugins\Toggl\Services\TogglImportService;
+use App\Plugins\Toggl\{TogglConfig, TogglPlugin};
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
 
@@ -21,6 +23,7 @@ use Illuminate\Console\Command;
  * Toggl-Inbox. Läuft im Scheduler sowie manuell aus der Admin-UI.
  */
 class TogglImportCommand extends Command {
+    use ChecksPluginSwitch;
     use IteratesOrganizations;
 
     protected $signature = 'toggl:import ' . self::ORGANIZATION_OPTION . '
@@ -38,7 +41,7 @@ class TogglImportCommand extends Command {
 
         foreach ($organizations as $org) {
             $config = TogglConfig::resolve($org->id);
-            if (! $config['enabled']) {
+            if (! $this->pluginEnabledFor(TogglPlugin::ID, (int) $org->id)) {
                 continue;
             }
             if ($config['api_token'] === null) {

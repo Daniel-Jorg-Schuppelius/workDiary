@@ -9,8 +9,7 @@
 @extends('layouts.app')
 @section('title', __('AVV-Register'))
 @section('nav-title', __('Auftragsverarbeitungsverträge'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 @section('content')
     <x-index-page overflow="clip" :subtitle="__('Auftragsverarbeitungsverträge (AVV) verwalten und Review-Fristen im Blick behalten.')">
         <x-slot:actions>
@@ -38,8 +37,8 @@
                     <td>{{ $a->processor?->name ?? '—' }}</td>
                     <td>v{{ $a->version }}</td>
                     <td><x-status-badge tone="ghost" size="sm">{{ $a->status->label() }}</x-status-badge></td>
-                    <td>{{ $a->valid_until?->format('d.m.Y') ?? '—' }}</td>
-                    <td class="{{ $a->isReviewOverdue() ? 'text-error font-semibold' : '' }}">{{ $a->review_due_at?->format('d.m.Y') ?? '—' }}</td>
+                    <td>{{ $a->valid_until?->fdate() ?? '—' }}</td>
+                    <td class="{{ $a->isReviewOverdue() ? 'text-error font-semibold' : '' }}">{{ $a->review_due_at?->fdate() ?? '—' }}</td>
                 </tr>
             @empty
                 <x-table.empty :colspan="6" :title="__('Keine Verträge erfasst.')" />

@@ -41,10 +41,12 @@ return [
         'fetch' => 'Fetch statements now',
         'suspend' => 'Suspend access',
         'submit' => 'Submit via EBICS',
+        'confirm_not_submitted' => 'Confirm as not submitted',
     ],
     'confirm' => [
         'suspend' => 'Suspend the access at the bank? New keys and a new letter will be needed afterwards.',
         'submit' => 'Send this payment run to the bank via EBICS now? You authorise it at the bank afterwards.',
+        'not_submitted' => 'Have you checked with the bank that this order was not received? Afterwards the payment run can be submitted again.',
     ],
     'last_error' => 'Last error: :error',
     'flash' => [
@@ -55,6 +57,7 @@ return [
         'suspended' => 'Access suspended.',
         'fetched' => ':statements statements imported, :skipped already present.',
         'submitted' => 'Payment run submitted (order :order). Please authorise it at the bank.',
+        'submission_released' => 'Submission recorded as not carried out. The payment run can be submitted again.',
     ],
     'error' => [
         'host_not_allowed' => 'This address is not allowed as bank access.',
@@ -67,6 +70,7 @@ return [
         'bank_rejected' => 'The bank rejected the order.',
         'failed' => 'The connection to the bank failed.',
         'already_submitted' => 'This payment run has already been submitted via EBICS.',
+        'outcome_unclear' => 'The outcome of the last submission is unclear. Please check with the bank first whether the order was received.',
     ],
     'letter' => [
         'title' => 'EBICS initialisation letter (INI/HIA)',
@@ -85,5 +89,6 @@ return [
     ],
     'run' => [
         'submitted' => 'Submitted via EBICS on :date (order :order).',
+        'unclear' => 'EBICS submission started on :date — outcome unclear.',
     ],
 ];

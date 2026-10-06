@@ -93,12 +93,6 @@ class ProtocolSignatureTokenService {
         });
     }
 
-    public function find(string $token): ?ProtocolSignatureToken {
-        return ProtocolSignatureToken::query()
-            ->where('token_hash', CryptoHelper::hash($token))
-            ->first();
-    }
-
     public function open(string $token): ProtocolSignatureToken {
         $record = $this->ensureUsable($token);
 
@@ -218,7 +212,7 @@ class ProtocolSignatureTokenService {
     }
 
     private function ensureUsable(string $token): ProtocolSignatureToken {
-        $record = $this->find($token);
+        $record = ProtocolSignatureToken::findByAccessToken($token);
         if ($record === null) {
             throw new RuntimeException('Signaturlink ist unbekannt oder wurde widerrufen.');
         }

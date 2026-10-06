@@ -1,7 +1,7 @@
 ---
 title: "Organizations & tenants"
 topic: admin.tenants
-version: 1
+version: 2
 audience:
     - admin
 related:
@@ -35,3 +35,9 @@ Risks and irreversible actions:
   permanently (audit-logged). Always offer an export first and check
   retention obligations.
 - Deactivating is the safe alternative when only access should end.
+
+Approvals: in the section of the same name, you define which role sees
+the approval steps of a contract negotiation under “Approvals”, per step
+kind (commercial, technical, HR). Left empty, the default applies:
+Accounting, Team Lead, Personnel Administration. Approval on the record is
+not affected.

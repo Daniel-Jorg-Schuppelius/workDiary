@@ -124,12 +124,7 @@ final class BoqCallOffService {
     }
 
     public function invoice(BoqCallOff $callOff, User $actor): Invoice {
-        if (! $callOff->status->isBillable()) {
-            throw ValidationException::withMessages(['status' => __('gaeb.call_off.error.not_billable')]);
-        }
-        if ($callOff->activeInvoice() !== null) {
-            throw ValidationException::withMessages(['status' => __('gaeb.call_off.error.invoiced')]);
-        }
+        $this->assertInvoiceable($callOff);
         $boq = $callOff->billOfQuantity()->with('project.customer')->firstOrFail();
         $customer = $boq->project?->customer;
         if (! $customer instanceof Customer) {
@@ -137,7 +132,10 @@ final class BoqCallOffService {
         }
 
         return DB::transaction(function () use ($callOff, $boq, $customer, $actor): Invoice {
-            BoqCallOff::query()->whereKey($callOff->id)->lockForUpdate()->first();
+            // Unter der Sperre neu lesen und neu prüfen: die Sperre allein reiht zwei Aufrufe nur hintereinander,
+            // der zweite rechnete denselben Abruf noch einmal ab (Sicherheitsaudit 2026-10-04, li-7).
+            $callOff = BoqCallOff::query()->whereKey($callOff->id)->lockForUpdate()->firstOrFail();
+            $this->assertInvoiceable($callOff);
             $draft = $this->invoices->emptyDraft($customer, $boq->project);
             $draft->forceFill(['bill_of_quantity_id' => $boq->id])->save();
 
@@ -168,5 +166,14 @@ final class BoqCallOffService {
 
             return $draft;
         });
+    }
+
+    private function assertInvoiceable(BoqCallOff $callOff): void {
+        if (! $callOff->status->isBillable()) {
+            throw ValidationException::withMessages(['status' => __('gaeb.call_off.error.not_billable')]);
+        }
+        if ($callOff->activeInvoice() !== null) {
+            throw ValidationException::withMessages(['status' => __('gaeb.call_off.error.invoiced')]);
+        }
     }
 }

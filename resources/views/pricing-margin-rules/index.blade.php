@@ -9,14 +9,13 @@
 @extends('layouts.app')
 @section('title', __('procurement.margin.title') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('procurement.margin.title'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('procurement.margin.subtitle')">
     <x-slot:actions>
         <x-icon-btn icon="fact_check" size="sm" :href="route('pricing-margin-rules.approvals')" show-label>
-            {{ __('procurement.approval.title') }}@if ($openApprovals > 0) <span class="badge badge-warning badge-sm">{{ $openApprovals }}</span>@endif
+            {{ __('procurement.approval.title') }}@if ($openApprovals > 0) <x-status-badge tone="warning">{{ $openApprovals }}</x-status-badge>@endif
         </x-icon-btn>
         <x-icon-btn icon="add" tone="primary" size="sm" data-entry-modal-trigger
                     :href="route('pricing-margin-rules.create')" show-label>{{ __('procurement.margin.action.new_rule') }}</x-icon-btn>
@@ -32,7 +31,7 @@
                     <option value="four_eyes" @selected($approvalMode === 'four_eyes')>{{ __('procurement.approval.mode.four_eyes') }}</option>
                 </select>
             </div>
-            <button type="submit" class="btn btn-sm">{{ __('Speichern') }}</button>
+            <x-button type="submit" tone="plain">{{ __('Speichern') }}</x-button>
             <p class="text-xs opacity-60 basis-full">{{ __('procurement.approval.mode.hint') }}</p>
         </form>
     </x-card>

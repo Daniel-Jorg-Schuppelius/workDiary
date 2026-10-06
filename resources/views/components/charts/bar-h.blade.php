@@ -63,51 +63,37 @@
     ];
 @endphp
 
-<figure class="wd-chart rounded-box border border-base-300 bg-base-100 p-3">
-    <figcaption>
-        <span class="font-['Space_Grotesk'] text-sm font-semibold">{{ $title }}</span>
-        <span class="ml-2 text-xs text-muted">
-            {{ $unit }}
-            @if ($computedAt) · {{ __('Stand:') }} {{ \Illuminate\Support\Carbon::parse($computedAt)->isoFormat('L LT') }} @endif
-        </span>
-    </figcaption>
+<x-charts.frame :title="$title" :unit="$unit" :computed-at="$computedAt" :note="$note"
+                :empty="$points->isEmpty()"
+                :spec="$chartSpec" :view-box="[$width, $height]">
+    <defs>
+        <pattern id="{{ $uid }}" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+            <line x1="0" y1="0" x2="0" y2="6" class="stroke-secondary" stroke-width="2" />
+        </pattern>
+    </defs>
+    <line x1="{{ $labelW }}" y1="{{ $padTop }}" x2="{{ $labelW }}" y2="{{ $height - $padBottom }}" class="stroke-base-300" stroke-width="1" />
+    @foreach ($points as $i => $point)
+        @php
+            $rowY = $padTop + $i * $rowH;
+        @endphp
+        <a @if (!empty($point['url'])) href="{{ $point['url'] }}" @endif tabindex="0"
+           aria-label="{{ $point['x'] }}: {{ $point['y'] }} {{ $unit }}@if ($hasSecond && ($point['y2'] ?? null) !== null), {{ $y2Label }}: {{ $point['y2'] }}@endif">
+            <text x="{{ $labelW - 6 }}" y="{{ round($rowY + $rowH / 2 + 3, 1) }}" text-anchor="end" class="fill-base-content/80 text-[10px]">{{ \Illuminate\Support\Str::limit((string) $point['x'], 30, '…') }}</text>
+            <rect x="{{ $labelW }}" y="{{ round($rowY + ($hasSecond ? 4 : ($rowH - $barH) / 2), 1) }}"
+                  width="{{ round($len((float) $point['y']), 1) }}" height="{{ $barH }}"
+                  class="fill-primary" />
+            <text x="{{ round($labelW + $len((float) $point['y']) + 4, 1) }}" y="{{ round($rowY + ($hasSecond ? 4 : ($rowH - $barH) / 2) + $barH - 3, 1) }}" class="fill-base-content/70 text-[10px] tabular-nums">{{ $point['y'] }}</text>
+            @if ($hasSecond && ($point['y2'] ?? null) !== null)
+                <rect x="{{ $labelW }}" y="{{ round($rowY + $barH + 8, 1) }}"
+                      width="{{ round($len((float) $point['y2']), 1) }}" height="{{ $barH }}"
+                      fill="url(#{{ $uid }})" class="stroke-secondary" stroke-width="1" />
+                <text x="{{ round($labelW + $len((float) $point['y2']) + 4, 1) }}" y="{{ round($rowY + $barH + 8 + $barH - 3, 1) }}" class="fill-base-content/70 text-[10px] tabular-nums">{{ $point['y2'] }}</text>
+            @endif
+        </a>
+    @endforeach
+    <text x="{{ $width - $padR + 48 }}" y="{{ $height - 4 }}" text-anchor="end" class="fill-muted text-[10px]">{{ __('Max.') }} {{ $maxY }}</text>
 
-    @if ($note)
-        <p class="mt-1 text-xs text-muted">{{ $note }}</p>
-    @endif
-
-    @if ($points->isEmpty())
-        <div class="wd-chart-empty">
-            <x-empty-state icon="bar_chart" :title="__('Noch keine Daten für dieses Diagramm.')" compact />
-        </div>
-    @else
-        @include('components.charts._canvas', ['spec' => $chartSpec])
-        <svg viewBox="0 0 {{ $width }} {{ $height }}" role="img" aria-label="{{ $title }}" class="wd-chart-svg mt-2 w-full">
-            <defs>
-                <pattern id="{{ $uid }}" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-                    <line x1="0" y1="0" x2="0" y2="6" class="stroke-secondary" stroke-width="2" />
-                </pattern>
-            </defs>
-            <line x1="{{ $labelW }}" y1="{{ $padTop }}" x2="{{ $labelW }}" y2="{{ $height - $padBottom }}" class="stroke-base-300" stroke-width="1" />
-            @foreach ($points as $i => $point)
-                @php($rowY = $padTop + $i * $rowH)
-                <a @if (!empty($point['url'])) href="{{ $point['url'] }}" @endif tabindex="0"
-                   aria-label="{{ $point['x'] }}: {{ $point['y'] }} {{ $unit }}@if ($hasSecond && ($point['y2'] ?? null) !== null), {{ $y2Label }}: {{ $point['y2'] }}@endif">
-                    <text x="{{ $labelW - 6 }}" y="{{ round($rowY + $rowH / 2 + 3, 1) }}" text-anchor="end" class="fill-base-content/80 text-[10px]">{{ \Illuminate\Support\Str::limit((string) $point['x'], 30, '…') }}</text>
-                    <rect x="{{ $labelW }}" y="{{ round($rowY + ($hasSecond ? 4 : ($rowH - $barH) / 2), 1) }}"
-                          width="{{ round($len((float) $point['y']), 1) }}" height="{{ $barH }}"
-                          class="fill-primary" />
-                    <text x="{{ round($labelW + $len((float) $point['y']) + 4, 1) }}" y="{{ round($rowY + ($hasSecond ? 4 : ($rowH - $barH) / 2) + $barH - 3, 1) }}" class="fill-base-content/70 text-[10px] tabular-nums">{{ $point['y'] }}</text>
-                    @if ($hasSecond && ($point['y2'] ?? null) !== null)
-                        <rect x="{{ $labelW }}" y="{{ round($rowY + $barH + 8, 1) }}"
-                              width="{{ round($len((float) $point['y2']), 1) }}" height="{{ $barH }}"
-                              fill="url(#{{ $uid }})" class="stroke-secondary" stroke-width="1" />
-                        <text x="{{ round($labelW + $len((float) $point['y2']) + 4, 1) }}" y="{{ round($rowY + $barH + 8 + $barH - 3, 1) }}" class="fill-base-content/70 text-[10px] tabular-nums">{{ $point['y2'] }}</text>
-                    @endif
-                </a>
-            @endforeach
-            <text x="{{ $width - $padR + 48 }}" y="{{ $height - 4 }}" text-anchor="end" class="fill-muted text-[10px]">{{ __('Max.') }} {{ $maxY }}</text>
-        </svg>
+    <x-slot:legend>
         @if ($hasSecond)
             <p class="mt-1 flex flex-wrap gap-3 text-xs">
                 <span class="inline-flex items-center gap-1">
@@ -127,30 +113,28 @@
                 </span>
             </p>
         @endif
+    </x-slot:legend>
 
-        <div class="wd-chart-table mt-2 max-h-48 overflow-y-auto">
-            <x-table bare>
-                <x-slot:head>
-                    <tr>
-                        <th>{{ $xLabel ?? __('Kategorie') }}</th>
-                        <th class="text-right">{{ $yLabel ?? $unit }}</th>
-                        @if ($hasSecond)<th class="text-right">{{ $y2Label }}</th>@endif
-                    </tr>
-                </x-slot:head>
-                @foreach ($points as $point)
-                    <tr>
-                        <td>
-                            @if (!empty($point['url']))
-                                <a href="{{ $point['url'] }}" class="link">{{ $point['x'] }}</a>
-                            @else
-                                {{ $point['x'] }}
-                            @endif
-                        </td>
-                        <td class="text-right tabular-nums">{{ $point['y'] }}</td>
-                        @if ($hasSecond)<td class="text-right tabular-nums">{{ $point['y2'] ?? '—' }}</td>@endif
-                    </tr>
-                @endforeach
-            </x-table>
-        </div>
-    @endif
-</figure>
+    <x-slot:head>
+        <tr>
+            <th>{{ $xLabel ?? __('Kategorie') }}</th>
+            <th class="text-right">{{ $yLabel ?? $unit }}</th>
+            @if ($hasSecond)<th class="text-right">{{ $y2Label }}</th>@endif
+        </tr>
+    </x-slot:head>
+    <x-slot:rows>
+        @foreach ($points as $point)
+            <tr>
+                <td>
+                    @if (!empty($point['url']))
+                        <a href="{{ $point['url'] }}" class="link">{{ $point['x'] }}</a>
+                    @else
+                        {{ $point['x'] }}
+                    @endif
+                </td>
+                <td class="text-right tabular-nums">{{ $point['y'] }}</td>
+                @if ($hasSecond)<td class="text-right tabular-nums">{{ $point['y2'] ?? '—' }}</td>@endif
+            </tr>
+        @endforeach
+    </x-slot:rows>
+</x-charts.frame>

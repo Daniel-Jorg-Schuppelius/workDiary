@@ -39,7 +39,9 @@ class SavedReportViewController extends Controller {
             })
             ->with('creator:id,name')
             ->orderBy('name')
-            ->get();
+            ->orderBy('id')
+            ->paginate(25)
+            ->withQueryString();
 
         return view('report-views.index', [
             'views' => $views,

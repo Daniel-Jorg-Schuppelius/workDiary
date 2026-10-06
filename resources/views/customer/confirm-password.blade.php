@@ -20,7 +20,7 @@
 
         <x-validation-errors first />
 
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 space-y-4">
+        <x-card class="space-y-4">
             <p class="text-sm text-base-content/70">{{ __('Diese Aktion ändert Ihre Anmeldemittel. Bitte bestätigen Sie sie mit Ihrem Passwort.') }}</p>
             <form method="POST" action="{{ route('customer.password.confirm.store') }}" class="space-y-3">
                 @csrf
@@ -31,6 +31,6 @@
                 </div>
                 <x-button type="submit" tone="primary" icon="check" class="w-full">{{ __('Bestätigen') }}</x-button>
             </form>
-        </div>
+        </x-card>
     </div>
 @endsection

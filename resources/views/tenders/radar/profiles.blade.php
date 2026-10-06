@@ -10,8 +10,7 @@
 
 @section('title', __('Suchprofile') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('Suchprofile'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @php
     /** @var \Illuminate\Support\Collection<int, \App\Models\Tenders\TenderFilterProfile> $profiles */

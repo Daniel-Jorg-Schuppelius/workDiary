@@ -65,9 +65,7 @@
         </form>
     </x-slot:actions>
 
-    @error('source')
-        <div class="mb-4 rounded-box border border-error/40 bg-error/10 p-3 text-sm text-error">{{ $message }}</div>
-    @enderror
+    <x-validation-errors class="mb-4" />
 
     <x-card class="mb-4">
         <details>
@@ -93,7 +91,7 @@
                 <div class="grid grid-cols-1 gap-3 md:grid-cols-[1fr_1fr_auto] md:items-end">
                     <div class="fieldset">
                         <label class="fieldset-label" for="manual-target">
-                            <span class="badge badge-xs badge-success mr-1">{{ __('Bleibt') }}</span>{{ __('Ziel-Projekt') }}
+                            <x-status-badge tone="success" size="xs" class="mr-1">{{ __('Bleibt') }}</x-status-badge>{{ __('Ziel-Projekt') }}
                         </label>
                         <select name="target" id="manual-target" required x-model="target" :disabled="!customerKey"
                                 class="select select-bordered w-full">
@@ -105,7 +103,7 @@
                     </div>
                     <div class="fieldset">
                         <label class="fieldset-label" for="manual-source">
-                            <span class="badge badge-xs badge-error mr-1">{{ __('Wird gelöscht') }}</span>{{ __('Quell-Projekt') }}
+                            <x-status-badge tone="error" size="xs" class="mr-1">{{ __('Wird gelöscht') }}</x-status-badge>{{ __('Quell-Projekt') }}
                         </label>
                         <select name="source" id="manual-source" required x-model="source" :disabled="!customerKey"
                                 class="select select-bordered w-full">
@@ -115,7 +113,7 @@
                             </template>
                         </select>
                     </div>
-                    <button class="btn btn-sm btn-primary" :disabled="!target || !source || target === source">{{ __('Vergleichen →') }}</button>
+                    <x-button type="submit" ::disabled="!target || !source || target === source">{{ __('Vergleichen →') }}</x-button>
                 </div>
             </form>
         </details>
@@ -138,7 +136,7 @@
                     <span class="font-semibold text-base-content" x-text="selected.length"></span> {{ __('Paar(e) ausgewählt') }}
                 </span>
                 <div class="flex items-center gap-2">
-                    <button type="button" class="btn btn-sm btn-ghost" @click="clear()">{{ __('Auswahl leeren') }}</button>
+                    <x-button tone="ghost" @click="clear()">{{ __('Auswahl leeren') }}</x-button>
                     <form method="POST" action="{{ route('projects.duplicates.bulk-merge') }}"
                           data-confirm-dialog
                           data-confirm-message="{{ __('Alle ausgewählten Paare zusammenführen? Die jeweils markierten Quell-Projekte werden gelöscht — das kann nicht rückgängig gemacht werden.') }}"
@@ -147,7 +145,7 @@
                         <template x-for="pair in selected" :key="pair">
                             <input type="hidden" name="pairs[]" :value="pair">
                         </template>
-                        <button type="submit" class="btn btn-sm btn-primary">{{ __('Ausgewählte zusammenführen →') }}</button>
+                        <x-button type="submit">{{ __('Ausgewählte zusammenführen →') }}</x-button>
                     </form>
                 </div>
             </div>
@@ -165,19 +163,19 @@
                         <input type="checkbox" class="checkbox checkbox-sm" value="{{ $pairKey }}" x-model="selected"
                                aria-label="{{ __('Für Bulk-Zusammenführung auswählen') }}">
                         @php
-                            $confBadge = match ($conf) {
-                                ProjectDuplicateFinder::CONF_EXACT => 'badge-error',
-                                ProjectDuplicateFinder::CONF_LIKELY => 'badge-warning',
-                                default => 'badge-ghost',
+                            $confTone = match ($conf) {
+                                ProjectDuplicateFinder::CONF_EXACT => 'error',
+                                ProjectDuplicateFinder::CONF_LIKELY => 'warning',
+                                default => 'ghost',
                             };
                         @endphp
-                        <span class="badge badge-sm {{ $confBadge }}">{{ $confidenceLabels[$conf] ?? $conf }}</span>
+                        <x-status-badge :tone="$confTone">{{ $confidenceLabels[$conf] ?? $conf }}</x-status-badge>
                         @foreach ($pair['reasons'] as $reason)
-                            <span class="badge badge-sm badge-outline">{{ $reasonLabels[$reason] ?? $reason }}</span>
+                            <x-status-badge tone="plain" outline>{{ $reasonLabels[$reason] ?? $reason }}</x-status-badge>
                         @endforeach
-                        <span class="badge badge-sm badge-ghost">{{ $target->customer?->name ?: __('Intern') }}</span>
+                        <x-status-badge>{{ $target->customer?->name ?: __('Intern') }}</x-status-badge>
                         @if ($target->foreignCustomer)
-                            <span class="badge badge-sm badge-outline badge-accent">{{ __('Endkunde') }}: {{ $target->foreignCustomer->name }}</span>
+                            <x-status-badge tone="accent" outline>{{ __('Endkunde') }}: {{ $target->foreignCustomer->name }}</x-status-badge>
                         @endif
                     </div>
 
@@ -186,11 +184,11 @@
                                 <tr>
                                     <th class="w-40">{{ __('Feld') }}</th>
                                     <th>
-                                        <span class="badge badge-sm badge-success">{{ __('Bleibt') }}</span>
+                                        <x-status-badge tone="success">{{ __('Bleibt') }}</x-status-badge>
                                         <a href="{{ route('projects.show', $target) }}" class="link ml-1">{{ $target->name }}</a>
                                     </th>
                                     <th>
-                                        <span class="badge badge-sm badge-ghost">{{ __('Wird gelöscht') }}</span>
+                                        <x-status-badge>{{ __('Wird gelöscht') }}</x-status-badge>
                                         <a href="{{ route('projects.show', $source) }}" class="link ml-1">{{ $source->name }}</a>
                                     </th>
                                 </tr>
@@ -221,8 +219,7 @@
                     </x-table>
 
                     <div class="mt-3 flex flex-wrap justify-end gap-2">
-                        <a href="{{ route('projects.duplicates.compare', ['target' => $target->sqid, 'source' => $source->sqid]) }}"
-                           class="btn btn-sm btn-ghost">{{ __('Felder wählen…') }}</a>
+                        <x-button :href="route('projects.duplicates.compare', ['target' => $target->sqid, 'source' => $source->sqid])" tone="ghost">{{ __('Felder wählen…') }}</x-button>
                         <form method="POST" action="{{ route('projects.duplicates.merge') }}"
                               data-confirm-dialog
                               data-confirm-message="{{ __('„:source“ endgültig in „:target“ zusammenführen? Das Quell-Projekt wird gelöscht.', ['source' => $source->name, 'target' => $target->name]) }}"
@@ -230,7 +227,7 @@
                             @csrf
                             <input type="hidden" name="source" value="{{ $source->sqid }}">
                             <input type="hidden" name="target" value="{{ $target->sqid }}">
-                            <button class="btn btn-sm btn-primary">{{ __('Zusammenführen →') }}</button>
+                            <x-button type="submit">{{ __('Zusammenführen →') }}</x-button>
                         </form>
                         <form method="POST" action="{{ route('projects.duplicates.merge') }}"
                               data-confirm-dialog
@@ -239,13 +236,13 @@
                             @csrf
                             <input type="hidden" name="source" value="{{ $target->sqid }}">
                             <input type="hidden" name="target" value="{{ $source->sqid }}">
-                            <button class="btn btn-sm btn-outline">{{ __('Umgekehrt') }}</button>
+                            <x-button type="submit" tone="outline">{{ __('Umgekehrt') }}</x-button>
                         </form>
                         <form method="POST" action="{{ route('projects.duplicates.dismiss') }}">
                             @csrf
                             <input type="hidden" name="source" value="{{ $source->sqid }}">
                             <input type="hidden" name="target" value="{{ $target->sqid }}">
-                            <button class="btn btn-sm btn-ghost">{{ __('Kein Duplikat') }}</button>
+                            <x-button type="submit" tone="ghost">{{ __('Kein Duplikat') }}</x-button>
                         </form>
                     </div>
                 </x-card>

@@ -28,14 +28,13 @@
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <x-card class="flex flex-col gap-2 space-y-4">
             <h3 class="card-title">{{ __('Stammdaten') }}</h3>
-            <dl class="space-y-2 text-sm">
-                <div class="flex justify-between"><dt class="text-muted">{{ __('Teamname') }}</dt>
-                    <dd>@if ($team->color)<span class="mr-2 inline-block h-2 w-2 rounded-full" style="background-color: {{ $team->color }}"></span>@endif{{ $team->name }}</dd></div>
-                <div class="flex justify-between"><dt class="text-muted">{{ __('Teamleiter') }}</dt><dd>{{ $team->lead?->name ?? '—' }}</dd></div>
+            <x-detail-grid layout="split">
+                <x-detail-grid.row :label="__('Teamname')">@if ($team->color)<span class="mr-2 inline-block h-2 w-2 rounded-full" style="background-color: {{ $team->color }}"></span>@endif{{ $team->name }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Teamleiter')">{{ $team->lead?->name ?? '—' }}</x-detail-grid.row>
                 @if ($team->description)
-                    <div><dt class="text-muted">{{ __('Beschreibung') }}</dt><dd>{{ $team->description }}</dd></div>
+                    <x-detail-grid.row :label="__('Beschreibung')" layout="cells">{{ $team->description }}</x-detail-grid.row>
                 @endif
-            </dl>
+            </x-detail-grid>
         </x-card>
 
         <x-card class="flex flex-col gap-2 space-y-3">

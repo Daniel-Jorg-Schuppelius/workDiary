@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Communication;
 
-use App\Enums\Communication\CommunicationVisibility;
+use App\Enums\Communication\{CommunicationVisibility, CustomerCircularRecipientStatus, CustomerCircularStatus};
 use App\Mail\CustomerCircularMail;
 use App\Models\Communication\CommunicationNote;
 use App\Models\Communication\{CustomerCircular, CustomerCircularRecipient};
@@ -126,10 +126,10 @@ class CustomerCircularTest extends TestCase {
 
         Mail::assertSent(CustomerCircularMail::class, 1);
         $recipient = CustomerCircularRecipient::query()->firstOrFail();
-        $this->assertSame(CustomerCircularRecipient::STATUS_SENT, $recipient->status);
+        $this->assertSame(CustomerCircularRecipientStatus::Sent, $recipient->status);
         $this->assertSame('a@example.test', $recipient->email);
         $this->assertNotNull($recipient->sent_at);
-        $this->assertSame(CustomerCircular::STATUS_SENT, $circular->fresh()?->status);
+        $this->assertSame(CustomerCircularStatus::Sent, $circular->fresh()?->status);
     }
 
     /**
@@ -144,13 +144,13 @@ class CustomerCircularTest extends TestCase {
         $circular = $this->circular();
 
         // Simulierter Abbruch nach dem ersten Empfänger.
-        $circular->forceFill(['status' => CustomerCircular::STATUS_SENDING])->save();
+        $circular->forceFill(['status' => CustomerCircularStatus::Sending])->save();
         CustomerCircularRecipient::query()->create([
             'organization_id' => $circular->organization_id,
             'customer_circular_id' => $circular->id,
             'customer_id' => $alpha->id,
             'email' => 'a@example.test',
-            'status' => CustomerCircularRecipient::STATUS_SENT,
+            'status' => CustomerCircularRecipientStatus::Sent,
             'sent_at' => now(),
         ]);
 
@@ -158,7 +158,7 @@ class CustomerCircularTest extends TestCase {
 
         Mail::assertSent(CustomerCircularMail::class, 1);
         Mail::assertSent(CustomerCircularMail::class, fn (CustomerCircularMail $mail) => $mail->hasTo('b@example.test'));
-        $this->assertSame(CustomerCircular::STATUS_SENT, $circular->fresh()?->status);
+        $this->assertSame(CustomerCircularStatus::Sent, $circular->fresh()?->status);
         $this->assertSame(2, CustomerCircularRecipient::query()->where('customer_circular_id', $circular->id)->count());
     }
 
@@ -174,8 +174,8 @@ class CustomerCircularTest extends TestCase {
 
         // sync-Queue: der Job reicht sich selbst weiter, bis alle fünf erreicht sind.
         Mail::assertSent(CustomerCircularMail::class, 5);
-        $this->assertSame(CustomerCircular::STATUS_SENT, $circular->fresh()?->status);
-        $this->assertSame(5, CustomerCircularRecipient::query()->where('customer_circular_id', $circular->id)->where('status', CustomerCircularRecipient::STATUS_SENT)->count());
+        $this->assertSame(CustomerCircularStatus::Sent, $circular->fresh()?->status);
+        $this->assertSame(5, CustomerCircularRecipient::query()->where('customer_circular_id', $circular->id)->where('status', CustomerCircularRecipientStatus::Sent)->count());
     }
 
     public function test_customer_without_email_is_recorded_as_skipped(): void {
@@ -186,7 +186,7 @@ class CustomerCircularTest extends TestCase {
         $this->service()->send($this->circular(), $this->admin);
 
         Mail::assertSent(CustomerCircularMail::class, 1);
-        $skipped = CustomerCircularRecipient::query()->where('status', CustomerCircularRecipient::STATUS_SKIPPED)->firstOrFail();
+        $skipped = CustomerCircularRecipient::query()->where('status', CustomerCircularRecipientStatus::Skipped)->firstOrFail();
         $this->assertSame('no_email', $skipped->reason);
         $this->assertNull($skipped->sent_at);
     }
@@ -271,6 +271,21 @@ class CustomerCircularTest extends TestCase {
         $this->actingAs($this->admin)->get(route('circulars.create'))->assertOk();
     }
 
+    public function test_status_labels_render_after_the_send(): void {
+        Mail::fake();
+        $this->customer(['name' => 'Alpha', 'email' => 'a@example.test']);
+        $this->customer(['name' => 'Ohne Mail', 'email' => null]);
+        $circular = $this->circular();
+        $this->service()->send($circular, $this->admin);
+
+        $this->actingAs($this->admin)->get(route('circulars.index'))->assertOk()->assertSee(CustomerCircularStatus::Sent->label());
+        $this->actingAs($this->admin)->get(route('circulars.show', $circular))
+            ->assertOk()
+            ->assertSee(CustomerCircularStatus::Sent->label())
+            ->assertSee(CustomerCircularRecipientStatus::Sent->label())
+            ->assertSee(CustomerCircularRecipientStatus::Skipped->label());
+    }
+
     public function test_store_and_send_via_http(): void {
         Mail::fake();
         $this->customer(['name' => 'Alpha', 'email' => 'a@example.test', 'address_zip' => '30159']);
@@ -288,7 +303,7 @@ class CustomerCircularTest extends TestCase {
         $this->actingAs($this->admin)->post(route('circulars.send', $circular))->assertRedirect();
 
         Mail::assertSent(CustomerCircularMail::class, 1);
-        $this->assertSame(CustomerCircular::STATUS_SENT, $circular->fresh()?->status);
+        $this->assertSame(CustomerCircularStatus::Sent, $circular->fresh()?->status);
     }
 
     public function test_approval_is_off_by_default(): void {

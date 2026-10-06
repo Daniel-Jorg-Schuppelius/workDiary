@@ -11,6 +11,7 @@
 namespace Tests\Feature\Finance;
 
 use App\Enums\Finance\{AllocationKind, BalanceCheck, MatchStatus, TransactionDirection};
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Customer\Customer;
 use App\Models\Finance\{BankStatement, BankTransaction, PaymentAllocation};
 use App\Models\Invoicing\Invoice;
@@ -69,7 +70,7 @@ class PaymentReconciliationSplitTest extends TestCase {
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
             'number' => $number,
-            'status' => Invoice::STATUS_ISSUED,
+            'status' => InvoiceStatus::Issued,
             'type' => Invoice::TYPE_INVOICE,
             'category' => Invoice::CATEGORY_SERVICE,
             'issued_on' => '2026-05-01',
@@ -214,7 +215,7 @@ class PaymentReconciliationSplitTest extends TestCase {
                 'organization_id' => $otherOrg->id,
                 'customer_id' => $otherCustomer->id,
                 'number' => $number,
-                'status' => Invoice::STATUS_ISSUED,
+                'status' => InvoiceStatus::Issued,
                 'type' => Invoice::TYPE_INVOICE,
                 'category' => Invoice::CATEGORY_SERVICE,
                 'currency' => 'EUR',
@@ -275,9 +276,9 @@ class PaymentReconciliationSplitTest extends TestCase {
         // Summe der Teil-Zuordnungen == Buchungsbetrag.
         $this->assertEqualsWithDelta((float) $tx->amount, (float) $tx->allocations()->sum('amount'), 0.001);
 
-        $this->assertSame(Invoice::STATUS_PAID, $first->refresh()->status);
-        $this->assertSame(Invoice::STATUS_PAID, $second->refresh()->status);
-        $this->assertSame(Invoice::STATUS_PAID, $third->refresh()->status);
+        $this->assertSame(InvoiceStatus::Paid, $first->refresh()->status);
+        $this->assertSame(InvoiceStatus::Paid, $second->refresh()->status);
+        $this->assertSame(InvoiceStatus::Paid, $third->refresh()->status);
         $this->assertDatabaseHas('payment_reconciliation_events', [
             'bank_transaction_id' => $tx->id,
             'event' => 'confirmed',
@@ -342,8 +343,8 @@ class PaymentReconciliationSplitTest extends TestCase {
         app(ReconciliationService::class)->processReturn($returnTx, $originalOne, $details[0]['return_reason']);
         app(ReconciliationService::class)->processReturn($returnTx, $originalTwo, $details[1]['return_reason']);
 
-        $this->assertSame(Invoice::STATUS_ISSUED, $first->refresh()->status);
-        $this->assertSame(Invoice::STATUS_ISSUED, $second->refresh()->status);
+        $this->assertSame(InvoiceStatus::Issued, $first->refresh()->status);
+        $this->assertSame(InvoiceStatus::Issued, $second->refresh()->status);
         $this->assertFalse($originalOne->refresh()->trashed());
         $this->assertFalse($originalTwo->refresh()->trashed());
 

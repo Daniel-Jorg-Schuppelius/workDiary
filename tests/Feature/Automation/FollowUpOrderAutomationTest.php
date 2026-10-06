@@ -107,6 +107,38 @@ class FollowUpOrderAutomationTest extends TestCase {
         $this->assertSame([['type' => CreateFollowUpOrderAction::TYPE, 'params' => []]], $rule->actions);
     }
 
+    /** Die Regelliste blättert; sortiert wird über alle Regeln, nicht nur über die Seite. */
+    public function test_rule_list_pages_and_sorts_on_the_server(): void {
+        $admin = $this->orgAdmin();
+        foreach (range(1, 27) as $i) {
+            AutomationRule::create([
+                'organization_id' => $this->organization->id,
+                'name' => sprintf('Regel %02d', $i),
+                'trigger_event' => OpenIssueCreatedTrigger::KEY,
+                'conditions' => ['all' => []],
+                'actions' => [['type' => CreateFollowUpOrderAction::TYPE, 'params' => []]],
+                'is_active' => $i !== 27,
+                'priority' => 100 - $i,
+            ]);
+        }
+
+        $first = $this->actingAs($admin)->get(route('admin.automations.index'))->assertOk();
+        $rules = $first->viewData('rules');
+        $this->assertSame(27, $rules->total());
+        $this->assertCount(25, $rules->items());
+        $this->assertSame('Regel 27', $rules->items()[0]->name);
+
+        $tail = $this->get(route('admin.automations.index', ['page' => 2]))->assertOk()->viewData('rules')->items();
+        $this->assertSame(['Regel 02', 'Regel 01'], array_map(static fn (AutomationRule $rule): string => $rule->name, $tail));
+
+        $byName = $this->get(route('admin.automations.index', ['sort' => 'name', 'dir' => 'desc']))->assertOk();
+        $this->assertSame('Regel 27', $byName->viewData('rules')->items()[0]->name);
+        $this->assertStringContainsString('sort=name&dir=desc', (string) $byName->viewData('rules')->nextPageUrl());
+
+        $inactiveFirst = $this->get(route('admin.automations.index', ['sort' => 'is_active', 'dir' => 'asc']))->assertOk();
+        $this->assertSame('Regel 27', $inactiveFirst->viewData('rules')->items()[0]->name);
+    }
+
     public function test_deviation_with_new_diary_entry_creates_follow_up(): void {
         ['user' => $user, 'stepRun' => $stepRun] = $this->makeRun();
 

@@ -11,8 +11,9 @@
 namespace App\Plugins\OpenProject\Console;
 
 use App\Console\Concerns\IteratesOrganizations;
-use App\Plugins\OpenProject\OpenProjectConfig;
+use App\Plugins\OpenProject\{OpenProjectConfig, OpenProjectPlugin};
 use App\Plugins\OpenProject\Services\OpenProjectExportService;
+use App\Plugins\Support\Console\ChecksPluginSwitch;
 use Illuminate\Console\Command;
 
 /**
@@ -21,6 +22,7 @@ use Illuminate\Console\Command;
  * Aufgabe → Work Package). Idempotent über die `pushed_entry`-Reference.
  */
 class OpenProjectPushCommand extends Command {
+    use ChecksPluginSwitch;
     use IteratesOrganizations;
 
     protected $signature = 'openproject:push ' . self::ORGANIZATION_OPTION;
@@ -37,7 +39,7 @@ class OpenProjectPushCommand extends Command {
 
         foreach ($organizations as $org) {
             $config = OpenProjectConfig::resolve($org->id);
-            if (! $config['enabled']) {
+            if (! $this->pluginEnabledFor(OpenProjectPlugin::ID, (int) $org->id)) {
                 continue;
             }
             if ($config['api_token'] === null || $config['base_url'] === null) {

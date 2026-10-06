@@ -14,6 +14,7 @@ namespace App\Dashboard\Widgets;
 
 use App\Dashboard\Widget;
 use App\Enums\Dashboard\WidgetGroup;
+use App\Enums\Learning\LearningTimeApprovalStatus;
 use App\Enums\User\Permission;
 use App\Models\Learning\{LearningAnswer, LearningCourse, LearningTimeSession};
 use App\Models\Platform\User;
@@ -75,7 +76,7 @@ class LearningGradingQueueWidget extends Widget {
                 ->whereHas('enrollment', fn ($e) => $e->whereIn('learning_course_id', $courseIds)))
             ->count();
         $timeApprovals = LearningTimeSession::query()
-            ->where('approval_status', LearningTimeSession::APPROVAL_PENDING)
+            ->where('approval_status', LearningTimeApprovalStatus::Pending)
             ->whereHas('enrollment', fn ($e) => $e->whereIn('learning_course_id', $courseIds))
             ->count();
 

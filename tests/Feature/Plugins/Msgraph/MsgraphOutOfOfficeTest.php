@@ -12,6 +12,7 @@ namespace Tests\Feature\Plugins\Msgraph;
 
 use App\Models\Absence\Vacation;
 use App\Models\Platform\User;
+use App\Plugins\Msgraph\Enums\MsgraphConnectionStatus;
 use App\Plugins\Msgraph\Models\MsgraphConnection;
 use App\Plugins\Msgraph\Services\MsgraphOutOfOfficeService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -32,7 +33,7 @@ class MsgraphOutOfOfficeTest extends TestCase {
         MsgraphConnection::query()->create([
             'organization_id' => $this->organization->id,
             'access_token' => 'secret-token-1',
-            'status' => MsgraphConnection::STATUS_ACTIVE,
+            'status' => MsgraphConnectionStatus::Active,
         ]);
         $vacation = Vacation::query()->create([
             'organization_id' => $this->organization->id, 'user_id' => $user->id,

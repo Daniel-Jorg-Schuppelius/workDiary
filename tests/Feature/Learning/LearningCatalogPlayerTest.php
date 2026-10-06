@@ -11,6 +11,7 @@
 namespace Tests\Feature\Learning;
 
 use App\Enums\Learning\LearningAudience;
+use App\Enums\Survey\SurveyInvitationStatus;
 use App\Models\Article\Article;
 use App\Models\Customer\Customer;
 use App\Models\Learning\{LearningCourse, LearningEnrollment};
@@ -70,7 +71,7 @@ class LearningCatalogPlayerTest extends TestCase {
             $invitation = SurveyInvitation::query()->create([
                 'organization_id' => $this->organization->id, 'survey_id' => $survey->id, 'learning_course_id' => $course->id,
                 'email' => "p{$i}@example.test", 'context_kind' => 'learning', 'token_hash' => hash('sha256', 'tok' . $i . $course->id),
-                'expires_at' => now()->addWeek(), 'status' => 'responded', 'responded_at' => now(),
+                'expires_at' => now()->addWeek(), 'status' => SurveyInvitationStatus::Responded, 'responded_at' => now(),
             ]);
             $response = SurveyResponse::query()->create([
                 'organization_id' => $this->organization->id, 'survey_id' => $survey->id,

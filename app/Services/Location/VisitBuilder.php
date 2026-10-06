@@ -10,6 +10,7 @@
 
 namespace App\Services\Location;
 
+use App\Enums\Location\LocationVisitStatus;
 use App\Models\Location\{CustomerGeofence, LocationPoint, LocationVisit};
 use App\Models\Platform\User;
 use App\Models\Scopes\OrganizationScope;
@@ -132,7 +133,7 @@ class VisitBuilder {
             'entered_at' => $point->recorded_at,
             'left_at' => $point->recorded_at,
             'sample_count' => 1,
-            'status' => LocationVisit::STATUS_OPEN,
+            'status' => LocationVisitStatus::Open,
             'materialized' => false,
         ]);
         $visit->save();
@@ -159,7 +160,7 @@ class VisitBuilder {
 
         $visit->left_at = $leftAt;
         $visit->duration_min = $duration;
-        $visit->status = LocationVisit::STATUS_CLOSED;
+        $visit->status = LocationVisitStatus::Closed;
         $visit->save();
     }
 
@@ -177,7 +178,7 @@ class VisitBuilder {
             ->withoutGlobalScope(OrganizationScope::class)
             ->where('organization_id', $orgId)
             ->where('user_id', $userId)
-            ->where('status', LocationVisit::STATUS_OPEN)
+            ->where('status', LocationVisitStatus::Open)
             ->latest('entered_at')
             ->first();
 

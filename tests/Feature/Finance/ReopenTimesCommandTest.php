@@ -12,6 +12,7 @@ namespace Tests\Feature\Finance;
 
 use App\Enums\Billing\BillingAgreementMode;
 use App\Enums\Finance\{TransferChannel, TransferTarget};
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Billing\CustomerBillingAgreement;
 use App\Models\Customer\Customer;
 use App\Models\Finance\{BillingTransfer, BillingTransferItem};
@@ -88,7 +89,7 @@ class ReopenTimesCommandTest extends TestCase {
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
             'number' => 'R-0001',
-            'status' => Invoice::STATUS_ISSUED,
+            'status' => InvoiceStatus::Issued,
             'currency' => 'EUR',
             'tax_rate' => '19.00',
             'created_by' => $this->user->id,

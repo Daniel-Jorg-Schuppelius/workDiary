@@ -19,7 +19,7 @@
     @else
         <div class="grid gap-3 sm:grid-cols-2">
             @foreach ($rows as $row)
-                <div class="rounded-box border border-base-300 bg-base-100 px-4 py-3 shadow-xs">
+                <x-card padding="px-4 py-3">
                     <p class="text-xs uppercase tracking-wider text-muted">{{ $row->direction->label() }}</p>
                     <p class="mt-1 font-['Space_Grotesk'] text-2xl font-bold tabular-nums">
                         {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $row->total, 2, withThousandsSeparator: true) }} €
@@ -27,7 +27,7 @@
                     <p class="text-xs {{ (float) $row->overdue > 0 ? 'text-error' : 'text-muted' }}">
                         {{ __('Überfällig') }}: {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $row->overdue, 2, withThousandsSeparator: true) }} €
                     </p>
-                </div>
+                </x-card>
             @endforeach
         </div>
     @endif

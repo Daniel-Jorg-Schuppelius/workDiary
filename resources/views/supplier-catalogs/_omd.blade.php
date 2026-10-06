@@ -27,7 +27,7 @@
     </div>
 
     @unless ($omd['configured'])
-        <div class="alert alert-warning text-sm mt-3">{{ __('procurement.omd.lookup.not_configured') }}</div>
+        <div role="alert" class="alert alert-warning text-sm mt-3">{{ __('procurement.omd.lookup.not_configured') }}</div>
     @else
         <form method="GET" action="{{ route('supplier-catalogs.show', $source) }}" class="mt-3 grid gap-3 md:grid-cols-4 items-end">
             <x-select-field name="omd_by" :label="__('procurement.omd.lookup.by')">
@@ -39,49 +39,48 @@
             <x-input-field name="omd_manufacturer_id" maxlength="100" :label="__('procurement.omd.lookup.manufacturer_id')" :value="$omd['manufacturer_id']" :hint="__('procurement.omd.lookup.manufacturer_id_hint')" />
             <div class="flex items-end gap-2">
                 <x-input-field name="omd_manufacturer_id_type" maxlength="20" :label="__('procurement.omd.lookup.manufacturer_id_type')" :value="$omd['manufacturer_id_type']" />
-                <button type="submit" class="btn btn-sm btn-primary">{{ __('procurement.omd.lookup.action') }}</button>
+                <x-button type="submit">{{ __('procurement.omd.lookup.action') }}</x-button>
             </div>
         </form>
 
         @if ($omd['error'] !== null)
-            <div class="alert alert-error text-sm mt-3">{{ $omd['error'] }}</div>
+            <div role="alert" class="alert alert-error text-sm mt-3">{{ $omd['error'] }}</div>
         @elseif ($product !== null)
             <div class="mt-4 grid gap-4 md:grid-cols-[1fr_auto]">
                 <div class="space-y-2 text-sm">
                     @if ($product->isAlternative() || $product->isFollowup())
-                        <div class="alert alert-warning text-sm">{{ __($product->isFollowup() ? 'procurement.omd.lookup.followup' : 'procurement.omd.lookup.alternative', ['no' => $product->supplierPid()]) }}</div>
+                        <div role="alert" class="alert alert-warning text-sm">{{ __($product->isFollowup() ? 'procurement.omd.lookup.followup' : 'procurement.omd.lookup.alternative', ['no' => $product->supplierPid()]) }}</div>
                     @endif
                     <div class="text-base font-semibold">{{ $record['name'] ?? $product->supplierPid() }}</div>
-                    <dl class="grid gap-x-4 gap-y-1 sm:grid-cols-[auto_1fr]">
-                        <dt class="text-muted">{{ __('procurement.catalog.map.external_no') }}</dt><dd class="font-mono">{{ $product->supplierPid() }}</dd>
+                    <x-detail-grid>
+                        <x-detail-grid.row :label="__('procurement.catalog.map.external_no')" class="font-mono">{{ $product->supplierPid() }}</x-detail-grid.row>
                         @if (! empty($record['gtin']))
-                            <dt class="text-muted">{{ __('procurement.catalog.map.gtin') }}</dt><dd class="font-mono">{{ $record['gtin'] }}</dd>
+                            <x-detail-grid.row :label="__('procurement.catalog.map.gtin')" class="font-mono">{{ $record['gtin'] }}</x-detail-grid.row>
                         @endif
                         @if (! empty($record['manufacturer_no']))
-                            <dt class="text-muted">{{ __('procurement.catalog.map.manufacturer_no') }}</dt><dd>{{ $record['manufacturer_no'] }}</dd>
+                            <x-detail-grid.row :label="__('procurement.catalog.map.manufacturer_no')">{{ $record['manufacturer_no'] }}</x-detail-grid.row>
                         @endif
                         @if (! empty($record['purchase_price']))
-                            <dt class="text-muted">{{ __('procurement.omd.lookup.net_price') }}</dt>
-                            <dd>{{ $money($record['purchase_price']) }} {{ $record['currency'] ?? 'EUR' }} / {{ $record['price_unit_amount'] ?? 1 }} {{ $record['unit'] ?? '' }}@if (($record['price_type'] ?? '') === 'list') <span class="text-xs opacity-60">({{ __('procurement.omd.lookup.list_only') }})</span>@endif</dd>
+                            <x-detail-grid.row :label="__('procurement.omd.lookup.net_price')">{{ $money($record['purchase_price']) }} {{ $record['currency'] ?? 'EUR' }} / {{ $record['price_unit_amount'] ?? 1 }} {{ $record['unit'] ?? '' }}@if (($record['price_type'] ?? '') === 'list') <span class="text-xs opacity-60">({{ __('procurement.omd.lookup.list_only') }})</span>@endif</x-detail-grid.row>
                         @elseif (($record['price_type'] ?? '') === 'on_request')
-                            <dt class="text-muted">{{ __('procurement.omd.lookup.net_price') }}</dt><dd>{{ __('procurement.omd.lookup.on_request') }}</dd>
+                            <x-detail-grid.row :label="__('procurement.omd.lookup.net_price')">{{ __('procurement.omd.lookup.on_request') }}</x-detail-grid.row>
                         @endif
                         @if (! empty($record['list_price']))
-                            <dt class="text-muted">{{ __('procurement.catalog.map.list_price') }}</dt><dd>{{ $money($record['list_price']) }} {{ $record['currency'] ?? 'EUR' }}</dd>
+                            <x-detail-grid.row :label="__('procurement.catalog.map.list_price')">{{ $money($record['list_price']) }} {{ $record['currency'] ?? 'EUR' }}</x-detail-grid.row>
                         @endif
                         @if (! empty($extra['omd_rrp']))
-                            <dt class="text-muted">{{ __('procurement.omd.lookup.rrp') }}</dt><dd>{{ $money($extra['omd_rrp']) }} {{ $record['currency'] ?? 'EUR' }}</dd>
+                            <x-detail-grid.row :label="__('procurement.omd.lookup.rrp')">{{ $money($extra['omd_rrp']) }} {{ $record['currency'] ?? 'EUR' }}</x-detail-grid.row>
                         @endif
                         @if (isset($record['lead_time_days']))
-                            <dt class="text-muted">{{ __('procurement.catalog.map.lead_time_days') }}</dt><dd>{{ $record['lead_time_days'] }}</dd>
+                            <x-detail-grid.row :label="__('procurement.catalog.map.lead_time_days')">{{ $record['lead_time_days'] }}</x-detail-grid.row>
                         @endif
                         @if (! empty($extra['omd_expiring']) && strtolower((string) $extra['omd_expiring']) !== 'no' && (string) $extra['omd_expiring'] !== 'false')
-                            <dt class="text-muted">{{ __('procurement.omd.lookup.expiring') }}</dt><dd>{{ $extra['omd_expiring_date'] ?? $extra['omd_expiring'] }}@if (! empty($extra['omd_successor'])) · {{ __('procurement.omd.lookup.successor', ['no' => $extra['omd_successor']]) }}@endif</dd>
+                            <x-detail-grid.row :label="__('procurement.omd.lookup.expiring')">{{ $extra['omd_expiring_date'] ?? $extra['omd_expiring'] }}@if (! empty($extra['omd_successor'])) · {{ __('procurement.omd.lookup.successor', ['no' => $extra['omd_successor']]) }}@endif</x-detail-grid.row>
                         @endif
                         @if (! empty($record['product_url']))
-                            <dt class="text-muted">{{ __('procurement.omd.lookup.deep_link') }}</dt><dd><a href="{{ $record['product_url'] }}" target="_blank" rel="noopener" class="link break-all">{{ $record['product_url'] }}</a></dd>
+                            <x-detail-grid.row :label="__('procurement.omd.lookup.deep_link')"><x-external-link :url="$record['product_url']" class="link break-all" /></x-detail-grid.row>
                         @endif
-                    </dl>
+                    </x-detail-grid>
                     @if (! empty($record['description']))
                         <p class="text-sm opacity-80 line-clamp-3">{{ $record['description'] }}</p>
                     @endif
@@ -95,7 +94,7 @@
                     @if (! empty($extra['etim']))
                         <div class="flex flex-wrap gap-1">
                             @foreach (array_slice($extra['etim'], 0, 12, true) as $name => $value)
-                                <span class="badge badge-sm badge-ghost">{{ $name }}: {{ $value }}</span>
+                                <x-status-badge>{{ $name }}: {{ $value }}</x-status-badge>
                             @endforeach
                         </div>
                     @endif
@@ -110,7 +109,7 @@
                                 <input type="hidden" name="omd_value" value="{{ $omd['value'] }}">
                                 <input type="hidden" name="omd_manufacturer_id" value="{{ $omd['manufacturer_id'] }}">
                                 <input type="hidden" name="omd_manufacturer_id_type" value="{{ $omd['manufacturer_id_type'] }}">
-                                <button type="submit" class="btn btn-sm btn-primary">{{ __($omd['item'] !== null ? 'procurement.omd.lookup.update_item' : 'procurement.omd.lookup.adopt') }}</button>
+                                <x-button type="submit">{{ __($omd['item'] !== null ? 'procurement.omd.lookup.update_item' : 'procurement.omd.lookup.adopt') }}</x-button>
                             </form>
                         @endif
                     </div>

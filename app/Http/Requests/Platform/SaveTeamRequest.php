@@ -28,7 +28,7 @@ class SaveTeamRequest extends BaseFormRequest {
         return [
             'name' => ['required', 'string', 'max:120'],
             'description' => ['nullable', 'string', 'max:500'],
-            'color' => ['nullable', 'string', 'max:16'],
+            'color' => ['nullable', 'string', 'max:16', new \App\Rules\ColorValue],
             'lead_user_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization()],
             'member_ids' => ['array'],
             'member_ids.*' => ['integer', new \App\Rules\ExistsInCurrentOrganization()],

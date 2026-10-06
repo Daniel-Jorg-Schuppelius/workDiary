@@ -57,7 +57,7 @@
                 </td>
                 <td class="text-sm">
                     @foreach ($row['uses'] as $use)
-                        <span class="badge badge-ghost badge-sm tabular-nums">{{ $use->horse?->name ?? '' }} {{ $use->minutes }} min</span>
+                        <x-status-badge class="tabular-nums">{{ $use->horse?->name ?? '' }} {{ $use->minutes }} min</x-status-badge>
                     @endforeach
                     @if ($canParticipants && $horse)
                         <form method="POST" action="{{ route('club.events.horses.use', $event) }}" class="mt-1 flex items-center gap-1" data-entry-form>

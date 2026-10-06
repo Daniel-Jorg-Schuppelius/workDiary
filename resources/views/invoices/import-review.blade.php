@@ -42,7 +42,7 @@
 
     @php $warnings = (array) ($extraction['warnings'] ?? []); @endphp
     @if ($warnings !== [])
-        <div class="alert alert-warning">
+        <div role="alert" class="alert alert-warning">
             <x-icon name="warning" />
             <ul class="list-inside list-disc text-sm">
                 @foreach ($warnings as $warning)

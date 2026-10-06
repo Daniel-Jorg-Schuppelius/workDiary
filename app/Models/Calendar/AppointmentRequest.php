@@ -10,6 +10,7 @@
 
 namespace App\Models\Calendar;
 
+use App\Enums\Calendar\AppointmentRequestStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Customer\Customer;
 use App\Models\Diary\DiaryEntry;
@@ -31,7 +32,7 @@ use Illuminate\Support\Carbon;
  * @property int $organization_id
  * @property string $source
  * @property string $source_uri
- * @property string $status
+ * @property AppointmentRequestStatus $status
  * @property int|null $customer_id
  * @property int|null $portal_user_id
  * @property int|null $lead_id
@@ -70,16 +71,6 @@ class AppointmentRequest extends Model {
     public const SOURCE_CALENDLY = 'calendly';
 
     public const SOURCE_PORTAL = 'portal';
-
-    public const STATUS_REQUESTED = 'requested';
-
-    public const STATUS_CONFIRMED = 'confirmed';
-
-    public const STATUS_DECLINED = 'declined';
-
-    public const STATUS_CANCELED = 'canceled';
-
-    public const STATUS_SUPERSEDED = 'superseded';
 
     protected $table = 'appointment_requests';
 
@@ -121,6 +112,7 @@ class AppointmentRequest extends Model {
 
     /** @var array<string, string> */
     protected $casts = [
+        'status' => AppointmentRequestStatus::class,
         'start_at' => 'datetime',
         'end_at' => 'datetime',
         'decided_at' => 'datetime',
@@ -136,27 +128,7 @@ class AppointmentRequest extends Model {
     }
 
     public function isPending(): bool {
-        return $this->status === self::STATUS_REQUESTED;
-    }
-
-    public function statusLabel(): string {
-        return match ($this->status) {
-            self::STATUS_REQUESTED => __('angefragt'),
-            self::STATUS_CONFIRMED => __('bestätigt'),
-            self::STATUS_DECLINED => __('abgelehnt'),
-            self::STATUS_CANCELED => __('storniert'),
-            self::STATUS_SUPERSEDED => __('ersetzt'),
-            default => __('Unbekannt'),
-        };
-    }
-
-    public function statusTone(): string {
-        return match ($this->status) {
-            self::STATUS_REQUESTED => 'info',
-            self::STATUS_CONFIRMED => 'success',
-            self::STATUS_DECLINED => 'error',
-            default => 'ghost',
-        };
+        return $this->status === AppointmentRequestStatus::Requested;
     }
 
     public function sourceLabel(): string {

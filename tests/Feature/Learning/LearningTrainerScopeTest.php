@@ -90,6 +90,24 @@ class LearningTrainerScopeTest extends TestCase {
         );
     }
 
+    /** Löschen folgt derselben Sicht wie Lesen und Ändern: Ein fremder Entwurf ließ sich per Adresse löschen. */
+    public function test_mit_schalter_loescht_die_autorin_nur_eigene_entwuerfe(): void {
+        $this->enableScoping();
+        $author = $this->author();
+        $own = $this->course('Eigen', $author);
+        $foreign = $this->course('Fremd', $this->manager());
+
+        $this->actingAs($author)->delete(route('learning.courses.destroy', $foreign))->assertForbidden();
+        $this->assertDatabaseHas('learning_courses', ['id' => $foreign->id]);
+
+        $this->actingAs($author)->delete(route('learning.courses.destroy', $own))->assertRedirect(route('learning.courses.index'));
+        $this->assertDatabaseMissing('learning_courses', ['id' => $own->id]);
+
+        // Die Verwaltung sieht alles und löscht auch den fremden Entwurf.
+        $this->actingAs($this->manager())->delete(route('learning.courses.destroy', $foreign))->assertRedirect(route('learning.courses.index'));
+        $this->assertDatabaseMissing('learning_courses', ['id' => $foreign->id]);
+    }
+
     public function test_verwaltung_und_admin_sehen_weiterhin_alles(): void {
         $this->enableScoping();
         $foreign = $this->course('Fremd', $this->author());

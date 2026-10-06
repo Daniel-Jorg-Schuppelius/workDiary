@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Reporting;
 
+use App\Enums\Applications\{ApplicationContractReviewStatus, ApplicationOpportunityStatus, JobApplicationStatus};
 use App\Enums\User\Permission as P;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
@@ -49,9 +50,9 @@ class ApplicationsReportController extends Controller {
         $from = $fromDate->toDateString();
         $to = $toDate->toDateString();
 
-        // Status = Bewerbungs-Workflow (JobApplication::STATUSES) — wirkt nur
+        // Status = Bewerbungs-Workflow (JobApplicationStatus) — wirkt nur
         // auf den Recruiting-Block; Ausschreibungen tragen ein anderes Enum.
-        $filters = $this->standardFilters($request, ['status'], $fromDate, $toDate, JobApplication::STATUSES);
+        $filters = $this->standardFilters($request, ['status'], $fromDate, $toDate, JobApplicationStatus::values());
 
         $tenders = $canTender ? $this->aggregateTenders($from, $to) : null;
         $recruiting = $canRecruiting ? $this->aggregateRecruiting($from, $to, $filters->status) : null;
@@ -59,11 +60,6 @@ class ApplicationsReportController extends Controller {
 
         if (in_array($request->query('export'), ['csv', 'xlsx'], true)) {
             return $this->exportCsv($tenders, $recruiting, $contracts, $from, $to, $filters->toAuditArray(), $request);
-        }
-
-        $statusOptions = [];
-        foreach (JobApplication::STATUSES as $status) {
-            $statusOptions[$status] = (string) __("values.$status");
         }
 
         return view('reports.applications', [
@@ -74,7 +70,7 @@ class ApplicationsReportController extends Controller {
             'contracts' => $contracts,
             'standardFilters' => $filters,
             'filterFields' => ['status'],
-            'statusOptions' => $statusOptions,
+            'statusOptions' => JobApplicationStatus::options(),
             'monthlySeries' => $this->monthlySeries($recruiting['monthly'] ?? [], $fromDate, $toDate),
             'periodPhrase' => $this->periodPhrase($this->bucketGranularity($fromDate, $toDate)),
             'periodAxis' => $this->periodAxisLabel($this->bucketGranularity($fromDate, $toDate)),
@@ -106,17 +102,17 @@ class ApplicationsReportController extends Controller {
 
     /**
      * Bewerber-Funnel: Anzahl je Workflow-Stufe in Workflow-Reihenfolge
-     * (JobApplication::STATUSES) — bewusst NICHT nach Größe sortiert.
+     * (JobApplicationStatus) — bewusst NICHT nach Größe sortiert.
      *
      * @param  array<string, int>  $pipeline
      * @return list<array{x: string, y: int}>
      */
     private function funnelSeries(array $pipeline): array {
         $series = [];
-        foreach (JobApplication::STATUSES as $status) {
-            $count = $pipeline[$status] ?? 0;
+        foreach (JobApplicationStatus::cases() as $status) {
+            $count = $pipeline[$status->value] ?? 0;
             if ($count > 0) {
-                $series[] = ['x' => (string) __("values.$status"), 'y' => $count];
+                $series[] = ['x' => $status->label(), 'y' => $count];
             }
         }
 
@@ -133,14 +129,14 @@ class ApplicationsReportController extends Controller {
         $decided = 0;
 
         foreach (ApplicationOpportunity::query()->whereBetween('created_at', [$from . ' 00:00:00', $to . ' 23:59:59'])->get(['status', 'estimated_value', 'loss_reason']) as $opportunity) {
-            $status = (string) $opportunity->status;
-            $pipeline[$status] ??= ['count' => 0, 'value' => 0.0];
-            $pipeline[$status]['count']++;
-            $pipeline[$status]['value'] += (float) $opportunity->estimated_value;
+            $status = $opportunity->status;
+            $pipeline[$status->value] ??= ['count' => 0, 'value' => 0.0];
+            $pipeline[$status->value]['count']++;
+            $pipeline[$status->value]['value'] += (float) $opportunity->estimated_value;
 
-            if (in_array($status, ['won', 'lost'], true)) {
+            if (in_array($status, [ApplicationOpportunityStatus::Won, ApplicationOpportunityStatus::Lost], true)) {
                 $decided++;
-                if ($status === 'won') {
+                if ($status === ApplicationOpportunityStatus::Won) {
                     $won++;
                 } elseif ($opportunity->loss_reason !== null) {
                     $reason = (string) $opportunity->loss_reason;
@@ -155,7 +151,7 @@ class ApplicationsReportController extends Controller {
             'win_rate' => $decided > 0 ? round($won / $decided * 100, 1) : null,
             'loss_reasons' => array_slice($lossReasons, 0, 10, true),
             'upcoming' => ApplicationOpportunity::query()
-                ->whereIn('status', ApplicationOpportunity::OPEN_STATUSES)
+                ->whereIn('status', ApplicationOpportunityStatus::open())
                 ->whereNotNull('submission_deadline')
                 ->whereBetween('submission_deadline', DateRange::days(now(), now()->addDays(14)))
                 ->count(),
@@ -177,14 +173,14 @@ class ApplicationsReportController extends Controller {
             ->when($status !== null, fn($q) => $q->where('status', $status))
             ->get(['status', 'source', 'received_at', 'created_at', 'updated_at']);
         foreach ($applications as $application) {
-            $pipeline[(string) $application->status] = ($pipeline[(string) $application->status] ?? 0) + 1;
+            $pipeline[$application->status->value] = ($pipeline[$application->status->value] ?? 0) + 1;
             $sources[(string) $application->source] = ($sources[(string) $application->source] ?? 0) + 1;
             $date = $application->received_at ?? $application->created_at;
             $monthKey = $date !== null ? ChartBucket::keyLabel($granularity, CarbonImmutable::parse((string) $date))[0] : null;
             if ($monthKey !== null) {
                 $monthly[$monthKey] = ($monthly[$monthKey] ?? 0) + 1;
             }
-            if ($application->status === 'accepted' && $application->received_at !== null) {
+            if ($application->status === JobApplicationStatus::Accepted && $application->received_at !== null) {
                 $acceptDays[] = (float) $application->received_at->diffInDays($application->updated_at);
             }
         }
@@ -204,7 +200,7 @@ class ApplicationsReportController extends Controller {
         return [
             'open' => ApplicationContractNegotiation::query()->whereNull('decision')->count(),
             'open_blockers' => \App\Models\Applications\ApplicationContractReview::query()
-                ->where('severity', 'blocker')->where('status', 'open')->count(),
+                ->where('severity', 'blocker')->where('status', ApplicationContractReviewStatus::Open)->count(),
             'due_soon' => ApplicationContractNegotiation::query()
                 ->whereNull('decision')
                 ->whereNotNull('due_on')

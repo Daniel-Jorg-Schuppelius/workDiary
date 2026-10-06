@@ -17,9 +17,9 @@
     <ul class="grid gap-2 sm:grid-cols-2">
         @forelse ($topics as $topic)
             <li>
-                <a href="{{ route('customer.help.show', $topic->topic) }}" class="block rounded-box border border-base-300 bg-base-100 p-3 hover:bg-base-200">
+                <x-card as="a" padding="p-3" class="block hover:bg-base-200" href="{{ route('customer.help.show', $topic->topic) }}">
                     <span class="font-medium">{{ $topic->title }}</span>
-                </a>
+                </x-card>
             </li>
         @empty
             <li class="text-sm text-base-content/70">{{ __('customer_help.empty') }}</li>

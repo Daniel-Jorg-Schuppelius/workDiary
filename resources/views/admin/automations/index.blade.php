@@ -11,8 +11,7 @@
 
 @section('title', __('Automatisierungen'))
 @section('nav-title', __('Automatisierungen'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('Regeln werten bei festgelegten Ereignissen Bedingungen aus und führen Aktionen automatisch aus (z. B. Kleinbetragsspesen genehmigen). Jede Auswertung wird im Audit-Log protokolliert.')">
@@ -23,14 +22,17 @@
                     show-label>{{ __('Neue Regel anlegen (JSON)') }}</x-icon-btn>
     </x-slot:actions>
 
-    <x-table scroll="flex" :pinRows="true" table-sort="client">
+    <x-table scroll="flex" :pinRows="true" table-sort="server"
+             :route="route('admin.automations.index')"
+             :current-sort="$sort"
+             :current-dir="$dir">
         <x-slot:head>
             <tr>
-                <x-table.th sort type="number" class="w-16" default="asc">{{ __('Prio') }}</x-table.th>
-                <x-table.th sort type="string">{{ __('Name') }}</x-table.th>
-                <x-table.th sort type="string">{{ __('Trigger') }}</x-table.th>
+                <x-table.th sort="priority" default class="w-16">{{ __('Prio') }}</x-table.th>
+                <x-table.th sort="name">{{ __('Name') }}</x-table.th>
+                <x-table.th sort="trigger">{{ __('Trigger') }}</x-table.th>
                 <th>{{ __('Aktion(en)') }}</th>
-                <x-table.th sort type="string" align="center">{{ __('Aktiv') }}</x-table.th>
+                <x-table.th sort="is_active" align="center">{{ __('Aktiv') }}</x-table.th>
                 <th></th>
             </tr>
         </x-slot:head>
@@ -73,5 +75,7 @@
                 :title="__('Keine Regeln definiert.')" compact />
         @endforelse
     </x-table>
+
+    <x-pagination :paginator="$rules" standing />
 </x-index-page>
 @endsection

@@ -22,7 +22,7 @@
     :submit-label="__('Erfassen')"
 >
     @if ($disposers->isEmpty())
-        <div class="alert alert-warning text-sm">
+        <div role="alert" class="alert alert-warning text-sm">
             {{ __('disposal.handover.no_disposers') }}
             <a class="link" href="{{ route('external-contacts.index') }}">{{ __('disposal.handover.create_disposer') }}</a>
         </div>

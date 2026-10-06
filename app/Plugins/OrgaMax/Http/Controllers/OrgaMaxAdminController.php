@@ -57,24 +57,24 @@ class OrgaMaxAdminController extends Controller {
         $invoices = ExternalReference::query()
             ->forPlugin($organization, OrgaMaxPlugin::ID, \App\Plugins\OrgaMax\Services\OrgaMaxInvoiceProjector::EXT_TYPE_INVOICE)
             ->orderByDesc('synced_at')
-            ->limit(50)
-            ->get();
+            ->orderByDesc('id')
+            ->paginate(25)
+            ->withQueryString();
+        // Zwei Paginatoren auf einer Seite: eigener Seitenparameter, damit das
+        // Blättern der Aufträge die Rechnungsseite nicht zurücksetzt.
         $orders = ExternalReference::query()
             ->forPlugin($organization, OrgaMaxPlugin::ID, \App\Plugins\OrgaMax\Services\OrgaMaxTarget::EXT_TYPE_ORDER)
             ->orderByDesc('synced_at')
-            ->limit(50)
-            ->get();
+            ->orderByDesc('id')
+            ->paginate(25, ['*'], 'orders_page')
+            ->withQueryString();
 
         return view('orgamax::admin.index', [
             'connection' => $connection,
             'invoices' => $invoices,
             'orders' => $orders,
             'requiredScopes' => OrgaMaxScopePreflight::requiredScopes(),
-            'openInboxCount' => IntegrationInboxItem::query()
-                ->where('organization_id', $organization->id)
-                ->where('plugin_id', OrgaMaxPlugin::ID)
-                ->where('status', IntegrationInboxItem::STATUS_OPEN)
-                ->count(),
+            'openInboxCount' => IntegrationInboxItem::openCount((int) $organization->id, OrgaMaxPlugin::ID),
             'expenseContractConfirmed' => (bool) config('plugins.orgamax.expense_receipt_contract_confirmed', false),
         ]);
     }

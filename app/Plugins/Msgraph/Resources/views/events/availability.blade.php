@@ -11,10 +11,9 @@
      der Organisation ab (nur free/busy/unknown, keine Termindetails). --}}
 <div class="rounded-box border border-base-300 bg-base-200/40 p-3 space-y-2" data-msgraph-availability>
     <div class="flex items-center gap-2">
-        <button type="button" class="btn btn-sm btn-ghost" data-availability-check>
-            <x-icon name="event_available" />
-            <span>{{ __('msgraph::msgraph.availability.check') }}</span>
-        </button>
+        <x-button tone="ghost" icon="event_available" data-availability-check>
+            {{ __('msgraph::msgraph.availability.check') }}
+        </x-button>
         <span class="text-sm text-muted">{{ __('msgraph::msgraph.availability.hint') }}</span>
     </div>
     <ul class="hidden space-y-1 text-sm" data-availability-results></ul>

@@ -9,8 +9,7 @@
 @extends('layouts.app')
 @section('title', __('Audit-Log') . ' — WorkDiary')
 @section('nav-title', __('Audit-Log'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
     @php
@@ -70,7 +69,7 @@
                         <tr class="hover">
                             <td class="whitespace-nowrap text-xs">{{ $log->created_at->orgTz()->format('d.m.Y H:i:s') }}</td>
                             <td class="text-xs">{{ optional($log->user)->name ?? '—' }}</td>
-                            <td><span class="badge badge-sm">{{ $log->eventLabel() }}</span></td>
+                            <td><x-status-badge tone="plain">{{ $log->eventLabel() }}</x-status-badge></td>
                             <td class="text-xs">{{ $log->auditableTypeLabel() }}</td>
                             <td class="text-xs">#{{ $log->auditable_id }}</td>
                             <td class="max-w-md">

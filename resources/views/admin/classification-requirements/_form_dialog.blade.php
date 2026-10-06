@@ -63,7 +63,19 @@
             <x-icon name="info" class="shrink-0" />
             <div class="space-y-1 text-sm">
                 <div class="font-medium">{{ __('Aktive Presets') }}</div>
-                <p id="req-preset-summary" class="text-sm">
+                @php
+                $presetLabels = [
+                    'enforce_phase' => __('Phase'), 'severity' => __('Schweregrad'), 'min_count' => __('Minimalanzahl'), 'max_count' => __('Maximalanzahl'), 'allow_multi' => __('Mehrfachauswahl'),
+                    'none_defined' => __('Für diese Kombination sind keine Presets definiert.'),
+                    'choose' => __('Wählen Sie Auftragstyp und Pflicht-Domain, um empfohlene Defaults zu sehen.'),
+                    'base_hint' => __('Domain setzt die Basis, Auftragstyp kann einzelne Felder gezielt überschreiben.'),
+                    'source_domain' => __('Pflicht-Domain'), 'source_entry_type' => __('Auftragstyp'), 'preset_from' => __('Preset aus'),
+                    'min' => __('Min.'), 'max' => __('Max.'), 'open' => __('offen'), 'yes' => __('Ja'), 'no' => __('Nein'),
+                    'all_from_entry_type' => __('Alle gezeigten Werte stammen direkt aus dem Auftragstyp-Preset.'),
+                    'base_from_domain' => __('Basis aus Domain-Preset für:'), 'overridden_by_entry_type' => __('Vom Auftragstyp überschrieben:'),
+                ];
+                @endphp
+                <p id="req-preset-summary" class="text-sm" data-preset-labels='@json($presetLabels)'>
                     {{ __('Wählen Sie Auftragstyp und Pflicht-Domain, um empfohlene Defaults zu sehen.') }}
                 </p>
                 <p id="req-preset-details" class="text-xs text-base-content/70">
@@ -112,182 +124,3 @@
         </div>
     </div>
 </x-modal>
-
-<script @cspNonce>
-    (function () {
-        var entryTypeSelect = document.getElementById('req-entry-type');
-        var requiredDomainSelect = document.getElementById('req-domain');
-        if (!entryTypeSelect || !requiredDomainSelect) {
-            return;
-        }
-
-        var entryTypePresetsRaw = entryTypeSelect.dataset.entryTypePresets || '{}';
-        var entryTypePresets = {};
-        try {
-            entryTypePresets = JSON.parse(entryTypePresetsRaw);
-        } catch (_error) {
-            entryTypePresets = {};
-        }
-
-        var requiredDomainPresetsRaw = requiredDomainSelect.dataset.requiredDomainPresets || '{}';
-        var requiredDomainPresets = {};
-        try {
-            requiredDomainPresets = JSON.parse(requiredDomainPresetsRaw);
-        } catch (_error) {
-            requiredDomainPresets = {};
-        }
-
-        var fields = {
-            enforce_phase: document.querySelector('[data-preset-target="enforce_phase"]'),
-            severity: document.querySelector('[data-preset-target="severity"]'),
-            min_count: document.querySelector('[data-preset-target="min_count"]'),
-            max_count: document.querySelector('[data-preset-target="max_count"]'),
-            allow_multi: document.querySelector('[data-preset-target="allow_multi"]')
-        };
-        var presetSummary = document.getElementById('req-preset-summary');
-        var presetDetails = document.getElementById('req-preset-details');
-
-        function optionLabel(select, value) {
-            if (!select) {
-                return '';
-            }
-
-            var option = Array.prototype.find.call(select.options, function (candidate) {
-                return candidate.value === value;
-            });
-
-            return option ? option.textContent.trim() : value;
-        }
-
-        function updatePresetHint() {
-            if (!presetSummary) {
-                return;
-            }
-
-            var requiredDomainPreset = requiredDomainPresets[requiredDomainSelect.value];
-            var entryTypePreset = entryTypePresets[entryTypeSelect.value];
-            var preset = combinedPreset();
-            var fieldLabels = {
-                enforce_phase: @json(__('Phase')),
-                severity: @json(__('Schweregrad')),
-                min_count: @json(__('Minimalanzahl')),
-                max_count: @json(__('Maximalanzahl')),
-                allow_multi: @json(__('Mehrfachauswahl'))
-            };
-
-            if (Object.keys(preset).length === 0) {
-                presetSummary.textContent = entryTypeSelect.value !== '' || requiredDomainSelect.value !== ''
-                    ? @json(__('Für diese Kombination sind keine Presets definiert.'))
-                    : @json(__('Wählen Sie Auftragstyp und Pflicht-Domain, um empfohlene Defaults zu sehen.'));
-                if (presetDetails) {
-                    presetDetails.textContent = @json(__('Domain setzt die Basis, Auftragstyp kann einzelne Felder gezielt überschreiben.'));
-                }
-
-                return;
-            }
-
-            var sources = [];
-            if (requiredDomainPreset) {
-                sources.push(@json(__('Pflicht-Domain')));
-            }
-            if (entryTypePreset) {
-                sources.push(@json(__('Auftragstyp')));
-            }
-
-            var sourceText = sources.join(' + ');
-            var phaseText = optionLabel(fields.enforce_phase, preset.enforce_phase);
-            var severityText = optionLabel(fields.severity, preset.severity);
-            var maxCountText = preset.max_count === null ? @json(__('offen')) : String(preset.max_count);
-            var allowMultiText = preset.allow_multi ? @json(__('Ja')) : @json(__('Nein'));
-
-            presetSummary.textContent = @json(__('Preset aus')) + ' ' + sourceText + ': '
-                + @json(__('Phase')) + ' ' + phaseText
-                + ' · ' + @json(__('Schweregrad')) + ' ' + severityText
-                + ' · ' + @json(__('Min.')) + ' ' + String(preset.min_count)
-                + ' · ' + @json(__('Max.')) + ' ' + maxCountText
-                + ' · ' + @json(__('Mehrfachauswahl')) + ' ' + allowMultiText;
-
-            if (presetDetails) {
-                var domainFields = [];
-                var overriddenFields = [];
-
-                Object.keys(fieldLabels).forEach(function (field) {
-                    if (requiredDomainPreset && Object.prototype.hasOwnProperty.call(requiredDomainPreset, field)) {
-                        domainFields.push(fieldLabels[field]);
-                    }
-                    if (requiredDomainPreset && entryTypePreset
-                        && Object.prototype.hasOwnProperty.call(requiredDomainPreset, field)
-                        && Object.prototype.hasOwnProperty.call(entryTypePreset, field)
-                        && requiredDomainPreset[field] !== entryTypePreset[field]) {
-                        overriddenFields.push(fieldLabels[field]);
-                    }
-                });
-
-                if (domainFields.length === 0 && entryTypePreset) {
-                    presetDetails.textContent = @json(__('Alle gezeigten Werte stammen direkt aus dem Auftragstyp-Preset.'));
-                } else if (overriddenFields.length === 0) {
-                    presetDetails.textContent = @json(__('Basis aus Domain-Preset für:')) + ' ' + domainFields.join(', ');
-                } else {
-                    presetDetails.textContent = @json(__('Basis aus Domain-Preset für:')) + ' ' + domainFields.join(', ')
-                        + ' · ' + @json(__('Vom Auftragstyp überschrieben:')) + ' ' + overriddenFields.join(', ');
-                }
-            }
-        }
-
-        function combinedPreset() {
-            var preset = {};
-            var requiredDomainPreset = requiredDomainPresets[requiredDomainSelect.value];
-            var entryTypePreset = entryTypePresets[entryTypeSelect.value];
-
-            if (requiredDomainPreset) {
-                Object.assign(preset, requiredDomainPreset);
-            }
-            if (entryTypePreset) {
-                Object.assign(preset, entryTypePreset);
-            }
-
-            return preset;
-        }
-
-        function applyPreset(force) {
-            var preset = combinedPreset();
-            if (Object.keys(preset).length === 0) {
-                return;
-            }
-
-            if (fields.enforce_phase && (force || fields.enforce_phase.value === '')) {
-                fields.enforce_phase.value = preset.enforce_phase;
-            }
-            if (fields.severity && (force || fields.severity.value === '')) {
-                fields.severity.value = preset.severity;
-            }
-            if (fields.min_count && (force || fields.min_count.value === '' || fields.min_count.value === '1')) {
-                fields.min_count.value = String(preset.min_count);
-            }
-            if (fields.max_count && force) {
-                fields.max_count.value = preset.max_count === null ? '' : String(preset.max_count);
-            }
-            if (fields.allow_multi && force) {
-                fields.allow_multi.checked = Boolean(preset.allow_multi);
-            }
-
-            updatePresetHint();
-        }
-
-        entryTypeSelect.addEventListener('change', function () {
-            applyPreset(true);
-        });
-
-        requiredDomainSelect.addEventListener('change', function () {
-            applyPreset(true);
-        });
-
-        var isEditMode = entryTypeSelect.dataset.requirementEditMode === '1';
-        var hasOldInput = entryTypeSelect.dataset.hasOldInput === '1';
-        if (!isEditMode && !hasOldInput && (entryTypeSelect.value !== '' || requiredDomainSelect.value !== '')) {
-            applyPreset(false);
-        } else {
-            updatePresetHint();
-        }
-    })();
-</script>

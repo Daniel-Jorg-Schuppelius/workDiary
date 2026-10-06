@@ -19,11 +19,11 @@
     {{-- Kacheln nur für freigegebene Bereiche (MVP-511); ohne Freigaben ein
          erklärter Leerzustand statt automatischer Vollsicht. --}}
     @if ($stats === [])
-        <div class="rounded-box border border-base-300 bg-base-100 p-8 text-center">
+        <x-card padding="p-8" class="text-center">
             <x-icon name="visibility_off" class="mb-2 text-4xl text-muted" />
             <p class="font-medium">{{ __('Für Ihren Zugang sind noch keine Bereiche freigegeben.') }}</p>
             <p class="mt-1 text-sm text-muted">{{ __('Bitte wenden Sie sich an Ihre Ansprechperson, um Inhalte freischalten zu lassen.') }}</p>
-        </div>
+        </x-card>
     @else
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             @isset($stats['diary'])

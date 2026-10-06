@@ -14,7 +14,7 @@
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar :badge="__('values.' . $requisition->status)" badge-tone="outline">
+        <x-page-toolbar :badge="$requisition->status->label()" badge-tone="outline">
             <div class="text-sm text-base-content/70">
                 {{ __("values.{$requisition->employment_type}") }} · {{ __(':count Stelle(n)', ['count' => $requisition->headcount]) }}
                 @if ($requisition->department) · {{ $requisition->department }} @endif
@@ -27,24 +27,22 @@
                     {{-- Karrierebereich veröffentlichen/pausieren (MVP-798, Befund C1-07):
                          Die Endpunkte gab es seit MVP-437, nur keinen Einstieg. --}}
                     @php $careerPosting = $requisition->postings->firstWhere('channel', 'website'); @endphp
-                    @if ($careerPosting?->status === 'published')
+                    @if ($careerPosting?->status === \App\Enums\Applications\JobPostingStatus::Published)
                         <x-action-form :action="route('recruiting.requisitions.career.pause', $requisition)"
-                                       :confirm="__('Die Stelle verschwindet aus dem öffentlichen Karrierebereich. Eingegangene Bewerbungen bleiben erhalten.')"
+                                       :confirm="__('Die Stelle wird aus der Liste des öffentlichen Karrierebereichs genommen. Über den direkten Link bleibt sie erreichbar, Bewerbungen sind dort nicht mehr möglich. Eingegangene Bewerbungen bleiben erhalten.')"
                                        :confirm-label="__('Pausieren')" confirm-icon="pause">
                             <x-icon-btn icon="pause" size="sm" tone="outline" type="submit" show-label>{{ __('Pausieren') }}</x-icon-btn>
                         </x-action-form>
                     @else
-                        <x-action-form :action="route('recruiting.requisitions.career.publish', $requisition)"
-                                       :confirm="__('Die Stelle wird öffentlich im Karrierebereich sichtbar und ist ohne Anmeldung bewerbbar.')"
-                                       :confirm-label="__('Veröffentlichen')" confirm-icon="public">
-                            <x-icon-btn icon="public" size="sm" tone="primary" type="submit" show-label>{{ __('Veröffentlichen') }}</x-icon-btn>
-                        </x-action-form>
+                        {{-- Die Veröffentlichung braucht die öffentlichen Inhalte und bei
+                             abgelaufenen Anzeigen ein neues Datum: Dialog statt Sofortaktion. --}}
+                        <x-icon-btn icon="public" size="sm" tone="primary" data-entry-modal-trigger :href="route('recruiting.requisitions.career.edit', $requisition)" show-label>{{ __('Veröffentlichen') }}</x-icon-btn>
                     @endif
                     <form method="POST" action="{{ route('recruiting.requisitions.status', $requisition) }}" class="flex items-center gap-1">
                         @csrf
                         <select name="status" class="select select-sm select-bordered" data-autosubmit aria-label="{{ __('Status') }}">
-                            @foreach (\App\Models\Applications\JobRequisition::STATUSES as $status)
-                                <option value="{{ $status }}" @selected($requisition->status === $status)>{{ __("values.$status") }}</option>
+                            @foreach (\App\Enums\Applications\JobRequisitionStatus::cases() as $status)
+                                <option value="{{ $status->value }}" @selected($requisition->status === $status)>{{ $status->label() }}</option>
                             @endforeach
                         </select>
                     </form>
@@ -87,11 +85,11 @@
                 <ul class="space-y-1 text-sm">
                     @foreach ($requisition->postings as $posting)
                         <li class="flex flex-wrap items-center gap-2">
-                            <x-status-badge size="xs" outline>{{ __("values.{$posting->status}") }}</x-status-badge>
+                            <x-status-badge size="xs" outline>{{ $posting->status->label() }}</x-status-badge>
                             {{ __("values.{$posting->channel}") }}
                             @if ($posting->reference)<span class="text-muted">{{ $posting->reference }}</span>@endif
                             @if ($posting->expires_at)<span class="text-xs text-muted">{{ __('bis :date', ['date' => $posting->expires_at->fdate()]) }}</span>@endif
-                            @if ($posting->status === 'published')
+                            @if ($posting->status->canTransitionTo(\App\Enums\Applications\JobPostingStatus::Closed))
                                 @can('update', $requisition)
                                     <x-action-form :action="route('recruiting.requisitions.postings.close', [$requisition, $posting])" class="ml-auto">
                                         <x-icon-btn icon="close" size="xs" tone="ghost" type="submit" :title="__('Schließen')" />
@@ -121,7 +119,7 @@
                 @foreach ($requisition->applications as $application)
                     <tr>
                         <td>{{ $application->isAnonymized() ? __('(anonymisiert)') : ($application->candidate_name ?? '—') }}</td>
-                        <td><x-status-badge size="md" outline>{{ __("values.{$application->status}") }}</x-status-badge></td>
+                        <td><x-status-badge size="md" outline>{{ $application->status->label() }}</x-status-badge></td>
                         <td>{{ optional($application->received_at)->fdate() ?? '—' }}</td>
                         <td class="text-right"><x-icon-btn icon="visibility" :href="route('recruiting.applications.show', $application)" :label="__('Anzeigen')" /></td>
                     </tr>

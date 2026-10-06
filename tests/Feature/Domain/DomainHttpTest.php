@@ -137,6 +137,189 @@ class DomainHttpTest extends TestCase {
         ])->assertRedirect(route('domains.show', $domain))->assertSessionHas('success');
     }
 
+    /** Verfügbarkeit prüfen und registrieren hatten Route und Dienst, aber keinen Einstieg im Portfolio. */
+    public function test_availability_check_and_registration_start_from_the_portfolio(): void {
+        $connection = DomainProviderConnection::factory()->create(['organization_id' => $this->organization->id]);
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+
+        // Ohne domain.register bleiben beide Einstiege weg.
+        $this->actingAs($this->admin)->get(route('domains.index'))->assertOk()
+            ->assertDontSee(route('domains.availability'), false)
+            ->assertDontSee(route('domains.register'), false);
+
+        $this->admin->givePermissionTo(Permission::DomainRegister->value);
+        $this->actingAs($this->admin)->get(route('domains.index'))->assertOk()
+            ->assertSee('data-open-dialog="domain-availability"', false)
+            ->assertSee('data-open-dialog="domain-register"', false)
+            ->assertSee(route('domains.availability'), false)
+            ->assertSee(route('domains.register'), false);
+
+        FakeDomainResellingTransport::fake([
+            'CheckDomains' => FakeDomainResellingTransport::properties([
+                ['domain' => 'belegt.de', 'status' => 'taken'],
+                ['domain' => 'neu.de', 'status' => 'available', 'price' => '9.90', 'currency' => 'EUR'],
+            ]),
+            'AddDomain' => "code=200\ndescription=ok\nEOF\n",
+        ]);
+
+        $this->actingAs($this->admin)->from(route('domains.index'))->post(route('domains.availability'), [
+            'connection' => $connection->sqid,
+            'domains' => "belegt.de,\nneu.de",
+        ])->assertRedirect(route('domains.index'))->assertSessionHas('availability');
+
+        // Das Ergebnis steht auf der Seite, der freie Name ist im Registrier-Dialog vorbelegt.
+        $this->actingAs($this->admin)->get(route('domains.index'))->assertOk()
+            ->assertSee(__('domain.availability.results'))
+            ->assertSee('belegt.de')
+            ->assertSee('9,90 EUR')
+            ->assertSee('id="domain-register-domain"', false)
+            ->assertSee('value="neu.de"', false);
+
+        $this->actingAs($this->admin)->from(route('domains.index'))->post(route('domains.register'), [
+            'connection' => $connection->sqid,
+            'domain' => 'neu.de',
+            'customer' => $customer->sqid,
+            'period' => '2',
+            'renewal_mode' => 'AUTORENEW',
+            'owner_contact' => 'P-OWNER1',
+            'nameservers' => "ns1.example.net\nns2.example.net",
+            'price_confirmed' => '1',
+        ])->assertRedirect(route('domains.index'))->assertSessionHas('success', __('domain.flash.registered'));
+
+        $domain = DomainProjection::query()->where('external_domain', 'neu.de')->sole();
+        $this->assertSame($customer->id, $domain->customer_id);
+        $this->assertDatabaseHas('domain_provider_commands', ['command' => 'AddDomain', 'target' => 'neu.de', 'customer_id' => $customer->id]);
+    }
+
+    /** Ohne betriebsbereite Verbindung gibt es nichts zu prüfen oder zu registrieren. */
+    public function test_registration_entries_need_a_runnable_connection(): void {
+        $this->admin->givePermissionTo(Permission::DomainRegister->value);
+        DomainProviderConnection::factory()->draft()->create(['organization_id' => $this->organization->id]);
+
+        $this->actingAs($this->admin)->get(route('domains.index'))->assertOk()
+            ->assertDontSee('data-open-dialog="domain-register"', false)
+            ->assertDontSee(route('domains.register'), false);
+    }
+
+    public function test_domain_can_be_renewed_from_the_detail_page(): void {
+        $connection = DomainProviderConnection::factory()->create(['organization_id' => $this->organization->id]);
+        $domain = DomainProjection::factory()->create([
+            'organization_id' => $this->organization->id,
+            'connection_id' => $connection->id,
+            'external_domain' => 'laufzeit.de',
+            'domain_hash' => DomainProjection::hashFor('laufzeit.de'),
+        ]);
+
+        $this->actingAs($this->admin)->get(route('domains.show', $domain))->assertOk()
+            ->assertDontSee(route('domains.renew', $domain), false);
+
+        $this->admin->givePermissionTo(Permission::DomainRenewalManage->value);
+        $this->actingAs($this->admin)->get(route('domains.show', $domain))->assertOk()
+            ->assertSee(route('domains.renew', $domain), false)
+            ->assertSee('id="domain-renew-period"', false);
+
+        $sent = [];
+        FakeDomainResellingTransport::fake(['RenewDomain' => function (array $params) use (&$sent): string {
+            $sent = $params;
+
+            return "code=200\ndescription=ok\nEOF\n";
+        }]);
+
+        $this->actingAs($this->admin)->from(route('domains.show', $domain))
+            ->post(route('domains.renew', $domain), ['period' => '2'])
+            ->assertRedirect(route('domains.show', $domain))
+            ->assertSessionHas('success', __('domain.flash.renew_requested'));
+
+        $this->assertSame('laufzeit.de', $sent['domain'] ?? null);
+        $this->assertSame('2', $sent['period'] ?? null);
+        $this->assertDatabaseHas('domain_provider_commands', ['command' => 'RenewDomain', 'target' => 'laufzeit.de', 'status' => 'confirmed']);
+    }
+
+    /**
+     * Zone ersetzen geht nur vom gelesenen Stand aus: Der Dialog ist mit den
+     * Einträgen der Zone vorbelegt, ohne gelesene Zone gibt es ihn nicht.
+     */
+    /** Eine gelesene Zone hängt an ihrer Domain — sonst zeigt die Detailseite sie nicht (Fehler bis 2026-10-05). */
+    public function test_read_zone_appears_on_the_domain_page(): void {
+        $this->admin->givePermissionTo(Permission::DomainDnsManage->value);
+        $connection = DomainProviderConnection::factory()->create(['organization_id' => $this->organization->id]);
+        $domain = DomainProjection::factory()->create([
+            'organization_id' => $this->organization->id,
+            'connection_id' => $connection->id,
+            'external_domain' => 'zone.de',
+            'domain_hash' => DomainProjection::hashFor('zone.de'),
+        ]);
+        FakeDomainResellingTransport::fake([
+            'StatusDNSZone' => fn (): string => FakeDomainResellingTransport::properties([['rr' => 'www.zone.de 3600 IN A 192.0.2.10']]),
+        ]);
+
+        $this->actingAs($this->admin)->get(route('domains.show', $domain))->assertOk()->assertDontSee('192.0.2.10');
+
+        $this->actingAs($this->admin)->post(route('domains.dns.read', $domain))->assertSessionHas('success');
+
+        $this->assertSame($domain->id, $domain->dnsZones()->sole()->domain_projection_id);
+        $this->actingAs($this->admin)->get(route('domains.show', $domain))->assertOk()
+            ->assertSee('192.0.2.10');
+    }
+
+    /**
+     * Zone ersetzen (Entscheidung 2026-10-05): vorbelegt mit dem gelesenen Stand; Einträge, deren
+     * Typ die App nicht kennt, gehen unverändert mit — sonst löschte der Vollersatz sie beim Anbieter.
+     */
+    public function test_zone_is_replaced_from_its_read_state_and_keeps_records_of_unknown_type(): void {
+        $this->admin->givePermissionTo(Permission::DomainDnsManage->value);
+        $connection = DomainProviderConnection::factory()->create(['organization_id' => $this->organization->id]);
+        $domain = DomainProjection::factory()->create([
+            'organization_id' => $this->organization->id,
+            'connection_id' => $connection->id,
+            'external_domain' => 'zone.de',
+            'domain_hash' => DomainProjection::hashFor('zone.de'),
+        ]);
+
+        $unknown = 'zone.de 3600 IN X-UNBEKANNT 0 issue "ca.example"';
+        $zone = ['www.zone.de 3600 IN A 192.0.2.10', $unknown];
+        FakeDomainResellingTransport::fake([
+            'StatusDNSZone' => function () use (&$zone): string {
+                return FakeDomainResellingTransport::properties(array_map(static fn (string $rr): array => ['rr' => $rr], $zone));
+            },
+            'ModifyDNSZone' => function (array $params) use (&$zone): string {
+                $zone = array_values(array_filter($params, static fn (string $key): bool => str_starts_with($key, 'rr'), ARRAY_FILTER_USE_KEY));
+
+                return "code=200\ndescription=ok\nEOF\n";
+            },
+        ]);
+
+        // Ohne gelesene Zone kein Einstieg.
+        $this->actingAs($this->admin)->get(route('domains.show', $domain))->assertOk()
+            ->assertDontSee('domain-dns-replace', false);
+
+        $this->actingAs($this->admin)->post(route('domains.dns.read', $domain))->assertSessionHas('success');
+        $this->assertSame([$unknown], $domain->dnsZones()->sole()->unparsed_records);
+
+        $this->actingAs($this->admin)->get(route('domains.show', $domain))->assertOk()
+            ->assertSee('data-open-dialog="domain-dns-replace"', false)
+            ->assertSee(route('domains.dns.replace', $domain), false)
+            ->assertSee('name="records[0][content]" value="192.0.2.10"', false)
+            ->assertSee('X-UNBEKANNT');
+
+        // Ein leeres Formular würde die Zone löschen: abgewiesen, nichts gesendet.
+        $this->actingAs($this->admin)->from(route('domains.show', $domain))->post(route('domains.dns.replace', $domain), [
+            'records' => [['type' => 'A', 'name' => '', 'ttl' => '', 'priority' => '', 'content' => '']],
+        ])->assertSessionHas('error', __('domain.errors.dns_replace_empty'));
+        $this->assertSame(['www.zone.de 3600 IN A 192.0.2.10', $unknown], $zone);
+
+        $this->actingAs($this->admin)->from(route('domains.show', $domain))->post(route('domains.dns.replace', $domain), [
+            'records' => [
+                ['type' => 'A', 'name' => 'www.zone.de', 'ttl' => '3600', 'priority' => '', 'content' => '192.0.2.20'],
+                ['type' => 'MX', 'name' => 'zone.de', 'ttl' => '', 'priority' => '10', 'content' => 'mail.zone.de'],
+                // Leerzeile des Formulars: ohne Namen kein Eintrag.
+                ['type' => 'A', 'name' => '', 'ttl' => '', 'priority' => '', 'content' => ''],
+            ],
+        ])->assertRedirect(route('domains.show', $domain))->assertSessionHas('success', __('domain.flash.dns_replaced'));
+
+        $this->assertSame(['www.zone.de 3600 IN A 192.0.2.20', 'zone.de 3600 IN MX 10 mail.zone.de', $unknown], $zone);
+    }
+
     public function test_other_org_domain_is_not_visible(): void {
         $otherOrg = Organization::factory()->create();
         $otherConnection = DomainProviderConnection::factory()->create(['organization_id' => $otherOrg->id]);

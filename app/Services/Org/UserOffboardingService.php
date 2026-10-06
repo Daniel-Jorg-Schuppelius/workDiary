@@ -79,6 +79,12 @@ class UserOffboardingService {
         'form_submissions' => 'submitted_by_user_id',
         'safety_events' => 'reported_by_user_id',
         'tours' => 'user_id',
+        // Entscheidung 2026-10-05 (Konsolidierungs-Audit k3-13): vier neuere
+        // Tabellen mit CASCADE auf das Konto sind ebenfalls Nachweise.
+        'personnel_file_submissions' => 'user_id',
+        'personnel_file_acknowledgements' => 'user_id',
+        'comments' => 'user_id',
+        'crisis_room_presences' => 'user_id',
     ];
 
     /**

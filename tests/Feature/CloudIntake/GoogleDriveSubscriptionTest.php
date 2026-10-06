@@ -36,7 +36,7 @@ class GoogleDriveSubscriptionTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
-        config(['plugins.google-drive.client_id' => 'cid', 'plugins.google-drive.client_secret' => 'sec']);
+        config(['plugins.google-drive.enabled' => true, 'plugins.google-drive.client_id' => 'cid', 'plugins.google-drive.client_secret' => 'sec']);
 
         $this->connection = CloudDocumentConnection::factory()->create([
             'organization_id' => $this->organization->id,

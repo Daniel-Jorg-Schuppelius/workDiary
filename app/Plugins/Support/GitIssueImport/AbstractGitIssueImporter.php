@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Support\GitIssueImport;
 
-use App\Enums\Integration\DataDomain;
+use App\Enums\Integration\{DataDomain, IntegrationInboxStatus};
 use App\Enums\Task\TaskStatus;
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use App\Models\Platform\{Organization, PluginSetting};
@@ -190,7 +190,7 @@ abstract class AbstractGitIssueImporter {
                 'external_type' => 'issue_ownership_conflict',
                 'external_id' => $externalId,
                 'case_type' => IntegrationInboxItem::CASE_UNMATCHED,
-                'status' => IntegrationInboxItem::STATUS_OPEN,
+                'status' => IntegrationInboxStatus::Open,
                 'remote_snapshot' => [
                     'issue' => $externalId,
                     'title' => (string) ($issue['title'] ?? ''),

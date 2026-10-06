@@ -131,6 +131,68 @@ class ScheduleTest extends TestCase {
             ->assertJsonPath('date', now()->addDay()->toDateString());
     }
 
+    /**
+     * Der Zug im Dienstplan (schedule.js) schickt nur Tag und Mitarbeiter der
+     * Zielzelle — als PUT, die Route kennt kein PATCH.
+     */
+    public function test_admin_can_move_shift_to_another_day_and_employee_with_a_partial_update(): void {
+        $admin = User::factory()->admin()->create();
+        $colleague = User::factory()->user()->create(['organization_id' => $admin->organization_id]);
+        $shift = ScheduledShift::factory()->create([
+            'organization_id' => $admin->organization_id,
+            'user_id' => $admin->id,
+            'created_by' => $admin->id,
+            'note' => 'bleibt',
+        ]);
+        $targetDate = $shift->date->copy()->addDays(2)->toDateString();
+
+        $this->actingAs($admin)
+            ->putJson(route('schedule.shifts.update', $shift), [
+                'date' => $targetDate,
+                'user_id' => $colleague->sqid,
+            ])
+            ->assertOk()
+            ->assertJsonPath('date', $targetDate)
+            ->assertJsonPath('user_id', $colleague->sqid);
+
+        $shift->refresh();
+        $this->assertSame($colleague->id, $shift->user_id);
+        $this->assertSame('bleibt', $shift->note);
+    }
+
+    /** Zugquelle für lib/pointer-sort.js: Marker und Griff nur für Admins, kein HTML5-`draggable`. */
+    public function test_shift_badges_carry_the_pointer_drag_markers_for_admins_only(): void {
+        $admin = User::factory()->admin()->create();
+        $user = User::factory()->user()->create(['organization_id' => $admin->organization_id]);
+        ScheduledShift::factory()->create([
+            'organization_id' => $admin->organization_id,
+            'user_id' => $user->id,
+            'created_by' => $admin->id,
+            'date' => now()->toDateString(),
+        ]);
+
+        foreach (['week', 'month'] as $view) {
+            $html = $this->actingAs($admin)
+                ->get(route('schedule.index', ['view' => $view]))
+                ->assertOk()
+                ->getContent() ?: '';
+
+            $this->assertSame(1, substr_count($html, 'data-shift-drag='), $view);
+            $this->assertSame(1, substr_count($html, 'data-shift-handle='), $view);
+            $this->assertStringContainsString('data-schedule-drop', $html);
+            $this->assertStringNotContainsString('draggable="true"', $html);
+
+            $html = $this->actingAs($user)
+                ->get(route('schedule.index', ['view' => $view]))
+                ->assertOk()
+                ->getContent() ?: '';
+
+            $this->assertStringNotContainsString('data-shift-drag', $html);
+            $this->assertStringNotContainsString('data-shift-handle', $html);
+            $this->assertStringNotContainsString('data-schedule-drop', $html);
+        }
+    }
+
     public function test_admin_can_delete_shift(): void {
         $admin = User::factory()->admin()->create();
         $shift = ScheduledShift::factory()->create([

@@ -14,6 +14,7 @@ use App\Enums\Task\{TaskPriority, TaskStatus};
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use App\Models\Platform\User;
 use App\Models\Project\Task;
+use App\Plugins\Todoist\Enums\{TodoistConnectionStatus, TodoistProjectLinkStatus};
 use App\Plugins\Todoist\Models\{TodoistConnection, TodoistProjectLink};
 use App\Plugins\Todoist\Services\TodoistImportService;
 use App\Plugins\Todoist\TodoistPlugin;
@@ -45,7 +46,7 @@ final class TodoistImportTest extends TestCase {
         $this->connection = TodoistConnection::query()->create([
             'organization_id' => $this->organization->id,
             'access_token' => 'secret-token',
-            'status' => TodoistConnection::STATUS_ACTIVE,
+            'status' => TodoistConnectionStatus::Active,
         ]);
         $this->link = TodoistProjectLink::query()->create([
             'organization_id' => $this->organization->id,
@@ -53,7 +54,7 @@ final class TodoistImportTest extends TestCase {
             'todoist_project_name' => 'Sync-Projekt',
             'target_kind' => TodoistProjectLink::KIND_GLOBAL_KANBAN,
             'sync_mode' => TodoistProjectLink::MODE_BIDIRECTIONAL,
-            'status' => TodoistProjectLink::STATUS_ACTIVE,
+            'status' => TodoistProjectLinkStatus::Active,
         ]);
         $this->imports = app(TodoistImportService::class);
         config()->set('plugins.todoist.client_id', 'cid');
@@ -87,6 +88,29 @@ final class TodoistImportTest extends TestCase {
             'external_id' => 't-1',
             'referenceable_id' => $task->id,
         ]);
+    }
+
+    /** k3-10: die Abschnittszuordnung kommt als TaskStatus aus `pluck()` — zugeordnet gewinnt, sonst „offen“. */
+    public function test_mapped_section_sets_the_task_status(): void {
+        $this->link->sectionLinks()->create([
+            'organization_id' => $this->organization->id,
+            'todoist_section_id' => 's-doing',
+            'name' => 'Doing',
+            'task_status' => TaskStatus::InProgress,
+        ]);
+        $this->fakeTasks([
+            ['id' => 't-1', 'content' => 'Zugeordnet', 'section_id' => 's-doing'],
+            ['id' => 't-2', 'content' => 'Fremder Abschnitt', 'section_id' => 's-other'],
+            ['id' => 't-3', 'content' => 'Ohne Abschnitt'],
+        ]);
+
+        $counters = $this->imports->syncLink($this->link, $this->connection);
+
+        $this->assertSame(3, $counters['created']);
+        $this->assertDatabaseHas('todoist_section_links', ['todoist_section_id' => 's-doing', 'task_status' => TaskStatus::InProgress->value]);
+        $this->assertSame(TaskStatus::InProgress, Task::query()->where('title', 'Zugeordnet')->firstOrFail()->status);
+        $this->assertSame(TaskStatus::Open, Task::query()->where('title', 'Fremder Abschnitt')->firstOrFail()->status);
+        $this->assertSame(TaskStatus::Open, Task::query()->where('title', 'Ohne Abschnitt')->firstOrFail()->status);
     }
 
     public function test_second_run_is_idempotent(): void {

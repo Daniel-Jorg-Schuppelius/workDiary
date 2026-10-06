@@ -11,6 +11,7 @@
 namespace Tests\Feature\Learning;
 
 use App\Enums\Learning\LearningEnrollmentStatus;
+use App\Enums\Organization\TenantStatus;
 use App\Models\Communication\ExternalParticipant;
 use App\Models\Learning\{LearningAccessToken, LearningCourse, LearningEnrollment};
 use App\Models\Platform\User;
@@ -220,5 +221,15 @@ class LearningExternalAccessTest extends TestCase {
         $this->service()->revoke($enrollment);
 
         $this->assertNull($this->service()->resolve($token));
+    }
+
+    /** Sicherheitsaudit 2026-10-04, pub-3: der Link endet mit der Mandantensperre. */
+    public function test_einstiegslink_endet_mit_der_sperre_fuer_suspended_tenant(): void {
+        [$enrollment] = $this->externalEnrollment();
+        $token = $this->service()->issue($enrollment);
+        app()->forgetInstance('currentOrganization');
+        $this->organization->forceFill(['tenant_status' => TenantStatus::Suspended])->save();
+
+        $this->get(route('learning.external.enter', $token))->assertStatus(423);
     }
 }

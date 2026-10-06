@@ -36,20 +36,19 @@
     <x-card>
         <div class="flex flex-wrap items-center gap-x-8 gap-y-2 text-sm">
             <div><span class="opacity-60">{{ __('ideas.col.owner') }}:</span> <strong>{{ $map->owner?->name }}</strong></div>
-            <div><span class="opacity-60">{{ __('ideas.col.visibility') }}:</span> <span class="badge badge-sm">{{ $map->visibility->label() }}</span></div>
+            <div><span class="opacity-60">{{ __('ideas.col.visibility') }}:</span> <x-status-badge tone="plain">{{ $map->visibility->label() }}</x-status-badge></div>
             @if ($map->isArchived())
-                <div><span class="badge badge-warning badge-sm">{{ __('ideas.filter.archived') }}</span></div>
+                <div><x-status-badge tone="warning">{{ __('ideas.filter.archived') }}</x-status-badge></div>
             @endif
             {{-- Freigaben-Verwaltung als Dialog (nur Eigentümer); spart vertikalen Platz fürs Canvas --}}
             @if ($canShare)
-                <button type="button" class="btn btn-sm btn-ghost gap-1 ml-auto"
+                <x-button tone="ghost" icon="group" icon-size="1rem" class="ml-auto"
                         data-open-dialog="ideas-shares-dialog">
-                    <x-icon name="group" class="text-base" />
                     {{ __('ideas.share.title') }}
                     @if ($shares->isNotEmpty())
-                        <span class="badge badge-sm">{{ $shares->count() }}</span>
+                        <x-status-badge tone="plain">{{ $shares->count() }}</x-status-badge>
                     @endif
-                </button>
+                </x-button>
             @endif
         </div>
         @if ($map->description)
@@ -64,14 +63,14 @@
         <x-modal id="ideas-shares-dialog" :embedded="false" icon="group"
                  :eyebrow="__('ideas.title.index')" :title="__('ideas.share.title')" tone="primary">
             @if ($shares->isEmpty())
-                <p class="text-sm opacity-60">{{ __('ideas.share.none') }}</p>
+                <x-empty-state icon="lock" :title="__('ideas.share.none')" compact />
             @else
                 <ul class="space-y-1">
                     @foreach ($shares as $share)
                         <li class="flex items-center gap-2 text-sm">
                             <x-icon name="{{ $share->team_id ? 'groups' : 'person' }}" class="text-base opacity-60" />
                             <span>{{ $share->team?->name ?? $share->user?->name ?? '—' }}</span>
-                            <span class="badge badge-sm">{{ $share->role->label() }}</span>
+                            <x-status-badge tone="plain">{{ $share->role->label() }}</x-status-badge>
                             <form method="POST" action="{{ route('ideas.shares.destroy', [$map, $share]) }}" class="ml-auto">
                                 @csrf @method('DELETE')
                                 <x-icon-btn icon="close" size="xs" tone="error" type="submit" :title="__('ideas.share.revoke')" />
@@ -109,7 +108,7 @@
                             <option value="editor">{{ __('ideas.share_role.editor') }}</option>
                         </select>
                     </div>
-                    <button type="submit" class="btn btn-sm btn-primary">{{ __('ideas.share.add') }}</button>
+                    <x-button type="submit">{{ __('ideas.share.add') }}</x-button>
                     <p class="text-xs opacity-60 basis-full">{{ __('ideas.share.hint') }}</p>
                 </form>
             @endunless
@@ -201,12 +200,12 @@
             <span class="text-xs opacity-60" x-show="busy">{{ __('ideas.editor.saving') }}</span>
             <span class="text-xs text-error" x-show="error" x-text="error"></span>
             <template x-if="lastDeleted">
-                <button type="button" class="btn btn-xs" x-on:click="undoDelete()">{{ __('ideas.editor.undo_delete') }}</button>
+                <x-button tone="plain" size="xs" x-on:click="undoDelete()">{{ __('ideas.editor.undo_delete') }}</x-button>
             </template>
-            <button type="button" class="btn btn-ghost btn-xs" x-on:click="toggleHistory()"
-                    :aria-expanded="historyOpen ? 'true' : 'false'">{{ __('ideas.editor.history') }}</button>
-            <span class="badge badge-info badge-sm" x-show="editing.length > 0" aria-live="polite"
-                  x-text="editing.join(', ') + ' {{ __('ideas.editor.presence_suffix') }}'"></span>
+            <x-button tone="ghost" size="xs" x-on:click="toggleHistory()"
+                    ::aria-expanded="historyOpen ? 'true' : 'false'">{{ __('ideas.editor.history') }}</x-button>
+            <x-status-badge tone="info" x-show="editing.length > 0" aria-live="polite"
+                    x-text="editing.join(', ') + ' {{ __('ideas.editor.presence_suffix') }}'"></x-status-badge>
             <span class="text-xs opacity-60 ml-auto hidden md:inline" x-show="view === 'outline'">{{ __('ideas.editor.keys_hint') }}</span>
             <span class="text-xs opacity-60 ml-auto hidden md:inline" x-show="view === 'canvas'" x-cloak>{{ __('ideas.editor.canvas_keys_hint') }}</span>
         </div>
@@ -215,7 +214,7 @@
         <template x-if="historyOpen">
             <div class="mb-3 border border-base-200 rounded-box p-3 max-h-64 overflow-y-auto" role="log" aria-label="{{ __('ideas.editor.history') }}">
                 <template x-if="history.length === 0">
-                    <p class="text-sm opacity-60">{{ __('ideas.editor.history_empty') }}</p>
+                    <x-empty-state icon="history" :title="__('ideas.editor.history_empty')" compact />
                 </template>
                 <ul class="space-y-1">
                     <template x-for="(entry, idx) in history" :key="idx">
@@ -239,8 +238,8 @@
                     <p class="text-sm" x-text="conflict && conflict.current ? conflict.current.title : ''"></p>
                 </div>
                 <div class="flex gap-2">
-                    <button type="button" class="btn btn-sm" x-on:click="conflictTakeServer()">{{ __('ideas.editor.conflict_take_server') }}</button>
-                    <button type="button" class="btn btn-sm btn-primary" x-on:click="conflictRetryMine()">{{ __('ideas.editor.conflict_retry_mine') }}</button>
+                    <x-button tone="plain" x-on:click="conflictTakeServer()">{{ __('ideas.editor.conflict_take_server') }}</x-button>
+                    <x-button x-on:click="conflictRetryMine()">{{ __('ideas.editor.conflict_retry_mine') }}</x-button>
                 </div>
             </div>
         </template>
@@ -256,12 +255,12 @@
                      :data-node-row="sqid"
                      x-on:click="selected = sqid"
                      x-on:keydown="onKeydown($event, sqid)">
-                    <button type="button" class="btn btn-ghost btn-xs px-0.5"
-                            :aria-label="collapsed[sqid] ? '{{ __('ideas.editor.expand') }}' : '{{ __('ideas.editor.collapse') }}'"
+                    <x-button tone="ghost" size="xs" class="px-0.5"
+                            ::aria-label="collapsed[sqid] ? '{{ __('ideas.editor.expand') }}' : '{{ __('ideas.editor.collapse') }}'"
                             x-show="childrenOf(sqid).length > 0"
                             x-on:click.stop="toggleCollapse(sqid)">
                         <span class="material-symbols-outlined text-base" aria-hidden="true" x-text="collapsed[sqid] ? 'chevron_right' : 'expand_more'"></span>
-                    </button>
+                    </x-button>
                     <span class="w-2 h-2 rounded-full shrink-0" :data-node-color="nodeColor(sqid)" aria-hidden="true"
                           :class="{
                               'bg-base-300': nodeColor(sqid) === 'default',
@@ -283,44 +282,28 @@
                         <span class="text-sm grow cursor-text" x-text="nodeTitle(sqid)"
                               x-on:dblclick="startRename(sqid)"></span>
                     </template>
-                    <span class="badge badge-xs" x-show="nodeStatus(sqid)" x-text="nodeStatus(sqid)"></span>
+                    <x-status-badge tone="plain" size="xs" x-show="nodeStatus(sqid)" x-text="nodeStatus(sqid)"></x-status-badge>
                     <template x-if="cfg.can_update">
                         <div class="flex items-center gap-0.5 opacity-0 hover:opacity-100 focus-within:opacity-100"
                              :class="selected === sqid ? 'opacity-100' : ''">
-                            <button type="button" class="btn btn-ghost btn-xs px-1" x-on:click.stop="addChild(sqid)"
-                                    aria-label="{{ __('ideas.editor.add_child') }}" title="{{ __('ideas.editor.add_child') }}">
-                                <x-icon name="add" class="text-base" />
-                            </button>
-                            <button type="button" class="btn btn-ghost btn-xs px-1" x-on:click.stop="startRename(sqid)"
-                                    aria-label="{{ __('ideas.editor.rename') }}" title="{{ __('ideas.editor.rename') }}">
-                                <x-icon name="edit" class="text-base" />
-                            </button>
-                            <button type="button" class="btn btn-ghost btn-xs px-1" x-on:click.stop="openDetails(sqid)"
-                                    aria-label="{{ __('ideas.editor.details') }}" title="{{ __('ideas.editor.details') }}">
-                                <x-icon name="tune" class="text-base" />
-                            </button>
+                            <x-icon-btn icon="add" icon-size="1rem" :label="__('ideas.editor.add_child')" class="px-1"
+                                    x-on:click.stop="addChild(sqid)" />
+                            <x-icon-btn icon="edit" icon-size="1rem" :label="__('ideas.editor.rename')" class="px-1"
+                                    x-on:click.stop="startRename(sqid)" />
+                            <x-icon-btn icon="tune" icon-size="1rem" :label="__('ideas.editor.details')" class="px-1"
+                                    x-on:click.stop="openDetails(sqid)" />
                             <template x-if="!isRoot(sqid)">
                                 <span class="flex items-center gap-0.5">
-                                    <button type="button" class="btn btn-ghost btn-xs px-1" x-on:click.stop="moveUp(sqid)"
-                                            aria-label="{{ __('ideas.editor.move_up') }}" title="{{ __('ideas.editor.move_up') }}">
-                                        <x-icon name="arrow_upward" class="text-base" />
-                                    </button>
-                                    <button type="button" class="btn btn-ghost btn-xs px-1" x-on:click.stop="moveDown(sqid)"
-                                            aria-label="{{ __('ideas.editor.move_down') }}" title="{{ __('ideas.editor.move_down') }}">
-                                        <x-icon name="arrow_downward" class="text-base" />
-                                    </button>
-                                    <button type="button" class="btn btn-ghost btn-xs px-1" x-on:click.stop="outdent(sqid)"
-                                            aria-label="{{ __('ideas.editor.outdent') }}" title="{{ __('ideas.editor.outdent') }}">
-                                        <x-icon name="format_indent_decrease" class="text-base" />
-                                    </button>
-                                    <button type="button" class="btn btn-ghost btn-xs px-1" x-on:click.stop="indent(sqid)"
-                                            aria-label="{{ __('ideas.editor.indent') }}" title="{{ __('ideas.editor.indent') }}">
-                                        <x-icon name="format_indent_increase" class="text-base" />
-                                    </button>
-                                    <button type="button" class="btn btn-ghost btn-xs px-1 text-error" x-on:click.stop="removeNode(sqid)"
-                                            aria-label="{{ __('ideas.editor.delete') }}" title="{{ __('ideas.editor.delete') }}">
-                                        <x-icon name="delete" class="text-base" />
-                                    </button>
+                                    <x-icon-btn icon="arrow_upward" icon-size="1rem" :label="__('ideas.editor.move_up')" class="px-1"
+                                            x-on:click.stop="moveUp(sqid)" />
+                                    <x-icon-btn icon="arrow_downward" icon-size="1rem" :label="__('ideas.editor.move_down')" class="px-1"
+                                            x-on:click.stop="moveDown(sqid)" />
+                                    <x-icon-btn icon="format_indent_decrease" icon-size="1rem" :label="__('ideas.editor.outdent')" class="px-1"
+                                            x-on:click.stop="outdent(sqid)" />
+                                    <x-icon-btn icon="format_indent_increase" icon-size="1rem" :label="__('ideas.editor.indent')" class="px-1"
+                                            x-on:click.stop="indent(sqid)" />
+                                    <x-icon-btn icon="delete" icon-size="1rem" tone="error" :label="__('ideas.editor.delete')" class="px-1"
+                                            x-on:click.stop="removeNode(sqid)" />
                                 </span>
                             </template>
                         </div>
@@ -342,14 +325,14 @@
                 <span x-show="error" class="text-error" x-text="error"></span>
                 <div class="ml-auto flex items-center gap-1">
                     {{-- Bild-Export (MVP-138): Mind Elixir rendert clientseitig --}}
-                    <button type="button" class="btn btn-ghost btn-xs gap-1" x-on:click="exportSvg()"
+                    <x-button tone="ghost" size="xs" icon="image" icon-size="1rem" x-on:click="exportSvg()"
                             title="{{ __('ideas.editor.export_svg') }}">
-                        <x-icon name="image" class="text-base" />SVG
-                    </button>
-                    <button type="button" class="btn btn-ghost btn-xs gap-1" x-on:click="exportPng()"
+                        SVG
+                    </x-button>
+                    <x-button tone="ghost" size="xs" icon="photo" icon-size="1rem" x-on:click="exportPng()"
                             title="{{ __('ideas.editor.export_png') }}">
-                        <x-icon name="photo" class="text-base" />PNG
-                    </button>
+                        PNG
+                    </x-button>
                     <span class="opacity-60 hidden sm:inline">{{ __('ideas.editor.canvas_a11y_hint') }}</span>
                 </div>
             </div>
@@ -357,15 +340,14 @@
                 <div class="alert alert-warning mb-2" role="alertdialog" aria-live="assertive">
                     <x-icon name="sync_problem" />
                     <span class="grow">{{ __('ideas.editor.conflict_title') }}</span>
-                    <button type="button" class="btn btn-sm" x-on:click="reloadFromConflict()">{{ __('ideas.editor.conflict_take_server') }}</button>
+                    <x-button tone="plain" x-on:click="reloadFromConflict()">{{ __('ideas.editor.conflict_take_server') }}</x-button>
                 </div>
             </template>
             {{-- Höhe wird per JS auf den Restplatz bis zum Viewport-Ende gesetzt
                  (fitHeight); min-h-96 ist die Smartphone-Untergrenze/Fallback. --}}
             {{-- Mind Elixir rendert Beschriftungen in diesen Knoten: Alpine bleibt draußen. --}}
-            <div x-ref="meHost" x-ignore
-                 class="rounded-box border border-base-300 bg-base-100 overflow-hidden min-h-96"
-                 role="application" aria-label="{{ __('ideas.editor.canvas') }}"></div>
+            <x-card padding="p-0" class="overflow-hidden min-h-96" x-ref="meHost" x-ignore role="application"
+                    aria-label="{{ __('ideas.editor.canvas') }}"></x-card>
         </div>
 
         {{-- Knoten-Detail (Notiz, Farbe, Status) --}}
@@ -378,16 +360,11 @@
                     <h3 class="font-medium text-sm" x-text="nodeTitle(selected)"></h3>
                     <div class="flex items-center gap-1">
                         <template x-if="cfg.can_update">
-                            <button type="button" class="btn btn-primary btn-xs gap-1"
-                                    x-on:click="saveDetailsFromRefs()">
-                                <x-icon name="save" class="text-base" />
+                            <x-button size="xs" icon="save" icon-size="1rem" x-on:click="saveDetailsFromRefs()">
                                 {{ __('Speichern') }}
-                            </button>
+                            </x-button>
                         </template>
-                        <button type="button" class="btn btn-ghost btn-xs"
-                                x-on:click="closeDetailsFromRefs()" aria-label="{{ __('Schließen') }}">
-                            <x-icon name="close" class="text-base" />
-                        </button>
+                        <x-icon-btn icon="close" icon-size="1rem" :label="__('Schließen')" x-on:click="closeDetailsFromRefs()" />
                     </div>
                 </div>
                 <div class="grid md:grid-cols-3 gap-3">
@@ -425,16 +402,18 @@
 
                 {{-- Überführung + Rückreferenzen (MVP-109), Kommentare am Knoten (MVP-1005) --}}
                 <div class="mt-3 flex flex-wrap items-center gap-2">
+                    {{-- raw-markup-ok: Link-Ziel setzt Alpine (:href); ohne serverseitiges href rendert die Knopf-Komponente kein a-Element --}}
                     <a class="btn btn-xs btn-outline gap-1" data-entry-modal-trigger :href="urlFor('comments', selected)">
                         <x-icon name="forum" class="text-sm" />
                         {{ __('ideas.comments.action.open') }}
-                        <span class="badge badge-xs" x-text="commentCount(selected)"></span>
+                        <x-status-badge tone="plain" size="xs" x-text="commentCount(selected)"></x-status-badge>
                     </a>
                     {{-- Anhänge am Knoten (MVP-1018) --}}
+                    {{-- raw-markup-ok: Link-Ziel setzt Alpine (:href); ohne serverseitiges href rendert die Knopf-Komponente kein a-Element --}}
                     <a class="btn btn-xs btn-outline gap-1" data-entry-modal-trigger :href="urlFor('attachments', selected)">
                         <x-icon name="attach_file" class="text-sm" />
                         {{ __('ideas.attachments.action.open') }}
-                        <span class="badge badge-xs" x-text="attachmentCount(selected)"></span>
+                        <x-status-badge tone="plain" size="xs" x-text="attachmentCount(selected)"></x-status-badge>
                     </a>
                     <template x-for="ref in selectedReferences()" :key="ref.label + ref.kind">
                         <a class="badge badge-outline badge-sm gap-1" :href="ref.url" target="_blank">
@@ -445,14 +424,14 @@
                     <template x-if="cfg.can_update && !isRoot(selected)">
                         <span class="flex flex-wrap gap-1 ml-auto">
                             <template x-for="target in cfg.convert_targets" :key="target">
-                                <button type="button" class="btn btn-xs btn-outline" x-on:click="convertNode(target)"
-                                        x-text="(cfg.labels['convert_' + target] || target)"></button>
+                                <x-button tone="outline" size="xs" x-on:click="convertNode(target)"
+                                        x-text="(cfg.labels['convert_' + target] || target)"></x-button>
                             </template>
                         </span>
                     </template>
                 </div>
                 <template x-if="convertResult">
-                    <div class="alert alert-sm mt-2" :class="convertResult.existing ? 'alert-warning' : 'alert-success'">
+                    <div role="status" class="alert alert-sm mt-2" :class="convertResult.existing ? 'alert-warning' : 'alert-success'">
                         <span x-text="convertResult.existing ? '{{ __('ideas.convert.already') }}' : '{{ __('ideas.convert.done') }}'"></span>
                         <a class="link" :href="convertResult.reference.url" target="_blank" x-text="convertResult.reference.label"></a>
                     </div>

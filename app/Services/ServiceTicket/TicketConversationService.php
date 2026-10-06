@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\ServiceTicket;
 
 use App\Enums\ServiceTicket\{ServiceTicketStatus, TicketMessageKind};
+use App\Enums\ServiceTicket\TicketMessageDeliveryStatus;
 use App\Jobs\ServiceTicketReplyMailJob;
 use App\Models\Platform\User;
 use App\Models\ServiceTicket\{ServiceTicket, ServiceTicketMessage};
@@ -54,7 +55,7 @@ class TicketConversationService {
                 'subject' => $subject,
                 'body' => $body,
                 'channel' => $channel,
-                'delivery_status' => $to !== [] ? 'queued' : null,
+                'delivery_status' => $to !== [] ? TicketMessageDeliveryStatus::Queued : null,
             ]);
 
             // Antwort ist kundensichtbar → ihre Anhänge auch.

@@ -16,8 +16,7 @@
 @section('title', __('metering.title'))
 @section('nav-title', __('metering.title'))
 
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
     <x-index-page overflow="clip" :subtitle="__('metering.subtitle')">
@@ -73,7 +72,7 @@
                     <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $agreement->unit_price, 4) }}</td>
                     <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $agreement->free_units, 2) }}</td>
                     <td class="whitespace-nowrap">{{ $agreement->next_run_on->fdate() }}</td>
-                    <td>{{ __('metering.status.' . $agreement->status) }}</td>
+                    <td>{{ $agreement->status->label() }}</td>
                     <td class="text-right">
                         <div class="flex justify-end gap-1">
                             <x-icon-btn icon="edit" size="xs" tone="ghost"

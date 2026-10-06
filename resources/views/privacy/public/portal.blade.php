@@ -24,7 +24,7 @@
     </section>
 
     @if ($errors->any())
-        <div class="alert err">
+        <div role="status" class="alert err">
             <ul>
                 @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
@@ -72,7 +72,7 @@
             <span>{{ __('dsar.field.privacy_ack') }}</span>
         </label>
 
-        <button class="btn" type="submit">{{ __('dsar.form.submit') }}</button>
+        <x-button type="submit" tone="plain" size="md">{{ __('dsar.form.submit') }}</x-button>
     </form>
 
     <section class="card">

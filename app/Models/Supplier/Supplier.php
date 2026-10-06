@@ -136,19 +136,11 @@ class Supplier extends Model implements ContactDetailsHolder {
     protected static function booted(): void {
         self::registerSequentialNumberHook();
 
-        // creating statt saving: erst BelongsToOrganization::creating setzt die
-        // organization_id — saving liefe davor und prüfte gegen NULL.
-        $assignSlug = function (self $supplier): void {
-            if ($supplier->slug === null || $supplier->slug === '') {
-                $supplier->slug = self::uniqueSlug(
-                    (string) $supplier->name,
-                    $supplier->organization_id,
-                    $supplier->exists ? $supplier->id : null,
-                );
-            }
-        };
-        static::creating($assignSlug);
-        static::updating($assignSlug);
+        self::assignSlugWhenMissing(static fn(self $supplier): string => self::uniqueSlug(
+            (string) $supplier->name,
+            $supplier->organization_id,
+            $supplier->exists ? $supplier->id : null,
+        ));
     }
 
     /**

@@ -11,7 +11,9 @@
 namespace App\Plugins\Clockify\Console;
 
 use App\Console\Concerns\IteratesOrganizations;
-use App\Plugins\Clockify\{ClockifyConfig, ClockifyExportService};
+use App\Plugins\Clockify\{ClockifyConfig, ClockifyPlugin};
+use App\Plugins\Clockify\Services\ClockifyExportService;
+use App\Plugins\Support\Console\ChecksPluginSwitch;
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
 
@@ -23,6 +25,7 @@ use Illuminate\Console\Command;
  * Historien-Blast beim ersten Aktivieren).
  */
 class ClockifyPushCommand extends Command {
+    use ChecksPluginSwitch;
     use IteratesOrganizations;
 
     protected $signature = 'clockify:push '
@@ -42,7 +45,7 @@ class ClockifyPushCommand extends Command {
 
         foreach ($organizations as $org) {
             $config = ClockifyConfig::resolve($org->id);
-            if (! $config['enabled'] || ! $config['export_enabled']) {
+            if (! $this->pluginEnabledFor(ClockifyPlugin::ID, (int) $org->id) || ! $config['export_enabled']) {
                 continue;
             }
             if ($config['api_key'] === null) {

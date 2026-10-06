@@ -12,7 +12,10 @@ declare(strict_types=1);
 
 namespace App\Plugins\Msgraph\Console;
 
+use App\Console\Concerns\IteratesOrganizations;
+use App\Plugins\Msgraph\MsgraphPlugin;
 use App\Plugins\Msgraph\Services\MsgraphSubscriptionService;
+use App\Plugins\Support\Console\ChecksPluginSwitch;
 use Illuminate\Console\Command;
 
 /**
@@ -24,14 +27,24 @@ use Illuminate\Console\Command;
  * den Verbindungs-Health.
  */
 class MsgraphSubscriptionsCommand extends Command {
+    use ChecksPluginSwitch;
+    use IteratesOrganizations;
+
     protected $signature = 'msgraph:subscriptions
         {--organization= : ID einer einzelnen Organisation, sonst alle}';
 
     protected $description = 'Stellt Graph-Change-Notification-Subscriptions sicher (Dokumenteingang, Zwei-Wege-Kalender, To-Do-Listen, Graph-Postfächer).';
 
     public function handle(MsgraphSubscriptionService $subscriptions): int {
-        $orgOption = $this->option('organization');
-        $result = $subscriptions->ensureAll(is_numeric($orgOption) ? (int) $orgOption : null);
+        $result = ['ensured' => 0, 'failed' => 0];
+        foreach ($this->organizationsToProcess() as $organization) {
+            if (! $this->pluginEnabledFor(MsgraphPlugin::ID, (int) $organization->id)) {
+                continue;
+            }
+            $perOrganization = $subscriptions->ensureAll((int) $organization->id);
+            $result['ensured'] += $perOrganization['ensured'];
+            $result['failed'] += $perOrganization['failed'];
+        }
 
         $this->info(sprintf('Subscriptions sichergestellt: %d, fehlgeschlagen: %d', $result['ensured'], $result['failed']));
 

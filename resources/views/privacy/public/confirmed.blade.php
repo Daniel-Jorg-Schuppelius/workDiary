@@ -11,7 +11,7 @@
 @section('title', __('dsar.confirmed.title'))
 
 @section('content')
-    <div class="alert ok">{{ __('dsar.confirmed.headline') }}</div>
+    <div role="status" class="alert ok">{{ __('dsar.confirmed.headline') }}</div>
 
     <section class="card">
         <p>{{ __('dsar.confirmed.text', ['nr' => $requestNumber]) }}</p>

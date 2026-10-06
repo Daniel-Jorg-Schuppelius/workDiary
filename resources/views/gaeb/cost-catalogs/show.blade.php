@@ -10,8 +10,7 @@
 
 @section('title', __('Baukostenkatalog: :name', ['name' => $catalog->name]))
 @section('nav-title', $catalog->name)
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @php
     $money = static fn (?string $value): string => $value === null

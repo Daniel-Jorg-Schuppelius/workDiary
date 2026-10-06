@@ -44,12 +44,12 @@
         'special' => __('besonders sensibel'),
         'depends' => __('je nach Inhalt'),
     ];
-    $sensitivityClass = [
-        'high' => 'badge-warning',
-        'special' => 'badge-error',
-        'medium' => 'badge-info',
-        'low' => 'badge-ghost',
-        'depends' => 'badge-ghost',
+    $sensitivityTone = [
+        'high' => 'warning',
+        'special' => 'error',
+        'medium' => 'info',
+        'low' => 'ghost',
+        'depends' => 'ghost',
     ];
 @endphp
 
@@ -129,9 +129,9 @@
                             <td class="font-medium">{{ $cat['label'] ?? $cat['code'] ?? '—' }}</td>
                             <td class="text-xs font-mono text-base-content/70">{{ implode(', ', (array) ($cat['models'] ?? [])) }}</td>
                             <td>
-                                <span class="badge badge-outline {{ $sensitivityClass[$sens] ?? 'badge-ghost' }}">
+                                <x-status-badge :tone="$sensitivityTone[$sens] ?? 'ghost'" size="md" outline>
                                     {{ $sensitivityLabel[$sens] ?? $sens }}
-                                </span>
+                                </x-status-badge>
                             </td>
                             <td>{{ $cat['retention'] ?? '—' }}</td>
                             <td class="text-xs text-base-content/70">{{ $cat['delete_path'] ?? '—' }}</td>
@@ -260,23 +260,23 @@
                                     'inactive' => __('inaktiv'),
                                     default => __('nicht konfiguriert'),
                                 };
-                                $integrationStatusClass = $integrationStatus === 'active' ? 'badge-success' : 'badge-ghost';
+                                $integrationStatusTone = $integrationStatus === 'active' ? 'success' : 'ghost';
                             @endphp
                             <tr>
                                 <td class="font-medium">
                                     {{ $integration['name'] }}
                                     @if (($integration['type'] ?? '') === 'plugin')
-                                        <span class="badge badge-sm badge-outline badge-info">{{ __('Plugin') }}</span>
+                                        <x-status-badge tone="info" outline>{{ __('Plugin') }}</x-status-badge>
                                     @endif
                                 </td>
                                 <td class="font-mono text-xs text-base-content/70">{{ $integration['source'] }}</td>
                                 <td class="text-xs text-base-content/70">{{ $integration['data'] }}</td>
                                 <td>
-                                    <span class="badge badge-outline {{ $integrationStatusClass }}">{{ $integrationStatusLabel }}</span>
+                                    <x-status-badge :tone="$integrationStatusTone" size="md" outline>{{ $integrationStatusLabel }}</x-status-badge>
                                 </td>
                                 <td class="text-xs">
                                     @if (! empty($integration['docs_url']))
-                                        <a href="{{ $integration['docs_url'] }}" class="link link-primary" target="_blank" rel="noopener">{{ __('Anbieter-Doku') }}</a>
+                                        <x-external-link :url="$integration['docs_url']" :label="__('Anbieter-Doku')" class="link-primary" />
                                     @else
                                         —
                                     @endif
@@ -324,7 +324,7 @@
                                     <td>{{ $actor?->name ?? __('System') }}</td>
                                     <td class="font-mono text-xs">{{ $export->event }}</td>
                                     <td class="text-xs text-base-content/70">
-                                        @if ($format)<span class="badge badge-sm badge-outline">{{ $format }}</span>@endif
+                                        @if ($format)<x-status-badge tone="plain" outline>{{ $format }}</x-status-badge>@endif
                                         @if ($scope)<span class="ml-1">{{ $scope }}</span>@endif
                                         @if (is_numeric($bytes))<span class="ml-1 text-muted">({{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((int) $bytes / 1024, 0, withThousandsSeparator: true) }} KB)</span>@endif
                                     </td>

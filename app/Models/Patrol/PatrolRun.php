@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Patrol;
 
+use App\Enums\Patrol\PatrolRunStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
@@ -26,21 +27,17 @@ use Illuminate\Support\Carbon;
  * @property int|null $organization_id
  * @property int $patrol_route_id
  * @property int|null $started_by
- * @property string $status
+ * @property PatrolRunStatus $status
  * @property Carbon $started_at
  * @property Carbon|null $finished_at
  * @property string|null $deviation_note
+ * @property string|null $abort_reason
+ * @property int|null $aborted_by_user_id
  */
 class PatrolRun extends Model {
     use Auditable;
     use BelongsToOrganization;
     use HasSqid;
-
-    public const STATUS_RUNNING = 'running';
-
-    public const STATUS_COMPLETED = 'completed';
-
-    public const STATUS_ABORTED = 'aborted';
 
     protected $fillable = [
         'organization_id', 'patrol_route_id', 'started_by', 'status',
@@ -51,6 +48,7 @@ class PatrolRun extends Model {
     protected $casts = [
         'started_at' => 'datetime',
         'finished_at' => 'datetime',
+        'status' => PatrolRunStatus::class,
     ];
 
     /** @return BelongsTo<PatrolRoute, $this> */
@@ -61,6 +59,11 @@ class PatrolRun extends Model {
     /** @return BelongsTo<User, $this> */
     public function starter(): BelongsTo {
         return $this->belongsTo(User::class, 'started_by');
+    }
+
+    /** @return BelongsTo<User, $this> */
+    public function abortedBy(): BelongsTo {
+        return $this->belongsTo(User::class, 'aborted_by_user_id');
     }
 
     /** @return HasMany<PatrolScan, $this> */

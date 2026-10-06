@@ -53,8 +53,9 @@ class BackupTargetAdminController extends Controller {
             'generations' => BackupGeneration::query()
                 ->with('connection')
                 ->orderByDesc('started_at')
-                ->limit(60)
-                ->get(),
+                ->orderByDesc('id')
+                ->paginate(25)
+                ->withQueryString(),
             'providers' => BackupProvider::cases(),
             'hasMasterKey' => $keyring->hasMasterKey(),
             'hasRecoveryKey' => $keyring->hasRecoveryKey(),
@@ -69,7 +70,7 @@ class BackupTargetAdminController extends Controller {
         // Nachweise überleben die Trennung (connection_id nullOnDelete).
         $backupConnection->delete();
 
-        return redirect()->route('admin.backup-targets.index')
+        return redirect()->toList('admin.backup-targets.index')
             ->with('success', __('backup_targets.flash.disconnected'));
     }
 
@@ -82,7 +83,7 @@ class BackupTargetAdminController extends Controller {
             ['snapshot_uuid' => $backupGeneration->snapshot_uuid],
         );
 
-        return redirect()->route('admin.backup-targets.index')->with(
+        return redirect()->toList('admin.backup-targets.index')->with(
             'success',
             $backupGeneration->legal_hold ? __('backup_targets.flash.hold_set') : __('backup_targets.flash.hold_released'),
         );
@@ -126,7 +127,7 @@ class BackupTargetAdminController extends Controller {
         Gate::authorize('delete', $backupGeneration);
 
         if ($backupGeneration->legal_hold) {
-            return redirect()->route('admin.backup-targets.index')
+            return redirect()->toList('admin.backup-targets.index')
                 ->with('error', __('backup_targets.flash.hold_blocks_delete'));
         }
 
@@ -135,7 +136,7 @@ class BackupTargetAdminController extends Controller {
         if ($connection !== null && $prefix !== '') {
             $adapter = $this->adapter($connection);
             if ($adapter === null) {
-                return redirect()->route('admin.backup-targets.index')
+                return redirect()->toList('admin.backup-targets.index')
                     ->with('error', __('backup_targets.flash.not_configured'));
             }
 
@@ -150,7 +151,7 @@ class BackupTargetAdminController extends Controller {
                     }
                 }
             } catch (Throwable $e) {
-                return redirect()->route('admin.backup-targets.index')
+                return redirect()->toList('admin.backup-targets.index')
                     ->with('error', __('backup_targets.flash.cleanup_failed', ['class' => class_basename($e)]));
             }
         }
@@ -158,7 +159,7 @@ class BackupTargetAdminController extends Controller {
         $backupGeneration->audit('backup.generationPurged', ['snapshot_uuid' => $backupGeneration->snapshot_uuid]);
         $backupGeneration->delete();
 
-        return redirect()->route('admin.backup-targets.index')
+        return redirect()->toList('admin.backup-targets.index')
             ->with('success', __('backup_targets.flash.generation_deleted'));
     }
 

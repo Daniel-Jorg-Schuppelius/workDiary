@@ -16,7 +16,6 @@ use App\Enums\Notification\SmsDeliveryStatus;
 use App\Models\Platform\{Organization, User};
 use App\Plugins\Contracts\SmsProvider;
 use App\Support\PhoneSearchKey;
-use CommonToolkit\Enums\HashAlgorithm;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
@@ -59,7 +58,7 @@ class SmsOptInService {
 
         $stored = (string) ($prefs['sms_number_hash'] ?? '');
 
-        return $stored !== '' && hash_equals($stored, $this->hash($number)) ? $number : null;
+        return $stored !== '' && hash_equals($stored, CryptoHelper::hash($number)) ? $number : null;
     }
 
     public function hasOptIn(User $user): bool {
@@ -91,8 +90,8 @@ class SmsOptInService {
 
         $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
         Cache::put($this->cacheKey($user), [
-            'hash' => $this->hash($code),
-            'number' => $this->hash($number),
+            'hash' => CryptoHelper::hash($code),
+            'number' => CryptoHelper::hash($number),
         ], now()->addMinutes(self::CODE_TTL_MINUTES));
 
         $result = $provider->sendSms(
@@ -123,15 +122,15 @@ class SmsOptInService {
         }
 
         // Nummer zwischen Anforderung und Bestätigung geändert → ungültig.
-        if (! hash_equals((string) ($pending['number'] ?? ''), $this->hash($number))
-            || ! hash_equals((string) ($pending['hash'] ?? ''), $this->hash(trim($code)))) {
+        if (! hash_equals((string) ($pending['number'] ?? ''), CryptoHelper::hash($number))
+            || ! hash_equals((string) ($pending['hash'] ?? ''), CryptoHelper::hash(trim($code)))) {
             return false;
         }
 
         Cache::forget($this->cacheKey($user));
         $this->writeBag($user, [
             'sms_opt_in' => true,
-            'sms_number_hash' => $this->hash($number),
+            'sms_number_hash' => CryptoHelper::hash($number),
             'sms_verified_at' => Carbon::now()->toIso8601String(),
         ]);
         $user->audit('sms.opt_in');
@@ -161,10 +160,6 @@ class SmsOptInService {
     /** @param  array<string, mixed>  $values */
     private function writeBag(User $user, array $values): void {
         $user->setPreference(self::BAG, array_merge($this->bag($user), $values));
-    }
-
-    private function hash(string $value): string {
-        return (string) CryptoHelper::hash($value, HashAlgorithm::SHA256);
     }
 
     private function cacheKey(User $user): string {

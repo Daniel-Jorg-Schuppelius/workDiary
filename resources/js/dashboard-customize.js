@@ -8,8 +8,9 @@
  */
 
 /**
- * „Dashboard anpassen": Sortieren der Kachel-Liste per Drag & Drop oder
- * Pfeiltasten, Sichtbarkeits-Schalter und die Verwaltung der Bereiche (Tabs).
+ * „Dashboard anpassen": Sortieren der Kachel-Liste per Ziehen
+ * (lib/pointer-sort.js: Maus an der ganzen Zeile, Finger und Stift am Griff)
+ * oder Pfeiltasten, Sichtbarkeits-Schalter und die Verwaltung der Bereiche (Tabs).
  *
  * Gespeichert wird erst beim Absenden des Formulars — die Reihenfolge steckt
  * allein in der Position der Zeilen, deshalb müssen nach jeder Bewegung die
@@ -20,6 +21,8 @@
  * sofort in jedem Kachel-Auswahlfeld auf, damit Anlegen und Zuordnen ein
  * Arbeitsgang bleiben.
  */
+
+import { pointerSort } from "./lib/pointer-sort.js";
 
 /** @param {HTMLElement} list */
 function reindexWidgets(list) {
@@ -214,15 +217,6 @@ function initTabs(root) {
  * @param {HTMLElement} list
  */
 function initSorting(list) {
-    /** @type {HTMLElement | null} */
-    let dragRow = null;
-
-    const clearMarkers = () => {
-        list.querySelectorAll("[data-widget-row]").forEach((row) => {
-            row.classList.remove("opacity-50", "outline", "outline-primary");
-        });
-    };
-
     list.addEventListener("click", (event) => {
         const target = event.target;
         if (!(target instanceof Element)) return;
@@ -262,67 +256,17 @@ function initSorting(list) {
         }
     });
 
-    list.addEventListener("dragstart", (event) => {
-        const target = event.target;
-        const row = target instanceof Element ? target.closest("[data-widget-row]") : null;
-        if (!(row instanceof HTMLElement)) return;
-
-        dragRow = row;
-        row.classList.add("opacity-50");
-        if (event instanceof DragEvent && event.dataTransfer) {
-            event.dataTransfer.effectAllowed = "move";
-            try {
-                event.dataTransfer.setData("text/plain", row.dataset.widgetKey || "");
-            } catch (_e) {
-                /* ältere Engines */
-            }
-        }
-    });
-
-    list.addEventListener("dragover", (event) => {
-        if (!dragRow) return;
-        event.preventDefault();
-
-        const target = event.target;
-        const row = target instanceof Element ? target.closest("[data-widget-row]") : null;
-        if (!(row instanceof HTMLElement) || row === dragRow) return;
-
-        row.classList.add("outline", "outline-primary");
-        if (event instanceof DragEvent && event.dataTransfer) {
-            event.dataTransfer.dropEffect = "move";
-        }
-    });
-
-    list.addEventListener("dragleave", (event) => {
-        const target = event.target;
-        const row = target instanceof Element ? target.closest("[data-widget-row]") : null;
-        if (row instanceof HTMLElement) {
-            row.classList.remove("outline", "outline-primary");
-        }
-    });
-
-    list.addEventListener("drop", (event) => {
-        if (!dragRow) return;
-        event.preventDefault();
-
-        const target = event.target;
-        const row = target instanceof Element ? target.closest("[data-widget-row]") : null;
-        if (row instanceof HTMLElement && row !== dragRow && row.parentNode) {
-            // Oberhalb der Mitte einfügen, sonst darunter — sonst „springt"
-            // die Zeile beim Ablegen am unteren Rand eine Position zu weit.
-            const box = row.getBoundingClientRect();
-            const before = event instanceof DragEvent && event.clientY < box.top + box.height / 2;
-            row.parentNode.insertBefore(dragRow, before ? row : row.nextElementSibling);
+    pointerSort(list, {
+        item: "[data-widget-row]",
+        handle: "[data-widget-handle]",
+        mouseAnywhere: true,
+        draggingClass: ["opacity-50"],
+        targetClass: ["outline", "outline-primary"],
+        onDrop: ({ item, target, before }) => {
+            if (before) target.before(item);
+            else target.after(item);
             reindexWidgets(list);
-        }
-
-        clearMarkers();
-        dragRow = null;
-    });
-
-    list.addEventListener("dragend", () => {
-        clearMarkers();
-        dragRow = null;
+        },
     });
 }
 

@@ -26,6 +26,7 @@ use App\Services\Billing\CustomerAccountStatementService;
 use App\Services\Concerns\ResolvesActorId;
 use App\Services\Finance\Contracts\AllocationTargetHandler;
 use App\Services\Invoicing\Contracts\PaymentStatusProvider;
+use App\Services\Invoicing\InvoiceSettlement;
 use App\Support\MorphMap;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
@@ -42,7 +43,10 @@ use InvalidArgumentException;
 class ReconciliationService implements PaymentStatusProvider {
     use ResolvesActorId;
 
-    public function __construct(private readonly MatchingService $matching) {}
+    public function __construct(
+        private readonly MatchingService $matching,
+        private readonly InvoiceSettlement $settlement,
+    ) {}
 
     /**
      * Bestätigt eine oder mehrere Zuordnungen für einen Bankumsatz und setzt die
@@ -330,22 +334,17 @@ class ReconciliationService implements PaymentStatusProvider {
      * paid_on=Buchungsdatum. Teilzahlung lässt den Status offen.
      */
     private function applyInvoiceEffect(Invoice $invoice, BankTransaction $transaction, ?int $actorId = null): void {
-        $allocated = $this->allocatedSum($invoice);
         // MVP-416: beleggenaue Skonto-Kondition (Frist gegen Buchungsdatum) statt Pauschale.
         $minWithSkonto = $this->matching->minAcceptableFor($invoice, $transaction->booking_date);
+        // Statuswechsel nur über die gemeinsame Stelle: Zahlungen aller Quellen, nie an Entwurf oder Storno.
+        $result = $this->settlement->sync($invoice, $transaction->booking_date, $minWithSkonto);
 
-        if ($invoice->status !== Invoice::STATUS_PAID
-            && $allocated + MatchingService::CENT_TOLERANCE >= $minWithSkonto
-        ) {
-            $invoice->status = Invoice::STATUS_PAID;
-            $invoice->paid_on = $transaction->booking_date;
-            // Mit Ereignissen speichern: der Statuswechsel ist die Naht für invoice.paid und Provision (MVP-718/729).
-            $invoice->save();
-
+        if ($result->changed() && $result->isPaid()) {
             // Vollaudit 2026-07 (N12): akzeptierter Skontoabzug strukturiert als
             // Erlösschmälerung festhalten — eigener AllocationKind::Skonto-Satz,
             // Teil der Hash-Kette (skonto_accepted) und des Z3-Nachweises.
-            $skonto = round(($invoice->total?->toFloat() ?? 0.0) - $allocated, 2);
+            // Basis ist der fällige Betrag: ein offener Einbehalt ist kein Skonto.
+            $skonto = $this->settlement->shortfall($invoice);
             if ($skonto > MatchingService::CENT_TOLERANCE) {
                 PaymentAllocation::query()->create([
                     'organization_id' => $invoice->organization_id,
@@ -363,16 +362,10 @@ class ReconciliationService implements PaymentStatusProvider {
                     'amount' => (string) $skonto,
                 ]);
             }
-        } elseif (
-            // Teilzahlung (MVP-162): sichtbarer Zwischenstatus statt „offen".
-            $allocated > 0
-            && $allocated + MatchingService::CENT_TOLERANCE < $minWithSkonto
-            && $invoice->status === Invoice::STATUS_ISSUED
-        ) {
-            $invoice->status = Invoice::STATUS_PARTIALLY_PAID;
-            $invoice->save();
         }
-        InvoicePaymentReceived::dispatch($invoice);
+        if ($result->settleable) {
+            InvoicePaymentReceived::dispatch($invoice);
+        }
     }
 
     private function applyExpenseEffect(Expense $expense, BankTransaction $transaction): void {
@@ -388,16 +381,10 @@ class ReconciliationService implements PaymentStatusProvider {
         // Auch Teilzahlungen zurückdrehen: werden alle Zuordnungen entfernt,
         // darf die Rechnung nicht als „teilbezahlt" hängen bleiben
         // (Mahnwesen-relevant).
-        if (! in_array($invoice->status, [Invoice::STATUS_PAID, Invoice::STATUS_PARTIALLY_PAID], true)) {
-            return;
-        }
-        // Nur zurücknehmen, wenn nach Wegfall dieser Zuordnung die Deckung fehlt.
-        $allocated = $this->allocatedSum($invoice); // Allocation ist bereits soft-deleted.
+        // Nur zurücknehmen, wenn nach Wegfall dieser Zuordnung die Deckung fehlt (die Zuordnung ist bereits soft-deleted).
         // MVP-416: beleggenaue Kondition (ohne Zahldatum: Kondition zählt) statt Pauschale.
-        $minWithSkonto = $this->matching->minAcceptableFor($invoice);
-
-        if ($allocated + MatchingService::CENT_TOLERANCE >= $minWithSkonto) {
-            return; // weiterhin gedeckt — Status bleibt bestehen.
+        if (! $this->settlement->sync($invoice, null, $this->matching->minAcceptableFor($invoice))->lowered()) {
+            return; // weiterhin gedeckt oder nie bezahlt — Status bleibt bestehen.
         }
 
         // Vollaudit 2026-07 (N12): der automatische Skonto-Satz existiert nur
@@ -409,10 +396,6 @@ class ReconciliationService implements PaymentStatusProvider {
             ->get()
             ->each(static fn(PaymentAllocation $skonto) => $skonto->delete());
 
-        $allocated = $this->allocatedSum($invoice);
-        $invoice->status = $allocated > 0 ? Invoice::STATUS_PARTIALLY_PAID : Invoice::STATUS_ISSUED;
-        $invoice->paid_on = null;
-        $invoice->saveQuietly();
         InvoicePaymentReverted::dispatch($invoice);
     }
 

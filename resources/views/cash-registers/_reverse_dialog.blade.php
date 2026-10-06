@@ -16,7 +16,7 @@
     method="POST"
     :submit-label="__('Storno buchen')">
 
-    <div class="alert alert-warning text-sm">
+    <div role="alert" class="alert alert-warning text-sm">
         <span>{{ __('GoBD: Der Originaleintrag bleibt unverändert erhalten — es wird eine Gegenbuchung mit heutigem Datum erzeugt.') }}</span>
     </div>
 

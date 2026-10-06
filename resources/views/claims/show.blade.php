@@ -20,13 +20,13 @@
                         back-route="claims.index" :back-label="__('Zur Liste')">
             <div class="flex flex-wrap items-center gap-2 text-sm">
                 <x-status-badge size="md" outline>{{ $claim->status->label() }}</x-status-badge>
-                <span class="badge badge-outline">{{ $claim->source->label() }}</span>
-                <span class="badge badge-outline">{{ __("values.{$claim->priority}") }}</span>
+                <x-status-badge tone="plain" size="md" outline>{{ $claim->source->label() }}</x-status-badge>
+                <x-status-badge tone="plain" size="md" outline>{{ __("values.{$claim->priority}") }}</x-status-badge>
                 @if ($claim->is_b2b)
-                    <span class="badge badge-warning badge-outline">{{ __('B2B (§ 377 HGB)') }}</span>
+                    <x-status-badge tone="warning" size="md" outline>{{ __('B2B (§ 377 HGB)') }}</x-status-badge>
                 @endif
                 @if ($claim->due_at !== null && $claim->status->isOpen() && $claim->due_at->isPast())
-                    <span class="badge badge-error">{{ __('überfällig seit :date', ['date' => $claim->due_at->fdatetime()]) }}</span>
+                    <x-status-badge tone="error" size="md">{{ __('überfällig seit :date', ['date' => $claim->due_at->fdatetime()]) }}</x-status-badge>
                 @endif
             </div>
             <x-slot:actions>
@@ -46,7 +46,7 @@
     </x-slot:toolbar>
 
     @if ($duplicates->isNotEmpty())
-        <div class="alert alert-warning text-sm">
+        <div role="alert" class="alert alert-warning text-sm">
             {{ __('Mögliche Dubletten (gleicher Kunde/Objektbezug):') }}
             @foreach ($duplicates as $dup)
                 <a class="link" href="{{ route('claims.show', $dup) }}">{{ $dup->number }}</a>
@@ -113,7 +113,7 @@
                             <option value="{{ $c->sqid }}" @selected($claim->goodwill_reason_classification_id === $c->id)>{{ $c->display_label }}</option>
                         @endforeach
                     </select>
-                    <button type="submit" class="btn btn-sm">{{ __('Speichern') }}</button>
+                    <x-button type="submit" tone="plain">{{ __('Speichern') }}</x-button>
                 </form>
             @endcan
         </x-card>
@@ -121,12 +121,12 @@
 
     <x-card :title="__('Nachweise')">
         @if ($claim->evidence->isEmpty())
-            <p class="text-sm text-muted">{{ __('Noch keine Nachweise — Fotos, Protokolle, Messwerte oder Nachrichten hier dokumentieren.') }}</p>
+            <x-empty-state icon="attach_file" :message="__('Noch keine Nachweise — Fotos, Protokolle, Messwerte oder Nachrichten hier dokumentieren.')" compact />
         @else
             <ul class="space-y-1 text-sm">
                 @foreach ($claim->evidence as $item)
                     <li>
-                        <span class="badge badge-outline badge-sm">{{ __("values.{$item->kind}") }}</span>
+                        <x-status-badge tone="plain" outline>{{ __("values.{$item->kind}") }}</x-status-badge>
                         <span class="font-medium">{{ $item->title }}</span>
                         @if ($item->note !== null)
                             — {{ $item->note }}
@@ -139,7 +139,7 @@
         @if ($claim->attachments->isNotEmpty())
             <div class="mt-2 flex flex-wrap gap-2 text-sm">
                 @foreach ($claim->attachments as $file)
-                    <span class="badge badge-ghost">{{ $file->original_name }}</span>
+                    <x-status-badge size="md">{{ $file->original_name }}</x-status-badge>
                 @endforeach
             </div>
         @endif
@@ -154,7 +154,7 @@
                 <input aria-label="{{ __('Titel') }}" name="title" class="input input-sm input-bordered w-56" placeholder="{{ __('Titel') }}" required>
                 <input aria-label="{{ __('Notiz (optional)') }}" name="note" class="input input-sm input-bordered w-64" placeholder="{{ __('Notiz (optional)') }}">
                 <input type="file" name="file" class="file-input file-input-sm file-input-bordered">
-                <button type="submit" class="btn btn-sm btn-primary">{{ __('Nachweis erfassen') }}</button>
+                <x-button type="submit">{{ __('Nachweis erfassen') }}</x-button>
             </form>
         @endcan
     </x-card>
@@ -162,12 +162,12 @@
     <div class="grid gap-4 lg:grid-cols-2">
         <x-card :title="__('Bewertung (Anspruchsart)')">
             @foreach ($claim->assessments->sortByDesc('assessed_at') as $assessment)
-                <div class="mb-2 rounded border border-base-300 p-2 text-sm {{ $assessment->status === 'active' ? '' : 'opacity-60' }}">
+                <div class="mb-2 rounded border border-base-300 p-2 text-sm {{ $assessment->status === \App\Enums\Claims\ClaimAssessmentStatus::Active ? '' : 'opacity-60' }}">
                     <div class="flex flex-wrap items-center gap-2">
-                        <span class="badge badge-outline">{{ $assessment->claim_kind->label() }}</span>
-                        <span class="badge {{ $assessment->verdict->value === 'justified' ? 'badge-success' : ($assessment->verdict->value === 'rejected' ? 'badge-error' : 'badge-warning') }} badge-outline">{{ $assessment->verdict->label() }}</span>
-                        @if ($assessment->status !== 'active')
-                            <span class="badge badge-ghost badge-sm">{{ __('abgelöst') }}</span>
+                        <x-status-badge tone="plain" size="md" outline>{{ $assessment->claim_kind->label() }}</x-status-badge>
+                        <x-status-badge :tone="$assessment->verdict->value === 'justified' ? 'success' : ($assessment->verdict->value === 'rejected' ? 'error' : 'warning')" size="md" outline>{{ $assessment->verdict->label() }}</x-status-badge>
+                        @if ($assessment->status !== \App\Enums\Claims\ClaimAssessmentStatus::Active)
+                            <x-status-badge>{{ __('abgelöst') }}</x-status-badge>
                         @endif
                         <span class="text-muted">{{ $assessment->assessed_at->fdatetime() }}, {{ $assessment->assessor->name ?? '—' }}</span>
                     </div>
@@ -193,7 +193,7 @@
                         </select>
                     </div>
                     <textarea aria-label="{{ __('Pflichtbegründung (min. 10 Zeichen)') }}" name="justification" rows="2" class="textarea textarea-bordered textarea-sm w-full" placeholder="{{ __('Pflichtbegründung (min. 10 Zeichen)') }}" required></textarea>
-                    <button type="submit" class="btn btn-sm btn-primary">{{ __('Bewertung festhalten') }}</button>
+                    <x-button type="submit">{{ __('Bewertung festhalten') }}</x-button>
                 </form>
             @endcan
         </x-card>
@@ -201,7 +201,7 @@
         <x-card :title="__('Entscheidung')">
             @foreach ($claim->decisions->sortByDesc('decided_at') as $decision)
                 <div class="mb-2 rounded border border-base-300 p-2 text-sm">
-                    <span class="badge badge-outline">{{ __("values.{$decision->decision}") }}</span>
+                    <x-status-badge tone="plain" size="md" outline>{{ __("values.{$decision->decision}") }}</x-status-badge>
                     <span class="text-muted">{{ $decision->decided_at->fdatetime() }}, {{ $decision->decider->name ?? '—' }}</span>
                     <p class="mt-1">{{ $decision->justification }}</p>
                 </div>
@@ -215,7 +215,7 @@
                         @endforeach
                     </select>
                     <textarea aria-label="{{ __('Pflichtbegründung (min. 10 Zeichen)') }}" name="justification" rows="2" class="textarea textarea-bordered textarea-sm w-full" placeholder="{{ __('Pflichtbegründung (min. 10 Zeichen)') }}" required></textarea>
-                    <button type="submit" class="btn btn-sm btn-primary">{{ __('Entscheiden') }}</button>
+                    <x-button type="submit">{{ __('Entscheiden') }}</x-button>
                 </form>
             @endcan
         </x-card>
@@ -231,10 +231,10 @@
                     <span class="font-mono font-medium">{{ $rma->rma_number }}</span>
                     <x-status-badge size="md" outline>{{ $rma->status->label() }}</x-status-badge>
                     @if ($rma->stock_state !== null)
-                        <span class="badge badge-warning badge-outline">{{ __('Quarantäne: :state', ['state' => $rma->stock_state]) }}</span>
+                        <x-status-badge tone="warning" size="md" outline>{{ __('Quarantäne: :state', ['state' => $rma->stock_state->label()]) }}</x-status-badge>
                     @endif
                     @if ($rma->disposition !== null)
-                        <span class="badge badge-outline">{{ $rma->disposition->label() }}</span>
+                        <x-status-badge tone="plain" size="md" outline>{{ $rma->disposition->label() }}</x-status-badge>
                     @endif
                     @if ($rma->serial_no !== null)
                         <span class="font-mono text-muted">SN {{ $rma->serial_no }}</span>
@@ -258,7 +258,7 @@
                     <p class="mt-1 flex flex-wrap items-center gap-2">
                         <x-icon name="assignment_return" />
                         <span>{{ __('claims.return_label.title') }}: {{ strtoupper($shipment->carrier) }} {{ $shipment->tracking_number }}</span>
-                        <span class="badge badge-sm">{{ $shipment->status->label() }}</span>
+                        <x-status-badge tone="plain">{{ $shipment->status->label() }}</x-status-badge>
                         @can('warehouse', $claim)
                             <a class="link text-xs" href="{{ route('claims.rma.return-label.download', [$rma, $shipment]) }}">{{ __('claims.return_label.download') }}</a>
                         @endcan
@@ -276,19 +276,19 @@
                                 </select>
                                 <input type="number" name="weight_grams" value="1000" min="1" step="1" required class="input input-xs input-bordered w-24"
                                        aria-label="{{ __('shipping.field.weight_grams') }}" title="{{ __('shipping.field.weight_grams') }}">
-                                <button type="submit" class="btn btn-xs">{{ __('claims.return_label.create') }}</button>
+                                <x-button type="submit" tone="plain" size="xs">{{ __('claims.return_label.create') }}</x-button>
                             </form>
                         @endif
                         @if ($rma->status === \App\Enums\Claims\ClaimRmaStatus::Announced)
                             <form method="POST" action="{{ route('claims.rma.receive', $rma) }}" class="flex flex-wrap items-center gap-1">
                                 @csrf
                                 <select name="stock_state" class="select select-xs select-bordered" aria-label="{{ __('Quarantäne-Zustand') }}">
-                                    @foreach (\App\Services\Claims\ClaimRmaService::QUARANTINE_STATES as $state)
-                                        <option value="{{ $state }}">{{ $state }}</option>
+                                    @foreach (\App\Enums\Inventory\StockState::quarantine() as $state)
+                                        <option value="{{ $state->value }}">{{ $state->value }}</option>
                                     @endforeach
                                 </select>
                                 <input aria-label="{{ __('Zustand (optional)') }}" name="condition_note" class="input input-xs input-bordered w-48" placeholder="{{ __('Zustand (optional)') }}">
-                                <button type="submit" class="btn btn-xs btn-primary">{{ __('Wareneingang buchen') }}</button>
+                                <x-button type="submit" size="xs">{{ __('Wareneingang buchen') }}</x-button>
                             </form>
                         @endif
                         @if (in_array($rma->status, [\App\Enums\Claims\ClaimRmaStatus::Received, \App\Enums\Claims\ClaimRmaStatus::Inspecting], true))
@@ -300,7 +300,7 @@
                                     @endforeach
                                 </select>
                                 <input aria-label="{{ __('Befund') }}" name="findings" class="input input-xs input-bordered w-48" placeholder="{{ __('Befund') }}">
-                                <button type="submit" class="btn btn-xs">{{ __('Prüfen') }}</button>
+                                <x-button type="submit" tone="plain" size="xs">{{ __('Prüfen') }}</x-button>
                             </form>
                             <form method="POST" action="{{ route('claims.rma.disposition', $rma) }}" class="flex flex-wrap items-center gap-1">
                                 @csrf
@@ -309,7 +309,7 @@
                                         <option value="{{ $disp->value }}">{{ $disp->label() }}</option>
                                     @endforeach
                                 </select>
-                                <button type="submit" class="btn btn-xs">{{ __('Verwendung entscheiden') }}</button>
+                                <x-button type="submit" tone="plain" size="xs">{{ __('Verwendung entscheiden') }}</x-button>
                             </form>
                         @endif
                     </div>
@@ -321,7 +321,7 @@
                 @csrf
                 <input aria-label="{{ __('Seriennummer (optional)') }}" name="serial_no" class="input input-sm input-bordered w-48" placeholder="{{ __('Seriennummer (optional)') }}" value="{{ $claim->serial_no }}">
                 <input name="expected_at" type="date" class="input input-sm input-bordered" aria-label="{{ __('Erwartet am') }}">
-                <button type="submit" class="btn btn-sm btn-primary">{{ __('Rücksendung ankündigen') }}</button>
+                <x-button type="submit">{{ __('Rücksendung ankündigen') }}</x-button>
             </form>
         @endcan
     </x-card>
@@ -330,7 +330,7 @@
         <x-card :title="__('Maßnahmen')">
             @foreach ($claim->actions as $action)
                 <div class="mb-2 flex flex-wrap items-center gap-2 text-sm">
-                    <span class="badge badge-outline">{{ $action->kind->label() }}</span>
+                    <x-status-badge tone="plain" size="md" outline>{{ $action->kind->label() }}</x-status-badge>
                     <span class="font-medium">{{ $action->title }}</span>
                     <x-status-badge size="md" outline>{{ $action->status->label() }}</x-status-badge>
                     @if ($action->assignee !== null)
@@ -345,7 +345,7 @@
                                     <option value="{{ $status->value }}" @selected($action->status === $status)>{{ $status->label() }}</option>
                                 @endforeach
                             </select>
-                            <button type="submit" class="btn btn-xs">{{ __('OK') }}</button>
+                            <x-button type="submit" tone="plain" size="xs">{{ __('OK') }}</x-button>
                         </form>
                     @endcan
                 </div>
@@ -360,7 +360,7 @@
                     </select>
                     <input aria-label="{{ __('Titel') }}" name="title" class="input input-sm input-bordered w-56" placeholder="{{ __('Titel') }}" required>
                     <input name="due_at" type="date" class="input input-sm input-bordered" aria-label="{{ __('Frist') }}">
-                    <button type="submit" class="btn btn-sm btn-primary">{{ __('Maßnahme anlegen') }}</button>
+                    <x-button type="submit">{{ __('Maßnahme anlegen') }}</x-button>
                 </form>
             @endcan
         </x-card>
@@ -369,16 +369,16 @@
             @foreach ($claim->financialOutcomes as $outcome)
                 <div class="mb-2 rounded border border-base-300 p-2 text-sm">
                     <div class="flex flex-wrap items-center gap-2">
-                        <span class="badge badge-outline">{{ $outcome->kind->label() }}</span>
+                        <x-status-badge tone="plain" size="md" outline>{{ $outcome->kind->label() }}</x-status-badge>
                         <x-status-badge size="md" outline>{{ $outcome->status->label() }}</x-status-badge>
                         @if ($outcome->amount !== null)
                             <span class="font-mono">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $outcome->amount, 2, withThousandsSeparator: true) }} {{ $outcome->currency->value }}</span>
                         @endif
                         @if ($outcome->resultInvoice !== null)
-                            <span class="badge badge-ghost">{{ __('Beleg :number', ['number' => $outcome->resultInvoice->number]) }}</span>
+                            <x-status-badge size="md">{{ __('Beleg :number', ['number' => $outcome->resultInvoice->number]) }}</x-status-badge>
                         @endif
                         @if ($outcome->external_reference !== null)
-                            <span class="badge badge-info badge-outline">{{ __('Extern: :ref', ['ref' => $outcome->external_reference]) }}</span>
+                            <x-status-badge tone="info" size="md" outline>{{ __('Extern: :ref', ['ref' => $outcome->external_reference]) }}</x-status-badge>
                         @endif
                     </div>
                     <p class="mt-1">{{ $outcome->justification }}</p>
@@ -387,20 +387,20 @@
                             @if ($outcome->status === \App\Enums\Claims\ClaimFinancialStatus::Proposed)
                                 <form method="POST" action="{{ route('claims.financial.approve', $outcome) }}">
                                     @csrf
-                                    <button type="submit" class="btn btn-xs btn-primary">{{ __('Freigeben (Vier-Augen)') }}</button>
+                                    <x-button type="submit" size="xs">{{ __('Freigeben (Vier-Augen)') }}</x-button>
                                 </form>
                             @endif
                             @if ($outcome->status === \App\Enums\Claims\ClaimFinancialStatus::Approved)
                                 <form method="POST" action="{{ route('claims.financial.execute', $outcome) }}">
                                     @csrf
-                                    <button type="submit" class="btn btn-xs btn-primary">{{ __('Ausführen / Beleg erzeugen') }}</button>
+                                    <x-button type="submit" size="xs">{{ __('Ausführen / Beleg erzeugen') }}</x-button>
                                 </form>
                             @endif
                             @if ($outcome->status === \App\Enums\Claims\ClaimFinancialStatus::Executed && $outcome->result_invoice_id === null && $outcome->external_reference === null && $outcome->kind->producesInvoice())
                                 <form method="POST" action="{{ route('claims.financial.reference', $outcome) }}" class="flex items-center gap-1">
                                     @csrf
                                     <input aria-label="{{ __('Belegnummer (extern)') }}" name="external_reference" class="input input-xs input-bordered w-44" placeholder="{{ __('Belegnummer (extern)') }}" required maxlength="100">
-                                    <button type="submit" class="btn btn-xs">{{ __('Nachtragen') }}</button>
+                                    <x-button type="submit" tone="plain" size="xs">{{ __('Nachtragen') }}</x-button>
                                 </form>
                             @endif
                         </div>
@@ -419,7 +419,7 @@
                         <input aria-label="{{ __('Betrag') }}" name="amount" type="number" step="0.01" min="0" class="input input-sm input-bordered w-32" placeholder="{{ __('Betrag') }}">
                     </div>
                     <textarea aria-label="{{ __('Pflichtbegründung (min. 10 Zeichen)') }}" name="justification" rows="2" class="textarea textarea-bordered textarea-sm w-full" placeholder="{{ __('Pflichtbegründung (min. 10 Zeichen)') }}" required></textarea>
-                    <button type="submit" class="btn btn-sm btn-primary">{{ __('Folge vorschlagen') }}</button>
+                    <x-button type="submit">{{ __('Folge vorschlagen') }}</x-button>
                 </form>
             @endcan
         </x-card>
@@ -452,7 +452,7 @@
                         </select>
                         <input aria-label="{{ __('Erstattet') }}" name="amount_recovered" type="number" step="0.01" min="0" class="input input-xs input-bordered w-28" placeholder="{{ __('Erstattet') }}">
                         <input aria-label="{{ __('Ergebnis (optional)') }}" name="outcome_note" class="input input-xs input-bordered w-48" placeholder="{{ __('Ergebnis (optional)') }}">
-                        <button type="submit" class="btn btn-xs">{{ __('Aktualisieren') }}</button>
+                        <x-button type="submit" tone="plain" size="xs">{{ __('Aktualisieren') }}</x-button>
                     </form>
                 @endcan
             </div>
@@ -463,7 +463,7 @@
                 <input aria-label="{{ __('Lieferant (Sqid)') }}" name="supplier_id" class="input input-sm input-bordered w-40" placeholder="{{ __('Lieferant (Sqid)') }}" value="{{ $claim->supplier?->sqid }}" required>
                 <input aria-label="{{ __('Externe RMA-Nr.') }}" name="external_reference" class="input input-sm input-bordered w-40" placeholder="{{ __('Externe RMA-Nr.') }}">
                 <input aria-label="{{ __('Forderung') }}" name="amount_claimed" type="number" step="0.01" min="0" class="input input-sm input-bordered w-32" placeholder="{{ __('Forderung') }}">
-                <button type="submit" class="btn btn-sm btn-primary">{{ __('Regress anlegen') }}</button>
+                <x-button type="submit">{{ __('Regress anlegen') }}</x-button>
             </form>
         @endcan
     </x-card>

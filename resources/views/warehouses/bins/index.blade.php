@@ -9,11 +9,10 @@
 @extends('layouts.app')
 @section('title', __('inventory.bins') . ' — ' . $warehouse->name . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('inventory.bins'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
-{{-- Erwartet: $warehouse (Warehouse), $bins (Collection<WarehouseBin> mit movements_count) --}}
+{{-- Erwartet: $warehouse (Warehouse), $bins (Paginator<WarehouseBin> mit movements_count), $sort, $dir --}}
 <x-index-page overflow="clip" :subtitle="__('inventory.subtitle.bins', ['warehouse' => $warehouse->name])" :badge="$warehouse->code" badge-tone="ghost"
               back-route="warehouses.index" :back-label="__('inventory.warehouses')">
     <x-slot:actions>
@@ -23,34 +22,37 @@
         @endcan
     </x-slot:actions>
 
-    @if ($bins->isEmpty())
+    @if ($bins->total() === 0)
         <x-empty-state framed icon="shelves"
                        :title="__('inventory.empty.bins')" />
     @else
-        <x-table :zebra="true" scroll="flex" :pinRows="true" table-sort="client">
+        <x-table :zebra="true" scroll="flex" :pinRows="true" table-sort="server"
+                 :route="route('warehouses.bins.index', $warehouse)"
+                 :current-sort="$sort"
+                 :current-dir="$dir">
             <x-slot:head>
                 <tr>
-                    <x-table.th sort type="number" default="asc" class="w-20">{{ __('inventory.field.sort_order') }}</x-table.th>
-                    <x-table.th sort>{{ __('inventory.field.code') }}</x-table.th>
-                    <x-table.th sort>{{ __('Name') }}</x-table.th>
-                    <x-table.th sort type="number" align="right">{{ __('inventory.field.movement') }}</x-table.th>
-                    <x-table.th sort>{{ __('Status') }}</x-table.th>
+                    <x-table.th sort="sort_order" default class="w-20">{{ __('inventory.field.sort_order') }}</x-table.th>
+                    <x-table.th sort="code">{{ __('inventory.field.code') }}</x-table.th>
+                    <x-table.th sort="name">{{ __('Name') }}</x-table.th>
+                    <x-table.th sort="movements" align="right">{{ __('inventory.field.movement') }}</x-table.th>
+                    <th>{{ __('Status') }}</th>
                     <th></th>
                 </tr>
             </x-slot:head>
             @foreach ($bins as $bin)
-                <tr>
+                <tr class="hover">
                     <td class="tabular-nums">{{ $bin->sort_order }}</td>
                     <td class="font-mono text-sm font-medium">{{ $bin->code }}</td>
                     <td>{{ $bin->name ?? '—' }}</td>
                     <td class="text-right tabular-nums">{{ $bin->movements_count }}</td>
                     <td>
                         @if ($bin->blocked)
-                            <span class="badge badge-sm badge-warning">{{ __('inventory.state.blocked') }}</span>
+                            <x-status-badge tone="warning">{{ __('inventory.state.blocked') }}</x-status-badge>
                         @elseif ($bin->active)
-                            <span class="badge badge-sm badge-success">{{ __('article.status.active') }}</span>
+                            <x-status-badge tone="success">{{ __('article.status.active') }}</x-status-badge>
                         @else
-                            <span class="badge badge-sm badge-ghost">{{ __('article.status.retired') }}</span>
+                            <x-status-badge>{{ __('article.status.retired') }}</x-status-badge>
                         @endif
                     </td>
                     <td class="text-right">
@@ -72,5 +74,7 @@
             @endforeach
         </x-table>
     @endif
+
+    <x-pagination :paginator="$bins" standing />
 </x-index-page>
 @endsection

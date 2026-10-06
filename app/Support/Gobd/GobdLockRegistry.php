@@ -47,7 +47,10 @@ final class GobdLockRegistry {
         'BillingTransfer' => ['file' => 'app/Models/Finance/BillingTransfer.php', 'table' => 'billing_transfers', 'mechanism' => self::MECHANISM_FREEZE],
         // MVP-702 (Feature 137): Fahrtenbuch-Fahrt nach Festschreibung unveränderlich — Korrektur nur als Stornofahrt.
         'TravelLog' => ['file' => 'app/Models/Travel/TravelLog.php', 'table' => 'travel_logs', 'mechanism' => self::MECHANISM_FREEZE],
+        // Zuwendung: nach der Bestätigung unveränderlich (Sicherheitsaudit 2026-10-04, li-4).
+        'ClubDonation' => ['file' => 'app/Models/Club/ClubDonation.php', 'table' => 'club_donations', 'mechanism' => self::MECHANISM_FREEZE],
         // Append-only Nachweise (AppendOnly-Trait)
+        'ClubDonationReceipt' => ['file' => 'app/Models/Club/ClubDonationReceipt.php', 'table' => 'club_donation_receipts', 'mechanism' => self::MECHANISM_APPEND_ONLY],
         'StockMovement' => ['file' => 'app/Models/Inventory/StockMovement.php', 'table' => 'stock_movements', 'mechanism' => self::MECHANISM_APPEND_ONLY],
         'DiaryEntryEvent' => ['file' => 'app/Models/Diary/DiaryEntryEvent.php', 'table' => 'diary_entry_events', 'mechanism' => self::MECHANISM_APPEND_ONLY],
         // Hash-verkettet und in config/audit.php als Kette geführt, aber bis

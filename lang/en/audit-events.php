@@ -263,7 +263,11 @@ return [
         'indexationApplied' => 'Index adjustment applied',
         'indexationDismissed' => 'Index adjustment dismissed',
         'activated' => 'Contract activated',
+        'approval_restarted' => 'Contract approval restarted',
         'approved_step' => 'Contract approval step granted',
+        'delegated_step' => 'Contract approval step delegated',
+        'question_step' => 'Question on contract approval step',
+        'rejected_step' => 'Contract approval step rejected',
         'cancelled' => 'Contract cancelled',
         'concluded' => 'Contract concluded',
         'ended' => 'Contract ended',
@@ -450,6 +454,7 @@ return [
     ],
     'integration' => [
         'changed' => 'Integration enabled/disabled',
+        'conflict_resolved' => 'External system conflict resolved',
         'data_ownership_changed' => 'Data ownership changed',
         'inbox_resolved' => 'Inbox item resolved',
         'settings_changed' => 'Integration settings changed',
@@ -463,6 +468,11 @@ return [
     'inventory' => [
         'mode_changed' => 'Inventory mode changed',
         'negativeApproved' => 'Negative stock approved',
+    ],
+    'stock_lot' => [
+        'blocked' => 'Lot blocked',
+        'released' => 'Lot released',
+        'merged' => 'Lot merged',
     ],
     'investment' => [
         'budget_approved' => 'Investment budget approved',
@@ -685,6 +695,7 @@ return [
         'route_created' => 'Patrol route created',
         'started' => 'Patrol started',
         'completed' => 'Patrol completed',
+        'aborted' => 'Patrol aborted',
     ],
     'payroll' => [
         'wage' => [
@@ -784,11 +795,13 @@ return [
         'interview_offered' => 'Interview slots offered',
         'interview_chosen' => 'Interview slot chosen',
         'application_decided' => 'Application decided',
+        'application_readmitted' => 'Application readmitted from the talent pool',
         'application_exported' => 'Application exported',
         'application_received' => 'Application received',
         'document_attached' => 'Application document attached',
         'draft_invited' => 'Employee draft invited',
         'onboarding_draft_created' => 'Onboarding draft created',
+        'posting_expired' => 'Job posting expired',
         'posting_paused' => 'Job posting paused',
         'posting_published' => 'Job posting published',
         'public_application_received' => 'Public application received',

@@ -39,8 +39,6 @@ class CsvFormulaGuardRuleTest extends TestCase {
      * @var array<string, string>
      */
     private const EXCEPTIONS = [
-        'app/Support/CsvExport.php' => 'Hier wohnt der Guard selbst; die Kopfzeile besteht aus anwendungseigenen Spaltennamen.',
-        'app/Support/Toolkit/CsvFacade.php' => 'Naht zum Toolkit: buildCsv() guardet die Datenzeilen selbst (Parameter guardFormulas), die Kopfzeile besteht aus anwendungseigenen Spaltennamen.',
         'app/Console/Commands/ExportAuditLog.php' => 'GoBD-Ausleitung: die Bytes sind über den head_hash kryptografisch gebunden. Ein vorangestellter Apostroph zerstörte genau den Nachweis, den die Datei erbringen soll.',
         'app/Services/TimeExport/Profiles/GenericCsvProfile.php' => 'Lohnexport per SFTP an ein Lohnsystem; payload_hash weist den ausgelieferten Stand nach. Geänderte Bytes hieße geänderte Lohndaten.',
         'app/Services/TimeExport/Profiles/DatevLodasProfile.php' => 'Lohnimportdatei für DATEV LODAS, kein Tabellendokument; payload_hash weist den Stand nach. Ein Apostroph vor negativen Stunden („-2,00") verfälschte die Lohndaten.',
@@ -86,6 +84,25 @@ class CsvFormulaGuardRuleTest extends TestCase {
             . 'Zellen mit CsvExport::guardRow() umschließen — oder mit Begründung in die Ausnahmeliste.',
             implode("\n  ", $violations),
         ));
+    }
+
+    /**
+     * Sicherheitsaudit 2026-10-04 (xi-3): der Standard-Binder von PhpSpreadsheet
+     * macht aus einem Text, der mit `=` beginnt, eine Formelzelle. XLSX-Zellen
+     * entstehen deshalb nur über `setValueExplicit()` mit ausdrücklichem Typ.
+     */
+    public function test_xlsx_zellen_werden_ausdruecklich_typisiert(): void {
+        $violations = [];
+        foreach ($this->filesUnder('app', '/\.php$/') as $path) {
+            $source = $this->stripComments((string) file_get_contents($path));
+            if (preg_match_all('/->(?:setCellValue|setCellValueByColumnAndRow)\s*\(|->fromArray\s*\(\s*\$\w+\s*,[^)]*\)\s*;.*Spreadsheet/', $source, $matches, PREG_OFFSET_CAPTURE) > 0) {
+                foreach ($matches[0] as [$_, $offset]) {
+                    $violations[] = str_replace($this->repoRoot() . '/', '', $path) . ':' . $this->lineOf($source, $offset);
+                }
+            }
+        }
+
+        $this->assertSame([], $violations, "XLSX-Zelle über den Standard-Binder geschrieben — getCell(...)->setValueExplicit(\$wert, DataType::TYPE_STRING|TYPE_NUMERIC) nutzen:\n" . implode("\n", $violations));
     }
 
     /** Eine Ausnahme ohne Begründung ist ein Vergessen mit Alibi. */

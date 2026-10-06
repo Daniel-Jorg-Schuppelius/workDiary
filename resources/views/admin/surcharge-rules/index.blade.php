@@ -10,8 +10,7 @@
 
 @section('title', __('surcharge.title.rules'))
 @section('nav-title', __('surcharge.title.rules'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('surcharge.title.rules_subtitle')">
@@ -103,5 +102,7 @@
             <x-table.empty icon="percent" :colspan="10" :title="__('surcharge.title.empty')" compact />
         @endforelse
     </x-table>
+
+    <x-pagination :paginator="$rules" standing />
 </x-index-page>
 @endsection

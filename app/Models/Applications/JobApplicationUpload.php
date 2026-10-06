@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Models\Applications;
 
 use App\Casts\ByteSizeCast;
+use App\Enums\Applications\JobApplicationUploadScanStatus;
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -29,15 +30,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $mime
  * @property \CommonToolkit\ValueObjects\ByteSize|null $size_bytes
  * @property string $sha256
- * @property string $scan_status
+ * @property JobApplicationUploadScanStatus $scan_status
  */
 class JobApplicationUpload extends Model {
     use BelongsToOrganization;
     use HasSqid;
-
-    public const SCAN_PENDING = 'pending';
-    public const SCAN_CLEAN = 'clean';
-    public const SCAN_REJECTED = 'rejected';
 
     protected $fillable = [
         'organization_id', 'job_application_id', 'storage_disk', 'storage_key',
@@ -47,6 +44,7 @@ class JobApplicationUpload extends Model {
     /** @var array<string, string> */
     protected $casts = [
         'size_bytes' => ByteSizeCast::class,
+        'scan_status' => JobApplicationUploadScanStatus::class,
     ];
 
     /** @return BelongsTo<JobApplication, $this> */
@@ -56,6 +54,6 @@ class JobApplicationUpload extends Model {
 
     /** Erst nach erfolgreichem Scan für HR/DMS freigegeben. */
     public function isReleased(): bool {
-        return $this->scan_status === self::SCAN_CLEAN;
+        return $this->scan_status === JobApplicationUploadScanStatus::Clean;
     }
 }

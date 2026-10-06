@@ -12,8 +12,7 @@
 @extends('layouts.app')
 @section('title', __('safety.register.title.instructions'))
 @section('nav-title', __('safety.register.title.instructions'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('safety.register.subtitle.instructions')">
     <x-slot:actions>
@@ -27,7 +26,7 @@
 
     <x-filter-bar :action="route('safety.instructions.index')" :reset="route('safety.instructions.index')">
         <x-filter-field :label="__('safety.register.kpi.instruction_due')" for="flt-due">
-            <span id="flt-due" class="badge {{ $dueCount > 0 ? 'badge-error' : 'badge-ghost' }} badge-sm">{{ $dueCount }}</span>
+            <x-status-badge id="flt-due" :tone="$dueCount > 0 ? 'error' : 'ghost'">{{ $dueCount }}</x-status-badge>
         </x-filter-field>
         <x-filter-field :label="__('safety.register.filter.open_only')" for="flt-open" class="order-40">
             <input id="flt-open" type="checkbox" name="open" value="1" class="toggle toggle-sm" data-autosubmit @checked($onlyOpen)>
@@ -52,7 +51,7 @@
             <tr class="hover">
                 <td class="font-mono text-sm">{{ $instruction->displayNo() }}</td>
                 <td class="font-medium">{{ $instruction->topic }}</td>
-                <td class="text-sm">{{ $instruction->held_on->format('d.m.Y') }}</td>
+                <td class="text-sm">{{ $instruction->held_on->fdate() }}</td>
                 <td class="text-sm">{{ $instruction->instructor?->name ?? '–' }}</td>
                 <td class="text-sm text-base-content/70">
                     @if ($instruction->assessment)

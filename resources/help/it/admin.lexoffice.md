@@ -1,7 +1,7 @@
 ---
 title: "Conflitti Lexoffice"
 topic: admin.lexoffice
-version: 1
+version: 2
 audience:
     - admin
     - buchhaltung
@@ -19,3 +19,9 @@ di Lexoffice) o **Scarta** (ignora il conflitto). Confronti con cura
 i dati affiancati prima di decidere, perché le prime due opzioni
 sovrascrivono valori; per le fatture la sovranità resta al programma
 esterno.
+
+La strategia di conflitto delle impostazioni Lexoffice vale per contatti e
+articoli. I conflitti di articoli non compaiono in questa casella, ma
+nell'elenco dei conflitti del magazzino (Magazzino → Conflitti): lì mantiene
+lo stato locale, applica lo stato Lexoffice o ignora il conflitto — con il
+permesso di gestione degli articoli.

@@ -1,7 +1,7 @@
 ---
 title: "Investitionsplanung"
 topic: investments.overview
-version: 1
+version: 2
 audience: []
 modules:
     - module.investments
@@ -21,6 +21,13 @@ Antragsteller kann nie selbst freigeben. Genehmigte Budgets werden als
 Snapshot eingefroren — eine Erhöhung läuft immer über eine genehmigte
 Budget-Abweichung und einen Nachtrag (neuer Antrag, alter Stand bleibt
 als „ersetzt" erhalten).
+
+**Zurückstellen & Ablehnung:** In der Planung lässt sich die Akte mit
+„Zurückstellen" parken; „Wieder aufnehmen" führt sie genau in die Phase
+zurück, in der sie stand. Die Ablehnung eines Budgetantrags ist
+endgültig: Eine abgelehnte Akte bleibt abgelehnt und lässt sich weder
+zurückstellen noch erneut beantragen — ein neuer Anlauf beginnt mit einer
+neuen Akte.
 
 **Umsetzung & Ist-Werte:** Nach der Freigabe werden Projekt, Bestellung,
 Asset, Eingangsrechnung oder Dokument verknüpft. Die Soll-Ist-Ansicht

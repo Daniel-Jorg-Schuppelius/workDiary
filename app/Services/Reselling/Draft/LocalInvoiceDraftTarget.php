@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Reselling\Draft;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Enums\Numbering\NumberScope;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\{Invoice, InvoiceItem};
@@ -62,7 +63,7 @@ final class LocalInvoiceDraftTarget implements InvoiceDraftTarget {
                 'organization_id' => $organization->id,
                 'customer_id' => $recipient->id,
                 'number' => $this->numbers->next($organization->id, NumberScope::Invoice, $now),
-                'status' => Invoice::STATUS_DRAFT,
+                'status' => InvoiceStatus::Draft,
                 'type' => Invoice::TYPE_INVOICE,
                 'category' => 'resale',
                 'currency' => $recipient->currency,

@@ -115,6 +115,7 @@
                     </ul>
                 @endif
             @else
+                {{-- raw-markup-ok: Ergebnisaussage der Schemaprüfung mit Verweis, kein Leerzustand --}}
                 <p class="text-sm text-muted">{{ __('Kein UBL-Schema anwendbar (z. B. CII) — Regelprüfung siehe KoSIT.') }}</p>
             @endif
             @if (! $validation['kosit_available'])
@@ -135,7 +136,7 @@
     @if ($incoming !== null && (($incoming->summary['deviations'] ?? []) !== [] || array_filter((array) ($incoming->summary['suggestions'] ?? [])) !== []))
         <x-card :title="__('Zuordnung und Abweichungen (beim Empfang)')">
             @foreach ((array) ($incoming->summary['deviations'] ?? []) as $deviation)
-                <div class="alert alert-warning text-sm">
+                <div role="alert" class="alert alert-warning text-sm">
                     <x-icon name="warning" />
                     {{ $deviation }}
                 </div>
@@ -172,7 +173,7 @@
     @if ($incoming !== null)
         <x-card :title="__('Prüfung und Freigabe')">
             <x-detail-grid>
-                <x-detail-grid.row :label="__('Status')">{{ $incoming->statusLabel() }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Status')">{{ $incoming->status->label() }}</x-detail-grid.row>
                 <x-detail-grid.row :label="__('Empfangen')">{{ $incoming->received_at->orgTz()->isoFormat('L LT') }} · {{ $incoming->source }}</x-detail-grid.row>
                 <x-detail-grid.row :label="__('SHA-256')"><span class="font-mono text-xs">{{ $incoming->sha256 }}</span></x-detail-grid.row>
                 @if ($incoming->decision_note)
@@ -195,7 +196,7 @@
                        placeholder="{{ __('Anmerkung (bei Ablehnung Pflicht)') }}">
                 <x-icon-btn icon="gavel" tone="primary" size="sm" type="submit" show-label>{{ __('Entscheiden') }}</x-icon-btn>
             </form>
-            @if ($incoming->transferred_at === null && in_array($incoming->status, [\App\Models\Invoicing\IncomingEInvoice::STATUS_APPROVED, \App\Models\Invoicing\IncomingEInvoice::STATUS_PAYMENT_RELEASED], true))
+            @if ($incoming->transferred_at === null && in_array($incoming->status, [\App\Enums\Invoicing\IncomingEInvoiceStatus::Approved, \App\Enums\Invoicing\IncomingEInvoiceStatus::PaymentReleased], true))
                 <x-action-form :action="route('finance.incoming-invoices.transfer', $incoming)" class="mt-2"
                       :confirm="__('Eingang an die führende Buchhaltung übergeben? Die Übergabe wird als Nachweis vermerkt.')"
                       confirm-icon="outbox"

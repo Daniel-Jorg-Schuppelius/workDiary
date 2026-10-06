@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Finance;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
@@ -49,7 +50,7 @@ class LateTimeEntryDetectorTest extends TestCase {
         $this->detector = app(LateTimeEntryDetector::class);
     }
 
-    private function invoiceWithServiceDate(string $serviceDate, string $status = Invoice::STATUS_ISSUED, ?TimeEntry $timeEntry = null): Invoice {
+    private function invoiceWithServiceDate(string $serviceDate, InvoiceStatus $status = InvoiceStatus::Issued, ?TimeEntry $timeEntry = null): Invoice {
         $invoice = Invoice::create([
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
@@ -87,8 +88,8 @@ class LateTimeEntryDetectorTest extends TestCase {
 
     public function test_latest_billed_service_date_ignores_draft_and_cancelled(): void {
         $this->invoiceWithServiceDate('2026-07-10');
-        $this->invoiceWithServiceDate('2026-07-20', Invoice::STATUS_DRAFT);
-        $this->invoiceWithServiceDate('2026-07-25', Invoice::STATUS_CANCELLED);
+        $this->invoiceWithServiceDate('2026-07-20', InvoiceStatus::Draft);
+        $this->invoiceWithServiceDate('2026-07-25', InvoiceStatus::Cancelled);
 
         $latest = $this->detector->latestBilledServiceDate($this->customer);
 
@@ -129,7 +130,7 @@ class LateTimeEntryDetectorTest extends TestCase {
             'exported' => true,
             'date' => '2026-07-10',
         ]);
-        $this->invoiceWithServiceDate('2026-07-10', Invoice::STATUS_ISSUED, $billedEntry);
+        $this->invoiceWithServiceDate('2026-07-10', InvoiceStatus::Issued, $billedEntry);
 
         $this->assertNull($this->detector->latestBilledServiceDate($this->customer, $this->project));
         $this->assertNotNull($this->detector->latestBilledServiceDate($this->customer, $otherProject));

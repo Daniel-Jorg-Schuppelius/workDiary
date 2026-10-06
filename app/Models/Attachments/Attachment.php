@@ -12,6 +12,7 @@ namespace App\Models\Attachments;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Platform\User;
+use App\Support\MorphMap;
 use Database\Factories\Attachments\AttachmentFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -97,8 +98,9 @@ class Attachment extends Model {
             if (empty($attachment->attachable_type) || empty($attachment->attachable_id)) {
                 return;
             }
-            $class = $attachment->attachable_type;
-            if (! class_exists($class) || ! is_subclass_of($class, Model::class)) {
+            // In der Typspalte steht der Alias, nicht der Klassenname (MVP-860).
+            $class = MorphMap::classFor($attachment->attachable_type);
+            if ($class === null || ! is_subclass_of($class, Model::class)) {
                 return;
             }
             $parent = $class::query()->withoutGlobalScopes()->find($attachment->attachable_id);

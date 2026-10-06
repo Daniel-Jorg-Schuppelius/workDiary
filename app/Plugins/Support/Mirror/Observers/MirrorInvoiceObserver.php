@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Support\Mirror\Observers;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Invoicing\Invoice;
 use App\Plugins\Support\Mirror\{MirrorOutboxDispatcher, MirrorTargetRegistry};
 use App\Services\Integration\IntegrationOutboxService;
@@ -31,7 +32,7 @@ class MirrorInvoiceObserver {
     ) {}
 
     public function saved(Invoice $invoice): void {
-        if ($invoice->status !== Invoice::STATUS_ISSUED) {
+        if ($invoice->status !== InvoiceStatus::Issued) {
             return;
         }
 

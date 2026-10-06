@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\CustomerPortal;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Customer\Customer;
 use App\Models\Diary\{DiaryEntry, OpenIssue};
 use App\Models\Invoicing\Invoice;
@@ -148,7 +149,7 @@ class CustomerPortalAccessTest extends TestCase {
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
             'number' => 'INV-OWN-001',
-            'status' => Invoice::STATUS_ISSUED,
+            'status' => InvoiceStatus::Issued,
             'currency' => 'EUR',
             'subtotal' => '100.00',
             'tax_rate' => '19.00',
@@ -159,7 +160,7 @@ class CustomerPortalAccessTest extends TestCase {
             'organization_id' => $this->organization->id,
             'customer_id' => $otherCustomer->id,
             'number' => 'INV-OTHER-001',
-            'status' => Invoice::STATUS_ISSUED,
+            'status' => InvoiceStatus::Issued,
             'currency' => 'EUR',
             'subtotal' => '50.00',
             'tax_rate' => '19.00',

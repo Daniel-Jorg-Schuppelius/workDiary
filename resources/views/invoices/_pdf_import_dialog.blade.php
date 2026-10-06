@@ -17,7 +17,7 @@
     :submit-label="__('invoice-import.submit')"
 >
     <div class="space-y-4">
-        <div class="alert alert-info text-sm">
+        <div role="status" class="alert alert-info text-sm">
             <x-icon name="auto_fix_high" />
             <span>{{ __('invoice-import.intro') }}</span>
         </div>

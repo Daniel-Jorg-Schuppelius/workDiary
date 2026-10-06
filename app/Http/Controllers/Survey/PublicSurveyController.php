@@ -70,10 +70,7 @@ class PublicSurveyController extends Controller {
     private function resolve(string $token): array {
         // Kein Org-Kontext gebunden ⇒ Auflösung ausschließlich über den
         // Token-Hash; jeder Fehlweg ist ein 404.
-        $invitation = SurveyInvitation::query()
-            ->withoutGlobalScopes()
-            ->where('token_hash', SurveyInvitation::hashToken($token))
-            ->first();
+        $invitation = SurveyInvitation::findByAccessToken($token);
         abort_if($invitation === null || ! $invitation->isUsable(), 404);
 
         $survey = $invitation->survey()->withoutGlobalScopes()->first();

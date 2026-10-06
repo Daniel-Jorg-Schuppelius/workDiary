@@ -11,6 +11,7 @@
 namespace Tests\Feature\Club;
 
 use App\Enums\Club\{ClubFeeClaimStatus, ClubFeeRunStatus};
+use App\Enums\Document\DocumentDispatchStatus;
 use App\Enums\User\UserRole;
 use App\Mail\ClubFeeNoticeMail;
 use App\Models\Club\{ClubFeeAccount, ClubFeeClaim, ClubFeeClaimItem, ClubFeeRun, ClubFeeTariff, ClubMember};
@@ -176,7 +177,7 @@ class ClubFeeRunTest extends TestCase {
         $this->actingAs($this->admin)->post(route('club.fees.claims.send', $claim), ['email' => 'muster@example.test'])->assertRedirect(route('club.fees.claims.show', $claim));
         Mail::assertQueued(ClubFeeNoticeMail::class, fn(ClubFeeNoticeMail $mail): bool => $mail->claimId === $claim->id);
         $dispatch = DocumentDispatch::query()->where('document_kind', 'fee_notice')->where('channel', DocumentDispatch::CHANNEL_EMAIL)->firstOrFail();
-        $this->assertSame('queued', $dispatch->status);
+        $this->assertSame(DocumentDispatchStatus::Queued, $dispatch->status);
         $this->assertSame('muster@example.test', $dispatch->recipient);
         $this->actingAs($this->admin)->get(route('club.fees.claims.show', $claim))->assertOk()->assertSee('muster@example.test')->assertSee($claim->number);
 

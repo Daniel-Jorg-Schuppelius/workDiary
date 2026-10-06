@@ -12,9 +12,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Surveys;
 
+use App\Enums\Survey\SurveyInvitationStatus;
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
-use App\Models\Survey\{Survey, SurveyInvitation, SurveyResponse};
+use App\Models\Survey\{Survey, SurveyResponse};
 use App\Services\Survey\SurveyService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
@@ -105,7 +106,7 @@ final class SurveyEngineTest extends TestCase {
             ->assertSessionHasErrors('q' . $survey->questions()->firstOrFail()->id);
 
         $this->assertSame(0, SurveyResponse::query()->count());
-        $this->assertSame(SurveyInvitation::STATUS_SENT, $issued['invitation']->fresh()?->status);
+        $this->assertSame(SurveyInvitationStatus::Sent, $issued['invitation']->fresh()?->status);
     }
 
     /** E1: Der Invitation-Claim ist atomar — der zweite Submit legt nichts an. */
@@ -137,7 +138,7 @@ final class SurveyEngineTest extends TestCase {
         $this->assertNull($response->survey_invitation_id);
 
         $invitation = $issued['invitation']->fresh();
-        $this->assertSame(SurveyInvitation::STATUS_RESPONDED, $invitation?->status);
+        $this->assertSame(SurveyInvitationStatus::Responded, $invitation?->status);
         $this->assertNull($invitation?->responded_at);
     }
 
@@ -188,6 +189,22 @@ final class SurveyEngineTest extends TestCase {
 
         $this->get(route('surveys.public-show', ['token' => $issued['token']]))->assertNotFound();
         $this->get(route('surveys.public-show', ['token' => str_repeat('x', 48)]))->assertNotFound();
+    }
+
+    public function test_used_token_is_404_and_detail_page_shows_invitation_status(): void {
+        $survey = $this->survey();
+        $service = app(SurveyService::class);
+        $used = $service->invite($survey, 'fertig@example.test');
+        $service->invite($survey, 'offen@example.test');
+        $service->submit($used['invitation'], [$survey->questions()->firstOrFail()->id => 9]);
+
+        $this->assertFalse($used['invitation']->fresh()?->isUsable());
+        $this->get(route('surveys.public-show', ['token' => $used['token']]))->assertNotFound();
+
+        $this->actingAs($this->admin)->get(route('surveys.show', $survey))
+            ->assertOk()
+            ->assertSee(SurveyInvitationStatus::Responded->label())
+            ->assertSee(SurveyInvitationStatus::Sent->label());
     }
 
     public function test_admin_page_requires_customer_rights(): void {

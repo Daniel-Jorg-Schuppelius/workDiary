@@ -9,8 +9,7 @@
 @extends('layouts.app')
 @section('title', __('Lieferanten') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('Lieferanten'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @php
     /** @var \Illuminate\Pagination\LengthAwarePaginator $suppliers */

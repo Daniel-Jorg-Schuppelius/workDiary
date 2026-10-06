@@ -15,6 +15,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
 use App\Models\Time\MonthClosure;
 use App\Services\TimeApproval\{MonthClosureService, MonthClosureWorkflowException, MonthTotalsSnapshotter};
+use App\Support\SortableQuery;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -39,18 +40,26 @@ class MonthApprovalController extends Controller {
         $user = Auth::user();
         Gate::authorize('viewAny', MonthClosure::class);
 
-        $closures = MonthClosure::query()
-            ->where('user_id', $user->id)
-            ->orderByDesc('period_year')
-            ->orderByDesc('period_month')
-            ->limit(24)
-            ->get();
+        $query = MonthClosure::query()->where('user_id', $user->id);
+        [$sort, $dir] = SortableQuery::resolve($request, ['period', 'status', 'days_open', 'warnings'], 'period', 'desc');
+        if ($sort !== 'period') {
+            $query->orderBy(['status' => 'status', 'days_open' => 'days_open', 'warnings' => 'warnings_count'][$sort], $dir);
+        }
+        $periodDir = $sort === 'period' ? $dir : 'desc';
+        $closures = $query
+            ->orderBy('period_year', $periodDir)
+            ->orderBy('period_month', $periodDir)
+            ->orderBy('id')
+            ->paginate(24)
+            ->withQueryString();
 
         // Aktuelles Jahr/Monat als Default-Vorschlag, falls keine Zeile existiert.
         $now = CarbonImmutable::now();
 
         return view('time-approval.month.index', [
             'closures' => $closures,
+            'sort' => $sort,
+            'dir' => $dir,
             'defaultYear' => (int) $now->year,
             'defaultMonth' => (int) $now->month,
         ]);

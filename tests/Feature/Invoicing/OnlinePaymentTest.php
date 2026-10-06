@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Invoicing;
 
-use App\Enums\Invoicing\OnlinePaymentStatus;
+use App\Enums\Invoicing\{InvoiceStatus, OnlinePaymentStatus};
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\{Invoice, InvoicePaymentLink, OnlinePayment};
 use App\Models\Platform\Organization;
@@ -48,7 +48,7 @@ final class OnlinePaymentTest extends TestCase {
             'organization_id' => $this->org->id,
             'customer_id' => $this->customer->id,
             'number' => 'R-2026-0100',
-            'status' => Invoice::STATUS_ISSUED,
+            'status' => InvoiceStatus::Issued,
             'type' => Invoice::TYPE_INVOICE,
             'tax_rate' => '19.00',
             'total' => '119.00',
@@ -85,13 +85,26 @@ final class OnlinePaymentTest extends TestCase {
         $this->assertCount(1, $this->provider->requests);
     }
 
+    /** Sicherheitsaudit 2026-10-04, pub-1: Rücksprung und Webhook der Bezahlseite stammen aus app.url, nie aus dem Host-Header des anonymen Aufrufs. */
+    public function test_checkout_urls_ignore_the_host_header(): void {
+        config(['app.url' => 'https://app.example.test']);
+        $token = $this->token($this->invoice());
+
+        $this->withHeader('Host', 'evil.example')->get('http://evil.example/zahlen/' . $token)->assertRedirect('https://pay.example.com/pay_1');
+
+        $request = $this->provider->requests[0];
+        $this->assertStringStartsWith('https://app.example.test/', $request->returnUrl);
+        $this->assertStringStartsWith('https://app.example.test/', $request->webhookUrl);
+        $this->assertStringNotContainsString('evil.example', $request->returnUrl . $request->webhookUrl);
+    }
+
     public function test_webhook_settles_invoice_only_after_asking_the_provider(): void {
         $invoice = $this->invoice();
         $this->get(route('payments.show', $this->token($invoice)));
 
         // Webhook ohne Zahlung beim Anbieter: nichts gebucht.
         $this->post(route('payments.webhook', FakeOnlinePaymentProvider::ID), ['id' => 'pay_1'])->assertOk();
-        $this->assertSame(Invoice::STATUS_ISSUED, $invoice->refresh()->status);
+        $this->assertSame(InvoiceStatus::Issued, $invoice->refresh()->status);
 
         $this->provider->settle('pay_1', $this->eur('2.04'));
         $this->post(route('payments.webhook', FakeOnlinePaymentProvider::ID), ['id' => 'pay_1'])->assertOk();
@@ -99,13 +112,29 @@ final class OnlinePaymentTest extends TestCase {
         $payment = OnlinePayment::query()->firstOrFail();
         $this->assertSame(OnlinePaymentStatus::Paid, $payment->status);
         $this->assertSame('2.04', $payment->fee_amount?->getAmount());
-        $this->assertSame(Invoice::STATUS_PAID, $invoice->refresh()->status);
+        $this->assertSame(InvoiceStatus::Paid, $invoice->refresh()->status);
         $this->assertNotNull($invoice->paid_on);
         $this->assertSame('0.00', app(DunningService::class)->openAmount($invoice)->getAmount());
 
         // Bezahlt: der Link zeigt keine Bezahlseite mehr.
         $this->get(route('payments.show', InvoicePaymentLink::query()->firstOrFail()->token))
             ->assertOk()->assertSee(__('payments.page.paid'));
+    }
+
+    /** Sicherheitsaudit 2026-10-04, pub-4: eine späte Zahlung belebt die inzwischen stornierte Rechnung nicht. */
+    public function test_late_payment_does_not_revive_a_cancelled_invoice(): void {
+        $invoice = $this->invoice();
+        $this->get(route('payments.show', $this->token($invoice)));
+
+        $invoice->cancel('Doppelt gestellt', null);
+        $this->provider->settle('pay_1', $this->eur('2.04'));
+        $this->post(route('payments.webhook', FakeOnlinePaymentProvider::ID), ['id' => 'pay_1'])->assertOk();
+
+        $invoice->refresh();
+        $this->assertSame(InvoiceStatus::Cancelled, $invoice->status);
+        $this->assertNull($invoice->paid_on);
+        // Das Geld ist trotzdem eingegangen und bleibt als bezahlte Online-Zahlung nachweisbar.
+        $this->assertSame(OnlinePaymentStatus::Paid, OnlinePayment::query()->firstOrFail()->status);
     }
 
     public function test_amount_mismatch_and_unknown_webhooks_book_nothing(): void {
@@ -115,7 +144,7 @@ final class OnlinePaymentTest extends TestCase {
         $this->provider->settle('pay_1', amount: $this->eur('1.00'));
         $this->post(route('payments.webhook', FakeOnlinePaymentProvider::ID), ['id' => 'pay_1'])->assertOk();
         $this->assertSame(OnlinePaymentStatus::Open, OnlinePayment::query()->firstOrFail()->status);
-        $this->assertSame(Invoice::STATUS_ISSUED, $invoice->refresh()->status);
+        $this->assertSame(InvoiceStatus::Issued, $invoice->refresh()->status);
 
         $this->post(route('payments.webhook', FakeOnlinePaymentProvider::ID), ['id' => 'pay_999'])->assertOk();
         $this->post(route('payments.webhook', 'unbekannt'), ['id' => 'pay_1'])->assertOk();
@@ -129,11 +158,11 @@ final class OnlinePaymentTest extends TestCase {
 
         // Rückkehr vom Anbieter fragt selbst nach — ohne auf den Webhook zu warten.
         $this->get(route('payments.done', $token))->assertOk()->assertSee(__('payments.page.paid'));
-        $this->assertSame(Invoice::STATUS_PAID, $invoice->refresh()->status);
+        $this->assertSame(InvoiceStatus::Paid, $invoice->refresh()->status);
 
         $this->provider->refund('pay_1', $this->eur('19.00'));
         $this->post(route('payments.webhook', FakeOnlinePaymentProvider::ID), ['id' => 'pay_1']);
-        $this->assertSame(Invoice::STATUS_PARTIALLY_PAID, $invoice->refresh()->status);
+        $this->assertSame(InvoiceStatus::PartiallyPaid, $invoice->refresh()->status);
         $this->assertNull($invoice->paid_on);
         $this->assertSame('19.00', app(DunningService::class)->openAmount($invoice)->getAmount());
 
@@ -143,7 +172,7 @@ final class OnlinePaymentTest extends TestCase {
     }
 
     public function test_not_payable_and_provider_failure_show_a_page(): void {
-        $draft = $this->invoice(['status' => Invoice::STATUS_DRAFT, 'number' => 'E-1']);
+        $draft = $this->invoice(['status' => InvoiceStatus::Draft, 'number' => 'E-1']);
         $this->assertNull(app(InvoicePaymentLinkService::class)->urlFor($draft));
 
         $invoice = $this->invoice();
@@ -152,7 +181,7 @@ final class OnlinePaymentTest extends TestCase {
         $this->get(route('payments.show', $token))->assertStatus(503)->assertSee(__('payments.page.unavailable'));
         $this->assertSame(OnlinePaymentStatus::Failed, OnlinePayment::query()->firstOrFail()->status);
 
-        $invoice->forceFill(['status' => Invoice::STATUS_CANCELLED])->save();
+        $invoice->forceFill(['status' => InvoiceStatus::Cancelled])->save();
         $this->get(route('payments.show', $token))->assertOk()->assertSee(__('payments.page.not_payable'));
 
         $this->get(route('payments.show', str_repeat('a', 40)))->assertNotFound();
@@ -164,11 +193,11 @@ final class OnlinePaymentTest extends TestCase {
         $this->provider->settle('pay_1');
 
         $this->artisan('invoicing:online-payments-refresh')->assertSuccessful();
-        $this->assertSame(Invoice::STATUS_PAID, $invoice->refresh()->status);
+        $this->assertSame(InvoiceStatus::Paid, $invoice->refresh()->status);
 
         $this->provider->refund('pay_1', $this->eur('119.00'));
         $this->artisan('invoicing:online-payments-refresh')->assertSuccessful();
-        $this->assertSame(Invoice::STATUS_ISSUED, $invoice->refresh()->status);
+        $this->assertSame(InvoiceStatus::Issued, $invoice->refresh()->status);
         $this->assertSame('119.00', OnlinePayment::query()->firstOrFail()->refunded_amount->getAmount());
     }
 

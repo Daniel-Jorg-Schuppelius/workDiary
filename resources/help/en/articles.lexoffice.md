@@ -1,7 +1,7 @@
 ---
 title: "Lexoffice products & services"
 topic: articles.lexoffice
-version: 1
+version: 2
 audience: []
 modules:
     - module.vertrieb
@@ -24,3 +24,11 @@ entry's master data as a dialog.
 With sufficient permission the sync can be triggered manually; it reports
 how many entries were created, updated or archived. This requires
 Lexoffice to be configured for the organisation.
+
+The conflict strategy from the Lexoffice settings (Lexoffice wins, local
+wins, manual review) also applies to the article sync: with “manual
+review”, locally changed articles whose state differs in Lexoffice end up
+as conflicts in the inventory conflict list (Inventory → Conflicts). There
+you decide per article whether the local state stays, the Lexoffice state
+is taken over or the conflict is dismissed. The manual sync reports the
+number of new conflicts.

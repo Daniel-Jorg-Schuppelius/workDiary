@@ -34,17 +34,7 @@
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="__('Qualifikationsmatrix der Mitarbeiter inkl. Ablauf- und Warnstatus.')">
             <x-slot:actions>
-                <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
-                            :href="route('reports.qualifications', array_merge($standardFilters->toQueryParams(), ['export' => 'pdf']))"
-                            show-label>PDF</x-icon-btn>
-                <x-action-menu icon="download" tone="outline" :label="__('Export')">
-                    <x-icon-btn icon="download" tone="outline" size="sm"
-                                :href="route('reports.qualifications', array_merge($standardFilters->toQueryParams(), ['export' => 'csv']))"
-                                show-label>CSV</x-icon-btn>
-                    <x-icon-btn icon="table_view" tone="outline" size="sm"
-                                :href="route('reports.qualifications', array_merge($standardFilters->toQueryParams(), ['export' => 'xlsx']))"
-                                show-label>Excel</x-icon-btn>
-                </x-action-menu>
+                <x-report-export :url="fn (string $format) => route('reports.qualifications', array_merge($standardFilters->toQueryParams(), ['export' => $format]))" />
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
@@ -94,10 +84,10 @@
                 @endforeach
             </x-table>
             <div class="mt-3 flex flex-wrap gap-3 text-xs text-base-content/70">
-                <span class="badge bg-success/15">{{ __('gültig') }}</span>
-                <span class="badge bg-warning/20">{{ __('läuft in 30 Tagen ab') }}</span>
-                <span class="badge bg-error/20">{{ __('abgelaufen') }}</span>
-                <span class="badge bg-base-200">{{ __('keine Zuweisung') }}</span>
+                <x-status-badge tone="plain" size="md" class="bg-success/15">{{ __('gültig') }}</x-status-badge>
+                <x-status-badge tone="plain" size="md" class="bg-warning/20">{{ __('läuft in 30 Tagen ab') }}</x-status-badge>
+                <x-status-badge tone="plain" size="md" class="bg-error/20">{{ __('abgelaufen') }}</x-status-badge>
+                <x-status-badge tone="plain" size="md" class="bg-base-200">{{ __('keine Zuweisung') }}</x-status-badge>
             </div>
         @endif
     </x-card>

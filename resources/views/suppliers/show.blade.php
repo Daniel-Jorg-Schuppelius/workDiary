@@ -125,15 +125,15 @@
             </x-slot:actions>
         @endcan
         @if ($questionnaireRequests->isEmpty())
-            <p class="text-sm text-muted">{{ __('supplier_questionnaire.none') }}</p>
+            <x-empty-state icon="fact_check" :title="__('supplier_questionnaire.none')" compact />
         @else
             <ul class="divide-y divide-base-200 text-sm">
                 @foreach ($questionnaireRequests as $qr)
                     <li class="flex flex-wrap items-center justify-between gap-2 py-1">
-                        <span>{{ $qr->questionnaire?->name }} · {{ $qr->sent_at?->format('d.m.Y') }}</span>
+                        <span>{{ $qr->questionnaire?->name }} · {{ $qr->sent_at?->fdate() }}</span>
                         <span class="flex items-center gap-2">
                             <span class="wd-badge badge-ghost">{{ $qr->status->label() }}</span>
-                            @if ($qr->valid_until)<span class="text-xs text-muted">{{ __('supplier_questionnaire.valid_until', ['date' => $qr->valid_until->format('d.m.Y')]) }}</span>@endif
+                            @if ($qr->valid_until)<span class="text-xs text-muted">{{ __('supplier_questionnaire.valid_until', ['date' => $qr->valid_until->fdate()]) }}</span>@endif
                             <x-icon-btn icon="visibility" size="xs" data-entry-modal-trigger :href="route('supplier-questionnaires.requests.show', $qr)" :label="__('supplier_questionnaire.open')" />
                         </span>
                     </li>

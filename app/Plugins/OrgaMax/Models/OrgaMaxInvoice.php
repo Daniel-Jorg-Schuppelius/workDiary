@@ -15,6 +15,7 @@ namespace App\Plugins\OrgaMax\Models;
 use App\Casts\MoneyCast;
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
 use App\Models\Customer\Customer;
+use App\Plugins\OrgaMax\Enums\OrgaMaxInvoiceStatus;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -63,6 +64,7 @@ class OrgaMaxInvoice extends Model {
     protected $casts = [
         'invoice_date' => 'date',
         'due_on' => 'date',
+        'invoice_status' => OrgaMaxInvoiceStatus::class,
         'total_net' => MoneyCast::class . ':currency,2',
         'total_gross' => MoneyCast::class . ':currency,2',
         'outstanding_amount' => MoneyCast::class . ':currency,2',
@@ -76,11 +78,17 @@ class OrgaMaxInvoice extends Model {
     }
 
     /**
-     * Noch nicht ausgeglichene Belege (Grundlage der Wechsel-Blocker).
+     * Noch nicht ausgeglichene Belege (Grundlage der Wechsel-Blocker). Ein
+     * unbekannter Zustand gilt als offen — lieber ein Blocker zu viel als ein
+     * übersehener Beleg.
      *
      * @param  Builder<$this>  $query
      */
     public function scopeOpen(Builder $query): void {
-        $query->whereNotIn('invoice_status', ['paid', 'cancelled', 'draft']);
+        $query->whereNotIn('invoice_status', [
+            OrgaMaxInvoiceStatus::Paid->value,
+            OrgaMaxInvoiceStatus::Cancelled->value,
+            OrgaMaxInvoiceStatus::Draft->value,
+        ]);
     }
 }

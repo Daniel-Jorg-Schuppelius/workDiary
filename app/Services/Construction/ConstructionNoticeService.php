@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Construction;
 
 use App\Enums\Construction\ConstructionNoticeStatus;
+use App\Enums\Document\DocumentDispatchStatus;
 use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Models\Construction\ConstructionNotice;
 use App\Models\Diary\DiaryEntry;
@@ -127,7 +128,7 @@ class ConstructionNoticeService {
             'document_id' => (int) $notice->getKey(),
             'channel' => DocumentDispatch::CHANNEL_MANUAL,
             'format' => 'pdf',
-            'status' => 'sent',
+            'status' => DocumentDispatchStatus::Sent,
             'recipient' => $proof['recipient'],
             'sha256' => CryptoHelper::hash($pdfBytes),
             'meta' => array_filter([

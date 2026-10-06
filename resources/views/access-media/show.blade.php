@@ -31,29 +31,29 @@
     <div class="grid gap-4 lg:grid-cols-3">
         <div class="space-y-4 lg:col-span-2">
             <x-card :title="__('Stammdaten')">
-                <dl class="grid gap-x-8 gap-y-1 text-sm sm:grid-cols-2">
-                    <div class="flex justify-between gap-4"><dt class="text-muted">{{ __('Typ') }}</dt><dd>{{ $medium->type->label() }}</dd></div>
-                    <div class="flex justify-between gap-4"><dt class="text-muted">{{ __('Objekt / Standort') }}</dt><dd>{{ $medium->site?->name ?? '—' }}</dd></div>
-                    <div class="flex justify-between gap-4"><dt class="text-muted">{{ __('Anlage / System') }}</dt><dd>{{ $medium->system_name ?? '—' }}</dd></div>
-                    <div class="flex justify-between gap-4"><dt class="text-muted">{{ __('Inhaber') }}</dt><dd>{{ $medium->holderDisplay() ?? '—' }}</dd></div>
+                <x-detail-grid layout="split" :cols="2">
+                    <x-detail-grid.row :label="__('Typ')">{{ $medium->type->label() }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('Objekt / Standort')">{{ $medium->site?->name ?? '—' }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('Anlage / System')">{{ $medium->system_name ?? '—' }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('Inhaber')">{{ $medium->holderDisplay() ?? '—' }}</x-detail-grid.row>
                     @if ($medium->blocked_at)
-                        <div class="flex justify-between gap-4"><dt class="text-muted">{{ __('Gesperrt am') }}</dt><dd>{{ $medium->blocked_at->orgTz()->format('d.m.Y H:i') }}</dd></div>
+                        <x-detail-grid.row :label="__('Gesperrt am')">{{ $medium->blocked_at->fdatetime() }}</x-detail-grid.row>
                     @endif
-                </dl>
+                </x-detail-grid>
                 @if ($medium->notes)
                     <p class="mt-3 whitespace-pre-line text-sm text-base-content/80">{{ $medium->notes }}</p>
                 @endif
                 @if ($medium->blockTask)
                     <div class="mt-3 rounded-lg border border-base-300 p-3 text-sm">
                         <span class="font-medium">{{ __('Sperr-Aufgabe') }}:</span> {{ $medium->blockTask->title }}
-                        — {{ $medium->blockTask->status?->value === 'done' ? __('erledigt') : __('offen (fällig :due)', ['due' => $medium->blockTask->due_date?->format('d.m.Y') ?? '—']) }}
+                        — {{ $medium->blockTask->status?->value === 'done' ? __('erledigt') : __('offen (fällig :due)', ['due' => $medium->blockTask->due_date?->fdate() ?? '—']) }}
                     </div>
                 @endif
             </x-card>
 
             <x-card :title="__('Historie')">
                 @if ($handovers->isEmpty())
-                    <p class="text-sm text-muted">{{ __('Noch keine Übergaben.') }}</p>
+                    <x-empty-state icon="swap_horiz" :title="__('Noch keine Übergaben.')" compact />
                 @else
                     <x-table bare>
                         <x-slot:head>
@@ -68,10 +68,10 @@
                         </x-slot:head>
                         @foreach ($handovers as $handover)
                             <tr>
-                                <td class="whitespace-nowrap text-sm">{{ $handover->occurred_at->orgTz()->format('d.m.Y H:i') }}</td>
+                                <td class="whitespace-nowrap text-sm">{{ $handover->occurred_at->fdatetime() }}</td>
                                 <td class="text-sm">{{ $handover->direction === 'issue' ? __('Ausgabe') : __('Rückgabe') }}</td>
                                 <td class="text-sm">{{ $handover->holderUser?->name ?? trim(($handover->holder_name ?? '') . ' ' . ($handover->holder_company ? '· ' . $handover->holder_company : '')) ?: '—' }}</td>
-                                <td class="whitespace-nowrap text-sm">{{ $handover->expected_return_at?->format('d.m.Y') ?? '—' }}</td>
+                                <td class="whitespace-nowrap text-sm">{{ $handover->expected_return_at?->fdate() ?? '—' }}</td>
                                 <td class="text-sm text-base-content/70">{{ $handover->condition ?? '—' }}</td>
                                 <td class="font-mono text-xs text-muted">{{ $handover->signature_token ?? '—' }}</td>
                             </tr>
@@ -99,7 +99,7 @@
                             <x-input-field type="date" name="expected_return_at" :label="__('Rückgabe erwartet')" />
                             <x-input-field name="signature_token" :label="__('Unterschrifts-Referenz')"
                                            :hint="__('Verweis auf eine erfasste Unterschrift (Muster Schlüsselübergabe) — optional.')" />
-                            <button type="submit" class="btn btn-primary btn-sm w-full">{{ __('Ausgeben') }}</button>
+                            <x-button type="submit" class="w-full">{{ __('Ausgeben') }}</x-button>
                         </form>
                     </x-card>
                 @elseif ($medium->status === AccessMediumStatus::Issued)
@@ -107,7 +107,7 @@
                         <form method="POST" action="{{ route('access-media.take-back', $medium) }}" class="space-y-3">
                             @csrf
                             <x-input-field name="condition" :label="__('Zustand bei Rückgabe')" />
-                            <button type="submit" class="btn btn-primary btn-sm w-full">{{ __('Zurücknehmen') }}</button>
+                            <x-button type="submit" class="w-full">{{ __('Zurücknehmen') }}</x-button>
                         </form>
                     </x-card>
                 @endif
@@ -119,7 +119,7 @@
                             <x-input-field name="note" :label="__('Hinweis zur Verlustmeldung')" />
                             {{-- Die Sperr-Aufgabe ist der Kontrollpunkt: workDiary
                                  sperrt keine Anlage, der Nachweis der Aufgabe schon. --}}
-                            <button type="submit" class="btn btn-error btn-sm w-full">{{ __('Verlust melden (erzeugt Sperr-Aufgabe)') }}</button>
+                            <x-button type="submit" tone="error" class="w-full">{{ __('Verlust melden (erzeugt Sperr-Aufgabe)') }}</x-button>
                         </form>
                     </x-card>
                 @endunless

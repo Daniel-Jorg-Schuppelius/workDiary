@@ -78,17 +78,16 @@
             }
             $configLinks = collect($configLinks)->unique('url')->all();
         @endphp
-        <div class="alert alert-info text-sm">
+        <div role="status" class="alert alert-info text-sm">
             <x-icon name="info" />
             <span>{{ $configLinks === [] ? __('Dieses Plugin hat keine dialogbasierten Einstellungen.') : __('Dieses Plugin wird auf eigenen Seiten konfiguriert:') }}</span>
         </div>
         @if ($configLinks !== [])
             <div class="flex flex-wrap gap-2">
                 @foreach ($configLinks as $link)
-                    <a href="{{ $link['url'] }}" class="btn btn-sm btn-outline">
-                        <x-icon name="{{ $link['icon'] }}" />
+                    <x-button :href="$link['url']" tone="outline" :icon="$link['icon']">
                         {{ $link['label'] }}
-                    </a>
+                    </x-button>
                 @endforeach
             </div>
         @endif

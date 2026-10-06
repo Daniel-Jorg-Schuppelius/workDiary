@@ -29,11 +29,8 @@
             @endif
         </div>
 
-        <dl class="space-y-2 text-sm">
-            <div>
-                <dt class="text-xs text-muted">{{ __('document_design.asset.status') }}</dt>
-                <dd><span class="badge badge-sm badge-{{ $badgeTone }}">{{ $asset->status->label() }}</span></dd>
-            </div>
+        <x-detail-grid layout="cells" :cols="1" small-labels>
+            <x-detail-grid.row :label="__('document_design.asset.status')"><x-status-badge :tone="$badgeTone">{{ $asset->status->label() }}</x-status-badge></x-detail-grid.row>
             @if ($asset->review_notes)
                 <div class="rounded-box border border-warning/50 bg-warning/10 p-2 text-xs">
                     <div class="font-medium">{{ __('document_design.asset.review_notes') }}</div>
@@ -47,22 +44,10 @@
             @if (! $hasNormalized && $imageUrl)
                 <p class="text-xs text-muted">{{ __('document_design.asset.preview_of_original') }}</p>
             @endif
-            <div>
-                <dt class="text-xs text-muted">{{ __('document_design.asset.page_role') }}</dt>
-                <dd>{{ $asset->page_role->label() }} · {{ $format->label() }}</dd>
-            </div>
-            <div>
-                <dt class="text-xs text-muted">{{ __('document_design.asset.original_name') }}</dt>
-                <dd class="break-all"><span class="uppercase">{{ $asset->source_type }}</span> · {{ $asset->original_name }} · {{ \CommonToolkit\Helper\Data\NumberHelper::formatBytes((int) $asset->size, 1) }}</dd>
-            </div>
-            <div>
-                <dt class="text-xs text-muted">{{ __('document_design.asset.uploaded') }}</dt>
-                <dd>{{ $asset->created_at->fdate() }}@if ($asset->uploader) · {{ $asset->uploader->name }}@endif</dd>
-            </div>
-            <div>
-                <dt class="text-xs text-muted">{{ __('document_design.asset.usage') }}</dt>
-                <dd>{{ $inUse ? __('document_design.asset.in_use') : __('document_design.asset.not_in_use') }}</dd>
-            </div>
+            <x-detail-grid.row :label="__('document_design.asset.page_role')">{{ $asset->page_role->label() }} · {{ $format->label() }}</x-detail-grid.row>
+            <x-detail-grid.row :label="__('document_design.asset.original_name')" class="break-all"><span class="uppercase">{{ $asset->source_type }}</span> · {{ $asset->original_name }} · {{ \CommonToolkit\Helper\Data\NumberHelper::formatBytes((int) $asset->size, 1) }}</x-detail-grid.row>
+            <x-detail-grid.row :label="__('document_design.asset.uploaded')">{{ $asset->created_at->fdate() }}@if ($asset->uploader) · {{ $asset->uploader->name }}@endif</x-detail-grid.row>
+            <x-detail-grid.row :label="__('document_design.asset.usage')">{{ $inUse ? __('document_design.asset.in_use') : __('document_design.asset.not_in_use') }}</x-detail-grid.row>
             <div class="flex flex-col items-start gap-1 pt-2">
                 @if ($hasOriginal)
                     <x-icon-btn icon="download" tone="outline" size="sm" target="_blank"
@@ -77,6 +62,6 @@
                     </x-icon-btn>
                 @endif
             </div>
-        </dl>
+        </x-detail-grid>
     </div>
 </x-modal>

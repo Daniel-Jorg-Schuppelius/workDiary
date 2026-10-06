@@ -78,7 +78,7 @@
                 <tr>
                     <td>{{ $block->asset->name ?? '—' }}</td>
                     <td>
-                        <span class="badge badge-error badge-outline">{{ $block->reason->label() }}</span>
+                        <x-status-badge tone="error" size="md" outline>{{ $block->reason->label() }}</x-status-badge>
                         @if ($block->note !== null)
                             <span class="block text-xs text-muted">{{ \Illuminate\Support\Str::limit($block->note, 80) }}</span>
                         @endif
@@ -87,12 +87,12 @@
                     <td>
                         @forelse ($block->exceptions as $exception)
                             @if ($exception->revoked_at === null)
-                                <span class="badge badge-warning badge-outline badge-sm" title="{{ $exception->reason_text }}">
+                                <x-status-badge tone="warning" outline title="{{ $exception->reason_text }}">
                                     {{ $exception->context }} {{ __('bis') }} {{ $exception->valid_until->fdate() }}
-                                </span>
+                                </x-status-badge>
                                 @can('release', \App\Models\AssetCompliance\AssetComplianceProfile::class)
                                     <form method="POST" action="{{ route('asset-compliance.blocks.exception.revoke', $exception) }}" class="inline">@csrf
-                                        <button type="submit" class="btn btn-xs btn-ghost">{{ __('Widerrufen') }}</button>
+                                        <x-button type="submit" tone="ghost" size="xs">{{ __('Widerrufen') }}</x-button>
                                     </form>
                                 @endcan
                             @endif
@@ -114,7 +114,7 @@
                                     {{-- :id — Formular wiederholt sich pro Sperre (doppelte ids, I13) --}}
                                     <x-input-field name="valid_until" type="date" :id="'block-exception-valid-until-' . $block->sqid" :label="__('Befristet bis')" required />
                                     <x-textarea-field name="reason_text" :label="__('Pflichtbegründung (min. 20 Zeichen)')" rows="2" required></x-textarea-field>
-                                    <button type="submit" class="btn btn-sm btn-warning">{{ __('Ausnahme erteilen') }}</button>
+                                    <x-button type="submit" tone="warning">{{ __('Ausnahme erteilen') }}</x-button>
                                 </form>
                             </details>
                         @endcan
@@ -123,7 +123,7 @@
                             <form method="POST" action="{{ route('asset-compliance.blocks.release', $block) }}" class="mt-2 flex items-end gap-2 rounded-box border border-base-300 p-3">
                                 @csrf
                                 <x-input-field name="note" :id="'block-release-note-' . $block->sqid" :label="__('Begründung')" required />
-                                <button type="submit" class="btn btn-sm">{{ __('Aufheben') }}</button>
+                                <x-button type="submit" tone="plain">{{ __('Aufheben') }}</x-button>
                             </form>
                         </details>
                     </td>
@@ -149,7 +149,7 @@
                     </x-select-field>
                     <x-input-field name="blocked_until" type="date" :label="__('Befristet bis (optional)')" />
                     <x-input-field name="note" id="block-create-note" :label="__('Begründung')" required />
-                    <button type="submit" class="btn btn-sm btn-error">{{ __('Sperren') }}</button>
+                    <x-button type="submit" tone="error">{{ __('Sperren') }}</x-button>
                 </form>
             </details>
         @endcan

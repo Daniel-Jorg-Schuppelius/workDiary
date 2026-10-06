@@ -39,7 +39,7 @@
             <ul class="mt-1 space-y-1 text-xs">
                 @foreach ($record->revisions as $revision)
                     <li>
-                        {{ $revision->created_at?->orgTz()->format('d.m.Y H:i') }} · {{ $revision->actor?->name ?? '–' }}:
+                        {{ $revision->created_at?->fdatetime() }} · {{ $revision->actor?->name ?? '–' }}:
                         {{ $revision->previous_status?->label() ?? '–' }} {{ $revision->previous_minutes ?? '' }}
                         <x-icon name="arrow_forward" class="text-muted" />
                         {{ $revision->status->label() }} {{ $revision->minutes ?? '' }} — {{ $revision->reason }}

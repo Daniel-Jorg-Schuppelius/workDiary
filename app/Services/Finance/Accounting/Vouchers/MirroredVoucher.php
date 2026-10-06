@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Finance\Accounting\Vouchers;
 
 use App\Enums\Billing\{DocumentDirection, DocumentKind};
+use App\Enums\Finance\AccountingVoucherState;
 
 /**
  * Ein Beleg eines Buchhaltungssystems, bereits auf die anbieterneutrale
@@ -36,8 +37,8 @@ final readonly class MirroredVoucher {
         public DocumentKind $kind,
         public ?string $rawType = null,
         public ?string $rawStatus = null,
-        /** draft|open|paid|cancelled — normalisierter Zustand im Fremdsystem. */
-        public string $state = 'open',
+        /** Normalisierter Zustand im Fremdsystem. */
+        public AccountingVoucherState $state = AccountingVoucherState::Open,
         public ?string $number = null,
         public ?string $date = null,
         public ?string $dueDate = null,

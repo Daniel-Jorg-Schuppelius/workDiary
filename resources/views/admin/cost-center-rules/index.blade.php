@@ -10,8 +10,7 @@
 
 @section('title', __('costcenter.title.rules'))
 @section('nav-title', __('costcenter.title.rules'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('costcenter.title.rules_subtitle')">
@@ -81,5 +80,7 @@
             <x-table.empty :colspan="4" icon="account_balance" :label="__('costcenter.title.empty')" />
         @endforelse
     </x-table>
+
+    <x-pagination :paginator="$rules" standing />
 </x-index-page>
 @endsection

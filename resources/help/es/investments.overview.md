@@ -1,7 +1,7 @@
 ---
 title: "Planificación de inversiones"
 topic: investments.overview
-version: 1
+version: 2
 audience: []
 modules:
     - module.investments
@@ -22,6 +22,12 @@ nunca puede aprobar por sí mismo. Los presupuestos aprobados se congelan
 como snapshot — un incremento pasa siempre por una desviación
 presupuestaria aprobada y una adenda (nueva solicitud; el estado
 anterior se conserva como «sustituido»).
+
+**Aplazamiento y rechazo:** Durante la planificación, el expediente se
+puede aparcar con «Aplazar»; «Reanudar» lo devuelve exactamente a la fase
+en la que estaba. El rechazo de una solicitud de presupuesto es
+definitivo: un expediente rechazado sigue rechazado y no se puede aplazar
+ni volver a solicitar — un nuevo intento empieza con un nuevo expediente.
 
 **Ejecución y valores reales:** Tras la aprobación se vinculan proyecto,
 pedido, activo, factura de entrada o documento. La vista

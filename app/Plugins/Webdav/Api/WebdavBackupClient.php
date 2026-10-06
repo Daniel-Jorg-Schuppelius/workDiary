@@ -17,6 +17,7 @@ use App\Models\Backup\BackupTargetConnection;
 use App\Plugins\PluginHealthService;
 use App\Plugins\Support\Backup\{BackupAccount, BackupRemoteObject, ChunkedFileReader};
 use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
+use App\Plugins\Webdav\Exceptions\PartialUploadUnsupportedException;
 use App\Plugins\Webdav\WebdavPlugin;
 use App\Support\UrlSafety;
 use CommonToolkit\Helper\FileSystem\File;

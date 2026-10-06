@@ -42,9 +42,9 @@
 </head>
 <body>
     <div class="actions no-print">
-        <button class="btn" data-print>{{ __('form.action.print') }}</button>
-        <a class="btn" href="{{ route('form-submissions.pdf', $submission) }}">{{ __('form.action.download_pdf') }}</a>
-        <a class="btn" href="{{ route('form-submissions.index') }}">{{ __('form.action.back') }}</a>
+        <x-button type="submit" tone="plain" size="md" data-print>{{ __('form.action.print') }}</x-button>
+        <x-button :href="route('form-submissions.pdf', $submission)" tone="plain" size="md">{{ __('form.action.download_pdf') }}</x-button>
+        <x-button :href="route('form-submissions.index')" tone="plain" size="md">{{ __('form.action.back') }}</x-button>
     </div>
 
     {{-- Kopf --}}

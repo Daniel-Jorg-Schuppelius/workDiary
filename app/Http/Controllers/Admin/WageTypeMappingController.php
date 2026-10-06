@@ -31,7 +31,9 @@ class WageTypeMappingController extends Controller {
         $mappings = WageTypeMapping::query()
             ->orderBy('profile')
             ->orderBy('wage_type')
-            ->get();
+            ->orderBy('id')
+            ->paginate(25)
+            ->withQueryString();
 
         return view('admin.wage-type-mappings.index', [
             'mappings' => $mappings,
@@ -56,7 +58,7 @@ class WageTypeMappingController extends Controller {
 
         WageTypeMapping::query()->create($this->validated($request));
 
-        return redirect()->route('admin.wage-type-mappings.index')
+        return redirect()->toList('admin.wage-type-mappings.index')
             ->with('success', __('wage_types.flash.created'));
     }
 
@@ -75,7 +77,7 @@ class WageTypeMappingController extends Controller {
 
         $wageTypeMapping->update($this->validated($request, $wageTypeMapping));
 
-        return redirect()->route('admin.wage-type-mappings.index')
+        return redirect()->toList('admin.wage-type-mappings.index')
             ->with('success', __('wage_types.flash.updated'));
     }
 
@@ -84,7 +86,7 @@ class WageTypeMappingController extends Controller {
 
         $wageTypeMapping->delete();
 
-        return redirect()->route('admin.wage-type-mappings.index')
+        return redirect()->toList('admin.wage-type-mappings.index')
             ->with('success', __('wage_types.flash.deleted'));
     }
 
@@ -159,7 +161,7 @@ class WageTypeMappingController extends Controller {
 
         $config->fill($attributes)->save();
 
-        return redirect()->route('admin.wage-type-mappings.index')
+        return redirect()->toList('admin.wage-type-mappings.index')
             ->with('success', __('wage_types.flash.delivery_saved'));
     }
 

@@ -11,8 +11,7 @@
 
 @section('title', __('Zutrittsmedien'))
 @section('nav-title', __('Zutrittsmedien'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @php
     use App\Enums\Access\{AccessMediumStatus, AccessMediumType};
@@ -82,7 +81,7 @@
                         @if ($medium->blockTask)
                             @php($overdue = $medium->blockTask->status?->value !== 'done' && $medium->blockTask->due_date?->isPast())
                             <span class="@if ($overdue) text-error font-medium @else text-base-content/70 @endif">
-                                {{ $medium->blockTask->status?->value === 'done' ? __('erledigt') : __('offen (fällig :due)', ['due' => $medium->blockTask->due_date?->format('d.m.Y') ?? '—']) }}
+                                {{ $medium->blockTask->status?->value === 'done' ? __('erledigt') : __('offen (fällig :due)', ['due' => $medium->blockTask->due_date?->fdate() ?? '—']) }}
                             </span>
                         @else
                             —

@@ -24,11 +24,11 @@
             <h1 class="text-2xl font-semibold">
                 {{ $statement->periodLabel() }}
                 @unless ($locked)
-                    <span class="badge badge-ghost align-middle">{{ __('customer-billing.provisional') }}</span>
+                    <x-status-badge size="md" class="align-middle">{{ __('customer-billing.provisional') }}</x-status-badge>
                 @endunless
             </h1>
         </div>
-        <a href="{{ $pdfUrl }}" class="btn btn-sm btn-primary">{{ __('customer-billing.download_pdf') }}</a>
+        <x-button :href="$pdfUrl">{{ __('customer-billing.download_pdf') }}</x-button>
     </div>
 
     {{-- Abrechnungsblock (Excel-Analogie Gesamt/Abgerechnet/Vormonat/Offen) --}}

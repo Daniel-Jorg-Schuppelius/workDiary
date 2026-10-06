@@ -11,7 +11,7 @@
 namespace App\Http\Resources;
 
 use App\Models\Communication\Comment;
-use App\Support\Sqid;
+use App\Support\{MorphMap, Sqid};
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -23,12 +23,8 @@ class CommentResource extends JsonResource {
 
     /** @return array<string, mixed> */
     public function toArray(Request $request): array {
-        $commentableId = null;
-        if (is_string($this->commentable_type) && class_exists($this->commentable_type)) {
-            /** @var class-string $commentableType */
-            $commentableType = $this->commentable_type;
-            $commentableId = Sqid::encodeOrNull($commentableType, $this->commentable_id);
-        }
+        $commentableType = MorphMap::classFor($this->commentable_type);
+        $commentableId = $commentableType !== null ? Sqid::encodeOrNull($commentableType, $this->commentable_id) : null;
 
         return [
             'id' => $this->sqid,

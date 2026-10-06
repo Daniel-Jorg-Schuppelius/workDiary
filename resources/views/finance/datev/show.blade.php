@@ -65,16 +65,16 @@
         </div>
 
         <div class="flex flex-wrap items-center gap-2 mb-4 text-xs">
-            <span class="badge badge-ghost">{{ __('finance.datev.format.label') }}: {{ __('finance.datev.format.value') }}</span>
+            <x-status-badge size="md">{{ __('finance.datev.format.label') }}: {{ __('finance.datev.format.value') }}</x-status-badge>
             @if ($batch->selection_mode === 'manual')
                 {{-- Persistierter Zuschnitt (MVP-334): Teilauswahl statt kompletter Zeitraum. --}}
-                <span class="badge badge-warning badge-outline">{{ __('finance.datev.selection.manual') }}</span>
+                <x-status-badge tone="warning" size="md" outline>{{ __('finance.datev.selection.manual') }}</x-status-badge>
             @endif
             @if ($batch->file_hash)
                 {{-- Ein finalisierter Stapel hat die Write→Read-Validierung zwingend bestanden. --}}
-                <span class="badge badge-success badge-outline gap-1">
+                <x-status-badge tone="success" size="md" outline class="gap-1">
                     <x-icon name="check_circle" class="w-3 h-3" />{{ __('finance.datev.format.verified') }}
-                </span>
+                </x-status-badge>
             @endif
         </div>
 
@@ -85,7 +85,7 @@
         @endif
 
         {{-- Konvertierungs-Hinweis (Kriterium 045): abgeleitete/vereinfachte Felder vor der Übergabe sichtbar machen. --}}
-        <div class="alert alert-info text-sm mb-3 block">
+        <div role="status" class="alert alert-info text-sm mb-3 block">
             <div class="font-medium mb-1">{{ __('finance.datev.loss.title') }}</div>
             <p class="text-xs text-base-content/70 mb-1">{{ __('finance.datev.loss.hint') }}</p>
             <ul class="list-disc pl-5 text-xs">
@@ -96,12 +96,12 @@
         </div>
 
         @if ($preflight['errors'] !== [])
-            <div class="alert alert-error text-sm mb-3">
+            <div role="alert" class="alert alert-error text-sm mb-3">
                 <ul class="list-disc pl-5">@foreach ($preflight['errors'] as $e)<li>{{ $e }}</li>@endforeach</ul>
             </div>
         @endif
         @if ($preflight['warnings'] !== [])
-            <div class="alert alert-warning text-sm mb-3">
+            <div role="alert" class="alert alert-warning text-sm mb-3">
                 <ul class="list-disc pl-5">@foreach ($preflight['warnings'] as $w)<li>{{ $w }}</li>@endforeach</ul>
             </div>
         @endif
@@ -140,7 +140,7 @@
                     <td>{{ $source->tax_key ?? '—' }}</td>
                     <td>
                         @if ($source->is_reversal)
-                            <span class="badge badge-error badge-outline badge-xs">{{ __('finance.datev.field.reversal_badge') }}</span>
+                            <x-status-badge tone="error" size="xs" outline>{{ __('finance.datev.field.reversal_badge') }}</x-status-badge>
                         @else
                             —
                         @endif

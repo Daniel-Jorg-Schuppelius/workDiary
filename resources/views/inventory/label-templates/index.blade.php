@@ -9,8 +9,7 @@
 @extends('layouts.app')
 @section('title', __('inventory.label_template.title') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('inventory.label_template.title'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('inventory.label_template.subtitle')">
@@ -20,7 +19,7 @@
         </x-slot:actions>
     @endif
 
-    @if ($templates->isEmpty())
+    @if ($templates->total() === 0)
         <x-empty-state framed :title="__('inventory.label_template.empty')" />
     @else
         <x-table :zebra="true" scroll="flex" :pinRows="true">
@@ -34,7 +33,7 @@
             </x-slot:head>
             @forelse ($templates as $tpl)
                 <tr>
-                    <td>{{ $tpl->name }} @if ($tpl->is_default)<span class="badge badge-sm badge-primary">{{ __('inventory.label_template.default') }}</span>@endif</td>
+                    <td>{{ $tpl->name }} @if ($tpl->is_default)<x-status-badge tone="primary">{{ __('inventory.label_template.default') }}</x-status-badge>@endif</td>
                     <td class="uppercase">{{ $tpl->paper_size }} · {{ __('inventory.label_template.orientation_' . $tpl->orientation) }}{{ $tpl->with_qr ? ' · QR' : '' }}</td>
                     <td class="text-xs">{{ collect($tpl->fields)->map(fn ($f) => __('inventory.label_template.field.' . $f))->implode(', ') }}</td>
                     @if ($canManage)
@@ -52,6 +51,8 @@
                                :title="__('inventory.label_template.empty')" compact />
             @endforelse
         </x-table>
+
+        <x-pagination :paginator="$templates" standing />
     @endif
 </x-index-page>
 @endsection

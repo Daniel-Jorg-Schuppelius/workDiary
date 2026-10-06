@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Plugins\Calendly;
 
+use App\Plugins\Calendly\Enums\{CalendlyConnectionStatus, CalendlyWebhookSubscriptionStatus};
 use App\Plugins\Calendly\Jobs\CalendlyIngestJob;
 use App\Plugins\Calendly\Models\{CalendlyConnection, CalendlyWebhookDelivery, CalendlyWebhookSubscription};
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -39,7 +40,7 @@ final class CalendlyWebhookTest extends TestCase {
         $connection = CalendlyConnection::query()->create([
             'organization_id' => $this->organization->id,
             'access_token' => 'tok',
-            'status' => CalendlyConnection::STATUS_ACTIVE,
+            'status' => CalendlyConnectionStatus::Active,
             'calendly_organization_uri' => 'https://api.calendly.com/organizations/o1',
             'calendly_user_uri' => 'https://api.calendly.com/users/u1',
         ]);
@@ -51,7 +52,7 @@ final class CalendlyWebhookTest extends TestCase {
             'signing_key' => self::SIGNING_KEY,
             'scope' => CalendlyWebhookSubscription::SCOPE_ORGANIZATION,
             'events' => ['invitee.created', 'invitee.canceled'],
-            'status' => CalendlyWebhookSubscription::STATUS_ACTIVE,
+            'status' => CalendlyWebhookSubscriptionStatus::Active,
         ]);
     }
 

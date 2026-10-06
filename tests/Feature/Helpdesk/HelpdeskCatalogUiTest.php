@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Helpdesk;
 
+use App\Enums\ServiceTicket\ServiceRequestStatus;
 use App\Enums\User\Permission;
 use App\Models\Form\FormTemplate;
 use App\Models\Platform\{Organization, User};
@@ -230,7 +231,7 @@ final class HelpdeskCatalogUiTest extends TestCase {
             'service_ticket_id' => $ticket->id,
             'request_item_id' => $item->id,
             'catalog_snapshot' => ['name' => $item->name, 'version' => 1],
-            'status' => ServiceRequest::STATUS_DONE,
+            'status' => ServiceRequestStatus::Done,
         ]);
 
         $this->actingAs($this->manager)

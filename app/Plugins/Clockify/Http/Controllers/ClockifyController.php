@@ -1,6 +1,6 @@
 <?php
 /*
- * Created on   : Tue Jul 07 2026
+ * Created on   : Sun Oct 04 2026
  * Author       : Daniel Jörg Schuppelius
  * Author Uri   : https://schuppelius.org
  * Filename     : ClockifyController.php
@@ -8,145 +8,48 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
+declare(strict_types=1);
+
 namespace App\Plugins\Clockify\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use App\Models\Integration\IntegrationInboxItem;
-use App\Models\Platform\Organization;
-use App\Plugins\Clockify\{ClockifyConfig, ClockifyExportService, ClockifyImportService, ClockifyPlugin};
-use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
-use Carbon\CarbonImmutable;
-use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
-use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\View\View;
+use App\Plugins\Clockify\{ClockifyConfig, ClockifyPlugin};
+use App\Plugins\Clockify\Services\{ClockifyExportService, ClockifyImportService};
+use App\Plugins\Support\AbstractTimeEntryPushService;
+use App\Plugins\Support\TimeTracking\{CsvAndApiTimeImporter, TimeImportAdminController};
 
-/**
- * Admin-Seite für den Clockify-Import: Detailed-Report-CSV hochladen oder
- * direkt über die Reports-API importieren. Zugeordnetes wird sofort als
- * TimeEntry angelegt; Unzugeordnetes landet in der universellen
- * Zuordnungs-Inbox (admin.integration.inbox) — hier nur die Anzahl offener
- * Gruppen als Deep-Link-Hinweis.
- */
-class ClockifyController extends Controller {
-    use ResolvesPluginOrgContext;
-
-    public function __construct(private readonly ClockifyImportService $service) {}
-
-    public function index(): View {
-        $admin = $this->admin();
-        $organization = $admin->organization;
-
-        $inboxOpenCount = $organization instanceof Organization
-            ? IntegrationInboxItem::query()
-                ->where('organization_id', $organization->id)
-                ->where('plugin_id', ClockifyPlugin::ID)
-                ->where('status', IntegrationInboxItem::STATUS_OPEN)
-                ->whereNotNull('group_key')
-                ->count()
-            : 0;
-
-        $config = ClockifyConfig::resolve($admin->organization_id);
-
-        return view('clockify::admin.import', [
-            'inboxOpenCount' => $inboxOpenCount,
-            'apiConfigured' => $config['api_key'] !== null,
-            'syncWindowDays' => $config['sync_window_days'],
-            'exportEnabled' => $config['export_enabled'],
-        ]);
+/** Clockify: Detailed-Report-CSV, Import über die Reports-API, Übertragung lokaler Zeiten (Spiegelung, Toggl-Muster). */
+class ClockifyController extends TimeImportAdminController {
+    protected function pluginId(): string {
+        return ClockifyPlugin::ID;
     }
 
-    public function uploadCsv(Request $request): RedirectResponse {
-        $admin = $this->admin();
-
-        $request->validate([
-            'csv' => ['required', 'file', 'mimes:csv,txt', 'max:20480'],
-        ]);
-
-        $content = ToolkitFile::read((string) $request->file('csv')->getRealPath());
-        $config = ClockifyConfig::resolve($admin->organization_id);
-
-        $result = $this->service->importFromCsv($this->organization($admin), $content, $config);
-
-        return back()->with('status', __('Clockify-Import: :created angelegt, :skipped übersprungen, :unmatched offen (Inbox).', [
-            'created' => $result['created'],
-            'skipped' => $result['skipped'],
-            'unmatched' => $result['unmatched'],
-        ]) . $this->unresolvedUsersSuffix($result));
+    protected function view(): string {
+        return 'clockify::admin.import';
     }
 
-    /** API-Import über das Formular-Zeitfenster (leer = sync_window_days rückwirkend). */
-    public function importApi(Request $request): RedirectResponse {
-        $admin = $this->admin();
-
-        $data = $request->validate([
-            'from' => ['nullable', 'date'],
-            'to' => ['nullable', 'date', 'after_or_equal:from'],
-        ]);
-
-        $config = ClockifyConfig::resolve($admin->organization_id);
-
-        $result = $this->service->importFromApi(
-            $this->organization($admin),
-            $config,
-            isset($data['from']) ? CarbonImmutable::parse((string) $data['from'])->startOfDay() : null,
-            isset($data['to']) ? CarbonImmutable::parse((string) $data['to'])->endOfDay() : null,
-        );
-
-        if (isset($result['error'])) {
-            return back()->withErrors(['api' => $result['error']]);
-        }
-
-        return back()->with('status', __('Clockify-API-Import: :created angelegt, :skipped übersprungen, :unmatched offen (Inbox).', [
-            'created' => $result['created'],
-            'skipped' => $result['skipped'],
-            'unmatched' => $result['unmatched'],
-        ]) . $this->unresolvedUsersSuffix($result));
+    protected function config(?int $organizationId): array {
+        return ClockifyConfig::resolve($organizationId);
     }
 
-    /** Übertragung lokaler Zeiten nach Clockify (Spiegelung, Toggl-Muster). */
-    public function exportApi(Request $request, ClockifyExportService $export): RedirectResponse {
-        $admin = $this->admin();
-
-        $data = $request->validate([
-            'from' => ['nullable', 'date'],
-            'to' => ['nullable', 'date', 'after_or_equal:from'],
-        ]);
-
-        $config = ClockifyConfig::resolve($admin->organization_id);
-
-        $result = $export->exportPending(
-            $this->organization($admin),
-            $config,
-            isset($data['from']) ? CarbonImmutable::parse((string) $data['from'])->startOfDay() : null,
-            isset($data['to']) ? CarbonImmutable::parse((string) $data['to'])->endOfDay() : null,
-        );
-
-        if ($result['pushed'] === 0 && $result['errors'] !== []) {
-            return back()->withErrors(['api' => $result['errors'][0]]);
-        }
-
-        $status = __('Clockify-Übertragung: :pushed übertragen, :skipped übersprungen, :failed fehlgeschlagen.', [
-            'pushed' => $result['pushed'],
-            'skipped' => $result['skipped'],
-            'failed' => $result['failed'],
-        ]);
-        if ($result['errors'] !== []) {
-            $status .= ' ' . $result['errors'][0];
-        }
-
-        return back()->with('status', $status);
+    protected function apiConfigured(array $config): bool {
+        return ($config['api_key'] ?? null) !== null;
     }
 
-    /**
-     * Hinweis auf Einträge ohne zuordenbaren Quell-Benutzer (MVP-509).
-     *
-     * @param  array<string, mixed>  $result
-     */
-    private function unresolvedUsersSuffix(array $result): string {
-        $n = (int) ($result['unresolved_users'] ?? 0);
+    protected function importer(): CsvAndApiTimeImporter {
+        return app(ClockifyImportService::class);
+    }
 
-        return $n > 0
-            ? ' ' . __(':n ohne zuordenbaren Benutzer — Fälle liegen in der Integrations-Inbox.', ['n' => $n])
-            : '';
+    protected function exporter(): AbstractTimeEntryPushService {
+        return app(ClockifyExportService::class);
+    }
+
+    protected function importedMessage(array $counts, bool $viaApi): string {
+        return $viaApi
+            ? (string) __('Clockify-API-Import: :created angelegt, :skipped übersprungen, :unmatched offen (Inbox).', $counts)
+            : (string) __('Clockify-Import: :created angelegt, :skipped übersprungen, :unmatched offen (Inbox).', $counts);
+    }
+
+    protected function exportedMessage(array $counts): string {
+        return (string) __('Clockify-Übertragung: :pushed übertragen, :skipped übersprungen, :failed fehlgeschlagen.', $counts);
     }
 }

@@ -10,8 +10,7 @@
 
 @section('title', __('Betroffenenanfragen'))
 @section('nav-title', __('Betroffenenanfragen'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
     <x-index-page overflow="clip" :subtitle="__('Anfragen betroffener Personen erfassen, zuweisen und fristgerecht bearbeiten.')">
@@ -48,7 +47,7 @@
                     <td>
                         <x-status-badge :tone="$r->isOverdue() ? 'error' : 'ghost'" size="sm">{{ $r->status->label() }}</x-status-badge>
                     </td>
-                    <td class="{{ $r->isOverdue() ? 'text-error font-semibold' : '' }}">{{ $r->deadline_at?->format('d.m.Y') }}</td>
+                    <td class="{{ $r->isOverdue() ? 'text-error font-semibold' : '' }}">{{ $r->deadline_at?->fdate() }}</td>
                     <td>{{ $r->assignedUser?->name ?? '—' }}</td>
                 </tr>
             @empty

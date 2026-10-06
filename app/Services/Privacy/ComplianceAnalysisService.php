@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Privacy;
 
+use App\Enums\Privacy\ComplianceFindingStatus;
 use App\Models\Platform\Organization;
 use App\Models\Privacy\{ComplianceFinding, Dpia, JointControllerAgreement, MeasureAssignment, PrivacyAttachment, PrivacyRequirement, ProcessingActivity, ProcessingAgreement, Processor, TechnicalMeasure};
 use App\Support\MorphMap;
@@ -72,9 +73,9 @@ class ComplianceAnalysisService {
         ComplianceFinding::query()
             ->where('organization_id', $orgId)
             ->where('auto_detected', true)
-            ->whereIn('status', ['missing', 'expiring'])
+            ->whereIn('status', ComplianceFindingStatus::detected())
             ->whereNotIn('id', $seenIds === [] ? [0] : $seenIds)
-            ->update(['status' => 'present', 'trigger' => null, 'detected_at' => $now]);
+            ->update(['status' => ComplianceFindingStatus::Present, 'trigger' => null, 'detected_at' => $now]);
 
         return count($gaps);
     }
@@ -125,7 +126,7 @@ class ComplianceAnalysisService {
             case 'avv_required': // Auftragsverarbeiter ohne AVV
                 foreach (Processor::query()->where('organization_id', $orgId)->where('role', 'processor')->get() as $p) {
                     if (! ProcessingAgreement::query()->where('processor_id', $p->id)->exists()) {
-                        $gaps[] = ['status' => 'missing', 'processor_id' => $p->id,
+                        $gaps[] = ['status' => ComplianceFindingStatus::Missing, 'processor_id' => $p->id,
                             'trigger' => "Auftragsverarbeiter „{$p->name}“ ohne AVV"];
                     }
                 }
@@ -133,14 +134,14 @@ class ComplianceAnalysisService {
             case 'avv_current': // Ablaufende/abgelaufene AVV
                 foreach (ProcessingAgreement::query()->where('organization_id', $orgId)
                     ->whereNotNull('valid_until')->whereDate('valid_until', '<=', $now->copy()->addDays($warnDays))->get() as $a) {
-                    $gaps[] = ['status' => 'expiring', 'agreement_id' => $a->id,
+                    $gaps[] = ['status' => ComplianceFindingStatus::Expiring, 'agreement_id' => $a->id,
                         'trigger' => "AVV „{$a->title}“ läuft ab oder ist abgelaufen"];
                 }
                 break;
             case 'gvv_required': // Gemeinsam Verantwortliche ohne GVV
                 foreach (Processor::query()->where('organization_id', $orgId)->where('role', 'joint_controller')->get() as $p) {
                     if (! JointControllerAgreement::query()->where('partner_id', $p->id)->exists()) {
-                        $gaps[] = ['status' => 'missing', 'processor_id' => $p->id,
+                        $gaps[] = ['status' => ComplianceFindingStatus::Missing, 'processor_id' => $p->id,
                             'trigger' => "Gemeinsam Verantwortlicher „{$p->name}“ ohne GVV"];
                     }
                 }
@@ -149,7 +150,7 @@ class ComplianceAnalysisService {
                 foreach (ProcessingActivity::query()->where('organization_id', $orgId)->where('dsfa_required', true)->get() as $act) {
                     $dpia = Dpia::query()->where('activity_id', $act->id)->first();
                     if ($dpia === null || $dpia->outcome->value === 'open') {
-                        $gaps[] = ['status' => 'missing', 'activity_id' => $act->id,
+                        $gaps[] = ['status' => ComplianceFindingStatus::Missing, 'activity_id' => $act->id,
                             'trigger' => "„{$act->name}“ mit DSFA-Bedarf ohne abgeschlossene DSFA"];
                     }
                 }
@@ -157,7 +158,7 @@ class ComplianceAnalysisService {
             case 'tom_assigned': // Verarbeitungstaetigkeit ohne zugeordnete TOM
                 foreach (ProcessingActivity::query()->where('organization_id', $orgId)->get() as $act) {
                     if (! MeasureAssignment::query()->where('activity_id', $act->id)->exists()) {
-                        $gaps[] = ['status' => 'missing', 'activity_id' => $act->id,
+                        $gaps[] = ['status' => ComplianceFindingStatus::Missing, 'activity_id' => $act->id,
                             'trigger' => "„{$act->name}“ ohne zugeordnete TOM"];
                     }
                 }
@@ -171,7 +172,7 @@ class ComplianceAnalysisService {
                     ->get();
                 if ($expiring->isNotEmpty()) {
                     $names = $expiring->map(fn(PrivacyAttachment $a): string => $a->filename)->implode(', ');
-                    $gaps[] = ['status' => 'expiring',
+                    $gaps[] = ['status' => ComplianceFindingStatus::Expiring,
                         'trigger' => 'TOM-Nachweise laufen ab oder sind abgelaufen: ' . $names];
                 }
                 break;
@@ -181,7 +182,7 @@ class ComplianceAnalysisService {
     }
 
     /** Manuelle Statusentscheidung (z. B. „nicht anwendbar"/„Abweichung akzeptiert"). */
-    public function override(ComplianceFinding $finding, string $status, ?string $justification, ?Carbon $dueAt = null): ComplianceFinding {
+    public function override(ComplianceFinding $finding, ComplianceFindingStatus $status, ?string $justification, ?Carbon $dueAt = null): ComplianceFinding {
         $finding->forceFill([
             'status' => $status,
             'justification' => $justification,

@@ -278,7 +278,7 @@ class CiBaseDesignTest extends TestCase {
             'organization_id' => $org->id,
             'customer_id' => $customer->id,
             'number' => 'G-' . uniqid(),
-            'status' => \App\Models\Invoicing\Invoice::STATUS_DRAFT,
+            'status' => \App\Enums\Invoicing\InvoiceStatus::Draft,
             'currency' => 'EUR',
             'tax_rate' => '19.00',
             'type' => \App\Models\Invoicing\Invoice::TYPE_CREDIT_NOTE,

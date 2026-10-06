@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Import\Specs\Concerns;
 
+use App\Enums\Integration\IntegrationInboxStatus;
 use App\Models\Integration\{ExternalReference, ExternalReferenceAlias, IntegrationInboxItem};
 use App\Models\Platform\Organization;
 use App\Services\Import\ImportOutcome;
@@ -168,7 +169,7 @@ trait DedupsAndStages {
             'dedupe_key' => $dedupeKey,
         ]);
         if (! $item->exists) {
-            $item->status = IntegrationInboxItem::STATUS_OPEN;
+            $item->status = IntegrationInboxStatus::Open;
         }
         $item->fill([
             'source' => 'csv',

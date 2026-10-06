@@ -30,7 +30,13 @@
                                 show-label>{{ __('sepa.action.export') }}</x-icon-btn>
                 </x-action-form>
             @endif
-            @if ($ebicsAvailable && $canRelease && $formatsAvailable && ($run->isReleased() || $run->isExported()) && $ebicsSubmission === null)
+            @if ($ebicsUnclear && $canRelease)
+                <x-action-form :action="route('finance.payment-runs.ebics.not-submitted', $run)" :confirm="__('ebics.confirm.not_submitted')">
+                    <x-icon-btn icon="report" tone="warning" size="sm" type="submit"
+                                show-label>{{ __('ebics.action.confirm_not_submitted') }}</x-icon-btn>
+                </x-action-form>
+            @endif
+            @if ($ebicsAvailable && $canRelease && $formatsAvailable && ($run->isReleased() || $run->isExported()) && $ebicsSubmission === null && $ebicsUnclear === null)
                 <x-action-form :action="route('finance.payment-runs.ebics', $run)" :confirm="__('ebics.confirm.submit')">
                     <x-icon-btn icon="send" tone="primary" size="sm" type="submit"
                                 show-label>{{ __('ebics.action.submit') }}</x-icon-btn>
@@ -45,23 +51,26 @@
         </x-slot:actions>
 
         <x-card>
-            <dl class="grid gap-3 text-sm sm:grid-cols-4">
-                <div><dt class="text-muted">{{ __('sepa.column.kind') }}</dt><dd>{{ $run->kind->label() }}</dd></div>
-                <div><dt class="text-muted">{{ __('sepa.column.account') }}</dt><dd>{{ $run->bankAccount?->label ?? '—' }}</dd></div>
-                <div><dt class="text-muted">{{ __('sepa.column.execution_date') }}</dt><dd>{{ optional($run->execution_date)->fdate() ?? '—' }}</dd></div>
-                <div><dt class="text-muted">{{ __('sepa.column.total') }}</dt><dd class="font-medium tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $run->total, 2, withThousandsSeparator: true) }}</dd></div>
+            <x-detail-grid layout="cells" :cols="4">
+                <x-detail-grid.row :label="__('sepa.column.kind')">{{ $run->kind->label() }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('sepa.column.account')">{{ $run->bankAccount?->label ?? '—' }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('sepa.column.execution_date')">{{ optional($run->execution_date)->fdate() ?? '—' }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('sepa.column.total')" class="font-medium tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $run->total, 2, withThousandsSeparator: true) }}</x-detail-grid.row>
+                @if ($ebicsUnclear)
+                    <x-detail-grid.row label="EBICS" class="text-warning">{{ __('ebics.run.unclear', ['date' => $ebicsUnclear->occurredAt()?->fdatetime()]) }}</x-detail-grid.row>
+                @endif
                 @if ($ebicsSubmission)
-                    <div><dt class="text-muted">EBICS</dt><dd>{{ __('ebics.run.submitted', ['date' => $ebicsSubmission->occurredAt()?->fdatetime(), 'order' => $ebicsSubmission->payloadData()['order_id'] ?? '—']) }}</dd></div>
+                    <x-detail-grid.row label="EBICS">{{ __('ebics.run.submitted', ['date' => $ebicsSubmission->occurredAt()?->fdatetime(), 'order' => $ebicsSubmission->payloadData()['order_id'] ?? '—']) }}</x-detail-grid.row>
                 @endif
                 @if ($run->released_at)
-                    <div><dt class="text-muted">{{ __('sepa.released_by') }}</dt><dd>{{ $run->releasedBy?->name ?? '—' }} · {{ $run->released_at->fdatetime() }}</dd></div>
+                    <x-detail-grid.row :label="__('sepa.released_by')">{{ $run->releasedBy?->name ?? '—' }} · {{ $run->released_at->fdatetime() }}</x-detail-grid.row>
                 @endif
                 @if ($run->file_sha256)
                     {{-- Der Hash ist der Beleg, dass ein zweiter Download dieselbe
                          Datei liefert und nicht eine neue Zahlung. --}}
-                    <div class="sm:col-span-3"><dt class="text-muted">{{ __('sepa.file_hash') }}</dt><dd class="font-mono text-xs break-all">{{ $run->file_sha256 }}</dd></div>
+                    <x-detail-grid.row :label="__('sepa.file_hash')" full class="font-mono text-xs break-all">{{ $run->file_sha256 }}</x-detail-grid.row>
                 @endif
-            </dl>
+            </x-detail-grid>
         </x-card>
 
         <x-table :pin-rows="true" :zebra="true" table-sort="client">

@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Integration;
 
+use App\Enums\Integration\IntegrationInboxStatus;
 use App\Enums\User\UserRole;
 use App\Models\Customer\Customer;
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
@@ -41,7 +42,7 @@ class IntegrationInboxTest extends TestCase {
             'external_id' => 'tg-1',
             'dedupe_key' => 'client:tg-1',
             'case_type' => IntegrationInboxItem::CASE_UNMATCHED,
-            'status' => IntegrationInboxItem::STATUS_OPEN,
+            'status' => IntegrationInboxStatus::Open,
             'remote_snapshot' => ['client' => 'Neu AG'],
             'mapped_snapshot' => ['name' => 'Neu AG', 'vat_id' => 'DE123'],
             'display_title' => 'Neu AG',
@@ -173,7 +174,7 @@ class IntegrationInboxTest extends TestCase {
             ->assertOk()
             ->assertSee(__('Neuer Zeiteintrag nicht nach :plugin übertragen', ['plugin' => 'Toggl Track']))
             ->assertSee(__('Übertragung nach :plugin fehlgeschlagen', ['plugin' => 'Toggl Track']))
-            ->assertSee('<span class="badge badge-sm badge-outline">' . __('entity-types.TimeEntry') . '</span>', false)
+            ->assertSeeInOrder(['class="badge badge-sm badge-outline">', __('entity-types.TimeEntry'), '</span>'], false)
             ->assertSee(__('Zeitüberschreitung bei der Zustellung'))
             ->assertDontSee('toggl.entry.create')
             ->assertDontSee('receipt.push')
@@ -296,7 +297,7 @@ class IntegrationInboxTest extends TestCase {
             ->assertRedirect();
 
         $item->refresh();
-        $this->assertSame(IntegrationInboxItem::STATUS_RESOLVED_LINKED, $item->status);
+        $this->assertSame(IntegrationInboxStatus::ResolvedLinked, $item->status);
         $this->assertSame($customer->id, $item->resolved_to_id);
         $this->assertDatabaseHas('external_references', [
             'plugin_id' => 'toggl',
@@ -316,7 +317,7 @@ class IntegrationInboxTest extends TestCase {
         $created = Customer::query()->where('name', 'Neu AG')->first();
         $this->assertNotNull($created);
         $this->assertSame('DE123', $created->vat_id);
-        $this->assertSame(IntegrationInboxItem::STATUS_RESOLVED_CREATED, $item->fresh()->status);
+        $this->assertSame(IntegrationInboxStatus::ResolvedCreated, $item->fresh()->status);
         $this->assertDatabaseHas('external_references', ['external_id' => 'tg-1', 'referenceable_id' => $created->id]);
     }
 
@@ -339,7 +340,7 @@ class IntegrationInboxTest extends TestCase {
             ->assertRedirect()
             ->assertSessionHas('error');
 
-        $this->assertSame(IntegrationInboxItem::STATUS_OPEN, $item->fresh()->status);
+        $this->assertSame(IntegrationInboxStatus::Open, $item->fresh()->status);
         $this->assertDatabaseMissing('projects', ['number' => 'P-100']);
     }
 
@@ -363,7 +364,7 @@ class IntegrationInboxTest extends TestCase {
             ->assertRedirect();
 
         $this->assertSame('new@x.test', $customer->fresh()->email);
-        $this->assertSame(IntegrationInboxItem::STATUS_RESOLVED_REMOTE, $item->fresh()->status);
+        $this->assertSame(IntegrationInboxStatus::ResolvedRemote, $item->fresh()->status);
     }
 
     public function test_keep_local_closes_without_change(): void {
@@ -382,13 +383,51 @@ class IntegrationInboxTest extends TestCase {
             ->assertRedirect();
 
         $this->assertSame('old@x.test', $customer->fresh()->email);
-        $this->assertSame(IntegrationInboxItem::STATUS_RESOLVED_LOCAL, $item->fresh()->status);
+        $this->assertSame(IntegrationInboxStatus::ResolvedLocal, $item->fresh()->status);
     }
 
     public function test_dismiss(): void {
         $item = $this->item();
         $this->actingAs($this->admin)->post(route('admin.integration.inbox.dismiss', $item))->assertRedirect();
-        $this->assertSame(IntegrationInboxItem::STATUS_DISMISSED, $item->fresh()->status);
+        $this->assertSame(IntegrationInboxStatus::Dismissed, $item->fresh()->status);
+    }
+
+    /** Erledigte Fälle tragen das Label des Status-Enums; der Filter arbeitet mit dem Rohwert der Anfrage. */
+    public function test_closed_items_show_the_status_label_and_filter_by_value(): void {
+        $this->item(['dedupe_key' => 'client:tg-linked', 'status' => IntegrationInboxStatus::ResolvedLinked, 'display_title' => 'Zugeordnete AG']);
+        $this->item(['dedupe_key' => 'client:tg-dismissed', 'status' => IntegrationInboxStatus::Dismissed, 'display_title' => 'Verworfene AG']);
+        $this->item(['dedupe_key' => 'client:tg-open', 'display_title' => 'Offene AG']);
+
+        $this->actingAs($this->admin)
+            ->get(route('admin.integration.inbox', ['status' => 'all']))
+            ->assertOk()
+            // Neueste zuerst; das Abzeichen steht je Karte vor dem Titel.
+            ->assertSeeInOrder(['Offene AG', 'badge-success">', 'Verworfen', 'Verworfene AG', 'badge-success">', 'Zugeordnet', 'Zugeordnete AG'], false);
+
+        $this->actingAs($this->admin)
+            ->get(route('admin.integration.inbox', ['status' => IntegrationInboxStatus::ResolvedLinked->value]))
+            ->assertOk()
+            ->assertSee('<option value="resolved_linked" selected>Zugeordnet</option>', false)
+            ->assertSee('Zugeordnete AG')
+            ->assertDontSee('Verworfene AG')
+            ->assertDontSee('Offene AG');
+
+        // Ohne Filter nur offene Fälle.
+        $this->actingAs($this->admin)
+            ->get(route('admin.integration.inbox'))
+            ->assertOk()
+            ->assertSee('Offene AG')
+            ->assertDontSee('Zugeordnete AG');
+    }
+
+    /** Die Audit-Zeile der Auflösung trägt den Rohwert des Status. */
+    public function test_resolution_audit_carries_the_raw_status_value(): void {
+        $item = $this->item();
+        $this->actingAs($this->admin)->post(route('admin.integration.inbox.dismiss', $item))->assertRedirect();
+
+        $audit = \App\Models\Audit\AuditLog::query()->where('event', 'integration.inbox_resolved')->sole();
+        $this->assertSame('dismissed', $audit->changes['status']);
+        $this->assertSame('dismissed', json_decode((string) $audit->getRawOriginal('changes'), true)['status']);
     }
 
     public function test_non_billing_user_forbidden(): void {

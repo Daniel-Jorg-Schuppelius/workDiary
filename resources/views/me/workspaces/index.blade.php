@@ -15,11 +15,10 @@
 
 @section('title', __('scope.workspace.title'))
 @section('nav-title', __('scope.workspace.title'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @php
-    /** @var \Illuminate\Support\Collection<int, \App\Models\Platform\UserWorkspace> $workspaces */
+    /** @var \Illuminate\Pagination\LengthAwarePaginator<int, \App\Models\Platform\UserWorkspace> $workspaces */
     /** @var string $activeKey */
 @endphp
 
@@ -33,17 +32,20 @@
                         show-label>{{ __('scope.workspace.create') }}</x-icon-btn>
         </x-slot:actions>
 
-        <x-table scroll="flex" :pinRows="true" :zebra="true" table-sort="client">
+        <x-table scroll="flex" :pinRows="true" :zebra="true" table-sort="server"
+                 :route="route('me.workspaces.index')"
+                 :current-sort="$sort"
+                 :current-dir="$dir">
             <x-slot:head>
                 <tr>
-                    <x-table.th sort type="number" align="right" class="w-16">{{ __('scope.workspace.sort') }}</x-table.th>
+                    <x-table.th sort="position" default align="right" class="w-16">{{ __('scope.workspace.sort') }}</x-table.th>
                     <th class="w-12"></th>
-                    <x-table.th sort type="string">{{ __('scope.workspace.name') }}</x-table.th>
-                    <x-table.th sort type="number" align="right" class="w-40">{{ __('scope.workspace.items') }}</x-table.th>
+                    <x-table.th sort="name">{{ __('scope.workspace.name') }}</x-table.th>
+                    {{-- Zahl der Einträge steckt in der JSON-Spalte — in der Datenbank nicht sortierbar. --}}
+                    <th class="w-40 text-right">{{ __('scope.workspace.items') }}</th>
                     <th class="w-32 text-right">{{ __('Aktion') }}</th>
                 </tr>
             </x-slot:head>
-            <tbody>
                 @forelse ($workspaces as $workspace)
                     @php $key = \App\Services\Navigation\NavFocusService::personalKey($workspace); @endphp
                     <tr class="hover">
@@ -52,7 +54,7 @@
                         <td class="font-semibold">
                             {{ $workspace->name }}
                             @if ($key === $activeKey)
-                                <span class="badge badge-primary badge-sm ml-2">{{ __('scope.workspace.active') }}</span>
+                                <x-status-badge tone="primary" class="ml-2">{{ __('scope.workspace.active') }}</x-status-badge>
                             @endif
                         </td>
                         <td class="text-right tabular-nums">{{ count($workspace->keys()) }}</td>
@@ -78,7 +80,8 @@
                         icon="dashboard_customize"
                         :title="__('scope.workspace.empty')" compact />
                 @endforelse
-            </tbody>
         </x-table>
+
+        <x-pagination :paginator="$workspaces" standing />
     </x-index-page>
 @endsection

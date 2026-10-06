@@ -56,7 +56,7 @@
                 <div class="mb-2 flex flex-wrap items-center gap-2 text-xs">
                     <x-status-badge :tone="$match->lineup_status->tone()" size="xs">{{ $match->lineup_status->label() }}</x-status-badge>
                     @if ($released && $match->lineup_released_at)
-                        <span class="text-muted">{{ __('club.matches.label.released_at', ['when' => $match->lineup_released_at->orgTz()->format('d.m.Y H:i'), 'name' => $match->lineupReleasedBy?->name ?? '–']) }}</span>
+                        <span class="text-muted">{{ __('club.matches.label.released_at', ['when' => $match->lineup_released_at->fdatetime(), 'name' => $match->lineupReleasedBy?->name ?? '–']) }}</span>
                     @endif
                     @if ($profile)
                         <span class="text-muted">{{ __('club.matches.label.sizes', ['field' => $counts['field'], 'max_field' => $profile->squad_size_field ?? '∞', 'bench' => $counts['bench'], 'max_bench' => $profile->squad_size_bench ?? '∞']) }}</span>
@@ -112,7 +112,7 @@
                                     <td class="text-sm">
                                         <input type="hidden" name="lineup_member[{{ $index }}]" value="{{ $sqid }}">
                                         <a href="{{ route('club.members.show', $member) }}" class="link link-hover font-medium">{{ $member->fullName() }}</a>
-                                        @if ($squad?->isGuest())<span class="badge badge-ghost badge-xs">{{ __('club.teams.label.guest', ['origin' => $squad->guest_origin]) }}</span>@endif
+                                        @if ($squad?->isGuest())<x-status-badge size="xs">{{ __('club.teams.label.guest', ['origin' => $squad->guest_origin]) }}</x-status-badge>@endif
                                         @if ($squad?->strength_rank)<span class="block text-xs text-muted">{{ __('club.teams.label.rank', ['rank' => $squad->strength_rank]) }}</span>@endif
                                     </td>
                                     <td>
@@ -238,14 +238,14 @@
                 <x-detail-grid>
                     <x-detail-grid.row :label="__('club.teams.field.team')">
                         <a href="{{ route('club.groups.show', $match->team) }}" class="link link-hover">{{ $match->team->name }}</a>
-                        @if ($match->team->age_class) <span class="badge badge-ghost badge-xs">{{ $match->team->age_class }}</span>@endif
+                        @if ($match->team->age_class) <x-status-badge size="xs">{{ $match->team->age_class }}</x-status-badge>@endif
                     </x-detail-grid.row>
                     <x-detail-grid.row :label="__('club.matches.field.opponent')" :value="$match->opponent_name" />
                     <x-detail-grid.row :label="__('club.matches.field.competition')" :value="$match->competition ?? '–'" />
                     <x-detail-grid.row :label="__('club.teams.field.season')" :value="$match->season?->name ?? '–'" />
                     <x-detail-grid.row :label="__('club.matches.field.is_home')" :value="$match->is_home ? __('club.matches.label.home') : __('club.matches.label.away')" />
                     <x-detail-grid.row :label="__('club.matches.field.venue')" :value="$match->venue ?? ($event->rooms->pluck('name')->implode(', ') ?: '–')" />
-                    <x-detail-grid.row :label="__('club.matches.field.meet_at')" :value="$match->meet_at?->orgTz()->format('d.m.Y H:i') ?? '–'" />
+                    <x-detail-grid.row :label="__('club.matches.field.meet_at')" :value="$match->meet_at?->fdatetime() ?? '–'" />
                     <x-detail-grid.row :label="__('club.events.field.leader')" :value="$event->responsibleUser?->name ?? '–'" />
                     <x-detail-grid.row :label="__('club.teams.field.profile')" :value="$profile?->name ?? __('club.teams.label.no_profile')" />
                     @if ($event->description)
@@ -260,7 +260,7 @@
                 @if ($match->hasResult())
                     <p class="text-2xl font-semibold tabular-nums">{{ $match->result_summary ?? __('club.matches.label.result_recorded') }}</p>
                     @if ($match->result_note)<p class="mt-1 whitespace-pre-line text-sm">{{ $match->result_note }}</p>@endif
-                    <p class="mt-2 text-xs text-muted">{{ __('club.matches.label.result_by', ['when' => $match->result_recorded_at?->orgTz()->format('d.m.Y H:i'), 'name' => $match->resultRecordedBy?->name ?? '–']) }}</p>
+                    <p class="mt-2 text-xs text-muted">{{ __('club.matches.label.result_by', ['when' => $match->result_recorded_at?->fdatetime(), 'name' => $match->resultRecordedBy?->name ?? '–']) }}</p>
                 @else
                     <p class="text-sm text-muted">{{ __('club.matches.empty.result') }}</p>
                 @endif

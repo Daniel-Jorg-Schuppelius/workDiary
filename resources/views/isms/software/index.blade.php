@@ -15,9 +15,10 @@
 
 @section('title', __('isms.title.software'))
 @section('nav-title', __('isms.title.software'))
+@include('partials.page-fill')
 
 @section('content')
-    <x-index-page :subtitle="__('isms.subtitle.software')">
+    <x-index-page overflow="clip" :subtitle="__('isms.subtitle.software')">
         <x-slot:actions>
             @if ($canManage)
                 <x-icon-btn icon="add" tone="primary" size="sm"
@@ -61,7 +62,7 @@
             </x-filter-field>
         </x-filter-bar>
 
-        <x-table>
+        <x-table scroll="flex">
             <x-slot:head>
                 <tr>
                     <th>{{ __('isms.field.name') }}</th>
@@ -135,7 +136,7 @@
                     <td>
                         @if ($product->eol_on !== null)
                             <span class="{{ $product->eolReached() ? 'text-error font-semibold' : ($product->eolSoon() ? 'text-warning font-semibold' : 'text-base-content/70') }}">
-                                {{ $product->eol_on->format('d.m.Y') }}
+                                {{ $product->eol_on->fdate() }}
                             </span>
                             @if ($product->eolReached())
                                 <x-status-badge tone="error" outline>{{ __('isms.software.eol_reached') }}</x-status-badge>

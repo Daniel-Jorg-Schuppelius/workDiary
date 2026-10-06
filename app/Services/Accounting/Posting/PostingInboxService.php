@@ -72,7 +72,8 @@ class PostingInboxService {
                 $sourceKey = $adapter->sourceKey($source);
                 $entry = $this->journal->activeEntryForSource($organization, $sourceKey);
 
-                if ($entry?->status->isPosted() === true && ! $includePosted) {
+                $changed = $entry?->status->isPosted() === true && $adapter->changedSincePosting($source, $entry);
+                if ($entry?->status->isPosted() === true && ! $includePosted && ! $changed) {
                     continue;
                 }
 
@@ -86,7 +87,9 @@ class PostingInboxService {
                     'source_key' => $sourceKey,
                     'entry' => $entry,
                     'proposal' => $proposal,
-                    'blockers' => $proposal instanceof PostingProposal ? $proposal->blockers : $this->sovereigntyBlockers($organization, $entry),
+                    'blockers' => $proposal instanceof PostingProposal
+                        ? $proposal->blockers
+                        : [...$this->sovereigntyBlockers($organization, $entry), ...($changed ? [(string) __('accounting.inbox.blocker.changed_since_posting')] : [])],
                     'state' => $this->stateOf($entry, $proposal),
                 ]);
             }

@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Invoicing\Chain;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\{Organization, User};
 use App\Services\Billing\Contracts\DocumentChainSource;
@@ -60,7 +61,7 @@ final class OverdueInvoices implements DocumentChainSource {
     private function query(Organization $organization): Builder {
         return Invoice::query()
             ->where('organization_id', $organization->id)
-            ->whereIn('status', [Invoice::STATUS_ISSUED, Invoice::STATUS_PARTIALLY_PAID])
+            ->whereIn('status', [InvoiceStatus::Issued, InvoiceStatus::PartiallyPaid])
             ->whereNotIn('type', [Invoice::TYPE_PROFORMA, Invoice::TYPE_CANCELLATION, Invoice::TYPE_CREDIT_NOTE])
             ->whereNotNull('due_on')
             ->where('due_on', '<', now()->toDateString());

@@ -16,6 +16,8 @@ use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Club\SaveAttendanceRequirementRequest;
 use App\Models\Club\{ClubAttendanceRequirement, ClubDepartment, ClubGroup};
+use App\Models\Club\ClubMember;
+use App\Models\Platform\User;
 use App\Services\Club\ClubCompetitionService;
 use App\Support\{CsvExport, Sqid};
 use Carbon\CarbonImmutable;
@@ -43,7 +45,7 @@ class ClubAttendanceRequirementController extends Controller {
             'requirements' => $requirements,
             'selected' => $selected,
             'asOf' => $asOf,
-            'report' => $selected !== null ? $this->competitions->complianceReport($selected, $asOf) : collect(),
+            'report' => $selected !== null ? $this->competitions->complianceReportPage($selected, $asOf, $this->leaderOnly($request), 50)->withQueryString() : null,
             'canManage' => Gate::allows('create', ClubAttendanceRequirement::class),
         ]);
     }
@@ -81,12 +83,20 @@ class ClubAttendanceRequirementController extends Controller {
         return redirect()->toList('club.requirements.index')->with('success', __('club.competitions.flash.requirement_deleted'));
     }
 
+    /** Ohne Registerrecht gilt die Liste nur für die eigenen Gruppen — wie in der Mitgliederliste. */
+    private function leaderOnly(Request $request): ?User {
+        /** @var User $user */
+        $user = $request->user();
+
+        return Gate::allows('viewRegister', ClubMember::class) ? null : $user;
+    }
+
     /** Export der Nachweisliste als CSV — Zeilen: Mitglied, Nummer, bestätigte Anwesenheiten, Soll, erfüllt, letzter Termin. */
     public function export(Request $request, ClubAttendanceRequirement $requirement): StreamedResponse {
         Gate::authorize('view', $requirement);
         $asOf = $this->asOf($request);
         $rows = [];
-        foreach ($this->competitions->complianceReport($requirement, $asOf) as $row) {
+        foreach ($this->competitions->complianceReport($requirement, $asOf, $this->leaderOnly($request)) as $row) {
             $rows[] = [$row['member']->fullName(), (string) $row['member']->member_no, (string) $row['count'], (string) $row['required'], $row['met'] ? (string) __('club.label.yes') : (string) __('club.label.no'), $row['last_on']?->format('d.m.Y') ?? ''];
         }
         $requirement->audit('club.competition.requirementExported', ['as_of' => $asOf->toDateString(), 'rows' => count($rows)]);

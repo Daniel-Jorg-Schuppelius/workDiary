@@ -317,7 +317,7 @@ class ProjectDetailsReportController extends Controller {
             $series[] = $row;
         }
 
-        return ['series' => $series, 'median' => $hasPlan ? null : $this->median($istValues)];
+        return ['series' => $series, 'median' => $hasPlan ? null : round(NumberHelper::median($istValues), 1)];
     }
 
     /**
@@ -388,22 +388,6 @@ class ProjectDetailsReportController extends Controller {
         }
 
         return ['series' => $series, 'bands' => $bands];
-    }
-
-    /**
-     * @param  list<float>  $values
-     */
-    private function median(array $values): ?float {
-        if ($values === []) {
-            return null;
-        }
-        sort($values);
-        $count = count($values);
-        $middle = intdiv($count, 2);
-
-        return $count % 2 === 1
-            ? $values[$middle]
-            : round(($values[$middle - 1] + $values[$middle]) / 2, 1);
     }
 
     /**

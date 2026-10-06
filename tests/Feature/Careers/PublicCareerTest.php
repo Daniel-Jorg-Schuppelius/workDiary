@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Careers;
 
+use App\Enums\Applications\{JobApplicationStatus, JobPostingStatus, JobRequisitionStatus};
 use App\Models\Applications\{JobApplication, JobPosting, JobRequisition};
 use App\Services\Applications\CareerFormState;
 use App\Services\Licensing\FeatureFlagResolver;
@@ -48,14 +49,14 @@ class PublicCareerTest extends TestCase {
             'title' => 'Servicetechniker (m/w/d)',
             'profile' => 'INTERN: Budget 60k, Stellenprofil vertraulich.',
             'budget_note' => 'INTERN: 60000',
-            'status' => 'open',
+            'status' => JobRequisitionStatus::Open,
         ], $overrides['requisition'] ?? []));
 
         return JobPosting::query()->create(array_merge([
             'organization_id' => $this->organization->id,
             'job_requisition_id' => $requisition->id,
             'channel' => 'website',
-            'status' => 'published',
+            'status' => JobPostingStatus::Published,
             'published_at' => now(),
             'public_slug' => 'servicetechniker',
             'public_title' => 'Servicetechniker (m/w/d)',
@@ -74,7 +75,7 @@ class PublicCareerTest extends TestCase {
     public function test_lists_published_postings_and_hides_drafts(): void {
         $this->enablePortal();
         $this->publishPosting();
-        $this->publishPosting(['posting' => ['public_slug' => 'entwurf', 'status' => 'draft', 'public_title' => 'Geheim-Entwurf']]);
+        $this->publishPosting(['posting' => ['public_slug' => 'entwurf', 'status' => JobPostingStatus::Draft, 'public_title' => 'Geheim-Entwurf']]);
 
         $this->get('/karriere/' . $this->organization->slug)
             ->assertOk()
@@ -110,7 +111,7 @@ class PublicCareerTest extends TestCase {
 
         $application = JobApplication::query()->firstOrFail();
         $this->assertSame('website', $application->source);
-        $this->assertSame('received', $application->status);
+        $this->assertSame(JobApplicationStatus::Received, $application->status);
         $this->assertNull($application->created_by);
         $this->assertNotNull($application->privacy_ack_at);
         $this->assertSame($posting->id, $application->job_posting_id);
@@ -187,11 +188,11 @@ class PublicCareerTest extends TestCase {
 
     public function test_ensure_public_slug_is_unique_per_org(): void {
         $requisition = JobRequisition::query()->create([
-            'organization_id' => $this->organization->id, 'title' => 'Techniker', 'status' => 'open',
+            'organization_id' => $this->organization->id, 'title' => 'Techniker', 'status' => JobRequisitionStatus::Open,
         ]);
         JobPosting::query()->create([
             'organization_id' => $this->organization->id, 'job_requisition_id' => $requisition->id,
-            'channel' => 'website', 'status' => 'published', 'public_slug' => 'techniker', 'public_title' => 'Techniker',
+            'channel' => 'website', 'status' => JobPostingStatus::Published, 'public_slug' => 'techniker', 'public_title' => 'Techniker',
         ]);
 
         $fresh = new JobPosting(['organization_id' => $this->organization->id]);
@@ -221,7 +222,7 @@ class PublicCareerTest extends TestCase {
     public function test_admin_can_publish_posting_to_career_area(): void {
         $admin = $this->orgAdmin();
         $requisition = JobRequisition::query()->create([
-            'organization_id' => $this->organization->id, 'title' => 'Monteur', 'status' => 'open',
+            'organization_id' => $this->organization->id, 'title' => 'Monteur', 'status' => JobRequisitionStatus::Open,
         ]);
 
         $this->actingAs($admin)

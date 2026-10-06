@@ -34,9 +34,9 @@
                         <span class="font-mono">{{ $object->name }}</span>
                         <span class="text-muted">{{ \Illuminate\Support\Number::fileSize($object->size) }}</span>
                         @if (collect($knownPrefixes)->keys()->first(fn ($prefix) => str_ends_with((string) $prefix, '/' . $object->name)) !== null)
-                            <span class="badge badge-ghost badge-sm">{{ __('backup_targets.cleanup_page.known') }}</span>
+                            <x-status-badge>{{ __('backup_targets.cleanup_page.known') }}</x-status-badge>
                         @else
-                            <span class="badge badge-warning badge-sm">{{ __('backup_targets.cleanup_page.orphan') }}</span>
+                            <x-status-badge tone="warning">{{ __('backup_targets.cleanup_page.orphan') }}</x-status-badge>
                         @endif
                     </li>
                 @endforeach

@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Tenders;
 
+use App\Enums\Tenders\TenderNoticeMatchState;
 use App\Models\Tenders\{TenderFilterProfile, TenderNotice, TenderNoticeMatch};
 use App\Plugins\Support\PluginHttpFactory;
 use App\Services\Tenders\{TenderNoticeImporter, TenderNoticeMatcher};
@@ -219,7 +220,7 @@ final class TenderNoticeRadarTest extends TestCase {
 
         $this->assertSame(1, $created);
         $this->assertSame(1, TenderNoticeMatch::query()->count());
-        $this->assertSame(TenderNoticeMatch::STATE_NEW, TenderNoticeMatch::query()->firstOrFail()->state);
+        $this->assertSame(TenderNoticeMatchState::New, TenderNoticeMatch::query()->firstOrFail()->state);
     }
 
     /** Der Befehl holt den Vortag und meldet, was neu ist. */

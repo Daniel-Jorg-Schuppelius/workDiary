@@ -234,7 +234,7 @@
                                         <span class="font-mono text-xs text-muted">{{ $action->finding?->ismsAudit?->displayNo() }}</span>
                                         {{ $action->title }}
                                     </span>
-                                    <x-status-badge tone="error" outline>{{ __('isms.dashboard.due_since', ['date' => $action->due_on?->format('d.m.Y')]) }}</x-status-badge>
+                                    <x-status-badge tone="error" outline>{{ __('isms.dashboard.due_since', ['date' => $action->due_on?->fdate()]) }}</x-status-badge>
                                 </li>
                             @endforeach
                             @foreach ($readiness['nonconformities']['open'] as $finding)
@@ -299,7 +299,7 @@
                                         {{ $assessment->displayName() }}
                                         <x-status-badge :tone="$assessment->criticality->tone()" outline class="ml-1">{{ $assessment->criticality->label() }}</x-status-badge>
                                     </span>
-                                    <x-status-badge tone="warning" outline>{{ __('isms.dashboard.review_overdue_since', ['date' => $assessment->next_review_on?->format('d.m.Y')]) }}</x-status-badge>
+                                    <x-status-badge tone="warning" outline>{{ __('isms.dashboard.review_overdue_since', ['date' => $assessment->next_review_on?->fdate()]) }}</x-status-badge>
                                 </li>
                             @endforeach
                         </ul>

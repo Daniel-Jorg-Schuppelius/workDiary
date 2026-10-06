@@ -409,6 +409,7 @@ return [
         'focus_on' => 'Modalità concentrazione',
         'focus_off' => 'Mostra barra laterale',
         'duplicate' => 'Duplica',
+        'delete_course' => 'Elimina corso',
         'import_learndash' => 'Importazione LearnDash',
         'import' => 'Importa',
         'gradebook' => 'Registro voti',
@@ -643,6 +644,7 @@ return [
     ],
     'help' => [
         'course_tags' => 'Separi più tag con una virgola. I tag si possono modificare anche dopo la pubblicazione.',
+        'enroll_by_operator' => 'L’iscrizione viene effettuata dal Suo referente.',
         'course_competency' => 'Chi completa il corso ottiene questo livello nella matrice delle competenze. Ripeterlo non lo abbassa mai.',
         'max_level' => 'Livelli da 1 fino a questo valore, ad es. 1 conoscenze di base … 4 può formare altri.',
         'assessment' => 'La valutazione di un responsabile può anche abbassare un livello; il completamento dei corsi mai.',
@@ -789,6 +791,7 @@ return [
         'booking_without_course' => 'Manca il corso di questa prenotazione.',
         'booking_requires_release' => 'Un corso è prenotabile solo dopo la pubblicazione.',
         'course_not_bookable' => 'Questo corso non è indicato come prenotabile.',
+        'self_enroll_requires_open' => 'L’autoiscrizione è possibile solo per i corsi aperti.',
         'booking_reject_reason' => 'Un rifiuto richiede una motivazione.',
         'booking_already_billed' => 'Una prenotazione fatturata non si annulla qui: se ne occupa la fatturazione.',
         'booking_not_billable' => 'Questa prenotazione non ha voci aperte.',
@@ -1029,6 +1032,7 @@ return [
     ],
     'confirm' => [
         'duplicate' => 'Duplicare questo corso come nuova bozza?',
+        'delete_course' => 'Eliminare definitivamente la bozza del corso «:title»? Sezioni e unità andranno perse.',
         'delete_note' => 'Eliminare davvero questa nota?',
         'detach_question' => 'Rimuovere questa domanda dalla prova? Resta nella banca.',
         'delete_category' => 'Eliminare questa categoria?',

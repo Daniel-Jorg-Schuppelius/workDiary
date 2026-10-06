@@ -73,9 +73,19 @@ trait ScansSourceTree {
         return $files;
     }
 
-    /** @return list<string> */
-    protected function bladeFiles(string $directory = 'resources/views'): array {
-        return $this->filesUnder($directory, '/\.blade\.php$/');
+    /**
+     * Views des Kerns und der Plugins (`app/Plugins/<Name>/Resources/views`);
+     * mit Verzeichnis nur dieses. Ohne die Plugins sahen acht View-Gates 53
+     * Views nicht (Konsolidierungs-Audit 2026-10, k3-18).
+     *
+     * @return list<string>
+     */
+    protected function bladeFiles(?string $directory = null): array {
+        if ($directory !== null) {
+            return $this->filesUnder($directory, '/\.blade\.php$/');
+        }
+
+        return [...$this->filesUnder('resources/views', '/\.blade\.php$/'), ...$this->filesUnder('app/Plugins', '/\.blade\.php$/')];
     }
 
     protected function relativePath(string $absolute): string {

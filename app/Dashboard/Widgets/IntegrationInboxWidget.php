@@ -14,6 +14,7 @@ namespace App\Dashboard\Widgets;
 
 use App\Dashboard\Widget;
 use App\Enums\Dashboard\WidgetGroup;
+use App\Enums\Integration\IntegrationInboxStatus;
 use App\Models\Integration\IntegrationInboxItem;
 use App\Models\Platform\User;
 use Illuminate\Contracts\View\View;
@@ -58,7 +59,7 @@ class IntegrationInboxWidget extends Widget {
     public function render(User $user): View|string {
         $perPlugin = IntegrationInboxItem::query()
             ->where('organization_id', $user->organization_id)
-            ->where('status', IntegrationInboxItem::STATUS_OPEN)
+            ->where('status', IntegrationInboxStatus::Open)
             ->selectRaw('plugin_id, COUNT(*) as cnt')
             ->groupBy('plugin_id')
             ->orderByDesc('cnt')

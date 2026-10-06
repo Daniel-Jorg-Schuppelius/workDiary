@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Integration;
 
+use App\Enums\Integration\IntegrationInboxStatus;
 use App\Models\Customer\Customer;
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -40,7 +41,7 @@ class IntegrationResolveInboxCommandTest extends TestCase {
             'external_id' => 'tg-1',
             'dedupe_key' => 'client:tg-1',
             'case_type' => IntegrationInboxItem::CASE_UNMATCHED,
-            'status' => IntegrationInboxItem::STATUS_OPEN,
+            'status' => IntegrationInboxStatus::Open,
             'remote_snapshot' => ['client' => 'Neu AG'],
             'mapped_snapshot' => ['name' => 'Neu AG', 'vat_id' => 'DE123'],
             'display_title' => 'Neu AG',
@@ -67,7 +68,7 @@ class IntegrationResolveInboxCommandTest extends TestCase {
             ->assertExitCode(0);
 
         $item->refresh();
-        $this->assertSame(IntegrationInboxItem::STATUS_RESOLVED_LINKED, $item->status);
+        $this->assertSame(IntegrationInboxStatus::ResolvedLinked, $item->status);
         $this->assertDatabaseHas('external_references', [
             'organization_id' => $this->organization->id,
             'plugin_id' => 'toggl',
@@ -85,7 +86,7 @@ class IntegrationResolveInboxCommandTest extends TestCase {
             ->assertExitCode(0);
 
         $item->refresh();
-        $this->assertSame(IntegrationInboxItem::STATUS_RESOLVED_CREATED, $item->status);
+        $this->assertSame(IntegrationInboxStatus::ResolvedCreated, $item->status);
         $this->assertNotNull(Customer::query()
             ->where('organization_id', $this->organization->id)
             ->where('name', 'Neu AG')
@@ -100,7 +101,7 @@ class IntegrationResolveInboxCommandTest extends TestCase {
             ->assertExitCode(0);
 
         $item->refresh();
-        $this->assertSame(IntegrationInboxItem::STATUS_OPEN, $item->status);
+        $this->assertSame(IntegrationInboxStatus::Open, $item->status);
         $this->assertSame(IntegrationInboxItem::CASE_UNMATCHED, $item->case_type);
     }
 
@@ -117,7 +118,7 @@ class IntegrationResolveInboxCommandTest extends TestCase {
             ->assertExitCode(0);
 
         $item->refresh();
-        $this->assertSame(IntegrationInboxItem::STATUS_OPEN, $item->status);
+        $this->assertSame(IntegrationInboxStatus::Open, $item->status);
         $this->assertSame(0, ExternalReference::query()->where('plugin_id', 'toggl')->count());
     }
 }

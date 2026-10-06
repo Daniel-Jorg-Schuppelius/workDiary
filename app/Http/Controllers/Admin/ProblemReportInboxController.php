@@ -38,6 +38,7 @@ class ProblemReportInboxController extends Controller {
         $reports = ProblemReport::query()
             ->when($status !== null, fn($query) => $query->where('status', $status?->value))
             ->latest()
+            ->orderByDesc('id')
             ->paginate((int) Setting::get('pagination.notifications', 25))
             ->withQueryString();
 

@@ -17,7 +17,7 @@ use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Classification\BranchProfileVariant;
 use App\Services\Classification\BranchProfileVariantService;
-use App\Support\ErrorText;
+use App\Support\{BranchProfileFiles, ErrorText};
 use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Http\{RedirectResponse, Request, Response};
 use Illuminate\Support\Facades\Gate;
@@ -55,7 +55,7 @@ class BranchProfileVariantController extends Controller {
 
         return view('admin.branch-profiles.variants.edit', [
             'variant' => $variant,
-            'options' => $this->variants->options($this->variants->baseProfile($variant->base_code) ?? []),
+            'options' => $this->variants->options(BranchProfileFiles::profile($variant->base_code) ?? []),
             'additions' => $variant->additions !== null ? JsonHelper::encode($variant->additions, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) : '',
             'installed' => data_get($this->currentOrganization()->settings, BranchProfileVariantService::SETTINGS_KEY . '.' . $variant->base_code),
         ]);
@@ -72,7 +72,7 @@ class BranchProfileVariantController extends Controller {
             'additions' => ['nullable', 'string', 'max:65000'],
         ]);
 
-        $options = $this->variants->options($this->variants->baseProfile($variant->base_code) ?? []);
+        $options = $this->variants->options(BranchProfileFiles::profile($variant->base_code) ?? []);
         $removals = [];
         foreach ((array) ($data['removals'] ?? []) as $section => $keys) {
             $known = array_column($options[$section] ?? [], 'key');

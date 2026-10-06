@@ -15,8 +15,7 @@
 @extends('layouts.app')
 @section('title', __('scorecard.title') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('scorecard.title'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @php
     /** @var \Illuminate\Pagination\LengthAwarePaginator $rows */
@@ -47,7 +46,7 @@
         <x-icon-btn icon="filter_alt" tone="ghost" size="sm" type="submit" show-label>{{ __('scorecard.apply') }}</x-icon-btn>
     </x-filter-bar>
 
-    <div class="alert alert-info text-xs">
+    <div role="status" class="alert alert-info text-xs">
         <x-icon name="info" />
         <span>{{ __('scorecard.weights_hint', [
             'ontime' => round($weights['ontime'] * 100),

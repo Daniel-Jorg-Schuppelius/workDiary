@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Resources;
 
 use App\Models\Protocol\{Protocol, ProtocolItem, ProtocolSignature};
-use App\Support\Sqid;
+use App\Support\{MorphMap, Sqid};
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -27,7 +27,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
 class ProtocolResource extends JsonResource {
     /** @return array<string, mixed> */
     public function toArray(Request $request): array {
-        $subjectClass = $this->subject_type;
+        $subjectClass = MorphMap::classFor($this->subject_type);
 
         return [
             'id' => $this->sqid,
@@ -37,8 +37,8 @@ class ProtocolResource extends JsonResource {
             'title' => $this->title,
             'description' => $this->description,
             'subject' => [
-                'type' => class_basename($this->subject_type),
-                'id' => class_exists($subjectClass) ? Sqid::encode($subjectClass, $this->subject_id) : null,
+                'type' => MorphMap::basename($this->subject_type),
+                'id' => $subjectClass !== null ? Sqid::encode($subjectClass, $this->subject_id) : null,
             ],
             'revision' => (int) $this->revision,
             'supersedes_id' => Sqid::encodeOrNull(Protocol::class, $this->supersedes_id),

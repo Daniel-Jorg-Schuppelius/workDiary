@@ -18,13 +18,11 @@ use App\Services\Passenger\PassengerRideService;
 
 /** Personenbeförderung (MVP-456) nur mit installiertem Branchenprofil taxi-mietwagen. */
 final class PassengerProfileCondition implements NavigationCondition {
-    public function __construct(private readonly PassengerRideService $rides) {}
-
     public function key(): string {
         return 'passenger.profile';
     }
 
     public function passes(?User $user, ?Organization $organization): bool {
-        return $organization !== null && $this->rides->isPassengerProfileActive($organization);
+        return $organization !== null && $organization->hasBranchProfile(PassengerRideService::PROFILE_CODE);
     }
 }

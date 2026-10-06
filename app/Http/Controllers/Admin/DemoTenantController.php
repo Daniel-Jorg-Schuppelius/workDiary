@@ -37,12 +37,9 @@ class DemoTenantController extends Controller {
         $organization = $user->organization;
         abort_if($organization === null, 404);
 
-        $isEmpty = \App\Models\Customer\Customer::query()->where('organization_id', $organization->id)->doesntExist()
-            && \App\Models\Diary\DiaryEntry::query()->where('organization_id', $organization->id)->doesntExist();
-
         return view('admin.demo.index', [
             'organization' => $organization,
-            'isEmpty' => $isEmpty,
+            'isEmpty' => $this->holdsNoData($organization),
             'industries' => DemoIndustry::all(),
             'currentIndustry' => $organization->is_demo ? $this->seeder->resolveIndustry($organization) : DemoIndustry::default(),
             'fullShowcase' => $organization->is_demo && $this->seeder->resolveFullShowcase($organization),
@@ -59,6 +56,11 @@ class DemoTenantController extends Controller {
         $organization = $user->organization;
         abort_if($organization === null, 404);
 
+        // Die Seite sperrt den Knopf nur im Browser — ein direkter POST darf Echtdaten nicht mit Demo-Daten mischen.
+        if (! $this->holdsNoData($organization)) {
+            return back()->with('error', __('Diese Organisation enthält bereits Echtdaten. Demo-Seeding ist hier nicht zulässig — lege einen frischen Mandanten an.'));
+        }
+
         $industry = DemoIndustry::fromKey((string) $request->input('industry'));
 
         $counts = $this->seeder->seed($organization, $user, $industry, $request->boolean('full_showcase'));
@@ -66,6 +68,11 @@ class DemoTenantController extends Controller {
         $this->writeAudit($user, $organization, 'demo.seeded', $counts);
 
         return back()->with('success', __('Demo-Daten wurden erzeugt.'));
+    }
+
+    private function holdsNoData(Organization $organization): bool {
+        return \App\Models\Customer\Customer::query()->where('organization_id', $organization->id)->doesntExist()
+            && \App\Models\Diary\DiaryEntry::query()->where('organization_id', $organization->id)->doesntExist();
     }
 
     public function reset(Request $request): RedirectResponse {

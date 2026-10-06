@@ -10,10 +10,13 @@
 
 namespace Tests\Feature\Invoicing;
 
+use App\Enums\Invoicing\{InvoiceScheduleStatus, InvoiceStatus};
 use App\Models\Contract\Contract;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\{Invoice, InvoiceSchedule};
 use App\Models\Platform\{Organization, User};
+use App\Plugins\Lexoffice\Enums\LexwarePlan;
+use App\Plugins\Lexoffice\Tariff\LexwareTariffService;
 use App\Services\Invoicing\RecurringInvoiceService;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -54,7 +57,7 @@ class RecurringInvoiceTest extends TestCase {
             'interval_count' => 1,
             'billing_period_mode' => InvoiceSchedule::MODE_PREVIOUS,
             'next_run_on' => '2030-06-01',
-            'status' => InvoiceSchedule::STATUS_ACTIVE,
+            'status' => InvoiceScheduleStatus::Active,
             'created_by' => $this->admin->id,
         ], $attributes));
 
@@ -76,7 +79,7 @@ class RecurringInvoiceTest extends TestCase {
 
         $this->assertSame(1, $result['created']);
         $invoice = Invoice::query()->firstOrFail();
-        $this->assertSame(Invoice::STATUS_DRAFT, $invoice->status);
+        $this->assertSame(InvoiceStatus::Draft, $invoice->status);
         // Modus previous: Mai 2030.
         $this->assertSame('Wartung 01.05.2030 bis 31.05.2030', (string) $invoice->items->first()->description);
         $this->assertSame('250.00', $invoice->subtotal?->getAmount());
@@ -137,7 +140,7 @@ class RecurringInvoiceTest extends TestCase {
 
         $this->assertSame(0, $result['created']);
         $this->assertSame(1, $result['ended']);
-        $this->assertSame(InvoiceSchedule::STATUS_ENDED, $schedule->fresh()->status);
+        $this->assertSame(InvoiceScheduleStatus::Ended, $schedule->fresh()->status);
     }
 
     public function test_command_runs_and_reports(): void {
@@ -185,5 +188,64 @@ class RecurringInvoiceTest extends TestCase {
         $schedule->refresh();
         $this->assertSame('Wartungsvertrag Quartal', $schedule->title);
         $this->assertSame($this->customer->id, $schedule->customer_id);
+    }
+
+    /** Aussetzen, fortsetzen, beenden: Statuswechsel, Vorschau der Läufe und Anzeige folgen dem Enum. */
+    public function test_status_can_be_paused_resumed_and_ended_for_good(): void {
+        $schedule = $this->makeSchedule();
+        $this->assertCount(3, $schedule->upcomingRuns());
+
+        $status = fn (string $value) => $this->actingAs($this->admin)
+            ->patch(route('invoice-schedules.status', $schedule), ['status' => $value]);
+
+        $status('paused')->assertSessionHas('status');
+        $schedule->refresh();
+        $this->assertSame(InvoiceScheduleStatus::Paused, $schedule->status);
+        $this->assertSame([], $schedule->upcomingRuns(), 'Ein ausgesetzter Plan kündigt keine Läufe an.');
+        $this->assertSame(0, app(RecurringInvoiceService::class)->generateDue(Carbon::parse('2030-06-01'))['created']);
+
+        // Ausgesetzt: „Fortsetzen" und „Beenden" stehen bereit, „Aussetzen" nicht.
+        $this->actingAs($this->admin)->get(route('invoice-schedules.show', $schedule))
+            ->assertOk()
+            ->assertSee('badge badge-sm badge-warning', false)
+            ->assertSee(InvoiceScheduleStatus::Paused->label())
+            ->assertSee('name="status" value="active"', false)
+            ->assertSee('name="status" value="ended"', false)
+            ->assertDontSee('name="status" value="paused"', false);
+        $this->actingAs($this->admin)->get(route('invoice-schedules.index'))
+            ->assertOk()
+            ->assertSee('badge badge-sm badge-warning', false);
+
+        // Derselbe Status ist kein Fehler.
+        $status('paused')->assertSessionHas('status')->assertSessionMissing('error');
+        $status('unbekannt')->assertSessionHasErrors('status');
+
+        $status('active')->assertSessionHas('status');
+        $this->assertSame(InvoiceScheduleStatus::Active, $schedule->refresh()->status);
+        $this->assertCount(3, $schedule->upcomingRuns());
+
+        $status('ended')->assertSessionHas('status');
+        $this->assertSame(InvoiceScheduleStatus::Ended, $schedule->refresh()->status);
+
+        // Beendet ist endgültig — auch „beendet → beendet" meldet den Fehler.
+        foreach (['active', 'paused', 'ended'] as $value) {
+            $status($value)->assertSessionHas('error', __('Ein beendeter Plan kann nicht wieder aktiviert werden.'));
+        }
+        $this->assertSame(InvoiceScheduleStatus::Ended, $schedule->refresh()->status);
+        $this->actingAs($this->admin)->get(route('invoice-schedules.show', $schedule))
+            ->assertOk()
+            ->assertSee(InvoiceScheduleStatus::Ended->label())
+            ->assertDontSee('name="status" value=', false);
+    }
+
+    /** Der Lexware-Tarifwechsel zählt nur laufende Pläne. */
+    public function test_tariff_change_preview_counts_active_schedules_only(): void {
+        $this->makeSchedule();
+        $this->makeSchedule(['title' => 'Ausgesetzt', 'status' => InvoiceScheduleStatus::Paused]);
+        $this->makeSchedule(['title' => 'Beendet', 'status' => InvoiceScheduleStatus::Ended]);
+
+        $preview = app(LexwareTariffService::class)->changePreview($this->organization, LexwarePlan::Unknown);
+
+        $this->assertSame(1, $preview['active_schedules']);
     }
 }

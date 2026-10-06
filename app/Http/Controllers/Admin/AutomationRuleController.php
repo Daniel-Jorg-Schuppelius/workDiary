@@ -17,6 +17,7 @@ use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Automation\{AutomationRule, AutomationRuleRun};
 use App\Models\Platform\User;
+use App\Support\SortableQuery;
 use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
@@ -32,18 +33,24 @@ use Illuminate\View\View;
  */
 class AutomationRuleController extends Controller {
     use ResolvesCurrentOrganization;
-    public function index(): View {
+    public function index(Request $request): View {
         $this->ensureAdmin();
 
-        $rules = AutomationRule::query()
-            ->orderBy('priority')
-            ->orderBy('name')
-            ->get();
+        $query = AutomationRule::query();
+        [$sort, $dir] = SortableQuery::apply($query, $request, [
+            'priority' => 'priority',
+            'name' => 'name',
+            'trigger' => 'trigger_event',
+            'is_active' => 'is_active',
+        ], 'priority', 'asc');
+        $rules = $query->orderBy('name')->orderBy('id')->paginate(25)->withQueryString();
 
         $engine = app(RuleEngine::class);
 
         return view('admin.automations.index', [
             'rules' => $rules,
+            'sort' => $sort,
+            'dir' => $dir,
             'triggerLabels' => collect($engine->triggers())->mapWithKeys(static fn (RuleTrigger $t): array => [$t->key() => $t->label()])->all(),
             'actionLabels' => collect($engine->actions())->mapWithKeys(static fn (RuleAction $a): array => [$a->type() => $a->label()])->all(),
         ]);
@@ -85,7 +92,7 @@ class AutomationRuleController extends Controller {
         $automationRule->save();
 
         return redirect()
-            ->route('admin.automations.index')
+            ->toList('admin.automations.index')
             ->with('status', __('Regel aktualisiert.'));
     }
 
@@ -123,7 +130,7 @@ class AutomationRuleController extends Controller {
         ]);
 
         return redirect()
-            ->route('admin.automations.index')
+            ->toList('admin.automations.index')
             ->with('status', __('Regel angelegt.'));
     }
 
@@ -134,7 +141,7 @@ class AutomationRuleController extends Controller {
         $automationRule->delete();
 
         return redirect()
-            ->route('admin.automations.index')
+            ->toList('admin.automations.index')
             ->with('status', __('Regel gelöscht.'));
     }
 

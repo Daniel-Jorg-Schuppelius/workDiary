@@ -13,8 +13,7 @@
 @extends('layouts.app')
 @section('title', __('club.attendance.title.index'))
 @section('nav-title', __('club.attendance.title.index'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('club.attendance.subtitle.index')">
     <x-slot:actions>
@@ -52,7 +51,7 @@
         </x-slot:head>
         @forelse ($records as $record)
             <tr class="hover">
-                <td class="whitespace-nowrap text-sm tabular-nums">{{ $record->event?->started_at?->orgTz()->format('d.m.Y H:i') }}</td>
+                <td class="whitespace-nowrap text-sm tabular-nums">{{ $record->event?->started_at?->fdatetime() }}</td>
                 <td class="text-sm">
                     @if ($record->event)
                         <a href="{{ route('club.events.attendance.show', $record->event) }}" class="link link-hover">{{ $record->event->title }}</a>

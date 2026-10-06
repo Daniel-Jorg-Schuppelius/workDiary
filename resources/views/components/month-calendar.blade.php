@@ -29,8 +29,8 @@
       - fullHeight   true → das Grid füllt den verbleibenden Flex-Container
                      vollständig aus (jede Wochenzeile bekommt gleichmäßig
                      1fr). Erfordert, dass der Parent flex-col/min-h-0 ist
-                     und die View `@section('wrapper-height-class', ...)` +
-                     `@section('main-class', ...)` setzt — analog zum
+                     und die View `@include('partials.page-fill')`
+                     setzt — analog zum
                      Schichtplan (`resources/views/schedule/index.blade.php`).
                      Default false → fixe Mindesthöhe pro Tag-Zelle.
       - showWeekHeader   Wochentag-Kopfzeile anzeigen (Default true)

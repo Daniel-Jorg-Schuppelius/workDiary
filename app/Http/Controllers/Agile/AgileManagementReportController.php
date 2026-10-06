@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agile;
 
+use App\Enums\Agile\AgileSprintStatus;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\Agile\{AgileBoard, AgileSprint, AgileWorkItem};
@@ -46,7 +47,7 @@ class AgileManagementReportController extends Controller {
                     'project' => $board->project,
                     'active_sprint' => AgileSprint::query()
                         ->where('board_id', $board->id)
-                        ->where('status', AgileSprint::STATUS_ACTIVE)
+                        ->where('status', AgileSprintStatus::Active)
                         ->first(),
                     'velocity_median' => $velocity->data['median'],
                     'scope_added' => array_sum(array_column($velocity->data['sprints'], 'scope_added')),

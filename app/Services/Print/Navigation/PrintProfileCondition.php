@@ -18,13 +18,11 @@ use App\Services\Print\PrintOrderService;
 
 /** Druckaufträge (MVP-459) nur mit installiertem Branchenprofil druck-kopiershop. */
 final class PrintProfileCondition implements NavigationCondition {
-    public function __construct(private readonly PrintOrderService $orders) {}
-
     public function key(): string {
         return 'print.profile';
     }
 
     public function passes(?User $user, ?Organization $organization): bool {
-        return $organization !== null && $this->orders->isPrintProfileActive($organization);
+        return $organization !== null && $organization->hasBranchProfile(PrintOrderService::PROFILE_CODE);
     }
 }

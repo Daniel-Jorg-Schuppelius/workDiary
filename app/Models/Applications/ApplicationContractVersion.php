@@ -27,6 +27,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $organization_id
  * @property int $negotiation_id
  * @property int $version
+ * @property int $approval_round Freigaberunde, unter der die Version steht
  * @property string $kind
  * @property string|null $summary
  * @property string|null $conditions
@@ -43,13 +44,14 @@ class ApplicationContractVersion extends Model {
     public const KINDS = ['draft', 'counter', 'final'];
 
     protected $fillable = [
-        'organization_id', 'negotiation_id', 'version', 'kind', 'summary',
+        'organization_id', 'negotiation_id', 'version', 'approval_round', 'kind', 'summary',
         'conditions', 'document_id', 'sha256', 'created_by',
     ];
 
     /** @var array<string, string> */
     protected $casts = [
         'version' => 'integer',
+        'approval_round' => 'integer',
         'conditions' => 'encrypted', // JSON-String, verschlüsselt at rest
     ];
 

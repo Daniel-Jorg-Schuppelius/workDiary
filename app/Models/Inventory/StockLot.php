@@ -10,8 +10,10 @@
 
 namespace App\Models\Inventory;
 
+use App\Enums\Inventory\StockLotStatus;
 use App\Models\Article\ArticleVariant;
-use App\Models\Concerns\{BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -24,17 +26,18 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $article_variant_id
  * @property string $lot_no
  * @property \Illuminate\Support\Carbon|null $best_before
- * @property string $status
+ * @property StockLotStatus $status
+ * @property string|null $blocked_reason
+ * @property \Illuminate\Support\Carbon|null $blocked_at
+ * @property int|null $blocked_by_user_id
+ * @property int|null $merged_into_lot_id
  */
 class StockLot extends Model {
+    use Auditable;
     use BelongsToOrganization;
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
     use HasSqid;
-
-    public const STATUS_ACTIVE = 'active';
-    public const STATUS_BLOCKED = 'blocked';
-    public const STATUS_MERGED = 'merged';
 
     protected $fillable = [
         'organization_id',
@@ -50,10 +53,22 @@ class StockLot extends Model {
     protected $casts = [
         'mfg_date' => 'date',
         'best_before' => 'date',
+        'status' => StockLotStatus::class,
+        'blocked_at' => 'datetime',
     ];
 
     /** @return BelongsTo<ArticleVariant, $this> */
     public function variant(): BelongsTo {
         return $this->belongsTo(ArticleVariant::class, 'article_variant_id');
+    }
+
+    /** @return BelongsTo<User, $this> */
+    public function blockedBy(): BelongsTo {
+        return $this->belongsTo(User::class, 'blocked_by_user_id');
+    }
+
+    /** @return BelongsTo<self, $this> */
+    public function mergedInto(): BelongsTo {
+        return $this->belongsTo(self::class, 'merged_into_lot_id');
     }
 }

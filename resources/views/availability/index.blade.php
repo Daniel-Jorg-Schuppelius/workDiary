@@ -92,12 +92,12 @@
                     <tr class="hover">
                         <td>
                             @if ($window->specific_date)
-                                {{ $window->specific_date->format('d.m.Y') }}
+                                {{ $window->specific_date->fdate() }}
                             @else
                                 {{ $weekdays[$window->weekday] ?? '—' }}
                                 @if ($window->valid_from || $window->valid_until)
                                     <span class="text-xs opacity-60">
-                                        ({{ $window->valid_from?->format('d.m.Y') ?? '…' }}–{{ $window->valid_until?->format('d.m.Y') ?? '…' }})
+                                        ({{ $window->valid_from?->fdate() ?? '…' }}–{{ $window->valid_until?->fdate() ?? '…' }})
                                     </span>
                                 @endif
                             @endif
@@ -184,7 +184,7 @@
                 </x-slot:head>
                 @forelse ($desired as $wish)
                     <tr class="hover">
-                        <td>{{ $wish->date->format('d.m.Y') }}</td>
+                        <td>{{ $wish->date->fdate() }}</td>
                         <td>{{ $wish->shiftType?->name ?? __('beliebig') }}</td>
                         <td>
                             <x-status-badge :tone="$wish->preference->tone()" size="sm">{{ $wish->preference->label() }}</x-status-badge>
@@ -205,6 +205,8 @@
                 @endforelse
             </x-table>
         </x-form-group>
+
+        <x-pagination :paginator="$desired" standing />
 
     </x-index-page>
 @endsection

@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers\Location;
 
+use App\Enums\Location\LocationPendingEntryStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Location\LocationPendingEntry;
 use App\Services\Location\VisitMaterializer;
@@ -28,7 +29,7 @@ class LocationReviewController extends Controller {
     public function index(Request $request): View {
         $entries = LocationPendingEntry::query()
             ->where('user_id', $this->authUser()->id)
-            ->where('status', LocationPendingEntry::STATUS_OPEN)
+            ->where('status', LocationPendingEntryStatus::Open)
             ->with(['customer', 'project'])
             ->orderBy('started_at')
             ->paginate(50);

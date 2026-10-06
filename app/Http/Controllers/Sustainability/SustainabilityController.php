@@ -12,17 +12,19 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Sustainability;
 
+use App\Enums\Sustainability\{SustainabilityAssessmentStatus, SustainabilityMeasureStatus};
 use App\Enums\User\Permission as P;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
 use App\Models\Platform\User;
 use App\Models\Sustainability\{SustainabilityActivityRecord, SustainabilityAssessment, SustainabilityCriterion, SustainabilityFactorSet, SustainabilityFrameMapping, SustainabilityMeasure, SustainabilityReportSnapshot, SustainabilitySite, SustainabilityTarget};
 use App\Services\Sustainability\{EmissionCalculationService, SustainabilityAssessmentService};
-use App\Support\ErrorText;
+use App\Support\{ErrorText, SortableQuery};
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request, Response};
 use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\Validation\Rule;
 
 /**
  * Nachhaltigkeit/ESG (Feature 071, MVP-223–234): Dashboard mit
@@ -33,6 +35,13 @@ use Illuminate\Support\Facades\{Auth, Gate};
 class SustainabilityController extends Controller {
     use RendersReportPdf;
     use WritesReportCsv;
+
+    /** Dashboard-Karten zeigen die jüngsten Einträge; die ganze Menge steht in den Listen. */
+    private const DASHBOARD_LIMIT = 10;
+
+    private const ASSESSMENT_SORTS = ['subject' => 'subject_label', 'version' => 'version', 'status' => 'status', 'score' => 'total_score', 'assessed_at' => 'assessed_at', 'created' => 'id'];
+
+    private const MEASURE_SORTS = ['title' => 'title', 'status' => 'status', 'due_on' => 'due_on', 'created' => 'id'];
 
     public function __construct(
         private readonly EmissionCalculationService $emissions,
@@ -47,8 +56,8 @@ class SustainabilityController extends Controller {
         $to = (string) $request->query('to', now()->toDateString());
         $aggregate = $this->emissions->aggregate($orgId, $from, $to);
 
-        $critical = SustainabilityAssessment::query()->where('rating', 'red')->where('status', 'final')->count();
-        $openMeasures = SustainabilityMeasure::query()->whereIn('status', ['proposed', 'approved', 'in_progress'])->count();
+        $critical = SustainabilityAssessment::query()->where('rating', 'red')->where('status', SustainabilityAssessmentStatus::Final)->count();
+        $openMeasures = SustainabilityMeasure::query()->whereIn('status', SustainabilityMeasureStatus::open())->count();
         $estimatedShare = array_sum($aggregate['quality_share']) > 0
             ? round(($aggregate['quality_share']['estimated'] ?? 0) / array_sum($aggregate['quality_share']) * 100)
             : 0;
@@ -96,14 +105,15 @@ class SustainabilityController extends Controller {
             'openMeasures' => $openMeasures,
             'estimatedShare' => $estimatedShare,
             'targets' => $targets,
-            'assessments' => SustainabilityAssessment::query()->orderByDesc('id')->limit(10)->get(),
-            'measures' => SustainabilityMeasure::query()->with('responsible')->orderByDesc('id')->limit(10)->get(),
+            'assessments' => SustainabilityAssessment::query()->orderByDesc('id')->limit(self::DASHBOARD_LIMIT)->get(),
+            'assessmentCount' => SustainabilityAssessment::query()->count(),
+            'measures' => SustainabilityMeasure::query()->with('responsible')->orderByDesc('id')->limit(self::DASHBOARD_LIMIT)->get(),
+            'measureCount' => SustainabilityMeasure::query()->count(),
             'criteria' => SustainabilityCriterion::query()->orderBy('dimension')->get(),
             'factorSets' => SustainabilityFactorSet::query()->with('factors')
                 ->where('active', true)
                 ->where(fn($q) => $q->whereNull('organization_id')->orWhere('organization_id', $orgId))
                 ->get(),
-            'records' => SustainabilityActivityRecord::query()->orderByDesc('period_end')->limit(15)->get(),
             'mappings' => SustainabilityFrameMapping::query()->where('active', true)->whereNull('organization_id')->orderBy('section_code')->get(),
             'users' => User::inCurrentOrganization()->orderBy('name')->get(['id', 'name']),
             'canManage' => Auth::user()?->can(P::SustainabilityManage->value) || (Auth::user()?->isAdmin() ?? false),
@@ -222,6 +232,24 @@ class SustainabilityController extends Controller {
         return redirect()->route('sustainability.assessments.show', $assessment)->with('status', __('Bewertungsentwurf angelegt.'));
     }
 
+    /** Alle Bewertungen — das Dashboard zeigt nur die jüngsten. */
+    public function assessmentIndex(Request $request): View {
+        Gate::authorize('viewAny', SustainabilityAssessment::class);
+
+        [$sort, $dir] = SortableQuery::resolve($request, self::ASSESSMENT_SORTS, 'created');
+
+        return view('sustainability.assessments.index', [
+            // Zweitschlüssel id: gleiche Werte (Status, Version) blättern sonst nicht stabil.
+            'assessments' => SustainabilityAssessment::query()
+                ->orderBy(self::ASSESSMENT_SORTS[$sort], $dir)
+                ->orderBy('id', $dir)
+                ->paginate(25)
+                ->withQueryString(),
+            'sort' => $sort,
+            'dir' => $dir,
+        ]);
+    }
+
     public function showAssessment(Request $request, SustainabilityAssessment $assessment): View {
         Gate::authorize('view', $assessment);
         $assessment->load(['items.criterion', 'assessor']);
@@ -285,6 +313,30 @@ class SustainabilityController extends Controller {
 
     // ── Maßnahmen (MVP-229) ──────────────────────────────────────────────
 
+    /** Alle Maßnahmen mit Statuspflege — ältere erreicht man nur hier. */
+    public function measureIndex(Request $request): View {
+        Gate::authorize('viewAny', SustainabilityAssessment::class);
+
+        $status = (string) $request->query('status', '');
+        $query = SustainabilityMeasure::query()->with('responsible');
+        if ($status === 'open') {
+            $query->whereIn('status', SustainabilityMeasureStatus::open());
+        } elseif (($single = SustainabilityMeasureStatus::tryFrom($status)) !== null) {
+            $query->where('status', $single);
+        } else {
+            $status = '';
+        }
+        [$sort, $dir] = SortableQuery::resolve($request, self::MEASURE_SORTS, 'created');
+
+        return view('sustainability.measures.index', [
+            'measures' => $query->orderBy(self::MEASURE_SORTS[$sort], $dir)->orderBy('id', $dir)->paginate(25)->withQueryString(),
+            'status' => $status,
+            'sort' => $sort,
+            'dir' => $dir,
+            'canManage' => Gate::allows('create', SustainabilityAssessment::class),
+        ]);
+    }
+
     public function storeMeasure(Request $request): RedirectResponse {
         Gate::authorize('create', SustainabilityAssessment::class);
         $request->merge(['responsible_user_id' => \App\Support\Sqid::decodeOrNumeric(User::class, $request->input('responsible_user_id'))]);
@@ -300,7 +352,7 @@ class SustainabilityController extends Controller {
         SustainabilityMeasure::query()->create([
             ...$data,
             'organization_id' => $this->currentOrganization()->id,
-            'status' => 'proposed',
+            'status' => SustainabilityMeasureStatus::Proposed,
             'created_by' => (int) Auth::id(),
         ]);
 
@@ -310,15 +362,20 @@ class SustainabilityController extends Controller {
     public function updateMeasure(Request $request, SustainabilityMeasure $measure): RedirectResponse {
         Gate::authorize('create', SustainabilityAssessment::class);
         $data = $request->validate([
-            'status' => ['required', 'in:' . implode(',', SustainabilityMeasure::STATUSES)],
+            'status' => ['required', Rule::enum(SustainabilityMeasureStatus::class)],
             'evidence_note' => ['nullable', 'string', 'max:1000'],
             'effectiveness' => ['nullable', 'in:effective,partly,ineffective'],
             'effectiveness_note' => ['nullable', 'string', 'max:1000'],
         ]);
 
+        // Die Statuspflege steht im Dashboard und in der Maßnahmenliste; die Liste behält Filter, Sortierung und Seite.
+        $return = static fn (): RedirectResponse => $request->input('origin') === 'list'
+            ? redirect()->toList('sustainability.measures.index')
+            : back();
+
         // Wirksamkeitsprüfung erst nach Umsetzung (done).
-        if (($data['effectiveness'] ?? null) !== null && $data['status'] !== 'done') {
-            return back()->with('error', __('Wirksamkeit wird erst nach der Umsetzung geprüft.'));
+        if (($data['effectiveness'] ?? null) !== null && $data['status'] !== SustainabilityMeasureStatus::Done->value) {
+            return $return()->with('error', __('Wirksamkeit wird erst nach der Umsetzung geprüft.'));
         }
 
         $measure->update([
@@ -327,7 +384,7 @@ class SustainabilityController extends Controller {
             'reviewed_at' => ($data['effectiveness'] ?? null) !== null ? now() : $measure->reviewed_at,
         ]);
 
-        return back()->with('status', __('Maßnahme aktualisiert.'));
+        return $return()->with('status', __('Maßnahme aktualisiert.'));
     }
 
     // ── Ziele (MVP-231) ──────────────────────────────────────────────────

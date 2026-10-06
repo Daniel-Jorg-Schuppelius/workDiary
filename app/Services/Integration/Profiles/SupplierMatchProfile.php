@@ -15,6 +15,7 @@ namespace App\Services\Integration\Profiles;
 use App\Models\Platform\Organization;
 use App\Models\Supplier\Supplier;
 use App\Services\Integration\Match\{AbstractMatchProfile, CompositeField, ExactField, FuzzyField, MatchStrategy};
+use App\Services\Integration\Profiles\Concerns\DisplaysPartyMatch;
 use App\Services\Stammdaten\ContactDetailsWriter;
 use Illuminate\Database\Eloquent\{Builder, Model};
 
@@ -26,6 +27,8 @@ use Illuminate\Database\Eloquent\{Builder, Model};
  * @extends AbstractMatchProfile<Supplier>
  */
 class SupplierMatchProfile extends AbstractMatchProfile {
+    use DisplaysPartyMatch;
+
     public const FUZZY_THRESHOLD = 0.86;
 
     public function targetType(): string {
@@ -43,20 +46,6 @@ class SupplierMatchProfile extends AbstractMatchProfile {
             new ExactField('email', MatchStrategy::LIKELY, 'email'),
             new CompositeField(['company', 'address_zip'], MatchStrategy::LIKELY, 'company_zip'),
             new FuzzyField(['name', 'company'], self::FUZZY_THRESHOLD, 'name'),
-        ];
-    }
-
-    public function display(array $mapped): array {
-        $title = (string) ($mapped['name'] ?? $mapped['company'] ?? '');
-        $subtitleParts = array_filter([
-            (string) ($mapped['company'] ?? ''),
-            (string) ($mapped['email'] ?? ''),
-            (string) ($mapped['vat_id'] ?? ''),
-        ], static fn(string $v): bool => $v !== '' && $v !== $title);
-
-        return [
-            'title' => $title !== '' ? $title : (string) __('(ohne Namen)'),
-            'subtitle' => $subtitleParts !== [] ? implode(' · ', $subtitleParts) : null,
         ];
     }
 

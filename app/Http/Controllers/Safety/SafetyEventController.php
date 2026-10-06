@@ -188,7 +188,7 @@ class SafetyEventController extends Controller {
         $this->service->delete($safety_event);
 
         return redirect()
-            ->route('safety-events.index')
+            ->toList('safety-events.index')
             ->with('success', __('safety.flash.deleted'));
     }
 

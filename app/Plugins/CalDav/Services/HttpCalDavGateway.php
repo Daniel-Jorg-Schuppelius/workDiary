@@ -12,12 +12,13 @@ declare(strict_types=1);
 
 namespace App\Plugins\CalDav\Services;
 
+use APIToolkit\API\Authentication\BasicAuthentication;
 use APIToolkit\API\WebDav\{MultiStatus, Propfind};
 use App\Plugins\CalDav\Contracts\CalDavGateway;
 use App\Plugins\CalDav\Models\CalDavConnection;
 use App\Plugins\Support\PluginApiClient;
 use App\Support\UrlSafety;
-use CommonToolkit\Helper\Data\XmlHelper;
+use CommonToolkit\Helper\Data\{WebLinkHelper, XmlHelper};
 use DateTimeInterface;
 use RuntimeException;
 use Throwable;
@@ -41,12 +42,12 @@ class HttpCalDavGateway implements CalDavGateway {
         if (! UrlSafety::isPubliclyRoutableHttpUrl((string) $connection->base_url)) {
             throw new RuntimeException('CalDAV base_url is not a publicly routable http(s) target.');
         }
+        $this->http->setAuthentication(new BasicAuthentication((string) $connection->username, (string) $connection->app_password));
     }
 
     public function putObject(string $objectName, string $ics): bool {
         try {
             $response = $this->http->requestResponse('PUT', $this->connection->objectUrl($objectName), [
-                'auth' => [$this->connection->username, $this->connection->app_password],
                 'headers' => ['Content-Type' => 'text/calendar; charset=utf-8'],
                 'body' => $ics,
             ]);
@@ -59,9 +60,7 @@ class HttpCalDavGateway implements CalDavGateway {
 
     public function deleteObject(string $objectName): bool {
         try {
-            $response = $this->http->requestResponse('DELETE', $this->connection->objectUrl($objectName), [
-                'auth' => [$this->connection->username, $this->connection->app_password],
-            ]);
+            $response = $this->http->requestResponse('DELETE', $this->connection->objectUrl($objectName));
         } catch (Throwable) {
             return false;
         }
@@ -74,7 +73,6 @@ class HttpCalDavGateway implements CalDavGateway {
         try {
             // PROPFIND Depth:0 auf die Collection: 207 Multi-Status = erreichbar + Auth gültig.
             $response = $this->http->requestResponse('PROPFIND', rtrim($this->connection->base_url, '/') . '/' . trim($this->connection->calendar_path, '/'), [
-                'auth' => [$this->connection->username, $this->connection->app_password],
                 'headers' => ['Depth' => '0', 'Content-Type' => 'application/xml; charset=utf-8'],
                 'body' => Propfind::body(['d:resourcetype']),
             ]);
@@ -115,7 +113,6 @@ class HttpCalDavGateway implements CalDavGateway {
 
         try {
             $response = $this->http->requestResponse('REPORT', $collection, [
-                'auth' => [$this->connection->username, $this->connection->app_password],
                 'headers' => ['Depth' => '1', 'Content-Type' => 'application/xml; charset=utf-8'],
                 'body' => $body,
             ]);
@@ -156,7 +153,6 @@ class HttpCalDavGateway implements CalDavGateway {
 
         try {
             $response = $this->http->requestResponse('REPORT', $collection, [
-                'auth' => [$this->connection->username, $this->connection->app_password],
                 'headers' => ['Depth' => '1', 'Content-Type' => 'application/xml; charset=utf-8'],
                 'body' => $body,
             ]);
@@ -193,9 +189,7 @@ class HttpCalDavGateway implements CalDavGateway {
     /** Einzelobjekt nachladen, wenn der Report kein calendar-data mitliefert. */
     private function fetchObject(string $href): string {
         try {
-            $response = $this->http->requestResponse('GET', $this->absolute($href), [
-                'auth' => [$this->connection->username, $this->connection->app_password],
-            ]);
+            $response = $this->http->requestResponse('GET', $this->absolute($href));
         } catch (Throwable) {
             return '';
         }
@@ -249,9 +243,8 @@ class HttpCalDavGateway implements CalDavGateway {
 
     /** Relative hrefs des Servers auf die Basis-URL beziehen. */
     private function absolute(string $href): string {
-        $base = (string) $this->connection->base_url;
-        $parts = parse_url($base);
-        $origin = ($parts['scheme'] ?? 'https') . '://' . ($parts['host'] ?? '') . (isset($parts['port']) ? ':' . $parts['port'] : '');
+        $origin = WebLinkHelper::origin((string) $this->connection->base_url)
+            ?? throw new RuntimeException('CalDAV base_url has no origin.');
 
         // Absolute Adressen aus der Server-Antwort gelten nur, solange sie zur
         // konfigurierten Verbindung gehören. Sonst führte ein Server mit einem

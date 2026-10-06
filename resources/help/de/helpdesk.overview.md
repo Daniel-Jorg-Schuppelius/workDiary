@@ -1,7 +1,7 @@
 ---
 title: "Helpdesk & Service Desk"
 topic: helpdesk.overview
-version: 1
+version: 2
 audience: []
 related:
     - open-issues
@@ -40,6 +40,15 @@ Schnittstelle. Die Quelle bleibt am Ticket vermerkt.
 Queue, mit Priorität oder Zuständigkeit — und werden in definierter
 Reihenfolge angewendet. Ein Test-Modus prüft eine Regel gegen ein
 Beispiel-Ticket und protokolliert das Ergebnis, ohne irgendetwas zu ändern.
+
+**Genehmigungen:** Offene Freigabestufen von Service-Requests, Changes und
+Vertragsverhandlungen stehen gesammelt unter „Genehmigungen“ — je Vorgang
+nur die nächste offene Stufe und nur für die Zuständigen: eine Person,
+eine Rolle oder bei Vertragsverhandlungen die Rolle, die die Organisation
+der Stufenart zuordnet (Vorgabe: kaufmännisch → Buchhaltung, fachlich →
+Teamleitung, HR → Personalverwaltung). Genehmigen, Ablehnen, Rückfrage und
+Delegation wirken wie an der Akte; eine Ablehnung beendet die Runde, die
+Selbstfreigabe bleibt gesperrt.
 
 **Zufriedenheit & Berichte:** Nach Abschluss kann der Kunde im Portal eine
 Kurzbewertung abgeben — eine je Ticket. Die Berichte zeigen Volumen je

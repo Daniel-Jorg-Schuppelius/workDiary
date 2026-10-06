@@ -12,8 +12,7 @@
 @extends('layouts.app')
 @section('title', __('commission.page.rules'))
 @section('nav-title', __('commission.page.rules'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('commission.subtitle.rules')">
     <x-slot:actions>
@@ -49,7 +48,7 @@
                 <td class="text-sm text-base-content/70">{{ $rule->user?->name ?? $rule->scope_value ?? '–' }}</td>
                 <td class="text-right font-mono text-sm">{{ $rule->rate_percent?->format() ?? '0,00' }} %</td>
                 <td class="text-sm">
-                    {{ $rule->valid_from?->format('d.m.Y') ?? '–' }} – {{ $rule->valid_to?->format('d.m.Y') ?? '–' }}
+                    {{ $rule->valid_from?->fdate() ?? '–' }} – {{ $rule->valid_to?->fdate() ?? '–' }}
                 </td>
                 <td class="text-center text-sm">{{ $rule->priority }}</td>
                 <td class="text-center">

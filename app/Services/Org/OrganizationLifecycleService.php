@@ -413,15 +413,23 @@ class OrganizationLifecycleService {
      *
      * `disk` = Spalte mit dem Datentraeger, sonst `default_disk`.
      * `dir` = der Zeiger ist ein Verzeichnis, kein Einzeldokument.
+     * `path` nennt eine Spalte oder mehrere (Original und Ableitung).
      *
-     * @var array<string, array{path: string, disk?: string, default_disk?: string, dir?: bool}>
+     * Nur Spalten, deren Pfad die App selbst vergibt: ein Wert aus einer
+     * Eingabe waere ein Loeschziel nach Wahl des Mandanten. Das Gate
+     * `PurgeFilePointerRuleTest` haelt das Schema gegen diese Liste.
+     *
+     * @var array<string, array{path: string|list<string>, disk?: string, default_disk?: string, dir?: bool}>
      */
     private const FILE_POINTER_TABLES = [
         'attachments' => ['path' => 'path', 'disk' => 'disk'],
         'bank_statements' => ['path' => 'file_path'],
         'billing_transfers' => ['path' => 'file_path'],
+        'contract_signature_evidences' => ['path' => 'path', 'disk' => 'disk'],
         'datev_booking_batches' => ['path' => 'file_path'],
+        'dictations' => ['path' => 'audio_path', 'disk' => 'audio_disk'],
         'export_runs' => ['path' => 'storage_path'],
+        'gaeb_imports' => ['path' => 'stored_path'],
         'gobd_exports' => ['path' => 'file_path'],
         'import_runs' => ['path' => 'storage_path'],
         'isms_advisories' => ['path' => 'file_path'],
@@ -429,11 +437,17 @@ class OrganizationLifecycleService {
         'job_application_uploads' => ['path' => 'storage_key'],
         'learning_cmi5_packages' => ['path' => 'storage_path', 'dir' => true],
         'learning_scorm_packages' => ['path' => 'storage_path', 'dir' => true],
-        'letterhead_assets' => ['path' => 'original_path', 'disk' => 'disk'],
+        'letterhead_assets' => ['path' => ['original_path', 'normalized_path'], 'disk' => 'disk'],
         'media_renditions' => ['path' => 'path', 'disk' => 'disk'],
+        'personnel_file_submissions' => ['path' => 'path', 'disk' => 'disk'],
         'privacy_attachments' => ['path' => 'path'],
+        'privacy_joint_controller_agreements' => ['path' => 'document_path'],
+        'privacy_processing_agreements' => ['path' => 'document_path'],
+        'procedure_documentations' => ['path' => 'pdf_path'],
         'resale_imports' => ['path' => 'file_path'],
+        'safety_instruction_participants' => ['path' => 'signature_image_path'],
         'time_exports' => ['path' => 'file_path'],
+        'travel_logs' => ['path' => 'driver_signature_path'],
         'whistleblowing_attachments' => ['path' => 'storage_key', 'default_disk' => 'whistleblowing'],
     ];
 
@@ -448,7 +462,11 @@ class OrganizationLifecycleService {
 
         // Plugins melden ihre Dateitabellen selbst an (MVP-1044).
         foreach ([...self::FILE_POINTER_TABLES, ...app(OrganizationFileTables::class)->all()] as $table => $spec) {
-            if (! Schema::hasTable($table) || ! Schema::hasColumn($table, $spec['path'])) {
+            if (! Schema::hasTable($table)) {
+                continue;
+            }
+            $pathColumns = array_values(array_filter((array) $spec['path'], static fn (string $column): bool => Schema::hasColumn($table, $column)));
+            if ($pathColumns === []) {
                 continue;
             }
             $diskColumn = ($spec['disk'] ?? null) !== null && Schema::hasColumn($table, (string) $spec['disk'])
@@ -459,23 +477,25 @@ class OrganizationLifecycleService {
                 $defaultDisk = (string) config('whistleblowing.disk', 'whistleblowing');
             }
 
-            $columns = [$spec['path']];
+            $columns = $pathColumns;
             if ($diskColumn !== null) {
                 $columns[] = $diskColumn;
             }
 
-            DB::table($table)->where('organization_id', $orgId)->select($columns)->orderBy($spec['path'])
-                ->chunk(500, function ($rows) use (&$targets, $spec, $diskColumn, $defaultDisk): void {
+            DB::table($table)->where('organization_id', $orgId)->select($columns)->orderBy(Schema::hasColumn($table, 'id') ? 'id' : $pathColumns[0])
+                ->chunk(500, function ($rows) use (&$targets, $spec, $pathColumns, $diskColumn, $defaultDisk): void {
                     foreach ($rows as $row) {
-                        $path = (string) ($row->{$spec['path']} ?? '');
-                        if ($path === '') {
-                            continue;
+                        foreach ($pathColumns as $column) {
+                            $path = (string) ($row->{$column} ?? '');
+                            if ($path === '') {
+                                continue;
+                            }
+                            $targets[] = [
+                                'disk' => $diskColumn !== null ? (string) ($row->{$diskColumn} ?: $defaultDisk) : $defaultDisk,
+                                'path' => $path,
+                                'dir' => (bool) ($spec['dir'] ?? false),
+                            ];
                         }
-                        $targets[] = [
-                            'disk' => $diskColumn !== null ? (string) ($row->{$diskColumn} ?: $defaultDisk) : $defaultDisk,
-                            'path' => $path,
-                            'dir' => (bool) ($spec['dir'] ?? false),
-                        ];
                     }
                 });
         }

@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers\Invoicing;
 
+use App\Enums\Invoicing\InvoiceScheduleStatus;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
@@ -21,6 +22,7 @@ use App\Services\Billing\BillingModeResolver;
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 /** Abrechnungspläne für wiederkehrende Rechnungen (MVP-415). */
@@ -80,7 +82,7 @@ class InvoiceScheduleController extends Controller {
         $schedule = InvoiceSchedule::create([
             ...$data,
             'organization_id' => $this->currentOrganization()->id,
-            'status' => InvoiceSchedule::STATUS_ACTIVE,
+            'status' => InvoiceScheduleStatus::Active,
             'created_by' => $auth->id,
         ]);
 
@@ -122,15 +124,18 @@ class InvoiceScheduleController extends Controller {
         Gate::authorize(Permission::InvoiceUpdate->value);
 
         $data = $request->validate([
-            'status' => ['required', 'in:active,paused,ended'],
+            'status' => ['required', Rule::enum(InvoiceScheduleStatus::class)],
         ]);
+        $target = InvoiceScheduleStatus::from((string) $data['status']);
+        $current = $invoiceSchedule->status;
 
-        if ($invoiceSchedule->status === InvoiceSchedule::STATUS_ENDED) {
+        // Derselbe Status ist kein Übergang und bleibt ein stilles Speichern — außer am Endzustand.
+        if ($current->isFinal() || ($current !== $target && ! $current->canTransitionTo($target))) {
             return redirect()->route('invoice-schedules.show', $invoiceSchedule)
                 ->with('error', __('Ein beendeter Plan kann nicht wieder aktiviert werden.'));
         }
 
-        $invoiceSchedule->update(['status' => $data['status']]);
+        $invoiceSchedule->update(['status' => $target]);
 
         return redirect()->route('invoice-schedules.show', $invoiceSchedule)
             ->with('status', __('Status aktualisiert.'));

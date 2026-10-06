@@ -10,8 +10,7 @@
 
 @section('title', __('notification.title.center'))
 @section('nav-title', __('notification.title.center'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('notification.title.center_subtitle')">
@@ -40,7 +39,7 @@
     </x-slot:actions>
 
     <div class="flex-1 min-h-0 overflow-y-auto">
-        <ul class="divide-y divide-base-200 rounded-box border border-base-300 bg-base-100">
+        <x-card as="ul" padding="p-0" class="divide-y divide-base-200">
             @forelse ($notifications as $notification)
                 @php
                     $data = (array) $notification->data;
@@ -55,7 +54,7 @@
                                 <x-status-badge size="xs" tone="error">{{ __('notification.field.escalation') }}</x-status-badge>
                             @endif
                             @if ($isUnread)
-                                <span class="badge badge-primary badge-xs">{{ __('notification.field.unread') }}</span>
+                                <x-status-badge tone="primary" size="xs">{{ __('notification.field.unread') }}</x-status-badge>
                             @endif
                         </div>
                         @if (($notificationMessage = \App\Support\NotificationText::message($data)) !== '')
@@ -97,7 +96,7 @@
                                    compact />
                 </li>
             @endforelse
-        </ul>
+        </x-card>
     </div>
 
     <x-pagination :paginator="$notifications" standing />

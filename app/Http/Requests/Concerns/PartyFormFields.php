@@ -41,7 +41,7 @@ trait PartyFormFields {
             'address' => ['nullable', 'string', 'max:1000'],
             'currency' => ['required', \Illuminate\Validation\Rule::enum(\CommonToolkit\Enums\CurrencyCode::class)],
             'timezone' => ['nullable', 'string', 'max:64', 'timezone'],
-            'color' => ['nullable', 'string', 'max:16'],
+            'color' => ['nullable', 'string', 'max:16', new \App\Rules\ColorValue],
             'comment' => ['nullable', 'string', 'max:5000'],
             'bank_account_holder' => ['nullable', 'string', 'max:200'],
             // Gemeinsame Format-Rules (Vollaudit 2026-07, M39).

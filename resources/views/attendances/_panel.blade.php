@@ -70,9 +70,8 @@
 
                 <form method="POST" action="{{ route('attendance.cancel') }}" class="leading-none">
                     @csrf
-                    <button type="submit" class="btn btn-xs btn-ghost btn-square h-7 min-h-7 text-error" title="{{ __('Stempelung verwerfen') }}" aria-label="{{ __('Stempelung verwerfen') }}">
-                        <x-icon name="delete" class="text-[0.95rem]" />
-                    </button>
+                    <x-icon-btn icon="delete" icon-size="0.95rem" tone="error" type="submit" :label="__('Stempelung verwerfen')"
+                            class="btn-square h-7 min-h-7" />
                 </form>
             </div>
         </div>

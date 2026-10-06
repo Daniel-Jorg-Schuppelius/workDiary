@@ -23,7 +23,7 @@
                 <li class="flex items-center gap-2 py-1.5">
                     <x-icon :name="$group['icon']" class="text-muted" />
                     <a href="{{ route('billing.chain') }}#{{ $group['key'] }}" class="link link-hover flex-1 min-w-0 truncate">{{ $group['label'] }}</a>
-                    <span class="badge badge-sm">{{ $group['count'] }}</span>
+                    <x-status-badge tone="plain">{{ $group['count'] }}</x-status-badge>
                 </li>
             @endforeach
         </ul>

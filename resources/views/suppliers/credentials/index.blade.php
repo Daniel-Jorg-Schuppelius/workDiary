@@ -16,8 +16,7 @@
 @section('title', __('procurement.credentials.title'))
 @section('nav-title', __('procurement.credentials.title'))
 
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
     <x-index-page overflow="clip" :subtitle="__('procurement.credentials.subtitle')">
@@ -42,10 +41,10 @@
                     <td>
                         <div class="flex flex-wrap gap-1">
                             @foreach ($row['items'] as $item)
-                                <span class="badge badge-sm badge-outline"
-                                      title="{{ $item['credential']?->valid_until?->fdate() ?? __('procurement.credentials.no_document') }}">
+                                <x-status-badge tone="plain" outline
+                                        title="{{ $item['credential']?->valid_until?->fdate() ?? __('procurement.credentials.no_document') }}">
                                     {{ $item['type']->name }}: {{ $item['status']->label() }}
-                                </span>
+                                </x-status-badge>
                             @endforeach
                         </div>
                     </td>

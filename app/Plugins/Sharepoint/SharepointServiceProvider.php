@@ -11,6 +11,7 @@
 namespace App\Plugins\Sharepoint;
 
 use App\Plugins\Sharepoint\Api\SharepointOAuth;
+use App\Plugins\Sharepoint\Services\SharepointMirrorTarget;
 use App\Plugins\Support\Mirror\{MirrorOutboxDispatcher, MirrorTargetRegistry};
 use App\Plugins\Support\PluginServiceProviderBase;
 use App\Services\Integration\IntegrationOutboxDispatcherResolver;

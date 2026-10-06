@@ -92,7 +92,7 @@ class PluginContributionsTest extends TestCase {
             \App\Plugins\Msgraph\Services\MsgraphCalendarImportFeed::class,
         ])));
         $this->assertContains(\App\Plugins\RemoteSupport\Import\RemoteSessionSpec::class, $modules->extensions(\App\Services\Import\EntitySpec::class));
-        $this->assertContains(\App\Plugins\Fritzbox\FritzboxCallReportMailHandler::class, $modules->extensions(\App\Services\Mail\Contracts\MailIntakeHandler::class));
+        $this->assertContains(\App\Plugins\Fritzbox\Services\FritzboxCallReportMailHandler::class, $modules->extensions(\App\Services\Mail\Contracts\MailIntakeHandler::class));
 
         $this->expectException(\InvalidArgumentException::class);
         $modules->contribute(\App\Services\Import\EntitySpec::class, self::class);

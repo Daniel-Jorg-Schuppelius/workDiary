@@ -44,12 +44,6 @@ class LexwareFeatureResolver {
         return $result;
     }
 
-    public function resolveOne(Organization $organization, User $user, LexwareFeature $feature): FeatureAvailability {
-        $profile = $this->tariffs->profile();
-
-        return $this->resolveFeature($organization, $user, $feature, $profile, $profile->effectivePlan());
-    }
-
     /** Rechnungshoheit der Organisation als Standard — Kunden können abweichen (BillingModeResolver). */
     public function organizationBillsLocally(Organization $organization): bool {
         $mode = BillingMode::tryFrom((string) data_get($organization->settings, 'billing_mode', ''));

@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Api;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
 use App\Models\Material\Material;
@@ -52,7 +53,7 @@ class ValueObjectJsonFormatTest extends TestCase {
             'organization_id' => $this->organization->id,
             'customer_id' => $customer->id,
             'number' => 'R2026-9001',
-            'status' => Invoice::STATUS_ISSUED,
+            'status' => InvoiceStatus::Issued,
             'type' => Invoice::TYPE_INVOICE,
             'currency' => 'EUR',
             'tax_rate' => '19.00',

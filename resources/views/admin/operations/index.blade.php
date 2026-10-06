@@ -10,9 +10,10 @@
 
 @section('title', __('operations.title.index'))
 @section('nav-title', __('operations.title.index'))
+@include('partials.page-fill')
 
 @section('content')
-<x-index-page :subtitle="__('operations.title.subtitle')">
+<x-index-page overflow="clip" :subtitle="__('operations.title.subtitle')">
     <x-filter-bar :action="route('admin.operations.index')" :reset="route('admin.operations.index')">
         <x-filter-field :label="__('operations.field.status')" for="op-status" class="min-w-44 shrink-0">
             <select id="op-status" name="status" class="select select-sm select-bordered w-full" data-autosubmit>
@@ -43,7 +44,7 @@
     @if ($tasks->isEmpty())
         <x-empty-state framed icon="task_alt" :title="__('operations.empty.title')" :message="__('operations.empty.message')" />
     @else
-        <x-table>
+        <x-table scroll="flex">
             <x-slot:head>
                 <tr>
                     <th>{{ __('operations.field.task') }}</th>

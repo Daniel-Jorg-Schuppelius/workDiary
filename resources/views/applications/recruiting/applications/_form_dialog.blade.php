@@ -42,6 +42,7 @@
         <x-textarea-field name="notes" :label="__('Interne Notiz (verschlüsselt gespeichert)')" rows="3" span="2">{{ old('notes') }}</x-textarea-field>
     </x-form-group>
 
+    {{-- raw-markup-ok: Erfassungsregel als Formularhinweis, kein Leerzustand --}}
     <p class="text-xs text-muted">{{ __('Keine Gesundheits- oder sonstigen Art.-9-Daten erfassen (Feature 068, Rechtsrahmen).') }}</p>
 
     <x-validation-errors />

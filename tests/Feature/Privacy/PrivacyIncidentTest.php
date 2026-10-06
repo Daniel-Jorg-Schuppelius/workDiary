@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Privacy;
 
-use App\Enums\Privacy\{ControllerRole, IncidentStatus, IncidentType};
+use App\Enums\Privacy\{ControllerRole, IncidentStatus, IncidentType, MeasureStatus};
 use App\Models\Customer\Customer;
 use App\Models\Platform\{Organization, User};
 use App\Models\Privacy\{Dpia, Incident, ProcessingActivity};
@@ -220,6 +220,21 @@ class PrivacyIncidentTest extends TestCase {
         $this->artisan('audit:verify')->assertExitCode(0);
     }
 
+    /** Konsolidierungs-Audit 2026-10, vierte Runde: keine stille Vorauswahl „Geringes Risiko“. */
+    public function test_risk_assessment_starts_empty_and_requires_a_level(): void {
+        $org = Organization::factory()->create();
+        $officer = $this->officer($org);
+        $incident = app(IncidentService::class)->open($org, IncidentType::Loss, 'Laptop verloren');
+
+        $html = (string) $this->actingAs($officer)->get(route('dataprotection.incidents.show', $incident))->assertOk()->getContent();
+        $this->assertStringContainsString('<option value="" selected disabled>' . e(__('Bitte wählen')) . '</option>', $html);
+        $this->assertStringNotContainsString('<option value="low" selected', $html);
+
+        $this->actingAs($officer)->post(route('dataprotection.incidents.assess', $incident), ['measures' => 'Gerät gesperrt'])
+            ->assertSessionHasErrors('risk_level');
+        $this->assertNull($incident->fresh()->risk_level);
+    }
+
     public function test_overdue_incident_is_reminded_idempotently(): void {
         $org = Organization::factory()->create();
         $svc = app(IncidentService::class);
@@ -237,9 +252,9 @@ class PrivacyIncidentTest extends TestCase {
         $incident = $svc->open($org, IncidentType::Disclosure, 'Offenlegung');
 
         $measure = $svc->addMeasure($incident, 'Mitarbeiter schulen', null, Carbon::now()->addWeek(), $actor);
-        $this->assertSame('open', $measure->status);
+        $this->assertSame(MeasureStatus::Open, $measure->status);
         $svc->completeMeasure($measure, $actor);
-        $this->assertSame('done', $measure->fresh()->status);
+        $this->assertSame(MeasureStatus::Done, $measure->fresh()->status);
     }
 
     public function test_dpia_upsert_via_http(): void {

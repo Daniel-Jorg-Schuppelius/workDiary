@@ -2547,6 +2547,8 @@ return [
         'todo_list_id' => 'To Do list',
         'todoist_project_id' => 'Todoist project',
         'todoist_project_name' => 'Todoist project',
+        'todoist_project_names' => 'Todoist project',
+        'todoist_project_names.*' => 'Todoist project',
         'toggl_email' => 'Toggl email',
         'token' => 'Token',
         'tolerance_days' => 'Tolerance (days)',

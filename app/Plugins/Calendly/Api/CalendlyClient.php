@@ -132,25 +132,6 @@ class CalendlyClient {
         return is_array($resource) ? $resource : null;
     }
 
-    /**
-     * `GET /webhook_subscriptions` (eine Seite) für Org/Scope.
-     *
-     * @return list<array<string, mixed>>
-     */
-    public function listWebhookSubscriptions(string $organizationUri, string $scope): array {
-        try {
-            $response = $this->api->getResponse($this->base . '/webhook_subscriptions', [
-                'organization' => $organizationUri,
-                'scope' => $scope,
-                'count' => 100,
-            ]);
-        } catch (Throwable) {
-            return [];
-        }
-
-        return $response->successful() ? $this->collection($response->json('collection')) : [];
-    }
-
     /** `DELETE {subscriptionUri}`. 404/410 = bereits entfernt → idempotenter Erfolg. */
     public function deleteWebhookSubscription(string $subscriptionUri): bool {
         try {

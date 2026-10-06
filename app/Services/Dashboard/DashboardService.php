@@ -221,7 +221,7 @@ class DashboardService {
         return $this->remember('recentAttachments', $user, fn (): Collection => Attachment::query()
             ->where('attachable_type', MorphMap::alias(DiaryEntry::class))
             ->whereIn('attachable_id', DiaryEntry::query()->where('user_id', $user->id)->select('id'))
-            ->with('uploader:id,name')
+            ->with(['uploader:id,name', 'attachable:id,user_id'])
             ->latest()
             ->limit($this->recentLimit())
             ->get());

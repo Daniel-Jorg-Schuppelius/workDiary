@@ -12,6 +12,7 @@ namespace App\Plugins\Msgraph\Models;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization};
 use App\Models\Project\Project;
+use App\Plugins\Msgraph\Enums\MsgraphTaskListLinkStatus;
 use App\Plugins\Support\TaskSync\TaskSyncLink;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -30,7 +31,7 @@ use Illuminate\Support\Carbon;
  * @property string $target_kind
  * @property int|null $project_id
  * @property string $sync_mode
- * @property string $status
+ * @property MsgraphTaskListLinkStatus $status
  * @property string|null $delta_link
  * @property string|null $subscription_id
  * @property Carbon|null $subscription_expires_at
@@ -51,10 +52,6 @@ class MsgraphTaskListLink extends Model implements TaskSyncLink {
     public const MODE_WORKDIARY_TO_TODO = 'workdiary_to_todo';
 
     public const MODE_BIDIRECTIONAL = 'bidirectional';
-
-    public const STATUS_ACTIVE = 'active';
-
-    public const STATUS_PAUSED = 'paused';
 
     protected $table = 'msgraph_task_list_links';
 
@@ -79,6 +76,7 @@ class MsgraphTaskListLink extends Model implements TaskSyncLink {
     protected $casts = [
         'last_run_at' => 'datetime',
         'last_run_counters' => 'array',
+        'status' => MsgraphTaskListLinkStatus::class,
         'subscription_expires_at' => 'datetime',
         'webhook_secret' => 'encrypted',
     ];

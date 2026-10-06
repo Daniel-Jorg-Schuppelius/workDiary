@@ -12,7 +12,9 @@ declare(strict_types=1);
 
 namespace App\Services\Investments;
 
+use App\Enums\Investments\InvestmentBudgetRequestStatus;
 use App\Models\Investments\{InvestmentBudgetRequest, InvestmentCase, InvestmentProgram, InvestmentProgramBudget};
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -37,7 +39,8 @@ final class InvestmentProgramService {
                 }
                 InvestmentProgramBudget::query()->updateOrCreate(
                     ['investment_program_id' => $program->id, 'year' => $year],
-                    ['organization_id' => $program->organization_id, 'budget_amount' => bcadd((string) $raw, '0', 2)],
+                    // bcadd(…, '0', 2) schnitt ab und warf bei „1e3“; die Eingabe prüft der Controller (decimal:0,2).
+                    ['organization_id' => $program->organization_id, 'budget_amount' => NumberHelper::roundPrecise((string) $raw, 2)],
                 );
             }
             $program->budgets()->where(fn ($q) => $q->where('year', '<', $program->starts_year)->orWhere('year', '>', $program->ends_year))->delete();
@@ -47,9 +50,9 @@ final class InvestmentProgramService {
     /** @return numeric-string */
     public function plannedAmount(InvestmentCase $case): string {
         $request = $case->approvedBudget()
-            ?? $case->budgetRequests()->whereIn('status', ['draft', 'in_approval'])->orderByDesc('version')->first();
+            ?? $case->budgetRequests()->whereIn('status', InvestmentBudgetRequestStatus::open())->orderByDesc('version')->first();
 
-        return $request instanceof InvestmentBudgetRequest ? bcadd($request->amount, '0', 2) : '0.00';
+        return $request instanceof InvestmentBudgetRequest ? NumberHelper::roundPrecise($request->amount, 2) : '0.00';
     }
 
     public function plannedYear(InvestmentCase $case, InvestmentProgram $program): int {
@@ -73,18 +76,18 @@ final class InvestmentProgramService {
             $planned = $this->plannedAmount($case);
             $projection = $this->investments->projection($case);
             $cases[] = ['case' => $case, 'year' => $year, 'planned' => $planned, 'approved' => $projection['approved'], 'actual' => $projection['actual']];
-            $byStatus[(string) $case->status] = ($byStatus[(string) $case->status] ?? 0) + 1;
-            $byCategory[(string) $case->category] = bcadd($byCategory[(string) $case->category] ?? '0', $planned, 2);
+            $byStatus[$case->status->value] = ($byStatus[$case->status->value] ?? 0) + 1;
+            $byCategory[(string) $case->category] = NumberHelper::addPrecise($byCategory[(string) $case->category] ?? '0', $planned, 2);
             if (isset($years[$year])) {
-                $years[$year]['planned'] = bcadd($years[$year]['planned'], $planned, 2);
+                $years[$year]['planned'] = NumberHelper::addPrecise($years[$year]['planned'], $planned, 2);
                 $years[$year]['approved'] = round($years[$year]['approved'] + $projection['approved'], 2);
                 $years[$year]['actual'] = round($years[$year]['actual'] + $projection['actual'], 2);
             }
         }
         $rows = [];
         foreach ($years as $row) {
-            $remaining = bcsub($row['budget'], $row['planned'], 2);
-            $rows[] = $row + ['remaining' => $remaining, 'over' => bccomp($remaining, '0', 2) < 0];
+            $remaining = NumberHelper::subtractPrecise($row['budget'], $row['planned'], 2);
+            $rows[] = $row + ['remaining' => $remaining, 'over' => NumberHelper::isNegativePrecise($remaining, 2)];
         }
 
         return ['years' => $rows, 'cases' => $cases, 'by_status' => $byStatus, 'by_category' => $byCategory];

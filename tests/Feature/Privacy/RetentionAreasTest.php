@@ -118,7 +118,7 @@ final class RetentionAreasTest extends TestCase {
 
         $proposals = RetentionProposal::query()->where('area', 'employee_records')->get();
         $this->assertSame([$candidate->id], $proposals->map(fn($p) => (int) $p->subject_id)->all());
-        $this->assertSame(RetentionProposal::STATUS_PENDING, $proposals->first()?->status);
+        $this->assertSame(\App\Enums\Privacy\RetentionProposalStatus::Pending, $proposals->first()?->status);
 
         // Der Scan schlägt NUR vor — anonymisiert wird erst nach Bestätigung.
         $this->assertNull($candidate->fresh()?->anonymized_at);

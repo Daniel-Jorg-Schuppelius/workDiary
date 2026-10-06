@@ -14,8 +14,7 @@
 @section('title', __('Umsatz je Produkt'))
 @section('nav-title', __('Umsatz je Produkt'))
 
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 @php
@@ -27,17 +26,7 @@
 
 <x-index-page overflow="clip" :subtitle="__('Menge, Nettoumsatz und Anteil je Artikel aus lokalen Rechnungen und gespiegelten Lexoffice-Rechnungen.') . ' · ' . __('Zeitraum') . ': ' . $label">
     <x-slot:actions>
-        <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
-                    :href="route('reports.product-revenue', array_merge($linkParams, ['export' => 'pdf']))"
-                    show-label>PDF</x-icon-btn>
-        <x-action-menu icon="download" tone="outline" :label="__('Export')">
-            <x-icon-btn icon="download" tone="outline" size="sm"
-                        :href="route('reports.product-revenue', array_merge($linkParams, ['export' => 'csv']))"
-                        show-label>CSV</x-icon-btn>
-            <x-icon-btn icon="table_view" tone="outline" size="sm"
-                        :href="route('reports.product-revenue', array_merge($linkParams, ['export' => 'xlsx']))"
-                        show-label>Excel</x-icon-btn>
-        </x-action-menu>
+        <x-report-export :url="fn (string $format) => route('reports.product-revenue', array_merge($linkParams, ['export' => $format]))" />
     </x-slot:actions>
 
     <x-filter-bar :action="route('reports.product-revenue')" :reset="route('reports.product-revenue')">

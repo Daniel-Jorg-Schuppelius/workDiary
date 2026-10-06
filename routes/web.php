@@ -432,6 +432,7 @@ Route::middleware('auth')->group(function () {
     // Filter-Presets (Folge-Iteration zu Phase H).
     Route::get('account/filter-presets', [\App\Http\Controllers\Platform\UserFilterPresetController::class, 'index'])->name('filter-presets.index');
     Route::post('account/filter-presets', [\App\Http\Controllers\Platform\UserFilterPresetController::class, 'store'])->name('filter-presets.store');
+    Route::get('account/filter-presets/{preset}/edit', [\App\Http\Controllers\Platform\UserFilterPresetController::class, 'edit'])->name('filter-presets.edit');
     Route::put('account/filter-presets/{preset}', [\App\Http\Controllers\Platform\UserFilterPresetController::class, 'update'])->name('filter-presets.update');
     Route::delete('account/filter-presets/{preset}', [\App\Http\Controllers\Platform\UserFilterPresetController::class, 'destroy'])->name('filter-presets.destroy');
 
@@ -1172,6 +1173,8 @@ Route::middleware('auth')->group(function () {
         Route::get('rundgaenge/lauf/{patrolRun}', [\App\Http\Controllers\Patrol\PatrolController::class, 'showRun'])->name('patrols.runs.show');
         Route::post('rundgaenge/lauf/{patrolRun}/scan', [\App\Http\Controllers\Patrol\PatrolController::class, 'scan'])->name('patrols.runs.scan');
         Route::post('rundgaenge/lauf/{patrolRun}/abschluss', [\App\Http\Controllers\Patrol\PatrolController::class, 'complete'])->name('patrols.runs.complete');
+        Route::get('rundgaenge/lauf/{patrolRun}/abbruch', [\App\Http\Controllers\Patrol\PatrolController::class, 'abortCreate'])->name('patrols.runs.abort.create');
+        Route::post('rundgaenge/lauf/{patrolRun}/abbruch', [\App\Http\Controllers\Patrol\PatrolController::class, 'abortStore'])->name('patrols.runs.abort.store');
         Route::get('rundgaenge/{patrolRoute}', [\App\Http\Controllers\Patrol\PatrolController::class, 'show'])->name('patrols.show');
         Route::post('rundgaenge/{patrolRoute}/start', [\App\Http\Controllers\Patrol\PatrolController::class, 'start'])->name('patrols.start');
         Route::post('rundgaenge/{patrolRoute}/kontrollpunkte', [\App\Http\Controllers\Patrol\PatrolController::class, 'addCheckpoint'])->name('patrols.checkpoints.add');
@@ -1240,6 +1243,7 @@ Route::middleware('auth')->group(function () {
             Route::get('backlog', [\App\Http\Controllers\Agile\AgileBacklogController::class, 'index'])->name('backlog');
             Route::post('backlog', [\App\Http\Controllers\Agile\AgileBacklogController::class, 'store'])->name('items.store');
             Route::post('backlog/uebernehmen', [\App\Http\Controllers\Agile\AgileBacklogController::class, 'adopt'])->name('items.adopt');
+            Route::get('backlog/{item}/bearbeiten', [\App\Http\Controllers\Agile\AgileBacklogController::class, 'editItem'])->name('items.edit');
             Route::patch('backlog/{item}/rang', [\App\Http\Controllers\Agile\AgileBacklogController::class, 'rerank'])->name('items.rerank');
             Route::patch('backlog/{item}', [\App\Http\Controllers\Agile\AgileBacklogController::class, 'updateItem'])->name('items.update');
             // Epic-Zuordnung über task.parent_task_id (Vollaudit 2026-07, M25).
@@ -1602,6 +1606,10 @@ Route::middleware('auth')->group(function () {
         Route::get('inventory/lots', [\App\Http\Controllers\Inventory\LotController::class, 'index'])->name('inventory.lots');
         Route::post('inventory/lots/split', [\App\Http\Controllers\Inventory\LotController::class, 'splitLot'])->name('inventory.lots.split');
         Route::post('inventory/lots/merge', [\App\Http\Controllers\Inventory\LotController::class, 'mergeLot'])->name('inventory.lots.merge');
+        Route::get('inventory/lots/{stockLot}/block', [\App\Http\Controllers\Inventory\LotController::class, 'blockCreate'])->name('inventory.lots.block.create');
+        Route::post('inventory/lots/{stockLot}/block', [\App\Http\Controllers\Inventory\LotController::class, 'blockStore'])->name('inventory.lots.block.store');
+        Route::get('inventory/lots/{stockLot}/unblock', [\App\Http\Controllers\Inventory\LotController::class, 'unblockCreate'])->name('inventory.lots.unblock.create');
+        Route::post('inventory/lots/{stockLot}/unblock', [\App\Http\Controllers\Inventory\LotController::class, 'unblockStore'])->name('inventory.lots.unblock.store');
 
         // ── Etikettendruck (Feature 048, E5)
         Route::get('inventory/labels/variant/{variant}', [\App\Http\Controllers\Inventory\LabelController::class, 'variant'])->name('inventory.labels.variant');
@@ -1612,6 +1620,8 @@ Route::middleware('auth')->group(function () {
         Route::get('inventory/conflicts', [\App\Http\Controllers\Inventory\InventoryConflictController::class, 'index'])->name('inventory.conflicts.index');
         Route::post('inventory/conflicts/{conflict}/keep-local', [\App\Http\Controllers\Inventory\InventoryConflictController::class, 'keepLocal'])->name('inventory.conflicts.keep-local');
         Route::post('inventory/conflicts/{conflict}/compensate', [\App\Http\Controllers\Inventory\InventoryConflictController::class, 'compensate'])->name('inventory.conflicts.compensate');
+        Route::post('inventory/conflicts/{conflict}/dismiss', [\App\Http\Controllers\Inventory\InventoryConflictController::class, 'dismiss'])->name('inventory.conflicts.dismiss');
+        Route::post('inventory/conflicts/{conflict}/adopt-remote', [\App\Http\Controllers\Inventory\InventoryConflictController::class, 'adoptRemote'])->name('inventory.conflicts.adopt-remote');
 
         // Etiketten-Layout-Designer (Feature 048, E5)
         Route::get('inventory/label-templates', [\App\Http\Controllers\Print\LabelTemplateController::class, 'index'])->name('inventory.label-templates.index');
@@ -2130,6 +2140,7 @@ Route::middleware('auth')->group(function () {
             Route::put('{guarantee}', [\App\Http\Controllers\Guarantee\GuaranteeController::class, 'update'])->name('update');
             Route::post('{guarantee}/zurueckerhalten', [\App\Http\Controllers\Guarantee\GuaranteeController::class, 'returned'])->name('returned');
             Route::post('{guarantee}/gezogen', [\App\Http\Controllers\Guarantee\GuaranteeController::class, 'drawn'])->name('drawn');
+            Route::get('{guarantee}/einbehalt-abloesen', [\App\Http\Controllers\Guarantee\GuaranteeController::class, 'secureDialog'])->name('secure-dialog');
             Route::post('{guarantee}/einbehalt-abloesen', [\App\Http\Controllers\Guarantee\GuaranteeController::class, 'secure'])->name('secure');
         });
 
@@ -2252,6 +2263,7 @@ Route::middleware('auth')->group(function () {
             Route::post('{requisition}/veroeffentlichungen', [\App\Http\Controllers\Applications\JobRequisitionController::class, 'addPosting'])->name('postings.store');
             Route::post('{requisition}/veroeffentlichungen/{posting}/schliessen', [\App\Http\Controllers\Applications\JobRequisitionController::class, 'closePosting'])->name('postings.close');
             // MVP-437: öffentlicher Karrierebereich — explizite Veröffentlichung/Pause.
+            Route::get('{requisition}/karriere', [\App\Http\Controllers\Applications\JobRequisitionController::class, 'editCareer'])->name('career.edit');
             Route::post('{requisition}/karriere', [\App\Http\Controllers\Applications\JobRequisitionController::class, 'publishCareer'])->name('career.publish');
             Route::post('{requisition}/karriere/pausieren', [\App\Http\Controllers\Applications\JobRequisitionController::class, 'pauseCareer'])->name('career.pause');
             // Eignungsmatrix (MVP-924)
@@ -2272,6 +2284,7 @@ Route::middleware('auth')->group(function () {
             Route::post('{application}/terminangebot', [\App\Http\Controllers\Applications\InterviewOfferController::class, 'store'])->name('interview-offers.store'); // MVP-925
             Route::post('{application}/unterlagen', [\App\Http\Controllers\Applications\JobApplicationController::class, 'addDocument'])->name('documents.store');
             Route::post('{application}/entscheiden', [\App\Http\Controllers\Applications\JobApplicationController::class, 'decide'])->name('decide');
+            Route::post('{application}/aufnehmen', [\App\Http\Controllers\Applications\JobApplicationController::class, 'readmit'])->name('readmit'); // Talentpool → Pipeline
             Route::get('{application}/unterlagen/{upload}', [\App\Http\Controllers\Applications\JobApplicationController::class, 'downloadUpload'])->name('uploads.download');
             Route::get('{application}/auskunft', [\App\Http\Controllers\Applications\JobApplicationController::class, 'export'])->name('export');
             Route::post('{application}/anonymisieren', [\App\Http\Controllers\Applications\JobApplicationController::class, 'anonymize'])->name('anonymize');
@@ -2482,6 +2495,7 @@ Route::middleware('auth')->group(function () {
             Route::post('kalender/fenster/{reservation}/stornieren', [\App\Http\Controllers\Rental\RentalCalendarController::class, 'cancel'])->name('reservations.cancel');
             Route::get('geraetepool', [\App\Http\Controllers\Rental\RentalProfileController::class, 'index'])->name('profiles.index');
             Route::post('geraetepool', [\App\Http\Controllers\Rental\RentalProfileController::class, 'store'])->name('profiles.store');
+            Route::get('geraetepool/{profile}/bearbeiten', [\App\Http\Controllers\Rental\RentalProfileController::class, 'edit'])->name('profiles.edit');
             Route::put('geraetepool/{profile}', [\App\Http\Controllers\Rental\RentalProfileController::class, 'update'])->name('profiles.update');
             Route::get('preislisten', [\App\Http\Controllers\Rental\RentalRateCardController::class, 'index'])->name('rates.index');
             Route::post('preislisten', [\App\Http\Controllers\Rental\RentalRateCardController::class, 'store'])->name('rates.store');
@@ -2560,6 +2574,7 @@ Route::middleware('auth')->group(function () {
             Route::post('{contract}/konditionen', [\App\Http\Controllers\AssetFinance\AssetFinanceContractController::class, 'storeTerm'])->name('terms.store');
             Route::post('{contract}/fristen', [\App\Http\Controllers\AssetFinance\AssetFinanceOperationsController::class, 'storeDeadline'])->name('deadlines.store');
             Route::post('fristen/{deadline}/erledigen', [\App\Http\Controllers\AssetFinance\AssetFinanceOperationsController::class, 'completeDeadline'])->name('deadlines.complete');
+            Route::get('raten/{schedule}/referenz', [\App\Http\Controllers\AssetFinance\AssetFinanceOperationsController::class, 'linkScheduleDialog'])->name('schedules.link-dialog');
             Route::post('raten/{schedule}/referenz', [\App\Http\Controllers\AssetFinance\AssetFinanceOperationsController::class, 'linkSchedule'])->name('schedules.link');
             Route::post('{contract}/limits', [\App\Http\Controllers\AssetFinance\AssetFinanceOperationsController::class, 'storeUsageLimit'])->name('limits.store');
             Route::post('limits/{limit}/istwert', [\App\Http\Controllers\AssetFinance\AssetFinanceOperationsController::class, 'recordUsage'])->name('limits.record');
@@ -2673,11 +2688,13 @@ Route::middleware('auth')->group(function () {
             Route::post('kriterien', [\App\Http\Controllers\Sustainability\SustainabilityController::class, 'storeCriterion'])->name('criteria.store');
             Route::post('aktivitaeten', [\App\Http\Controllers\Sustainability\SustainabilityController::class, 'storeActivity'])->name('activities.store');
             Route::post('faktoren', [\App\Http\Controllers\Sustainability\SustainabilityController::class, 'storeFactor'])->name('factors.store');
+            Route::get('bewertungen', [\App\Http\Controllers\Sustainability\SustainabilityController::class, 'assessmentIndex'])->name('assessments.index');
             Route::post('bewertungen', [\App\Http\Controllers\Sustainability\SustainabilityController::class, 'storeAssessment'])->name('assessments.store');
             Route::get('bewertungen/{assessment}', [\App\Http\Controllers\Sustainability\SustainabilityController::class, 'showAssessment'])->name('assessments.show');
             Route::put('bewertungen/{assessment}/kriterium/{item}', [\App\Http\Controllers\Sustainability\SustainabilityController::class, 'scoreItem'])->name('assessments.items.update');
             Route::post('bewertungen/{assessment}/finalisieren', [\App\Http\Controllers\Sustainability\SustainabilityController::class, 'finalizeAssessment'])->name('assessments.finalize');
             Route::post('bewertungen/{assessment}/neue-version', [\App\Http\Controllers\Sustainability\SustainabilityController::class, 'newAssessmentVersion'])->name('assessments.new-version');
+            Route::get('massnahmen', [\App\Http\Controllers\Sustainability\SustainabilityController::class, 'measureIndex'])->name('measures.index');
             Route::post('massnahmen', [\App\Http\Controllers\Sustainability\SustainabilityController::class, 'storeMeasure'])->name('measures.store');
             Route::put('massnahmen/{measure}', [\App\Http\Controllers\Sustainability\SustainabilityController::class, 'updateMeasure'])->name('measures.update');
             Route::post('ziele', [\App\Http\Controllers\Sustainability\SustainabilityController::class, 'storeTarget'])->name('targets.store');
@@ -2850,6 +2867,7 @@ Route::middleware('auth')->group(function () {
             Route::get('trefferquote', [\App\Http\Controllers\Sales\QuoteWinRateController::class, 'index'])->name('win-rate');
             Route::get('{quote}/nachfassen/dialog', [\App\Http\Controllers\Sales\QuoteFollowUpController::class, 'dialog'])->name('follow-ups.dialog');
             Route::post('{quote}/nachfassen', [\App\Http\Controllers\Sales\QuoteFollowUpController::class, 'store'])->name('follow-ups.store');
+            Route::get('{quote}/nachfass-termin', [\App\Http\Controllers\Sales\QuoteFollowUpController::class, 'scheduleDialog'])->name('follow-ups.schedule-dialog');
             Route::post('{quote}/nachfass-termin', [\App\Http\Controllers\Sales\QuoteFollowUpController::class, 'schedule'])->name('follow-ups.schedule');
             Route::get('neu', [\App\Http\Controllers\Sales\QuoteController::class, 'create'])->name('create');
             Route::post('/', [\App\Http\Controllers\Sales\QuoteController::class, 'store'])->name('store');
@@ -3117,7 +3135,9 @@ Route::middleware('auth')->group(function () {
             Route::get('{run}', [\App\Http\Controllers\Finance\PaymentRunController::class, 'show'])->name('show');
             Route::post('{run}/freigeben', [\App\Http\Controllers\Finance\PaymentRunController::class, 'release'])->name('release');
             Route::post('{run}/export', [\App\Http\Controllers\Finance\PaymentRunController::class, 'export'])->name('export');
-            Route::post('{run}/ebics', [\App\Http\Controllers\Finance\EbicsConnectionController::class, 'submit'])->middleware('throttle:6,1')->name('ebics');
+            // Bewegt Geld mit hinterlegten Schlüsseln: nur mit frischer Anmeldung (Sicherheitsaudit 2026-10-04, pub-5).
+            Route::post('{run}/ebics', [\App\Http\Controllers\Finance\EbicsConnectionController::class, 'submit'])->middleware(['throttle:6,1', 'reauth'])->name('ebics');
+            Route::post('{run}/ebics/nicht-eingereicht', [\App\Http\Controllers\Finance\EbicsConnectionController::class, 'confirmNotSubmitted'])->middleware(['throttle:6,1', 'reauth'])->name('ebics.not-submitted');
             Route::post('{run}/storno', [\App\Http\Controllers\Finance\PaymentRunController::class, 'cancel'])->name('cancel');
             Route::get('{run}/positionen/{item}/kuerzen', [\App\Http\Controllers\Finance\PaymentRunController::class, 'adjustForm'])->name('items.adjust-form');
             Route::post('{run}/positionen/{item}/kuerzen', [\App\Http\Controllers\Finance\PaymentRunController::class, 'adjust'])->name('items.adjust');
@@ -4582,6 +4602,7 @@ Route::middleware('auth')->group(function () {
         // Routing-Regeln (Feature 065, P3).
         Route::get('helpdesk/routing', [\App\Http\Controllers\Helpdesk\TicketRoutingController::class, 'index'])->name('helpdesk.routing.index');
         Route::post('helpdesk/routing', [\App\Http\Controllers\Helpdesk\TicketRoutingController::class, 'store'])->name('helpdesk.routing.store');
+        Route::get('helpdesk/routing/{rule}/edit', [\App\Http\Controllers\Helpdesk\TicketRoutingController::class, 'edit'])->name('helpdesk.routing.edit');
         Route::patch('helpdesk/routing/{rule}', [\App\Http\Controllers\Helpdesk\TicketRoutingController::class, 'update'])->name('helpdesk.routing.update');
         Route::delete('helpdesk/routing/{rule}', [\App\Http\Controllers\Helpdesk\TicketRoutingController::class, 'destroy'])->name('helpdesk.routing.destroy');
         Route::post('helpdesk/routing/dry-run', [\App\Http\Controllers\Helpdesk\TicketRoutingController::class, 'dryRun'])->name('helpdesk.routing.dry-run');

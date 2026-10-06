@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Sales\DeadlineScans;
 
 use App\Enums\Notification\NotificationEvent;
+use App\Enums\Sales\QuoteStatus;
 use App\Models\Platform\User;
 use App\Models\Sales\Quote;
 use App\Services\Notification\DeadlineScans\{AbstractDeadlineScan, DeadlineScanOptions};
@@ -39,7 +40,7 @@ class QuoteFollowUpScan extends AbstractDeadlineScan {
     public function run(NotificationDispatcher $dispatcher, DeadlineScanOptions $options): int {
         $now = Carbon::now();
         $expiringDays = $options->expiringDays;
-        $open = static fn () => Quote::query()->whereIn('status', ['approved', 'sent']);
+        $open = static fn () => Quote::query()->whereIn('status', QuoteStatus::pending());
 
         return $this->runScan($dispatcher, [
             'affected' => fn (Quote $quote): ?User => $quote->follow_up_user_id === null

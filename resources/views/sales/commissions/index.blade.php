@@ -13,8 +13,7 @@
 @extends('layouts.app')
 @section('title', __('commission.title'))
 @section('nav-title', __('commission.title'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('commission.subtitle.index')">
 
@@ -50,7 +49,7 @@
                     <tr class="hover">
                         <td class="font-mono text-sm">{{ $invoice->number ?? $invoice->sqid }}</td>
                         <td class="text-sm">{{ $invoice->customer?->name ?? '–' }}</td>
-                        <td class="text-sm">{{ $invoice->paid_on?->format('d.m.Y') ?? '–' }}</td>
+                        <td class="text-sm">{{ $invoice->paid_on?->fdate() ?? '–' }}</td>
                         <td class="text-right">
                             <div class="flex justify-end gap-1">
                                 @if ($canManage)
@@ -84,7 +83,7 @@
         </x-slot:head>
         @forelse ($commissions as $commission)
             <tr class="hover">
-                <td class="text-sm">{{ $commission->earned_on?->format('d.m.Y') ?? '–' }}</td>
+                <td class="text-sm">{{ $commission->earned_on?->fdate() ?? '–' }}</td>
                 <td class="text-sm font-medium">{{ $commission->recipientName() }}</td>
                 <td class="font-mono text-sm">
                     {{ $commission->invoice?->number ?? '–' }}

@@ -96,7 +96,7 @@
                     <tr @class(['opacity-60' => $estimate === null])>
                         <td>{{ __('costing.stage.' . $stage) }}</td>
                         <td>{{ $estimate?->name ?? '—' }}</td>
-                        <td class="tabular-nums">{{ $estimate?->determined_on->format('d.m.Y') ?? '—' }}</td>
+                        <td class="tabular-nums">{{ $estimate?->determined_on->fdate() ?? '—' }}</td>
                         <td class="text-xs text-base-content/70">
                             {{ $estimate === null ? __('nicht ermittelt') : __('costing.source.' . $estimate->source) }}
                         </td>

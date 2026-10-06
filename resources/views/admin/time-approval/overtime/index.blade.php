@@ -11,8 +11,7 @@
 
 @section('title', __('Überstunden-Anträge'))
 @section('nav-title', __('Überstunden-Anträge'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
     <x-index-page overflow="clip" :subtitle="__('Beantragte Mehrarbeit entscheiden — Genehmigung quittiert den zugehörigen Rahmenzeit-Befund.')">
@@ -68,13 +67,12 @@
                                     <input aria-label="{{ __('Anmerkung (optional)') }}" type="text" name="note" maxlength="2000"
                                            class="input input-xs input-bordered w-40"
                                            placeholder="{{ __('Anmerkung (optional)') }}">
-                                    <button class="btn btn-xs btn-success" type="submit">
+                                    <x-button type="submit" tone="success" size="xs">
                                         {{ __('Genehmigen') }}
-                                    </button>
-                                    <button class="btn btn-xs btn-error" type="submit"
-                                            formaction="{{ route('admin.overtime.reject', $r) }}">
+                                    </x-button>
+                                    <x-button type="submit" tone="error" size="xs" formaction="{{ route('admin.overtime.reject', $r) }}">
                                         {{ __('Ablehnen') }}
-                                    </button>
+                                    </x-button>
                                 </form>
                             @endcan
                         </td>

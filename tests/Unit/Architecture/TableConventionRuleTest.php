@@ -54,7 +54,7 @@ class TableConventionRuleTest extends TestCase {
     /** Dokumentierte Bestandsausnahmen zu R4 (Matrix/Raster/Dokument/Eigenlayout). */
     private const RAW_TABLE_FILE_EXEMPT = [
         'assets/dossier.blade.php',              // Druck-Dossier (window.print)
-        'diary/case-file.blade.php',             // Druck-Akte
+        'diary/_case_file_sections.blade.php',   // Druck-Akte (Datenteil für Bildschirm und PDF)
         'public/protocol-sign.blade.php',        // öffentliche Signaturseite
         'invoices/_preview.blade.php',           // Belegvorschau (Dokument-Replikat)
         'install/requirements.blade.php',        // Installer-Layout
@@ -86,8 +86,7 @@ class TableConventionRuleTest extends TestCase {
         $viewsDir = $root . '/resources/views';
         $violations = [];
 
-        foreach ($this->bladeFiles($viewsDir) as $file) {
-            $rel = str_replace($viewsDir . '/', '', $file->getPathname());
+        foreach ($this->viewFiles() as $rel => $file) {
             $src = (string) file_get_contents($file->getPathname());
             $isComponent = str_starts_with($rel, 'components/');
 
@@ -193,6 +192,22 @@ class TableConventionRuleTest extends TestCase {
 
     private function lineOf(string $src, int $offset): int {
         return substr_count(substr($src, 0, $offset), "\n") + 1;
+    }
+
+    /**
+     * Views des Kerns (Pfad ab `resources/views`) und der Plugins (Pfad ab
+     * `app/Plugins`) — ohne die Plugins sah das Gate 53 Views nicht (k3-18).
+     *
+     * @return iterable<string, SplFileInfo>
+     */
+    private function viewFiles(): iterable {
+        $root = dirname(__DIR__, 3);
+        foreach ($this->bladeFiles($root . '/resources/views') as $file) {
+            yield str_replace($root . '/resources/views/', '', $file->getPathname()) => $file;
+        }
+        foreach ($this->bladeFiles($root . '/app/Plugins') as $file) {
+            yield str_replace($root . '/', '', $file->getPathname()) => $file;
+        }
     }
 
     /**

@@ -10,9 +10,10 @@
 
 @section('title', __('disposal.index.title'))
 @section('nav-title', __('disposal.index.title'))
+@include('partials.page-fill')
 
 @section('content')
-<x-index-page :subtitle="__('disposal.index.subtitle')">
+<x-index-page overflow="clip" :subtitle="__('disposal.index.subtitle')">
     <x-slot:actions>
         @can('create', \App\Models\Disposal\DisposalJob::class)
             <x-icon-btn icon="add" tone="primary" size="sm"
@@ -48,36 +49,34 @@
     </x-filter-bar>
 
 
-    <x-card padding="p-0">
-        <x-table bare>
-            <x-slot:head>
-                <tr>
-                    <th>{{ __('Nummer') }}</th>
-                    <th>{{ __('Kunde') }}</th>
-                    <th>{{ __('disposal.field.site') }}</th>
-                    <th>{{ __('Status') }}</th>
-                    <th class="text-right">{{ __('disposal.index.col.items') }}</th>
-                    <th>{{ __('disposal.index.col.picked_up') }}</th>
-                    <th>{{ __('Verantwortlich') }}</th>
-                    <th></th>
-                </tr>
-            </x-slot:head>
-            @forelse ($jobs as $job)
-                <tr>
-                    <td><a href="{{ route('disposal.show', $job) }}" class="link font-mono">{{ $job->number }}</a></td>
-                    <td>{{ $job->customer->name ?? '—' }}</td>
-                    <td>{{ $job->site?->name ?? '—' }}</td>
-                    <td><x-status-badge size="md" :tone="$job->status->tone()" outline>{{ $job->status->label() }}</x-status-badge></td>
-                    <td class="text-right font-mono">{{ $job->items_count }}</td>
-                    <td>{{ $job->picked_up_on?->fdate() ?? '—' }}</td>
-                    <td>{{ $job->responsible->name ?? '—' }}</td>
-                    <td class="text-right"><x-icon-btn icon="visibility" :href="route('disposal.show', $job)" :label="__('Anzeigen')" /></td>
-                </tr>
-            @empty
-                <x-table.empty icon="recycling" :colspan="8" :title="__('disposal.index.empty')" compact />
-            @endforelse
-        </x-table>
-    </x-card>
+    <x-table scroll="flex">
+        <x-slot:head>
+            <tr>
+                <th>{{ __('Nummer') }}</th>
+                <th>{{ __('Kunde') }}</th>
+                <th>{{ __('disposal.field.site') }}</th>
+                <th>{{ __('Status') }}</th>
+                <th class="text-right">{{ __('disposal.index.col.items') }}</th>
+                <th>{{ __('disposal.index.col.picked_up') }}</th>
+                <th>{{ __('Verantwortlich') }}</th>
+                <th></th>
+            </tr>
+        </x-slot:head>
+        @forelse ($jobs as $job)
+            <tr class="hover">
+                <td><a href="{{ route('disposal.show', $job) }}" class="link font-mono">{{ $job->number }}</a></td>
+                <td>{{ $job->customer->name ?? '—' }}</td>
+                <td>{{ $job->site?->name ?? '—' }}</td>
+                <td><x-status-badge size="md" :tone="$job->status->tone()" outline>{{ $job->status->label() }}</x-status-badge></td>
+                <td class="text-right font-mono">{{ $job->items_count }}</td>
+                <td>{{ $job->picked_up_on?->fdate() ?? '—' }}</td>
+                <td>{{ $job->responsible->name ?? '—' }}</td>
+                <td class="text-right"><x-icon-btn icon="visibility" :href="route('disposal.show', $job)" :label="__('Anzeigen')" /></td>
+            </tr>
+        @empty
+            <x-table.empty icon="recycling" :colspan="8" :title="__('disposal.index.empty')" compact />
+        @endforelse
+    </x-table>
 
     <x-pagination :paginator="$jobs" standing />
 </x-index-page>

@@ -66,7 +66,7 @@
                                                 <form method="POST" action="{{ route('procedures.materials.destroy', [$template, $recipeVersion, $req]) }}">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit" class="btn btn-xs btn-ghost text-error">{{ __('recipes.action.remove') }}</button>
+                                                    <x-button type="submit" tone="ghost" size="xs" class="text-error">{{ __('recipes.action.remove') }}</x-button>
                                                 </form>
                                             </div>
                                         </td>
@@ -112,7 +112,7 @@
                             <input type="checkbox" name="is_tool" value="1" class="checkbox checkbox-sm" @checked(old('is_tool'))>
                             <span class="label-text">{{ __('recipes.field.tool') }}</span>
                         </label>
-                        <button type="submit" class="btn btn-sm btn-primary">{{ __('recipes.action.add') }}</button>
+                        <x-button type="submit">{{ __('recipes.action.add') }}</x-button>
                     </div>
                     <p class="text-xs text-muted md:col-span-7">{{ __('recipes.hint.ratio_input') }}</p>
                 </form>
@@ -125,7 +125,7 @@
         <x-card>
             <div class="mb-1 flex flex-wrap items-center justify-between gap-2">
                 <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('recipes.title.party') }}</h2>
-                <a href="{{ route('recipe-menus.index') }}" class="btn btn-xs btn-ghost">{{ __('recipes.menu.title') }} →</a>
+                <x-button :href="route('recipe-menus.index')" tone="ghost" size="xs">{{ __('recipes.menu.title') }} →</x-button>
             </div>
             <p class="mb-3 text-xs text-muted">{{ __('recipes.hint.party') }}</p>
 
@@ -144,7 +144,7 @@
                     <input type="text" name="yield_unit" maxlength="20" value="{{ old('yield_unit', $recipeProfile?->yield_unit) }}" class="input input-bordered input-sm w-24">
                 </label>
                 <div class="md:col-span-2">
-                    <button type="submit" class="btn btn-sm btn-primary">{{ __('recipes.action.save_profile') }}</button>
+                    <x-button type="submit">{{ __('recipes.action.save_profile') }}</x-button>
                 </div>
 
                 {{-- Allergen-Abweichungen (mit Begründung, auditiert) --}}
@@ -178,18 +178,18 @@
         <x-card>
             <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('recipes.title.allergens') }}</h2>
             @error('allergens')
-                <div class="alert alert-error mb-2 text-sm">{{ $message }}</div>
+                <div role="alert" class="alert alert-error mb-2 text-sm">{{ $message }}</div>
             @enderror
             @if ($recipeAllergens !== null)
                 <div class="mb-2 flex flex-wrap gap-1">
                     @forelse ($recipeAllergens['effective'] as $code)
-                        <span class="badge badge-warning badge-sm">{{ $recipeAllergenOptions->firstWhere('code', $code)?->label ?? $code }}</span>
+                        <x-status-badge tone="warning">{{ $recipeAllergenOptions->firstWhere('code', $code)?->label ?? $code }}</x-status-badge>
                     @empty
                         <span class="text-sm text-muted">{{ __('recipes.allergens.none') }}</span>
                     @endforelse
                 </div>
                 @if ($recipeAllergens['unresolved'] !== [])
-                    <div class="alert alert-warning text-sm">
+                    <div role="alert" class="alert alert-warning text-sm">
                         <div>
                             <p class="font-medium">{{ __('recipes.allergens.unresolved_heading') }}</p>
                             <ul class="mt-1 list-inside list-disc">
@@ -209,7 +209,7 @@
                                     <option value="{{ $option->code }}">{{ $option->display_label }}</option>
                                 @endforeach
                             </select>
-                            <button type="submit" class="btn btn-xs btn-primary">{{ __('recipes.action.save_allergens') }}</button>
+                            <x-button type="submit" size="xs">{{ __('recipes.action.save_allergens') }}</x-button>
                         </form>
                     @endforeach
                 @endif
@@ -223,7 +223,7 @@
                 <form method="GET" action="{{ route('procedures.edit', $template) }}" class="flex items-center gap-2">
                     <label class="text-sm" for="recipe-portions">{{ __('recipes.field.portions') }}</label>
                     <input id="recipe-portions" type="number" name="portions" step="0.01" min="0.01" value="{{ $recipePortions }}" class="input input-bordered input-sm w-28">
-                    <button type="submit" class="btn btn-sm">{{ __('recipes.action.scale') }}</button>
+                    <x-button type="submit" tone="plain">{{ __('recipes.action.scale') }}</x-button>
                 </form>
             </div>
             @if ($recipePlan !== null)

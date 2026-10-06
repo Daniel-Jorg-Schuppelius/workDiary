@@ -22,9 +22,10 @@
 
 @section('title', __('isms.title.requirements'))
 @section('nav-title', __('isms.title.requirements'))
+@include('partials.page-fill')
 
 @section('content')
-    <x-index-page :subtitle="$scope !== null ? __('isms.subtitle.requirements_scope', ['scope' => $scope->name]) : __('isms.subtitle.requirements')">
+    <x-index-page overflow="clip" :subtitle="$scope !== null ? __('isms.subtitle.requirements_scope', ['scope' => $scope->name]) : __('isms.subtitle.requirements')">
         <x-slot:actions>
             {{-- Direkt-Exporte (Feature 044, MVP 1): SoA-Stand des gewählten Scopes; „versioniert" leistet das Auditpaket.
                  Ohne Geltungsbereich gibt es nichts zu exportieren (Export antwortet 404). --}}
@@ -138,7 +139,7 @@
             {{-- Scope ohne SoA-Aussagen zu den angezeigten Anforderungen:
                  fehlende Statements idempotent nachziehen (gewählte Norm
                  oder alle — der aktuelle Norm-Filter wird übernommen). --}}
-            <div class="alert alert-info">
+            <div role="status" class="alert alert-info">
                 <x-icon name="rule" />
                 <span>{{ __('isms.statements_missing_for_scope', ['scope' => $scope->name]) }}</span>
                 <x-action-form :action="route('isms.statements.ensure', $scope)"
@@ -154,7 +155,7 @@
             </div>
         @endif
 
-        <x-table>
+        <x-table scroll="flex">
             <x-slot:head>
                 <tr>
                     <th>{{ __('isms.field.ref_no') }}</th>

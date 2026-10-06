@@ -137,6 +137,9 @@ class AssetDrilldownReportTest extends TestCase {
             ]));
         $response->assertOk();
         $response->assertSee('Lager defekt');
+        // Der Auftragslink trägt die Sqid, nicht die rohe ID (Konsolidierungs-Audit 2026-10, k4-02).
+        $response->assertSee(route('diary.show', $entry), false);
+        $response->assertDontSee('/diary/' . $entry->id . '"', false);
     }
 
     private function defect(string $reportedAt): AssetDefect {

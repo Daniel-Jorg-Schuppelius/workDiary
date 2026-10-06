@@ -1,7 +1,7 @@
 ---
 title: "Planification des investissements"
 topic: investments.overview
-version: 1
+version: 2
 audience: []
 modules:
     - module.investments
@@ -22,6 +22,13 @@ supplémentaire. Le demandeur ne peut jamais valider lui-même. Les budgets
 approuvés sont figés sous forme de snapshot — une augmentation passe
 toujours par un écart budgétaire approuvé et un avenant (nouvelle
 demande, l'ancien état est conservé comme « remplacé »).
+
+**Report et refus :** Pendant la planification, le dossier peut être mis
+en attente avec « Reporter » ; « Reprendre » le ramène exactement à la
+phase où il se trouvait. Le refus d'une demande de budget est
+définitif : un dossier refusé reste refusé et ne peut être ni reporté ni
+soumis à nouveau — une nouvelle tentative commence par un nouveau
+dossier.
 
 **Réalisation & valeurs réelles :** Après la validation, on relie le
 projet, la commande, l'actif, la facture entrante ou le document. La vue

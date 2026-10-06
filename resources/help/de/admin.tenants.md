@@ -1,7 +1,7 @@
 ---
 title: "Organisationen & Mandanten"
 topic: admin.tenants
-version: 1
+version: 2
 audience:
     - admin
 related:
@@ -37,3 +37,9 @@ Risiken und unumkehrbare Aktionen:
   und Aufbewahrungspflichten prüfen.
 - Deaktivieren ist die sichere Alternative, wenn nur der Zugang
   beendet werden soll.
+
+Genehmigungen: Im gleichnamigen Abschnitt der Organisation legen Sie fest,
+welche Rolle die Freigabestufen einer Vertragsverhandlung je Stufenart
+unter „Genehmigungen“ sieht (kaufmännisch, fachlich, HR). Leer bleibt die
+Vorgabe: Buchhaltung, Teamleitung, Personalverwaltung. Die Freigabe an der
+Akte bleibt davon unberührt.

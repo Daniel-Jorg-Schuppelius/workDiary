@@ -11,12 +11,14 @@
 namespace Tests\Feature\Finance;
 
 use App\Enums\Finance\{BillingMode, TransferTarget};
+use App\Enums\Migration\AccountingMigrationItemStatus;
 use App\Enums\Migration\{AccountingMigrationStatus, MigrationDataArea, MigrationProvider};
 use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
 use App\Models\Migration\{AccountingMigrationEvent, AccountingMigrationItem, AccountingMigrationRun};
 use App\Models\Platform\{Organization, User};
 use App\Plugins\Lexoffice\Models\LexofficeVoucher;
+use App\Plugins\OrgaMax\Enums\OrgaMaxInvoiceStatus;
 use App\Plugins\OrgaMax\Models\OrgaMaxInvoice;
 use App\Services\AccountingMigration\{AccountingMigrationService, CutoverGuard};
 use Carbon\CarbonImmutable;
@@ -103,7 +105,7 @@ class AccountingMigrationTest extends TestCase {
         $this->assertSame(1, $run->counters['customers']['pending'] ?? 0);
 
         $matchedItem = $run->items()->where('source_external_id', 'lex-1')->firstOrFail();
-        $this->assertSame(AccountingMigrationItem::STATUS_MATCHED, $matchedItem->status);
+        $this->assertSame(AccountingMigrationItemStatus::Matched, $matchedItem->status);
         $this->assertSame('orga-1', $matchedItem->target_external_id);
         $this->assertSame((int) $mapped->id, (int) $matchedItem->referenceable_id, 'Beide Provider-IDs zeigen auf dasselbe lokale Objekt.');
 
@@ -119,12 +121,12 @@ class AccountingMigrationTest extends TestCase {
         $this->service()->analyze($run->refresh(), $this->admin);
 
         $item = $run->items()->firstOrFail();
-        $this->service()->decideItem($item, AccountingMigrationItem::STATUS_SKIPPED, $this->admin, 'Karteileiche');
+        $this->service()->decideItem($item, AccountingMigrationItemStatus::Skipped, $this->admin, 'Karteileiche');
 
         $this->service()->analyze($run->refresh(), $this->admin);
 
         $this->assertSame(1, $run->items()->count(), 'Wiederholung erzeugt keine Dubletten.');
-        $this->assertSame(AccountingMigrationItem::STATUS_SKIPPED, $item->refresh()->status, 'Getroffene Entscheidungen bleiben erhalten.');
+        $this->assertSame(AccountingMigrationItemStatus::Skipped, $item->refresh()->status, 'Getroffene Entscheidungen bleiben erhalten.');
     }
 
     public function test_finalized_documents_stay_historic_and_open_ones_block_completion(): void {
@@ -142,7 +144,7 @@ class AccountingMigrationTest extends TestCase {
         $this->service()->analyze($run->refresh(), $this->admin);
 
         $item = $run->items()->firstOrFail();
-        $this->assertSame(AccountingMigrationItem::STATUS_HISTORIC, $item->status, 'Belege bleiben Historie und werden nie nachgebaut.');
+        $this->assertSame(AccountingMigrationItemStatus::Historic, $item->status, 'Belege bleiben Historie und werden nie nachgebaut.');
         $this->assertSame(1, $run->refresh()->counters['documents']['open'] ?? 0);
 
         // Offener Altbeleg blockiert den Abschluss.
@@ -157,7 +159,7 @@ class AccountingMigrationTest extends TestCase {
         $this->service()->analyze($run->refresh(), $this->admin);
 
         $item = $run->items()->firstOrFail();
-        $this->service()->decideItem($item, AccountingMigrationItem::STATUS_CONFLICT, $this->admin, 'Mehrdeutig');
+        $this->service()->decideItem($item, AccountingMigrationItemStatus::Conflict, $this->admin, 'Mehrdeutig');
 
         $blockers = $this->service()->cutover($run->refresh(), $this->admin);
         $this->assertNotSame([], $blockers);
@@ -165,7 +167,7 @@ class AccountingMigrationTest extends TestCase {
         $this->assertNull($customer->refresh()->billing_cutover_on, 'Ohne saubere Zuordnung kein Stichtag.');
 
         // Nach der Entscheidung läuft die Umschaltung durch.
-        $this->service()->decideItem($item->refresh(), AccountingMigrationItem::STATUS_MATCHED, $this->admin);
+        $this->service()->decideItem($item->refresh(), AccountingMigrationItemStatus::Matched, $this->admin);
         $this->service()->transition($run->refresh(), AccountingMigrationStatus::Mapping, $this->admin);
         $this->assertSame([], $this->service()->startParallelRun($run->refresh(), $this->admin));
         $this->assertSame([], $this->service()->cutover($run->refresh(), $this->admin));
@@ -216,7 +218,7 @@ class AccountingMigrationTest extends TestCase {
         $run = $this->plan();
         $this->service()->analyze($run->refresh(), $this->admin);
         $item = $run->items()->firstOrFail();
-        $this->service()->decideItem($item, AccountingMigrationItem::STATUS_MATCHED, $this->admin);
+        $this->service()->decideItem($item, AccountingMigrationItemStatus::Matched, $this->admin);
         $this->service()->startParallelRun($run->refresh(), $this->admin);
         $this->service()->cutover($run->refresh(), $this->admin);
         $this->service()->complete($run->refresh(), $this->admin);
@@ -271,7 +273,7 @@ class AccountingMigrationTest extends TestCase {
         $item = $run->items()->firstOrFail();
         $this->assertSame('orga-9', $item->source_external_id, 'Quelle ist jetzt orgaMAX.');
         $this->assertSame('lex-9', $item->target_external_id, 'Ziel ist jetzt Lexoffice.');
-        $this->assertSame(AccountingMigrationItem::STATUS_MATCHED, $item->status);
+        $this->assertSame(AccountingMigrationItemStatus::Matched, $item->status);
 
         $this->assertSame([], $this->service()->startParallelRun($run->refresh(), $this->admin));
         $this->assertSame([], $this->service()->cutover($run->refresh(), $this->admin));
@@ -295,7 +297,7 @@ class AccountingMigrationTest extends TestCase {
             'organization_id' => $this->org->id,
             'external_id' => 'inv-1',
             'invoice_number' => 'INV-1',
-            'invoice_status' => 'open',
+            'invoice_status' => OrgaMaxInvoiceStatus::Locked,
             'invoice_date' => '2026-07-01',
             'outstanding_amount' => 119.0,
         ]);
@@ -303,7 +305,7 @@ class AccountingMigrationTest extends TestCase {
             'organization_id' => $this->org->id,
             'external_id' => 'inv-2',
             'invoice_number' => 'INV-2',
-            'invoice_status' => 'paid',
+            'invoice_status' => OrgaMaxInvoiceStatus::Paid,
             'invoice_date' => '2026-06-01',
         ]);
 
@@ -317,7 +319,7 @@ class AccountingMigrationTest extends TestCase {
 
         $this->assertSame(2, $run->refresh()->counters['documents']['read'] ?? 0);
         $this->assertSame(1, $run->refresh()->counters['documents']['open'] ?? 0, 'Nur der offene Beleg zählt.');
-        $this->assertSame(2, $run->items()->where('status', AccountingMigrationItem::STATUS_HISTORIC)->count());
+        $this->assertSame(2, $run->items()->where('status', AccountingMigrationItemStatus::Historic)->count());
         $this->assertSame('INV-1', $run->items()->orderBy('id')->firstOrFail()->display_title, 'Belegnummer kommt aus dem Spiegel.');
 
         $blockers = $this->service()->completionBlockers($run->refresh());
@@ -342,5 +344,63 @@ class AccountingMigrationTest extends TestCase {
 
         $regular = User::factory()->user()->create(['organization_id' => $this->org->id]);
         $this->actingAs($regular)->get(route('admin.accounting-migration.index'))->assertForbidden();
+    }
+
+    /** Die Positionsliste blättert, Konflikte zuerst — früher endete sie still nach 200 Positionen. */
+    public function test_item_list_pages_with_conflicts_first(): void {
+        $run = $this->plan();
+        AccountingMigrationItem::factory()->count(200)->create([
+            'organization_id' => $this->org->id,
+            'accounting_migration_run_id' => $run->id,
+            'status' => AccountingMigrationItemStatus::Matched,
+        ]);
+        $pending = AccountingMigrationItem::factory()->create([
+            'organization_id' => $this->org->id,
+            'accounting_migration_run_id' => $run->id,
+            'status' => AccountingMigrationItemStatus::Pending,
+            'display_title' => 'Offene Position',
+        ]);
+        $conflict = AccountingMigrationItem::factory()->create([
+            'organization_id' => $this->org->id,
+            'accounting_migration_run_id' => $run->id,
+            'status' => AccountingMigrationItemStatus::Conflict,
+            'display_title' => 'Strittige Position',
+        ]);
+
+        $first = $this->actingAs($this->admin)->get(route('admin.accounting-migration.index'))->assertOk();
+        $items = $first->viewData('items');
+        $this->assertSame(202, $items->total());
+        $this->assertCount(50, $items->items());
+        $this->assertSame([$conflict->id, $pending->id], [$items->items()[0]->id, $items->items()[1]->id]);
+
+        $last = $this->actingAs($this->admin)->get(route('admin.accounting-migration.index', ['page' => 5]))->assertOk();
+        $this->assertCount(2, $last->viewData('items')->items());
+        $last->assertSee(route('admin.accounting-migration.decide', [$run->sqid, $last->viewData('items')->items()[1]->sqid]));
+    }
+
+    /** Positionsliste, Entscheidung und Protokoll lesen den Stand als Enum (Label in der Liste, Speicherwert im CSV). */
+    public function test_item_status_is_shown_decided_and_exported(): void {
+        $this->customerWithRefs('Nur Quelle', 'lex-2');
+        $run = $this->plan();
+        $this->service()->analyze($run->refresh(), $this->admin);
+        $item = $run->items()->firstOrFail();
+        $this->assertSame(AccountingMigrationItemStatus::Pending, $item->status);
+
+        $this->actingAs($this->admin)->get(route('admin.accounting-migration.index'))
+            ->assertOk()
+            ->assertSeeText(AccountingMigrationItemStatus::Pending->label());
+
+        $decide = route('admin.accounting-migration.decide', [$run->sqid, $item->sqid]);
+        // „übertragen" setzt nur ein Schreiblauf, nie eine Person.
+        $this->actingAs($this->admin)->post($decide, ['status' => 'transferred'])->assertSessionHasErrors('status');
+        $this->assertSame(AccountingMigrationItemStatus::Pending, $item->refresh()->status);
+
+        $this->actingAs($this->admin)->post($decide, ['status' => 'conflict', 'note' => 'Mehrdeutig'])->assertSessionHasNoErrors();
+        $this->assertSame(AccountingMigrationItemStatus::Conflict, $item->refresh()->status);
+        $this->assertTrue($item->blocksCutover());
+        $this->assertSame('conflict', AccountingMigrationEvent::query()->where('event', 'item_decided')->latest('id')->firstOrFail()->payload['status']);
+
+        $csv = $this->actingAs($this->admin)->get(route('admin.accounting-migration.report', $run->sqid))->assertOk()->streamedContent();
+        $this->assertStringContainsString(';conflict;lex-2;', $csv);
     }
 }

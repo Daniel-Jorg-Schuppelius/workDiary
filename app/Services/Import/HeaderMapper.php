@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Import;
 
 use App\Enums\Import\ImportErrorCode;
+use CommonToolkit\Helper\Data\StringHelper;
 
 /**
  * Kopfzeilen-Zuordnung einer Quelldatei auf die kanonischen Spalten einer
@@ -32,7 +33,7 @@ final class HeaderMapper {
         $aliases = self::aliasMap($spec, $saved);
         $out = [];
         foreach ($rawHeader as $i => $cell) {
-            $out[$i] = $aliases[self::normKey($cell)] ?? null;
+            $out[$i] = $aliases[StringHelper::normalizeColumnName($cell)] ?? null;
         }
 
         return $out;
@@ -105,23 +106,19 @@ final class HeaderMapper {
     private static function aliasMap(EntitySpec $spec, array $saved): array {
         $aliases = [];
         foreach ($spec->headerAliases() as $alias => $canonical) {
-            $aliases[self::normKey($alias)] = $canonical;
+            $aliases[StringHelper::normalizeColumnName($alias)] = $canonical;
         }
         foreach ($spec->columns() as $col) {
-            $aliases[self::normKey($col)] = $col;
+            $aliases[StringHelper::normalizeColumnName($col)] = $col;
         }
         // Gespeicherte Zuordnungen ergänzen nur: die Spec geht vor, und eine
         // Spalte, die es nicht mehr gibt, fällt still heraus.
         foreach ($saved as $header => $column) {
             if (in_array($column, $spec->columns(), true)) {
-                $aliases += [self::normKey($header) => $column];
+                $aliases += [StringHelper::normalizeColumnName($header) => $column];
             }
         }
 
         return $aliases;
-    }
-
-    private static function normKey(string $value): string {
-        return mb_strtolower(trim($value));
     }
 }

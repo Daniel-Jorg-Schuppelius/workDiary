@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Procurement;
 
+use App\Enums\Procurement\CatalogImportStatus;
 use App\Models\Supplier\{Supplier, SupplierCatalogImport, SupplierCatalogItem, SupplierCatalogSource};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
@@ -58,7 +59,7 @@ final class CatalogScheduledFetchTest extends TestCase {
         $this->assertDatabaseHas('supplier_catalog_imports', [
             'supplier_catalog_source_id' => $source->id,
             'trigger' => SupplierCatalogImport::TRIGGER_SCHEDULED,
-            'status' => SupplierCatalogImport::STATUS_SUCCESS,
+            'status' => CatalogImportStatus::Success->value,
             'created' => 1,
         ]);
         $this->assertTrue($source->fresh()->next_fetch_at->isFuture());
@@ -83,9 +84,27 @@ final class CatalogScheduledFetchTest extends TestCase {
         $this->assertDatabaseHas('supplier_catalog_imports', [
             'supplier_catalog_source_id' => $source->id,
             'trigger' => SupplierCatalogImport::TRIGGER_SCHEDULED,
-            'status' => SupplierCatalogImport::STATUS_ERROR,
+            'status' => CatalogImportStatus::Error->value,
         ]);
         $this->assertTrue($source->fresh()->next_fetch_at->isFuture()); // trotzdem neu terminiert
+    }
+
+    public function test_history_shows_result_and_balance_per_run(): void {
+        $source = $this->source(['next_fetch_at' => null]);
+        $this->fakeDatanorm();
+        $this->artisan('catalog:fetch-due')->assertExitCode(0);
+        app(\App\Services\Procurement\CatalogImportDispatcher::class)->recordFailure($source, SupplierCatalogImport::TRIGGER_SCHEDULED, 'Verbindung abgelehnt');
+
+        $runs = SupplierCatalogImport::query()->orderBy('id')->get();
+        $this->assertSame([CatalogImportStatus::Success, CatalogImportStatus::Error], $runs->pluck('status')->all());
+
+        $this->actingAs($this->orgAdmin())
+            ->get(route('supplier-catalogs.show', $source))
+            ->assertOk()
+            ->assertSee(CatalogImportStatus::Success->label())
+            ->assertSee(CatalogImportStatus::Error->label())
+            ->assertSee('+1 / ~0 / !0 / ×0')
+            ->assertSee('Verbindung abgelehnt');
     }
 
     public function test_command_ignores_upload_and_inactive_sources(): void {

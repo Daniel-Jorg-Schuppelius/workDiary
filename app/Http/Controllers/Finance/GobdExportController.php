@@ -61,7 +61,7 @@ class GobdExportController extends Controller {
             'selected' => array_values(array_filter((array) $request->input('sections', $this->service->availableSections()), 'is_string')),
             'encodings' => $this->service->availableEncodings(),
             'preflight' => $preflight,
-            'recent' => GobdExport::query()->with('creator:id,name')->orderByDesc('created_at')->limit(10)->get(),
+            'recent' => GobdExport::query()->with('creator:id,name')->orderByDesc('created_at')->orderByDesc('id')->paginate(25)->withQueryString(),
         ]);
     }
 

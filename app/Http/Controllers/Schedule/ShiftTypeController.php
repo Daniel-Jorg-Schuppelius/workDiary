@@ -15,6 +15,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Schedule\{StoreShiftTypeRequest, UpdateShiftTypeRequest};
 use App\Models\Platform\User;
 use App\Models\Schedule\ShiftType;
+use App\Support\SortableQuery;
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -28,13 +29,19 @@ class ShiftTypeController extends Controller {
 
         $search = $request->string('q')->toString();
 
-        $types = ShiftType::query()
+        $query = ShiftType::query()
             ->withCount('scheduledShifts')
-            ->when($search !== '', fn($q) => $q->search($search))
-            ->orderBy('name')
-            ->get();
+            ->when($search !== '', fn($q) => $q->search($search));
+        [$sort, $dir] = SortableQuery::apply($query, $request, [
+            'name' => 'name',
+            'abbreviation' => 'abbreviation',
+            'default_time' => 'default_start_time',
+            'is_active' => 'is_active',
+            'used' => 'scheduled_shifts_count',
+        ], 'name', 'asc');
+        $types = $query->orderBy('name')->orderBy('id')->paginate(25)->withQueryString();
 
-        return view('shift-types.index', compact('types', 'search'));
+        return view('shift-types.index', compact('types', 'search', 'sort', 'dir'));
     }
 
     public function create(): View {

@@ -12,7 +12,9 @@ declare(strict_types=1);
 
 namespace App\Plugins\BuchhaltungsButler\Api;
 
+use APIToolkit\API\Authentication\BasicAuthentication;
 use App\Plugins\BuchhaltungsButler\BuchhaltungsButlerPlugin;
+use App\Plugins\BuchhaltungsButler\Exceptions\BhbApiException;
 use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
 use Illuminate\Http\Client\Response;
 
@@ -66,7 +68,7 @@ class BhbApiClient {
         }
 
         return (array) $this->guard(
-            $this->authed($path, ['multipart' => $multipart]),
+            $this->api()->requestResponse('post', $this->baseUrl . $path, ['multipart' => $multipart]),
             $path,
         );
     }
@@ -75,23 +77,14 @@ class BhbApiClient {
 
     /** @param array<string, string|int|float> $fields Formfelder; api_key wird immer ergänzt. */
     private function postForm(string $path, array $fields = []): Response {
-        return $this->authed($path, ['form_params' => ['api_key' => $this->apiKey] + $fields]);
-    }
-
-    /** @param array<string, mixed> $options */
-    private function authed(string $path, array $options = []): Response {
-        $options['headers'] = array_merge(
-            (array) ($options['headers'] ?? []),
-            ['Authorization' => 'Basic ' . base64_encode($this->apiClient . ':' . $this->apiSecret)],
-        );
-
-        return $this->api()->requestResponse('post', $this->baseUrl . $path, $options);
+        return $this->api()->requestResponse('post', $this->baseUrl . $path, ['form_params' => ['api_key' => $this->apiKey] + $fields]);
     }
 
     /** Ein Exemplar je Client, damit das Request-Intervall zwischen Requests wirkt. */
     private function api(): PluginApiClient {
         if ($this->api === null) {
             $this->api = $this->http->client(BuchhaltungsButlerPlugin::ID, $this->baseUrl, $this->requestInterval);
+            $this->api->setAuthentication(new BasicAuthentication($this->apiClient, $this->apiSecret));
         }
 
         return $this->api;

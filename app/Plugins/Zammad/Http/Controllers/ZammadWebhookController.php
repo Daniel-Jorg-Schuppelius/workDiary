@@ -45,6 +45,10 @@ class ZammadWebhookController extends Controller {
         // Org-Kontext für nachgelagerte (scoped) Operationen binden.
         $org = Organization::query()->whereKey($conn->organization_id)->first();
         if ($org instanceof Organization) {
+            // Gesperrter Mandant: nichts verarbeiten (Entscheidung 2026-10-05) — erst nach der Signaturprüfung, kein Rückschluss von außen.
+            if (! $org->publicSurfacesAvailable()) {
+                return \App\Plugins\Support\PluginTenantGate::refusal();
+            }
             app()->instance('currentOrganization', $org);
         }
 

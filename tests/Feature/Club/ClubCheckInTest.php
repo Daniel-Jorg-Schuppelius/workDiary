@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Club;
 
 use App\Enums\Club\{ClubAttendanceStatus, ClubEventVisibility};
-use App\Models\Club\{ClubAttendanceRecord, ClubGroup, ClubMember};
+use App\Models\Club\{ClubAttendanceRecord, ClubAttendanceSheet, ClubGroup, ClubMember};
 use App\Models\Platform\User;
 use App\Services\Club\{ClubEventService, ClubGroupService};
 use Carbon\CarbonImmutable;
@@ -46,8 +46,12 @@ final class ClubCheckInTest extends TestCase {
         $this->actingAs($admin)->get(route('club.events.show', $event))->assertOk()->assertSee('data:image/svg+xml', false);
 
         $this->actingAs($user)->get(route('club.checkin.show', $code))->assertOk()->assertSee($member->fullName());
+        // Anzeigen legt nichts an — weder der Check-in noch die Liste der Leitung.
+        $this->actingAs($admin)->get(route('club.events.attendance.show', $event))->assertOk();
+        $this->assertSame(0, ClubAttendanceSheet::query()->count());
         $this->actingAs($user)->post(route('club.checkin.store', $code), ['member' => $stranger->sqid])->assertForbidden();
         $this->actingAs($user)->post(route('club.checkin.store', $code), ['member' => $member->sqid])->assertRedirect(route('club.checkin.show', $code));
+        $this->assertSame(1, ClubAttendanceSheet::query()->count());
         $this->assertSame(ClubAttendanceStatus::Present, ClubAttendanceRecord::query()->where('club_member_id', $member->id)->sole()->status);
         $this->actingAs($user)->get(route('club.checkin.show', $code))->assertSee(__('club.checkin.status.checked_in'));
 

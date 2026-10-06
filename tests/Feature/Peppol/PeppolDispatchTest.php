@@ -10,6 +10,8 @@
 
 namespace Tests\Feature\Peppol;
 
+use App\Enums\Document\DocumentDispatchStatus;
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Customer\Customer;
 use App\Models\Document\DocumentDispatch;
 use App\Models\Invoicing\Invoice;
@@ -168,7 +170,7 @@ class PeppolDispatchTest extends TestCase {
         ];
     }
 
-    private function makeInvoice(string $status = Invoice::STATUS_ISSUED): Invoice {
+    private function makeInvoice(InvoiceStatus $status = InvoiceStatus::Issued): Invoice {
         $invoice = Invoice::create([
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
@@ -210,7 +212,7 @@ class PeppolDispatchTest extends TestCase {
             ->where('channel', DocumentDispatch::CHANNEL_PEPPOL)
             ->firstOrFail();
 
-        $this->assertSame('sent', $dispatch->status);
+        $this->assertSame(DocumentDispatchStatus::Sent, $dispatch->status);
         $this->assertSame('xrechnung_ubl', $dispatch->format);
         $this->assertSame(ParticipantId::DEFAULT_SCHEME . '::' . self::RECEIVER, $dispatch->recipient);
         $this->assertSame('MSG-1', $dispatch->meta['message_id'] ?? null);
@@ -341,7 +343,7 @@ class PeppolDispatchTest extends TestCase {
             ->assertSessionHas('error', fn (string $message): bool => str_contains($message, 'nicht angenommen'));
 
         $dispatch = DocumentDispatch::query()->where('channel', DocumentDispatch::CHANNEL_PEPPOL)->firstOrFail();
-        $this->assertSame('failed', $dispatch->status, 'Ein abgelehnter Zustellversuch gehört trotzdem ins Protokoll.');
+        $this->assertSame(DocumentDispatchStatus::Failed, $dispatch->status, 'Ein abgelehnter Zustellversuch gehört trotzdem ins Protokoll.');
     }
 
     public function test_missing_credentials_yield_a_clear_message(): void {
@@ -366,7 +368,7 @@ class PeppolDispatchTest extends TestCase {
 
     public function test_draft_invoice_is_not_delivered(): void {
         $this->fakeHttp();
-        $invoice = $this->makeInvoice(Invoice::STATUS_DRAFT);
+        $invoice = $this->makeInvoice(InvoiceStatus::Draft);
 
         $this->actingAs($this->admin)
             ->post(route('invoices.peppol.send', $invoice))

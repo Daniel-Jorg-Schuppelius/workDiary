@@ -11,6 +11,7 @@
 namespace App\Services\Timeline;
 
 use App\Enums\Diary\Status;
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Enums\Procedure\ProcedureRunStatus;
 use App\Enums\Protocol\ProtocolEventType;
 use App\Models\Audit\AuditLog;
@@ -308,7 +309,7 @@ class DiaryEntryTimelineService {
             ->get();
 
         foreach ($invoices as $invoice) {
-            $issued = $invoice->status !== Invoice::STATUS_DRAFT;
+            $issued = $invoice->status !== InvoiceStatus::Draft;
             $items[] = new TimelineItem(
                 id: 'invoice:' . $invoice->id,
                 type: 'invoice',

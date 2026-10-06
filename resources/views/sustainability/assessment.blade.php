@@ -14,7 +14,7 @@
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar :title="$assessment->subject_label . ' · V' . $assessment->version" :badge="__('values.' . $assessment->status)" badge-tone="outline"
+        <x-page-toolbar :title="$assessment->subject_label . ' · V' . $assessment->version" :badge="$assessment->status->label()" badge-tone="outline"
                         back-route="sustainability.index" :back-label="__('Übersicht')">
         <div class="text-sm text-base-content/70">
             @if ($assessment->total_score !== null)
@@ -48,10 +48,10 @@
             <select name="vergleich" class="select select-sm select-bordered">
                 <option value="">{{ __('— Alternative wählen (Gerät A/B, Reparatur vs. Ersatz …) —') }}</option>
                 @foreach ($others as $other)
-                    <option value="{{ $other->sqid }}" @selected($compare !== null && $compare->id === $other->id)>{{ $other->subject_label }} (V{{ $other->version }}, {{ __("values.{$other->status}") }})</option>
+                    <option value="{{ $other->sqid }}" @selected($compare !== null && $compare->id === $other->id)>{{ $other->subject_label }} (V{{ $other->version }}, {{ $other->status->label() }})</option>
                 @endforeach
             </select>
-            <button type="submit" class="btn btn-sm">{{ __('Vergleichen') }}</button>
+            <x-button type="submit" tone="plain">{{ __('Vergleichen') }}</x-button>
         </form>
         @if ($compare !== null)
             <div class="mt-3 grid gap-4 sm:grid-cols-2">
@@ -106,12 +106,12 @@
                                         </select>
                                         <input aria-label="{{ __('Quelle') }}" name="source_note" maxlength="300" class="input input-xs input-bordered w-40" placeholder="{{ __('Quelle') }}" value="{{ $item->source_note }}">
                                         <input aria-label="{{ __('Begründung') }}" name="justification" maxlength="1000" class="input input-xs input-bordered w-52" placeholder="{{ __('Begründung') }}" value="{{ $item->justification }}">
-                                        <button type="submit" class="btn btn-xs">{{ __('OK') }}</button>
+                                        <x-button type="submit" tone="plain" size="xs">{{ __('OK') }}</x-button>
                                     </form>
                                 </td>
                             @else
                                 <td>{{ $item->score ?? '—' }}</td>
-                                <td>{{ __("values.{$item->data_quality}") }}@if ($item->data_quality === 'estimated') <span class="badge badge-warning badge-xs">{{ __('Schätzwert') }}</span>@endif</td>
+                                <td>{{ __("values.{$item->data_quality}") }}@if ($item->data_quality === 'estimated') <x-status-badge tone="warning" size="xs">{{ __('Schätzwert') }}</x-status-badge>@endif</td>
                                 <td class="text-xs text-base-content/70">{{ $item->source_note }} {{ $item->justification !== null ? '— ' . $item->justification : '' }}</td>
                             @endif
                         </tr>

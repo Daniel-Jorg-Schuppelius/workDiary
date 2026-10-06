@@ -241,6 +241,25 @@ class ClubEventService {
     }
 
     /**
+     * Regeln für Mitglied und Vertretung: Termin nicht begonnen, Anmeldefrist
+     * offen, Mitglied gehört zur Zielgruppe. Gilt für jede Selbstbedienung —
+     * auch die Prüfungsanfrage (authz-a-6).
+     */
+    public function assertSelfRegistrable(Event $event, ClubMember $member): void {
+        $now = CarbonImmutable::now();
+        if (CarbonImmutable::instance($event->started_at)->lessThan($now)) {
+            throw ValidationException::withMessages(['club_member_id' => __('club.events.error.event_started')]);
+        }
+        $closes = $this->detailsOf($event)->registrationClosesAt($event);
+        if ($closes !== null && $closes->lessThan($now)) {
+            throw ValidationException::withMessages(['club_member_id' => __('club.events.error.registration_closed')]);
+        }
+        if (! $this->isEligible($event, $member)) {
+            throw ValidationException::withMessages(['club_member_id' => __('club.events.error.not_eligible')]);
+        }
+    }
+
+    /**
      * Anmeldung: belegt einen Platz oder wartet. Fristen, Sichtbarkeit und
      * Terminbeginn gelten für Mitglied/Vertretung; Verwaltung und Leitung
      * ergänzen mit `$force` auch spontan.
@@ -262,16 +281,7 @@ class ClubEventService {
                 throw ValidationException::withMessages(['club_member_id' => __('club.error.member_left')]);
             }
             if (! $force) {
-                if (CarbonImmutable::instance($event->started_at)->lessThan($now)) {
-                    throw ValidationException::withMessages(['club_member_id' => __('club.events.error.event_started')]);
-                }
-                $closes = $details->registrationClosesAt($event);
-                if ($closes !== null && $closes->lessThan($now)) {
-                    throw ValidationException::withMessages(['club_member_id' => __('club.events.error.registration_closed')]);
-                }
-                if (! $this->isEligible($event, $member)) {
-                    throw ValidationException::withMessages(['club_member_id' => __('club.events.error.not_eligible')]);
-                }
+                $this->assertSelfRegistrable($event, $member);
             }
 
             /** @var ClubEventParticipation|null $existing */

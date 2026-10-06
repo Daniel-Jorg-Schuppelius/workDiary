@@ -13,9 +13,10 @@ declare(strict_types=1);
 namespace App\Plugins\Etsy\Console;
 
 use App\Console\Concerns\IteratesOrganizations;
-use App\Models\Platform\{Organization, PluginSetting};
+use App\Models\Platform\Organization;
 use App\Plugins\Etsy\EtsyPlugin;
 use App\Plugins\Etsy\Services\{EtsyLedgerImportService, EtsyReceiptImportService};
+use App\Plugins\Support\Console\ChecksPluginSwitch;
 use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Console\Command;
 use Throwable;
@@ -27,6 +28,7 @@ use Throwable;
  * Organisation stoppen die anderen nicht.
  */
 class EtsySyncCommand extends Command {
+    use ChecksPluginSwitch;
     use IteratesOrganizations;
 
     protected $signature = 'etsy:sync {--org= : Nur diese Organisation (ID) synchronisieren}';
@@ -36,6 +38,9 @@ class EtsySyncCommand extends Command {
     public function handle(EtsyReceiptImportService $receipts, EtsyLedgerImportService $ledger): int {
         $failures = $this->forEachOrganization(
             function (Organization $organization) use ($receipts, $ledger): void {
+                if (! $this->pluginEnabledFor(EtsyPlugin::ID, (int) $organization->id)) {
+                    return;
+                }
                 $counters = $receipts->import($organization) + ['ledger' => $ledger->import($organization)];
                 $this->info(sprintf('Org %d: %s', $organization->id, JsonHelper::encode($counters)));
             },
@@ -44,11 +49,6 @@ class EtsySyncCommand extends Command {
                 report($e);
             },
             option: 'org',
-            scope: fn($query) => $query->whereIn('id', PluginSetting::query()
-                ->withoutGlobalScopes()
-                ->where('plugin_id', EtsyPlugin::ID)
-                ->where('enabled', true)
-                ->select('organization_id')),
         );
 
         return $failures === 0 ? self::SUCCESS : self::FAILURE;

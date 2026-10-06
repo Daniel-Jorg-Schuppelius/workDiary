@@ -12,8 +12,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Patrols;
 
+use App\Enums\Patrol\PatrolRunStatus;
 use App\Models\Diary\OpenIssue;
-use App\Models\Patrol\{PatrolRoute, PatrolRun};
+use App\Models\Patrol\PatrolRoute;
 use App\Models\Platform\User;
 use App\Services\Patrol\PatrolService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -105,7 +106,7 @@ final class PatrolTest extends TestCase {
 
         $service->complete($run, $this->admin, 'Zufahrt blockiert, Punkt 2 nicht erreichbar');
 
-        $this->assertSame(PatrolRun::STATUS_COMPLETED, $run->fresh()?->status);
+        $this->assertSame(PatrolRunStatus::Completed, $run->fresh()?->status);
         $issue = OpenIssue::query()->firstOrFail();
         $this->assertSame('patrolDeviation', $issue->source_type->value);
         $this->assertStringContainsString('Revierfahrt Nacht', $issue->title);
@@ -152,6 +153,57 @@ final class PatrolTest extends TestCase {
 
         $this->expectException(\RuntimeException::class);
         $service->start($route, $this->admin);
+    }
+
+    /** Die Rundgangsseite und die Sperren folgen dem Stand: Scan nur solange er läuft, Bericht erst danach. */
+    public function test_finished_run_is_closed_for_scans_and_offers_the_report(): void {
+        ['route' => $route, 'tokens' => $tokens] = $this->route(1);
+        $service = app(PatrolService::class);
+        $run = $service->start($route, $this->admin);
+        $this->assertSame(PatrolRunStatus::Running, $run->fresh()?->status);
+
+        $this->actingAs($this->admin)->get(route('patrols.runs.show', $run))
+            ->assertOk()
+            ->assertSee(route('patrols.runs.scan', $run), false)
+            ->assertDontSee('export=pdf', false);
+
+        $service->scan($run, $tokens[0]);
+        $service->complete($run, $this->admin);
+
+        $this->actingAs($this->admin)->get(route('patrols.runs.show', $run))
+            ->assertOk()
+            ->assertDontSee(route('patrols.runs.scan', $run), false)
+            ->assertSee('export=pdf', false);
+
+        $run->refresh();
+        foreach ([fn () => $service->scan($run, $tokens[0]), fn () => $service->complete($run, $this->admin)] as $attempt) {
+            try {
+                $attempt();
+                $this->fail('Ein abgeschlossener Rundgang nimmt nichts mehr an.');
+            } catch (\RuntimeException $e) {
+                $this->assertSame(__('Dieser Rundgang läuft nicht mehr.'), $e->getMessage());
+            }
+        }
+
+        // Nach dem Abschluss ist die Route wieder frei.
+        $this->assertSame(PatrolRunStatus::Running, $service->start($route, $this->admin)->status);
+    }
+
+    /** Eine Altzeile `aborted` ohne Begründung, Person und Endzeit muss lesbar bleiben. */
+    public function test_aborted_legacy_row_is_readable_and_closed(): void {
+        ['route' => $route, 'tokens' => $tokens] = $this->route(1);
+        $service = app(PatrolService::class);
+        $run = $service->start($route, $this->admin);
+        \Illuminate\Support\Facades\DB::table('patrol_runs')->where('id', $run->id)->update(['status' => 'aborted']);
+
+        $run->refresh();
+        $this->assertSame(PatrolRunStatus::Aborted, $run->status);
+        $this->actingAs($this->admin)->get(route('patrols.runs.show', $run))
+            ->assertOk()
+            ->assertDontSee(route('patrols.runs.scan', $run), false);
+
+        $this->expectException(\RuntimeException::class);
+        $service->complete($run, $this->admin);
     }
 
     public function test_page_requires_dispatch_rights(): void {

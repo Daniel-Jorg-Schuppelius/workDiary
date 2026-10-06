@@ -62,7 +62,7 @@
 
                 @if ($canConfigure)
                     <div class="flex justify-end">
-                        <button type="submit" class="btn btn-primary btn-sm">{{ __('Speichern') }}</button>
+                        <x-button type="submit">{{ __('Speichern') }}</x-button>
                     </div>
                 @endif
             </form>
@@ -84,9 +84,9 @@
                 @if ($canConfigure && ! $profile->isLocalActive())
                     <form method="POST" action="{{ route('finance.accounting.activate') }}" class="mt-4 flex justify-end">
                         @csrf
-                        <button type="submit" class="btn btn-primary btn-sm" @disabled(! $preflight->isReady())>
+                        <x-button type="submit" :disabled="! $preflight->isReady()">
                             {{ __('accounting.ledger.action.activate') }}
-                        </button>
+                        </x-button>
                     </form>
                     @unless ($preflight->isReady())
                         <p class="mt-2 text-xs text-muted">{{ __('accounting.ledger.preflight.blocked_hint') }}</p>

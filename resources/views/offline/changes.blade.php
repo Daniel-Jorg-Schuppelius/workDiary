@@ -33,7 +33,7 @@
          data-label-type-form-submission="{{ __('offline.type.form') }}"
          data-label-type-attendance-correct="{{ __('offline.type.attendance_correct') }}"
          class="space-y-6">
-        <p data-offline-empty class="text-sm text-muted" hidden>{{ __('offline.empty') }}</p>
+        <x-empty-state icon="cloud_done" :title="__('offline.empty')" compact data-offline-empty hidden />
         <section data-offline-section="outbox" class="space-y-2" hidden>
             <h2 class="text-base font-semibold" data-section-heading></h2>
             <ul class="space-y-2" data-section-list></ul>
@@ -50,7 +50,7 @@
     </div>
 
     <template data-sync-item-template>
-        <li class="flex flex-wrap items-center gap-3 rounded-box border border-base-300 bg-base-100 p-3 shadow-xs">
+        <x-card as="li" padding="p-3" class="flex flex-wrap items-center gap-3">
             <div class="min-w-0 flex-1">
                 <p class="font-medium" data-item-type></p>
                 <p class="text-xs text-muted tabular-nums" data-item-time></p>
@@ -58,11 +58,11 @@
                 <p class="text-sm text-warning" data-item-server hidden></p>
             </div>
             <div class="flex items-center gap-1.5">
-                <button type="button" class="btn btn-xs btn-primary" data-item-retry hidden>{{ __('offline.action.retry') }}</button>
-                <button type="button" class="btn btn-xs btn-warning" data-item-force hidden>{{ __('offline.action.force_local') }}</button>
-                <button type="button" class="btn btn-xs btn-ghost text-error" data-item-discard>{{ __('offline.action.discard') }}</button>
+                <x-button size="xs" data-item-retry hidden>{{ __('offline.action.retry') }}</x-button>
+                <x-button tone="warning" size="xs" data-item-force hidden>{{ __('offline.action.force_local') }}</x-button>
+                <x-button tone="ghost" size="xs" class="text-error" data-item-discard>{{ __('offline.action.discard') }}</x-button>
             </div>
-        </li>
+        </x-card>
     </template>
 </x-index-page>
 @endsection

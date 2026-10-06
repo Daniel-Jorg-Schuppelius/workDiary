@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Import;
 
 use App\Enums\Import\{ImportEntity, ImportRunState};
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Accounting\AccountingEntry;
 use App\Models\Customer\Customer;
 use App\Models\Integration\ImportRun;
@@ -77,8 +78,8 @@ class LegacyInvoiceImportTest extends TestCase {
 
         $open = Invoice::query()->where('external_number', 'RE-1001')->firstOrFail();
         $paid = Invoice::query()->where('external_number', 'RE-1002')->firstOrFail();
-        $this->assertSame(Invoice::STATUS_PARTIALLY_PAID, $open->status);
-        $this->assertSame(Invoice::STATUS_PAID, $paid->status);
+        $this->assertSame(InvoiceStatus::PartiallyPaid, $open->status);
+        $this->assertSame(InvoiceStatus::Paid, $paid->status);
         $this->assertSame(InvoiceSpec::NUMBER_SOURCE, $open->number_source);
         $this->assertTrue($open->isOverdue());
 

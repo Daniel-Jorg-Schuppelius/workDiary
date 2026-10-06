@@ -118,7 +118,7 @@
             </div>
         @elseif ($room?->cleaning_profile_id)
             {{-- Bestehende Zuordnung beibehalten, falls Profile später entfernt wurden. --}}
-            <input type="hidden" name="cleaning_profile_id" value="{{ $room->cleaning_profile_id }}">
+            <input type="hidden" name="cleaning_profile_id" value="{{ \App\Support\Sqid::encode(\App\Models\Facility\CleaningProfile::class, $room->cleaning_profile_id) }}">
         @endif
 
         <div class="fieldset @unless ($hasCleaningProfiles) md:col-span-2 @endunless">
@@ -162,8 +162,8 @@
                         <li class="flex flex-wrap items-center gap-2 rounded-box border border-base-300 p-2 text-sm">
                             <x-icon :name="$req->kind->icon()" class="text-warning" />
                             <span class="font-medium">{{ $req->kind->label() }}</span>
-                            @if ($req->level)<span class="badge badge-sm badge-outline">{{ $req->level }}</span>@endif
-                            @unless ($req->is_active)<span class="badge badge-sm badge-ghost">{{ __('inaktiv') }}</span>@endunless
+                            @if ($req->level)<x-status-badge tone="plain" outline>{{ $req->level }}</x-status-badge>@endif
+                            @unless ($req->is_active)<x-status-badge>{{ __('inaktiv') }}</x-status-badge>@endunless
                             @if ($req->note)<span class="text-muted">— {{ $req->note }}</span>@endif
                             <x-button tone="ghost" size="xs" class="ml-auto text-error"
                                href="#"
@@ -172,7 +172,7 @@
                     @endforeach
                 </ul>
             @else
-                <p class="mt-2 text-sm text-muted">{{ __('Noch keine Anforderungen hinterlegt.') }}</p>
+                <x-empty-state icon="rule" :title="__('Noch keine Anforderungen hinterlegt.')" compact class="mt-2" />
             @endif
         </x-form-group>
     @endif

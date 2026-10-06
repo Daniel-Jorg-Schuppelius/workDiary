@@ -63,8 +63,8 @@
 </head>
 <body>
     <div class="actions no-print">
-        <button class="btn" data-print>{{ __('timeline.action.print') }}</button>
-        <a class="btn" href="{{ route('assets.show', $asset) }}">{{ __('asset.dossier.back') }}</a>
+        <x-button type="submit" tone="plain" size="md" data-print>{{ __('timeline.action.print') }}</x-button>
+        <x-button :href="route('assets.show', $asset)" tone="plain" size="md">{{ __('asset.dossier.back') }}</x-button>
     </div>
 
     {{-- Kopf --}}
@@ -73,6 +73,7 @@
         {{ __('asset.dossier.generated_at') }} {{ $generatedAt->fdatetime() }}
         — {{ __('Asset-Nr.') }} {{ $asset->asset_no }}
         — {{ __('asset.dossier.lifecycle') }}:
+        {{-- raw-markup-ok: Standalone-Druckansicht mit eigenem CSS (.badge.ok/.warn/.crit), ohne daisyUI --}}
         <span class="badge {{ $lifecycle['phase_tone'] === 'success' ? 'ok' : ($lifecycle['phase_tone'] === 'error' ? 'crit' : 'warn') }}">{{ $lifecycle['phase_label'] }}</span>
     </div>
 
@@ -82,6 +83,7 @@
         <tr><th>{{ __('Bezeichnung') }}</th><td>{{ $asset->name }}</td></tr>
         <tr><th>{{ __('Typ') }}</th><td>{{ $classLabels[$classValue] ?? $classValue }}</td></tr>
         <tr><th>{{ __('Status') }}</th><td>{{ $statusLabels[$statusValue] ?? $statusValue }} · {{ __('asset.dossier.health') }}: {{ $healthLabels[$healthValue] ?? $healthValue }}</td></tr>
+        {{-- raw-markup-ok: Standalone-Druckansicht mit eigenem CSS (.badge.ok/.warn/.crit), ohne daisyUI --}}
         <tr><th>{{ __('asset.dossier.lifecycle') }}</th><td><span class="badge {{ $lifecycle['phase_tone'] === 'success' ? 'ok' : ($lifecycle['phase_tone'] === 'error' ? 'crit' : 'warn') }}">{{ $lifecycle['phase_label'] }}</span></td></tr>
         @if ($asset->manufacturer || $asset->model)
             <tr><th>{{ __('Hersteller / Modell') }}</th><td>{{ trim(($asset->manufacturer ?? '') . ' ' . ($asset->model ?? '')) ?: '—' }}</td></tr>
@@ -100,7 +102,7 @@
         <tr><th>{{ __('asset.dossier.decommissioned') }}</th><td>{{ $lifecycle['decommissioned_on']?->fdate() ?? '—' }}</td></tr>
         <tr><th>{{ __('asset.dossier.warranty') }}</th><td>
             {{ $lifecycle['warranty_until']?->fdate() ?? '—' }}
-            @if ($lifecycle['warranty_expired'])<span class="badge crit">{{ __('asset.dossier.warranty_expired') }}</span>@endif
+            @if ($lifecycle['warranty_expired'])<x-status-badge tone="plain" size="md" class="crit">{{ __('asset.dossier.warranty_expired') }}</x-status-badge>@endif
         </td></tr>
         @if ($lifecycle['in_service_days'] !== null)
             <tr><th>{{ __('asset.dossier.in_service_days') }}</th><td>{{ $lifecycle['in_service_days'] }}</td></tr>
@@ -146,6 +148,7 @@
                         <td>{{ $plan->label }}</td>
                         <td>{{ $plan->next_due_on?->fdate() ?? '—' }}</td>
                         <td>{{ $plan->last_run_at?->fdatetime() ?? '—' }}</td>
+                        {{-- raw-markup-ok: Standalone-Druckansicht mit eigenem CSS (.badge.ok/.warn/.crit), ohne daisyUI --}}
                         <td><span class="badge {{ $plan->isDue() ? 'warn' : 'ok' }}">{{ $plan->isDue() ? __('asset.dossier.due') : __('asset.dossier.scheduled') }}</span></td>
                     </tr>
                 @endforeach
@@ -166,7 +169,7 @@
                         @if ($slaContract)
                             <a href="{{ route('sla-contracts.show', $slaContract) }}">{{ $slaContract->code }} — {{ $slaContract->label }}</a>
                             @if ($asset->sla_contract_id)
-                                <span class="badge">{{ __('Direktzuordnung') }}</span>
+                                <x-status-badge tone="plain" size="md">{{ __('Direktzuordnung') }}</x-status-badge>
                             @endif
                         @else
                             {{ __('Kein Vertrag zugeordnet.') }}
@@ -183,7 +186,7 @@
                         <tr>
                             <td>{{ $ticket->ticket_no }}</td>
                             <td>{{ $ticket->title }}</td>
-                            <td><span class="badge">{{ $ticket->slaStatus()->label() }}</span></td>
+                            <td><x-status-badge tone="plain" size="md">{{ $ticket->slaStatus()->label() }}</x-status-badge></td>
                             <td>{{ $ticket->resolution_due_at?->fdatetime() ?? '—' }}</td>
                         </tr>
                     @endforeach
@@ -234,7 +237,7 @@
         <h2>{{ __('asset.dossier.defects') }}
             @if ($recurringDefect ?? false)
                 {{-- Wiederholdefekt-Fall (Feature 009 → Rang 47): >= 3 Defekte in 12 Monaten. --}}
-                <span class="badge badge-warning badge-sm align-middle">{{ __('Wiederholdefekt') }}</span>
+                <x-status-badge tone="warning" class="align-middle">{{ __('Wiederholdefekt') }}</x-status-badge>
             @endif
         </h2>
         <table>
@@ -245,7 +248,7 @@
                         <td>{{ $defect->reported_at?->fdatetime() ?? '—' }}</td>
                         <td>{{ $defect->title }}</td>
                         <td>{{ $defect->severity->label() }}</td>
-                        <td><span class="badge">{{ $defect->status->label() }}</span></td>
+                        <td><x-status-badge tone="plain" size="md">{{ $defect->status->label() }}</x-status-badge></td>
                         <td>{{ $defect->blocks_usage ? __('timeline.case.yes') : __('timeline.case.no') }}</td>
                     </tr>
                 @endforeach
@@ -263,7 +266,7 @@
                     <tr>
                         <td>{{ $entry->start_at?->fdate() ?? $entry->created_at?->fdate() ?? '—' }}</td>
                         <td>{{ $entry->title }}</td>
-                        <td><span class="badge">{{ $entry->statusLabel() }}</span></td>
+                        <td><x-status-badge tone="plain" size="md">{{ $entry->statusLabel() }}</x-status-badge></td>
                         <td>{{ $entry->user?->name ?? '—' }}</td>
                     </tr>
                 @endforeach
@@ -281,7 +284,7 @@
                     <tr>
                         <td>{{ $protocol->occurred_at?->fdatetime() ?? '—' }}</td>
                         <td>{{ $protocol->title }}</td>
-                        <td><span class="badge">{{ $protocol->status->label() }}</span></td>
+                        <td><x-status-badge tone="plain" size="md">{{ $protocol->status->label() }}</x-status-badge></td>
                     </tr>
                 @endforeach
             </tbody>
@@ -314,7 +317,7 @@
                     <tr>
                         <td>{{ $issue->title }}</td>
                         <td>{{ $issue->severity->label() }}</td>
-                        <td><span class="badge">{{ $issue->status->label() }}</span></td>
+                        <td><x-status-badge tone="plain" size="md">{{ $issue->status->label() }}</x-status-badge></td>
                         <td>{{ $issue->due_at?->fdate() ?? '—' }}</td>
                     </tr>
                 @endforeach
@@ -341,6 +344,7 @@
     {{-- Vollständige Lebenszyklus-Timeline --}}
     <h2>{{ __('asset.dossier.timeline') }}</h2>
     @if (empty($timelineItems))
+        {{-- raw-markup-ok: Standalone-Seite mit eigenem Stylesheet, ohne App-CSS --}}
         <p class="muted">{{ __('timeline.empty') }}</p>
     @else
         <table>

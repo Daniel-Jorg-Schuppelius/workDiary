@@ -44,10 +44,10 @@
                         <td class="text-sm">{{ implode(', ', $group['providers']) }}</td>
                         <td class="text-sm">
                             @foreach ($group['suggestions']['customers'] as $customer)
-                                <span class="badge badge-outline badge-sm mr-1">{{ __('resale.inbox.mode_customer') }}: {{ $customer->name }}</span>
+                                <x-status-badge tone="plain" outline class="mr-1">{{ __('resale.inbox.mode_customer') }}: {{ $customer->name }}</x-status-badge>
                             @endforeach
                             @foreach ($group['suggestions']['foreign'] as $foreign)
-                                <span class="badge badge-outline badge-sm mr-1">{{ __('resale.inbox.mode_foreign') }}: {{ $foreign->name }} ({{ $foreign->customer?->name }})</span>
+                                <x-status-badge tone="plain" outline class="mr-1">{{ __('resale.inbox.mode_foreign') }}: {{ $foreign->name }} ({{ $foreign->customer?->name }})</x-status-badge>
                             @endforeach
                             @if ($group['suggestions']['customers']->isEmpty() && $group['suggestions']['foreign']->isEmpty())
                                 <span class="text-muted">—</span>
@@ -94,7 +94,7 @@
                         <td class="text-right tabular-nums">{{ $import->rows_unassigned }}</td>
                         <td class="text-right tabular-nums">
                             @if ($issueCount > 0)
-                                <span class="badge badge-warning badge-sm">{{ $issueCount }}</span>
+                                <x-status-badge tone="warning">{{ $issueCount }}</x-status-badge>
                             @else
                                 <span class="text-muted">0</span>
                             @endif

@@ -49,7 +49,7 @@ class ClubAttendanceController extends Controller {
         $sheet = ClubAttendanceSheet::query()->where('event_id', $event->id)->first();
         $canRecord = $sheet !== null ? Gate::allows('record', $sheet) : Gate::allows('manageParticipants', $details);
         if ($sheet === null && $canRecord) {
-            $sheet = $this->attendance->sheetFor($event);
+            $sheet = $this->attendance->sheetOrDraft($event);
         }
         if ($sheet !== null) {
             Gate::authorize('view', $sheet);
@@ -75,8 +75,7 @@ class ClubAttendanceController extends Controller {
     }
 
     public function save(SaveAttendanceSheetRequest $request, Event $event): RedirectResponse {
-        $sheet = $this->sheetOrFail($event);
-        Gate::authorize('record', $sheet);
+        $sheet = $this->sheetForWrite($event);
 
         /** @var User $actor */
         $actor = Auth::user();
@@ -97,8 +96,7 @@ class ClubAttendanceController extends Controller {
     }
 
     public function confirm(Request $request, Event $event): RedirectResponse {
-        $sheet = $this->sheetOrFail($event);
-        Gate::authorize('record', $sheet);
+        $sheet = $this->sheetForWrite($event);
 
         $data = $request->validate(['version' => ['required', 'integer', 'min:0']]);
         /** @var User $actor */
@@ -190,7 +188,7 @@ class ClubAttendanceController extends Controller {
     }
 
     public function spontaneousDialog(Event $event): View {
-        $sheet = $this->sheetOrFail($event);
+        $sheet = $this->attendance->sheetOrDraft($event);
         Gate::authorize('record', $sheet);
 
         $inRoster = $this->attendance->rosterFor($sheet, $event)->pluck('id');
@@ -200,8 +198,7 @@ class ClubAttendanceController extends Controller {
     }
 
     public function spontaneous(AddSpontaneousAttendeeRequest $request, Event $event): RedirectResponse {
-        $sheet = $this->sheetOrFail($event);
-        Gate::authorize('record', $sheet);
+        $sheet = $this->sheetForWrite($event);
 
         /** @var User $actor */
         $actor = Auth::user();
@@ -308,6 +305,13 @@ class ClubAttendanceController extends Controller {
         }
 
         return $query;
+    }
+
+    /** Erst das Recht am Anfangszustand prüfen, dann die Liste anlegen — eine abgewiesene Anfrage hinterlässt nichts. */
+    private function sheetForWrite(Event $event): ClubAttendanceSheet {
+        Gate::authorize('record', $this->attendance->sheetOrDraft($event));
+
+        return $this->attendance->sheetFor($event);
     }
 
     private function sheetOrFail(Event $event): ClubAttendanceSheet {

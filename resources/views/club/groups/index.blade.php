@@ -13,8 +13,7 @@
 @extends('layouts.app')
 @section('title', __('club.title.groups'))
 @section('nav-title', __('club.title.groups'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('club.subtitle.groups')">
     <x-slot:actions>
@@ -69,14 +68,14 @@
                 <td class="text-center text-sm tabular-nums">{{ $group->active_memberships_count }}@if ($group->max_members !== null) / {{ $group->max_members }}@endif</td>
                 <td class="text-center text-sm">
                     @if ($group->requested_memberships_count > 0)
-                        <span class="badge badge-warning badge-sm">{{ $group->requested_memberships_count }}</span>
+                        <x-status-badge tone="warning">{{ $group->requested_memberships_count }}</x-status-badge>
                     @else
                         <span class="text-muted">–</span>
                     @endif
                 </td>
                 <td class="text-center text-sm">
                     @if ($group->open_proposals_count > 0)
-                        <span class="badge badge-warning badge-sm">{{ $group->open_proposals_count }}</span>
+                        <x-status-badge tone="warning">{{ $group->open_proposals_count }}</x-status-badge>
                     @else
                         <span class="text-muted">–</span>
                     @endif

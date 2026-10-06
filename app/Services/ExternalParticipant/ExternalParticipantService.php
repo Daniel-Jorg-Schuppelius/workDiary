@@ -112,10 +112,7 @@ class ExternalParticipantService {
      * Zugriff keine Org-Session besitzt.
      */
     public function resolveUsable(string $plainToken): ?ExternalParticipant {
-        $record = ExternalParticipant::query()
-            ->withoutGlobalScopes()
-            ->where('token_hash', CryptoHelper::hash($plainToken))
-            ->first();
+        $record = ExternalParticipant::findByAccessToken($plainToken);
 
         return $record !== null && $record->isUsable() ? $record : null;
     }

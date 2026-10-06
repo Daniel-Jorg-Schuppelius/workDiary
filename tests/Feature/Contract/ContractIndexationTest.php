@@ -98,6 +98,19 @@ final class ContractIndexationTest extends TestCase {
         $this->assertSame(PriceIndexStatus::Approved, PriceIndexValue::query()->where('period_on', '2026-07-01')->sole()->status);
     }
 
+    /** Konsolidierungs-Audit 2026-10, k1-03: der Faktor wird nicht mehr bei sechs Stellen abgeschnitten. */
+    public function test_large_contract_values_are_not_truncated(): void {
+        app(PriceIndexService::class)->ingest(self::CSV);
+        $this->approveAll();
+
+        // 1.000.000 × 124,6 / 117,6 = 1.059.523,8095… — der abgeschnittene Faktor 1,059523 ergab 1.059.523,00.
+        $result = app(ContractIndexationService::class)->calculate($this->contract(['value_amount' => '1000000.00']));
+
+        $this->assertNotNull($result);
+        $this->assertSame('1059523.81', $result['new_amount']);
+        $this->assertSame('5.9524', $result['change_percent']);
+    }
+
     public function test_proposal_threshold_pass_through_and_apply(): void {
         app(PriceIndexService::class)->ingest(self::CSV);
         $this->approveAll();

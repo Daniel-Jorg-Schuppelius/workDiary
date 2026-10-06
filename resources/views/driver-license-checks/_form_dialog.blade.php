@@ -17,7 +17,7 @@
     :form-data="['data-entry-form' => '']"
     :submit-label="__('Dokumentieren')">
 
-    <div class="alert alert-info text-sm">
+    <div role="status" class="alert alert-info text-sm">
         <span>{{ __('Sichtprüfung des Original-Führerscheins — bewusst ohne Foto-Upload (Datensparsamkeit).') }}</span>
     </div>
 

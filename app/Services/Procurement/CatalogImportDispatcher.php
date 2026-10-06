@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Procurement;
 
-use App\Enums\Procurement\CatalogSourceFormat;
+use App\Enums\Procurement\{CatalogImportStatus, CatalogSourceFormat};
 use App\Models\Supplier\{SupplierCatalogImport, SupplierCatalogSource};
 use RuntimeException;
 
@@ -43,7 +43,7 @@ class CatalogImportDispatcher {
             throw $e;
         }
 
-        $this->record($source, $trigger, SupplierCatalogImport::STATUS_SUCCESS, $summary, $source->last_file_hash, null);
+        $this->record($source, $trigger, CatalogImportStatus::Success, $summary, $source->last_file_hash, null);
 
         return $summary;
     }
@@ -55,18 +55,18 @@ class CatalogImportDispatcher {
      * @param  array{rows?: int, created?: int, updated?: int, unchanged?: int, price_changed?: int, discontinued?: int}  $summary
      */
     public function recordRun(SupplierCatalogSource $source, string $trigger, array $summary): void {
-        $this->record($source, $trigger, SupplierCatalogImport::STATUS_SUCCESS, $summary, null, null);
+        $this->record($source, $trigger, CatalogImportStatus::Success, $summary, null, null);
     }
 
     /** Protokolliert einen fehlgeschlagenen Lauf (z. B. Abruf-/Verbindungsfehler). */
     public function recordFailure(SupplierCatalogSource $source, string $trigger, string $message): void {
-        $this->record($source, $trigger, SupplierCatalogImport::STATUS_ERROR, [], null, $message);
+        $this->record($source, $trigger, CatalogImportStatus::Error, [], null, $message);
     }
 
     /**
      * @param  array{rows?: int, created?: int, updated?: int, unchanged?: int, price_changed?: int, discontinued?: int}  $summary
      */
-    private function record(SupplierCatalogSource $source, string $trigger, string $status, array $summary, ?string $fileHash, ?string $error): void {
+    private function record(SupplierCatalogSource $source, string $trigger, CatalogImportStatus $status, array $summary, ?string $fileHash, ?string $error): void {
         SupplierCatalogImport::query()->create([
             'organization_id' => $source->organization_id,
             'supplier_catalog_source_id' => $source->id,

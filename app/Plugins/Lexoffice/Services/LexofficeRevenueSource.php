@@ -11,9 +11,8 @@
 namespace App\Plugins\Lexoffice\Services;
 
 use App\Models\Invoicing\Invoice;
-use App\Plugins\Lexoffice\{LexofficeInvoiceService, LexofficePlugin};
+use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\Lexoffice\Models\{LexofficeVoucher, LexofficeVoucherLine};
-use App\Plugins\Lexoffice\VoucherTypes;
 use App\Services\Billing\Contracts\ExternalRevenueSource;
 use App\Services\Billing\Dto\ExternalProductRevenue;
 use App\Support\Query\{DateParts, DateRange};

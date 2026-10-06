@@ -18,10 +18,7 @@
         <x-page-toolbar>
             <div class="text-sm text-base-content/70">{{ __('procedure.blocked_report.subtitle') }}</div>
             <x-slot:actions>
-                <x-action-menu icon="download" :label="__('Export')">
-                    <x-icon-btn icon="download" size="sm" :href="route('reports.procedure-blocked', ['from' => $from->toDateString(), 'to' => $to->toDateString(), 'export' => 'csv'])" show-label>{{ __('CSV') }}</x-icon-btn>
-                    <x-icon-btn icon="table_view" size="sm" :href="route('reports.procedure-blocked', ['from' => $from->toDateString(), 'to' => $to->toDateString(), 'export' => 'xlsx'])" show-label>Excel</x-icon-btn>
-                </x-action-menu>
+                <x-report-export :url="fn (string $format) => route('reports.procedure-blocked', ['from' => $from->toDateString(), 'to' => $to->toDateString(), 'export' => $format])" :formats="['csv', 'xlsx']" tone="ghost" />
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>

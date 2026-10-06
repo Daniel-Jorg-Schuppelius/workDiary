@@ -11,6 +11,7 @@
 namespace Tests\Feature\Plugins\SevDesk;
 
 use App\Enums\Billing\{DocumentDirection, DocumentKind};
+use App\Enums\Finance\AccountingVoucherState;
 use App\Models\Finance\AccountingVoucher;
 use App\Models\Platform\PluginSetting;
 use App\Models\Supplier\Supplier;
@@ -70,7 +71,7 @@ class SevDeskVoucherPullTest extends TestCase {
         $expense = AccountingVoucher::query()->where('external_id', '77001')->firstOrFail();
         $this->assertSame(DocumentDirection::Incoming->value, $expense->direction);
         $this->assertSame(DocumentKind::Other->value, $expense->document_kind);
-        $this->assertSame('paid', $expense->voucher_state);
+        $this->assertSame(AccountingVoucherState::Paid, $expense->voucher_state);
         $this->assertSame('59.50', (string) $expense->total_amount);
         $this->assertNotNull($expense->supplier_id);
         $this->assertFalse($expense->is_cancellation);
@@ -78,7 +79,7 @@ class SevDeskVoucherPullTest extends TestCase {
         // C = Einnahme → ausgehend, Status 100 = offen.
         $income = AccountingVoucher::query()->where('external_id', '77002')->firstOrFail();
         $this->assertSame(DocumentDirection::Outgoing->value, $income->direction);
-        $this->assertSame('open', $income->voucher_state);
+        $this->assertSame(AccountingVoucherState::Open, $income->voucher_state);
         $this->assertNull($income->supplier_id);
     }
 

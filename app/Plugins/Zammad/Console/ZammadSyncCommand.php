@@ -14,9 +14,11 @@ namespace App\Plugins\Zammad\Console;
 
 use App\Console\Concerns\IteratesOrganizations;
 use App\Models\Platform\Organization;
+use App\Plugins\Support\Console\ChecksPluginSwitch;
 use App\Plugins\Zammad\Contracts\ZammadGatewayFactory;
 use App\Plugins\Zammad\Models\ZammadConnection;
 use App\Plugins\Zammad\Services\ZammadTicketImporter;
+use App\Plugins\Zammad\ZammadPlugin;
 use Illuminate\Console\Command;
 use Throwable;
 
@@ -28,6 +30,7 @@ use Throwable;
  * fortgeschrieben.
  */
 class ZammadSyncCommand extends Command {
+    use ChecksPluginSwitch;
     use IteratesOrganizations;
 
     protected $signature = 'zammad:sync ' . self::ORGANIZATION_OPTION;
@@ -38,6 +41,9 @@ class ZammadSyncCommand extends Command {
         foreach ($this->organizationsToProcess() as $org) {
             // Fehler je Anbindung werden unten gefangen — Org-Fehler sollen weiter durchschlagen.
             $this->withOrganizationContext($org, function (Organization $org) use ($factory, $importer): void {
+                if (! $this->pluginEnabledFor(ZammadPlugin::ID, (int) $org->id)) {
+                    return;
+                }
                 $connections = ZammadConnection::query()->withoutGlobalScopes()
                     ->where('organization_id', $org->id)
                     ->get();

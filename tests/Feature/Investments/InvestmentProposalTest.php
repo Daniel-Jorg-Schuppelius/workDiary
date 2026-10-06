@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Investments;
 
-use App\Enums\Investments\InvestmentOrigin;
+use App\Enums\Investments\{InvestmentCaseStatus, InvestmentOrigin};
+use App\Enums\Organization\TenantStatus;
 use App\Enums\User\UserRole;
 use App\Models\Investments\InvestmentCase;
 use App\Models\Platform\User;
@@ -48,7 +49,7 @@ final class InvestmentProposalTest extends TestCase {
         $this->actingAs($employee)->post(route('investments.proposals.store'), $this->payload())->assertSessionHas('success');
 
         $case = InvestmentCase::query()->sole();
-        $this->assertSame('idea', $case->status);
+        $this->assertSame(InvestmentCaseStatus::Idea, $case->status);
         $this->assertSame(InvestmentOrigin::Staff, $case->origin);
         $this->assertSame($employee->id, $case->submitter_user_id);
         $this->assertSame('4500.00', $case->estimated_amount);
@@ -80,5 +81,20 @@ final class InvestmentProposalTest extends TestCase {
     public function test_link_management_needs_manage(): void {
         $employee = $this->userWithRole(UserRole::User->value);
         $this->actingAs($employee)->post(route('investments.proposals.rotate'))->assertForbidden();
+    }
+
+    /** Sicherheitsaudit 2026-10-04, pub-3: der Link endet mit der Mandantensperre. */
+    public function test_public_link_is_locked_for_a_suspended_tenant(): void {
+        $this->actingAs($this->admin)->post(route('investments.proposals.rotate'));
+        $token = session('investment_proposal_token');
+        $this->actingAs($this->admin)->patch(route('investments.proposals.toggle'), ['enabled' => 1]);
+        auth()->logout();
+        app()->forgetInstance('currentOrganization');
+        $this->get(route('investment-proposal.public', $token))->assertOk();
+
+        $this->organization->forceFill(['tenant_status' => TenantStatus::Suspended])->save();
+
+        $this->get(route('investment-proposal.public', $token))->assertStatus(423);
+        $this->post(route('investment-proposal.public.store', $token), $this->payload() + ['submitter_name' => 'Standort Nord', 'submitter_email' => 'nord@example.test'])->assertStatus(423);
     }
 }

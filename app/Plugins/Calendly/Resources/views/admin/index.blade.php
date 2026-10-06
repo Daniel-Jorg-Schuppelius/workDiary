@@ -9,9 +9,10 @@
 @extends('layouts.app')
 @section('title', __('Calendly'))
 @section('nav-title', __('Calendly'))
+@include('partials.page-fill')
 
 @section('content')
-<x-index-page
+<x-index-page overflow="clip"
     :subtitle="__('Empfängt extern über Calendly gebuchte Termine als bestätigungspflichtige Terminwünsche und erzeugt Einmal-Buchungslinks.')"
     :badge="$connection && $connection->isActive() ? __('verbunden') : __('nicht verbunden')"
     :badge-tone="$connection && $connection->isActive() ? 'success' : 'ghost'">
@@ -41,12 +42,10 @@
         @endif
     </x-slot:actions>
 
-    @if ($errors->any())
-        <div class="alert alert-error text-sm">{{ $errors->first() }}</div>
-    @endif
+    <x-validation-errors first />
 
     @unless ($configured)
-        <div class="alert alert-warning text-sm">
+        <div role="alert" class="alert alert-warning text-sm">
             {{ __('Es ist keine Calendly-App hinterlegt — weder in den Plugin-Einstellungen dieser Organisation noch als CALENDLY_CLIENT_ID/CALENDLY_CLIENT_SECRET der Installation.') }}
         </div>
     @endunless
@@ -54,7 +53,7 @@
     {{-- Einmal-Buchungslink (Outbound, P5) --}}
     @if ($connection && $connection->isActive())
         @if (session('calendly_booking_url'))
-            <div class="alert alert-info text-sm">
+            <div role="status" class="alert alert-info text-sm">
                 <span>{{ __('Buchungslink') }}:
                     <a href="{{ session('calendly_booking_url') }}" target="_blank" rel="noopener"
                        class="link break-all">{{ session('calendly_booking_url') }}</a>
@@ -84,18 +83,18 @@
                     <input id="booking-link-days" name="days" type="number" min="1" max="90" value="30"
                            class="input input-sm input-bordered w-24" />
                 </div>
-                <button type="submit" class="btn btn-sm btn-primary">{{ __('Link erzeugen') }}</button>
+                <x-button type="submit">{{ __('Link erzeugen') }}</x-button>
             </form>
         </div>
     @endif
 
     {{-- Offene Terminwünsche (zweiphasige Bestätigung) --}}
-    @if ($requests->isEmpty())
+    @if ($requests->total() === 0)
         <x-empty-state framed icon="event_busy"
             :title="__('Keine offenen Terminwünsche')"
             :message="__('Es liegen aktuell keine bestätigungspflichtigen Terminwünsche vor.')" />
     @else
-        <x-table>
+        <x-table scroll="flex">
             <x-slot:head>
                 <tr>
                     <th>{{ __('Termin') }}</th>
@@ -107,7 +106,7 @@
             @foreach ($requests as $request)
                 <tr>
                     <td class="whitespace-nowrap">
-                        {{ $request->start_at?->orgTz()->format('d.m.Y H:i') ?? '—' }}
+                        {{ $request->start_at?->fdatetime() ?? '—' }}
                         <div class="text-xs text-muted">{{ $request->service_label }}</div>
                     </td>
                     <td>
@@ -118,17 +117,16 @@
                         @if ($request->customer_id)
                             {{ optional($request->customer)->name }}
                         @else
-                            <span class="badge badge-warning badge-sm">{{ __('nicht zugeordnet') }}</span>
+                            <x-status-badge tone="warning">{{ __('nicht zugeordnet') }}</x-status-badge>
                         @endif
                     </td>
                     <td class="text-right">
                         <div class="flex justify-end gap-1">
                             <form method="POST" action="{{ route('admin.calendly.requests.confirm', $request) }}">
                                 @csrf
-                                <button type="submit" class="btn btn-xs btn-primary">{{ __('Bestätigen') }}</button>
+                                <x-button type="submit" size="xs">{{ __('Bestätigen') }}</x-button>
                             </form>
-                            <button type="button" class="btn btn-xs btn-ghost"
-                                    data-open-dialog="decline-dialog-{{ $request->getKey() }}">{{ __('Ablehnen') }}</button>
+                            <x-button tone="ghost" size="xs" data-open-dialog="decline-dialog-{{ $request->getKey() }}">{{ __('Ablehnen') }}</x-button>
                         </div>
                     </td>
                 </tr>
@@ -153,6 +151,8 @@
                 </x-form-group>
             </x-modal>
         @endforeach
+
+        <x-pagination :paginator="$requests" standing />
     @endif
 </x-index-page>
 @endsection

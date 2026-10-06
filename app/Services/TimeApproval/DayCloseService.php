@@ -244,7 +244,7 @@ class DayCloseService {
      * nicht gesperrt, keine ⛔-Warnung (§2.6/§4).
      */
     public function close(DayClosure $closure, ?User $actor = null): DayClosure {
-        $this->assertStatus($closure, [DayClosureStatus::Open]);
+        $this->ensureTransition($closure, DayClosureStatus::Closed);
 
         $day = CarbonImmutable::instance($closure->day);
         // "Zukunftstag" gegen den LOKALEN Kalendertag prüfen: um 00:30 lokal
@@ -272,7 +272,7 @@ class DayCloseService {
         $actorId = $this->resolveActorId($actor);
 
         return DB::transaction(function () use ($closure, $actorId): DayClosure {
-            $closure = $this->lockAndAssert($closure, [DayClosureStatus::Open]);
+            $closure = $this->lockAndAssert($closure, DayClosureStatus::Closed);
             $closure->fill([
                 'status' => DayClosureStatus::Closed,
                 'closed_at' => CarbonImmutable::now(),
@@ -296,7 +296,7 @@ class DayCloseService {
      * `locked`) sind ausgenommen — dort zuerst Monats-Reopen (MVP-016).
      */
     public function requestCorrection(DayClosure $closure, string $reason, ?User $actor = null): DayCorrectionRequest {
-        $this->assertStatus($closure, [DayClosureStatus::Closed]);
+        $this->ensureTransition($closure, DayClosureStatus::Correction);
         $this->assertReason($reason);
 
         $owner = $this->ownerOf($closure);
@@ -335,7 +335,7 @@ class DayCloseService {
         $this->assertRequestPending($request);
 
         $closure = $this->closureOf($request);
-        $this->assertStatus($closure, [DayClosureStatus::Correction]);
+        $this->ensureTransition($closure, DayClosureStatus::Open);
 
         $actorId = $this->resolveActorId($actor);
 
@@ -369,7 +369,7 @@ class DayCloseService {
         $this->assertRequestPending($request);
 
         $closure = $this->closureOf($request);
-        $this->assertStatus($closure, [DayClosureStatus::Correction]);
+        $this->ensureTransition($closure, DayClosureStatus::Closed);
 
         $actorId = $this->resolveActorId($actor);
 
@@ -399,7 +399,7 @@ class DayCloseService {
      * auch die Stempel-Sperre auf.
      */
     public function reopen(DayClosure $closure, string $reason, ?User $actor = null): DayClosure {
-        $this->assertStatus($closure, [DayClosureStatus::Closed]);
+        $this->ensureTransition($closure, DayClosureStatus::Open);
         $this->assertReason($reason);
 
         $owner = $this->ownerOf($closure);
@@ -408,7 +408,7 @@ class DayCloseService {
         $actorId = $this->resolveActorId($actor);
 
         return DB::transaction(function () use ($closure, $reason, $actorId): DayClosure {
-            $closure = $this->lockAndAssert($closure, [DayClosureStatus::Closed]);
+            $closure = $this->lockAndAssert($closure, DayClosureStatus::Open);
             $closure->fill([
                 'status' => DayClosureStatus::Open,
                 'closed_at' => null,
@@ -531,13 +531,12 @@ class DayCloseService {
         return $balance;
     }
 
-    /** @param  list<DayClosureStatus>  $allowed */
-    private function assertStatus(DayClosure $closure, array $allowed): void {
-        if (! in_array($closure->status, $allowed, true)) {
+    private function ensureTransition(DayClosure $closure, DayClosureStatus $target): void {
+        if (! $closure->status->canTransitionTo($target)) {
             throw new DayCloseWorkflowException(
                 'illegalTransition',
                 __('day-close.errors.illegal_day_status', ['status' => $closure->status->value]),
-                ['from' => $closure->status->value, 'allowed' => array_map(static fn(DayClosureStatus $s) => $s->value, $allowed)],
+                ['from' => $closure->status->value, 'to' => $target->value],
             );
         }
     }
@@ -546,13 +545,11 @@ class DayCloseService {
      * Sperrt die Tagesabschluss-Zeile in der Transaktion und prüft den Status
      * erneut gegen den frischen Wert (verhindert doppelte Übergänge/Events bei
      * parallelen close()/reopen()-Aufrufen).
-     *
-     * @param  list<DayClosureStatus>  $allowed
      */
-    private function lockAndAssert(DayClosure $closure, array $allowed): DayClosure {
+    private function lockAndAssert(DayClosure $closure, DayClosureStatus $target): DayClosure {
         /** @var DayClosure $fresh */
         $fresh = DayClosure::query()->whereKey($closure->getKey())->lockForUpdate()->firstOrFail();
-        $this->assertStatus($fresh, $allowed);
+        $this->ensureTransition($fresh, $target);
 
         return $fresh;
     }

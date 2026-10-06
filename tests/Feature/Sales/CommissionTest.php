@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sales;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Enums\Sales\{CommissionAssignmentSource, CommissionScope, CommissionSettlementStatus, CommissionStatus};
 use App\Models\Article\Article;
 use App\Models\Customer\Customer;
@@ -87,7 +88,7 @@ final class CommissionTest extends TestCase {
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
             'number' => 'RE-' . fake()->unique()->numberBetween(1000, 9999),
-            'status' => Invoice::STATUS_ISSUED,
+            'status' => InvoiceStatus::Issued,
             'type' => Invoice::TYPE_INVOICE,
             'currency' => 'EUR',
             'subtotal' => '1000.00',
@@ -99,7 +100,7 @@ final class CommissionTest extends TestCase {
     }
 
     private function pay(Invoice $invoice, string $on = '2026-08-15'): Invoice {
-        $invoice->status = Invoice::STATUS_PAID;
+        $invoice->status = InvoiceStatus::Paid;
         $invoice->paid_on = Carbon::parse($on);
         $invoice->save();
 
@@ -307,7 +308,7 @@ final class CommissionTest extends TestCase {
         $this->lead();
         $invoice = $this->pay($this->invoice());
 
-        $invoice->status = Invoice::STATUS_CANCELLED;
+        $invoice->status = InvoiceStatus::Cancelled;
         $invoice->cancelled_at = Carbon::parse('2026-09-02');
         $invoice->save();
 
@@ -333,7 +334,7 @@ final class CommissionTest extends TestCase {
         $settlement->close($august, $this->admin);
 
         $invoice->refresh();
-        $invoice->status = Invoice::STATUS_CANCELLED;
+        $invoice->status = InvoiceStatus::Cancelled;
         $invoice->cancelled_at = Carbon::parse('2026-09-02');
         $invoice->save();
 
@@ -519,7 +520,7 @@ final class CommissionTest extends TestCase {
                 'organization_id' => $other->id,
                 'customer_id' => $otherCustomer->id,
                 'number' => 'FR-1',
-                'status' => Invoice::STATUS_PAID,
+                'status' => InvoiceStatus::Paid,
                 'currency' => 'EUR',
                 'subtotal' => '500.00',
                 'total' => '595.00',

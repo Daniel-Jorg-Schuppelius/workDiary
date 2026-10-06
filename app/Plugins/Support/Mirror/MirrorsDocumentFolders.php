@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Support\Mirror;
 
+use App\Enums\Document\DocumentType;
 use Illuminate\Support\{Carbon, Str};
 
 /**
@@ -24,6 +25,29 @@ use Illuminate\Support\{Carbon, Str};
 trait MirrorsDocumentFolders {
     /** Spiegelbare Quellen (Rang 19); null/leer = nur DMS-Dokumente (rückwärtskompatibel). */
     public const SOURCES = ['document', 'invoice_pdf', 'protocol_pdf'];
+
+    /**
+     * Ordnerabbild aus den zwei Formularspalten (Dokumenttyp, Pfad): nur
+     * bekannte Typen mit Pfad, je Typ ein Ordner.
+     *
+     * @param  array<array-key, mixed>  $types
+     * @param  array<array-key, mixed>  $paths
+     * @return array<string, string>
+     */
+    public static function folderMapFromInput(array $types, array $paths): array {
+        $valid = array_map(static fn (DocumentType $t): string => $t->value, DocumentType::cases());
+
+        $map = [];
+        foreach ($types as $i => $type) {
+            $type = is_string($type) ? $type : '';
+            $path = isset($paths[$i]) && is_string($paths[$i]) ? trim($paths[$i], '/') : '';
+            if ($type !== '' && $path !== '' && in_array($type, $valid, true)) {
+                $map[$type] = $path;
+            }
+        }
+
+        return $map;
+    }
 
     /** Spiegelt diese Anbindung die angegebene Quelle? Ohne Auswahl nur `document`. */
     public function mirrorsSource(string $source): bool {

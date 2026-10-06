@@ -109,6 +109,11 @@ return [
         'on_documents' => 'Link di pagamento sulla fattura e nell\'e-mail',
         'on_documents_hint' => 'Se disattivato, il pagamento online resta possibile nel portale clienti.',
     ],
+    'approvals' => [
+        'step_roles_hint' => 'Le fasi di approvazione di una trattativa contrattuale compaiono in «Approvazioni» per il ruolo assegnato al loro tipo di fase. L\'approvazione dalla pratica resta possibile.',
+        'step_role' => ':kind: ruolo responsabile',
+        'default_role' => 'Predefinito (:role)',
+    ],
     'mcp' => [
         'heading' => 'Assistenti IA (MCP)',
         'description' => 'Gli assistenti IA come Claude o ChatGPT possono collegarsi con il consenso dei singoli utenti e leggere o creare bozze con i loro permessi.',

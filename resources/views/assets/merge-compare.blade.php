@@ -15,8 +15,7 @@
     <x-index-page :subtitle="__('Wählen Sie das Zielgerät, in das „:name“ überführt werden soll. Alle Verknüpfungen (Sitzungen, Wartungen, Anhänge, Geräte-IDs …) wandern aufs Ziel; das Duplikat wird gelöscht.', ['name' => $source->name ?: $source->asset_no])"
                   :back="route('assets.show', $source)" :back-label="__('Zurück')">
 
-        <form method="GET" action="{{ route('assets.merge.compare') }}"
-              class="max-w-xl rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+        <x-card as="form" class="max-w-xl" method="GET" action="{{ route('assets.merge.compare') }}">
             <input type="hidden" name="source" value="{{ $source->sqid }}">
             <div class="flex items-end gap-2">
                 <label class="form-control flex-1">
@@ -28,9 +27,9 @@
                         @endforeach
                     </select>
                 </label>
-                <button type="submit" class="btn btn-sm btn-primary">{{ __('Vergleichen') }}</button>
+                <x-button type="submit">{{ __('Vergleichen') }}</x-button>
             </div>
-        </form>
+        </x-card>
     </x-index-page>
 @else
     @php
@@ -53,14 +52,16 @@
             [__('Seriennummer'), $target->serial_no, $source->serial_no, 'serial_no'],
             [__('Inventarnummer'), $target->inventory_no, $source->inventory_no, 'inventory_no'],
             [__('Standort (Freitext)'), $target->location_text, $source->location_text, 'location_text'],
-            [__('In Betrieb seit'), $target->commissioned_on?->format('d.m.Y'), $source->commissioned_on?->format('d.m.Y'), 'commissioned_on'],
-            [__('Garantie bis'), $target->warranty_until?->format('d.m.Y'), $source->warranty_until?->format('d.m.Y'), 'warranty_until'],
+            [__('In Betrieb seit'), $target->commissioned_on?->fdate(), $source->commissioned_on?->fdate(), 'commissioned_on'],
+            [__('Garantie bis'), $target->warranty_until?->fdate(), $source->warranty_until?->fdate(), 'warranty_until'],
             [__('Notizen'), $target->notes, $source->notes, 'notes'],
         ];
     @endphp
 
     <x-index-page :subtitle="__('Wählen Sie pro Feld, ob der Wert des zu löschenden Geräts den Ziel-Wert ersetzen soll. Leere Ziel-Felder werden ohnehin aus der Quelle aufgefüllt; befüllte Ziel-Felder bleiben unangetastet.')"
                   :back="route('assets.show', $source)" :back-label="__('Zurück')">
+
+        <x-validation-errors class="mb-4" />
 
         <form method="POST" action="{{ route('assets.merge') }}"
               data-confirm-dialog
@@ -75,11 +76,11 @@
                     <tr>
                         <th class="w-44">{{ __('Feld') }}</th>
                         <th>
-                            <span class="badge badge-sm badge-success">{{ __('Bleibt') }}</span>
+                            <x-status-badge tone="success">{{ __('Bleibt') }}</x-status-badge>
                             <a href="{{ route('assets.show', $target) }}" class="link ml-1">{{ $target->name ?: $target->asset_no }}</a>
                         </th>
                         <th>
-                            <span class="badge badge-sm badge-ghost">{{ __('Wird gelöscht') }}</span>
+                            <x-status-badge>{{ __('Wird gelöscht') }}</x-status-badge>
                             <a href="{{ route('assets.show', $source) }}" class="link ml-1">{{ $source->name ?: $source->asset_no }}</a>
                         </th>
                         <th class="w-40 text-center">{{ __('Wert aus Quelle übernehmen') }}</th>
@@ -110,9 +111,8 @@
             </x-table>
 
             <div class="mt-4 flex flex-wrap justify-end gap-2">
-                <a href="{{ route('assets.merge.compare', ['source' => $target->sqid, 'target' => $source->sqid]) }}"
-                   class="btn btn-sm btn-outline">{{ __('Richtung tauschen') }}</a>
-                <button class="btn btn-sm btn-primary">{{ __('Zusammenführen →') }}</button>
+                <x-button :href="route('assets.merge.compare', ['source' => $target->sqid, 'target' => $source->sqid])" tone="outline">{{ __('Richtung tauschen') }}</x-button>
+                <x-button type="submit">{{ __('Zusammenführen →') }}</x-button>
             </div>
         </form>
     </x-index-page>

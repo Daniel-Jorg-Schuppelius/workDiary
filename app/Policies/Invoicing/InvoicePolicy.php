@@ -10,6 +10,7 @@
 
 namespace App\Policies\Invoicing;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
 
@@ -27,19 +28,19 @@ class InvoicePolicy {
     }
 
     public function update(User $user, Invoice $invoice): bool {
-        return $user->canManageBilling() && $invoice->status === Invoice::STATUS_DRAFT;
+        return $user->canManageBilling() && $invoice->status === InvoiceStatus::Draft;
     }
 
     public function delete(User $user, Invoice $invoice): bool {
-        return $user->canManageBilling() && $invoice->status === Invoice::STATUS_DRAFT;
+        return $user->canManageBilling() && $invoice->status === InvoiceStatus::Draft;
     }
 
     public function issue(User $user, Invoice $invoice): bool {
-        return $user->canManageBilling() && $invoice->status === Invoice::STATUS_DRAFT;
+        return $user->canManageBilling() && $invoice->status === InvoiceStatus::Draft;
     }
 
     public function pay(User $user, Invoice $invoice): bool {
-        return $user->canManageBilling() && $invoice->status === Invoice::STATUS_ISSUED;
+        return $user->canManageBilling() && $invoice->status === InvoiceStatus::Issued;
     }
 
     /**

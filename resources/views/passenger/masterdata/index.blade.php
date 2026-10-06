@@ -114,7 +114,7 @@
                     </select>
                     <input type="number" step="0.01" min="0" name="amount" placeholder="{{ __('passenger.field.amount') }}" class="input input-sm input-bordered w-28" aria-label="{{ __('passenger.field.amount') }}">
                     <input type="number" step="0.1" min="0" max="100" name="percent" placeholder="{{ __('passenger.field.percent') }}" class="input input-sm input-bordered w-28" aria-label="{{ __('passenger.field.percent') }}">
-                    <button type="submit" class="btn btn-sm btn-primary">{{ __('passenger.masterdata.action.add_rule') }}</button>
+                    <x-button type="submit">{{ __('passenger.masterdata.action.add_rule') }}</x-button>
                 </form>
             @endcan
         </x-card>

@@ -109,6 +109,11 @@ return [
         'on_documents' => 'Lien de paiement sur la facture et dans l\'e-mail',
         'on_documents_hint' => 'Désactivé, le paiement en ligne reste possible dans le portail client.',
     ],
+    'approvals' => [
+        'step_roles_hint' => 'Les étapes d\'approbation d\'une négociation contractuelle apparaissent sous « Approbations » pour le rôle associé à leur type d\'étape. L\'approbation depuis le dossier reste possible.',
+        'step_role' => ':kind : rôle responsable',
+        'default_role' => 'Par défaut (:role)',
+    ],
     'mcp' => [
         'heading' => 'Assistants IA (MCP)',
         'description' => 'Les assistants IA comme Claude ou ChatGPT peuvent se connecter avec l’accord de chaque utilisateur et lire ou créer des brouillons avec ses droits.',

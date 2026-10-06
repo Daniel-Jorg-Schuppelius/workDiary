@@ -20,12 +20,12 @@
                         back-route="rental.index" :back-label="__('Zur Liste')">
             <div class="flex flex-wrap items-center gap-2 text-sm">
                 <x-status-badge size="md" outline>{{ $case->status->label() }}</x-status-badge>
-                <span class="badge badge-outline">{{ $case->starts_at->fdatetime() }} – {{ $case->ends_at->fdatetime() }}</span>
+                <x-status-badge tone="plain" size="md" outline>{{ $case->starts_at->fdatetime() }} – {{ $case->ends_at->fdatetime() }}</x-status-badge>
                 @if ($case->isOverdue())
-                    <span class="badge badge-error">{{ __('Rückgabe überfällig') }}</span>
+                    <x-status-badge tone="error" size="md">{{ __('Rückgabe überfällig') }}</x-status-badge>
                 @endif
                 @if ($case->rateCard !== null)
-                    <span class="badge badge-outline">{{ __('Preisliste :name (v:version)', ['name' => $case->rateCard->name, 'version' => $case->rateCard->version]) }}</span>
+                    <x-status-badge tone="plain" size="md" outline>{{ __('Preisliste :name (v:version)', ['name' => $case->rateCard->name, 'version' => $case->rateCard->version]) }}</x-status-badge>
                 @endif
             </div>
             <x-slot:actions>
@@ -74,7 +74,7 @@
                             @csrf
                             <x-input-field name="ends_at" type="datetime-local" :label="__('Neues Ende')" required />
                             <x-input-field name="reason" :label="__('Grund')" />
-                            <button type="submit" class="btn btn-sm">{{ __('Verlängern') }}</button>
+                            <x-button type="submit" tone="plain">{{ __('Verlängern') }}</x-button>
                         </form>
                     </details>
                 @endif
@@ -99,6 +99,7 @@
                     {{ __('Eingefroren aus :name (Version :version) — spätere Preisänderungen bewerten diese Akte nicht um.', ['name' => data_get($case->terms_snapshot, 'name'), 'version' => data_get($case->terms_snapshot, 'version')]) }}
                 </p>
             @else
+                {{-- raw-markup-ok: Hinweis mit Folge für die Erfassung, kein Leerzustand einer Liste --}}
                 <p class="text-sm text-muted">{{ __('Keine Preisliste hinterlegt — Positionen werden manuell erfasst.') }}</p>
             @endif
             {{-- Mietbedingungen (MVP-895): unterschriebene Fassung des Kunden. --}}
@@ -136,7 +137,7 @@
                 <tr>
                     <td>{{ $caseAsset->asset->name ?? '—' }}</td>
                     <td>
-                        <x-status-badge size="md" outline>{{ __("values.{$caseAsset->status}") }}</x-status-badge>
+                        <x-status-badge size="md" outline>{{ $caseAsset->status->label() }}</x-status-badge>
                         @if ($caseAsset->replacedBy !== null)
                             <span class="text-xs text-muted">{{ __('ersetzt durch :name', ['name' => $caseAsset->replacedBy->asset->name ?? '—']) }}</span>
                         @endif
@@ -144,13 +145,13 @@
                     <td class="text-sm">{{ collect($caseAsset->accessories ?? [])->implode(', ') ?: '—' }}</td>
                     <td class="text-right">
                         @can('handover', $case)
-                            @if ($caseAsset->status === 'planned' && in_array($case->status, [\App\Enums\Rental\RentalCaseStatus::Reserved, \App\Enums\Rental\RentalCaseStatus::HandedOver], true))
+                            @if ($caseAsset->status === \App\Enums\Rental\RentalCaseAssetStatus::Planned && in_array($case->status, [\App\Enums\Rental\RentalCaseStatus::Reserved, \App\Enums\Rental\RentalCaseStatus::HandedOver], true))
                                 <details class="inline-block text-left">
                                     <summary class="btn btn-xs btn-primary">{{ __('Übergabe') }}</summary>
                                     @include('rental._report_form', ['case' => $case, 'caseAsset' => $caseAsset, 'mode' => 'handover'])
                                 </details>
                             @endif
-                            @if ($caseAsset->status === 'handed_over' && in_array($case->status, [\App\Enums\Rental\RentalCaseStatus::HandedOver, \App\Enums\Rental\RentalCaseStatus::Overdue], true))
+                            @if ($caseAsset->status === \App\Enums\Rental\RentalCaseAssetStatus::HandedOver && in_array($case->status, [\App\Enums\Rental\RentalCaseStatus::HandedOver, \App\Enums\Rental\RentalCaseStatus::Overdue], true))
                                 <details class="inline-block text-left">
                                     <summary class="btn btn-xs">{{ __('Rücknahme') }}</summary>
                                     @include('rental._report_form', ['case' => $case, 'caseAsset' => $caseAsset, 'mode' => 'return'])
@@ -158,7 +159,7 @@
                             @endif
                         @endcan
                         @can('update', $case)
-                            @if (in_array($caseAsset->status, ['planned', 'handed_over'], true) && $case->status->isOpen() && $case->status !== \App\Enums\Rental\RentalCaseStatus::Draft)
+                            @if ($caseAsset->status->isOpen() && $case->status->isOpen() && $case->status !== \App\Enums\Rental\RentalCaseStatus::Draft)
                                 <details class="inline-block text-left">
                                     <summary class="btn btn-xs btn-ghost">{{ __('Tausch') }}</summary>
                                     <form method="POST" action="{{ route('rental.swap', $case) }}" class="mt-2 flex flex-wrap items-end gap-2 rounded-box border border-base-300 p-3">
@@ -173,7 +174,7 @@
                                         </x-select-field>
                                         {{-- :id — Tausch-Formular wiederholt sich pro Leihobjekt (doppelte ids, I13) --}}
                                         <x-input-field name="note" :id="'swap-note-' . $caseAsset->sqid" :label="__('Grund')" />
-                                        <button type="submit" class="btn btn-sm">{{ __('Tauschen') }}</button>
+                                        <x-button type="submit" tone="plain">{{ __('Tauschen') }}</x-button>
                                     </form>
                                 </details>
                             @endif
@@ -261,7 +262,7 @@
                                 <form method="POST" action="{{ route('rental.charges.reference', $charge) }}" class="flex items-center gap-1">
                                     @csrf
                                     <input aria-label="{{ __('Belegnr.') }}" type="text" name="external_reference" class="input input-xs input-bordered w-32" placeholder="{{ __('Belegnr.') }}" required>
-                                    <button type="submit" class="btn btn-xs">{{ __('OK') }}</button>
+                                    <x-button type="submit" tone="plain" size="xs">{{ __('OK') }}</x-button>
                                 </form>
                             @else
                                 —
@@ -270,12 +271,12 @@
                         <td class="text-right">
                             @if ($charge->status === \App\Enums\Rental\RentalChargeStatus::Draft)
                                 <form method="POST" action="{{ route('rental.charges.release', $charge) }}" class="inline">@csrf
-                                    <button type="submit" class="btn btn-xs btn-primary">{{ __('Freigeben') }}</button>
+                                    <x-button type="submit" size="xs">{{ __('Freigeben') }}</x-button>
                                 </form>
                             @endif
                             @if (! $charge->status->isSettled() && $charge->status !== \App\Enums\Rental\RentalChargeStatus::Cancelled)
                                 <form method="POST" action="{{ route('rental.charges.cancel', $charge) }}" class="inline">@csrf
-                                    <button type="submit" class="btn btn-xs btn-ghost text-error">{{ __('Stornieren') }}</button>
+                                    <x-button type="submit" tone="ghost" size="xs" class="text-error">{{ __('Stornieren') }}</x-button>
                                 </form>
                             @endif
                         </td>
@@ -287,11 +288,11 @@
             <div class="flex flex-wrap items-center gap-2 border-t border-base-300 p-3">
                 @if ($chargeSuggestions !== [])
                     <form method="POST" action="{{ route('rental.charges.suggest', $case) }}">@csrf
-                        <button type="submit" class="btn btn-sm">{{ __(':count Positionen aus Konditionen übernehmen', ['count' => count($chargeSuggestions)]) }}</button>
+                        <x-button type="submit" tone="plain">{{ __(':count Positionen aus Konditionen übernehmen', ['count' => count($chargeSuggestions)]) }}</x-button>
                     </form>
                 @endif
                 <form method="POST" action="{{ route('rental.invoice', $case) }}">@csrf
-                    <button type="submit" class="btn btn-sm btn-primary">{{ __('Freigegebene Positionen abrechnen') }}</button>
+                    <x-button type="submit">{{ __('Freigegebene Positionen abrechnen') }}</x-button>
                 </form>
                 <details class="inline-block">
                     <summary class="btn btn-sm btn-ghost">{{ __('Position erfassen') }}</summary>
@@ -307,7 +308,7 @@
                         <x-input-field name="unit" :label="__('Einheit')" value="Tag" required />
                         <x-input-field name="unit_price" type="number" step="0.01" :label="__('Einzelpreis')" required />
                         <x-input-field name="reason_text" :label="__('Begründung (Pflicht bei Schaden/Verlust/Minderung)')" />
-                        <button type="submit" class="btn btn-sm">{{ __('Erfassen') }}</button>
+                        <x-button type="submit" tone="plain">{{ __('Erfassen') }}</x-button>
                     </form>
                 </details>
             </div>
@@ -337,7 +338,7 @@
                         <td class="text-right">
                             @if ($deposit->status === \App\Enums\Rental\RentalDepositStatus::Requested)
                                 <form method="POST" action="{{ route('rental.deposits.receive', $deposit) }}" class="inline">@csrf
-                                    <button type="submit" class="btn btn-xs btn-primary">{{ __('Erhalten') }}</button>
+                                    <x-button type="submit" size="xs">{{ __('Erhalten') }}</x-button>
                                 </form>
                             @endif
                             @if ($deposit->status === \App\Enums\Rental\RentalDepositStatus::Received)
@@ -348,7 +349,7 @@
                                         {{-- :id — Abrechnungs-Formular wiederholt sich pro Kaution (doppelte ids, I13) --}}
                                         <x-input-field name="retained_amount" type="number" step="0.01" min="0" :id="'deposit-retained-' . $deposit->sqid" :label="__('Einbehalt (0 = volle Erstattung)')" value="0" />
                                         <x-input-field name="reason" :id="'deposit-reason-' . $deposit->sqid" :label="__('Begründung (Pflicht bei Einbehalt)')" />
-                                        <button type="submit" class="btn btn-sm">{{ __('Abrechnen') }}</button>
+                                        <x-button type="submit" tone="plain">{{ __('Abrechnen') }}</x-button>
                                     </form>
                                 </details>
                             @endif
@@ -365,7 +366,7 @@
                         @csrf
                         <x-input-field name="amount" type="number" step="0.01" min="0.01" :label="__('Betrag')" :value="$case->deposit_amount" required />
                         <x-input-field name="note" id="deposit-note" :label="__('Notiz')" />
-                        <button type="submit" class="btn btn-sm">{{ __('Anfordern') }}</button>
+                        <x-button type="submit" tone="plain">{{ __('Anfordern') }}</x-button>
                     </form>
                 </details>
             </div>
@@ -375,31 +376,18 @@
     <x-card :title="__('Belegungsfenster')" padding="p-0">
         <x-table bare>
             <x-slot:head>
-                <tr><th>{{ __('Asset') }}</th><th>{{ __('Art') }}</th><th>{{ __('Zeitraum (inkl. Puffer)') }}</th><th>{{ __('Status') }}</th><th></th></tr>
+                <tr><th>{{ __('Asset') }}</th><th>{{ __('Art') }}</th><th>{{ __('Zeitraum (inkl. Puffer)') }}</th><th>{{ __('Status') }}</th></tr>
             </x-slot:head>
+            {{-- Ohne Storno: Fenster einer Akte enden über Rücknahme, Tausch oder Storno der Akte. --}}
             @forelse ($case->reservations as $reservation)
                 <tr>
                     <td>{{ $reservation->asset->name ?? '—' }}</td>
                     <td>{{ $reservation->kind->label() }}</td>
                     <td>{{ $reservation->blockedFrom()->fdatetime() }} – {{ $reservation->blockedUntil()->fdatetime() }}</td>
-                    <td><x-status-badge size="md" outline>{{ __("values.{$reservation->status}") }}</x-status-badge></td>
-                    {{-- Storno (MVP-798, Befund C1-04): Endpunkt war da, Aktionsspalte fehlte.
-                         Rechteprüfung wie im Controller (create auf RentalCase). --}}
-                    <td class="text-right">
-                        @can('create', \App\Models\Rental\RentalCase::class)
-                            @if ($reservation->status === 'active')
-                                <x-action-form :action="route('rental.reservations.cancel', $reservation)"
-                                               :confirm="__('Das Belegungsfenster wird storniert und das Gerät im Kalender wieder freigegeben.')"
-                                               :confirm-label="__('Stornieren')" confirm-icon="event_busy">
-                                    <x-icon-btn icon="event_busy" size="xs" tone="error" type="submit"
-                                                :title="__('Stornieren')" />
-                                </x-action-form>
-                            @endif
-                        @endcan
-                    </td>
+                    <td><x-status-badge size="md" outline>{{ $reservation->status->label() }}</x-status-badge></td>
                 </tr>
             @empty
-                <x-table.empty :colspan="5" :title="__('Keine Belegungsfenster — entstehen mit der Reservierung.')" compact />
+                <x-table.empty :colspan="4" :title="__('Keine Belegungsfenster — entstehen mit der Reservierung.')" compact />
             @endforelse
         </x-table>
     </x-card>

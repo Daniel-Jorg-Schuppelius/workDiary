@@ -42,6 +42,20 @@
                         <x-button tone="outline" size="xs" icon="folder_zip" :href="route('customer.agreements.package', ['revision' => $revision->sqid])">
                             <span>{{ __('contract-signing.action.package') }}</span>
                         </x-button>
+                        {{-- Einzeldateien der Fassung: die gebundenen Versionen, Schlüssel ist die Position im Manifest. --}}
+                        <ul class="mt-1 space-y-0.5 text-xs">
+                            @foreach ($revision->manifestItems as $item)
+                                <li>
+                                    <a class="link link-hover inline-flex items-center justify-end gap-1"
+                                       href="{{ route('customer.agreements.file', ['revision' => $revision->sqid, 'item' => $item->sort]) }}"
+                                       title="{{ __('contract-signing.action.download_file') }}">
+                                        <x-status-badge size="xs">{{ $item->roleLabel() }}</x-status-badge>
+                                        <span>{{ $item->original_name }}</span>
+                                        <x-icon name="download" />
+                                    </a>
+                                </li>
+                            @endforeach
+                        </ul>
                     @else
                         <span class="text-xs text-muted">{{ __('contract-signing.portal.not_released') }}</span>
                     @endif

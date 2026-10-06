@@ -108,7 +108,6 @@
                                         <th class="w-24 text-right">{{ __('Aktion') }}</th>
                                     </tr>
                                 </x-slot:head>
-                                <tbody>
                                     @foreach ($offering->requestItems as $item)
                                         <tr class="hover">
                                             <td class="font-medium">
@@ -157,24 +156,18 @@
                                             </td>
                                         </tr>
                                     @endforeach
-                                </tbody>
                             </x-table>
                         @else
-                            <p class="mt-2 text-sm text-muted">{{ __('Noch keine Katalogeinträge in diesem Angebot.') }}</p>
+                            <x-empty-state icon="list_alt" :title="__('Noch keine Katalogeinträge in diesem Angebot.')" compact class="mt-2" />
                         @endif
                     </div>
                 @empty
-                    <p class="mt-3 text-sm text-muted">{{ __('Noch keine Angebote in diesem Fachdienst.') }}</p>
+                    <x-empty-state icon="storefront" :title="__('Noch keine Angebote in diesem Fachdienst.')" compact class="mt-3" />
                 @endforelse
             </x-card>
         @empty
-            <x-card>
-                <div class="py-8 text-center text-muted">
-                    <x-icon name="storefront" class="text-3xl" />
-                    <p class="mt-2 font-medium">{{ __('Noch kein Servicekatalog angelegt') }}</p>
-                    <p class="text-sm">{{ __('Legen Sie zuerst einen Fachdienst an, dann Angebote und bestellbare Katalogeinträge.') }}</p>
-                </div>
-            </x-card>
+            <x-empty-state framed icon="storefront" :title="__('Noch kein Servicekatalog angelegt')"
+                           :message="__('Legen Sie zuerst einen Fachdienst an, dann Angebote und bestellbare Katalogeinträge.')" />
         @endforelse
     </x-index-page>
 @endsection

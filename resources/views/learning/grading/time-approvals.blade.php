@@ -12,7 +12,7 @@
   Eingriff in die Zeitkonten für etwas, das noch niemand entschieden hat.
 --}}
 @extends('layouts.app')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 @section('title', __('learning.title.time_approvals'))
 @section('nav-title', __('learning.title.time_approvals'))
 @section('content')

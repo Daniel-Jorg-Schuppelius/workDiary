@@ -10,9 +10,10 @@
 
 @section('title', __('Leasing & Asset-Verträge'))
 @section('nav-title', __('Leasing'))
+@include('partials.page-fill')
 
 @section('content')
-<x-index-page :subtitle="__('Leasing-, Mietkauf-, Finanzierungs- und Nutzungsverträge mit Fristen, Konditionen und Soll-Ist-Sicht — ohne Bilanzierung.')">
+<x-index-page overflow="clip" :subtitle="__('Leasing-, Mietkauf-, Finanzierungs- und Nutzungsverträge mit Fristen, Konditionen und Soll-Ist-Sicht — ohne Bilanzierung.')">
     <x-slot:actions>
         @can('create', \App\Models\AssetFinance\AssetFinanceContract::class)
             <x-icon-btn icon="add" tone="primary" size="sm"
@@ -45,39 +46,37 @@
     </x-filter-bar>
 
 
-    <x-card padding="p-0">
-        <x-table bare>
-            <x-slot:head>
-                <tr>
-                    <th>{{ __('Nummer') }}</th>
-                    <th>{{ __('Vertragspartner') }}</th>
-                    <th>{{ __('Art') }}</th>
-                    <th>{{ __('Assets') }}</th>
-                    <th>{{ __('Laufzeit') }}</th>
-                    <th>{{ __('Status') }}</th>
-                    <th></th>
-                </tr>
-            </x-slot:head>
-            @forelse ($contracts as $contract)
-                <tr>
-                    <td><a href="{{ route('asset-finance.show', $contract) }}" class="link font-mono">{{ $contract->number }}</a></td>
-                    <td>{{ $contract->partner_name }}</td>
-                    <td>{{ $contract->kind->label() }}</td>
-                    <td>{{ $contract->contractAssets->map(fn($ca) => $ca->asset?->name)->filter()->implode(', ') ?: '—' }}</td>
-                    <td>
-                        {{ $contract->starts_on->fdate() }} – {{ optional($contract->ends_on)->fdate() ?? __('unbefristet') }}
-                        @if ($contract->ends_on !== null && $contract->status->isOpen() && $contract->ends_on <= now()->addMonths(6))
-                            <span class="badge badge-warning badge-outline badge-sm">{{ __('endet bald') }}</span>
-                        @endif
-                    </td>
-                    <td><x-status-badge size="md" outline>{{ $contract->status->label() }}</x-status-badge></td>
-                    <td class="text-right"><x-icon-btn icon="visibility" :href="route('asset-finance.show', $contract)" :label="__('Anzeigen')" /></td>
-                </tr>
-            @empty
-                <x-table.empty icon="request_quote" :colspan="7" :title="__('Keine Leasingakten — Verträge über den Dialog anlegen.')" compact />
-            @endforelse
-        </x-table>
-    </x-card>
+    <x-table scroll="flex">
+        <x-slot:head>
+            <tr>
+                <th>{{ __('Nummer') }}</th>
+                <th>{{ __('Vertragspartner') }}</th>
+                <th>{{ __('Art') }}</th>
+                <th>{{ __('Assets') }}</th>
+                <th>{{ __('Laufzeit') }}</th>
+                <th>{{ __('Status') }}</th>
+                <th></th>
+            </tr>
+        </x-slot:head>
+        @forelse ($contracts as $contract)
+            <tr class="hover">
+                <td><a href="{{ route('asset-finance.show', $contract) }}" class="link font-mono">{{ $contract->number }}</a></td>
+                <td>{{ $contract->partner_name }}</td>
+                <td>{{ $contract->kind->label() }}</td>
+                <td>{{ $contract->contractAssets->map(fn($ca) => $ca->asset?->name)->filter()->implode(', ') ?: '—' }}</td>
+                <td>
+                    {{ $contract->starts_on->fdate() }} – {{ optional($contract->ends_on)->fdate() ?? __('unbefristet') }}
+                    @if ($contract->ends_on !== null && $contract->status->isOpen() && $contract->ends_on <= now()->addMonths(6))
+                        <x-status-badge tone="warning" outline>{{ __('endet bald') }}</x-status-badge>
+                    @endif
+                </td>
+                <td><x-status-badge size="md" outline>{{ $contract->status->label() }}</x-status-badge></td>
+                <td class="text-right"><x-icon-btn icon="visibility" :href="route('asset-finance.show', $contract)" :label="__('Anzeigen')" /></td>
+            </tr>
+        @empty
+            <x-table.empty icon="request_quote" :colspan="7" :title="__('Keine Leasingakten — Verträge über den Dialog anlegen.')" compact />
+        @endforelse
+    </x-table>
 
     <x-pagination :paginator="$contracts" standing />
 </x-index-page>

@@ -15,9 +15,10 @@
 
 @section('title', __('isms.title.vulnerabilities'))
 @section('nav-title', __('isms.title.vulnerabilities'))
+@include('partials.page-fill')
 
 @section('content')
-    <x-index-page :subtitle="__('isms.subtitle.vulnerabilities')">
+    <x-index-page overflow="clip" :subtitle="__('isms.subtitle.vulnerabilities')">
         <x-slot:actions>
             <x-icon-btn icon="upload_file" tone="outline" size="sm"
                         data-entry-modal-trigger
@@ -82,7 +83,7 @@
             </x-filter-field>
         </x-filter-bar>
 
-        <x-table>
+        <x-table scroll="flex">
             <x-slot:head>
                 <tr>
                     <th>{{ __('isms.field.vuln_no') }}</th>
@@ -125,7 +126,7 @@
                     <td><x-status-badge :tone="$vulnerability->status->tone()">{{ $vulnerability->status->label() }}</x-status-badge></td>
                     <td><x-status-badge :tone="$vulnerability->exploitability->tone()" outline>{{ $vulnerability->exploitability->label() }}</x-status-badge></td>
                     <td class="{{ $vulnerability->isOverdue() ? 'text-error font-semibold' : 'text-base-content/70' }}">
-                        {{ $vulnerability->due_on?->format('d.m.Y') ?? '—' }}
+                        {{ $vulnerability->due_on?->fdate() ?? '—' }}
                     </td>
                     <td class="text-right">
                         <div class="flex justify-end gap-1">

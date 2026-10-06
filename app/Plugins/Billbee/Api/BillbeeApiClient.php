@@ -12,9 +12,10 @@ declare(strict_types=1);
 
 namespace App\Plugins\Billbee\Api;
 
+use APIToolkit\API\Authentication\BasicAuthentication;
 use App\Plugins\Billbee\BillbeePlugin;
+use App\Plugins\Billbee\Exceptions\BillbeeApiException;
 use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
-use Illuminate\Http\Client\Response;
 
 /**
  * Typisierte Oberfläche der Billbee-REST-API (MVP-433/434; OpenAPI-Fixture
@@ -53,7 +54,7 @@ class BillbeeApiClient {
             'pageSize' => $pageSize,
         ], static fn($value): bool => $value !== null);
 
-        $body = $this->guard($this->authed('get', '/api/v1/orders', ['query' => $query]), '/api/v1/orders');
+        $body = $this->guard($this->api()->requestResponse('get', $this->baseUrl . '/api/v1/orders', ['query' => $query]), '/api/v1/orders');
 
         return $this->paged($body);
     }
@@ -65,7 +66,7 @@ class BillbeeApiClient {
      */
     public function products(int $page, int $pageSize): array {
         $body = $this->guard(
-            $this->authed('get', '/api/v1/products', ['query' => ['page' => $page, 'pageSize' => $pageSize]]),
+            $this->api()->requestResponse('get', $this->baseUrl . '/api/v1/products', ['query' => ['page' => $page, 'pageSize' => $pageSize]]),
             '/api/v1/products',
         );
 
@@ -81,7 +82,7 @@ class BillbeeApiClient {
      */
     public function updateStock(string $sku, float $newQuantity, ?string $reason = null): array {
         return (array) $this->guard(
-            $this->authed('post', '/api/v1/products/updatestock', ['json' => array_filter([
+            $this->api()->requestResponse('post', $this->baseUrl . '/api/v1/products/updatestock', ['json' => array_filter([
                 'Sku' => $sku,
                 'NewQuantity' => $newQuantity,
                 'Reason' => $reason,
@@ -109,23 +110,11 @@ class BillbeeApiClient {
         ];
     }
 
-    /** @param array<string, mixed> $options */
-    private function authed(string $method, string $path, array $options = []): Response {
-        $options['headers'] = array_merge(
-            (array) ($options['headers'] ?? []),
-            [
-                'X-Billbee-Api-Key' => $this->apiKey,
-                'Authorization' => 'Basic ' . base64_encode($this->username . ':' . $this->apiPassword),
-            ],
-        );
-
-        return $this->api()->requestResponse($method, $this->baseUrl . $path, $options);
-    }
-
     /** Ein Exemplar je Client, damit das 0,5-s-Intervall zwischen Requests wirkt. */
     private function api(): PluginApiClient {
         if ($this->api === null) {
             $this->api = $this->http->client(BillbeePlugin::ID, $this->baseUrl, $this->requestInterval);
+            $this->api->setAuthentication(new BasicAuthentication($this->username, $this->apiPassword, ['X-Billbee-Api-Key' => $this->apiKey]));
         }
 
         return $this->api;

@@ -44,7 +44,7 @@
         <div class="space-y-4 lg:col-span-2">
             <x-card :title="__('Kontrollpunkte')">
                 @if ($route->checkpoints->isEmpty())
-                    <p class="text-sm text-muted">{{ __('Noch keine Kontrollpunkte — unten hinzufügen.') }}</p>
+                    <x-empty-state icon="location_on" :title="__('Noch keine Kontrollpunkte — unten hinzufügen.')" compact />
                 @else
                     <x-table bare>
                         <x-slot:head>
@@ -84,7 +84,7 @@
                         <input aria-label="{{ __('Kontrollpunkt (Ort)') }}" type="text" name="label" required maxlength="160" class="input input-sm input-bordered sm:col-span-2" placeholder="{{ __('Kontrollpunkt (Ort)') }}">
                         <input type="number" name="expected_offset_minutes" required min="0" max="1440" value="0" class="input input-sm input-bordered" placeholder="{{ __('Soll ab Start (min)') }}" aria-label="{{ __('Soll ab Start (min)') }}">
                         <input type="number" name="tolerance_minutes" required min="0" max="240" value="10" class="input input-sm input-bordered" placeholder="{{ __('Toleranz (min)') }}" aria-label="{{ __('Toleranz (min)') }}">
-                        <button type="submit" class="btn btn-primary btn-sm sm:col-span-4">{{ __('Kontrollpunkt hinzufügen') }}</button>
+                        <x-button type="submit" class="sm:col-span-4">{{ __('Kontrollpunkt hinzufügen') }}</x-button>
                     </form>
                 @endif
             </x-card>
@@ -93,15 +93,19 @@
         <div class="space-y-4">
             <x-card :title="__('Letzte Rundgänge')">
                 @if ($runs->isEmpty())
-                    <p class="text-sm text-muted">{{ __('Noch keine Rundgänge.') }}</p>
+                    <x-empty-state icon="directions_walk" :title="__('Noch keine Rundgänge.')" compact />
                 @else
                     <ul class="space-y-1 text-sm">
                         @foreach ($runs as $run)
                             <li class="flex justify-between gap-2">
                                 <a class="link link-hover min-w-0 truncate" href="{{ route('patrols.runs.show', $run) }}">
-                                    {{ $run->started_at->orgTz()->format('d.m.Y H:i') }} · {{ $run->starter?->name ?? '—' }}
+                                    {{ $run->started_at->fdatetime() }} · {{ $run->starter?->name ?? '—' }}
                                 </a>
-                                <span class="shrink-0 text-muted">{{ $run->scans_count }} {{ __('Scans') }}</span>
+                                <span class="shrink-0 text-muted">
+                                    {{ $run->scans_count }} {{ __('Scans') }}
+                                    <x-status-badge size="xs" :tone="$run->status === \App\Enums\Patrol\PatrolRunStatus::Aborted ? 'warning' : 'ghost'"
+                                                    :title="$run->abort_reason">{{ $run->status->label() }}</x-status-badge>
+                                </span>
                             </li>
                         @endforeach
                     </ul>

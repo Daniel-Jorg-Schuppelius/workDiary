@@ -11,6 +11,7 @@
 namespace App\Plugins\Msgraph\Api;
 
 use APIToolkit\API\Authentication\OAuth2\OAuth2BearerAuthentication;
+use APIToolkit\API\Pagination\{CursorPage, CursorPaginator};
 use App\Plugins\Msgraph\Models\MsgraphContactConnection;
 use App\Plugins\Msgraph\{MsgraphConfig, MsgraphPlugin};
 use App\Plugins\Support\{ConnectionTokenStore, PluginApiClient, PluginHttpFactory};
@@ -92,35 +93,31 @@ class MsgraphContactsClient {
      * @return list<array<string, mixed>>
      */
     public function contacts(): array {
-        $contacts = [];
-        $url = $this->base . '/me/contacts';
-        $query = [
-            '$top' => '100',
-            '$select' => 'id,displayName,companyName,businessPhones,homePhones,mobilePhone',
-        ];
         $page = 0;
-
-        do {
+        $paginator = new CursorPaginator(function (?string $nextLink) use (&$page): CursorPage {
+            // Das Limit wirft, statt wie `maxPages` still zu enden.
             if (++$page > self::MAX_CONTACT_PAGES) {
                 throw new RuntimeException('Graph-Kontaktabruf überschreitet das Seitenlimit.');
             }
-            $response = $this->api->getResponse($url, $query);
+            $response = $nextLink === null
+                ? $this->api->getResponse($this->base . '/me/contacts', [
+                    '$top' => '100',
+                    '$select' => 'id,displayName,companyName,businessPhones,homePhones,mobilePhone',
+                ])
+                : $this->api->getFollowUp($nextLink);
             if (! $response->successful()) {
                 throw new RuntimeException('Graph /me/contacts fehlgeschlagen (HTTP ' . $response->status() . ').');
             }
-            /** @var array{value?: list<mixed>, '@odata.nextLink'?: string} $data */
             $data = (array) $response->json();
-            foreach ((array) ($data['value'] ?? []) as $row) {
-                if (is_array($row)) {
-                    $contacts[] = $row;
-                }
-            }
-            $url = $data['@odata.nextLink'] ?? null;
-            if (is_string($url) && $url !== '' && ! str_starts_with($url, $this->base . '/')) {
+            $next = $data['@odata.nextLink'] ?? null;
+            if (is_string($next) && $next !== '' && ! str_starts_with($next, $this->base . '/')) {
                 throw new RuntimeException('Graph-Kontaktabruf lieferte eine ungültige Folgeseite.');
             }
-            $query = [];
-        } while (is_string($url) && $url !== '');
+
+            return new CursorPage(array_filter((array) ($data['value'] ?? []), is_array(...)), is_string($next) && $next !== '' ? $next : null);
+        });
+        /** @var list<array<string, mixed>> $contacts */
+        $contacts = $paginator->toArray();
 
         return $contacts;
     }

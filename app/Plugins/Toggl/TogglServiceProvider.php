@@ -12,7 +12,7 @@ namespace App\Plugins\Toggl;
 
 use App\Plugins\Support\PluginServiceProviderBase;
 use App\Plugins\Toggl\Console\{TogglBackfillReferencesCommand, TogglImportCommand, TogglPushCommand, TogglRepairEntryBillableCommand, TogglRepairEntryUsersCommand};
-use App\Plugins\Toggl\Services\TogglOutboxDispatcher;
+use App\Plugins\Toggl\Services\{TogglGroupBooker, TogglImportService, TogglOutboxDispatcher};
 use App\Services\Integration\{InboxGroupBookerRegistry, IntegrationOutboxDispatcherResolver};
 
 /**

@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Integration;
 
+use App\Enums\Integration\IntegrationInboxStatus;
 use App\Models\Audit\AuditLog;
 use App\Models\Customer\Customer;
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
@@ -37,7 +38,7 @@ class InboxActionService {
     /** Ordnet den Eintrag einem bestehenden lokalen Datensatz zu. */
     public function assignTo(IntegrationInboxItem $item, Model $target): void {
         $this->writeReference($item, $target);
-        $this->close($item, IntegrationInboxItem::STATUS_RESOLVED_LINKED, $target);
+        $this->close($item, IntegrationInboxStatus::ResolvedLinked, $target);
     }
 
     /** Legt einen neuen lokalen Datensatz aus dem gemappten Wertesatz an. */
@@ -51,7 +52,7 @@ class InboxActionService {
         $model = $profile->create($organization, $item->mapped_snapshot ?? []);
 
         $this->writeReference($item, $model);
-        $this->close($item, IntegrationInboxItem::STATUS_RESOLVED_CREATED, $model);
+        $this->close($item, IntegrationInboxStatus::ResolvedCreated, $model);
 
         return $model;
     }
@@ -89,12 +90,12 @@ class InboxActionService {
             $this->contactDetails->writeInline($model, $contactFields);
         }
 
-        $this->close($item, IntegrationInboxItem::STATUS_RESOLVED_REMOTE, $model);
+        $this->close($item, IntegrationInboxStatus::ResolvedRemote, $model);
     }
 
     /** Konflikt zugunsten der lokalen Werte schließen — und lokal auch extern durchsetzen. */
     public function keepLocal(IntegrationInboxItem $item): void {
-        $this->close($item, IntegrationInboxItem::STATUS_RESOLVED_LOCAL, $item->referenceable);
+        $this->close($item, IntegrationInboxStatus::ResolvedLocal, $item->referenceable);
 
         // „Lokal behalten" heißt: der lokale Stand soll auch extern gelten — sonst meldet der nächste Abgleich
         // denselben Konflikt. Mit Outbox-Dispatcher (MVP-114) werden die Konfliktfelder enqueued; ohne Rückkanal unberührt.
@@ -118,7 +119,7 @@ class InboxActionService {
 
     /** Eintrag verwerfen (bewusst nicht zuordnen). */
     public function dismiss(IntegrationInboxItem $item): void {
-        $this->close($item, IntegrationInboxItem::STATUS_DISMISSED, null);
+        $this->close($item, IntegrationInboxStatus::Dismissed, null);
     }
 
     /**
@@ -126,7 +127,7 @@ class InboxActionService {
      * für plugin-spezifische Auflöser, die die Fachlogik selbst erledigen (z. B.
      * die WebDAV-Konfliktauflösung, Rang 18). Zentraler Abschluss statt Nachbau.
      */
-    public function markResolved(IntegrationInboxItem $item, string $status, ?Model $resolvedTo = null): void {
+    public function markResolved(IntegrationInboxItem $item, IntegrationInboxStatus $status, ?Model $resolvedTo = null): void {
         $this->close($item, $status, $resolvedTo);
     }
 
@@ -151,7 +152,7 @@ class InboxActionService {
         );
     }
 
-    private function close(IntegrationInboxItem $item, string $status, ?Model $resolvedTo): void {
+    private function close(IntegrationInboxItem $item, IntegrationInboxStatus $status, ?Model $resolvedTo): void {
         $item->update([
             'status' => $status,
             'resolved_to_type' => $resolvedTo?->getMorphClass(),
@@ -170,7 +171,7 @@ class InboxActionService {
             'auditable_type' => MorphMap::stableKey($item::class),
             'auditable_id' => $item->getKey(),
             'changes' => [
-                'status' => $status,
+                'status' => $status->value,
                 'case_type' => $item->case_type,
                 'plugin_id' => $item->plugin_id,
                 'external_id' => $item->external_id,

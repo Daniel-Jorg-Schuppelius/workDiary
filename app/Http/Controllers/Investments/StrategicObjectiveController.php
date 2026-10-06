@@ -34,7 +34,7 @@ class StrategicObjectiveController extends Controller {
         Gate::authorize(P::InvestmentViewAny->value);
 
         return view('investments.objectives.index', [
-            'objectives' => StrategicObjective::query()->with(['keyResults', 'owner'])->withCount('cases')->orderByDesc('is_active')->orderBy('title')->get(),
+            'objectives' => StrategicObjective::query()->with(['keyResults', 'owner'])->withCount('cases')->orderByDesc('is_active')->orderBy('title')->orderBy('id')->paginate(25)->withQueryString(),
             'canManage' => Gate::allows(P::InvestmentManage->value),
         ]);
     }

@@ -16,6 +16,7 @@ use App\Enums\Import\ImportRunState;
 use App\Models\Integration\{ImportColumnMapping, ImportRun};
 use App\Models\Platform\{Organization, User};
 use App\Services\Import\Source\{CsvImportSource, ImportSourceFactory};
+use CommonToolkit\Helper\Data\StringHelper;
 use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\{DB, Storage};
@@ -92,7 +93,7 @@ class ImportColumnMappingService {
                 $mapping = ImportColumnMapping::query()->firstOrNew([
                     'organization_id' => $run->organization_id,
                     'entity' => $run->entity->value,
-                    'source_header' => ImportColumnMapping::normalize($header),
+                    'source_header' => StringHelper::normalizeColumnName($header),
                 ]);
                 $mapping->created_by ??= $actor->id;
                 $mapping->fill(['target_column' => $column, 'updated_by' => $actor->id])->save();

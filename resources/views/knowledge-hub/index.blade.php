@@ -73,13 +73,13 @@
     @if ($activeTagId !== null || $tagFacets !== [])
         <div class="flex flex-wrap items-center gap-2">
             @if ($activeTagId !== null)
-                <span class="badge badge-primary gap-1">
+                <x-status-badge tone="primary" size="md" class="gap-1">
                     <x-icon name="sell" class="text-sm" />
                     {{ $activeTagName ?? __('collections.hub.tag_filter') }}
                     <a href="{{ route('knowledge-hub.index', $hubQuery(['tag' => null])) }}" class="inline-flex" aria-label="{{ __('search.filter.remove') }}">
                         <x-icon name="close" class="text-sm" />
                     </a>
-                </span>
+                </x-status-badge>
             @endif
             @foreach ($tagFacets as $facet)
                 @continue($facet['id'] === $activeTagId)
@@ -154,7 +154,7 @@
                             <p class="mt-2 flex flex-wrap items-center gap-1 text-xs text-muted">
                                 <span>{{ $row['updated_at']?->fdate() }}</span>
                                 @foreach ($row['tags'] as $tag)
-                                    <span class="badge badge-ghost badge-xs">{{ $tag['name'] }}</span>
+                                    <x-status-badge size="xs">{{ $tag['name'] }}</x-status-badge>
                                 @endforeach
                             </p>
                         </x-card>
@@ -193,7 +193,7 @@
                                 <td class="font-medium">
                                     <a class="link link-hover" href="{{ $row['url'] }}">{{ $row['title'] }}</a>
                                     @foreach ($row['tags'] as $tag)
-                                        <span class="badge badge-ghost badge-xs">{{ $tag['name'] }}</span>
+                                        <x-status-badge size="xs">{{ $tag['name'] }}</x-status-badge>
                                     @endforeach
                                 </td>
                                 <td class="text-sm text-base-content/70"><x-subject-link :subject="$row['subject']" /></td>

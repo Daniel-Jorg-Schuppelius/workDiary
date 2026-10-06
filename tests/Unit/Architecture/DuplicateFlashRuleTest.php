@@ -47,7 +47,7 @@ class DuplicateFlashRuleTest extends TestCase {
     public function test_views_do_not_render_layout_flashes_locally(): void {
         $violations = [];
 
-        foreach ([...$this->bladeFiles(), ...$this->bladeFiles('app/Plugins')] as $file) {
+        foreach ($this->bladeFiles() as $file) {
             $relative = $this->relativePath($file);
             if (str_starts_with($relative, 'resources/views/layouts/')
                 || str_starts_with($relative, 'resources/views/components/')

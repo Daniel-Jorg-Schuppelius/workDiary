@@ -11,7 +11,7 @@
 @if ($parsed->corrections !== [] || $parsed->synonyms !== [] || $parsed->ignored !== [])
     <div class="space-y-1" role="status">
         @foreach ($parsed->corrections as $word => $candidates)
-            <div class="alert alert-warning py-2 text-sm">
+            <div role="alert" class="alert alert-warning py-2 text-sm">
                 <x-icon name="spellcheck" />
                 <span>{{ __('search.notice.corrections', ['word' => $word, 'candidates' => implode(', ', $candidates)]) }}</span>
             </div>

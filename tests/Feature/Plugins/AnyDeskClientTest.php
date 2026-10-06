@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Plugins;
 
-use App\Plugins\RemoteSupport\Providers\AnyDeskClient;
+use App\Plugins\RemoteSupport\Api\AnyDeskClient;
 use Carbon\CarbonImmutable;
 use Psr\Http\Message\RequestInterface;
 use Tests\Support\FakePluginHttp;

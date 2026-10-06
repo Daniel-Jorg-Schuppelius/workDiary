@@ -14,6 +14,7 @@ use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
 use App\Models\Platform\User;
 use App\Plugins\Contracts\{ContactSyncer, PluginCapability};
+use App\Plugins\Msgraph\Enums\MsgraphConnectionStatus;
 use App\Plugins\Msgraph\Models\MsgraphContactConnection;
 use App\Plugins\Msgraph\MsgraphPlugin;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -49,7 +50,7 @@ final class MsgraphContactsTest extends TestCase {
         return MsgraphContactConnection::query()->create($attributes + [
             'organization_id' => $this->organization->id,
             'access_token' => 'secret-token-1',
-            'status' => MsgraphContactConnection::STATUS_ACTIVE,
+            'status' => MsgraphConnectionStatus::Active,
         ]);
     }
 
@@ -175,6 +176,19 @@ final class MsgraphContactsTest extends TestCase {
             ->post(route('customers.msgraph.contact.push', $customer))
             ->assertRedirect()
             ->assertSessionHas('success');
+    }
+
+    public function test_disconnect_marks_the_connection_disconnected(): void {
+        $connection = $this->connection(['refresh_token' => 'refresh-token-1']);
+
+        $this->actingAs($this->admin)->post(route('admin.msgraph.contacts.disconnect'))
+            ->assertRedirect()->assertSessionHas('success');
+
+        $fresh = $connection->fresh();
+        $this->assertInstanceOf(MsgraphContactConnection::class, $fresh);
+        $this->assertSame(MsgraphConnectionStatus::Disconnected, $fresh->status);
+        $this->assertNull($fresh->access_token);
+        $this->assertFalse($fresh->isActive());
     }
 
     public function test_push_without_connection_fails_cleanly(): void {

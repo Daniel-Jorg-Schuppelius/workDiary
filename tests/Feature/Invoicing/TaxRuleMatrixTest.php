@@ -10,6 +10,8 @@
 
 namespace Tests\Feature\Invoicing;
 
+use App\Enums\Finance\TaxRuleStatus;
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Customer\Customer;
 use App\Models\Finance\TaxRule;
 use App\Models\Invoicing\Invoice;
@@ -70,7 +72,7 @@ final class TaxRuleMatrixTest extends TestCase {
         $override = new TaxRule([
             'organization_id' => $this->org->id,
             'country' => 'DE', 'category' => 'services', 'rate_type' => 'standard',
-            'rate' => '18.00', 'valid_from' => '2026-01-01', 'status' => 'active',
+            'rate' => '18.00', 'valid_from' => '2026-01-01', 'status' => TaxRuleStatus::Active,
         ]);
         $resolver->assertNoOverlap($override); // Org-Zeile ≠ Katalog-Zeile → kein Konflikt
         $override->save();
@@ -83,10 +85,25 @@ final class TaxRuleMatrixTest extends TestCase {
         $conflict = new TaxRule([
             'organization_id' => $this->org->id,
             'country' => 'DE', 'category' => 'services', 'rate_type' => 'standard',
-            'rate' => '17.00', 'valid_from' => '2026-06-01', 'status' => 'active',
+            'rate' => '17.00', 'valid_from' => '2026-06-01', 'status' => TaxRuleStatus::Active,
         ]);
         $this->expectException(\RuntimeException::class);
         $resolver->assertNoOverlap($conflict);
+    }
+
+    /** Die Seite gab es, aber keinen Link dorthin: Einstieg im Systemmenü, an das Recht der Seite gebunden. */
+    public function test_tax_rule_matrix_is_linked_from_the_system_menu(): void {
+        $admin = User::factory()->admin()->create(['organization_id' => $this->org->id]);
+
+        $this->actingAs($admin)->get(route('dashboard'))->assertOk()
+            ->assertSee('href="' . route('finance.tax-rules.index') . '"', false);
+        $this->actingAs($admin)->get(route('finance.tax-rules.index'))->assertOk()
+            ->assertSee(route('finance.tax-rules.store'), false);
+
+        // Buchhaltung führt Belege, aber nicht die Finanzkonfiguration: kein Link, keine Seite.
+        $this->actingAs($this->user)->get(route('dashboard'))->assertOk()
+            ->assertDontSee(route('finance.tax-rules.index'), false);
+        $this->actingAs($this->user)->get(route('finance.tax-rules.index'))->assertForbidden();
     }
 
     public function test_explicit_fallback_to_static_catalog_without_rules(): void {
@@ -104,7 +121,7 @@ final class TaxRuleMatrixTest extends TestCase {
             'organization_id' => $this->org->id,
             'customer_id' => $this->customer->id,
             'number' => 'R2026-9001',
-            'status' => Invoice::STATUS_DRAFT,
+            'status' => InvoiceStatus::Draft,
             'type' => Invoice::TYPE_INVOICE,
             'tax_rate' => '19.00',
         ]);
@@ -152,7 +169,7 @@ final class TaxRuleMatrixTest extends TestCase {
             'organization_id' => $this->org->id,
             'customer_id' => $customer->id,
             'number' => 'R2026-9002',
-            'status' => Invoice::STATUS_ISSUED,
+            'status' => InvoiceStatus::Issued,
             'issued_on' => now(), 'due_on' => now()->addDays(14),
             'currency' => 'EUR',
             'type' => Invoice::TYPE_INVOICE,
@@ -179,7 +196,7 @@ final class TaxRuleMatrixTest extends TestCase {
             'organization_id' => $this->org->id,
             'customer_id' => $this->customer->id,
             'number' => 'R2026-9003',
-            'status' => Invoice::STATUS_ISSUED,
+            'status' => InvoiceStatus::Issued,
             'issued_on' => now(),
             'type' => Invoice::TYPE_INVOICE,
             'tax_rate' => '19.00',

@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Ai\Suggestions;
 
+use App\Enums\Ai\AiTextSuggestionStatus;
 use App\Enums\User\Permission;
 use App\Models\Ai\{AiCapabilitySetting, AiTextSuggestion};
 use App\Services\Ai\{AiCapabilityRegistry, AiRoutingResolver};
@@ -70,7 +71,7 @@ class SuggestionViewData implements SuggestionView {
         return AiTextSuggestion::query()
             ->where('subject_type', $subjectType)
             ->whereIn('subject_id', $items->map(static fn (Model $m) => $m->getKey()))
-            ->where('status', AiTextSuggestion::STATUS_PROPOSED)
+            ->where('status', AiTextSuggestionStatus::Proposed)
             ->when($capability !== null, static fn ($q) => $q->where('capability', $capability))
             ->get()
             ->keyBy('subject_id');

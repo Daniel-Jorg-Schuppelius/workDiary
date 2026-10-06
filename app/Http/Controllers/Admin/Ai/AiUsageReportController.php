@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin\Ai;
 
-use App\Enums\Ai\AiFamily;
+use App\Enums\Ai\{AiFamily, AiTextSuggestionStatus};
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\WritesReportCsv;
@@ -89,14 +89,14 @@ class AiUsageReportController extends Controller {
                 $total = 0;
                 foreach ($group as $row) {
                     $cnt = (int) $row->getAttribute('cnt');
-                    $byStatus[(string) $row->getAttribute('status')] = $cnt;
+                    $byStatus[$row->status->value] = $cnt;
                     $total += $cnt;
                     $cached += (int) $row->getAttribute('cached');
                     $fallbacks += (int) $row->getAttribute('fallbacks');
                 }
-                $adopted = ($byStatus[AiTextSuggestion::STATUS_ACCEPTED] ?? 0)
-                    + ($byStatus[AiTextSuggestion::STATUS_EDITED] ?? 0);
-                $decided = $adopted + ($byStatus[AiTextSuggestion::STATUS_REJECTED] ?? 0);
+                $adopted = ($byStatus[AiTextSuggestionStatus::Accepted->value] ?? 0)
+                    + ($byStatus[AiTextSuggestionStatus::Edited->value] ?? 0);
+                $decided = $adopted + ($byStatus[AiTextSuggestionStatus::Rejected->value] ?? 0);
 
                 return [
                     'total' => $total,

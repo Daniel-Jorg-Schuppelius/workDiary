@@ -40,7 +40,8 @@ class CatalogRuleController extends Controller {
                 ->with('registry')
                 ->orderBy('priority')
                 ->orderBy('id')
-                ->get(),
+                ->paginate(25)
+                ->withQueryString(),
             'registries' => $this->registries(),
             'canManage' => Gate::allows(P::ProjectUpdate->value),
         ]);
@@ -74,7 +75,7 @@ class CatalogRuleController extends Controller {
             'created_by' => $this->actor()->id,
         ]);
 
-        return redirect()->route('catalog-rules.index')->with('success', __('Regel gespeichert.'));
+        return redirect()->toList('catalog-rules.index')->with('success', __('Regel gespeichert.'));
     }
 
     public function update(Request $request, CatalogAssignmentRule $rule): RedirectResponse {
@@ -83,7 +84,7 @@ class CatalogRuleController extends Controller {
 
         $rule->update($this->validated($request));
 
-        return redirect()->route('catalog-rules.index')->with('success', __('Regel gespeichert.'));
+        return redirect()->toList('catalog-rules.index')->with('success', __('Regel gespeichert.'));
     }
 
     public function destroy(CatalogAssignmentRule $rule): RedirectResponse {
@@ -92,7 +93,7 @@ class CatalogRuleController extends Controller {
 
         $rule->delete();
 
-        return redirect()->route('catalog-rules.index')->with('success', __('Regel gelöscht.'));
+        return redirect()->toList('catalog-rules.index')->with('success', __('Regel gelöscht.'));
     }
 
     /**

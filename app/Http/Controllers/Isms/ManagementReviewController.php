@@ -11,10 +11,10 @@
 namespace App\Http\Controllers\Isms;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Isms\Concerns\ResolvesIsmsScope;
 use App\Models\Isms\{IsmsManagementReview, IsmsScope};
 use App\Models\Platform\User;
 use App\Services\Isms\AuditService;
-use App\Support\SqidEncoder;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -29,9 +29,10 @@ use Illuminate\View\View;
  * über IsmsManagementReviewPolicy (isms.viewAny/view/manage).
  */
 class ManagementReviewController extends Controller {
+    use ResolvesIsmsScope;
+
     public function __construct(
         private readonly AuditService $service,
-        private readonly SqidEncoder $sqids,
     ) {}
 
     public function index(): View {
@@ -63,7 +64,7 @@ class ManagementReviewController extends Controller {
 
         /** @var User $creator */
         $creator = Auth::user();
-        $scope = $this->resolveScope($data['scope'])
+        $scope = $this->scopeOrNull($data['scope'])
             ?? IsmsScope::query()->orderByDesc('is_default')->firstOrFail();
         $this->service->createReview($creator, $scope, $data);
 
@@ -146,16 +147,5 @@ class ManagementReviewController extends Controller {
      */
     private function scopeOptions(): Collection {
         return IsmsScope::query()->orderByDesc('is_default')->orderBy('name')->get();
-    }
-
-    /** Löst den Scope-Formularparameter (Sqid) auf (Muster ConformityController). */
-    private function resolveScope(mixed $sqid): ?IsmsScope {
-        if (! is_string($sqid) || $sqid === '') {
-            return null;
-        }
-
-        $id = $this->sqids->decode(IsmsScope::class, $sqid);
-
-        return $id === null ? null : IsmsScope::query()->whereKey($id)->first();
     }
 }

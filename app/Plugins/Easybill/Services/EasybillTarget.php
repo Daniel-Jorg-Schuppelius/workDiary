@@ -19,7 +19,7 @@ use App\Models\Integration\ExternalReference;
 use App\Plugins\Easybill\Api\{EasybillClient, EasybillClientFactory};
 use App\Plugins\Easybill\{EasybillConfig, EasybillPlugin};
 use App\Services\Finance\BillingPositionBuilder;
-use App\Services\Finance\Targets\Concerns\{LoadsBillingSources, ReconcilesByMarker};
+use App\Services\Finance\Targets\Concerns\{LoadsBillingSources, ProjectsContactReference, ReconcilesByMarker};
 use App\Services\Finance\Targets\{FacturationTarget, TargetResult};
 use GuzzleHttp\Exception\ConnectException;
 use RuntimeException;
@@ -42,6 +42,7 @@ use RuntimeException;
  */
 class EasybillTarget implements FacturationTarget {
     use LoadsBillingSources;
+    use ProjectsContactReference;
     use ReconcilesByMarker;
 
     public const EXT_TYPE_INVOICE = 'easybill_invoice';
@@ -181,58 +182,19 @@ class EasybillTarget implements FacturationTarget {
         /** @var Customer $customer */
         $customer = $transfer->customer;
 
-        $existing = ExternalReference::query()
-            ->forPlugin($transfer->organization_id, EasybillPlugin::ID, self::EXT_TYPE_CUSTOMER)
-            ->forReferenceable($customer)
-            ->first();
-        if ($existing instanceof ExternalReference) {
-            return $existing;
-        }
-
         $number = trim((string) $customer->number);
 
-        $matched = null;
-        if ($number !== '') {
-            foreach ($client->customersByNumber($number) as $row) {
-                if (is_array($row) && (string) ($row['number'] ?? '') === $number && ! empty($row['id'] ?? null)) {
-                    $matched = $row;
-                    break;
-                }
-            }
-        }
-
-        if ($matched === null) {
-            $payload = array_filter([
+        return $this->projectContact(
+            $customer,
+            (int) $transfer->organization_id,
+            EasybillPlugin::ID,
+            self::EXT_TYPE_CUSTOMER,
+            fn(): ?array => $number !== '' ? self::rowByNumber($client->customersByNumber($number), 'number', $number) : null,
+            fn(): array => $client->createCustomer(array_filter([
                 'company_name' => (string) $customer->name,
                 'number' => $number !== '' ? $number : null,
-            ], static fn($value): bool => $value !== null);
-
-            try {
-                $matched = $client->createCustomer($payload);
-            } catch (ConnectException) {
-                // Ausgang unklar — nächster Lauf findet den Kunden über die
-                // Nummer wieder, statt ihn doppelt anzulegen.
-                throw new RuntimeException((string) __('easybill::finance.error.easybill_outcome_unclear'));
-            }
-        }
-
-        $customerId = (string) ($matched['id'] ?? '');
-        if ($customerId === '') {
-            throw new RuntimeException('easybill customer projection returned no id.');
-        }
-
-        return ExternalReference::updateOrCreate(
-            [
-                'plugin_id' => EasybillPlugin::ID,
-                'external_type' => self::EXT_TYPE_CUSTOMER,
-                'referenceable_type' => $customer->getMorphClass(),
-                'referenceable_id' => $customer->getKey(),
-            ],
-            [
-                'organization_id' => $transfer->organization_id,
-                'external_id' => $customerId,
-                'synced_at' => now(),
-            ],
+            ], static fn($value): bool => $value !== null)),
+            (string) __('easybill::finance.error.easybill_outcome_unclear'),
         );
     }
 

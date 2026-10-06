@@ -74,7 +74,6 @@
                 <th class="w-32 text-right">{{ __('Aktion') }}</th>
             </tr>
         </x-slot:head>
-        <tbody>
             @forelse ($tokens as $device)
                 <tr class="hover">
                     <td class="font-semibold">{{ $device->label }}</td>
@@ -101,7 +100,6 @@
                     icon="smartphone"
                     :title="__('Noch kein Gerät verbunden')" compact />
             @endforelse
-        </tbody>
     </x-table>
 </x-index-page>
 

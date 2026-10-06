@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Ideas;
 
 use App\Models\Ideas\{IdeaMap, IdeaNode};
+use App\Support\MorphMap;
 use CommonToolkit\Builders\XmlDocumentBuilder;
 use CommonToolkit\Entities\XML\{Attribute, Element};
 use Illuminate\Support\Collection;
@@ -82,7 +83,7 @@ class IdeaMapExportService {
             'lock_version' => (int) $node->lock_version,
             'references' => $node->references->map(fn ($r): array => [
                 'kind' => (string) $r->kind,
-                'type' => class_basename((string) $r->target_type),
+                'type' => MorphMap::basename((string) $r->target_type),
                 'label' => (string) ($r->target?->getAttribute('title') ?? $r->target?->getAttribute('name') ?? '—'),
             ])->values()->all(),
             'children' => $byParent->get($node->id, collect())

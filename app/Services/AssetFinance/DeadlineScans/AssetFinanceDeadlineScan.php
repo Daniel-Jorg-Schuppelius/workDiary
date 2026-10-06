@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\AssetFinance\DeadlineScans;
 
+use App\Enums\AssetFinance\AssetFinanceDeadlineStatus;
 use App\Models\AssetFinance\AssetFinanceDeadline;
 use App\Models\Platform\Organization;
 use App\Services\AssetFinance\AssetFinanceService;
@@ -33,7 +34,7 @@ class AssetFinanceDeadlineScan extends AbstractDeadlineScan {
         return $this->sumPerOrganization(
             AssetFinanceDeadline::query()
                 ->withoutGlobalScopes()
-                ->where('status', 'open'),
+                ->where('status', AssetFinanceDeadlineStatus::Open),
             fn(Organization $organization): int => $this->service->scanDeadlines($organization),
         );
     }

@@ -14,6 +14,7 @@ use App\Enums\Diary\{LocationMode, Mode, Priority};
 use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\{DecodesSqidInputs, ParsesOrgLocalDateTimes};
 use App\Models\Classification\EntryType;
+use App\Rules\IsoCountryCode;
 use Illuminate\Validation\Rule;
 
 class SaveDiaryEntryRequest extends BaseFormRequest {
@@ -129,7 +130,7 @@ class SaveDiaryEntryRequest extends BaseFormRequest {
             'address_line' => [$requiresAddress ? 'required' : 'nullable', 'string', 'max:200'],
             'address_zip' => ['nullable', 'string', 'max:16'],
             'address_city' => [$requiresAddress ? 'required' : 'nullable', 'string', 'max:120'],
-            'address_country' => ['nullable', 'string', 'size:2'],
+            'address_country' => ['nullable', 'string', 'max:2', new IsoCountryCode],
             'address_lat' => ['nullable', 'numeric', 'between:-90,90'],
             'address_lng' => ['nullable', 'numeric', 'between:-180,180'],
 

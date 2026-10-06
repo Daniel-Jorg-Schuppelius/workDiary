@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Communication;
 
-use App\Enums\Communication\CommunicationVisibility;
+use App\Enums\Communication\{CommunicationVisibility, CustomerCircularRecipientStatus, CustomerCircularStatus};
 use App\Jobs\Communication\CustomerCircularSendJob;
 use App\Mail\CustomerCircularMail;
 use App\Models\Communication\{CustomerCircular, CustomerCircularRecipient};
@@ -82,8 +82,8 @@ class CustomerCircularService {
      * werden; der Job überspringt bereits erreichte Empfänger.
      */
     public function send(CustomerCircular $circular, User $actor): CustomerCircular {
-        $resume = $circular->status === CustomerCircular::STATUS_SENDING;
-        if (! $circular->isDraft() && ! $resume) {
+        $resume = $circular->status === CustomerCircularStatus::Sending;
+        if (! $resume && ! $circular->status->canTransitionTo(CustomerCircularStatus::Sending)) {
             throw new RuntimeException((string) __('circular.already_sent'));
         }
         if (! $resume && $this->approvalRequired() && ! $circular->isApproved()) {
@@ -95,7 +95,7 @@ class CustomerCircularService {
             throw new RuntimeException((string) __('circular.no_recipients'));
         }
 
-        $circular->forceFill(['status' => CustomerCircular::STATUS_SENDING])->save();
+        $circular->forceFill(['status' => CustomerCircularStatus::Sending])->save();
         if (! $resume) {
             $circular->audit('circular.send_started', ['recipients' => $recipients->count(), 'by_user_id' => (int) $actor->id]);
         }
@@ -113,7 +113,7 @@ class CustomerCircularService {
      * noch Empfänger offen sind.
      */
     public function deliver(CustomerCircular $circular, User $actor, ?int $batchSize = null): bool {
-        if ($circular->status !== CustomerCircular::STATUS_SENDING) {
+        if ($circular->status !== CustomerCircularStatus::Sending) {
             return true;
         }
 
@@ -121,7 +121,7 @@ class CustomerCircularService {
         $recipients = $this->audience((array) ($circular->filters ?? []), (bool) $circular->is_mandatory);
         $done = CustomerCircularRecipient::query()
             ->where('customer_circular_id', $circular->id)
-            ->whereIn('status', [CustomerCircularRecipient::STATUS_SENT, CustomerCircularRecipient::STATUS_SKIPPED])
+            ->whereIn('status', [CustomerCircularRecipientStatus::Sent, CustomerCircularRecipientStatus::Skipped])
             ->pluck('customer_id')
             ->flip();
 
@@ -134,7 +134,7 @@ class CustomerCircularService {
         }
 
         $circular->forceFill([
-            'status' => CustomerCircular::STATUS_SENT,
+            'status' => CustomerCircularStatus::Sent,
             'sent_at' => CarbonImmutable::now(),
             'sent_by' => $actor->id,
         ])->save();
@@ -185,7 +185,7 @@ class CustomerCircularService {
         if ($email === '') {
             // Ohne Adresse ist der Kunde NICHT erreicht — das ist die
             // wichtigere Zeile als ein „versendet".
-            $this->recordRecipient($circular, $customer, null, CustomerCircularRecipient::STATUS_SKIPPED, 'no_email');
+            $this->recordRecipient($circular, $customer, null, CustomerCircularRecipientStatus::Skipped, 'no_email');
 
             return;
         }
@@ -193,7 +193,7 @@ class CustomerCircularService {
         try {
             Mail::to($email)->send(new CustomerCircularMail($circular, $customer, $body));
         } catch (Throwable $e) {
-            $this->recordRecipient($circular, $customer, $email, CustomerCircularRecipient::STATUS_FAILED, class_basename($e));
+            $this->recordRecipient($circular, $customer, $email, CustomerCircularRecipientStatus::Failed, class_basename($e));
 
             return;
         }
@@ -217,14 +217,14 @@ class CustomerCircularService {
             // bereits erfolgten Versand nicht als Fehlschlag erscheinen lassen.
         }
 
-        $this->recordRecipient($circular, $customer, $email, CustomerCircularRecipient::STATUS_SENT, null, $note?->id);
+        $this->recordRecipient($circular, $customer, $email, CustomerCircularRecipientStatus::Sent, null, $note?->id);
     }
 
     private function recordRecipient(
         CustomerCircular $circular,
         Customer $customer,
         ?string $email,
-        string $status,
+        CustomerCircularRecipientStatus $status,
         ?string $reason = null,
         ?int $noteId = null,
     ): void {
@@ -236,7 +236,7 @@ class CustomerCircularService {
                     'email' => $email,
                     'status' => $status,
                     'reason' => $reason,
-                    'sent_at' => $status === CustomerCircularRecipient::STATUS_SENT ? CarbonImmutable::now() : null,
+                    'sent_at' => $status === CustomerCircularRecipientStatus::Sent ? CarbonImmutable::now() : null,
                     'communication_note_id' => $noteId,
                 ],
             );

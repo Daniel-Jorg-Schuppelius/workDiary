@@ -18,11 +18,11 @@ use App\Models\Platform\User;
 use App\Plugins\Contracts\BackupTarget;
 use App\Plugins\PluginManager;
 use App\Plugins\Support\Concerns\HandlesOAuthPopup;
+use App\Plugins\Support\OAuthStateHandshake;
 use App\Services\Backup\BackupNaming;
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{Auth, Cache, Gate};
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\{Auth, Gate};
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
@@ -38,7 +38,8 @@ use Throwable;
 abstract class BackupTargetOAuthController extends Controller {
     use HandlesOAuthPopup;
 
-    private const STATE_TTL_SECONDS = 600;
+    /** Backup-Ziele gelten installationsweit — der Handshake bindet an keine Organisation. */
+    private const INSTALLATION = 0;
 
     abstract protected function provider(): BackupProvider;
 
@@ -76,14 +77,10 @@ abstract class BackupTargetOAuthController extends Controller {
             $connectionId = Sqid::decode(BackupTargetConnection::class, $rawConnection);
         }
 
-        $state = Str::random(40);
-        $verifier = OAuth2AuthorizationCodeGrant::generatePkceVerifier();
-        Cache::put($this->stateKey($state), [
-            'user_id' => (int) $admin->id,
+        ['state' => $state, 'verifier' => $verifier] = $this->handshake()->start(self::INSTALLATION, (int) $admin->id, true, [
             'connection_id' => $connectionId,
-            'pkce_verifier' => $verifier,
             'popup' => $this->oauthPopupRequested($request),
-        ], self::STATE_TTL_SECONDS);
+        ]);
 
         $url = $this->grant()->getAuthorizationUrl($state, $this->scopes(), $this->extraAuthorizeParams(), $verifier);
 
@@ -98,8 +95,8 @@ abstract class BackupTargetOAuthController extends Controller {
         $state = (string) $request->query('state', '');
         $code = (string) $request->query('code', '');
 
-        $payload = $state !== '' ? Cache::pull($this->stateKey($state)) : null;
-        if (!is_array($payload) || (int) ($payload['user_id'] ?? 0) !== (int) $admin->id) {
+        $payload = $this->handshake()->redeem($state, self::INSTALLATION, (int) $admin->id);
+        if ($payload === null) {
             return $this->backToOverview()->with('error', __('backup_targets.flash.state_invalid'));
         }
 
@@ -110,7 +107,7 @@ abstract class BackupTargetOAuthController extends Controller {
         }
 
         try {
-            $token = $this->grant()->exchangeAuthorizationCode($code, (string) ($payload['pkce_verifier'] ?? '') ?: null);
+            $token = $this->grant()->exchangeAuthorizationCode($code, OAuthStateHandshake::verifierFrom($payload));
         } catch (Throwable $e) {
             // Nur die Fehlerklasse — nie Payload/Token.
             return $this->respondToOAuth($isPopup, false, $this->backToOverview()->with('error', __('backup_targets.flash.oauth_failed', ['class' => class_basename($e)])));
@@ -149,7 +146,10 @@ abstract class BackupTargetOAuthController extends Controller {
         try {
             $account = $adapter->backupAccount($connection);
             $quota = $adapter->backupQuota($connection);
-            $rootRef = $adapter->backupEnsureFolder($connection, app(BackupNaming::class)->pseudonym());
+            $pseudonym = app(BackupNaming::class)->pseudonym();
+            $rootRef = $adapter->backupEnsureFolder($connection, $pseudonym);
+            // Erst schreiben, lesen, löschen — dann gilt das Ziel als brauchbar.
+            app(BackupTargetSelfTest::class)->run($adapter, $connection, $pseudonym);
             $connection->forceFill([
                 'external_account_id' => $account->externalId,
                 'external_account_label' => $account->label,
@@ -198,8 +198,8 @@ abstract class BackupTargetOAuthController extends Controller {
         return redirect()->route('admin.backup-targets.index');
     }
 
-    private function stateKey(string $state): string {
-        return 'backup-target-' . $this->provider()->value . '-oauth-state:' . $state;
+    private function handshake(): OAuthStateHandshake {
+        return new OAuthStateHandshake('backup-target-' . $this->provider()->value . '-oauth-state');
     }
 
     private function admin(): User {

@@ -59,7 +59,7 @@ class ClassificationRequirementController extends Controller {
 
         $this->indexFilter->applySorting($requirementsQuery, $sortField);
 
-        $requirements = $requirementsQuery->get();
+        $requirements = $requirementsQuery->orderBy('id')->paginate(25)->withQueryString();
         $phaseLabels = $this->indexFilter->phaseLabels();
         $severityLabels = $this->indexFilter->severityLabels();
         $domainLabels = $this->indexFilter->domainLabels();

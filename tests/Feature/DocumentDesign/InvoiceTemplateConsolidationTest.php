@@ -11,6 +11,7 @@
 namespace Tests\Feature\DocumentDesign;
 
 use App\Enums\DocumentDesign\RenderDocumentKind;
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Customer\Customer;
 use App\Models\DocumentDesign\DocumentRenderProfile;
 use App\Models\Invoicing\Invoice;
@@ -139,7 +140,7 @@ class InvoiceTemplateConsolidationTest extends TestCase {
             'organization_id' => $this->org->id,
             'customer_id' => $this->customer->id,
             'number' => 'R2026-0200',
-            'status' => Invoice::STATUS_DRAFT,
+            'status' => InvoiceStatus::Draft,
             'currency' => 'EUR',
             'tax_rate' => '19.00',
         ]);

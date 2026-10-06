@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Plugins\CalDav;
 
+use App\Enums\Integration\IntegrationInboxStatus;
 use App\Models\Calendar\Event;
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use App\Plugins\CalDav\CalDavPlugin;
@@ -223,6 +224,11 @@ final class CalDavImportTest extends TestCase {
         $admin = \App\Models\Platform\User::factory()->admin()->create(['organization_id' => $this->organization->id]);
         $this->actingAs($admin)->get(route('admin.integration.inbox'))->assertOk()
             ->assertSeeText(__('Serie') . ': Jour fixe')->assertSeeText(__('Alle als Termine anlegen'));
+        // Der Statusfilter kommt als Zeichenkette: „open“ zeigt die Gruppen, ein erledigter Stand nicht.
+        $this->actingAs($admin)->get(route('admin.integration.inbox', ['status' => 'open']))->assertOk()
+            ->assertSeeText(__('Serie') . ': Jour fixe');
+        $this->actingAs($admin)->get(route('admin.integration.inbox', ['status' => 'dismissed']))->assertOk()
+            ->assertDontSeeText(__('Serie') . ': Jour fixe');
         $this->assertSame(['created' => 3, 'skipped' => 0], $booker->book($this->organization, 'serie', []));
         $this->assertSame(3, Event::query()->where('organization_id', $this->organization->id)->count());
         Carbon::setTestNow();
@@ -238,13 +244,13 @@ final class CalDavImportTest extends TestCase {
         ])) . "\r\n";
         $this->bindGateway(new CalDavSyncPage([$this->change('serie.ics', $series(''))], [], 't1'));
         app(CalDavCalendarImportService::class)->run($connection);
-        $this->assertSame(3, IntegrationInboxItem::query()->where('status', IntegrationInboxItem::STATUS_OPEN)->count());
+        $this->assertSame(3, IntegrationInboxItem::query()->where('status', IntegrationInboxStatus::Open)->count());
 
         $this->bindGateway(new CalDavSyncPage([$this->change('serie.ics', $series('EXDATE:20260827T090000Z'), '"etag-2"')], [], 't2'));
         app(CalDavCalendarImportService::class)->run($connection->fresh());
 
-        $this->assertSame(2, IntegrationInboxItem::query()->where('status', IntegrationInboxItem::STATUS_OPEN)->count());
-        $this->assertSame(IntegrationInboxItem::STATUS_DISMISSED, IntegrationInboxItem::query()->where('dedupe_key', 'calendar-proposal:serie:' . strtotime('2026-08-27 09:00:00 UTC'))->value('status'));
+        $this->assertSame(2, IntegrationInboxItem::query()->where('status', IntegrationInboxStatus::Open)->count());
+        $this->assertSame(IntegrationInboxStatus::Dismissed, IntegrationInboxItem::query()->where('dedupe_key', 'calendar-proposal:serie:' . strtotime('2026-08-27 09:00:00 UTC'))->value('status'));
         Carbon::setTestNow();
     }
 
@@ -277,5 +283,25 @@ final class CalDavImportTest extends TestCase {
         $this->artisan('caldav:import')->assertExitCode(0);
 
         $this->assertSame([], $gateway->seenSyncTokens);
+    }
+
+    /** k2-05: die Vorschläge eines gelöschten fremden Objekts blieben offen — bei Serien alle Vorkommen. */
+    public function test_deleted_foreign_object_takes_its_open_proposals_along(): void {
+        Carbon::setTestNow('2026-08-19 08:00:00');
+        $connection = $this->connection();
+        $this->bindGateway(new CalDavSyncPage([
+            $this->change('fremd.ics', $this->ics('uid-fremd', 'Fremder Termin')),
+            $this->change('bleibt.ics', $this->ics('uid-bleibt', 'Bleibt')),
+            $this->change('reihe-7.ics', $this->ics('uid-der-serie', 'Jour fixe', null, rrule: 'FREQ=WEEKLY;COUNT=3')),
+        ], [], 't1'));
+        $this->assertSame(5, app(CalDavCalendarImportService::class)->run($connection)['proposals']);
+
+        $this->bindGateway(new CalDavSyncPage([], ['/remote.php/dav/calendars/team/plan/fremd.ics', 'reihe-7.ics'], 't2'));
+        $result = app(CalDavCalendarImportService::class)->run($connection->fresh());
+
+        $this->assertSame(0, $result['deleted']);
+        $this->assertSame(['calendar-proposal:bleibt.ics'], IntegrationInboxItem::query()->where('status', IntegrationInboxStatus::Open)->pluck('dedupe_key')->all());
+        $this->assertSame(4, IntegrationInboxItem::query()->where('status', IntegrationInboxStatus::Dismissed)->count());
+        Carbon::setTestNow();
     }
 }

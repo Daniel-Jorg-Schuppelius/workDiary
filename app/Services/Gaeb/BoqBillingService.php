@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Gaeb;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Customer\Customer;
 use App\Models\Finance\{CashEntry, PaymentAllocation};
 use App\Models\Gaeb\BillOfQuantity;
@@ -45,7 +46,7 @@ final class BoqBillingService {
         return round((float) Invoice::query()
             ->where('bill_of_quantity_id', $boq->id)
             ->where('type', Invoice::TYPE_DOWN_PAYMENT)
-            ->where('status', '!=', Invoice::STATUS_CANCELLED)
+            ->where('status', '!=', InvoiceStatus::Cancelled)
             ->sum('subtotal'), 2);
     }
 
@@ -80,7 +81,7 @@ final class BoqBillingService {
             if ($amount <= 0.0 || $amount > $proposal['amount']) {
                 throw ValidationException::withMessages(['amount' => __('gaeb.billing.error.amount', ['max' => NumberHelper::toGermanFormat($proposal['amount'], 2, withThousandsSeparator: true)])]);
             }
-            $count = Invoice::query()->where('bill_of_quantity_id', $boq->id)->where('type', Invoice::TYPE_DOWN_PAYMENT)->where('status', '!=', Invoice::STATUS_CANCELLED)->count();
+            $count = Invoice::query()->where('bill_of_quantity_id', $boq->id)->where('type', Invoice::TYPE_DOWN_PAYMENT)->where('status', '!=', InvoiceStatus::Cancelled)->count();
             $invoice = $this->invoices->downPaymentFor(
                 $customer,
                 $boq->project,
@@ -102,7 +103,7 @@ final class BoqBillingService {
         $rows = [];
         $totals = ['net' => 0.0, 'gross' => 0.0, 'paid' => 0.0, 'open' => 0.0];
         foreach ($invoices as $invoice) {
-            $active = $invoice->status !== Invoice::STATUS_CANCELLED && $invoice->status !== Invoice::STATUS_DRAFT;
+            $active = $invoice->status !== InvoiceStatus::Cancelled && $invoice->status !== InvoiceStatus::Draft;
             $paid = $active ? $this->dunning->paidAmount($invoice)->toFloat() : 0.0;
             $open = $active ? $this->dunning->openAmount($invoice)->toFloat() : 0.0;
             $rows[] = ['invoice' => $invoice, 'paid' => $paid, 'open' => $open];

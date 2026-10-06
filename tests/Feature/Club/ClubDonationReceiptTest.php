@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Club;
 
-use App\Enums\Club\ClubDonationReceiptKind;
+use App\Enums\Club\{ClubDonationKind, ClubDonationReceiptKind};
 use App\Models\Club\{ClubDonation, ClubDonationReceipt, ClubMember};
 use App\Models\Platform\User;
 use App\Services\Club\ClubDonationService;
@@ -95,6 +95,54 @@ final class ClubDonationReceiptTest extends TestCase {
         $this->assertStringContainsString('einhundertfünfzig Euro', $html);
         $this->assertStringContainsString('Anlage zur Sammelbestätigung', $html);
         $this->actingAs($this->admin)->get(route('club.fees.donations.receipts.pdf', $receipt))->assertOk()->assertHeader('Content-Type', 'application/pdf');
+    }
+
+    /** Sicherheitsaudit 2026-10-04, li-4: ein veralteter Stand stellt keine zweite Bestätigung aus; Bestätigtes ist auf Modellebene unveränderlich. */
+    public function test_a_donation_is_receipted_exactly_once_and_frozen_afterwards(): void {
+        $this->saveExemption();
+        $this->actingAs($this->admin)->post(route('club.fees.donations.store'), [
+            'donor_name' => 'Anna Gönnerin', 'donor_address' => "Hauptstr. 1\n12345 Musterstadt", 'kind' => 'donation', 'amount' => '101.05', 'received_on' => '2026-05-05',
+        ])->assertRedirect();
+        $service = app(ClubDonationService::class);
+        $first = ClubDonation::query()->sole();
+        $stale = ClubDonation::query()->sole();
+
+        $service->issueSingle($first, $this->admin);
+        try {
+            $service->issueSingle($stale, $this->admin);
+            $this->fail('Zweite Bestätigung hätte abgelehnt werden müssen.');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            $this->assertArrayHasKey('donation', $e->errors());
+        }
+        $this->assertSame(1, ClubDonationReceipt::query()->count());
+
+        $receipted = ClubDonation::query()->sole();
+        try {
+            $receipted->update(['note' => 'nachträglich']);
+            $this->fail('Bestätigte Zuwendung hätte unveränderlich sein müssen.');
+        } catch (\RuntimeException) {
+        }
+        $this->expectException(\RuntimeException::class);
+        ClubDonationReceipt::query()->sole()->update(['year' => 2030]);
+    }
+
+    /** Die Spendenliste blättert; der Zähler der Karte nennt alle Spenden des Jahres, nicht die der Seite. */
+    public function test_the_donation_count_spans_all_pages(): void {
+        $service = app(ClubDonationService::class);
+        foreach (range(1, 52) as $i) {
+            $service->record($this->organization, $this->admin, [
+                'club_member_id' => null, 'donor_name' => sprintf('Spenderin %02d', $i), 'donor_address' => 'Hauptstr. 1', 'kind' => ClubDonationKind::Donation,
+                'amount' => '10.00', 'received_on' => '2026-03-01', 'is_expense_waiver' => false, 'note' => null,
+            ]);
+        }
+
+        $first = $this->actingAs($this->admin)->get(route('club.fees.donations.index', ['year' => 2026]))->assertOk();
+        $this->assertCount(50, $first->viewData('donations')->items());
+        $first->assertSee('>(52)</span>', false)->assertSee('year=2026&amp;page=2', false);
+
+        $second = $this->actingAs($this->admin)->get(route('club.fees.donations.index', ['year' => 2026, 'page' => 2]))->assertOk();
+        $this->assertSame(['Spenderin 02', 'Spenderin 01'], collect($second->viewData('donations')->items())->pluck('donor_name')->all());
+        $second->assertSee('>(52)</span>', false);
     }
 
     public function test_membership_fees_only_when_enabled_and_amounts_in_words(): void {

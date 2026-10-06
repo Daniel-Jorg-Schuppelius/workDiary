@@ -13,7 +13,7 @@
 @extends('layouts.app')
 @section('title', __('resale.reconcile.title'))
 @section('nav-title', __('resale.title.menu'))
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @php
     $compact = \App\View\Components\Resale\LicenceMonths::class;
@@ -71,7 +71,7 @@
                             <a href="{{ route('finance.resale.reconcile.show', $row['customer']) }}" class="link link-hover font-medium">{{ $row['name'] }}</a>
                         @else
                             {{ $row['name'] }}
-                            <span class="badge badge-warning badge-outline badge-xs ml-1" title="{{ __('resale.reconcile.no_customer_hint') }}">{{ __('resale.reconcile.no_customer') }}</span>
+                            <x-status-badge tone="warning" size="xs" outline class="ml-1" title="{{ __('resale.reconcile.no_customer_hint') }}">{{ __('resale.reconcile.no_customer') }}</x-status-badge>
                         @endif
                         @if ($row['subscriptions'] === 0 && $row['lines'] > 0)
                             <span class="block text-xs text-muted">{{ trans_choice('resale.reconcile.lines_without_subscription', $row['lines'], ['count' => $row['lines']]) }}</span>

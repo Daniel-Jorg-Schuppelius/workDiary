@@ -11,6 +11,7 @@
 namespace Tests\Feature\Plugins\Msgraph;
 
 use App\Models\Platform\User;
+use App\Plugins\Msgraph\Enums\MsgraphConnectionStatus;
 use App\Plugins\Msgraph\Models\MsgraphConnection;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
@@ -44,7 +45,7 @@ final class MsgraphAvailabilityTest extends TestCase {
         return MsgraphConnection::query()->create([
             'organization_id' => $this->organization->id,
             'access_token' => 'secret-token-1',
-            'status' => MsgraphConnection::STATUS_ACTIVE,
+            'status' => MsgraphConnectionStatus::Active,
         ]);
     }
 

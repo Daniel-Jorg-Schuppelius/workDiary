@@ -108,8 +108,9 @@ class LearningScormController extends Controller {
         $package = $this->packageFor($enrollment, $unit);
 
         $validated = $request->validate([
-            'lesson_status' => ['nullable', 'string', 'max:40'],
-            'success_status' => ['nullable', 'string', 'max:40'],
+            // Spaltenlänge 20 — ein längerer Wert liefe unter MariaDB-Strict in einen 500er.
+            'lesson_status' => ['nullable', 'string', 'max:20'],
+            'success_status' => ['nullable', 'string', 'max:20'],
             'score_scaled' => ['nullable', 'numeric', 'between:-1,1'],
             'suspend_data' => ['nullable', 'string', 'max:64000'],
             'location' => ['nullable', 'string', 'max:1000'],

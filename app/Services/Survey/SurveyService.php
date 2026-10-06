@@ -12,10 +12,11 @@ declare(strict_types=1);
 
 namespace App\Services\Survey;
 
+use App\Enums\Survey\SurveyInvitationStatus;
 use App\Models\Customer\Customer;
 use App\Models\Survey\{Survey, SurveyAnswer, SurveyInvitation, SurveyResponse};
 use App\Services\Fields\{FieldSchema, FieldValidator};
-use CommonToolkit\Helper\Data\EmailHelper;
+use CommonToolkit\Helper\Data\{CryptoHelper, EmailHelper};
 use Illuminate\Support\{Carbon, Str};
 use Illuminate\Support\Facades\{DB, Validator};
 use RuntimeException;
@@ -64,10 +65,10 @@ class SurveyService {
             'customer_id' => $customer?->id,
             'email' => EmailHelper::normalize($email),
             'context_kind' => $contextKind,
-            'token_hash' => SurveyInvitation::hashToken($token),
+            'token_hash' => CryptoHelper::hash($token),
             'expires_at' => Carbon::now()->addDays(30),
             'sent_at' => Carbon::now(),
-            'status' => SurveyInvitation::STATUS_SENT,
+            'status' => SurveyInvitationStatus::Sent,
         ]);
 
         $survey->audit('survey.invited', ['context' => $contextKind]);
@@ -142,9 +143,9 @@ class SurveyService {
             $claimed = SurveyInvitation::query()
                 ->withoutGlobalScopes()
                 ->whereKey($invitation->id)
-                ->where('status', '!=', SurveyInvitation::STATUS_RESPONDED)
+                ->where('status', '!=', SurveyInvitationStatus::Responded)
                 ->update([
-                    'status' => SurveyInvitation::STATUS_RESPONDED,
+                    'status' => SurveyInvitationStatus::Responded,
                     // Anonym: kein Antwortzeitpunkt - kein Join-Feld zur Antwort.
                     'responded_at' => $survey->anonymous ? null : Carbon::now(),
                 ]);

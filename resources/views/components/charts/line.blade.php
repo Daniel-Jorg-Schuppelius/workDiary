@@ -28,6 +28,7 @@
 
 @php
     $points = collect($series)->values();
+    $range = $points->isNotEmpty() ? [$points->first()['x'], $points->last()['x']] : null;
     // Ab ~9 Punkten überlappen waagerechte X-Labels — dann schräg (−40°) mit mehr Fußraum.
     $rotateLabels = $points->count() > 8;
     $width = 640; $pad = 36;
@@ -71,83 +72,60 @@
     ];
 @endphp
 
-<figure class="wd-chart rounded-box border border-base-300 bg-base-100 p-3">
-    <figcaption>
-        <span class="font-['Space_Grotesk'] text-sm font-semibold">{{ $title }}</span>
-        <span class="ml-2 text-xs text-muted">
-            {{ $unit }}
-            @if ($points->isNotEmpty()) · {{ $points->first()['x'] }} – {{ $points->last()['x'] }} @endif
-            @if ($computedAt) · {{ __('Stand:') }} {{ \Illuminate\Support\Carbon::parse($computedAt)->isoFormat('L LT') }} @endif
-        </span>
-    </figcaption>
-
-    @if ($note)
-        <p class="mt-1 text-xs text-muted">{{ $note }}</p>
+<x-charts.frame :title="$title" :unit="$unit" :range="$range" :computed-at="$computedAt" :note="$note"
+                :empty="$points->isEmpty()" empty-icon="show_chart"
+                :spec="$chartSpec" :view-box="[$width, $height]">
+    <line x1="{{ $pad }}" y1="{{ $height - $padB }}" x2="{{ $width - $pad }}" y2="{{ $height - $padB }}" class="stroke-base-300" stroke-width="1" />
+    <line x1="{{ $pad }}" y1="{{ $pad }}" x2="{{ $pad }}" y2="{{ $height - $padB }}" class="stroke-base-300" stroke-width="1" />
+    <text x="{{ $pad - 6 }}" y="{{ $pad }}" text-anchor="end" class="fill-muted text-[10px]">{{ $maxY }}</text>
+    <text x="{{ $pad - 6 }}" y="{{ $height - $padB }}" text-anchor="end" class="fill-muted text-[10px]">{{ $minY }}</text>
+    @if ($minY < 0)
+        <line x1="{{ $pad }}" y1="{{ round($sy(0.0), 1) }}" x2="{{ $width - $pad }}" y2="{{ round($sy(0.0), 1) }}" class="stroke-base-content/30" stroke-width="1" stroke-dasharray="3 3" />
+        <text x="{{ $pad - 6 }}" y="{{ round($sy(0.0), 1) + 3 }}" text-anchor="end" class="fill-muted text-[10px]">0</text>
     @endif
+    @if ($ideal && $points->count() > 1)
+        <line x1="{{ $sx(0) }}" y1="{{ $sy((float) $points->first()['y']) }}"
+              x2="{{ $sx($points->count() - 1) }}" y2="{{ $sy(0) }}"
+              class="stroke-base-content/30" stroke-width="1" stroke-dasharray="5 4" />
+    @endif
+    <path d="{{ $path }}" fill="none" class="stroke-primary" stroke-width="2" />
+    @foreach ($points as $i => $point)
+        @if ($i % $labelEvery === 0 || $i === $points->count() - 1)
+            @if ($rotateLabels)
+                <text x="{{ round($sx($i), 1) }}" y="{{ $height - $padB + 12 }}" text-anchor="end"
+                      transform="rotate(-40 {{ round($sx($i), 1) }} {{ $height - $padB + 12 }})"
+                      class="fill-muted text-[10px]">{{ \Illuminate\Support\Str::limit((string) $point['x'], 18, '…') }}</text>
+            @else
+                <text x="{{ round($sx($i), 1) }}" y="{{ $height - $padB + 14 }}" text-anchor="middle" class="fill-muted text-[10px]">{{ \Illuminate\Support\Str::limit((string) $point['x'], 10, '…') }}</text>
+            @endif
+        @endif
+    @endforeach
+    @foreach ($points as $i => $point)
+        <a @if (!empty($point['url'])) href="{{ $point['url'] }}" @endif tabindex="0"
+           aria-label="{{ $point['x'] }}: {{ $point['y'] }} {{ $unit }}">
+            <circle cx="{{ round($sx($i), 1) }}" cy="{{ round($sy((float) $point['y']), 1) }}" r="4"
+                    class="fill-primary stroke-base-100" stroke-width="1.5" />
+        </a>
+    @endforeach
 
-    @if ($points->isEmpty())
-        <div class="wd-chart-empty">
-            <x-empty-state icon="show_chart" :title="__('Noch keine Daten für dieses Diagramm.')" compact />
-        </div>
-    @else
-        @include('components.charts._canvas', ['spec' => $chartSpec])
-        <svg viewBox="0 0 {{ $width }} {{ $height }}" role="img" aria-label="{{ $title }}" class="wd-chart-svg mt-2 w-full">
-            <line x1="{{ $pad }}" y1="{{ $height - $padB }}" x2="{{ $width - $pad }}" y2="{{ $height - $padB }}" class="stroke-base-300" stroke-width="1" />
-            <line x1="{{ $pad }}" y1="{{ $pad }}" x2="{{ $pad }}" y2="{{ $height - $padB }}" class="stroke-base-300" stroke-width="1" />
-            <text x="{{ $pad - 6 }}" y="{{ $pad }}" text-anchor="end" class="fill-muted text-[10px]">{{ $maxY }}</text>
-            <text x="{{ $pad - 6 }}" y="{{ $height - $padB }}" text-anchor="end" class="fill-muted text-[10px]">{{ $minY }}</text>
-            @if ($minY < 0)
-                <line x1="{{ $pad }}" y1="{{ round($sy(0.0), 1) }}" x2="{{ $width - $pad }}" y2="{{ round($sy(0.0), 1) }}" class="stroke-base-content/30" stroke-width="1" stroke-dasharray="3 3" />
-                <text x="{{ $pad - 6 }}" y="{{ round($sy(0.0), 1) + 3 }}" text-anchor="end" class="fill-muted text-[10px]">0</text>
-            @endif
-            @if ($ideal && $points->count() > 1)
-                <line x1="{{ $sx(0) }}" y1="{{ $sy((float) $points->first()['y']) }}"
-                      x2="{{ $sx($points->count() - 1) }}" y2="{{ $sy(0) }}"
-                      class="stroke-base-content/30" stroke-width="1" stroke-dasharray="5 4" />
-            @endif
-            <path d="{{ $path }}" fill="none" class="stroke-primary" stroke-width="2" />
-            @foreach ($points as $i => $point)
-                @if ($i % $labelEvery === 0 || $i === $points->count() - 1)
-                    @if ($rotateLabels)
-                        <text x="{{ round($sx($i), 1) }}" y="{{ $height - $padB + 12 }}" text-anchor="end"
-                              transform="rotate(-40 {{ round($sx($i), 1) }} {{ $height - $padB + 12 }})"
-                              class="fill-muted text-[10px]">{{ \Illuminate\Support\Str::limit((string) $point['x'], 18, '…') }}</text>
+    <x-slot:head>
+        <tr>
+            <th>{{ $xLabel ?? __('Zeitpunkt') }}</th>
+            <th class="text-right">{{ $yLabel ?? $unit }}</th>
+        </tr>
+    </x-slot:head>
+    <x-slot:rows>
+        @foreach ($points as $point)
+            <tr>
+                <td>
+                    @if (!empty($point['url']))
+                        <a href="{{ $point['url'] }}" class="link">{{ $point['x'] }}</a>
                     @else
-                        <text x="{{ round($sx($i), 1) }}" y="{{ $height - $padB + 14 }}" text-anchor="middle" class="fill-muted text-[10px]">{{ \Illuminate\Support\Str::limit((string) $point['x'], 10, '…') }}</text>
+                        {{ $point['x'] }}
                     @endif
-                @endif
-            @endforeach
-            @foreach ($points as $i => $point)
-                <a @if (!empty($point['url'])) href="{{ $point['url'] }}" @endif tabindex="0"
-                   aria-label="{{ $point['x'] }}: {{ $point['y'] }} {{ $unit }}">
-                    <circle cx="{{ round($sx($i), 1) }}" cy="{{ round($sy((float) $point['y']), 1) }}" r="4"
-                            class="fill-primary stroke-base-100" stroke-width="1.5" />
-                </a>
-            @endforeach
-        </svg>
-
-        {{-- Gleichwertige Tabelle (Pflicht) — dasselbe Datenarray. --}}
-        <div class="wd-chart-table mt-2 max-h-48 overflow-y-auto">
-            <x-table bare>
-                <x-slot:head>
-                    <tr>
-                        <th>{{ $xLabel ?? __('Zeitpunkt') }}</th>
-                        <th class="text-right">{{ $yLabel ?? $unit }}</th>
-                    </tr>
-                </x-slot:head>
-                @foreach ($points as $point)
-                    <tr>
-                        <td>
-                            @if (!empty($point['url']))
-                                <a href="{{ $point['url'] }}" class="link">{{ $point['x'] }}</a>
-                            @else
-                                {{ $point['x'] }}
-                            @endif
-                        </td>
-                        <td class="text-right tabular-nums">{{ $point['y'] }}</td>
-                    </tr>
-                @endforeach
-            </x-table>
-        </div>
-    @endif
-</figure>
+                </td>
+                <td class="text-right tabular-nums">{{ $point['y'] }}</td>
+            </tr>
+        @endforeach
+    </x-slot:rows>
+</x-charts.frame>

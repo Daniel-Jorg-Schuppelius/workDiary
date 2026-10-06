@@ -117,7 +117,7 @@ class ExpenseService {
 
     public function approve(Expense $expense, User $approver): Expense {
         $this->assertNotOwnExpense($expense, $approver);
-        $this->assertStatus($expense, [ExpenseStatus::Pending], 'approve');
+        $this->ensureTransition($expense, ExpenseStatus::Approved, 'approve');
 
         $expense = DB::transaction(function () use ($expense, $approver): Expense {
             $expense->status = ExpenseStatus::Approved;
@@ -136,7 +136,7 @@ class ExpenseService {
 
     public function reject(Expense $expense, User $approver, ?string $reason = null): Expense {
         $this->assertNotOwnExpense($expense, $approver);
-        $this->assertStatus($expense, [ExpenseStatus::Pending], 'reject');
+        $this->ensureTransition($expense, ExpenseStatus::Rejected, 'reject');
 
         $expense = DB::transaction(function () use ($expense, $approver, $reason): Expense {
             $expense->status = ExpenseStatus::Rejected;
@@ -154,7 +154,7 @@ class ExpenseService {
     }
 
     public function markReimbursed(Expense $expense, ?string $reference = null): Expense {
-        $this->assertStatus($expense, [ExpenseStatus::Approved], 'reimburse');
+        $this->ensureTransition($expense, ExpenseStatus::Reimbursed, 'reimburse');
 
         $expense = DB::transaction(function () use ($expense, $reference): Expense {
             $expense->status = ExpenseStatus::Reimbursed;
@@ -234,11 +234,9 @@ class ExpenseService {
      * Ohne Vorbedingung ließ sich eine abgelehnte oder bereits erstattete
      * Auslage erneut genehmigen und ein zweites Mal auszahlen — der Status war
      * ein Etikett, keine Bedingung.
-     *
-     * @param  list<ExpenseStatus>  $allowed
      */
-    private function assertStatus(Expense $expense, array $allowed, string $action): void {
-        if (! in_array($expense->status, $allowed, true)) {
+    private function ensureTransition(Expense $expense, ExpenseStatus $target, string $action): void {
+        if (! $expense->status->canTransitionTo($target)) {
             throw ValidationException::withMessages([
                 'status' => (string) __('expenses.error.invalid_transition', [
                     'action' => $action,

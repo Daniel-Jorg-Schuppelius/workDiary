@@ -1,7 +1,7 @@
 ---
-title: "Inventory conflicts (external transfer)"
+title: "Conflicts with external systems (stock and articles)"
 topic: inventory.conflicts
-version: 1
+version: 3
 audience:
     - admin
     - geschaeftsfuehrung
@@ -37,10 +37,26 @@ same stock. Nothing is ever deleted retroactively or technically rolled
 back; the inventory ledger stays complete, and every decision is recorded
 with person and timestamp.
 
-**Permissions & filters:** Viewing requires the inventory read permission;
-resolving additionally requires the posting permission, because the
-compensation is a real stock posting. The list can be filtered by open or
-all conflicts.
+**Article conflicts:** The same list shows articles that were changed
+locally and whose state in the connected external system (such as Lexware
+Office) differs — with the plugin's conflict strategy set to “manual
+review”. For each conflict, the article, the differing fields and both
+values are shown side by side. Three paths: *Keep local* closes the
+conflict; the local state stays and is transferred to the external system
+at the next synchronisation. *Take the external state* (for example “Take
+Lexoffice state”) fetches the article afresh from the external system and
+overwrites the local change. *Dismiss* closes the conflict without
+reconciliation — both states stay as they are; if the article still
+differs at the next synchronisation, a new conflict is created.
+
+**Permissions & filters:** The “Conflicts” tab in the inventory tab bar
+shows the number of open conflicts. Viewing requires the inventory read
+permission or the article read permission; without the inventory
+permission you only see article conflicts, without the article permission
+only stock conflicts. Resolving depends on the type: stock conflicts need
+the posting permission, because the compensation is a real stock posting;
+article conflicts need the article management permission. The list can be
+filtered by open or all conflicts and by type (stock, article).
 
 Open conflicts should be reviewed promptly: as long as they exist, local and
 external stock differ — affecting availability, purchase proposals and

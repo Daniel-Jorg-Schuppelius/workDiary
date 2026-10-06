@@ -113,6 +113,78 @@ class LearningCourseUiTest extends TestCase {
             ->assertForbidden();
     }
 
+    public function test_entwurf_laesst_sich_aus_der_kursakte_loeschen(): void {
+        $author = $this->author();
+        $course = $this->courseWithUnit();
+        $deleteForm = 'action="' . route('learning.courses.destroy', $course) . '"';
+
+        $this->actingAs($author)
+            ->get(route('learning.courses.show', $course))
+            ->assertOk()
+            ->assertSee($deleteForm, false)
+            ->assertSee(__('learning.action.delete_course'));
+
+        $this->actingAs($author)
+            ->delete(route('learning.courses.destroy', $course))
+            ->assertRedirect(route('learning.courses.index'))
+            ->assertSessionHas('success', __('learning.flash.deleted'));
+
+        $this->assertDatabaseMissing('learning_courses', ['id' => $course->id]);
+        $this->assertDatabaseMissing('learning_units', ['learning_course_id' => $course->id]);
+    }
+
+    /** Eine Version kann Nachweise tragen: Der Kurs wird archiviert, nie gelöscht — auch wieder geöffnet nicht. */
+    public function test_einmal_freigegebener_kurs_bietet_kein_loeschen_und_verweigert_es(): void {
+        $author = $this->author();
+        $course = $this->courseWithUnit();
+        $deleteForm = 'action="' . route('learning.courses.destroy', $course) . '"';
+        app(LearningCourseService::class)->release($course, $author);
+
+        $this->actingAs($author)->get(route('learning.courses.show', $course))->assertOk()->assertDontSee($deleteForm, false);
+        $this->actingAs($author)->delete(route('learning.courses.destroy', $course))->assertForbidden();
+
+        app(LearningCourseService::class)->reopen($course->refresh());
+        $this->assertSame(LearningCourseStatus::Draft, $course->refresh()->status);
+        $this->actingAs($author)->get(route('learning.courses.show', $course))->assertOk()->assertDontSee($deleteForm, false);
+        $this->actingAs($author)->delete(route('learning.courses.destroy', $course))->assertForbidden();
+
+        $this->assertDatabaseHas('learning_courses', ['id' => $course->id]);
+    }
+
+    /** Die Aktion prüfte `update` — das verlangt einen bearbeitbaren Stand, also bekam außer Admins jeder 403. */
+    public function test_autorin_oeffnet_einen_freigegebenen_kurs_wieder(): void {
+        $author = $this->author();
+        $lead = User::factory()->teamleitung()->create(['organization_id' => $this->organization->id]);
+        $course = $this->courseWithUnit();
+        $reopenForm = 'action="' . route('learning.courses.reopen', $course) . '"';
+
+        // Im Entwurf gibt es nichts zu öffnen.
+        $this->actingAs($author)->get(route('learning.courses.show', $course))->assertOk()->assertDontSee($reopenForm, false);
+        $this->actingAs($author)->post(route('learning.courses.reopen', $course))->assertForbidden();
+
+        app(LearningCourseService::class)->release($course, $author);
+        $this->actingAs($lead)->post(route('learning.courses.reopen', $course))->assertForbidden();
+        $this->assertSame(LearningCourseStatus::Released, $course->refresh()->status);
+
+        $this->actingAs($author)->get(route('learning.courses.show', $course))->assertOk()->assertSee($reopenForm, false);
+        $this->actingAs($author)->post(route('learning.courses.reopen', $course))->assertRedirect();
+        $this->assertSame(LearningCourseStatus::Draft, $course->refresh()->status);
+    }
+
+    public function test_loeschen_braucht_das_autorenrecht_und_die_eigene_organisation(): void {
+        $course = $this->courseWithUnit();
+        $lead = User::factory()->teamleitung()->create(['organization_id' => $this->organization->id]);
+
+        $this->actingAs($lead)->delete(route('learning.courses.destroy', $course))->assertForbidden();
+
+        $foreign = Organization::factory()->create();
+        $foreignCourse = app(LearningCourseService::class)->createCourse($foreign, null, ['title' => 'Fremdkurs']);
+        $this->actingAs($this->author())->delete(route('learning.courses.destroy', $foreignCourse->sqid))->assertNotFound();
+
+        $this->assertDatabaseHas('learning_courses', ['id' => $course->id]);
+        $this->assertDatabaseHas('learning_courses', ['id' => $foreignCourse->id]);
+    }
+
     public function test_teamleitung_darf_keinen_kurs_anlegen(): void {
         $lead = User::factory()->teamleitung()->create(['organization_id' => $this->organization->id]);
 

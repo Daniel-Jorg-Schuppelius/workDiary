@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Patrol;
 
 use App\Enums\OpenIssue\OpenIssueSource;
+use App\Enums\Patrol\PatrolRunStatus;
 use App\Models\Diary\OpenIssue;
 use App\Models\Patrol\{PatrolCheckpoint, PatrolRoute, PatrolRun};
 use App\Models\Platform\User;
@@ -73,14 +74,14 @@ class PatrolService {
         if ($route->checkpoints()->count() === 0) {
             throw new RuntimeException((string) __('Ohne Kontrollpunkte kein Rundgang.'));
         }
-        if ($route->runs()->where('status', PatrolRun::STATUS_RUNNING)->exists()) {
+        if ($route->runs()->where('status', PatrolRunStatus::Running)->exists()) {
             throw new RuntimeException((string) __('Für diese Route läuft bereits ein Rundgang.'));
         }
 
         $run = $route->runs()->create([
             'organization_id' => $route->organization_id,
             'started_by' => $actor->id,
-            'status' => PatrolRun::STATUS_RUNNING,
+            'status' => PatrolRunStatus::Running,
             'started_at' => Carbon::now(),
         ]);
         $run->audit('patrol.started', ['route' => $route->name]);
@@ -94,7 +95,7 @@ class PatrolService {
      * idempotent (der erste zählt).
      */
     public function scan(PatrolRun $run, string $token): PatrolCheckpoint {
-        if ($run->status !== PatrolRun::STATUS_RUNNING) {
+        if ($run->status !== PatrolRunStatus::Running) {
             throw new RuntimeException((string) __('Dieser Rundgang läuft nicht mehr.'));
         }
 
@@ -132,7 +133,7 @@ class PatrolService {
      * offenen Punkt am Rundgang — über das vorhandene Eskalationssystem.
      */
     public function complete(PatrolRun $run, User $actor, ?string $deviationNote = null): PatrolRun {
-        if ($run->status !== PatrolRun::STATUS_RUNNING) {
+        if (! $run->status->canTransitionTo(PatrolRunStatus::Completed)) {
             throw new RuntimeException((string) __('Dieser Rundgang läuft nicht mehr.'));
         }
 
@@ -147,7 +148,7 @@ class PatrolService {
         }
 
         $run->forceFill([
-            'status' => PatrolRun::STATUS_COMPLETED,
+            'status' => PatrolRunStatus::Completed,
             'finished_at' => Carbon::now(),
             'deviation_note' => $deviationNote,
         ])->save();
@@ -155,26 +156,68 @@ class PatrolService {
         $this->writeLogbookEntry($run, $actor, $missed->count(), $late);
 
         if ($missed->isNotEmpty() || $late > 0) {
-            OpenIssue::query()->create([
-                'organization_id' => $run->organization_id,
-                'subject_type' => $run->getMorphClass(),
-                'subject_id' => $run->id,
-                'source_type' => OpenIssueSource::PatrolDeviation->value,
-                'title' => (string) __('Rundgang „:route": :missed Kontrollpunkte verpasst, :late außerhalb des Fensters', [
-                    'route' => (string) $run->route?->name,
-                    'missed' => $missed->count(),
-                    'late' => $late,
-                ]),
-                'description' => $deviationNote,
-                'severity' => 'high',
-                'status' => 'open',
-                'assignee_user_id' => $actor->id,
-                'created_by_user_id' => $actor->id,
-                'due_at' => Carbon::now()->addDay(),
-            ]);
+            $this->raiseDeviation($run, $actor, (string) __('Rundgang „:route": :missed Kontrollpunkte verpasst, :late außerhalb des Fensters', [
+                'route' => (string) $run->route?->name,
+                'missed' => $missed->count(),
+                'late' => $late,
+            ]), $deviationNote);
         }
 
         return $run;
+    }
+
+    /**
+     * Abbruch eines laufenden Rundgangs, immer mit Begründung. Die bis dahin
+     * erfassten Scans bleiben als Nachweis stehen; ins Wachbuch kommt der Lauf
+     * nicht (dort stehen durchgeführte Rundgänge). Offene oder verspätete
+     * Kontrollpunkte gehen wie beim Abschluss als offener Punkt an die
+     * Leitstelle — sonst ließe sich die Eskalation durch Abbrechen umgehen.
+     */
+    public function abort(PatrolRun $run, User $actor, string $reason): PatrolRun {
+        if (! $run->status->canTransitionTo(PatrolRunStatus::Aborted)) {
+            throw new RuntimeException((string) __('Dieser Rundgang läuft nicht mehr.'));
+        }
+        $reason = trim($reason);
+        if ($reason === '') {
+            throw new RuntimeException((string) __('Der Abbruch braucht eine Begründung.'));
+        }
+
+        $missed = $this->missedCheckpoints($run);
+        $late = $run->scans()->where('in_window', false)->count();
+
+        $run->forceFill([
+            'status' => PatrolRunStatus::Aborted,
+            'finished_at' => Carbon::now(),
+            'abort_reason' => $reason,
+            'aborted_by_user_id' => $actor->id,
+        ])->save();
+        $run->audit('patrol.aborted', ['reason' => $reason, 'missed' => $missed->count(), 'late' => $late]);
+
+        if ($missed->isNotEmpty() || $late > 0) {
+            $this->raiseDeviation($run, $actor, (string) __('Rundgang „:route" abgebrochen: :missed Kontrollpunkte offen, :late außerhalb des Fensters', [
+                'route' => (string) $run->route?->name,
+                'missed' => $missed->count(),
+                'late' => $late,
+            ]), $reason);
+        }
+
+        return $run;
+    }
+
+    private function raiseDeviation(PatrolRun $run, User $actor, string $title, ?string $description): void {
+        OpenIssue::query()->create([
+            'organization_id' => $run->organization_id,
+            'subject_type' => $run->getMorphClass(),
+            'subject_id' => $run->id,
+            'source_type' => OpenIssueSource::PatrolDeviation->value,
+            'title' => $title,
+            'description' => $description,
+            'severity' => 'high',
+            'status' => 'open',
+            'assignee_user_id' => $actor->id,
+            'created_by_user_id' => $actor->id,
+            'due_at' => Carbon::now()->addDay(),
+        ]);
     }
 
     /**

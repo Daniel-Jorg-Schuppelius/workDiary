@@ -43,7 +43,7 @@
             <div class="flex flex-wrap items-center justify-between gap-2 border-b border-base-300 px-4 py-2 text-sm">
                 <span class="text-muted">{{ trans_choice('lexoffice::lexware.handover.count', $invoices->count(), ['count' => $invoices->count()]) }}</span>
                 @if ($canExport)
-                    <button type="submit" class="btn btn-sm btn-primary">{{ __('lexoffice::lexware.action.export_selected') }}</button>
+                    <x-button type="submit">{{ __('lexoffice::lexware.action.export_selected') }}</x-button>
                 @endif
             </div>
             <x-table bare>
@@ -73,7 +73,7 @@
                         <td class="tabular-nums">{{ $invoice->issued_on?->fdate() ?? '—' }}</td>
                         <td>{{ $invoice->customer?->name ?? '—' }}</td>
                         <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($invoice->total?->toFloat() ?? 0.0, 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td>
-                        <td><x-status-badge size="sm" outline>{{ __('values.' . $invoice->status) }}</x-status-badge></td>
+                        <td><x-status-badge size="sm" outline>{{ $invoice->status->label() }}</x-status-badge></td>
                         <td class="text-xs">
                             @if ($lastDispatch)
                                 {{ __('lexoffice::lexware.handover.dispatched', ['channel' => $lastDispatch->channel, 'at' => $lastDispatch->created_at?->fdatetime()]) }}
@@ -99,9 +99,10 @@
                                     @if ($state === null || ! $state->status->isSettled())
                                         <details class="inline-block text-left">
                                             <summary class="btn btn-xs btn-ghost">{{ __('lexoffice::lexware.action.confirm') }}</summary>
+                                            {{-- raw-markup-ok: Aufklapp-Panel in der Tabellenzeile mit eigenem Schatten, keine Seitenkarte --}}
                                             <div class="mt-2 rounded-box border border-base-300 bg-base-100 p-3 shadow">
                                                 <x-input-field name="confirmation_note" id="confirm-note-{{ $invoice->sqid }}" :label="__('lexoffice::lexware.field.confirmation_note')" form="confirm-form-{{ $invoice->sqid }}" />
-                                                <button type="submit" form="confirm-form-{{ $invoice->sqid }}" class="btn btn-xs btn-primary mt-2">{{ __('lexoffice::lexware.action.confirm_go') }}</button>
+                                                <x-button type="submit" size="xs" class="mt-2" form="confirm-form-{{ $invoice->sqid }}">{{ __('lexoffice::lexware.action.confirm_go') }}</x-button>
                                             </div>
                                         </details>
                                     @endif

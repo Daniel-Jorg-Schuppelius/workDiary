@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Ai\Suggestions;
 
+use App\Enums\Ai\AiTextSuggestionStatus;
 use App\Models\Ai\AiTextSuggestion;
 use App\Models\Integration\{ImportColumnMapping, ImportRun};
 use App\Models\Platform\{Organization, User};
@@ -141,7 +142,7 @@ class ImportMappingSuggestionService {
             ->where('subject_type', $run->getMorphClass())
             ->where('subject_id', (int) $run->id)
             ->where('capability', self::CAPABILITY)
-            ->where('status', AiTextSuggestion::STATUS_PROPOSED)
+            ->where('status', AiTextSuggestionStatus::Proposed)
             ->first();
         if ($suggestion === null) {
             return;
@@ -154,7 +155,7 @@ class ImportMappingSuggestionService {
             return;
         }
 
-        $this->markDecided($suggestion, AiTextSuggestion::STATUS_ACCEPTED, $user);
+        $this->markDecided($suggestion, AiTextSuggestionStatus::Accepted, $user);
         $this->auditDecision($suggestion, 'accepted', $user, ['adopted' => count($adopted)]);
     }
 

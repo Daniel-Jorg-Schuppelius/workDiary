@@ -62,11 +62,12 @@ final class CsvExportTest extends TestCase {
         $this->assertSame('normal', $lines[7]);
     }
 
-    public function test_header_row_stays_unguarded_and_umlauts_survive(): void {
+    /** Kopfzeilen tragen auch frei erfasste Beschriftungen (eigene Felder) — Sicherheitsaudit 2026-10-04, xi-3. */
+    public function test_header_row_is_guarded_and_umlauts_survive(): void {
         $body = $this->render(['Straße', '+/-'], [['Müller-Lüdenscheid', 'Größe Ü']]);
 
         $lines = explode("\r\n", substr($body, strlen(StringHelper::BOM_UTF8)));
-        $this->assertSame('Straße;+/-', $lines[0]);
+        $this->assertSame("Straße;'+/-", $lines[0]);
         // '-' mitten im Wort löst den Guard nicht aus, UTF-8 bleibt unangetastet
         $this->assertSame('Müller-Lüdenscheid;Größe Ü', $lines[1]);
     }

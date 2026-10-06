@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Gaeb;
 
+use App\Enums\Applications\ApplicationOpportunityStatus;
 use App\Enums\Gaeb\GaebImportStatus;
 use App\Enums\User\Permission as P;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
@@ -55,7 +56,7 @@ class GaebPackageController extends Controller {
                 ->latest('id')
                 ->paginate(25),
             'opportunities' => ApplicationOpportunity::query()
-                ->whereIn('status', ApplicationOpportunity::OPEN_STATUSES)
+                ->whereIn('status', ApplicationOpportunityStatus::open())
                 ->orderBy('title')
                 ->get(['id', 'title']),
             'projects' => Project::query()->orderBy('name')->limit(500)->get(['id', 'name']),

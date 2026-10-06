@@ -12,8 +12,10 @@ namespace App\Policies\Communication;
 
 use App\Enums\User\Permission as P;
 use App\Models\Communication\CommunicationNote;
+use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\User;
 use App\Policies\Concerns\HasAdminBypass;
+use App\Support\MorphMap;
 
 /**
  * Zugriffsregeln für Kommunikationsnotizen (MVP-012, ../WorkDiary-Architecture/kommunikationsnotizen.md §7):
@@ -33,8 +35,23 @@ class CommunicationNotePolicy {
             return false;
         }
 
-        return (int) $note->created_by_user_id === (int) $user->id
-            || $user->can(P::CommunicationView->value);
+        return $this->carrierVisible($user, $note)
+            && ((int) $note->created_by_user_id === (int) $user->id || $user->can(P::CommunicationView->value));
+    }
+
+    /**
+     * Die Notiz folgt ihrem Träger: an einem Auftrag, den der Benutzer nicht
+     * öffnen darf, ist sie auch per Direktaufruf nicht lesbar — wie in Liste
+     * und Suche (`CommunicationNote::scopeVisibleTo()`, Sicherheitsaudit
+     * 2026-10-04, authz-b-6).
+     */
+    private function carrierVisible(User $user, CommunicationNote $note): bool {
+        if (! MorphMap::is($note->notable_type, DiaryEntry::class) || $user->can(P::DiaryViewAny->value)) {
+            return true;
+        }
+        $entry = $note->notable;
+
+        return $entry instanceof DiaryEntry && $user->can('view', $entry);
     }
 
     public function create(User $user): bool {

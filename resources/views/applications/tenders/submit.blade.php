@@ -21,7 +21,7 @@
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar :badge="__('values.' . $opportunity->status)" badge-tone="outline"
+        <x-page-toolbar :badge="$opportunity->status->label()" badge-tone="outline"
                         :back="route('tenders.show', $opportunity)" :back-label="__('Zur Akte')">
             <div class="text-sm text-base-content/70">
                 {{ $opportunity->title }}
@@ -34,19 +34,19 @@
          was hier auffällt, ist nach der Abgabe nicht mehr zu heilen. --}}
     <x-card :title="__('1. Prüfung')">
         @if (empty($findings))
-            <div class="alert alert-success">
+            <div role="status" class="alert alert-success">
                 <x-icon name="check_circle" />
                 <span>{{ __('Keine Beanstandungen. Die Akte ist abgabebereit.') }}</span>
             </div>
         @else
             @foreach ($blockers as $finding)
-                <div class="alert alert-error mb-2">
+                <div role="alert" class="alert alert-error mb-2">
                     <x-icon name="block" />
                     <span>{{ $finding['message'] }}</span>
                 </div>
             @endforeach
             @foreach ($warnings as $finding)
-                <div class="alert alert-warning mb-2">
+                <div role="alert" class="alert alert-warning mb-2">
                     <x-icon name="warning" />
                     <span>{{ $finding['message'] }}</span>
                 </div>

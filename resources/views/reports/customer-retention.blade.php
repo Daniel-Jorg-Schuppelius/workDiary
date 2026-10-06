@@ -27,17 +27,7 @@
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="__('Kohorten-Retention nach Erstleistungsjahr und Kundenbestandsbrücke.')">
             <x-slot:actions>
-                <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
-                            :href="route('reports.customer-retention', array_merge($linkParams, ['export' => 'pdf']))"
-                            show-label>PDF</x-icon-btn>
-                <x-action-menu icon="download" tone="outline" :label="__('Export')">
-                    <x-icon-btn icon="download" tone="outline" size="sm"
-                                :href="route('reports.customer-retention', array_merge($linkParams, ['export' => 'csv']))"
-                                show-label>CSV</x-icon-btn>
-                    <x-icon-btn icon="table_view" tone="outline" size="sm"
-                                :href="route('reports.customer-retention', array_merge($linkParams, ['export' => 'xlsx']))"
-                                show-label>Excel</x-icon-btn>
-                </x-action-menu>
+                <x-report-export :url="fn (string $format) => route('reports.customer-retention', array_merge($linkParams, ['export' => $format]))" />
                 <x-help-button topic="reports.customer-retention" />
             </x-slot:actions>
         </x-page-toolbar>
@@ -76,7 +66,7 @@
         <x-card id="neukunden" class="scroll-mt-24">
             <h2 class="mb-2 font-['Space_Grotesk'] text-sm font-semibold">{{ __('Neukunden') }} ({{ count($bridge['new']) + count($bridge['newChurned']) }})</h2>
             @if ($bridge['new'] === [] && $bridge['newChurned'] === [])
-                <p class="text-sm text-muted">{{ __('Keine Neukunden im Zeitraum.') }}</p>
+                <x-empty-state icon="person_add" :title="__('Keine Neukunden im Zeitraum.')" compact />
             @else
                 <ul class="space-y-1 text-sm">
                     @foreach ($bridge['new'] as $c)
@@ -85,7 +75,7 @@
                     @foreach ($bridge['newChurned'] as $c)
                         <li>
                             <a href="{{ $customerLink($c['customerId']) }}" class="link link-hover">{{ $c['customerName'] }}</a>
-                            <span class="badge badge-ghost badge-xs ml-1">{{ __('wieder inaktiv') }}</span>
+                            <x-status-badge size="xs" class="ml-1">{{ __('wieder inaktiv') }}</x-status-badge>
                         </li>
                     @endforeach
                 </ul>
@@ -95,7 +85,7 @@
         <x-card id="zurueckgewonnen" class="scroll-mt-24">
             <h2 class="mb-2 font-['Space_Grotesk'] text-sm font-semibold">{{ __('Zurückgewonnen') }} ({{ count($bridge['reactivated']) }})</h2>
             @if ($bridge['reactivated'] === [])
-                <p class="text-sm text-muted">{{ __('Keine zurückgewonnenen Kunden im Zeitraum.') }}</p>
+                <x-empty-state icon="undo" :title="__('Keine zurückgewonnenen Kunden im Zeitraum.')" compact />
             @else
                 <ul class="space-y-1 text-sm">
                     @foreach ($bridge['reactivated'] as $c)
@@ -108,7 +98,7 @@
         <x-card id="verloren" class="scroll-mt-24">
             <h2 class="mb-2 font-['Space_Grotesk'] text-sm font-semibold">{{ __('Verlorene Kunden') }} ({{ count($bridge['lost']) }})</h2>
             @if ($bridge['lost'] === [])
-                <p class="text-sm text-muted">{{ __('Keine verlorenen Kunden im Zeitraum — gut so.') }}</p>
+                <x-empty-state icon="check_circle" :title="__('Keine verlorenen Kunden im Zeitraum — gut so.')" compact />
             @else
                 <ul class="space-y-1 text-sm">
                     @foreach ($bridge['lost'] as $c)

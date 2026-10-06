@@ -25,7 +25,7 @@
 <main class="mx-auto max-w-3xl p-4 space-y-4">
     <div class="rounded-box bg-base-100 p-4 shadow">
         <div class="mb-1 flex items-center gap-2 text-xs text-muted">
-            <span class="badge badge-outline badge-sm">{{ __('Angebot') }}</span>
+            <x-status-badge tone="plain" outline>{{ __('Angebot') }}</x-status-badge>
             <span>{{ $quote->number }} · V{{ $quote->version }}</span>
         </div>
         <h1 class="font-['Space_Grotesk'] text-xl font-semibold">{{ __('Angebot :nr', ['nr' => $quote->number]) }}</h1>
@@ -35,7 +35,7 @@
     </div>
 
     @if (session('status'))
-        <div class="alert alert-success">{{ session('status') }}</div>
+        <div role="status" class="alert alert-success">{{ session('status') }}</div>
     @endif
     @if (session('error'))
         <div role="alert" class="alert alert-error">{{ session('error') }}</div>
@@ -84,13 +84,13 @@
     @endif
 
     @if ($decided)
-        <div class="alert alert-info">
+        <div role="status" class="alert alert-info">
             {{ __('Zu diesem Angebot liegt bereits eine Entscheidung vor (:status, :date).', [
-                'status' => __('values.' . $quote->status),
+                'status' => $quote->status->label(),
                 'date' => optional($quote->decided_at)->fdatetime() ?? '—',
             ]) }}
         </div>
-    @elseif ($quote->status === 'sent' && ! $quote->isExpired())
+    @elseif ($quote->status === \App\Enums\Sales\QuoteStatus::Sent && ! $quote->isExpired())
         <form method="POST" action="{{ route('quotes.portal.decide', $quote) }}" class="rounded-box bg-base-100 p-4 shadow space-y-3">
             @csrf
             <input type="hidden" name="token" value="{{ $token }}">
@@ -110,13 +110,13 @@
                 @endforeach
             </div>
             <div class="flex flex-wrap gap-2">
-                <button type="submit" name="decision" value="accept" class="btn btn-primary btn-sm">{{ __('Angebot annehmen') }}</button>
-                <button type="submit" name="decision" value="reject" class="btn btn-outline btn-sm">{{ __('Angebot ablehnen') }}</button>
+                <x-button type="submit" name="decision" value="accept">{{ __('Angebot annehmen') }}</x-button>
+                <x-button type="submit" tone="outline" name="decision" value="reject">{{ __('Angebot ablehnen') }}</x-button>
             </div>
             <p class="text-xs text-muted">{{ __('Ihre Auswahl wird mit Zeitstempel dokumentiert. Abgewählte Positionen gelten als nicht beauftragt.') }}</p>
         </form>
     @elseif ($quote->isExpired())
-        <div class="alert alert-warning">{{ __('Die Bindefrist dieses Angebots ist abgelaufen — bitte kontaktieren Sie uns für eine neue Version.') }}</div>
+        <div role="alert" class="alert alert-warning">{{ __('Die Bindefrist dieses Angebots ist abgelaufen — bitte kontaktieren Sie uns für eine neue Version.') }}</div>
     @endif
 </main>
 </body>

@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Invoicing;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\{BaseInterestRate, Invoice};
 use App\Models\Platform\{Organization, User};
@@ -72,7 +73,7 @@ final class BaseInterestRateTest extends TestCase {
         $customer = Customer::factory()->create(['organization_id' => $org->id]);
         $invoice = Invoice::query()->create([
             'organization_id' => $org->id, 'customer_id' => $customer->id, 'number' => 'R2026-9001',
-            'status' => Invoice::STATUS_ISSUED, 'type' => Invoice::TYPE_INVOICE, 'currency' => 'EUR',
+            'status' => InvoiceStatus::Issued, 'type' => Invoice::TYPE_INVOICE, 'currency' => 'EUR',
             'tax_rate' => '19.00', 'total' => '10000.00',
             'issued_on' => '2026-06-01', 'due_on' => '2026-06-20',
         ]);

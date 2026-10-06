@@ -363,7 +363,7 @@
             <x-card id="learning-notes">
                 <h3 class="mb-3 flex items-center gap-2 text-sm font-semibold">
                     <x-icon name="sticky_note_2" class="text-muted" /> {{ __('learning.title.my_notes') }}
-                    <span class="badge badge-ghost badge-sm">{{ $notes->count() }}</span>
+                    <x-status-badge>{{ $notes->count() }}</x-status-badge>
                 </h3>
                 @if ($notes->isEmpty())
                     <p class="text-sm text-muted">{{ __('learning.empty.notes') }}</p>

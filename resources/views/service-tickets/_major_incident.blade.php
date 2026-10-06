@@ -57,6 +57,6 @@
             <x-icon-btn icon="emergency_home" tone="error" size="sm" type="submit" show-label>{{ __('Major Incident ausrufen') }}</x-icon-btn>
         </form>
     @else
-        <p class="text-sm text-muted">{{ __('Kein Major Incident.') }}</p>
+        <x-empty-state icon="check_circle" :title="__('Kein Major Incident.')" compact />
     @endif
 </x-card>

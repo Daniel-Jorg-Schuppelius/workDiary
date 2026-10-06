@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Reporting;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
@@ -46,15 +47,15 @@ class PaymentBehaviorReportTest extends TestCase {
         $alpha = Customer::create(['organization_id' => $this->organization->id, 'name' => 'Alpha GmbH']);
         $beta = Customer::create(['organization_id' => $this->organization->id, 'name' => 'Beta AG']);
 
-        $this->createInvoice($alpha, 'R-1', Invoice::STATUS_PAID, '2030-01-10', '2030-01-24', '2030-01-20', 1000);
-        $this->createInvoice($beta, 'R-2', Invoice::STATUS_PAID, '2030-01-05', '2030-01-19', '2030-02-08', 500);
-        $this->createInvoice($beta, 'R-3', Invoice::STATUS_ISSUED, '2030-02-01', '2030-02-15', null, 500);
+        $this->createInvoice($alpha, 'R-1', InvoiceStatus::Paid, '2030-01-10', '2030-01-24', '2030-01-20', 1000);
+        $this->createInvoice($beta, 'R-2', InvoiceStatus::Paid, '2030-01-05', '2030-01-19', '2030-02-08', 500);
+        $this->createInvoice($beta, 'R-3', InvoiceStatus::Issued, '2030-02-01', '2030-02-15', null, 500);
         // Störer: Entwurf und Proforma bleiben unberücksichtigt.
-        $this->createInvoice($alpha, 'R-4', Invoice::STATUS_DRAFT, '2030-02-10', '2030-02-24', null, 9999);
-        $this->createInvoice($alpha, 'P-1', Invoice::STATUS_ISSUED, '2030-02-12', '2030-02-26', null, 8888, Invoice::TYPE_PROFORMA);
+        $this->createInvoice($alpha, 'R-4', InvoiceStatus::Draft, '2030-02-10', '2030-02-24', null, 9999);
+        $this->createInvoice($alpha, 'P-1', InvoiceStatus::Issued, '2030-02-12', '2030-02-26', null, 8888, Invoice::TYPE_PROFORMA);
     }
 
-    private function createInvoice(Customer $customer, string $number, string $status, string $issued, string $due, ?string $paid, float $total, string $type = Invoice::TYPE_INVOICE): void {
+    private function createInvoice(Customer $customer, string $number, InvoiceStatus|string $status, string $issued, string $due, ?string $paid, float $total, string $type = Invoice::TYPE_INVOICE): void {
         Invoice::create([
             'organization_id' => $this->organization->id,
             'customer_id' => $customer->id,

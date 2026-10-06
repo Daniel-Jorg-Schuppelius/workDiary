@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\CustomerPortal;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Customer\Customer;
 use App\Models\Diary\DiaryEntry;
 use App\Models\Invoicing\Invoice;
@@ -32,7 +33,7 @@ final class PortalSearchTest extends TestCase {
         parent::tearDown();
     }
 
-    private function invoice(Customer $customer, string $number, string $status): void {
+    private function invoice(Customer $customer, string $number, InvoiceStatus|string $status): void {
         Invoice::create(['organization_id' => $this->organization->id, 'customer_id' => $customer->id, 'number' => $number, 'status' => $status,
             'currency' => 'EUR', 'subtotal' => '100.00', 'tax_rate' => '19.00', 'tax_amount' => '19.00', 'total' => '119.00']);
     }
@@ -45,9 +46,9 @@ final class PortalSearchTest extends TestCase {
         $this->allowPortal($customer, ['invoices']);
         $portalUser = User::factory()->kunde((int) $customer->id, (int) $this->organization->id)->create(['organization_id' => $this->organization->id]);
 
-        $this->invoice($customer, 'RE-2026-SUCH-1', Invoice::STATUS_ISSUED);
-        $this->invoice($customer, 'RE-2026-SUCH-ENTWURF', Invoice::STATUS_DRAFT);
-        $this->invoice($other, 'RE-2026-SUCH-FREMD', Invoice::STATUS_ISSUED);
+        $this->invoice($customer, 'RE-2026-SUCH-1', InvoiceStatus::Issued);
+        $this->invoice($customer, 'RE-2026-SUCH-ENTWURF', InvoiceStatus::Draft);
+        $this->invoice($other, 'RE-2026-SUCH-FREMD', InvoiceStatus::Issued);
         DiaryEntry::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $customer->id, 'title' => 'SUCH-Auftrag']);
 
         $this->actingAs($portalUser, 'customer');

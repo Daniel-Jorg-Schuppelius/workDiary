@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Ai\Suggestions;
 
+use App\Enums\Ai\AiTextSuggestionStatus;
 use App\Enums\Classification\ClassificationDomain;
 use App\Enums\OpenIssue\OpenIssueSeverity;
 use App\Enums\Protocol\{ProtocolItemResult, ProtocolItemType};
@@ -239,7 +240,7 @@ class ProtocolTextSuggestionService {
             $this->protocols->updateItemText($item, $user, $text, true);
         });
 
-        $this->markDecided($suggestion, $edited ? AiTextSuggestion::STATUS_EDITED : AiTextSuggestion::STATUS_ACCEPTED, $user);
+        $this->markDecided($suggestion, $edited ? AiTextSuggestionStatus::Edited : AiTextSuggestionStatus::Accepted, $user);
         $this->auditDecision($suggestion, $edited ? 'edited' : 'accepted', $user);
 
         return $edited;
@@ -284,7 +285,7 @@ class ProtocolTextSuggestionService {
         ));
 
         if ($remaining === []) {
-            $this->markDecided($suggestion, AiTextSuggestion::STATUS_ACCEPTED, $user);
+            $this->markDecided($suggestion, AiTextSuggestionStatus::Accepted, $user);
         } else {
             $suggestion->forceFill(['suggestion' => JsonHelper::encode($remaining, JSON_UNESCAPED_UNICODE)])->save();
         }

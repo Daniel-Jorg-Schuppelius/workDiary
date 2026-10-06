@@ -168,7 +168,7 @@ class SafetyInstructionController extends Controller {
         $this->service->delete($instruction);
 
         return redirect()
-            ->route('safety.instructions.index')
+            ->toList('safety.instructions.index')
             ->with('success', __('safety.register.flash.instruction_deleted'));
     }
 

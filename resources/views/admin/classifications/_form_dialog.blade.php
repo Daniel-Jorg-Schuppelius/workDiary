@@ -26,7 +26,7 @@
     :submit-label="$isEdit ? __('Speichern') : __('Anlegen')"
 >
     @if ($sourceClassification)
-        <div class="alert alert-info mb-4">
+        <div role="status" class="alert alert-info mb-4">
             <x-icon name="info" />
             <span>{{ __('Es wird ein organisationsspezifischer Override für den Plattform-Default :code angelegt.', ['code' => $sourceClassification->code]) }}</span>
         </div>

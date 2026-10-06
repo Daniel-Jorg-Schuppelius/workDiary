@@ -11,6 +11,7 @@
 namespace App\Plugins\Nextcloud\Api;
 
 use APIToolkit\API\WebDav\{MultiStatus, Propfind};
+use App\Plugins\Nextcloud\Exceptions\NextcloudNotFoundException;
 use App\Plugins\Support\PluginApiClient;
 use App\Support\UrlSafety;
 use Illuminate\Http\Client\Response;

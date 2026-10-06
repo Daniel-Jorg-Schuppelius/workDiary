@@ -41,7 +41,7 @@ class ListCommand extends Command {
                 $plugin->version(),
                 $state !== null ? ($state->installed_version ?? '—') : '—',
                 $plugin->schemaVersion(),
-                $state !== null ? ($state->last_health_status ?? '—') : '—',
+                $state?->last_health_status->value ?? '—',
                 $state !== null ? $state->failure_count : 0,
                 $state !== null && $state->isAutoDisabled() ? 'auto-disabled' : 'ok',
             ];

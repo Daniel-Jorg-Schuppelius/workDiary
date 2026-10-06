@@ -409,6 +409,7 @@ return [
         'focus_on' => 'Focus mode',
         'focus_off' => 'Show sidebar',
         'duplicate' => 'Duplicate',
+        'delete_course' => 'Delete course',
         'import_learndash' => 'LearnDash import',
         'import' => 'Import',
         'gradebook' => 'Gradebook',
@@ -643,6 +644,7 @@ return [
     ],
     'help' => [
         'course_tags' => 'Separate several with commas. Tags can also be changed after release.',
+        'enroll_by_operator' => 'Enrolment is arranged by your contact person.',
         'course_competency' => 'Completing the course grants this level in the competency matrix. Repeating it never lowers the level.',
         'max_level' => 'Levels from 1 up to this value, e.g. 1 basic knowledge … 4 can instruct others.',
         'assessment' => 'An assessment by a manager may also lower a level; course completions never do.',
@@ -789,6 +791,7 @@ return [
         'booking_without_course' => 'The course for this booking is missing.',
         'booking_requires_release' => 'A course can only be booked after release.',
         'course_not_bookable' => 'This course is not marked as bookable.',
+        'self_enroll_requires_open' => 'Self-enrolment is only possible for open courses.',
         'booking_reject_reason' => 'A rejection needs a reason.',
         'booking_already_billed' => 'A billed booking is not cancelled here — that is the invoicing side.',
         'booking_not_billable' => 'This booking has no open billing item.',
@@ -1029,6 +1032,7 @@ return [
     ],
     'confirm' => [
         'duplicate' => 'Duplicate this course as a new draft?',
+        'delete_course' => 'Permanently delete the course draft “:title”? Its sections and units will be lost.',
         'delete_note' => 'Really delete this note?',
         'detach_question' => 'Remove this question from the quiz? It stays in the question bank.',
         'delete_category' => 'Delete this category?',

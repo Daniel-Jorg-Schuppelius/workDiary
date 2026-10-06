@@ -20,8 +20,10 @@ use App\Plugins\CalDav\Contracts\{CalDavGateway, CalDavGatewayFactory};
 use App\Plugins\CalDav\Models\CalDavConnection;
 use App\Plugins\GoogleCalendar\Models\GoogleCalendarConnection;
 use App\Plugins\GoogleCalendar\Services\GoogleCalendarImportFeed;
+use App\Plugins\Msgraph\Enums\MsgraphConnectionStatus;
 use App\Plugins\Msgraph\Models\MsgraphConnection;
 use App\Plugins\Msgraph\Services\MsgraphCalendarImportFeed;
+use App\Plugins\Support\OAuthConnectionStatus;
 use App\Support\Sqid;
 use CommonToolkit\Parsers\ICalendarParser;
 use DateTimeImmutable;
@@ -97,7 +99,7 @@ final class CalendarTimeImportTest extends TestCase {
 
     public function test_google_feed_writes_single_events_with_the_own_attendee(): void {
         config()->set('plugins.google_calendar.enabled', true);
-        $connection = GoogleCalendarConnection::query()->create(['organization_id' => $this->organization->id, 'access_token' => 't', 'status' => GoogleCalendarConnection::STATUS_ACTIVE]);
+        $connection = GoogleCalendarConnection::query()->create(['organization_id' => $this->organization->id, 'access_token' => 't', 'status' => OAuthConnectionStatus::Active]);
         FakePluginHttp::fake(['https://www.googleapis.com/calendar/v3/calendars/primary/events*' => FakePluginHttp::response(['items' => [
             ['id' => 'e1', 'iCalUID' => 'e1@google.com', 'status' => 'confirmed', 'summary' => 'Montage, Halle 2', 'transparency' => 'transparent',
                 'start' => ['dateTime' => '2026-07-02T08:00:00+02:00'], 'end' => ['dateTime' => '2026-07-02T12:00:00+02:00'],
@@ -117,7 +119,7 @@ final class CalendarTimeImportTest extends TestCase {
 
     public function test_microsoft_feed_keeps_categories_and_skips_cancelled(): void {
         $this->pluginSecret('msgraph', ['enabled' => true, 'client_id' => 'c', 'client_secret' => 's']);
-        $connection = MsgraphConnection::query()->create(['organization_id' => $this->organization->id, 'access_token' => 't', 'status' => MsgraphConnection::STATUS_ACTIVE]);
+        $connection = MsgraphConnection::query()->create(['organization_id' => $this->organization->id, 'access_token' => 't', 'status' => MsgraphConnectionStatus::Active]);
         FakePluginHttp::fake(['https://graph.microsoft.com/v1.0/me/calendarView*' => FakePluginHttp::response(['value' => [
             ['id' => 'o1', 'subject' => 'Einsatz', 'categories' => ['Arbeitszeit'], 'showAs' => 'busy',
                 'start' => ['dateTime' => '2026-07-02T06:00:00.0000000', 'timeZone' => 'UTC'], 'end' => ['dateTime' => '2026-07-02T14:00:00.0000000', 'timeZone' => 'UTC'],

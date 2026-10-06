@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Mail;
 
+use App\Enums\Integration\IntegrationInboxStatus;
 use App\Models\Communication\CommunicationNote;
 use App\Models\Customer\Customer;
 use App\Models\Document\Document;
@@ -210,7 +211,7 @@ final class MailIntakeTest extends TestCase {
         $this->assertSame($customer->getMorphClass(), $note->notable_type);
 
         $item->refresh();
-        $this->assertSame(IntegrationInboxItem::STATUS_RESOLVED_LINKED, $item->status);
+        $this->assertSame(IntegrationInboxStatus::ResolvedLinked, $item->status);
         $this->assertSame(1, ExternalReference::query()
             ->where('plugin_id', MailIntakeService::PLUGIN_ID)
             ->where('external_type', MailIntakeService::EXTERNAL_TYPE)

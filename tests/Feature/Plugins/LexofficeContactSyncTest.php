@@ -10,9 +10,12 @@
 
 namespace Tests\Feature\Plugins;
 
+use App\Enums\Integration\IntegrationInboxStatus;
 use App\Models\Customer\Customer;
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
-use App\Plugins\Lexoffice\{LexofficeContactSync, LexofficeMatchPolicy, LexofficePlugin};
+use App\Plugins\Lexoffice\Enums\LexofficeMatchPolicy;
+use App\Plugins\Lexoffice\LexofficePlugin;
+use App\Plugins\Lexoffice\Services\LexofficeContactSync;
 use App\Services\Stammdaten\CustomerMergeService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
@@ -134,7 +137,7 @@ class LexofficeContactSyncTest extends TestCase {
             'case_type' => \App\Models\Integration\IntegrationInboxItem::CASE_CONFLICT,
             'referenceable_id' => $customer->id,
             'external_id' => 'lex-3',
-            'status' => \App\Models\Integration\IntegrationInboxItem::STATUS_OPEN,
+            'status' => IntegrationInboxStatus::Open->value,
         ]);
         $this->assertDatabaseMissing('pending_external_conflicts', ['plugin_id' => LexofficePlugin::ID]);
 

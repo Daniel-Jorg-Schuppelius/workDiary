@@ -14,6 +14,7 @@ namespace Tests\Unit\Services\Import\Specs;
 
 use App\Enums\Finance\BillingMode;
 use App\Enums\Import\ImportErrorCode;
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\Organization;
@@ -123,7 +124,7 @@ class InvoiceSpecTest extends TestCase {
         $invoice = Invoice::query()->where('external_number', 'RE-2024-001')->firstOrFail();
         $this->assertSame('ALT-RE-2024-001', $invoice->number);
         $this->assertSame(InvoiceSpec::NUMBER_SOURCE, $invoice->number_source);
-        $this->assertSame(Invoice::STATUS_ISSUED, $invoice->status);
+        $this->assertSame(InvoiceStatus::Issued, $invoice->status);
         $this->assertSame('2024-01-15', $invoice->issued_on?->toDateString());
         $this->assertSame('2024-01-29', $invoice->due_on?->toDateString());
         $this->assertSame('1000.00', $invoice->subtotal?->getAmount());
@@ -147,13 +148,13 @@ class InvoiceSpecTest extends TestCase {
         $this->assertSame(ImportOutcome::Created, $o2, $i2?->message ?? '');
 
         $partial = Invoice::query()->where('external_number', 'R-1')->firstOrFail();
-        $this->assertSame(Invoice::STATUS_PARTIALLY_PAID, $partial->status);
+        $this->assertSame(InvoiceStatus::PartiallyPaid, $partial->status);
         $this->assertSame('1190.00', $partial->total?->getAmount(), 'Brutto aus Netto + Satz');
         $this->assertSame('500.00', data_get($partial->import_metadata, 'paid_amount'));
         $this->assertNull($partial->paid_on);
 
         $paid = Invoice::query()->where('external_number', 'R-2')->firstOrFail();
-        $this->assertSame(Invoice::STATUS_PAID, $paid->status);
+        $this->assertSame(InvoiceStatus::Paid, $paid->status);
         $this->assertSame('2024-02-01', $paid->paid_on?->toDateString());
     }
 

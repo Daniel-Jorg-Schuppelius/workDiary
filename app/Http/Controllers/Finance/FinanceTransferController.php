@@ -340,7 +340,7 @@ class FinanceTransferController extends Controller {
         }
 
         return redirect()
-            ->route('finance.transfers.index')
+            ->toList('finance.transfers.index')
             ->with('success', __('finance.flash.voided'));
     }
 

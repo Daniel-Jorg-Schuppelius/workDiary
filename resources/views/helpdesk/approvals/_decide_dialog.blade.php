@@ -6,12 +6,10 @@
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
-{{-- Variablen: $approval (mit approvable geladen), $orgUsers --}}
+{{-- Variablen: $approval, $entry (Gegenstand), $orgUsers --}}
 @php
     /** @var \App\Models\Approval\Approval $approval */
-    $approvable = $approval->approvable;
-    $ticket = $approvable instanceof \App\Models\ServiceTicket\ServiceRequest ? $approvable->ticket : null;
-    $subject = $ticket?->title ?? $approvable?->title ?? $approvable?->name ?? '—';
+    /** @var \App\Services\Approval\Dto\ApprovalInboxEntry $entry */
 @endphp
 
 <x-modal
@@ -25,11 +23,12 @@
     :form-data="['data-entry-form' => '']"
     :submit-label="__('Entscheiden')">
 
-    <div class="alert alert-info text-sm">
+    <div role="status" class="alert alert-info text-sm">
         <div>
-            <div class="font-semibold">{{ \App\Support\EntityType::label($approval->approvable_type) }}: {{ $subject }}</div>
-            @if ($ticket !== null)
-                <div class="text-base-content/70 font-mono">{{ $ticket->ticket_no }}</div>
+            <div class="text-xs text-base-content/70">{{ $entry->type ?? \App\Support\EntityType::label($approval->approvable_type) }}</div>
+            <div class="font-semibold">{{ $entry->title }}</div>
+            @if ($entry->reference !== null)
+                <div class="text-base-content/70 font-mono">{{ $entry->reference }}</div>
             @endif
             @if ($approval->decision === 'question' && $approval->reason)
                 <div class="mt-1">{{ __('Letzte Rückfrage') }}: {{ $approval->reason }}</div>

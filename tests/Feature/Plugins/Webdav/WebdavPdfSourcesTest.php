@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Plugins\Webdav;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Enums\Protocol\ProtocolStatus;
 use App\Models\Customer\Customer;
 use App\Models\Integration\IntegrationOutboxEntry;
@@ -19,7 +20,7 @@ use App\Models\Protocol\Protocol;
 use App\Plugins\Support\Mirror\{MirrorOutboxDispatcher, RemoteFileGateway};
 use App\Plugins\Webdav\Contracts\WebdavGatewayFactory;
 use App\Plugins\Webdav\Models\WebdavConnection;
-use App\Plugins\Webdav\WebdavMirrorTarget;
+use App\Plugins\Webdav\Services\WebdavMirrorTarget;
 use App\Services\Invoicing\InvoicePdfRenderer;
 use App\Services\Protocol\ProtocolPdfRenderer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -108,7 +109,7 @@ final class WebdavPdfSourcesTest extends TestCase {
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
             'number' => 'R2026-0042',
-            'status' => Invoice::STATUS_ISSUED,
+            'status' => InvoiceStatus::Issued,
             'issued_on' => '2026-05-01',
             'currency' => 'EUR',
             'tax_rate' => '19.00',
@@ -174,7 +175,7 @@ final class WebdavPdfSourcesTest extends TestCase {
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
             'number' => 'R2026-0099',
-            'status' => Invoice::STATUS_DRAFT,
+            'status' => InvoiceStatus::Draft,
             'currency' => 'EUR',
             'tax_rate' => '19.00',
             'created_by' => $this->admin->id,

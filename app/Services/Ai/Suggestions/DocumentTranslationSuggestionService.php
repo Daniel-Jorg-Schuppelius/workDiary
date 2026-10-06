@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Ai\Suggestions;
 
+use App\Enums\Ai\AiTextSuggestionStatus;
+use App\Enums\Sales\QuoteStatus;
 use App\Models\Ai\AiTextSuggestion;
 use App\Models\Platform\{Organization, User};
 use App\Models\Sales\{Quote, QuoteItem};
@@ -85,12 +87,12 @@ class DocumentTranslationSuggestionService {
 
         if ($subject instanceof QuoteItem) {
             $quote = $subject->quote;
-            if (! $quote instanceof Quote || $quote->status !== 'draft') {
+            if (! $quote instanceof Quote || $quote->status !== QuoteStatus::Draft) {
                 throw new AiException((string) __('ai.error.only_quote_draft'));
             }
             $subject->forceFill(['description' => $text, 'ai_assisted_at' => Carbon::now()])->save();
         } elseif ($subject instanceof Quote) {
-            if ($subject->status !== 'draft') {
+            if ($subject->status !== QuoteStatus::Draft) {
                 throw new AiException((string) __('ai.error.only_quote_draft'));
             }
             $subject->forceFill(['terms' => $text])->save();
@@ -98,7 +100,7 @@ class DocumentTranslationSuggestionService {
             throw new AiException((string) __('ai.error.suggestion_subject_missing'));
         }
 
-        $this->markDecided($suggestion, $edited ? AiTextSuggestion::STATUS_EDITED : AiTextSuggestion::STATUS_ACCEPTED, $user);
+        $this->markDecided($suggestion, $edited ? AiTextSuggestionStatus::Edited : AiTextSuggestionStatus::Accepted, $user);
         $this->auditDecision($suggestion, $edited ? 'edited' : 'accepted', $user);
 
         return $edited;
@@ -163,7 +165,7 @@ class DocumentTranslationSuggestionService {
     }
 
     private function draftOrganizationOf(Quote $quote): Organization {
-        if ($quote->status !== 'draft') {
+        if ($quote->status !== QuoteStatus::Draft) {
             throw new AiException((string) __('ai.error.only_quote_draft'));
         }
 

@@ -54,11 +54,10 @@
             <x-bulk-toolbar :label="__(':n Zeiteinträge ausgewählt')" class="mb-2">
                 <x-slot:actions>
                     @if ($canReassign)
-                        <a href="{{ route('projects.time-entries.reassign-dialog', $project) }}"
-                           data-bulk-dialog-link data-entry-modal-trigger
-                           class="btn btn-primary btn-sm">
-                            <x-icon name="person_add" /> {{ __('Benutzer zuordnen') }}
-                        </a>
+                        <x-button :href="route('projects.time-entries.reassign-dialog', $project)" icon="person_add"
+                                data-bulk-dialog-link data-entry-modal-trigger>
+                            {{ __('Benutzer zuordnen') }}
+                        </x-button>
                     @endif
                     @if ($canPublish)
                         {{-- Kontrollierte Portal-Veröffentlichung (MVP-511):
@@ -67,23 +66,21 @@
                               data-bulk-ids-form class="inline">
                             @csrf
                             <input type="hidden" name="mode" value="publish">
-                            <button type="submit" class="btn btn-success btn-sm"
-                                    data-confirm-dialog
+                            <x-button type="submit" tone="success" icon="visibility" data-confirm-dialog
                                     data-confirm-message="{{ __('Die ausgewählten Zeiten im Kundenportal sichtbar machen? Beschreibungen erscheinen nur in der dafür freigegebenen Detailstufe.') }}"
                                     data-confirm-label="{{ __('Veröffentlichen') }}">
-                                <x-icon name="visibility" /> {{ __('Für Portal veröffentlichen') }}
-                            </button>
+                                {{ __('Für Portal veröffentlichen') }}
+                            </x-button>
                         </form>
                         <form method="POST" action="{{ route('projects.time-entries.portal-visibility', $project) }}"
                               data-bulk-ids-form class="inline">
                             @csrf
                             <input type="hidden" name="mode" value="retract">
-                            <button type="submit" class="btn btn-warning btn-sm"
-                                    data-confirm-dialog
+                            <x-button type="submit" tone="warning" icon="visibility_off" data-confirm-dialog
                                     data-confirm-message="{{ __('Die ausgewählten Zeiten aus dem Kundenportal zurückziehen?') }}"
                                     data-confirm-label="{{ __('Zurückziehen') }}">
-                                <x-icon name="visibility_off" /> {{ __('Zurückziehen') }}
-                            </button>
+                                {{ __('Zurückziehen') }}
+                            </x-button>
                         </form>
                     @endif
                 </x-slot:actions>
@@ -143,7 +140,7 @@
                             @if ($entry->tags->isNotEmpty())
                                 <span class="mt-0.5 flex flex-wrap gap-1">
                                     @foreach ($entry->tags as $tag)
-                                        <span class="badge badge-xs" style="background:{{ $tag->color ?? '#94a3b8' }};color:#fff">{{ $tag->displayName() }}</span>
+                                        <x-status-badge tone="plain" size="xs" style="background:{{ $tag->color ?? '#94a3b8' }};color:#fff">{{ $tag->displayName() }}</x-status-badge>
                                     @endforeach
                                 </span>
                             @endif

@@ -10,7 +10,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Enums\DocumentDesign\{LetterheadAssetStatus, LetterheadPageRole, PageFormat, RenderDocumentKind, RenderProfileStatus, TableStylePreset};
+use App\Enums\DocumentDesign\{LetterheadAssetStatus, LetterheadPageRole, PageFormat, RenderDocumentKind, RenderProfileStatus, RenderProfileVersionStatus, TableStylePreset};
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\DocumentDesign\{DocumentRenderProfile, DocumentRenderProfileVersion, LetterheadAsset};
@@ -79,7 +79,7 @@ class DocumentDesignController extends Controller {
         $isActive = fn (DocumentRenderProfile $p): bool => $p->status === RenderProfileStatus::Active;
         $designed = DocumentRenderProfileVersion::query()
             ->where('organization_id', $organization->id)
-            ->where(fn ($q) => $q->whereNotNull('first_asset_id')->orWhere('status', DocumentRenderProfileVersion::STATUS_ACTIVE))
+            ->where(fn ($q) => $q->whereNotNull('first_asset_id')->orWhere('status', RenderProfileVersionStatus::Active))
             ->exists();
 
         $steps = [
@@ -256,7 +256,7 @@ class DocumentDesignController extends Controller {
         $organization = $this->organization($user);
         $profile = $this->profile($organization, $sqid);
 
-        $draft = $profile->versions()->where('status', DocumentRenderProfileVersion::STATUS_DRAFT)->first();
+        $draft = $profile->versions()->where('status', RenderProfileVersionStatus::Draft)->first();
         $version = $draft ?? $profile->activeVersion;
         abort_if($version === null, 404);
 
@@ -304,7 +304,7 @@ class DocumentDesignController extends Controller {
         $profile = $this->profile($organization, $sqid);
 
         $version = $profile->versions()
-            ->where('status', DocumentRenderProfileVersion::STATUS_DRAFT)
+            ->where('status', RenderProfileVersionStatus::Draft)
             ->firstOrFail();
 
         $data = $request->validate([
@@ -388,7 +388,7 @@ class DocumentDesignController extends Controller {
         $profile = $this->profile($organization, $sqid);
 
         $version = $profile->versions()
-            ->where('status', DocumentRenderProfileVersion::STATUS_DRAFT)
+            ->where('status', RenderProfileVersionStatus::Draft)
             ->firstOrFail();
 
         $confirmed = $request->boolean('confirm_warnings');
@@ -460,7 +460,7 @@ class DocumentDesignController extends Controller {
 
         $kind = RenderDocumentKind::tryFrom((string) $request->query('kind')) ?? RenderDocumentKind::Invoice;
         $scenario = (string) $request->query('scenario', \App\Services\DocumentDesign\SampleDocumentService::SCENARIO_STANDARD);
-        $version = $profile->versions()->where('status', DocumentRenderProfileVersion::STATUS_DRAFT)->first()
+        $version = $profile->versions()->where('status', RenderProfileVersionStatus::Draft)->first()
             ?? $profile->activeVersion;
         abort_if($version === null, 404);
 
@@ -542,7 +542,7 @@ class DocumentDesignController extends Controller {
     private function assetInUse(Organization $organization, LetterheadAsset $asset): bool {
         return DocumentRenderProfileVersion::query()
             ->where('organization_id', $organization->id)
-            ->where('status', '!=', DocumentRenderProfileVersion::STATUS_SUPERSEDED)
+            ->where('status', '!=', RenderProfileVersionStatus::Superseded)
             ->where(fn ($q) => $q->where('first_asset_id', $asset->id)->orWhere('following_asset_id', $asset->id))
             ->exists();
     }

@@ -10,6 +10,8 @@
 
 namespace Tests\Feature\Invoicing;
 
+use App\Enums\Invoicing\InvoiceStatus;
+use App\Enums\Sales\QuoteStatus;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\{Organization, User};
@@ -74,7 +76,7 @@ final class QuoteProformaTest extends TestCase {
         // Teilannahme: nur Grundpaket + Option Schulung.
         $items = $quote->items()->get();
         $quote = $service->accept($quote, [(int) $items[0]->id, (int) $items[2]->id], $token);
-        $this->assertSame('partially_accepted', $quote->status);
+        $this->assertSame(QuoteStatus::PartiallyAccepted, $quote->status);
         $this->assertSame(1300.0, $quote->total?->toFloat() - $quote->tax_amount?->toFloat());
         $this->assertNotNull($quote->decision_snapshot);
 
@@ -83,7 +85,7 @@ final class QuoteProformaTest extends TestCase {
         $this->assertSame(2, $invoice->items()->count());
         $this->assertSame(1300.0, $invoice->subtotal?->toFloat());
         $this->assertSame((int) $quote->id, (int) $invoice->quote_id);
-        $this->assertSame('partially_accepted', $quote->fresh()->status, 'Keine Rückwirkung.');
+        $this->assertSame(QuoteStatus::PartiallyAccepted, $quote->fresh()->status, 'Keine Rückwirkung.');
 
         // Nachträgliche Angebotsänderung wirkt NICHT auf den Snapshot.
         $quote->items()->first()->update(['unit_price' => '9999.00']);
@@ -218,7 +220,7 @@ final class QuoteProformaTest extends TestCase {
 
         $this->assertSame(2, $next->version);
         $this->assertSame($quote->number, $next->number);
-        $this->assertSame('draft', $next->status);
+        $this->assertSame(QuoteStatus::Draft, $next->status);
         $this->assertSame(3, $next->items()->count());
         $this->assertSame((int) $quote->id, (int) $next->previous_version_id);
     }
@@ -234,7 +236,7 @@ final class QuoteProformaTest extends TestCase {
             $this->fail('Abgelaufenes Angebot wurde angenommen.');
         } catch (\RuntimeException) {
         }
-        $this->assertSame('expired', $quote->fresh()->status);
+        $this->assertSame(QuoteStatus::Expired, $quote->fresh()->status);
     }
 
     public function test_proforma_converts_to_real_invoice_with_new_number(): void {
@@ -242,7 +244,7 @@ final class QuoteProformaTest extends TestCase {
             'organization_id' => $this->org->id,
             'customer_id' => $this->customer->id,
             'number' => 'PF-2026-0001',
-            'status' => Invoice::STATUS_DRAFT,
+            'status' => InvoiceStatus::Draft,
             'type' => Invoice::TYPE_PROFORMA,
             'tax_rate' => '19.00',
         ]);
@@ -273,7 +275,7 @@ final class QuoteProformaTest extends TestCase {
             'organization_id' => $this->org->id,
             'customer_id' => $this->customer->id,
             'number' => 'G2026-0001',
-            'status' => Invoice::STATUS_ISSUED,
+            'status' => InvoiceStatus::Issued,
             'type' => Invoice::TYPE_CREDIT_NOTE,
             'tax_rate' => '19.00',
             'issued_on' => now(),

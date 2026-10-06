@@ -88,9 +88,13 @@ class ClubGroupChangeProposalController extends Controller {
         $target = filled($data['suggested_group_id'] ?? null)
             ? ClubGroup::query()->findOrFail((int) $data['suggested_group_id'])
             : null;
+        // Aufgenommen wird in die Zielgruppe — dort muss der Benutzer entscheiden dürfen, nicht nur an der Quelle (authz-a-5).
+        if ($target !== null && $target->id !== $proposal->club_group_id) {
+            Gate::authorize('decide', $target);
+        }
         $override = (bool) ($data['override'] ?? false);
         if ($override) {
-            abort_unless(Gate::allows('override', $proposal->group), 403, (string) __('club.error.override_forbidden'));
+            abort_unless(Gate::allows('override', $target ?? $proposal->group), 403, (string) __('club.error.override_forbidden'));
         }
 
         $this->groups->confirmProposal($proposal, $actor, CarbonImmutable::parse((string) $data['effective_on']), $target, $override, $data['note'] ?? null);

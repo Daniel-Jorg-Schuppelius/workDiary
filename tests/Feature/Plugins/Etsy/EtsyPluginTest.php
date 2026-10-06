@@ -14,6 +14,7 @@ use App\Models\Platform\PluginSetting;
 use App\Plugins\Etsy\EtsyPlugin;
 use App\Plugins\Etsy\Models\EtsyConnection;
 use App\Plugins\PluginHealth;
+use App\Plugins\Support\OAuthConnectionStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\Support\FakePluginHttp;
@@ -118,7 +119,7 @@ final class EtsyPluginTest extends TestCase {
             'shop_id' => 77,
             'etsy_user_id' => 12345,
             'access_token' => '12345.tok',
-            'status' => EtsyConnection::STATUS_ACTIVE,
+            'status' => OAuthConnectionStatus::Active,
             'webhook_token' => 'hook-123',
         ]);
     }

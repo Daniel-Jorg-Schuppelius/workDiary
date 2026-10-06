@@ -10,10 +10,11 @@
 
 namespace Tests\Feature\Navigation;
 
-use App\Models\Auth\RemotePendingSession;
 use App\Models\Platform\{PluginSetting, User};
 use App\Plugins\Lexoffice\LexofficePlugin;
-use App\Plugins\RemoteSupport\Providers\TeamViewerClient;
+use App\Plugins\RemoteSupport\Api\TeamViewerClient;
+use App\Plugins\RemoteSupport\Enums\RemotePendingSessionStatus;
+use App\Plugins\RemoteSupport\Models\RemotePendingSession;
 use App\Plugins\RemoteSupport\RemoteSupportPlugin;
 use App\Services\Navigation\NavigationRegistry;
 use App\Settings\SettingScope;
@@ -90,7 +91,7 @@ class PluginNavigationTest extends TestCase {
         $this->enable(RemoteSupportPlugin::ID);
         RemotePendingSession::query()->create([
             'organization_id' => $this->organization->id, 'provider' => TeamViewerClient::ID, 'remote_id' => '1', 'session_id' => 's-1',
-            'started_at' => now()->subHour(), 'ended_at' => now(), 'status' => RemotePendingSession::STATUS_OPEN,
+            'started_at' => now()->subHour(), 'ended_at' => now(), 'status' => RemotePendingSessionStatus::Open,
         ]);
 
         $nav = $this->navigation();

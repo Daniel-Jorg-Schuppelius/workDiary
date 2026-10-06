@@ -43,45 +43,24 @@
                     <x-status-badge :tone="$transfer->channel->tone()" outline>{{ $transfer->channel->label() }}</x-status-badge>
                     <x-status-badge :tone="$transfer->target->tone()" outline>{{ $transfer->target->label() }}</x-status-badge>
                 </div>
-                <dl class="mt-3 grid gap-x-8 gap-y-1 text-sm sm:grid-cols-2">
-                    <div class="flex gap-2">
-                        <dt class="text-muted">{{ __('finance.field.period') }}:</dt>
-                        <dd>{{ $transfer->period_from?->format('d.m.Y') ?? '—' }} – {{ $transfer->period_to?->format('d.m.Y') ?? '—' }}</dd>
-                    </div>
+                <x-detail-grid class="mt-3 sm:grid-cols-[max-content_1fr_max-content_1fr]">
+                    <x-detail-grid.row :label="__('finance.field.period') . ':'">{{ $transfer->period_from?->fdate() ?? '—' }} – {{ $transfer->period_to?->fdate() ?? '—' }}</x-detail-grid.row>
                     {{-- Kopfzahlen = das, was fakturiert wird (Positionen).
                          Die ungetaktete Quellsumme steht bei den Einzelquellen. --}}
-                    <div class="flex gap-2">
-                        <dt class="text-muted">{{ __('finance.field.position_count') }}:</dt>
-                        <dd class="tabular-nums">{{ $positions->count() }}</dd>
-                    </div>
-                    <div class="flex gap-2">
-                        <dt class="text-muted">{{ __('finance.field.total_quantity') }}:</dt>
-                        <dd class="tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $positionTotals['quantity'], 2, withThousandsSeparator: true) }}</dd>
-                    </div>
-                    <div class="flex gap-2">
-                        <dt class="text-muted">{{ __('finance.field.total_amount') }}:</dt>
-                        <dd class="tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $positionTotals['amount'], 2, withThousandsSeparator: true) }}</dd>
-                    </div>
+                    <x-detail-grid.row :label="__('finance.field.position_count') . ':'" class="tabular-nums">{{ $positions->count() }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('finance.field.total_quantity') . ':'" class="tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $positionTotals['quantity'], 2, withThousandsSeparator: true) }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('finance.field.total_amount') . ':'" class="tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $positionTotals['amount'], 2, withThousandsSeparator: true) }}</x-detail-grid.row>
                     @if (filled($transfer->correction_reason))
-                        <div class="flex gap-2 sm:col-span-2">
-                            <dt class="text-muted">{{ __('finance.field.correction_reason') }}:</dt>
-                            <dd>{{ $transfer->correction_reason }}</dd>
-                        </div>
+                        <x-detail-grid.row :label="__('finance.field.correction_reason') . ':'" class="sm:col-span-3">{{ $transfer->correction_reason }}</x-detail-grid.row>
                     @endif
-                    <div class="flex gap-2 sm:col-span-2">
-                        <dt class="text-muted">{{ __('finance.field.payload_hash') }}:</dt>
-                        <dd class="break-all font-mono text-xs">{{ $transfer->payload_hash }}</dd>
-                    </div>
+                    <x-detail-grid.row :label="__('finance.field.payload_hash') . ':'" class="sm:col-span-3 break-all font-mono text-xs">{{ $transfer->payload_hash }}</x-detail-grid.row>
                     @if ($transfer->transferred_at !== null)
-                        <div class="flex gap-2">
-                            <dt class="text-muted">{{ __('finance.field.transferred_at') }}:</dt>
-                            <dd>{{ $transfer->transferred_at->orgTz()->format('d.m.Y H:i') }}</dd>
-                        </div>
+                        <x-detail-grid.row :label="__('finance.field.transferred_at') . ':'">{{ $transfer->transferred_at->fdatetime() }}</x-detail-grid.row>
                     @endif
-                </dl>
+                </x-detail-grid>
 
                 @if ($transfer->status === \App\Enums\Finance\TransferStatus::Failed && $transfer->failure_reason !== null)
-                    <div class="alert alert-error mt-3 text-sm">
+                    <div role="alert" class="alert alert-error mt-3 text-sm">
                         <x-icon name="error" />
                         <span><span class="font-semibold">{{ __('finance.field.failure_reason') }}:</span> {{ $transfer->failure_reason }}</span>
                     </div>
@@ -91,7 +70,7 @@
                 @if ($transfer->status === \App\Enums\Finance\TransferStatus::Transferred
                     && $transfer->target === \App\Enums\Finance\TransferTarget::Lexoffice
                     && $transfer->externalReference !== null)
-                    <div class="alert alert-info mt-3 text-sm">
+                    <div role="status" class="alert alert-info mt-3 text-sm">
                         <x-icon name="cloud_done" />
                         <span>
                             {{ __('finance.hint.lexoffice_draft_created') }}
@@ -108,7 +87,7 @@
                 @if ($transfer->status === \App\Enums\Finance\TransferStatus::Transferred
                     && $transfer->target === \App\Enums\Finance\TransferTarget::SevDesk
                     && $transfer->externalReference !== null)
-                    <div class="alert alert-info mt-3 text-sm">
+                    <div role="status" class="alert alert-info mt-3 text-sm">
                         <x-icon name="cloud_done" />
                         <span>
                             {{ __('finance.hint.sevdesk_draft_created') }}
@@ -121,7 +100,7 @@
                 @if ($transfer->status === \App\Enums\Finance\TransferStatus::Transferred
                     && $transfer->target === \App\Enums\Finance\TransferTarget::Easybill
                     && $transfer->externalReference !== null)
-                    <div class="alert alert-info mt-3 text-sm">
+                    <div role="status" class="alert alert-info mt-3 text-sm">
                         <x-icon name="cloud_done" />
                         <span>
                             {{ __('finance.hint.easybill_draft_created') }}
@@ -227,16 +206,10 @@
                 </div>
             </form>
         @else
-            <dl class="grid gap-2 text-sm">
-                <div>
-                    <dt class="text-muted">{{ __('finance.field.intro_text') }}</dt>
-                    <dd class="whitespace-pre-line">{{ $transfer->intro_text ?: '—' }}</dd>
-                </div>
-                <div>
-                    <dt class="text-muted">{{ __('finance.field.closing_text') }}</dt>
-                    <dd class="whitespace-pre-line">{{ $transfer->closing_text ?: '—' }}</dd>
-                </div>
-            </dl>
+            <x-detail-grid layout="cells" :cols="1">
+                <x-detail-grid.row :label="__('finance.field.intro_text')" class="whitespace-pre-line">{{ $transfer->intro_text ?: '—' }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('finance.field.closing_text')" class="whitespace-pre-line">{{ $transfer->closing_text ?: '—' }}</x-detail-grid.row>
+            </x-detail-grid>
         @endif
     </x-card>
 
@@ -438,7 +411,7 @@
             @foreach ($transfer->items as $item)
                 <tr>
                     @if ($item->source instanceof \App\Models\Time\TimeEntry)
-                        <td>{{ $item->source->date?->format('d.m.Y') ?? '—' }}</td>
+                        <td>{{ $item->source->date?->fdate() ?? '—' }}</td>
                         <td>
                             {{ $item->source->project?->name ?? '—' }}
                             <span class="text-muted">·</span>
@@ -448,7 +421,7 @@
                             @endif
                         </td>
                     @elseif ($item->source instanceof \App\Models\Material\MaterialUsage)
-                        <td>{{ $item->source->timesheet?->work_date?->format('d.m.Y') ?? '—' }}</td>
+                        <td>{{ $item->source->timesheet?->work_date?->fdate() ?? '—' }}</td>
                         <td>
                             {{ trim((string) $item->source->description) ?: __('Material') }}
                             <span class="block text-xs text-muted">{{ $item->source->timesheet?->project?->name ?? '' }}</span>

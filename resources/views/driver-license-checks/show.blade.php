@@ -36,7 +36,7 @@
     </x-slot:toolbar>
 
     @if ($overdue)
-        <div class="alert alert-error text-sm">
+        <div role="alert" class="alert alert-error text-sm">
             <span>{{ __('Die Führerscheinkontrolle dieses Fahrers ist überfällig — Fahrzeugreservierungen sind gesperrt, bis eine neue Sichtprüfung dokumentiert ist.') }}</span>
         </div>
     @endif

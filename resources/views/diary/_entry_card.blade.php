@@ -13,26 +13,13 @@
       - $filters : array (für Such-Highlight, optional)
 --}}
 @php($needle = trim((string) ($filters['q'] ?? '')))
-<article class="grid gap-4 rounded-box border border-base-300 bg-base-100 p-4 shadow-xs transition hover:border-primary/30 md:grid-cols-[minmax(0,1fr)_auto]">
+<x-card as="article" class="grid gap-4 transition hover:border-primary/30 md:grid-cols-[minmax(0,1fr)_auto]">
     <div class="min-w-0">
         <div class="flex flex-wrap items-center gap-3 mb-3">
-            <span @class([
-                'badge badge-sm',
-                'badge-success' => $entry->statusTone() === 'done',
-                'badge-info'    => $entry->statusTone() === 'progress',
-                'badge-warning' => $entry->statusTone() === 'open',
-                'badge-error'   => $entry->statusTone() === 'alert',
-                'badge-ghost'   => $entry->statusTone() === 'neutral',
-            ])>{{ $entry->statusLabel() }}</span>
+            <x-status-badge :tone="$entry->status->badgeTone()">{{ $entry->statusLabel() }}</x-status-badge>
             @php($dispatchStatus = app(\App\Services\Dispatch\DispatchStatusResolver::class)->resolve($entry))
             @if ($dispatchStatus !== \App\Enums\Diary\DispatchStatus::Unplanned)
-                <span @class([
-                    'badge badge-sm badge-outline',
-                    'badge-success' => $dispatchStatus->tone() === 'done',
-                    'badge-info'    => $dispatchStatus->tone() === 'progress',
-                    'badge-warning' => $dispatchStatus->tone() === 'open',
-                    'badge-ghost'   => $dispatchStatus->tone() === 'neutral',
-                ])>{{ $dispatchStatus->label() }}</span>
+                <x-status-badge :tone="$dispatchStatus->badgeTone()" outline>{{ $dispatchStatus->label() }}</x-status-badge>
             @endif
             @if ($entry->mode && $entry->mode !== \App\Enums\Diary\Mode::Fixed)
                 <x-status-badge tone="ghost" outline>{{ $entry->modeLabel() }}</x-status-badge>
@@ -58,7 +45,7 @@
         @if ($entry->tags->isNotEmpty())
             <div class="mt-2 flex flex-wrap gap-1">
                 @foreach ($entry->tags as $tag)
-                    <span class="badge badge-outline badge-sm" @if ($tag->color) style="border-color: {{ $tag->color }}; color: {{ $tag->color }};" @endif>#{{ $tag->displayName() }}</span>
+                    <x-status-badge tone="plain" outline :style="$tag->color ? 'border-color: '.$tag->color.'; color: '.$tag->color.';' : null">#{{ $tag->displayName() }}</x-status-badge>
                 @endforeach
             </div>
         @endif
@@ -97,4 +84,4 @@
                         show-label>{{ __('Bearbeiten') }}</x-icon-btn>
         @endcan
     </div>
-</article>
+</x-card>

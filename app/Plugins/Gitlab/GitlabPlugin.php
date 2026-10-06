@@ -15,7 +15,8 @@ namespace App\Plugins\Gitlab;
 use App\Models\Platform\Organization;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{Plugin, PluginCapability, TaskSyncer};
-use App\Plugins\Gitlab\Api\{GitlabApiException, GitlabClientFactory};
+use App\Plugins\Gitlab\Api\GitlabClientFactory;
+use App\Plugins\Gitlab\Exceptions\GitlabApiException;
 use App\Plugins\Gitlab\Services\GitlabIssueImporter;
 use Throwable;
 

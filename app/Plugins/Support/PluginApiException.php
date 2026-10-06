@@ -37,9 +37,4 @@ class PluginApiException extends RuntimeException {
     public function isRateLimited(): bool {
         return $this->status === 429;
     }
-
-    /** Timeout/Netzfehler ohne Antwort: Ausgang der Schreiboperation unklar. */
-    public function isOutcomeUnclear(): bool {
-        return $this->status === 0;
-    }
 }

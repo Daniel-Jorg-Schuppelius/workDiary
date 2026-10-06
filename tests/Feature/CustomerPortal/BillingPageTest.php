@@ -88,6 +88,23 @@ class BillingPageTest extends TestCase {
             ->assertSee('33,00');
     }
 
+    /** Konsolidierungs-Audit 2026-10 (k4-14): bisher endete die Liste still nach 24 Monaten. */
+    public function test_index_pages_beyond_two_years(): void {
+        $this->travelTo('2028-08-15 12:00:00');
+
+        $first = $this->actingAs($this->portalUser, 'customer')->get(route('customer.billing.index'))->assertOk();
+        $statements = $first->viewData('statements');
+        $this->assertSame(27, $statements->total());
+        $this->assertCount(24, $statements->items());
+        $this->assertSame([2028, 8], [$statements->items()[0]->year, $statements->items()[0]->month]);
+
+        // Der Monat mit den Zeiten liegt jenseits des alten Fensters.
+        $second = $this->get(route('customer.billing.index', ['page' => 2]))->assertOk()->assertSee('33,00');
+        $oldest = $second->viewData('statements')->items();
+        $this->assertCount(3, $oldest);
+        $this->assertSame([2026, 6], [$oldest[2]->year, $oldest[2]->month]);
+    }
+
     public function test_show_renders_attendance_and_balance_block(): void {
         $this->actingAs($this->portalUser, 'customer')
             ->get(route('customer.billing.show', ['year' => 2026, 'month' => 6]))

@@ -11,8 +11,7 @@
 
 @section('title', __('flex.eligibility.title', ['name' => $member->name]))
 @section('nav-title', __('flex.eligibility.nav_title'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 <x-page-shell overflow="clip">
@@ -58,19 +57,22 @@
         </form>
     </x-card>
 
-    <x-table scroll="flex" :pinRows="true" table-sort="client">
+    <x-table scroll="flex" :pinRows="true" table-sort="server"
+             :route="route('users.flex-eligibility.index', $member)"
+             :current-sort="$sort"
+             :current-dir="$dir">
         <x-slot:head>
             <tr>
-                <x-table.th sort type="date" default="desc">{{ __('flex.eligibility.table.valid_from') }}</x-table.th>
-                <x-table.th sort type="date">{{ __('flex.eligibility.table.valid_to') }}</x-table.th>
-                <x-table.th sort type="string">{{ __('flex.eligibility.table.note') }}</x-table.th>
+                <x-table.th sort="valid_from" default>{{ __('flex.eligibility.table.valid_from') }}</x-table.th>
+                <x-table.th sort="valid_to">{{ __('flex.eligibility.table.valid_to') }}</x-table.th>
+                <x-table.th sort="note">{{ __('flex.eligibility.table.note') }}</x-table.th>
                 <th class="text-right">{{ __('flex.eligibility.table.actions') }}</th>
             </tr>
         </x-slot:head>
         @forelse ($periods as $period)
-            <tr>
-                <td data-sort-value="{{ $period->valid_from->format('Y-m-d') }}">{{ $period->valid_from->fdate() }}</td>
-                <td data-sort-value="{{ $period->valid_to?->format('Y-m-d') ?? '9999-12-31' }}">
+            <tr class="hover">
+                <td>{{ $period->valid_from->fdate() }}</td>
+                <td>
                     @if ($period->valid_to)
                         {{ $period->valid_to->fdate() }}
                     @else
@@ -102,5 +104,7 @@
                 :title="__('flex.eligibility.empty', ['name' => $member->name])" compact />
         @endforelse
     </x-table>
+
+    <x-pagination :paginator="$periods" standing />
 </x-page-shell>
 @endsection

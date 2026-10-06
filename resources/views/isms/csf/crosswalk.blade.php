@@ -79,7 +79,7 @@
                                     <td class="align-top">
                                         <div class="flex flex-wrap gap-1">
                                             @foreach ($row['targets'] as $target)
-                                                <span class="badge badge-sm badge-ghost font-mono" title="{{ $target['title'] }}">{{ $target['ref'] }}</span>
+                                                <x-status-badge class="font-mono" title="{{ $target['title'] }}">{{ $target['ref'] }}</x-status-badge>
                                             @endforeach
                                         </div>
                                     </td>

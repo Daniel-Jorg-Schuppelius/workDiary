@@ -19,10 +19,10 @@
     size="wide">
 
     <x-slot:headerActions>
-        <a href="{{ route('lexoffice.vouchers.file', $voucher) }}" target="_blank" rel="noopener"
-           class="btn btn-ghost btn-sm gap-2" title="{{ __('In neuem Tab öffnen') }}">
-            <x-icon name="open_in_new" /> {{ __('Neuer Tab') }}
-        </a>
+        <x-button :href="route('lexoffice.vouchers.file', $voucher)" tone="ghost" icon="open_in_new" class="gap-2"
+                target="_blank" rel="noopener" title="{{ __('In neuem Tab öffnen') }}">
+            {{ __('Neuer Tab') }}
+        </x-button>
     </x-slot:headerActions>
 
     <div class="h-[68vh] w-full overflow-hidden rounded-box border border-base-300 bg-base-200">
@@ -32,15 +32,14 @@
     </div>
 
     <x-slot:footerExtra>
-        <a href="{{ route('lexoffice.vouchers.file', [$voucher, 'download' => 1]) }}"
-           class="btn btn-primary gap-2">
-            <x-icon name="download" /> {{ __('Herunterladen') }}
-        </a>
+        <x-button :href="route('lexoffice.vouchers.file', [$voucher, 'download' => 1])" size="md" icon="download" class="gap-2">
+            {{ __('Herunterladen') }}
+        </x-button>
     </x-slot:footerExtra>
 
     <x-slot:actions>
-        <button type="button" class="btn btn-ghost gap-2" data-entry-modal-close>
-            <x-icon name="close" /> {{ __('Schließen') }}
-        </button>
+        <x-button tone="ghost" size="md" icon="close" class="gap-2" data-entry-modal-close>
+            {{ __('Schließen') }}
+        </x-button>
     </x-slot:actions>
 </x-modal>

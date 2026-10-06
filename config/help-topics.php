@@ -578,6 +578,7 @@ return [
         'materials.*' => 'materials.manage',
         'inventory.stock' => 'inventory.stock',
         'inventory.lots' => 'inventory.stock',
+        'inventory.lots.*' => 'inventory.stock',
         'inventory.scan' => 'inventory.stock',
         'inventory.counts.*' => 'inventory.counts',
         'inventory.label-templates.*' => 'inventory.labels',

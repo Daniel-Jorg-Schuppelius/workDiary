@@ -10,7 +10,8 @@
 
 namespace Tests\Feature\Plugins\Calendly;
 
-use App\Enums\Diary\Status;
+use App\Enums\Calendar\AppointmentRequestStatus;
+use App\Enums\Diary\{DispatchStatus, Status};
 use App\Models\Calendar\AppointmentRequest;
 use App\Models\Customer\Customer;
 use App\Models\Diary\{DiaryEntry, DiaryEntryEvent};
@@ -54,7 +55,7 @@ final class CalendlyConfirmTest extends TestCase {
             'organization_id' => $this->organization->id,
             'source' => AppointmentRequest::SOURCE_CALENDLY,
             'source_uri' => 'inv-confirm-' . uniqid(),
-            'status' => AppointmentRequest::STATUS_REQUESTED,
+            'status' => AppointmentRequestStatus::Requested,
             'customer_id' => $this->customer->id,
             'invitee_name' => 'Jane Doe',
             'invitee_email' => 'jane@example.com',
@@ -73,13 +74,13 @@ final class CalendlyConfirmTest extends TestCase {
         $this->assertSame($this->customer->id, $entry->customer_id);
         $this->assertSame(Status::Open, $entry->status);
         $this->assertSame((int) $this->admin->id, (int) $entry->planned_by_user_id);
-        $this->assertSame('confirmed', $entry->fresh()?->getAttribute('dispatch_status'));
+        $this->assertSame(DispatchStatus::Confirmed, $entry->fresh()?->dispatch_status);
         $this->assertNotNull($entry->fresh()?->getAttribute('dispatch_confirmed_at'));
 
         $this->assertSame(1, DiaryEntryEvent::query()->where('event', 'dispatch.calendly_confirmed')->count());
 
         $request->refresh();
-        $this->assertSame(AppointmentRequest::STATUS_CONFIRMED, $request->status);
+        $this->assertSame(AppointmentRequestStatus::Confirmed, $request->status);
         $this->assertSame($entry->id, $request->diary_entry_id);
         $this->assertSame((int) $this->admin->id, (int) $request->decided_by);
     }
@@ -116,7 +117,7 @@ final class CalendlyConfirmTest extends TestCase {
         $this->service()->decline($request, $this->admin, 'Keine Kapazität');
 
         $request->refresh();
-        $this->assertSame(AppointmentRequest::STATUS_DECLINED, $request->status);
+        $this->assertSame(AppointmentRequestStatus::Declined, $request->status);
         $this->assertSame('Keine Kapazität', $request->decline_reason);
         $this->assertSame(0, DiaryEntry::query()->count());
     }

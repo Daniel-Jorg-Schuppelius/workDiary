@@ -39,6 +39,7 @@ class BillbeeAdminController extends Controller {
             ->when($channel !== '', fn($q) => $q->where('channel', $channel))
             ->when($state !== null && $state !== '', fn($q) => $q->where('state', (int) $state))
             ->orderByDesc('ordered_at')
+            ->orderByDesc('id')
             ->paginate(25)
             ->withQueryString();
 
@@ -49,11 +50,7 @@ class BillbeeAdminController extends Controller {
             ->orderBy('channel')
             ->pluck('channel');
 
-        $openInbox = IntegrationInboxItem::query()
-            ->where('organization_id', $organization->id)
-            ->where('plugin_id', BillbeePlugin::ID)
-            ->where('status', IntegrationInboxItem::STATUS_OPEN)
-            ->count();
+        $openInbox = IntegrationInboxItem::openCount((int) $organization->id, BillbeePlugin::ID);
 
         return view(BillbeePlugin::ID . '::admin.index', [
             'orders' => $orders,

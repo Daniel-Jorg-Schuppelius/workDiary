@@ -52,7 +52,7 @@ class IncomingEInvoicesSection extends AbstractGdpduSection {
             yield [
                 $this->dateTime($incoming->received_at),
                 $this->str($incoming->source),
-                $this->str($incoming->status),
+                $incoming->status->value,
                 $this->str($incoming->sha256),
                 $this->dateTime($incoming->decided_at),
                 $this->str($incoming->decision_note),

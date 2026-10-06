@@ -10,7 +10,7 @@
 
 namespace Tests\Unit\Enums;
 
-use App\Enums\Diary\{LocationMode, Mode, Priority, Status};
+use App\Enums\Diary\{DispatchStatus, LocationMode, Mode, Priority, Status};
 use Tests\TestCase;
 
 final class DiaryEnumsTest extends TestCase {
@@ -54,5 +54,16 @@ final class DiaryEnumsTest extends TestCase {
         $this->assertNotEmpty(Status::InProgress->label());
         $this->assertNotEmpty(Status::Open->label());
         $this->assertNotEmpty(Status::Problem->label());
+    }
+
+    public function test_badge_tones_are_component_tones(): void {
+        $this->assertSame(
+            ['done' => 'success', 'progress' => 'info', 'open' => 'warning', 'alert' => 'error', 'neutral' => 'ghost'],
+            collect(Status::cases())->mapWithKeys(static fn (Status $s): array => [$s->tone() => $s->badgeTone()])->all(),
+        );
+        $this->assertSame(
+            ['neutral' => 'ghost', 'open' => 'warning', 'progress' => 'info', 'done' => 'success'],
+            collect(DispatchStatus::cases())->mapWithKeys(static fn (DispatchStatus $s): array => [$s->tone() => $s->badgeTone()])->all(),
+        );
     }
 }

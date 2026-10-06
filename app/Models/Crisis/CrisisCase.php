@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Crisis;
 
+use App\Enums\Crisis\CrisisCaseStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
@@ -28,7 +29,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, HasOne};
  * @property string $title
  * @property string $category
  * @property string $severity
- * @property string $status
+ * @property CrisisCaseStatus $status
  * @property string|null $trigger_source
  * @property string|null $description
  * @property string|null $affected_summary
@@ -47,11 +48,6 @@ class CrisisCase extends Model {
 
     public const SEVERITIES = ['minor', 'major', 'critical'];
 
-    public const STATUSES = ['prepared', 'reported', 'assessed', 'activated', 'in_progress', 'stabilized', 'recovery', 'all_clear', 'post_review', 'closed', 'discarded'];
-
-    /** Aktive Führungszustände (Dashboard + Mitglieder-Notfallzugriff). */
-    public const ACTIVE_STATUSES = ['reported', 'assessed', 'activated', 'in_progress', 'stabilized', 'recovery'];
-
     protected $fillable = [
         'organization_id', 'title', 'category', 'severity', 'status',
         'trigger_source', 'description', 'affected_summary',
@@ -61,6 +57,7 @@ class CrisisCase extends Model {
 
     /** @var array<string, string> */
     protected $casts = [
+        'status' => CrisisCaseStatus::class,
         'activated_at' => 'datetime',
         'all_clear_at' => 'datetime',
         'closed_at' => 'datetime',
@@ -111,11 +108,12 @@ class CrisisCase extends Model {
         return $this->belongsTo(User::class, 'responsible_user_id');
     }
 
-    public function isActive(): bool {
-        return in_array($this->status, self::ACTIVE_STATUSES, true);
+    /** Notfallzugriff (MVP-213): Stabsmitglieder sehen die Akte während der Krise. */
+    /** Aktivieren geht laut Statustabelle und nur, solange die Akte nie aktiviert war (Meldefristen laufen ab `activated_at`). */
+    public function canBeActivated(): bool {
+        return $this->activated_at === null && $this->status->canTransitionTo(CrisisCaseStatus::Activated);
     }
 
-    /** Notfallzugriff (MVP-213): Stabsmitglieder sehen die Akte während der Krise. */
     public function isTeamMember(User $user): bool {
         return $this->team()
             ->where(fn($q) => $q->where('user_id', $user->id)->orWhere('deputy_user_id', $user->id))

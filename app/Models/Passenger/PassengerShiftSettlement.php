@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Passenger;
 
+use App\Enums\Passenger\ShiftSettlementStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Fleet\Vehicle;
 use App\Models\Platform\User;
@@ -42,7 +43,7 @@ use Illuminate\Support\Carbon;
  * @property numeric-string $cancelled_total
  * @property numeric-string $difference
  * @property string|null $difference_reason
- * @property string $status
+ * @property ShiftSettlementStatus $status
  * @property int|null $cash_entry_id
  */
 class PassengerShiftSettlement extends Model {
@@ -52,12 +53,6 @@ class PassengerShiftSettlement extends Model {
     use HasFactory;
 
     use HasSqid;
-
-    public const STATUS_OPEN = 'open';
-
-    public const STATUS_BALANCED = 'balanced';
-
-    public const STATUS_DISPUTED = 'disputed';
 
     protected $fillable = [
         'organization_id',
@@ -94,6 +89,7 @@ class PassengerShiftSettlement extends Model {
         'tip_total' => 'decimal:2',
         'cancelled_total' => 'decimal:2',
         'difference' => 'decimal:2',
+        'status' => ShiftSettlementStatus::class,
         'closed_at' => 'datetime',
     ];
 

@@ -12,12 +12,14 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Privacy;
 
+use App\Enums\Privacy\ComplianceFindingStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Privacy\ComplianceFinding;
 use App\Services\Privacy\ComplianceAnalysisService;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 /** Compliance-/Vertragsluecken: Ampeluebersicht, regelbasierte Analyse, Entscheidungen. */
@@ -27,12 +29,14 @@ class ComplianceController extends Controller {
     public function index(): View {
         Gate::authorize('viewAny', ComplianceFinding::class);
 
-        $priority = ['missing' => 0, 'expiring' => 1, 'required' => 2, 'in_review' => 3, 'deviation_accepted' => 4, 'present' => 5, 'not_applicable' => 6];
+        // Offene Lücken zuerst; die Rangfolge der Status steht in der Abfrage, damit sie über alle Seiten gilt.
         $findings = ComplianceFinding::query()
             ->with(['activity', 'agreement', 'processor'])
-            ->get()
-            ->sortBy(fn (ComplianceFinding $f): string => sprintf('%d_%s', $priority[$f->status] ?? 9, $f->requirement_key))
-            ->values();
+            ->orderByRaw("CASE status WHEN 'missing' THEN 0 WHEN 'expiring' THEN 1 WHEN 'required' THEN 2 WHEN 'in_review' THEN 3 WHEN 'deviation_accepted' THEN 4 WHEN 'present' THEN 5 WHEN 'not_applicable' THEN 6 ELSE 9 END")
+            ->orderBy('requirement_key')
+            ->orderBy('id')
+            ->paginate(20)
+            ->withQueryString();
 
         // Konfigurierbarer Anforderungskatalog (Nachtrag 043c) — beim ersten
         // Aufruf werden die config-Defaults materialisiert.
@@ -41,7 +45,8 @@ class ComplianceController extends Controller {
 
         return view('privacy.compliance.index', [
             'findings' => $findings,
-            'counts' => $findings->groupBy('status')->map->count(),
+            // Ampel über alle Befunde, nicht nur über die Seite.
+            'counts' => ComplianceFinding::query()->selectRaw('status, COUNT(*) as aggregate')->groupBy('status')->pluck('aggregate', 'status'),
             'requirements' => $requirements,
         ]);
     }
@@ -77,19 +82,20 @@ class ComplianceController extends Controller {
     public function update(Request $request, ComplianceFinding $finding): RedirectResponse {
         Gate::authorize('update', $finding);
         $data = $request->validate([
-            'status' => ['required', 'in:present,in_review,not_applicable,deviation_accepted,missing'],
+            'status' => ['required', Rule::enum(ComplianceFindingStatus::class)->only(ComplianceFindingStatus::manual())],
             'justification' => ['nullable', 'string', 'max:5000'],
             'due_at' => ['nullable', 'date'],
         ]);
 
         // Begründungspflicht fuer „nicht anwendbar"/„Abweichung akzeptiert".
-        if (in_array($data['status'], ['not_applicable', 'deviation_accepted'], true) && empty($data['justification'])) {
+        $status = ComplianceFindingStatus::from($data['status']);
+        if ($status->needsJustification() && empty($data['justification'])) {
             return back()->withErrors(['justification' => __('Für diesen Status ist eine Begründung erforderlich.')]);
         }
 
         $this->service->override(
             $finding,
-            $data['status'],
+            $status,
             $data['justification'] ?? null,
             isset($data['due_at']) ? Carbon::parse($data['due_at']) : null,
         );

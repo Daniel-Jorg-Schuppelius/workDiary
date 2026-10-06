@@ -17,10 +17,7 @@
         <x-page-toolbar>
             <div class="text-sm text-base-content/70">{{ __('Pipeline, Budgetauslastung und offene Entscheidungen.') }}</div>
             <x-slot:actions>
-                <x-action-menu icon="download" :label="__('Export')">
-                    <x-icon-btn icon="download" size="sm" :href="route('investments.report', array_merge($standardFilters->toQueryParams(), ['export' => 'csv']))" show-label>{{ __('CSV') }}</x-icon-btn>
-                    <x-icon-btn icon="table_view" size="sm" :href="route('investments.report', array_merge($standardFilters->toQueryParams(), ['export' => 'xlsx']))" show-label>Excel</x-icon-btn>
-                </x-action-menu>
+                <x-report-export :url="fn (string $format) => route('investments.report', array_merge($standardFilters->toQueryParams(), ['export' => $format]))" :formats="['csv', 'xlsx']" tone="ghost" />
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
@@ -51,7 +48,7 @@
             @else
                 <ul class="space-y-1 text-sm">
                     @foreach ($pipeline as $status => $count)
-                        <li class="flex justify-between gap-4"><span>{{ __("values.$status") }}</span><span class="tabular-nums">{{ $count }}</span></li>
+                        <li class="flex justify-between gap-4"><span>{{ \App\Enums\Investments\InvestmentCaseStatus::from($status)->label() }}</span><span class="tabular-nums">{{ $count }}</span></li>
                     @endforeach
                 </ul>
             @endif

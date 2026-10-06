@@ -23,14 +23,7 @@
     @endphp
     <x-index-page :subtitle="__('accounting.reports.period', ['from' => $from->fdate(), 'to' => $to->fdate()])">
         <x-slot:actions>
-            <x-icon-btn icon="picture_as_pdf" size="sm" tone="ghost" show-label
-                        :href="route('reports.accounting.profit-and-loss', array_merge($query, ['export' => 'pdf']))" :label="__('PDF')" />
-            <x-action-menu icon="download" :label="__('Export')">
-                <x-icon-btn icon="download" size="sm" tone="ghost" show-label
-                            :href="route('reports.accounting.profit-and-loss', array_merge($query, ['export' => 'csv']))" :label="__('CSV')" />
-                <x-icon-btn icon="table_view" size="sm" tone="ghost" show-label
-                            :href="route('reports.accounting.profit-and-loss', array_merge($query, ['export' => 'xlsx']))" :label="__('Excel')" />
-            </x-action-menu>
+            <x-report-export :url="fn (string $format) => route('reports.accounting.profit-and-loss', array_merge($query, ['export' => $format]))" tone="ghost" />
         </x-slot:actions>
 
         <x-filter-bar :action="route('reports.accounting.profit-and-loss')" :reset="route('reports.accounting.profit-and-loss')">

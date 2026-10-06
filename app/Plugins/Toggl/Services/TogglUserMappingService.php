@@ -14,8 +14,8 @@ use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Integration\{ExternalReference, ExternalReferenceAlias, IntegrationInboxItem};
 use App\Models\Platform\{Organization, User};
 use App\Models\Project\Project;
-use App\Plugins\Toggl\Sources\TogglApiClient;
-use App\Plugins\Toggl\{TogglConfig, TogglImportService, TogglOptionBuilder, TogglPlugin};
+use App\Plugins\Toggl\Api\TogglApiClient;
+use App\Plugins\Toggl\{TogglConfig, TogglPlugin};
 use App\Support\Sqid;
 use Illuminate\Support\Collection;
 

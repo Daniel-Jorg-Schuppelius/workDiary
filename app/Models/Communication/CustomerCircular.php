@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Communication;
 
+use App\Enums\Communication\CustomerCircularStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
@@ -21,6 +22,7 @@ use Illuminate\Support\Carbon;
 /**
  * Rundschreiben an einen gefilterten Kundenkreis (Feature 119, MVP-608).
  *
+ * @property CustomerCircularStatus $status
  * @property Carbon|null $sent_at
  * @property Carbon|null $approved_at
  * @property int|null $created_by
@@ -31,12 +33,6 @@ class CustomerCircular extends Model {
     use Auditable;
     use BelongsToOrganization;
     use HasSqid;
-
-    public const STATUS_DRAFT = 'draft';
-
-    public const STATUS_SENDING = 'sending';
-
-    public const STATUS_SENT = 'sent';
 
     protected $fillable = [
         'organization_id',
@@ -60,6 +56,7 @@ class CustomerCircular extends Model {
         'filters' => 'array',
         'sent_at' => 'datetime',
         'approved_at' => 'datetime',
+        'status' => CustomerCircularStatus::class,
     ];
 
     /** @var array<string, mixed> */
@@ -76,7 +73,7 @@ class CustomerCircular extends Model {
     }
 
     public function isDraft(): bool {
-        return $this->status === self::STATUS_DRAFT;
+        return $this->status === CustomerCircularStatus::Draft;
     }
 
     /** @return BelongsTo<User, $this> */

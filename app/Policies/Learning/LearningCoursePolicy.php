@@ -51,6 +51,17 @@ class LearningCoursePolicy {
         return ($user->can(P::LearningAuthor->value) || $user->can(P::LearningManage->value)) && $course->isVisibleTo($user);
     }
 
+    /**
+     * Neue Bearbeitungsrunde eines freigegebenen Kurses. Eigenes Recht statt
+     * `update`: das verlangt einen bearbeitbaren Stand und wies deshalb jeden
+     * freigegebenen Kurs ab.
+     */
+    public function reopen(User $user, LearningCourse $course): bool {
+        return $user->can(P::LearningAuthor->value)
+            && $course->status === LearningCourseStatus::Released
+            && $course->isVisibleTo($user);
+    }
+
     public function release(User $user, LearningCourse $course): bool {
         return $user->can(P::LearningRelease->value) && $course->status !== LearningCourseStatus::Archived;
     }
@@ -68,6 +79,7 @@ class LearningCoursePolicy {
     public function delete(User $user, LearningCourse $course): bool {
         return $user->can(P::LearningAuthor->value)
             && $course->status === LearningCourseStatus::Draft
-            && $course->versions()->count() === 0;
+            && $course->versions()->count() === 0
+            && $course->isVisibleTo($user);
     }
 }

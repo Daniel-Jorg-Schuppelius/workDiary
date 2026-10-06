@@ -14,14 +14,14 @@
 @section('content')
 <x-page-shell>
     @if ($application->isAnonymized())
-        <div class="alert alert-info text-sm">
+        <div role="status" class="alert alert-info text-sm">
             <x-icon name="shield" />
             {{ __('Diese Akte wurde am :date anonymisiert — es sind keine personenbezogenen Daten mehr gespeichert.', ['date' => $application->anonymized_at->fdatetime()]) }}
         </div>
     @endif
 
     <x-slot:toolbar>
-        <x-page-toolbar :title="$application->isAnonymized() ? __('(anonymisiert)') : ($application->candidate_name ?? '—')" :badge="__('values.' . $application->status)" badge-tone="outline">
+        <x-page-toolbar :title="$application->isAnonymized() ? __('(anonymisiert)') : ($application->candidate_name ?? '—')" :badge="$application->status->label()" badge-tone="outline">
             <div class="text-sm text-base-content/70">
                 @if ($application->requisition) {{ $application->requisition->title }} · @endif
                 {{ __('Quelle: :source', ['source' => __("values.{$application->source}")]) }}
@@ -32,12 +32,12 @@
                     <x-icon-btn icon="draw" size="sm" data-entry-modal-trigger :href="route('contracts.employment.application.create', $application)" show-label>{{ __('hr.employment.title') }}</x-icon-btn>
                 @endif
                 @can('update', $application)
-                    @if (in_array($application->status, \App\Models\Applications\JobApplication::PIPELINE_STATUSES, true))
+                    @if ($application->status->inPipeline())
                         <form method="POST" action="{{ route('recruiting.applications.status', $application) }}" class="flex items-center gap-1">
                             @csrf
                             <select name="status" class="select select-sm select-bordered" data-autosubmit aria-label="{{ __('Status') }}">
-                                @foreach (['screened', 'interview_planned', 'interviewed', 'task_open'] as $status)
-                                    <option value="{{ $status }}" @selected($application->status === $status)>{{ __("values.$status") }}</option>
+                                @foreach (\App\Enums\Applications\JobApplicationStatus::working() as $status)
+                                    <option value="{{ $status->value }}" @selected($application->status === $status)>{{ $status->label() }}</option>
                                 @endforeach
                             </select>
                         </form>
@@ -70,7 +70,7 @@
                 </form>
             @endcan
             @if ($application->documents->isEmpty())
-                <p class="text-sm text-muted">{{ __('Keine Unterlagen abgelegt.') }}</p>
+                <x-empty-state icon="description" :title="__('Keine Unterlagen abgelegt.')" compact />
             @else
                 <ul class="space-y-1 text-sm">
                     @foreach ($application->documents as $link)
@@ -85,7 +85,7 @@
                  (MVP-795): erreichbar erst nach bestandener Prüfung. --}}
             <h4 class="mt-4 text-sm font-semibold">{{ __('Eingereichte Unterlagen') }}</h4>
             @if ($application->uploads->isEmpty())
-                <p class="text-sm text-muted">{{ __('Keine Unterlagen eingereicht.') }}</p>
+                <x-empty-state icon="upload_file" :title="__('Keine Unterlagen eingereicht.')" compact />
             @else
                 <ul class="space-y-1 text-sm">
                     @foreach ($application->uploads as $upload)
@@ -94,8 +94,8 @@
                                 <a class="link" href="{{ route('recruiting.applications.uploads.download', [$application, $upload]) }}">{{ $upload->original_name }}</a>
                             @else
                                 <span>{{ $upload->original_name }}</span>
-                                <x-status-badge :tone="$upload->scan_status === \App\Models\Applications\JobApplicationUpload::SCAN_REJECTED ? 'error' : 'warning'">
-                                    {{ $upload->scan_status === \App\Models\Applications\JobApplicationUpload::SCAN_REJECTED ? __('Abgewiesen') : __('In Prüfung') }}
+                                <x-status-badge :tone="$upload->scan_status === \App\Enums\Applications\JobApplicationUploadScanStatus::Rejected ? 'error' : 'warning'">
+                                    {{ $upload->scan_status === \App\Enums\Applications\JobApplicationUploadScanStatus::Rejected ? __('Abgewiesen') : __('In Prüfung') }}
                                 </x-status-badge>
                             @endif
                         </li>
@@ -129,7 +129,8 @@
     <div class="grid gap-4 lg:grid-cols-2">
         <x-card :title="__('Gespräche')">
             @can('update', $application)
-                @unless ($application->isAnonymized())
+                {{-- Entschieden ist endgültig: Gespräche nur in der Pipeline. --}}
+                @if ($application->status->inPipeline())
                     <form method="POST" action="{{ route('recruiting.applications.interviews.store', $application) }}" class="mb-3 flex flex-wrap items-end gap-2">
                         @csrf
                         <input type="datetime-local" name="scheduled_at" required class="input input-sm input-bordered" aria-label="{{ __('Termin') }}">
@@ -164,7 +165,7 @@
                             <x-icon-btn icon="send" size="sm" tone="primary" type="submit" show-label>{{ __('recruiting.offer.send') }}</x-icon-btn>
                         </form>
                     </details>
-                @endunless
+                @endif
             @endcan
             @if ($application->interviews->isEmpty())
                 <x-empty-state icon="event" :title="__('Keine Gespräche geplant.')" compact />
@@ -172,11 +173,11 @@
                 <ul class="space-y-2 text-sm">
                     @foreach ($application->interviews as $interview)
                         <li class="flex flex-wrap items-center gap-2">
-                            <x-status-badge size="xs" outline>{{ __("values.{$interview->status}") }}</x-status-badge>
+                            <x-status-badge size="xs" outline>{{ $interview->status->label() }}</x-status-badge>
                             {{ $interview->scheduled_at->fdatetime() }} · {{ __("values.{$interview->mode}") }}
                             @if ($interview->interviewer)<span class="text-muted">{{ $interview->interviewer->name }}</span>@endif
                             @if ($interview->rating)<span class="text-xs">{{ str_repeat('★', (int) $interview->rating) }}</span>@endif
-                            @if ($interview->status === 'planned')
+                            @if ($interview->status === \App\Enums\Applications\JobApplicationInterviewStatus::Planned && $application->status->inPipeline())
                                 @can('update', $application)
                                     <x-action-form :action="route('recruiting.applications.interviews.complete', [$application, $interview])" class="ml-auto">
                                         <x-icon-btn icon="check" size="xs" tone="success" type="submit" :title="__('Als geführt dokumentieren')" />
@@ -241,7 +242,7 @@
                                         @endforeach
                                     </select>
                                     <input name="note" maxlength="2000" value="{{ $rating?->note }}" class="input input-xs input-bordered w-48" aria-label="{{ __('recruiting.suitability.note') }}" placeholder="{{ __('recruiting.suitability.note') }}">
-                                    <button type="submit" class="btn btn-xs">{{ __('recruiting.suitability.save') }}</button>
+                                    <x-button type="submit" tone="plain" size="xs">{{ __('recruiting.suitability.save') }}</x-button>
                                 </form>
                             @else
                                 <span>{{ $rating?->level ?? '—' }}</span>
@@ -255,7 +256,7 @@
 
     {{-- Entscheidung (MVP-191) --}}
     @can('decide', $application)
-        @if (in_array($application->status, \App\Models\Applications\JobApplication::PIPELINE_STATUSES, true))
+        @if ($application->status->inPipeline())
             <x-card :title="__('Entscheidung')">
                 <form method="POST" action="{{ route('recruiting.applications.decide', $application) }}" class="flex flex-wrap items-end gap-2">
                     @csrf
@@ -275,11 +276,26 @@
                 </form>
                 <p class="mt-2 text-xs text-muted">{{ __('Absage/Rückzug startet die Löschvormerkung (:months Monate, konfigurierbar); Talentpool braucht eine befristete Einwilligung.', ['months' => (int) config('applications.rejected_retention_months', 6)]) }}</p>
             </x-card>
+        @elseif ($application->status === \App\Enums\Applications\JobApplicationStatus::TalentPool)
+            {{-- Aufnahme aus dem Talentpool: die einzige Ausnahme von „entschieden ist endgültig“. --}}
+            <x-card :title="__('Entscheidung')">
+                @if ($application->hasValidTalentPoolConsent())
+                    <x-action-form :action="route('recruiting.applications.readmit', $application)" class="flex flex-wrap items-end gap-2"
+                          :confirm="__('Diese Akte aus dem Talentpool wieder in die Pipeline aufnehmen? Löschvormerkung und Talentpool-Einwilligung werden entfernt.')"
+                          confirm-icon="restore" confirm-tone="primary" :confirm-label="__('Aufnehmen')">
+                        <input aria-label="{{ __('Anmerkung') }}" name="note" maxlength="1000" class="input input-sm input-bordered flex-1" placeholder="{{ __('Anmerkung') }}">
+                        <x-icon-btn icon="restore" tone="primary" size="sm" type="submit" show-label>{{ __('Aus dem Talentpool aufnehmen') }}</x-icon-btn>
+                    </x-action-form>
+                    <p class="mt-2 text-xs text-muted">{{ __('Die Akte beginnt wieder als eingegangene Bewerbung; die Löschfrist entsteht mit der nächsten Entscheidung neu.') }}</p>
+                @else
+                    <p class="text-sm text-base-content/70">{{ __('Die Talentpool-Einwilligung fehlt oder ist abgelaufen — die Akte kann nicht wieder aufgenommen werden.') }}</p>
+                @endif
+            </x-card>
         @endif
     @endcan
 
     {{-- Onboarding-Übergabe (MVP-193) --}}
-    @if ($application->status === 'accepted')
+    @if ($application->status === \App\Enums\Applications\JobApplicationStatus::Accepted)
         <x-card :title="__('Onboarding-Übergabe (Mitarbeiter-Entwurf)')">
             @if ($application->employeeDraft === null)
                 @can('decide', $application)
@@ -293,7 +309,7 @@
             @else
                 @php $draft = $application->employeeDraft; @endphp
                 <x-detail-grid>
-                    <x-detail-grid.row :label="__('Status')">{{ __("values.{$draft->status}") }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('Status')">{{ $draft->status->label() }}</x-detail-grid.row>
                     <x-detail-grid.row :label="__('Name')">{{ $draft->name }}</x-detail-grid.row>
                     <x-detail-grid.row :label="__('E-Mail')">{{ $draft->email ?? '—' }}</x-detail-grid.row>
                     @if (($draft->qualifications ?? []) !== [])
@@ -307,7 +323,7 @@
                         @endforeach
                     </ul>
                 @endif
-                @if ($draft->status === 'draft')
+                @if ($draft->status === \App\Enums\Applications\EmployeeDraftStatus::Draft)
                     @can('invite', $draft)
                         <x-action-form :action="route('recruiting.applications.draft.invite', [$application, $draft])" class="mt-3"
                               :confirm="__('Jetzt ein Nutzerkonto anlegen? Der Kandidat muss beim ersten Login das Passwort setzen.')"
@@ -325,7 +341,7 @@
     @include('applications._negotiations', [
         'negotiations' => $application->negotiations,
         'storeRoute' => route('recruiting.applications.negotiations.store', $application),
-        'canOpen' => in_array($application->status, ['offer', 'accepted'], true) && auth()->user()?->can('decide', $application),
+        'canOpen' => in_array($application->status, [\App\Enums\Applications\JobApplicationStatus::Offer, \App\Enums\Applications\JobApplicationStatus::Accepted], true) && auth()->user()?->can('decide', $application),
     ])
 </x-page-shell>
 @endsection

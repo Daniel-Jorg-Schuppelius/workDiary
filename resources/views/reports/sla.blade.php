@@ -31,17 +31,7 @@
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="__('sla.report.subtitle')">
             <x-slot:actions>
-                <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
-                            :href="route('reports.sla', array_merge($standardFilters->toQueryParams(), ['export' => 'pdf']))"
-                            show-label>PDF</x-icon-btn>
-                <x-action-menu icon="download" tone="outline" :label="__('Export')">
-                    <x-icon-btn icon="download" tone="outline" size="sm"
-                                :href="route('reports.sla', array_merge($standardFilters->toQueryParams(), ['export' => 'csv']))"
-                                show-label>CSV</x-icon-btn>
-                    <x-icon-btn icon="table_view" tone="outline" size="sm"
-                                :href="route('reports.sla', array_merge($standardFilters->toQueryParams(), ['export' => 'xlsx']))"
-                                show-label>Excel</x-icon-btn>
-                </x-action-menu>
+                <x-report-export :url="fn (string $format) => route('reports.sla', array_merge($standardFilters->toQueryParams(), ['export' => $format]))" />
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
@@ -222,7 +212,7 @@
                                         <input aria-label="{{ __('sla.report.cause') }}" type="text" name="cause" maxlength="191"
                                                class="input input-xs input-bordered w-32"
                                                placeholder="{{ __('sla.report.cause') }}">
-                                        <button class="btn btn-xs" type="submit">{{ __('sla.report.acknowledge_btn') }}</button>
+                                        <x-button type="submit" tone="plain" size="xs">{{ __('sla.report.acknowledge_btn') }}</x-button>
                                     </form>
                                 @endif
                             </td>

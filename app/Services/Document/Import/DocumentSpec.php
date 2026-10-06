@@ -121,7 +121,7 @@ class DocumentSpec extends AbstractEntitySpec implements ProvidesZipImport {
         $file = $row['file'] ?? null;
         if ($file === null) {
             $issues[] = $this->requiredIssue('file');
-        } elseif (! in_array($this->extensionOf((string) $file), DocumentService::ALLOWED_EXTENSIONS, true)) {
+        } elseif (! in_array($this->extensionOf((string) $file), FileAttacher::ALLOWED_EXTENSIONS, true)) {
             $issues[] = new ValidationIssue(
                 ImportErrorCode::Format,
                 'file',
@@ -197,7 +197,7 @@ class DocumentSpec extends AbstractEntitySpec implements ProvidesZipImport {
             }
 
             $mime = $this->mimeOf($content);
-            if (! in_array($mime, DocumentService::ALLOWED_MIMES, true)) {
+            if (! in_array($mime, FileAttacher::ALLOWED_MIMES, true)) {
                 return [
                     ImportOutcome::Failed,
                     new ValidationIssue(ImportErrorCode::Format, 'file', (string) __('import.error.document.mime', ['mime' => $mime])),

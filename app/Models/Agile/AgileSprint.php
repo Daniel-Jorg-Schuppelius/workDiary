@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Agile;
 
+use App\Enums\Agile\AgileSprintStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
@@ -28,7 +29,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property string|null $goal
  * @property \Illuminate\Support\Carbon|null $starts_on
  * @property \Illuminate\Support\Carbon|null $ends_on
- * @property string $status
+ * @property AgileSprintStatus $status
  * @property array<int, array<string, mixed>>|null $commitment_snapshot
  * @property array<string, mixed>|null $completion_snapshot
  * @property array<string, mixed>|null $capacity_snapshot
@@ -42,14 +43,6 @@ class AgileSprint extends Model {
     use Auditable;
     use BelongsToOrganization;
     use HasSqid;
-
-    public const STATUS_PLANNED = 'planned';
-
-    public const STATUS_ACTIVE = 'active';
-
-    public const STATUS_COMPLETED = 'completed';
-
-    public const STATUS_CANCELLED = 'cancelled';
 
     protected $fillable = [
         'organization_id',
@@ -73,6 +66,7 @@ class AgileSprint extends Model {
     protected $casts = [
         'starts_on' => 'date',
         'ends_on' => 'date',
+        'status' => AgileSprintStatus::class,
         'commitment_snapshot' => 'array',
         'completion_snapshot' => 'array',
         'capacity_snapshot' => 'array',
@@ -93,10 +87,10 @@ class AgileSprint extends Model {
     }
 
     public function isActive(): bool {
-        return $this->status === self::STATUS_ACTIVE;
+        return $this->status === AgileSprintStatus::Active;
     }
 
     public function isFinished(): bool {
-        return in_array($this->status, [self::STATUS_COMPLETED, self::STATUS_CANCELLED], true);
+        return in_array($this->status, [AgileSprintStatus::Completed, AgileSprintStatus::Cancelled], true);
     }
 }

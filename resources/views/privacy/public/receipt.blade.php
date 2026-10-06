@@ -11,7 +11,7 @@
 @section('title', __('dsar.receipt.title'))
 
 @section('content')
-    <div class="alert ok">{{ __('dsar.receipt.headline') }}</div>
+    <div role="status" class="alert ok">{{ __('dsar.receipt.headline') }}</div>
 
     <section class="card">
         @if ($requestNumber)

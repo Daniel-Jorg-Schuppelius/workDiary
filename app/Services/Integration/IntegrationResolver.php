@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Integration;
 
 use App\Enums\Integration\{ConflictFieldPolicy, ImportMatchPolicy};
+use App\Enums\Integration\IntegrationInboxStatus;
 use App\Models\Customer\Customer;
 use App\Models\Integration\{ExternalReference, ExternalReferenceAlias, IntegrationInboxItem};
 use App\Models\Platform\Organization;
@@ -278,7 +279,7 @@ class IntegrationResolver {
         ]);
 
         if (! $item->exists) {
-            $item->status = IntegrationInboxItem::STATUS_OPEN;
+            $item->status = IntegrationInboxStatus::Open;
         }
 
         $item->fill([

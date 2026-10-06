@@ -11,6 +11,7 @@
 namespace Tests\Feature\Invoicing;
 
 use App\Enums\Invoicing\{InvoiceDeliveryFormat, XRechnungSyntax};
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Mail\InvoiceMail;
 use App\Models\Customer\Customer;
 use App\Models\Document\DocumentDispatch;
@@ -129,7 +130,7 @@ final class XRechnungCiiTest extends TestCase {
             'body_html' => '<p>{{invoice_number}}</p>',
             'body_text' => '{{invoice_number}}',
         ]);
-        $invoice = $this->invoice(status: Invoice::STATUS_DRAFT);
+        $invoice = $this->invoice(status: InvoiceStatus::Draft);
 
         $this->actingAs($this->admin)->post(route('invoices.send', $invoice), [
             'template_id' => $template->id,
@@ -179,7 +180,7 @@ final class XRechnungCiiTest extends TestCase {
         ]]]);
     }
 
-    private function invoice(string $status = Invoice::STATUS_ISSUED, string $taxRate = '19.00', InvoiceDeliveryFormat $format = InvoiceDeliveryFormat::Pdf): Invoice {
+    private function invoice(InvoiceStatus $status = InvoiceStatus::Issued, string $taxRate = '19.00', InvoiceDeliveryFormat $format = InvoiceDeliveryFormat::Pdf): Invoice {
         $invoice = Invoice::create([
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,

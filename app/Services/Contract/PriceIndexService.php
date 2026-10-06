@@ -15,12 +15,11 @@ namespace App\Services\Contract;
 use App\Enums\Contract\PriceIndexStatus;
 use App\Models\Contract\PriceIndexValue;
 use App\Models\Platform\User;
-use App\Plugins\Support\PluginHttpFactory;
 use App\Services\Concerns\AssertsStatusTransition;
+use App\Support\BundesbankSeries;
 use App\Support\Query\DateRange;
 use Carbon\CarbonInterface;
 use CommonToolkit\Helper\Data\NumberHelper;
-use RuntimeException;
 
 /**
  * Verbraucherpreisindex für Deutschland (MVP-952): Ursprungswerte des
@@ -35,17 +34,11 @@ class PriceIndexService {
 
     public const SOURCE = 'bundesbank';
 
-    public function __construct(private readonly PluginHttpFactory $http) {}
+    public function __construct(private readonly BundesbankSeries $series) {}
 
     /** @return int Anzahl neuer oder geänderter Monatswerte */
     public function import(): int {
-        $response = $this->http->coreClient('bundesbank', self::SERIES_URL)
-            ->getResponse(self::SERIES_URL, ['format' => 'csv'], ['timeout' => 30]);
-        if (! $response->successful()) {
-            throw new RuntimeException('Bundesbank-Abruf fehlgeschlagen (HTTP ' . $response->status() . ').');
-        }
-
-        return $this->ingest($response->body());
+        return $this->ingest($this->series->csv(self::SERIES_URL));
     }
 
     /**
@@ -56,13 +49,13 @@ class PriceIndexService {
      */
     public function ingest(string $csv, string $source = self::SOURCE): int {
         $changed = 0;
-        foreach (preg_split('/\r?\n/', $csv) ?: [] as $line) {
-            if (preg_match('/^(\d{4})-(\d{2});([\d.,]+);/', trim($line), $m) !== 1) {
+        foreach (BundesbankSeries::monthlyValues($csv) as $month => $value) {
+            // Ein Index ist nie negativ; eine solche Zeile ist keine Wertzeile.
+            if (str_starts_with($value, '-')) {
                 continue;
             }
-            $value = NumberHelper::normalizeDecimalString($m[3]);
-            $row = $this->find(PriceIndexValue::SERIES_VPI, $m[1] . '-' . $m[2] . '-01') ?? new PriceIndexValue(['series' => PriceIndexValue::SERIES_VPI, 'period_on' => $m[1] . '-' . $m[2] . '-01']);
-            if ($row->exists && bccomp((string) $row->value, $value, 1) === 0) {
+            $row = $this->find(PriceIndexValue::SERIES_VPI, $month . '-01') ?? new PriceIndexValue(['series' => PriceIndexValue::SERIES_VPI, 'period_on' => $month . '-01']);
+            if ($row->exists && NumberHelper::comparePrecise((string) $row->value, $value, 1) === 0) {
                 continue;
             }
             $row->fill(['value' => $value, 'source' => $source, 'status' => PriceIndexStatus::Pending, 'approver_user_id' => null, 'approved_at' => null])->save();

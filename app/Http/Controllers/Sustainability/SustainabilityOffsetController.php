@@ -18,6 +18,7 @@ use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Sustainability\SustainabilityOffset;
 use App\Services\Sustainability\SustainabilityClaimChecker;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
@@ -33,7 +34,7 @@ class SustainabilityOffsetController extends Controller {
 
         return view('sustainability.offsets', [
             'offsets' => $offsets,
-            'totals' => $offsets->groupBy('claim_year')->map(static fn ($rows): string => (string) $rows->reduce(static fn (string $sum, SustainabilityOffset $o): string => bcadd($sum, (string) $o->quantity_t, 3), '0')),
+            'totals' => $offsets->groupBy('claim_year')->map(static fn ($rows): string => NumberHelper::sumPrecise($rows->pluck('quantity_t')->all(), 3)),
             'findings' => (array) $request->session()->get('claim_findings', []),
             'claimText' => (string) $request->session()->get('claim_text', ''),
             'canManage' => Gate::allows(P::SustainabilityManage->value),

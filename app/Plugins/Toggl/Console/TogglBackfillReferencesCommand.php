@@ -11,7 +11,8 @@
 namespace App\Plugins\Toggl\Console;
 
 use App\Console\Concerns\IteratesOrganizations;
-use App\Plugins\Toggl\{TogglConfig, TogglImportService};
+use App\Plugins\Toggl\Services\TogglImportService;
+use App\Plugins\Toggl\TogglConfig;
 use Illuminate\Console\Command;
 
 /**

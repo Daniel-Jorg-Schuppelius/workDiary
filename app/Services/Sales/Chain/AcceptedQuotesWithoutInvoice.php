@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Sales\Chain;
 
-use App\Models\Invoicing\Invoice;
+use App\Enums\Invoicing\InvoiceStatus;
+use App\Enums\Sales\QuoteStatus;
 use App\Models\Platform\{Organization, User};
 use App\Models\Sales\Quote;
 use App\Services\Billing\Contracts\DocumentChainSource;
@@ -61,9 +62,9 @@ final class AcceptedQuotesWithoutInvoice implements DocumentChainSource {
     private function query(Organization $organization): Builder {
         return Quote::query()
             ->where('organization_id', $organization->id)
-            ->whereIn('status', ['accepted', 'partially_accepted'])
+            ->whereIn('status', QuoteStatus::won())
             ->whereNotExists(fn ($q) => $q->selectRaw('1')->from('invoices')
                 ->whereColumn('invoices.quote_id', 'quotes.id')
-                ->where('invoices.status', '!=', Invoice::STATUS_CANCELLED));
+                ->where('invoices.status', '!=', InvoiceStatus::Cancelled));
     }
 }

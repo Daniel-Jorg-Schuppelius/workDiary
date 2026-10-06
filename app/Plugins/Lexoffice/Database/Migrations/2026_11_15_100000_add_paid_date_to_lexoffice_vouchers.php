@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Schema;
 /**
  * Zahlungsdatum am Lexoffice-Beleg-Spiegel (Phase-54-Nachtrag): Die
  * voucherlist liefert kein paidDate — es wird je bezahltem Beleg über den
- * Payments-Endpunkt nachgeladen ({@see \App\Plugins\Lexoffice\LexofficeVoucherSync::enrichPaidDates()})
+ * Payments-Endpunkt nachgeladen ({@see \App\Plugins\Lexoffice\Services\LexofficeVoucherSync::enrichPaidDates()})
  * und macht den Zahlungsverhaltens-Report auch bei externer
  * Rechnungshoheit aussagekräftig (Zahldauer/DSO-Historie).
  */

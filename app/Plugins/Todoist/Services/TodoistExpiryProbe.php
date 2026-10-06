@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\Todoist\Services;
 
 use App\Enums\Operations\{OperationsTaskSeverity, OperationsTaskType};
+use App\Plugins\Todoist\Enums\TodoistConnectionStatus;
 use App\Plugins\Todoist\Models\TodoistConnection;
 use App\Services\Operations\Expiry\ExpiryProbe;
 use App\Services\Operations\OperationsSignal;
@@ -42,7 +43,7 @@ final class TodoistExpiryProbe implements ExpiryProbe {
                     organizationId: $orgId,
                 );
             }
-            if ((string) $connection->status !== 'active' || $connection->last_error !== null) {
+            if ($connection->status !== TodoistConnectionStatus::Active || $connection->last_error !== null) {
                 $signals[] = new OperationsSignal(
                     type: OperationsTaskType::ConnectionFailing,
                     dedupeKey: 'connection_failing:todoist:' . $connection->id,
@@ -51,7 +52,7 @@ final class TodoistExpiryProbe implements ExpiryProbe {
                     params: [
                         'name' => (string) ($connection->todoist_user_email ?? 'Todoist'),
                         'kind' => 'Todoist',
-                        'error' => (string) ($connection->last_error ?? $connection->status),
+                        'error' => (string) ($connection->last_error ?? $connection->status->value),
                     ],
                     organizationId: $orgId,
                 );

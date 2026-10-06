@@ -12,9 +12,10 @@ declare(strict_types=1);
 
 namespace App\Plugins\Easybill\Api;
 
+use APIToolkit\API\Authentication\BearerAuthentication;
 use App\Plugins\Easybill\EasybillPlugin;
+use App\Plugins\Easybill\Exceptions\EasybillApiException;
 use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
-use Illuminate\Http\Client\Response;
 
 /**
  * Typisierte Oberfläche der easybill-REST-API (MVP-431; Swagger-Fixture
@@ -45,7 +46,7 @@ class EasybillClient {
     /** @return array<int, mixed> GET /customers?number= — exakter Nummernfilter. */
     public function customersByNumber(string $number): array {
         $body = (array) $this->guard(
-            $this->authed('get', '/customers', ['query' => ['number' => $number, 'limit' => 10]]),
+            $this->api()->requestResponse('get', $this->baseUrl . '/customers', ['query' => ['number' => $number, 'limit' => 10]]),
             '/customers',
         );
 
@@ -61,7 +62,7 @@ class EasybillClient {
     public function createCustomer(array $payload): array {
         // 429/5xx-Retry gewollt (api-toolkit ≥2.9.2: POST-Retry ist Opt-in):
         // Dubletten fängt die Reconciliation über den external-id-Marker.
-        return (array) $this->guard($this->authed('post', '/customers', ['json' => $payload, 'retry_non_idempotent' => true]), '/customers');
+        return (array) $this->guard($this->api()->requestResponse('post', $this->baseUrl . '/customers', ['json' => $payload, 'retry_non_idempotent' => true]), '/customers');
     }
 
     /**
@@ -73,7 +74,7 @@ class EasybillClient {
      */
     public function updateCustomer(string $customerId, array $payload): array {
         return (array) $this->guard(
-            $this->authed('put', '/customers/' . rawurlencode($customerId), ['json' => $payload]),
+            $this->api()->requestResponse('put', $this->baseUrl . '/customers/' . rawurlencode($customerId), ['json' => $payload]),
             '/customers/{id}',
         );
     }
@@ -92,12 +93,12 @@ class EasybillClient {
         // 429/5xx-Retry gewollt (POST-Opt-in seit api-toolkit 2.9.2): der
         // Beleg entsteht als Entwurf mit external-id-Marker — ein doppelter
         // Draft würde von der Adoptions-Reconciliation eingefangen.
-        return (array) $this->guard($this->authed('post', '/documents', ['json' => $payload, 'retry_non_idempotent' => true]), '/documents');
+        return (array) $this->guard($this->api()->requestResponse('post', $this->baseUrl . '/documents', ['json' => $payload, 'retry_non_idempotent' => true]), '/documents');
     }
 
     /** @return array<string, mixed> GET /documents/{id} — Status-/Nummernrücklauf. */
     public function document(string $documentId): array {
-        return (array) $this->guard($this->authed('get', '/documents/' . rawurlencode($documentId)), '/documents/{id}');
+        return (array) $this->guard($this->api()->requestResponse('get', $this->baseUrl . '/documents/' . rawurlencode($documentId)), '/documents/{id}');
     }
 
     /**
@@ -105,7 +106,7 @@ class EasybillClient {
      * @return array<int, mixed> GET /documents — normalisierte items[].
      */
     public function documents(array $query = []): array {
-        $body = (array) $this->guard($this->authed('get', '/documents', ['query' => $query]), '/documents');
+        $body = (array) $this->guard($this->api()->requestResponse('get', $this->baseUrl . '/documents', ['query' => $query]), '/documents');
 
         return $this->rows($body);
     }
@@ -128,7 +129,7 @@ class EasybillClient {
 
     /** Binärabruf GET /documents/{id}/pdf (application/pdf). */
     public function downloadPdf(string $documentId): ?string {
-        $response = $this->authed('get', '/documents/' . rawurlencode($documentId) . '/pdf');
+        $response = $this->api()->requestResponse('get', $this->baseUrl . '/documents/' . rawurlencode($documentId) . '/pdf');
         if (! $response->successful()) {
             return null;
         }
@@ -145,7 +146,7 @@ class EasybillClient {
      * @return array{content: string, mime: string}|null
      */
     public function downloadFile(string $documentId): ?array {
-        $response = $this->authed('get', '/documents/' . rawurlencode($documentId) . '/download');
+        $response = $this->api()->requestResponse('get', $this->baseUrl . '/documents/' . rawurlencode($documentId) . '/download');
         if (! $response->successful()) {
             return null;
         }
@@ -172,20 +173,11 @@ class EasybillClient {
         return is_array($items) && array_is_list($items) ? $items : [];
     }
 
-    /** @param array<string, mixed> $options */
-    private function authed(string $method, string $path, array $options = []): Response {
-        $options['headers'] = array_merge(
-            (array) ($options['headers'] ?? []),
-            ['Authorization' => 'Bearer ' . $this->apiKey],
-        );
-
-        return $this->api()->requestResponse($method, $this->baseUrl . $path, $options);
-    }
-
     /** Ein Exemplar je Client, damit das Request-Intervall zwischen Requests wirkt. */
     private function api(): PluginApiClient {
         if ($this->api === null) {
             $this->api = $this->http->client(EasybillPlugin::ID, $this->baseUrl, 60.0 / max(1, $this->ratePerMinute));
+            $this->api->setAuthentication(new BearerAuthentication($this->apiKey));
         }
 
         return $this->api;

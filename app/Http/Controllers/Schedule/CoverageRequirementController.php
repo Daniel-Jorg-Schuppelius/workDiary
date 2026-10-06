@@ -14,7 +14,8 @@ use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Schedule\{StoreCoverageRequirementRequest, UpdateCoverageRequirementRequest};
 use App\Models\Platform\User;
-use App\Models\Schedule\{CoverageRequirement, DutyPlan};
+use App\Models\Schedule\{CoverageRequirement, DutyPlan, ShiftType};
+use App\Support\SortableQuery;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -25,15 +26,28 @@ class CoverageRequirementController extends Controller {
         Gate::authorize('view', $dutyPlan);
         Gate::authorize('viewAny', CoverageRequirement::class);
 
-        $requirements = CoverageRequirement::query()
+        [$sort, $dir] = SortableQuery::resolve($request, ['shift', 'scope', 'min', 'max', 'notes'], 'scope', 'asc');
+        $query = CoverageRequirement::query()
             ->with('shiftType')
-            ->forPlan($dutyPlan->id)
-            ->orderByRaw('specific_date IS NULL')
-            ->orderBy('specific_date')
-            ->orderBy('weekday')
-            ->get();
+            ->forPlan($dutyPlan->id);
+        match ($sort) {
+            'shift' => $query->orderBy(ShiftType::query()->select('name')->whereColumn('shift_types.id', 'coverage_requirements.shift_type_id'), $dir),
+            'min' => $query->orderBy('min_staff', $dir),
+            'max' => $query->orderBy('max_staff', $dir),
+            'notes' => $query->orderBy('notes', $dir),
+            default => null,
+        };
+        // Geltungsbereich wie bisher: konkrete Daten vor den Wochentagsregeln.
+        $scopeDir = $sort === 'scope' ? $dir : 'asc';
+        $requirements = $query
+            ->orderByRaw($scopeDir === 'asc' ? 'specific_date IS NULL asc' : 'specific_date IS NULL desc')
+            ->orderBy('specific_date', $scopeDir)
+            ->orderBy('weekday', $scopeDir)
+            ->orderBy('id')
+            ->paginate(25)
+            ->withQueryString();
 
-        return view('coverage-requirements.index', compact('dutyPlan', 'requirements'));
+        return view('coverage-requirements.index', compact('dutyPlan', 'requirements', 'sort', 'dir'));
     }
 
     public function create(DutyPlan $dutyPlan): View {
@@ -63,7 +77,7 @@ class CoverageRequirementController extends Controller {
         CoverageRequirement::create($data);
 
         return redirect()
-            ->route('duty-plans.coverage.index', $dutyPlan)
+            ->toList('duty-plans.coverage.index', [$dutyPlan])
             ->with('success', __('Soll-Besetzung gespeichert.'));
     }
 
@@ -94,7 +108,7 @@ class CoverageRequirementController extends Controller {
         $requirement->update($data);
 
         return redirect()
-            ->route('duty-plans.coverage.index', $dutyPlan)
+            ->toList('duty-plans.coverage.index', [$dutyPlan])
             ->with('success', __('Soll-Besetzung aktualisiert.'));
     }
 
@@ -104,7 +118,7 @@ class CoverageRequirementController extends Controller {
         $requirement->delete();
 
         return redirect()
-            ->route('duty-plans.coverage.index', $dutyPlan)
+            ->toList('duty-plans.coverage.index', [$dutyPlan])
             ->with('success', __('Soll-Besetzung gelöscht.'));
     }
 }

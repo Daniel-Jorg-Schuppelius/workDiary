@@ -11,6 +11,7 @@
 namespace App\Plugins\Msgraph\Models;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasConnectionHealth};
+use App\Plugins\Msgraph\Enums\MsgraphConnectionStatus;
 use App\Plugins\Support\Calendar\RemoteCalendarConnection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -38,17 +39,13 @@ use Illuminate\Support\Carbon;
  * @property string|null $subscription_id
  * @property Carbon|null $subscription_expires_at
  * @property string|null $webhook_secret
- * @property string $status
+ * @property MsgraphConnectionStatus $status
  * @property Carbon|null $last_published_at
  */
 class MsgraphConnection extends Model implements RemoteCalendarConnection {
     use Auditable;
     use BelongsToOrganization;
     use HasConnectionHealth;
-
-    public const STATUS_ACTIVE = 'active';
-
-    public const STATUS_DISCONNECTED = 'disconnected';
 
     /** Tabellenname explizit (Klassenname würde sonst zu `msgraph_connections` — zur Sicherheit fixiert). */
     protected $table = 'msgraph_connections';
@@ -85,6 +82,7 @@ class MsgraphConnection extends Model implements RemoteCalendarConnection {
         'two_way' => 'boolean',
         'subscription_expires_at' => 'datetime',
         'webhook_secret' => 'encrypted',
+        'status' => MsgraphConnectionStatus::class,
         'last_published_at' => 'datetime',
         'last_imported_at' => 'datetime',
         'last_error_at' => 'datetime',
@@ -95,7 +93,7 @@ class MsgraphConnection extends Model implements RemoteCalendarConnection {
 
     /** Betriebsbereit: verbunden, Token vorhanden und nicht auto-deaktiviert (MVP-178). */
     public function isActive(): bool {
-        return $this->status === self::STATUS_ACTIVE
+        return $this->status === MsgraphConnectionStatus::Active
             && trim((string) $this->access_token) !== ''
             && $this->disabled_at === null;
     }

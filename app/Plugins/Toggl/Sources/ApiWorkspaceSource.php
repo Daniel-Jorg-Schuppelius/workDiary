@@ -10,6 +10,7 @@
 
 namespace App\Plugins\Toggl\Sources;
 
+use App\Plugins\Toggl\Api\TogglApiClient;
 use Carbon\CarbonImmutable;
 
 /**

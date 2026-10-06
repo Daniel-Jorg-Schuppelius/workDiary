@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Agile;
 
+use App\Enums\Agile\AgileSprintStatus;
 use App\Models\Agile\{AgileEvent, AgileSprint, AgileWorkItem};
 use App\Models\Platform\{Organization, User};
 use App\Models\Project\Project;
@@ -178,7 +179,7 @@ final class AgileMetricsTest extends TestCase {
             'organization_id' => $otherBoard->organization_id,
             'board_id' => $otherBoard->id,
             'name' => 'Fremd',
-            'status' => AgileSprint::STATUS_COMPLETED,
+            'status' => AgileSprintStatus::Completed,
             'completion_snapshot' => ['done_points' => 99],
             'completed_at' => now(),
         ]);

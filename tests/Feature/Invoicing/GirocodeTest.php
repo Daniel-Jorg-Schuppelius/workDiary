@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Invoicing;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\{Organization, User};
@@ -60,7 +61,7 @@ class GirocodeTest extends TestCase {
             'organization_id' => $this->org->id,
             'customer_id' => $this->customer->id,
             'number' => 'R2030-0007',
-            'status' => Invoice::STATUS_ISSUED,
+            'status' => InvoiceStatus::Issued,
             'currency' => 'EUR',
             'tax_rate' => '19.00',
             'created_by' => $this->user->id,
@@ -129,19 +130,19 @@ class GirocodeTest extends TestCase {
     }
 
     public function test_no_code_for_a_paid_invoice(): void {
-        $this->assertNull(app(GirocodeService::class)->payload($this->invoice(['status' => Invoice::STATUS_PAID]), $this->legal()));
+        $this->assertNull(app(GirocodeService::class)->payload($this->invoice(['status' => InvoiceStatus::Paid]), $this->legal()));
     }
 
     public function test_partial_payment_without_a_known_amount_gets_no_code(): void {
         // Status gesetzt, aber weder Zuordnung noch Kassenbeleg: Der Rest ist
         // unbekannt — ein Code über die volle Summe lüde zur Doppelzahlung ein.
-        $invoice = $this->invoice(['number' => 'R2030-0008', 'status' => Invoice::STATUS_PARTIALLY_PAID]);
+        $invoice = $this->invoice(['number' => 'R2030-0008', 'status' => InvoiceStatus::PartiallyPaid]);
 
         $this->assertNull(app(GirocodeService::class)->payload($invoice, $this->legal()));
     }
 
     public function test_partial_payment_puts_the_remainder_into_the_code(): void {
-        $invoice = $this->invoice(['number' => 'R2030-0009', 'status' => Invoice::STATUS_PARTIALLY_PAID]);
+        $invoice = $this->invoice(['number' => 'R2030-0009', 'status' => InvoiceStatus::PartiallyPaid]);
         $transaction = \App\Models\Finance\BankTransaction::factory()->create([
             'organization_id' => $this->org->id,
             'amount' => '50.00',
@@ -162,7 +163,7 @@ class GirocodeTest extends TestCase {
     }
 
     public function test_cash_payments_count_towards_the_remainder(): void {
-        $invoice = $this->invoice(['number' => 'R2030-0010', 'status' => Invoice::STATUS_PARTIALLY_PAID]);
+        $invoice = $this->invoice(['number' => 'R2030-0010', 'status' => InvoiceStatus::PartiallyPaid]);
         $register = \App\Models\Finance\CashRegister::query()->create([
             'organization_id' => $this->org->id,
             'name' => 'Ladenkasse',
@@ -189,7 +190,7 @@ class GirocodeTest extends TestCase {
     public function test_open_retention_reduces_the_coded_amount(): void {
         // Der Beleg weist den geminderten Zahlbetrag aus — der Code muss
         // dieselbe Zahl tragen, sonst überweist der Kunde den Einbehalt mit.
-        $invoice = $this->invoice(['number' => 'R2030-0011', 'status' => Invoice::STATUS_DRAFT]);
+        $invoice = $this->invoice(['number' => 'R2030-0011', 'status' => InvoiceStatus::Draft]);
         app(\App\Services\Invoicing\RetentionService::class)->add(
             $invoice,
             \App\Enums\Invoicing\RetentionKind::Warranty,
@@ -199,7 +200,7 @@ class GirocodeTest extends TestCase {
             actor: $this->user,
         );
 
-        $invoice->forceFill(['status' => Invoice::STATUS_ISSUED])->save();
+        $invoice->forceFill(['status' => InvoiceStatus::Issued])->save();
 
         $payload = (string) app(GirocodeService::class)->payload($invoice->fresh(), $this->legal());
 

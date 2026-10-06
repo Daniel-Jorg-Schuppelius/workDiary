@@ -31,6 +31,7 @@
 
 @php
     $points = collect($series)->values();
+    $range = $points->isNotEmpty() ? [$points->first()['x'], $points->last()['x']] : null;
     $bandList = collect($bands)->values();
     // Ab ~9 Kategorien überlappen horizontale Labels — dann schräg (−40°) mit mehr Fußraum.
     $rotateLabels = $points->count() > 8;
@@ -79,96 +80,79 @@
     ];
 @endphp
 
-<figure class="wd-chart rounded-box border border-base-300 bg-base-100 p-3">
-    <figcaption>
-        <span class="font-['Space_Grotesk'] text-sm font-semibold">{{ $title }}</span>
-        <span class="ml-2 text-xs text-muted">
-            {{ $unit }}
-            @if ($points->isNotEmpty()) · {{ $points->first()['x'] }} – {{ $points->last()['x'] }} @endif
-            @if ($computedAt) · {{ __('Stand:') }} {{ \Illuminate\Support\Carbon::parse($computedAt)->isoFormat('L LT') }} @endif
-        </span>
-    </figcaption>
-
-    @if ($note)
-        <p class="mt-1 text-xs text-muted">{{ $note }}</p>
+<x-charts.frame :title="$title" :unit="$unit" :range="$range" :computed-at="$computedAt" :note="$note"
+                :empty="$points->isEmpty() || $bandList->isEmpty()" empty-icon="stacked_bar_chart"
+                :spec="$chartSpec" :view-box="[$width, $height]">
+    @if ($hasHatch)
+        <defs>
+            <pattern id="{{ $uid }}" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                <line x1="0" y1="0" x2="0" y2="6" class="stroke-secondary" stroke-width="2" />
+            </pattern>
+        </defs>
     @endif
-
-    @if ($points->isEmpty() || $bandList->isEmpty())
-        <div class="wd-chart-empty">
-            <x-empty-state icon="stacked_bar_chart" :title="__('Noch keine Daten für dieses Diagramm.')" compact />
-        </div>
-    @else
-        @include('components.charts._canvas', ['spec' => $chartSpec])
-        <svg viewBox="0 0 {{ $width }} {{ $height }}" role="img" aria-label="{{ $title }}" class="wd-chart-svg mt-2 w-full">
-            @if ($hasHatch)
-                <defs>
-                    <pattern id="{{ $uid }}" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-                        <line x1="0" y1="0" x2="0" y2="6" class="stroke-secondary" stroke-width="2" />
-                    </pattern>
-                </defs>
-            @endif
-            <line x1="{{ $pad }}" y1="{{ $height - $padB }}" x2="{{ $width - $pad }}" y2="{{ $height - $padB }}" class="stroke-base-300" stroke-width="1" />
-            <line x1="{{ $pad }}" y1="{{ $pad }}" x2="{{ $pad }}" y2="{{ $height - $padB }}" class="stroke-base-300" stroke-width="1" />
-            <text x="{{ $pad - 6 }}" y="{{ $pad }}" text-anchor="end" class="fill-muted text-[10px]">{{ $maxY }}</text>
-            <text x="{{ $pad - 6 }}" y="{{ $height - $padB }}" text-anchor="end" class="fill-muted text-[10px]">0</text>
-            @foreach ($points as $i => $point)
-                @php
-                    $cx = $pad + ($i + 0.5) * $slot_;
-                    $ariaSegments = $bandList
-                        ->map(fn(array $b): array => ['label' => $b['label'], 'value' => (float) ($point[$b['key']] ?? 0)])
-                        ->filter(fn(array $s): bool => $s['value'] > 0)
-                        ->map(fn(array $s): string => $s['label'] . ': ' . $s['value'])->implode(', ');
-                    // Segment-Rechtecke vorberechnen (unten → oben gestapelt).
-                    $rects = [];
-                    $stackBase = 0.0;
-                    foreach ($bandList as $bandIndex => $band) {
-                        $value = (float) ($point[$band['key']] ?? 0);
-                        $yTop = $sy($stackBase + $value);
-                        $segH = $sy($stackBase) - $yTop;
-                        $stackBase += $value;
-                        if ($segH > 0) {
-                            $rects[] = ['y' => $yTop, 'h' => $segH, 'fill' => $fills[$bandIndex % count($fills)], 'hatch' => ! empty($band['hatch'])];
-                        }
-                    }
-                @endphp
-                <a @if (!empty($point['url'])) href="{{ $point['url'] }}" @endif tabindex="0"
-                   aria-label="{{ $point['x'] }}: {{ $totals[$i] }} {{ $unit }}@if ($ariaSegments !== '') ({{ $ariaSegments }})@endif">
-                    @foreach ($rects as $rect)
-                        @if ($rect['hatch'])
-                            <rect x="{{ round($cx - $barW / 2, 1) }}" y="{{ round($rect['y'], 1) }}"
-                                  width="{{ round($barW, 1) }}" height="{{ round($rect['h'], 1) }}"
-                                  fill="url(#{{ $uid }})" class="stroke-secondary" stroke-width="1" />
-                        @else
-                            <rect x="{{ round($cx - $barW / 2, 1) }}" y="{{ round($rect['y'], 1) }}"
-                                  width="{{ round($barW, 1) }}" height="{{ round($rect['h'], 1) }}"
-                                  class="{{ $rect['fill'] }} stroke-base-100" stroke-width="0.5" />
-                        @endif
-                    @endforeach
-                </a>
-                @if ($rotateLabels)
-                    <text x="{{ round($cx, 1) }}" y="{{ $height - $padB + 12 }}" text-anchor="end"
-                          transform="rotate(-40 {{ round($cx, 1) }} {{ $height - $padB + 12 }})"
-                          class="fill-muted text-[10px]">{{ \Illuminate\Support\Str::limit((string) $point['x'], 18, '…') }}</text>
+    <line x1="{{ $pad }}" y1="{{ $height - $padB }}" x2="{{ $width - $pad }}" y2="{{ $height - $padB }}" class="stroke-base-300" stroke-width="1" />
+    <line x1="{{ $pad }}" y1="{{ $pad }}" x2="{{ $pad }}" y2="{{ $height - $padB }}" class="stroke-base-300" stroke-width="1" />
+    <text x="{{ $pad - 6 }}" y="{{ $pad }}" text-anchor="end" class="fill-muted text-[10px]">{{ $maxY }}</text>
+    <text x="{{ $pad - 6 }}" y="{{ $height - $padB }}" text-anchor="end" class="fill-muted text-[10px]">0</text>
+    @foreach ($points as $i => $point)
+        @php
+            $cx = $pad + ($i + 0.5) * $slot_;
+            $ariaSegments = $bandList
+                ->map(fn(array $b): array => ['label' => $b['label'], 'value' => (float) ($point[$b['key']] ?? 0)])
+                ->filter(fn(array $s): bool => $s['value'] > 0)
+                ->map(fn(array $s): string => $s['label'] . ': ' . $s['value'])->implode(', ');
+            // Segment-Rechtecke vorberechnen (unten → oben gestapelt).
+            $rects = [];
+            $stackBase = 0.0;
+            foreach ($bandList as $bandIndex => $band) {
+                $value = (float) ($point[$band['key']] ?? 0);
+                $yTop = $sy($stackBase + $value);
+                $segH = $sy($stackBase) - $yTop;
+                $stackBase += $value;
+                if ($segH > 0) {
+                    $rects[] = ['y' => $yTop, 'h' => $segH, 'fill' => $fills[$bandIndex % count($fills)], 'hatch' => ! empty($band['hatch'])];
+                }
+            }
+        @endphp
+        <a @if (!empty($point['url'])) href="{{ $point['url'] }}" @endif tabindex="0"
+           aria-label="{{ $point['x'] }}: {{ $totals[$i] }} {{ $unit }}@if ($ariaSegments !== '') ({{ $ariaSegments }})@endif">
+            @foreach ($rects as $rect)
+                @if ($rect['hatch'])
+                    <rect x="{{ round($cx - $barW / 2, 1) }}" y="{{ round($rect['y'], 1) }}"
+                          width="{{ round($barW, 1) }}" height="{{ round($rect['h'], 1) }}"
+                          fill="url(#{{ $uid }})" class="stroke-secondary" stroke-width="1" />
                 @else
-                    <text x="{{ round($cx, 1) }}" y="{{ $height - $padB + 12 }}" text-anchor="middle" class="fill-muted text-[10px]">{{ \Illuminate\Support\Str::limit((string) $point['x'], 10, '…') }}</text>
+                    <rect x="{{ round($cx - $barW / 2, 1) }}" y="{{ round($rect['y'], 1) }}"
+                          width="{{ round($barW, 1) }}" height="{{ round($rect['h'], 1) }}"
+                          class="{{ $rect['fill'] }} stroke-base-100" stroke-width="0.5" />
                 @endif
             @endforeach
-            @if ($hasCompare)
-                @php
-                    $cmp = $points->map(fn(array $p, int $i): ?array => ($p['compare'] ?? null) === null ? null : [
-                        'x' => $pad + ($i + 0.5) * $slot_,
-                        'y' => $sy((float) $p['compare']),
-                    ])->filter()->values();
-                @endphp
-                @if ($cmp->count() > 1)
-                    <polyline fill="none" class="stroke-accent" stroke-width="2" stroke-dasharray="4 3"
-                              points="{{ $cmp->map(fn(array $c): string => round($c['x'], 1) . ',' . round($c['y'], 1))->implode(' ') }}" />
-                @endif
-                @foreach ($cmp as $c)
-                    <circle cx="{{ round($c['x'], 1) }}" cy="{{ round($c['y'], 1) }}" r="2.5" class="fill-accent" />
-                @endforeach
-            @endif
-        </svg>
+        </a>
+        @if ($rotateLabels)
+            <text x="{{ round($cx, 1) }}" y="{{ $height - $padB + 12 }}" text-anchor="end"
+                  transform="rotate(-40 {{ round($cx, 1) }} {{ $height - $padB + 12 }})"
+                  class="fill-muted text-[10px]">{{ \Illuminate\Support\Str::limit((string) $point['x'], 18, '…') }}</text>
+        @else
+            <text x="{{ round($cx, 1) }}" y="{{ $height - $padB + 12 }}" text-anchor="middle" class="fill-muted text-[10px]">{{ \Illuminate\Support\Str::limit((string) $point['x'], 10, '…') }}</text>
+        @endif
+    @endforeach
+    @if ($hasCompare)
+        @php
+            $cmp = $points->map(fn(array $p, int $i): ?array => ($p['compare'] ?? null) === null ? null : [
+                'x' => $pad + ($i + 0.5) * $slot_,
+                'y' => $sy((float) $p['compare']),
+            ])->filter()->values();
+        @endphp
+        @if ($cmp->count() > 1)
+            <polyline fill="none" class="stroke-accent" stroke-width="2" stroke-dasharray="4 3"
+                      points="{{ $cmp->map(fn(array $c): string => round($c['x'], 1) . ',' . round($c['y'], 1))->implode(' ') }}" />
+        @endif
+        @foreach ($cmp as $c)
+            <circle cx="{{ round($c['x'], 1) }}" cy="{{ round($c['y'], 1) }}" r="2.5" class="fill-accent" />
+        @endforeach
+    @endif
+
+    <x-slot:legend>
         <p class="mt-1 flex flex-wrap gap-3 text-xs">
             @foreach ($bandList as $bandIndex => $band)
                 <span class="inline-flex items-center gap-1">
@@ -197,32 +181,30 @@
                 </span>
             </p>
         @endif
+    </x-slot:legend>
 
-        <div class="wd-chart-table mt-2 max-h-48 overflow-y-auto">
-            <x-table bare>
-                <x-slot:head>
-                    <tr>
-                        <th>{{ $xLabel ?? __('Kategorie') }}</th>
-                        @foreach ($bandList as $band)<th class="text-right">{{ $band['label'] }}</th>@endforeach
-                        <th class="text-right">Σ</th>
-                        @if ($hasCompare)<th class="text-right">{{ $compareLabel ?? __('Vergleich') }}</th>@endif
-                    </tr>
-                </x-slot:head>
-                @foreach ($points as $i => $point)
-                    <tr>
-                        <td>
-                            @if (!empty($point['url']))
-                                <a href="{{ $point['url'] }}" class="link">{{ $point['x'] }}</a>
-                            @else
-                                {{ $point['x'] }}
-                            @endif
-                        </td>
-                        @foreach ($bandList as $band)<td class="text-right tabular-nums">{{ $point[$band['key']] ?? 0 }}</td>@endforeach
-                        <td class="text-right font-semibold tabular-nums">{{ $totals[$i] }}</td>
-                        @if ($hasCompare)<td class="text-right tabular-nums">{{ $point['compare'] ?? '—' }}</td>@endif
-                    </tr>
-                @endforeach
-            </x-table>
-        </div>
-    @endif
-</figure>
+    <x-slot:head>
+        <tr>
+            <th>{{ $xLabel ?? __('Kategorie') }}</th>
+            @foreach ($bandList as $band)<th class="text-right">{{ $band['label'] }}</th>@endforeach
+            <th class="text-right">Σ</th>
+            @if ($hasCompare)<th class="text-right">{{ $compareLabel ?? __('Vergleich') }}</th>@endif
+        </tr>
+    </x-slot:head>
+    <x-slot:rows>
+        @foreach ($points as $i => $point)
+            <tr>
+                <td>
+                    @if (!empty($point['url']))
+                        <a href="{{ $point['url'] }}" class="link">{{ $point['x'] }}</a>
+                    @else
+                        {{ $point['x'] }}
+                    @endif
+                </td>
+                @foreach ($bandList as $band)<td class="text-right tabular-nums">{{ $point[$band['key']] ?? 0 }}</td>@endforeach
+                <td class="text-right font-semibold tabular-nums">{{ $totals[$i] }}</td>
+                @if ($hasCompare)<td class="text-right tabular-nums">{{ $point['compare'] ?? '—' }}</td>@endif
+            </tr>
+        @endforeach
+    </x-slot:rows>
+</x-charts.frame>

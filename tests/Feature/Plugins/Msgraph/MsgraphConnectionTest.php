@@ -13,6 +13,7 @@ namespace Tests\Feature\Plugins\Msgraph;
 use App\Models\Platform\User;
 use App\Plugins\Contracts\{CalendarPublisher, PluginCapability};
 use App\Plugins\Msgraph\Api\{MsgraphCalendarClient, MsgraphOAuth};
+use App\Plugins\Msgraph\Enums\MsgraphConnectionStatus;
 use App\Plugins\Msgraph\Models\MsgraphConnection;
 use App\Plugins\Msgraph\MsgraphPlugin;
 use App\Plugins\{PluginDiscovery, PluginHealth};
@@ -95,7 +96,7 @@ final class MsgraphConnectionTest extends TestCase {
         return MsgraphConnection::query()->create($attributes + [
             'organization_id' => $this->organization->id,
             'access_token' => 'secret-token-123',
-            'status' => MsgraphConnection::STATUS_ACTIVE,
+            'status' => MsgraphConnectionStatus::Active,
         ]);
     }
 
@@ -131,7 +132,7 @@ final class MsgraphConnectionTest extends TestCase {
         $response->assertRedirect(route('admin.msgraph.index'))->assertSessionHas('success');
 
         $connection = MsgraphConnection::query()->firstOrFail();
-        $this->assertSame(MsgraphConnection::STATUS_ACTIVE, $connection->status);
+        $this->assertSame(MsgraphConnectionStatus::Active, $connection->status);
         $this->assertSame('secret-token-123', $connection->access_token); // entschlüsselt über Cast
         $this->assertSame('refresh-token-456', $connection->refresh_token);
         $this->assertNotNull($connection->token_expires_at);
@@ -174,7 +175,7 @@ final class MsgraphConnectionTest extends TestCase {
         // … der Flash bleibt in der Session (das Opener-Fenster lädt neu).
         $response->assertSessionHas('success');
 
-        $this->assertSame(MsgraphConnection::STATUS_ACTIVE, MsgraphConnection::query()->firstOrFail()->status);
+        $this->assertSame(MsgraphConnectionStatus::Active, MsgraphConnection::query()->firstOrFail()->status);
     }
 
     public function test_oauth_state_is_single_use(): void {
@@ -210,7 +211,7 @@ final class MsgraphConnectionTest extends TestCase {
 
         $fresh = $connection->fresh();
         $this->assertInstanceOf(MsgraphConnection::class, $fresh);
-        $this->assertSame(MsgraphConnection::STATUS_DISCONNECTED, $fresh->status);
+        $this->assertSame(MsgraphConnectionStatus::Disconnected, $fresh->status);
         $this->assertNull($fresh->access_token);
         $this->assertNull($fresh->refresh_token);
         $this->assertFalse($fresh->isActive());

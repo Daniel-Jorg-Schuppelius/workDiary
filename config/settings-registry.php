@@ -129,6 +129,11 @@ return [
     // KI-Assistenten über MCP (MVP-1063/1065): Opt-in je Organisation, ab Werk aus —
     // ohne Freigabe keine Zustimmung, keine Tokenausgabe und keine Werkzeuge.
     'mcp.enabled' => ['type' => 'boolean', 'scopes' => ['organization'], 'fallback' => false],
+    // Genehmigungs-Eingang (Entscheidung 2026-10-06): Stufen nach Art (Vertragsverhandlungen)
+    // erscheinen bei dieser Rolle; Vorgaben in config/approvals.php.
+    'approvals.step_role.commercial' => ['type' => 'enum', 'scopes' => ['organization'], 'options_from' => [App\Enums\User\UserRole::class, 'values']],
+    'approvals.step_role.technical' => ['type' => 'enum', 'scopes' => ['organization'], 'options_from' => [App\Enums\User\UserRole::class, 'values']],
+    'approvals.step_role.hr' => ['type' => 'enum', 'scopes' => ['organization'], 'options_from' => [App\Enums\User\UserRole::class, 'values']],
     // Online-Zahlung (MVP-1067): Anbieter, wenn mehrere Plugins aktiv sind (leer = erster
     // aktiver), und ob der Zahlungslink auf Rechnung und Mail steht (Portal immer).
     'payments.online.provider' => ['type' => 'string', 'scopes' => ['organization'], 'rules' => 'nullable|string|max:40|regex:/^[a-z0-9_-]+$/'],

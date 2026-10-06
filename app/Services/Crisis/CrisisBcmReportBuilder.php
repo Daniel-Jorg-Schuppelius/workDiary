@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Crisis;
 
+use App\Enums\Crisis\{CrisisActionStatus, CrisisCaseStatus};
 use App\Models\Crisis\{CrisisAction, CrisisBusinessProcess, CrisisCase, CrisisExercise};
 use Carbon\CarbonImmutable;
 
@@ -29,7 +30,7 @@ final class CrisisBcmReportBuilder {
         $now = CarbonImmutable::now();
         $from = $now->subYear();
         $exercises = CrisisExercise::query()->whereNotNull('exercised_at')->where('exercised_at', '>=', $from)->get(['effectiveness']);
-        $ended = CrisisCase::query()->whereIn('status', ['all_clear', 'post_review', 'closed'])->withCount('review')->get(['id']);
+        $ended = CrisisCase::query()->whereIn('status', CrisisCaseStatus::ended())->withCount('review')->get(['id']);
         $processes = CrisisBusinessProcess::query()->where('is_active', true)->get(['criticality', 'rto_hours', 'review_due_on']);
 
         return [
@@ -37,8 +38,8 @@ final class CrisisBcmReportBuilder {
             'exercises' => $exercises->count(),
             'effectiveness' => $exercises->countBy(static fn (CrisisExercise $e): string => (string) ($e->effectiveness ?? 'open'))->all(),
             'exercises_due' => CrisisExercise::query()->whereNotNull('next_due_on')->where('next_due_on', '<', $now->toDateString())->count(),
-            'actions_open' => CrisisAction::query()->whereIn('status', ['open', 'in_progress'])->count(),
-            'actions_overdue' => CrisisAction::query()->whereIn('status', ['open', 'in_progress'])->whereNotNull('due_at')->where('due_at', '<', $now)->count(),
+            'actions_open' => CrisisAction::query()->whereIn('status', CrisisActionStatus::pending())->count(),
+            'actions_overdue' => CrisisAction::query()->whereIn('status', CrisisActionStatus::pending())->whereNotNull('due_at')->where('due_at', '<', $now)->count(),
             'cases_ended' => $ended->count(),
             'cases_without_review' => $ended->where('review_count', 0)->count(),
             'processes' => $processes->count(),

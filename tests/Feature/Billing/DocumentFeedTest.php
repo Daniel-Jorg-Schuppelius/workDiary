@@ -12,14 +12,15 @@ namespace Tests\Feature\Billing;
 
 use App\Enums\Billing\{DocumentDirection, DocumentKind, DocumentOrigin};
 use App\Enums\Expense\{ExpenseStatus, PaymentMethod};
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\{PluginSetting, User};
 use App\Models\Supplier\Supplier;
 use App\Models\Travel\Expense;
-use App\Plugins\Lexoffice\{LexofficeExpenseLinkProvider, LexofficePlugin};
+use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\Lexoffice\Models\LexofficeVoucher;
-use App\Plugins\Lexoffice\VoucherTypes;
+use App\Plugins\Lexoffice\Services\{LexofficeExpenseLinkProvider, VoucherTypes};
 use App\Plugins\OrgaMax\Models\OrgaMaxInvoice;
 use App\Services\Billing\{DocumentFeedFilters, DocumentFeedQuery};
 use Carbon\CarbonImmutable;
@@ -170,7 +171,7 @@ final class DocumentFeedTest extends TestCase {
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
             'number' => 'RE/2026/1110',
-            'status' => Invoice::STATUS_ISSUED,
+            'status' => InvoiceStatus::Issued,
             'type' => Invoice::TYPE_INVOICE,
             'category' => Invoice::CATEGORY_SERVICE,
             'issued_on' => '2026-08-10',
@@ -408,7 +409,7 @@ final class DocumentFeedTest extends TestCase {
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
             'number' => 'RE/2026/2220',
-            'status' => Invoice::STATUS_ISSUED,
+            'status' => InvoiceStatus::Issued,
             'type' => Invoice::TYPE_INVOICE,
             'category' => Invoice::CATEGORY_SERVICE,
             'issued_on' => '2026-08-10',

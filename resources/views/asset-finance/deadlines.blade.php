@@ -18,8 +18,8 @@
     <x-filter-bar :action="route('asset-finance.deadlines.index')" :reset="route('asset-finance.deadlines.index')">
         <select name="status" class="select select-sm select-bordered w-44 shrink-0" aria-label="{{ __('Status') }}">
             <option value="">{{ __('Offen (Standard)') }}</option>
-            @foreach (\App\Models\AssetFinance\AssetFinanceDeadline::STATUSES as $status)
-                <option value="{{ $status }}" @selected(request('status') === $status)>{{ __("values.$status") }}</option>
+            @foreach (\App\Enums\AssetFinance\AssetFinanceDeadlineStatus::options() as $value => $label)
+                <option value="{{ $value }}" @selected(request('status') === $value)>{{ $label }}</option>
             @endforeach
         </select>
     </x-filter-bar>
@@ -40,7 +40,7 @@
             @forelse ($deadlines as $deadline)
                 <tr>
                     <td>
-                        @if ($deadline->status === 'open' && $deadline->isDueForWarning())
+                        @if ($deadline->isDueForWarning())
                             <span class="text-error font-medium">{{ $deadline->due_on->fdate() }}</span>
                         @else
                             {{ $deadline->due_on->fdate() }}
@@ -56,12 +56,12 @@
                         @endif
                     </td>
                     <td>{{ $deadline->responsible->name ?? '—' }}</td>
-                    <td><x-status-badge size="md" outline>{{ __("values.{$deadline->status}") }}</x-status-badge></td>
+                    <td><x-status-badge size="md" outline>{{ $deadline->status->label() }}</x-status-badge></td>
                     <td class="text-right">
-                        @if ($deadline->status === 'open' && $deadline->contract !== null)
+                        @if ($deadline->status === \App\Enums\AssetFinance\AssetFinanceDeadlineStatus::Open && $deadline->contract !== null)
                             @can('update', $deadline->contract)
                                 <form method="POST" action="{{ route('asset-finance.deadlines.complete', $deadline) }}" class="inline">@csrf
-                                    <button type="submit" class="btn btn-xs">{{ __('Erledigt') }}</button>
+                                    <x-button type="submit" tone="plain" size="xs">{{ __('Erledigt') }}</x-button>
                                 </form>
                             @endcan
                         @endif

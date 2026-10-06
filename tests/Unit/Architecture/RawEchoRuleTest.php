@@ -73,7 +73,7 @@ class RawEchoRuleTest extends TestCase {
 
     public function test_raw_blade_echo_stays_on_the_allow_list(): void {
         $violations = [];
-        $files = array_merge($this->bladeFiles(), $this->filesUnder('app/Plugins', '/\.blade\.php$/'));
+        $files = $this->bladeFiles();
 
         foreach ($files as $file) {
             $relative = $this->relativePath($file);

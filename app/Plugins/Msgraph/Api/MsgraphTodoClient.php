@@ -91,14 +91,16 @@ class MsgraphTodoClient implements GraphSubscriptionClient {
         $paginator = new \APIToolkit\API\Pagination\CursorPaginator(function (?string $nextLink) use ($firstUrl, $query, $label): \APIToolkit\API\Pagination\CursorPage {
             $response = $nextLink === null
                 ? $this->api->getResponse($firstUrl, $query)
-                : $this->api->getResponse($nextLink);
+                : $this->api->getFollowUp($nextLink);
             if (! $response->successful()) {
                 throw new RuntimeException($label . ' fehlgeschlagen (HTTP ' . $response->status() . ').');
             }
-            $next = $response->json('@odata.nextLink');
+            // Direkt aus dem Array — json('@odata.…') würde die Punkte als Pfad-Notation deuten.
+            $data = (array) $response->json();
+            $next = $data['@odata.nextLink'] ?? null;
 
             return new \APIToolkit\API\Pagination\CursorPage(
-                (array) $response->json('value', []),
+                (array) ($data['value'] ?? []),
                 is_string($next) && $next !== '' ? $next : null,
             );
         }, maxPages: 500);
@@ -119,7 +121,7 @@ class MsgraphTodoClient implements GraphSubscriptionClient {
         if ($checkpoint === null || $checkpoint === '') {
             $response = $this->api->getResponse($this->base . '/me/todo/lists/' . rawurlencode($listId) . '/tasks/delta', ['$top' => '100']);
         } else {
-            $response = $this->api->getResponse($checkpoint); // absolute next-/deltaLink-URL
+            $response = $this->api->getFollowUp($checkpoint); // absolute next-/deltaLink-URL
         }
 
         if ($response->status() === 410) {

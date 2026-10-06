@@ -571,7 +571,7 @@ class ArbZgComplianceReportController extends Controller {
         );
 
         return redirect()
-            ->route('reports.compliance.history')
+            ->toList('reports.compliance.history')
             ->with('success', __('compliance.history.acknowledged'));
     }
 

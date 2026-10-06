@@ -12,6 +12,7 @@ namespace App\Plugins\OrgaMax\Models;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization};
 use App\Models\Platform\User;
+use App\Plugins\OrgaMax\Enums\OrgaMaxConnectionStatus;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -33,7 +34,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $token_expires_at
  * @property array<int, string>|null $granted_scopes
  * @property array<string, mixed>|null $account_snapshot
- * @property string $status
+ * @property OrgaMaxConnectionStatus $status
  * @property string|null $blocked_reason
  * @property string|null $intent_token_hash
  * @property Carbon|null $intent_expires_at
@@ -55,18 +56,6 @@ class OrgaMaxConnection extends Model {
     public const MODE_PRIVATE = 'private';
 
     public const MODE_MARKETPLACE = 'marketplace';
-
-    public const STATUS_DRAFT = 'draft';
-
-    public const STATUS_PENDING_CALLBACK = 'pending_callback';
-
-    public const STATUS_PENDING_CONFIRMATION = 'pending_confirmation';
-
-    public const STATUS_ACTIVE = 'active';
-
-    public const STATUS_BLOCKED = 'blocked';
-
-    public const STATUS_DISCONNECTED = 'disconnected';
 
     /** Capability-Schlüssel der Datenführerschafts-Matrix (MVP-305). */
     public const CAPABILITIES = [
@@ -117,6 +106,7 @@ class OrgaMaxConnection extends Model {
         'token_expires_at' => 'datetime',
         'granted_scopes' => 'array',
         'account_snapshot' => 'array',
+        'status' => OrgaMaxConnectionStatus::class,
         'intent_expires_at' => 'datetime',
         'confirmed_at' => 'datetime',
         'capabilities' => 'array',
@@ -132,7 +122,7 @@ class OrgaMaxConnection extends Model {
     }
 
     public function isActive(): bool {
-        return $this->status === self::STATUS_ACTIVE;
+        return $this->status === OrgaMaxConnectionStatus::Active;
     }
 
     /**
@@ -152,11 +142,5 @@ class OrgaMaxConnection extends Model {
         $raw = $this->checkpoints[$resource] ?? null;
 
         return $raw === null ? null : Carbon::parse((string) $raw);
-    }
-
-    public function setCheckpoint(string $resource, Carbon $at): void {
-        $checkpoints = (array) $this->checkpoints;
-        $checkpoints[$resource] = $at->toIso8601String();
-        $this->checkpoints = $checkpoints;
     }
 }

@@ -10,7 +10,7 @@
   die Einarbeitung, nicht ein zweiter Pflichtkatalog.
 --}}
 @extends('layouts.app')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 @section('title', __('learning.title.paths'))
 @section('nav-title', __('learning.title.paths'))
 @section('content')

@@ -14,7 +14,7 @@
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar :badge="__('values.' . $case->status)" badge-tone="outline">
+        <x-page-toolbar :badge="$case->status->label()" badge-tone="outline">
             <div class="text-sm text-base-content/70">
                 {{ __("values.{$case->category}") }} · {{ __("values.{$case->severity}") }}
                 @if ($case->trigger_source) · {{ __('Auslöser: :source', ['source' => $case->trigger_source]) }} @endif
@@ -22,18 +22,18 @@
             </div>
             <x-slot:actions>
                 @can('approve', $case)
-                    @if (in_array($case->status, ['reported', 'assessed'], true))
+                    @if ($case->canBeActivated())
                         <x-action-form :action="route('crisis.activate', $case)">
                             <x-icon-btn icon="emergency_home" tone="error" size="sm" type="submit" show-label>{{ __('Krise aktivieren') }}</x-icon-btn>
                         </x-action-form>
                     @endif
-                    @if ($case->isActive())
+                    @if ($case->status->canTransitionTo(\App\Enums\Crisis\CrisisCaseStatus::AllClear))
                         <x-action-form :action="route('crisis.all-clear', $case)"
                               :confirm="__('Entwarnung dokumentieren?')" confirm-icon="task_alt" confirm-tone="success" :confirm-label="__('Entwarnen')">
                             <x-icon-btn icon="task_alt" tone="success" size="sm" type="submit" show-label>{{ __('Entwarnen') }}</x-icon-btn>
                         </x-action-form>
                     @endif
-                    @if ($case->status === 'post_review')
+                    @if ($case->status === \App\Enums\Crisis\CrisisCaseStatus::PostReview)
                         <x-action-form :action="route('crisis.close', $case)">
                             <x-icon-btn icon="lock" size="sm" type="submit" show-label>{{ __('Akte schließen') }}</x-icon-btn>
                         </x-action-form>
@@ -48,12 +48,16 @@
                         <x-icon-btn icon="notification_important" tone="warning" size="sm" type="submit" show-label
                                     :title="__('Unquittierte Alarme erneut + an Stellvertretungen')">{{ __('Eskalieren') }}</x-icon-btn>
                     </x-action-form>
-                    @if ($case->isActive())
+                    @if ($case->status->isActive())
                         <form method="POST" action="{{ route('crisis.status', $case) }}" class="flex items-center gap-1">
                             @csrf
                             <select name="status" class="select select-sm select-bordered" data-autosubmit aria-label="{{ __('Status') }}">
-                                @foreach (['assessed', 'in_progress', 'stabilized', 'recovery'] as $status)
-                                    <option value="{{ $status }}" @selected($case->status === $status)>{{ __("values.$status") }}</option>
+                                {{-- Gemeldet und aktiviert sind keine Lagezustände: ohne leere Vorauswahl zeigte das Feld den ersten. --}}
+                                @unless ($case->status->isStage())
+                                    <option value="" selected disabled>{{ __('Bitte wählen') }}</option>
+                                @endunless
+                                @foreach ($case->status->selectableStages() as $status)
+                                    <option value="{{ $status->value }}" @selected($case->status === $status)>{{ $status->label() }}</option>
                                 @endforeach
                             </select>
                         </form>
@@ -63,13 +67,26 @@
         </x-page-toolbar>
     </x-slot:toolbar>
 
+    {{-- Geschlossen/verworfen: die Policy weist jede Änderung ab, die Seite zeigt nur noch. --}}
+    @if ($case->status->isShelved())
+        <div role="status" class="alert alert-info text-sm">
+            <x-icon name="lock" />
+            @if ($case->status === \App\Enums\Crisis\CrisisCaseStatus::Closed)
+                {{-- Ohne closed_at (Altbestand) ist die letzte Änderung der Abschluss: danach nimmt die Akte nichts mehr an. --}}
+                <span>{{ __('Akte geschlossen am :date — nur lesend.', ['date' => ($case->closed_at ?? $case->updated_at)->fdatetime()]) }}</span>
+            @else
+                <span>{{ __('Akte verworfen — nur lesend.') }}</span>
+            @endif
+        </div>
+    @endif
+
     {{-- Meldefristen (D9) --}}
     @if ($deadlines !== [])
         <x-card :title="__('Meldefristen (konfigurierbare Templates)')">
             <ul class="space-y-1 text-sm">
                 @foreach ($deadlines as $deadline)
                     <li class="flex flex-wrap items-center gap-2">
-                        <x-status-badge size="xs" :tone="$deadline['overdue'] ? 'error' : 'outline'">
+                        <x-status-badge size="xs" :tone="$deadline['overdue'] ? 'error' : 'ghost'">
                             {{ $deadline['immediate'] ? __('unverzüglich') : ($deadline['due_at'] !== null ? $deadline['due_at']->fdatetime() : '—') }}
                         </x-status-badge>
                         <span>{{ $deadline['label'] }}</span>
@@ -114,7 +131,7 @@
                 <form method="POST" action="{{ route('crisis.roles.store') }}" class="mb-3 flex flex-wrap items-end gap-1 text-xs">
                     @csrf
                     <input aria-label="{{ __('Neue Stabsrolle (z. B. Kommunikation)') }}" name="name" required maxlength="120" class="input input-xs input-bordered w-48" placeholder="{{ __('Neue Stabsrolle (z. B. Kommunikation)') }}">
-                    <button type="submit" class="btn btn-xs">{{ __('Rolle anlegen') }}</button>
+                    <x-button type="submit" tone="plain" size="xs">{{ __('Rolle anlegen') }}</x-button>
                 </form>
             @endif
             @if ($case->team->isEmpty())
@@ -123,7 +140,7 @@
                 <ul class="space-y-2 text-sm">
                     @foreach ($case->team as $assignment)
                         <li class="flex flex-wrap items-center gap-2">
-                            <span class="badge badge-outline badge-sm">{{ $assignment->role->name ?? '—' }}</span>
+                            <x-status-badge tone="plain" outline>{{ $assignment->role->name ?? '—' }}</x-status-badge>
                             <span class="font-medium">{{ $assignment->user->name ?? '—' }}</span>
                             @if ($assignment->deputy)<span class="text-xs text-muted">{{ __('Vertretung: :name', ['name' => $assignment->deputy->name]) }}</span>@endif
                             @if ($assignment->contact_note)<span class="text-xs text-muted">{{ $assignment->contact_note }}</span>@endif
@@ -154,7 +171,7 @@
 
         {{-- Lagebild (MVP-214) --}}
         <x-card :title="__('Lagebild (versioniert)')">
-            @if ($canManage && ! in_array($case->status, ['closed', 'discarded'], true))
+            @if ($canManage)
                 <form method="POST" action="{{ route('crisis.sitrep.store', $case) }}" class="mb-3 grid gap-2">
                     @csrf
                     <textarea aria-label="{{ __('Aktuelle Lage/Bewertung') }}" name="content" required rows="2" class="textarea textarea-bordered textarea-sm" placeholder="{{ __('Aktuelle Lage/Bewertung') }}"></textarea>
@@ -173,7 +190,7 @@
                     @foreach ($case->situationReports as $report)
                         <div class="rounded-box border border-base-300 p-2 text-sm">
                             <div class="flex items-center gap-2 text-xs text-muted">
-                                <span class="badge badge-outline badge-xs">V{{ $report->version }}</span>
+                                <x-status-badge tone="plain" size="xs" outline>V{{ $report->version }}</x-status-badge>
                                 {{ $report->created_at->fdatetime() }}
                             </div>
                             <p class="mt-1 whitespace-pre-line">{{ $report->content }}</p>
@@ -184,7 +201,7 @@
             @endif
 
             <h4 class="mt-4 text-sm font-semibold">{{ __('Entscheidungsprotokoll') }}</h4>
-            @if ($canManage && ! in_array($case->status, ['closed', 'discarded'], true))
+            @if ($canManage)
                 <form method="POST" action="{{ route('crisis.decisions.store', $case) }}" class="my-1 flex flex-wrap items-end gap-2">
                     @csrf
                     <input aria-label="{{ __('Entscheidung') }}" name="decision" required maxlength="1000" class="input input-sm input-bordered flex-1" placeholder="{{ __('Entscheidung') }}">
@@ -232,18 +249,18 @@
                 <ul class="space-y-2 text-sm">
                     @foreach ($case->actions as $action)
                         <li class="flex flex-wrap items-center gap-2">
-                            <x-status-badge size="xs" outline>{{ __("values.{$action->status}") }}</x-status-badge>
-                            <span @class(['line-through opacity-60' => in_array($action->status, ['done', 'cancelled'], true)])>{{ $action->title }}</span>
+                            <x-status-badge size="xs" outline>{{ $action->status->label() }}</x-status-badge>
+                            <span @class(['line-through opacity-60' => $action->status->isSettled()])>{{ $action->title }}</span>
                             @if ($action->assignee)<span class="text-xs text-muted">{{ $action->assignee->name }}</span>@endif
                             @if ($action->due_at)
-                                <span @class(['text-xs', 'text-error font-semibold' => $action->due_at->isPast() && ! in_array($action->status, ['done', 'cancelled'], true), 'text-muted' => ! $action->due_at->isPast()])>{{ $action->due_at->fdatetime() }}</span>
+                                <span @class(['text-xs', 'text-error font-semibold' => $action->due_at->isPast() && ! $action->status->isSettled(), 'text-muted' => ! $action->due_at->isPast()])>{{ $action->due_at->fdatetime() }}</span>
                             @endif
-                            @if ($canManage && ! in_array($action->status, ['done', 'cancelled'], true))
+                            @if ($canManage && ! $action->status->isSettled())
                                 <form method="POST" action="{{ route('crisis.actions.update', [$case, $action]) }}" class="ml-auto flex items-center gap-1">
                                     @csrf @method('PUT')
                                     <select name="status" class="select select-xs select-bordered" data-autosubmit>
-                                        @foreach (\App\Models\Crisis\CrisisAction::STATUSES as $status)
-                                            <option value="{{ $status }}" @selected($action->status === $status)>{{ __("values.$status") }}</option>
+                                        @foreach (\App\Enums\Crisis\CrisisActionStatus::cases() as $status)
+                                            <option value="{{ $status->value }}" @selected($action->status === $status)>{{ $status->label() }}</option>
                                         @endforeach
                                     </select>
                                 </form>
@@ -278,22 +295,22 @@
                     @foreach ($case->communications as $communication)
                         <li class="rounded-box border border-base-300 p-2">
                             <div class="flex flex-wrap items-center gap-2">
-                                <span class="badge badge-outline badge-xs">{{ __("values.{$communication->audience}") }}</span>
+                                <x-status-badge tone="plain" size="xs" outline>{{ __("values.{$communication->audience}") }}</x-status-badge>
                                 <span class="font-medium">{{ $communication->subject }}</span>
-                                <x-status-badge size="xs" :tone="$communication->status === 'sent' ? 'success' : ($communication->status === 'approved' ? 'info' : 'outline')">{{ __("values.{$communication->status}") }}</x-status-badge>
+                                <x-status-badge size="xs" :tone="$communication->status->tone()">{{ $communication->status->label() }}</x-status-badge>
                                 @if ($communication->sent_at)<span class="text-xs text-muted">{{ $communication->sent_at->fdatetime() }} · {{ $communication->channel }}</span>@endif
                             </div>
-                            @if ($communication->status === 'draft')
+                            @if ($communication->status === \App\Enums\Crisis\CrisisCommunicationStatus::Draft)
                                 @can('approve', $case)
                                     <x-action-form :action="route('crisis.communications.approve', [$case, $communication])" class="mt-1">
                                         <x-icon-btn icon="verified" tone="info" size="xs" type="submit" show-label>{{ __('Freigeben') }}</x-icon-btn>
                                     </x-action-form>
                                 @endcan
-                            @elseif ($communication->status === 'approved' && $canManage)
+                            @elseif ($communication->status === \App\Enums\Crisis\CrisisCommunicationStatus::Approved && $canManage)
                                 <form method="POST" action="{{ route('crisis.communications.sent', [$case, $communication]) }}" class="mt-1 flex items-center gap-1">
                                     @csrf
                                     <input aria-label="{{ __('Kanal (Mail/Telefon/Presse)') }}" name="channel" required maxlength="100" class="input input-xs input-bordered w-40" placeholder="{{ __('Kanal (Mail/Telefon/Presse)') }}">
-                                    <button type="submit" class="btn btn-xs">{{ __('Aussendung dokumentieren') }}</button>
+                                    <x-button type="submit" tone="plain" size="xs">{{ __('Aussendung dokumentieren') }}</x-button>
                                 </form>
                             @endif
                         </li>
@@ -334,7 +351,7 @@
                 <ul class="space-y-1 text-sm">
                     @foreach ($case->continuityImpacts as $impact)
                         <li class="flex flex-wrap items-center gap-2">
-                            <x-status-badge size="xs" :tone="$impact->status === 'restored' ? 'success' : ($impact->status === 'down' ? 'error' : 'warning')">{{ __("values.{$impact->status}") }}</x-status-badge>
+                            <x-status-badge size="xs" :tone="$impact->status->tone()">{{ $impact->status->label() }}</x-status-badge>
                             <span class="font-medium">{{ $impact->process_name }}</span>
                             @if ($impact->rto_hours !== null)<span class="text-xs text-muted">RTO {{ $impact->rto_hours }} h</span>@endif
                             @if ($impact->rpo_hours !== null)<span class="text-xs text-muted">RPO {{ $impact->rpo_hours }} h</span>@endif
@@ -343,8 +360,8 @@
                                 <form method="POST" action="{{ route('crisis.bcm.update', [$case, $impact]) }}" class="ml-auto flex items-center gap-1">
                                     @csrf @method('PUT')
                                     <select name="status" class="select select-xs select-bordered" data-autosubmit>
-                                        @foreach (\App\Models\Crisis\CrisisContinuityImpact::STATUSES as $status)
-                                            <option value="{{ $status }}" @selected($impact->status === $status)>{{ __("values.$status") }}</option>
+                                        @foreach (\App\Enums\Crisis\CrisisContinuityImpactStatus::cases() as $status)
+                                            <option value="{{ $status->value }}" @selected($impact->status === $status)>{{ $status->label() }}</option>
                                         @endforeach
                                     </select>
                                 </form>
@@ -380,7 +397,7 @@
                 <ul class="space-y-1 text-sm">
                     @foreach ($case->links as $link)
                         <li>
-                            <span class="badge badge-outline badge-xs">{{ \App\Support\EntityType::label($link->linkable_type) }}</span>
+                            <x-status-badge tone="plain" size="xs" outline>{{ \App\Support\EntityType::label($link->linkable_type) }}</x-status-badge>
                             {{ $link->linkable?->getAttribute('title') ?? $link->linkable?->getAttribute('subject') ?? $link->linkable?->getAttribute('ticket_no') ?? ('#' . $link->linkable_id) }}
                         </li>
                     @endforeach
@@ -398,7 +415,7 @@
                 @if ($case->review->follow_up)<x-detail-grid.row :label="__('Folgemaßnahmen')">{{ $case->review->follow_up }}</x-detail-grid.row>@endif
                 <x-detail-grid.row :label="__('Nachbereitet am')">{{ optional($case->review->reviewed_at)->fdatetime() ?? '—' }}</x-detail-grid.row>
             </x-detail-grid>
-        @elseif ($case->status === 'all_clear')
+        @elseif ($case->status === \App\Enums\Crisis\CrisisCaseStatus::AllClear)
             @if ($canManage)
                 <form method="POST" action="{{ route('crisis.review.store', $case) }}" class="grid gap-2">
                     @csrf
@@ -408,6 +425,8 @@
                     <div><x-icon-btn icon="fact_check" tone="primary" size="sm" type="submit" show-label>{{ __('Nachbereitung speichern') }}</x-icon-btn></div>
                 </form>
             @endif
+        @elseif ($case->status->isShelved())
+            <x-empty-state icon="fact_check" :title="__('Keine Nachbereitung dokumentiert.')" compact />
         @else
             <p class="text-sm text-muted">{{ __('Nachbereitung wird nach der Entwarnung möglich.') }}</p>
         @endif

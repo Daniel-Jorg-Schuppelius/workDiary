@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Invoicing;
 
-use App\Models\Concerns\BelongsToOrganization;
+use App\Models\Concerns\{BelongsToOrganization, HasAccessToken};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -29,6 +29,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class InvoicePaymentLink extends Model {
     use BelongsToOrganization;
+    use HasAccessToken;
 
     protected $fillable = ['organization_id', 'invoice_id', 'token', 'token_hash'];
 

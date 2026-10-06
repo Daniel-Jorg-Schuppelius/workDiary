@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Finance;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\Finance\{BankAccount, PaymentRun, PaymentRunItem, SepaMandate};
@@ -53,7 +54,7 @@ class PaymentRunController extends Controller {
         // Offene Rechnungen der Mandatskunden (MVP-1011): Belegbezug der Lastschrift.
         $invoices = Invoice::query()
             ->whereIn('customer_id', $mandates->pluck('customer_id')->filter()->unique()->all())
-            ->whereIn('status', [Invoice::STATUS_ISSUED, Invoice::STATUS_PARTIALLY_PAID])
+            ->whereIn('status', [InvoiceStatus::Issued, InvoiceStatus::PartiallyPaid])
             ->with('customer:id,name,company')
             ->orderByDesc('id')
             ->limit(200)
@@ -209,13 +210,16 @@ class PaymentRunController extends Controller {
 
         $ebics = app(EbicsPaymentSubmission::class);
         $connection = $ebics->connectionFor($run);
+        $ebicsEntry = $connection !== null ? $ebics->lastEntry($run, $connection) : null;
 
         return view('finance.payment-runs.show', [
             'run' => $run->load(['items.incomingEInvoice', 'items.mandate', 'bankAccount', 'releasedBy']),
             'canRelease' => Gate::allows(Permission::FinancePaymentRelease->value),
             'formatsAvailable' => FinancialFormatsSupport::isAvailable(),
             // EBICS (MVP-124): einreichbar, wenn das Konto einen freigeschalteten Zugang hat.
-            'ebicsSubmission' => $connection !== null ? $connection->journal->first(static fn ($entry): bool => $entry->eventKey() === 'ebics_payment_submitted' && (int) ($entry->payloadData()['payment_run_id'] ?? 0) === (int) $run->id) : null,
+            'ebicsSubmission' => $ebicsEntry?->eventKey() === EbicsPaymentSubmission::EVENT_SUBMITTED ? $ebicsEntry : null,
+            // Begonnen ohne Ergebnis: erst bei der Bank prüfen, dann als nicht eingereicht bestätigen.
+            'ebicsUnclear' => $ebicsEntry?->eventKey() === EbicsPaymentSubmission::EVENT_STARTED ? $ebicsEntry : null,
             'ebicsAvailable' => $connection !== null,
         ]);
     }

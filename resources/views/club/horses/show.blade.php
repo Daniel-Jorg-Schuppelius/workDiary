@@ -40,7 +40,7 @@
                     </x-slot:head>
                     @forelse ($assignments as $assignment)
                         <tr class="{{ $assignment->event?->cancelled_at ? 'opacity-60' : '' }}">
-                            <td class="whitespace-nowrap text-sm tabular-nums">{{ $assignment->event?->started_at->orgTz()->format('d.m.Y H:i') }}</td>
+                            <td class="whitespace-nowrap text-sm tabular-nums">{{ $assignment->event?->started_at->fdatetime() }}</td>
                             <td class="text-sm">@if ($assignment->event)<a href="{{ route('club.events.show', $assignment->event) }}" class="link link-hover">{{ $assignment->event->title }}</a>@endif</td>
                             <td class="text-sm">{{ $assignment->member?->fullName() }}@if ($assignment->override_note)<span class="block text-xs text-warning">{{ __('club.horses.label.override', ['note' => $assignment->override_note]) }}</span>@endif</td>
                             <td>@if ($assignment->needsReview())<x-status-badge tone="warning" size="xs" icon="warning" :label="$assignment->review_reason" />@elseif ($assignment->event?->cancelled_at)<x-status-badge tone="ghost" size="xs">{{ __('club.events.label.cancelled') }}</x-status-badge>@else<x-status-badge tone="success" size="xs">{{ __('club.horses.label.assigned') }}</x-status-badge>@endif</td>
@@ -95,7 +95,7 @@
             <x-card :title="__('club.resources.card.closures')" icon="block" :count="$closures->count()">
                 <ul class="space-y-1 text-sm">
                     @forelse ($closures as $closure)
-                        <li><span class="tabular-nums">{{ $closure->starts_at->orgTz()->format('d.m.Y H:i') }} – {{ $closure->ends_at->orgTz()->format('d.m.Y H:i') }}</span> {{ $closure->reason }}</li>
+                        <li><span class="tabular-nums">{{ $closure->starts_at->fdatetime() }} – {{ $closure->ends_at->fdatetime() }}</span> {{ $closure->reason }}</li>
                     @empty
                         <li class="text-muted">{{ __('club.resources.empty.closures') }}</li>
                     @endforelse
@@ -106,7 +106,7 @@
             <x-card :title="__('club.horses.card.clearances')" icon="verified_user" :count="$clearances->count()">
                 <ul class="space-y-1 text-sm">
                     @forelse ($clearances as $clearance)
-                        <li class="{{ $clearance->isValidOn($today) ? '' : 'opacity-60' }}">{{ $clearance->member?->fullName() }} <span class="text-xs text-muted">{{ $clearance->granted_on->format('d.m.Y') }}@if ($clearance->valid_to) – {{ $clearance->valid_to->format('d.m.Y') }}@endif{{ $clearance->note ? ' · ' . $clearance->note : '' }}</span></li>
+                        <li class="{{ $clearance->isValidOn($today) ? '' : 'opacity-60' }}">{{ $clearance->member?->fullName() }} <span class="text-xs text-muted">{{ $clearance->granted_on->fdate() }}@if ($clearance->valid_to) – {{ $clearance->valid_to->fdate() }}@endif{{ $clearance->note ? ' · ' . $clearance->note : '' }}</span></li>
                     @empty
                         <li class="text-muted">{{ $resource->requires_clearance ? __('club.resources.empty.clearances') : __('club.resources.label.no_clearance_needed') }}</li>
                     @endforelse

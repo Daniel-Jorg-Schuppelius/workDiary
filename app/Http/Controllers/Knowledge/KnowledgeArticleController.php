@@ -267,7 +267,7 @@ class KnowledgeArticleController extends Controller {
         $this->service->delete($article, $actor);
 
         return redirect()
-            ->route('knowledge.index')
+            ->toList('knowledge.index')
             ->with('success', __('knowledge.flash.deleted'));
     }
 

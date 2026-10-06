@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Policies;
 
+use App\Enums\Sales\QuoteStatus;
 use App\Models\Platform\User;
 use App\Models\Sales\Quote;
 use App\Policies\Sales\QuotePolicy;
@@ -41,7 +42,7 @@ final class QuotePolicyTest extends TestCase {
         $this->actAsTeam($this->organization);
     }
 
-    private function quote(string $status): Quote {
+    private function quote(QuoteStatus $status): Quote {
         $quote = new Quote;
         $quote->status = $status;
 
@@ -49,7 +50,7 @@ final class QuotePolicyTest extends TestCase {
     }
 
     public function test_draft_lifecycle_for_accountant(): void {
-        $draft = $this->quote('draft');
+        $draft = $this->quote(QuoteStatus::Draft);
 
         $this->assertTrue($this->policy->viewAny($this->accountant));
         $this->assertTrue($this->policy->create($this->accountant));
@@ -61,7 +62,7 @@ final class QuotePolicyTest extends TestCase {
     }
 
     public function test_approved_quote_may_be_sent_but_not_edited(): void {
-        $approved = $this->quote('approved');
+        $approved = $this->quote(QuoteStatus::Approved);
 
         $this->assertTrue($this->policy->send($this->accountant, $approved));
         $this->assertFalse($this->policy->update($this->accountant, $approved), 'Nach Freigabe wird versioniert statt geändert.');
@@ -70,15 +71,15 @@ final class QuotePolicyTest extends TestCase {
     }
 
     public function test_convert_only_accepted_quotes(): void {
-        $this->assertTrue($this->policy->convert($this->accountant, $this->quote('accepted')));
-        $this->assertTrue($this->policy->convert($this->accountant, $this->quote('partially_accepted')));
-        $this->assertFalse($this->policy->convert($this->accountant, $this->quote('sent')));
-        $this->assertFalse($this->policy->convert($this->accountant, $this->quote('rejected')));
+        $this->assertTrue($this->policy->convert($this->accountant, $this->quote(QuoteStatus::Accepted)));
+        $this->assertTrue($this->policy->convert($this->accountant, $this->quote(QuoteStatus::PartiallyAccepted)));
+        $this->assertFalse($this->policy->convert($this->accountant, $this->quote(QuoteStatus::Sent)));
+        $this->assertFalse($this->policy->convert($this->accountant, $this->quote(QuoteStatus::Rejected)));
     }
 
     public function test_regular_or_orgless_user_has_no_access(): void {
         $user = $this->actorIn($this->organization);
-        $draft = $this->quote('draft');
+        $draft = $this->quote(QuoteStatus::Draft);
 
         $this->assertFalse($this->policy->viewAny($user));
         $this->assertFalse($this->policy->update($user, $draft));

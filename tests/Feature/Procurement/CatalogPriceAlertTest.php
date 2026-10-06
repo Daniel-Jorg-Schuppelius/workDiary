@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Procurement;
 
+use App\Enums\Article\PricingChangeAlertStatus;
 use App\Enums\Procurement\CatalogItemStatus;
 use App\Models\Article\{Article, PricingChangeAlert, PricingMarginRule};
 use App\Models\Inventory\Warehouse;
@@ -82,7 +83,7 @@ final class CatalogPriceAlertTest extends TestCase {
             'organization_id' => $this->organization->id,
             'article_id' => $this->article->id,
             'new_purchase_price' => '90.0000',
-            'status' => PricingChangeAlert::STATUS_OPEN,
+            'status' => PricingChangeAlertStatus::Open->value,
         ]);
     }
 
@@ -168,7 +169,7 @@ final class CatalogPriceAlertTest extends TestCase {
             'article_id' => $this->article->id, 'supplier_id' => $this->supplier->id,
             'type' => PricingChangeAlert::TYPE_MARGIN,
             'new_purchase_price' => '90.0000', 'sale_price' => '100.0000', 'new_margin' => '10',
-            'min_margin' => '30', 'status' => PricingChangeAlert::STATUS_OPEN,
+            'min_margin' => '30', 'status' => PricingChangeAlertStatus::Open,
             'impacts' => ['purchase_orders' => ['B-000042'], 'boq_items' => [], 'manufacturing_orders' => []],
         ]);
         PricingChangeAlert::query()->create([
@@ -176,7 +177,7 @@ final class CatalogPriceAlertTest extends TestCase {
             'supplier_catalog_item_id' => $item->id,
             'article_id' => $this->article->id, 'supplier_id' => $this->supplier->id,
             'type' => PricingChangeAlert::TYPE_AVAILABILITY,
-            'status' => PricingChangeAlert::STATUS_OPEN,
+            'status' => PricingChangeAlertStatus::Open,
             'impacts' => [
                 'purchase_orders' => [], 'boq_items' => [], 'manufacturing_orders' => ['FA-000007'],
                 'availability' => ['old' => 'lieferbar', 'new' => 'ausverkauft'],
@@ -197,7 +198,7 @@ final class CatalogPriceAlertTest extends TestCase {
             'supplier_catalog_item_id' => $this->linkedItem('90.0000')->id,
             'article_id' => $this->article->id, 'supplier_id' => $this->supplier->id,
             'new_purchase_price' => '90.0000', 'sale_price' => '100.0000', 'new_margin' => '10',
-            'min_margin' => '30', 'status' => PricingChangeAlert::STATUS_OPEN,
+            'min_margin' => '30', 'status' => PricingChangeAlertStatus::Open,
         ]);
 
         $this->actingAs($this->admin)
@@ -205,6 +206,6 @@ final class CatalogPriceAlertTest extends TestCase {
             ->assertRedirect()
             ->assertSessionHas('success');
 
-        $this->assertSame(PricingChangeAlert::STATUS_ACKNOWLEDGED, $alert->fresh()->status);
+        $this->assertSame(PricingChangeAlertStatus::Acknowledged, $alert->fresh()->status);
     }
 }

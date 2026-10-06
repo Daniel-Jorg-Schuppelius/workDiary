@@ -11,6 +11,7 @@
 namespace App\Services\Expense;
 
 use App\Enums\Expense\ExpenseStatus;
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Invoicing\Invoice;
 use App\Models\Travel\Expense;
 use Illuminate\Database\Eloquent\{Builder, Collection};
@@ -59,7 +60,7 @@ class ExpenseInvoicingService {
      * @param  Collection<int, Expense>  $expenses
      */
     public function addToInvoice(Invoice $invoice, Collection $expenses): Invoice {
-        if ($invoice->status !== Invoice::STATUS_DRAFT) {
+        if ($invoice->status !== InvoiceStatus::Draft) {
             throw new RuntimeException(__('Spesen können nur einem Rechnungsentwurf hinzugefügt werden.'));
         }
 

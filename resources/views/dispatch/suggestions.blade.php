@@ -38,11 +38,11 @@
     @else
         <x-card :title="__('Freie Slots am :date (:name)', ['date' => $date->fdate(), 'name' => $selected->name])">
             @if ($slots === [])
-                <p class="text-sm text-muted">{{ __('Keine freien Slots — der Tag ist voll belegt oder es gibt kein Arbeitsfenster.') }}</p>
+                <x-empty-state icon="event_busy" :message="__('Keine freien Slots — der Tag ist voll belegt oder es gibt kein Arbeitsfenster.')" compact />
             @else
                 <div class="flex flex-wrap gap-2">
                     @foreach ($slots as $slot)
-                        <span class="badge badge-outline">{{ $slot['start'] }}–{{ $slot['end'] }} ({{ $slot['net_minutes'] }} {{ __('Min.') }})</span>
+                        <x-status-badge tone="plain" size="md" outline>{{ $slot['start'] }}–{{ $slot['end'] }} ({{ $slot['net_minutes'] }} {{ __('Min.') }})</x-status-badge>
                     @endforeach
                 </div>
             @endif
@@ -58,7 +58,7 @@
                             <x-order-link :entry="$suggestion['entry']" link-class="link" class="font-medium">{{ $suggestion['entry']->title ?? __('Auftrag #:id', ['id' => $suggestion['entry']->id]) }}</x-order-link>
                             <x-status-badge size="xs" outline>{{ __('Score :score', ['score' => $suggestion['score']]) }}</x-status-badge>
                             @if ($suggestion['distance_is_estimate'] && $suggestion['distance_km'] !== null)
-                                <span class="badge badge-warning badge-xs">{{ __('grobe Schätzung (Luftlinie)') }}</span>
+                                <x-status-badge tone="warning" size="xs">{{ __('grobe Schätzung (Luftlinie)') }}</x-status-badge>
                             @endif
                         </div>
                         <ul class="mt-1 list-disc pl-5 text-sm text-base-content/80">
@@ -77,14 +77,14 @@
                                     <input type="hidden" name="date" value="{{ $date->toDateString() }}">
                                     <input type="hidden" name="duration" value="{{ $suggestion['duration_minutes'] }}">
                                     <input type="time" name="start" value="{{ $suggestion['slot']['start'] }}" class="input input-xs input-bordered" aria-label="{{ __('Start') }}">
-                                    <button type="submit" class="btn btn-xs btn-primary">{{ __('Übernehmen') }}</button>
+                                    <x-button type="submit" size="xs">{{ __('Übernehmen') }}</x-button>
                                 </form>
                                 <form method="POST" action="{{ route('dispatch.suggestions.dismiss', $suggestion['entry']) }}" class="flex flex-wrap items-center gap-1">
                                     @csrf
                                     <input type="hidden" name="user_id" value="{{ $selected->sqid }}">
                                     <input type="hidden" name="date" value="{{ $date->toDateString() }}">
                                     <input aria-label="{{ __('Grund (optional)') }}" name="reason" maxlength="500" class="input input-xs input-bordered w-48" placeholder="{{ __('Grund (optional)') }}">
-                                    <button type="submit" class="btn btn-xs btn-outline">{{ __('Ablehnen') }}</button>
+                                    <x-button type="submit" tone="outline" size="xs">{{ __('Ablehnen') }}</x-button>
                                 </form>
                             </div>
                         @endcan

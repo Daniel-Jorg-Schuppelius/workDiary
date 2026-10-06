@@ -11,8 +11,7 @@
 
 @section('title', __('Standort-Vorschläge'))
 @section('nav-title', __('Standort-Vorschläge'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('Aus Ihren Standortdaten abgeleitete Zeitvorschläge prüfen und buchen.')">

@@ -10,9 +10,12 @@
 
 namespace Tests\Feature\Communication;
 
+use App\Models\Attachments\Attachment;
 use App\Models\Chat\Channel;
 use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class ChatTest extends TestCase {
@@ -53,6 +56,25 @@ class ChatTest extends TestCase {
             ->assertOk()->assertJsonStructure(['messages', 'oldest_id', 'has_more']);
 
         $this->assertDatabaseHas('chat_messages', ['channel_id' => $channel->id, 'body' => 'Hallo Team']);
+    }
+
+    /** Konsolidierungs-Audit 2026-10, k3-7: der Chat nimmt, was jeder Anhang nimmt — eine Liste. */
+    public function test_chat_uploads_follow_the_shared_attachment_list(): void {
+        Storage::fake('local');
+        $user = $this->member();
+        $channel = Channel::create(['organization_id' => $user->organization_id, 'name' => 'Dateien', 'slug' => 'dateien', 'type' => 'channel', 'visibility' => 'public', 'created_by' => $user->id]);
+        $channel->members()->attach($user->id, ['role' => 'owner', 'joined_at' => now()]);
+
+        $this->actingAs($user)->post(route('chat.messages.store', $channel), [
+            'body' => 'Anbei',
+            'files' => [
+                UploadedFile::fake()->create('protokoll.log', 4, 'text/plain'),
+                UploadedFile::fake()->create('alt.doc', 4, 'application/msword'),
+            ],
+        ], ['Accept' => 'application/json'])->assertCreated();
+
+        $names = Attachment::query()->pluck('original_name')->all();
+        $this->assertSame(['protokoll.log'], $names);
     }
 
     public function test_non_member_cannot_post(): void {

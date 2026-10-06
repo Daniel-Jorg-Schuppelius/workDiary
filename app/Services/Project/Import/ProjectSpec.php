@@ -19,6 +19,7 @@ use App\Models\Platform\Organization;
 use App\Models\Project\Project;
 use App\Services\Import\{ImportOutcome, ValidationIssue};
 use App\Services\Import\Specs\AbstractEntitySpec;
+use App\Services\Import\Specs\Concerns\ValidatesImportDates;
 use CommonToolkit\Helper\Data\StringHelper;
 use Throwable;
 
@@ -30,6 +31,10 @@ use Throwable;
  * die Zeile mit {@see ImportErrorCode::FkMissing} markiert.
  */
 class ProjectSpec extends AbstractEntitySpec {
+    use ValidatesImportDates;
+
+    private const DATE_COLUMNS = ['starts_on', 'ends_on'];
+
     public function entity(): ImportEntity {
         return ImportEntity::Projects;
     }
@@ -84,7 +89,6 @@ class ProjectSpec extends AbstractEntitySpec {
                 'billable' => $raw === null || $raw === '' ? null : (bool) StringHelper::parseBool($raw),
                 'hourly_rate', 'internal_rate', 'budget' => $this->decimal($this->trimmedString($raw)),
                 'time_budget' => ($v = $this->trimmedString($raw)) !== null && ctype_digit($v) ? (int) $v : null,
-                'starts_on', 'ends_on' => $this->parseDate($this->trimmedString($raw)),
                 'status' => $this->normStatus($this->trimmedString($raw)),
                 default => $this->trimmedString($raw),
             };
@@ -118,6 +122,10 @@ class ProjectSpec extends AbstractEntitySpec {
         if (! empty($row['status']) && ! ($row['status'] instanceof ProjectStatus)) {
             $issues[] = $this->formatIssue('status', (string) __('import.error.format.enum'));
         }
+        // Vorher las ein eigener Parser den 31.02. als 3. März und Unlesbares still als leer (Konsolidierungs-Audit 2026-10, k1-01).
+        foreach (self::DATE_COLUMNS as $field) {
+            $this->validateDateField($issues, $row, $field);
+        }
 
         return $issues;
     }
@@ -141,6 +149,11 @@ class ProjectSpec extends AbstractEntitySpec {
 
             $payload = array_filter($row, static fn($v): bool => $v !== null);
             unset($payload['customer_number']);
+            foreach (self::DATE_COLUMNS as $field) {
+                if (isset($payload[$field])) {
+                    $payload[$field] = $this->dateString($payload[$field]);
+                }
+            }
             $payload['organization_id'] = $organization->id;
             $payload['customer_id'] = $customer->id;
             $payload['status'] ??= ProjectStatus::Active;
@@ -169,20 +182,6 @@ class ProjectSpec extends AbstractEntitySpec {
                 new ValidationIssue(ImportErrorCode::Persist, null, $e->getMessage()),
             ];
         }
-    }
-
-    private function parseDate(?string $value): ?string {
-        if ($value === null) {
-            return null;
-        }
-        foreach (['Y-m-d', 'd.m.Y', 'd/m/Y'] as $fmt) {
-            $d = \DateTimeImmutable::createFromFormat('!' . $fmt, $value);
-            if ($d !== false) {
-                return $d->format('Y-m-d');
-            }
-        }
-
-        return null;
     }
 
     private function normStatus(?string $value): ?ProjectStatus {

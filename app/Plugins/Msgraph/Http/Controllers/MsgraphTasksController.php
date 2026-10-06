@@ -13,10 +13,12 @@ namespace App\Plugins\Msgraph\Http\Controllers;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
 use App\Plugins\Msgraph\Api\{MsgraphTasksOAuth, MsgraphTodoClient};
+use App\Plugins\Msgraph\Enums\{MsgraphConnectionStatus, MsgraphTaskListLinkStatus};
 use App\Plugins\Msgraph\Models\{MsgraphTaskConnection, MsgraphTaskListLink};
 use App\Plugins\Msgraph\{MsgraphConfig, MsgraphPlugin};
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
 use App\Plugins\Support\{ConnectionOAuthController, PluginOAuthGrant};
+use App\Support\Sqid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\{RedirectResponse, Request};
 use Throwable;
@@ -60,11 +62,11 @@ class MsgraphTasksController extends ConnectionOAuthController {
     }
 
     protected function connectedStatus(): string {
-        return MsgraphTaskConnection::STATUS_ACTIVE;
+        return MsgraphConnectionStatus::Active->value;
     }
 
     protected function disconnectedStatus(): string {
-        return MsgraphTaskConnection::STATUS_DISCONNECTED;
+        return MsgraphConnectionStatus::Disconnected->value;
     }
 
     /** Bestätigte Kontoidentität laden (Fehler unkritisch). */
@@ -92,7 +94,8 @@ class MsgraphTasksController extends ConnectionOAuthController {
         $data = $request->validate([
             'todo_list_id' => ['required', 'string', 'max:512'],
             'target_kind' => ['required', 'in:' . MsgraphTaskListLink::KIND_PROJECT . ',' . MsgraphTaskListLink::KIND_GLOBAL_KANBAN],
-            'project_id' => ['required_if:target_kind,' . MsgraphTaskListLink::KIND_PROJECT, 'nullable', 'integer'],
+            // Sqid aus dem Formular; die rohe ID bleibt für Altaufrufer lesbar.
+            'project_id' => ['required_if:target_kind,' . MsgraphTaskListLink::KIND_PROJECT, 'nullable', 'string', 'max:64'],
             'sync_mode' => ['required', 'in:' . implode(',', [
                 MsgraphTaskListLink::MODE_TODO_TO_WORKDIARY,
                 MsgraphTaskListLink::MODE_WORKDIARY_TO_TODO,
@@ -113,7 +116,8 @@ class MsgraphTasksController extends ConnectionOAuthController {
 
         $projectId = null;
         if ($data['target_kind'] === MsgraphTaskListLink::KIND_PROJECT) {
-            $project = Project::query()->where('organization_id', $organization->id)->find((int) $data['project_id']);
+            $decoded = Sqid::decodeOrNumeric(Project::class, (string) $data['project_id']);
+            $project = $decoded !== null ? Project::query()->where('organization_id', $organization->id)->find($decoded) : null;
             if ($project === null) {
                 return back()->with('error', __('msgraph::msgraph_tasks.flash.project_invalid'));
             }
@@ -127,7 +131,7 @@ class MsgraphTasksController extends ConnectionOAuthController {
                 'target_kind' => (string) $data['target_kind'],
                 'project_id' => $projectId,
                 'sync_mode' => (string) $data['sync_mode'],
-                'status' => MsgraphTaskListLink::STATUS_ACTIVE,
+                'status' => MsgraphTaskListLinkStatus::Active,
             ],
         );
         $link->audit('msgraph_tasks.link_saved', ['list' => $list['name'], 'mode' => $link->sync_mode]);

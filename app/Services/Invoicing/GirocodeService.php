@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Invoicing;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Finance\CashEntry;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\Organization;
@@ -81,7 +82,7 @@ class GirocodeService {
             return null;
         }
 
-        $amount = $amount === null ? $this->amount($invoice) : ($invoice->status === Invoice::STATUS_PAID || round($amount, 2) < 0.01 ? null : round($amount, 2));
+        $amount = $amount === null ? $this->amount($invoice) : ($invoice->status === InvoiceStatus::Paid || round($amount, 2) < 0.01 ? null : round($amount, 2));
         if ($amount === null) {
             return null;
         }
@@ -151,12 +152,12 @@ class GirocodeService {
      * Bleibt nichts übrig, erscheint kein Code.
      */
     private function amount(Invoice $invoice): ?float {
-        if ($invoice->status === Invoice::STATUS_PAID) {
+        if ($invoice->status === InvoiceStatus::Paid) {
             return null;
         }
 
         $paid = $this->paidAmount($invoice);
-        if ($invoice->status === Invoice::STATUS_PARTIALLY_PAID && $paid < 0.01) {
+        if ($invoice->status === InvoiceStatus::PartiallyPaid && $paid < 0.01) {
             // Teilzahlung bekannt, Betrag aber nicht: dann lieber kein Code
             // als einer über die volle Summe.
             return null;

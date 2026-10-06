@@ -52,7 +52,7 @@
             <x-card>
                 <h3 class="font-semibold mb-2">{{ __('Journal') }} — {{ $detail->name }}</h3>
                 @if ($entries->isEmpty())
-                    <p class="text-muted">{{ __('Noch keine Buchungen.') }}</p>
+                    <x-empty-state icon="receipt_long" :title="__('Noch keine Buchungen.')" compact />
                 @else
                     <x-table bare>
                         <x-slot:head>

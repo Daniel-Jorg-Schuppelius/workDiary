@@ -9,8 +9,7 @@
 @extends('layouts.app')
 @section('title', __('procurement.title') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('procurement.title'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('procurement.subtitle')">
@@ -46,7 +45,7 @@
                 <tr>
                     <td><a href="{{ route('purchase-orders.show', $order) }}" class="link link-hover font-mono">{{ $order->number }}</a></td>
                     <td>{{ $order->supplier?->name }}</td>
-                    <td><span class="badge badge-sm badge-ghost">{{ $order->status->label() }}</span></td>
+                    <td><x-status-badge>{{ $order->status->label() }}</x-status-badge></td>
                 </tr>
             @endforeach
         </x-table>

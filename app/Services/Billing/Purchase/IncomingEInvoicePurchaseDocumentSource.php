@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Billing\Purchase;
 
+use App\Enums\Invoicing\IncomingEInvoiceStatus;
 use App\Models\Document\Document;
 use App\Models\Invoicing\IncomingEInvoice;
 use App\Models\Platform\Organization;
@@ -37,7 +38,7 @@ final class IncomingEInvoicePurchaseDocumentSource implements PurchaseDocumentSo
 
     public const NUMBER_PREFIX = 'ER-';
 
-    private const ACCEPTED = [IncomingEInvoice::STATUS_APPROVED, IncomingEInvoice::STATUS_PAYMENT_RELEASED];
+    private const ACCEPTED = [IncomingEInvoiceStatus::Approved, IncomingEInvoiceStatus::PaymentReleased];
 
     public function key(): string {
         return self::KEY;

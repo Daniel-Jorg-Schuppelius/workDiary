@@ -14,10 +14,12 @@ namespace App\Plugins\Todoist\Console;
 
 use App\Console\Concerns\IteratesOrganizations;
 use App\Models\Platform\Organization;
+use App\Plugins\Support\Console\ChecksPluginSwitch;
 use App\Plugins\Todoist\Api\TodoistApiClient;
+use App\Plugins\Todoist\Enums\TodoistProjectLinkStatus;
 use App\Plugins\Todoist\Models\{TodoistConnection, TodoistProjectLink};
 use App\Plugins\Todoist\Services\{TodoistImportService, TodoistSyncService};
-use App\Plugins\Todoist\TodoistConfig;
+use App\Plugins\Todoist\{TodoistConfig, TodoistPlugin};
 use Illuminate\Console\Command;
 
 /**
@@ -30,6 +32,7 @@ use Illuminate\Console\Command;
  * bleibt der Cursor unverändert — der nächste Lauf setzt dort wieder auf.
  */
 class TodoistSyncCommand extends Command {
+    use ChecksPluginSwitch;
     use IteratesOrganizations;
 
     protected $signature = 'todoist:sync ' . self::ORGANIZATION_OPTION . '
@@ -42,6 +45,9 @@ class TodoistSyncCommand extends Command {
         // mit eigener Todoist-App läuft auch dann, wenn die Installation selbst
         // keine hinterlegt hat.
         $this->forEachOrganization(function (Organization $org) use ($imports, $sync): void {
+            if (! $this->pluginEnabledFor(TodoistPlugin::ID, (int) $org->id)) {
+                return;
+            }
             $connection = TodoistConnection::query()->withoutGlobalScopes()
                 ->where('organization_id', $org->id)
                 ->first();
@@ -93,7 +99,7 @@ class TodoistSyncCommand extends Command {
             if ($items->isNotEmpty()) {
                 $links = TodoistProjectLink::query()
                     ->where('organization_id', $org->id)
-                    ->where('status', TodoistProjectLink::STATUS_ACTIVE)
+                    ->where('status', TodoistProjectLinkStatus::Active)
                     ->get()
                     ->keyBy('todoist_project_id');
 

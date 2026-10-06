@@ -44,15 +44,15 @@
             <div class="flex flex-wrap gap-2">
                 <form method="POST" action="{{ route('b2b-catalog.rotate', $access) }}">
                     @csrf
-                    <button type="submit" class="btn btn-sm">{{ __('b2b_catalog.action.rotate') }}</button>
+                    <x-button type="submit" tone="plain">{{ __('b2b_catalog.action.rotate') }}</x-button>
                 </form>
                 @if ($access->isActive())
                     <form method="POST" action="{{ route('b2b-catalog.revoke', $access) }}">
                         @csrf
-                        <button type="submit" class="btn btn-sm btn-ghost text-error">{{ __('b2b_catalog.action.revoke') }}</button>
+                        <x-button type="submit" tone="ghost" class="text-error">{{ __('b2b_catalog.action.revoke') }}</x-button>
                     </form>
                 @endif
-                <a href="{{ route('b2b-catalog.index') }}" class="btn btn-sm btn-ghost">{{ __('b2b_catalog.action.back') }}</a>
+                <x-button :href="route('b2b-catalog.index')" tone="ghost">{{ __('b2b_catalog.action.back') }}</x-button>
             </div>
         </x-card>
 
@@ -76,7 +76,7 @@
                     <span class="label-text">{{ __('b2b_catalog.field.custom_price') }}</span>
                     <input type="number" name="custom_price" step="0.0001" min="0" value="{{ old('custom_price') }}" class="input input-bordered input-sm w-36" placeholder="{{ __('b2b_catalog.field.custom_price_placeholder') }}">
                 </label>
-                <button type="submit" class="btn btn-sm btn-primary">{{ __('b2b_catalog.action.release') }}</button>
+                <x-button type="submit">{{ __('b2b_catalog.action.release') }}</x-button>
             </form>
 
             <x-table :bare="true" :empty-title="__('b2b_catalog.items_empty')">
@@ -100,7 +100,7 @@
                                             <form method="POST" action="{{ route('b2b-catalog.items.destroy', [$access, $item]) }}">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="btn btn-xs btn-ghost text-error">{{ __('b2b_catalog.action.remove') }}</button>
+                                                <x-button type="submit" tone="ghost" size="xs" class="text-error">{{ __('b2b_catalog.action.remove') }}</x-button>
                                             </form>
                                         </div>
                                     </td>

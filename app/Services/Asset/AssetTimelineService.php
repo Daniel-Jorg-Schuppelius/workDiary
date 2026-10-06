@@ -180,4 +180,28 @@ class AssetTimelineService {
 
         return $value->toISOString();
     }
+
+    /**
+     * Zeitleiste ohne Ereignisse zu Aufträgen, Protokollen, Material und
+     * Anhängen, die der Betrachter nicht sehen darf — die eine Zuordnung
+     * „Ereignisart → sichtbare IDs“ für Detailseite und Akte
+     * (Konsolidierungs-Audit 2026-10, k3-12).
+     *
+     * @param  array{orders: array<array-key, mixed>, protocols: array<array-key, mixed>, materials: array<array-key, mixed>, attachments: array<array-key, mixed>}  $visibleIds
+     * @return list<array<string, mixed>>
+     */
+    public function buildVisible(Asset $asset, int $limit, array $visibleIds): array {
+        return array_values(array_filter($this->build($asset, $limit), static function (array $event) use ($visibleIds): bool {
+            $payload = is_array($event['payload'] ?? null) ? $event['payload'] : [];
+            $id = (int) ($payload['id'] ?? 0);
+
+            return match ((string) ($event['kind'] ?? '')) {
+                'order.linked' => in_array($id, $visibleIds['orders'], true),
+                'protocol.linked' => in_array($id, $visibleIds['protocols'], true),
+                'material.linked' => in_array($id, $visibleIds['materials'], true),
+                'attachment.linked' => in_array($id, $visibleIds['attachments'], true),
+                default => true,
+            };
+        }));
+    }
 }

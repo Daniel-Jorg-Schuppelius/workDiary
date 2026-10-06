@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Rental;
 
+use App\Enums\Rental\RentalConditionItemState;
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
@@ -24,16 +25,19 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  * @property string $report_type
  * @property int $report_id
  * @property string $label
- * @property string $state
+ * @property RentalConditionItemState $state
  */
 class RentalConditionItem extends Model {
     use BelongsToOrganization;
     use HasSqid;
 
-    public const STATES = ['ok', 'worn', 'damaged', 'missing'];
-
     protected $fillable = [
         'organization_id', 'report_type', 'report_id', 'label', 'state', 'note',
+    ];
+
+    /** @var array<string, string> */
+    protected $casts = [
+        'state' => RentalConditionItemState::class,
     ];
 
     /** @return MorphTo<Model, $this> */

@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers\Procurement;
 
+use App\Enums\Article\PricingChangeAlertStatus;
 use App\Enums\Procurement\{CatalogItemStatus, CatalogSourceFormat, PunchoutProtocol};
 use App\Enums\User\Permission as P;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
@@ -60,7 +61,7 @@ class SupplierCatalogController extends Controller {
 
         return view('supplier-catalogs.index', [
             'sources' => $sources,
-            'openAlerts' => PricingChangeAlert::query()->where('status', PricingChangeAlert::STATUS_OPEN)->count(),
+            'openAlerts' => PricingChangeAlert::query()->where('status', PricingChangeAlertStatus::Open)->count(),
         ]);
     }
 
@@ -71,7 +72,7 @@ class SupplierCatalogController extends Controller {
         return view('supplier-catalogs.alerts', [
             'alerts' => PricingChangeAlert::query()
                 ->with(['article:id,name', 'supplier:id,name'])
-                ->where('status', PricingChangeAlert::STATUS_OPEN)
+                ->where('status', PricingChangeAlertStatus::Open)
                 ->orderByDesc('id')
                 ->paginate(50),
         ]);
@@ -82,7 +83,7 @@ class SupplierCatalogController extends Controller {
         abort_unless($alert->organization_id === $this->currentOrganization()->id, 404);
 
         $alert->forceFill([
-            'status' => PricingChangeAlert::STATUS_ACKNOWLEDGED,
+            'status' => PricingChangeAlertStatus::Acknowledged,
             'acknowledged_by' => Auth::id(),
             'acknowledged_at' => now(),
         ])->save();

@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Privacy;
 
+use App\Enums\Privacy\MeasureStatus;
 use App\Models\Concerns\BelongsToOrganization;
 use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
@@ -23,6 +24,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  *
  * @property int $id
  * @property int $organization_id
+ * @property MeasureStatus $status
  */
 class Measure extends Model {
     use BelongsToOrganization;
@@ -44,6 +46,7 @@ class Measure extends Model {
 
     /** @var array<string, string> */
     protected $casts = [
+        'status' => MeasureStatus::class,
         'due_at' => 'date',
         'completed_at' => 'datetime',
     ];
@@ -61,7 +64,7 @@ class Measure extends Model {
     public function isOverdue(): bool {
         $due = $this->getAttribute('due_at');
 
-        return $this->getAttribute('status') !== 'done'
+        return $this->status !== MeasureStatus::Done
             && $due !== null
             && $due->isPast();
     }

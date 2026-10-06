@@ -16,10 +16,11 @@
         <form method="GET" action="{{ route('b2b-punchout.browse', ['org' => $organization->slug]) }}" class="toolbar">
             <input type="hidden" name="t" value="{{ $token }}">
             <input type="search" name="q" value="{{ $q }}" placeholder="{{ __('b2b_catalog.public.search_placeholder') }}" aria-label="{{ __('b2b_catalog.public.search_placeholder') }}">
-            <button type="submit" class="btn secondary">{{ __('b2b_catalog.public.search') }}</button>
+            <x-button type="submit" tone="plain" size="md" class="secondary">{{ __('b2b_catalog.public.search') }}</x-button>
         </form>
 
         @if ($items->isEmpty())
+            {{-- raw-markup-ok: Standalone-Seite mit eigenem Stylesheet, ohne App-CSS --}}
             <p class="muted">{{ __('b2b_catalog.public.empty') }}</p>
         @else
             <form method="POST" action="{{ route('b2b-punchout.transfer', ['org' => $organization->slug]) }}">
@@ -69,12 +70,12 @@
                     </span>
                     <span>
                         @if ($items->previousPageUrl())
-                            <a class="btn secondary" href="{{ $items->previousPageUrl() }}">{{ __('b2b_catalog.public.prev') }}</a>
+                            <x-button :href="$items->previousPageUrl()" tone="plain" size="md" class="secondary">{{ __('b2b_catalog.public.prev') }}</x-button>
                         @endif
                         @if ($items->nextPageUrl())
-                            <a class="btn secondary" href="{{ $items->nextPageUrl() }}">{{ __('b2b_catalog.public.next') }}</a>
+                            <x-button :href="$items->nextPageUrl()" tone="plain" size="md" class="secondary">{{ __('b2b_catalog.public.next') }}</x-button>
                         @endif
-                        <button type="submit" class="btn">{{ __('b2b_catalog.public.to_cart') }}</button>
+                        <x-button type="submit" tone="plain" size="md">{{ __('b2b_catalog.public.to_cart') }}</x-button>
                     </span>
                 </div>
             </form>

@@ -65,7 +65,7 @@
     </x-slot:toolbar>
 
     @if (session('protocol.signature.token_url'))
-        <div class="alert alert-info">
+        <div role="status" class="alert alert-info">
             <x-icon name="link" />
             <div class="min-w-0">
                 <p class="text-sm">{{ __('protocol.dialog.token_url_hint') }}</p>
@@ -101,14 +101,13 @@
                     <x-detail-grid.row :label="__('Quelle')" :value="\App\Support\Trans::or('weather.providers.' . $weather->provider, $weather->provider) . ' · ' . $weather->fetched_at?->fdatetime()" />
                 </x-detail-grid>
             @else
-                <div class="flex items-center justify-between gap-2">
-                    <p class="text-sm text-muted">{{ __('Kein Wetter-Snapshot vorhanden.') }}</p>
+                <x-empty-state icon="partly_cloudy_day" :title="__('Kein Wetter-Snapshot vorhanden.')" compact>
                     @can('update', $protocol)
-                        <x-action-form :action="route('protocols.weather', $protocol)" method="POST">
+                        <x-action-form :action="route('protocols.weather', $protocol)" method="POST" class="mt-2">
                             <x-icon-btn icon="cloud_download" tone="outline" size="sm" type="submit" show-label>{{ __('Wetter abrufen') }}</x-icon-btn>
                         </x-action-form>
                     @endcan
-                </div>
+                </x-empty-state>
             @endif
         </x-card>
     </div>

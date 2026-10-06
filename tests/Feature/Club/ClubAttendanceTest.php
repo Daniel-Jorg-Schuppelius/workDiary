@@ -320,13 +320,15 @@ class ClubAttendanceTest extends TestCase {
 
         $this->actingAs($lead)->get(route('club.events.attendance.show', $otherEvent))->assertForbidden();
         $this->actingAs($lead)->get(route('club.events.attendance.show', $ownEvent))->assertOk()->assertSee($member->fullName());
-        $sheet = ClubAttendanceSheet::query()->where('event_id', $ownEvent->id)->firstOrFail();
+        // Die Anzeige legt die Liste nicht an — erst das Speichern.
+        $this->assertFalse(ClubAttendanceSheet::query()->where('event_id', $ownEvent->id)->exists());
 
         $this->actingAs($lead)->post(route('club.events.attendance.save', $ownEvent), [
             'version' => 0,
             'conducted_minutes' => 110,
             'records' => [$member->sqid => ['status' => 'partial', 'arrived_at' => '18:15', 'left_at' => '19:30']],
         ])->assertRedirect(route('club.events.attendance.show', $ownEvent));
+        $sheet = ClubAttendanceSheet::query()->where('event_id', $ownEvent->id)->firstOrFail();
         $record = ClubAttendanceRecord::query()->firstOrFail();
         $this->assertSame(75, $record->minutes);
         $this->assertSame(1, $sheet->refresh()->version);

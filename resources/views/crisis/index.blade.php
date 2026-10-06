@@ -10,9 +10,10 @@
 
 @section('title', __('Krisenakten'))
 @section('nav-title', __('Krisenmanagement'))
+@include('partials.page-fill')
 
 @section('content')
-<x-index-page :subtitle="__('Gemeinsames Lagebild über Vorfälle, Krisenstab, Kommunikation und Wiederanlauf.')">
+<x-index-page overflow="clip" :subtitle="__('Gemeinsames Lagebild über Vorfälle, Krisenstab, Kommunikation und Wiederanlauf.')">
     <x-slot:actions>
         {{-- Offline-Krisenmappe (MVP-914): Speichern auf Anforderung, Auffrischen bei jedem Besuch. --}}
         <x-icon-btn icon="download_for_offline" tone="ghost" size="sm" type="button"
@@ -41,39 +42,37 @@
     <x-filter-bar :action="route('crisis.index')" :reset="route('crisis.index')">
         <select name="status" class="select select-sm select-bordered w-44 shrink-0" aria-label="{{ __('Status') }}">
             <option value="">{{ __('Alle Status') }}</option>
-            @foreach ($statuses as $s)
-                <option value="{{ $s }}" @selected(($filters['status'] ?? '') === $s)>{{ __("values.$s") }}</option>
+            @foreach ($statuses as $value => $label)
+                <option value="{{ $value }}" @selected(($filters['status'] ?? '') === $value)>{{ $label }}</option>
             @endforeach
         </select>
     </x-filter-bar>
 
 
-    <x-card padding="p-0">
-        <x-table bare>
-            <x-slot:head>
-                <tr>
-                    <th>{{ __('Krise') }}</th>
-                    <th>{{ __('Kategorie') }}</th>
-                    <th>{{ __('Schweregrad') }}</th>
-                    <th>{{ __('Status') }}</th>
-                    <th>{{ __('Aktiviert') }}</th>
-                    <th></th>
-                </tr>
-            </x-slot:head>
-            @forelse ($cases as $case)
-                <tr>
-                    <td><a href="{{ route('crisis.show', $case) }}" class="link">{{ $case->title }}</a></td>
-                    <td>{{ __("values.{$case->category}") }}</td>
-                    <td><x-status-badge size="md" :tone="$case->severity === 'critical' ? 'error' : ($case->severity === 'major' ? 'warning' : 'outline')">{{ __("values.{$case->severity}") }}</x-status-badge></td>
-                    <td><x-status-badge size="md" outline>{{ __("values.{$case->status}") }}</x-status-badge></td>
-                    <td>{{ optional($case->activated_at)->fdatetime() ?? '—' }}</td>
-                    <td class="text-right"><x-icon-btn icon="visibility" :href="route('crisis.show', $case)" :label="__('Anzeigen')" /></td>
-                </tr>
-            @empty
-                <x-table.empty icon="emergency_home" :colspan="6" :title="__('Keine Krisenakten — hoffentlich bleibt es so.')" compact />
-            @endforelse
-        </x-table>
-    </x-card>
+    <x-table scroll="flex">
+        <x-slot:head>
+            <tr>
+                <th>{{ __('Krise') }}</th>
+                <th>{{ __('Kategorie') }}</th>
+                <th>{{ __('Schweregrad') }}</th>
+                <th>{{ __('Status') }}</th>
+                <th>{{ __('Aktiviert') }}</th>
+                <th></th>
+            </tr>
+        </x-slot:head>
+        @forelse ($cases as $case)
+            <tr class="hover">
+                <td><a href="{{ route('crisis.show', $case) }}" class="link">{{ $case->title }}</a></td>
+                <td>{{ __("values.{$case->category}") }}</td>
+                <td><x-status-badge size="md" :tone="$case->severity === 'critical' ? 'error' : ($case->severity === 'major' ? 'warning' : 'ghost')">{{ __("values.{$case->severity}") }}</x-status-badge></td>
+                <td><x-status-badge size="md" outline>{{ $case->status->label() }}</x-status-badge></td>
+                <td>{{ optional($case->activated_at)->fdatetime() ?? '—' }}</td>
+                <td class="text-right"><x-icon-btn icon="visibility" :href="route('crisis.show', $case)" :label="__('Anzeigen')" /></td>
+            </tr>
+        @empty
+            <x-table.empty icon="emergency_home" :colspan="6" :title="__('Keine Krisenakten — hoffentlich bleibt es so.')" compact />
+        @endforelse
+    </x-table>
 
     <x-pagination :paginator="$cases" standing />
 </x-index-page>

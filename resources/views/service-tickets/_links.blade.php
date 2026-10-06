@@ -47,7 +47,7 @@
     @endif
 
     @if ($ticket->links->isEmpty())
-        <p class="text-sm text-muted">{{ __('Noch keine Verknüpfungen.') }}</p>
+        <x-empty-state icon="link_off" :title="__('Noch keine Verknüpfungen.')" compact />
     @else
         <ul class="space-y-1 text-sm">
             @foreach ($ticket->links as $link)
@@ -90,7 +90,7 @@
                 @foreach ($ticket->changes as $change)
                     <li class="flex flex-wrap items-center gap-2">
                         <a href="{{ route('servicedesk.changes.show', $change) }}" class="link link-hover">{{ $change->title }}</a>
-                        <x-status-badge size="xs" outline>{{ \App\Http\Controllers\Helpdesk\ChangeController::statusLabels()[$change->status] ?? $change->status }}</x-status-badge>
+                        <x-status-badge size="xs" outline>{{ $change->status->label() }}</x-status-badge>
                     </li>
                 @endforeach
             </ul>

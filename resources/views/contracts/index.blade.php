@@ -10,9 +10,10 @@
 
 @section('title', __('Vertragsverwaltung'))
 @section('nav-title', __('Verträge'))
+@include('partials.page-fill')
 
 @section('content')
-<x-index-page :subtitle="__('Verträge beliebiger Art mit Laufzeit, Kündigungsfrist, Indexierung und Vertragskalender — mit nächstmöglichem Kündigungstermin.')">
+<x-index-page overflow="clip" :subtitle="__('Verträge beliebiger Art mit Laufzeit, Kündigungsfrist, Indexierung und Vertragskalender — mit nächstmöglichem Kündigungstermin.')">
     <x-slot:actions>
         @can('create', \App\Models\Contract\Contract::class)
             <x-icon-btn icon="add" tone="primary" size="sm"
@@ -45,36 +46,34 @@
     </x-filter-bar>
 
 
-    <x-card padding="p-0">
-        <x-table bare>
-            <x-slot:head>
-                <tr>
-                    <th>{{ __('Nummer') }}</th>
-                    <th>{{ __('Titel') }}</th>
-                    <th>{{ __('Vertragspartner') }}</th>
-                    <th>{{ __('Art') }}</th>
-                    <th>{{ __('Laufzeit') }}</th>
-                    <th>{{ __('Nächste Kündigung zum') }}</th>
-                    <th>{{ __('Status') }}</th>
-                    <th></th>
-                </tr>
-            </x-slot:head>
-            @forelse ($contracts as $contract)
-                <tr>
-                    <td><a href="{{ route('contracts.show', $contract) }}" class="link font-mono">{{ $contract->number }}</a></td>
-                    <td>{{ $contract->title }}</td>
-                    <td>{{ $contract->partnerLabel() ?: '—' }}</td>
-                    <td>{{ $contract->kind->label() }}</td>
-                    <td>{{ $contract->starts_on->fdate() }} – {{ optional($contract->ends_on)->fdate() ?? __('unbefristet') }}</td>
-                    <td>{{ optional($nextTermination[$contract->id] ?? null)->fdate() ?? '—' }}</td>
-                    <td><x-status-badge size="md" outline>{{ $contract->status->label() }}</x-status-badge></td>
-                    <td class="text-right"><x-icon-btn icon="visibility" :href="route('contracts.show', $contract)" :label="__('Anzeigen')" /></td>
-                </tr>
-            @empty
-                <x-table.empty icon="contract" :colspan="8" :title="__('Keine Verträge — über den Dialog anlegen.')" compact />
-            @endforelse
-        </x-table>
-    </x-card>
+    <x-table scroll="flex">
+        <x-slot:head>
+            <tr>
+                <th>{{ __('Nummer') }}</th>
+                <th>{{ __('Titel') }}</th>
+                <th>{{ __('Vertragspartner') }}</th>
+                <th>{{ __('Art') }}</th>
+                <th>{{ __('Laufzeit') }}</th>
+                <th>{{ __('Nächste Kündigung zum') }}</th>
+                <th>{{ __('Status') }}</th>
+                <th></th>
+            </tr>
+        </x-slot:head>
+        @forelse ($contracts as $contract)
+            <tr class="hover">
+                <td><a href="{{ route('contracts.show', $contract) }}" class="link font-mono">{{ $contract->number }}</a></td>
+                <td>{{ $contract->title }}</td>
+                <td>{{ $contract->partnerLabel() ?: '—' }}</td>
+                <td>{{ $contract->kind->label() }}</td>
+                <td>{{ $contract->starts_on->fdate() }} – {{ optional($contract->ends_on)->fdate() ?? __('unbefristet') }}</td>
+                <td>{{ optional($nextTermination[$contract->id] ?? null)->fdate() ?? '—' }}</td>
+                <td><x-status-badge size="md" outline>{{ $contract->status->label() }}</x-status-badge></td>
+                <td class="text-right"><x-icon-btn icon="visibility" :href="route('contracts.show', $contract)" :label="__('Anzeigen')" /></td>
+            </tr>
+        @empty
+            <x-table.empty icon="contract" :colspan="8" :title="__('Keine Verträge — über den Dialog anlegen.')" compact />
+        @endforelse
+    </x-table>
 
     <x-pagination :paginator="$contracts" standing />
 </x-index-page>

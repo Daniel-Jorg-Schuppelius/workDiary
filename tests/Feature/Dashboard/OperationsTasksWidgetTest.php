@@ -70,7 +70,7 @@ class OperationsTasksWidgetTest extends TestCase {
         $html = $result instanceof View ? $result->render() : (string) $result;
 
         $this->assertStringContainsString(e(__('operations.title.widget')), $html);
-        $this->assertStringContainsString('>4<', $html); // Zähler-Badge
+        $this->assertMatchesRegularExpression('/badge-warning">\s*4\s*</', $html); // Zähler-Badge
         $this->assertStringContainsString(e(__('operations.task.backup_overdue', ['hours' => 30, 'threshold' => 26])), $html);
         $this->assertStringContainsString(e(OperationsTaskSeverity::Critical->label()), $html); // Critical in Top-3
         $this->assertStringContainsString(route('admin.operations.index'), $html);
@@ -81,7 +81,7 @@ class OperationsTasksWidgetTest extends TestCase {
         $html = $result instanceof View ? $result->render() : (string) $result;
 
         $this->assertStringContainsString(e(__('operations.widget.empty')), $html);
-        $this->assertStringContainsString('>0<', $html);
+        $this->assertMatchesRegularExpression('/badge-ghost">\s*0\s*</', $html);
     }
 
     public function test_dashboard_shows_widget_only_for_authorized_users(): void {

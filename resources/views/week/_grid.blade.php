@@ -32,7 +32,7 @@
     $extDays = $bands['extDays'];
 @endphp
 
-<div class="wd-week-scroll min-h-0 flex-1 overflow-auto rounded-box border border-base-300 bg-base-100 shadow-xs">
+<x-card padding="p-0" class="wd-week-scroll min-h-0 flex-1 overflow-auto">
     <div class="wd-week-grid" data-week-key="{{ $wv['key'] }}">
         {{-- Header row --}}
         <div class="wd-week-corner"></div>
@@ -166,4 +166,4 @@
             </div>
         @endforeach
     </div>
-</div>
+</x-card>

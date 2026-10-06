@@ -12,8 +12,7 @@
 @extends('layouts.app')
 @section('title', __('learning.title.bookings'))
 @section('nav-title', __('learning.title.bookings'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('learning.subtitle.bookings')">
     <x-slot:actions>
@@ -22,7 +21,7 @@
 
     <x-filter-bar :action="route('learning.bookings.index')" :reset="route('learning.bookings.index')">
         <x-filter-field :label="__('learning.field.open_bookings')" for="flt-open-count">
-            <span id="flt-open-count" class="badge badge-ghost badge-sm">{{ $openCount }}</span>
+            <x-status-badge id="flt-open-count">{{ $openCount }}</x-status-badge>
         </x-filter-field>
         <x-filter-field :label="__('learning.field.status')" for="flt-booking-status">
             <select id="flt-booking-status" name="status" class="select select-sm select-bordered" data-autosubmit>

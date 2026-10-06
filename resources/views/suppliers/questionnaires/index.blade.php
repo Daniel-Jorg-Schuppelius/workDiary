@@ -6,7 +6,7 @@
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
-{{-- Fragebögen und Anfragen der Selbstauskunft (MVP-937). Erwartet: $questionnaires, $requests, $canManage --}}
+{{-- Fragebögen und Anfragen der Selbstauskunft (MVP-937). Erwartet: $questionnaires, $requests (Seite), $canManage --}}
 @extends('layouts.app')
 
 @section('title', __('supplier_questionnaire.title'))
@@ -68,9 +68,9 @@
                 <tr>
                     <td><a class="link" href="{{ route('suppliers.show', $qr->supplier) }}">{{ $qr->supplier?->name }}</a></td>
                     <td>{{ $qr->questionnaire?->name }}</td>
-                    <td>{{ $qr->sent_at?->format('d.m.Y') ?? '—' }}</td>
+                    <td>{{ $qr->sent_at?->fdate() ?? '—' }}</td>
                     <td><span class="wd-badge badge-ghost">{{ $qr->status->label() }}</span></td>
-                    <td>{{ $qr->valid_until?->format('d.m.Y') ?? '—' }}</td>
+                    <td>{{ $qr->valid_until?->fdate() ?? '—' }}</td>
                     <td><div class="flex justify-end"><x-icon-btn icon="visibility" size="xs" data-entry-modal-trigger :href="route('supplier-questionnaires.requests.show', $qr)" :label="__('supplier_questionnaire.open')" /></div></td>
                 </tr>
             @empty
@@ -78,5 +78,7 @@
             @endforelse
         </x-table>
     </x-card>
+
+    <x-pagination :paginator="$requests" standing />
 </x-index-page>
 @endsection

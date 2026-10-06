@@ -22,7 +22,7 @@
         @if ($record->overlapEvent)
             <p class="text-sm">
                 <a href="{{ route('club.events.attendance.show', $record->overlapEvent) }}" class="link link-primary">{{ $record->overlapEvent->title }}</a>
-                <span class="text-muted">· {{ $record->overlapEvent->started_at->orgTz()->format('d.m.Y H:i') }}</span>
+                <span class="text-muted">· {{ $record->overlapEvent->started_at->fdatetime() }}</span>
             </p>
         @endif
         <x-input-field name="reason" :label="__('club.attendance.field.reason')" required maxlength="255" :value="old('reason')" />

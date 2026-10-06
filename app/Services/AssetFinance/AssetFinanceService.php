@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\AssetFinance;
 
-use App\Enums\AssetFinance\{AssetFinanceEndKind, AssetFinanceStatus};
+use App\Enums\AssetFinance\{AssetFinanceDeadlineStatus, AssetFinanceEndKind, AssetFinanceEndProcessStatus, AssetFinanceRateScheduleStatus, AssetFinanceStatus};
 use App\Enums\Notification\NotificationEvent;
 use App\Enums\Numbering\NumberScope;
 use App\Models\AssetFinance\{AssetFinanceContract, AssetFinanceContractAsset, AssetFinanceDeadline, AssetFinanceEndProcess, AssetFinanceOption, AssetFinanceRateSchedule, AssetFinanceUsageLimit};
@@ -112,7 +112,7 @@ class AssetFinanceService {
                 'asset_finance_contract_id' => $contract->id,
                 'due_on' => $due->toDateString(),
                 'amount' => $contract->rate_amount,
-                'status' => 'planned',
+                'status' => AssetFinanceRateScheduleStatus::Planned,
             ]);
             $created++;
             $due = $due->copy()->addMonthsNoOverflow($stepMonths);
@@ -132,7 +132,7 @@ class AssetFinanceService {
 
         $schedule->forceFill([
             'incoming_einvoice_id' => $invoice->id,
-            'status' => 'paid',
+            'status' => AssetFinanceRateScheduleStatus::Paid,
             'paid_at' => now(),
         ])->save();
 
@@ -204,7 +204,7 @@ class AssetFinanceService {
      * (Rückgabe/Kauf/Verlängerung) und dokumentiert die Entscheidung.
      */
     public function completeEndProcess(AssetFinanceEndProcess $endProcess, User $actor): AssetFinanceEndProcess {
-        if ($endProcess->status === 'completed') {
+        if ($endProcess->status === AssetFinanceEndProcessStatus::Completed) {
             return $endProcess;
         }
 
@@ -215,7 +215,7 @@ class AssetFinanceService {
             $this->assertStatusTransition($contract->status, $target);
 
             $endProcess->forceFill([
-                'status' => 'completed',
+                'status' => AssetFinanceEndProcessStatus::Completed,
                 'decided_by' => $actor->id,
                 'decided_at' => now(),
             ])->save();
@@ -268,7 +268,7 @@ class AssetFinanceService {
         $schedules = $contract->rateSchedules()->get();
 
         $planned = round((float) $schedules->sum(fn (AssetFinanceRateSchedule $s) => (float) $s->amount), 2);
-        $referenced = round((float) $schedules->where('status', 'paid')->sum(fn (AssetFinanceRateSchedule $s) => (float) $s->amount), 2);
+        $referenced = round((float) $schedules->where('status', AssetFinanceRateScheduleStatus::Paid)->sum(fn (AssetFinanceRateSchedule $s) => (float) $s->amount), 2);
 
         $overruns = $contract->usageLimits()->get()
             ->filter(fn (AssetFinanceUsageLimit $limit): bool => $limit->overrun() > 0)
@@ -308,7 +308,7 @@ class AssetFinanceService {
 
         foreach ($deadlines as $deadline) {
             if ($deadline->due_on->endOfDay()->isPast()) {
-                $deadline->forceFill(['status' => 'missed'])->save();
+                $deadline->forceFill(['status' => AssetFinanceDeadlineStatus::Missed])->save();
                 $deadline->contract?->audit('assetFinance.deadlineMissed', ['deadline_id' => $deadline->id]);
             }
 

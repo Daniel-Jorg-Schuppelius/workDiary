@@ -15,9 +15,10 @@
 
 @section('title', __('isms.title.incidents'))
 @section('nav-title', __('isms.title.incidents'))
+@include('partials.page-fill')
 
 @section('content')
-    <x-index-page :subtitle="__('isms.subtitle.incidents')">
+    <x-index-page overflow="clip" :subtitle="__('isms.subtitle.incidents')">
         <x-slot:actions>
             @if ($canManage)
                 <x-icon-btn icon="add" tone="primary" size="sm"
@@ -69,7 +70,7 @@
             </x-filter-field>
         </x-filter-bar>
 
-        <x-table>
+        <x-table scroll="flex">
             <x-slot:head>
                 <tr>
                     <th>{{ __('isms.field.incident_no') }}</th>
@@ -133,7 +134,7 @@
                     <td><x-status-badge :tone="$incident->severity->tone()">{{ $incident->severity->label() }}</x-status-badge></td>
                     <td><x-status-badge :tone="$incident->status->tone()">{{ $incident->status->label() }}</x-status-badge></td>
                     <td class="text-base-content/70">{{ optional($incident->owner)->name ?? '—' }}</td>
-                    <td class="text-base-content/70">{{ $incident->detected_at?->format('d.m.Y') ?? '—' }}</td>
+                    <td class="text-base-content/70">{{ $incident->detected_at?->fdate() ?? '—' }}</td>
                     <td class="text-right">
                         <div class="flex justify-end gap-1">
                             @can('update', $incident)

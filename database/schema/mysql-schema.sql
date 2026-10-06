@@ -1220,6 +1220,7 @@ CREATE TABLE `application_contract_versions` (
   `organization_id` bigint(20) unsigned NOT NULL,
   `negotiation_id` bigint(20) unsigned NOT NULL,
   `version` int(10) unsigned NOT NULL,
+  `approval_round` smallint(5) unsigned NOT NULL DEFAULT 1,
   `kind` varchar(12) NOT NULL DEFAULT 'draft',
   `summary` text DEFAULT NULL,
   `conditions` text DEFAULT NULL,
@@ -1445,6 +1446,7 @@ CREATE TABLE `approvals` (
   `approvable_type` varchar(255) NOT NULL,
   `approvable_id` bigint(20) unsigned NOT NULL,
   `step` smallint(5) unsigned NOT NULL,
+  `round` smallint(5) unsigned NOT NULL DEFAULT 1,
   `approver_rule` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`approver_rule`)),
   `decided_by` bigint(20) unsigned DEFAULT NULL,
   `decision` varchar(12) DEFAULT NULL,
@@ -9583,6 +9585,7 @@ CREATE TABLE `domain_dns_zone_projections` (
   `zone` varchar(253) NOT NULL,
   `zone_hash` char(64) NOT NULL,
   `soa` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`soa`)),
+  `unparsed_records` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`unparsed_records`)),
   `revision` varchar(190) DEFAULT NULL,
   `raw_hash` varchar(64) DEFAULT NULL,
   `synced_at` timestamp NULL DEFAULT NULL,
@@ -10922,6 +10925,19 @@ CREATE TABLE `form_templates` (
   CONSTRAINT `form_templates_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `fritzbox_dismissed_calls`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `fritzbox_dismissed_calls` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `call_hash` varchar(64) NOT NULL,
+  `dismissed_at` timestamp NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `fdc_org_hash_unique` (`organization_id`,`call_hash`),
+  CONSTRAINT `fdc_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `gaeb_imports`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -11757,6 +11773,7 @@ CREATE TABLE `investment_cases` (
   `urgency` varchar(10) NOT NULL DEFAULT 'medium',
   `risk_note` text DEFAULT NULL,
   `status` varchar(20) NOT NULL DEFAULT 'idea',
+  `deferred_from_status` varchar(32) DEFAULT NULL,
   `origin` varchar(16) DEFAULT NULL,
   `submitter_user_id` bigint(20) unsigned DEFAULT NULL,
   `submitter_name` varchar(200) DEFAULT NULL,
@@ -16908,12 +16925,16 @@ CREATE TABLE `patrol_runs` (
   `started_at` timestamp NOT NULL,
   `finished_at` timestamp NULL DEFAULT NULL,
   `deviation_note` varchar(1000) DEFAULT NULL,
+  `abort_reason` varchar(1000) DEFAULT NULL,
+  `aborted_by_user_id` bigint(20) unsigned DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `patrol_runs_patrol_route_id_foreign` (`patrol_route_id`),
   KEY `patrol_runs_started_by_foreign` (`started_by`),
   KEY `patrol_runs_org_route_idx` (`organization_id`,`patrol_route_id`,`started_at`),
+  KEY `patrol_runs_aborted_by_user_id_foreign` (`aborted_by_user_id`),
+  CONSTRAINT `patrol_runs_aborted_by_user_id_foreign` FOREIGN KEY (`aborted_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `patrol_runs_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
   CONSTRAINT `patrol_runs_patrol_route_id_foreign` FOREIGN KEY (`patrol_route_id`) REFERENCES `patrol_routes` (`id`) ON DELETE CASCADE,
   CONSTRAINT `patrol_runs_started_by_foreign` FOREIGN KEY (`started_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
@@ -21874,12 +21895,20 @@ CREATE TABLE `stock_lots` (
   `supplier_ref` varchar(128) DEFAULT NULL,
   `status` varchar(12) NOT NULL DEFAULT 'active',
   `note` varchar(255) DEFAULT NULL,
+  `blocked_reason` varchar(500) DEFAULT NULL,
+  `blocked_at` timestamp NULL DEFAULT NULL,
+  `blocked_by_user_id` bigint(20) unsigned DEFAULT NULL,
+  `merged_into_lot_id` bigint(20) unsigned DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `stock_lots_org_variant_no_uq` (`organization_id`,`article_variant_id`,`lot_no`),
   KEY `stock_lots_variant_bb_idx` (`article_variant_id`,`best_before`),
+  KEY `stock_lots_blocked_by_user_id_foreign` (`blocked_by_user_id`),
+  KEY `stock_lots_merged_into_lot_id_foreign` (`merged_into_lot_id`),
   CONSTRAINT `stock_lots_article_variant_id_foreign` FOREIGN KEY (`article_variant_id`) REFERENCES `article_variants` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `stock_lots_blocked_by_user_id_foreign` FOREIGN KEY (`blocked_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `stock_lots_merged_into_lot_id_foreign` FOREIGN KEY (`merged_into_lot_id`) REFERENCES `stock_lots` (`id`) ON DELETE SET NULL,
   CONSTRAINT `stock_lots_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -26289,3 +26318,14 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (954,'2027_03_09_12
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (955,'2027_03_09_130000_create_ebics_tables',53);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (956,'2027_03_09_140000_add_open_masterdata_to_supplier_catalog_sources',54);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (957,'2027_03_09_150000_reslug_customers_with_reserved_slugs',55);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (958,'2027_03_09_160000_add_unparsed_records_to_domain_dns_zone_projections',56);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (959,'2027_03_10_100000_add_block_and_merge_fields_to_stock_lots',57);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (960,'2027_03_10_100100_add_abort_fields_to_patrol_runs',57);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (961,'2027_03_10_100200_backfill_resolved_at_on_closed_inbox_items',58);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (962,'2027_03_10_100300_add_round_to_approvals_table',59);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (963,'2027_03_10_100400_add_approval_round_to_application_contract_versions_table',59);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (964,'2027_03_10_100500_create_fritzbox_dismissed_calls_table',60);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (965,'2027_03_10_100600_backfill_fritzbox_dismissed_calls',60);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (966,'2027_03_10_100700_add_deferred_from_status_to_investment_cases',61);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (967,'2027_03_10_100800_normalize_orgamax_invoice_status',62);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (968,'2027_03_10_100900_post_lot_block_balances',63);

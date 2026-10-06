@@ -12,6 +12,7 @@ namespace App\Http\Controllers\Concerns;
 
 use App\Models\Contacts\ContactAddress;
 use App\Models\Platform\User;
+use App\Rules\IsoCountryCode;
 
 /**
  * Gemeinsame Validierungsregeln und Persistenz für die erweiterten
@@ -41,7 +42,7 @@ trait ManagesUserContactDetails {
             'address.street' => ['nullable', 'string', 'max:255'],
             'address.zip' => ['nullable', 'string', 'max:32'],
             'address.city' => ['nullable', 'string', 'max:128'],
-            'address.country_code' => ['nullable', 'string', 'size:2'],
+            'address.country_code' => ['nullable', 'string', 'max:2', new IsoCountryCode],
 
             'bank' => ['sometimes', 'array'],
             'bank.account_holder' => ['nullable', 'string', 'max:200'],
@@ -81,7 +82,7 @@ trait ManagesUserContactDetails {
             'street' => $this->blankToNull($address['street'] ?? null),
             'zip' => $this->blankToNull($address['zip'] ?? null),
             'city' => $this->blankToNull($address['city'] ?? null),
-            'country_code' => $this->blankToNull($address['country_code'] ?? null),
+            'country_code' => $this->blankToNull(is_string($address['country_code'] ?? null) ? strtoupper($address['country_code']) : null),
         ];
 
         $existing = $user->primaryAddress();

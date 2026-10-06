@@ -26,7 +26,7 @@
                 <p class="text-sm">
                     {{ __('Eingang bis') }}: {{ optional($case->acknowledgement_due_at)->format('d.m.Y') }} ·
                     {{ __('Rückmeldung bis') }}: {{ optional($case->feedback_due_at)->format('d.m.Y') }}
-                    @if ($case->acknowledged_at) · {{ __('bestätigt am') }} {{ $case->acknowledged_at->format('d.m.Y') }} @endif
+                    @if ($case->acknowledged_at) · {{ __('bestätigt am') }} {{ $case->acknowledged_at->fdate() }} @endif
                 </p>
             </div>
         </x-card>
@@ -62,7 +62,7 @@
                         <p class="whitespace-pre-line">{{ $m->body_ciphertext }}</p>
                     </div>
                 @empty
-                    <p>{{ __('Noch keine Einträge.') }}</p>
+                    <x-empty-state icon="forum" :title="__('Noch keine Einträge.')" compact />
                 @endforelse
             </div>
         </x-card>
@@ -80,22 +80,33 @@
 
                 <x-card>
                     <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Status ändern') }}</h2>
+                    @php
+                        // Nur zulässige Ziele; „Gelöscht" geht allein über die kontrollierte Löschung unten.
+                        $statusTargets = array_values(array_filter(
+                            $case->status->allowedTransitions(),
+                            static fn (\App\Enums\Whistleblowing\CaseStatus $target): bool => $target !== \App\Enums\Whistleblowing\CaseStatus::Deleted,
+                        ));
+                    @endphp
+                    @if ($statusTargets === [])
+                        <p class="mt-2 text-sm text-muted">{{ __('Aus diesem Status führt kein weiterer Schritt über dieses Formular.') }}</p>
+                    @else
                     <form method="post" action="{{ route('whistleblowing.internal.status', $case) }}" class="mt-2 space-y-2">
                         @csrf
                         <x-form-group tone="ghost" cols="1">
                             <x-input-field name="to" :label="__('Status')">
                                 <select id="to" name="to" class="select select-bordered w-full">
-                                    @foreach (\App\Enums\Whistleblowing\CaseStatus::cases() as $s)
-                                        <option value="{{ $s->value }}">{{ __('whistleblowing.status.' . $s->value) }}</option>
+                                    @foreach ($statusTargets as $s)
+                                        <option value="{{ $s->value }}" @selected(old('to') === $s->value)>{{ $s->label() }}</option>
                                     @endforeach
                                 </select>
                             </x-input-field>
                             <x-input-field name="reason" :label="__('Begründung')">
-                                <textarea id="reason" name="reason" class="textarea textarea-bordered w-full" placeholder="{{ __('Begründung (bei Abschluss erforderlich)') }}"></textarea>
+                                <textarea id="reason" name="reason" class="textarea textarea-bordered w-full" placeholder="{{ __('Begründung (bei Abschluss erforderlich)') }}">{{ old('reason') }}</textarea>
                             </x-input-field>
                         </x-form-group>
                         <x-icon-btn icon="edit" tone="ghost" size="sm" type="submit" show-label>{{ __('Status setzen') }}</x-icon-btn>
                     </form>
+                    @endif
                 </x-card>
             @endcan
 
@@ -147,6 +158,40 @@
                         <x-icon-btn icon="send" tone="primary" size="sm" type="submit" show-label>{{ __('Senden') }}</x-icon-btn>
                     </form>
                 </x-card>
+            @endcan
+
+            {{-- Selbstsperre (Konzept 7.4): Die Zuweisung endet sofort; aufheben kann die Sperre niemand über die Oberfläche. --}}
+            @can('declareConflict', $case)
+                <x-card>
+                    <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Interessenkonflikt') }}</h2>
+                    <p class="mt-1 text-sm text-base-content/70">{{ __('Sind Sie selbst betroffen oder befangen, sperren Sie sich für diesen Fall. Ihre Zuweisung endet sofort, und Sie können die Sperre nicht selbst aufheben.') }}</p>
+                    <x-action-form :action="route('whistleblowing.internal.conflict', $case)" class="mt-2 space-y-2"
+                                   :confirm="__('Interessenkonflikt melden? Sie verlieren sofort den Zugriff auf diesen Fall und können die Sperre nicht selbst aufheben.')"
+                                   confirm-icon="block" confirm-tone="error"
+                                   :confirm-label="__('Interessenkonflikt melden')">
+                        <x-form-group tone="ghost" cols="1">
+                            <x-textarea-field name="reason" id="conflict-reason" rows="2" maxlength="2000"
+                                              :label="__('Begründung (optional)')" />
+                        </x-form-group>
+                        <x-icon-btn icon="block" tone="error" size="sm" type="submit" show-label>{{ __('Interessenkonflikt melden') }}</x-icon-btn>
+                    </x-action-form>
+                </x-card>
+            @endcan
+
+            {{-- Löschen nimmt der Dienst nur aus der Aufbewahrungsprüfung an (Konzept 16); unter Löschsperre gibt es keinen Knopf. --}}
+            @can('retention', $case)
+                @if ($case->status === \App\Enums\Whistleblowing\CaseStatus::RetentionReview)
+                    <x-card>
+                        <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Kontrollierte Löschung') }}</h2>
+                        <p class="mt-1 text-sm text-base-content/70">{{ __('Der Fall steht in der Aufbewahrungsprüfung. Die Löschung vernichtet den Schlüssel des Falls: Meldeinhalt, Nachrichten, Anhänge und Zuweisungen sind danach unwiederbringlich verloren, es bleibt nur ein inhaltsfreier Löschnachweis. Steht ein Verfahren oder eine Aufbewahrungspflicht entgegen, setzen Sie stattdessen die Löschsperre.') }}</p>
+                        <x-action-form :action="route('whistleblowing.internal.destroy', $case)" class="mt-2"
+                                       :confirm="__('Fall :number endgültig löschen? Meldeinhalt, Nachrichten und Anhänge lassen sich danach nicht wiederherstellen.', ['number' => $case->case_number])"
+                                       confirm-icon="delete_forever" confirm-tone="error"
+                                       :confirm-label="__('Endgültig löschen')">
+                            <x-icon-btn icon="delete_forever" tone="error" size="sm" type="submit" show-label>{{ __('Fall löschen') }}</x-icon-btn>
+                        </x-action-form>
+                    </x-card>
+                @endif
             @endcan
         </div>
     </x-index-page>

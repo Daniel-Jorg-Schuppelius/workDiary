@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\Calendly\Services;
 
 use App\Plugins\Calendly\Api\CalendlyClient;
+use App\Plugins\Calendly\Enums\CalendlyWebhookSubscriptionStatus;
 use App\Plugins\Calendly\Models\{CalendlyConnection, CalendlyWebhookSubscription};
 use Illuminate\Support\Str;
 
@@ -31,7 +32,7 @@ class CalendlySubscriptionManager {
     public function ensure(CalendlyConnection $connection): ?CalendlyWebhookSubscription {
         $existing = CalendlyWebhookSubscription::query()
             ->where('calendly_connection_id', $connection->id)
-            ->where('status', CalendlyWebhookSubscription::STATUS_ACTIVE)
+            ->where('status', CalendlyWebhookSubscriptionStatus::Active)
             ->first();
 
         if ($existing instanceof CalendlyWebhookSubscription) {
@@ -76,7 +77,7 @@ class CalendlySubscriptionManager {
             'calendly_subscription_uri' => is_string($resource['uri'] ?? null) ? $resource['uri'] : null,
             'scope' => CalendlyWebhookSubscription::SCOPE_ORGANIZATION,
             'events' => self::EVENTS,
-            'status' => CalendlyWebhookSubscription::STATUS_ACTIVE,
+            'status' => CalendlyWebhookSubscriptionStatus::Active,
         ]);
     }
 
@@ -84,7 +85,7 @@ class CalendlySubscriptionManager {
     public function remove(CalendlyConnection $connection): void {
         $subscriptions = CalendlyWebhookSubscription::query()
             ->where('calendly_connection_id', $connection->id)
-            ->where('status', CalendlyWebhookSubscription::STATUS_ACTIVE)
+            ->where('status', CalendlyWebhookSubscriptionStatus::Active)
             ->get();
 
         $client = new CalendlyClient($connection);
@@ -93,7 +94,7 @@ class CalendlySubscriptionManager {
             if ($uri !== '') {
                 $client->deleteWebhookSubscription($uri);
             }
-            $subscription->forceFill(['status' => CalendlyWebhookSubscription::STATUS_DISABLED])->save();
+            $subscription->forceFill(['status' => CalendlyWebhookSubscriptionStatus::Disabled])->save();
         }
     }
 }

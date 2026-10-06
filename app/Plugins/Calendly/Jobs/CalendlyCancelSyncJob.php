@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Calendly\Jobs;
 
+use App\Enums\Calendar\AppointmentRequestStatus;
 use App\Models\Calendar\AppointmentRequest;
 use App\Plugins\Calendly\CalendlyPlugin;
 use App\Plugins\Calendly\Models\CalendlyConnection;
@@ -50,7 +51,7 @@ class CalendlyCancelSyncJob implements ShouldQueue {
         if (
             ! $request instanceof AppointmentRequest
             || $request->source !== AppointmentRequest::SOURCE_CALENDLY
-            || $request->status !== AppointmentRequest::STATUS_CONFIRMED
+            || $request->status !== AppointmentRequestStatus::Confirmed
         ) {
             return; // inzwischen anderweitig abgeschlossen (z. B. Calendly-seitige Absage)
         }
@@ -93,7 +94,7 @@ class CalendlyCancelSyncJob implements ShouldQueue {
 
         // Idempotent zum später eintreffenden invitee.canceled-Echo-Webhook.
         $request->forceFill([
-            'status' => AppointmentRequest::STATUS_CANCELED,
+            'status' => AppointmentRequestStatus::Canceled,
             'cancellation' => ['canceler_type' => 'host', 'reason' => $this->reason],
         ])->save();
         $request->audit('calendly.cancel_synced', ['event_uuid' => $eventUuid]);

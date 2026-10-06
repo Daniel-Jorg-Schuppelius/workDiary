@@ -11,6 +11,7 @@
 namespace Tests\Feature\Invoicing;
 
 use App\Enums\Finance\AllocationKind;
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
@@ -70,7 +71,7 @@ class InvoiceDiscountSkontoTest extends TestCase {
     }
 
     /** @param array<int, array<string, mixed>> $items */
-    private function makeInvoice(array $items, array $attributes = [], string $status = Invoice::STATUS_DRAFT): Invoice {
+    private function makeInvoice(array $items, array $attributes = [], InvoiceStatus $status = InvoiceStatus::Draft): Invoice {
         // Snapshot erst NACH recalculate()/save() setzen — der Ausstellungs-Guard
         // blockiert sonst (korrekt) die Summenfelder.
         $partySnapshot = $attributes['party_snapshot'] ?? null;
@@ -142,7 +143,7 @@ class InvoiceDiscountSkontoTest extends TestCase {
         $invoice = $this->makeInvoice([
             ['quantity' => '2.00', 'unit_price' => '100.00', 'discount_percent' => '10.00'],
             ['quantity' => '1.00', 'unit_price' => '100.00', 'discount_amount' => '15.00'],
-        ], ['discount_amount' => '20.00'], Invoice::STATUS_ISSUED);
+        ], ['discount_amount' => '20.00'], InvoiceStatus::Issued);
 
         $cancellation = app(InvoiceGenerator::class)->cancellationFor($invoice, 'Test', (int) $this->admin->id);
 
@@ -174,7 +175,7 @@ class InvoiceDiscountSkontoTest extends TestCase {
         $issued = $this->makeInvoice(
             [['quantity' => '1.00', 'unit_price' => '100.00']],
             ['party_snapshot' => ['frozen' => true]],
-            Invoice::STATUS_ISSUED,
+            InvoiceStatus::Issued,
         );
 
         $this->actingAs($this->admin)
@@ -199,7 +200,7 @@ class InvoiceDiscountSkontoTest extends TestCase {
             'discount_amount' => '18.00',
             'skonto_percent' => '2.00',
             'skonto_days' => 14,
-        ], Invoice::STATUS_ISSUED);
+        ], InvoiceStatus::Issued);
 
         $response = $this->actingAs($this->admin)->get(route('invoices.einvoice', $invoice));
 
@@ -217,7 +218,7 @@ class InvoiceDiscountSkontoTest extends TestCase {
         $invoice = $this->makeInvoice(
             [['quantity' => '1.00', 'unit_price' => '100.00']],
             ['skonto_percent' => '2.00', 'skonto_days' => 14],
-            Invoice::STATUS_ISSUED,
+            InvoiceStatus::Issued,
         );
         // total = 119,00; Skonto 2 % = 2,38 → 116,62 innerhalb der Frist.
         $matching = app(MatchingService::class);

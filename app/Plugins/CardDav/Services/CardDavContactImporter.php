@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\CardDav\Services;
 
 use App\Enums\Integration\{ConflictFieldPolicy, ImportMatchPolicy};
+use App\Enums\Integration\IntegrationInboxStatus;
 use App\Models\Integration\IntegrationInboxItem;
 use App\Models\Platform\Organization;
 use App\Plugins\CardDav\CardDavPlugin;
@@ -181,9 +182,9 @@ class CardDavContactImporter {
                 ->where('organization_id', $organization->id)
                 ->where('plugin_id', CardDavPlugin::ID)
                 ->where('dedupe_key', self::EXT_TYPE_CONTACT . ':' . $card->uid)
-                ->where('status', IntegrationInboxItem::STATUS_OPEN)
+                ->where('status', IntegrationInboxStatus::Open)
                 ->update([
-                    'status' => IntegrationInboxItem::STATUS_DISMISSED,
+                    'status' => IntegrationInboxStatus::Dismissed,
                     'resolved_at' => now(),
                 ]);
         }

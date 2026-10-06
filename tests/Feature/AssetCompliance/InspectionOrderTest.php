@@ -13,16 +13,18 @@ declare(strict_types=1);
 namespace Tests\Feature\AssetCompliance;
 
 use App\Enums\AssetCompliance\{AssetInspectionOrderStatus, AssetInspectionScheduleStatus};
+use App\Enums\Organization\TenantStatus;
 use App\Mail\InspectionOrderMail;
 use App\Models\Asset\Asset;
 use App\Models\AssetCompliance\{AssetCalibrationCertificate, AssetComplianceProfile, AssetInspectionEvent, AssetInspectionOrder, AssetInspectionSchedule};
 use App\Models\Platform\User;
 use App\Models\Supplier\Supplier;
-use App\Services\AssetCompliance\AssetComplianceService;
+use App\Services\AssetCompliance\{AssetComplianceService, InspectionOrderService};
 use Database\Seeders\AssetComplianceCatalogSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\{Mail, Storage};
+use Illuminate\Validation\ValidationException;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -91,7 +93,15 @@ final class InspectionOrderTest extends TestCase {
         $this->assertSame(AssetInspectionOrderStatus::Reported, $order->fresh()?->status);
         $this->get(route('inspection-order.public', $token))->assertOk();
 
+        // Stand, wie ihn eine zweite, gleichzeitige Übernahme geladen hätte (k3-4).
+        $stale = $order->fresh();
         $this->actingAs($this->admin)->post(route('asset-compliance.orders.take-over', $order))->assertSessionHas('success');
+        try {
+            app(InspectionOrderService::class)->takeOver($stale, $this->admin);
+            $this->fail('Die zweite Übernahme hätte unter der Sperre abgelehnt werden müssen.');
+        } catch (ValidationException) {
+            // erwartet
+        }
         $event = AssetInspectionEvent::query()->sole();
         $this->assertSame('Kalibrierdienst GmbH', $event->external_inspector_name);
         $this->assertSame('K-4711', AssetCalibrationCertificate::query()->sole()->certificate_no);
@@ -99,6 +109,15 @@ final class InspectionOrderTest extends TestCase {
         $this->assertSame(AssetInspectionOrderStatus::Completed, $order->fresh()?->status);
         $this->logout();
         $this->get(route('inspection-order.public', $token))->assertNotFound();
+    }
+
+    public function test_index_lists_orders(): void {
+        $this->actingAs($this->admin)->post(route('asset-compliance.orders.store'), [
+            'title' => 'Kalibrierung 2026', 'supplier_id' => $this->provider->sqid, 'recipient_email' => 'labor@kalib.test', 'schedule_ids' => [$this->schedule->sqid],
+        ])->assertRedirect();
+
+        $this->actingAs($this->admin)->get(route('asset-compliance.orders.index'))
+            ->assertOk()->assertSee('Kalibrierung 2026')->assertSee('Kalibrierdienst GmbH');
     }
 
     public function test_cancel_releases_schedules_and_rights(): void {
@@ -111,5 +130,25 @@ final class InspectionOrderTest extends TestCase {
 
         $user = User::factory()->create(['organization_id' => $this->organization->id]);
         $this->actingAs($user)->get(route('asset-compliance.orders.create'))->assertForbidden();
+    }
+
+    /** Sicherheitsaudit 2026-10-04, pub-3: der Link endet mit der Mandantensperre. */
+    public function test_order_link_is_locked_for_a_suspended_tenant(): void {
+        $this->actingAs($this->admin)->post(route('asset-compliance.orders.store'), [
+            'title' => 'Kalibrierung 2026', 'supplier_id' => $this->provider->sqid, 'recipient_email' => 'labor@kalib.test', 'schedule_ids' => [$this->schedule->sqid],
+        ])->assertRedirect();
+        $token = null;
+        Mail::assertQueued(InspectionOrderMail::class, function (InspectionOrderMail $mail) use (&$token): bool {
+            $token = $mail->token;
+
+            return true;
+        });
+        $this->logout();
+        $this->get(route('inspection-order.public', $token))->assertOk();
+
+        $this->organization->forceFill(['tenant_status' => TenantStatus::Suspended])->save();
+
+        $this->get(route('inspection-order.public', $token))->assertStatus(423);
+        $this->post(route('inspection-order.public.offer', $token), ['offer_amount' => '180', 'offer_planned_on' => now()->addDays(5)->toDateString()])->assertStatus(423);
     }
 }

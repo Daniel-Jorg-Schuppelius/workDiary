@@ -15,6 +15,7 @@ use App\Models\Integration\{ExternalReference, IntegrationInboxItem, Integration
 use App\Models\Platform\User;
 use App\Models\Project\{Project, Task};
 use App\Plugins\Contracts\{PluginCapability, TaskSyncer};
+use App\Plugins\Msgraph\Enums\{MsgraphConnectionStatus, MsgraphTaskListLinkStatus};
 use App\Plugins\Msgraph\Models\{MsgraphTaskConnection, MsgraphTaskListLink};
 use App\Plugins\Msgraph\MsgraphPlugin;
 use App\Plugins\Msgraph\Observers\MsgraphTodoTaskObserver;
@@ -52,7 +53,7 @@ final class MsgraphTodoSyncTest extends TestCase {
         return MsgraphTaskConnection::query()->create([
             'organization_id' => $this->organization->id,
             'access_token' => 'secret-token-1',
-            'status' => MsgraphTaskConnection::STATUS_ACTIVE,
+            'status' => MsgraphConnectionStatus::Active,
         ]);
     }
 
@@ -65,7 +66,7 @@ final class MsgraphTodoSyncTest extends TestCase {
             'target_kind' => MsgraphTaskListLink::KIND_PROJECT,
             'project_id' => $project->id,
             'sync_mode' => MsgraphTaskListLink::MODE_TODO_TO_WORKDIARY,
-            'status' => MsgraphTaskListLink::STATUS_ACTIVE,
+            'status' => MsgraphTaskListLinkStatus::Active,
         ]);
     }
 
@@ -93,6 +94,20 @@ final class MsgraphTodoSyncTest extends TestCase {
         $response->assertRedirect();
 
         $this->assertStringContainsString('Tasks.ReadWrite', urldecode((string) $response->headers->get('Location')));
+    }
+
+    public function test_disconnect_marks_the_task_connection_disconnected(): void {
+        $connection = $this->connection();
+        $this->assertTrue($connection->isActive());
+
+        $this->actingAs($this->admin)->post(route('admin.msgraph.tasks.disconnect'))
+            ->assertRedirect()->assertSessionHas('success');
+
+        $fresh = $connection->fresh();
+        $this->assertInstanceOf(MsgraphTaskConnection::class, $fresh);
+        $this->assertSame(MsgraphConnectionStatus::Disconnected, $fresh->status);
+        $this->assertNull($fresh->access_token);
+        $this->assertFalse($fresh->isActive());
     }
 
     public function test_import_creates_task_with_reference_then_unchanged(): void {

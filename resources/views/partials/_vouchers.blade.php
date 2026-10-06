@@ -13,7 +13,7 @@
     Dokumente-Panel — zwei Karten, die nach demselben aussahen. Die Begriffe
     sind seither getrennt: **Beleg** ist Buchhaltung (hier), **Dokument** ist
     die verwaltete, versionierte Datei (`documents/_panel`), **Anhang** die
-    lose Datei am Vorgang (`attachments._panel`).
+    lose Datei am Vorgang (`<x-attachments-section>`).
 
     Lokale Rechnungen und die Belege der Buchhaltungsprogramme
     ({@see \App\Services\Billing\PartyDocumentSources}, MVP-1038) in einer
@@ -63,7 +63,7 @@
             'source' => null,
             'number' => $invoice->number,
             'date' => $invoice->issued_on,
-            'status' => $invoice->status,
+            'status' => $invoice->status->value,
             'amount' => $invoice->total?->toFloat() ?? 0.0,
             'currency' => $invoice->currency->value,
             'model' => $invoice,
@@ -105,7 +105,7 @@
         <div class="flex flex-wrap items-center justify-between gap-2">
             <h2 class="flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold">
                 <x-icon name="receipt_long" class="text-muted" /> {{ __('Rechnungen & Belege') }}
-                <span class="badge badge-ghost badge-sm">{{ $range['label'] }}</span>
+                <x-status-badge>{{ $range['label'] }}</x-status-badge>
             </h2>
             <div class="flex items-center gap-3">
                 <span class="text-sm text-muted">
@@ -123,7 +123,7 @@
         @if ($byType->isNotEmpty())
             <div class="flex flex-wrap gap-1.5">
                 @foreach ($byType as $type => $group)
-                    <span class="badge badge-sm badge-outline">{{ $valueLabel($type) }}: {{ $group->count() }}</span>
+                    <x-status-badge tone="plain" outline>{{ $valueLabel($type) }}: {{ $group->count() }}</x-status-badge>
                 @endforeach
             </div>
         @endif
@@ -159,9 +159,9 @@
                         <td data-sort-value="{{ optional($row['date'])->format('Y-m-d') ?? '' }}">{{ optional($row['date'])->fdate() ?? '–' }}</td>
                         <td>{{ $valueLabel($row['type']) }}</td>
                         <td>
-                            <span class="badge badge-sm {{ $model ? 'badge-primary badge-outline' : 'badge-ghost' }}">
+                            <x-status-badge :tone="$model ? 'primary' : 'ghost'" :outline="(bool) $model">
                                 {{ $row['source'] ?? __('Lokal') }}
-                            </span>
+                            </x-status-badge>
                         </td>
                         <td>
                             <x-status-badge :tone="$statusTone($row['status'])">{{ $valueLabel($row['status']) }}</x-status-badge>

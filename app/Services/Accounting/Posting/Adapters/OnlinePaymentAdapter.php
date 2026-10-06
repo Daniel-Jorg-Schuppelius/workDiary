@@ -14,6 +14,7 @@ namespace App\Services\Accounting\Posting\Adapters;
 
 use App\Enums\Finance\{PostingAccountRole, PostingSourceKind, SettlementKind};
 use App\Enums\Invoicing\OnlinePaymentStatus;
+use App\Models\Accounting\AccountingEntry;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\{Invoice, OnlinePayment};
 use App\Models\Platform\Organization;
@@ -45,6 +46,19 @@ class OnlinePaymentAdapter extends AbstractPostingAdapter {
         $payments = $query->with('invoice')->orderBy('paid_at')->get();
 
         return $payments;
+    }
+
+    /**
+     * Erstattung nach dem Buchen (Sicherheitsaudit 2026-10-04, li-8): der Satz
+     * trägt weniger Rücklauf an der Forderung, als die Zahlung heute ausweist.
+     * Zahlung und Erstattung teilen sich einen Vorschlag — der Ausweg ist
+     * Storno und Neubuchung, der Buchungseingang muss den Fall aber zeigen.
+     */
+    public function changedSincePosting(Model $source, AccountingEntry $entry): bool {
+        assert($source instanceof OnlinePayment);
+        $booked = (float) $entry->lines()->whereNotNull('counterparty_id')->sum('debit');
+
+        return abs((float) $source->refunded_amount->getAmount() - $booked) >= 0.005;
     }
 
     public function proposalFor(Organization $organization, Model $source): PostingProposal {

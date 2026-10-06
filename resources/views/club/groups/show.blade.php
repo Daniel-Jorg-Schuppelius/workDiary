@@ -64,7 +64,7 @@
                                 @endif
                             </td>
                             <td class="text-center text-sm">{{ $member?->ageOn($today) ?? '–' }}</td>
-                            <td class="text-sm">{{ $membership->valid_from->format('d.m.Y') }}</td>
+                            <td class="text-sm">{{ $membership->valid_from->fdate() }}</td>
                             <td>
                                 @if ($result !== null && $group->hasAgeCriteria())
                                     <x-status-badge :tone="$result->tone()" size="xs">{{ $result->label() }}</x-status-badge>
@@ -142,12 +142,12 @@
                                             <a href="{{ route('club.members.show', $entry->member) }}" class="link link-hover font-medium">{{ $entry->member->fullName() }}</a>
                                             <span class="block text-xs text-muted">{{ __('club.teams.label.age_class_of', ['age' => app(\App\Services\Club\ClubTeamService::class)->ageClassOf($entry->member, $group, $today) ?? '–']) }}</span>
                                         @endif
-                                        @if ($entry->isGuest())<span class="badge badge-ghost badge-xs">{{ __('club.teams.label.guest', ['origin' => $entry->guest_origin]) }}</span>@endif
+                                        @if ($entry->isGuest())<x-status-badge size="xs">{{ __('club.teams.label.guest', ['origin' => $entry->guest_origin]) }}</x-status-badge>@endif
                                     </td>
                                     <td class="text-center text-sm tabular-nums">{{ $entry->jersey_no ?? '–' }}</td>
                                     <td class="text-sm">{{ $profile?->positionLabel($entry->position_code) ?? $entry->position_code ?? '–' }}</td>
                                     @if ($profile?->hasPairings())<td class="text-center text-sm tabular-nums">{{ $entry->strength_rank ?? '–' }}</td>@endif
-                                    <td class="text-sm tabular-nums">{{ $entry->valid_from->format('d.m.Y') }}@if ($entry->valid_to) – {{ $entry->valid_to->format('d.m.Y') }}@endif</td>
+                                    <td class="text-sm tabular-nums">{{ $entry->valid_from->fdate() }}@if ($entry->valid_to) – {{ $entry->valid_to->fdate() }}@endif</td>
                                     <td class="text-right">
                                         @if ($canDecide)
                                             <x-icon-btn icon="edit" tone="ghost" size="xs" data-entry-modal-trigger :href="route('club.groups.squad.edit', [$group, $entry])" :label="__('club.action.edit')" />
@@ -183,7 +183,7 @@
                                     <a href="{{ route('club.members.show', $membership->member) }}" class="link link-hover">{{ $membership->member->fullName() }}</a>
                                 @endif
                             </td>
-                            <td class="text-sm">{{ $membership->valid_from->format('d.m.Y') }}</td>
+                            <td class="text-sm">{{ $membership->valid_from->fdate() }}</td>
                             <td class="text-sm text-base-content/70">{{ $membership->note ?? '–' }}</td>
                             <td class="text-right">
                                 @if ($canDecide)

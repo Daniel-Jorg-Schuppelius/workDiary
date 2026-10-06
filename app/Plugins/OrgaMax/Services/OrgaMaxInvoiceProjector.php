@@ -14,6 +14,7 @@ namespace App\Plugins\OrgaMax\Services;
 
 use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
+use App\Plugins\OrgaMax\Enums\OrgaMaxInvoiceStatus;
 use App\Plugins\OrgaMax\Models\{OrgaMaxConnection, OrgaMaxInvoice};
 use App\Plugins\OrgaMax\OrgaMaxPlugin;
 use Orgamax\API\Client;
@@ -55,7 +56,7 @@ class OrgaMaxInvoiceProjector {
                 'customer_external_id' => $this->nullIfBlank($projection['customer_id'] ?? null),
                 'customer_name' => $this->nullIfBlank($projection['customer'] ?? null),
                 'invoice_type' => $this->nullIfBlank($projection['type'] ?? null),
-                'invoice_status' => $this->nullIfBlank($projection['status'] ?? null),
+                'invoice_status' => OrgaMaxInvoiceStatus::fromSdk($invoice->getState()),
                 'invoice_number' => $this->nullIfBlank($projection['number'] ?? null),
                 'invoice_date' => $this->dateOrNull($projection['date'] ?? null),
                 'due_on' => $this->dateOrNull($projection['due_on'] ?? null),

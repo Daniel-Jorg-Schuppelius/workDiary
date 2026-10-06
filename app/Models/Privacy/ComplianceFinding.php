@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Privacy;
 
+use App\Enums\Privacy\ComplianceFindingStatus;
 use App\Models\Concerns\BelongsToOrganization;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -21,6 +22,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * gepflegt). Drill-down ueber activity/agreement/processor.
  *
  * @property int $organization_id
+ * @property ComplianceFindingStatus $status
  */
 class ComplianceFinding extends Model {
     use BelongsToOrganization;
@@ -46,13 +48,11 @@ class ComplianceFinding extends Model {
 
     /** @var array<string, string> */
     protected $casts = [
+        'status' => ComplianceFindingStatus::class,
         'due_at' => 'date',
         'auto_detected' => 'boolean',
         'detected_at' => 'datetime',
     ];
-
-    /** Stati, die als „offene Luecke" zaehlen (Ampel rot/gelb). */
-    public const OPEN_STATUSES = ['missing', 'expiring', 'required', 'in_review'];
 
     /** @return BelongsTo<ProcessingActivity, $this> */
     public function activity(): BelongsTo {

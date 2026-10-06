@@ -18,7 +18,7 @@
       $anchor, $from, $to, $shifts, $shiftsByDate, $users, $holidays,
       $isAdmin, $openSlotsByDate, $complianceByShift
 
-    Die komplexe Cell-Logik (Klick-Handler, Drag&Drop, Open-Slots, Compliance,
+    Die komplexe Cell-Logik (Klick-Handler, Zeigerzug, Open-Slots, Compliance,
     Add-Hint) liegt im Schichtplan-Cell-Partial; die Komponente übergibt
     pro Tag $day, $items (=Shifts des Tages) und die Status-Flags.
 --}}

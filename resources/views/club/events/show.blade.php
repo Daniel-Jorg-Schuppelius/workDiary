@@ -75,7 +75,7 @@
                                 @endif
                             </td>
                             <td class="text-sm">{{ $participation->source->label() }}@if ($participation->registeredBy) · {{ $participation->registeredBy->name }}@endif</td>
-                            <td class="text-sm text-base-content/70">{{ $participation->registered_at?->orgTz()->format('d.m.Y H:i') ?? '–' }}</td>
+                            <td class="text-sm text-base-content/70">{{ $participation->registered_at?->fdatetime() ?? '–' }}</td>
                             <td class="text-sm text-base-content/70">{{ $participation->note ?? '–' }}</td>
                             <td class="text-right">
                                 @if ($canParticipants && ! $isCancelled)
@@ -94,11 +94,11 @@
             <x-card :title="__('club.events.field.waitlist')" icon="hourglass_top" :count="$waitlisted->count()">
                 @forelse ($waitlisted as $index => $participation)
                     <div class="flex flex-wrap items-center gap-2 py-1 text-sm">
-                        <span class="badge badge-warning badge-sm">{{ $index + 1 }}</span>
+                        <x-status-badge tone="warning">{{ $index + 1 }}</x-status-badge>
                         @if ($participation->member)
                             <a href="{{ route('club.members.show', $participation->member) }}" class="link link-hover">{{ $participation->member->fullName() }}</a>
                         @endif
-                        <span class="text-muted">{{ $participation->registered_at?->orgTz()->format('d.m.Y H:i') }}</span>
+                        <span class="text-muted">{{ $participation->registered_at?->fdatetime() }}</span>
                         @if ($canParticipants && ! $isCancelled)
                             <x-action-form :action="route('club.events.participations.cancel', [$event, $participation])" :confirm="__('club.events.confirm.cancel_registration')" confirm-icon="person_remove" confirm-tone="warning" class="ml-auto">
                                 <x-icon-btn type="submit" icon="person_remove" tone="outline" size="xs" class="btn-warning" :label="__('club.events.action.cancel_registration')" />
@@ -224,9 +224,9 @@
                     <ul class="space-y-1 text-xs">
                         @foreach ($clubNotifications as $delivery)
                             <li class="flex flex-wrap items-center gap-2">
-                                <span class="tabular-nums text-muted">{{ $delivery->created_at?->orgTz()->format('d.m.Y H:i') }}</span>
+                                <span class="tabular-nums text-muted">{{ $delivery->created_at?->fdatetime() }}</span>
                                 <span class="font-medium">{{ $delivery->member?->fullName() }}</span>
-                                <span class="badge badge-ghost badge-xs">{{ __('club.my.kind.' . $delivery->kind) }}</span>
+                                <x-status-badge size="xs">{{ __('club.my.kind.' . $delivery->kind) }}</x-status-badge>
                                 <span class="text-muted">{{ $delivery->recipientLabel() }}</span>
                                 @if ($delivery->isFailed())
                                     <x-status-badge tone="error" size="xs" :label="__('club.my.label.delivery_failed')" :title="$delivery->error" />

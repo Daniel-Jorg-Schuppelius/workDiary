@@ -28,7 +28,7 @@
                 <x-input-field name="vat_id" :label="__('platform_usage.billing_profile.field.vat_id')" :value="old('vat_id', $contact['vat_id'] ?? '')" />
                 <x-input-field name="reference" :label="__('platform_usage.billing_profile.field.reference')" :value="old('reference', $contact['reference'] ?? '')" :hint="__('platform_usage.billing_profile.hint.reference')" />
                 <div class="sm:col-span-2 flex justify-end">
-                    <button type="submit" class="btn btn-sm btn-primary">{{ __('platform_usage.billing_profile.save') }}</button>
+                    <x-button type="submit">{{ __('platform_usage.billing_profile.save') }}</x-button>
                 </div>
             </form>
         </x-card>
@@ -45,7 +45,7 @@
                 <x-input-field name="requested_addons" :label="__('platform_usage.plan_request.field.addons')" :hint="__('platform_usage.plan_request.hint.addons')" />
                 <x-textarea-field name="note" rows="3" :label="__('platform_usage.plan_request.field.note')">{{ old('note') }}</x-textarea-field>
                 <div class="flex justify-end">
-                    <button type="submit" class="btn btn-sm">{{ __('platform_usage.plan_request.send') }}</button>
+                    <x-button type="submit" tone="plain">{{ __('platform_usage.plan_request.send') }}</x-button>
                 </div>
             </form>
         </x-card>

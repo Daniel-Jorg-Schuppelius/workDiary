@@ -9,9 +9,10 @@
 @extends('layouts.app')
 @section('title', __('search.synonyms.title') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('search.synonyms.title'))
+@include('partials.page-fill')
 
 @section('content')
-<x-index-page :subtitle="__('search.synonyms.subtitle')">
+<x-index-page overflow="clip" :subtitle="__('search.synonyms.subtitle')">
     <x-slot:actions>
         @if ($canManage)
             @foreach ($presets as $preset)
@@ -32,7 +33,7 @@
         <span>{{ __('search.synonyms.notice') }}</span>
     </div>
 
-    <x-table :caption="__('search.synonyms.title')">
+    <x-table scroll="flex" :caption="__('search.synonyms.title')">
         <x-slot:head>
             <tr>
                 <x-table.th>{{ __('search.synonyms.field.terms') }}</x-table.th>
@@ -46,7 +47,7 @@
                 <td>
                     <div class="flex flex-wrap gap-1">
                         @foreach ((array) $group->terms as $term)
-                            <span class="badge badge-sm badge-outline font-mono">{{ $term }}</span>
+                            <x-status-badge tone="plain" outline class="font-mono">{{ $term }}</x-status-badge>
                         @endforeach
                     </div>
                 </td>

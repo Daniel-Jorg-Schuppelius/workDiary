@@ -125,7 +125,7 @@ class RoomController extends Controller {
             'capacity' => ['nullable', 'integer', 'min:1', 'max:9999'],
             'equipment' => ['nullable', 'array'],
             'equipment.*' => ['string', 'max:40'],
-            'color' => ['nullable', 'string', 'max:9'],
+            'color' => ['nullable', 'string', 'max:9', new \App\Rules\ColorValue],
             'is_active' => ['sometimes', 'boolean'],
             'notes' => ['nullable', 'string', 'max:2000'],
         ]);

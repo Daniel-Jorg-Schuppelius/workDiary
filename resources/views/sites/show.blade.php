@@ -37,40 +37,28 @@
         </div>
 
         <x-card :title="__('Adresse & Lage')">
-            <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 text-sm">
+            <x-detail-grid layout="cells">
                 @if ($site->address_street || $site->address_zip || $site->address_city)
-                    <div>
-                        <dt class="text-muted">{{ __('Adresse') }}</dt>
-                        <dd>
-                            @if ($site->address_street){{ $site->address_street }}<br>@endif
-                            {{ trim(($site->address_zip ?? '').' '.($site->address_city ?? '')) }}
-                            @if ($site->country) · {{ $site->country }}@endif
-                        </dd>
-                    </div>
+                    <x-detail-grid.row :label="__('Adresse')">
+                        @if ($site->address_street){{ $site->address_street }}<br>@endif
+                        {{ trim(($site->address_zip ?? '').' '.($site->address_city ?? '')) }}
+                        @if ($site->country) · {{ $site->country }}@endif
+                    </x-detail-grid.row>
                 @endif
                 @if ($site->geo_lat !== null && $site->geo_lng !== null)
-                    <div>
-                        <dt class="text-muted">{{ __('Geo') }}</dt>
-                        <dd class="font-mono">{{ $site->geo_lat }}, {{ $site->geo_lng }}</dd>
-                    </div>
+                    <x-detail-grid.row :label="__('Geo')" class="font-mono">{{ $site->geo_lat }}, {{ $site->geo_lng }}</x-detail-grid.row>
                 @endif
-                <div>
-                    <dt class="text-muted">{{ __('Status') }}</dt>
-                    <dd>
-                        @if ($site->is_active)
-                            <x-status-badge tone="success" size="sm">{{ __('aktiv') }}</x-status-badge>
-                        @else
-                            <x-status-badge tone="ghost" size="sm">{{ __('inaktiv') }}</x-status-badge>
-                        @endif
-                    </dd>
-                </div>
+                <x-detail-grid.row :label="__('Status')">
+                    @if ($site->is_active)
+                        <x-status-badge tone="success" size="sm">{{ __('aktiv') }}</x-status-badge>
+                    @else
+                        <x-status-badge tone="ghost" size="sm">{{ __('inaktiv') }}</x-status-badge>
+                    @endif
+                </x-detail-grid.row>
                 @if ($site->notes)
-                    <div class="md:col-span-2">
-                        <dt class="text-muted">{{ __('Notizen') }}</dt>
-                        <dd class="whitespace-pre-line">{{ $site->notes }}</dd>
-                    </div>
+                    <x-detail-grid.row :label="__('Notizen')" full class="whitespace-pre-line">{{ $site->notes }}</x-detail-grid.row>
                 @endif
-            </dl>
+            </x-detail-grid>
         </x-card>
 
         <x-card :title="__('Gebäude') . ' (' . $buildings->count() . ')'" padding="p-0">

@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Applications;
 
+use App\Enums\Applications\JobApplicationUploadScanStatus;
 use App\Models\Applications\{JobApplication, JobApplicationUpload};
 use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
 use Illuminate\Http\UploadedFile;
@@ -87,7 +88,7 @@ class CareerApplicationUploadService {
                 'mime' => (string) $file->getMimeType(),
                 'size_bytes' => (int) $file->getSize(),
                 'sha256' => ToolkitFile::hash($absolute),
-                'scan_status' => JobApplicationUpload::SCAN_PENDING,
+                'scan_status' => JobApplicationUploadScanStatus::Pending,
             ]);
             $stored++;
         }

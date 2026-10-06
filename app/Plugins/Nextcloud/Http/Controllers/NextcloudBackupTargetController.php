@@ -15,7 +15,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Backup\BackupTargetConnection;
 use App\Models\Platform\User;
 use App\Plugins\Nextcloud\Api\NextcloudBackupClient;
-use App\Plugins\Nextcloud\NextcloudConfig;
+use App\Plugins\Nextcloud\{NextcloudConfig, NextcloudPlugin};
+use App\Plugins\Support\Backup\BackupTargetSelfTest;
 use App\Services\Backup\BackupNaming;
 use App\Support\{Sqid, UrlSafety};
 use Illuminate\Http\{RedirectResponse, Request};
@@ -62,7 +63,10 @@ class NextcloudBackupTargetController extends Controller {
             $client = new NextcloudBackupClient($connection);
             $account = $client->account();
             $quota = $client->quota();
-            $rootRef = $client->ensureFolder(app(BackupNaming::class)->pseudonym());
+            $pseudonym = app(BackupNaming::class)->pseudonym();
+            $rootRef = $client->ensureFolder($pseudonym);
+            // Erst schreiben, lesen, löschen — dann gilt das Ziel als brauchbar.
+            app(BackupTargetSelfTest::class)->run(app(NextcloudPlugin::class), $connection, $pseudonym);
             $connection->forceFill([
                 'external_account_id' => $account->externalId,
                 'external_account_label' => $account->label,

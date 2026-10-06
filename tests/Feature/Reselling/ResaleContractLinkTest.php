@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Reselling;
 
-use App\Enums\Contract\{ContractKind, ContractObligationKind, ContractPartnerType, ContractStatus, ContractTermKind};
+use App\Enums\Contract\{ContractKind, ContractObligationKind, ContractObligationStatus, ContractPartnerType, ContractStatus, ContractTermKind};
 use App\Enums\User\Permission;
 use App\Models\Contract\{Contract, ContractObligation};
 use App\Models\Customer\{Customer, ForeignCustomer};
@@ -202,7 +202,7 @@ class ResaleContractLinkTest extends TestCase {
         $this->assertSame(ContractObligationKind::NoticeDeadline, $obligation->kind);
         $this->assertSame('2026-12-01', $obligation->due_on->toDateString(), 'Ende minus 30 Tage Kündigungsfrist');
         $this->assertSame(14, $obligation->warn_days_before);
-        $this->assertSame('open', $obligation->status);
+        $this->assertSame(ContractObligationStatus::Open, $obligation->status);
         $this->assertSame('resale:' . $subscription->id, $obligation->note);
         $this->assertStringContainsString('Microsoft 365 Business Premium', (string) $obligation->title);
         $this->assertStringContainsString('31.12.2026', (string) $obligation->title);
@@ -220,7 +220,7 @@ class ResaleContractLinkTest extends TestCase {
         $this->assertStringContainsString('31.01.2027', (string) $obligation->title);
 
         // Erledigt bleibt erledigt — auch bei unverändertem Termin kein neuer.
-        $obligation->forceFill(['status' => 'done', 'done_at' => now()])->save();
+        $obligation->forceFill(['status' => ContractObligationStatus::Done, 'done_at' => now()])->save();
         $this->assertSame(['created' => 0, 'updated' => 0, 'closed' => 0], $sync->sync($this->organization));
         $this->assertSame(1, ContractObligation::query()->count());
 
@@ -253,7 +253,7 @@ class ResaleContractLinkTest extends TestCase {
         $subscription->forceFill(['status' => 'ended'])->save();
         $this->assertSame(['created' => 0, 'updated' => 0, 'closed' => 1], $sync->sync($this->organization));
         $obligation->refresh();
-        $this->assertSame('done', $obligation->status);
+        $this->assertSame(ContractObligationStatus::Done, $obligation->status);
         $this->assertNotNull($obligation->done_at);
         $this->assertSame(['created' => 0, 'updated' => 0, 'closed' => 0], $sync->sync($this->organization), 'geschlossen bleibt geschlossen');
 

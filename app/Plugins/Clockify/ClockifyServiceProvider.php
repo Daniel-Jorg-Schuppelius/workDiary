@@ -11,7 +11,7 @@
 namespace App\Plugins\Clockify;
 
 use App\Plugins\Clockify\Console\ClockifyPushCommand;
-use App\Plugins\Clockify\Services\ClockifyOutboxDispatcher;
+use App\Plugins\Clockify\Services\{ClockifyGroupBooker, ClockifyImportService, ClockifyOutboxDispatcher};
 use App\Plugins\Support\PluginServiceProviderBase;
 use App\Services\Integration\{InboxGroupBookerRegistry, IntegrationOutboxDispatcherResolver};
 

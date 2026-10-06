@@ -409,6 +409,7 @@ return [
         'focus_on' => 'Mode concentration',
         'focus_off' => 'Afficher la barre latérale',
         'duplicate' => 'Dupliquer',
+        'delete_course' => 'Supprimer le cours',
         'import_learndash' => 'Import LearnDash',
         'import' => 'Importer',
         'gradebook' => 'Carnet de notes',
@@ -643,6 +644,7 @@ return [
     ],
     'help' => [
         'course_tags' => 'Séparez-en plusieurs par des virgules. Les mots-clés restent modifiables après la publication.',
+        'enroll_by_operator' => 'L’inscription est effectuée par votre interlocuteur.',
         'course_competency' => 'Terminer le cours attribue ce niveau dans la matrice des compétences. Le refaire ne l’abaisse jamais.',
         'max_level' => 'Niveaux de 1 à cette valeur, p. ex. 1 notions de base … 4 peut former d’autres personnes.',
         'assessment' => 'L’évaluation d’un responsable peut aussi abaisser un niveau ; un cours terminé ne le fait jamais.',
@@ -789,6 +791,7 @@ return [
         'booking_without_course' => 'Le cours de cette réservation est introuvable.',
         'booking_requires_release' => 'Un cours ne peut être réservé qu\'après publication.',
         'course_not_bookable' => 'Ce cours n\'est pas marqué comme réservable.',
+        'self_enroll_requires_open' => 'L’auto-inscription n’est possible que pour les cours ouverts.',
         'booking_reject_reason' => 'Un refus nécessite un motif.',
         'booking_already_billed' => 'Une réservation facturée ne s\'annule pas ici — c\'est le rôle de la facturation.',
         'booking_not_billable' => 'Cette réservation n\'a pas de poste ouvert.',
@@ -1029,6 +1032,7 @@ return [
     ],
     'confirm' => [
         'duplicate' => 'Dupliquer ce cours en nouveau brouillon ?',
+        'delete_course' => 'Supprimer définitivement le brouillon du cours « :title » ? Ses sections et unités seront perdues.',
         'delete_note' => 'Vraiment supprimer cette note ?',
         'detach_question' => 'Retirer cette question du quiz ? Elle reste dans la banque.',
         'delete_category' => 'Supprimer cette catégorie ?',

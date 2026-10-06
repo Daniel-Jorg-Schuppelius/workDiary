@@ -111,7 +111,7 @@ final class CreateQuoteDraftTool extends GuardedTool {
         return Response::structured([
             'id' => $quote->sqid,
             'number' => $quote->number,
-            'status' => $quote->status,
+            'status' => $quote->status->value,
             'total' => $quote->total,
             'url' => route('quotes.show', $quote),
         ]);

@@ -77,6 +77,24 @@ class PrivacyWorkflowTest extends TestCase {
         $this->assertNotNull($fresh->review_due_at);
     }
 
+    /** Konsolidierungs-Audit 2026-10, vierte Runde: keine stille Vorauswahl „Stattgegeben“. */
+    public function test_decision_form_starts_empty_and_requires_a_choice(): void {
+        $org = Organization::factory()->create();
+        DataProtectionPermissions::seedOrganization($org);
+        $officer = User::factory()->create(['organization_id' => $org->id]);
+        app(PermissionRegistrar::class)->setPermissionsTeamId($org->id);
+        $officer->assignRole(DataProtectionPermissions::ROLE_DATENSCHUTZ);
+        $dsr = app(DataSubjectRequestService::class)->open($org, DataSubjectRequestType::Access, 'Erika Muster', 'Bitte Auskunft.', 'email', $officer);
+
+        $html = (string) $this->actingAs($officer)->get(route('dataprotection.requests.show', $dsr))->assertOk()->getContent();
+        $this->assertStringContainsString('<option value="" selected disabled>' . e(__('Bitte wählen')) . '</option>', $html);
+        $this->assertStringNotContainsString('<option value="granted" selected', $html);
+
+        $this->actingAs($officer)->post(route('dataprotection.requests.decide', $dsr), ['note' => 'Begründung ohne Entscheidung.'])
+            ->assertSessionHasErrors('decision');
+        $this->assertSame(DataSubjectRequestStatus::Intake, $dsr->fresh()->status);
+    }
+
     public function test_access_requires_dataprotection_permission(): void {
         $org = Organization::factory()->create();
         DataProtectionPermissions::seedOrganization($org);

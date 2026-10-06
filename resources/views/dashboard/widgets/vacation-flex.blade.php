@@ -18,12 +18,12 @@
             <p class="text-xs uppercase tracking-wider text-muted">{{ __('Anträge offen') }}</p>
             <p class="mt-1 font-['Space_Grotesk'] text-2xl font-bold tabular-nums text-info">{{ $vacation['pending'] ?? 0 }}</p>
         </div>
-        <div class="rounded-box border border-base-300 bg-base-100 px-4 py-3 shadow-xs">
+        <x-card padding="px-4 py-3">
             <p class="text-xs uppercase tracking-wider text-muted">{{ __('Genehmigt') }} ({{ $now->year }})</p>
             <p class="mt-1 font-['Space_Grotesk'] text-2xl font-bold tabular-nums">
                 {{ rtrim(rtrim(\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) ($vacation['approved_days_this_year'] ?? 0), 1, withThousandsSeparator: true), '0'), ',') }}
                 <span class="text-sm font-normal text-muted">{{ __('Tage') }}</span>
             </p>
-        </div>
+        </x-card>
     </div>
 </x-card>

@@ -10,8 +10,9 @@
 
 namespace App\Services\Invoicing;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Customer\Customer;
-use App\Models\Invoicing\{Invoice, InvoiceItem};
+use App\Models\Invoicing\InvoiceItem;
 use App\Models\Project\Project;
 use App\Models\Time\TimeEntry;
 use Carbon\CarbonImmutable;
@@ -37,7 +38,7 @@ class LateTimeEntryDetector {
             ->whereNotNull('service_date')
             ->whereHas('invoice', function (Builder $q) use ($customer): void {
                 $q->where('customer_id', $customer->id)
-                    ->whereNotIn('status', [Invoice::STATUS_DRAFT, Invoice::STATUS_CANCELLED]);
+                    ->whereNotIn('status', [InvoiceStatus::Draft, InvoiceStatus::Cancelled]);
             });
 
         if ($project !== null) {
@@ -71,7 +72,7 @@ class LateTimeEntryDetector {
             ->selectRaw('invoices.customer_id as customer_id, MAX(invoice_items.service_date) as latest')
             ->join('invoices', 'invoices.id', '=', 'invoice_items.invoice_id')
             ->whereIn('invoices.customer_id', $customerIds)
-            ->whereNotIn('invoices.status', [Invoice::STATUS_DRAFT, Invoice::STATUS_CANCELLED])
+            ->whereNotIn('invoices.status', [InvoiceStatus::Draft, InvoiceStatus::Cancelled])
             ->whereNotNull('invoice_items.service_date')
             ->groupBy('invoices.customer_id')
             ->pluck('latest', 'customer_id');
@@ -121,7 +122,7 @@ class LateTimeEntryDetector {
                     ->join('invoices', 'invoices.id', '=', 'invoice_items.invoice_id')
                     ->join('projects as late_projects', 'late_projects.id', '=', 'time_entries.project_id')
                     ->whereColumn('invoices.customer_id', 'late_projects.customer_id')
-                    ->whereNotIn('invoices.status', [Invoice::STATUS_DRAFT, Invoice::STATUS_CANCELLED])
+                    ->whereNotIn('invoices.status', [InvoiceStatus::Draft, InvoiceStatus::Cancelled])
                     ->whereNotNull('invoice_items.service_date')
                     ->whereColumn('invoice_items.service_date', '>=', 'time_entries.date');
             })

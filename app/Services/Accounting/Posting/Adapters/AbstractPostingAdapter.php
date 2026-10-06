@@ -14,6 +14,7 @@ namespace App\Services\Accounting\Posting\Adapters;
 
 use App\Enums\Finance\PostingAccountRole;
 use App\Models\Accounting\{AccountingAccount, AccountingPostingRule, AccountingProfile, FixedAsset};
+use App\Models\Accounting\AccountingEntry;
 use App\Models\Finance\DatevBookingSource;
 use App\Models\Platform\Organization;
 use App\Services\Accounting\ExchangeRateService;
@@ -30,6 +31,10 @@ use Illuminate\Database\Eloquent\Model;
  */
 abstract class AbstractPostingAdapter implements PostingSourceAdapter {
     public function __construct(protected readonly PostingRuleResolver $rules) {}
+
+    public function changedSincePosting(Model $source, AccountingEntry $entry): bool {
+        return false;
+    }
 
     public function sourceKey(Model $source): string {
         return $this->kind()->keyPrefix() . ':' . $source->getKey();

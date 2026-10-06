@@ -12,12 +12,14 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Rental;
 
+use App\Enums\Rental\RentalRateCardStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Asset\Asset;
 use App\Models\Rental\{RentalCase, RentalProfile, RentalRateCard};
 use App\Rules\ExistsInCurrentOrganization;
 use App\Support\Sqid;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 
@@ -62,6 +64,25 @@ class RentalProfileController extends Controller {
         return back()->with('status', __('Verleihprofil gespeichert.'));
     }
 
+    public function edit(RentalProfile $profile): View {
+        Gate::authorize('create', RentalCase::class);
+
+        return view('rental._profile_dialog', [
+            'profile' => $profile->load('asset:id,name'),
+            // Die hinterlegte Preisliste bleibt wählbar, auch wenn sie nicht mehr aktiv ist.
+            'rateCards' => RentalRateCard::query()
+                ->where(function (Builder $query) use ($profile): void {
+                    $query->where('status', RentalRateCardStatus::Active->value);
+                    if ($profile->default_rate_card_id !== null) {
+                        $query->orWhere('id', $profile->default_rate_card_id);
+                    }
+                })
+                ->orderBy('name')
+                ->limit(200)
+                ->get(['id', 'name', 'version']),
+        ]);
+    }
+
     public function update(Request $request, RentalProfile $profile): RedirectResponse {
         Gate::authorize('create', RentalCase::class);
 
@@ -80,13 +101,14 @@ class RentalProfileController extends Controller {
             }
         }
 
-        if ($request->filled('accessories') && is_string($request->input('accessories'))) {
+        // Auch das leere Textfeld (kommt als null an) wird zur Liste — sonst scheitert es an der Array-Regel.
+        if ($request->has('accessories') && ! is_array($request->input('accessories'))) {
             $request->merge([
                 'accessories' => array_values(array_filter(array_map('trim', explode("\n", (string) $request->input('accessories'))))),
             ]);
         }
 
-        return $request->validate([
+        $data = $request->validate([
             'asset_id' => ['required', 'integer', new ExistsInCurrentOrganization('assets')],
             'is_rentable' => ['sometimes', 'boolean'],
             'portal_bookable' => ['sometimes', 'boolean'],
@@ -101,5 +123,14 @@ class RentalProfileController extends Controller {
             'default_rate_card_id' => ['nullable', 'integer', new ExistsInCurrentOrganization('rental_rate_cards')],
             'notes' => ['nullable', 'string', 'max:4000'],
         ]);
+
+        // Ein geleertes Pufferfeld meint null Stunden; die Spalten nehmen kein NULL.
+        foreach (['buffer_before_hours', 'buffer_after_hours'] as $field) {
+            if (array_key_exists($field, $data)) {
+                $data[$field] ??= 0;
+            }
+        }
+
+        return $data;
     }
 }

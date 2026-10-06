@@ -12,7 +12,6 @@ declare(strict_types=1);
 
 namespace App\Plugins\Support;
 
-use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\UniqueConstraintViolationException;
 
@@ -38,10 +37,5 @@ trait RecordsWebhookDeliveries {
         } catch (UniqueConstraintViolationException) {
             return null;
         }
-    }
-
-    /** Inhaltsbasierte Dedup-Kennung über den unveränderten Raw-Body. */
-    protected function deliveryHash(string $raw): string {
-        return CryptoHelper::hash($raw);
     }
 }

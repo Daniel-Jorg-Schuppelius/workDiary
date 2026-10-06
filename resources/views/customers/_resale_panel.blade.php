@@ -55,7 +55,7 @@
                         @if ($subscription->is_own_holding)
                             <span class="text-muted" title="{{ __('resale.holder.own') }}">—</span>
                         @elseif ($subscription->open_periods_count > 0)
-                            <span class="badge badge-error badge-sm">{{ $subscription->open_periods_count }}</span>
+                            <x-status-badge tone="error">{{ $subscription->open_periods_count }}</x-status-badge>
                         @else
                             <span class="text-muted">0</span>
                         @endif

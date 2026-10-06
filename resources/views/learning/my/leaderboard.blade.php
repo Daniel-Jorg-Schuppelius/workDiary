@@ -13,8 +13,7 @@
 @extends('layouts.app')
 @section('title', __('learning.title.leaderboard'))
 @section('nav-title', __('learning.title.leaderboard'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('learning.subtitle.leaderboard')"
               back-route="learning.my.index" :back-label="__('learning.action.back')">

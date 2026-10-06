@@ -51,11 +51,11 @@
                 <div>
                     <h1 class="flex items-center gap-2 font-['Space_Grotesk'] text-lg font-semibold">
                         {{ $profile->name }}
-                        <span class="badge badge-ghost badge-sm">{{ $pageFormat->label() }}</span>
+                        <x-status-badge>{{ $pageFormat->label() }}</x-status-badge>
                         @if ($profile->is_default)
-                            <span class="badge badge-primary badge-sm">{{ __('document_design.profile.base_badge') }}</span>
+                            <x-status-badge tone="primary">{{ __('document_design.profile.base_badge') }}</x-status-badge>
                         @elseif ($canInherit && $version->override_sections !== null)
-                            <span class="badge badge-info badge-sm">{{ __('document_design.editor.inherits_badge') }}</span>
+                            <x-status-badge tone="info">{{ __('document_design.editor.inherits_badge') }}</x-status-badge>
                         @endif
                     </h1>
                     <p class="text-sm text-muted">
@@ -65,15 +65,15 @@
                 <div class="flex flex-wrap items-center gap-2">
                     {{-- Vollaudit 2026-07 (N3): x-page-shell hat keinen actions-Slot —
                          der Zurück-Link gehört in die Kopf-Karte. --}}
-                    <a href="{{ route('admin.document-design.index') }}" class="btn btn-sm btn-ghost">{{ __('Zurück zur Übersicht') }}</a>
+                    <x-button :href="route('admin.document-design.index')" tone="ghost">{{ __('Zurück zur Übersicht') }}</x-button>
                     <span class="text-xs text-muted" x-show="dirty">{{ __('document_design.editor.unsaved') }}</span>
                     <template x-if="message && message.tone === 'error'">
-                        <span class="badge badge-error badge-sm" x-text="message.text"></span>
+                        <x-status-badge tone="error" x-text="message.text"></x-status-badge>
                     </template>
                     @if ($isDraft && $canManage)
-                        <button type="button" class="btn btn-sm btn-primary" @click="save()" :disabled="saving">
+                        <x-button @click="save()" ::disabled="saving">
                             {{ __('document_design.editor.save_draft') }}
-                        </button>
+                        </x-button>
                         <x-action-form :action="route('admin.document-design.activate', $profile->sqid)" method="POST"
                               :confirm="($preflight['warnings'] ?? []) !== []
                                   ? __('document_design.editor.activate_confirm_warnings', ['n' => count($preflight['warnings'])])
@@ -83,12 +83,12 @@
                                 {{-- Feinschliff: Warnungen werden mit der Dialog-Bestätigung bewusst quittiert. --}}
                                 <input type="hidden" name="confirm_warnings" value="1">
                             @endif
-                            <button type="submit" class="btn btn-sm btn-success">{{ __('document_design.editor.activate') }}</button>
+                            <x-button type="submit" tone="success">{{ __('document_design.editor.activate') }}</x-button>
                         </x-action-form>
                     @elseif ($canManage)
                         <x-action-form :action="route('admin.document-design.draft.new', $profile->sqid)" method="POST">
                             <input type="hidden" name="source" value="{{ $version->sqid }}">
-                            <button type="submit" class="btn btn-sm btn-primary">{{ __('document_design.editor.new_draft') }}</button>
+                            <x-button type="submit">{{ __('document_design.editor.new_draft') }}</x-button>
                         </x-action-form>
                     @endif
                 </div>
@@ -100,10 +100,10 @@
             <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('document_design.editor.preflight') }}</h2>
             <ul class="space-y-1 text-sm">
                 <template x-for="issue in preflight.errors" :key="issue.code + (issue.block || '') + (issue.page || '')">
-                    <li class="flex items-start gap-2"><span class="badge badge-error badge-xs mt-1"></span><span x-text="issue.message"></span></li>
+                    <li class="flex items-start gap-2"><x-status-badge tone="error" size="xs" class="mt-1" /><span x-text="issue.message"></span></li>
                 </template>
                 <template x-for="issue in preflight.warnings" :key="'w' + issue.code + (issue.block || '') + (issue.page || '')">
-                    <li class="flex items-start gap-2"><span class="badge badge-warning badge-xs mt-1"></span><span x-text="issue.message"></span></li>
+                    <li class="flex items-start gap-2"><x-status-badge tone="warning" size="xs" class="mt-1" /><span x-text="issue.message"></span></li>
                 </template>
             </ul>
         </x-card>
@@ -114,8 +114,8 @@
                 <div class="mb-2 flex items-center justify-between">
                     <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('document_design.editor.preview_heading') }}</h2>
                     <div class="join">
-                        <button type="button" class="btn btn-xs join-item" :class="page === 'first' ? 'btn-primary' : 'btn-ghost'" @click="page = 'first'">{{ __('Erste Seite') }}</button>
-                        <button type="button" class="btn btn-xs join-item" :class="page === 'following' ? 'btn-primary' : 'btn-ghost'" @click="page = 'following'">{{ __('Folgeseiten') }}</button>
+                        <x-button tone="plain" size="xs" class="join-item" ::class="page === 'first' ? 'btn-primary' : 'btn-ghost'" @click="page = 'first'">{{ __('Erste Seite') }}</x-button>
+                        <x-button tone="plain" size="xs" class="join-item" ::class="page === 'following' ? 'btn-primary' : 'btn-ghost'" @click="page = 'following'">{{ __('Folgeseiten') }}</x-button>
                     </div>
                 </div>
                 <p class="mb-2 text-xs text-muted">{{ __('document_design.editor.preview_hint') }}</p>
@@ -206,14 +206,14 @@
                                     <option value="{{ $scenario }}">{{ \App\Services\DocumentDesign\SampleDocumentService::scenarioLabel($scenario) }}</option>
                                 @endforeach
                             </select>
-                            <button type="button" class="btn btn-xs btn-outline" @click="reloadPreview()">{{ __('document_design.editor.pdf_preview_reload') }}</button>
+                            <x-button tone="outline" size="xs" @click="reloadPreview()">{{ __('document_design.editor.pdf_preview_reload') }}</x-button>
                         </div>
                     </div>
                     <p class="mb-2 text-xs text-muted">{{ __('document_design.editor.pdf_preview_hint') }}</p>
                     {{-- Feinschliff: effektive Vererbungsquelle + Briefbogen-Blöcke direkt an der Vorschau. --}}
                     @if ($canInherit)
                         <p class="mb-1 text-xs" x-show="inheritEnabled" x-cloak>
-                            <span class="badge badge-info badge-xs align-middle">{{ __('document_design.editor.inherits_badge') }}</span>
+                            <x-status-badge tone="info" size="xs" class="align-middle">{{ __('document_design.editor.inherits_badge') }}</x-status-badge>
                             <span x-text="inheritanceSummary"></span>
                         </p>
                     @endif
@@ -254,8 +254,8 @@
                                         <input type="checkbox" class="checkbox checkbox-xs" x-model="overrides.{{ $section }}" @change="markDirty()" :disabled="!editable">
                                         {{ $label }}
                                     </label>
-                                    <span class="badge badge-xs" :class="overrides.{{ $section }} ? 'badge-warning' : 'badge-ghost'"
-                                          x-text="overrides.{{ $section }} ? '{{ __('document_design.editor.overridden') }}' : '{{ __('document_design.editor.inherited') }}'"></span>
+                                    <x-status-badge tone="plain" size="xs" ::class="overrides.{{ $section }} ? 'badge-warning' : 'badge-ghost'"
+                                          x-text="overrides.{{ $section }} ? '{{ __('document_design.editor.overridden') }}' : '{{ __('document_design.editor.inherited') }}'"></x-status-badge>
                                 </div>
                             @endforeach
                             <p class="text-xs text-muted">{{ __('document_design.editor.inherit_reset_hint') }}</p>
@@ -408,13 +408,13 @@
                         @endforeach
 
                         <div class="flex flex-wrap gap-2">
-                            <button type="button" class="btn btn-xs btn-outline" @click="toggleAddressWindow()" :disabled="!editable">
+                            <x-button tone="outline" size="xs" @click="toggleAddressWindow()" ::disabled="!editable">
                                 <span x-text="layout.address_window ? '{{ __('document_design.editor.address_remove') }}' : '{{ __('document_design.editor.address_add') }}'"></span>
-                            </button>
-                            <button type="button" class="btn btn-xs btn-outline" @click="toggleSenderLine()" :disabled="!editable">
+                            </x-button>
+                            <x-button tone="outline" size="xs" @click="toggleSenderLine()" ::disabled="!editable">
                                 <span x-text="layout.sender_line ? '{{ __('document_design.editor.sender_remove') }}' : '{{ __('document_design.editor.sender_add') }}'"></span>
-                            </button>
-                            <button type="button" class="btn btn-xs btn-outline" @click="addBlockedArea()" :disabled="!editable">{{ __('document_design.editor.blocked_add') }}</button>
+                            </x-button>
+                            <x-button tone="outline" size="xs" @click="addBlockedArea()" ::disabled="!editable">{{ __('document_design.editor.blocked_add') }}</x-button>
                             <label class="flex items-center gap-2 text-sm">
                                 <input type="checkbox" class="checkbox checkbox-xs" x-model="layout.footer.page_numbers" @change="markDirty()" :disabled="!editable">
                                 {{ __('document_design.editor.page_numbers') }}
@@ -467,7 +467,7 @@
                                             <input type="number" step="0.5" class="input input-bordered input-xs w-16"
                                                    x-model.number="area[field]" @change="markDirty()" :disabled="!editable">
                                         </template>
-                                        <button type="button" class="btn btn-ghost btn-xs text-error" @click="removeBlockedArea(index)" :disabled="!editable">✕</button>
+                                        <x-button tone="ghost" size="xs" class="text-error" :aria-label="__('Entfernen')" @click="removeBlockedArea(index)" ::disabled="!editable">✕</x-button>
                                     </div>
                                 </template>
                             </div>
@@ -535,10 +535,10 @@
                         <p class="mb-2 text-xs text-muted">{{ __('document_design.editor.test_hint') }}</p>
                         <div class="flex flex-wrap gap-2">
                             @foreach ($kinds as $kind)
-                                <a class="btn btn-xs btn-outline"
-                                   href="{{ route('admin.document-design.test-pdf', ['profile' => $profile->sqid, 'kind' => $kind->value]) }}">
+                                <x-button :href="route('admin.document-design.test-pdf', ['profile' => $profile->sqid, 'kind' => $kind->value])"
+                                        tone="outline" size="xs">
                                     {{ $kind->label() }}
-                                </a>
+                                </x-button>
                             @endforeach
                         </div>
                     </x-card>
@@ -573,7 +573,7 @@
                                 <input type="checkbox" name="is_customer_specific" value="1" class="checkbox checkbox-sm" @checked($profile->is_customer_specific)>
                                 {{ __('document_design.profile.customer_specific') }}
                             </label>
-                            <button type="submit" class="btn btn-sm btn-outline">{{ __('document_design.editor.assign_save') }}</button>
+                            <x-button type="submit" tone="outline">{{ __('document_design.editor.assign_save') }}</x-button>
                         </form>
 
                         <div class="mt-4">
@@ -582,15 +582,15 @@
                                 @foreach ($versions as $v)
                                     <li class="flex items-center justify-between gap-2">
                                         <span>
-                                            v{{ $v->version }} — {{ $v->status === 'active' ? __('Aktiv') : ($v->status === 'draft' ? __('Entwurf') : __('Abgelöst')) }}
+                                            v{{ $v->version }} — {{ $v->status->label() }}
                                             @if ($v->activated_at) · {{ $v->activated_at->fdate() }} @endif
                                         </span>
-                                        @if ($canManage && $v->status === 'superseded')
+                                        @if ($canManage && $v->status === \App\Enums\DocumentDesign\RenderProfileVersionStatus::Superseded)
                                             <x-action-form :action="route('admin.document-design.draft.new', $profile->sqid)" method="POST"
                                                   :confirm="__('document_design.editor.rollback_confirm', ['v' => $v->version])"
                                                   :confirm-label="__('document_design.editor.rollback')">
                                                 <input type="hidden" name="source" value="{{ $v->sqid }}">
-                                                <button type="submit" class="btn btn-ghost btn-xs">{{ __('document_design.editor.rollback') }}</button>
+                                                <x-button type="submit" tone="ghost" size="xs">{{ __('document_design.editor.rollback') }}</x-button>
                                             </x-action-form>
                                         @endif
                                     </li>

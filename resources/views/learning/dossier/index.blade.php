@@ -10,7 +10,7 @@
   namentliche Ausprägung braucht einen Anlass und wird protokolliert.
 --}}
 @extends('layouts.app')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 @section('title', __('learning.title.dossier'))
 @section('nav-title', __('learning.title.dossier'))
 @section('content')

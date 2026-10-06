@@ -14,6 +14,7 @@ namespace App\Plugins\Todoist\Observers;
 
 use App\Models\Integration\ExternalReference;
 use App\Models\Project\Task;
+use App\Plugins\Todoist\Enums\TodoistProjectLinkStatus;
 use App\Plugins\Todoist\Models\{TodoistConnection, TodoistProjectLink};
 use App\Plugins\Todoist\Services\{TodoistImportService, TodoistOutboxDispatcher};
 use App\Plugins\Todoist\TodoistPlugin;
@@ -85,7 +86,7 @@ class TodoistTaskObserver {
                 ->where('target_kind', TodoistProjectLink::KIND_GLOBAL_KANBAN))
             ->first();
 
-        return $link !== null && $link->exportsToTodoist() && $link->status === TodoistProjectLink::STATUS_ACTIVE
+        return $link !== null && $link->exportsToTodoist() && $link->status === TodoistProjectLinkStatus::Active
             ? $link
             : null;
     }
@@ -124,7 +125,7 @@ class TodoistTaskObserver {
             ->when($task->project_id === null, fn ($q) => $q
                 ->where('target_kind', TodoistProjectLink::KIND_GLOBAL_KANBAN))
             ->first();
-        if ($link === null || ! $link->exportsToTodoist() || $link->status !== TodoistProjectLink::STATUS_ACTIVE) {
+        if ($link === null || ! $link->exportsToTodoist() || $link->status !== TodoistProjectLinkStatus::Active) {
             return;
         }
 

@@ -176,7 +176,7 @@
                 @foreach ($projectIdeaMaps as $ideaMap)
                     <li>
                         <a href="{{ route('ideas.show', $ideaMap) }}" class="link text-sm">{{ $ideaMap->title }}</a>
-                        <span class="text-xs opacity-60">{{ $ideaMap->updated_at?->format('d.m.Y') }}</span>
+                        <span class="text-xs opacity-60">{{ $ideaMap->updated_at?->fdate() }}</span>
                     </li>
                 @endforeach
             </ul>

@@ -61,17 +61,17 @@
     @if ($isSlaRisk || $item['hasHardConflict'])
         <div class="mt-1.5 flex flex-wrap items-center gap-1">
             @if ($item['hasHardConflict'])
-                <span class="badge badge-xs badge-error gap-1" title="{{ __('Harter Dispositionskonflikt') }}">
+                <x-status-badge tone="error" size="xs" class="gap-1" title="{{ __('Harter Dispositionskonflikt') }}">
                     <x-icon name="warning" class="text-xs" />
                     {{ __('Konflikt') }}
-                </span>
+                </x-status-badge>
             @endif
             @if ($isSlaRisk)
-                <span class="badge badge-xs {{ $sla->value === 'breached' ? 'badge-error' : 'badge-warning' }} gap-1"
+                <x-status-badge :tone="$sla->value === 'breached' ? 'error' : 'warning'" size="xs" class="gap-1"
                       title="{{ __('SLA') }}: {{ $sla->label() }}">
                     <x-icon name="timer" class="text-xs" />
                     {{ $sla->label() }}
-                </span>
+                </x-status-badge>
             @endif
         </div>
     @endif

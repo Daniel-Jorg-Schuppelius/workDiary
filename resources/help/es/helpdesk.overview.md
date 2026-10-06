@@ -1,7 +1,7 @@
 ---
 title: "Helpdesk y Service Desk"
 topic: helpdesk.overview
-version: 1
+version: 2
 audience: []
 related:
     - open-issues
@@ -42,6 +42,16 @@ fuente queda anotada en el ticket.
 entrantes — por ejemplo a una cola, con prioridad o responsabilidad — y
 se aplican en un orden definido. Un modo de prueba verifica una regla
 contra un ticket de ejemplo y registra el resultado sin cambiar nada.
+
+**Aprobaciones:** Las etapas de aprobación abiertas de solicitudes de
+servicio, cambios y negociaciones contractuales se reúnen en
+«Aprobaciones» — por expediente solo la siguiente etapa abierta y solo para
+los responsables: una persona, un rol o, en las negociaciones
+contractuales, el rol que la organización asigna al tipo de etapa (por
+defecto: comercial → Contabilidad, técnica → Jefe de equipo, RR. HH. →
+Administración de personal). Aprobar, rechazar, consultar y delegar tienen
+el mismo efecto que en el expediente; un rechazo cierra la ronda y la
+autoaprobación sigue bloqueada.
 
 **Satisfacción e informes:** Tras el cierre, el cliente puede emitir una
 valoración breve en el portal — una por ticket. Los informes muestran el

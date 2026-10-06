@@ -13,7 +13,6 @@ declare(strict_types=1);
 namespace App\Services\Finance\ProcedureDocumentation\Sections;
 
 use App\Enums\Numbering\NumberScope;
-use App\Enums\Plugin\PluginHealthStatus;
 use App\Models\Accounting\{AccountingProfile, AccountingSovereigntyPeriod};
 use App\Models\Integration\WebhookEndpoint;
 use App\Models\Platform\{Organization, PluginState};
@@ -58,7 +57,7 @@ final class InterfacesSection implements ProcedureSection {
                 $plugin->id(),
                 $this->text($plugin->version()),
                 $this->yesNo($plugin->isPerOrganization()),
-                $this->text(PluginHealthStatus::tryFrom((string) $state?->last_health_status)?->label()),
+                $this->text($state?->last_health_status?->label()),
                 $this->dateTime($state?->last_health_check_at),
             ];
         }

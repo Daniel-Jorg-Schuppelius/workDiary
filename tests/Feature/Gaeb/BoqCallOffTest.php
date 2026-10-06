@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Gaeb;
 
 use App\Enums\Gaeb\BoqCallOffStatus;
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Customer\Customer;
 use App\Models\Gaeb\{BillOfQuantity, BoqCallOff, BoqItem};
 use App\Models\Invoicing\Invoice;
@@ -75,6 +76,24 @@ final class BoqCallOffTest extends TestCase {
         $this->callOff('60')->assertSessionHas('success');
     }
 
+    /** Konsolidierungs-Audit 2026-10 (k4-14): die Abrufe blättern, die Restmengen rechnen weiter über alle. */
+    public function test_call_offs_page_while_remaining_quantities_count_all(): void {
+        $this->boq->forceFill(['is_framework' => true])->save();
+        foreach (range(1, 26) as $i) {
+            $this->callOff('1')->assertSessionHas('success');
+        }
+
+        $first = $this->actingAs($this->admin)->get(route('bill-of-quantities.call-offs.index', $this->boq))->assertOk();
+        $this->assertSame(26, $first->viewData('callOffs')->total());
+        $this->assertSame(26, $first->viewData('callOffs')->items()[0]->number);
+
+        $second = $this->get(route('bill-of-quantities.call-offs.index', [$this->boq, 'page' => 2]))->assertOk();
+        $this->assertSame([1], array_map(static fn (BoqCallOff $c): int => $c->number, $second->viewData('callOffs')->items()));
+        $row = collect($second->viewData('remaining'))->first(fn (array $r): bool => $r['item']->is($this->item));
+        $this->assertSame(26.0, (float) $row['called']);
+        $this->assertSame(74.0, (float) $row['remaining']);
+    }
+
     public function test_call_off_is_invoiced_once_with_boq_prices(): void {
         $this->boq->forceFill(['is_framework' => true])->save();
         $this->callOff('8')->assertSessionHas('success');
@@ -82,11 +101,19 @@ final class BoqCallOffTest extends TestCase {
 
         $this->actingAs($this->admin)->post(route('bill-of-quantities.call-offs.invoice', $callOff))->assertSessionHasErrors('status');
         $this->actingAs($this->admin)->post(route('bill-of-quantities.call-offs.transition', $callOff), ['status' => 'ordered']);
+        // Sicherheitsaudit 2026-10-04, li-7: ein zweiter Aufruf mit veraltetem Stand (zwei Tabs, Doppelklick) rechnet nicht noch einmal ab.
+        $stale = BoqCallOff::query()->sole();
         $this->actingAs($this->admin)->post(route('bill-of-quantities.call-offs.invoice', $callOff))->assertRedirect();
+        try {
+            app(\App\Services\Gaeb\BoqCallOffService::class)->invoice($stale, $this->admin);
+            $this->fail('Der zweite Aufruf hätte abgelehnt werden müssen.');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            $this->assertArrayHasKey('status', $e->errors());
+        }
 
         $invoice = Invoice::query()->sole();
         $this->assertSame($this->boq->id, $invoice->bill_of_quantity_id);
-        $this->assertSame(Invoice::STATUS_DRAFT, $invoice->status);
+        $this->assertSame(InvoiceStatus::Draft, $invoice->status);
         $this->assertSame('100.00', $invoice->subtotal?->getAmount());
         $this->assertSame($invoice->id, $callOff->fresh()?->invoice_id);
 

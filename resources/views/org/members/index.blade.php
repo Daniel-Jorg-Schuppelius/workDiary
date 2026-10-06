@@ -9,8 +9,7 @@
 @extends('layouts.app')
 @section('title', __('Mitarbeiter'))
 @section('nav-title', __('Mitarbeiter'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('Mitarbeiter des Mandanten verwalten.')">
     <x-slot:actions>
@@ -72,7 +71,7 @@
                             @if ($member->isDeactivated())
                                 <x-status-badge size="sm" tone="error" outline>{{ __('ausgeschieden') }}</x-status-badge>
                             @elseif ($member->left_at !== null)
-                                <x-status-badge size="sm" tone="warning" outline>{{ __('Austritt :date', ['date' => $member->left_at->format('d.m.Y')]) }}</x-status-badge>
+                                <x-status-badge size="sm" tone="warning" outline>{{ __('Austritt :date', ['date' => $member->left_at->fdate()]) }}</x-status-badge>
                             @endif
                         </td>
                         <td class="text-right">

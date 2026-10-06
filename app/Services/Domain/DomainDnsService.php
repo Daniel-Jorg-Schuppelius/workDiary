@@ -11,7 +11,7 @@
 namespace App\Services\Domain;
 
 use App\Enums\Domain\{DomainCapabilityArea, DomainDnsRecordType};
-use App\Models\Domain\{DomainDnsRecordProjection, DomainDnsZoneProjection, DomainProviderCommand, DomainProviderConnection};
+use App\Models\Domain\{DomainDnsRecordProjection, DomainDnsZoneProjection, DomainProjection, DomainProviderCommand, DomainProviderConnection};
 use App\Models\Platform\User;
 use Illuminate\Support\Carbon;
 
@@ -34,6 +34,20 @@ class DomainDnsService {
         $adapter = $this->resolver->for($connection);
         $response = $adapter->execute('StatusDNSZone', ['dnszone' => $zone], DomainCapabilityArea::Dns);
 
+        // Einträge, die sich nicht deuten lassen (unbekannter Typ), bleiben als
+        // Rohzeile erhalten: beim Ersetzen der Zone gehen sie unverändert mit.
+        $parsedRecords = [];
+        $unparsed = [];
+        foreach ($response->property('rr') as $rr) {
+            $parsed = $this->parseRr($rr);
+            if ($parsed === null) {
+                $unparsed[] = trim((string) $rr);
+
+                continue;
+            }
+            $parsedRecords[] = $parsed + ['raw' => $rr];
+        }
+
         $zoneRow = DomainDnsZoneProjection::query()->updateOrCreate(
             [
                 'organization_id' => $connection->organization_id,
@@ -42,7 +56,13 @@ class DomainDnsService {
             ],
             [
                 'zone' => $zone,
+                // Ohne die Verknüpfung findet die Domain-Detailseite ihre Zone nicht.
+                'domain_projection_id' => DomainProjection::query()
+                    ->where('organization_id', $connection->organization_id)
+                    ->where('domain_hash', DomainProjection::hashFor($zone))
+                    ->value('id'),
                 'soa' => ['soa' => $response->first('soa')],
+                'unparsed_records' => array_values(array_filter($unparsed, static fn (string $line): bool => $line !== '')),
                 'revision' => $response->first('revision'),
                 'raw_hash' => $response->rawHash(),
                 'synced_at' => Carbon::now(),
@@ -51,13 +71,8 @@ class DomainDnsService {
 
         // Records aus dem `rr`-Property neu materialisieren.
         $zoneRow->records()->delete();
-        $position = 0;
-        foreach ($response->property('rr') as $rr) {
-            $parsed = $this->parseRr($rr);
-            if ($parsed === null) {
-                continue;
-            }
-            $zoneRow->records()->create($parsed + ['organization_id' => $connection->organization_id, 'position' => $position++, 'raw' => $rr]);
+        foreach ($parsedRecords as $position => $record) {
+            $zoneRow->records()->create($record + ['organization_id' => $connection->organization_id, 'position' => $position]);
         }
 
         return $zoneRow->fresh(['records']) ?? $zoneRow;
@@ -91,12 +106,22 @@ class DomainDnsService {
      * @return array{command: DomainProviderCommand, conflict: bool}
      */
     public function replaceZone(DomainProviderConnection $connection, string $zone, array $records, User $actor): array {
+        // Ein leerer Vollersatz löschte die ganze Zone — das ist nie gemeint.
+        if ($records === []) {
+            throw new DomainActionException(__('domain.errors.dns_replace_empty'));
+        }
         $this->validateRecords($records);
         $snapshot = $this->readZone($connection, $zone); // Snapshot vor dem Replace
 
         $params = ['dnszone' => $zone];
-        foreach ($records as $i => $record) {
-            $params['rr' . $i] = $this->serialize($record);
+        $i = 0;
+        foreach ($records as $record) {
+            $params['rr' . $i++] = $this->serialize($record);
+        }
+        // Ein Vollersatz löscht beim Anbieter alles, was nicht mitgesendet wird —
+        // die nicht deutbaren Einträge des eben gelesenen Stands gehen deshalb roh mit.
+        foreach ($snapshot->unparsed_records ?? [] as $line) {
+            $params['rr' . $i++] = $line;
         }
 
         $command = $this->commands->create(

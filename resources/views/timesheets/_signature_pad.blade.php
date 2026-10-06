@@ -43,7 +43,7 @@
     </div>
 
     <div class="flex flex-wrap items-center justify-between gap-2">
-        <button type="button" class="btn btn-ghost btn-xs" @click="clear()">{{ __('Leeren') }}</button>
+        <x-button tone="ghost" size="xs" @click="clear()">{{ __('Leeren') }}</x-button>
         <span class="text-xs text-muted" x-show="hasSignature">{{ __('Mit dem Klick auf "Signieren" bestätigen Sie die Richtigkeit.') }}</span>
     </div>
 
@@ -53,6 +53,6 @@
         <input type="hidden" name="customer_name"  :value="customerName">
         <input type="hidden" name="customer_role"  :value="customerRole">
         <input type="hidden" name="customer_email" :value="customerEmail">
-        <button class="btn btn-primary btn-sm w-full" :disabled="submitDisabled">{{ __('Signieren') }}</button>
+        <x-button type="submit" class="w-full" ::disabled="submitDisabled">{{ __('Signieren') }}</x-button>
     </form>
 </div>

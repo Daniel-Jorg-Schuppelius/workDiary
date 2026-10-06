@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Supplier;
 
+use App\Enums\Invoicing\IncomingEInvoiceStatus;
 use App\Enums\Notification\{NotificationChannel, NotificationEvent};
 use App\Enums\Supplier\CredentialStatus;
 use App\Models\Document\Document;
@@ -223,7 +224,7 @@ class SupplierCredentialTest extends TestCase {
             'sha256' => hash('sha256', 'beleg'),
             'source' => 'upload',
             'received_at' => now(),
-            'status' => IncomingEInvoice::STATUS_APPROVED,
+            'status' => IncomingEInvoiceStatus::Approved,
             'seller_name' => $supplier->name,
         ]);
 
@@ -232,7 +233,7 @@ class SupplierCredentialTest extends TestCase {
             ->assertRedirect()
             ->assertSessionHas('warning');
 
-        $this->assertSame(IncomingEInvoice::STATUS_PAYMENT_RELEASED, $incoming->fresh()?->status);
+        $this->assertSame(IncomingEInvoiceStatus::PaymentReleased, $incoming->fresh()?->status);
     }
 
     public function test_complete_credentials_release_without_a_warning(): void {
@@ -253,7 +254,7 @@ class SupplierCredentialTest extends TestCase {
             'sha256' => hash('sha256', 'beleg-2'),
             'source' => 'upload',
             'received_at' => now(),
-            'status' => IncomingEInvoice::STATUS_APPROVED,
+            'status' => IncomingEInvoiceStatus::Approved,
             'seller_name' => $supplier->name,
         ]);
 

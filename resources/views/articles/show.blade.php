@@ -22,9 +22,9 @@
             <div class="flex flex-wrap items-center gap-2 text-xs">
                 <span class="uppercase text-muted">{{ $article->type->label() }}</span>
                 <span class="font-mono text-base-content/70">{{ $article->number ?? __('article.sku_auto_hint') }}</span>
-                <span class="badge badge-sm {{ $article->status->value === 'active' ? 'badge-success' : ($article->status->value === 'retired' ? 'badge-ghost' : 'badge-warning') }}">
+                <x-status-badge :tone="$article->status->value === 'active' ? 'success' : ($article->status->value === 'retired' ? 'ghost' : 'warning')">
                     {{ $article->status->label() }}
-                </span>
+                </x-status-badge>
                 <span class="text-base-content/70">{{ __('article.field.base_unit') }}: <strong>{{ $article->base_unit }}</strong></span>
                 @foreach ($tags ?? collect() as $tag)
                     <x-tag-badge :tag="$tag" />
@@ -60,7 +60,7 @@
                 <div class="font-medium">{{ $option->name }} <span class="opacity-50 font-mono text-xs">{{ $option->code }}</span></div>
                 <div class="flex flex-wrap gap-2 mt-2">
                     @foreach ($option->values as $value)
-                        <span class="badge {{ $value->active ? 'badge-outline' : 'badge-ghost line-through' }}">{{ $value->label }} <span class="opacity-50 font-mono ml-1">{{ $value->code }}</span></span>
+                        <x-status-badge :tone="$value->active ? 'plain' : 'ghost'" size="md" :outline="(bool) $value->active" :class="$value->active ? null : 'line-through'">{{ $value->label }} <span class="opacity-50 font-mono ml-1">{{ $value->code }}</span></x-status-badge>
                     @endforeach
                 </div>
                 @if ($canManage)
@@ -68,7 +68,7 @@
                         @csrf
                         <input aria-label="{{ __('article.field.code') }}" name="code" required maxlength="40" placeholder="{{ __('article.field.code') }}" class="input input-sm input-bordered">
                         <input aria-label="{{ __('article.field.label') }}" name="label" required maxlength="255" placeholder="{{ __('article.field.label') }}" class="input input-sm input-bordered">
-                        <button type="submit" class="btn btn-sm">{{ __('article.action.add_value') }}</button>
+                        <x-button type="submit" tone="plain">{{ __('article.action.add_value') }}</x-button>
                     </form>
                 @endif
             </div>
@@ -102,7 +102,7 @@
                 <tr>
                     <td class="font-mono text-sm">{{ $variant->sku ?? '—' }}</td>
                     <td>{{ $variant->optionValues->pluck('label')->implode(', ') ?: '—' }}</td>
-                    <td><span class="badge badge-sm {{ $variant->status->value === 'active' ? 'badge-success' : 'badge-ghost' }}">{{ $variant->status->label() }}</span></td>
+                    <td><x-status-badge :tone="$variant->status->value === 'active' ? 'success' : 'ghost'">{{ $variant->status->label() }}</x-status-badge></td>
                     <td class="text-right">
                         <div class="flex items-center justify-end gap-1">
                             <x-icon-btn icon="label" size="xs" tone="ghost"
@@ -171,7 +171,7 @@
                     @endforeach
                 </select>
                 <input aria-label="{{ __('article.field.factor_to_base') }}" name="factor_to_base" type="number" step="0.00000001" min="0" required placeholder="{{ __('article.field.factor_to_base') }}" class="input input-sm input-bordered w-32">
-                <button type="submit" class="btn btn-sm">{{ __('article.action.add_unit') }}</button>
+                <x-button type="submit" tone="plain">{{ __('article.action.add_unit') }}</x-button>
             </form>
         @endif
     </x-card>
@@ -240,7 +240,7 @@
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="3" class="text-center text-sm opacity-60">{{ __('article.tiers.empty') }}</td></tr>
+                <x-table.empty :colspan="3" icon="sell" :title="__('article.tiers.empty')" compact />
             @endforelse
         </x-table>
         @if ($canManage)
@@ -248,7 +248,7 @@
                 @csrf
                 <input aria-label="{{ __('article.tiers.min_qty') }}" name="min_qty" type="number" step="0.01" min="0.01" required placeholder="{{ __('article.tiers.min_qty') }}" class="input input-sm input-bordered w-32">
                 <input aria-label="{{ __('article.tiers.unit_price') }}" name="unit_price" type="number" step="0.0001" min="0" required placeholder="{{ __('article.tiers.unit_price') }}" class="input input-sm input-bordered w-32">
-                <button type="submit" class="btn btn-sm">{{ __('article.tiers.action.add') }}</button>
+                <x-button type="submit" tone="plain">{{ __('article.tiers.action.add') }}</x-button>
             </form>
         @endif
     </x-card>
@@ -265,7 +265,7 @@
                     </tr>
                 </x-slot:head>
                 @foreach ($article->externalMappings as $map)
-                    <tr><td>{{ $map->plugin_id }}</td><td class="font-mono">{{ $map->external_id }}</td><td>{{ \App\Support\Trans::or('values.' . $map->sync_status, $map->sync_status) }}</td></tr>
+                    <tr><td>{{ $map->plugin_id }}</td><td class="font-mono">{{ $map->external_id }}</td><td>{{ $map->sync_status->label() }}</td></tr>
                 @endforeach
             </x-table>
         </x-card>

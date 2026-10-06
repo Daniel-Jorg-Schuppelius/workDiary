@@ -11,6 +11,7 @@
 namespace Tests\Feature\Helpdesk;
 
 use App\Enums\Fields\FieldType;
+use App\Enums\ServiceTicket\ServiceRequestStatus;
 use App\Models\Customer\Customer;
 use App\Models\Form\FormTemplate;
 use App\Models\Platform\User;
@@ -171,7 +172,7 @@ final class HelpdeskPortalCatalogTest extends TestCase {
         $this->assertSame(['cpu' => 'i7', 'os' => 'Linux'], $request->form_snapshot['answers'] ?? null);
         $this->assertSame('Notebook bestellen', $request->catalog_snapshot['name']);
         $this->assertSame(1, $request->catalog_snapshot['version']);
-        $this->assertSame(ServiceRequest::STATUS_PENDING, $request->status);
+        $this->assertSame(ServiceRequestStatus::PendingApproval, $request->status);
 
         // Katalogänderung schreibt NIE um.
         $item->update(['name' => 'Umbenannt', 'version' => 7]);

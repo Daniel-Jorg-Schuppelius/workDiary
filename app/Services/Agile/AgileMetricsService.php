@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Agile;
 
-use App\Enums\Agile\AgileColumnCategory;
+use App\Enums\Agile\{AgileColumnCategory, AgileSprintStatus};
 use App\Models\Agile\{AgileBoard, AgileBoardColumn, AgileEvent, AgileSprint};
 use App\Services\Agile\Metrics\MetricResult;
 use CommonToolkit\Enums\PercentileMethod;
@@ -38,7 +38,7 @@ class AgileMetricsService {
     public function velocity(AgileBoard $board): MetricResult {
         $sprints = AgileSprint::query()
             ->where('board_id', $board->id)
-            ->where('status', AgileSprint::STATUS_COMPLETED)
+            ->where('status', AgileSprintStatus::Completed)
             ->orderBy('completed_at')
             ->get();
 
@@ -52,7 +52,7 @@ class AgileMetricsService {
 
         return $this->result('velocity', 'story_points', ['board_id' => $board->id], [
             'sprints' => $series,
-            'median' => $this->median($values),
+            'median' => round(NumberHelper::median($values), 1),
             'min' => $values === [] ? 0 : min($values),
             'max' => $values === [] ? 0 : max($values),
         ]);
@@ -347,7 +347,7 @@ class AgileMetricsService {
 
         return $this->result('flow_efficiency', 'percent', ['board_id' => $board->id], [
             'available' => true,
-            'median' => $this->median($values),
+            'median' => round(NumberHelper::median($values), 1),
             'sample_size' => count($values),
         ]);
     }
@@ -530,20 +530,6 @@ class AgileMetricsService {
             'p95' => NumberHelper::percentile($values, 95, PercentileMethod::NearestRank),
             'count' => count($values),
         ];
-    }
-
-    /** @param array<int, int|float> $values */
-    private function median(array $values): float {
-        if ($values === []) {
-            return 0.0;
-        }
-        sort($values);
-        $count = count($values);
-        $middle = intdiv($count, 2);
-
-        return $count % 2 === 1
-            ? (float) $values[$middle]
-            : round(((float) $values[$middle - 1] + (float) $values[$middle]) / 2, 1);
     }
 
     private function board(AgileSprint $sprint): AgileBoard {

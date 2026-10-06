@@ -14,7 +14,7 @@
     $startAt = old('start_at', $shift?->start_at?->orgTz()->format('Y-m-d\TH:i') ?? $prefillStartAt ?? '');
     $endAt = old('end_at', $shift?->end_at?->orgTz()->format('Y-m-d\TH:i') ?? $prefillEndAt ?? '');
     $note = old('note', $shift?->note ?? '');
-    $selectedUser = (int) old('user_id', $shift?->user_id ?? $prefillUserId ?? auth()->id());
+    $selectedUser = \App\Support\Sqid::decodeOrNumeric(\App\Models\Platform\User::class, old('user_id', $shift?->user_id ?? $prefillUserId ?? auth()->id()));
     $back = request()->query('_back') ?? url()->previous();
     $dialogUrl = ($isEdit ? route('shifts.edit', $shift) : route('shifts.create')) . '?dialog=1';
 @endphp
@@ -30,7 +30,7 @@
             <label for="user_id" class="fieldset-label">{{ __('Mitarbeiter') }}</label>
             <select id="user_id" name="user_id" class="select select-bordered w-full">
                 @foreach ($assignableUsers as $u)
-                    <option value="{{ $u['id'] }}" @selected($selectedUser === (int) $u['id'])>{{ $u['name'] }}</option>
+                    <option value="{{ \App\Support\Sqid::encode(\App\Models\Platform\User::class, $u['id']) }}" @selected($selectedUser === (int) $u['id'])>{{ $u['name'] }}</option>
                 @endforeach
             </select>
         </div>

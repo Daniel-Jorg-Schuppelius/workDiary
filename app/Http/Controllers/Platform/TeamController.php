@@ -87,12 +87,7 @@ class TeamController extends Controller {
         ]);
 
         $memberIds = $team->members->pluck('id')->all();
-        $addableUsers = User::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $team->organization_id)
-            ->whereNotIn('id', $memberIds)
-            ->orderBy('name')
-            ->get(['id', 'name']);
+        $addableUsers = User::addableTo((int) $team->organization_id, $memberIds);
 
         return view('teams.show', compact('team', 'addableUsers'));
     }
@@ -188,12 +183,7 @@ class TeamController extends Controller {
         Gate::authorize('manageMembers', $team);
 
         $memberIds = $team->members()->pluck('users.id')->all();
-        $addableUsers = User::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $team->organization_id)
-            ->whereNotIn('id', $memberIds)
-            ->orderBy('name')
-            ->get(['id', 'name']);
+        $addableUsers = User::addableTo((int) $team->organization_id, $memberIds);
 
         return view('teams._attach_member_dialog', compact('team', 'addableUsers'));
     }

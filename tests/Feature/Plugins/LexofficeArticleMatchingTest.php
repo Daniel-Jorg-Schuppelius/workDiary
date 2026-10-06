@@ -10,9 +10,10 @@
 
 namespace Tests\Feature\Plugins;
 
+use App\Enums\Integration\IntegrationInboxStatus;
 use App\Models\Article\{Article, ArticleVariant};
 use App\Models\Integration\IntegrationInboxItem;
-use App\Plugins\Lexoffice\LexofficeArticleSync;
+use App\Plugins\Lexoffice\Services\LexofficeArticleSync;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\Support\FakePluginHttp;
@@ -127,7 +128,7 @@ final class LexofficeArticleMatchingTest extends TestCase {
             'plugin_id' => 'lexoffice',
             'external_id' => 'lex-ambiguous',
             'case_type' => IntegrationInboxItem::CASE_AMBIGUOUS,
-            'status' => IntegrationInboxItem::STATUS_OPEN,
+            'status' => IntegrationInboxStatus::Open->value,
         ]);
         // Dienstleistung ohne SKU/GTIN: reine Projektion, kein Inbox-Rauschen.
         $this->assertDatabaseMissing('external_article_mappings', ['external_id' => 'lex-service']);
@@ -166,7 +167,7 @@ final class LexofficeArticleMatchingTest extends TestCase {
         (new LexofficeArticleSync('test-key'))->sync($this->organization);
         $this->assertDatabaseHas('integration_inbox_items', [
             'external_id' => 'lex-dup',
-            'status' => IntegrationInboxItem::STATUS_OPEN,
+            'status' => IntegrationInboxStatus::Open->value,
         ]);
 
         // Datenqualität behoben: GTIN-Dublette bereinigt → nächster Lauf
@@ -184,7 +185,7 @@ final class LexofficeArticleMatchingTest extends TestCase {
         ]);
         $this->assertDatabaseHas('integration_inbox_items', [
             'external_id' => 'lex-dup',
-            'status' => IntegrationInboxItem::STATUS_RESOLVED_LINKED,
+            'status' => IntegrationInboxStatus::ResolvedLinked->value,
         ]);
     }
 }

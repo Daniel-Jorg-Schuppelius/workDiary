@@ -26,8 +26,8 @@
                         back-route="investments.programs.index" :back-label="__('investment.program.title')">
             <div class="flex flex-wrap items-center gap-2 text-sm">
                 <x-status-badge size="md" outline>{{ $program->status->label() }}</x-status-badge>
-                <span class="badge badge-outline">{{ $program->starts_year }}–{{ $program->ends_year }}</span>
-                <span class="badge badge-outline">{{ $program->currency->value }}</span>
+                <x-status-badge tone="plain" size="md" outline>{{ $program->starts_year }}–{{ $program->ends_year }}</x-status-badge>
+                <x-status-badge tone="plain" size="md" outline>{{ $program->currency->value }}</x-status-badge>
             </div>
             <x-slot:actions>
                 @if ($canManage)
@@ -104,7 +104,7 @@
                     <td><a class="link" href="{{ route('investments.show', $row['case']) }}">{{ $row['case']->title }}</a></td>
                     <td class="tabular-nums">{{ $row['year'] }}</td>
                     <td>{{ __('values.' . $row['case']->category) }}</td>
-                    <td>{{ __('values.' . $row['case']->status) }}</td>
+                    <td>{{ $row['case']->status->label() }}</td>
                     <td class="text-right tabular-nums">{{ $money($row['planned']) }}</td>
                     <td class="text-right tabular-nums">{{ $money($row['actual']) }}</td>
                 </tr>

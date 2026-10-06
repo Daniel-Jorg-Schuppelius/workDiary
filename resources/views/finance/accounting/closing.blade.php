@@ -102,8 +102,8 @@
                         <input id="opening-file" type="file" name="file" accept=".csv,text/csv"
                                class="file-input file-input-bordered file-input-sm w-full" required>
                     </div>
-                    <button type="submit" name="dry_run" value="1" class="btn btn-ghost btn-sm">{{ __('accounting.opening.action.dry_run') }}</button>
-                    <button type="submit" name="dry_run" value="0" class="btn btn-primary btn-sm">{{ __('accounting.opening.action.import') }}</button>
+                    <x-button type="submit" tone="ghost" name="dry_run" value="1">{{ __('accounting.opening.action.dry_run') }}</x-button>
+                    <x-button type="submit" name="dry_run" value="0">{{ __('accounting.opening.action.import') }}</x-button>
                 </form>
                 <p class="mt-2 text-xs text-muted">{{ __('accounting.opening.hint') }}</p>
             </x-card>
@@ -116,7 +116,7 @@
                                   :to-label="__('accounting.ledger.column.to')"
                                   :from="now()->startOfYear()->toDateString()"
                                   :to="now()->toDateString()" />
-                    <button type="submit" class="btn btn-primary btn-sm">{{ __('accounting.datev.action.export') }}</button>
+                    <x-button type="submit">{{ __('accounting.datev.action.export') }}</x-button>
                 </form>
                 <p class="mt-2 text-xs text-muted">{{ __('accounting.datev.hint') }}</p>
             </x-card>

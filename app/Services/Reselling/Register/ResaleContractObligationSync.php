@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Reselling\Register;
 
-use App\Enums\Contract\ContractObligationKind;
+use App\Enums\Contract\{ContractObligationKind, ContractObligationStatus};
 use App\Enums\Reselling\RenewalMode;
 use App\Models\Contract\{Contract, ContractObligation};
 use App\Models\Platform\Organization;
@@ -71,7 +71,7 @@ final class ResaleContractObligationSync {
             if ($subscriptionId === null) {
                 continue;
             }
-            if ($obligation->status === 'open') {
+            if ($obligation->status === ContractObligationStatus::Open) {
                 $open[$subscriptionId][] = $obligation;
             } else {
                 $settled[$subscriptionId][] = $obligation;
@@ -219,7 +219,7 @@ final class ResaleContractObligationSync {
     }
 
     private function close(ContractObligation $obligation): void {
-        $obligation->forceFill(['status' => 'done', 'done_at' => now()])->save();
+        $obligation->forceFill(['status' => ContractObligationStatus::Done, 'done_at' => now()])->save();
         $obligation->contract?->audit('contract.obligationClosed', ['obligation_id' => $obligation->id, 'source' => 'resale']);
     }
 }

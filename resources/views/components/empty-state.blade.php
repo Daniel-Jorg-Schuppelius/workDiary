@@ -34,7 +34,7 @@
       - title   : optionale Überschrift
       - message : optionaler Beschreibungstext
       - tone    : ghost (Default, grau) | primary | success | warning | error | info
-      - compact : kleinere Variante (geringeres Padding), z. B. innerhalb Tabellenzellen
+      - compact : kleinere Variante (geringeres Padding, ohne Standard-Message), z. B. innerhalb Tabellenzellen
       - framed  : true = umgibt sich selbst mit der weißen Karten-Optik
 --}}
 
@@ -46,7 +46,8 @@
         $icon = '<span class="material-symbols-outlined" aria-hidden="true">' . e($icon) . '</span>';
     }
     $title = $title ?? __('Keine Einträge vorhanden');
-    $message = $message ?? __('Für die aktuelle Auswahl wurden keine Daten gefunden.');
+    // Kompakt (Kachel, Tabellenzeile, Seitenleiste) ohne Standardzeile — dort steht sie meist unter einer Aussage, zu der sie nicht passt.
+    $message = $message ?? ($compact ? null : __('Für die aktuelle Auswahl wurden keine Daten gefunden.'));
 
     $toneClass = [
         'primary' => 'bg-primary/5 text-primary',

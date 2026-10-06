@@ -11,6 +11,7 @@
 namespace Tests\Feature\Construction;
 
 use App\Enums\Construction\ConstructionNoticeStatus;
+use App\Enums\Document\DocumentDispatchStatus;
 use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Mail\DocumentMail;
 use App\Models\Construction\ConstructionNotice;
@@ -150,7 +151,7 @@ class ConstructionNoticeTest extends TestCase {
             ->forDocument($notice->kind, (int) $notice->id)
             ->firstOrFail();
         $this->assertSame(DocumentDispatch::CHANNEL_MANUAL, $dispatch->channel);
-        $this->assertSame('sent', $dispatch->status);
+        $this->assertSame(DocumentDispatchStatus::Sent, $dispatch->status);
         $this->assertSame('Bauherr GmbH', $dispatch->recipient);
         $this->assertSame('registered_mail', $dispatch->meta['method'] ?? null);
         $this->assertSame('RR123456789DE', $dispatch->meta['reference'] ?? null);

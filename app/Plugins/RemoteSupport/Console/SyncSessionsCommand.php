@@ -11,7 +11,9 @@
 namespace App\Plugins\RemoteSupport\Console;
 
 use App\Console\Concerns\IteratesOrganizations;
-use App\Plugins\RemoteSupport\{RemoteSessionImporter, RemoteSupportConfig};
+use App\Plugins\RemoteSupport\{RemoteSupportConfig, RemoteSupportPlugin};
+use App\Plugins\RemoteSupport\Services\RemoteSessionImporter;
+use App\Plugins\Support\Console\ChecksPluginSwitch;
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
 
@@ -21,6 +23,7 @@ use Illuminate\Console\Command;
  * Läuft sowohl stündlich im Scheduler als auch manuell aus der Admin-UI.
  */
 class SyncSessionsCommand extends Command {
+    use ChecksPluginSwitch;
     use IteratesOrganizations;
 
     protected $signature = 'remote:sync-sessions ' . self::ORGANIZATION_OPTION . '
@@ -38,7 +41,7 @@ class SyncSessionsCommand extends Command {
 
         foreach ($organizations as $org) {
             $config = RemoteSupportConfig::resolve($org->id);
-            if (! $config['enabled']) {
+            if (! $this->pluginEnabledFor(RemoteSupportPlugin::ID, (int) $org->id)) {
                 continue;
             }
             if ($service->providersFor($config) === []) {

@@ -19,50 +19,11 @@
                 {{ __('Bereich') }}: {{ $scopeLabel }} · {{ $label }}
             </x-slot:subtitle>
             <x-slot:actions>
-                <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
-                            :href="route('reports.assets.drilldown.protocols', array_filter($filters + ['export' => 'pdf'], fn($v) => $v !== null && $v !== ''))"
-                            show-label>PDF</x-icon-btn>
-                <x-action-menu icon="download" tone="outline" :label="__('Export')">
-                    <x-icon-btn icon="download" tone="outline" size="sm"
-                                :href="route('reports.assets.drilldown.protocols', array_filter($filters + ['export' => 'csv'], fn($v) => $v !== null && $v !== ''))"
-                                show-label>CSV</x-icon-btn>
-                    <x-icon-btn icon="table_view" tone="outline" size="sm"
-                                :href="route('reports.assets.drilldown.protocols', array_filter($filters + ['export' => 'xlsx'], fn($v) => $v !== null && $v !== ''))"
-                                show-label>Excel</x-icon-btn>
-                </x-action-menu>
+                @include('reports.drilldown._export_actions', ['route' => 'reports.assets.drilldown.protocols', 'params' => $filters])
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
 
-    <x-card>
-        @if ($protocols->isEmpty())
-            <x-empty-state icon="fact_check" :title="__('Keine Defektprotokolle für diesen Drilldown gefunden.')" />
-        @else
-            <x-table bare table-sort="client">
-                <x-slot:head>
-                    <tr>
-                        <x-table.th sort type="string">{{ __('Titel') }}</x-table.th>
-                        <x-table.th sort type="string">{{ __('Status') }}</x-table.th>
-                        <x-table.th sort type="date">{{ __('Zeitpunkt') }}</x-table.th>
-                        <x-table.th sort type="string">{{ __('Erstellt von') }}</x-table.th>
-                        <x-table.th sort type="number">{{ __('Auftrag') }}</x-table.th>
-                    </tr>
-                </x-slot:head>
-                @foreach ($protocols as $protocol)
-                    <tr>
-                        <td class="font-medium">{{ $protocol->title }}</td>
-                        <td><x-status-badge tone="ghost" outline>{{ $protocol->status->label() }}</x-status-badge></td>
-                        <td>{{ $protocol->occurred_at?->fdatetime() ?? '—' }}</td>
-                        <td>{{ $protocol->creator?->name ?? '—' }}</td>
-                        <td>
-                            <a href="{{ route('diary.show', $protocol->subject_id) }}" class="link link-hover">#{{ $protocol->subject_id }}</a>
-                        </td>
-                    </tr>
-                @endforeach
-            </x-table>
-
-            <x-pagination :paginator="$protocols" standing />
-        @endif
-    </x-card>
+    @include('reports.drilldown._protocols_table')
 </x-page-shell>
 @endsection

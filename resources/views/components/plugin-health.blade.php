@@ -11,7 +11,7 @@
      ein hängender Server blockierte den Seitenaufbau). --}}
 @props(['pluginId', 'state' => null, 'detailed' => false])
 @php
-    $health = \App\Enums\Plugin\PluginHealthStatus::tryFrom((string) $state?->last_health_status);
+    $health = $state?->last_health_status;
 @endphp
 <div {{ $attributes->merge(['class' => 'flex flex-wrap items-center gap-2 text-sm']) }}>
     <x-status-badge size="sm" :tone="$health?->tone() ?? 'ghost'">{{ $health?->label() ?? __('Noch nicht geprüft') }}</x-status-badge>

@@ -20,8 +20,8 @@
         <x-page-toolbar back-route="surveys.index" :back-label="__('Zur Liste')">
             <div class="flex min-w-0 items-center gap-2">
                 <span class="truncate font-medium">{{ $survey->title }}</span>
-                @if ($survey->anonymous)<span class="badge badge-outline badge-sm">{{ __('anonym') }}</span>@endif
-                @unless ($survey->active)<span class="badge badge-ghost badge-sm">{{ __('inaktiv') }}</span>@endunless
+                @if ($survey->anonymous)<x-status-badge tone="plain" outline>{{ __('anonym') }}</x-status-badge>@endif
+                @unless ($survey->active)<x-status-badge>{{ __('inaktiv') }}</x-status-badge>@endunless
             </div>
             <x-slot:actions>
                 @if ($canManage)
@@ -39,13 +39,13 @@
         <div class="space-y-4 lg:col-span-2">
             <x-card :title="__('Fragen')">
                 @if ($survey->questions->isEmpty())
-                    <p class="text-sm text-muted">{{ __('Noch keine Fragen — unten hinzufügen.') }}</p>
+                    <x-empty-state icon="quiz" :title="__('Noch keine Fragen — unten hinzufügen.')" compact />
                 @else
                     <ol class="space-y-2 text-sm">
                         @foreach ($survey->questions as $question)
                             <li class="flex items-start justify-between gap-3 rounded-lg border border-base-300 p-3">
                                 <div class="min-w-0">
-                                    <span class="badge badge-outline badge-xs mr-2 font-mono">{{ $question->type }}</span>
+                                    <x-status-badge tone="plain" size="xs" outline class="mr-2 font-mono">{{ $question->type }}</x-status-badge>
                                     {{ $question->label }}
                                     @if ($question->options)
                                         <span class="block text-xs text-muted">{{ implode(' · ', $question->options) }}</span>
@@ -72,14 +72,14 @@
                         </select>
                         <input aria-label="{{ __('Fragetext') }}" type="text" name="label" required maxlength="500" class="input input-sm input-bordered sm:col-span-2" placeholder="{{ __('Fragetext') }}">
                         <input aria-label="{{ __('Auswahl: A, B, C') }}" type="text" name="options" class="input input-sm input-bordered" placeholder="{{ __('Auswahl: A, B, C') }}">
-                        <button type="submit" class="btn btn-primary btn-sm sm:col-span-4">{{ __('Frage hinzufügen') }}</button>
+                        <x-button type="submit" class="sm:col-span-4">{{ __('Frage hinzufügen') }}</x-button>
                     </form>
                 @endif
             </x-card>
 
             <x-card :title="__('Letzte Freitext-Antworten')">
                 @if ($textAnswers->isEmpty())
-                    <p class="text-sm text-muted">{{ __('Noch keine Freitext-Antworten.') }}</p>
+                    <x-empty-state icon="notes" :title="__('Noch keine Freitext-Antworten.')" compact />
                 @else
                     <ul class="space-y-2 text-sm">
                         @foreach ($textAnswers as $answer)
@@ -92,13 +92,12 @@
 
         <div class="space-y-4">
             <x-card :title="__('Auswertung')">
-                <dl class="space-y-1 text-sm">
-                    <div class="flex justify-between"><dt class="text-muted">{{ __('NPS-Score') }}</dt>
-                        {{-- null heißt „nichts zu rechnen", nicht 0. --}}
-                        <dd class="font-medium tabular-nums">{{ $nps ?? '—' }}</dd></div>
-                    <div class="flex justify-between"><dt class="text-muted">{{ __('Antworten') }}</dt><dd class="tabular-nums">{{ $responseCount }}</dd></div>
-                    <div class="flex justify-between"><dt class="text-muted">{{ __('Einladungen') }}</dt><dd class="tabular-nums">{{ $invitations->count() }}</dd></div>
-                </dl>
+                <x-detail-grid layout="split">
+                    {{-- null heißt „nichts zu rechnen", nicht 0. --}}
+                    <x-detail-grid.row :label="__('NPS-Score')" class="font-medium tabular-nums">{{ $nps ?? '—' }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('Antworten')" class="tabular-nums">{{ $responseCount }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('Einladungen')" class="tabular-nums">{{ $invitations->count() }}</x-detail-grid.row>
+                </x-detail-grid>
             </x-card>
 
             @if ($canManage && $survey->active)
@@ -111,24 +110,20 @@
                             @endforeach
                         </x-select-field>
                         <p class="text-xs text-muted">{{ __('Der Ermüdungsschutz lehnt Adressen ab, die kürzlich eingeladen wurden — über alle Fragebögen hinweg.') }}</p>
-                        <button type="submit" class="btn btn-primary btn-sm w-full">{{ __('Einladung senden') }}</button>
+                        <x-button type="submit" class="w-full">{{ __('Einladung senden') }}</x-button>
                     </form>
                 </x-card>
             @endif
 
             <x-card :title="__('Letzte Einladungen')">
                 @if ($invitations->isEmpty())
-                    <p class="text-sm text-muted">{{ __('Noch keine Einladungen.') }}</p>
+                    <x-empty-state icon="mail" :title="__('Noch keine Einladungen.')" compact />
                 @else
                     <ul class="space-y-1 text-xs">
                         @foreach ($invitations->take(15) as $invitation)
                             <li class="flex justify-between gap-2">
                                 <span class="min-w-0 truncate">{{ $invitation->customer?->name ?? $invitation->email }}</span>
-                                <span class="shrink-0 text-muted">{{ [
-                                    'created' => __('erstellt'),
-                                    'sent' => __('versendet'),
-                                    'responded' => __('beantwortet'),
-                                ][$invitation->status] ?? $invitation->status }}</span>
+                                <span class="shrink-0 text-muted">{{ $invitation->status->label() }}</span>
                             </li>
                         @endforeach
                     </ul>

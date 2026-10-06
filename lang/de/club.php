@@ -1304,6 +1304,7 @@ return [
             'record_result' => 'Ergebnis erfassen',
             'record_performance' => 'Leistung erfassen',
             'correct_performance' => 'Leistung korrigieren',
+            'delete_performance' => 'Leistung löschen',
             'confirm' => 'Bestätigen',
             'grant_start_right' => 'Startrecht dokumentieren',
             'revoke_start_right' => 'Startrecht entfernen',
@@ -1360,6 +1361,7 @@ return [
         ],
         'confirm' => [
             'delete_requirement' => 'Anforderung „:name“ löschen?',
+            'delete_performance' => 'Leistung :discipline vom :date löschen? Sie zählt danach nicht mehr für die Bestleistungen.',
         ],
         'flash' => [
             'created' => 'Wettkampf angelegt.',
@@ -1666,6 +1668,7 @@ return [
         ],
         'error' => [
             'claim_not_open' => 'Die Forderung ist nicht offen.',
+            'credit_already_applied' => 'Das Guthaben aus dieser Bankzahlung ist bereits mit Forderungen verrechnet — die Zuordnung lässt sich deshalb nicht aufheben.',
             'not_compensatable' => 'Diese Buchung lässt sich nicht kompensieren.',
             'already_compensated' => 'Diese Zahlung wurde bereits kompensiert.',
             'not_overdue' => 'Nur überfällige Forderungen können gemahnt werden.',

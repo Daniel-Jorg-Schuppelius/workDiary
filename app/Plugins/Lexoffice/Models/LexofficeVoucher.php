@@ -124,15 +124,6 @@ class LexofficeVoucher extends Model {
         return $this->belongsTo(Supplier::class);
     }
 
-    /**
-     * Leistungszeitraum laut Rechnung (Lexoffice shippingConditions): Beginn
-     * ist bei Leistungsdatum und -zeitraum gesetzt, Ende nur beim Zeitraum.
-     * Das Register ordnet danach zu — nicht nach dem Rechnungsdatum.
-     */
-    public function serviceStart(): ?\Carbon\CarbonImmutable {
-        return $this->service_starts_on === null ? null : \Carbon\CarbonImmutable::instance($this->service_starts_on);
-    }
-
     /** Leistungsmonate aus dem Zeitraum (gerundet; Einzeldatum = null). */
     public function serviceMonths(): ?int {
         if ($this->service_starts_on === null || $this->service_ends_on === null) {

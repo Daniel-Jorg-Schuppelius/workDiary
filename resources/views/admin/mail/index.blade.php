@@ -20,15 +20,15 @@
             <div class="mb-1 flex flex-wrap items-center justify-between gap-2">
                 <h1 class="font-['Space_Grotesk'] text-lg font-semibold">{{ __('mail.title') }}</h1>
                 <div class="flex items-center gap-2">
-                    <a href="{{ route('admin.integration.inbox', ['plugin' => 'email']) }}" class="btn btn-sm btn-ghost">
+                    <x-button :href="route('admin.integration.inbox', ['plugin' => 'email'])" tone="ghost">
                         {{ __('mail.to_inbox') }}
                         @if ($openCount > 0)
-                            <span class="badge badge-sm badge-warning ml-1">{{ $openCount }}</span>
+                            <x-status-badge tone="warning" class="ml-1">{{ $openCount }}</x-status-badge>
                         @endif
-                    </a>
+                    </x-button>
                     <form method="POST" action="{{ route('admin.mail.poll') }}">
                         @csrf
-                        <button type="submit" class="btn btn-sm btn-primary">{{ __('mail.action.poll') }}</button>
+                        <x-button type="submit">{{ __('mail.action.poll') }}</x-button>
                     </form>
                 </div>
             </div>
@@ -57,9 +57,9 @@
                                     <td class="text-muted">{{ $connection->username . '@' . $connection->host }}</td>
                                     <td>
                                         @if ($connection->isActive())
-                                            <span class="badge badge-success badge-sm">{{ __('mail.status.active') }}</span>
+                                            <x-status-badge tone="success">{{ __('mail.status.active') }}</x-status-badge>
                                         @else
-                                            <span class="badge badge-ghost badge-sm">{{ __('mail.status.inactive') }}</span>
+                                            <x-status-badge>{{ __('mail.status.inactive') }}</x-status-badge>
                                         @endif
                                     </td>
                                     <td class="text-muted">{{ $connection->last_polled_at?->diffForHumans() ?? '—' }}</td>
@@ -68,7 +68,7 @@
                                             <form method="POST" action="{{ route('admin.mail.disconnect') }}">
                                                 @csrf
                                                 <input type="hidden" name="connection" value="{{ $connection->sqid }}">
-                                                <button type="submit" class="btn btn-ghost btn-xs text-error">{{ __('mail.action.disconnect') }}</button>
+                                                <x-button type="submit" tone="ghost" size="xs" class="text-error">{{ __('mail.action.disconnect') }}</x-button>
                                             </form>
                                         @endif
                                     </td>
@@ -79,8 +79,7 @@
         </x-card>
 
         {{-- Neues Postfach --}}
-        <form method="POST" action="{{ route('admin.mail.connection.store') }}"
-              class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs space-y-3">
+        <x-card as="form" class="space-y-3" method="POST" action="{{ route('admin.mail.connection.store') }}">
             @csrf
             <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('mail.add_heading') }}</h2>
             <div class="grid gap-3 md:grid-cols-2">
@@ -157,9 +156,9 @@
                 </label>
             </div>
             <div class="flex justify-end">
-                <button type="submit" class="btn btn-sm btn-primary">{{ __('mail.action.save') }}</button>
+                <x-button type="submit">{{ __('mail.action.save') }}</x-button>
             </div>
-        </form>
+        </x-card>
     </div>
 </x-page-shell>
 @endsection

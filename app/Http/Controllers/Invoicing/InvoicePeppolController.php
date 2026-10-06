@@ -43,7 +43,7 @@ class InvoicePeppolController extends Controller {
         return back()->with('status', __('peppol.flash.sent', [
             'participant' => (string) $dispatch->recipient,
             'message' => (string) ($meta['message_id'] ?? '—'),
-            'status' => (string) ($meta['transport_status'] ?? $dispatch->status),
+            'status' => (string) ($meta['transport_status'] ?? $dispatch->status->value),
         ]));
     }
 }

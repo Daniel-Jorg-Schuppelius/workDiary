@@ -13,7 +13,7 @@ namespace App\Plugins\Lexoffice\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\Inventory\StockDelivery;
 use App\Models\Manufacturing\ManufacturingOrder;
-use App\Plugins\Lexoffice\{LexofficeDeliveryNoteService, LexofficeOrderConfirmationService, LexofficeQuotationService};
+use App\Plugins\Lexoffice\Services\{LexofficeDeliveryNoteService, LexofficeOrderConfirmationService, LexofficeQuotationService};
 use App\Support\ErrorText;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;

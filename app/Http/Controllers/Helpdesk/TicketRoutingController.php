@@ -34,6 +34,7 @@ class TicketRoutingController extends Controller {
         Gate::authorize(Permission::HelpdeskQueueManage->value);
 
         return view('helpdesk.routing.index', [
+            // Ohne Blättern: die erste zutreffende Regel gewinnt — die Reihenfolge muss auf einer Seite stehen.
             'rules' => TicketRoutingRule::query()->orderBy('position')->orderBy('id')->get(),
         ]);
     }
@@ -47,7 +48,17 @@ class TicketRoutingController extends Controller {
             'organization_id' => $this->currentOrganization()->id,
         ]);
 
-        return redirect()->route('helpdesk.routing.index')->with('success', __('Regel angelegt.'));
+        return redirect()->toList('helpdesk.routing.index')->with('success', __('Regel angelegt.'));
+    }
+
+    public function edit(TicketRoutingRule $rule): View {
+        Gate::authorize(Permission::HelpdeskQueueManage->value);
+
+        return view('helpdesk.routing._form_dialog', [
+            'rule' => $rule,
+            'conditions' => JsonHelper::encode($rule->conditions, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE),
+            'actions' => JsonHelper::encode($rule->actions, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE),
+        ]);
     }
 
     public function update(Request $request, TicketRoutingRule $rule): RedirectResponse {
@@ -58,14 +69,14 @@ class TicketRoutingController extends Controller {
         // das Ausführungsprotokoll bleibt eindeutig zuordenbar.
         $rule->update([...$data, 'version' => $rule->version + 1]);
 
-        return redirect()->route('helpdesk.routing.index')->with('success', __('Regel gespeichert.'));
+        return redirect()->toList('helpdesk.routing.index')->with('success', __('Regel gespeichert.'));
     }
 
     public function destroy(TicketRoutingRule $rule): RedirectResponse {
         Gate::authorize(Permission::HelpdeskQueueManage->value);
         $rule->delete();
 
-        return redirect()->route('helpdesk.routing.index')->with('success', __('Regel gelöscht.'));
+        return redirect()->toList('helpdesk.routing.index')->with('success', __('Regel gelöscht.'));
     }
 
     /** Dry-Run: Regeln gegen ein bestehendes Ticket testen (keine Änderung). */

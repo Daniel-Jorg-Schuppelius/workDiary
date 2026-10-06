@@ -111,6 +111,7 @@ return [
             'post' => 'Post',
             'reverse' => 'Reverse',
             'reverse_submit' => 'Create counter-entry',
+            'import' => 'Import chart of accounts',
         ],
         'column' => [
             'fiscal_year' => 'Fiscal year',
@@ -254,6 +255,11 @@ return [
         ],
         'import' => [
             'line_invalid' => 'Line :line skipped (number, name or account type missing).',
+            'title' => 'Import chart of accounts from CSV',
+            'hint' => 'Existing account numbers are updated, new accounts are created; nothing is deleted. Faulty lines are skipped and counted.',
+            'file' => 'CSV file',
+            'columns' => 'Header row with the columns number, name and type (:types); optional normal_balance (debit or credit), is_open_item, datev_account, euer_category and deductible_percent.',
+            'submit' => 'Import',
         ],
     ],
 
@@ -304,6 +310,7 @@ return [
             'no_amount' => 'The document has no amount.',
             'no_lines' => 'The proposal has no entry lines.',
             'sovereignty' => 'For this period the organization does not keep a local ledger.',
+            'changed_since_posting' => 'The source changed after posting (e.g. a refund) — reverse the entry and post it again.',
             'foreign_currency' => 'The transaction is in :currency, accounting is kept in :base — payments, cash and assets in foreign currency are not posted.',
             'unsupported_target' => 'There is no posting path for this payment target yet.',
             'year_closed' => 'Fiscal year :year is closed.',

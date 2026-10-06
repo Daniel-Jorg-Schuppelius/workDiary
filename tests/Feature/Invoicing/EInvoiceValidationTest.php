@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Invoicing;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\{Organization, User};
@@ -67,7 +68,7 @@ final class EInvoiceValidationTest extends TestCase {
             'organization_id' => $this->org->id,
             'customer_id' => $this->customer->id,
             'number' => 'R2026-0042',
-            'status' => Invoice::STATUS_ISSUED,
+            'status' => InvoiceStatus::Issued,
             'type' => Invoice::TYPE_INVOICE,
             'tax_rate' => '19.00',
             'issued_on' => now(),
@@ -129,7 +130,7 @@ final class EInvoiceValidationTest extends TestCase {
             'organization_id' => $this->org->id,
             'customer_id' => $this->customer->id,
             'number' => 'R2026-0043',
-            'status' => Invoice::STATUS_DRAFT,
+            'status' => InvoiceStatus::Draft,
             'type' => Invoice::TYPE_INVOICE,
             'tax_rate' => '19.00',
         ]);
@@ -139,6 +140,6 @@ final class EInvoiceValidationTest extends TestCase {
         $this->actingAs($this->user)
             ->post(route('invoices.issue', $draft))
             ->assertRedirect(route('invoices.einvoice-validation', $draft));
-        $this->assertSame(Invoice::STATUS_DRAFT, $draft->fresh()->status, 'Ausstellung wurde geblockt.');
+        $this->assertSame(InvoiceStatus::Draft, $draft->fresh()->status, 'Ausstellung wurde geblockt.');
     }
 }

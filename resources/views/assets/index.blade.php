@@ -11,8 +11,7 @@
 
 @section('title', __('Objekte & Assets'))
 @section('nav-title', __('Objekte & Assets'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
     <x-index-page overflow="clip" :subtitle="__('Objekte, Geräte und Anlagen des Mandanten verwalten.')">
@@ -104,8 +103,8 @@
                         @if ($asset->tags->isNotEmpty())
                             <div class="mt-1 flex flex-wrap gap-1">
                                 @foreach ($asset->tags as $tag)
-                                    <span class="badge badge-xs badge-outline"
-                                          @if ($tag->color) style="border-color: {{ $tag->color }}; color: {{ $tag->color }};" @endif>#{{ $tag->displayName() }}</span>
+                                    <x-status-badge tone="plain" size="xs" outline
+                                          :style="$tag->color ? 'border-color: '.$tag->color.'; color: '.$tag->color.';' : null">#{{ $tag->displayName() }}</x-status-badge>
                                 @endforeach
                             </div>
                         @endif

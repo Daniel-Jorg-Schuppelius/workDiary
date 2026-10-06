@@ -21,7 +21,7 @@
                         back-route="recalls.index" :back-label="__('recall.title')">
             <div class="flex flex-wrap items-center gap-2 text-sm">
                 <x-status-badge size="md" outline :tone="$recall->status->tone()">{{ $recall->status->label() }}</x-status-badge>
-                <span class="badge badge-outline">{{ $recall->kind->label() }}</span>
+                <x-status-badge tone="plain" size="md" outline>{{ $recall->kind->label() }}</x-status-badge>
             </div>
             <x-slot:actions>
                 <x-icon-btn icon="picture_as_pdf" size="sm" :href="route('recalls.authority.pdf', $recall)" show-label>{{ __('recall.authority.pdf') }}</x-icon-btn>
@@ -134,14 +134,14 @@
                                     @if ($item->claim_case_id === null && $item->status !== \App\Enums\Inventory\RecallItemStatus::Resolved)
                                         <form method="POST" action="{{ route('recalls.items.claim', [$recall, $item]) }}">
                                             @csrf
-                                            <button type="submit" class="btn btn-xs btn-ghost" title="{{ __('recall.hint.claim') }}">{{ __('recall.action.claim') }}</button>
+                                            <x-button type="submit" tone="ghost" size="xs" title="{{ __('recall.hint.claim') }}">{{ __('recall.action.claim') }}</x-button>
                                         </form>
                                     @endif
                                     @foreach ($item->status->allowedTransitions() as $target)
                                         <form method="POST" action="{{ route('recalls.items.status', [$recall, $item]) }}">
                                             @csrf
                                             <input type="hidden" name="status" value="{{ $target->value }}">
-                                            <button type="submit" class="btn btn-xs">{{ __('recall.item_transition.' . $target->value) }}</button>
+                                            <x-button type="submit" tone="plain" size="xs">{{ __('recall.item_transition.' . $target->value) }}</x-button>
                                         </form>
                                     @endforeach
                                 </div>
@@ -167,7 +167,7 @@
                     <tr>
                         <td>{{ $dispatch->created_at?->fdatetime() }}</td>
                         <td>{{ $dispatch->recipient }}</td>
-                        <td>{{ __('recall.dispatch.' . $dispatch->status) }}</td>
+                        <td>{{ __('recall.dispatch.' . $dispatch->status->value) }}</td>
                     </tr>
                 @empty
                     <x-table.empty icon="mail" :colspan="3" :title="__('recall.dispatch.none')" compact />

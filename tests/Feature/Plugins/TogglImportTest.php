@@ -10,14 +10,16 @@
 
 namespace Tests\Feature\Plugins;
 
+use App\Enums\Integration\IntegrationInboxStatus;
 use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use App\Models\Platform\{PluginSetting, User};
 use App\Models\Project\Project;
 use App\Models\Time\TimeEntry;
 use App\Plugins\Support\ImportedTimeEntry;
+use App\Plugins\Toggl\Services\TogglImportService;
 use App\Plugins\Toggl\Sources\TogglEntry;
-use App\Plugins\Toggl\{TogglConfig, TogglImportService, TogglPlugin};
+use App\Plugins\Toggl\{TogglConfig, TogglPlugin};
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
@@ -95,7 +97,7 @@ class TogglImportTest extends TestCase {
             'dedupe_key' => 'entry:' . $entryKey,
             'group_key' => ($workspaceId !== null ? 'ws' . $workspaceId . '|' : '') . $this->groupKey($client, $project),
             'case_type' => IntegrationInboxItem::CASE_UNMATCHED,
-            'status' => IntegrationInboxItem::STATUS_OPEN,
+            'status' => IntegrationInboxStatus::Open,
             'remote_snapshot' => [
                 'source' => 'csv',
                 'entry_key' => $entryKey,
@@ -660,7 +662,7 @@ class TogglImportTest extends TestCase {
             'external_id' => 'toggl:222',
             'group_key' => 'ws1|' . $this->groupKey('Unknown Co', 'Mystery'),
             'case_type' => IntegrationInboxItem::CASE_UNMATCHED,
-            'status' => IntegrationInboxItem::STATUS_OPEN,
+            'status' => IntegrationInboxStatus::Open->value,
         ]);
     }
 
@@ -682,7 +684,7 @@ class TogglImportTest extends TestCase {
             'source' => 'csv',
             'group_key' => $this->groupKey('Beta GmbH', 'Intranet'),
             'case_type' => IntegrationInboxItem::CASE_UNMATCHED,
-            'status' => IntegrationInboxItem::STATUS_OPEN,
+            'status' => IntegrationInboxStatus::Open->value,
         ]);
         // Snapshot trägt UTC — die spätere Buchung aus der Inbox übernimmt ihn (MVP-824).
         $snapshot = IntegrationInboxItem::query()->where('plugin_id', TogglPlugin::ID)->firstOrFail()->remote_snapshot;
@@ -704,7 +706,7 @@ class TogglImportTest extends TestCase {
         $this->assertNotNull($entry);
         $this->assertSame(60, $entry->minutes);
 
-        $this->assertSame(IntegrationInboxItem::STATUS_RESOLVED_CREATED, $item->fresh()->status);
+        $this->assertSame(IntegrationInboxStatus::ResolvedCreated, $item->fresh()->status);
         $this->assertSame($entry->id, $item->fresh()->resolved_to_id);
 
         // Reference gemerkt → künftiger Match.
@@ -771,7 +773,7 @@ class TogglImportTest extends TestCase {
             'dedupe_key' => 'entry:toggl:42',
             'group_key' => $this->groupKey('Gamma', 'App'),
             'case_type' => IntegrationInboxItem::CASE_UNMATCHED,
-            'status' => IntegrationInboxItem::STATUS_OPEN,
+            'status' => IntegrationInboxStatus::Open,
             'remote_snapshot' => [
                 'source' => 'api', 'entry_key' => 'toggl:42',
                 'client_name' => 'Gamma', 'project_name' => 'App',
@@ -904,7 +906,7 @@ class TogglImportTest extends TestCase {
         ]);
         $this->assertDatabaseHas('integration_inbox_items', [
             'external_id' => 'csv:new',
-            'status' => IntegrationInboxItem::STATUS_RESOLVED_CREATED,
+            'status' => IntegrationInboxStatus::ResolvedCreated->value,
         ]);
     }
 
@@ -971,7 +973,7 @@ class TogglImportTest extends TestCase {
         ]);
         $this->assertDatabaseHas('integration_inbox_items', [
             'external_id' => 'csv:intern',
-            'status' => IntegrationInboxItem::STATUS_RESOLVED_CREATED,
+            'status' => IntegrationInboxStatus::ResolvedCreated->value,
         ]);
     }
 

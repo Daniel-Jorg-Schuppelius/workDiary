@@ -11,12 +11,12 @@
 --}}
 @php
     $lexwareProfile = app(\App\Plugins\Lexoffice\Tariff\LexwareTariffService::class)->profile();
-    $lexwareState = $lexwareProfile->localFeatures !== [] && $invoice->status !== \App\Models\Invoicing\Invoice::STATUS_DRAFT
+    $lexwareState = $lexwareProfile->localFeatures !== [] && $invoice->status !== \App\Enums\Invoicing\InvoiceStatus::Draft
         ? app(\App\Plugins\Lexoffice\Handover\LexofficeInvoiceHandoverService::class)->stateFor($invoice)
         : null;
     $lexwareActive = $lexwareProfile->localFeatures !== [];
 @endphp
-@if ($lexwareActive && $invoice->status !== \App\Models\Invoicing\Invoice::STATUS_DRAFT)
+@if ($lexwareActive && $invoice->status !== \App\Enums\Invoicing\InvoiceStatus::Draft)
     <span class="inline-flex items-center gap-1 text-xs" title="{{ __('lexoffice::lexware.handover.title') }}">
         <x-icon name="outbox" size="1em" class="text-muted" />
         @if ($lexwareState)

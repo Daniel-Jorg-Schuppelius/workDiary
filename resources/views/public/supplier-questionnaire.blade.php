@@ -7,24 +7,13 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
 {{-- Öffentliche Selbstauskunft (MVP-937). Erwartet: $sent, $request, $orgName, $token --}}
-<!doctype html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="light">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="robots" content="noindex, nofollow">
-<title>{{ __('supplier_questionnaire.public_title', ['org' => $orgName]) }}</title>
-@include('partials.font-bootstrap', ['icons' => false])
-@vite(['resources/css/app.css','resources/js/app.js'])
-</head>
-<body class="min-h-screen bg-base-200">
-<main class="max-w-2xl mx-auto p-4 flex flex-col gap-4">
+<x-public-page :title="__('supplier_questionnaire.public_title', ['org' => $orgName])" main="max-w-2xl mx-auto p-4 flex flex-col gap-4">
     <x-card class="flex flex-col gap-1">
         <h1 class="card-title">{{ __('supplier_questionnaire.public_title', ['org' => $orgName]) }}</h1>
         @if ($request)
             <p class="text-sm font-medium">{{ $request->questionnaire?->name }}</p>
             @if ($request->questionnaire?->description)<p class="text-sm opacity-70 whitespace-pre-line">{{ $request->questionnaire->description }}</p>@endif
-            @if ($request->note)<div class="alert alert-warning text-sm">{{ __('supplier_questionnaire.public_rework', ['note' => $request->note]) }}</div>@endif
+            @if ($request->note)<div role="alert" class="alert alert-warning text-sm">{{ __('supplier_questionnaire.public_rework', ['note' => $request->note]) }}</div>@endif
         @endif
     </x-card>
     @if ($sent)
@@ -40,6 +29,4 @@
             </form>
         </x-card>
     @endif
-</main>
-</body>
-</html>
+</x-public-page>

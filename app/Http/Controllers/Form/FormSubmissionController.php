@@ -11,7 +11,7 @@
 namespace App\Http\Controllers\Form;
 
 use App\Enums\User\Permission as P;
-use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
+use App\Http\Controllers\Concerns\{AuthorizesCarrier, ResolvesGlobalDateRange};
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Document\DocumentController;
 use App\Models\Asset\Asset;
@@ -34,6 +34,7 @@ use Illuminate\View\View;
  * gerenderte Felder), Read-Only-/Druck-Seite und gefilterte Liste.
  */
 class FormSubmissionController extends Controller {
+    use AuthorizesCarrier;
     use ResolvesGlobalDateRange;
 
     /**
@@ -139,6 +140,7 @@ class FormSubmissionController extends Controller {
         $subject = null;
         if (filled($data['subject_kind'] ?? null)) {
             $subject = $this->findSubject((string) $data['subject_kind'], (string) ($data['subject_id'] ?? ''));
+            $this->authorizeCarrier($subject);
         }
 
         /** @var array<string, \Illuminate\Http\UploadedFile> $files */

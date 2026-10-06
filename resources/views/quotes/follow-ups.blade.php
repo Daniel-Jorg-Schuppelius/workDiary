@@ -76,7 +76,13 @@
                             </td>
                             <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($quote->total?->toFloat() ?? 0.0, 2, withThousandsSeparator: true) }}</td>
                             <td class="text-right">
-                                <div class="flex justify-end">
+                                <div class="flex justify-end gap-1">
+                                    @can('followUp', $quote)
+                                        <x-icon-btn icon="event" size="xs" tone="ghost"
+                                                    data-entry-modal-trigger
+                                                    :href="route('quotes.follow-ups.schedule-dialog', $quote)"
+                                                    :label="__('quotes.follow_up.schedule_action')" />
+                                    @endcan
                                     <x-icon-btn icon="phone_forwarded" size="xs" tone="ghost"
                                                 data-entry-modal-trigger
                                                 :href="route('quotes.follow-ups.dialog', $quote)"

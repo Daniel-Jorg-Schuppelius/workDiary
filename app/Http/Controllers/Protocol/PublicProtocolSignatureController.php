@@ -12,6 +12,7 @@ namespace App\Http\Controllers\Protocol;
 
 use App\Http\Controllers\Concerns\ChecksTenantPublicSurfaces;
 use App\Http\Controllers\Controller;
+use App\Models\Protocol\ProtocolSignatureToken;
 use App\Services\Customer\CustomerQueryService;
 use App\Services\Protocol\ProtocolSignatureTokenService;
 use App\Support\ErrorText;
@@ -123,7 +124,7 @@ class PublicProtocolSignatureController extends Controller {
             'question' => ['required', 'string', 'min:3', 'max:2000'],
         ]);
 
-        $record = $this->tokens->find($token);
+        $record = ProtocolSignatureToken::findByAccessToken($token);
         if ($record === null || ! $record->expires_at->isFuture()) {
             return response()->view('public.protocol-sign-error', [
                 'message' => __('protocol.signature.tokenExpired'),

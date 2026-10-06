@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Sales\Chain;
 
+use App\Enums\Sales\QuoteStatus;
 use App\Models\Platform\{Organization, User};
 use App\Models\Sales\Quote;
 use App\Services\Billing\Contracts\DocumentChainSource;
@@ -64,7 +65,7 @@ final class QuotesToFollowUp implements DocumentChainSource {
 
         return Quote::query()
             ->where('organization_id', $organization->id)
-            ->whereIn('status', ['approved', 'sent'])
+            ->whereIn('status', QuoteStatus::pending())
             ->where(fn ($q) => $q
                 ->where(fn ($f) => $f->whereNotNull('follow_up_at')->whereNull('followed_up_at')->where('follow_up_at', '<=', $today))
                 ->orWhere(fn ($e) => $e->whereNotNull('valid_until')->where('valid_until', '<', $today)));

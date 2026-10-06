@@ -40,12 +40,17 @@ class OpenAiCompatibleProvider extends AbstractLlmProvider {
         return $key === '' ? [] : ['Authorization' => 'Bearer ' . $key];
     }
 
+    /** Pfad vor `/models` und `/chat/completions`, wenn die Basis-URL ihn nicht schon trägt. */
+    protected function apiPrefix(): string {
+        return '';
+    }
+
     public function preflight(): void {
-        $this->getJson('/models');
+        $this->getJson($this->apiPrefix() . '/models');
     }
 
     protected function complete(string $system, string $user, bool $expectJson = false): Completion {
-        $response = $this->postJson('/chat/completions', [
+        $response = $this->postJson($this->apiPrefix() . '/chat/completions', [
             'model' => $this->requireModel(),
             'max_tokens' => self::MAX_OUTPUT_TOKENS,
             'messages' => [

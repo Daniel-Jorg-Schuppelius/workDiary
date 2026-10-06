@@ -12,6 +12,7 @@ namespace Tests\Feature\Plugins;
 
 use App\Models\Platform\User;
 use App\Plugins\Todoist\Api\TodoistOAuth;
+use App\Plugins\Todoist\Enums\TodoistConnectionStatus;
 use App\Plugins\Todoist\Models\TodoistConnection;
 use App\Support\MorphMap;
 use GuzzleHttp\{Client as GuzzleClient, HandlerStack};
@@ -72,7 +73,7 @@ final class TodoistConnectionTest extends TestCase {
         $connection = TodoistConnection::query()->create([
             'organization_id' => $this->organization->id,
             'access_token' => 'secret-token-123',
-            'status' => TodoistConnection::STATUS_ACTIVE,
+            'status' => TodoistConnectionStatus::Active,
         ]);
 
         $fake = FakePluginHttp::fake([
@@ -106,7 +107,7 @@ final class TodoistConnectionTest extends TestCase {
         $response->assertRedirect(route('admin.todoist.index'))->assertSessionHas('success');
 
         $connection = TodoistConnection::query()->firstOrFail();
-        $this->assertSame(TodoistConnection::STATUS_ACTIVE, $connection->status);
+        $this->assertSame(TodoistConnectionStatus::Active, $connection->status);
         $this->assertSame('secret-token-123', $connection->access_token); // entschlüsselt über Cast
         $this->assertSame('u-1', $connection->todoist_user_id);
 
@@ -152,14 +153,14 @@ final class TodoistConnectionTest extends TestCase {
         $connection = TodoistConnection::query()->create([
             'organization_id' => $this->organization->id,
             'access_token' => 'secret-token-123',
-            'status' => TodoistConnection::STATUS_ACTIVE,
+            'status' => TodoistConnectionStatus::Active,
         ]);
 
         $this->actingAs($this->admin)->post(route('admin.todoist.disconnect'))
             ->assertRedirect()->assertSessionHas('success');
 
         $fresh = $connection->fresh();
-        $this->assertSame(TodoistConnection::STATUS_DISCONNECTED, $fresh->status);
+        $this->assertSame(TodoistConnectionStatus::Disconnected, $fresh->status);
         $this->assertNull($fresh->access_token);
         $this->assertDatabaseHas('audit_logs', [
             'auditable_type' => MorphMap::stableKey($connection::class),

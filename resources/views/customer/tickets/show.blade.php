@@ -42,7 +42,7 @@
                 @endif
             </div>
         @empty
-            <p class="text-sm text-muted">{{ __('Noch keine Nachrichten.') }}</p>
+            <x-empty-state icon="forum" :title="__('Noch keine Nachrichten.')" compact />
         @endforelse
     </div>
 
@@ -52,7 +52,7 @@
         <div class="mt-1 flex flex-wrap items-center gap-2">
             <input name="files[]" type="file" multiple class="file-input file-input-sm file-input-bordered"
                    aria-label="{{ __('Anhänge (optional)') }}">
-            <button type="submit" class="btn btn-primary btn-sm">{{ __('Antworten') }}</button>
+            <x-button type="submit">{{ __('Antworten') }}</x-button>
         </div>
         @error('files')<p class="text-error text-xs mt-1">{{ $message }}</p>@enderror
         @error('files.*')<p class="text-error text-xs mt-1">{{ $message }}</p>@enderror
@@ -62,12 +62,12 @@
         <div class="mt-4 flex flex-wrap items-start gap-3 rounded-box border border-info/40 bg-info/5 p-3">
             <form method="POST" action="{{ route('customer.tickets.accept', $ticket) }}">
                 @csrf
-                <button type="submit" class="btn btn-success btn-sm">{{ __('Lösung bestätigen') }}</button>
+                <x-button type="submit" tone="success">{{ __('Lösung bestätigen') }}</x-button>
             </form>
             <form method="POST" action="{{ route('customer.tickets.reopen', $ticket) }}" class="flex items-center gap-2">
                 @csrf
                 <input aria-label="{{ __('Grund der Wiedereröffnung') }}" name="reason" required minlength="5" maxlength="500" class="input input-sm input-bordered" placeholder="{{ __('Grund der Wiedereröffnung') }}">
-                <button type="submit" class="btn btn-outline btn-sm">{{ __('Wiedereröffnen') }}</button>
+                <x-button type="submit" tone="outline">{{ __('Wiedereröffnen') }}</x-button>
             </form>
         </div>
     @endif
@@ -83,7 +83,7 @@
                     @endforeach
                 </select>
                 <input aria-label="{{ __('Anmerkung (optional)') }}" name="comment" maxlength="500" class="input input-sm input-bordered flex-1" placeholder="{{ __('Anmerkung (optional)') }}">
-                <button type="submit" class="btn btn-primary btn-sm">{{ __('Bewerten') }}</button>
+                <x-button type="submit">{{ __('Bewerten') }}</x-button>
             </div>
         </form>
     @endif

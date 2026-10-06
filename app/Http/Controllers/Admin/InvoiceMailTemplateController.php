@@ -14,6 +14,7 @@ use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Invoicing\InvoiceMailTemplate;
+use App\Support\SortableQuery;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, DB};
@@ -25,17 +26,28 @@ class InvoiceMailTemplateController extends Controller {
     public function index(Request $request): View {
         $this->authorizeBilling();
         $search = $request->string('q')->toString();
-        $templates = InvoiceMailTemplate::query()
-            ->when($search !== '', fn($q) => $q->search($search))
+        [$sort, $dir] = SortableQuery::resolve($request, ['name', 'kind', 'subject', 'scope', 'default'], 'kind', 'asc');
+        $query = InvoiceMailTemplate::query()->when($search !== '', fn($q) => $q->search($search));
+        if ($sort === 'scope') {
+            // „Global" (ohne Organisation) vor „Organisation", wie die Beschriftung sortiert.
+            $query->orderByRaw('organization_id is null ' . ($dir === 'asc' ? 'desc' : 'asc'));
+        } else {
+            $query->orderBy(['name' => 'name', 'kind' => 'document_kind', 'subject' => 'subject', 'default' => 'is_default'][$sort], $dir);
+        }
+        $templates = $query
             ->orderBy('document_kind')
             ->orderByDesc('is_default')
             ->orderBy('name')
-            ->get();
+            ->orderBy('id')
+            ->paginate(25)
+            ->withQueryString();
 
         return view('admin.invoice-mail-templates.index', [
             'templates' => $templates,
             'variablesByKind' => $this->variablesByKind(),
             'search' => $search,
+            'sort' => $sort,
+            'dir' => $dir,
         ]);
     }
 

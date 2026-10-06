@@ -10,11 +10,12 @@
 
 namespace App\Enums\Expense;
 
-use App\Enums\Concerns\HasOptions;
-use App\Enums\Contracts\HasLabel;
+use App\Enums\Concerns\{HasOptions, HasTransitions};
+use App\Enums\Contracts\HasStatusTransitions;
 
-enum ExpenseStatus: string implements HasLabel {
+enum ExpenseStatus: string implements HasStatusTransitions {
     use HasOptions;
+    use HasTransitions;
 
     case Draft = 'draft';
     case Pending = 'pending';
@@ -49,5 +50,19 @@ enum ExpenseStatus: string implements HasLabel {
             self::Reimbursed,
             self::Invoiced,
         ], true);
+    }
+
+    /** @return list<self> */
+    public function allowedTransitions(): array {
+        return match ($this) {
+            self::Draft => [self::Pending, self::Cancelled],
+            self::Pending => [self::Approved, self::Rejected, self::Cancelled],
+            self::Approved => [self::Reimbursed, self::Invoiced, self::Cancelled],
+            // Abgelehnt lässt sich nach Korrektur neu einreichen.
+            self::Rejected => [self::Pending],
+            // Die Rechnungsposition wird wieder freigegeben.
+            self::Invoiced => [self::Approved],
+            self::Reimbursed, self::Cancelled => [],
+        };
     }
 }

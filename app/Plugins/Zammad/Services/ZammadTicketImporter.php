@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Zammad\Services;
 
+use App\Enums\Integration\IntegrationInboxStatus;
 use App\Models\Customer\Customer;
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use App\Models\Platform\{Organization, User};
@@ -104,7 +105,7 @@ class ZammadTicketImporter {
                         'external_type' => 'ticket_ownership_conflict',
                         'external_id' => (string) $ticket['id'],
                         'case_type' => IntegrationInboxItem::CASE_UNMATCHED,
-                        'status' => IntegrationInboxItem::STATUS_OPEN,
+                        'status' => IntegrationInboxStatus::Open,
                         'remote_snapshot' => [
                             'ticket_id' => $ticket['id'],
                             'reason' => 'Aufgabenbereich wird von "' . $ownership->ownerFor($organization, \App\Enums\Integration\DataDomain::Tasks) . '" geführt.',
@@ -200,7 +201,7 @@ class ZammadTicketImporter {
             ->where('organization_id', $connection->organization_id)
             ->where('plugin_id', ZammadPlugin::ID)
             ->where('external_type', 'ticket_ownership_conflict')
-            ->where('status', IntegrationInboxItem::STATUS_OPEN)
+            ->where('status', IntegrationInboxStatus::Open)
             ->count();
         if ($openConflicts > 0) {
             throw new \RuntimeException((string) __(':count offene Zuordnungskonflikte — bitte zuerst auflösen.', ['count' => $openConflicts]));
@@ -284,7 +285,7 @@ class ZammadTicketImporter {
                 'external_type' => 'ticket_customer',
                 'external_id' => (string) $ticket['id'],
                 'case_type' => $candidates !== [] ? IntegrationInboxItem::CASE_AMBIGUOUS : IntegrationInboxItem::CASE_UNMATCHED,
-                'status' => IntegrationInboxItem::STATUS_OPEN,
+                'status' => IntegrationInboxStatus::Open,
                 'referenceable_type' => $best instanceof Model ? $best->getMorphClass() : null,
                 'referenceable_id' => $best instanceof Model ? $best->getKey() : null,
                 'candidate_ids' => $this->candidatePayload($candidates),

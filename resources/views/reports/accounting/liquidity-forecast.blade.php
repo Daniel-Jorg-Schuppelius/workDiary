@@ -16,8 +16,7 @@
 @section('title', __('accounting.reports.card.liquidity_forecast.title'))
 @section('nav-title', __('accounting.reports.card.liquidity_forecast.title'))
 
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
     <x-index-page overflow="clip" :subtitle="__('accounting.reports.forecast.subtitle', ['date' => $as_of->fdate(), 'weeks' => $weeks])">
@@ -25,14 +24,7 @@
             <x-icon-btn icon="tune" size="sm" tone="ghost" show-label placement="menu" :href="route('reports.accounting.liquidity-scenarios.index')" :label="__('accounting.reports.scenario.manage')" />
             <x-icon-btn icon="edit_calendar" size="sm" tone="ghost" show-label placement="menu" :href="route('reports.accounting.liquidity-plan.index')" :label="__('accounting.liquidity_plan.title')" />
             <x-icon-btn icon="compare_arrows" size="sm" tone="ghost" show-label placement="menu" :href="route('reports.accounting.liquidity-plan.actual')" :label="__('accounting.liquidity_plan.actual_title')" />
-            <x-icon-btn icon="picture_as_pdf" size="sm" tone="ghost" show-label
-                        :href="route('reports.accounting.liquidity-forecast', ['weeks' => $weeks, 'export' => 'pdf'])" :label="__('PDF')" />
-            <x-action-menu icon="download" :label="__('Export')">
-                <x-icon-btn icon="download" size="sm" tone="ghost" show-label
-                            :href="route('reports.accounting.liquidity-forecast', ['weeks' => $weeks, 'export' => 'csv'])" :label="__('CSV')" />
-                <x-icon-btn icon="table_view" size="sm" tone="ghost" show-label
-                            :href="route('reports.accounting.liquidity-forecast', ['weeks' => $weeks, 'export' => 'xlsx'])" :label="__('Excel')" />
-            </x-action-menu>
+            <x-report-export :url="fn (string $format) => route('reports.accounting.liquidity-forecast', ['weeks' => $weeks, 'export' => $format])" tone="ghost" />
         </x-slot:actions>
 
         {{-- Horizont als Reiter, Szenario als Filter (MVP-954/969) — beides keine Aktionen des Kopfs. --}}
@@ -123,7 +115,7 @@
                         <td class="whitespace-nowrap">{{ $item['expected_on']->fdate() }}</td>
                         <td colspan="{{ count($sources) }}">
                             {{ $item['label'] !== '' ? $item['label'] : '—' }}
-                            <span class="badge badge-ghost badge-sm ml-1">{{ __('accounting.reports.forecast.source.' . $item['source']) }}</span>
+                            <x-status-badge class="ml-1">{{ __('accounting.reports.forecast.source.' . $item['source']) }}</x-status-badge>
                             @if ($item['note'])
                                 <span class="ml-1">· {{ $item['note'] }}</span>
                             @endif

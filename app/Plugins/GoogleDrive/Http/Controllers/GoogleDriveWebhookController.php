@@ -43,7 +43,9 @@ class GoogleDriveWebhookController extends Controller {
             abort(403);
         }
 
-        $wake->signal((int) $connection->id);
+        if (! \App\Plugins\Support\PluginTenantGate::blocks((int) $connection->organization_id)) {
+            $wake->signal((int) $connection->id);
+        }
 
         return response('', 200);
     }

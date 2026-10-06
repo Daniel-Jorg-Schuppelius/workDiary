@@ -20,7 +20,8 @@
     /** @var bool $isEnforced */
     /** @var bool $canInstall */
     /** @var bool $canToggleFlag */
-    $payload = $license->payload;
+    /** @var bool $showInstallation */
+    $payload = $showInstallation ? $license->payload : null;
     $statusLabel = match ($license->status->value) {
         'valid' => __('Gültig'),
         'grace_period' => __('Grace-Period'),
@@ -37,14 +38,14 @@
 
 @section('content')
 <x-index-page
-    :subtitle="$payload?->licensee ?? __('Keine aktive Lizenz')"
-    :badge="$statusLabel"
+    :subtitle="$showInstallation ? ($payload?->licensee ?? __('Keine aktive Lizenz')) : ($org?->name ?? '')"
+    :badge="$showInstallation ? $statusLabel : null"
     :badge-tone="$badgeTone"
 >
     <x-slot:note>
-        @unless ($isEnforced)
+        @if ($showInstallation && ! $isEnforced)
             <span class="text-xs text-muted">{{ __('Lizenzprüfung ist in dieser Umgebung deaktiviert (Dev/Test).') }}</span>
-        @endunless
+        @endif
     </x-slot:note>
     <x-slot:actions>
         @if ($canIssue ?? false)
@@ -59,6 +60,8 @@
         @endif
     </x-slot:actions>
 
+    {{-- Installationslizenz: nur für den Betreiber (authz-b-7). --}}
+    @if ($showInstallation)
     <x-card as="article" class="flex flex-col gap-3">
         <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Lizenz-Karte') }}</h2>
 
@@ -67,41 +70,26 @@
                 {{ $license->message ?? __('Es ist aktuell keine gültige Lizenz hinterlegt.') }}
             </p>
         @else
-            <dl class="grid grid-cols-1 gap-2 text-sm md:grid-cols-2">
-                <div>
-                    <dt class="text-xs uppercase tracking-wider text-muted">{{ __('Lizenznehmer') }}</dt>
-                    <dd class="font-mono text-base-content">{{ $payload->licensee }}</dd>
-                </div>
-                <div>
-                    <dt class="text-xs uppercase tracking-wider text-muted">{{ __('Lizenz-ID') }}</dt>
-                    <dd class="font-mono text-xs text-base-content/80 break-all">{{ $payload->licenseId }}</dd>
-                </div>
-                <div>
-                    <dt class="text-xs uppercase tracking-wider text-muted">{{ __('Ausgestellt') }}</dt>
-                    <dd>{{ $payload->issuedAt->translatedFormat('d.m.Y') }}</dd>
-                </div>
-                <div>
-                    <dt class="text-xs uppercase tracking-wider text-muted">{{ __('Gültig bis') }}</dt>
-                    <dd>
-                        @if ($payload->expiresAt)
-                            {{ $payload->expiresAt->translatedFormat('d.m.Y') }}
-                            @if ($expiresIn !== null)
-                                <span class="ml-1 text-xs text-muted">
-                                    ({{ $expiresIn >= 0 ? __(':n Tage verbleibend', ['n' => $expiresIn]) : __(':n Tage überzogen', ['n' => abs($expiresIn)]) }})
-                                </span>
-                            @endif
-                        @else
-                            <span class="italic text-muted">{{ __('unbefristet') }}</span>
+            <x-detail-grid layout="cells" small-labels>
+                <x-detail-grid.row :label="__('Lizenznehmer')" class="font-mono text-base-content">{{ $payload->licensee }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Lizenz-ID')" class="font-mono text-xs text-base-content/80 break-all">{{ $payload->licenseId }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Ausgestellt')">{{ $payload->issuedAt->translatedFormat('d.m.Y') }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Gültig bis')">
+                    @if ($payload->expiresAt)
+                        {{ $payload->expiresAt->translatedFormat('d.m.Y') }}
+                        @if ($expiresIn !== null)
+                            <span class="ml-1 text-xs text-muted">
+                                ({{ $expiresIn >= 0 ? __(':n Tage verbleibend', ['n' => $expiresIn]) : __(':n Tage überzogen', ['n' => abs($expiresIn)]) }})
+                            </span>
                         @endif
-                    </dd>
-                </div>
+                    @else
+                        <span class="italic text-muted">{{ __('unbefristet') }}</span>
+                    @endif
+                </x-detail-grid.row>
                 @if ($payload->domain)
-                    <div>
-                        <dt class="text-xs uppercase tracking-wider text-muted">{{ __('Domain-Bindung') }}</dt>
-                        <dd class="font-mono">{{ $payload->domain }}</dd>
-                    </div>
+                    <x-detail-grid.row :label="__('Domain-Bindung')" class="font-mono">{{ $payload->domain }}</x-detail-grid.row>
                 @endif
-            </dl>
+            </x-detail-grid>
 
             @if ($license->message)
                 <p class="rounded-box border border-base-300 bg-base-200 px-3 py-2 text-xs text-base-content/70">
@@ -110,6 +98,7 @@
             @endif
         @endif
     </x-card>
+    @endif
 
     {{-- Mandantenstatus (SaaS): trial/active/suspended/expired (Feature 021) --}}
     @if ($org !== null && $tenantStatus !== null)
@@ -195,41 +184,26 @@
         </div>
 
         @if ($org === null)
-            <p class="text-sm text-base-content/70">{{ __('Keine aktive Organisation im Kontext.') }}</p>
+            <x-empty-state icon="domain_disabled" :title="__('Keine aktive Organisation im Kontext.')" compact />
         @else
-            <dl class="grid grid-cols-1 gap-2 text-sm md:grid-cols-2">
-                <div>
-                    <dt class="text-xs uppercase tracking-wider text-muted">{{ __('Plan (Tier)') }}</dt>
-                    <dd><x-status-badge :tone="$orgUsable ? 'success' : 'neutral'" size="md">{{ __('values.' . $orgModules['plan']) }}</x-status-badge></dd>
-                </div>
-                <div>
-                    <dt class="text-xs uppercase tracking-wider text-muted">{{ __('Zugebuchte Module') }}</dt>
-                    <dd class="text-xs break-all">{{ count($orgModules['addons']) ? collect($orgModules['addons'])->map(fn ($c) => app(\App\Services\Licensing\ModuleCatalog::class)->labels()[$c] ?? $c)->implode(', ') : '—' }}</dd>
-                </div>
+            <x-detail-grid layout="cells" small-labels>
+                <x-detail-grid.row :label="__('Plan (Tier)')"><x-status-badge :tone="$orgUsable ? 'success' : 'neutral'" size="md">{{ __('values.' . $orgModules['plan']) }}</x-status-badge></x-detail-grid.row>
+                <x-detail-grid.row :label="__('Zugebuchte Module')" class="text-xs break-all">{{ count($orgModules['addons']) ? collect($orgModules['addons'])->map(fn ($c) => app(\App\Services\Licensing\ModuleCatalog::class)->labels()[$c] ?? $c)->implode(', ') : '—' }}</x-detail-grid.row>
                 @if ($op !== null && $orgUsable)
-                    <div>
-                        <dt class="text-xs uppercase tracking-wider text-muted">{{ __('Lizenznehmer') }}</dt>
-                        <dd class="font-mono">{{ $op->licensee }}</dd>
-                    </div>
-                    <div>
-                        <dt class="text-xs uppercase tracking-wider text-muted">{{ __('Gültig bis') }}</dt>
-                        <dd>
-                            @if ($op->expiresAt)
-                                {{ $op->expiresAt->translatedFormat('d.m.Y') }}
-                                @if ($orgExpiresIn !== null)
-                                    <span class="ml-1 text-xs text-muted">({{ $orgExpiresIn >= 0 ? __(':n Tage verbleibend', ['n' => $orgExpiresIn]) : __(':n Tage überzogen', ['n' => abs($orgExpiresIn)]) }})</span>
-                                @endif
-                            @else
-                                <span class="italic text-muted">{{ __('unbefristet') }}</span>
+                    <x-detail-grid.row :label="__('Lizenznehmer')" class="font-mono">{{ $op->licensee }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('Gültig bis')">
+                        @if ($op->expiresAt)
+                            {{ $op->expiresAt->translatedFormat('d.m.Y') }}
+                            @if ($orgExpiresIn !== null)
+                                <span class="ml-1 text-xs text-muted">({{ $orgExpiresIn >= 0 ? __(':n Tage verbleibend', ['n' => $orgExpiresIn]) : __(':n Tage überzogen', ['n' => abs($orgExpiresIn)]) }})</span>
                             @endif
-                        </dd>
-                    </div>
+                        @else
+                            <span class="italic text-muted">{{ __('unbefristet') }}</span>
+                        @endif
+                    </x-detail-grid.row>
                 @endif
-                <div class="md:col-span-2">
-                    <dt class="text-xs uppercase tracking-wider text-muted">{{ __('Bindungs-ID (für die Ausstellung)') }}</dt>
-                    <dd class="font-mono text-xs text-base-content/80 break-all select-all">{{ $org->license_uid }}</dd>
-                </div>
-            </dl>
+                <x-detail-grid.row :label="__('Bindungs-ID (für die Ausstellung)')" full class="font-mono text-xs text-base-content/80 break-all select-all">{{ $org->license_uid }}</x-detail-grid.row>
+            </x-detail-grid>
 
             @if ($orgLicense !== null && $orgLicense->message && ! $orgUsable)
                 <p class="rounded-box border border-warning/40 bg-warning/10 px-3 py-2 text-xs text-base-content/80">{{ $orgLicense->message }}</p>
@@ -335,6 +309,7 @@
         </div>
     </x-card>
 
+    @if ($showInstallation)
     <x-card as="article" class="flex flex-col gap-3">
         <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Feature-Flags') }}</h2>
         @if (count($features) === 0)
@@ -366,9 +341,9 @@
                                     <td class="text-right">
                                         <form method="POST" action="{{ route('admin.license.flags.toggle', ['flag' => $feature['code']]) }}" class="inline">
                                             @csrf
-                                            <button type="submit" class="btn btn-sm {{ $feature['overridden'] ? 'btn-success' : 'btn-warning' }} btn-outline">
+                                            <x-button type="submit" :tone="$feature['overridden'] ? 'success' : 'warning'" class="btn-outline">
                                                 {{ $feature['overridden'] ? __('Reaktivieren') : __('Deaktivieren') }}
-                                            </button>
+                                            </x-button>
                                         </form>
                                     </td>
                                 @endif
@@ -377,6 +352,7 @@
             </x-table>
         @endif
     </x-card>
+    @endif
 
     {{-- MVP-052: Modulkonfiguration (lizenzierte Module org-bezogen schalten) --}}
     @if (count($modules) > 0)
@@ -411,10 +387,9 @@
                         @if ($canConfigureModules)
                             <div class="shrink-0">
                                 @if ($status === \App\Enums\Licensing\ModuleStatus::Active)
-                                    <button type="button" class="btn btn-sm btn-outline btn-warning"
-                                            data-open-dialog="{{ $dialogId }}">
+                                    <x-button tone="warning" class="btn-outline" data-open-dialog="{{ $dialogId }}">
                                         {{ __('Deaktivieren') }}
-                                    </button>
+                                    </x-button>
                                     {{-- Gemeinsamer Dialog-Wrapper statt rohem <dialog> (Vollaudit 2026-07, N57). --}}
                                     <x-modal :id="$dialogId" :embedded="false" tone="warning" icon="toggle_off"
                                         :title="__('Modul deaktivieren') . ': ' . $module['label']"
@@ -434,7 +409,7 @@
                                     <form method="POST" action="{{ route('admin.license.modules.enable') }}">
                                         @csrf
                                         <input type="hidden" name="module" value="{{ $module['code'] }}">
-                                        <button type="submit" class="btn btn-sm btn-outline btn-success">{{ __('Aktivieren') }}</button>
+                                        <x-button type="submit" tone="success" class="btn-outline">{{ __('Aktivieren') }}</x-button>
                                     </form>
                                 @elseif ($status === \App\Enums\Licensing\ModuleStatus::NotLicensed)
                                     <span class="text-xs text-muted">{{ __('Nicht lizenziert') }}</span>

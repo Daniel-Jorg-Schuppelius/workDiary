@@ -11,8 +11,7 @@
 
 @section('title', __('Inbox Monatsfreigaben'))
 @section('nav-title', __('Inbox Monatsfreigaben'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @php
     use App\Enums\TimeApproval\MonthClosureStatus;
@@ -77,10 +76,8 @@
                                     </form>
                                 @endcan
                                 @can('reject', $c)
-                                    <button type="button" class="btn btn-sm btn-warning"
-                                            data-open-dialog="reject-{{ $c->id }}">
-                                        <x-icon name="close" class="text-base" />
-                                    </button>
+                                    <x-icon-btn icon="close" icon-size="1rem" tone="warning" size="sm" :label="__('Monat ablehnen')"
+                                                data-open-dialog="reject-{{ $c->id }}" />
                                     {{-- Gemeinsamer Dialog-Wrapper statt rohem <dialog> (Vollaudit 2026-07, N57). --}}
                                     <x-modal :id="'reject-' . $c->id" :embedded="false" tone="warning" icon="block"
                                         :title="__('Monat ablehnen')"
@@ -93,11 +90,8 @@
                                 @endcan
                                 @can('reopen', $c)
                                     @if (in_array($c->status, [MonthClosureStatus::Approved, MonthClosureStatus::Locked], true))
-                                        <button type="button" class="btn btn-sm btn-ghost"
-                                                data-open-dialog="reopen-{{ $c->id }}"
-                                                aria-label="{{ __('Wieder öffnen') }}">
-                                            <x-icon name="lock_open" class="text-base" />
-                                        </button>
+                                        <x-icon-btn icon="lock_open" icon-size="1rem" size="sm" :label="__('Wieder öffnen')"
+                                                data-open-dialog="reopen-{{ $c->id }}" />
                                         {{-- Gemeinsamer Dialog-Wrapper statt rohem <dialog> (Vollaudit 2026-07, N57). --}}
                                         <x-modal :id="'reopen-' . $c->id" :embedded="false" tone="warning" icon="lock_open"
                                             :title="__('Monat wieder öffnen')"

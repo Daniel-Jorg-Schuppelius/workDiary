@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Contract;
 
-use App\Enums\Contract\ContractObligationKind;
+use App\Enums\Contract\{ContractObligationKind, ContractObligationStatus};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\{Builder, Model};
@@ -32,14 +32,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $warn_days_before
  * @property bool $recurring
  * @property int|null $recurrence_months
- * @property string $status
+ * @property ContractObligationStatus $status
  */
 class ContractObligation extends Model {
     use Auditable;
     use BelongsToOrganization;
     use HasSqid;
-
-    public const STATUSES = ['open', 'done', 'missed'];
 
     protected $fillable = [
         'organization_id', 'contract_id', 'kind', 'title', 'due_on',
@@ -50,6 +48,7 @@ class ContractObligation extends Model {
     /** @var array<string, string> */
     protected $casts = [
         'kind' => ContractObligationKind::class,
+        'status' => ContractObligationStatus::class,
         'due_on' => 'date',
         'warn_days_before' => 'integer',
         'recurrence_months' => 'integer',
@@ -59,11 +58,11 @@ class ContractObligation extends Model {
 
     /** @param Builder<self> $query */
     public function scopeOpen(Builder $query): void {
-        $query->where('status', 'open');
+        $query->where('status', ContractObligationStatus::Open);
     }
 
     public function isDueForWarning(): bool {
-        return $this->status === 'open'
+        return $this->status === ContractObligationStatus::Open
             && $this->due_on->copy()->subDays($this->warn_days_before)->startOfDay()->isPast();
     }
 

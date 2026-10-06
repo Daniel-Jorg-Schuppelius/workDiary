@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Applications\Demo;
 
+use App\Enums\Applications\{ApplicationOpportunityStatus, ApplicationRequirementStatus, JobApplicationInterviewStatus, JobRequisitionStatus};
 use App\Models\Customer\Customer;
 use App\Models\Platform\{Organization, User};
 use App\Services\Demo\Contracts\{DemoBlock, DemoSeedContext};
@@ -60,7 +61,7 @@ final class ApplicationsDemoBlock implements DemoBlock {
                 'kind' => 'framework',
                 'source' => 'Vergabeportal (Demo)',
                 'customer_id' => $customer->id,
-                'status' => 'in_progress',
+                'status' => ApplicationOpportunityStatus::InProgress,
                 'submission_deadline' => \Carbon\Carbon::now()->addDays(14)->toDateString(),
                 'estimated_value' => '48000.00',
                 'probability' => 60,
@@ -72,7 +73,7 @@ final class ApplicationsDemoBlock implements DemoBlock {
                 'label' => (string) __('Referenzliste vergleichbarer Objekte'),
                 'kind' => 'proof',
                 'required' => true,
-                'status' => 'done',
+                'status' => ApplicationRequirementStatus::Done,
                 'position' => 1,
             ]);
             $tenders->decideGo($opportunity, 'go', (string) __('Passt zur Auslastung im Winterhalbjahr.'), $actor);
@@ -84,7 +85,7 @@ final class ApplicationsDemoBlock implements DemoBlock {
                 'organization_id' => $organization->id,
                 'title' => (string) __('Servicetechniker:in (Demo)'),
                 'employment_type' => 'full_time',
-                'status' => 'open',
+                'status' => JobRequisitionStatus::Open,
                 'responsible_user_id' => $actor->id,
                 'created_by' => $actor->id,
             ]);
@@ -99,7 +100,7 @@ final class ApplicationsDemoBlock implements DemoBlock {
                 'scheduled_at' => \Carbon\Carbon::now()->subDays(3),
                 'mode' => 'onsite',
                 'interviewer_id' => $actor->id,
-                'status' => 'done',
+                'status' => JobApplicationInterviewStatus::Done,
                 'rating' => 5,
             ]);
             $recruiting->decide($application->refresh(), 'accepted', null, $actor);

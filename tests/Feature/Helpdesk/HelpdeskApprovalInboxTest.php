@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Helpdesk;
 
+use App\Enums\ServiceTicket\ServiceRequestStatus;
 use App\Models\Approval\Approval;
 use App\Models\Platform\{Organization, User};
 use App\Models\Procurement\RequestItem;
@@ -105,7 +106,7 @@ final class HelpdeskApprovalInboxTest extends TestCase {
             ->post(route('servicedesk.approvals.decide', $step1), ['decision' => 'approved'])
             ->assertRedirect(route('servicedesk.approvals.index'));
 
-        $this->assertSame(ServiceRequest::STATUS_PENDING, $request->fresh()->status);
+        $this->assertSame(ServiceRequestStatus::PendingApproval, $request->fresh()->status);
 
         // Jetzt ist Schritt 2 (Rolle) der niedrigste offene — B sieht und entscheidet.
         $this->actingAs($this->approverB)
@@ -118,7 +119,7 @@ final class HelpdeskApprovalInboxTest extends TestCase {
             ->post(route('servicedesk.approvals.decide', $step2), ['decision' => 'approved'])
             ->assertRedirect(route('servicedesk.approvals.index'));
 
-        $this->assertSame(ServiceRequest::STATUS_DONE, $request->fresh()->status);
+        $this->assertSame(ServiceRequestStatus::Done, $request->fresh()->status);
     }
 
     public function test_higher_step_cannot_be_decided_before_lower(): void {
@@ -147,7 +148,7 @@ final class HelpdeskApprovalInboxTest extends TestCase {
             ])
             ->assertRedirect(route('servicedesk.approvals.index'));
 
-        $this->assertSame(ServiceRequest::STATUS_REJECTED, $request->fresh()->status);
+        $this->assertSame(ServiceRequestStatus::Rejected, $request->fresh()->status);
     }
 
     public function test_question_keeps_step_open(): void {
@@ -164,7 +165,7 @@ final class HelpdeskApprovalInboxTest extends TestCase {
         // question zählt NICHT als erledigt: Request bleibt pending, der
         // Schritt bleibt in der Inbox sichtbar und erneut entscheidbar.
         $this->assertSame('question', $step1->fresh()->decision);
-        $this->assertSame(ServiceRequest::STATUS_PENDING, $request->fresh()->status);
+        $this->assertSame(ServiceRequestStatus::PendingApproval, $request->fresh()->status);
         $this->actingAs($this->approverA)
             ->get(route('servicedesk.approvals.index'))
             ->assertOk()
@@ -203,7 +204,7 @@ final class HelpdeskApprovalInboxTest extends TestCase {
             ->whereNull('decision')
             ->firstOrFail();
         $this->assertSame(['type' => 'user', 'value' => (int) $this->approverB->id], $delegated->approver_rule);
-        $this->assertSame(ServiceRequest::STATUS_PENDING, $request->fresh()->status);
+        $this->assertSame(ServiceRequestStatus::PendingApproval, $request->fresh()->status);
 
         // Der Delegat sieht den Schritt und kann ihn entscheiden.
         $this->actingAs($this->approverB)
@@ -214,7 +215,7 @@ final class HelpdeskApprovalInboxTest extends TestCase {
         $this->actingAs($this->approverB)
             ->post(route('servicedesk.approvals.decide', $delegated), ['decision' => 'approved'])
             ->assertRedirect(route('servicedesk.approvals.index'));
-        $this->assertSame(ServiceRequest::STATUS_PENDING, $request->fresh()->status); // Schritt 2 noch offen
+        $this->assertSame(ServiceRequestStatus::PendingApproval, $request->fresh()->status); // Schritt 2 noch offen
     }
 
     public function test_delegated_step_still_blocks_requester_self_approval(): void {
@@ -257,5 +258,29 @@ final class HelpdeskApprovalInboxTest extends TestCase {
         $this->actingAs($this->approverA)
             ->post(route('servicedesk.approvals.decide', $foreignApproval->sqid), ['decision' => 'approved'])
             ->assertNotFound();
+    }
+
+    /** Vorher hob eine spätere Stufe die Ablehnung auf: der Antrag wurde genehmigt und erfüllt. */
+    public function test_a_rejection_ends_the_chain_for_later_steps(): void {
+        $request = $this->twoStepRequest('Abgelehnt bleibt abgelehnt');
+        $step1 = $request->approvals()->where('step', 1)->firstOrFail();
+        $step2 = $request->approvals()->where('step', 2)->firstOrFail();
+
+        $this->actingAs($this->approverA)
+            ->post(route('servicedesk.approvals.decide', $step1), ['decision' => 'rejected', 'reason' => 'Kein Budget'])
+            ->assertRedirect(route('servicedesk.approvals.index'));
+
+        $this->actingAs($this->approverB)
+            ->get(route('servicedesk.approvals.index'))
+            ->assertOk()
+            ->assertDontSee('Abgelehnt bleibt abgelehnt');
+
+        $this->actingAs($this->approverB)
+            ->post(route('servicedesk.approvals.decide', $step2), ['decision' => 'approved'])
+            ->assertSessionHas('error');
+
+        $this->assertNull($step2->fresh()->decision);
+        $this->assertSame(ServiceRequestStatus::Rejected, $request->fresh()->status);
+        $this->assertNull($request->fresh()->fulfilled_id);
     }
 }

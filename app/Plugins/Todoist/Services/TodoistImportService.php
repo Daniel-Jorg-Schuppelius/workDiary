@@ -17,6 +17,7 @@ use App\Models\Integration\ExternalReference;
 use App\Models\Project\Task;
 use App\Plugins\Support\TaskSync\{AbstractTaskSyncService, TaskSyncLink};
 use App\Plugins\Todoist\Api\TodoistApiClient;
+use App\Plugins\Todoist\Enums\TodoistProjectLinkStatus;
 use App\Plugins\Todoist\Models\{TodoistConnection, TodoistProjectLink};
 use App\Plugins\Todoist\Observers\TodoistTaskObserver;
 use App\Plugins\Todoist\TodoistPlugin;
@@ -41,7 +42,7 @@ class TodoistImportService extends AbstractTaskSyncService {
 
     /** @return array{created: int, updated: int, unchanged: int, conflicts: int, inbox: int, failed: int} */
     public function syncLink(TodoistProjectLink $link, TodoistConnection $connection): array {
-        if (! $link->importsFromTodoist() || $link->status !== TodoistProjectLink::STATUS_ACTIVE) {
+        if (! $link->importsFromTodoist() || $link->status !== TodoistProjectLinkStatus::Active) {
             return self::emptyCounters();
         }
 
@@ -63,7 +64,7 @@ class TodoistImportService extends AbstractTaskSyncService {
      */
     public function syncItems(TodoistProjectLink $link, Collection $remoteTasks, bool $fullView = false): array {
         $counters = self::emptyCounters();
-        if (! $link->importsFromTodoist() || $link->status !== TodoistProjectLink::STATUS_ACTIVE) {
+        if (! $link->importsFromTodoist() || $link->status !== TodoistProjectLinkStatus::Active) {
             return $counters;
         }
 
@@ -125,7 +126,7 @@ class TodoistImportService extends AbstractTaskSyncService {
     /**
      * @param  array<string, mixed>  $remote
      * @param  Collection<string, ExternalReference>  $references
-     * @param  \Illuminate\Support\Collection<string, string>  $sectionMap
+     * @param  \Illuminate\Support\Collection<string, TaskStatus>  $sectionMap
      * @param  \Illuminate\Support\Collection<string, int|string>  $collaboratorMap
      * @return 'created'|'updated'|'unchanged'|'conflicts'|'inbox'
      */
@@ -202,7 +203,7 @@ class TodoistImportService extends AbstractTaskSyncService {
      * Feldadapter Todoist → WorkDiary (Adaptertabelle 055).
      *
      * @param  array<string, mixed>  $remote
-     * @param  \Illuminate\Support\Collection<string, string>  $sectionMap
+     * @param  \Illuminate\Support\Collection<string, TaskStatus>  $sectionMap
      * @param  \Illuminate\Support\Collection<string, int|string>  $collaboratorMap
      * @return array<string, mixed>
      */
@@ -231,11 +232,7 @@ class TodoistImportService extends AbstractTaskSyncService {
             $mapped['status'] = TaskStatus::Done->value;
         } else {
             $sectionId = isset($remote['section_id']) ? (string) $remote['section_id'] : '';
-            if ($sectionId !== '' && $sectionMap->has($sectionId)) {
-                $mapped['status'] = (string) $sectionMap->get($sectionId);
-            } else {
-                $mapped['status'] = TaskStatus::Open->value;
-            }
+            $mapped['status'] = (($sectionId !== '' ? $sectionMap->get($sectionId) : null) ?? TaskStatus::Open)->value;
         }
 
         return $mapped;

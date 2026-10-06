@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Sales;
 
+use App\Enums\Sales\QuoteStatus;
 use App\Models\Platform\User;
 use App\Models\Sales\Quote;
 use App\Support\Query\DateRange;
@@ -33,10 +34,6 @@ use Illuminate\Support\Collection;
 final class QuoteWinRateReport {
     public const GROUPS = ['customer', 'owner'];
 
-    private const WON = ['accepted', 'partially_accepted'];
-
-    private const OPEN = ['draft', 'approved', 'sent'];
-
     /**
      * @return array{
      *     totals: array{won: int, lost: int, expired: int, won_volume: Money, decided_volume: Money, rate: Percentage|null, volume_rate: Percentage|null},
@@ -50,10 +47,10 @@ final class QuoteWinRateReport {
             ->with('customer:id,name,company')
             ->where(function (Builder $query) use ($from, $to, $today): void {
                 $query->where(function (Builder $decided) use ($from, $to): void {
-                    $decided->whereIn('status', [...self::WON, 'rejected']);
+                    $decided->whereIn('status', [...QuoteStatus::won(), QuoteStatus::Rejected]);
                     DateRange::whereTimestampBetween($decided, 'decided_at', $from, $to);
                 })->orWhere(function (Builder $expired) use ($from, $to, $today): void {
-                    $expired->where(fn (Builder $q) => $q->where('status', 'expired')->orWhere(fn (Builder $sent) => $sent->whereIn('status', ['approved', 'sent'])->where('valid_until', '<', DateRange::day($today))))
+                    $expired->where(fn (Builder $q) => $q->where('status', QuoteStatus::Expired)->orWhere(fn (Builder $sent) => $sent->whereIn('status', QuoteStatus::pending())->where('valid_until', '<', DateRange::day($today))))
                         ->whereBetween('valid_until', DateRange::days($from, $to));
                 });
             })
@@ -65,7 +62,7 @@ final class QuoteWinRateReport {
             ? (string) ($owners[$quote->follow_up_user_id ?? $quote->created_by] ?? __('quotes.win_rate.no_owner'))
             : (string) ($quote->customer?->company ?: ($quote->customer->name ?? '—')));
 
-        $open = $this->latest($organizationId)->whereIn('status', self::OPEN)
+        $open = $this->latest($organizationId)->whereIn('status', QuoteStatus::open())
             ->where(fn (Builder $q) => $q->whereNull('valid_until')->orWhere('valid_until', '>=', DateRange::day($today)))
             ->get();
 
@@ -88,8 +85,8 @@ final class QuoteWinRateReport {
      * @return array{won: int, lost: int, expired: int, won_volume: Money, decided_volume: Money, rate: Percentage|null, volume_rate: Percentage|null}
      */
     private function figures(Collection $quotes): array {
-        $won = $quotes->filter(fn (Quote $quote): bool => in_array($quote->status, self::WON, true));
-        $lost = $quotes->where('status', 'rejected');
+        $won = $quotes->filter(fn (Quote $quote): bool => $quote->status->isWon());
+        $lost = $quotes->where('status', QuoteStatus::Rejected);
         $decided = $quotes->count();
         $wonVolume = $this->volume($won);
         $decidedVolume = $this->volume($quotes);

@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Reselling;
 
 use App\Enums\Finance\BillingMode;
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Enums\Reselling\PeriodStatus;
 use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
@@ -89,7 +90,7 @@ class DraftTargetTest extends TestCase {
         $invoice = Invoice::query()->where('customer_id', $customer->id)->firstOrFail();
         $this->assertSame($invoice->number, $result['draft_id']);
         $this->assertSame(route('invoices.show', $invoice), $result['url']);
-        $this->assertSame(Invoice::STATUS_DRAFT, $invoice->status);
+        $this->assertSame(InvoiceStatus::Draft, $invoice->status);
         // Leistungszeitraum je Position = Abo-Periode; Leistungsdatum bleibt der Beginn.
         $items = $invoice->items()->orderBy('position')->get();
         $this->assertSame(['2025-08-05', '2026-08-05'], $items->map(static fn(InvoiceItem $i): ?string => $i->service_from?->toDateString())->all());
@@ -111,7 +112,7 @@ class DraftTargetTest extends TestCase {
         // Belegspiegel: Entwurf ist keine Rechnung; ausgestellt (Nummer vergeben) schon — ohne entschiedenen Bezug.
         $period->load('links');
         $this->assertFalse($period->draftIsInvoiced());
-        Invoice::query()->whereKey($invoice->id)->update(['status' => Invoice::STATUS_ISSUED, 'issued_on' => '2026-09-04']);
+        Invoice::query()->whereKey($invoice->id)->update(['status' => InvoiceStatus::Issued, 'issued_on' => '2026-09-04']);
         $this->assertTrue($period->fresh()?->load('links')->draftIsInvoiced() ?? false, 'Rechnungsnummer ausgestellt = Entwurf wurde Rechnung');
     }
 

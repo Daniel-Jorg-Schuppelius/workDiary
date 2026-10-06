@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Appointments;
 
+use App\Enums\Calendar\AppointmentRequestStatus;
 use App\Enums\Diary\Status;
 use App\Models\Calendar\AppointmentRequest;
 use App\Models\Customer\Customer;
@@ -51,7 +52,7 @@ class AppointmentRequestService {
             'organization_id' => $service->organization_id,
             'source' => AppointmentRequest::SOURCE_PORTAL,
             'source_uri' => 'portal:' . $portalUser->id . ':' . $start->format('YmdHi'),
-            'status' => AppointmentRequest::STATUS_REQUESTED,
+            'status' => AppointmentRequestStatus::Requested,
             'customer_id' => $customer->id,
             'portal_user_id' => $portalUser->id,
             'bookable_service_id' => $service->id,
@@ -68,7 +69,7 @@ class AppointmentRequestService {
 
     /** Bestätigung durch die Disposition — erst hier entsteht der Eintrag. */
     public function confirm(AppointmentRequest $request, User $decider): DiaryEntry {
-        if ($request->status !== AppointmentRequest::STATUS_REQUESTED) {
+        if (! $request->status->canTransitionTo(AppointmentRequestStatus::Confirmed)) {
             throw new RuntimeException((string) __('Diese Anfrage ist bereits entschieden.'));
         }
 
@@ -87,7 +88,7 @@ class AppointmentRequestService {
         $entry->save();
 
         $request->forceFill([
-            'status' => AppointmentRequest::STATUS_CONFIRMED,
+            'status' => AppointmentRequestStatus::Confirmed,
             'diary_entry_id' => $entry->id,
             'decided_by' => $decider->id,
             'decided_at' => Carbon::now(),
@@ -99,12 +100,12 @@ class AppointmentRequestService {
     }
 
     public function decline(AppointmentRequest $request, User $decider, string $reason): AppointmentRequest {
-        if ($request->status !== AppointmentRequest::STATUS_REQUESTED) {
+        if (! $request->status->canTransitionTo(AppointmentRequestStatus::Declined)) {
             throw new RuntimeException((string) __('Diese Anfrage ist bereits entschieden.'));
         }
 
         $request->forceFill([
-            'status' => AppointmentRequest::STATUS_DECLINED,
+            'status' => AppointmentRequestStatus::Declined,
             'decided_by' => $decider->id,
             'decided_at' => Carbon::now(),
             'decline_reason' => $reason,
@@ -144,7 +145,8 @@ class AppointmentRequestService {
         if ($request->portal_user_id !== $portalUser->id) {
             throw new RuntimeException((string) __('Diese Anfrage gehört nicht zu Ihrem Zugang.'));
         }
-        if (! in_array($request->status, [AppointmentRequest::STATUS_REQUESTED, AppointmentRequest::STATUS_CONFIRMED], true)) {
+        // Bewusst enger als die Übergangstabelle: abgelehnte Anfragen storniert nur Calendly.
+        if (! in_array($request->status, [AppointmentRequestStatus::Requested, AppointmentRequestStatus::Confirmed], true)) {
             throw new RuntimeException((string) __('Diese Anfrage lässt sich nicht mehr stornieren.'));
         }
 
@@ -154,7 +156,7 @@ class AppointmentRequestService {
         }
 
         $request->forceFill([
-            'status' => AppointmentRequest::STATUS_CANCELED,
+            'status' => AppointmentRequestStatus::Canceled,
             'cancellation' => ['by' => 'portal', 'at' => Carbon::now()->toIso8601String()],
         ])->save();
         $request->audit('appointment.canceled', ['by' => 'portal']);

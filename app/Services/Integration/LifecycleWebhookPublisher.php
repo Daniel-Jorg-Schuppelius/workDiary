@@ -107,7 +107,7 @@ class LifecycleWebhookPublisher {
             'subject_type' => 'Invoice',
             'subject_id' => $invoice->sqid,
             'number' => $invoice->number,
-            'status' => $invoice->status,
+            'status' => $invoice->status->value,
             'customer_id' => Sqid::encodeOrNull(Customer::class, $invoice->customer_id),
             'total' => $invoice->total?->getAmount(),
             // In-Memory-Modelle ohne gesetzte Währung (DB-Default greift erst nach refresh) → null statt Fehler.

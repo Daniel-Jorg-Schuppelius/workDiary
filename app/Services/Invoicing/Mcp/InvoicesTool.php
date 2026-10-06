@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Invoicing\Mcp;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Http\Resources\InvoiceResource;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\{Invoice, InvoiceItem};
@@ -36,7 +37,7 @@ final class InvoicesTool extends GuardedTool {
     public function schema(JsonSchema $schema): array {
         return [
             'id' => $schema->string()->description('Kennung einer Rechnung für die Detailansicht.'),
-            'status' => $schema->string()->enum(Invoice::STATUSES)->description('Status der Rechnung.'),
+            'status' => $schema->string()->enum(InvoiceStatus::values())->description('Status der Rechnung.'),
             'customer' => $schema->string()->description('Kennung eines Kunden.'),
             'from' => $schema->string()->format('date')->description('Rechnungsdatum ab (JJJJ-MM-TT).'),
             'to' => $schema->string()->format('date')->description('Rechnungsdatum bis (JJJJ-MM-TT).'),
@@ -55,7 +56,7 @@ final class InvoicesTool extends GuardedTool {
     protected function respond(Request $request, User $user, Organization $organization): Response|ResponseFactory {
         $data = $request->validate([
             'id' => ['nullable', 'string', 'max:64'],
-            'status' => ['nullable', 'string', 'in:' . implode(',', Invoice::STATUSES)],
+            'status' => ['nullable', 'string', 'in:' . implode(',', InvoiceStatus::values())],
             'customer' => ['nullable', 'string', 'max:64'],
             'from' => ['nullable', 'date_format:Y-m-d'],
             'to' => ['nullable', 'date_format:Y-m-d'],
@@ -71,7 +72,7 @@ final class InvoicesTool extends GuardedTool {
 
             return Response::structured(['invoice' => [
                 ...InvoiceResource::make($invoice)->resolve(),
-                'open_amount' => in_array($invoice->status, [Invoice::STATUS_ISSUED, Invoice::STATUS_PARTIALLY_PAID], true) ? $this->dunning->openAmount($invoice) : null,
+                'open_amount' => in_array($invoice->status, [InvoiceStatus::Issued, InvoiceStatus::PartiallyPaid], true) ? $this->dunning->openAmount($invoice) : null,
                 'items' => $invoice->items->map(static fn (InvoiceItem $item): array => [
                     'kind' => $item->lineKind()->value,
                     'description' => $item->description,

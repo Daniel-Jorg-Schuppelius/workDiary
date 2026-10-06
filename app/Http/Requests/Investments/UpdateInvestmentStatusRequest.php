@@ -12,7 +12,9 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Investments;
 
+use App\Enums\Investments\InvestmentCaseStatus;
 use App\Http\Requests\BaseFormRequest;
+use Illuminate\Validation\Rule;
 
 /**
  * Validierung für den manuellen Statuswechsel einer Investitionsakte.
@@ -23,7 +25,7 @@ class UpdateInvestmentStatusRequest extends BaseFormRequest {
     public function rules(): array {
         return [
             // Freigabe-/Abschluss-Status laufen NUR über Service-Aktionen.
-            'status' => ['required', 'in:idea,screening,comparison,budget_request,in_progress,completed,deferred'],
+            'status' => ['required', Rule::enum(InvestmentCaseStatus::class)->only(InvestmentCaseStatus::manual())],
         ];
     }
 }

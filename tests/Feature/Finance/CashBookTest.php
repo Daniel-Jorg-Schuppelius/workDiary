@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Finance;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Customer\Customer;
 use App\Models\Finance\{CashEntry, CashRegister};
 use App\Models\Invoicing\Invoice;
@@ -128,7 +129,7 @@ class CashBookTest extends TestCase {
             'organization_id' => $this->organization->id,
             'customer_id' => $customer->id,
             'number' => 'R2030-0042',
-            'status' => Invoice::STATUS_ISSUED,
+            'status' => InvoiceStatus::Issued,
             'issued_on' => '2030-06-01',
             'currency' => 'EUR',
             'tax_rate' => '19.00',
@@ -156,18 +157,20 @@ class CashBookTest extends TestCase {
         $this->assertSame('100,00', $rows[0][2]);
     }
 
-    public function test_cash_payment_marks_invoice_paid_on_full_cover(): void {
+    /** @param array<string, mixed> $overrides */
+    private function invoice(array $overrides = []): Invoice {
         $customer = Customer::create([
             'organization_id' => $this->organization->id,
             'name' => 'Barzahler GmbH',
             'currency' => 'EUR',
             'created_by' => $this->admin->id,
         ]);
-        $invoice = Invoice::create([
+
+        return Invoice::create($overrides + [
             'organization_id' => $this->organization->id,
             'customer_id' => $customer->id,
             'number' => 'R2030-0001',
-            'status' => Invoice::STATUS_ISSUED,
+            'status' => InvoiceStatus::Issued,
             'issued_on' => '2030-06-01',
             'currency' => 'EUR',
             'tax_rate' => '19.00',
@@ -176,11 +179,64 @@ class CashBookTest extends TestCase {
             'total' => '119.00',
             'created_by' => $this->admin->id,
         ]);
+    }
+
+    /** Sicherheitsaudit 2026-10-04, li-1: eine Bareinnahme belebt weder Storno noch Entwurf noch Gutschrift. */
+    public function test_cash_payment_is_rejected_for_invoices_that_take_no_payments(): void {
+        $cases = [
+            'storniert' => ['status' => InvoiceStatus::Cancelled, 'number' => 'R2030-0101'],
+            'entwurf' => ['status' => InvoiceStatus::Draft, 'number' => 'R2030-0102'],
+            'gutschrift' => ['type' => Invoice::TYPE_CREDIT_NOTE, 'number' => 'R2030-0103', 'subtotal' => '-100.00', 'tax_amount' => '-19.00', 'total' => '-119.00'],
+        ];
+        foreach ($cases as $label => $attributes) {
+            $invoice = $this->invoice($attributes);
+            $before = $invoice->status;
+
+            try {
+                $this->record(['amount' => '119.00', 'invoice_id' => $invoice->id]);
+                $this->fail('Buchung hätte abgelehnt werden müssen: ' . $label);
+            } catch (\InvalidArgumentException) {
+            }
+
+            $this->assertSame($before, $invoice->fresh()->status, $label);
+        }
+        $this->assertSame(0, CashEntry::query()->whereNotNull('invoice_id')->count());
+    }
+
+    /** Sicherheitsaudit 2026-10-04, li-1: das Storno der Bareinnahme nimmt „bezahlt" zurück, und die Einnahme zählt nicht mehr als Zahlung. */
+    public function test_reversing_the_cash_payment_reopens_the_invoice(): void {
+        $invoice = $this->invoice();
+        $entry = $this->record(['amount' => '119.00', 'invoice_id' => $invoice->id]);
+        $this->assertSame(InvoiceStatus::Paid, $invoice->fresh()->status);
+
+        app(CashBookService::class)->reverse($entry, 'Falscher Kunde', (int) $this->admin->id, \Illuminate\Support\Carbon::parse('2030-06-01'));
+
+        $invoice->refresh();
+        $this->assertSame(InvoiceStatus::Issued, $invoice->status);
+        $this->assertNull($invoice->paid_on);
+        $this->assertSame(0.0, app(\App\Services\Invoicing\DunningService::class)->paidAmount($invoice)->toFloat());
+    }
+
+    /** Konsolidierungs-Audit 2026-10, k3-1: Teilzahlungen aus der Kasse summieren sich, statt bei „teilbezahlt" hängen zu bleiben. */
+    public function test_partial_cash_payments_add_up_to_paid(): void {
+        $invoice = $this->invoice();
+
+        $this->record(['amount' => '60.00', 'invoice_id' => $invoice->id]);
+        $this->assertSame(InvoiceStatus::PartiallyPaid, $invoice->fresh()->status);
+
+        $this->record(['amount' => '59.00', 'invoice_id' => $invoice->id, 'booked_on' => '2030-06-02']);
+        $invoice->refresh();
+        $this->assertSame(InvoiceStatus::Paid, $invoice->status);
+        $this->assertSame('2030-06-02', $invoice->paid_on?->toDateString());
+    }
+
+    public function test_cash_payment_marks_invoice_paid_on_full_cover(): void {
+        $invoice = $this->invoice();
 
         $this->record(['amount' => '119.00', 'invoice_id' => $invoice->id, 'purpose' => 'Barzahlung R2030-0001']);
 
         $invoice->refresh();
-        $this->assertSame(Invoice::STATUS_PAID, $invoice->status);
+        $this->assertSame(InvoiceStatus::Paid, $invoice->status);
         $this->assertSame('2030-06-01', $invoice->paid_on?->toDateString());
     }
 

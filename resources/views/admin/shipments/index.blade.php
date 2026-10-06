@@ -18,8 +18,7 @@
         <x-page-toolbar :subtitle="__('shipping.intro')" />
 
         {{-- Anbindung anlegen/bearbeiten (je Carrier eine Anbindung, Upsert) --}}
-        <form method="POST" action="{{ route('admin.shipments.connections.store') }}"
-              class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+        <x-card as="form" method="POST" action="{{ route('admin.shipments.connections.store') }}">
             @csrf
             <h2 class="mb-1 font-['Space_Grotesk'] text-base font-semibold">{{ __('shipping.form_heading') }}</h2>
             <p class="mb-3 text-xs text-muted">{{ __('shipping.form_hint') }}</p>
@@ -68,10 +67,10 @@
                     <input type="checkbox" name="active" value="1" class="checkbox checkbox-sm" @checked(old('active', true))>
                     <span class="label-text">{{ __('shipping.field.active') }}</span>
                 </label>
-                <button type="submit" class="btn btn-sm btn-primary ml-auto">{{ __('shipping.action.save') }}</button>
+                <x-button type="submit" class="ml-auto">{{ __('shipping.action.save') }}</x-button>
             </div>
             <p class="mt-2 text-xs text-muted">{{ __('shipping.secret_hint') }}</p>
-        </form>
+        </x-card>
 
         {{-- Bestehende Anbindungen --}}
         <x-card>
@@ -92,16 +91,16 @@
                                     <td>{{ $connection->name }}</td>
                                     <td>
                                         @if ($connection->sandbox)
-                                            <span class="badge badge-warning badge-sm">{{ __('shipping.mode.sandbox') }}</span>
+                                            <x-status-badge tone="warning">{{ __('shipping.mode.sandbox') }}</x-status-badge>
                                         @else
-                                            <span class="badge badge-ghost badge-sm">{{ __('shipping.mode.production') }}</span>
+                                            <x-status-badge>{{ __('shipping.mode.production') }}</x-status-badge>
                                         @endif
                                     </td>
                                     <td>
                                         @if ($connection->isActive())
-                                            <span class="badge badge-success badge-sm">{{ __('shipping.status_label.active') }}</span>
+                                            <x-status-badge tone="success">{{ __('shipping.status_label.active') }}</x-status-badge>
                                         @else
-                                            <span class="badge badge-ghost badge-sm">{{ __('shipping.status_label.inactive') }}</span>
+                                            <x-status-badge>{{ __('shipping.status_label.inactive') }}</x-status-badge>
                                         @endif
                                     </td>
                                     <td class="text-right">
@@ -109,7 +108,7 @@
                                             <form method="POST" action="{{ route('admin.shipments.connections.disconnect') }}">
                                                 @csrf
                                                 <input type="hidden" name="connection" value="{{ $connection->sqid }}">
-                                                <button type="submit" class="btn btn-ghost btn-xs text-error">{{ __('shipping.action.disconnect') }}</button>
+                                                <x-button type="submit" tone="ghost" size="xs" class="text-error">{{ __('shipping.action.disconnect') }}</x-button>
                                             </form>
                                         @endif
                                     </td>

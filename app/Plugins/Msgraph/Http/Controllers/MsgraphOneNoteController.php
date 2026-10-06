@@ -16,6 +16,7 @@ use App\Plugins\Msgraph\Models\MsgraphOneNoteConnection;
 use App\Plugins\Msgraph\{MsgraphConfig, MsgraphPlugin};
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
 use App\Plugins\Support\{ConnectionOAuthController, PluginOAuthGrant};
+use App\Plugins\Support\OAuthConnectionStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\{RedirectResponse, Request};
 use Throwable;
@@ -58,11 +59,11 @@ class MsgraphOneNoteController extends ConnectionOAuthController {
     }
 
     protected function connectedStatus(): string {
-        return MsgraphOneNoteConnection::STATUS_ACTIVE;
+        return OAuthConnectionStatus::Active->value;
     }
 
     protected function disconnectedStatus(): string {
-        return MsgraphOneNoteConnection::STATUS_DISCONNECTED;
+        return OAuthConnectionStatus::Disconnected->value;
     }
 
     /** Ohne eingeschaltete Übernahme kein zusätzlicher Berechtigungsbereich. */

@@ -10,8 +10,7 @@
 @extends('layouts.app')
 @section('title', __('Veranstaltungs-Kategorien'))
 @section('nav-title', __('Veranstaltungs-Kategorien'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @php
     /** @var \Illuminate\Pagination\LengthAwarePaginator $categories */

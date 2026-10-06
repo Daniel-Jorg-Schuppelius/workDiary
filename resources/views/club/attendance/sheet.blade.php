@@ -47,16 +47,7 @@
 
     @include('club.events._tabs')
 
-    @if ($errors->any())
-        <div class="alert alert-error text-sm" role="alert">
-            <x-icon name="error" />
-            <ul class="list-inside list-disc">
-                @foreach ($errors->all() as $message)
-                    <li>{{ $message }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
+    <x-validation-errors />
 
     @if ($sheet === null)
         <x-empty-state framed icon="fact_check" :title="__('club.attendance.empty.no_sheet')" />
@@ -81,7 +72,7 @@
                     </div>
                     <div class="fieldset">
                         <span class="fieldset-label">{{ __('club.attendance.field.confirmed') }}</span>
-                        <span class="text-sm">{{ $sheet->confirmed_at ? $sheet->confirmed_at->orgTz()->format('d.m.Y H:i') . ' · ' . ($sheet->confirmedBy?->name ?? '–') : '–' }}</span>
+                        <span class="text-sm">{{ $sheet->confirmed_at ? $sheet->confirmed_at->fdatetime() . ' · ' . ($sheet->confirmedBy?->name ?? '–') : '–' }}</span>
                         @if ($isConfirmed && $sheet->changed_since_confirmation)
                             <p class="text-xs text-warning">{{ __('club.attendance.hint.changed_since_confirmation') }}</p>
                         @endif
@@ -168,7 +159,7 @@
                                 @if ($record && $canRecord)
                                     <div class="flex justify-end gap-1">
                                         @if ($record->revisions->isNotEmpty())
-                                            <span class="badge badge-ghost badge-xs" title="{{ __('club.attendance.label.revisions') }}">{{ $record->revisions->count() }}</span>
+                                            <x-status-badge size="xs" title="{{ __('club.attendance.label.revisions') }}">{{ $record->revisions->count() }}</x-status-badge>
                                         @endif
                                         <x-icon-btn icon="edit" tone="outline" size="xs"
                                                     data-entry-modal-trigger
@@ -212,8 +203,8 @@
                 <ul class="space-y-1 text-sm">
                     @foreach ($confirmations as $confirmation)
                         <li class="flex flex-wrap items-center gap-2">
-                            <span class="badge badge-ghost badge-sm">v{{ $confirmation->version }}</span>
-                            <span>{{ $confirmation->confirmed_at->orgTz()->format('d.m.Y H:i') }}</span>
+                            <x-status-badge>v{{ $confirmation->version }}</x-status-badge>
+                            <span>{{ $confirmation->confirmed_at->fdatetime() }}</span>
                             <span class="text-muted">· {{ $confirmation->confirmedBy?->name ?? '–' }}</span>
                             <span class="text-muted">· {{ trans_choice('club.attendance.label.snapshot_rows', count($confirmation->snapshot ?? []), ['count' => count($confirmation->snapshot ?? [])]) }}</span>
                         </li>

@@ -36,7 +36,7 @@
                     @forelse ($open as $row)
                         <tr class="hover">
                             <td class="font-medium"><a class="link link-hover" href="{{ route('safety.instructions.show', $row->instruction) }}">{{ $row->instruction?->topic }}</a></td>
-                            <td class="text-sm">{{ $row->instruction?->held_on->format('d.m.Y') }}</td>
+                            <td class="text-sm">{{ $row->instruction?->held_on->fdate() }}</td>
                             <td class="text-sm text-base-content/70">{{ $row->instruction?->instructor?->name ?? '–' }}</td>
                             <td class="text-right">
                                 @can('sign', $row)
@@ -68,9 +68,9 @@
                     @forelse ($done as $row)
                         <tr class="hover">
                             <td class="font-medium"><a class="link link-hover" href="{{ route('safety.instructions.show', $row->instruction) }}">{{ $row->instruction?->topic }}</a></td>
-                            <td class="text-sm">{{ $row->signed_at?->orgTz()->format('d.m.Y H:i') }}</td>
+                            <td class="text-sm">{{ $row->signed_at?->fdatetime() }}</td>
                             <td class="text-sm text-base-content/70">{{ $row->method?->label() ?? '–' }}</td>
-                            <td class="text-sm {{ $row->isDueOverdue() ? 'text-error font-semibold' : 'text-base-content/70' }}">{{ $row->next_due_on?->format('d.m.Y') ?? '–' }}</td>
+                            <td class="text-sm {{ $row->isDueOverdue() ? 'text-error font-semibold' : 'text-base-content/70' }}">{{ $row->next_due_on?->fdate() ?? '–' }}</td>
                         </tr>
                     @empty
                         <x-table.empty :colspan="4" :title="__('safety.register.empty.mine_done')" compact />
@@ -86,10 +86,10 @@
                     <div class="flex items-start justify-between gap-2 border-b border-base-200 py-2 text-sm last:border-0">
                         <div>
                             <div class="font-medium">{{ $checkup->occasion ?? $checkup->kind->label() }}</div>
-                            <div class="text-xs text-muted">{{ $checkup->kind->label() }} · {{ $checkup->performed_on->format('d.m.Y') }}</div>
+                            <div class="text-xs text-muted">{{ $checkup->kind->label() }} · {{ $checkup->performed_on->fdate() }}</div>
                         </div>
                         <div class="text-right text-xs {{ $checkup->isDueOverdue() ? 'text-error font-semibold' : 'text-muted' }}">
-                            {{ __('safety.register.field.next_due_on') }}<br>{{ $checkup->next_due_on?->format('d.m.Y') ?? '–' }}
+                            {{ __('safety.register.field.next_due_on') }}<br>{{ $checkup->next_due_on?->fdate() ?? '–' }}
                         </div>
                     </div>
                 @empty

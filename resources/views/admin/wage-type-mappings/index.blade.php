@@ -11,8 +11,7 @@
 
 @section('title', __('wage_types.title.index'))
 @section('nav-title', __('wage_types.title.index'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('wage_types.title.index_subtitle')">
@@ -107,5 +106,7 @@
             <x-table.empty :colspan="4" icon="badge" :label="__('wage_types.title.empty')" />
         @endforelse
     </x-table>
+
+    <x-pagination :paginator="$mappings" standing />
 </x-index-page>
 @endsection

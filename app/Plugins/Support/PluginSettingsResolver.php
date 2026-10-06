@@ -50,10 +50,6 @@ final class PluginSettingsResolver {
         return new self($pluginId, 'plugins.' . ($configKey ?? $pluginId), $row, is_array($settings) ? $settings : []);
     }
 
-    public function hasRow(): bool {
-        return $this->row !== null;
-    }
-
     /** Der Org-Schalter hat Vorrang; ohne Zeile zählt die Config. */
     public function enabled(bool $default = false): bool {
         if ($this->row !== null) {

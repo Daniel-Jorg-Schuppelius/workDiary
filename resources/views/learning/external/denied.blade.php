@@ -14,7 +14,7 @@
 @section('title', __('learning.external.link_invalid_title'))
 @section('content')
 <div class="w-full">
-    <div class="alert alert-warning text-sm">
+    <div role="alert" class="alert alert-warning text-sm">
         <x-icon name="link_off" />
         <span>{{ __('learning.external.link_invalid') }}</span>
     </div>

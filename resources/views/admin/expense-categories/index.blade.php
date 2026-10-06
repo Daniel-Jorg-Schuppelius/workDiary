@@ -10,8 +10,7 @@
 
 @section('title', __('Spesenkategorien'))
 @section('nav-title', __('Spesenkategorien'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('Spesen-Kategorien für Belegerfassung verwalten.')">

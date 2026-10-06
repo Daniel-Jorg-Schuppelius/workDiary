@@ -13,15 +13,19 @@ declare(strict_types=1);
 namespace App\Plugins\DatevOnline\Console;
 
 use App\Models\Platform\Organization;
+use App\Plugins\DatevOnline\DatevOnlinePlugin;
 use App\Plugins\DatevOnline\Enums\DatevConnectionStatus;
 use App\Plugins\DatevOnline\Models\DatevOnlineConnection;
 use App\Plugins\DatevOnline\Services\{DatevDocumentUploader, DatevExtfTransferService};
+use App\Plugins\Support\Console\ChecksPluginSwitch;
 use App\Support\OrganizationContext;
 use Illuminate\Console\Command;
 use Throwable;
 
 /** Nächtlicher Lauf (MVP-122): Belegbilder hochladen, offene EXTF-Importjobs abfragen. */
 class DatevOnlineSyncCommand extends Command {
+    use ChecksPluginSwitch;
+
     protected $signature = 'datev-online:sync';
 
     protected $description = 'Überträgt Belegbilder an DATEV Unternehmen online und fragt offene EXTF-Importe ab.';
@@ -36,7 +40,7 @@ class DatevOnlineSyncCommand extends Command {
 
         foreach ($connections as $connection) {
             $organization = Organization::query()->withoutGlobalScopes()->find($connection->organization_id);
-            if (! $organization instanceof Organization) {
+            if (! $organization instanceof Organization || ! $this->pluginEnabledFor(DatevOnlinePlugin::ID, (int) $organization->id)) {
                 continue;
             }
             OrganizationContext::run($organization, function () use ($connection, $uploader, $extf): void {

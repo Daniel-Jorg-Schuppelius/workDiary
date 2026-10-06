@@ -21,10 +21,10 @@
             <div class="space-y-1 text-sm">
                 <p><span class="font-semibold">{{ __('Rolle') }}:</span> {{ $activity->controller_role->label() }}</p>
                 <p><span class="font-semibold">{{ __('Zweck') }}:</span> {{ $activity->purpose ?? '—' }}</p>
-                <p><span class="font-semibold">{{ __('Review fällig') }}:</span> {{ $activity->review_due_at?->format('d.m.Y') ?? '—' }}</p>
+                <p><span class="font-semibold">{{ __('Review fällig') }}:</span> {{ $activity->review_due_at?->fdate() ?? '—' }}</p>
                 @if ($activity->currentVersion)
                     <p><span class="font-semibold">{{ __('Gültige Version') }}:</span> v{{ $activity->currentVersion->version_no }}
-                        ({{ __('gültig ab') }} {{ $activity->currentVersion->valid_from?->format('d.m.Y') }})</p>
+                        ({{ __('gültig ab') }} {{ $activity->currentVersion->valid_from?->fdate() }})</p>
                 @endif
             </div>
         </x-card>
@@ -47,7 +47,7 @@
                             <tr>
                                 <td>v{{ $v->version_no }}</td>
                                 <td class="text-sm">{{ $v->note ?? '—' }}</td>
-                                <td class="text-sm">{{ $v->approved_at?->format('d.m.Y') ?? __('Entwurf') }}</td>
+                                <td class="text-sm">{{ $v->approved_at?->fdate() ?? __('Entwurf') }}</td>
                                 <td class="text-right">
                                     @can('approve', $activity)
                                         @unless ($v->approved_at)
@@ -101,10 +101,10 @@
                 <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
                     <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('DSFA-Workflow (geführt)') }}</h2>
                     @if ($dpiaModel && $dpiaModel->outcome->value !== 'open')
-                        <a href="{{ route('dataprotection.activities.dpia.report', $activity) }}" class="btn btn-ghost btn-sm">
-                            <x-icon name="picture_as_pdf" class="text-base" />
+                        <x-button :href="route('dataprotection.activities.dpia.report', $activity)" tone="ghost" icon="picture_as_pdf"
+                                icon-size="1rem">
                             {{ __('Bericht (PDF)') }}
-                        </a>
+                        </x-button>
                     @endif
                 </div>
                 <ol class="space-y-2">
@@ -137,7 +137,8 @@
                                               placeholder="{{ __('Ergebnis dieses Schritts …') }}">{{ old('content') }}</textarea>
                                     @if ($stepCode === 'approval')
                                         <div class="flex flex-wrap gap-2">
-                                            <select name="outcome" class="select select-bordered select-sm" required>
+                                            <select name="outcome" class="select select-bordered select-sm" required aria-label="{{ __('Ergebnis') }}">
+                                                <option value="" selected disabled>{{ __('Bitte wählen') }}</option>
                                                 <option value="proceed">{{ __('Verarbeitung zulässig') }}</option>
                                                 <option value="consult">{{ __('Aufsichtsbehörde konsultieren') }}</option>
                                                 <option value="abort">{{ __('Verarbeitung nicht durchführen') }}</option>

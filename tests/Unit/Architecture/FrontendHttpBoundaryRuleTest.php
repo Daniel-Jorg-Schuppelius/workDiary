@@ -35,7 +35,6 @@ class FrontendHttpBoundaryRuleTest extends TestCase {
     /** @var array<string, string> Pfad-Präfix → Begründung */
     private const FETCH_ALLOW_LIST = [
         'resources/js/lib/http.js' => 'Die HTTP-Naht selbst.',
-        'resources/js/sw.js' => 'Service-Worker: eigener fetch-Handler/Cache, außerhalb des DOM-Kontexts.',
     ];
 
     public function test_frontend_requests_go_through_the_http_boundary(): void {

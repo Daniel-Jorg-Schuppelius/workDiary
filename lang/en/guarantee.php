@@ -29,6 +29,18 @@ return [
         'create' => 'Record guarantee',
         'edit' => 'Edit guarantee',
         'returned' => 'Certificate returned',
+        'drawn' => 'Record as drawn',
+        'secure' => 'Replace retention',
+    ],
+    'confirm' => [
+        'drawn' => 'Record guarantee :reference as drawn? It no longer counts as security afterwards, and the record cannot be undone.',
+    ],
+    'secure' => [
+        'title' => 'Replace retention',
+        'hint' => 'The guarantee takes the place of the retention; the retained amount is thereby considered paid out. Only open retentions covered by the guarantee amount are offered.',
+        'retention' => 'Retention',
+        'submit' => 'Replace',
+        'empty' => 'There is no open retention that this guarantee covers.',
     ],
     'kpi' => [
         'issued' => 'Issued (active)',

@@ -10,8 +10,7 @@
 
 @section('title', __('Kostengruppen zuordnen: :name', ['name' => $bill->name]))
 @section('nav-title', __('Kostengruppen zuordnen'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @php
     /** @var \Illuminate\Pagination\LengthAwarePaginator $items */
@@ -57,7 +56,7 @@
         </x-filter-bar>
 
         @if (empty($options))
-            <div class="alert alert-warning">
+            <div role="alert" class="alert alert-warning">
                 <x-icon name="warning" />
                 <span>{{ __('Zum Katalog „:type“ ist kein Stamm hinterlegt — die Nummern lassen sich nur frei eintragen.', ['type' => $catalog->type ?? $catalog->catalog_key]) }}</span>
             </div>

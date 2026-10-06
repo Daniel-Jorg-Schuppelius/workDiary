@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin;
 
-use App\Enums\Migration\{AccountingMigrationStatus, MigrationDataArea, MigrationProvider};
+use App\Enums\Migration\{AccountingMigrationItemStatus, AccountingMigrationStatus, MigrationDataArea, MigrationProvider};
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\Migration\{AccountingMigrationItem, AccountingMigrationRun};
@@ -22,6 +22,7 @@ use App\Support\ErrorText;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use RuntimeException;
 
@@ -51,11 +52,12 @@ class AccountingMigrationController extends Controller {
                 ->orderByDesc('id')
                 ->limit(10)
                 ->get(),
-            'items' => $run === null ? collect() : $run->items()
+            'items' => $run?->items()
                 ->orderByRaw("CASE status WHEN 'conflict' THEN 0 WHEN 'failed' THEN 1 WHEN 'pending' THEN 2 ELSE 3 END")
                 ->orderBy('data_area')
-                ->limit(200)
-                ->get(),
+                ->orderBy('id')
+                ->paginate(50)
+                ->withQueryString(),
             'blockers' => $run === null ? [] : $this->service->cutoverBlockers($run),
             'completionBlockers' => $run === null ? [] : $this->service->completionBlockers($run),
         ]);
@@ -122,12 +124,12 @@ class AccountingMigrationController extends Controller {
         abort_unless($item instanceof AccountingMigrationItem, 404);
 
         $data = $request->validate([
-            'status' => ['required', 'string', 'in:matched,skipped,historic,conflict'],
+            'status' => ['required', Rule::enum(AccountingMigrationItemStatus::class)->only(AccountingMigrationItemStatus::decisions())],
             'note' => ['nullable', 'string', 'max:1000'],
         ]);
 
         try {
-            $this->service->decideItem($item, (string) $data['status'], $user, $data['note'] ?? null);
+            $this->service->decideItem($item, AccountingMigrationItemStatus::from((string) $data['status']), $user, $data['note'] ?? null);
         } catch (RuntimeException $e) {
             return back()->with('error', ErrorText::for($e));
         }
@@ -190,7 +192,7 @@ class AccountingMigrationController extends Controller {
             foreach ($run->items()->orderBy('data_area')->orderBy('id')->cursor() as $item) {
                 yield [
                     $item->data_area->label(),
-                    $item->status,
+                    $item->status->value,
                     $item->source_external_id,
                     $item->target_external_id,
                     $item->display_title,

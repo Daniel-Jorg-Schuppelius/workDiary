@@ -9,9 +9,10 @@
 @extends('layouts.app')
 @section('title', __('gobd.title') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('gobd.title'))
+@include('partials.page-fill')
 
 @section('content')
-<x-index-page :subtitle="__('gobd.subtitle')">
+<x-index-page overflow="clip" :subtitle="__('gobd.subtitle')">
     <x-slot:actions>
         <x-icon-btn icon="fact_check" tone="primary" size="sm"
                     data-entry-modal-trigger
@@ -80,46 +81,46 @@
     @endif
 
     {{-- Revisionssicherer Nachweis: bisherige Exporte --}}
-    <x-card padding="p-0" :title="__('gobd.recent.title')">
-        <x-table :caption="__('gobd.recent.title')" bare>
-            <x-slot:head>
-                <tr>
-                    <x-table.th>{{ __('gobd.period') }}</x-table.th>
-                    <x-table.th>{{ __('gobd.recent.status') }}</x-table.th>
-                    <x-table.th align="right">{{ __('gobd.recent.records') }}</x-table.th>
-                    <x-table.th>{{ __('gobd.recent.package_hash') }}</x-table.th>
-                    <x-table.th>{{ __('gobd.recent.created') }}</x-table.th>
-                    <x-table.th align="right">{{ __('gobd.recent.actions') }}</x-table.th>
-                </tr>
-            </x-slot:head>
-            @forelse ($recent as $export)
-                <tr>
-                    <td class="text-sm tabular-nums">{{ $export->period_from->fdate() }} – {{ $export->period_to->fdate() }}</td>
-                    <td>
-                        {{-- Lauf-Status ohne Polling: die Seite zeigt den Stand des letzten Aufrufs (MVP-722). --}}
-                        <span class="wd-badge badge-{{ $export->status->tone() }}">{{ $export->status->label() }}</span>
-                        @if ($export->error !== null)
-                            <span class="block text-xs text-error/80">{{ \Illuminate\Support\Str::limit($export->error, 80) }}</span>
+    <x-table scroll="flex" :caption="__('gobd.recent.title')">
+        <x-slot:head>
+            <tr>
+                <x-table.th>{{ __('gobd.period') }}</x-table.th>
+                <x-table.th>{{ __('gobd.recent.status') }}</x-table.th>
+                <x-table.th align="right">{{ __('gobd.recent.records') }}</x-table.th>
+                <x-table.th>{{ __('gobd.recent.package_hash') }}</x-table.th>
+                <x-table.th>{{ __('gobd.recent.created') }}</x-table.th>
+                <x-table.th align="right">{{ __('gobd.recent.actions') }}</x-table.th>
+            </tr>
+        </x-slot:head>
+        @forelse ($recent as $export)
+            <tr class="hover">
+                <td class="text-sm tabular-nums">{{ $export->period_from->fdate() }} – {{ $export->period_to->fdate() }}</td>
+                <td>
+                    {{-- Lauf-Status ohne Polling: die Seite zeigt den Stand des letzten Aufrufs (MVP-722). --}}
+                    <span class="wd-badge badge-{{ $export->status->tone() }}">{{ $export->status->label() }}</span>
+                    @if ($export->error !== null)
+                        <span class="block text-xs text-error/80">{{ \Illuminate\Support\Str::limit($export->error, 80) }}</span>
+                    @endif
+                </td>
+                <td class="text-right tabular-nums">{{ $export->record_count }}</td>
+                <td class="font-mono text-xs opacity-70">{{ \Illuminate\Support\Str::limit($export->package_sha256, 16) }}</td>
+                <td class="text-sm">{{ $export->created_at?->fdatetime() }}{{ $export->creator ? ' · ' . $export->creator->name : '' }}</td>
+                <td class="text-right">
+                    <div class="flex justify-end">
+                        @if ($export->status->isDownloadable() && $export->file_path !== null)
+                            <x-icon-btn icon="download" size="sm" :href="route('finance.gobd.download', $export)"
+                                        :title="__('gobd.download')" />
                         @endif
-                    </td>
-                    <td class="text-right tabular-nums">{{ $export->record_count }}</td>
-                    <td class="font-mono text-xs opacity-70">{{ \Illuminate\Support\Str::limit($export->package_sha256, 16) }}</td>
-                    <td class="text-sm">{{ $export->created_at?->fdatetime() }}{{ $export->creator ? ' · ' . $export->creator->name : '' }}</td>
-                    <td class="text-right">
-                        <div class="flex justify-end">
-                            @if ($export->status->isDownloadable() && $export->file_path !== null)
-                                <x-icon-btn icon="download" size="sm" :href="route('finance.gobd.download', $export)"
-                                            :title="__('gobd.download')" />
-                            @endif
-                        </div>
-                    </td>
-                </tr>
-            @empty
-                <x-table.empty :colspan="6"
-                               icon="inventory_2"
-                               :title="__('gobd.recent.none')" compact />
-            @endforelse
-        </x-table>
-    </x-card>
+                    </div>
+                </td>
+            </tr>
+        @empty
+            <x-table.empty :colspan="6"
+                           icon="inventory_2"
+                           :title="__('gobd.recent.none')" compact />
+        @endforelse
+    </x-table>
+
+    <x-pagination :paginator="$recent" standing />
 </x-index-page>
 @endsection

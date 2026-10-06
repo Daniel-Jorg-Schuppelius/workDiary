@@ -10,8 +10,7 @@
 
 @section('title', __('Ausschreibungen') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('Ausschreibungen'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('Auftragsbewerbungen mit Fristen, Unterlagen, Einreichung und Entscheidung.')">
@@ -29,7 +28,7 @@
             <select id="tender-status" name="status" class="select select-sm select-bordered w-44" aria-label="{{ __('Status') }}">
                 <option value="">{{ __('Alle Status') }}</option>
                 @foreach ($statuses as $s)
-                    <option value="{{ $s }}" @selected(($filters['status'] ?? '') === $s)>{{ __("values.$s") }}</option>
+                    <option value="{{ $s->value }}" @selected(($filters['status'] ?? '') === $s->value)>{{ $s->label() }}</option>
                 @endforeach
             </select>
         </x-filter-field>
@@ -59,7 +58,7 @@
             <tr class="hover">
                 <td><a href="{{ route('tenders.show', $opportunity) }}" class="link link-hover font-medium">{{ $opportunity->title }}</a></td>
                 <td>{{ $opportunity->customer->name ?? '—' }}</td>
-                <td><x-status-badge :tone="$opportunity->statusTone()" size="sm">{{ __("values.{$opportunity->status}") }}</x-status-badge></td>
+                <td><x-status-badge :tone="$opportunity->status->tone()" size="sm">{{ $opportunity->status->label() }}</x-status-badge></td>
                 <td class="tabular-nums">{{ optional($opportunity->submission_deadline)->fdate() ?? '—' }}</td>
                 <td class="text-right tabular-nums">{{ $opportunity->estimated_value !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $opportunity->estimated_value, 2, withThousandsSeparator: true) . ' €' : '—' }}</td>
                 <td>{{ __("values.{$opportunity->go_decision}") }}</td>

@@ -23,12 +23,7 @@
         <x-page-toolbar>
             <div class="text-sm text-base-content/70">{{ $bill->name }}</div>
             <x-slot:actions>
-                <x-action-menu icon="download" :label="__('Export')">
-                    <x-icon-btn icon="download" size="sm" show-label
-                                :href="route('bill-of-quantities.calculation-data', [$bill, 'export' => 'csv'])">{{ __('CSV') }}</x-icon-btn>
-                    <x-icon-btn icon="table_view" size="sm" show-label
-                                :href="route('bill-of-quantities.calculation-data', [$bill, 'export' => 'xlsx'])">Excel</x-icon-btn>
-                </x-action-menu>
+                <x-report-export :url="fn (string $format) => route('bill-of-quantities.calculation-data', [$bill, 'export' => $format])" :formats="['csv', 'xlsx']" tone="ghost" />
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
@@ -43,7 +38,7 @@
         {{-- Zuschlagspositionen mit eigenen Ansätzen sind ein Formatverstoß: Der
              Zuschlag rechnet auf andere Positionen, das Geld zählte sonst zweimal. --}}
         @if (! empty($markupWithApproaches))
-            <div class="alert alert-warning">
+            <div role="alert" class="alert alert-warning">
                 <x-icon name="warning" />
                 <span>{{ __('Zuschlagspositionen mit eigenen Kostenansätzen: :refs. Der Zuschlag rechnet prozentual auf andere Positionen — eigene Ansätze zählen dasselbe Geld ein zweites Mal.', ['refs' => implode(', ', $markupWithApproaches)]) }}</span>
             </div>

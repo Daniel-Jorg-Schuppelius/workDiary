@@ -125,7 +125,7 @@ class SignatureService {
         $plain = Str::random(64);
 
         $timesheet->forceFill([
-            'magic_token_hash' => Timesheet::hashMagicToken($plain),
+            'magic_token_hash' => CryptoHelper::hash($plain),
             'magic_expires_at' => now()->addMinutes($minutes),
         ])->save();
 

@@ -20,14 +20,11 @@
 
         <div class="border border-base-300 bg-base-100 rounded p-4">
             <p class="font-semibold">{{ __('Ihr Zugang') }}</p>
-            <dl class="mt-2 grid gap-2 text-sm sm:grid-cols-[10rem_1fr]">
-                <dt class="text-muted">{{ __('Name') }}</dt>
-                <dd>{{ $user->name }}</dd>
-                <dt class="text-muted">{{ __('Anmelde-E-Mail') }}</dt>
-                <dd>{{ $user->email }}</dd>
-                <dt class="text-muted">{{ __('Kunde') }}</dt>
-                <dd>{{ $user->customer?->name ?? '—' }}</dd>
-            </dl>
+            <x-detail-grid class="mt-2">
+                <x-detail-grid.row :label="__('Name')">{{ $user->name }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Anmelde-E-Mail')">{{ $user->email }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Kunde')">{{ $user->customer?->name ?? '—' }}</x-detail-grid.row>
+            </x-detail-grid>
         </div>
 
         <div class="border border-base-300 bg-base-100 rounded p-4">

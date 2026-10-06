@@ -9,8 +9,7 @@
 @extends('layouts.app')
 @section('title', __('inventory.pick_list.title') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('inventory.pick_list.title'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 {{-- Erwartet: $list (PickList), $sourceSlug, $sourceSqid, $source (Model) --}}
@@ -47,7 +46,7 @@
                     <td class="font-mono text-sm">{{ $line->bin?->code ?? '—' }}</td>
                     <td class="font-mono text-sm">
                         {{ $line->lot?->lot_no ?? '—' }}
-                        @if ($line->lot?->best_before)<span class="text-xs text-muted ml-1">{{ $line->lot->best_before->format('d.m.Y') }}</span>@endif
+                        @if ($line->lot?->best_before)<span class="text-xs text-muted ml-1">{{ $line->lot->best_before->fdate() }}</span>@endif
                     </td>
                     <td class="font-medium">{{ $line->label() }}</td>
                     <td class="font-mono text-sm">{{ $line->sku() !== '' ? $line->sku() : '—' }}</td>

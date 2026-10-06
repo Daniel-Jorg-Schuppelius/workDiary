@@ -36,7 +36,9 @@ class ScopeController extends Controller {
                 ->withCount(['statements', 'risks'])
                 ->orderByDesc('is_default')
                 ->orderBy('name')
-                ->get(),
+                ->orderBy('id')
+                ->paginate(25)
+                ->withQueryString(),
             'canManage' => Gate::allows('create', IsmsScope::class),
         ]);
     }
@@ -85,7 +87,7 @@ class ScopeController extends Controller {
         $this->service->delete($scope, $actor);
 
         return redirect()
-            ->route('isms.scopes.index')
+            ->toList('isms.scopes.index')
             ->with('success', __('isms.flash.scope_deleted'));
     }
 

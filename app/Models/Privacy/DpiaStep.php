@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Privacy;
 
+use App\Enums\Privacy\DpiaStepStatus;
 use App\Models\Concerns\BelongsToOrganization;
 use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
@@ -28,7 +29,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $dpia_id
  * @property string $step
  * @property int $position
- * @property string $status
+ * @property DpiaStepStatus $status
  * @property string|null $content
  * @property int|null $completed_by
  * @property \Illuminate\Support\Carbon|null $completed_at
@@ -38,10 +39,6 @@ class DpiaStep extends Model {
 
     /** Feste Schrittfolge des Workflows (Position = Index). */
     public const STEPS = ['description', 'necessity', 'risks', 'mitigations', 'approval'];
-
-    public const STATUS_PENDING = 'pending';
-
-    public const STATUS_DONE = 'done';
 
     protected $table = 'privacy_dpia_steps';
 
@@ -59,6 +56,7 @@ class DpiaStep extends Model {
     /** @var array<string, string> */
     protected $casts = [
         'completed_at' => 'datetime',
+        'status' => DpiaStepStatus::class,
     ];
 
     /** @return BelongsTo<Dpia, $this> */
@@ -72,7 +70,7 @@ class DpiaStep extends Model {
     }
 
     public function isDone(): bool {
-        return $this->status === self::STATUS_DONE;
+        return $this->status === DpiaStepStatus::Done;
     }
 
     /** Anzeige-Label je Schritt (Rohdeutsch = JSON-Key-Konvention). */

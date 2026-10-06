@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Crisis;
 
+use App\Enums\Crisis\CrisisContinuityImpactStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -28,7 +29,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int|null $rpo_hours
  * @property string|null $workaround
  * @property string|null $substitute_process
- * @property string $status
+ * @property CrisisContinuityImpactStatus $status
  * @property string|null $residual_note
  */
 class CrisisContinuityImpact extends Model {
@@ -36,15 +37,13 @@ class CrisisContinuityImpact extends Model {
     use BelongsToOrganization;
     use HasSqid;
 
-    public const STATUSES = ['down', 'degraded', 'workaround', 'restored'];
-
     protected $fillable = [
         'organization_id', 'crisis_case_id', 'crisis_business_process_id', 'process_name', 'rto_hours',
         'rpo_hours', 'workaround', 'substitute_process', 'status', 'residual_note',
     ];
 
     /** @var array<string, string> */
-    protected $casts = ['rto_hours' => 'integer', 'rpo_hours' => 'integer'];
+    protected $casts = ['rto_hours' => 'integer', 'rpo_hours' => 'integer', 'status' => CrisisContinuityImpactStatus::class];
 
     /** @return BelongsTo<CrisisCase, $this> */
     public function crisisCase(): BelongsTo {

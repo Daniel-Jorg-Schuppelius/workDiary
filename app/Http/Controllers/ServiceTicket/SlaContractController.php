@@ -13,9 +13,12 @@ namespace App\Http\Controllers\ServiceTicket;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
+use App\Models\Customer\Customer;
 use App\Models\Platform\User;
+use App\Models\Project\Project;
 use App\Models\ServiceTicket\SlaContract;
 use App\Services\ServiceTicket\SlaQuotaService;
+use App\Support\SortableQuery;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -36,21 +39,30 @@ class SlaContractController extends Controller {
     public function index(Request $request): View {
         $this->authorizeView($request);
 
-        $contracts = SlaContract::query()
+        // Standard wie bisher: der Standardvertrag zuerst, dann nach Code.
+        [$sort, $dir] = SortableQuery::resolve($request, ['code', 'label', 'customer', 'project', 'quotas', 'status'], 'status', 'desc');
+        $query = SlaContract::query()
             ->with(['customer:id,name', 'project:id,name'])
-            ->withCount('quotas')
-            ->orderByDesc('is_default')
-            ->orderBy('code')
-            ->get();
+            ->withCount('quotas');
+        match ($sort) {
+            'customer' => $query->orderBy(Customer::query()->select('name')->whereColumn('customers.id', 'sla_contracts.customer_id'), $dir),
+            'project' => $query->orderBy(Project::query()->select('name')->whereColumn('projects.id', 'sla_contracts.project_id'), $dir),
+            'quotas' => $query->orderBy('quotas_count', $dir),
+            'status' => $query->orderBy('is_default', $dir)->orderBy('is_active', $dir),
+            default => $query->orderBy($sort, $dir),
+        };
+        $contracts = $query->orderBy('code')->orderBy('id')->paginate(25)->withQueryString();
 
         $canManage = $request->user()?->can(\App\Enums\User\Permission::SlaContractManage->value) ?? false;
 
         return view('sla-contracts.index', [
             'contracts' => $contracts,
+            'sort' => $sort,
+            'dir' => $dir,
             'canManage' => $canManage,
             // Projekt-Auswahl fürs Admin-Formular (W5.4), org-gescopt via Global Scope.
             'projects' => $canManage
-                ? \App\Models\Project\Project::query()->orderBy('name')->get(['id', 'name', 'customer_id', 'foreign_customer_id'])
+                ? Project::query()->orderBy('name')->get(['id', 'name', 'customer_id', 'foreign_customer_id'])
                 : collect(),
         ]);
     }
@@ -69,7 +81,7 @@ class SlaContractController extends Controller {
         $contract = SlaContract::query()->create($data);
         $this->ensureSingleDefault($contract);
 
-        return redirect()->route('sla-contracts.index')->with('success', __('SLA-Vertrag angelegt.'));
+        return redirect()->toList('sla-contracts.index')->with('success', __('SLA-Vertrag angelegt.'));
     }
 
     public function update(Request $request, SlaContract $slaContract): \Illuminate\Http\RedirectResponse {
@@ -78,7 +90,7 @@ class SlaContractController extends Controller {
         $slaContract->update($this->validatedContract($request, $slaContract));
         $this->ensureSingleDefault($slaContract);
 
-        return redirect()->route('sla-contracts.index')->with('success', __('SLA-Vertrag gespeichert.'));
+        return redirect()->toList('sla-contracts.index')->with('success', __('SLA-Vertrag gespeichert.'));
     }
 
     /** @return array<string, mixed> */

@@ -12,11 +12,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Rental;
 
-use App\Enums\Rental\{RentalCondition, RentalReturnFollowUp};
+use App\Enums\Rental\{RentalCondition, RentalConditionItemState, RentalReturnFollowUp};
 use App\Exceptions\AssetNotUsableException;
 use App\Http\Controllers\Controller;
 use App\Models\Asset\Asset;
-use App\Models\Rental\{RentalCase, RentalConditionItem};
+use App\Models\Rental\RentalCase;
 use App\Rules\ExistsInCurrentOrganization;
 use App\Services\Attachments\FileAttacher;
 use App\Services\Rental\RentalCaseService;
@@ -92,7 +92,7 @@ class RentalHandoverController extends Controller {
             'note' => ['nullable', 'string', 'max:4000'],
             'condition_items' => ['sometimes', 'array'],
             'condition_items.*.label' => ['required_with:condition_items', 'string', 'max:255'],
-            'condition_items.*.state' => ['nullable', Rule::in(RentalConditionItem::STATES)],
+            'condition_items.*.state' => ['nullable', Rule::enum(RentalConditionItemState::class)],
             'condition_items.*.note' => ['nullable', 'string', 'max:1000'],
             'accessory_items' => ['sometimes', 'array'],
             'accessory_items.*.label' => ['required_with:accessory_items', 'string', 'max:255'],

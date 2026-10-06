@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Invoicing;
 
-use App\Enums\Manufacturing\DeliveryFacturationStatus;
+use App\Enums\Invoicing\InvoiceStatus;
+use App\Enums\Manufacturing\{DeliveryFacturationStatus, DeliveryStockStatus};
 use App\Events\Invoicing\DeliveryInvoiced;
 use App\Models\Inventory\StockDelivery;
 use App\Models\Invoicing\{Invoice, InvoiceItem};
@@ -48,7 +49,7 @@ class DeliveryInvoicingService {
             ->where('organization_id', $draft->organization_id)
             ->where('customer_id', $draft->customer_id)
             ->where('facturation_target', self::TARGET_LOCAL)
-            ->where('stock_status', 'delivered')
+            ->where('stock_status', DeliveryStockStatus::Delivered)
             ->whereIn('facturation_status', [DeliveryFacturationStatus::Pending->value, DeliveryFacturationStatus::Failed->value])
             ->when($from !== null, fn($q) => $q->where('delivered_at', '>=', $from))
             ->when($toExclusive !== null, fn($q) => $q->where('delivered_at', '<', $toExclusive))
@@ -79,7 +80,7 @@ class DeliveryInvoicingService {
         return DB::transaction(function () use ($draft, $deliveryIds): EloquentCollection {
             /** @var Invoice $invoice */
             $invoice = Invoice::query()->whereKey($draft->id)->lockForUpdate()->firstOrFail();
-            if ($invoice->status !== Invoice::STATUS_DRAFT || ! in_array($invoice->type, [Invoice::TYPE_INVOICE, Invoice::TYPE_PARTIAL, Invoice::TYPE_FINAL], true)) {
+            if ($invoice->status !== InvoiceStatus::Draft || ! in_array($invoice->type, [Invoice::TYPE_INVOICE, Invoice::TYPE_PARTIAL, Invoice::TYPE_FINAL], true)) {
                 throw ValidationException::withMessages(['delivery_ids' => __('invoicing.free.error.draft_only')]);
             }
             $ids = array_values(array_unique(array_map('intval', $deliveryIds)));
@@ -175,7 +176,7 @@ class DeliveryInvoicingService {
         if ($delivery->facturation_target !== self::TARGET_LOCAL) {
             return (string) __('invoicing.free.error.delivery_external');
         }
-        if ($delivery->stock_status !== 'delivered') {
+        if ($delivery->stock_status !== DeliveryStockStatus::Delivered) {
             return (string) __('invoicing.free.error.delivery_not_delivered');
         }
         if ($delivery->facturation_status === DeliveryFacturationStatus::Invoiced) {

@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Sales\Import;
 
 use App\Enums\Import\{ImportEntity, ImportErrorCode};
+use App\Enums\Sales\QuoteStatus;
 use App\Models\Platform\Organization;
 use App\Models\Sales\{Quote, QuoteItem};
 use App\Services\Import\{ImportOutcome, ValidationIssue};
@@ -35,9 +36,6 @@ use Throwable;
 class QuoteSpec extends AbstractEntitySpec {
     use ResolvesImportReferences;
     use ValidatesImportDates;
-
-    /** @var list<string> */
-    public const ALLOWED_STATUSES = ['draft', 'sent', 'accepted', 'rejected', 'expired'];
 
     private const DEFAULT_TAX_RATE = '19.00';
 
@@ -129,7 +127,7 @@ class QuoteSpec extends AbstractEntitySpec {
             $issues[] = $this->fkIssue('customer_number', 'customer', (string) $row['customer_number']);
         }
 
-        if (! empty($row['status']) && ! in_array($row['status'], self::ALLOWED_STATUSES, true)) {
+        if (! empty($row['status']) && ! in_array(QuoteStatus::tryFrom((string) $row['status']), QuoteStatus::importable(), true)) {
             $issues[] = $this->formatIssue('status', (string) __('import.error.format.status'));
         }
 
@@ -178,7 +176,7 @@ class QuoteSpec extends AbstractEntitySpec {
                         'organization_id' => $organization->id,
                         'number' => (string) $row['number'],
                         'version' => $row['version'] ?? 1,
-                        'status' => $row['status'] ?? 'draft',
+                        'status' => $row['status'] ?? QuoteStatus::Draft->value,
                     ]);
                     $created = true;
                 } else {

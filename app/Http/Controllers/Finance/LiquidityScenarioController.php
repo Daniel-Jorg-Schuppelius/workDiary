@@ -20,7 +20,7 @@ use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
-/** Szenarien zur Liquiditätsvorschau (MVP-954); Recht wie die Vorschau selbst. */
+/** Szenarien zur Liquiditätsvorschau (MVP-954); lesen wie die Vorschau, ändern wie die Liquiditätsplanung. */
 class LiquidityScenarioController extends Controller {
     use ResolvesCurrentOrganization;
 
@@ -29,11 +29,12 @@ class LiquidityScenarioController extends Controller {
 
         return view('reports.accounting.liquidity-scenarios', [
             'scenarios' => LiquidityScenario::query()->with('items')->orderBy('name')->get(),
+            'canEdit' => Gate::allows(Permission::AccountingLedgerPrepare->value),
         ]);
     }
 
     public function store(Request $request): RedirectResponse {
-        $this->authorizeView();
+        $this->authorizeEdit();
         $scenario = LiquidityScenario::query()->create($this->validated($request) + [
             'organization_id' => $this->currentOrganization()->id,
             'created_by' => $this->authUser()->id,
@@ -43,21 +44,21 @@ class LiquidityScenarioController extends Controller {
     }
 
     public function update(Request $request, LiquidityScenario $scenario): RedirectResponse {
-        $this->authorizeView();
+        $this->authorizeEdit();
         $scenario->update($this->validated($request));
 
         return back()->with('success', __('accounting.reports.scenario.flash.saved'));
     }
 
     public function destroy(LiquidityScenario $scenario): RedirectResponse {
-        $this->authorizeView();
+        $this->authorizeEdit();
         $scenario->delete();
 
         return redirect()->route('reports.accounting.liquidity-scenarios.index')->with('success', __('accounting.reports.scenario.flash.deleted'));
     }
 
     public function storeItem(Request $request, LiquidityScenario $scenario): RedirectResponse {
-        $this->authorizeView();
+        $this->authorizeEdit();
         $data = $request->validate([
             'label' => ['required', 'string', 'max:200'],
             'direction' => ['required', 'in:in,out'],
@@ -70,7 +71,7 @@ class LiquidityScenarioController extends Controller {
     }
 
     public function destroyItem(LiquidityScenarioItem $item): RedirectResponse {
-        $this->authorizeView();
+        $this->authorizeEdit();
         $item->delete();
 
         return back()->with('success', __('accounting.reports.scenario.flash.item_deleted'));
@@ -98,5 +99,10 @@ class LiquidityScenarioController extends Controller {
 
     private function authorizeView(): void {
         abort_unless(Gate::allows(Permission::AccountingLedgerView->value), 403);
+    }
+
+    /** Szenarien gelten für die ganze Organisation — ändern wie die Liquiditätsplanung (authz-a-7). */
+    private function authorizeEdit(): void {
+        abort_unless(Gate::allows(Permission::AccountingLedgerPrepare->value), 403);
     }
 }

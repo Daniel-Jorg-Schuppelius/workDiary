@@ -8,18 +8,7 @@
 
   Öffentliche Umfrage-Teilnahme (Feature 090): token-basiert, ohne Login.
 --}}
-<!doctype html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="light">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="robots" content="noindex,nofollow">
-<title>{{ $survey->title }}</title>
-@include('partials.font-bootstrap', ['icons' => false])
-@vite(['resources/css/app.css','resources/js/app.js'])
-</head>
-<body class="min-h-screen bg-base-200">
-<main class="mx-auto max-w-2xl p-4 space-y-4">
+<x-public-page :title="$survey->title" main="mx-auto max-w-2xl p-4 space-y-4">
     <div class="rounded-box bg-base-100 p-6 shadow">
         <h1 class="text-xl font-semibold">{{ $survey->title }}</h1>
         @if ($survey->purpose)
@@ -40,9 +29,7 @@
                     <x-field-input :field="$question->fieldDefinition()" prefix="" :wide="false" />
                 </div>
             @endforeach
-            <button type="submit" class="btn btn-primary w-full">{{ __('Antworten absenden') }}</button>
+            <x-button type="submit" size="md" class="w-full">{{ __('Antworten absenden') }}</x-button>
         </form>
     </div>
-</main>
-</body>
-</html>
+</x-public-page>

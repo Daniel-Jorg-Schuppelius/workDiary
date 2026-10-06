@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\TagResource;
 use App\Models\Classification\Tag;
@@ -18,9 +19,12 @@ use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use OpenApi\Attributes as OA;
 
 class TagController extends Controller {
+    use ResolvesCurrentOrganization;
+
     #[OA\Get(
         path: '/tags',
         summary: 'Tags auflisten',
@@ -55,8 +59,8 @@ class TagController extends Controller {
     public function store(Request $request): JsonResponse {
         Gate::authorize('create', Tag::class);
         $data = $request->validate([
-            'name' => ['required', 'string', 'max:64', 'unique:tags,name'],
-            'color' => ['nullable', 'string', 'max:16'],
+            'name' => ['required', 'string', 'max:64', Rule::unique('tags', 'name')->where('organization_id', $this->currentOrganization()->id)],
+            'color' => ['nullable', 'string', 'max:16', new \App\Rules\ColorValue],
         ]);
         $tag = Tag::create([
             'name' => $data['name'],
@@ -88,8 +92,8 @@ class TagController extends Controller {
     public function update(Request $request, Tag $tag): TagResource {
         Gate::authorize('update', $tag);
         $data = $request->validate([
-            'name' => ['required', 'string', 'max:64', 'unique:tags,name,' . $tag->id],
-            'color' => ['nullable', 'string', 'max:16'],
+            'name' => ['required', 'string', 'max:64', Rule::unique('tags', 'name')->where('organization_id', $this->currentOrganization()->id)->ignore($tag->id)],
+            'color' => ['nullable', 'string', 'max:16', new \App\Rules\ColorValue],
         ]);
         $tag->update([
             'name' => $data['name'],

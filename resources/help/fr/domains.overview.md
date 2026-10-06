@@ -33,9 +33,12 @@ DNS, factures, chronologie et actions. « Actualiser » réconcilie l'état du
 fournisseur pour ce domaine précis.
 
 **DNS :** La zone est lue à la demande. Dans l'interface, on peut ajouter et
-supprimer des enregistrements individuels ; remplacer toute la zone n'y est
-volontairement pas proposé, car un remplacement complet erroné supprime tous les
-enregistrements du domaine. Après une écriture, le système détecte les écarts
+supprimer des enregistrements individuels. « Remplacer la zone » n'apparaît
+qu'une fois la zone lue : la boîte de dialogue est préremplie avec son état et
+demande confirmation avant l'envoi, car un remplacement complet supprime tout
+enregistrement absent du formulaire. Les enregistrements dont le formulaire ne
+peut pas modifier le type sont conservés tels quels ; un formulaire vide est
+refusé. Après une écriture, le système détecte les écarts
 (conflit DNS) et les rend visibles au lieu de les écraser. Les enregistrements
 MX/SRV exigent une priorité.
 

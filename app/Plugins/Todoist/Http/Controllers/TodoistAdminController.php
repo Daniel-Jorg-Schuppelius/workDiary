@@ -10,12 +10,14 @@
 
 namespace App\Plugins\Todoist\Http\Controllers;
 
+use App\Enums\Task\TaskStatus;
 use App\Models\Integration\ExternalReference;
 use App\Models\Platform\User;
 use App\Models\Project\Project;
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
 use App\Plugins\Support\{ConnectionOAuthController, PluginOAuthGrant};
 use App\Plugins\Todoist\Api\{TodoistApiClient, TodoistOAuth};
+use App\Plugins\Todoist\Enums\{TodoistConnectionStatus, TodoistProjectLinkStatus};
 use App\Plugins\Todoist\Models\{TodoistConnection, TodoistProjectLink};
 use App\Plugins\Todoist\Services\TodoistPreflightService;
 use App\Plugins\Todoist\{TodoistConfig, TodoistPlugin};
@@ -23,6 +25,7 @@ use App\Support\SqidEncoder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Throwable;
 
@@ -56,7 +59,7 @@ class TodoistAdminController extends ConnectionOAuthController {
         return view('todoist::admin.index', [
             'configured' => TodoistConfig::isConfigured(),
             'connection' => $connection,
-            'links' => TodoistProjectLink::query()->with('project:id,name')->orderBy('todoist_project_name')->get(),
+            'links' => TodoistProjectLink::query()->with('project:id,name')->orderBy('todoist_project_name')->orderBy('id')->paginate(25)->withQueryString(),
             'remoteProjects' => $remoteProjects,
             'projects' => Project::query()->orderBy('name')->limit(500)->get(['id', 'name']),
         ]);
@@ -93,11 +96,11 @@ class TodoistAdminController extends ConnectionOAuthController {
     }
 
     protected function connectedStatus(): string {
-        return TodoistConnection::STATUS_ACTIVE;
+        return TodoistConnectionStatus::Active->value;
     }
 
     protected function disconnectedStatus(): string {
-        return TodoistConnection::STATUS_DISCONNECTED;
+        return TodoistConnectionStatus::Disconnected->value;
     }
 
     /** Ohne PKCE (Todoist unterstützt es nicht); state bleibt Einmal-Token. */
@@ -136,6 +139,8 @@ class TodoistAdminController extends ConnectionOAuthController {
         $data = $request->validate([
             'todoist_project_id' => ['required', 'string', 'max:64'],
             'todoist_project_name' => ['nullable', 'string', 'max:191'],
+            'todoist_project_names' => ['nullable', 'array'],
+            'todoist_project_names.*' => ['nullable', 'string', 'max:191'],
             'target_kind' => ['required', 'in:project,global_kanban'],
             'project' => ['nullable', 'string'],
             'sync_mode' => ['required', 'in:todoist_to_workdiary,workdiary_to_todoist,bidirectional'],
@@ -156,11 +161,11 @@ class TodoistAdminController extends ConnectionOAuthController {
             'todoist_project_id' => (string) $data['todoist_project_id'],
         ]);
         $link->fill([
-            'todoist_project_name' => $data['todoist_project_name'] ?? $link->todoist_project_name,
+            'todoist_project_name' => $data['todoist_project_names'][(string) $data['todoist_project_id']] ?? $data['todoist_project_name'] ?? $link->todoist_project_name,
             'target_kind' => (string) $data['target_kind'],
             'project_id' => $projectId,
             'sync_mode' => (string) $data['sync_mode'],
-            'status' => $link->exists ? $link->status : TodoistProjectLink::STATUS_DRAFT,
+            'status' => $link->exists ? $link->status : TodoistProjectLinkStatus::Draft,
         ])->save();
         $link->audit('todoist.link_saved', ['todoist_project_id' => $link->todoist_project_id, 'sync_mode' => $link->sync_mode]);
 
@@ -206,9 +211,11 @@ class TodoistAdminController extends ConnectionOAuthController {
         $organization = $this->organization($admin);
         abort_unless((int) $link->organization_id === (int) $organization->id, 404);
 
-        $status = (string) $request->validate(['status' => ['required', 'in:active,paused']])['status'];
+        $status = TodoistProjectLinkStatus::from((string) $request->validate([
+            'status' => ['required', Rule::enum(TodoistProjectLinkStatus::class)->only([TodoistProjectLinkStatus::Active, TodoistProjectLinkStatus::Paused])],
+        ])['status']);
         $link->forceFill(['status' => $status])->save();
-        $link->audit('todoist.link_status', ['status' => $status]);
+        $link->audit('todoist.link_status', ['status' => $status->value]);
 
         return back()->with('success', __('todoist::todoist.flash.link_saved'));
     }
@@ -232,7 +239,7 @@ class TodoistAdminController extends ConnectionOAuthController {
 
         $data = $request->validate([
             'sections' => ['nullable', 'array'],
-            'sections.*.status' => ['nullable', 'in:open,in_progress'],
+            'sections.*.status' => ['nullable', Rule::enum(TaskStatus::class)->only([TaskStatus::Open, TaskStatus::InProgress])],
             'sections.*.name' => ['nullable', 'string', 'max:191'],
         ]);
 

@@ -52,9 +52,10 @@ final class ValuationTest extends TestCase {
         $this->valuation->receipt($this->variant, $this->warehouse, '10', '2');
         $this->valuation->receipt($this->variant, $this->warehouse, '10', '4'); // avg 3
 
-        $movement = $this->valuation->issue($this->variant, $this->warehouse, '5');
+        $issue = $this->valuation->issue($this->variant, $this->warehouse, '5');
 
-        $this->assertSame('15.0000', $movement->cost_total?->getAmount()); // 5 × 3
+        $this->assertSame('15.0000', $issue->first()->cost_total?->getAmount()); // 5 × 3
+        $this->assertSame('3.0000', $issue->costUnit());
         $this->assertSame('3.0000', $this->valuation->average($this->variant, $this->warehouse));
         $this->assertSame('45.0000', $this->valuation->totalValue($this->variant, $this->warehouse));
     }
@@ -75,7 +76,7 @@ final class ValuationTest extends TestCase {
         $this->assertNotSame('2.0000', $this->valuation->average($this->variant, $this->warehouse));
 
         // … aber der Kostensnapshot der alten Abgangsbewegung bleibt unverändert.
-        $this->assertSame('8.0000', $issue->fresh()->cost_total?->getAmount());
+        $this->assertSame('8.0000', $issue->first()->fresh()?->cost_total?->getAmount());
     }
 
     public function test_issue_blocks_negative_stock(): void {

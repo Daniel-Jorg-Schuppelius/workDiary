@@ -14,6 +14,7 @@ use App\Models\Chat\ChatWebhook;
 use App\Models\Platform\User;
 use App\Models\Project\OperationsTask;
 use App\Models\Time\AttendanceTerminal;
+use App\Plugins\Todoist\Enums\TodoistConnectionStatus;
 use App\Plugins\Todoist\Models\TodoistConnection;
 use App\Services\Operations\Expiry\ExpiryScanner;
 use App\Services\Operations\OperationsAlertService;
@@ -127,7 +128,7 @@ class ExpiryScannerTest extends TestCase {
         $connection = TodoistConnection::query()->create([
             'organization_id' => $this->admin->organization_id,
             'access_token' => 'secret',
-            'status' => 'paused',
+            'status' => TodoistConnectionStatus::Paused,
             'last_error' => 'HTTP 401 beim Sync',
         ]);
 
@@ -138,6 +139,25 @@ class ExpiryScannerTest extends TestCase {
             'type' => 'connection_failing',
             'status' => 'open',
         ]);
+    }
+
+    /** Ohne hinterlegten Fehler nennt die Aufgabe den Verbindungsstand als Rohwert. */
+    public function test_disconnected_todoist_connection_is_reported_with_its_status(): void {
+        $connection = TodoistConnection::query()->create([
+            'organization_id' => $this->admin->organization_id,
+            'status' => TodoistConnectionStatus::Disconnected,
+        ]);
+        $healthy = TodoistConnection::query()->create([
+            'organization_id' => User::factory()->create()->organization_id,
+            'access_token' => 'secret',
+            'status' => TodoistConnectionStatus::Active,
+        ]);
+
+        $this->scan();
+
+        $task = OperationsTask::query()->where('dedupe_key', "connection_failing:todoist:{$connection->id}")->sole();
+        $this->assertSame('disconnected', $task->params['error'] ?? null);
+        $this->assertSame(0, OperationsTask::query()->where('dedupe_key', "connection_failing:todoist:{$healthy->id}")->count());
     }
 
     public function test_disabled_chat_webhook_and_stale_terminal_are_reported(): void {
@@ -187,7 +207,7 @@ class ExpiryScannerTest extends TestCase {
         $connection = TodoistConnection::query()->create([
             'organization_id' => $this->admin->organization_id,
             'access_token' => 'secret',
-            'status' => 'paused',
+            'status' => TodoistConnectionStatus::Paused,
             'last_error' => 'HTTP 401',
         ]);
         $this->scan();

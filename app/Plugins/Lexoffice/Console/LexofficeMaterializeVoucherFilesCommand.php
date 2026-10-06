@@ -11,8 +11,9 @@
 namespace App\Plugins\Lexoffice\Console;
 
 use App\Console\Concerns\IteratesOrganizations;
-use App\Plugins\Lexoffice\{LexofficeConfig, LexofficeVoucherFileService};
+use App\Plugins\Lexoffice\LexofficeConfig;
 use App\Plugins\Lexoffice\Models\LexofficeVoucher;
+use App\Plugins\Lexoffice\Services\LexofficeVoucherFileService;
 use Illuminate\Console\Command;
 
 /**
@@ -45,7 +46,7 @@ class LexofficeMaterializeVoucherFilesCommand extends Command {
                 continue;
             }
 
-            $service = new LexofficeVoucherFileService($config['api_key'], $config['base_url']);
+            $service = new LexofficeVoucherFileService($config['api_key'], $config['base_url'], $config['request_interval']);
             $stored = 0;
             $empty = 0;
             $errors = 0;

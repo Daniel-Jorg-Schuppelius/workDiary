@@ -45,7 +45,7 @@ class RawConfirmAttributeRuleTest extends TestCase {
         $stale = [];
         $seen = [];
 
-        foreach (array_merge($this->bladeFiles(), $this->bladeFiles('app/Plugins')) as $file) {
+        foreach ($this->bladeFiles() as $file) {
             $relative = $this->relativePath($file);
             $source = $this->stripBladeComments((string) file_get_contents($file));
             $count = $this->countRawConfirmAttributes($source);

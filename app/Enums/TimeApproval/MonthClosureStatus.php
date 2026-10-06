@@ -10,15 +10,16 @@
 
 namespace App\Enums\TimeApproval;
 
-use App\Enums\Concerns\HasOptions;
-use App\Enums\Contracts\HasLabel;
+use App\Enums\Concerns\{HasOptions, HasTransitions};
+use App\Enums\Contracts\HasStatusTransitions;
 
 /**
  * Status einer Monatsfreigabe (MVP-016).
  * Siehe ../WorkDiary-Architecture/monatsfreigabe.md §4 für die Übergänge.
  */
-enum MonthClosureStatus: string implements HasLabel {
+enum MonthClosureStatus: string implements HasStatusTransitions {
     use HasOptions;
+    use HasTransitions;
 
     case Draft = 'draft';
     case Submitted = 'submitted';
@@ -66,5 +67,17 @@ enum MonthClosureStatus: string implements HasLabel {
 
     public function isTerminal(): bool {
         return $this === self::Locked;
+    }
+
+    /** @return list<self> */
+    public function allowedTransitions(): array {
+        return match ($this) {
+            self::Draft, self::Reopened => [self::Submitted],
+            self::Submitted => [self::Approved, self::Rejected],
+            self::Approved => [self::Reopened, self::Locked],
+            // Abgelehnt: neu einreichen, selbst zurück in den Entwurf oder durch die Prüfung wieder öffnen.
+            self::Rejected => [self::Submitted, self::Draft, self::Reopened],
+            self::Locked => [self::Reopened],
+        };
     }
 }

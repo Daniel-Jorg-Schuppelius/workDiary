@@ -18,10 +18,10 @@
         <x-card>
             <div class="mb-1 flex flex-wrap items-center justify-between gap-2">
                 <h1 class="font-['Space_Grotesk'] text-lg font-semibold">{{ $menu->name }}</h1>
-                <a href="{{ route('recipe-menus.index') }}" class="btn btn-sm btn-ghost">{{ __('recipes.action.back') }}</a>
+                <x-button :href="route('recipe-menus.index')" tone="ghost">{{ __('recipes.action.back') }}</x-button>
             </div>
             <p class="text-sm text-muted">
-                {{ $menu->event_date?->format('d.m.Y') ?? __('recipes.menu.no_date') }}
+                {{ $menu->event_date?->fdate() ?? __('recipes.menu.no_date') }}
                 @if ($menu->guest_count) · {{ __('recipes.menu.field.guest_count') }}: {{ $menu->guest_count }} @endif
             </p>
         </x-card>
@@ -45,7 +45,7 @@
                     <span class="label-text">{{ __('recipes.menu.field.portions_per_guest') }}</span>
                     <input type="number" name="portions_per_guest" step="0.01" min="0.01" max="100" value="1" class="input input-bordered input-sm w-28">
                 </label>
-                <button type="submit" class="btn btn-sm btn-primary">{{ __('recipes.menu.action.add_dish') }}</button>
+                <x-button type="submit">{{ __('recipes.menu.action.add_dish') }}</x-button>
             </form>
 
             <x-table :bare="true" :empty-title="__('recipes.menu.no_dishes')">
@@ -67,7 +67,7 @@
                                         @if ($dish['version'] !== null)
                                             v{{ $dish['version']->version }}
                                         @else
-                                            <span class="badge badge-warning badge-sm">{{ __('recipes.menu.not_published') }}</span>
+                                            <x-status-badge tone="warning">{{ __('recipes.menu.not_published') }}</x-status-badge>
                                         @endif
                                     </td>
                                     <td class="text-right">
@@ -75,7 +75,7 @@
                                             <form method="POST" action="{{ route('recipe-menus.items.destroy', [$menu, $dish['item']]) }}">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="btn btn-xs btn-ghost text-error">{{ __('recipes.action.remove') }}</button>
+                                                <x-button type="submit" tone="ghost" size="xs" class="text-error">{{ __('recipes.action.remove') }}</x-button>
                                             </form>
                                         </div>
                                     </td>
@@ -89,7 +89,7 @@
             <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('recipes.title.allergens') }}</h2>
             <div class="flex flex-wrap gap-1">
                 @forelse ($allergens['effective'] as $code)
-                    <span class="badge badge-warning badge-sm">{{ $code }}</span>
+                    <x-status-badge tone="warning">{{ $code }}</x-status-badge>
                 @empty
                     <span class="text-sm text-muted">{{ __('recipes.allergens.none') }}</span>
                 @endforelse
@@ -106,12 +106,12 @@
                 <form method="GET" action="{{ route('recipe-menus.show', $menu) }}" class="flex items-center gap-2">
                     <label class="text-sm" for="menu-guests">{{ __('recipes.menu.field.guest_count') }}</label>
                     <input id="menu-guests" type="number" name="guests" min="1" max="100000" value="{{ $guests }}" class="input input-bordered input-sm w-28">
-                    <button type="submit" class="btn btn-sm">{{ __('recipes.action.scale') }}</button>
+                    <x-button type="submit" tone="plain">{{ __('recipes.action.scale') }}</x-button>
                 </form>
             </div>
 
             @if ($aggregate['missing_published'] !== [])
-                <div class="alert alert-warning mb-2 text-sm">{{ __('recipes.menu.missing_published', ['dishes' => implode(', ', $aggregate['missing_published'])]) }}</div>
+                <div role="alert" class="alert alert-warning mb-2 text-sm">{{ __('recipes.menu.missing_published', ['dishes' => implode(', ', $aggregate['missing_published'])]) }}</div>
             @endif
 
             <x-table :bare="true" :empty-title="__('recipes.menu.no_materials')">

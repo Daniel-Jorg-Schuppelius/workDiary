@@ -1,7 +1,7 @@
 ---
 title: "Sostenibilidad y ESG"
 topic: sustainability.overview
-version: 1
+version: 2
 audience: []
 modules:
     - module.sustainability
@@ -34,6 +34,12 @@ esperado, el esfuerzo, los costes, el plazo, el justificante y la
 verificación de eficacia tras la ejecución. Las trayectorias objetivo
 (p. ej. CO₂e hasta 2030) interpolan valores previstos por año y los
 contraponen a los valores reales.
+
+**Listas:** El resumen muestra las diez evaluaciones y medidas más
+recientes y cuenta en cada caso el conjunto completo. «Mostrar todos» abre
+para cada una una lista completa y ordenable. La lista de medidas puede
+filtrarse por estado; allí mantiene usted también el estado de las
+medidas más antiguas que ya no aparecen en el resumen.
 
 **Informe:** Indicadores con desglose detallado, advertencias de calidad
 de datos, exportación CSV con indicación de la metodología y snapshot

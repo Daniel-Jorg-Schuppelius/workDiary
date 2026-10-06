@@ -176,7 +176,7 @@ class RiskController extends Controller {
         $this->service->delete($risk, $actor);
 
         return redirect()
-            ->route('isms.risks.index')
+            ->toList('isms.risks.index')
             ->with('success', __('isms.flash.risk_deleted'));
     }
 

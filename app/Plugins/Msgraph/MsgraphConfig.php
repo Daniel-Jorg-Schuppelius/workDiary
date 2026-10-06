@@ -11,6 +11,7 @@
 namespace App\Plugins\Msgraph;
 
 use App\Plugins\Support\PluginSettingsResolver;
+use CommonToolkit\Helper\Data\WebLinkHelper;
 
 /**
  * Microsoft-365-Konfiguration (MVP-328, Bauturbo A8; Feature 102 Variante B):
@@ -93,7 +94,7 @@ class MsgraphConfig {
         );
 
         // Graph-Ressourcen-Scopes voll qualifizieren; OIDC-Scopes bleiben nackt.
-        $resource = (string) parse_url($config['api_base'], PHP_URL_SCHEME) . '://' . (string) parse_url($config['api_base'], PHP_URL_HOST);
+        $resource = (string) WebLinkHelper::origin($config['api_base']);
         $oidc = ['openid', 'profile', 'email', 'offline_access'];
         $scopes = [];
         // Notes.Read nur, wenn die Organisation die OneNote-Übernahme eingeschaltet hat.

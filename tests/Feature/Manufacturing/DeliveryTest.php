@@ -11,15 +11,16 @@
 namespace Tests\Feature\Manufacturing;
 
 use App\Enums\Finance\BillingMode;
-use App\Enums\Inventory\StockState;
-use App\Enums\Manufacturing\DeliveryFacturationStatus;
+use App\Enums\Inventory\{StockMovementType, StockState};
+use App\Enums\Manufacturing\{DeliveryFacturationStatus, DeliveryStockStatus};
 use App\Models\Article\{Article, ArticleVariant};
 use App\Models\Customer\Customer;
-use App\Models\Inventory\{StockDelivery, Warehouse};
+use App\Models\Inventory\{InventoryOutboxEntry, StockDelivery, StockMovement, Warehouse};
 use App\Models\Platform\Organization;
-use App\Services\Inventory\InventoryLedger;
+use App\Services\Inventory\{InventoryLedger, LotService, LotStockReader};
 use App\Services\Manufacturing\DeliveryService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Bus;
 use RuntimeException;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -63,7 +64,7 @@ final class DeliveryTest extends TestCase {
 
         $this->assertSame('7.0000', $this->ledger->balance($this->variant, $this->warehouse, StockState::Physical));
         $this->assertSame('3.0000', $delivery->quantity?->getNumericValue());
-        $this->assertSame('delivered', $delivery->stock_status);
+        $this->assertSame(DeliveryStockStatus::Delivered, $delivery->stock_status);
         $this->assertSame(DeliveryFacturationStatus::Pending, $delivery->facturation_status);
         $this->assertSame('Widget rot', $delivery->name_snapshot);
         $this->assertSame('WID-ROT', $delivery->sku_snapshot);
@@ -89,8 +90,30 @@ final class DeliveryTest extends TestCase {
 
         $fresh = $delivery->fresh();
         $this->assertSame(DeliveryFacturationStatus::Failed, $fresh->facturation_status);
-        $this->assertSame('delivered', $fresh->stock_status, 'Lagerbuchung bleibt sichtbar');
+        $this->assertSame(DeliveryStockStatus::Delivered, $fresh->stock_status, 'Lagerbuchung bleibt sichtbar');
         $this->assertSame('6.0000', $this->ledger->balance($this->variant, $this->warehouse, StockState::Physical));
+    }
+
+    /** Auslieferung je Charge (FEFO-Bewertung, externe Führung): je Charge eine bewertete, gespiegelte Bewegung. */
+    public function test_delivery_issues_per_lot_and_mirrors_each_movement(): void {
+        Bus::fake();
+        $this->organization->update(['settings' => ['valuation_method' => 'fefo', 'inventory_mode' => 'external', 'inventory_plugin_id' => 'jtl_wawi']]);
+        $lots = app(LotService::class);
+        $late = $lots->register($this->variant, 'D-LATE', '2027-01-01');
+        $soon = $lots->register($this->variant, 'D-SOON', '2026-11-01');
+        $lots->receiveIntoLot($this->variant, $this->warehouse, '2', '3', $late);
+        $lots->receiveIntoLot($this->variant, $this->warehouse, '2', '4', $soon);
+
+        $this->deliveries->deliver($this->variant, $this->warehouse, '3');
+
+        $issued = StockMovement::query()->where('movement_type', StockMovementType::Issue->value)->orderBy('id')->get();
+        $this->assertSame(
+            [[$soon->id, '-2.0000', '8.0000'], [$late->id, '-1.0000', '3.0000']],
+            $issued->map(fn (StockMovement $m): array => [$m->stock_lot_id, $m->qty_base, $m->cost_total?->getAmount()])->all(),
+        );
+        $this->assertSame(['0.0000', '1.0000'], [app(LotStockReader::class)->balanceOf($soon), app(LotStockReader::class)->balanceOf($late)]);
+        $this->assertEqualsCanonicalizing($issued->pluck('id')->all(), InventoryOutboxEntry::query()->where('operation', 'issue')->pluck('stock_movement_id')->all());
+        $this->assertSame(1, StockDelivery::query()->count());
     }
 
     public function test_facturation_target_follows_customer_billing_mode(): void {

@@ -11,6 +11,7 @@
 namespace Tests\Feature\Finance;
 
 use App\Enums\Finance\EbicsConnectionStatus;
+use App\Enums\Invoicing\IncomingEInvoiceStatus;
 use App\Models\Audit\AuditLog;
 use App\Models\Document\Document;
 use App\Models\Finance\{BankAccount, BankStatement, EbicsConnection};
@@ -61,6 +62,21 @@ final class EbicsTest extends TestCase {
         }
 
         return EbicsConnection::query()->firstOrFail();
+    }
+
+    /** Die Kontenliste blättert; eine Aktion kehrt auf die zuletzt gezeigte Seite zurück. */
+    public function test_bank_account_list_pages_and_keeps_the_page_after_a_delete(): void {
+        foreach (range(1, 25) as $i) {
+            BankAccount::factory()->create(['organization_id' => $this->org->id, 'label' => sprintf('Konto %02d', $i)]);
+        }
+
+        $first = $this->actingAs($this->admin)->get(route('finance.bank-accounts.index'))->assertOk();
+        $this->assertSame(26, $first->viewData('accounts')->total());
+        $first->assertSee('Geschäftskonto')->assertDontSee('Konto 25');
+
+        $this->actingAs($this->admin)->get(route('finance.bank-accounts.index', ['page' => 2]))->assertOk()->assertSee('Konto 25')->assertDontSee('Geschäftskonto');
+        $this->actingAs($this->admin)->delete(route('finance.bank-accounts.destroy', BankAccount::query()->where('label', 'Konto 01')->firstOrFail()->sqid))
+            ->assertRedirect(route('finance.bank-accounts.index', ['page' => 2]));
     }
 
     public function test_setup_runs_step_by_step_with_letter_and_keeps_secrets_out_of_the_audit(): void {
@@ -135,20 +151,36 @@ final class EbicsTest extends TestCase {
         $invoice = IncomingEInvoice::query()->create([
             'organization_id' => $this->org->id, 'document_id' => Document::factory()->create(['organization_id' => $this->org->id])->id,
             'sha256' => hash('sha256', 'ebics-run'), 'source' => 'upload', 'received_at' => now(),
-            'status' => IncomingEInvoice::STATUS_PAYMENT_RELEASED, 'invoice_number' => 'RE-4711', 'seller_name' => 'Lieferant GmbH',
+            'status' => IncomingEInvoiceStatus::PaymentReleased, 'invoice_number' => 'RE-4711', 'seller_name' => 'Lieferant GmbH',
             'issue_date' => CarbonImmutable::today()->subDays(3)->toDateString(), 'due_date' => CarbonImmutable::today()->addDays(27)->toDateString(),
             'currency' => 'EUR', 'amount_gross' => '1190.00', 'creditor_iban' => 'DE89370400440532013000', 'creditor_bic' => 'COBADEFFXXX',
         ]);
         $runs = app(PaymentRunService::class);
         $run = $runs->release($runs->createFromProposals($this->account, $this->admin, [$invoice->id]), $this->admin);
 
-        $this->actingAs($this->admin)->post(route('finance.payment-runs.ebics', $run))->assertSessionHas('success', __('ebics.flash.submitted', ['order' => 'A001']));
+        // Der Ablauf braucht mehr Aufrufe, als die Drossel der EBICS-Routen je Minute zulässt.
+        $this->withoutMiddleware(\Illuminate\Routing\Middleware\ThrottleRequests::class);
+
+        // Sicherheitsaudit 2026-10-04, pub-5: ohne frische Anmeldung geht es erst über die Passwortbestätigung.
+        $this->actingAs($this->admin)->from(route('finance.payment-runs.show', $run))->post(route('finance.payment-runs.ebics', $run))->assertRedirect(route('password.confirm'));
+        $this->assertCount(0, $this->gateway->uploads);
+
+        // Fehler hinter dem Upload (Ausgang unklar): kein zweiter Versuch, bis jemand bei der Bank geprüft hat.
+        $this->gateway->throws = new \RuntimeException('Zeitüberschreitung');
+        $this->actingAs($this->admin)->withRecentAuthentication()->post(route('finance.payment-runs.ebics', $run))->assertSessionHas('error', __('ebics.error.failed'));
+        $this->gateway->throws = null;
+        $this->actingAs($this->admin)->withRecentAuthentication()->post(route('finance.payment-runs.ebics', $run))->assertSessionHas('error', __('ebics.error.outcome_unclear'));
+        $this->assertCount(0, $this->gateway->uploads);
+        $this->actingAs($this->admin)->get(route('finance.payment-runs.show', $run))->assertOk()->assertSee(__('ebics.action.confirm_not_submitted'));
+        $this->actingAs($this->admin)->withRecentAuthentication()->post(route('finance.payment-runs.ebics.not-submitted', $run))->assertSessionHas('success', __('ebics.flash.submission_released'));
+
+        $this->actingAs($this->admin)->withRecentAuthentication()->post(route('finance.payment-runs.ebics', $run))->assertSessionHas('success', __('ebics.flash.submitted', ['order' => 'A001']));
         $this->assertCount(1, $this->gateway->uploads);
         $this->assertStringContainsString('pain.001', $this->gateway->uploads[0]['xml']);
         $this->assertSame('credit_transfer', $this->gateway->uploads[0]['kind']->value);
         $this->assertTrue($run->refresh()->isExported(), 'Eingereicht wird die archivierte Datei.');
 
-        $this->actingAs($this->admin)->post(route('finance.payment-runs.ebics', $run))->assertSessionHas('error', __('ebics.error.already_submitted'));
+        $this->actingAs($this->admin)->withRecentAuthentication()->post(route('finance.payment-runs.ebics', $run))->assertSessionHas('error', __('ebics.error.already_submitted'));
         $this->assertCount(1, $this->gateway->uploads);
     }
 }

@@ -15,8 +15,9 @@ namespace App\Plugins\Github\Console;
 use App\Console\Concerns\IteratesOrganizations;
 use App\Models\Platform\Organization;
 use App\Plugins\Github\Api\GithubClientFactory;
-use App\Plugins\Github\GithubConfig;
+use App\Plugins\Github\{GithubConfig, GithubPlugin};
 use App\Plugins\Github\Services\GithubIssueImporter;
+use App\Plugins\Support\Console\ChecksPluginSwitch;
 use Illuminate\Console\Command;
 use Throwable;
 
@@ -27,6 +28,7 @@ use Throwable;
  * Abbruch in einer Organisation lässt die übrigen unberührt.
  */
 class GithubSyncCommand extends Command {
+    use ChecksPluginSwitch;
     use IteratesOrganizations;
 
     protected $signature = 'github:sync ' . self::ORGANIZATION_OPTION;
@@ -36,7 +38,7 @@ class GithubSyncCommand extends Command {
     public function handle(GithubClientFactory $factory, GithubIssueImporter $importer): int {
         $this->forEachOrganization(function (Organization $org) use ($factory, $importer): void {
             $config = GithubConfig::resolve((int) $org->id);
-            if (! $config['enabled'] || ! GithubConfig::isConfigured((int) $org->id)) {
+            if (! $this->pluginEnabledFor(GithubPlugin::ID, (int) $org->id) || ! GithubConfig::isConfigured((int) $org->id)) {
                 return;
             }
 

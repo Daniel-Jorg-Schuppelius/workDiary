@@ -15,8 +15,7 @@
 @section('title', __('circular.title'))
 @section('nav-title', __('circular.title'))
 
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
     <x-index-page overflow="clip" :subtitle="__('circular.subtitle')">
@@ -46,7 +45,7 @@
                             <x-status-badge tone="warning" outline>{{ __('circular.mandatory_short') }}</x-status-badge>
                         @endif
                     </td>
-                    <td>{{ __('circular.status.' . $circular->status) }}</td>
+                    <td>{{ $circular->status->label() }}</td>
                     <td class="text-right tabular-nums">{{ $circular->sent_count }}</td>
                     <td class="text-right tabular-nums">{{ $circular->skipped_count }}</td>
                     <td class="whitespace-nowrap">{{ optional($circular->sent_at)->fdatetime() ?? '—' }}</td>

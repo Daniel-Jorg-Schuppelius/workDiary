@@ -15,6 +15,7 @@ return [
         'lexoffice_delivery_not_linked' => 'Mit dieser Auslieferung ist kein Lexoffice-Lieferschein verknüpft.',
         'lexoffice_dunning_not_invoice' => 'Eine Mahnung kann nur zu einer Rechnung erstellt werden.',
         'lexoffice_not_configured' => 'Lexoffice ist für diese Organisation nicht konfiguriert (API-Key fehlt).',
+        'lexoffice_outcome_unclear' => 'Ausgang der Lexoffice-Übergabe unklar (Zeitüberschreitung nach dem Senden) — nicht blind wiederholen; der nächste Lauf sucht den Entwurf über den Quellmarker.',
         'lexoffice_oc_no_customer' => 'Fertigungsauftrag ohne Kunde kann nicht als Auftragsbestätigung übergeben werden.',
         'lexoffice_oc_not_linked' => 'Mit diesem Fertigungsauftrag ist keine Lexoffice-Auftragsbestätigung verknüpft.',
         'lexoffice_quote_no_customer' => 'Fertigungsauftrag ohne Kunde kann nicht als Angebot übergeben werden.',
@@ -23,5 +24,6 @@ return [
     'lexoffice' => [
         'introduction' => 'Unsere Lieferungen/Leistungen stellen wir Ihnen wie folgt in Rechnung.',
         'delivery_title' => 'Lieferschein',
+        'transfer_marker' => 'Übergabenachweis :marker',
     ],
 ];

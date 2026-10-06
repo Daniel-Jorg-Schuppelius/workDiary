@@ -52,7 +52,7 @@ trait BuildsOpenIssueDrilldown {
      */
     protected function defectProtocolDrilldownQuery(array $entryIds, CarbonImmutable $from, CarbonImmutable $to): Builder {
         return Protocol::query()
-            ->with(['creator:id,name'])
+            ->with(['creator:id,name', 'subject'])
             ->where('type', ProtocolType::Defect->value)
             ->where('subject_type', MorphMap::alias(DiaryEntry::class))
             ->whereBetween('occurred_at', [$from, $to])

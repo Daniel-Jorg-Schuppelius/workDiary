@@ -10,8 +10,7 @@
 
 @section('title', __('Organisationen'))
 @section('nav-title', __('Organisationen'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 @php
@@ -118,13 +117,8 @@
 
                                 {{-- Endgültig löschen (Purge) — nur nach Cooldown --}}
                                 @if ($canPurge)
-                                    <button type="button"
-                                            class="btn btn-sm btn-ghost text-error"
-                                            title="{{ __('Endgültig löschen') }}"
-                                            aria-label="{{ __('Endgültig löschen') }}"
-                                            data-open-dialog="purge-modal-{{ $org->id }}">
-                                        <x-icon name="delete_forever" />
-                                    </button>
+                                    <x-icon-btn icon="delete_forever" tone="error" size="sm" :label="__('Endgültig löschen')"
+                                            data-open-dialog="purge-modal-{{ $org->id }}" />
 
                                     {{-- Gemeinsamer Dialog-Wrapper statt rohem <dialog> (Vollaudit 2026-07, N57). --}}
                                     <x-modal :id="'purge-modal-' . $org->id" :embedded="false" tone="error" icon="delete_forever"

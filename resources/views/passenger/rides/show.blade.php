@@ -94,7 +94,7 @@
                                 <option value="{{ $vehicle->sqid }}" @selected((string) old('vehicle_id') === $vehicle->sqid)>{{ $vehicle->license_plate }}</option>
                             @endforeach
                         </select>
-                        <button type="submit" class="btn btn-sm btn-primary col-span-2">{{ __('passenger.rides.action.assign') }}</button>
+                        <x-button type="submit" class="col-span-2">{{ __('passenger.rides.action.assign') }}</x-button>
                     </form>
                 @endif
             @endcan
@@ -130,7 +130,7 @@
                         <input type="number" step="0.1" min="0" name="estimated_km" value="{{ old('estimated_km') }}" placeholder="{{ __('passenger.field.estimated_km') }}" class="input input-sm input-bordered" aria-label="{{ __('passenger.field.estimated_km') }}">
                         <input type="number" step="1" min="0" name="estimated_minutes" value="{{ old('estimated_minutes') }}" placeholder="{{ __('passenger.field.estimated_minutes') }}" class="input input-sm input-bordered" aria-label="{{ __('passenger.field.estimated_minutes') }}">
                         <input type="number" step="0.01" min="0" name="planned_net" value="{{ old('planned_net') }}" placeholder="{{ __('passenger.field.planned_net_optional') }}" class="input input-sm input-bordered" aria-label="{{ __('passenger.field.planned_net_optional') }}">
-                        <button type="submit" class="btn btn-sm btn-primary">{{ __('passenger.rides.action.start') }}</button>
+                        <x-button type="submit">{{ __('passenger.rides.action.start') }}</x-button>
                     </form>
                 @endif
             @endcan
@@ -155,7 +155,7 @@
                             <form method="POST" action="{{ route('passenger-rides.transition', $ride) }}">
                                 @csrf
                                 <input type="hidden" name="status" value="{{ $target->value }}">
-                                <button type="submit" class="btn btn-sm">{{ __('passenger.rides.action.transition_to', ['status' => $target->label()]) }}</button>
+                                <x-button type="submit" tone="plain">{{ __('passenger.rides.action.transition_to', ['status' => $target->label()]) }}</x-button>
                             </form>
                         @endif
                     @endforeach
@@ -176,7 +176,7 @@
                         <input type="number" step="1" min="0" name="odometer_end_km" value="{{ old('odometer_end_km') }}" placeholder="{{ __('passenger.field.odometer_end_km') }}" class="input input-sm input-bordered" aria-label="{{ __('passenger.field.odometer_end_km') }}">
                         {{-- Pflicht, sobald der Satz vom Vorschlag aus Streckengrenze und Landeskatalog abweicht (§ 12 Abs. 2 Nr. 10 UStG). --}}
                         <input type="text" maxlength="200" name="tax_reason" value="{{ old('tax_reason') }}" placeholder="{{ __('passenger.field.tax_reason') }}" class="input input-sm input-bordered col-span-2" aria-label="{{ __('passenger.field.tax_reason') }}">
-                        <button type="submit" class="btn btn-sm btn-primary col-span-2">{{ __('passenger.rides.action.complete') }}</button>
+                        <x-button type="submit" class="col-span-2">{{ __('passenger.rides.action.complete') }}</x-button>
                     </form>
                 @endif
 
@@ -193,7 +193,7 @@
                             @endforeach
                         </select>
                         <input type="text" name="reason" value="{{ old('reason') }}" placeholder="{{ __('passenger.field.reason') }} *" class="input input-sm input-bordered w-64" required aria-label="{{ __('passenger.field.reason') }}">
-                        <button type="submit" class="btn btn-sm btn-outline btn-error">{{ __('passenger.rides.action.close') }}</button>
+                        <x-button type="submit" tone="error" class="btn-outline">{{ __('passenger.rides.action.close') }}</x-button>
                     </form>
                 @endif
 
@@ -206,7 +206,7 @@
                                 <option value="{{ $candidate->sqid }}">{{ __('passenger.field.follow_up_ride') }} #{{ $candidate->sqid }} — {{ optional($candidate->requested_at)->fdatetime() }}</option>
                             @endforeach
                         </select>
-                        <button type="submit" class="btn btn-sm">{{ __('passenger.rides.action.record_return') }}</button>
+                        <x-button type="submit" tone="plain">{{ __('passenger.rides.action.record_return') }}</x-button>
                     </form>
                 @endif
             @endcan

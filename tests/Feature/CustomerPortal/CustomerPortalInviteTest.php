@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\CustomerPortal;
 
+use App\Enums\Organization\TenantStatus;
 use App\Enums\User\Permission as P;
 use App\Mail\CustomerPortalInvitationMail;
 use App\Models\Customer\Customer;
@@ -266,5 +267,18 @@ class CustomerPortalInviteTest extends TestCase {
         Mail::assertSent(CustomerPortalInvitationMail::class, 1);
         $this->assertNotSame($firstHash, $portalUser->fresh()->portal_invite_token_hash, 'Erneuter Versand rotiert den Token.');
         $this->get(route('customer.invitation.show', ['token' => $firstToken]))->assertNotFound();
+    }
+
+    /** Sicherheitsaudit 2026-10-04, pub-3: der Link endet mit der Mandantensperre. */
+    public function test_invitation_is_locked_for_a_suspended_tenant(): void {
+        [, $token] = $this->inviteAndCaptureToken();
+        auth()->logout();
+        app()->forgetInstance('currentOrganization');
+        $this->organization->forceFill(['tenant_status' => TenantStatus::Suspended])->save();
+
+        $this->get(route('customer.invitation.show', ['token' => $token]))->assertStatus(423);
+        $this->post(route('customer.invitation.accept', ['token' => $token]), [
+            'password' => 'Sicher-Und-Lang-2026!', 'password_confirmation' => 'Sicher-Und-Lang-2026!',
+        ])->assertStatus(423);
     }
 }

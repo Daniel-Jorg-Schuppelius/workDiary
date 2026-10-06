@@ -36,7 +36,7 @@ class AgreementController extends Controller {
     public function index(): View {
         $revisions = $this->scope()
             ->whereIn('status', [SigningRevisionStatus::Ready->value, SigningRevisionStatus::PartiallySigned->value, SigningRevisionStatus::Signed->value, SigningRevisionStatus::Superseded->value])
-            ->with(['contract', 'requests'])
+            ->with(['contract', 'requests', 'manifestItems'])
             ->orderByDesc('id')
             ->paginate(25);
 

@@ -54,7 +54,7 @@ class BackupTargetOAuthTest extends TestCase {
     }
 
     /** Erfolgs-Stubs für Konto + Quota + Stammordner nach dem Token-Tausch. */
-    private function fakeProviderApis(): void {
+    private function fakeProviderApis(string $readBack = \App\Plugins\Support\Backup\BackupTargetSelfTest::PAYLOAD): void {
         FakePluginHttp::fake([
             'https://api.dropboxapi.com/2/users/get_current_account' => FakePluginHttp::response([
                 'account_id' => 'dbid:backup-1', 'email' => 'backup@example.org', 'name' => ['display_name' => 'Backup Konto'],
@@ -65,6 +65,14 @@ class BackupTargetOAuthTest extends TestCase {
             'https://api.dropboxapi.com/2/files/create_folder_v2' => FakePluginHttp::response([
                 'metadata' => ['id' => 'id:root', 'path_display' => '/wd-abc'],
             ]),
+            // Selbsttest (k2-04): schreiben, lesen, löschen.
+            'https://content.dropboxapi.com/2/files/upload_session/start' => FakePluginHttp::response(['session_id' => 'sess-1']),
+            'https://content.dropboxapi.com/2/files/upload_session/append_v2' => FakePluginHttp::response(null),
+            'https://content.dropboxapi.com/2/files/upload_session/finish' => FakePluginHttp::response([
+                'size' => strlen(\App\Plugins\Support\Backup\BackupTargetSelfTest::PAYLOAD), 'path_display' => '/wd-abc/.wd-selftest.bin',
+            ]),
+            'https://content.dropboxapi.com/2/files/download' => FakePluginHttp::response($readBack),
+            'https://api.dropboxapi.com/2/files/delete_v2' => FakePluginHttp::response(['metadata' => []]),
         ]);
     }
 
@@ -169,5 +177,22 @@ class BackupTargetOAuthTest extends TestCase {
 
         $this->assertDatabaseMissing('backup_target_connections', ['id' => $connection->id]);
         $this->assertDatabaseHas('backup_generations', ['id' => $generation->id, 'connection_id' => null]);
+    }
+
+    /** k2-04: die OAuth-Ziele wurden aktiv, ohne je eine Datei gelesen oder gelöscht zu haben. */
+    public function test_target_stays_inactive_when_the_probe_fails(): void {
+        $this->fakeTokenEndpoint([
+            'access_token' => 'at-1', 'refresh_token' => 'rt-1', 'expires_in' => 14400,
+            'scope' => 'account_info.read files.metadata.read files.content.read files.content.write',
+        ]);
+        $this->fakeProviderApis('etwas anderes');
+        $state = $this->startFlowAndGetState();
+
+        $this->actingAs($this->platformAdmin)
+            ->get(route('admin.backup-targets.dropbox.oauth.callback', ['state' => $state, 'code' => 'auth-code']))
+            ->assertRedirect(route('admin.backup-targets.index'))
+            ->assertSessionHas('error');
+
+        $this->assertNotSame(BackupTargetStatus::Active, BackupTargetConnection::query()->sole()->status);
     }
 }

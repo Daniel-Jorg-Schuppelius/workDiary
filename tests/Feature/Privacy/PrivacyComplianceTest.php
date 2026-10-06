@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Privacy;
 
-use App\Enums\Privacy\ProcessorRole;
+use App\Enums\Privacy\{ComplianceFindingStatus, ProcessorRole};
 use App\Models\Platform\{Organization, User};
 use App\Models\Privacy\{ComplianceFinding, ProcessingActivity, ProcessingAgreement, Processor};
 use App\Services\Privacy\{ComplianceAnalysisService, DataProtectionPermissions};
@@ -44,12 +44,12 @@ class PrivacyComplianceTest extends TestCase {
         $svc->run($org);
         $finding = ComplianceFinding::where('organization_id', $org->id)
             ->where('requirement_key', 'avv_required')->where('processor_id', $processor->id)->firstOrFail();
-        $this->assertSame('missing', $finding->status);
+        $this->assertSame(ComplianceFindingStatus::Missing, $finding->status);
 
         // AVV anlegen → erneute Analyse markiert die Lücke als behoben.
         ProcessingAgreement::create(['organization_id' => $org->id, 'processor_id' => $processor->id, 'title' => 'AVV', 'version' => '1.0', 'status' => 'active']);
         $svc->run($org);
-        $this->assertSame('present', $finding->fresh()->status);
+        $this->assertSame(ComplianceFindingStatus::Present, $finding->fresh()->status);
     }
 
     public function test_manual_override_is_respected_by_reanalysis(): void {
@@ -59,11 +59,11 @@ class PrivacyComplianceTest extends TestCase {
 
         $svc->run($org);
         $finding = ComplianceFinding::where('organization_id', $org->id)->where('requirement_key', 'tom_assigned')->firstOrFail();
-        $this->assertSame('missing', $finding->status);
+        $this->assertSame(ComplianceFindingStatus::Missing, $finding->status);
 
-        $svc->override($finding, 'not_applicable', 'Kein Personenbezug');
+        $svc->override($finding, ComplianceFindingStatus::NotApplicable, 'Kein Personenbezug');
         $svc->run($org);
-        $this->assertSame('not_applicable', $finding->fresh()->status, 'Manuelle Entscheidung bleibt erhalten.');
+        $this->assertSame(ComplianceFindingStatus::NotApplicable, $finding->fresh()->status, 'Manuelle Entscheidung bleibt erhalten.');
     }
 
     public function test_not_applicable_requires_justification(): void {

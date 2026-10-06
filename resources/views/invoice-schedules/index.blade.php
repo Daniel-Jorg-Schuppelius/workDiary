@@ -17,8 +17,7 @@
 @endphp
 
 @section('nav-title', __('Abrechnungspläne'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('Wiederkehrende Rechnungen: der Scheduler erzeugt ausschließlich Entwürfe — Ausstellung und Versand bleiben manuell.')"
@@ -60,7 +59,7 @@
                 <td class="whitespace-nowrap" data-sort-value="{{ $schedule->next_run_on->format('Y-m-d') }}">{{ $schedule->next_run_on->fdate() }}</td>
                 <td class="whitespace-nowrap">{{ $schedule->end_on?->fdate() ?? '—' }}</td>
                 <td>
-                    <x-status-badge size="sm" :tone="$schedule->statusTone()">{{ $schedule->statusLabel() }}</x-status-badge>
+                    <x-status-badge size="sm" :tone="$schedule->status->tone()">{{ $schedule->status->label() }}</x-status-badge>
                     @if (($blocked[$schedule->id] ?? false) === true)
                         {{-- Rechnungshoheit: externes Programm führt die Faktura — Plan läuft nicht. --}}
                         <span class="tooltip tooltip-left" data-tip="{{ __('Externes Fakturasystem führt die Rechnungen dieses Kunden — der Plan erzeugt keine Entwürfe.') }}">

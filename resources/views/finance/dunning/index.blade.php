@@ -15,8 +15,7 @@
 @section('title', __('finance.dunning.title'))
 @section('nav-title', __('finance.dunning.title'))
 
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
     <x-index-page overflow="clip" :subtitle="__('finance.dunning.subtitle')">
@@ -41,7 +40,7 @@
                 <span>{{ __('finance.dunning.interest_base_missing') }}</span>
             </div>
         @elseif ($interestRate > 0)
-            <div class="alert text-sm">
+            <div role="status" class="alert text-sm">
                 <x-icon name="percent" />
                 <span>{{ ($interestMode ?? 'fixed') === 'base_rate'
                     ? __('finance.dunning.interest_active_base', ['points' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($interestPoints, 2), 'rate' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($interestRate, 2)])
@@ -51,7 +50,7 @@
 
         @if (count($blocked) > 0)
             {{-- Mahnsperren: eigener Abschnitt — nie in der Auswahl. --}}
-            <details class="rounded-box border border-base-300 bg-base-100 shadow-xs">
+            <x-card as="details" padding="p-0">
                 <summary class="cursor-pointer px-4 py-3 text-sm font-medium">
                     {{ trans_choice('finance.dunning.blocked_heading', count($blocked), ['count' => count($blocked)]) }}
                 </summary>
@@ -72,12 +71,12 @@
                         @endforeach
                     </ul>
                 </div>
-            </details>
+            </x-card>
         @endif
 
         @if (count($waiting) > 0)
             {{-- Karenz läuft: sichtbar halten, damit nichts lautlos verschwindet. --}}
-            <details class="rounded-box border border-base-300 bg-base-100 shadow-xs">
+            <x-card as="details" padding="p-0">
                 <summary class="cursor-pointer px-4 py-3 text-sm font-medium">
                     {{ trans_choice('finance.dunning.waiting_heading', count($waiting), ['count' => count($waiting)]) }}
                 </summary>
@@ -94,7 +93,7 @@
                         @endforeach
                     </ul>
                 </div>
-            </details>
+            </x-card>
         @endif
 
         @php($bulkEnabled = count($candidates) > 0)

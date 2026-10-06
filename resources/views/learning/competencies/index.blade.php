@@ -12,7 +12,7 @@
   Variablen: $users (Paginator), $people, $matrix, $gaps, $catalog, $requirements
 --}}
 @extends('layouts.app')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 @section('title', __('learning.title.competencies'))
 @section('nav-title', __('learning.title.competencies'))
 @section('content')
@@ -110,7 +110,8 @@
                         @php $gap = $rowGaps[$competency->id] ?? null; @endphp
                         <td class="text-center">
                             @if ($gap !== null)
-                                <span class="badge badge-warning badge-sm" title="{{ __('learning.help.competency_gap', ['actual' => $gap['actual'], 'required' => $gap['required']]) }}">{{ $gap['actual'] }} / {{ $gap['required'] }}</span>
+                                <x-status-badge tone="warning"
+                                        title="{{ __('learning.help.competency_gap', ['actual' => $gap['actual'], 'required' => $gap['required']]) }}">{{ $gap['actual'] }} / {{ $gap['required'] }}</x-status-badge>
                             @else
                                 {{ $row['levels'][$competency->id] ?? '—' }}
                             @endif

@@ -40,9 +40,12 @@ class LicenseAdminController extends Controller {
     public function index(Request $request): View {
         Gate::authorize(Permission::PlatformLicenseView->value);
 
+        // Installationslizenz, Mandantenzahl und Feature-Flags sind Betreiberwissen (authz-b-7);
+        // die Organisation sieht ihre Lizenz, ihren Status und ihre Module.
+        $operator = $this->isPlatformOperator();
         $result = $this->service->current();
 
-        $orgCount = Organization::query()->count();
+        $orgCount = $operator ? Organization::query()->count() : null;
 
         // Org-gebundene Lizenz der aktuellen Organisation.
         $org = $request->user()?->organization;
@@ -51,30 +54,31 @@ class LicenseAdminController extends Controller {
         // Nutzer-Limit org-bezogen auswerten: maßgeblich ist die org-gebundene
         // Lizenz (sofern nutzbar), Auslastung sind die aktiven Org-Nutzer.
         $limitLicense = ($orgLicense !== null && $orgLicense->isUsable()) ? $orgLicense : $result;
-        $userCount = $org !== null ? $org->activeUserCount() : User::query()->count();
+        $userCount = $org !== null ? $org->activeUserCount() : ($operator ? User::query()->count() : 0);
 
         return view('admin.license.index', [
             'license' => $result,
             'badgeTone' => $this->badgeTone($result),
             'limits' => $this->limits($limitLicense, $userCount, $orgCount),
-            'features' => $this->features($result),
+            'showInstallation' => $operator,
+            'features' => $operator ? $this->features($result) : [],
             'expiresIn' => $this->expiresInDays($result),
             'isEnforced' => $this->service->isEnforced(),
-            'canInstall' => $request->user()?->can(Permission::PlatformLicenseInstall->value) ?? false,
-            'canToggleFlag' => $request->user()?->can(Permission::PlatformLicenseInstall->value) ?? false,
+            'canInstall' => $operator && ($request->user()?->can(Permission::PlatformLicenseInstall->value) ?? false),
+            'canToggleFlag' => $operator && ($request->user()?->can(Permission::PlatformLicenseInstall->value) ?? false),
             'org' => $org,
             'orgLicense' => $orgLicense,
             'orgBadgeTone' => $orgLicense !== null ? $this->badgeTone($orgLicense) : 'neutral',
             'orgExpiresIn' => $orgLicense !== null ? $this->expiresInDays($orgLicense) : null,
             'orgModules' => $this->orgModules($orgLicense),
-            'canIssue' => $this->service->canIssue(),
+            'canIssue' => $operator && $this->service->canIssue(),
             'moduleCodes' => $this->moduleCodes(),
             // Mandantenstatus (trial/active/suspended/expired); abgeleitet aus
             // tenant_status-Spalte bzw. Lizenz-Ablauf (Feature 021).
             'tenantStatus' => $org?->tenantStatus($orgLicense),
             'tenantStatusExplicit' => $org?->tenant_status,
             'tenantStatusOptions' => TenantStatus::assignable(),
-            'canManageTenant' => $request->user()?->can(Permission::PlatformLicenseInstall->value) ?? false,
+            'canManageTenant' => $operator && ($request->user()?->can(Permission::PlatformLicenseInstall->value) ?? false),
             // MVP-052: org-bezogene Modulkonfiguration (4-Zustands-Modell).
             'modules' => $org !== null ? $this->moduleStatus->forOrganization($org) : [],
             'canConfigureModules' => $request->user()?->can(Permission::PlatformFeatureFlagOverride->value) ?? false,
@@ -505,12 +509,14 @@ class LicenseAdminController extends Controller {
      *     percent:int|null, status:string,
      * }>
      */
-    private function limits(LicenseResult $result, int $userCount, int $orgCount): array {
+    private function limits(LicenseResult $result, int $userCount, ?int $orgCount): array {
         $payload = $result->payload;
         $rows = [];
 
         $rows[] = $this->limitRow('users', __('Nutzer'), $userCount, $payload?->maxUsers);
-        $rows[] = $this->limitRow('organizations', __('Organisationen'), $orgCount, null);
+        if ($orgCount !== null) {
+            $rows[] = $this->limitRow('organizations', __('Organisationen'), $orgCount, null);
+        }
 
         return $rows;
     }

@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Middleware;
 
 use App\Support\Auth\RecentAuthentication;
+use App\Support\UrlSafety;
 use Closure;
 use Illuminate\Http\{JsonResponse, Request, Response};
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
@@ -41,7 +42,9 @@ class RequireRecentAuthentication {
             ], Response::HTTP_LOCKED);
         }
 
-        $request->session()->put('url.intended', $request->fullUrl());
+        // Eine Schreibaktion lässt sich nach der Bestätigung nicht per GET wiederholen: zurück auf die Seite, von der sie kam.
+        $previous = url()->previous();
+        $request->session()->put('url.intended', $request->isMethod('GET') || ! UrlSafety::isSameOriginOrRelative($previous, $request->getHost()) ? $request->fullUrl() : $previous);
 
         return redirect($target);
     }

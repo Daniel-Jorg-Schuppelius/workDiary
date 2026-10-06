@@ -12,8 +12,7 @@
 @extends('layouts.app')
 @section('title', __('commission.page.agents'))
 @section('nav-title', __('commission.page.agents'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('commission.subtitle.agents')">
     <x-slot:actions>
@@ -27,13 +26,16 @@
 
     @include('sales._commission_tabs')
 
-    <x-table scroll="flex" table-sort="client">
+    <x-table scroll="flex" table-sort="server"
+             :route="route('commission-agents.index')"
+             :current-sort="$sort"
+             :current-dir="$dir">
         <x-slot:head>
             <tr>
-                <x-table.th sort type="string" default>{{ __('commission.field.agent_name') }}</x-table.th>
-                <x-table.th sort type="string">{{ __('commission.field.company') }}</x-table.th>
-                <x-table.th sort type="string">{{ __('commission.field.email') }}</x-table.th>
-                <x-table.th sort type="string" align="center">{{ __('commission.field.is_active') }}</x-table.th>
+                <x-table.th sort="name" default>{{ __('commission.field.agent_name') }}</x-table.th>
+                <x-table.th sort="company">{{ __('commission.field.company') }}</x-table.th>
+                <x-table.th sort="email">{{ __('commission.field.email') }}</x-table.th>
+                <x-table.th sort="is_active" align="center">{{ __('commission.field.is_active') }}</x-table.th>
                 <th></th>
             </tr>
         </x-slot:head>
@@ -56,5 +58,7 @@
             <x-table.empty icon="handshake" :colspan="5" :title="__('commission.empty.agents')" compact />
         @endforelse
     </x-table>
+
+    <x-pagination :paginator="$agents" standing />
 </x-index-page>
 @endsection

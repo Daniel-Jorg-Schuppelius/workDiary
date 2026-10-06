@@ -11,6 +11,7 @@
 namespace Tests\Feature\Finance;
 
 use App\Enums\Finance\{AccountType, AccountingEntryStatus, ProfitDetermination, RecurringInterval, RecurringRunStatus, RecurringTemplateKind, RecurringTemplateStatus};
+use App\Enums\Invoicing\IncomingEInvoiceStatus;
 use App\Models\Accounting\{AccountingAccount, AccountingEntry, AccountingRecurringRun, AccountingRecurringTemplate};
 use App\Models\Invoicing\IncomingEInvoice;
 use App\Models\Platform\{Organization, User};
@@ -167,7 +168,7 @@ class AccountingRecurringTest extends TestCase {
             'sha256' => hash('sha256', 'telefon-01'),
             'source' => 'upload',
             'received_at' => now(),
-            'status' => IncomingEInvoice::STATUS_APPROVED,
+            'status' => IncomingEInvoiceStatus::Approved,
             'invoice_number' => 'TK-2026-01',
             'seller_name' => 'Telefon AG',
             'issue_date' => $this->startsOn->addDays(5)->toDateString(),

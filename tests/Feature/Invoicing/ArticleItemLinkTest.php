@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Invoicing;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Article\Article;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
@@ -59,7 +60,7 @@ class ArticleItemLinkTest extends TestCase {
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
             'number' => 'R2030-' . fake()->unique()->numerify('####'),
-            'status' => Invoice::STATUS_DRAFT,
+            'status' => InvoiceStatus::Draft,
             'currency' => 'EUR',
             'tax_rate' => '19.00',
             'created_by' => $this->admin->id,

@@ -16,8 +16,8 @@ use App\Models\Audit\AuditLog;
 use App\Models\Classification\BranchProfileVariant;
 use App\Models\Platform\User;
 use App\Services\Classification\{BranchProfileInstaller, BranchProfileVariantService};
-use App\Support\ErrorText;
-use CommonToolkit\Helper\FileSystem\{File, Folder};
+use App\Support\{BranchProfileFiles, ErrorText};
+use CommonToolkit\Helper\FileSystem\Folder;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\{Arr, Collection};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -176,7 +176,7 @@ class BranchProfileController extends Controller {
      * Installer-Kern angewendet wie die mitgelieferten Profile.
      */
     public function import(Request $request): RedirectResponse {
-        $this->authorizeViewCatalog();
+        $this->authorizeInstall();
 
         $request->validate([
             'file' => ['required', 'file', 'max:2048', 'mimetypes:application/json,text/plain'],
@@ -251,9 +251,7 @@ class BranchProfileController extends Controller {
 
             // MVP-841: Vorschau in der Sprache des Nutzers (Beilage i18n/<code>.php).
             $profileCode = (string) ($profile['code'] ?? pathinfo($file, PATHINFO_FILENAME));
-            $i18nFile = database_path("data/branchprofiles/i18n/{$profileCode}.php");
-            /** @var array<string, array<string, array<string, string>>> $i18n */
-            $i18n = File::isFile($i18nFile) ? (array) require $i18nFile : [];
+            $i18n = BranchProfileFiles::sidecar($profileCode);
             $locale = strtolower(substr(app()->getLocale(), 0, 2));
 
             /** @var list<array<string, mixed>> $entryTypeRows */

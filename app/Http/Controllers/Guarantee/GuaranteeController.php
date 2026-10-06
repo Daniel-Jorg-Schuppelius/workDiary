@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Guarantee;
 
 use App\Enums\Guarantee\{GuaranteeDirection, GuaranteeStatus};
+use App\Enums\Invoicing\RetentionStatus;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Guarantee\SaveGuaranteeRequest;
@@ -133,6 +134,26 @@ class GuaranteeController extends Controller {
         }
 
         return back()->with('status', __('guarantee.drawn'));
+    }
+
+    /**
+     * Dialog „Einbehalt ablösen": bietet nur an, was {@see GuaranteeService::secureRetention()}
+     * annimmt — offen, gleiche Organisation, von der Bürgschaft gedeckt.
+     */
+    public function secureDialog(Guarantee $guarantee): View {
+        $this->authorizeBilling();
+
+        return view('guarantees._secure_dialog', [
+            'guarantee' => $guarantee,
+            'retentions' => InvoiceRetention::query()
+                ->with(['invoice:id,number,customer_id', 'invoice.customer:id,name,company'])
+                ->where('organization_id', $guarantee->organization_id)
+                ->where('status', RetentionStatus::Open->value)
+                ->where('currency', $guarantee->currency)
+                ->where('amount', '<=', $guarantee->amount->getAmount())
+                ->orderByRaw('due_on IS NULL, due_on')
+                ->get(),
+        ]);
     }
 
     /** Bürgschaft löst einen Sicherheitseinbehalt ab (MVP-602 ↔ MVP-603). */

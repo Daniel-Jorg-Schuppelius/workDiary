@@ -13,8 +13,7 @@
 @extends('layouts.app')
 @section('title', __('learning.title.questions'))
 @section('nav-title', __('learning.title.questions'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('learning.subtitle.questions')">
     <x-slot:actions>
@@ -36,7 +35,7 @@
                     <label class="sr-only" for="cat-name-{{ $cat->sqid }}">{{ __('learning.field.category') }}</label>
                     <input type="text" id="cat-name-{{ $cat->sqid }}" name="name" value="{{ $cat->name }}" minlength="2" maxlength="120" required
                            class="input input-xs input-bordered w-40">
-                    <span class="badge badge-ghost badge-sm">{{ $cat->questions_count }}</span>
+                    <x-status-badge>{{ $cat->questions_count }}</x-status-badge>
                     <x-icon-btn icon="save" tone="ghost" size="xs" type="submit" :label="__('learning.action.rename_category')" />
                 </form>
                 @if ((int) $cat->questions_count === 0)
@@ -88,7 +87,7 @@
             </select>
         </x-filter-field>
         <x-filter-field :label="__('learning.field.questions')" for="flt-q-total">
-            <span id="flt-q-total" class="badge badge-ghost badge-sm">{{ $total }}</span>
+            <x-status-badge id="flt-q-total">{{ $total }}</x-status-badge>
         </x-filter-field>
     </x-filter-bar>
 
@@ -116,7 +115,7 @@
                 <td class="text-center text-sm">{{ $question->points }}</td>
                 <td class="text-sm">
                     @forelse ($question->quizzes as $quiz)
-                        <span class="badge badge-ghost badge-sm">{{ $quiz->title }}</span>
+                        <x-status-badge>{{ $quiz->title }}</x-status-badge>
                     @empty
                         <span class="text-muted">–</span>
                     @endforelse

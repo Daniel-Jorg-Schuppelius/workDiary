@@ -258,7 +258,7 @@ class ServiceTicketController extends Controller {
         $ticket->delete();
 
         return redirect()
-            ->route('service-tickets.index')
+            ->toList('service-tickets.index')
             ->with('success', __('Ticket gelöscht.'));
     }
 

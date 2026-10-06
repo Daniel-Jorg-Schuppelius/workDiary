@@ -11,6 +11,7 @@
 namespace Tests\Feature\Finance;
 
 use App\Enums\Finance\{AccountType, OpenItemDirection, OpenItemStatus, PostingAccountRole, PostingSourceKind, ProfitDetermination, SettlementKind};
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Accounting\{AccountingAccount, AccountingOpenItem, AccountingOpenItemSettlement, AccountingPostingRule};
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
@@ -100,7 +101,7 @@ class AccountingOpenItemTest extends TestCase {
             'organization_id' => $this->org->id,
             'customer_id' => $customer->id,
             'number' => 'RE-' . fake()->unique()->numberBetween(1000, 9999),
-            'status' => Invoice::STATUS_ISSUED,
+            'status' => InvoiceStatus::Issued,
             'issued_on' => $this->startsOn->addMonth()->toDateString(),
             'due_on' => $this->startsOn->addMonth()->addDays(14)->toDateString(),
             'currency' => 'EUR',

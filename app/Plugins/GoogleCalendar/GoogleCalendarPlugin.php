@@ -16,7 +16,7 @@ use App\Plugins\Contracts\{CalendarPublisher, PluginCapability};
 use App\Plugins\GoogleCalendar\Api\GoogleCalendarClient;
 use App\Plugins\GoogleCalendar\Models\GoogleCalendarConnection;
 use App\Plugins\Support\Calendar\{OrganizationEventSource, RemoteCalendarEvent, RemoteCalendarPublishService};
-use App\Plugins\Support\PluginOrgContext;
+use App\Plugins\Support\{OAuthConnectionStatus, PluginOrgContext};
 use Closure;
 use Throwable;
 
@@ -134,7 +134,7 @@ class GoogleCalendarPlugin extends AbstractPlugin implements CalendarPublisher {
         }
 
         $connection = GoogleCalendarConnection::query()->where('organization_id', $org->id)->first();
-        if (! $connection instanceof GoogleCalendarConnection || $connection->status === GoogleCalendarConnection::STATUS_DISCONNECTED) {
+        if (! $connection instanceof GoogleCalendarConnection || $connection->status === OAuthConnectionStatus::Disconnected) {
             return PluginHealth::degraded(__('google_calendar::google_calendar.health.no_connection'));
         }
         if (! $connection->isActive()) {

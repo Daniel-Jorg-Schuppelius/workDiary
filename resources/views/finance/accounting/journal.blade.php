@@ -15,8 +15,7 @@
 @section('title', __('accounting.ledger.journal.title'))
 @section('nav-title', __('accounting.ledger.journal.title'))
 
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
     <x-index-page overflow="clip" :subtitle="__('accounting.ledger.journal.subtitle')">

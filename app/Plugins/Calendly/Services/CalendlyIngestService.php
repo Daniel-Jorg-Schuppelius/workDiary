@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace App\Plugins\Calendly\Services;
 
+use App\Enums\Calendar\AppointmentRequestStatus;
+use App\Enums\Integration\IntegrationInboxStatus;
 use App\Models\Calendar\AppointmentRequest;
 use App\Models\Integration\IntegrationInboxItem;
 use App\Models\Platform\Organization;
@@ -85,7 +87,7 @@ class CalendlyIngestService {
                 'organization_id' => $organization->id,
                 'source' => AppointmentRequest::SOURCE_CALENDLY,
                 'source_uri' => $inviteeUri,
-                'status' => AppointmentRequest::STATUS_REQUESTED,
+                'status' => AppointmentRequestStatus::Requested,
             ]);
         }
         /** @var AppointmentRequest $request */
@@ -133,7 +135,7 @@ class CalendlyIngestService {
         $rescheduled = (bool) ($invitee['rescheduled'] ?? false);
         $newInvitee = $this->uri($invitee['new_invitee'] ?? null);
         $cancellation = is_array($invitee['cancellation'] ?? null) ? $invitee['cancellation'] : null;
-        $targetStatus = $rescheduled ? AppointmentRequest::STATUS_SUPERSEDED : AppointmentRequest::STATUS_CANCELED;
+        $targetStatus = $rescheduled ? AppointmentRequestStatus::Superseded : AppointmentRequestStatus::Canceled;
 
         $request = $this->find($organization, $inviteeUri);
         if (! $request instanceof AppointmentRequest) {
@@ -162,10 +164,10 @@ class CalendlyIngestService {
 
     /** Markiert den Vorgänger einer Umbuchung als abgelöst und gibt seinen Dispositionseintrag frei. */
     private function supersede(AppointmentRequest $predecessor, string $newInviteeUri): void {
-        if (in_array($predecessor->status, [AppointmentRequest::STATUS_SUPERSEDED, AppointmentRequest::STATUS_CANCELED], true)) {
+        if (! $predecessor->status->canTransitionTo(AppointmentRequestStatus::Superseded)) {
             return;
         }
-        $predecessor->status = AppointmentRequest::STATUS_SUPERSEDED;
+        $predecessor->status = AppointmentRequestStatus::Superseded;
         $predecessor->rescheduled_to_uri = $newInviteeUri;
         $predecessor->save();
 
@@ -222,7 +224,7 @@ class CalendlyIngestService {
                 'external_id' => (string) $request->source_uri,
                 'group_key' => $request->service_label ?? 'calendly',
                 'case_type' => IntegrationInboxItem::CASE_UNMATCHED,
-                'status' => IntegrationInboxItem::STATUS_OPEN,
+                'status' => IntegrationInboxStatus::Open,
                 'referenceable_type' => $request->getMorphClass(),
                 'referenceable_id' => $request->getKey(),
                 'remote_snapshot' => $invitee,

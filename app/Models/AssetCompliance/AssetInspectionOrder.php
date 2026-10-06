@@ -14,6 +14,7 @@ namespace App\Models\AssetCompliance;
 
 use App\Enums\AssetCompliance\AssetInspectionOrderStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Concerns\HasAccessToken;
 use App\Models\Supplier\Supplier;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
@@ -46,6 +47,7 @@ use Illuminate\Support\Carbon;
 class AssetInspectionOrder extends Model {
     use Auditable;
     use BelongsToOrganization;
+    use HasAccessToken;
     use HasSqid;
 
     protected $fillable = [

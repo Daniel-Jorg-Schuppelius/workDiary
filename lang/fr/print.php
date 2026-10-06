@@ -155,7 +155,6 @@ return [
         'approval_stale' => 'Le fichier a été modifié après validation — l\'ordre redevient à contrôler/valider.',
         'machine_foreign' => 'La machine n\'appartient pas à cette organisation.',
         'machine_inspection_overdue' => 'Machine avec contrôle/étalonnage obligatoire en retard — démarrage interdit.',
-        'qc_result_invalid' => 'Résultat CQ invalide.',
         'invalid_transition' => 'Changement de statut non autorisé.',
         'invalid_transition_detail' => 'Changement de statut non autorisé : :from → :to.',
         'shipment_required' => 'La remise par expédition exige une expédition existante.',

@@ -145,7 +145,7 @@ final class McpAuthorizationServer {
         McpOAuthCode::query()->create([
             'mcp_oauth_client_id' => $client->id,
             'user_id' => $user->id,
-            'code_hash' => self::digest($code),
+            'code_hash' => CryptoHelper::hash($code),
             'redirect_uri' => $redirectUri,
             'code_challenge' => $challenge,
             'scopes' => $scopes,
@@ -166,7 +166,7 @@ final class McpAuthorizationServer {
         $client = $this->client($clientId);
 
         $tokens = DB::transaction(function () use ($client, $code, $redirectUri, $verifier): ?array {
-            $row = McpOAuthCode::query()->where('code_hash', self::digest($code))->where('mcp_oauth_client_id', $client->id)->lockForUpdate()->first();
+            $row = McpOAuthCode::query()->where('code_hash', CryptoHelper::hash($code))->where('mcp_oauth_client_id', $client->id)->lockForUpdate()->first();
             if ($row === null) {
                 throw new McpOAuthException('invalid_grant', (string) __('mcp.oauth.error.grant'));
             }
@@ -205,7 +205,7 @@ final class McpAuthorizationServer {
         $client = $this->client($clientId);
 
         $tokens = DB::transaction(function () use ($client, $refreshToken): ?array {
-            $row = McpOAuthRefreshToken::query()->where('token_hash', self::digest($refreshToken))->where('mcp_oauth_client_id', $client->id)->lockForUpdate()->first();
+            $row = McpOAuthRefreshToken::query()->where('token_hash', CryptoHelper::hash($refreshToken))->where('mcp_oauth_client_id', $client->id)->lockForUpdate()->first();
             if ($row === null) {
                 throw new McpOAuthException('invalid_grant', (string) __('mcp.oauth.error.grant'));
             }
@@ -231,7 +231,7 @@ final class McpAuthorizationServer {
         if ($client === null || $token === '') {
             return;
         }
-        $family = McpOAuthRefreshToken::query()->where('token_hash', self::digest($token))->where('mcp_oauth_client_id', $client->id)->value('family');
+        $family = McpOAuthRefreshToken::query()->where('token_hash', CryptoHelper::hash($token))->where('mcp_oauth_client_id', $client->id)->value('family');
         if ($family === null) {
             $access = PersonalAccessToken::findToken($token);
             $family = $access === null ? null : McpOAuthRefreshToken::query()
@@ -254,7 +254,8 @@ final class McpAuthorizationServer {
     private function userMayConnect(?User $user): bool {
         $organization = $user?->organization;
 
-        return $user instanceof User && $organization instanceof Organization && $this->enabledFor($organization);
+        // Ein deaktiviertes Konto tauscht weder einen offenen Code noch erneuert es ein Token (pub-2).
+        return $user instanceof User && $user->canLogin() && $organization instanceof Organization && $this->enabledFor($organization);
     }
 
     /**
@@ -269,7 +270,7 @@ final class McpAuthorizationServer {
             'user_id' => $user->id,
             'personal_access_token_id' => $access->accessToken->id,
             'family' => $family,
-            'token_hash' => self::digest($refresh),
+            'token_hash' => CryptoHelper::hash($refresh),
             'scopes' => $scopes,
             'expires_at' => now()->addDays(self::REFRESH_TTL_DAYS),
         ]);
@@ -320,9 +321,5 @@ final class McpAuthorizationServer {
     /** @param  array<string, mixed>  $params */
     private static function text(array $params, string $key): string {
         return isset($params[$key]) && is_string($params[$key]) ? $params[$key] : '';
-    }
-
-    private static function digest(string $value): string {
-        return (string) CryptoHelper::hash($value);
     }
 }

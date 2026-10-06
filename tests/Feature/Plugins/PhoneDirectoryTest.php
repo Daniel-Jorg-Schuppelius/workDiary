@@ -14,7 +14,7 @@ namespace Tests\Feature\Plugins;
 
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
-use App\Plugins\Fritzbox\{FritzboxGroupBooker, FritzboxImportService, FritzboxSuggestionService};
+use App\Plugins\Fritzbox\Services\{FritzboxGroupBooker, FritzboxImportService, FritzboxSuggestionService};
 use App\Plugins\Fritzbox\Sources\FritzboxCall;
 use App\Services\Contacts\ExternalPhoneContactDirectory;
 use Carbon\CarbonImmutable;

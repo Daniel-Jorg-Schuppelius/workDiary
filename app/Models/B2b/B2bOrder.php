@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Models\B2b;
 
 use App\Casts\MoneyCast;
+use App\Enums\B2b\B2bOrderStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Customer\Customer;
 use App\Models\Diary\DiaryEntry;
@@ -41,7 +42,7 @@ use Illuminate\Support\Carbon;
  * @property \CommonToolkit\ValueObjects\Money|null $total_net
  * @property array<int, array<string, mixed>> $lines
  * @property string $source
- * @property string $status
+ * @property B2bOrderStatus $status
  * @property Carbon|null $ordered_at
  * @property Carbon|null $requested_delivery_date
  * @property int|null $diary_entry_id
@@ -55,10 +56,6 @@ class B2bOrder extends Model {
     use HasFactory;
 
     use HasSqid;
-
-    public const STATUS_OPEN = 'open';
-    public const STATUS_BOOKED = 'booked';
-    public const STATUS_DISMISSED = 'dismissed';
 
     public const SOURCE_UPLOAD = 'upload';
     public const SOURCE_MAIL = 'mail';
@@ -91,15 +88,16 @@ class B2bOrder extends Model {
         'ordered_at' => 'datetime',
         'requested_delivery_date' => 'date',
         'booked_at' => 'datetime',
+        'status' => B2bOrderStatus::class,
     ];
 
     public function isOpen(): bool {
-        return $this->status === self::STATUS_OPEN;
+        return $this->status === B2bOrderStatus::Open;
     }
 
     /** @param Builder<B2bOrder> $query */
     public function scopeOpen(Builder $query): void {
-        $query->where('status', self::STATUS_OPEN);
+        $query->where('status', B2bOrderStatus::Open);
     }
 
     /** @return BelongsTo<B2bCatalogAccess, $this> */

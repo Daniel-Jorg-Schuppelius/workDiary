@@ -14,7 +14,7 @@ use App\Http\Controllers\Concerns\ManagesShiftLike;
 use App\Http\Controllers\Controller;
 use App\Models\Diary\OnCallShift;
 use App\Models\Platform\User;
-use App\Support\Tz;
+use App\Support\{Sqid, Tz};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -95,6 +95,7 @@ class OnCallShiftController extends Controller {
     private function validateShift(Request $request): array {
         // datetime-local (Wanduhrzeit) in aktiver Anzeige-Zeitzone → UTC.
         $request->merge([
+            'user_id' => Sqid::decodeOrNumeric(User::class, $request->input('user_id')),
             'start_at' => Tz::toUtcString($request->input('start_at')),
             'end_at' => Tz::toUtcString($request->input('end_at')),
         ]);

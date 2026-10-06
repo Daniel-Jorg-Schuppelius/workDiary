@@ -10,8 +10,7 @@
 
 @section('title', __('Datentransfer'))
 @section('nav-title', __('Datentransfer'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('Daten von :org als CSV oder Excel exportieren — gleiche Spalten wie der Import (Round-Trip).', ['org' => $organization->name])">
@@ -83,12 +82,12 @@
     <h3 class="mb-2 mt-6 flex items-center gap-2 text-sm font-semibold text-base-content/70">
         <x-icon name="history" class="text-muted" size="1em" />
         {{ __('Letzte Exporte') }}
-        @if ($runs->isNotEmpty())
-            <span class="font-normal text-muted">({{ $runs->count() }})</span>
+        @if ($runs->total() > 0)
+            <span class="font-normal text-muted">({{ $runs->total() }})</span>
         @endif
     </h3>
 
-    @if ($runs->isEmpty())
+    @if ($runs->total() === 0)
         <x-empty-state framed
             icon="download"
             :title="__('Noch keine Exporte vorhanden')"
@@ -129,6 +128,8 @@
                 </tr>
             @endforeach
         </x-table>
+
+        <x-pagination :paginator="$runs" standing />
     @endif
 </x-index-page>
 @endsection

@@ -83,7 +83,7 @@
                 <x-input-field name="retired_on" type="date" :label="__('sustainability.offset.field.retired_on')" />
                 <x-input-field name="registry_reference" :label="__('sustainability.offset.field.registry_reference')" />
                 <x-input-field name="note" :label="__('sustainability.offset.field.note')" />
-                <div class="sm:col-span-4 flex justify-end"><button type="submit" class="btn btn-sm">{{ __('sustainability.offset.add') }}</button></div>
+                <div class="sm:col-span-4 flex justify-end"><x-button type="submit" tone="plain">{{ __('sustainability.offset.add') }}</x-button></div>
             </form>
         @endif
     </x-card>
@@ -93,11 +93,11 @@
         <form method="POST" action="{{ route('sustainability.claims.check') }}" class="grid gap-2">
             @csrf
             <x-textarea-field name="claim_text" rows="3" :label="__('sustainability.claim.text')" required>{{ old('claim_text', $claimText) }}</x-textarea-field>
-            <div class="flex justify-end"><button type="submit" class="btn btn-sm">{{ __('sustainability.claim.check') }}</button></div>
+            <div class="flex justify-end"><x-button type="submit" tone="plain">{{ __('sustainability.claim.check') }}</x-button></div>
         </form>
         @if (session('claim_checked'))
             @if ($findings === [])
-                <div class="alert alert-success mt-3 text-sm">{{ __('sustainability.claim.none') }}</div>
+                <div role="status" class="alert alert-success mt-3 text-sm">{{ __('sustainability.claim.none') }}</div>
             @else
                 <ul class="mt-3 space-y-1 text-sm">
                     @foreach ($findings as $finding)

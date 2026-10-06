@@ -11,9 +11,9 @@
 namespace Tests\Feature\Inventory;
 
 use App\Contracts\Inventory\ExternalInventoryDispatcher;
+use App\Enums\Integration\ExternalConflictStatus;
 use App\Enums\Inventory\OutboxStatus;
 use App\Jobs\Inventory\InventoryOutboxDeliveryJob;
-use App\Models\Integration\PendingExternalConflict;
 use App\Models\Inventory\{InventoryOutboxEntry, StockMovement};
 use App\Services\Inventory\{ExternalInventoryDispatcherResolver, InventoryOutboxService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -88,7 +88,7 @@ final class InventoryOutboxTest extends TestCase {
         $this->assertDatabaseHas('pending_external_conflicts', [
             'conflict_type' => 'inventory_outbox',
             'referenceable_id' => $movement->id,
-            'status' => PendingExternalConflict::STATUS_OPEN,
+            'status' => ExternalConflictStatus::Open->value,
         ]);
     }
 

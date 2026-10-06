@@ -3,19 +3,20 @@
  *
  * Reads window.__scheduleConfig set by the Blade index view.
  * Alle Interaktionen laufen über data-Attribute + Event-Delegation
- * (data-schedule-cell/-drop, data-shift-drag/-edit, data-slot-open/-suggest,
- * data-type-edit/-delete) — Inline-Event-Attribute sind unter der Nonce-CSP
- * (CSP_SCRIPT_NONCE) blockiert und werden hier nicht mehr verwendet.
+ * (data-schedule-cell/-drop, data-shift-drag/-handle/-edit,
+ * data-slot-open/-suggest, data-type-edit/-delete) — Inline-Event-Attribute
+ * sind unter der Nonce-CSP (CSP_SCRIPT_NONCE) blockiert und werden hier nicht
+ * mehr verwendet.
  */
 
 import { __ } from "./i18n.js";
 import { escHtml, escCssValue, html, setHtml, clearHtml } from "./lib/html.js";
 import { request } from "./lib/http.js";
+import { pointerSort } from "./lib/pointer-sort.js";
 
 /* ──────────────────────────── State ──────────────────────────── */
 
 let _cfg = null; // window.__scheduleConfig
-let _dragShiftId = null; // shift id being dragged
 
 /* ──────────────────── Notify helper ──────────────────────────── */
 
@@ -70,7 +71,7 @@ document.addEventListener("DOMContentLoaded", function () {
         ?.addEventListener("click", shiftTypeResetForm);
 });
 
-/* ───────────── Delegierte Klick-/Drag-Handler (statt Inline) ───────────── */
+/* ───────────── Delegierte Klick-/Zug-Handler (statt Inline) ───────────── */
 
 document.addEventListener("click", (event) => {
     const target = event.target instanceof Element ? event.target : null;
@@ -167,35 +168,22 @@ document.addEventListener("click", (event) => {
     }
 });
 
-document.addEventListener("dragstart", (event) => {
-    const badge = /** @type {HTMLElement | null} */ (
-        event.target instanceof Element
-            ? event.target.closest("[data-shift-drag]")
-            : null
-    );
-    if (!badge) return;
-    _dragShiftId = badge.dataset.shiftDrag;
-    event.dataTransfer.effectAllowed = "move";
-    event.dataTransfer.setData("text/plain", String(_dragShiftId));
-});
-
-document.addEventListener("dragover", (event) => {
-    if (
-        event.target instanceof Element &&
-        event.target.closest("[data-schedule-drop]")
-    ) {
-        event.preventDefault();
-    }
-});
-
-document.addEventListener("drop", (event) => {
-    const cell = /** @type {HTMLElement | null} */ (
-        event.target instanceof Element
-            ? event.target.closest("[data-schedule-drop]")
-            : null
-    );
-    if (!cell) return;
-    scheduleDropCell(event, cell.dataset.date, cell.dataset.dropUser || null);
+// Schicht auf eine andere Zelle ziehen (lib/pointer-sort.js). Die Maus zieht
+// am ganzen Abzeichen; Finger und Stift nur am Griff — sonst ließe sich die
+// Matrix, die in beide Richtungen scrollt, über den Abzeichen nicht mehr
+// wischen. Der Zug scrollt die Matrix am Rand in beide Richtungen mit.
+pointerSort(document, {
+    item: "[data-shift-drag]",
+    list: ".schedule-cell",
+    handle: "[data-shift-handle]",
+    mouseAnywhere: true,
+    target: "[data-schedule-drop]",
+    axis: "both",
+    scrollAxis: "both",
+    // Wichtig-Marke: sonst gewinnt hover:opacity-80 des Abzeichens.
+    draggingClass: ["opacity-50!"],
+    targetClass: ["drag-over"],
+    onDrop: ({ item, target }) => moveShift(item, target),
 });
 
 /**
@@ -221,19 +209,29 @@ function applyShiftTypeDefaults(event) {
     if (endEl && de) endEl.value = de;
 }
 
-/* ────────────────────── Drag & Drop ──────────────────────────── */
+/* ──────────────────── Schicht verschieben ────────────────────── */
 
-function scheduleDropCell(event, date, userId) {
-    event.preventDefault();
-    if (!_dragShiftId) return;
+/**
+ * Abgelegte Schicht umbuchen: neuer Tag, in der Wochenmatrix auch neuer
+ * Mitarbeiter (die Monatszelle trägt keinen).
+ *
+ * @param {HTMLElement} badge
+ * @param {HTMLElement} cell
+ */
+function moveShift(badge, cell) {
+    const id = badge.dataset.shiftDrag;
+    const date = cell.dataset.date;
+    if (!id || !date) return;
+    // Zurück in die eigene Zelle gelegt: nichts zu ändern.
+    if (badge.closest("[data-schedule-drop]") === cell) return;
 
-    const id = _dragShiftId;
-    _dragShiftId = null;
-
+    /** @type {Record<string, string>} */
     const body = { date };
-    if (userId) body.user_id = userId;
+    if (cell.dataset.dropUser) body.user_id = cell.dataset.dropUser;
 
-    apiFetch("PATCH", `${_cfg.routes.shiftsUpdate}/${id}`, body)
+    // PUT wie der Schicht-Dialog: die Route kennt kein PATCH, die Regeln
+    // des Requests nehmen das Teil-Update.
+    apiFetch("PUT", `${_cfg.routes.shiftsUpdate}/${id}`, body)
         .then(() => window.location.reload())
         .catch((err) =>
             notifyError(err.message ?? __("js.schedule.move_failed")),

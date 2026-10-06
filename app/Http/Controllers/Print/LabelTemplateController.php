@@ -30,7 +30,7 @@ class LabelTemplateController extends Controller {
         $this->canView();
 
         return view('inventory.label-templates.index', [
-            'templates' => LabelTemplate::query()->orderByDesc('is_default')->orderBy('name')->get(),
+            'templates' => LabelTemplate::query()->orderByDesc('is_default')->orderBy('name')->orderBy('id')->paginate(25)->withQueryString(),
             'canManage' => Auth::user()?->can(P::InventoryConfigure->value) ?? false,
         ]);
     }
@@ -46,7 +46,7 @@ class LabelTemplateController extends Controller {
         $template = LabelTemplate::query()->create($this->validated($request));
         $this->applyDefault($template);
 
-        return redirect()->route('inventory.label-templates.index')->with('success', __('inventory.label_template.flash.saved'));
+        return redirect()->toList('inventory.label-templates.index')->with('success', __('inventory.label_template.flash.saved'));
     }
 
     public function edit(LabelTemplate $labelTemplate): View {
@@ -60,14 +60,14 @@ class LabelTemplateController extends Controller {
         $labelTemplate->update($this->validated($request));
         $this->applyDefault($labelTemplate);
 
-        return redirect()->route('inventory.label-templates.index')->with('success', __('inventory.label_template.flash.saved'));
+        return redirect()->toList('inventory.label-templates.index')->with('success', __('inventory.label_template.flash.saved'));
     }
 
     public function destroy(LabelTemplate $labelTemplate): RedirectResponse {
         $this->canManage();
         $labelTemplate->delete();
 
-        return redirect()->route('inventory.label-templates.index')->with('success', __('inventory.label_template.flash.deleted'));
+        return redirect()->toList('inventory.label-templates.index')->with('success', __('inventory.label_template.flash.deleted'));
     }
 
     /** @return array<string, mixed> */

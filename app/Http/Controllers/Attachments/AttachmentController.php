@@ -32,23 +32,7 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 class AttachmentController extends Controller {
     public function __construct(private readonly ImageMetaUploader $imageUploader) {}
 
-    // Größenlimit: {@see FileAttacher::maxKb()} — eine Wahrheit, org-konfigurierbar (uploads.attachment_kb).
-    public const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'txt', 'csv', 'log', 'zip', 'docx', 'xlsx'];
-
-    /** Serverseitig akzeptierte MIME-Typen, geprüft über PHP Fileinfo (nicht Client-Header) */
-    public const ALLOWED_MIMES = [
-        'image/jpeg',
-        'image/png',
-        'image/gif',
-        'image/webp',
-        'application/pdf',
-        'text/plain',
-        'text/csv',
-        'application/zip',
-        'application/x-zip-compressed',
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    ];
+    // Größenlimit und Positivliste: {@see FileAttacher} — eine Wahrheit, das Limit org-konfigurierbar (uploads.attachment_kb).
 
     /**
      * Route-Typ → Modell. Öffentlich, damit die attachments.store-Route ihre
@@ -125,13 +109,13 @@ class AttachmentController extends Controller {
         }
 
         $ext = strtolower($file->getClientOriginalExtension() ?: ($file->extension() ?? ''));
-        if (! in_array($ext, self::ALLOWED_EXTENSIONS, true)) {
+        if (! in_array($ext, FileAttacher::ALLOWED_EXTENSIONS, true)) {
             return back()->withErrors(['file' => __('Dateityp nicht erlaubt.')]);
         }
 
         // Serverseitiger MIME-Check über PHP Fileinfo – unabhängig vom Client-Header
         $serverMime = $file->getMimeType() ?? '';
-        if (! in_array($serverMime, self::ALLOWED_MIMES, true)) {
+        if (! in_array($serverMime, FileAttacher::ALLOWED_MIMES, true)) {
             return back()->withErrors(['file' => __('Dateityp nicht erlaubt.')]);
         }
 

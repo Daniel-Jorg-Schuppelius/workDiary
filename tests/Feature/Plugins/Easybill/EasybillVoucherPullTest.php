@@ -11,6 +11,7 @@
 namespace Tests\Feature\Plugins\Easybill;
 
 use App\Enums\Billing\{DocumentDirection, DocumentKind};
+use App\Enums\Finance\AccountingVoucherState;
 use App\Models\Customer\Customer;
 use App\Models\Finance\AccountingVoucher;
 use App\Models\Integration\ExternalReference;
@@ -86,7 +87,7 @@ class EasybillVoucherPullTest extends TestCase {
         $this->assertSame(EasybillPlugin::ID, $open->plugin_id);
         $this->assertSame(DocumentDirection::Outgoing->value, $open->direction);
         $this->assertSame(DocumentKind::Invoice->value, $open->document_kind);
-        $this->assertSame('open', $open->voucher_state);
+        $this->assertSame(AccountingVoucherState::Open, $open->voucher_state);
         // easybill liefert CENTS — 119000 sind 1190,00 €, nicht 119.000 €.
         $this->assertSame('1190.00', (string) $open->total_amount);
         $this->assertSame('1000.00', (string) $open->net_amount);
@@ -94,7 +95,7 @@ class EasybillVoucherPullTest extends TestCase {
         $this->assertFalse($open->is_cancellation);
 
         $paid = AccountingVoucher::query()->where('external_id', '4712')->firstOrFail();
-        $this->assertSame('paid', $paid->voucher_state);
+        $this->assertSame(AccountingVoucherState::Paid, $paid->voucher_state);
         $this->assertSame('0.00', (string) $paid->open_amount);
         $this->assertSame('2026-08-10', $paid->paid_date?->toDateString());
 

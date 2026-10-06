@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\DocumentDesign;
 
-use App\Enums\DocumentDesign\{InformationBlock, InformationBlockState};
+use App\Enums\DocumentDesign\{InformationBlock, InformationBlockState, RenderProfileVersionStatus};
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
 use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
@@ -27,7 +27,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $organization_id
  * @property int $document_render_profile_id
  * @property int $version
- * @property string $status
+ * @property RenderProfileVersionStatus $status
  * @property int|null $first_asset_id
  * @property int|null $following_asset_id
  * @property array<string, mixed> $layout
@@ -42,12 +42,6 @@ class DocumentRenderProfileVersion extends Model {
     use BelongsToOrganization;
 
     use HasSqid;
-
-    public const STATUS_DRAFT = 'draft';
-
-    public const STATUS_ACTIVE = 'active';
-
-    public const STATUS_SUPERSEDED = 'superseded';
 
     protected $fillable = [
         'organization_id',
@@ -76,6 +70,7 @@ class DocumentRenderProfileVersion extends Model {
         'content_texts' => 'array',
         'override_sections' => 'array',
         'activated_at' => 'datetime',
+        'status' => RenderProfileVersionStatus::class,
     ];
 
     protected static function booted(): void {
@@ -83,7 +78,7 @@ class DocumentRenderProfileVersion extends Model {
         // Versionen dürfen ihren Layoutstand nicht mehr ändern — nur der
         // Statuswechsel active→superseded bleibt erlaubt.
         static::updating(function (self $version): void {
-            if ($version->getOriginal('status') === self::STATUS_DRAFT) {
+            if ($version->getOriginal('status') === RenderProfileVersionStatus::Draft) {
                 return;
             }
             $changed = array_keys($version->getDirty());
@@ -115,7 +110,7 @@ class DocumentRenderProfileVersion extends Model {
     }
 
     public function isDraft(): bool {
-        return $this->status === self::STATUS_DRAFT;
+        return $this->status === RenderProfileVersionStatus::Draft;
     }
 
     public function blockState(InformationBlock $block): InformationBlockState {

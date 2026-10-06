@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Procurement;
 
+use App\Enums\Article\PriceChangeRequestStatus;
 use App\Enums\Procurement\CatalogItemStatus;
 use App\Models\Article\{Article, PriceChangeRequest, PricingMarginRule};
 use App\Models\Platform\User;
@@ -102,7 +103,7 @@ final class PriceApprovalTest extends TestCase {
         // Preis unverändert, offener Antrag mit Snapshot vorhanden.
         $this->assertSame('80.0000', $this->article->fresh()->default_sale_price?->getAmount());
         $request = PriceChangeRequest::query()->firstOrFail();
-        $this->assertSame(PriceChangeRequest::STATUS_REQUESTED, $request->status);
+        $this->assertSame(PriceChangeRequestStatus::Requested, $request->status);
         $this->assertSame('100.0000', $request->suggested_price?->getAmount());
         $this->assertSame($this->admin->id, (int) $request->requested_by);
     }
@@ -127,7 +128,7 @@ final class PriceApprovalTest extends TestCase {
             ->post(route('pricing-margin-rules.approvals.approve', $request))
             ->assertRedirect()->assertSessionHas('error');
 
-        $this->assertSame(PriceChangeRequest::STATUS_REQUESTED, $request->fresh()->status);
+        $this->assertSame(PriceChangeRequestStatus::Requested, $request->fresh()->status);
         $this->assertSame('80.0000', $this->article->fresh()->default_sale_price?->getAmount());
     }
 
@@ -143,7 +144,7 @@ final class PriceApprovalTest extends TestCase {
 
         $this->assertSame('100.0000', $this->article->fresh()->default_sale_price?->getAmount());
         $fresh = $request->fresh();
-        $this->assertSame(PriceChangeRequest::STATUS_APPROVED, $fresh->status);
+        $this->assertSame(PriceChangeRequestStatus::Approved, $fresh->status);
         $this->assertSame($this->approver->id, (int) $fresh->decided_by);
     }
 
@@ -160,7 +161,7 @@ final class PriceApprovalTest extends TestCase {
             ->post(route('pricing-margin-rules.approvals.approve', $request))
             ->assertRedirect()->assertSessionHas('error');
 
-        $this->assertSame(PriceChangeRequest::STATUS_EXPIRED, $request->fresh()->status);
+        $this->assertSame(PriceChangeRequestStatus::Expired, $request->fresh()->status);
         $this->assertSame('80.0000', $this->article->fresh()->default_sale_price?->getAmount());
     }
 
@@ -175,7 +176,7 @@ final class PriceApprovalTest extends TestCase {
             ->assertRedirect()->assertSessionHas('success');
 
         $fresh = $request->fresh();
-        $this->assertSame(PriceChangeRequest::STATUS_REJECTED, $fresh->status);
+        $this->assertSame(PriceChangeRequestStatus::Rejected, $fresh->status);
         $this->assertSame('Marge zu knapp', $fresh->decision_note);
         $this->assertSame('80.0000', $this->article->fresh()->default_sale_price?->getAmount());
     }
@@ -189,6 +190,39 @@ final class PriceApprovalTest extends TestCase {
             ->get(route('pricing-margin-rules.approvals'))
             ->assertOk()
             ->assertSee('Schraube');
+    }
+
+    /** Entschiedene Anträge sind endgültig; die Liste zeigt Stand und Aktionen je Zeile (Enum, nicht Zeichenkette). */
+    public function test_decided_request_is_final_and_listed_with_its_status(): void {
+        $this->enableFourEyes();
+        $item = $this->linkedItem();
+        $this->actingAs($this->admin)->post(route('supplier-catalogs.items.apply-price', $item));
+        $request = PriceChangeRequest::query()->firstOrFail();
+
+        // Offen: Statusbadge und Entscheidungsformulare stehen in der Zeile.
+        $this->actingAs($this->approver)->get(route('pricing-margin-rules.approvals'))
+            ->assertOk()
+            ->assertSee(PriceChangeRequestStatus::Requested->label())
+            ->assertSee(route('pricing-margin-rules.approvals.approve', $request), false);
+
+        $this->actingAs($this->approver)
+            ->post(route('pricing-margin-rules.approvals.reject', $request), ['note' => 'Marge zu knapp'])
+            ->assertSessionHas('success');
+
+        // Abgelehnt bleibt abgelehnt — weder genehmigen noch erneut ablehnen.
+        $this->actingAs($this->approver)
+            ->post(route('pricing-margin-rules.approvals.approve', $request))
+            ->assertSessionHas('error', __('procurement.approval.error.not_open'));
+        $this->actingAs($this->approver)
+            ->post(route('pricing-margin-rules.approvals.reject', $request))
+            ->assertSessionHas('error', __('procurement.approval.error.not_open'));
+        $this->assertSame(PriceChangeRequestStatus::Rejected, $request->fresh()->status);
+        $this->assertSame('80.0000', $this->article->fresh()->default_sale_price?->getAmount());
+
+        $this->actingAs($this->approver)->get(route('pricing-margin-rules.approvals'))
+            ->assertOk()
+            ->assertSee(PriceChangeRequestStatus::Rejected->label())
+            ->assertDontSee(route('pricing-margin-rules.approvals.approve', $request), false);
     }
 
     public function test_mode_toggle_saves_setting(): void {

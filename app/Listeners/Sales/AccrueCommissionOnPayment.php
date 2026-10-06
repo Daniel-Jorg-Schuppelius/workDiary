@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace App\Listeners\Sales;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Events\Invoicing\InvoicePaymentReceived;
 use App\Listeners\ModuleListener;
-use App\Models\Invoicing\Invoice;
 use App\Services\Sales\CommissionAccrualService;
 
 /** Provision auf Teilzahlungen (MVP-989); „bezahlt“ läuft weiter über den Statuswechsel der Rechnung. */
@@ -27,7 +27,7 @@ final class AccrueCommissionOnPayment extends ModuleListener {
 
     public function handle(InvoicePaymentReceived $event): void {
         $invoice = $event->invoice;
-        if ($invoice->status !== Invoice::STATUS_PARTIALLY_PAID || ! $this->shouldHandle((int) $invoice->organization_id)) {
+        if ($invoice->status !== InvoiceStatus::PartiallyPaid || ! $this->shouldHandle((int) $invoice->organization_id)) {
             return;
         }
         $this->accrual->accrue($invoice);

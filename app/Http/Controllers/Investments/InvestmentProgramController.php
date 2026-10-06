@@ -34,7 +34,7 @@ class InvestmentProgramController extends Controller {
         Gate::authorize(P::InvestmentViewAny->value);
 
         return view('investments.programs.index', [
-            'programs' => InvestmentProgram::query()->withCount('cases')->with('budgets')->orderByDesc('starts_year')->orderBy('name')->get(),
+            'programs' => InvestmentProgram::query()->withCount('cases')->with('budgets')->orderByDesc('starts_year')->orderBy('name')->orderBy('id')->paginate(25)->withQueryString(),
         ]);
     }
 
@@ -77,7 +77,7 @@ class InvestmentProgramController extends Controller {
 
     public function budgets(Request $request, InvestmentProgram $program): RedirectResponse {
         Gate::authorize(P::InvestmentManage->value);
-        $data = $request->validate(['budget' => ['array'], 'budget.*' => ['nullable', 'numeric', 'min:0', 'max:999999999999']]);
+        $data = $request->validate(['budget' => ['array'], 'budget.*' => ['nullable', 'numeric', 'decimal:0,2', 'min:0', 'max:999999999999']]);
         $this->programs->saveBudgets($program, (array) ($data['budget'] ?? []));
 
         return back()->with('success', __('investment.program.flash.budgets'));

@@ -20,6 +20,7 @@ use App\Plugins\Etsy\Models\{EtsyConnection, EtsyReceipt};
 use App\Plugins\Etsy\Services\{EtsyLedgerImportService, EtsyReceiptImportService};
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
 use App\Plugins\Support\{ConnectionOAuthController, PluginOAuthGrant};
+use App\Plugins\Support\OAuthConnectionStatus;
 use App\Services\Integration\IntegrationOutboxService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -62,11 +63,7 @@ class EtsyAdminController extends ConnectionOAuthController {
             ->orderBy('status')
             ->pluck('status');
 
-        $openInbox = IntegrationInboxItem::query()
-            ->where('organization_id', $organization->id)
-            ->where('plugin_id', EtsyPlugin::ID)
-            ->where('status', IntegrationInboxItem::STATUS_OPEN)
-            ->count();
+        $openInbox = IntegrationInboxItem::openCount((int) $organization->id, EtsyPlugin::ID);
 
         // Ledger-Summen je Art (90 Tage) — amount ist Etsy-roh in kleinster
         // Währungseinheit (MVP-498), die Anzeige teilt durch 100.
@@ -176,11 +173,11 @@ class EtsyAdminController extends ConnectionOAuthController {
     }
 
     protected function connectedStatus(): string {
-        return EtsyConnection::STATUS_ACTIVE;
+        return OAuthConnectionStatus::Active->value;
     }
 
     protected function disconnectedStatus(): string {
-        return EtsyConnection::STATUS_DISCONNECTED;
+        return OAuthConnectionStatus::Disconnected->value;
     }
 
     protected function keepsRefreshTokenOnReconnect(): bool {

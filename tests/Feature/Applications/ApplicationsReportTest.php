@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Applications;
 
+use App\Enums\Applications\ApplicationOpportunityStatus;
 use App\Models\Applications\ApplicationOpportunity;
 use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -38,7 +39,7 @@ final class ApplicationsReportTest extends TestCase {
             'organization_id' => $this->organization->id,
             'title' => 'Gewonnen',
             'kind' => 'tender',
-            'status' => 'won',
+            'status' => ApplicationOpportunityStatus::Won,
             'estimated_value' => '10000',
             'created_by' => $admin->id,
         ]);
@@ -46,7 +47,7 @@ final class ApplicationsReportTest extends TestCase {
             'organization_id' => $this->organization->id,
             'title' => 'Verloren',
             'kind' => 'tender',
-            'status' => 'lost',
+            'status' => ApplicationOpportunityStatus::Lost,
             'loss_reason' => 'Preis zu hoch',
             'created_by' => $admin->id,
         ]);

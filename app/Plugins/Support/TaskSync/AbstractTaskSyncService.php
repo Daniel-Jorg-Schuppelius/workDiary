@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Support\TaskSync;
 
+use App\Enums\Integration\IntegrationInboxStatus;
 use App\Enums\Task\TaskStatus;
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use App\Models\Project\Task;
@@ -277,7 +278,7 @@ abstract class AbstractTaskSyncService {
             'external_type' => $this->externalType(),
             'external_id' => $reference->external_id,
             'case_type' => IntegrationInboxItem::CASE_UNMATCHED,
-            'status' => IntegrationInboxItem::STATUS_OPEN,
+            'status' => IntegrationInboxStatus::Open,
             'referenceable_type' => $task->getMorphClass(),
             'referenceable_id' => $task->getKey(),
             'local_snapshot' => $this->baseFrom($task),
@@ -309,7 +310,7 @@ abstract class AbstractTaskSyncService {
             'external_type' => $this->externalType(),
             'external_id' => (string) ($remote['id'] ?? ''),
             'case_type' => IntegrationInboxItem::CASE_UNMATCHED,
-            'status' => IntegrationInboxItem::STATUS_OPEN,
+            'status' => IntegrationInboxStatus::Open,
             'remote_snapshot' => $remote,
             'display_title' => $this->remoteDisplayTitle($remote),
             'display_subtitle' => $this->displaySubtitle($link),
@@ -339,7 +340,7 @@ abstract class AbstractTaskSyncService {
             'external_type' => $this->externalType(),
             'external_id' => $reference->external_id,
             'case_type' => IntegrationInboxItem::CASE_CONFLICT,
-            'status' => IntegrationInboxItem::STATUS_OPEN,
+            'status' => IntegrationInboxStatus::Open,
             'referenceable_type' => $task->getMorphClass(),
             'referenceable_id' => $task->getKey(),
             'remote_snapshot' => $remote,

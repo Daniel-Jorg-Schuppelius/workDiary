@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Plugins;
 
+use App\Enums\Plugin\PluginHealthStatus;
 use App\Events\{PluginHealthChanged, PluginRecovered};
 use App\Models\Platform\PluginState;
 use App\Plugins\Contracts\{Plugin, PluginCapability};
@@ -43,7 +44,7 @@ class PluginHealthServiceTest extends TestCase {
         $this->service()->check($this->plugin, null);
 
         $state = PluginState::query()->where('plugin_id', 'switchable')->firstOrFail();
-        $this->assertSame('degraded', $state->last_health_status);
+        $this->assertSame(PluginHealthStatus::Degraded, $state->last_health_status);
         $this->assertSame('partial', $state->last_health_code);
         $this->assertNotNull($state->last_health_latency_ms);
     }
@@ -71,8 +72,8 @@ class PluginHealthServiceTest extends TestCase {
 
         // Roh-Status in der UI zeigt trotzdem sofort das letzte Ergebnis.
         $state = PluginState::query()->where('plugin_id', 'switchable')->firstOrFail();
-        $this->assertSame('failing', $state->last_health_status);
-        $this->assertSame('failing', $state->last_announced_status);
+        $this->assertSame(PluginHealthStatus::Failing, $state->last_health_status);
+        $this->assertSame(PluginHealthStatus::Failing, $state->last_announced_status);
     }
 
     public function test_flapping_never_announces(): void {
@@ -118,12 +119,65 @@ class PluginHealthServiceTest extends TestCase {
 
         $this->assertNotNull($task->refresh()->resolved_at, 'Recovery muss die Aufgabe auflösen.');
     }
+    /** k3-10: gegen 'ok' verglichen zählte das Widget jedes geprüfte Plugin als Störung. */
+    public function test_widget_lists_only_states_that_are_not_ok(): void {
+        $admin = \App\Models\Platform\User::factory()->admin()->create();
+        foreach (PluginHealthStatus::cases() as $status) {
+            PluginState::query()->create(['plugin_id' => 'p-' . $status->value, 'organization_id' => null, 'last_health_status' => $status]);
+        }
+        PluginState::query()->create(['plugin_id' => 'p-ungeprueft', 'organization_id' => null]);
+
+        $view = (new \App\Dashboard\Widgets\PluginHealthWidget)->render($admin);
+        $this->assertInstanceOf(\Illuminate\Contracts\View\View::class, $view);
+
+        $this->assertSame(['p-degraded', 'p-failing'], $view->getData()['failing']->pluck('plugin_id')->all());
+        $html = $view->render();
+        $this->assertStringContainsString(e(PluginHealthStatus::Degraded->label()), $html);
+        $this->assertStringContainsString(e(PluginHealthStatus::Failing->label()), $html);
+        $this->assertStringNotContainsString('p-ok', $html);
+    }
+
+    public function test_health_badge_and_plugin_list_read_the_stored_level(): void {
+        $this->plugin->result = PluginHealth::degraded('langsam');
+        $state = $this->service()->check($this->plugin, null)['state'];
+        $this->assertDatabaseHas('plugin_states', ['plugin_id' => 'switchable', 'last_health_status' => PluginHealthStatus::Degraded->value, 'last_announced_status' => PluginHealthStatus::Degraded->value]);
+
+        $html = \Illuminate\Support\Facades\Blade::render('<x-plugin-health plugin-id="switchable" :state="$state" />', ['state' => $state->fresh()]);
+        $this->assertStringContainsString(e(PluginHealthStatus::Degraded->label()), $html);
+        $this->assertStringContainsString('badge-warning', $html);
+        $unchecked = \Illuminate\Support\Facades\Blade::render('<x-plugin-health plugin-id="switchable" :state="$state" />', ['state' => null]);
+        $this->assertStringContainsString(e(__('Noch nicht geprüft')), $unchecked);
+
+        $this->app->make(\App\Plugins\PluginManager::class)->register($this->plugin);
+        \Illuminate\Support\Facades\Artisan::call('plugin:list');
+        $this->assertMatchesRegularExpression('/switchable.*\bdegraded\b/', \Illuminate\Support\Facades\Artisan::output());
+    }
+
+    /** Eine Stufe außerhalb des Katalogs erreicht plugin_states nicht: der Check zählt als fehlgeschlagen. */
+    public function test_unknown_level_is_reported_as_failing(): void {
+        try {
+            new PluginHealth('wackelig');
+            $this->fail('PluginHealth nahm eine unbekannte Stufe an.');
+        } catch (\ValueError) {
+        }
+
+        $plugin = new SwitchableHealthPlugin;
+        $plugin->probe = static fn (): PluginHealth => new PluginHealth('wackelig');
+        $result = $this->service()->check($plugin, null);
+
+        $this->assertSame(PluginHealth::STATUS_FAILING, $result['health']->status);
+        $this->assertSame('exception', $result['health']->code);
+        $this->assertSame(PluginHealthStatus::Failing, $result['state']->fresh()->last_health_status);
+    }
 }
 
 final class SwitchableHealthPlugin implements Plugin {
     use PluginDefaults;
 
     public PluginHealth $result;
+
+    /** @var (\Closure(): PluginHealth)|null */
+    public ?\Closure $probe = null;
 
     public function __construct() {
         $this->result = PluginHealth::ok();
@@ -157,6 +211,6 @@ final class SwitchableHealthPlugin implements Plugin {
         return [];
     }
     public function healthCheck(): PluginHealth {
-        return $this->result;
+        return $this->probe !== null ? ($this->probe)() : $this->result;
     }
 }

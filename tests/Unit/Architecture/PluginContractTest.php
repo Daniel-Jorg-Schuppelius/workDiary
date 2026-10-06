@@ -10,7 +10,7 @@
 
 namespace Tests\Unit\Architecture;
 
-use App\Plugins\Contracts\{Plugin, PluginCapabilityContract, SettingsField};
+use App\Plugins\Contracts\{Plugin, PluginCapability, PluginCapabilityContract, SettingsField};
 use App\Plugins\PluginDiscovery;
 use Tests\TestCase;
 
@@ -50,6 +50,25 @@ class PluginContractTest extends TestCase {
                 $this->assertInstanceOf($interface, $plugin, "$class kündigt {$cap->identifier()} an, implementiert aber $interface nicht.");
             }
         }
+    }
+
+    /**
+     * Gegenrichtung: Der Kern nutzt eine Fähigkeit über `instanceof`, die
+     * Plugin-Übersicht liest `capabilities()` — beides muss sich decken.
+     */
+    public function test_implemented_capability_interfaces_are_advertised(): void {
+        $missing = [];
+        foreach ($this->pluginClasses() as $class) {
+            $plugin = $this->app->make($class);
+            $advertised = array_map(static fn(PluginCapabilityContract $cap): string => $cap->identifier(), $plugin->capabilities());
+            foreach (PluginCapability::cases() as $case) {
+                if ($plugin instanceof ($case->interface()) && ! in_array($case->identifier(), $advertised, true)) {
+                    $missing[] = "$class implementiert {$case->interface()}, kündigt {$case->identifier()} aber nicht an.";
+                }
+            }
+        }
+
+        $this->assertSame([], $missing, implode("\n", $missing));
     }
 
     public function test_settings_schema_is_well_formed(): void {

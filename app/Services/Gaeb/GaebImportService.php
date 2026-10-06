@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Gaeb;
 
+use App\Enums\Applications\ApplicationOpportunityStatus;
 use App\Enums\Gaeb\{BoqItemStatus, BoqItemType, BoqProgressSource, GaebImportStatus, GaebPhase};
 use App\Models\Applications\ApplicationOpportunity;
 use App\Models\Gaeb\{BillOfQuantity, BoqCatalog, BoqCatalogAssignment, BoqChangeOrder, BoqItem, BoqItemPriceSnapshot, BoqItemQuantitySplit, BoqSection, GaebImport};
@@ -375,7 +376,7 @@ class GaebImportService {
                 'discount_percent' => $item->getDiscountPercent(),
                 'vat_rate' => $item->getVatRate(),
                 'bidder_comment' => $item->getBidderComment(),
-                'alternative_bid_status' => $item->getAlternativeBidStatus()?->value,
+                'alternative_bid_status' => $item->getAlternativeBidStatus(),
                 'external_id' => $item->getExternalId(),
                 'position' => $item->getPosition(),
             ]);
@@ -448,14 +449,14 @@ class GaebImportService {
 
         $tender = ApplicationOpportunity::query()
             ->where('bill_of_quantity_id', $boq->id)
-            ->whereIn('status', ApplicationOpportunity::OPEN_STATUSES)
+            ->whereIn('status', ApplicationOpportunityStatus::open())
             ->first();
 
         if ($tender === null) {
             return;
         }
 
-        $tender->forceFill(['status' => 'won'])->save();
+        $tender->forceFill(['status' => ApplicationOpportunityStatus::Won])->save();
         $tender->audit('tender.awarded', [
             'gaeb_import_id' => $import->id,
             'filename' => $import->filename,

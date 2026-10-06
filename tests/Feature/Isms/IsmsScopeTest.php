@@ -81,4 +81,15 @@ class IsmsScopeTest extends TestCase {
             ->post(route('isms.scopes.store'), ['name' => 'Verboten'])
             ->assertForbidden();
     }
+
+    /** k3-6: ohne Standardbereich zeigten Dashboard, Readiness und CSF den ersten Bereich, Anforderungen, Konformität und SoA nichts. */
+    public function test_overviews_show_the_same_scope_when_none_is_default(): void {
+        $admin = User::factory()->admin()->create();
+        app()->instance('currentOrganization', $admin->organization);
+        IsmsScope::query()->where('organization_id', $admin->organization_id)->delete();
+        $scope = IsmsScope::factory()->create(['organization_id' => $admin->organization_id, 'name' => 'Werk Nord', 'is_default' => false]);
+
+        $this->actingAs($admin)->get(route('isms.soa'))->assertOk()->assertSee('Werk Nord');
+        $this->actingAs($admin)->get(route('isms.soa', ['scope' => $scope->sqid]))->assertOk()->assertSee('Werk Nord');
+    }
 }

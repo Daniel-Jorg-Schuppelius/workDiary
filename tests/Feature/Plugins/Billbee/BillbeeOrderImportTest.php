@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Plugins\Billbee;
 
+use App\Enums\Integration\{IntegrationInboxStatus, MarketplaceInboxStatus};
 use App\Models\Customer\Customer;
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use App\Models\Platform\{Organization, PluginSetting, User};
@@ -90,14 +91,14 @@ class BillbeeOrderImportTest extends TestCase {
         $amazon = BillbeeOrder::query()->where('billbee_order_id', '1001')->firstOrFail();
         $this->assertSame('Amazon', $amazon->channel);
         $this->assertSame('ORD-1001', $amazon->order_number);
-        $this->assertSame(BillbeeOrder::INBOX_OPEN, $amazon->inbox_status);
+        $this->assertSame(MarketplaceInboxStatus::Open, $amazon->inbox_status);
         $this->assertNull($amazon->customer_id);
         $this->assertSame('49.90', $amazon->total_gross?->getAmount());
 
         // Kein Blind-Import: Käufer landen als Inbox-Vorschläge.
         $this->assertSame(2, IntegrationInboxItem::query()
             ->where('plugin_id', BillbeePlugin::ID)
-            ->where('status', IntegrationInboxItem::STATUS_OPEN)
+            ->where('status', IntegrationInboxStatus::Open)
             ->count());
         $this->assertSame(0, Customer::query()->count());
     }
@@ -144,7 +145,7 @@ class BillbeeOrderImportTest extends TestCase {
 
         $this->assertSame(1, $result['linked']);
         $this->assertSame(2, BillbeeOrder::query()->where('customer_id', $customer->id)->count());
-        $this->assertSame(0, BillbeeOrder::query()->where('inbox_status', BillbeeOrder::INBOX_OPEN)->count());
+        $this->assertSame(0, BillbeeOrder::query()->where('inbox_status', MarketplaceInboxStatus::Open)->count());
     }
 
     public function test_checkpoint_uses_modified_at_min_with_overlap(): void {

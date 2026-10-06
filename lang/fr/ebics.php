@@ -41,10 +41,12 @@ return [
         'fetch' => 'Récupérer les relevés maintenant',
         'suspend' => 'Bloquer l’accès',
         'submit' => 'Envoyer par EBICS',
+        'confirm_not_submitted' => 'Confirmer comme non transmis',
     ],
     'confirm' => [
         'suspend' => 'Bloquer l’accès auprès de la banque ? Il faudra ensuite de nouvelles clés et une nouvelle lettre.',
         'submit' => 'Envoyer maintenant ce lot de paiements à la banque par EBICS ? Vous l’autorisez ensuite auprès de la banque.',
+        'not_submitted' => 'Avez-vous vérifié auprès de la banque que cet ordre n’a pas été reçu ? Le lot de paiement pourra ensuite être transmis à nouveau.',
     ],
     'last_error' => 'Dernière erreur : :error',
     'flash' => [
@@ -55,6 +57,7 @@ return [
         'suspended' => 'Accès bloqué.',
         'fetched' => ':statements relevés importés, :skipped déjà présents.',
         'submitted' => 'Lot de paiements envoyé (ordre :order). Veuillez l’autoriser auprès de la banque.',
+        'submission_released' => 'Transmission enregistrée comme non effectuée. Le lot de paiement peut être transmis à nouveau.',
     ],
     'error' => [
         'host_not_allowed' => 'Cette adresse n’est pas autorisée comme accès bancaire.',
@@ -67,6 +70,7 @@ return [
         'bank_rejected' => 'La banque a refusé l’ordre.',
         'failed' => 'La connexion à la banque a échoué.',
         'already_submitted' => 'Ce lot de paiements a déjà été envoyé par EBICS.',
+        'outcome_unclear' => 'Le résultat du dernier envoi est incertain. Veuillez d’abord vérifier auprès de la banque si l’ordre a été reçu.',
     ],
     'letter' => [
         'title' => 'Lettre d’initialisation EBICS (INI/HIA)',
@@ -85,5 +89,6 @@ return [
     ],
     'run' => [
         'submitted' => 'Envoyé par EBICS le :date (ordre :order).',
+        'unclear' => 'Transmission EBICS commencée le :date — résultat incertain.',
     ],
 ];

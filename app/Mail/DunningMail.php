@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Mail;
 
 use App\Enums\DocumentDesign\RenderDocumentKind;
+use App\Mail\Concerns\TracksDocumentDispatch;
 use App\Models\Invoicing\{Invoice, InvoiceMailTemplate};
 use App\Services\Invoicing\{DunningPdfRenderer, DunningService, InvoicePdfRenderer};
 use App\Support\DocumentNumber;
@@ -31,6 +32,7 @@ use Illuminate\Queue\SerializesModels;
  */
 class DunningMail extends Mailable implements ShouldQueue {
     use Queueable, SerializesModels;
+    use TracksDocumentDispatch;
 
     /** @param array{rate: float, days: int, amount: float}|null $interest Verzugszins-Ausweis (MVP-691) */
     public function __construct(
@@ -49,25 +51,6 @@ class DunningMail extends Mailable implements ShouldQueue {
 
     public function envelope(): Envelope {
         return new Envelope(subject: $this->subjectLine());
-    }
-
-    public function headers(): \Illuminate\Mail\Mailables\Headers {
-        // Vollaudit 2026-07 (M26): Dispatch-Referenz für den Zustellnachweis.
-        return new \Illuminate\Mail\Mailables\Headers(text: array_filter([
-            \App\Listeners\RecordInvoiceMailDelivery::HEADER => $this->dispatchId !== null ? (string) $this->dispatchId : null,
-        ]));
-    }
-
-    /** Queue-Fehlschlag → Zustellnachweis auf failed (Vollaudit 2026-07, M26). */
-    public function failed(\Throwable $exception): void {
-        if ($this->dispatchId === null) {
-            return;
-        }
-        $dispatch = \App\Models\Document\DocumentDispatch::query()->withoutGlobalScopes()->find($this->dispatchId);
-        $dispatch?->forceFill([
-            'status' => 'failed',
-            'meta' => [...(array) $dispatch->meta, 'error' => mb_substr($exception->getMessage(), 0, 500)],
-        ])->save();
     }
 
     public function subjectLine(): string {

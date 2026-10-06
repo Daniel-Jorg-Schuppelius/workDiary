@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Agile;
 
+use App\Enums\Agile\AgileSprintStatus;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\Agile\{AgileBoard, AgileSprint};
@@ -51,7 +52,7 @@ class AgileSprintReportController extends Controller {
             $sprintId = \App\Support\Sqid::decode(AgileSprint::class, (string) $request->query('sprint'));
             $sprint = $sprints->firstWhere('id', $sprintId) ?? abort(404);
         }
-        $sprint ??= $sprints->firstWhere('status', AgileSprint::STATUS_ACTIVE)
+        $sprint ??= $sprints->firstWhere('status', AgileSprintStatus::Active)
             ?? $sprints->first(fn(AgileSprint $s): bool => $s->started_at !== null);
 
         $burndown = $sprint?->started_at !== null ? $this->metrics->burndown($sprint) : null;

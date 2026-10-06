@@ -10,6 +10,7 @@
 
 namespace App\Models\Integration;
 
+use App\Enums\Integration\ExternalArticleSyncStatus;
 use App\Models\Article\{Article, ArticleVariant};
 use App\Models\Concerns\BelongsToOrganization;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
@@ -25,7 +26,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int|null $organization_id
  * @property string $plugin_id
  * @property string $external_id
- * @property string $sync_status
+ * @property ExternalArticleSyncStatus $sync_status
  */
 class ExternalArticleMapping extends Model {
     use BelongsToOrganization;
@@ -47,6 +48,7 @@ class ExternalArticleMapping extends Model {
 
     /** @var array<string, string> */
     protected $casts = [
+        'sync_status' => ExternalArticleSyncStatus::class,
         'last_synced_at' => 'datetime',
     ];
 

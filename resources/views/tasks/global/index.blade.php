@@ -10,8 +10,7 @@
 @extends('layouts.app')
 @section('title', __('Globale Aufgaben'))
 @section('nav-title', __('Globale Aufgaben'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @php
     /** @var \Illuminate\Pagination\LengthAwarePaginator<int, \App\Models\Project\Task> $tasks */
@@ -48,7 +47,6 @@
                     <th class="w-32 text-right">{{ __('Aktion') }}</th>
                 </tr>
             </x-slot:head>
-            <tbody>
                 @forelse ($tasks as $task)
                     <tr class="hover">
                         <td class="font-semibold">{{ $task->title }}</td>
@@ -73,13 +71,10 @@
                                 <form method="POST" action="{{ route('tasks.global.destroy', $task) }}" class="inline">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit"
-                                            class="btn btn-xs btn-ghost text-error"
+                                    <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')"
                                             data-confirm-dialog
                                             data-confirm-title="{{ __('Aufgabe löschen?') }}"
-                                            data-confirm-message="{{ __('Diese globale Aufgabe wird unwiderruflich entfernt.') }}">
-                                        <x-icon name="delete" />
-                                    </button>
+                                            data-confirm-message="{{ __('Diese globale Aufgabe wird unwiderruflich entfernt.') }}" />
                                 </form>
                             @endcan
                         </td>
@@ -87,7 +82,6 @@
                 @empty
                     <x-table.empty :colspan="7" :title="__('Noch keine globalen Aufgaben.')" />
                 @endforelse
-            </tbody>
         </x-table>
 
         <x-pagination :paginator="$tasks" standing />

@@ -27,6 +27,14 @@ Iniciar la ronda → escanear tokens (el escáner de cámara teclea como
 teclado, o entrada manual) → finalizar. Como máximo una ronda por ruta a la
 vez; los escaneos dobles cuentan una vez.
 
+## Interrupción
+
+Una ronda en curso puede **interrumpirse** — solo con un **motivo**. Entonces
+no cuenta como finalizada; los puntos de control confirmados se conservan
+como prueba, y el informe refleja la interrupción con motivo, persona y hora.
+Los puntos abiertos pasan a la central como **punto abierto**, igual que una
+desviación. Después la ruta vuelve a quedar libre.
+
 ## Desviaciones
 
 Los puntos omitidos o escaneos fuera de ventana se **muestran, nunca se

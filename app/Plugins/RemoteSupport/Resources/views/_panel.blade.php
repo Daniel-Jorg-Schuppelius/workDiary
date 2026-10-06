@@ -19,17 +19,15 @@
         </h2>
         <div class="flex items-center gap-2">
             @if (($pendingCount ?? 0) > 0)
-                <a href="{{ route('admin.remote-support.pending.index') }}" class="btn btn-sm btn-warning">
-                    <x-icon name="help" />
+                <x-button :href="route('admin.remote-support.pending.index')" tone="warning" icon="help">
                     {{ trans_choice(':count unzugeordnet|:count unzugeordnet', $pendingCount, ['count' => $pendingCount]) }}
-                </a>
+                </x-button>
             @endif
             <form method="POST" action="{{ route('assets.remote-support.sync', $asset) }}" class="inline">
                 @csrf
-                <button type="submit" class="btn btn-sm">
-                    <x-icon name="sync" />
+                <x-button type="submit" tone="plain" icon="sync">
                     {{ __('Verbindungen importieren') }}
-                </button>
+                </x-button>
             </form>
         </div>
     </div>
@@ -49,10 +47,7 @@
                                     @csrf
                                     @method('DELETE')
                                     <input type="hidden" name="remote_id" value="{{ $id }}">
-                                    <button type="submit" class="btn btn-ghost btn-sm btn-square text-error"
-                                            title="{{ __('Entfernen') }}" aria-label="{{ __('Entfernen') }}">
-                                        <x-icon name="delete" class="text-[1.1rem]" />
-                                    </button>
+                                    <x-icon-btn icon="delete" icon-size="1.1rem" tone="error" size="sm" type="submit" :label="__('Entfernen')" class="btn-square" />
                                 </form>
                             </li>
                         @endforeach
@@ -68,7 +63,7 @@
                                placeholder="{{ __('z. B. 123 456 789') }}"
                                class="input input-sm input-bordered">
                     </label>
-                    <button type="submit" class="btn btn-sm btn-primary">{{ __('Hinzufügen') }}</button>
+                    <x-button type="submit">{{ __('Hinzufügen') }}</x-button>
                 </form>
             </div>
         @endforeach
@@ -110,9 +105,9 @@
                             @endforeach
                         </select>
                     </label>
-                    <button type="submit" class="btn btn-sm">
-                        <x-icon name="move_up" class="text-[1.1rem]" />{{ __('Übertragen') }}
-                    </button>
+                    <x-button type="submit" tone="plain" icon="move_up" icon-size="1.1rem">
+                        {{ __('Übertragen') }}
+                    </x-button>
                 </div>
             </div>
         </form>

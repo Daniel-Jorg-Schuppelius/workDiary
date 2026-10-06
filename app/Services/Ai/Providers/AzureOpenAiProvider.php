@@ -12,7 +12,6 @@ declare(strict_types=1);
 
 namespace App\Services\Ai\Providers;
 
-use App\Services\Ai\Dto\AiUsage;
 use App\Services\Ai\Exceptions\AiProviderCallException;
 
 /**
@@ -21,7 +20,7 @@ use App\Services\Ai\Exceptions\AiProviderCallException;
  * `model` = Deployment-Name. EU-Data-Zone ist eine Deployment-
  * Eigenschaft in Azure — Hinweis dazu in der Verbindungs-Hilfe.
  */
-class AzureOpenAiProvider extends AbstractLlmProvider {
+class AzureOpenAiProvider extends OpenAiCompatibleProvider {
     protected function baseUrl(): string {
         $base = rtrim((string) $this->connection->base_url, '/');
         if ($base === '') {
@@ -36,23 +35,7 @@ class AzureOpenAiProvider extends AbstractLlmProvider {
         return ['api-key' => $this->requireApiKey()];
     }
 
-    public function preflight(): void {
-        $this->getJson('/openai/v1/models');
-    }
-
-    protected function complete(string $system, string $user, bool $expectJson = false): Completion {
-        $response = $this->postJson('/openai/v1/chat/completions', [
-            'model' => $this->requireModel(), // Deployment-Name
-            'max_tokens' => self::MAX_OUTPUT_TOKENS,
-            'messages' => [
-                ['role' => 'system', 'content' => $system],
-                ['role' => 'user', 'content' => $user],
-            ],
-        ]);
-
-        return new Completion((string) $response->json('choices.0.message.content', ''), new AiUsage(
-            inputTokens: (int) $response->json('usage.prompt_tokens', 0),
-            outputTokens: (int) $response->json('usage.completion_tokens', 0),
-        ));
+    protected function apiPrefix(): string {
+        return '/openai/v1';
     }
 }

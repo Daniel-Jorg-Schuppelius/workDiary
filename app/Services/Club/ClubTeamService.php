@@ -17,6 +17,7 @@ use App\Models\Club\{ClubGroup, ClubMember, ClubSeason, ClubSportProfile, ClubSq
 use App\Models\Platform\{Organization, User};
 use App\Support\Query\DateRange;
 use Carbon\{CarbonImmutable, CarbonInterface};
+use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\{Collection, Str};
 use Illuminate\Support\Facades\DB;
@@ -355,7 +356,7 @@ class ClubTeamService {
                 'code' => $position['code'],
                 'label' => (string) $parts[0],
                 'unit' => isset($parts[1]) && $parts[1] !== '' ? $parts[1] : null,
-                'lower_is_better' => in_array(mb_strtolower((string) ($parts[2] ?? '')), ['1', 'ja', 'yes', 'true', 'lower', 'kleiner'], true),
+                'lower_is_better' => StringHelper::parseBool((string) ($parts[2] ?? ''), false, ['1', 'ja', 'yes', 'true', 'lower', 'kleiner'], []) === true,
             ];
         }
 

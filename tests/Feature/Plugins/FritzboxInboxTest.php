@@ -10,15 +10,18 @@
 
 namespace Tests\Feature\Plugins;
 
+use App\Enums\Integration\IntegrationInboxStatus;
 use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Integration\IntegrationInboxItem;
 use App\Models\Platform\User;
 use App\Models\Time\TimeEntry;
-use App\Plugins\Fritzbox\{FritzboxGroupBooker, FritzboxImportService, FritzboxPlugin, FritzboxSuggestionService};
+use App\Plugins\Fritzbox\FritzboxPlugin;
+use App\Plugins\Fritzbox\Services\{FritzboxGroupBooker, FritzboxImportService, FritzboxSuggestionService};
 use App\Plugins\Fritzbox\Sources\FritzboxCall;
 use App\Services\Integration\InboxGroupBookerRegistry;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Artisan;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
@@ -109,7 +112,7 @@ class FritzboxInboxTest extends TestCase {
         $this->assertSame(2, $result['created']);
         $this->assertSame(0, $result['skipped']);
         $this->assertSame(2, TimeEntry::query()->withoutGlobalScopes()->count());
-        $this->assertSame(0, IntegrationInboxItem::query()->where('status', IntegrationInboxItem::STATUS_OPEN)->count());
+        $this->assertSame(0, IntegrationInboxItem::query()->where('status', IntegrationInboxStatus::Open)->count());
 
         // Gelernt: der nächste Anruf dieser Nummer bucht automatisch.
         $status = $this->service()->bookCall($this->organization, $this->config(), $this->makeCall('2026-07-22 11:00:00'), $this->owner->id);
@@ -176,7 +179,7 @@ class FritzboxInboxTest extends TestCase {
         $status = $this->service()->bookCall($this->organization, $this->config(), $this->makeCall('2026-07-23 09:00:00'), $this->owner->id);
         $this->assertSame('pending', $status);
         $this->assertStringContainsString('|', (string) IntegrationInboxItem::query()
-            ->where('status', IntegrationInboxItem::STATUS_OPEN)
+            ->where('status', IntegrationInboxStatus::Open)
             ->orderByDesc('id')
             ->firstOrFail()
             ->group_key);
@@ -188,13 +191,14 @@ class FritzboxInboxTest extends TestCase {
         $result = $this->booker()->book($this->organization, '+492219567000', ['action' => 'ignore']);
 
         $this->assertSame(2, $result['skipped']);
-        $this->assertSame(0, IntegrationInboxItem::query()->where('status', IntegrationInboxItem::STATUS_OPEN)->count());
+        $this->assertSame(0, IntegrationInboxItem::query()->where('status', IntegrationInboxStatus::Open)->count());
 
         $status = $this->service()->bookCall($this->organization, $this->config(), $this->makeCall('2026-07-25 09:00:00'), $this->owner->id);
         $this->assertSame('ignored', $status);
     }
 
-    public function test_dismiss_is_temporary_future_calls_reappear(): void {
+    /** Verwerfen gilt je Anruf (Sperrmarke, {@see FritzboxDismissedCallTest}) — neue Anrufe derselben Nummer tauchen wieder auf. */
+    public function test_dismiss_is_per_call_new_calls_of_the_number_reappear(): void {
         $this->stagePendingCalls();
 
         $count = $this->booker()->dismiss($this->organization, '+492219567000');
@@ -203,6 +207,66 @@ class FritzboxInboxTest extends TestCase {
         // Neuer Anruf derselben Nummer taucht wieder auf.
         $status = $this->service()->bookCall($this->organization, $this->config(), $this->makeCall('2026-08-03 09:00:00'), $this->owner->id);
         $this->assertSame('pending', $status);
+    }
+
+    /**
+     * Entscheidung 2026-10-05: verworfene Anrufe tragen ihr Erledigt-Datum —
+     * ohne `resolved_at` übersprang sie der Aufräumlauf für immer.
+     */
+    public function test_dismissed_group_carries_the_resolution_and_is_purged_after_the_retention(): void {
+        $this->travelTo('2026-08-01 10:00:00');
+        $this->stagePendingCalls();
+        $this->actingAs($this->owner);
+
+        $this->assertSame(2, $this->booker()->dismiss($this->organization, '+492219567000'));
+
+        $this->assertDismissedNow(2);
+
+        $this->travel(89)->days();
+        Artisan::call('integration:purge-inbox');
+        $this->assertSame(2, IntegrationInboxItem::query()->count());
+
+        $this->travel(2)->days();
+        Artisan::call('integration:purge-inbox');
+        $this->assertSame(0, IntegrationInboxItem::query()->count());
+    }
+
+    public function test_dismissing_a_single_call_of_a_shared_number_closes_only_that_call(): void {
+        $this->travelTo('2026-08-01 10:00:00');
+        $this->stagePendingCalls();
+        $this->booker()->book($this->organization, '+492219567000', ['action' => 'shared']);
+        $single = (string) $this->booker()->groups($this->organization)->firstOrFail()['group_key'];
+
+        $this->assertSame(1, $this->booker()->dismiss($this->organization, $single));
+
+        $this->assertDismissedNow(1);
+        $this->assertSame(1, IntegrationInboxItem::query()->where('status', IntegrationInboxStatus::Open)->whereNull('resolved_at')->count());
+    }
+
+    public function test_ignoring_a_number_closes_groups_and_single_calls_with_the_resolution(): void {
+        $this->travelTo('2026-08-01 10:00:00');
+        $this->stagePendingCalls();
+        $this->booker()->book($this->organization, '+492219567000', ['action' => 'shared']);
+        $this->actingAs($this->owner);
+
+        $result = $this->booker()->book($this->organization, '+492219567000', ['action' => 'ignore']);
+
+        $this->assertSame(2, $result['skipped']);
+        $this->assertDismissedNow(2);
+
+        $this->travel(91)->days();
+        Artisan::call('integration:purge-inbox');
+        $this->assertSame(0, IntegrationInboxItem::query()->count());
+    }
+
+    private function assertDismissedNow(int $expected): void {
+        $dismissed = IntegrationInboxItem::query()->where('status', IntegrationInboxStatus::Dismissed)->get();
+        $this->assertCount($expected, $dismissed);
+        foreach ($dismissed as $item) {
+            $this->assertTrue(now()->equalTo($item->resolved_at), 'resolved_at fehlt oder weicht ab');
+            $this->assertSame(auth()->id(), $item->resolved_by);
+            $this->assertNull($item->resolved_to_id);
+        }
     }
 
     public function test_suggestion_by_exact_name(): void {

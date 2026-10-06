@@ -111,6 +111,7 @@ return [
             'post' => 'Contabilizar',
             'reverse' => 'Anular',
             'reverse_submit' => 'Crear contraasiento',
+            'import' => 'Importar plan de cuentas',
         ],
         'column' => [
             'fiscal_year' => 'Ejercicio',
@@ -254,6 +255,11 @@ return [
         ],
         'import' => [
             'line_invalid' => 'Línea :line omitida (falta número, nombre o tipo de cuenta).',
+            'title' => 'Importar plan de cuentas desde CSV',
+            'hint' => 'Los números de cuenta existentes se actualizan y las cuentas nuevas se crean; no se elimina nada. Las líneas erróneas se omiten y se cuentan.',
+            'file' => 'Archivo CSV',
+            'columns' => 'Fila de cabecera con las columnas number, name y type (:types); opcionales normal_balance (debit o credit), is_open_item, datev_account, euer_category y deductible_percent.',
+            'submit' => 'Importar',
         ],
     ],
 
@@ -304,6 +310,7 @@ return [
             'no_amount' => 'El documento no tiene importe.',
             'no_lines' => 'La propuesta no tiene líneas de asiento.',
             'sovereignty' => 'En este periodo la organización no lleva un libro mayor local.',
+            'changed_since_posting' => 'El origen cambió después de la contabilización (p. ej., un reembolso): anule el asiento y contabilícelo de nuevo.',
             'foreign_currency' => 'La operación está en :currency, la contabilidad en :base — los pagos, la caja y los activos en moneda extranjera no se contabilizan.',
             'unsupported_target' => 'Todavía no hay vía contable para este destino de pago.',
             'year_closed' => 'El ejercicio :year está cerrado.',

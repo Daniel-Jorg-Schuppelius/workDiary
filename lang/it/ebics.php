@@ -41,10 +41,12 @@ return [
         'fetch' => 'Recupera estratti ora',
         'suspend' => 'Blocca accesso',
         'submit' => 'Invia tramite EBICS',
+        'confirm_not_submitted' => 'Conferma come non inviato',
     ],
     'confirm' => [
         'suspend' => 'Bloccare l’accesso presso la banca? Poi serviranno nuove chiavi e una nuova lettera.',
         'submit' => 'Inviare ora questa distinta di pagamento alla banca tramite EBICS? L’autorizzazione la dà poi presso la banca.',
+        'not_submitted' => 'Ha verificato presso la banca che questo ordine non è stato ricevuto? In seguito la distinta potrà essere inviata di nuovo.',
     ],
     'last_error' => 'Ultimo errore: :error',
     'flash' => [
@@ -55,6 +57,7 @@ return [
         'suspended' => 'Accesso bloccato.',
         'fetched' => ':statements estratti importati, :skipped già presenti.',
         'submitted' => 'Distinta inviata (ordine :order). La autorizzi presso la banca.',
+        'submission_released' => 'Invio registrato come non avvenuto. La distinta può essere inviata di nuovo.',
     ],
     'error' => [
         'host_not_allowed' => 'Questo indirizzo non è consentito come accesso bancario.',
@@ -67,6 +70,7 @@ return [
         'bank_rejected' => 'La banca ha respinto l’ordine.',
         'failed' => 'La connessione alla banca non è riuscita.',
         'already_submitted' => 'Questa distinta è già stata inviata tramite EBICS.',
+        'outcome_unclear' => 'L’esito dell’ultimo invio non è chiaro. Verifichi prima presso la banca se l’ordine è stato ricevuto.',
     ],
     'letter' => [
         'title' => 'Lettera di inizializzazione EBICS (INI/HIA)',
@@ -85,5 +89,6 @@ return [
     ],
     'run' => [
         'submitted' => 'Inviata tramite EBICS il :date (ordine :order).',
+        'unclear' => 'Invio EBICS avviato il :date — esito non chiaro.',
     ],
 ];

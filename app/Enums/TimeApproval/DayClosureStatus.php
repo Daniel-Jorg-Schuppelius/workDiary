@@ -10,8 +10,8 @@
 
 namespace App\Enums\TimeApproval;
 
-use App\Enums\Concerns\HasOptions;
-use App\Enums\Contracts\HasLabel;
+use App\Enums\Concerns\{HasOptions, HasTransitions};
+use App\Enums\Contracts\HasStatusTransitions;
 
 /**
  * Status eines Tagesabschlusses (MVP-015, ../WorkDiary-Architecture/tagesabschluss.md §3).
@@ -22,8 +22,9 @@ use App\Enums\Contracts\HasLabel;
  * siehe {@see \App\Services\TimeApproval\DayCloseService::isMonthLocked()}.
  * String-backed statt tinyint gemäß Haus-Konvention (vgl. MonthClosureStatus).
  */
-enum DayClosureStatus: string implements HasLabel {
+enum DayClosureStatus: string implements HasStatusTransitions {
     use HasOptions;
+    use HasTransitions;
 
     case Open = 'open';
     case Closed = 'closed';
@@ -40,6 +41,18 @@ enum DayClosureStatus: string implements HasLabel {
             self::Closed     => 'success',
             self::Correction => 'warning',
             self::Locked     => 'secondary',
+        };
+    }
+
+    /** @return list<self> */
+    public function allowedTransitions(): array {
+        return match ($this) {
+            self::Open => [self::Closed],
+            // Wieder öffnen direkt oder über einen Korrekturantrag.
+            self::Closed => [self::Correction, self::Open],
+            self::Correction => [self::Open, self::Closed],
+            // Kein gespeicherter Zustand: gilt, solange der Monat gesperrt ist.
+            self::Locked => [],
         };
     }
 }

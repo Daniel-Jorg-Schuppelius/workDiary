@@ -111,7 +111,7 @@
                     <x-detail-grid.row :label="__('club.competitions.field.venue')" :value="$competition->venue ?? ($event->rooms->pluck('name')->implode(', ') ?: '–')" />
                     <x-detail-grid.row :label="__('club.competitions.field.entry_fee')" :value="$competition->entry_fee?->format() ?? '–'" />
                     <x-detail-grid.row :label="__('club.competitions.field.requires_start_right')" :value="$competition->requires_start_right ? __('club.label.yes') : __('club.label.no')" />
-                    <x-detail-grid.row :label="__('club.competitions.field.entry_deadline_hours')" :value="$details->registrationClosesAt($event)?->orgTz()->format('d.m.Y H:i') ?? '–'" />
+                    <x-detail-grid.row :label="__('club.competitions.field.entry_deadline_hours')" :value="$details->registrationClosesAt($event)?->fdatetime() ?? '–'" />
                     <x-detail-grid.row :label="__('club.events.field.leader')" :value="$event->responsibleUser?->name ?? '–'" />
                     <x-detail-grid.row :label="__('club.events.field.groups')">
                         @forelse ($event->clubGroups as $group)

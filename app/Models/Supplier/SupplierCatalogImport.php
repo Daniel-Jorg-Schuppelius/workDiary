@@ -10,6 +10,7 @@
 
 namespace App\Models\Supplier;
 
+use App\Enums\Procurement\CatalogImportStatus;
 use App\Models\Concerns\BelongsToOrganization;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
@@ -22,7 +23,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $organization_id
  * @property int $supplier_catalog_source_id
  * @property string $trigger
- * @property string $status
+ * @property CatalogImportStatus $status
  * @property int $rows
  * @property int $created
  * @property int $updated
@@ -41,10 +42,6 @@ class SupplierCatalogImport extends Model {
     public const TRIGGER_MANUAL = 'manual';
 
     public const TRIGGER_SCHEDULED = 'scheduled';
-
-    public const STATUS_SUCCESS = 'success';
-
-    public const STATUS_ERROR = 'error';
 
     protected $fillable = [
         'organization_id',
@@ -69,6 +66,7 @@ class SupplierCatalogImport extends Model {
         'unchanged' => 'integer',
         'price_changed' => 'integer',
         'discontinued' => 'integer',
+        'status' => CatalogImportStatus::class,
     ];
 
     /** @return BelongsTo<SupplierCatalogSource, $this> */

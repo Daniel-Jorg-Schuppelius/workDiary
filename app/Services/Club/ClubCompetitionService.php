@@ -21,6 +21,8 @@ use App\Support\Query\DateRange;
 use App\Support\Tz;
 use Carbon\{CarbonImmutable, CarbonInterface};
 use CommonToolkit\Helper\Data\NumberHelper;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -108,7 +110,7 @@ class ClubCompetitionService {
                 }
             }
             $this->events->register($event, $member, $actor, $source, null, $force);
-            $day = $this->localDay($event);
+            $day = $this->events->localDay($event);
             $hasRight = ! $details->requires_start_right || $this->hasStartRight($member, $details->profile()->firstOrFail(), $day);
             $entries = collect();
             foreach ($codes as $code) {
@@ -328,12 +330,36 @@ class ClubCompetitionService {
      * bestätigter, anrechenbarer Anwesenheiten im Zeitraum vor dem Stichtag
      * gegen die konfigurierte Anzahl.
      *
+     * `$leader` schränkt auf Mitglieder der Gruppen ein, die dieser Benutzer
+     * leitet (Gruppenleitung ohne Registerrecht, authz-a-3).
+     *
      * @return Collection<int, array{member: ClubMember, count: int, required: int, met: bool, last_on: CarbonImmutable|null}>
      */
-    public function complianceReport(ClubAttendanceRequirement $requirement, CarbonInterface $asOf): Collection {
+    public function complianceReport(ClubAttendanceRequirement $requirement, CarbonInterface $asOf, ?User $leader = null): Collection {
         $asOf = CarbonImmutable::instance($asOf)->startOfDay();
-        $from = $asOf->subMonths($requirement->period_months)->addDay();
+
+        return $this->complianceMembers($requirement, $asOf, $leader)->get()->toBase()
+            ->map(fn(ClubMember $member): array => $this->complianceRow($requirement, $member, $asOf));
+    }
+
+    /**
+     * Dieselbe Nachweisliste seitenweise: gezählt wird nur für die Mitglieder der Seite.
+     *
+     * @return LengthAwarePaginator<int, array{member: ClubMember, count: int, required: int, met: bool, last_on: CarbonImmutable|null}>
+     */
+    public function complianceReportPage(ClubAttendanceRequirement $requirement, CarbonInterface $asOf, ?User $leader, int $perPage): LengthAwarePaginator {
+        $asOf = CarbonImmutable::instance($asOf)->startOfDay();
+
+        return $this->complianceMembers($requirement, $asOf, $leader)->paginate($perPage)
+            ->through(fn(ClubMember $member): array => $this->complianceRow($requirement, $member, $asOf));
+    }
+
+    /** @return Builder<ClubMember> */
+    private function complianceMembers(ClubAttendanceRequirement $requirement, CarbonImmutable $asOf, ?User $leader): Builder {
         $members = ClubMember::query()->where('organization_id', $requirement->organization_id)->current($asOf);
+        if ($leader !== null) {
+            $members->whereHas('activeGroupMemberships.group', fn($groups) => $groups->where('leader_user_id', $leader->id));
+        }
         if ($requirement->club_group_id !== null) {
             $groupId = $requirement->club_group_id;
             $members->whereHas('groupMemberships', fn($q) => $q->where('club_group_id', $groupId)->where('status', ClubGroupMembershipStatus::Active->value));
@@ -341,34 +367,37 @@ class ClubCompetitionService {
             $departmentId = $requirement->club_department_id;
             $members->whereHas('groupMemberships', fn($q) => $q->where('status', ClubGroupMembershipStatus::Active->value)->whereHas('group', fn($g) => $g->where('club_department_id', $departmentId)));
         }
-        $rows = collect();
-        foreach ($members->orderBy('last_name')->orderBy('first_name')->get() as $member) {
-            $records = ClubAttendanceRecord::query()
-                ->join('club_attendance_sheets', 'club_attendance_sheets.id', '=', 'club_attendance_records.club_attendance_sheet_id')
-                ->join('events', 'events.id', '=', 'club_attendance_records.event_id')
-                ->leftJoin('club_event_details', 'club_event_details.event_id', '=', 'events.id')
-                ->where('club_attendance_records.club_member_id', $member->id)
-                ->where('club_attendance_sheets.status', ClubAttendanceSheetStatus::Confirmed->value)
-                ->whereIn('club_attendance_records.status', [ClubAttendanceStatus::Present->value, ClubAttendanceStatus::Partial->value])
-                ->where(fn($q) => $q->whereNull('club_attendance_records.overlap_event_id')->orWhereNotNull('club_attendance_records.overlap_cleared_at'))
-                ->where('events.started_at', '>=', DateRange::dayStart($from))
-                ->where('events.started_at', '<', DateRange::dayAfter($asOf))
-                ->when($requirement->event_kind !== null, fn($q) => $q->where('club_event_details.kind', $requirement->event_kind?->value))
-                ->when($requirement->club_group_id !== null, fn($q) => $q->whereExists(fn($sub) => $sub->selectRaw('1')->from('club_event_groups')->whereColumn('club_event_groups.event_id', 'events.id')->where('club_event_groups.club_group_id', $requirement->club_group_id)))
-                ->orderByDesc('events.started_at')
-                ->get(['events.started_at as started_at']);
-            $count = $records->count();
-            $last = $records->first();
-            $rows->push([
-                'member' => $member,
-                'count' => $count,
-                'required' => $requirement->required_count,
-                'met' => $count >= $requirement->required_count,
-                'last_on' => $last !== null ? CarbonImmutable::parse((string) $last->getAttribute('started_at'))->setTimezone(Tz::current()) : null,
-            ]);
-        }
 
-        return $rows;
+        return $members->orderBy('last_name')->orderBy('first_name')->orderBy('id');
+    }
+
+    /** @return array{member: ClubMember, count: int, required: int, met: bool, last_on: CarbonImmutable|null} */
+    private function complianceRow(ClubAttendanceRequirement $requirement, ClubMember $member, CarbonImmutable $asOf): array {
+        $from = $asOf->subMonths($requirement->period_months)->addDay();
+        $records = ClubAttendanceRecord::query()
+            ->join('club_attendance_sheets', 'club_attendance_sheets.id', '=', 'club_attendance_records.club_attendance_sheet_id')
+            ->join('events', 'events.id', '=', 'club_attendance_records.event_id')
+            ->leftJoin('club_event_details', 'club_event_details.event_id', '=', 'events.id')
+            ->where('club_attendance_records.club_member_id', $member->id)
+            ->where('club_attendance_sheets.status', ClubAttendanceSheetStatus::Confirmed->value)
+            ->whereIn('club_attendance_records.status', [ClubAttendanceStatus::Present->value, ClubAttendanceStatus::Partial->value])
+            ->where(fn($q) => $q->whereNull('club_attendance_records.overlap_event_id')->orWhereNotNull('club_attendance_records.overlap_cleared_at'))
+            ->where('events.started_at', '>=', DateRange::dayStart($from))
+            ->where('events.started_at', '<', DateRange::dayAfter($asOf))
+            ->when($requirement->event_kind !== null, fn($q) => $q->where('club_event_details.kind', $requirement->event_kind?->value))
+            ->when($requirement->club_group_id !== null, fn($q) => $q->whereExists(fn($sub) => $sub->selectRaw('1')->from('club_event_groups')->whereColumn('club_event_groups.event_id', 'events.id')->where('club_event_groups.club_group_id', $requirement->club_group_id)))
+            ->orderByDesc('events.started_at')
+            ->get(['events.started_at as started_at']);
+        $count = $records->count();
+        $last = $records->first();
+
+        return [
+            'member' => $member,
+            'count' => $count,
+            'required' => $requirement->required_count,
+            'met' => $count >= $requirement->required_count,
+            'last_on' => $last !== null ? CarbonImmutable::parse((string) $last->getAttribute('started_at'))->setTimezone(Tz::current()) : null,
+        ];
     }
 
     /** Pflichtrolle Standaufsicht (Schießsport): Termin eines Schießsport-Profils ohne Standaufsicht. */
@@ -402,7 +431,7 @@ class ClubCompetitionService {
                 continue;
             }
             $details = ClubCompetitionDetails::query()->where('event_id', $event->id)->with('profile')->first();
-            if ($details?->profile !== null && $this->hasStartRight($member, $details->profile, $this->localDay($event))) {
+            if ($details?->profile !== null && $this->hasStartRight($member, $details->profile, $this->events->localDay($event))) {
                 $entry->update(['status' => ClubEntryStatus::Registered->value, 'review_reason' => null]);
                 $entry->audit('club.competition.entryCleared', ['note' => 'start_right']);
             }
@@ -475,12 +504,6 @@ class ClubCompetitionService {
             'is_active' => (bool) ($data['is_active'] ?? true),
             'notes' => $this->nullableString($data['notes'] ?? null),
         ];
-    }
-
-    private function localDay(Event $event): CarbonImmutable {
-        $tz = Tz::isValid($event->timezone) && $event->timezone !== 'UTC' ? (string) $event->timezone : Tz::current();
-
-        return CarbonImmutable::instance($event->started_at)->setTimezone($tz)->startOfDay();
     }
 
     private function date(mixed $value): ?CarbonImmutable {

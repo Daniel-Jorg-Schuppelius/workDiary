@@ -12,6 +12,7 @@ namespace App\Http\Controllers\Document;
 
 use App\Enums\Document\{DocumentStatus, DocumentType};
 use App\Http\Controllers\Attachments\AttachmentController;
+use App\Http\Controllers\Concerns\AuthorizesCarrier;
 use App\Http\Controllers\Controller;
 use App\Models\Asset\Asset;
 use App\Models\Classification\Tag;
@@ -32,6 +33,7 @@ use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class DocumentController extends Controller {
+    use AuthorizesCarrier;
     /**
      * Whitelist der erlaubten Bezugs-Typen. Verhindert, dass Aufrufer
      * beliebige Klassen an `documentable_type` setzen können.
@@ -51,8 +53,8 @@ class DocumentController extends Controller {
 
     // Größenlimit: {@see FileAttacher::maxKb()} (wie AttachmentController, org-konfigurierbar).
 
-    // Erlaubte Endungen/MIME-Typen: {@see DocumentService::ALLOWED_EXTENSIONS} /
-    // {@see DocumentService::ALLOWED_MIMES} (MVP-707: geteilt mit dem Dokument-ZIP-Import).
+    // Erlaubte Endungen/MIME-Typen: {@see \App\Services\Attachments\FileAttacher::ALLOWED_EXTENSIONS} /
+    // `ALLOWED_MIMES` (MVP-707: geteilt mit dem Dokument-ZIP-Import).
 
     public function __construct(
         private readonly DocumentService $service,
@@ -210,6 +212,7 @@ class DocumentController extends Controller {
         $documentable = null;
         if (filled($data['documentable_kind'] ?? null)) {
             $documentable = $this->findDocumentable((string) $data['documentable_kind'], (string) ($data['documentable_id'] ?? ''));
+            $this->authorizeCarrier($documentable);
         }
 
         /** @var User $creator */

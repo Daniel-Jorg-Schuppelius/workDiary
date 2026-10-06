@@ -80,7 +80,7 @@ class AdvisoryController extends Controller {
         );
 
         return redirect()
-            ->route('isms.vulnerabilities.index')
+            ->toList('isms.vulnerabilities.index')
             ->with('success', __('isms.flash.advisory_imported', [
                 'title' => $advisory->title,
                 'count' => $advisory->vuln_count,

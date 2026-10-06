@@ -12,8 +12,7 @@
 @extends('layouts.app')
 @section('title', __('training.title.assignments'))
 @section('nav-title', __('training.title.assignments'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('training.subtitle.assignments')">
     <x-slot:actions>
@@ -35,7 +34,7 @@
             </select>
         </x-filter-field>
         <x-filter-field :label="__('training.kpi.overdue')" for="flt-overdue">
-            <span id="flt-overdue" class="badge {{ $overdueCount > 0 ? 'badge-error' : 'badge-ghost' }} badge-sm">{{ $overdueCount }}</span>
+            <x-status-badge id="flt-overdue" :tone="$overdueCount > 0 ? 'error' : 'ghost'">{{ $overdueCount }}</x-status-badge>
         </x-filter-field>
     </x-filter-bar>
 
@@ -56,8 +55,8 @@
             <tr class="hover">
                 <td class="font-medium">{{ $assignment->user?->name ?? '–' }}</td>
                 <td class="text-sm">{{ $assignment->course?->title ?? '–' }}</td>
-                <td class="text-sm">{{ $assignment->due_at?->format('d.m.Y') ?? '–' }}</td>
-                <td class="text-sm text-base-content/70">{{ $assignment->fulfilled_at?->format('d.m.Y') ?? '–' }}</td>
+                <td class="text-sm">{{ $assignment->due_at?->fdate() ?? '–' }}</td>
+                <td class="text-sm text-base-content/70">{{ $assignment->fulfilled_at?->fdate() ?? '–' }}</td>
                 <td>
                     <x-status-badge :tone="$assignmentState->tone()" size="sm">{{ $assignmentState->label() }}</x-status-badge>
                 </td>

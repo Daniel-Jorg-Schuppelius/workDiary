@@ -16,20 +16,12 @@
 @section('title', __('accounting.recapitulative.title'))
 @section('nav-title', __('accounting.recapitulative.title'))
 
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
     <x-index-page overflow="clip" :subtitle="$period?->label() ?? __('accounting.reports.period', ['from' => $from->fdate(), 'to' => $to->fdate()])">
         <x-slot:actions>
-            <x-icon-btn icon="picture_as_pdf" size="sm" tone="ghost" show-label
-                        :href="route('reports.accounting.recapitulative', ['export' => 'pdf', 'period' => $period?->key])" :label="__('PDF')" />
-            <x-action-menu icon="download" :label="__('Export')">
-                <x-icon-btn icon="download" size="sm" tone="ghost" show-label
-                            :href="route('reports.accounting.recapitulative', ['export' => 'csv', 'period' => $period?->key])" :label="__('CSV')" />
-                <x-icon-btn icon="table_view" size="sm" tone="ghost" show-label
-                            :href="route('reports.accounting.recapitulative', ['export' => 'xlsx', 'period' => $period?->key])" :label="__('Excel')" />
-            </x-action-menu>
+            <x-report-export :url="fn (string $format) => route('reports.accounting.recapitulative', ['export' => $format, 'period' => $period?->key])" tone="ghost" />
         </x-slot:actions>
 
         <div class="alert bg-warning/10 border-warning/30 text-sm text-base-content" role="note">
@@ -63,7 +55,7 @@
 
         <x-card :title="__('accounting.reports.unclear.title')" icon="help">
             @if ($unclear === [])
-                <p class="text-sm text-muted">{{ __('accounting.reports.unclear.none') }}</p>
+                <x-empty-state icon="check_circle" :title="__('accounting.reports.unclear.none')" compact />
             @else
                 <ul class="list-disc pl-5 text-sm">
                     @foreach ($unclear as $item)

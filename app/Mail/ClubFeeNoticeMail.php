@@ -12,13 +12,14 @@ declare(strict_types=1);
 
 namespace App\Mail;
 
+use App\Mail\Concerns\TracksDocumentDispatch;
 use App\Models\Club\ClubFeeClaim;
 use App\Models\Document\DocumentDispatch;
 use App\Services\Club\ClubFeeNoticePdfRenderer;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\{Attachment, Mailable};
-use Illuminate\Mail\Mailables\{Content, Envelope, Headers};
+use Illuminate\Mail\Mailables\{Content, Envelope};
 use Illuminate\Queue\SerializesModels;
 
 /**
@@ -29,6 +30,7 @@ use Illuminate\Queue\SerializesModels;
 class ClubFeeNoticeMail extends Mailable implements ShouldQueue {
     use Queueable;
     use SerializesModels;
+    use TracksDocumentDispatch;
 
     public function __construct(
         public readonly int $claimId,
@@ -46,10 +48,6 @@ class ClubFeeNoticeMail extends Mailable implements ShouldQueue {
         return new Envelope(subject: (string) ($dunning !== null
             ? __('club.fees.mail.subject_dunning', ['number' => $claim->number, 'level' => $dunning->level])
             : __('club.fees.mail.subject', ['number' => $claim->number])));
-    }
-
-    public function headers(): Headers {
-        return new Headers(text: [\App\Listeners\RecordInvoiceMailDelivery::HEADER => (string) $this->dispatchId]);
     }
 
     public function content(): Content {
@@ -83,11 +81,6 @@ class ClubFeeNoticeMail extends Mailable implements ShouldQueue {
             ->update(['sha256' => \CommonToolkit\Helper\Data\CryptoHelper::hash($bytes)]);
 
         return [Attachment::fromData(static fn(): string => $bytes, $renderer->filename($claim, $dunning))->withMime('application/pdf')];
-    }
-
-    public function failed(\Throwable $exception): void {
-        $dispatch = DocumentDispatch::query()->withoutGlobalScopes()->find($this->dispatchId);
-        $dispatch?->forceFill(['status' => 'failed', 'meta' => [...(array) $dispatch->meta, 'error' => mb_substr($exception->getMessage(), 0, 500)]])->save();
     }
 
     private function dunning(): ?\App\Models\Club\ClubFeeDunning {

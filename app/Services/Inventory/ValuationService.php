@@ -15,12 +15,11 @@ namespace App\Services\Inventory;
 use App\Contracts\Inventory\InventoryValuationStrategy;
 use App\Enums\Inventory\{OwnershipType, StockMovementType, StockState, ValuationMethod};
 use App\Models\Article\ArticleVariant;
-use App\Models\Inventory\{StockMovement, StockValuation, Warehouse};
+use App\Models\Inventory\{StockLot, StockMovement, StockValuation, Warehouse};
 use App\Support\DecimalQty;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
-use RuntimeException;
 
 /**
  * Bestandsbewertung mit gleitendem Durchschnittspreis (Feature 048, MVP-070).
@@ -33,7 +32,10 @@ use RuntimeException;
 class ValuationService implements InventoryValuationStrategy {
     public const SCALE = 4;
 
-    public function __construct(private readonly InventoryLedger $ledger) {}
+    public function __construct(
+        private readonly InventoryLedger $ledger,
+        private readonly LotService $lots,
+    ) {}
 
     public function method(): ValuationMethod {
         return ValuationMethod::MovingAverage;
@@ -93,13 +95,15 @@ class ValuationService implements InventoryValuationStrategy {
     /**
      * Rückbuchung eines Abgangs ins Lager (Bewegungsart Return): wie ein
      * Wareneingang zum angegebenen Stückkostenwert, aber als klar erkennbare
-     * Gegenbuchung im Journal (referenziert die ursprüngliche Bewegung als source).
+     * Gegenbuchung im Journal (referenziert die ursprüngliche Bewegung als source),
+     * in die Charge, aus der der Abgang kam — ist sie inzwischen gesperrt, wird
+     * die Menge mitgesperrt, denn die Rückbuchung darf nicht scheitern.
      */
-    public function returnToStock(ArticleVariant $variant, Warehouse $warehouse, string $qty, string $unitCost, string $currency = 'EUR', ?int $actorUserId = null, ?Model $source = null): StockMovement {
+    public function returnToStock(ArticleVariant $variant, Warehouse $warehouse, string $qty, string $unitCost, string $currency = 'EUR', ?int $actorUserId = null, ?Model $source = null, ?StockLot $lot = null): StockMovement {
         $qty = DecimalQty::positive($qty);
         $unitCost = DecimalQty::positive($unitCost);
 
-        return DB::transaction(function () use ($variant, $warehouse, $qty, $unitCost, $currency, $actorUserId, $source): StockMovement {
+        return DB::transaction(function () use ($variant, $warehouse, $qty, $unitCost, $currency, $actorUserId, $source, $lot): StockMovement {
             $valuation = $this->valuationFor($variant, $warehouse);
             $oldQty = $valuation->exists ? $valuation->qty_on_hand : '0';
             $oldAvg = $valuation->exists ? ($valuation->avg_cost?->getAmount() ?? '0') : '0';
@@ -117,7 +121,7 @@ class ValuationService implements InventoryValuationStrategy {
                 'currency' => $currency,
             ])->save();
 
-            return $this->ledger->post(new StockPosting(
+            return $this->lots->holdArrival($lot, fn (): StockMovement => $this->ledger->post(new StockPosting(
                 $variant,
                 $warehouse,
                 StockState::Physical,
@@ -129,44 +133,37 @@ class ValuationService implements InventoryValuationStrategy {
                 costUnit: $unitCost,
                 costTotal: $addValue,
                 currency: $currency,
-            ));
+                stockLotId: $lot?->id,
+            )));
         });
     }
 
-    /** Abgang zum aktuellen Durchschnitt bewertet (Durchschnitt unverändert). */
-    public function issue(ArticleVariant $variant, Warehouse $warehouse, string $qty, bool $allowNegative = false, ?int $actorUserId = null): StockMovement {
-        $qty = DecimalQty::positive($qty);
+    /**
+     * Abgang über das Lagerbuch (Charge gewählt oder FEFO-zugeteilt), jeder
+     * Teil zum aktuellen Durchschnitt bewertet (Durchschnitt unverändert).
+     */
+    public function issue(ArticleVariant $variant, Warehouse $warehouse, string $qty, bool $allowNegative = false, ?int $actorUserId = null, ?StockLot $lot = null, bool $requireLot = false): StockIssue {
+        return $this->ledger->issue(
+            $variant, $warehouse, $qty,
+            allowNegative: $allowNegative,
+            actorUserId: $actorUserId,
+            lot: $lot,
+            requireLot: $requireLot,
+            // Läuft nach der gesperrten Bestandsprüfung des Lagerbuchs: der Durchschnitt wird erst danach gelesen, sonst
+            // schrieben zwei parallele Abgänge ihren Bestand gegen denselben veralteten Stand fort.
+            costing: function (?StockLot $partLot, string $partQty) use ($variant, $warehouse): array {
+                $valuation = $this->valuationFor($variant, $warehouse);
+                $avg = $valuation->exists ? ($valuation->avg_cost?->getAmount() ?? '0') : '0';
+                $valuation->fill([
+                    'organization_id' => $variant->organization_id,
+                    'avg_cost' => $avg,
+                    'qty_on_hand' => bcsub($valuation->exists ? $valuation->qty_on_hand : '0', $partQty, self::SCALE),
+                    'currency' => $valuation->exists ? $valuation->currency : 'EUR',
+                ])->save();
 
-        return DB::transaction(function () use ($variant, $warehouse, $qty, $allowNegative, $actorUserId): StockMovement {
-            // Verfügbarkeit UNTER Zeilensperre in der Transaktion prüfen (wie FifoValuationService): der ungesperrte
-            // Check davor war TOCTOU — zwei parallele Abgänge buchten zusammen ins Minus (Moving-Average-Verzerrung).
-            if (! $allowNegative && bccomp($this->ledger->availableForUpdate($variant, $warehouse), $qty, self::SCALE) < 0) {
-                throw new RuntimeException('Abgang übersteigt den verfügbaren Bestand.');
-            }
-
-            $valuation = $this->valuationFor($variant, $warehouse);
-            $avg = $valuation->exists ? ($valuation->avg_cost?->getAmount() ?? '0') : '0';
-            $costTotal = bcmul($qty, $avg, self::SCALE);
-
-            $valuation->fill([
-                'organization_id' => $variant->organization_id,
-                'avg_cost' => $avg,
-                'qty_on_hand' => bcsub($valuation->exists ? $valuation->qty_on_hand : '0', $qty, self::SCALE),
-                'currency' => $valuation->exists ? $valuation->currency : 'EUR',
-            ])->save();
-
-            return $this->ledger->post(new StockPosting(
-                $variant,
-                $warehouse,
-                StockState::Physical,
-                bcmul($qty, '-1', self::SCALE),
-                StockMovementType::Issue,
-                OwnershipType::Own,
-                actorUserId: $actorUserId,
-                costUnit: $avg,
-                costTotal: $costTotal,
-            ));
-        });
+                return ['unit' => bcadd($avg, '0', self::SCALE), 'total' => bcmul($partQty, $avg, self::SCALE)];
+            },
+        );
     }
 
     /** @return numeric-string */

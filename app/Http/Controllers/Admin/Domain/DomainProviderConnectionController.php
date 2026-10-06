@@ -36,7 +36,9 @@ class DomainProviderConnectionController extends Controller {
         $connections = DomainProviderConnection::query()
             ->withCount(['projections', 'resellerAccounts'])
             ->orderBy('name')
-            ->get();
+            ->orderBy('id')
+            ->paginate(25)
+            ->withQueryString();
 
         return view('admin.domain-provider.index', [
             'connections' => $connections,
@@ -80,7 +82,7 @@ class DomainProviderConnectionController extends Controller {
 
         $ok = $service->test($connection);
 
-        return redirect()->route('admin.domain-provider.index')->with(
+        return redirect()->toList('admin.domain-provider.index')->with(
             $ok ? 'success' : 'error',
             $ok ? __('domain.flash.connected') : __('domain.flash.connection_failed'),
         );
@@ -140,6 +142,6 @@ class DomainProviderConnectionController extends Controller {
 
         $connection->delete();
 
-        return redirect()->route('admin.domain-provider.index')->with('success', __('domain.flash.disconnected'));
+        return redirect()->toList('admin.domain-provider.index')->with('success', __('domain.flash.disconnected'));
     }
 }

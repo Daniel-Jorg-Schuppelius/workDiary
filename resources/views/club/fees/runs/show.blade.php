@@ -35,16 +35,7 @@
         </x-page-toolbar>
     </x-slot:toolbar>
 
-    @if ($errors->any())
-        <div class="alert alert-error text-sm" role="alert">
-            <x-icon name="error" />
-            <ul class="list-inside list-disc">
-                @foreach ($errors->all() as $message)
-                    <li>{{ $message }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
+    <x-validation-errors />
     @if ($external)
         <div class="alert alert-warning text-sm" role="status"><x-icon name="lock" /><span>{{ __('club.fees.hint.external_billing', ['mode' => $external->label()]) }}</span></div>
     @endif
@@ -65,7 +56,7 @@
     <div class="grid gap-4 lg:grid-cols-3">
         <div class="space-y-4 lg:col-span-2">
             <x-card :title="__('club.fees.card.positions')" icon="calculate" :count="$positions->count()">
-                <p class="mb-2 text-xs text-muted">{{ __('club.fees.hint.frozen', ['at' => $run->calculated_at?->orgTz()->format('d.m.Y H:i') ?? '–']) }}</p>
+                <p class="mb-2 text-xs text-muted">{{ __('club.fees.hint.frozen', ['at' => $run->calculated_at?->fdatetime() ?? '–']) }}</p>
                 <x-table :bare="true" size="sm">
                     <x-slot:head>
                         <tr>
@@ -113,7 +104,7 @@
                     @endforelse
                 </ul>
                 @if ($run->released_at)
-                    <p class="mt-2 text-xs text-muted">{{ __('club.fees.label.released_at', ['at' => $run->released_at->orgTz()->format('d.m.Y H:i'), 'by' => $run->releasedBy?->name ?? '–']) }}</p>
+                    <p class="mt-2 text-xs text-muted">{{ __('club.fees.label.released_at', ['at' => $run->released_at->fdatetime(), 'by' => $run->releasedBy?->name ?? '–']) }}</p>
                 @endif
             </x-card>
         </div>

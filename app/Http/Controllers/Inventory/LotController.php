@@ -10,10 +10,12 @@
 
 namespace App\Http\Controllers\Inventory;
 
+use App\Enums\Inventory\StockLotStatus;
 use App\Enums\User\Permission as P;
 use App\Http\Controllers\Controller;
 use App\Models\Inventory\StockLot;
-use App\Services\Inventory\{LotService, LotSplitService};
+use App\Models\Platform\User;
+use App\Services\Inventory\{LotService, LotSplitService, LotStockReader};
 use App\Support\{ErrorText, SqidEncoder};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -21,27 +23,26 @@ use Illuminate\View\View;
 use RuntimeException;
 
 /**
- * Chargenverwaltung (Feature 047/048, E2/E7): Chargenliste mit Restbestand sowie
- * Los-Split und -Merge. Lesen mit inventory.viewAny, Aktionen mit inventory.post.
+ * Chargenverwaltung (Feature 047/048, E2/E7): Chargenliste mit Restbestand,
+ * Los-Split und -Merge sowie Sperren und Freigeben mit Begründung. Lesen mit
+ * inventory.viewAny, Aktionen mit inventory.post.
  */
 class LotController extends Controller {
     public function __construct(
         private readonly LotService $lots,
         private readonly LotSplitService $split,
+        private readonly LotStockReader $lotStock,
     ) {}
 
     public function index(): View {
         $this->canView();
 
-        $lots = StockLot::query()->with('variant.article')->orderByDesc('id')->paginate(40);
-        $onHand = [];
-        foreach ($lots as $lot) {
-            $onHand[$lot->id] = $this->lots->onHand($lot);
-        }
+        $lots = StockLot::query()->with(['variant.article', 'blockedBy:id,name', 'mergedInto:id,lot_no'])->orderByDesc('id')->paginate(40);
 
         return view('inventory.lots.index', [
             'lots' => $lots,
-            'onHand' => $onHand,
+            'onHand' => $this->lotStock->balancesOf($lots->getCollection()),
+            'mergeable' => $lots->getCollection()->filter(fn (StockLot $lot): bool => $lot->status === StockLotStatus::Active)->values(),
             'canManage' => Auth::user()?->can(P::InventoryPost->value) ?? false,
         ]);
     }
@@ -57,16 +58,16 @@ class LotController extends Controller {
 
         $lot = $this->resolve((string) $data['lot']);
         if (! $lot instanceof StockLot) {
-            return back()->with('error', __('inventory.lot.flash.unknown'));
+            return redirect()->toList('inventory.lots')->with('error', __('inventory.lot.flash.unknown'));
         }
 
         try {
-            $this->split->split($lot, (string) $data['qty'], (string) $data['new_lot_no'], $data['best_before'] ?? null);
+            $this->split->split($lot, (string) $data['qty'], (string) $data['new_lot_no'], $data['best_before'] ?? null, $this->actor()->id);
         } catch (RuntimeException $e) {
-            return back()->with('error', ErrorText::for($e));
+            return redirect()->toList('inventory.lots')->with('error', ErrorText::for($e));
         }
 
-        return back()->with('success', __('inventory.lot.flash.split'));
+        return redirect()->toList('inventory.lots')->with('success', __('inventory.lot.flash.split'));
     }
 
     public function mergeLot(Request $request): RedirectResponse {
@@ -79,16 +80,63 @@ class LotController extends Controller {
         $from = $this->resolve((string) $data['from']);
         $into = $this->resolve((string) $data['into']);
         if (! $from instanceof StockLot || ! $into instanceof StockLot) {
-            return back()->with('error', __('inventory.lot.flash.unknown'));
+            return redirect()->toList('inventory.lots')->with('error', __('inventory.lot.flash.unknown'));
         }
 
         try {
-            $this->split->merge($from, $into);
+            $this->split->merge($from, $into, $this->actor()->id);
         } catch (RuntimeException $e) {
-            return back()->with('error', ErrorText::for($e));
+            return redirect()->toList('inventory.lots')->with('error', ErrorText::for($e));
         }
 
-        return back()->with('success', __('inventory.lot.flash.merged'));
+        return redirect()->toList('inventory.lots')->with('success', __('inventory.lot.flash.merged'));
+    }
+
+    public function blockCreate(StockLot $stockLot): View {
+        $this->canManage();
+        abort_unless($stockLot->status->canTransitionTo(StockLotStatus::Blocked), 404);
+
+        return view('inventory.lots._status_dialog', ['lot' => $stockLot, 'blocking' => true]);
+    }
+
+    public function blockStore(Request $request, StockLot $stockLot): RedirectResponse {
+        $this->canManage();
+        $data = $request->validate(['reason' => ['required', 'string', 'max:500']]);
+
+        try {
+            $this->lots->block($stockLot, (string) $data['reason'], $this->actor());
+        } catch (RuntimeException $e) {
+            return redirect()->toList('inventory.lots')->with('error', ErrorText::for($e));
+        }
+
+        return redirect()->toList('inventory.lots')->with('success', __('inventory.lot.flash.blocked', ['lot' => $stockLot->lot_no]));
+    }
+
+    public function unblockCreate(StockLot $stockLot): View {
+        $this->canManage();
+        abort_unless($stockLot->status === StockLotStatus::Blocked, 404);
+
+        return view('inventory.lots._status_dialog', ['lot' => $stockLot, 'blocking' => false]);
+    }
+
+    public function unblockStore(Request $request, StockLot $stockLot): RedirectResponse {
+        $this->canManage();
+        $data = $request->validate(['reason' => ['required', 'string', 'max:500']]);
+
+        try {
+            $this->lots->unblock($stockLot, (string) $data['reason'], $this->actor());
+        } catch (RuntimeException $e) {
+            return redirect()->toList('inventory.lots')->with('error', ErrorText::for($e));
+        }
+
+        return redirect()->toList('inventory.lots')->with('success', __('inventory.lot.flash.unblocked', ['lot' => $stockLot->lot_no]));
+    }
+
+    private function actor(): User {
+        $user = Auth::user();
+        abort_unless($user instanceof User, 403);
+
+        return $user;
     }
 
     private function resolve(string $sqid): ?StockLot {

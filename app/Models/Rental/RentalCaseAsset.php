@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Rental;
 
+use App\Enums\Rental\RentalCaseAssetStatus;
 use App\Models\Asset\Asset;
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Model;
@@ -25,15 +26,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $organization_id
  * @property int $rental_case_id
  * @property int $asset_id
- * @property string $status
+ * @property RentalCaseAssetStatus $status
  * @property int|null $replaced_by_id
  * @property array<int, string>|null $accessories
  */
 class RentalCaseAsset extends Model {
     use BelongsToOrganization;
     use HasSqid;
-
-    public const STATUSES = ['planned', 'handed_over', 'returned', 'swapped'];
 
     protected $fillable = [
         'organization_id', 'rental_case_id', 'asset_id', 'status',
@@ -42,6 +41,7 @@ class RentalCaseAsset extends Model {
 
     /** @var array<string, string> */
     protected $casts = [
+        'status' => RentalCaseAssetStatus::class,
         'accessories' => 'array',
     ];
 

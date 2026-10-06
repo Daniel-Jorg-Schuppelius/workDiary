@@ -27,6 +27,15 @@ Démarrer la ronde → scanner les jetons (le scanner caméra tape comme un
 clavier, ou saisie manuelle) → terminer. Au plus une ronde par parcours à la
 fois ; les doubles scans comptent une fois.
 
+## Interruption
+
+Une ronde en cours peut être **interrompue** — uniquement avec un **motif**.
+Elle ne compte alors pas comme terminée ; les points de contrôle confirmés
+restent acquis comme preuve, et le rapport indique l’interruption avec motif,
+personne et heure. Les points ouverts sont transmis au poste de contrôle
+comme **point ouvert**, comme pour un écart. Le parcours est ensuite de
+nouveau libre.
+
 ## Écarts
 
 Les points manqués ou scans hors fenêtre sont **montrés, jamais lissés** — et

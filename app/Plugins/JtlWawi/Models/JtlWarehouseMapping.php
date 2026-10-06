@@ -69,8 +69,4 @@ class JtlWarehouseMapping extends Model {
     public function warehouse(): BelongsTo {
         return $this->belongsTo(Warehouse::class);
     }
-
-    public function isMapped(): bool {
-        return $this->warehouse_id !== null;
-    }
 }

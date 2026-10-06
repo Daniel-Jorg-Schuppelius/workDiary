@@ -15,6 +15,7 @@ use App\Enums\Task\{TaskPriority, TaskStatus};
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem, IntegrationOutboxEntry};
 use App\Models\Platform\User;
 use App\Models\Project\Task;
+use App\Plugins\Todoist\Enums\{TodoistConnectionStatus, TodoistProjectLinkStatus};
 use App\Plugins\Todoist\Models\{TodoistConnection, TodoistProjectLink};
 use App\Plugins\Todoist\Services\{TodoistImportService, TodoistOutboxDispatcher};
 use App\Plugins\Todoist\TodoistPlugin;
@@ -48,7 +49,7 @@ final class TodoistOutboxTest extends TestCase {
         $this->connection = TodoistConnection::query()->create([
             'organization_id' => $this->organization->id,
             'access_token' => 'secret-token',
-            'status' => TodoistConnection::STATUS_ACTIVE,
+            'status' => TodoistConnectionStatus::Active,
         ]);
         $this->link = TodoistProjectLink::query()->create([
             'organization_id' => $this->organization->id,
@@ -56,7 +57,7 @@ final class TodoistOutboxTest extends TestCase {
             'todoist_project_name' => 'Sync-Projekt',
             'target_kind' => TodoistProjectLink::KIND_GLOBAL_KANBAN,
             'sync_mode' => TodoistProjectLink::MODE_BIDIRECTIONAL,
-            'status' => TodoistProjectLink::STATUS_ACTIVE,
+            'status' => TodoistProjectLinkStatus::Active,
         ]);
         $this->imports = app(TodoistImportService::class);
         config()->set('plugins.todoist.client_id', 'cid');

@@ -17,6 +17,7 @@ use App\Plugins\GoogleCalendar\Api\GoogleCalendarClient;
 use App\Plugins\GoogleCalendar\GoogleCalendarPlugin;
 use App\Plugins\GoogleCalendar\Models\GoogleCalendarConnection;
 use App\Plugins\Support\Calendar\RemoteCalendarPublishService;
+use App\Plugins\Support\OAuthConnectionStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Psr\Http\Message\RequestInterface;
 use Tests\Concerns\WithOrganization;
@@ -43,7 +44,7 @@ final class GoogleCalendarPublishTest extends TestCase {
         return GoogleCalendarConnection::query()->create($attributes + [
             'organization_id' => $this->organization->id,
             'access_token' => 'secret-token-123',
-            'status' => GoogleCalendarConnection::STATUS_ACTIVE,
+            'status' => OAuthConnectionStatus::Active,
         ]);
     }
 

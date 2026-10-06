@@ -55,6 +55,11 @@ class WhistleblowingCaseWorkflowService {
      */
     public function transition(WhistleblowingCase $case, CaseStatus $to, ?User $actor = null, ?string $reason = null): void {
         $from = $this->status($case);
+        // Gelöscht wird nur über den WhistleblowingDeletionService: Ein bloßer
+        // Statuswechsel ließe Inhalte und Schlüssel stehen und schriebe keinen Grabstein.
+        if ($to === CaseStatus::Deleted) {
+            throw InvalidCaseTransition::between($from, $to);
+        }
         $this->assertAllowed($from, $to);
 
         if ($to->isClosed() && ($reason === null || trim($reason) === '')) {

@@ -105,7 +105,7 @@ class OvertimeRequestController extends Controller {
         );
 
         return redirect()
-            ->route('overtime.index')
+            ->toList('overtime.index')
             ->with('status', __('Überstunden-Antrag eingereicht.'));
     }
 

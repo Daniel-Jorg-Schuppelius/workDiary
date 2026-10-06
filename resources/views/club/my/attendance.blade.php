@@ -10,8 +10,7 @@
 @extends('layouts.app')
 @section('title', __('club.my.title.attendance'))
 @section('nav-title', __('club.my.title.attendance'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 @section('content')
 @php
     $hours = intdiv($creditedMinutes, 60);
@@ -35,7 +34,7 @@
         </x-slot:head>
         @forelse ($records as $record)
             <tr class="hover">
-                <td class="whitespace-nowrap text-sm tabular-nums">{{ $record->event?->started_at?->orgTz()->format('d.m.Y H:i') }}</td>
+                <td class="whitespace-nowrap text-sm tabular-nums">{{ $record->event?->started_at?->fdatetime() }}</td>
                 <td class="text-sm">{{ $record->event?->title }}</td>
                 <td>
                     <x-status-badge :tone="$record->status->tone()" size="sm" :icon="$record->status->icon()">{{ $record->status->label() }}</x-status-badge>

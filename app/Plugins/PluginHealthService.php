@@ -10,6 +10,7 @@
 
 namespace App\Plugins;
 
+use App\Enums\Plugin\PluginHealthStatus;
 use App\Events\{PluginHealthChanged, PluginRecovered};
 use App\Models\Platform\{PluginError, PluginState};
 use App\Plugins\Contracts\Plugin;
@@ -108,9 +109,10 @@ class PluginHealthService {
 
     /** Persistiert Roh-Ergebnis + Metadaten und meldet stabile Übergänge. */
     private function persist(PluginState $state, PluginHealth $health): void {
+        $status = PluginHealthStatus::from($health->status);
         $previousRaw = $state->last_health_status;
 
-        $state->last_health_status = $health->status;
+        $state->last_health_status = $status;
         $state->last_health_message = $health->message;
         $state->last_health_latency_ms = $health->latencyMs;
         $state->last_health_code = $health->code;
@@ -118,7 +120,7 @@ class PluginHealthService {
             $state->last_ok_at = now();
         }
 
-        $state->health_streak = $previousRaw === $health->status
+        $state->health_streak = $previousRaw === $status
             ? (int) $state->health_streak + 1
             : 1;
 
@@ -127,18 +129,18 @@ class PluginHealthService {
 
         if ($announced === null) {
             // Erststatus: sofort melden — es gibt nichts, wogegen geflattert wird.
-            $state->last_announced_status = $health->status;
+            $state->last_announced_status = $status;
             $this->announce($state, null, $health);
-        } elseif ($health->status !== $announced && $state->health_streak >= $flapThreshold) {
-            $state->last_announced_status = $health->status;
+        } elseif ($status !== $announced && $state->health_streak >= $flapThreshold) {
+            $state->last_announced_status = $status;
             $this->announce($state, $announced, $health);
         }
 
         $state->save();
     }
 
-    private function announce(PluginState $state, ?string $from, PluginHealth $health): void {
-        PluginHealthChanged::dispatch($state->plugin_id, $state->organization_id, $from, $health->status, $health->message);
+    private function announce(PluginState $state, ?PluginHealthStatus $from, PluginHealth $health): void {
+        PluginHealthChanged::dispatch($state->plugin_id, $state->organization_id, $from?->value, $health->status, $health->message);
         if ($health->isOk() && $from !== null) {
             PluginRecovered::dispatch($state->plugin_id, $state->organization_id, $health->message);
         }

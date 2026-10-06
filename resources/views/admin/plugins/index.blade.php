@@ -11,8 +11,7 @@
 
 @section('title', __('Plugins'))
 @section('nav-title', __('Plugins'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('Plugins verwalten — aktivieren, konfigurieren, Status & Healthchecks prüfen.')">
@@ -66,7 +65,7 @@
                 :title="__('Keine Treffer')"
                 :message="__('Suche/Filter treffen kein Plugin.')">
                 <x-slot:action>
-                    <a href="{{ route('admin.plugins.index') }}" class="btn btn-sm">{{ __('Filter zurücksetzen') }}</a>
+                    <x-button :href="route('admin.plugins.index')" tone="plain">{{ __('Filter zurücksetzen') }}</x-button>
                 </x-slot:action>
             </x-empty-state>
         @else
@@ -104,8 +103,8 @@
                     $isAutoDisabled = $state && $state->isAutoDisabled();
                     // Deaktivierte Plugins haben keinen Zustand (Review 2026-08, E1):
                     // ein stehen gebliebener Health-Status wäre eine falsche Aussage.
-                    $health = $isEnabled || $isAutoDisabled ? \App\Enums\Plugin\PluginHealthStatus::tryFrom((string) $state?->last_health_status) : null;
-                    $healthClass = 'badge-' . ($health?->tone() ?? 'ghost');
+                    $health = $isEnabled || $isAutoDisabled ? $state?->last_health_status : null;
+                    $healthTone = $health?->tone() ?? 'ghost';
                     $healthLabel = $health?->label() ?? (! $isEnabled && ! $isAutoDisabled ? __('Deaktiviert') : __('Zustand unbekannt'));
                     $failureCount = (int) ($state?->failure_count ?? 0);
                     $openErrors = (int) ($errorCounts[$plugin->id()] ?? 0);
@@ -151,9 +150,10 @@
                         @endif
                     </td>
                     <td>
-                        <span class="badge {{ $healthClass }} badge-sm {{ $isStale ? 'opacity-60' : '' }}" title="{{ $isEnabled || $isAutoDisabled ? $state?->last_health_message : '' }}" data-health-badge>{{ $healthLabel }}</span>
+                        <x-status-badge :tone="$healthTone" :class="$isStale ? 'opacity-60' : null" title="{{ $isEnabled || $isAutoDisabled ? $state?->last_health_message : '' }}" data-health-badge>{{ $healthLabel }}</x-status-badge>
                         @if ($failureCount > 0)
-                            <span class="badge badge-error badge-outline badge-sm ml-1 tabular-nums" data-failure-chip title="{{ __('Aufgezeichnete Fehler in Folge — bei Schwelle :threshold wird das Plugin automatisch deaktiviert.', ['threshold' => (int) config('plugins.auto_disable_threshold', 5)]) }}">{{ $failureCount }} ⚠</span>
+                            <x-status-badge tone="error" outline class="ml-1 tabular-nums" data-failure-chip
+                                    title="{{ __('Aufgezeichnete Fehler in Folge — bei Schwelle :threshold wird das Plugin automatisch deaktiviert.', ['threshold' => (int) config('plugins.auto_disable_threshold', 5)]) }}">{{ $failureCount }} ⚠</x-status-badge>
                         @endif
                         @if ($openErrors > 0)
                             {{-- Deep-Link auf die gefilterte Fehler-Inbox (W4a / Symptom 2). --}}
@@ -186,14 +186,11 @@
                     </td>
                     <td class="text-right">
                         <div class="flex justify-end gap-1">
-                            <a href="{{ route('admin.plugins.edit', $plugin->id()) }}" data-entry-modal-trigger
-                               class="btn btn-sm btn-ghost" title="{{ __('Konfigurieren') }}">
-                                <x-icon name="settings" />
-                            </a>
-                            <a href="{{ route('admin.plugin-errors.index', ['plugin' => $plugin->id(), 'status' => 'all']) }}"
-                               class="btn btn-sm btn-ghost" title="{{ __('Fehler dieses Plugins') }}">
-                                <x-icon name="bug_report" />
-                            </a>
+                            <x-icon-btn icon="settings" size="sm" :href="route('admin.plugins.edit', $plugin->id())"
+                                    :label="__('Konfigurieren')" data-entry-modal-trigger />
+                            <x-icon-btn icon="bug_report" size="sm"
+                                    :href="route('admin.plugin-errors.index', ['plugin' => $plugin->id(), 'status' => 'all'])"
+                                    :label="__('Fehler dieses Plugins')" />
                             <x-action-form :action="route('admin.plugins.toggle', $plugin->id())">
                                 <x-icon-btn type="submit" tone="ghost" size="sm" :icon="$isEnabled ? 'toggle_on' : 'toggle_off'" :label="$isEnabled ? __('Deaktivieren') : __('Aktivieren')" />
                             </x-action-form>

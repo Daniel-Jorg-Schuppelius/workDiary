@@ -59,7 +59,8 @@ class CommunicationNoteControllerTest extends TestCase {
 
     /** Vollaudit 2026-07 (M12): Bezüge Protocol und Asset (Spec §5). */
     public function test_notes_can_be_stored_against_protocol_and_asset(): void {
-        $user = User::factory()->user()->create();
+        // Wer eine Notiz anhängt, muss den Träger sehen dürfen (authz-b-6).
+        $user = User::factory()->admin()->create();
         app()->instance('currentOrganization', $user->organization);
         $protocol = \App\Models\Protocol\Protocol::factory()->create(['organization_id' => $user->organization_id]);
         $asset = \App\Models\Asset\Asset::factory()->create(['organization_id' => $user->organization_id]);

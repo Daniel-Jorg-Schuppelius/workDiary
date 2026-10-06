@@ -10,6 +10,7 @@
 
 namespace App\Services\Invoicing;
 
+use App\Enums\Invoicing\{InvoiceScheduleStatus, InvoiceStatus};
 use App\Enums\Notification\NotificationEvent;
 use App\Models\Contract\Contract;
 use App\Models\Customer\Customer;
@@ -82,13 +83,13 @@ class RecurringInvoiceService {
         }
 
         $runs = 0;
-        while ($schedule->status === InvoiceSchedule::STATUS_ACTIVE
+        while ($schedule->status === InvoiceScheduleStatus::Active
             && $schedule->next_run_on->lessThanOrEqualTo($today)
             && $runs < self::MAX_CATCHUP_RUNS
         ) {
             // Plan- oder Vertragsende beendet den Plan mit Audit statt still zu laufen.
             if ($this->hasEnded($schedule)) {
-                $schedule->update(['status' => InvoiceSchedule::STATUS_ENDED]);
+                $schedule->update(['status' => InvoiceScheduleStatus::Ended]);
 
                 return ['created' => $created, 'blocked' => false, 'ended' => true];
             }
@@ -173,7 +174,7 @@ class RecurringInvoiceService {
             'organization_id' => $schedule->organization_id,
             'customer_id' => $customer->id,
             'number' => $this->generator->nextNumber($schedule->organization_id),
-            'status' => Invoice::STATUS_DRAFT,
+            'status' => InvoiceStatus::Draft,
             'currency' => $customer->currency,
             'tax_rate' => $tax['rate'],
             'is_reverse_charge' => $tax['reverse_charge'],

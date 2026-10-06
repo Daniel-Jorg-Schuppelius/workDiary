@@ -14,8 +14,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Knowledge\{ContentCollection, ContentReference};
 use App\Models\Platform\User;
 use App\Services\Collections\{CollectableTypes, ContentReferenceService};
-use App\Support\Sqid;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\Rule;
@@ -35,7 +33,7 @@ class ContentReferenceController extends Controller {
     public function create(Request $request): View {
         Gate::authorize('create', ContentCollection::class);
         $type = (string) $request->query('type', '');
-        $source = $this->resolveItem($type, (string) $request->query('item', ''));
+        $source = $this->types->findVisibleOrFail($type, (string) $request->query('item', ''), $this->user());
 
         return view('collections._reference_dialog', [
             'type' => $type,
@@ -55,8 +53,8 @@ class ContentReferenceController extends Controller {
         ]);
 
         [$targetType, $targetSqid] = explode(':', (string) $data['target'], 2);
-        $source = $this->resolveItem((string) $data['type'], (string) $data['item']);
-        $target = $this->resolveItem($targetType, $targetSqid);
+        $source = $this->types->findVisibleOrFail((string) $data['type'], (string) $data['item'], $this->user());
+        $target = $this->types->findVisibleOrFail($targetType, $targetSqid, $this->user());
 
         $this->service->add($source, $target, $this->user());
 
@@ -69,19 +67,6 @@ class ContentReferenceController extends Controller {
         $this->service->remove($reference, $this->user());
 
         return redirect()->back()->with('success', __('collections.references.flash.removed'));
-    }
-
-    /** Inhalt aus Typ und Kennung — nur, wenn die Person ihn sehen darf. */
-    private function resolveItem(string $type, string $sqid): Model {
-        $class = $this->types->classFor($type);
-        abort_if($class === null, 404);
-        $id = Sqid::decode($class, $sqid);
-        abort_if($id === null, 404);
-
-        $visible = $this->types->visible($type, $this->user(), [$id]);
-        abort_if($visible === [], 404);
-
-        return $visible[0];
     }
 
     private function user(): User {

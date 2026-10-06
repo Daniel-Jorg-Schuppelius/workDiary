@@ -10,6 +10,7 @@
 
 namespace App\Models\Location;
 
+use App\Enums\Location\LocationVisitStatus;
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
 use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\{Builder, Model};
@@ -25,16 +26,12 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $left_at
  * @property int|null $duration_min
  * @property int $sample_count
- * @property string $status
+ * @property LocationVisitStatus $status
  * @property bool $materialized
  */
 class LocationVisit extends Model {
     use BelongsToOrganization;
     use HasSqid;
-
-    public const STATUS_OPEN = 'open';
-
-    public const STATUS_CLOSED = 'closed';
 
     protected $fillable = [
         'organization_id',
@@ -53,17 +50,18 @@ class LocationVisit extends Model {
         'left_at' => 'datetime',
         'duration_min' => 'integer',
         'sample_count' => 'integer',
+        'status' => LocationVisitStatus::class,
         'materialized' => 'boolean',
     ];
 
     /** @param Builder<LocationVisit> $query */
     public function scopeClosed(Builder $query): void {
-        $query->where('status', self::STATUS_CLOSED);
+        $query->where('status', LocationVisitStatus::Closed);
     }
 
     /** @param Builder<LocationVisit> $query */
     public function scopeMaterializable(Builder $query): void {
-        $query->where('status', self::STATUS_CLOSED)->where('materialized', false);
+        $query->where('status', LocationVisitStatus::Closed)->where('materialized', false);
     }
 
     /** @return BelongsTo<CustomerGeofence, $this> */

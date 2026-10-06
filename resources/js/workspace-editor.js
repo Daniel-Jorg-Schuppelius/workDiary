@@ -11,7 +11,7 @@
  * Editor für eigene Arbeitsbereiche (Feature 082 Phase 2, MVP-731).
  *
  * Zwei gleichwertige Wege, die Reihenfolge zu bestimmen — das ist die
- * eigentliche Anforderung: Drag-and-drop über **Pointer Events** (Maus,
+ * eigentliche Anforderung: Ziehen am Griff über lib/pointer-sort.js (Maus,
  * Touch, Stift in einem Codepfad) UND Schaltflächen bzw. Pfeiltasten am
  * Griff. Ohne Zeigegerät ist der Editor damit vollständig bedienbar.
  *
@@ -33,8 +33,7 @@
  *   [data-workspace-count]    Zähler, [data-workspace-empty] Leerhinweis
  */
 
-/** Pixel, ab denen aus einem Klick ein Ziehen wird. */
-const DRAG_THRESHOLD = 4;
+import { pointerSort } from "./lib/pointer-sort.js";
 
 /**
  * @param {Element | null} node
@@ -153,30 +152,6 @@ function move(chip, direction) {
     else sibling.after(chip);
 }
 
-/** @type {{chip: HTMLElement, root: HTMLElement, pointerId: number, startY: number, dragging: boolean} | null} */
-let drag = null;
-
-/**
- * Zeile, über der der Zeiger gerade steht (Mittelpunktvergleich — stabiler
- * als elementFromPoint, wenn die gezogene Zeile unter dem Zeiger klebt).
- *
- * @param {HTMLElement} list
- * @param {HTMLElement} chip
- * @param {number} clientY
- */
-function reorderTo(list, chip, clientY) {
-    for (const other of chipsOf(list)) {
-        if (other === chip) continue;
-        const box = other.getBoundingClientRect();
-        const middle = box.top + box.height / 2;
-        if (clientY < middle) {
-            if (other.previousElementSibling !== chip) other.before(chip);
-            return;
-        }
-    }
-    if (list.lastElementChild !== chip) list.appendChild(chip);
-}
-
 document.addEventListener("click", (event) => {
     const target = event.target instanceof Element ? event.target : null;
     if (!target) return;
@@ -239,54 +214,15 @@ document.addEventListener("keydown", (event) => {
     }
 });
 
-document.addEventListener("pointerdown", (event) => {
-    if (event.button !== 0 && event.pointerType === "mouse") return;
-    const target = event.target instanceof Element ? event.target : null;
-    if (!target || !target.closest("[data-workspace-handle]")) return;
-    const chip = /** @type {HTMLElement | null} */ (
-        target.closest("[data-workspace-chip]")
-    );
-    const root = editorOf(target);
-    if (!chip || !root) return;
-
-    drag = {
-        chip,
-        root,
-        pointerId: event.pointerId,
-        startY: event.clientY,
-        dragging: false,
-    };
+// Die Reihenfolge steht schon während des Zugs im DOM (= im Formular).
+// Delegation über document, weil der Dialog nachgeladen wird.
+pointerSort(document, {
+    list: "[data-workspace-order]",
+    item: "[data-workspace-chip]",
+    handle: "[data-workspace-handle]",
+    mode: "live",
+    draggingClass: ["opacity-60", "ring-1", "ring-primary"],
 });
-
-document.addEventListener("pointermove", (event) => {
-    if (!drag || event.pointerId !== drag.pointerId) return;
-    const list = orderList(drag.root);
-    if (!list) return;
-
-    if (!drag.dragging) {
-        if (Math.abs(event.clientY - drag.startY) < DRAG_THRESHOLD) return;
-        drag.dragging = true;
-        drag.chip.classList.add("opacity-60", "ring-1", "ring-primary");
-        try {
-            drag.chip.setPointerCapture(event.pointerId);
-        } catch (_e) {
-            /* ältere Engines ohne Pointer-Capture */
-        }
-    }
-
-    event.preventDefault();
-    reorderTo(list, drag.chip, event.clientY);
-});
-
-/** Ziehen beenden — Reihenfolge steht bereits im DOM (= im Formular). */
-function endDrag() {
-    if (!drag) return;
-    drag.chip.classList.remove("opacity-60", "ring-1", "ring-primary");
-    drag = null;
-}
-
-document.addEventListener("pointerup", endDrag);
-document.addEventListener("pointercancel", endDrag);
 
 // Katalogfilter: rein visuell, die Auswahl bleibt unberührt.
 document.addEventListener("input", (event) => {

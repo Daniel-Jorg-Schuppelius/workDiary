@@ -13,6 +13,7 @@ namespace App\Plugins\Nextcloud\Api;
 use App\Enums\CloudIntake\CloudIntakeItemStatus;
 use App\Models\CloudIntake\{CloudDocumentConnection, CloudDocumentItem};
 use App\Plugins\Nextcloud\Contracts\NextcloudTransportFactory;
+use App\Plugins\Nextcloud\Exceptions\NextcloudNotFoundException;
 use App\Plugins\Nextcloud\NextcloudConfig;
 use App\Plugins\Support\Intake\{IntakeAccount, IntakeChangePage, IntakeContainer, IntakeItem};
 use App\Services\CloudIntake\StaleCheckpointException;

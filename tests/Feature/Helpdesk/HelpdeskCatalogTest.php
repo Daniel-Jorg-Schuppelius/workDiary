@@ -10,11 +10,12 @@
 
 namespace Tests\Feature\Helpdesk;
 
+use App\Enums\ServiceTicket\ServiceRequestStatus;
 use App\Models\Platform\{Organization, User};
 use App\Models\Procurement\RequestItem;
 use App\Models\Project\Task;
 use App\Models\Sales\ServiceOffering;
-use App\Models\ServiceTicket\{BusinessService, ServiceQueue, ServiceRequest};
+use App\Models\ServiceTicket\{BusinessService, ServiceQueue};
 use App\Services\ServiceTicket\ServiceRequestService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -64,7 +65,7 @@ final class HelpdeskCatalogTest extends TestCase {
         $item = $this->item(['approval_chain' => [['approver' => ['type' => 'role', 'value' => 'teamleitung']]]]);
         $request = app(ServiceRequestService::class)->submit($item, $this->requester, ['cpu' => 'i7']);
 
-        $this->assertSame(ServiceRequest::STATUS_PENDING, $request->status);
+        $this->assertSame(ServiceRequestStatus::PendingApproval, $request->status);
         $this->assertSame('Notebook bestellen', $request->catalog_snapshot['name']);
         $this->assertSame(['cpu' => 'i7'], $request->form_snapshot['answers']);
         $this->assertSame('service_request', $request->ticket()->firstOrFail()->kind->value);
@@ -94,14 +95,14 @@ final class HelpdeskCatalogTest extends TestCase {
 
         // Schritt 1 genehmigt → Request bleibt pending (Schritt 2 offen).
         $request = $service->decide($steps[0], $this->approver, 'approved');
-        $this->assertSame(ServiceRequest::STATUS_PENDING, $request->status);
+        $this->assertSame(ServiceRequestStatus::PendingApproval, $request->status);
 
         // Schritt 2 genehmigt → approved + Fulfillment (Task). Zweite
         // Person: wer Schritt 1 entschieden hat, ist für Schritt 2 gesperrt
         // (Sicherheitsscan 2026-08-23, S-34).
         $zweiterGenehmiger = User::factory()->teamleitung()->create(['organization_id' => $this->org->id]);
         $request = $service->decide($steps[1]->fresh(), $zweiterGenehmiger, 'approved');
-        $this->assertSame(ServiceRequest::STATUS_DONE, $request->status);
+        $this->assertSame(ServiceRequestStatus::Done, $request->status);
         $this->assertNotNull($request->fulfilled_id);
     }
 
@@ -118,7 +119,7 @@ final class HelpdeskCatalogTest extends TestCase {
         }
 
         $request = $service->decide($step, $this->approver, 'rejected', 'Kein Budget');
-        $this->assertSame(ServiceRequest::STATUS_REJECTED, $request->status);
+        $this->assertSame(ServiceRequestStatus::Rejected, $request->status);
         $this->assertNull($request->fulfilled_id);
     }
 
@@ -127,11 +128,29 @@ final class HelpdeskCatalogTest extends TestCase {
         $service = app(ServiceRequestService::class);
         $request = $service->submit($item, $this->requester);
 
-        $this->assertSame(ServiceRequest::STATUS_DONE, $request->status);
+        $this->assertSame(ServiceRequestStatus::Done, $request->status);
         $taskCount = Task::query()->count();
 
         $service->fulfill($request->fresh(), $this->approver);
         $this->assertSame($taskCount, Task::query()->count(), 'Zweiter fulfill-Aufruf erzeugt nichts Neues.');
+    }
+
+    public function test_only_approved_requests_are_fulfilled(): void {
+        $item = $this->item(['approval_chain' => [['approver' => ['type' => 'role', 'value' => 'teamleitung']]]]);
+        $service = app(ServiceRequestService::class);
+        $request = $service->submit($item, $this->requester);
+        $this->assertSame(ServiceRequestStatus::PendingApproval, $request->status);
+
+        try {
+            $service->fulfill($request, $this->approver);
+            $this->fail('Ein wartender Request wurde erfüllt.');
+        } catch (\RuntimeException) {
+        }
+        $this->assertNull($request->fresh()?->fulfilled_id);
+
+        // Der im Schema vorgesehene Zwischenstand bleibt als Ausgang zugelassen.
+        $request->forceFill(['status' => ServiceRequestStatus::Fulfilling])->save();
+        $this->assertSame(ServiceRequestStatus::Done, $service->fulfill($request, $this->approver)->status);
     }
 
     public function test_visibility_filters_by_role(): void {

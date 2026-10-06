@@ -28,7 +28,7 @@ use Illuminate\Validation\ValidationException;
 class AccountPaymentController extends Controller {
     /** Modal-Fragment „Zahlung buchen" (data-entry-modal-trigger). */
     public function create(Customer $customer): \Illuminate\View\View {
-        Gate::authorize('update', $customer);
+        Gate::authorize('manageBilling', $customer);
         $customer->billingAgreement()->firstOrFail();
 
         return view('customers.billing._payment_form_dialog', [
@@ -37,7 +37,7 @@ class AccountPaymentController extends Controller {
     }
 
     public function store(Request $request, Customer $customer, CustomerAccountStatementService $service): RedirectResponse {
-        Gate::authorize('update', $customer);
+        Gate::authorize('manageBilling', $customer);
 
         $data = $request->validate([
             'paid_on' => ['required', 'date'],
@@ -60,7 +60,7 @@ class AccountPaymentController extends Controller {
     }
 
     public function destroy(Customer $customer, CustomerAccountPayment $payment, CustomerAccountStatementService $service): RedirectResponse {
-        Gate::authorize('update', $customer);
+        Gate::authorize('manageBilling', $customer);
         abort_unless(
             $payment->agreement()->where('customer_id', $customer->id)->exists(),
             404

@@ -398,7 +398,7 @@ class DiaryEntryTimelineTest extends TestCase {
             'organization_id' => $admin->organization_id,
             'customer_id' => $customer->id,
             'number' => 'AN-2026-007',
-            'status' => 'sent',
+            'status' => \App\Enums\Sales\QuoteStatus::Sent,
             'created_by' => $admin->id,
         ]);
 

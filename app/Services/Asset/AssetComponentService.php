@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Asset;
 
+use App\Enums\Asset\AssetComponentStatus;
 use App\Models\Asset\{Asset, AssetComponent};
 use App\Models\Material\MaterialUsage;
 use App\Models\Platform\User;
@@ -37,7 +38,7 @@ class AssetComponentService {
         return AssetComponent::query()
             ->with('article:id,name,number,base_unit')
             ->where('asset_id', $asset->id)
-            ->where('status', AssetComponent::STATUS_INSTALLED)
+            ->where('status', AssetComponentStatus::Installed)
             ->orderBy('position')
             ->get();
     }
@@ -80,7 +81,7 @@ class AssetComponentService {
      * @param array<string, mixed> $attributes
      */
     public function replace(AssetComponent $old, array $attributes, ?User $actor = null): AssetComponent {
-        if (! $old->isInstalled()) {
+        if (! $old->status->canTransitionTo(AssetComponentStatus::Replaced)) {
             throw new RuntimeException((string) __('asset.components.not_installed'));
         }
 
@@ -89,12 +90,12 @@ class AssetComponentService {
                 'organization_id' => $old->organization_id,
                 'asset_id' => $old->asset_id,
                 'installed_on' => CarbonImmutable::today()->toDateString(),
-                'status' => AssetComponent::STATUS_INSTALLED,
+                'status' => AssetComponentStatus::Installed,
                 'created_by' => $actor?->id,
             ]);
 
             $old->forceFill([
-                'status' => AssetComponent::STATUS_REPLACED,
+                'status' => AssetComponentStatus::Replaced,
                 'removed_on' => CarbonImmutable::today()->toDateString(),
                 'replaced_by_id' => $new->id,
             ])->save();

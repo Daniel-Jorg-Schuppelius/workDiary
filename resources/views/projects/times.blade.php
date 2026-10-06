@@ -13,8 +13,7 @@
 @extends('layouts.app')
 @section('title', __('Projekte') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('Projekte'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 @php
@@ -106,9 +105,9 @@
             <span class="text-muted">{{ __('Gruppieren nach') }}</span>
             <div class="join">
                 @foreach ($groupOptions as $value => $label)
-                    <a href="{{ route('projects.times', $listQuery + ['group' => $value]) }}"
-                       class="join-item btn btn-sm {{ $group === $value ? 'btn-primary' : 'btn-ghost' }}"
-                       @if ($group === $value) aria-current="true" @endif>{{ $label }}</a>
+                    <x-button :href="route('projects.times', $listQuery + ['group' => $value])"
+                       :tone="$group === $value ? 'primary' : 'ghost'" class="join-item"
+                       :aria-current="$group === $value ? 'true' : null">{{ $label }}</x-button>
                 @endforeach
             </div>
             <x-icon-btn icon="unfold_less" size="sm" tone="outline"
@@ -123,11 +122,9 @@
     @if ($canReassign)
         <x-bulk-toolbar :label="__(':n Zeiteinträge ausgewählt')">
             <x-slot:actions>
-                <a href="{{ route('projects.times.reassign-dialog') }}"
-                   data-bulk-dialog-link data-entry-modal-trigger
-                   class="btn btn-primary btn-sm">
-                    <x-icon name="person_add" /> {{ __('Benutzer zuordnen') }}
-                </a>
+                <x-button :href="route('projects.times.reassign-dialog')" icon="person_add" data-bulk-dialog-link data-entry-modal-trigger>
+                    {{ __('Benutzer zuordnen') }}
+                </x-button>
             </x-slot:actions>
         </x-bulk-toolbar>
     @endif
@@ -248,7 +245,7 @@
                         @if ($entry->tags->isNotEmpty())
                             <span class="mt-0.5 flex flex-wrap gap-1">
                                 @foreach ($entry->tags as $tag)
-                                    <span class="badge badge-xs" style="background:{{ $tag->color ?? '#94a3b8' }};color:#fff">{{ $tag->displayName() }}</span>
+                                    <x-status-badge tone="plain" size="xs" style="background:{{ $tag->color ?? '#94a3b8' }};color:#fff">{{ $tag->displayName() }}</x-status-badge>
                                 @endforeach
                             </span>
                         @endif

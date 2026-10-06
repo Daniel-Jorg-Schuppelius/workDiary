@@ -11,9 +11,10 @@
 
 @section('title', __('finance.datev.title'))
 @section('nav-title', __('finance.datev.menu'))
+@include('partials.page-fill')
 
 @section('content')
-    <x-index-page :subtitle="__('finance.datev.subtitle')"
+    <x-index-page overflow="clip" :subtitle="__('finance.datev.subtitle')"
                   :badge="$importAvailable ? null : __('finance.datev.error.unavailable_badge')"
                   badge-tone="warning"
                   :badge-title="$importAvailable ? null : \App\Services\Billing\FinancialFormatsSupport::unavailableMessage('finance.datev.error.unavailable')">
@@ -52,7 +53,7 @@
             <x-kpi-tile :label="__('finance.datev.metric.exported_total_year')" :value="\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($exportedTotalYear, 2, withThousandsSeparator: true) . ' €'" />
         </div>
 
-        <x-table>
+        <x-table scroll="flex">
             <x-slot:head>
                 <tr>
                     <x-table.th>{{ __('finance.datev.field.batch_no') }}</x-table.th>
@@ -66,7 +67,7 @@
             </x-slot:head>
 
             @forelse ($batches as $batch)
-                <tr>
+                <tr class="hover">
                     <td>#{{ $batch->batch_no }}</td>
                     <td>{{ $batch->period_from?->toDateString() }} – {{ $batch->period_to?->toDateString() }}</td>
                     <td><x-status-badge :tone="$batch->status->tone()" :label="$batch->status->label()" /></td>

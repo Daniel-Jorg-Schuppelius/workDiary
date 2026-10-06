@@ -11,6 +11,7 @@
 namespace App\Services\Finance;
 
 use App\Enums\Finance\DatevBatchStatus;
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Finance\{DatevBookingBatch, DatevBookingEvent, DatevBookingSource};
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\{Organization, User};
@@ -104,7 +105,7 @@ class DatevBookingService {
     private function collectInvoices(Organization $organization, array $period): Collection {
         $query = Invoice::query()
             ->where('organization_id', $organization->id)
-            ->whereIn('status', [Invoice::STATUS_ISSUED, Invoice::STATUS_PAID])
+            ->whereIn('status', [InvoiceStatus::Issued, InvoiceStatus::Paid])
             // MVP-707: Altrechnungen wurden im Vorsystem gebucht — nie erneut übergeben.
             ->where('number_source', '!=', \App\Services\Invoicing\Import\InvoiceSpec::NUMBER_SOURCE)
             ->whereNotNull('issued_on')
@@ -149,7 +150,7 @@ class DatevBookingService {
     private function collectReversals(Organization $organization, array $period): Collection {
         $query = Invoice::query()
             ->where('organization_id', $organization->id)
-            ->where('status', Invoice::STATUS_CANCELLED)
+            ->where('status', InvoiceStatus::Cancelled)
             ->whereNotNull('cancelled_at')
             ->with('customer');
 
@@ -741,7 +742,7 @@ class DatevBookingService {
 
         return Invoice::query()
             ->where('organization_id', $organization->id)
-            ->whereIn('status', [Invoice::STATUS_ISSUED, Invoice::STATUS_PAID])
+            ->whereIn('status', [InvoiceStatus::Issued, InvoiceStatus::Paid])
             ->whereHas('customer', fn($q) => $q->where('billing_mode', '!=', 'workdiary')->whereNotNull('billing_mode'))
             ->count();
     }

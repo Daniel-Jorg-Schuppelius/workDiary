@@ -12,54 +12,38 @@ declare(strict_types=1);
 
 namespace App\Plugins\GoogleCalendar\Console;
 
+use App\Plugins\GoogleCalendar\GoogleCalendarPlugin;
 use App\Plugins\GoogleCalendar\Models\GoogleCalendarConnection;
 use App\Plugins\GoogleCalendar\Services\GoogleCalendarImportService;
-use Illuminate\Console\Command;
-use Throwable;
+use App\Plugins\Support\Calendar\Console\CalendarImportCommand;
+use App\Plugins\Support\Calendar\RemoteCalendarConnection;
 
 /**
  * Kalender-Rückimport Google (Feature 121, MVP-610a): Änderungsliste aller
  * Verbindungen mit `two_way`-Opt-in → Integrations-Inbox-Fälle. Fehler zählen
  * auf die Verbindungs-Gesundheit (Auto-Disable ab Schwellwert).
+ *
+ * @extends CalendarImportCommand<GoogleCalendarConnection>
  */
-class GoogleCalendarImportCommand extends Command {
+class GoogleCalendarImportCommand extends CalendarImportCommand {
     protected $signature = 'google-calendar:import
         {--organization= : ID einer einzelnen Organisation, sonst alle}';
 
     protected $description = 'Importiert Änderungen aus dem Google-Kalender als Integrations-Inbox-Vorschläge (Zwei-Wege, Opt-in).';
 
-    public function handle(GoogleCalendarImportService $import): int {
-        $orgOption = $this->option('organization');
-        $failed = 0;
-        $totals = ['proposals' => 0, 'conflicts' => 0, 'deleted' => 0];
+    protected function pluginId(): string {
+        return GoogleCalendarPlugin::ID;
+    }
 
-        $connections = GoogleCalendarConnection::query()
-            ->withoutGlobalScopes()
-            ->where('two_way', true)
-            ->when(is_numeric($orgOption), fn ($q) => $q->where('organization_id', (int) $orgOption))
-            ->get();
+    protected function connectionModel(): string {
+        return GoogleCalendarConnection::class;
+    }
 
-        foreach ($connections as $connection) {
-            try {
-                $result = $import->run($connection);
-                foreach ($totals as $key => $value) {
-                    $totals[$key] = $value + $result[$key];
-                }
-                $connection->recordConnectionSuccess();
-            } catch (Throwable $e) {
-                $failed++;
-                $connection->recordConnectionFailure(class_basename($e));
-            }
-        }
+    protected function import(RemoteCalendarConnection $connection): array {
+        return app(GoogleCalendarImportService::class)->run($connection);
+    }
 
-        $this->info(sprintf(
-            'Google-Kalender-Rückimport: %d Vorschläge, %d Konflikte, %d Lösch-Hinweise, %d Fehler',
-            $totals['proposals'],
-            $totals['conflicts'],
-            $totals['deleted'],
-            $failed,
-        ));
-
-        return $failed > 0 ? self::FAILURE : self::SUCCESS;
+    protected function label(): string {
+        return 'Google-Kalender-Rückimport';
     }
 }

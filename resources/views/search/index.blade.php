@@ -96,24 +96,24 @@
     @if ($project !== null || $activeTag !== null)
         <div class="flex flex-wrap items-center gap-2">
             @if ($project !== null)
-                <span class="badge badge-outline gap-1">
+                <x-status-badge tone="plain" size="md" outline class="gap-1">
                     <x-icon name="folder_special" class="text-sm" />
                     {{ __('search.filter.project', ['name' => $project->name]) }}
                     <a href="{{ route('search.index', $criteria->toParameters(['project' => null])) }}"
                        class="inline-flex" aria-label="{{ __('search.filter.remove') }}">
                         <x-icon name="close" class="text-sm" />
                     </a>
-                </span>
+                </x-status-badge>
             @endif
             @if ($activeTag !== null)
-                <span class="badge badge-outline gap-1">
+                <x-status-badge tone="plain" size="md" outline class="gap-1">
                     <x-icon name="sell" class="text-sm" />
                     {{ $activeTag['name'] !== null ? __('search.filter.tag', ['name' => $activeTag['name']]) : __('search.filter.tag_without_hits') }}
                     <a href="{{ route('search.index', $criteria->toParameters(['tag' => null])) }}"
                        class="inline-flex" aria-label="{{ __('search.filter.remove') }}">
                         <x-icon name="close" class="text-sm" />
                     </a>
-                </span>
+                </x-status-badge>
             @endif
         </div>
     @endif

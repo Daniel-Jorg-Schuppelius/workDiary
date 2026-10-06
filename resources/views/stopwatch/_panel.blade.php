@@ -17,10 +17,10 @@
             <div class="mt-1 text-xs text-muted">{{ $current->description ?: __('Läuft…') }}</div>
             <form method="POST" action="{{ route('stopwatch.stop') }}" class="mt-2">
                 @csrf
-                <x-button tone="error" size="sm">{{ __('Stoppen') }}</x-button>
+                <x-button type="submit" tone="error" size="sm">{{ __('Stoppen') }}</x-button>
             </form>
         </div>
     @else
-        <div class="mt-2 text-sm text-muted">{{ __('Keine laufende Erfassung.') }}</div>
+        <x-empty-state icon="timer_off" :title="__('Keine laufende Erfassung.')" compact class="mt-2" />
     @endif
 </x-card>

@@ -10,8 +10,7 @@
 @extends('layouts.app')
 @section('title', __('club.horses.title.index'))
 @section('nav-title', __('club.horses.title.index'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('club.horses.subtitle.index')">
     <x-slot:actions>
@@ -39,7 +38,7 @@
             <tr class="hover {{ $horse->is_active ? '' : 'opacity-60' }}">
                 <td class="font-medium">
                     <a href="{{ route('club.horses.show', $horse) }}" class="link link-hover">{{ $horse->name }}</a>
-                    @if ($closedResourceIds->contains($horse->club_resource_id))<span class="badge badge-warning badge-xs">{{ __('club.resources.label.closed_now') }}</span>@endif
+                    @if ($closedResourceIds->contains($horse->club_resource_id))<x-status-badge tone="warning" size="xs">{{ __('club.resources.label.closed_now') }}</x-status-badge>@endif
                     @if ($horse->resource?->requires_clearance)<x-icon name="verified_user" class="text-info" />@endif
                 </td>
                 <td class="text-sm">{{ $horse->kind->label() }}</td>
@@ -55,5 +54,6 @@
             <x-table.empty icon="bedroom_baby" :colspan="9" :title="__('club.horses.empty.index')" :message="__('club.horses.hint.index_empty')" compact />
         @endforelse
     </x-table>
+    <x-pagination :paginator="$horses" standing />
 </x-index-page>
 @endsection

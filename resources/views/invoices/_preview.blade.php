@@ -15,9 +15,7 @@
     <div class="rounded-box border border-warning/40 bg-warning/5 px-3 py-2 text-sm">{{ $blocked }}</div>
 @elseif ($preview !== null)
     @if ($preview['totals']['count'] === 0 && $preview['travel']['count'] === 0)
-        <div class="rounded-box border border-base-300 bg-base-200/40 px-3 py-2 text-sm text-base-content/70">
-            {{ __('invoicing.preview.empty') }}
-        </div>
+        <x-empty-state icon="receipt_long" :message="__('invoicing.preview.empty')" compact />
     @else
         <div class="space-y-3 rounded-box border border-base-300 bg-base-200/30 p-3">
             <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">

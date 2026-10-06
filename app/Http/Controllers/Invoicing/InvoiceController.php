@@ -11,8 +11,9 @@
 namespace App\Http\Controllers\Invoicing;
 
 use App\Enums\Finance\MandateStatus;
-use App\Enums\Invoicing\InvoiceDeliveryFormat;
+use App\Enums\Invoicing\{InvoiceDeliveryFormat, InvoiceStatus};
 use App\Enums\User\Permission;
+use App\Http\Controllers\Concerns\SplitsRecipientLists;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Invoicing\SaveInvoiceItemRequest;
 use App\Mail\InvoiceMail;
@@ -31,6 +32,8 @@ use Illuminate\Support\Facades\{Auth, DB, Gate, Mail};
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class InvoiceController extends Controller {
+    use SplitsRecipientLists;
+
     public function create(Request $request): View {
         Gate::authorize('create', Invoice::class);
         $customers = Customer::query()->orderBy('name')->get();
@@ -238,7 +241,7 @@ class InvoiceController extends Controller {
 
         // Belegkette 066: anrechenbare offene Abschläge für den Schlussrechnungs-CTA.
         $openDownPaymentCount = 0;
-        if ($invoice->status === Invoice::STATUS_DRAFT && $invoice->type === Invoice::TYPE_INVOICE) {
+        if ($invoice->status === InvoiceStatus::Draft && $invoice->type === Invoice::TYPE_INVOICE) {
             $openDownPaymentCount = app(InvoiceGenerator::class)
                 ->openDownPaymentsFor($invoice->customer, $invoice->project_id, $invoice->currency->value)
                 ->count();
@@ -246,7 +249,7 @@ class InvoiceController extends Controller {
         $settledByInvoice = $invoice->settledByInvoice();
 
         // Lastschrift mit Belegbezug (MVP-1011): offene Rechnung, Kunde mit nutzbarem Mandat.
-        $directDebitOffer = in_array($invoice->status, [Invoice::STATUS_ISSUED, Invoice::STATUS_PARTIALLY_PAID], true)
+        $directDebitOffer = in_array($invoice->status, [InvoiceStatus::Issued, InvoiceStatus::PartiallyPaid], true)
             && Gate::allows(Permission::FinancePaymentRun->value)
             && SepaMandate::query()->where('customer_id', $invoice->customer_id)->where('status', MandateStatus::Active->value)->get()
                 ->contains(static fn (SepaMandate $mandate): bool => $mandate->isUsable());
@@ -297,7 +300,7 @@ class InvoiceController extends Controller {
     /** Prüfung/Freigabe (MVP-163): optionaler Schritt vor der Ausstellung. */
     public function approve(Invoice $invoice): RedirectResponse {
         Gate::authorize('issue', $invoice);
-        abort_unless($invoice->status === Invoice::STATUS_DRAFT, 422);
+        abort_unless($invoice->status === InvoiceStatus::Draft, 422);
 
         $invoice->update(['approved_at' => now(), 'approved_by' => (int) Auth::id()]);
         $invoice->audit('invoice.approved', ['by' => (int) Auth::id()]);
@@ -436,7 +439,7 @@ class InvoiceController extends Controller {
             'document_id' => $invoice->id,
             'channel' => $channel,
             'format' => $format,
-            'status' => $channel === \App\Models\Document\DocumentDispatch::CHANNEL_EMAIL ? 'queued' : 'sent',
+            'status' => $channel === \App\Models\Document\DocumentDispatch::CHANNEL_EMAIL ? \App\Enums\Document\DocumentDispatchStatus::Queued : \App\Enums\Document\DocumentDispatchStatus::Sent,
             'recipient' => $recipient,
             'sha256' => $sha256,
             'meta' => $meta !== [] ? $meta : null,
@@ -497,7 +500,7 @@ class InvoiceController extends Controller {
     public function pay(Invoice $invoice): RedirectResponse {
         Gate::authorize('pay', $invoice);
         $invoice->update([
-            'status' => Invoice::STATUS_PAID,
+            'status' => InvoiceStatus::Paid,
             'paid_on' => now(),
         ]);
 
@@ -941,7 +944,7 @@ class InvoiceController extends Controller {
             'reason' => ['nullable', 'string', 'max:2000'],
         ]);
 
-        if ($invoice->status === Invoice::STATUS_ISSUED && ! $invoice->isCreditNote()) {
+        if ($invoice->status === InvoiceStatus::Issued && ! $invoice->isCreditNote()) {
             $cancellation = $gen->cancellationFor($invoice, $data['reason'] ?? null, (int) Auth::id());
 
             return redirect()->route('invoices.show', $cancellation)
@@ -1034,6 +1037,8 @@ class InvoiceController extends Controller {
             $request->merge(['template_id' => app(\App\Support\SqidEncoder::class)->decode(InvoiceMailTemplate::class, $rawTemplate)]);
         }
 
+        $this->splitRecipientLists($request);
+
         $data = $request->validate([
             'template_id' => ['required', 'integer', new \App\Rules\ExistsInCurrentOrganization('invoice_mail_templates')],
             'to' => ['required', 'array', 'min:1', 'max:20'],
@@ -1058,8 +1063,8 @@ class InvoiceController extends Controller {
             // Der Queue-Job sieht nach markSent() den gestellten Datensatz. Für
             // den synchronen Preflight spiegeln wir diesen Status nur im RAM.
             $validationInvoice = clone $invoice;
-            if ($invoice->status === Invoice::STATUS_DRAFT && ! $invoice->isCreditNote()) {
-                $validationInvoice->status = Invoice::STATUS_ISSUED;
+            if ($invoice->status === InvoiceStatus::Draft && ! $invoice->isCreditNote()) {
+                $validationInvoice->status = InvoiceStatus::Issued;
                 $validationInvoice->issued_on ??= now();
                 $validationInvoice->due_on ??= now()->addDays($validationInvoice->effectivePaymentTermsDays());
             }

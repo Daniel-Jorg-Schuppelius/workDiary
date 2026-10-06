@@ -15,9 +15,8 @@ namespace App\Services\Licensing;
 use App\Enums\Licensing\ModuleStatus;
 use App\Models\Audit\AuditLog;
 use App\Models\Platform\{LicenseFlagOverride, Organization, User};
-use App\Support\MorphMap;
+use App\Support\{BranchProfileFiles, MorphMap};
 use Carbon\CarbonImmutable;
-use CommonToolkit\Helper\FileSystem\File;
 
 /**
  * Funktionsumfang der Organisation (Feature 081, MVP-373).
@@ -70,10 +69,7 @@ class ModuleScopeService {
      * @return array{code: string, label: string, modules: list<string>}|null
      */
     public function branchProfileRecommendation(Organization $organization): ?array {
-        $codes = array_values(array_filter(
-            $organization->installedBranchProfileCodes(),
-            static fn(string $code): bool => preg_match('/^[a-z0-9\-]+$/', $code) === 1,
-        ));
+        $codes = array_values(array_filter($organization->installedBranchProfileCodes(), BranchProfileFiles::isValidCode(...)));
         if ($codes === []) {
             return null;
         }
@@ -81,13 +77,7 @@ class ModuleScopeService {
         $modules = [];
         $labels = [];
         foreach ($codes as $code) {
-            $path = database_path("data/branchprofiles/{$code}.php");
-            if (! File::isFile($path)) {
-                continue;
-            }
-
-            /** @var array<string, mixed> $profile */
-            $profile = require $path;
+            $profile = BranchProfileFiles::profile($code);
             $recommended = $profile['modules_recommended'] ?? null;
             if (! is_array($recommended) || $recommended === []) {
                 continue;

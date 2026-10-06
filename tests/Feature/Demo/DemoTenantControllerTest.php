@@ -109,4 +109,34 @@ class DemoTenantControllerTest extends TestCase {
             ->assertOk()
             ->assertSee('Dies ist ein Demo-Mandant', false);
     }
+
+    /** Der Knopf trug `:disabled` als wörtliches Attribut und war nie gesperrt. */
+    public function test_seed_button_is_disabled_once_the_tenant_holds_data(): void {
+        $admin = User::factory()->platformAdmin()->create();
+        $seedButton = '~<button type="submit"([^>]*)>(?:(?!</button>).)*' . preg_quote(__('Demo-Daten erzeugen'), '~') . '~s';
+
+        $html = (string) $this->actingAs($admin)->get(route('admin.demo.index'))->assertOk()->getContent();
+        $this->assertSame(1, preg_match($seedButton, $html, $empty));
+        $this->assertStringNotContainsString('disabled', $empty[1]);
+
+        Customer::factory()->create(['organization_id' => $admin->organization_id]);
+
+        $html = (string) $this->actingAs($admin)->get(route('admin.demo.index'))->assertOk()->getContent();
+        $this->assertSame(1, preg_match($seedButton, $html, $filled));
+        $this->assertStringContainsString(' disabled', $filled[1]);
+        $this->assertStringNotContainsString(':disabled', $filled[1]);
+    }
+
+    public function test_seed_is_refused_once_the_tenant_holds_data(): void {
+        $admin = User::factory()->platformAdmin()->create();
+        Customer::factory()->create(['organization_id' => $admin->organization_id]);
+
+        $this->actingAs($admin)
+            ->post(route('admin.demo.seed'), ['industry' => 'it'])
+            ->assertRedirect()
+            ->assertSessionHas('error');
+
+        $this->assertFalse((bool) $admin->organization->refresh()->is_demo);
+        $this->assertSame(1, Customer::query()->where('organization_id', $admin->organization_id)->count());
+    }
 }

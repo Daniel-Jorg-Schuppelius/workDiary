@@ -10,9 +10,11 @@
 
 namespace Tests\Feature\Plugins\Msgraph;
 
+use App\Enums\Integration\IntegrationInboxStatus;
 use App\Models\Calendar\Event;
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use App\Models\Platform\User;
+use App\Plugins\Msgraph\Enums\MsgraphConnectionStatus;
 use App\Plugins\Msgraph\Models\MsgraphConnection;
 use App\Plugins\Msgraph\MsgraphPlugin;
 use App\Plugins\Msgraph\Services\MsgraphCalendarImportService;
@@ -48,7 +50,7 @@ final class MsgraphCalendarImportTest extends TestCase {
         return MsgraphConnection::query()->create($attributes + [
             'organization_id' => $this->organization->id,
             'access_token' => 'secret-token-1',
-            'status' => MsgraphConnection::STATUS_ACTIVE,
+            'status' => MsgraphConnectionStatus::Active,
             'two_way' => true,
         ]);
     }
@@ -177,7 +179,7 @@ final class MsgraphCalendarImportTest extends TestCase {
             ]),
         ]);
         app(MsgraphCalendarImportService::class)->run($connection->fresh());
-        $this->assertSame(IntegrationInboxItem::STATUS_DISMISSED, IntegrationInboxItem::query()->where('dedupe_key', 'calendar-proposal:evt-master:evt-occ-1')->value('status'));
+        $this->assertSame(IntegrationInboxStatus::Dismissed, IntegrationInboxItem::query()->where('dedupe_key', 'calendar-proposal:evt-master:evt-occ-1')->value('status'));
     }
 
     // ── Folgeausbau: Vorschlag-Übernahme („Neu anlegen" → Event) ────────
@@ -215,7 +217,7 @@ final class MsgraphCalendarImportTest extends TestCase {
             'external_id' => 'evt-extern',
             'referenceable_id' => $event->getKey(),
         ]);
-        $this->assertSame(IntegrationInboxItem::STATUS_RESOLVED_CREATED, $item->fresh()?->status);
+        $this->assertSame(IntegrationInboxStatus::ResolvedCreated, $item->fresh()?->status);
     }
 
     public function test_command_runs_only_for_two_way_connections(): void {

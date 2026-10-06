@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Plugins\Lexoffice\Console;
 
 use App\Console\Concerns\IteratesOrganizations;
-use App\Plugins\Lexoffice\{LexofficeConfig, LexofficeVoucherLineSync};
+use App\Plugins\Lexoffice\LexofficeConfig;
+use App\Plugins\Lexoffice\Services\LexofficeVoucherLineSync;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Support\Facades\Cache;
@@ -45,29 +46,24 @@ class LexofficeSyncVoucherLinesCommand extends Command {
             if ($config['enabled'] !== true || ! is_string($config['api_key']) || $config['api_key'] === '') {
                 continue;
             }
-            $lock = Cache::lock(LexofficeConfig::apiLockKey($org->id), 3600);
             try {
-                $lock->block(600);
+                Cache::lock(LexofficeConfig::apiLockKey((int) $org->id), 3600)->block(LexofficeConfig::API_LOCK_WAIT_SCHEDULED, function () use ($org, $config, $limit): void {
+                    try {
+                        $sync = new LexofficeVoucherLineSync($config['api_key'], $config['base_url'], $config['request_interval']);
+                        if ($this->option('refresh')) {
+                            $reset = $sync->resetSynced($org);
+                            $this->line("Organisation #{$org->id} ({$org->name}): {$reset} Rechnungen zum Neuladen markiert");
+                        }
+                        do {
+                            $result = $sync->syncMissing($org, $limit);
+                            $this->line("Organisation #{$org->id} ({$org->name}): {$result['synced']} Rechnungen, {$result['lines']} Positionen, {$result['failed']} Fehler, {$result['remaining']} offen");
+                        } while ($this->option('all') && $result['remaining'] > 0 && $result['synced'] > 0);
+                    } catch (\Throwable $e) {
+                        $this->error("  Fehler: {$e->getMessage()}");
+                    }
+                });
             } catch (LockTimeoutException) {
                 $this->warn("Organisation #{$org->id} ({$org->name}): anderer Lexoffice-Lauf blockiert — übersprungen.");
-
-                continue;
-            }
-            try {
-                // Anfrageabstand der Organisation explizit — die Konsole bindet keinen Org-Kontext.
-                $sync = new LexofficeVoucherLineSync($config['api_key'], $config['base_url'], LexofficeConfig::requestInterval($org->id));
-                if ($this->option('refresh')) {
-                    $reset = $sync->resetSynced($org);
-                    $this->line("Organisation #{$org->id} ({$org->name}): {$reset} Rechnungen zum Neuladen markiert");
-                }
-                do {
-                    $result = $sync->syncMissing($org, $limit);
-                    $this->line("Organisation #{$org->id} ({$org->name}): {$result['synced']} Rechnungen, {$result['lines']} Positionen, {$result['failed']} Fehler, {$result['remaining']} offen");
-                } while ($this->option('all') && $result['remaining'] > 0 && $result['synced'] > 0);
-            } catch (\Throwable $e) {
-                $this->error("  Fehler: {$e->getMessage()}");
-            } finally {
-                $lock->release();
             }
         }
 

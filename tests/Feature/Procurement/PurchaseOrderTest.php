@@ -104,7 +104,7 @@ final class PurchaseOrderTest extends TestCase {
         $receipts->receive($line, '4', lotNo: 'CH-2026-001', bestBefore: '2027-01-31');
         $lot = \App\Models\Inventory\StockLot::query()->where('lot_no', 'CH-2026-001')->firstOrFail();
         $this->assertSame('2027-01-31', \Illuminate\Support\Carbon::parse((string) $lot->best_before)->toDateString());
-        $this->assertSame('4.0000', app(\App\Services\Inventory\LotService::class)->onHand($lot));
+        $this->assertSame('4.0000', app(\App\Services\Inventory\LotStockReader::class)->balanceOf($lot));
 
         // Serienpflicht: qty muss 1 sein, Serie wird registriert.
         $this->article->forceFill(['batch_required' => false, 'serial_required' => true])->save();

@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Ai;
 
+use App\Enums\Ai\AiTextSuggestionStatus;
 use App\Models\Concerns\BelongsToOrganization;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
@@ -33,7 +34,7 @@ use Illuminate\Support\Carbon;
  * @property string $capability
  * @property string|null $original
  * @property string $suggestion
- * @property string $status
+ * @property AiTextSuggestionStatus $status
  * @property int|null $connection_id
  * @property string|null $provider
  * @property bool $fallback_used
@@ -45,16 +46,6 @@ class AiTextSuggestion extends Model {
 
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
-
-    public const STATUS_PROPOSED = 'proposed';
-
-    public const STATUS_ACCEPTED = 'accepted';
-
-    public const STATUS_EDITED = 'edited';
-
-    public const STATUS_REJECTED = 'rejected';
-
-    public const STATUS_EXPIRED = 'expired';
 
     protected $fillable = [
         'organization_id',
@@ -75,6 +66,7 @@ class AiTextSuggestion extends Model {
 
     /** @var array<string, string> */
     protected $casts = [
+        'status' => AiTextSuggestionStatus::class,
         'fallback_used' => 'boolean',
         'from_cache' => 'boolean',
         'decided_at' => 'datetime',
@@ -86,6 +78,6 @@ class AiTextSuggestion extends Model {
     }
 
     public function isOpen(): bool {
-        return $this->status === self::STATUS_PROPOSED;
+        return $this->status === AiTextSuggestionStatus::Proposed;
     }
 }

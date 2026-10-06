@@ -73,12 +73,12 @@
         </span>
         <span class="flex items-center gap-1">
             @if ($openSlotsCount > 0)
-                <span class="badge badge-xs badge-warning gap-0.5" title="{{ __('schedule.coverage.under_title') }}">
+                <x-status-badge tone="warning" size="xs" class="gap-0.5" title="{{ __('schedule.coverage.under_title') }}">
                     <span class="text-[0.6rem]">!</span>{{ $openSlotsCount }}
-                </span>
+                </x-status-badge>
             @endif
             @if ($totalCount > 0)
-                <span class="badge badge-xs badge-ghost">{{ $totalCount }}</span>
+                <x-status-badge size="xs">{{ $totalCount }}</x-status-badge>
             @endif
         </span>
     </div>
@@ -110,12 +110,17 @@
                     @if ($isAdmin ?? false) cursor-pointer hover:opacity-80 @endif"
              style="background:{{ $shift->shiftType?->color ?? '#6b7280' }};color:#fff;"
              @if ($isAdmin ?? false)
-                 draggable="true"
                  data-shift-drag="{{ $shift->sqid }}"
                  data-shift-edit="{{ $shift->sqid }}"
                  data-shift-payload="{{ json_encode($shiftPayload) }}"
              @endif
              title="{{ $shift->shiftType?->name ?? __('Schicht') }}{{ $shift->resolvedStartTime() ? ': '.$shift->resolvedStartTime() : '' }}{{ $shift->note ? ' · '.$shift->note : '' }}{{ $complTitle }}{{ $qualTitle }}{{ $wishTitle }}">
+            @if ($isAdmin ?? false)
+                {{-- Griff für Finger und Stift; die Maus zieht am ganzen Abzeichen.
+                     Trefferfläche: app.css ([data-shift-handle]::before). --}}
+                <x-icon name="drag_indicator" size="1.1em" data-shift-handle
+                        class="-ml-1.5 -mr-1 cursor-grab touch-none opacity-70" />
+            @endif
             {{ $shift->shiftType?->abbreviation ?? '?' }}
             @if ($shift->resolvedStartTime() || $shift->resolvedEndTime())
                 <span class="font-normal opacity-80">{{ $shift->resolvedStartTime() ?? '' }}–{{ $shift->resolvedEndTime() ?? '' }}</span>

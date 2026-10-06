@@ -42,21 +42,15 @@
                 </div>
 
                 <div class="rounded-4xl border border-base-300 bg-base-100 p-8 shadow-xs">
-                    <dl class="mb-6 grid grid-cols-1 gap-3 rounded-2xl border border-base-300 bg-base-200/60 px-4 py-3 text-sm sm:grid-cols-2">
-                        <div>
-                            <dt class="text-xs uppercase tracking-wider text-muted">{{ __('Domain') }}</dt>
-                            <dd class="mt-1 font-mono text-sm text-base-content">{{ $host }}</dd>
-                        </div>
-                        <div>
-                            <dt class="text-xs uppercase tracking-wider text-muted">{{ __('Status') }}</dt>
-                            <dd class="mt-1 text-sm text-base-content">
-                                <span class="inline-flex items-center gap-1.5 rounded-full bg-warning/15 px-2.5 py-0.5 text-xs font-medium text-warning">
-                                    <span class="inline-block h-1.5 w-1.5 rounded-full bg-warning"></span>
-                                    {{ __('Nicht aktiviert') }}
-                                </span>
-                            </dd>
-                        </div>
-                    </dl>
+                    <x-detail-grid layout="cells" small-labels class="mb-6 rounded-2xl border border-base-300 bg-base-200/60 px-4 py-3">
+                        <x-detail-grid.row :label="__('Domain')" class="mt-1 font-mono text-sm text-base-content">{{ $host }}</x-detail-grid.row>
+                        <x-detail-grid.row :label="__('Status')" class="mt-1 text-sm text-base-content">
+                            <span class="inline-flex items-center gap-1.5 rounded-full bg-warning/15 px-2.5 py-0.5 text-xs font-medium text-warning">
+                                <span class="inline-block h-1.5 w-1.5 rounded-full bg-warning"></span>
+                                {{ __('Nicht aktiviert') }}
+                            </span>
+                        </x-detail-grid.row>
+                    </x-detail-grid>
 
                     @if (! empty($message))
                         <div class="mb-5 rounded-2xl border border-warning/30 bg-warning/10 px-4 py-3 text-sm text-warning-content">

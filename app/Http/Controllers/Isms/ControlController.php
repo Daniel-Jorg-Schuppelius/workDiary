@@ -56,7 +56,7 @@ class ControlController extends Controller {
         $hasActiveFilters = $filters['implementation_status'] !== 'all';
 
         return view('isms.controls.index', [
-            'controls' => $query->orderBy('title')->get(),
+            'controls' => $query->orderBy('title')->orderBy('id')->paginate(25)->withQueryString(),
             'filters' => $filters,
             'hasActiveFilters' => $hasActiveFilters,
             'canManage' => Gate::allows('create', IsmsControl::class),
@@ -132,7 +132,7 @@ class ControlController extends Controller {
         $this->service->delete($control, $actor);
 
         return redirect()
-            ->route('isms.controls.index')
+            ->toList('isms.controls.index')
             ->with('success', __('isms.flash.control_deleted'));
     }
 

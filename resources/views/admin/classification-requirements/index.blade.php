@@ -10,8 +10,7 @@
 
 @section('title', __('Pflichtregeln'))
 @section('nav-title', __('Pflichtregeln'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('Pflichtklassifikationen pro Auftragstyp für :org verwalten.', ['org' => $organization->name])">
@@ -91,7 +90,7 @@
 
     <div class="flex flex-wrap items-center gap-3 px-1">
         <span class="text-sm font-medium">
-            {{ trans_choice(':count Pflichtregel angezeigt|:count Pflichtregeln angezeigt', $requirements->count(), ['count' => $requirements->count()]) }}
+            {{ trans_choice(':count Pflichtregel angezeigt|:count Pflichtregeln angezeigt', $requirements->total(), ['count' => $requirements->total()]) }}
         </span>
         @if ($hasActiveFilters)
             <span class="text-sm font-medium">{{ __('Aktive Filter') }}</span>
@@ -101,7 +100,7 @@
         @endif
     </div>
 
-    @if ($requirements->isEmpty())
+    @if ($requirements->total() === 0)
         <x-empty-state framed
             icon="rule" />
     @else
@@ -176,6 +175,8 @@
                 </tr>
             @endforeach
         </x-table>
+
+        <x-pagination :paginator="$requirements" standing />
     @endif
 </x-index-page>
 @endsection

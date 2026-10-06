@@ -11,8 +11,7 @@
 @extends('layouts.app')
 @section('title', __('hr.personnel_file.submission.title'))
 @section('nav-title', __('hr.personnel_file.submission.title'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('hr.personnel_file.submission.subtitle')" back-route="org.members.index" :back-label="__('hr.personnel_file.back')">
     <x-table scroll="flex">

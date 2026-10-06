@@ -11,7 +11,7 @@
 namespace Tests\Feature\Learning;
 
 use App\Enums\Attendance\{AttendanceSource, AttendanceStatus};
-use App\Enums\Learning\LearningTimePolicy;
+use App\Enums\Learning\{LearningTimeApprovalStatus, LearningTimePolicy};
 use App\Models\Communication\ExternalParticipant;
 use App\Models\Learning\{LearningCourse, LearningEnrollment, LearningTimeSession};
 use App\Models\Platform\User;
@@ -288,14 +288,14 @@ class LearningTimeTest extends TestCase {
         $stopped = $this->time()->stop($session->refresh());
 
         // Noch keine Anwesenheit: entschieden hat darüber niemand.
-        $this->assertSame(LearningTimeSession::APPROVAL_PENDING, $stopped->approval_status);
+        $this->assertSame(LearningTimeApprovalStatus::Pending, $stopped->approval_status);
         $this->assertNull($stopped->attendance_id);
         $this->assertSame(0, Attendance::query()->where('source', AttendanceSource::Learning->value)->count());
 
         $manager = User::factory()->personalverwaltung()->create(['organization_id' => $this->organization->id]);
         $approved = $this->time()->approve($stopped, $manager);
 
-        $this->assertSame(LearningTimeSession::APPROVAL_APPROVED, $approved->approval_status);
+        $this->assertSame(LearningTimeApprovalStatus::Approved, $approved->approval_status);
         $this->assertNotNull($approved->attendance_id);
         $this->assertSame(60, Attendance::query()->where('source', AttendanceSource::Learning->value)->firstOrFail()->duration_minutes);
     }
@@ -322,10 +322,41 @@ class LearningTimeTest extends TestCase {
 
         // Die Sitzung bleibt im Journal — gelöscht wird nichts, sonst wäre
         // die Ablehnung nicht nachvollziehbar.
-        $this->assertSame(LearningTimeSession::APPROVAL_REJECTED, $rejected->approval_status);
+        $this->assertSame(LearningTimeApprovalStatus::Rejected, $rejected->approval_status);
         $this->assertNull($rejected->attendance_id);
         $this->assertSame('Nicht abgestimmt', $rejected->approval_note);
         $this->assertSame(0, Attendance::query()->where('source', AttendanceSource::Learning->value)->count());
+    }
+
+    /** k3-10: entschieden wird einmal — und nur, wo eine Freigabe aussteht. */
+    public function test_entschiedene_und_freigabefreie_sitzungen_nehmen_keine_entscheidung_an(): void {
+        Carbon::setTestNow(Carbon::parse('2026-09-01 20:00:00'));
+        $manager = User::factory()->personalverwaltung()->create(['organization_id' => $this->organization->id]);
+        $session = $this->time()->start($this->enrollmentFor(LearningTimePolicy::ApprovalRequired));
+        Carbon::setTestNow(Carbon::parse('2026-09-01 21:00:00'));
+        $this->time()->heartbeat($session);
+        $approved = $this->time()->approve($this->time()->stop($session->refresh()), $manager);
+        $this->assertDatabaseHas('learning_time_sessions', ['id' => $approved->id, 'approval_status' => LearningTimeApprovalStatus::Approved->value]);
+
+        $withoutApproval = $this->time()->stop($this->time()->start($this->enrollmentFor(LearningTimePolicy::VoluntaryUnpaid)));
+        $this->assertNull($withoutApproval->approval_status);
+
+        $attempts = [
+            fn () => $this->time()->approve($approved->refresh(), $manager),
+            fn () => $this->time()->reject($approved->refresh(), $manager, 'Doch nicht'),
+            fn () => $this->time()->approve($withoutApproval, $manager),
+            fn () => $this->time()->reject($withoutApproval, $manager, 'Ohne Antrag'),
+        ];
+        foreach ($attempts as $index => $attempt) {
+            try {
+                $attempt();
+                $this->fail("Versuch {$index} wurde angenommen.");
+            } catch (ValidationException $e) {
+                $this->assertSame([(string) __('learning.errors.approval_decided')], $e->errors()['approval'] ?? null, "Versuch {$index}");
+            }
+        }
+        $this->assertSame(LearningTimeApprovalStatus::Approved, $approved->refresh()->approval_status);
+        $this->assertSame(1, Attendance::query()->where('source', AttendanceSource::Learning->value)->count());
     }
 
     public function test_freigabeliste_zeigt_offene_faelle(): void {

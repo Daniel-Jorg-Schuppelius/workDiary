@@ -12,6 +12,7 @@ namespace App\Models\Communication;
 
 use App\Enums\ExternalParticipant\{ExternalAbility, ExternalParty};
 use App\Models\Concerns\{BelongsToOrganization, HasJournal, HasSqid};
+use App\Models\Concerns\HasAccessToken;
 use App\Models\Contacts\ExternalContact;
 use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -55,6 +56,7 @@ use Illuminate\Support\Carbon;
  */
 class ExternalParticipant extends Model {
     use BelongsToOrganization;
+    use HasAccessToken;
     use HasJournal;
 
     /** @var class-string<ExternalParticipantEvent> Journal des Trägers (MVP-864) */

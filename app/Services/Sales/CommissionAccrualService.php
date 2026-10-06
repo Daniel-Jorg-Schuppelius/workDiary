@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Sales;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Enums\Sales\{CommissionAssignmentSource, CommissionReversalKind, CommissionStatus};
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
@@ -102,7 +103,7 @@ class CommissionAccrualService {
      * @return list<InvoiceCommission>
      */
     public function onPaymentReverted(Invoice $invoice): array {
-        if ($this->isReducingDocument($invoice) || $invoice->status === Invoice::STATUS_PAID) {
+        if ($this->isReducingDocument($invoice) || $invoice->status === InvoiceStatus::Paid) {
             return [];
         }
 
@@ -115,7 +116,7 @@ class CommissionAccrualService {
             }
 
             $target = Money::zero($currency);
-            if ($invoice->status === Invoice::STATUS_PARTIALLY_PAID) {
+            if ($invoice->status === InvoiceStatus::PartiallyPaid) {
                 $ruleId = $rows->whereNull('reversal_of_id')->sortByDesc('id')->first()?->commission_rule_id;
                 $rule = $ruleId === null ? null : CommissionRule::query()->find($ruleId);
                 // Gelöschte Regel: bezahlter Anteil der bisherigen Grundlage, eine Prüfung ist nicht mehr möglich.
@@ -141,7 +142,7 @@ class CommissionAccrualService {
      * Haftungsfrist.
      */
     public function accrue(Invoice $invoice): ?InvoiceCommission {
-        if ($this->isReducingDocument($invoice) || ! in_array($invoice->status, [Invoice::STATUS_PAID, Invoice::STATUS_PARTIALLY_PAID], true)) {
+        if ($this->isReducingDocument($invoice) || ! in_array($invoice->status, [InvoiceStatus::Paid, InvoiceStatus::PartiallyPaid], true)) {
             return null;
         }
 
@@ -150,7 +151,7 @@ class CommissionAccrualService {
             return null;
         }
 
-        $earnedOn = $invoice->status === Invoice::STATUS_PAID ? $this->dateOf($invoice) : Carbon::today();
+        $earnedOn = $invoice->status === InvoiceStatus::Paid ? $this->dateOf($invoice) : Carbon::today();
         $rule = $this->resolver->ruleFor($invoice, $assignment, $earnedOn);
         if ($rule === null) {
             return null;
@@ -161,7 +162,7 @@ class CommissionAccrualService {
             return null;
         }
         $target = match (true) {
-            $invoice->status === Invoice::STATUS_PAID => $base,
+            $invoice->status === InvoiceStatus::Paid => $base,
             $rule->is_partial_accrual => $base->times($this->paidShare($invoice)),
             default => Money::zero($base->getCurrency()),
         };
@@ -325,7 +326,7 @@ class CommissionAccrualService {
         $invoice->sales_agent_id = $user === null ? $agent?->id : null;
         $invoice->save();
 
-        if (! in_array($invoice->status, [Invoice::STATUS_PAID, Invoice::STATUS_PARTIALLY_PAID], true)) {
+        if (! in_array($invoice->status, [InvoiceStatus::Paid, InvoiceStatus::PartiallyPaid], true)) {
             return [];
         }
 

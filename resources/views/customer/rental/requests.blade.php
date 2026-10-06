@@ -21,7 +21,7 @@
             <x-date-range type="datetime-local" from-name="from" to-name="to"
                           :from="$from?->format('Y-m-d\TH:i')" :to="$to?->format('Y-m-d\TH:i')"
                           :label="__('Gewünschter Zeitraum')" required />
-            <button type="submit" class="btn btn-primary btn-sm">{{ __('Verfügbarkeit prüfen') }}</button>
+            <x-button type="submit">{{ __('Verfügbarkeit prüfen') }}</x-button>
         </form>
 
         @if ($profiles->isEmpty())
@@ -43,9 +43,9 @@
                         <td>
                             @if (array_key_exists((int) $profile->asset_id, $availability))
                                 @if ($availability[(int) $profile->asset_id])
-                                    <span class="badge badge-success badge-sm">{{ __('frei') }}</span>
+                                    <x-status-badge tone="success">{{ __('frei') }}</x-status-badge>
                                 @else
-                                    <span class="badge badge-warning badge-sm">{{ __('belegt') }}</span>
+                                    <x-status-badge tone="warning">{{ __('belegt') }}</x-status-badge>
                                 @endif
                             @else
                                 <span class="text-muted">{{ __('Zeitraum wählen') }}</span>
@@ -107,10 +107,10 @@
         </x-slot:head>
         @forelse ($requests as $request)
             <tr>
-                <td class="whitespace-nowrap">{{ $request->starts_at->orgTz()->format('d.m.Y H:i') }} – {{ $request->ends_at->orgTz()->format('d.m.Y H:i') }}</td>
+                <td class="whitespace-nowrap">{{ $request->starts_at->fdatetime() }} – {{ $request->ends_at->fdatetime() }}</td>
                 <td>{{ $request->subjectLabel() }}</td>
                 <td>
-                    <span class="badge badge-{{ $request->status->badgeTone() }} badge-sm">{{ $request->is_direct ? __('rental.portal.direct_status') : $request->status->label() }}</span>
+                    <x-status-badge :tone="$request->status->badgeTone()">{{ $request->is_direct ? __('rental.portal.direct_status') : $request->status->label() }}</x-status-badge>
                     @if ($request->status === \App\Enums\Rental\RentalRequestStatus::Declined && $request->decline_reason)
                         <span class="block text-xs text-muted">{{ $request->decline_reason }}</span>
                     @endif
@@ -119,7 +119,7 @@
                     @if ($request->isOpen())
                         <form method="POST" action="{{ route('customer.rentals.requests.withdraw', $request) }}" class="flex justify-end">
                             @csrf
-                            <button type="submit" class="btn btn-ghost btn-xs">{{ __('Zurücknehmen') }}</button>
+                            <x-button type="submit" tone="ghost" size="xs">{{ __('Zurücknehmen') }}</x-button>
                         </form>
                     @endif
                 </td>

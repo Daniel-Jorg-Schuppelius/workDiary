@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Crisis;
 
-use App\Enums\Crisis\CrisisProcessCriticality;
+use App\Enums\Crisis\{CrisisContinuityImpactStatus, CrisisProcessCriticality};
 use App\Enums\Isms\RiskStatus;
 use App\Enums\Privacy\ProcessingActivityStatus;
 use App\Models\Crisis\{CrisisBusinessProcess, CrisisCase, CrisisContinuityImpact};
@@ -83,7 +83,7 @@ final class CrisisBiaService {
             'process_name' => $process->name,
             'rto_hours' => $process->rto_hours,
             'rpo_hours' => $process->rpo_hours,
-            'status' => 'down',
+            'status' => CrisisContinuityImpactStatus::Down,
         ]);
     }
 }

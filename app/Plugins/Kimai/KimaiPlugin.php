@@ -13,8 +13,9 @@ namespace App\Plugins\Kimai;
 use App\Models\Platform\Organization;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{Plugin, PluginCapability, TimeImporter};
+use App\Plugins\Kimai\Api\KimaiApiClient;
 use App\Plugins\Kimai\Exceptions\KimaiApiException;
-use App\Plugins\Kimai\Sources\KimaiApiClient;
+use App\Plugins\Kimai\Services\{KimaiExportService, KimaiGroupBooker, KimaiImportService};
 
 /**
  * Kimai-Plugin (Migrationsimport MVP-134 + API-Rückkanal).

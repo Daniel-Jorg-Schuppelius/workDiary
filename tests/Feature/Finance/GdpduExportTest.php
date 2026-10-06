@@ -236,6 +236,31 @@ final class GdpduExportTest extends TestCase {
         $this->assertStringContainsString("M\xFCller", $iso['rechnungen.csv']);
     }
 
+    /** Der Prüfstand der Eingangsrechnung steht als Rohwert in der CSV (Enum-Cast, kein Zeichenkettenkontext). */
+    public function test_incoming_einvoices_section_exports_the_status_value(): void {
+        \App\Models\Invoicing\IncomingEInvoice::query()->create([
+            'organization_id' => $this->organization->id,
+            'document_id' => \App\Models\Document\Document::factory()->create(['organization_id' => $this->organization->id])->id,
+            'sha256' => hash('sha256', 'eingang-gdpdu'),
+            'source' => 'upload',
+            'received_at' => '2025-06-10 09:00:00',
+            'status' => \App\Enums\Invoicing\IncomingEInvoiceStatus::PaymentReleased,
+        ]);
+
+        $result = $this->service->build(
+            $this->organization,
+            Carbon::parse('2025-01-01'),
+            Carbon::parse('2025-12-31'),
+            ['incoming_einvoices'],
+            $this->accountant,
+        );
+
+        $files = $this->unzipPackage($result['path']);
+        $this->assertArrayHasKey('eingangsrechnungen.csv', $files);
+        $this->assertStringContainsString('payment_released', $files['eingangsrechnungen.csv']);
+        $this->assertStringContainsString(hash('sha256', 'eingang-gdpdu'), $files['eingangsrechnungen.csv']);
+    }
+
     public function test_time_entries_section_exports_worked_time(): void {
         $this->timeEntry($this->organization, 'Meier Bau GmbH', 'Dachsanierung', minutes: 90, description: 'Vor-Ort-Beratung');
 
@@ -321,6 +346,32 @@ final class GdpduExportTest extends TestCase {
         $export->refresh();
         $this->assertSame(GobdExportStatus::Failed, $export->status);
         $this->assertSame('Platte voll', $export->error);
+    }
+
+    /** Der Nachweis früherer Exporte blättert, statt nach den jüngsten zehn abzuschneiden. */
+    public function test_index_pages_through_all_exports(): void {
+        foreach (range(1, 27) as $i) {
+            $export = GobdExport::query()->create([
+                'organization_id' => $this->organization->id,
+                'period_from' => '2025-01-01',
+                'period_to' => '2025-12-31',
+                'sections' => ['invoices'],
+                'encoding' => GdpduExportService::ENCODING_CP1252,
+                'file_hashes' => [],
+                'package_sha256' => sprintf('hash%02d', $i),
+                'record_count' => $i,
+                'status' => GobdExportStatus::Ready,
+            ]);
+            $export->forceFill(['created_at' => now()->subDays(30 - $i)])->saveQuietly();
+        }
+
+        $first = $this->actingAs($this->accountant)->get(route('finance.gobd.index'))->assertOk();
+        $this->assertSame(27, $first->viewData('recent')->total());
+        $this->assertCount(25, $first->viewData('recent')->items());
+        $first->assertSee('hash27')->assertDontSee('hash02');
+
+        $this->actingAs($this->accountant)->get(route('finance.gobd.index', ['page' => 2]))
+            ->assertOk()->assertSee('hash02')->assertSee('hash01')->assertDontSee('hash27');
     }
 
     public function test_download_of_a_foreign_export_is_not_found(): void {
@@ -446,7 +497,9 @@ final class GdpduExportTest extends TestCase {
         $items = $files['buchungsstapelpositionen.csv'];
         $this->assertStringContainsString('RE-2025-100', $items);
         $this->assertStringContainsString('STORNO-RE-2025-100', $items);
-        $this->assertStringContainsString(MorphMap::alias(Invoice::class), $items);
+        // Belegart als Klassenkurzname wie vor der Alias-Umstellung, nie der Tabellenname (Konsolidierungs-Audit 2026-10, k3-2).
+        $this->assertStringContainsString(';Invoice;', $items);
+        $this->assertStringNotContainsString(MorphMap::alias(Invoice::class), $items);
         $this->assertStringContainsString('8400', $items);
         $this->assertStringContainsString('Ja', $items);   // Generalumkehr
         $this->assertStringContainsString('Nein', $items);

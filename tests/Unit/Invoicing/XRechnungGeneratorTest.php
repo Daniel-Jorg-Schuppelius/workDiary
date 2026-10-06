@@ -10,6 +10,7 @@
 
 namespace Tests\Unit\Invoicing;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
@@ -78,7 +79,7 @@ class XRechnungGeneratorTest extends TestCase {
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
             'number' => $number,
-            'status' => Invoice::STATUS_ISSUED,
+            'status' => InvoiceStatus::Issued,
             'type' => $type,
             'issued_on' => '2026-06-01',
             'due_on' => '2026-07-01',
@@ -123,7 +124,7 @@ class XRechnungGeneratorTest extends TestCase {
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
             'number' => 'R2026-0099',
-            'status' => Invoice::STATUS_ISSUED,
+            'status' => InvoiceStatus::Issued,
             'issued_on' => '2026-06-01',
             'due_on' => '2026-07-01',
             'currency' => 'EUR',
@@ -401,7 +402,7 @@ class XRechnungGeneratorTest extends TestCase {
 
     public function test_preflight_flags_draft_status(): void {
         $invoice = $this->makeIssuedInvoice();
-        $invoice->update(['status' => Invoice::STATUS_DRAFT]);
+        $invoice->update(['status' => InvoiceStatus::Draft]);
 
         $result = app(XRechnungGenerator::class)->preflight($invoice->fresh(['items', 'customer']));
 
@@ -487,7 +488,7 @@ class XRechnungGeneratorTest extends TestCase {
 
     public function test_zugferd_generation_throws_on_preflight_errors(): void {
         $invoice = $this->makeIssuedInvoice();
-        $invoice->update(['status' => Invoice::STATUS_DRAFT]);
+        $invoice->update(['status' => InvoiceStatus::Draft]);
 
         $this->expectException(ValidationException::class);
         app(XRechnungGenerator::class)->generateZugferdPdf($invoice->fresh(['items', 'customer']));

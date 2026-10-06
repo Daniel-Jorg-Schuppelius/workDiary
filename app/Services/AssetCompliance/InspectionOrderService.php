@@ -79,10 +79,7 @@ final class InspectionOrderService {
     }
 
     public function resolve(string $token): ?AssetInspectionOrder {
-        if ($token === '') {
-            return null;
-        }
-        $order = AssetInspectionOrder::query()->withoutGlobalScopes()->where('token_hash', CryptoHelper::hash($token))->first();
+        $order = AssetInspectionOrder::findByAccessToken($token);
 
         return $order !== null && $order->expires_at->isFuture()
             && in_array($order->status, [AssetInspectionOrderStatus::Requested, AssetInspectionOrderStatus::Offered, AssetInspectionOrderStatus::Accepted, AssetInspectionOrderStatus::Reported], true) ? $order : null;
@@ -154,10 +151,15 @@ final class InspectionOrderService {
 
     /** Übernahme der gemeldeten Ergebnisse als Prüfereignisse (Zertifikat samt Datei und Prüfsumme). */
     public function takeOver(AssetInspectionOrder $order, User $actor): int {
-        $this->assertValidatedTransition($order->status, AssetInspectionOrderStatus::Completed, 'inspection_order.error.transition');
         $supplierName = (string) $order->supplier?->name;
 
         return DB::transaction(function () use ($order, $actor, $supplierName): int {
+            // Unter der Sperre prüfen: zwei gleichzeitige Übernahmen legten sonst jedes
+            // Prüfereignis doppelt an (Konsolidierungs-Audit 2026-10, k3-4).
+            AssetInspectionOrder::query()->whereKey($order->id)->lockForUpdate()->firstOrFail();
+            $order->refresh();
+            $this->assertValidatedTransition($order->status, AssetInspectionOrderStatus::Completed, 'inspection_order.error.transition');
+
             $count = 0;
             foreach ($order->items()->with(['assignment', 'attachments'])->whereNotNull('result')->whereNull('asset_inspection_event_id')->get() as $item) {
                 $assignment = $item->assignment;

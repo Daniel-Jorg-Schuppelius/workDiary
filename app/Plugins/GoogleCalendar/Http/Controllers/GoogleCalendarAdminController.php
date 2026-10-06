@@ -15,6 +15,7 @@ use App\Plugins\GoogleCalendar\{GoogleCalendarConfig, GoogleCalendarPlugin};
 use App\Plugins\GoogleCalendar\Models\GoogleCalendarConnection;
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
 use App\Plugins\Support\{ConnectionOAuthController, PluginOAuthGrant};
+use App\Plugins\Support\OAuthConnectionStatus;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\View\View;
@@ -88,11 +89,11 @@ class GoogleCalendarAdminController extends ConnectionOAuthController {
     }
 
     protected function connectedStatus(): string {
-        return GoogleCalendarConnection::STATUS_ACTIVE;
+        return OAuthConnectionStatus::Active->value;
     }
 
     protected function disconnectedStatus(): string {
-        return GoogleCalendarConnection::STATUS_DISCONNECTED;
+        return OAuthConnectionStatus::Disconnected->value;
     }
 
     protected function keepsRefreshTokenOnReconnect(): bool {

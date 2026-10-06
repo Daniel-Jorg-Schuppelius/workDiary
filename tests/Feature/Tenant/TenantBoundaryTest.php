@@ -158,7 +158,7 @@ class TenantBoundaryTest extends TestCase {
                 'organization_id' => $this->orgB->id,
                 'customer_id' => $customer->id,
                 'number' => 'RB-1',
-                'status' => \App\Models\Invoicing\Invoice::STATUS_ISSUED,
+                'status' => \App\Enums\Invoicing\InvoiceStatus::Issued,
                 'type' => \App\Models\Invoicing\Invoice::TYPE_INVOICE,
                 'category' => \App\Models\Invoicing\Invoice::CATEGORY_SERVICE,
                 'currency' => 'EUR',

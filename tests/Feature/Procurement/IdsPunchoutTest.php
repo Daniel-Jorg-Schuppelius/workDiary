@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Procurement;
 
+use App\Enums\Organization\TenantStatus;
 use App\Models\Article\{Article, ArticleSupply};
 use App\Models\Inventory\Warehouse;
 use App\Models\Platform\User;
@@ -173,5 +174,14 @@ XML;
                 'punchout_url' => 'https://shop.example.com/ids', 'punchout_protocol' => 'ids',
             ])
             ->assertSessionHasErrors('punchout_customer_number');
+    }
+
+    /** Sicherheitsaudit 2026-10-04, pub-3: der Link endet mit der Mandantensperre. */
+    public function test_cart_return_is_locked_for_a_suspended_tenant(): void {
+        $this->articleWithSupply('WT-200');
+        $token = $this->token();
+        $this->organization->forceFill(['tenant_status' => TenantStatus::Suspended])->save();
+
+        $this->post(route('oci-carts.ids-return', $token), ['warenkorb' => $this->cart()])->assertStatus(423);
     }
 }

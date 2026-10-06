@@ -13,7 +13,7 @@ namespace App\Http\Controllers\Domain;
 use App\Enums\Domain\{DomainRenewalMode, DomainSyncStatus};
 use App\Http\Controllers\Controller;
 use App\Models\Customer\{Customer, ForeignCustomer};
-use App\Models\Domain\DomainProjection;
+use App\Models\Domain\{DomainProjection, DomainProviderConnection};
 use App\Services\Domain\{DomainCustomerMappingService, DomainInvoiceService, DomainSyncService};
 use App\Support\Sqid;
 use Illuminate\Contracts\View\View;
@@ -55,10 +55,19 @@ class DomainController extends Controller {
 
         $domains = $query->orderBy('external_domain')->paginate(25)->withQueryString();
 
+        // Prüfen und Registrieren brauchen eine betriebsbereite Verbindung —
+        // ohne sie bleiben beide Einstiege weg.
+        $connections = Gate::allows('register', DomainProjection::class)
+            ? DomainProviderConnection::query()->orderBy('name')->get()
+                ->filter(static fn (DomainProviderConnection $connection): bool => $connection->isRunnable())->values()
+            : collect();
+
         return view('domain.index', [
             'domains' => $domains,
             'metrics' => $this->metrics(),
             'filters' => $request->only(['q', 'customer', 'sync', 'renewal_mode', 'tld', 'expiry_within']),
+            'registerConnections' => $connections,
+            'registerCustomers' => $connections->isNotEmpty() ? Customer::query()->orderBy('name')->get(['id', 'name']) : collect(),
         ]);
     }
 

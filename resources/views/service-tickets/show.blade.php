@@ -30,7 +30,7 @@
     <x-card>
         <div class="flex flex-wrap items-center gap-3">
             <span class="font-mono text-sm">{{ $ticket->ticket_no }}</span>
-            <span class="badge">{{ $ticket->priority->label() }}</span>
+            <x-status-badge tone="plain" size="md">{{ $ticket->priority->label() }}</x-status-badge>
             <x-status-badge size="md" outline>{{ $ticket->status->label() }}</x-status-badge>
             <x-status-badge tone="ghost" size="md">{{ $ticket->source->label() }}</x-status-badge>
             <span class="ml-auto {{ $slaStatus->textClass() }} font-medium">
@@ -47,16 +47,16 @@
 
         <div class="divider my-3"></div>
 
-        <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 text-sm">
-            <div><dt class="text-muted">{{ __('Gemeldet von') }}</dt><dd>{{ $ticket->reportedBy?->name ?: '—' }}</dd></div>
-            <div><dt class="text-muted">{{ __('Gemeldet am') }}</dt><dd>{{ $ticket->reported_at?->orgTz()->translatedFormat('d.m.Y H:i') ?: '—' }}</dd></div>
-            <div><dt class="text-muted">{{ __('Bearbeiter') }}</dt><dd>{{ $ticket->assignedTo?->name ?: '—' }}</dd></div>
-            <div><dt class="text-muted">{{ __('Bestätigt') }}</dt><dd>{{ $ticket->acknowledged_at?->orgTz()->translatedFormat('d.m.Y H:i') ?: '—' }}</dd></div>
-            <div><dt class="text-muted">{{ __('Reaktion bis') }}</dt><dd class="flex items-center gap-2">{{ $reactDue?->translatedFormat('d.m.Y H:i') ?: '—' }}@if ($reactDue)<x-status-badge :tone="$reactionStatus->tone()" size="sm" outline>{{ $reactionStatus->label() }}</x-status-badge>@endif</dd></div>
-            <div><dt class="text-muted">{{ __('Lösung bis') }}</dt><dd>{{ $resDue?->translatedFormat('d.m.Y H:i') ?: '—' }}</dd></div>
-            <div><dt class="text-muted">{{ __('Asset') }}</dt><dd>{{ $ticket->asset?->name ?: '—' }}</dd></div>
-            <div><dt class="text-muted">{{ __('Kunde') }}</dt><dd>{{ $ticket->customer?->name ?: '—' }}</dd></div>
-        </dl>
+        <x-detail-grid layout="cells">
+            <x-detail-grid.row :label="__('Gemeldet von')">{{ $ticket->reportedBy?->name ?: '—' }}</x-detail-grid.row>
+            <x-detail-grid.row :label="__('Gemeldet am')">{{ $ticket->reported_at?->orgTz()->translatedFormat('d.m.Y H:i') ?: '—' }}</x-detail-grid.row>
+            <x-detail-grid.row :label="__('Bearbeiter')">{{ $ticket->assignedTo?->name ?: '—' }}</x-detail-grid.row>
+            <x-detail-grid.row :label="__('Bestätigt')">{{ $ticket->acknowledged_at?->orgTz()->translatedFormat('d.m.Y H:i') ?: '—' }}</x-detail-grid.row>
+            <x-detail-grid.row :label="__('Reaktion bis')" class="flex items-center gap-2">{{ $reactDue?->translatedFormat('d.m.Y H:i') ?: '—' }}@if ($reactDue)<x-status-badge :tone="$reactionStatus->tone()" size="sm" outline>{{ $reactionStatus->label() }}</x-status-badge>@endif</x-detail-grid.row>
+            <x-detail-grid.row :label="__('Lösung bis')">{{ $resDue?->translatedFormat('d.m.Y H:i') ?: '—' }}</x-detail-grid.row>
+            <x-detail-grid.row :label="__('Asset')">{{ $ticket->asset?->name ?: '—' }}</x-detail-grid.row>
+            <x-detail-grid.row :label="__('Kunde')">{{ $ticket->customer?->name ?: '—' }}</x-detail-grid.row>
+        </x-detail-grid>
 
         @if ($ticket->description)
             <div class="mt-4">
@@ -95,7 +95,7 @@
                                    :selected="$ticket->assignedTo?->sqid" class="select-sm"
                                    :placeholder="__('Unzugewiesen')" />
                 </div>
-                <button class="btn btn-sm" type="submit">{{ __('Speichern') }}</button>
+                <x-button type="submit" tone="plain">{{ __('Speichern') }}</x-button>
             </form>
         </x-card>
     @endif

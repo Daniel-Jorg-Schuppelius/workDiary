@@ -17,6 +17,7 @@ use App\Models\Platform\User;
 use App\Support\SortableQuery;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class QualificationController extends Controller {
@@ -91,9 +92,9 @@ class QualificationController extends Controller {
 
     /** @return array<string, mixed> */
     private function validated(Request $request, ?Qualification $qualification = null): array {
-        $uniqueRule = 'unique:qualifications,name';
+        $uniqueRule = Rule::unique('qualifications', 'name')->where('organization_id', $this->currentOrganization()->id);
         if ($qualification) {
-            $uniqueRule .= ',' . $qualification->id;
+            $uniqueRule->ignore($qualification->id);
         }
 
         return $request->validate([

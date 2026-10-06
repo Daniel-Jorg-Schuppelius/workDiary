@@ -12,13 +12,14 @@ declare(strict_types=1);
 
 namespace App\Services\Invoicing\OnlinePayment;
 
-use App\Enums\Invoicing\OnlinePaymentStatus;
+use App\Enums\Invoicing\{InvoiceStatus, OnlinePaymentStatus};
 use App\Events\Invoicing\{InvoicePaymentReceived, InvoicePaymentReverted};
 use App\Models\Invoicing\{Invoice, OnlinePayment};
 use App\Models\Platform\Organization;
 use App\Plugins\Support\Payments\{OnlinePaymentRequest, OnlinePaymentSnapshot};
-use App\Services\Invoicing\{DunningService, RetentionService};
+use App\Services\Invoicing\{DunningService, InvoiceSettlement};
 use App\Services\Invoicing\OnlinePayment\Exceptions\OnlinePaymentException;
+use App\Support\CanonicalUrl;
 use App\Support\{DocumentLocale, OrganizationContext};
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Http\Request;
@@ -44,7 +45,7 @@ class OnlinePaymentService {
         private readonly OnlinePaymentProviderResolver $providers,
         private readonly InvoicePaymentLinkService $links,
         private readonly DunningService $dunning,
-        private readonly RetentionService $retentions,
+        private readonly InvoiceSettlement $settlement,
     ) {}
 
     /**
@@ -53,7 +54,7 @@ class OnlinePaymentService {
      * @throws OnlinePaymentException
      */
     public function checkoutUrl(Invoice $invoice, string $token): string {
-        if ($invoice->status === Invoice::STATUS_PAID) {
+        if ($invoice->status === InvoiceStatus::Paid) {
             throw new OnlinePaymentException(OnlinePaymentException::PAID);
         }
         if (! $this->links->payable($invoice)) {
@@ -94,8 +95,9 @@ class OnlinePaymentService {
                 reference: (string) $payment->sqid,
                 amount: $open,
                 description: (string) __('payments.description', ['number' => (string) $invoice->number]),
-                returnUrl: route('payments.done', $token),
-                webhookUrl: route('payments.webhook', $provider->onlinePaymentProviderId()),
+                // Der Aufruf ist anonym: Rücksprung und Webhook nie aus dem Host-Header bilden (pub-1).
+                returnUrl: CanonicalUrl::route('payments.done', $token),
+                webhookUrl: CanonicalUrl::route('payments.webhook', $provider->onlinePaymentProviderId()),
                 locale: DocumentLocale::for($invoice->customer, $organization),
                 customerEmail: $invoice->customer->email,
             ));
@@ -205,35 +207,13 @@ class OnlinePaymentService {
         }
     }
 
-    /** Deckung fortschreiben wie der Bankabgleich: bezahlt, teilbezahlt oder zurück auf offen. */
+    /** Zahlstatus über die gemeinsame Stelle fortschreiben: bezahlt, teilbezahlt oder zurück auf offen; nie an Entwurf oder Storno. */
     private function syncInvoice(Invoice $invoice, OnlinePayment $payment): void {
-        $paid = $this->dunning->paidAmount($invoice)->toFloat();
-        $payable = $this->retentions->payableAmountOf($invoice);
+        $result = $this->settlement->sync($invoice, $payment->paid_at?->copy()->startOfDay());
 
-        if ($paid + 0.005 >= $payable) {
-            if ($invoice->status !== Invoice::STATUS_PAID) {
-                $invoice->status = Invoice::STATUS_PAID;
-                $invoice->paid_on = $payment->paid_at?->copy()->startOfDay();
-                // Mit Ereignissen speichern: der Statuswechsel ist die Naht für invoice.paid und Provision.
-                $invoice->save();
-            }
-            InvoicePaymentReceived::dispatch($invoice);
-
-            return;
-        }
-
-        if ($invoice->status === Invoice::STATUS_PAID || ($invoice->status === Invoice::STATUS_PARTIALLY_PAID && $paid <= 0.005)) {
-            $invoice->status = $paid > 0.005 ? Invoice::STATUS_PARTIALLY_PAID : Invoice::STATUS_ISSUED;
-            $invoice->paid_on = null;
-            $invoice->save();
+        if ($result->lowered()) {
             InvoicePaymentReverted::dispatch($invoice);
-
-            return;
-        }
-
-        if ($invoice->status === Invoice::STATUS_ISSUED && $paid > 0.005) {
-            $invoice->status = Invoice::STATUS_PARTIALLY_PAID;
-            $invoice->save();
+        } elseif ($result->settleable && ($result->isPaid() || $result->changed())) {
             InvoicePaymentReceived::dispatch($invoice);
         }
     }

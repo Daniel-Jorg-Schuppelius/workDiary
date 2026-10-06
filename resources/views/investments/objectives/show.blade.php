@@ -63,7 +63,7 @@
             @forelse ($portfolio['cases'] as $row)
                 <tr>
                     <td><a class="link" href="{{ route('investments.show', $row['case']) }}">{{ $row['case']->title }}</a></td>
-                    <td>{{ __('values.' . $row['case']->status) }}</td>
+                    <td>{{ $row['case']->status->label() }}</td>
                     <td class="text-right tabular-nums">{{ $money($row['planned']) }}</td>
                 </tr>
             @empty

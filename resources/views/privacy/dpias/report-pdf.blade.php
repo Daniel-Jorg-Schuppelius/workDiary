@@ -34,7 +34,7 @@
         <h2>{{ $loop->iteration }}. {{ $step->label() }}</h2>
         <div class="content">{{ $step->content ?: '—' }}</div>
         <div class="step-meta">
-            {{ $step->isDone() ? __('Abgeschlossen') : __('Offen') }}
+            {{ $step->status->label() }}
             @if ($step->completed_at) · {{ $step->completed_at->orgTz()->format('d.m.Y H:i') }} @endif
             @if ($step->completedBy) · {{ $step->completedBy->name }} @endif
         </div>

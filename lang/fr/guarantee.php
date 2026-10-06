@@ -29,6 +29,18 @@ return [
         'create' => 'Enregistrer une caution',
         'edit' => 'Modifier la caution',
         'returned' => 'Acte restitué',
+        'drawn' => 'Enregistrer l’appel de la caution',
+        'secure' => 'Remplacer la retenue',
+    ],
+    'confirm' => [
+        'drawn' => 'Enregistrer l’appel de la caution :reference ? Elle ne compte ensuite plus comme sûreté et l’enregistrement ne peut pas être annulé.',
+    ],
+    'secure' => [
+        'title' => 'Remplacer la retenue de garantie',
+        'hint' => 'La caution prend la place de la retenue ; le montant retenu est ainsi considéré comme versé. Seules les retenues ouvertes couvertes par le montant de la caution sont proposées.',
+        'retention' => 'Retenue de garantie',
+        'submit' => 'Remplacer',
+        'empty' => 'Aucune retenue ouverte n’est couverte par cette caution.',
     ],
     'kpi' => [
         'issued' => 'Données (actives)',

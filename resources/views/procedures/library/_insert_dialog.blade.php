@@ -13,7 +13,7 @@
          :form-data="['data-entry-form' => '']" :submit-label="__('procedure.library.insert')">
     <p class="text-sm text-warning">{{ __('procedure.library.insert_hint') }}</p>
     @if ($steps->isEmpty())
-        <p class="text-sm text-muted">{{ __('procedure.library.empty') }}</p>
+        <x-empty-state icon="library_add" :message="__('procedure.library.empty')" compact />
     @else
         <div class="max-h-80 space-y-1 overflow-y-auto">
             @foreach ($steps as $step)

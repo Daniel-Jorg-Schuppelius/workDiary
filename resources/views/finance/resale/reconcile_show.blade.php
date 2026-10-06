@@ -51,14 +51,14 @@
         </div>
 
         @if (! $has_source)
-            <div class="alert alert-warning mb-4 text-sm">{{ __('resale.mirror.no_source') }}</div>
+            <div role="alert" class="alert alert-warning mb-4 text-sm">{{ __('resale.mirror.no_source') }}</div>
         @elseif ($pending > 0)
             <div class="alert alert-info mb-4 text-sm" title="{{ __('resale.link_ui.pending_hint') }}">{{ trans_choice('resale.invoices.pending', $pending, ['count' => $pending]) }}</div>
         @endif
 
         @if ($inbox !== [])
             {{-- Endkunden im Rechnungstext, deren Abos noch ohne Halter sind. --}}
-            <div class="alert alert-warning mb-4 text-sm">
+            <div role="alert" class="alert alert-warning mb-4 text-sm">
                 <div>
                     <span class="font-medium">{{ __('resale.reconcile.inbox.title') }}</span>
                     <span class="block text-xs">{{ __('resale.reconcile.inbox.hint', ['customer' => $customer->name]) }}</span>
@@ -158,6 +158,7 @@
                         </div>
                     </div>
                     @if ($row['candidates'] === [] && $row['taken'] === [] && $row['foreign'] === [] && $row['voided'] === [])
+                        {{-- raw-markup-ok: Fehlerhinweis je Periode (kein passender Beleg), kein Leerzustand einer Liste --}}
                         <p class="mt-2 text-xs text-error">{{ __('resale.reconcile.periods.none', ['amount' => \App\Services\Reselling\Register\LicenseMonths::label($row['needed'], (float) $period->termMonths())]) }}</p>
                     @else
                         <ul class="mt-2 space-y-1">
@@ -210,7 +211,7 @@
                                         <span class="text-xs text-muted tabular-nums">= <x-resale.licence-months :value="$candidate['row']['months']" :per-licence="$candidate['row']['per_licence']" /></span>
                                         <span class="text-success text-xs">{{ __('resale.invoices.remaining', ['amount' => \App\Services\Reselling\Register\LicenseMonths::label($candidate['row']['free'], $candidate['row']['per_licence'])]) }}</span>
                                         @if ($voucher->voucherTextHint !== null)
-                                            <span class="badge badge-info badge-outline badge-xs" title="{{ $voucher->voucherText }}">{{ $voucher->voucherTextHint }}</span>
+                                            <x-status-badge tone="info" size="xs" outline title="{{ $voucher->voucherText }}">{{ $voucher->voucherTextHint }}</x-status-badge>
                                         @endif
                                         @if ($line->previewUrl !== null)
                                             <x-icon-btn icon="picture_as_pdf" size="xs" tone="ghost" data-entry-modal-trigger :href="$line->previewUrl" :title="__('resale.invoices.preview')" />
@@ -257,7 +258,7 @@
                     @endif
                 </div>
             @empty
-                <div class="px-4 py-6 text-center text-sm text-muted">{{ __('resale.reconcile.periods.empty') }}</div>
+                <x-empty-state icon="check_circle" :title="__('resale.reconcile.periods.empty')" compact class="m-4" />
             @endforelse
         </x-card>
 
@@ -314,7 +315,7 @@
                                 <span class="block text-xs text-muted tabular-nums">{{ __('resale.reconcile.service_period') }} {{ $voucher->servicePeriodLabel() }}</span>
                             @endif
                             @if ($voucher->voucherTextHint !== null)
-                                <span class="badge badge-info badge-outline badge-xs ml-1" title="{{ $voucher->voucherText }}">{{ $voucher->voucherTextHint }}</span>
+                                <x-status-badge tone="info" size="xs" outline class="ml-1" title="{{ $voucher->voucherText }}">{{ $voucher->voucherTextHint }}</x-status-badge>
                             @endif
                             @if ($line->previewUrl !== null)
                                 <x-icon-btn icon="picture_as_pdf" size="xs" tone="ghost" data-entry-modal-trigger :href="$line->previewUrl" :title="__('resale.invoices.preview')" />

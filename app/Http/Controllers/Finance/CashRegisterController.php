@@ -11,6 +11,7 @@
 namespace App\Http\Controllers\Finance;
 
 use App\Enums\Finance\PostingSourceKind;
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
@@ -58,7 +59,7 @@ class CashRegisterController extends Controller {
     public function index(): View {
         Gate::authorize(Permission::CashView->value);
 
-        $registers = CashRegister::query()->orderBy('name')->get();
+        $registers = CashRegister::query()->orderBy('name')->orderBy('id')->paginate(25)->withQueryString();
         $balances = [];
         $lastClosings = [];
         foreach ($registers as $register) {
@@ -133,7 +134,7 @@ class CashRegisterController extends Controller {
         return view('cash-registers._entry_form_dialog', [
             'register' => $cashRegister,
             'openInvoices' => Invoice::query()
-                ->whereIn('status', [Invoice::STATUS_ISSUED, Invoice::STATUS_PARTIALLY_PAID])
+                ->whereIn('status', [InvoiceStatus::Issued, InvoiceStatus::PartiallyPaid])
                 ->orderByDesc('issued_on')
                 ->limit(100)
                 ->get(['id', 'number', 'total', 'currency']),

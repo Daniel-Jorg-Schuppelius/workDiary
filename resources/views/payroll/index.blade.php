@@ -169,7 +169,9 @@
             </p>
             <p class="text-xs text-muted">{{ __('Monatlicher gesetzlicher Mindestlohn laut Eurostat – informativ, getrennt vom oben gepflegten Stundensatz.') }}</p>
         @else
-            <p class="text-sm text-muted">{{ __('Noch keine Eurostat-Daten für das Land der Organisation. Über „Eurostat-Import" laden.') }}</p>
+            {{-- Der Text trägt ein gerades Anführungszeichen — als Attributwert bräche er das Tag. --}}
+            @php($eurostatHint = __('Noch keine Eurostat-Daten für das Land der Organisation. Über „Eurostat-Import" laden.'))
+            <x-empty-state icon="public" :message="$eurostatHint" compact />
         @endif
     </x-card>
 

@@ -98,6 +98,102 @@ class UserFilterPresetTest extends TestCase {
     }
 
     #[Test]
+    public function user_menu_links_the_presets_page(): void {
+        $this->actingAs($this->orgUser())
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee(route('filter-presets.index'), false);
+    }
+
+    #[Test]
+    public function index_offers_the_edit_dialog(): void {
+        $user = $this->orgUser();
+        $preset = UserFilterPreset::create([
+            'user_id' => $user->id,
+            'scope' => 'diary',
+            'name' => 'Offene Einträge',
+            'query' => ['status' => 'open'],
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('filter-presets.index'))
+            ->assertOk()
+            ->assertSee(route('filter-presets.edit', $preset), false);
+
+        $this->actingAs($user)
+            ->get(route('filter-presets.edit', $preset))
+            ->assertOk()
+            ->assertSee(route('filter-presets.update', $preset), false)
+            ->assertSee('Offene Einträge');
+    }
+
+    #[Test]
+    public function update_renames_keeps_the_query_and_moves_the_default(): void {
+        $user = $this->orgUser();
+        $oldDefault = UserFilterPreset::create([
+            'user_id' => $user->id,
+            'scope' => 'diary',
+            'name' => 'Bisheriger Standard',
+            'query' => [],
+            'is_default' => true,
+        ]);
+        $otherScope = UserFilterPreset::create([
+            'user_id' => $user->id,
+            'scope' => 'invoices',
+            'name' => 'Rechnungen',
+            'query' => [],
+            'is_default' => true,
+        ]);
+        $preset = UserFilterPreset::create([
+            'user_id' => $user->id,
+            'scope' => 'diary',
+            'name' => 'Offene Einträge',
+            'query' => ['status' => 'open'],
+        ]);
+
+        // Wie der Dialog sendet: Bereich versteckt, Filterwerte gar nicht.
+        $this->actingAs($user)
+            ->from(route('filter-presets.index'))
+            ->put(route('filter-presets.update', $preset), [
+                'scope' => 'diary',
+                'name' => 'Offen und dringend',
+                'sort_order' => 3,
+                'is_default' => '1',
+            ])
+            ->assertRedirect(route('filter-presets.index'))
+            ->assertSessionHas('status', __('Filter aktualisiert.'));
+
+        $preset->refresh();
+        $this->assertSame('Offen und dringend', $preset->name);
+        $this->assertSame(3, $preset->sort_order);
+        $this->assertTrue($preset->is_default);
+        $this->assertSame(['status' => 'open'], $preset->query);
+        $this->assertFalse($oldDefault->refresh()->is_default);
+        $this->assertTrue($otherScope->refresh()->is_default, 'Der Standard eines anderen Bereichs bleibt.');
+    }
+
+    #[Test]
+    public function edit_and_update_forbidden_for_foreign_preset(): void {
+        $owner = $this->orgUser();
+        $intruder = $this->orgUser();
+        $preset = UserFilterPreset::create([
+            'user_id' => $owner->id,
+            'scope' => 'diary',
+            'name' => 'Owned',
+            'query' => [],
+        ]);
+
+        $this->actingAs($intruder)
+            ->get(route('filter-presets.edit', $preset))
+            ->assertForbidden();
+        $this->actingAs($intruder)
+            ->put(route('filter-presets.update', $preset), ['scope' => 'diary', 'name' => 'Gekapert'])
+            ->assertForbidden();
+
+        $this->assertSame('Owned', $preset->refresh()->name);
+    }
+
+    #[Test]
     public function guest_redirected_to_login(): void {
         $this->get(route('filter-presets.index'))->assertRedirect(route('login'));
     }

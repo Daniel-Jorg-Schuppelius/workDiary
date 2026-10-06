@@ -41,7 +41,7 @@
         <article class="rounded-(--panel-radius) border border-base-300 bg-base-100 p-6 shadow-xs lg:p-8"
                  data-help-center-topic="{{ $row->topic }}" data-help-center-title="{{ $row->title }}">
             <div class="mb-1 flex flex-wrap items-center gap-2">
-                <span class="badge badge-sm badge-primary badge-outline">{{ $sectionTitle }}</span>
+                <x-status-badge tone="primary" outline>{{ $sectionTitle }}</x-status-badge>
                 <span class="text-xs text-muted">
                     {{ __('Version :version', ['version' => $row->version]) }}
                     @if ($row->source_updated_at)

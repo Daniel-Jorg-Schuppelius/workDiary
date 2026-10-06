@@ -30,13 +30,13 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <x-card class="flex flex-col gap-2 space-y-4">
             <h3 class="card-title">{{ __('access.title.metadata') }}</h3>
-            <dl class="space-y-2 text-sm">
-                <div class="flex justify-between"><dt class="text-muted">{{ __('access.field.group_name') }}</dt><dd>{{ $group->name }}</dd></div>
-                <div class="flex justify-between"><dt class="text-muted">{{ __('access.field.group_slug') }}</dt><dd class="font-mono text-xs">{{ $group->slug }}</dd></div>
+            <x-detail-grid layout="split">
+                <x-detail-grid.row :label="__('access.field.group_name')">{{ $group->name }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('access.field.group_slug')" class="font-mono text-xs">{{ $group->slug }}</x-detail-grid.row>
                 @if ($group->description)
-                    <div><dt class="text-muted">{{ __('access.field.description') }}</dt><dd>{{ $group->description }}</dd></div>
+                    <x-detail-grid.row :label="__('access.field.description')" layout="cells">{{ $group->description }}</x-detail-grid.row>
                 @endif
-            </dl>
+            </x-detail-grid>
         </x-card>
 
         <x-card class="flex flex-col gap-2 space-y-3">

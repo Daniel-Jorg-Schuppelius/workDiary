@@ -14,7 +14,7 @@ use App\Enums\Club\{ClubEventVisibility, ClubExamCandidateStatus, ClubGradeSourc
 use App\Enums\User\UserRole;
 use App\Models\Calendar\Event;
 use App\Models\Club\{ClubAttendanceRecord, ClubEventParticipation, ClubExamCandidate, ClubExamOffer, ClubGrade, ClubGradingSystem, ClubGradingVersion, ClubGroup, ClubMember, ClubMemberGrade};
-use App\Models\Platform\User;
+use App\Models\Platform\{Organization, User};
 use App\Services\Club\{ClubAttendanceService, ClubEventService, ClubExamService, ClubGradingService, ClubGroupService, ClubMemberService};
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -279,5 +279,55 @@ class ClubExamTest extends TestCase {
         $this->actingAs($self)->get(route('club.my.certificate', $awarded))->assertOk()->assertHeader('content-type', 'application/pdf');
         $this->actingAs($this->orgUser())->get(route('club.my.certificate', $awarded))->assertForbidden();
         $this->actingAs($self)->get(route('club.exams.index'))->assertForbidden();
+    }
+
+    /** Die Liste sortiert in der Datenbank nach Terminbeginn, nicht nach Anlagereihenfolge — auch über Seiten hinweg. */
+    public function test_index_orders_offers_by_event_start_across_pages(): void {
+        $base = CarbonImmutable::now('Europe/Berlin')->addDays(5)->setTime(10, 0);
+        foreach (range(31, 1) as $day) {
+            $this->offer($base->addDays($day), ['title' => sprintf('Prüfung %02d', $day)]);
+        }
+        $titles = fn($response): array => collect($response->viewData('offers')->items())->map(fn(ClubExamOffer $offer): string => (string) $offer->event?->title)->all();
+
+        $first = $this->actingAs($this->admin)->get(route('club.exams.index'))->assertOk();
+        $this->assertSame(31, $first->viewData('offers')->total());
+        $this->assertSame(['Prüfung 01', 'Prüfung 02'], array_slice($titles($first), 0, 2));
+        $this->assertCount(30, $titles($first));
+
+        $second = $this->actingAs($this->admin)->get(route('club.exams.index', ['period' => 'upcoming', 'page' => 2]))->assertOk();
+        $this->assertSame(['Prüfung 31'], $titles($second));
+    }
+
+    /**
+     * Sicherheitsaudit 2026-10-04, authz-a-6: die Selbstanfrage folgt den Regeln
+     * der Selbstanmeldung — nach Terminbeginn gibt es weder Zulassung noch Anfrage.
+     */
+    public function test_group_lists_only_take_groups_of_the_own_organization(): void {
+        $foreign = ClubGroup::factory()->create(['organization_id' => Organization::factory()->create()->id, 'name' => 'Fremdverein']);
+        $offers = ClubExamOffer::query()->count();
+
+        $this->actingAs($this->admin)->post(route('club.exams.store'), [
+            'title' => 'Prüfung Winter', 'club_grading_system_id' => $this->judo->sqid, 'target_grade_ids' => [$this->yellow->sqid], 'visibility' => 'groups',
+            'club_group_ids' => [$foreign->sqid], 'started_at' => '2026-12-10T10:00', 'ended_at' => '2026-12-10T12:00', 'timezone' => 'Europe/Berlin',
+        ])->assertSessionHasErrors('club_group_ids.0');
+        $this->assertSame($offers, ClubExamOffer::query()->count());
+
+        $this->actingAs($this->admin)->put(route('club.grading.requirements.update', [$this->version, $this->yellow]), [
+            'counting_basis' => 'since_previous_grade', 'counted_group_ids' => [$foreign->sqid],
+        ])->assertSessionHasErrors('counted_group_ids.0');
+    }
+
+    public function test_self_request_follows_the_rules_of_self_registration(): void {
+        $self = $this->orgUser();
+        $eligible = $this->member();
+        app(ClubMemberService::class)->update($eligible, ['user_id' => $self->id]);
+        $this->training($eligible, '2026-05-01 18:00', 90);
+        $this->training($eligible, '2026-05-08 18:00', 90);
+        $event = $this->offer(CarbonImmutable::now()->subDay())->event()->firstOrFail();
+
+        $this->actingAs($self)->post(route('club.my.exam.request', $event))->assertSessionHasErrors('club_member_id');
+
+        $this->assertSame(0, ClubExamCandidate::query()->where('club_member_id', $eligible->id)->count());
+        $this->assertFalse(ClubEventParticipation::query()->where('event_id', $event->id)->where('club_member_id', $eligible->id)->exists());
     }
 }

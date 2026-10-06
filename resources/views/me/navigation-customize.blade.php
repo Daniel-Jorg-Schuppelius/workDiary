@@ -35,7 +35,7 @@
         </x-slot:toolbar>
 
 
-        <div class="alert alert-info rounded-2xl px-5 py-3 text-sm shadow-xs">
+        <div role="status" class="alert alert-info rounded-2xl px-5 py-3 text-sm shadow-xs">
             <x-icon name="info" class="text-base" />
             <span>{{ __('scope.customize.cosmetic_hint') }}</span>
         </div>

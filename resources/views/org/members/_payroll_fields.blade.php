@@ -142,7 +142,7 @@
     </label>
 
     @if ($employmentHint)
-        <div class="alert alert-warning md:col-span-2 py-2 text-sm" x-show="isAny('payroll', '')" x-cloak>
+        <div role="alert" class="alert alert-warning md:col-span-2 py-2 text-sm" x-show="isAny('payroll', '')" x-cloak>
             <x-icon name="info" class="text-[1.1rem]" />
             <span>{{ $employmentHint }}</span>
         </div>

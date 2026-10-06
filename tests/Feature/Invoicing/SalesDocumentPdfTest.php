@@ -11,6 +11,8 @@
 namespace Tests\Feature\Invoicing;
 
 use App\Enums\DocumentDesign\RenderDocumentKind;
+use App\Enums\Invoicing\InvoiceStatus;
+use App\Enums\Sales\QuoteStatus;
 use App\Mail\DunningMail;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
@@ -108,7 +110,7 @@ class SalesDocumentPdfTest extends TestCase {
         $firstItem = $quote->items()->orderBy('position')->firstOrFail();
         // Teilannahme: Grundpaket ja, Fachliteratur nein, Option nein.
         $quote = $service->accept($quote, [(int) $firstItem->id], $token);
-        $this->assertSame('partially_accepted', $quote->status);
+        $this->assertSame(QuoteStatus::PartiallyAccepted, $quote->status);
 
         $html = view('quotes.order-confirmation-pdf', app(OrderConfirmationPdfRenderer::class)->viewData($quote))->render();
         $this->assertStringContainsString('Auftragsbestätigung', $html);
@@ -127,7 +129,7 @@ class SalesDocumentPdfTest extends TestCase {
             'organization_id' => $this->org->id,
             'customer_id' => $this->customer->id,
             'number' => 'R2026-0100',
-            'status' => Invoice::STATUS_ISSUED,
+            'status' => InvoiceStatus::Issued,
             'currency' => 'EUR',
             'tax_rate' => '19.00',
             'issued_on' => now()->subDays(40)->toDateString(),

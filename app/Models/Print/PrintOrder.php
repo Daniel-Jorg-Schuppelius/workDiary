@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Print;
 
-use App\Enums\Print\{PreflightStatus, PrintOrderStatus, PrintOutputKind};
+use App\Enums\Print\{PreflightStatus, PrintOrderStatus, PrintOutputKind, PrintQcStatus};
 use App\Models\Asset\Asset;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Document\{Document, DocumentVersion};
@@ -54,7 +54,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $approved_file_hash
  * @property int|null $asset_id
  * @property Carbon|null $production_started_at
- * @property string|null $qc_status
+ * @property PrintQcStatus|null $qc_status
  * @property Carbon|null $qc_at
  * @property string|null $qc_note
  * @property Carbon|null $issued_at
@@ -70,12 +70,6 @@ class PrintOrder extends Model {
     use HasFactory;
 
     use HasSqid;
-
-    public const QC_PASSED = 'passed';
-
-    public const QC_REWORK = 'rework';
-
-    public const QC_BLOCKED = 'blocked';
 
     protected $fillable = [
         'organization_id',
@@ -120,6 +114,7 @@ class PrintOrder extends Model {
         'status' => PrintOrderStatus::class,
         'output_kind' => PrintOutputKind::class,
         'preflight_status' => PreflightStatus::class,
+        'qc_status' => PrintQcStatus::class,
         'preflight_findings' => 'array',
         'production_snapshot' => 'array',
         'handover_name' => 'encrypted',

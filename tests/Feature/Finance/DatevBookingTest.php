@@ -11,6 +11,7 @@
 namespace Tests\Feature\Finance;
 
 use App\Enums\Finance\DatevBatchStatus;
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Enums\User\Permission;
 use App\Models\Customer\Customer;
 use App\Models\Finance\DatevBookingBatch;
@@ -56,7 +57,7 @@ class DatevBookingTest extends TestCase {
         return app(DatevBookingService::class);
     }
 
-    private function makeInvoice(string $number, string $status = Invoice::STATUS_ISSUED, ?Customer $customer = null): Invoice {
+    private function makeInvoice(string $number, InvoiceStatus $status = InvoiceStatus::Issued, ?Customer $customer = null): Invoice {
         return Invoice::create([
             'organization_id' => $this->organization->id,
             'customer_id' => ($customer ?? $this->customer)->id,
@@ -79,8 +80,8 @@ class DatevBookingTest extends TestCase {
 
     public function test_collect_booking_ready_includes_issued_invoices_in_period(): void {
         $this->makeInvoice('RE-1');
-        $this->makeInvoice('RE-2', Invoice::STATUS_DRAFT);          // Entwurf ⇒ ausgeschlossen
-        $this->makeInvoice('RE-3', Invoice::STATUS_CANCELLED);      // storniert ⇒ ausgeschlossen
+        $this->makeInvoice('RE-2', InvoiceStatus::Draft);          // Entwurf ⇒ ausgeschlossen
+        $this->makeInvoice('RE-3', InvoiceStatus::Cancelled);      // storniert ⇒ ausgeschlossen
 
         $sources = $this->service()->collectBookingReady($this->organization, $this->period());
         $this->assertCount(1, $sources);
@@ -92,7 +93,7 @@ class DatevBookingTest extends TestCase {
             'organization_id' => $this->organization->id,
             'billing_mode' => 'lexoffice',
         ]);
-        $this->makeInvoice('RE-EXT', Invoice::STATUS_ISSUED, $external);
+        $this->makeInvoice('RE-EXT', InvoiceStatus::Issued, $external);
         $this->makeInvoice('RE-LOCAL');
 
         $sources = $this->service()->collectBookingReady($this->organization, $this->period());

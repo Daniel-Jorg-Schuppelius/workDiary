@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Reporting;
 
-use App\Enums\Applications\TenderProcedureType;
+use App\Enums\Applications\{ApplicationOpportunityStatus, TenderProcedureType};
+use App\Enums\Tenders\TenderNoticeMatchState;
 use App\Enums\User\Permission as P;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
@@ -111,14 +112,14 @@ class TenderCockpitController extends Controller {
             ->where('kind', '!=', 'inquiry')
             ->whereBetween('created_at', [$from . ' 00:00:00', $to . ' 23:59:59'])
             ->get(['status', 'estimated_value']) as $opportunity) {
-            $status = (string) $opportunity->status;
+            $status = $opportunity->status->value;
             $rows[$status] ??= ['count' => 0, 'value' => 0.0];
             $rows[$status]['count']++;
             $rows[$status]['value'] += (float) $opportunity->estimated_value;
         }
 
         $ordered = [];
-        foreach (ApplicationOpportunity::STATUSES as $status) {
+        foreach (ApplicationOpportunityStatus::values() as $status) {
             if (isset($rows[$status])) {
                 $ordered[$status] = $rows[$status];
             }
@@ -144,19 +145,19 @@ class TenderCockpitController extends Controller {
         foreach (ApplicationOpportunity::query()
             ->whereBetween('created_at', [$from . ' 00:00:00', $to . ' 23:59:59'])
             ->get(['status', 'estimated_value', 'loss_reason']) as $opportunity) {
-            $status = (string) $opportunity->status;
-            if ($status === 'won') {
+            $status = $opportunity->status;
+            if ($status === ApplicationOpportunityStatus::Won) {
                 $counts['won']++;
                 $wonValue += (float) $opportunity->estimated_value;
-            } elseif ($status === 'lost') {
+            } elseif ($status === ApplicationOpportunityStatus::Lost) {
                 $counts['lost']++;
                 $reason = trim((string) $opportunity->loss_reason);
                 $reason = $reason === '' ? (string) __('Ohne Angabe') : $reason;
                 $lossReasons[$reason] = ($lossReasons[$reason] ?? 0) + 1;
-            } elseif ($status === 'withdrawn') {
+            } elseif ($status === ApplicationOpportunityStatus::Withdrawn) {
                 $counts['withdrawn']++;
             }
-            if (in_array($status, ['submitted', 'post_submission', 'won', 'lost'], true)) {
+            if (in_array($status, [ApplicationOpportunityStatus::Submitted, ApplicationOpportunityStatus::PostSubmission, ApplicationOpportunityStatus::Won, ApplicationOpportunityStatus::Lost], true)) {
                 $counts['submitted']++;
             }
         }
@@ -190,7 +191,7 @@ class TenderCockpitController extends Controller {
         ];
 
         foreach (ApplicationOpportunity::query()
-            ->whereIn('status', ApplicationOpportunity::OPEN_STATUSES)
+            ->whereIn('status', ApplicationOpportunityStatus::open())
             ->get(['submission_deadline', 'estimated_value']) as $opportunity) {
             $deadline = $opportunity->submission_deadline;
             $key = match (true) {
@@ -221,7 +222,7 @@ class TenderCockpitController extends Controller {
 
         foreach (ApplicationOpportunity::query()
             ->with('responsible:id,name')
-            ->whereIn('status', ApplicationOpportunity::OPEN_STATUSES)
+            ->whereIn('status', ApplicationOpportunityStatus::open())
             ->get() as $opportunity) {
             $responsible = $opportunity->responsible;
             $name = $responsible === null ? (string) __('Ohne Verantwortlichen') : $responsible->name;
@@ -316,9 +317,9 @@ class TenderCockpitController extends Controller {
             ->pluck('aggregate', 'state');
 
         return [
-            'new' => (int) $counts->get(TenderNoticeMatch::STATE_NEW, 0),
-            'muted' => (int) $counts->get(TenderNoticeMatch::STATE_MUTED, 0),
-            'converted' => (int) $counts->get(TenderNoticeMatch::STATE_CONVERTED, 0),
+            'new' => (int) $counts->get(TenderNoticeMatchState::New->value, 0),
+            'muted' => (int) $counts->get(TenderNoticeMatchState::Muted->value, 0),
+            'converted' => (int) $counts->get(TenderNoticeMatchState::Converted->value, 0),
         ];
     }
 

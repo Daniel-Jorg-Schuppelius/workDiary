@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Plugins\BuchhaltungsButler;
 
 use App\Plugins\{AbstractPlugin, PluginHealth};
-use App\Plugins\BuchhaltungsButler\Api\{BhbApiException, BhbClientFactory};
+use App\Plugins\BuchhaltungsButler\Api\BhbClientFactory;
+use App\Plugins\BuchhaltungsButler\Exceptions\BhbApiException;
 use App\Plugins\Contracts\Plugin;
 use Throwable;
 

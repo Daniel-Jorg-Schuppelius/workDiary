@@ -10,12 +10,12 @@
 
 namespace Tests\Feature\Manufacturing;
 
-use App\Enums\Inventory\StockState;
+use App\Enums\Inventory\{StockMovementType, StockState};
 use App\Models\Article\{Article, ArticleVariant};
-use App\Models\Inventory\Warehouse;
+use App\Models\Inventory\{StockLot, StockMovement, Warehouse};
 use App\Models\Manufacturing\ManufacturingOrder;
 use App\Models\Procedure\{ProcedureMaterialRequirement, ProcedureTemplateVersion};
-use App\Services\Inventory\InventoryLedger;
+use App\Services\Inventory\{InventoryLedger, LotStockReader, StockPosting};
 use App\Services\Manufacturing\{ManufacturingInventoryService, ManufacturingOrderService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use RuntimeException;
@@ -151,6 +151,21 @@ final class ManufacturingInventoryTest extends TestCase {
         $this->assertSame('12.0000', $this->ledger->balance($this->materialVariant, $this->warehouse, StockState::Reserved));
     }
 
+    /** Materialverbrauch über die Reservierung bucht je Charge nach FEFO, ohne Reservierung ebenso. */
+    public function test_consume_issues_material_per_lot(): void {
+        $late = $this->materialLot('M-LATE', '2027-02-01', '30');
+        $early = $this->materialLot('M-EARLY', '2026-11-01', '5');
+        $order = $this->releasedOrder('10'); // reserviert 2 × 10 = 20
+        $material = $order->materials()->first();
+
+        $this->link->consume($material, '8');
+
+        $issued = StockMovement::query()->where('movement_type', StockMovementType::Issue->value)->orderBy('id')->get();
+        $this->assertSame([[$early->id, '-5.0000'], [$late->id, '-3.0000']], $issued->map(fn (StockMovement $m): array => [$m->stock_lot_id, $m->qty_base])->all());
+        $this->assertSame(['0.0000', '27.0000'], [app(LotStockReader::class)->balanceOf($early), app(LotStockReader::class)->balanceOf($late)]);
+        $this->assertSame('12.0000', $this->ledger->balance($this->materialVariant, $this->warehouse, StockState::Reserved));
+    }
+
     public function test_receive_finished_good_increases_product_stock(): void {
         $order = $this->releasedOrder('10');
 
@@ -216,6 +231,13 @@ final class ManufacturingInventoryTest extends TestCase {
         );
 
         return $this->orders->release($order);
+    }
+
+    private function materialLot(string $lotNo, string $bestBefore, string $qty): StockLot {
+        $lot = StockLot::factory()->create(['organization_id' => $this->organization->id, 'article_variant_id' => $this->materialVariant->id, 'lot_no' => $lotNo, 'best_before' => $bestBefore]);
+        $this->ledger->post(new StockPosting($this->materialVariant, $this->warehouse, StockState::Physical, $qty, StockMovementType::Receipt, stockLotId: $lot->id));
+
+        return $lot;
     }
 
     private function variantFor(Article $article): ArticleVariant {

@@ -14,7 +14,7 @@
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar :back="route('reports.customers', array_filter(['project_id' => $projectId, 'user_id' => $userId]))" :back-label="__('Zur Kundenanalyse')">
+        <x-page-toolbar :back="route('reports.customers', array_filter(['project_id' => \App\Support\Sqid::encode(\App\Models\Project\Project::class, $projectId), 'user_id' => \App\Support\Sqid::encode(\App\Models\Platform\User::class, $userId)]))" :back-label="__('Zur Kundenanalyse')">
             <x-slot:subtitle>
                 {{ __('Kunde') }}: {{ $customer?->name ?? ('#' . $customerId) }} · {{ $label }}
                 @if ($escalatedOnly)
@@ -22,48 +22,11 @@
                 @endif
             </x-slot:subtitle>
             <x-slot:actions>
-                <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
-                            :href="route('reports.customers.drilldown.open-issues', array_filter(['customer_id' => $customerId, 'project_id' => $projectId, 'user_id' => $userId, 'escalated' => $escalatedOnly ? 1 : null, 'export' => 'pdf']))"
-                            show-label>PDF</x-icon-btn>
-                <x-action-menu icon="download" tone="outline" :label="__('Export')">
-                    <x-icon-btn icon="download" tone="outline" size="sm"
-                                :href="route('reports.customers.drilldown.open-issues', array_filter(['customer_id' => $customerId, 'project_id' => $projectId, 'user_id' => $userId, 'escalated' => $escalatedOnly ? 1 : null, 'export' => 'csv']))"
-                                show-label>CSV</x-icon-btn>
-                    <x-icon-btn icon="table_view" tone="outline" size="sm"
-                                :href="route('reports.customers.drilldown.open-issues', array_filter(['customer_id' => $customerId, 'project_id' => $projectId, 'user_id' => $userId, 'escalated' => $escalatedOnly ? 1 : null, 'export' => 'xlsx']))"
-                                show-label>Excel</x-icon-btn>
-                </x-action-menu>
+                @include('reports.drilldown._export_actions', ['route' => 'reports.customers.drilldown.open-issues', 'params' => ['customer_id' => \App\Support\Sqid::encode(\App\Models\Customer\Customer::class, $customerId), 'project_id' => \App\Support\Sqid::encode(\App\Models\Project\Project::class, $projectId), 'user_id' => \App\Support\Sqid::encode(\App\Models\Platform\User::class, $userId), 'escalated' => $escalatedOnly ? 1 : null]])
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
 
-    <x-card>
-        @if ($issues->isEmpty())
-            <x-empty-state icon="error_outline" :title="__('Keine offenen Punkte für diesen Drilldown gefunden.')" />
-        @else
-            <x-table bare table-sort="client">
-                <x-slot:head>
-                    <tr>
-                        <x-table.th sort type="string">{{ __('Titel') }}</x-table.th>
-                        <x-table.th sort type="string">{{ __('Status') }}</x-table.th>
-                        <x-table.th sort type="string">{{ __('Severity') }}</x-table.th>
-                        <x-table.th sort type="date">{{ __('Fällig') }}</x-table.th>
-                        <x-table.th sort type="string">{{ __('Zugewiesen') }}</x-table.th>
-                    </tr>
-                </x-slot:head>
-                @foreach ($issues as $issue)
-                    <tr>
-                        <td class="font-medium">{{ $issue->title }}</td>
-                        <td><x-status-badge tone="ghost" outline>{{ $issue->status->label() }}</x-status-badge></td>
-                        <td><x-status-badge tone="ghost" outline>{{ $issue->severity->label() }}</x-status-badge></td>
-                        <td>{{ $issue->due_at?->fdate() ?? '—' }}</td>
-                        <td>{{ $issue->assignee?->name ?? '—' }}</td>
-                    </tr>
-                @endforeach
-            </x-table>
-
-            <x-pagination :paginator="$issues" standing />
-        @endif
-    </x-card>
+    @include('reports.drilldown._open_issues_table')
 </x-page-shell>
 @endsection

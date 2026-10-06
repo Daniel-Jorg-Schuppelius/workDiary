@@ -31,6 +31,9 @@ final class FakeEbicsGateway implements EbicsGateway {
 
     public ?string $failWith = null;
 
+    /** Fehler ohne Antwort der Bank (z. B. Zeitüberschreitung) — der Ausgang bleibt offen. */
+    public ?\Throwable $throws = null;
+
     public function createKeys(EbicsConnection $connection): void {
         $this->calls[] = 'keys';
         $connection->forceFill(['keyring' => '{"fake":true}', 'keyring_secret' => 'secret-passphrase'])->save();
@@ -71,6 +74,9 @@ final class FakeEbicsGateway implements EbicsGateway {
 
     private function guard(string $call): void {
         $this->calls[] = $call;
+        if ($this->throws !== null) {
+            throw $this->throws;
+        }
         if ($this->failWith !== null) {
             throw new EbicsException('bank_rejected', $this->failWith, 'Testfehler');
         }

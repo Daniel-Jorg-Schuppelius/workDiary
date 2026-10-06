@@ -28,7 +28,7 @@
     </x-slot:toolbar>
 
     @if ($capped)
-        <div class="alert alert-info alert-soft text-sm">{{ __('Zeitraum auf 14 Tage gekappt — für längere Zeiträume das Board nutzen.') }}</div>
+        <div role="status" class="alert alert-info alert-soft text-sm">{{ __('Zeitraum auf 14 Tage gekappt — für längere Zeiträume das Board nutzen.') }}</div>
     @endif
 
     <x-card>

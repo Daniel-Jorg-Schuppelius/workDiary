@@ -215,4 +215,27 @@ class ClubGroupTest extends TestCase {
             ->assertSessionHasErrors('name');
         $this->assertNotNull(ClubGroup::query()->find($group->id));
     }
+
+    /**
+     * Sicherheitsaudit 2026-10-04, authz-a-5: über die Aufnahme entscheidet die
+     * Zielgruppe — die Leitung der Quellgruppe nimmt nicht in fremde Gruppen auf.
+     */
+    public function test_proposal_confirmation_needs_the_right_at_the_target_group(): void {
+        $lead = $this->userWithRole(UserRole::Teamleitung->value);
+        $kids = ClubGroup::factory()->ageRange(6, 11)->create(['name' => 'Kinder', 'leader_user_id' => $lead->id]);
+        $youth = ClubGroup::factory()->ageRange(12, 17)->create(['name' => 'Jugend', 'club_department_id' => $kids->club_department_id]);
+        $member = ClubMember::factory()->aged(12)->create();
+        $this->groupService()->admit($kids, $member, $this->today()->subYear(), $this->admin);
+        $this->groupService()->refreshProposals($this->organization, $this->today());
+        $proposal = ClubGroupChangeProposal::query()->firstOrFail();
+        $payload = ['effective_on' => $this->today()->toDateString(), 'suggested_group_id' => $youth->sqid];
+
+        $this->actingAs($lead)->post(route('club.proposals.confirm', $proposal), $payload)->assertForbidden();
+        $this->assertSame(0, $youth->activeMemberCountOn($this->today()));
+        $this->assertSame(ClubProposalStatus::Open, $proposal->refresh()->status);
+
+        $youth->update(['leader_user_id' => $lead->id]);
+        $this->actingAs($lead)->post(route('club.proposals.confirm', $proposal), $payload)->assertRedirect();
+        $this->assertSame(1, $youth->activeMemberCountOn($this->today()));
+    }
 }

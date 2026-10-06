@@ -9,8 +9,7 @@
 @extends('layouts.app')
 @section('title', __('GVV-Register'))
 @section('nav-title', __('Gemeinsame Verantwortlichkeit (Art. 26)'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 @php
     $matrixLabels = [
         'information_duties' => __('Informationspflichten (Art. 13/14)'),

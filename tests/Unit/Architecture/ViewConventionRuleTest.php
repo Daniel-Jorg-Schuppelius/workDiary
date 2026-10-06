@@ -61,13 +61,6 @@ class ViewConventionRuleTest extends TestCase {
 
     /** @var array<string, string> V1 */
     private const DATE_RANGE_ALLOW = [
-        'resources/views/finance/accounting/_rule_dialog.blade.php' => 'Welle 4 (I6): valid_from/valid_to → x-date-range.',
-        'resources/views/admin/maintenance-windows/_form_dialog.blade.php' => 'Welle 4 (I6): starts_at/ends_at (datetime-local).',
-        'resources/views/diary/_dispatch_panel.blade.php' => 'Welle 4 (I6): reserved_from/reserved_to.',
-        'resources/views/energy-logs/_form_body.blade.php' => 'Welle 4 (I6): started_at/ended_at.',
-        'resources/views/per-diem-trips/_form_body.blade.php' => 'Welle 4 (I6): started_at/ended_at.',
-        'resources/views/passenger/rides/_form_dialog.blade.php' => 'Welle 4 (I6): window_start/window_end.',
-        'resources/views/org/members/_payroll_fields.blade.php' => 'Welle 4 (I6): employment_start_date/_end_date.',
         'resources/views/whistleblowing/public/portal.blade.php' => 'Öffentliches Portal-Layout ohne App-Komponenten (bewusst).',
         'resources/views/rental/calendar.blade.php' => 'Welle 4 (I6): starts_at/ends_at (datetime-local).',
     ];
@@ -84,45 +77,18 @@ class ViewConventionRuleTest extends TestCase {
     ];
 
     /** @var array<string, string> V3 */
-    private const SCROLL_FLEX_ALLOW = [
-        'resources/views/inventory/index.blade.php' => 'Welle 4 (I10): drei Karten nach der Bestandstabelle.',
-        'resources/views/purchase-orders/suggestions.blade.php' => 'Welle 4 (I10): Apply-Formular nach der Tabelle.',
-        'resources/views/gaeb/cost-catalogs/show.blade.php' => 'Welle 4 (I10).',
-        'resources/views/bill-of-quantities/catalog-assignment.blade.php' => 'Welle 4 (I10).',
-        'resources/views/admin/automations/index.blade.php' => 'Welle 4 (I9): Inline-Formular unter scroll=flex-Tabelle.',
-    ];
+    private const SCROLL_FLEX_ALLOW = [];
 
     /** @var array<string, string> V4 — 29 Altfälle, Welle 4 (I4): Block entfernen, Layout rendert den Flash */
-    private const FLASH_ALLOW = [
-        'resources/views/account/two-factor.blade.php' => 'Welle 4 (I4).',
-        'resources/views/admin/accounting-migration/index.blade.php' => 'Welle 4 (I4).',
-        'resources/views/admin/b2b-catalog/index.blade.php' => 'Welle 4 (I4).',
-        'resources/views/admin/b2b-catalog/show.blade.php' => 'Welle 4 (I4).',
-        'resources/views/admin/backup-targets/index.blade.php' => 'Welle 4 (I4).',
-        'resources/views/admin/branding/edit.blade.php' => 'Welle 4 (I4).',
-        'resources/views/admin/chat/index.blade.php' => 'Welle 4 (I4).',
-        'resources/views/admin/cloud-intake/index.blade.php' => 'Welle 4 (I4).',
-        'resources/views/admin/cti/index.blade.php' => 'Welle 4 (I4).',
-        'resources/views/admin/document-design/editor.blade.php' => 'Welle 4 (I4).',
-        'resources/views/admin/document-design/index.blade.php' => 'Welle 4 (I4).',
-        'resources/views/admin/mail/index.blade.php' => 'Welle 4 (I4).',
-        'resources/views/admin/shipments/index.blade.php' => 'Welle 4 (I4).',
-        'resources/views/admin/sso/index.blade.php' => 'Welle 4 (I4).',
-        'resources/views/admin/terminals/index.blade.php' => 'Welle 4 (I4).',
-        'resources/views/admin/time-dimensions/index.blade.php' => 'Welle 4 (I4).',
-        'resources/views/admin/wage-type-mappings/index.blade.php' => 'Welle 4 (I4).',
-        'resources/views/articles/sales_discount_groups.blade.php' => 'Welle 4 (I4).',
-        'resources/views/availability/index.blade.php' => 'Welle 4 (I4).',
-        'resources/views/external-contacts/index.blade.php' => 'Welle 4 (I4).',
-        'resources/views/payroll/index.blade.php' => 'Welle 4 (I4).',
-        'resources/views/products/index.blade.php' => 'Welle 4 (I4).',
-        'resources/views/recipes/menus/index.blade.php' => 'Welle 4 (I4).',
-        'resources/views/recipes/menus/show.blade.php' => 'Welle 4 (I4).',
-        'resources/views/shift-exchanges/index.blade.php' => 'Welle 4 (I4).',
-        'resources/views/supplier-catalogs/metal_quotations.blade.php' => 'Welle 4 (I4).',
-        'resources/views/whistleblowing/internal/index.blade.php' => 'Welle 4 (I4).',
-        'resources/views/whistleblowing/internal/portal.blade.php' => 'Welle 4 (I4).',
-        'resources/views/whistleblowing/internal/show.blade.php' => 'Welle 4 (I4).',
+    private const FLASH_ALLOW = [];
+
+    /**
+     * @var array<string, string> V5 — zweite, gleichzeitig sichtbare Liste derselben
+     *      Seite: die stehende Fußzeile gehört genau einer Liste (<x-pagination>:
+     *      ein `standing` je Aufruf), die andere blättert in ihrer Karte.
+     */
+    private const INLINE_PAGINATION_ALLOW = [
+        'app/Plugins/OrgaMax/Resources/views/admin/index.blade.php' => 'Übergebene Aufträge blättern in der Karte; die stehende Fußzeile gehört der Rechnungs-Projektion (Konsolidierungs-Audit 2026-10, vierte Runde).',
     ];
 
     /**
@@ -188,8 +154,8 @@ class ViewConventionRuleTest extends TestCase {
 
             // V3 — scroll="flex" nur mit Voll-Höhe-Marker und als letztes Element.
             if (! $isPartial && str_contains($source, 'scroll="flex"') && ! $this->isAllowListed($relative, self::SCROLL_FLEX_ALLOW)) {
-                if (! str_contains($source, "@section('main-class'")) {
-                    $violations[] = sprintf('%s  V3 scroll="flex" ohne @section(\'main-class\', …) — Voll-Höhe greift nicht', $relative);
+                if (! str_contains($source, "@include('partials.page-fill')") && ! str_contains($source, "@section('main-class'")) {
+                    $violations[] = sprintf('%s  V3 scroll="flex" ohne @include(\'partials.page-fill\') — Voll-Höhe greift nicht', $relative);
                 }
                 $tail = substr($source, (int) strrpos($source, '</x-table>'));
                 if (preg_match('/<x-card\b/', $tail) === 1) {
@@ -205,6 +171,7 @@ class ViewConventionRuleTest extends TestCase {
 
             // V5 — Index-Seiten paginieren stehend.
             if (str_ends_with($relative, 'index.blade.php')
+                && ! $this->isAllowListed($relative, self::INLINE_PAGINATION_ALLOW)
                 && preg_match('/<x-pagination\b[^>]*>/', $source, $m, PREG_OFFSET_CAPTURE) === 1
                 && ! str_contains($m[0][0], 'standing')) {
                 $violations[] = sprintf('%s:%d  V5 <x-pagination> ohne standing auf einer Index-Seite', $relative, $this->lineOf($source, (int) $m[0][1]));
@@ -248,7 +215,7 @@ class ViewConventionRuleTest extends TestCase {
     public function test_page_toolbar_actions_follow_the_overflow_conventions(): void {
         $violations = [];
 
-        foreach ([...$this->bladeFiles(), ...$this->bladeFiles('app/Plugins')] as $file) {
+        foreach ($this->bladeFiles() as $file) {
             $relative = $this->relativePath($file);
             if ($this->isAllowListed($relative, self::SKIP_PREFIXES)) {
                 continue;

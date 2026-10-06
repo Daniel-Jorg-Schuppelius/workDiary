@@ -11,6 +11,7 @@
 namespace Tests\Feature\Finance;
 
 use App\Enums\Finance\{AccountType, MandateKind, MandateStatus, PaymentRunStatus, PostingAccountRole, PostingSourceKind, ProfitDetermination, SettlementKind};
+use App\Enums\Invoicing\{IncomingEInvoiceStatus, InvoiceStatus};
 use App\Models\Accounting\{AccountingAccount, AccountingPostingRule};
 use App\Models\Customer\Customer;
 use App\Models\Document\Document;
@@ -115,7 +116,7 @@ class LiquidityForecastTest extends TestCase {
             'organization_id' => $this->org->id,
             'customer_id' => $customer->id,
             'number' => 'RE-' . fake()->unique()->numberBetween(1000, 9999),
-            'status' => Invoice::STATUS_ISSUED,
+            'status' => InvoiceStatus::Issued,
             'issued_on' => $issuedOn,
             'due_on' => $dueOn,
             'currency' => 'EUR',
@@ -163,7 +164,7 @@ class LiquidityForecastTest extends TestCase {
             'sha256' => hash('sha256', uniqid('', true)),
             'source' => 'upload',
             'received_at' => $this->today,
-            'status' => 'approved',
+            'status' => IncomingEInvoiceStatus::Approved,
             'invoice_number' => 'ER-' . fake()->unique()->numberBetween(1000, 9999),
             'seller_name' => 'Lieferant GmbH',
             'issue_date' => $issuedOn,

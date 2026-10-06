@@ -409,6 +409,7 @@ return [
         'focus_on' => 'Fokusmodus',
         'focus_off' => 'Seitenleiste einblenden',
         'duplicate' => 'Duplizieren',
+        'delete_course' => 'Kurs löschen',
         'import_learndash' => 'LearnDash-Import',
         'import' => 'Importieren',
         'gradebook' => 'Notenbuch',
@@ -643,6 +644,7 @@ return [
     ],
     'help' => [
         'course_tags' => 'Mehrere durch Komma trennen. Schlagwörter lassen sich auch nach der Freigabe ändern.',
+        'enroll_by_operator' => 'Die Einschreibung nimmt Ihr Ansprechpartner vor.',
         'course_competency' => 'Wer den Kurs abschließt, erhält diese Stufe in der Kompetenzmatrix. Eine Wiederholung stuft nie herab.',
         'max_level' => 'Stufen 1 bis zu diesem Wert, z. B. 1 Grundkenntnis … 4 kann anleiten.',
         'assessment' => 'Die Einschätzung einer Führungskraft darf eine Stufe auch senken; Kursabschlüsse tun das nie.',
@@ -789,6 +791,7 @@ return [
         'booking_without_course' => 'Zu dieser Buchung fehlt der Kurs.',
         'booking_requires_release' => 'Ein Kurs kann erst nach der Freigabe gebucht werden.',
         'course_not_bookable' => 'Dieser Kurs ist nicht als buchbar gekennzeichnet.',
+        'self_enroll_requires_open' => 'Die Selbsteinschreibung ist nur bei offenen Kursen möglich.',
         'booking_reject_reason' => 'Eine Absage braucht eine Begründung.',
         'booking_already_billed' => 'Eine abgerechnete Buchung wird nicht storniert — dafür ist die Faktura zuständig.',
         'booking_not_billable' => 'Diese Buchung hat keinen offenen Rechnungsposten.',
@@ -1029,6 +1032,7 @@ return [
     ],
     'confirm' => [
         'duplicate' => 'Diesen Kurs als neuen Entwurf duplizieren?',
+        'delete_course' => 'Den Kursentwurf „:title“ endgültig löschen? Abschnitte und Einheiten des Entwurfs gehen verloren.',
         'delete_note' => 'Diese Notiz wirklich löschen?',
         'detach_question' => 'Diese Frage aus der Prüfung entfernen? Im Katalog bleibt sie erhalten.',
         'delete_category' => 'Diese Kategorie löschen?',

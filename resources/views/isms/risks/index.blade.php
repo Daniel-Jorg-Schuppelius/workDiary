@@ -15,9 +15,10 @@
 
 @section('title', __('isms.title.risks'))
 @section('nav-title', __('isms.title.risks'))
+@include('partials.page-fill')
 
 @section('content')
-    <x-index-page :subtitle="__('isms.subtitle.risks')">
+    <x-index-page overflow="clip" :subtitle="__('isms.subtitle.risks')">
         <x-slot:actions>
             {{-- Direkt-Exporte (Feature 044, MVP 1): Datenstand = jetzt; „versioniert" leistet das Auditpaket. --}}
             <x-action-menu icon="download" tone="outline" :label="__('Export')">
@@ -130,7 +131,7 @@
             </x-filter-field>
         </x-filter-bar>
 
-        <x-table>
+        <x-table scroll="flex">
             <x-slot:head>
                 <tr>
                     <th>{{ __('isms.field.risk_no') }}</th>
@@ -172,77 +173,9 @@
                                 {{-- Bewertungshistorie (046-D): freigegebene Stände statt Überschreiben --}}
                                 <p class="font-semibold">{{ __('isms.assessment.history_title') }}:</p>
                                 @if ($risk->assessments->isNotEmpty())
-                                    <x-table size="xs">
-                                        <x-slot:head>
-                                            <tr>
-                                                <th>{{ __('isms.field.risk_no') }}</th>
-                                                <th>{{ __('isms.field.assessment_kind') }}</th>
-                                                <th>{{ __('isms.field.score') }}</th>
-                                                <th>{{ __('isms.field.rationale') }}</th>
-                                                <th>{{ __('isms.field.status') }}</th>
-                                                <th>{{ __('isms.field.approved_by') }}</th>
-                                                <th>{{ __('isms.field.valid_until') }}</th>
-                                                <th></th>
-                                            </tr>
-                                        </x-slot:head>
-                                            @foreach ($risk->assessments as $assessment)
-                                                <tr id="isms-assessment-{{ $assessment->id }}">
-                                                    <td class="font-mono">{{ $assessment->displayNo() }}</td>
-                                                    <td><x-status-badge :tone="$assessment->kind->tone()" outline>{{ $assessment->kind->label() }}</x-status-badge></td>
-                                                    <td class="whitespace-nowrap">
-                                                        {{ $assessment->likelihood }}×{{ $assessment->impact }} =
-                                                        <x-status-badge :tone="\App\Models\Isms\IsmsRisk::scoreTone($assessment->score)">{{ $assessment->score }}</x-status-badge>
-                                                    </td>
-                                                    <td class="max-w-60">{{ $assessment->rationale !== null ? \Illuminate\Support\Str::limit($assessment->rationale, 80) : '—' }}</td>
-                                                    <td><x-status-badge :tone="$assessment->status->tone()">{{ $assessment->status->label() }}</x-status-badge></td>
-                                                    <td class="whitespace-nowrap">
-                                                        @if ($assessment->isApproved())
-                                                            {{ optional($assessment->approvedBy)->name ?? '—' }} · {{ $assessment->approved_at?->format('d.m.Y') }}
-                                                        @else
-                                                            —
-                                                        @endif
-                                                    </td>
-                                                    <td class="whitespace-nowrap">
-                                                        @if ($assessment->valid_until !== null)
-                                                            {{ $assessment->valid_until->format('d.m.Y') }}
-                                                            @if ($assessment->isReviewOverdue())
-                                                                <x-status-badge tone="warning">{{ __('isms.assessment.review_overdue') }}</x-status-badge>
-                                                            @endif
-                                                        @else
-                                                            —
-                                                        @endif
-                                                    </td>
-                                                    <td class="text-right">
-                                                        @can('update', $risk)
-                                                            @unless ($assessment->isApproved())
-                                                                <span class="flex justify-end gap-1">
-                                                                    <x-action-form :action="route('isms.risks.assessments.approve', $assessment)"
-                                                                          data-confirm-title="{{ __('isms.action.approve_assessment') }}"
-                                                                          :confirm="__('isms.confirm_approve_assessment')"
-                                                                          confirm-icon="task_alt"
-                                                                          confirm-tone="primary"
-                                                                          :confirm-label="__('isms.action.approve_assessment')">
-                                                                        <x-icon-btn icon="task_alt" tone="primary" size="xs" type="submit"
-                                                                                    :label="__('isms.action.approve_assessment')" />
-                                                                    </x-action-form>
-                                                                    <x-action-form :action="route('isms.risks.assessments.destroy', $assessment)" method="DELETE"
-                                                                          data-confirm-title="{{ __('isms.action.delete') }}"
-                                                                          :confirm="__('isms.confirm_delete_assessment')"
-                                                                          confirm-icon="delete"
-                                                                          confirm-tone="error"
-                                                                          :confirm-label="__('isms.action.delete')">
-                                                                        <x-icon-btn icon="delete" tone="error" size="xs" type="submit"
-                                                                                    :label="__('isms.action.delete')" />
-                                                                    </x-action-form>
-                                                                </span>
-                                                            @endunless
-                                                        @endcan
-                                                    </td>
-                                                </tr>
-                                            @endforeach
-                                    </x-table>
+                                    @include('isms.risks._assessments', ['risk' => $risk])
                                 @else
-                                    <p>{{ __('isms.assessment.empty') }}</p>
+                                    <x-empty-state icon="history" :message="__('isms.assessment.empty')" compact />
                                 @endif
                                 @can('update', $risk)
                                     <x-icon-btn icon="add" tone="outline" size="xs"
@@ -262,7 +195,7 @@
                     <td><x-status-badge :tone="$risk->status->tone()">{{ $risk->status->label() }}</x-status-badge></td>
                     <td class="text-base-content/70">{{ optional($risk->owner)->name ?? '—' }}</td>
                     <td class="{{ $risk->review_due_on !== null && $risk->review_due_on->isPast() && $risk->status->isOpen() ? 'text-error font-semibold' : 'text-base-content/70' }}">
-                        {{ $risk->review_due_on?->format('d.m.Y') ?? '—' }}
+                        {{ $risk->review_due_on?->fdate() ?? '—' }}
                     </td>
                     <td class="text-right">
                         <div class="flex justify-end gap-1">

@@ -296,7 +296,7 @@
                             <x-detail-grid.row :label="__('learning.field.scorm_files')">{{ $unit->scormPackage->file_count }}</x-detail-grid.row>
                         </x-detail-grid>
                     @else
-                        <p class="text-sm text-base-content/80">{{ __('learning.help.scorm_empty') }}</p>
+                        <x-empty-state icon="inventory_2" :message="__('learning.help.scorm_empty')" compact />
                     @endif
 
                     <form method="POST" action="{{ route('learning.courses.units.scorm.import', [$course, $unit]) }}"
@@ -335,7 +335,7 @@
                             <x-detail-grid.row :label="__('learning.field.scorm_files')">{{ $unit->cmi5Package->file_count }}</x-detail-grid.row>
                         </x-detail-grid>
                     @else
-                        <p class="text-sm text-base-content/80">{{ __('learning.help.cmi5_empty') }}</p>
+                        <x-empty-state icon="inventory_2" :message="__('learning.help.cmi5_empty')" compact />
                     @endif
 
                     <form method="POST" action="{{ route('learning.courses.units.cmi5.import', [$course, $unit]) }}"
@@ -370,7 +370,7 @@
                             <x-icon-btn icon="link_off" tone="error" size="sm" type="submit" show-label>{{ __('learning.action.lti_unlink') }}</x-icon-btn>
                         </form>
                     @else
-                        <p class="text-sm text-base-content/80">{{ __('learning.help.lti_empty') }}</p>
+                        <x-empty-state icon="link_off" :message="__('learning.help.lti_empty')" compact />
                     @endif
 
                     @if ($ltiTools->isEmpty())
@@ -409,7 +409,7 @@
             <x-card>
                 <h3 class="mb-2 text-sm font-semibold">{{ __('learning.field.embed_hosts') }}</h3>
                 @if ($allowedHosts === [])
-                    <p class="text-sm text-base-content/80">{{ __('learning.help.embed_hosts_empty') }}</p>
+                    <x-empty-state icon="public_off" :message="__('learning.help.embed_hosts_empty')" compact />
                 @else
                     <ul class="list-disc pl-5 text-sm text-base-content/80">
                         @foreach ($allowedHosts as $host)

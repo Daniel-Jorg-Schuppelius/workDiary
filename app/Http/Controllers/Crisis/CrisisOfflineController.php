@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Crisis;
 
+use App\Enums\Crisis\{CrisisActionStatus, CrisisCaseStatus};
 use App\Http\Controllers\Controller;
 use App\Models\Crisis\{CrisisAction, CrisisCase, CrisisCommunication, CrisisTeamAssignment};
 use App\Models\Platform\User;
@@ -29,7 +30,7 @@ class CrisisOfflineController extends Controller {
         Gate::authorize('viewAny', CrisisCase::class);
 
         $cases = CrisisCase::query()
-            ->whereIn('status', CrisisCase::ACTIVE_STATUSES)
+            ->whereIn('status', CrisisCaseStatus::active())
             ->with(['responsible:id,name', 'team.role', 'team.user', 'team.deputy', 'actions.assignee:id,name', 'communications', 'situationReports'])
             ->orderByDesc('activated_at')
             ->get()
@@ -42,12 +43,12 @@ class CrisisOfflineController extends Controller {
             'cases' => $cases->map(fn (CrisisCase $case): array => [
                 'title' => $case->title,
                 'severity' => $case->severity,
-                'status' => $case->status,
+                'status' => $case->status->value,
                 'activated_at' => $case->activated_at?->toIso8601String(),
                 'responsible' => $case->responsible?->name,
                 'description' => $case->description,
                 'situation' => ($report = $case->situationReports->sortByDesc('version')->first()) !== null ? ['content' => $report->content, 'risks' => $report->risks, 'at' => $report->created_at?->toIso8601String()] : null,
-                'actions' => $case->actions->where('status', '!=', 'done')->values()->map(fn (CrisisAction $a): array => ['title' => $a->title, 'due_at' => $a->due_at?->toIso8601String(), 'assignee' => $a->assignee?->name, 'status' => $a->status])->all(),
+                'actions' => $case->actions->where('status', '!=', CrisisActionStatus::Done)->values()->map(fn (CrisisAction $a): array => ['title' => $a->title, 'due_at' => $a->due_at?->toIso8601String(), 'assignee' => $a->assignee?->name, 'status' => $a->status->value])->all(),
                 'team' => $case->team->map(fn (CrisisTeamAssignment $t): array => ['role' => $t->role?->name, 'person' => $this->contact($t->user), 'deputy' => $this->contact($t->deputy), 'note' => $t->contact_note])->all(),
                 'communications' => $case->communications->whereNotNull('sent_at')->values()->map(fn (CrisisCommunication $c): array => ['subject' => $c->subject, 'audience' => $c->audience, 'sent_at' => $c->sent_at?->toIso8601String(), 'body' => $c->body])->all(),
             ])->all(),

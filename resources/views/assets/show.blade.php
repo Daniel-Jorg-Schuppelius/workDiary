@@ -53,8 +53,8 @@
                     @if ($asset->tags->isNotEmpty())
                         <div class="flex flex-wrap gap-1">
                             @foreach ($asset->tags as $tag)
-                                <span class="badge badge-sm badge-outline"
-                                      @if ($tag->color) style="border-color: {{ $tag->color }}; color: {{ $tag->color }};" @endif>#{{ $tag->displayName() }}</span>
+                                <x-status-badge tone="plain" outline
+                                      :style="$tag->color ? 'border-color: '.$tag->color.'; color: '.$tag->color.';' : null">#{{ $tag->displayName() }}</x-status-badge>
                             @endforeach
                         </div>
                     @endif
@@ -117,34 +117,22 @@
                     </x-slot:actions>
                 @endif
                 @if ($room || $site || $building || $floor)
-                    <dl class="grid gap-x-4 gap-y-3 text-sm sm:grid-cols-2">
-                        <div>
-                            <dt class="text-xs text-muted">{{ __('Standort') }}</dt>
-                            <dd>{{ $site?->name ?: '—' }}</dd>
-                        </div>
-                        <div>
-                            <dt class="text-xs text-muted">{{ __('Gebäude') }}</dt>
-                            <dd>{{ $building?->name ?: '—' }}</dd>
-                        </div>
-                        <div>
-                            <dt class="text-xs text-muted">{{ __('Etage') }}</dt>
-                            <dd>{{ $floor?->label ?: '—' }}</dd>
-                        </div>
-                        <div>
-                            <dt class="text-xs text-muted">{{ __('Raum') }}</dt>
-                            <dd>
-                                @if ($room)
-                                    @if ($floor)
-                                        <a class="link link-hover" href="{{ route('floors.show', $floor) }}">{{ $room->name }}</a>
-                                    @else
-                                        {{ $room->name }}
-                                    @endif
+                    <x-detail-grid layout="cells" small-labels>
+                        <x-detail-grid.row :label="__('Standort')">{{ $site?->name ?: '—' }}</x-detail-grid.row>
+                        <x-detail-grid.row :label="__('Gebäude')">{{ $building?->name ?: '—' }}</x-detail-grid.row>
+                        <x-detail-grid.row :label="__('Etage')">{{ $floor?->label ?: '—' }}</x-detail-grid.row>
+                        <x-detail-grid.row :label="__('Raum')">
+                            @if ($room)
+                                @if ($floor)
+                                    <a class="link link-hover" href="{{ route('floors.show', $floor) }}">{{ $room->name }}</a>
                                 @else
-                                    —
+                                    {{ $room->name }}
                                 @endif
-                            </dd>
-                        </div>
-                    </dl>
+                            @else
+                                —
+                            @endif
+                        </x-detail-grid.row>
+                    </x-detail-grid>
                 @else
                     <x-empty-state compact icon="location_off"
                                    :title="__('Keinem Raum zugeordnet')"
@@ -160,7 +148,7 @@
                         <ul class="space-y-1 text-sm">
                             @foreach ($positions as $position)
                                 <li class="flex flex-wrap items-center gap-2">
-                                    <span class="tabular-nums">{{ $position->recorded_at->orgTz()->format('d.m.Y H:i') }}</span>
+                                    <span class="tabular-nums">{{ $position->recorded_at->fdatetime() }}</span>
                                     <span class="font-mono text-xs text-muted">{{ \CommonToolkit\Helper\Geo\GeoHelper::formatCoordinates((float) $position->lat, (float) $position->lng) }}</span>
                                     @if ($position->deviation_m !== null)
                                         <x-status-badge :tone="$position->deviation_m > 0 ? 'warning' : 'success'" :title="__('Soll-Ort') . ': ' . $position->expected_label">
@@ -203,12 +191,12 @@
                     </x-slot:actions>
                 @endif
                 @if ($os)
-                    <dl class="grid gap-x-4 gap-y-3 text-sm sm:grid-cols-2">
-                        <div><dt class="text-xs text-muted">{{ __('Software') }}</dt><dd class="font-medium">{{ $os->software?->name }}</dd></div>
-                        <div><dt class="text-xs text-muted">{{ __('Version') }}</dt><dd>{{ $os->version ?: '—' }}</dd></div>
-                        <div><dt class="text-xs text-muted">{{ __('Sitze') }}</dt><dd>{{ $os->seats ?: '—' }}</dd></div>
-                        <div><dt class="text-xs text-muted">{{ __('Läuft ab') }}</dt><dd>{{ $os->expires_on?->isoFormat('L') ?: '—' }}</dd></div>
-                    </dl>
+                    <x-detail-grid layout="cells" small-labels>
+                        <x-detail-grid.row :label="__('Software')" class="font-medium">{{ $os->software?->name }}</x-detail-grid.row>
+                        <x-detail-grid.row :label="__('Version')">{{ $os->version ?: '—' }}</x-detail-grid.row>
+                        <x-detail-grid.row :label="__('Sitze')">{{ $os->seats ?: '—' }}</x-detail-grid.row>
+                        <x-detail-grid.row :label="__('Läuft ab')">{{ $os->expires_on?->isoFormat('L') ?: '—' }}</x-detail-grid.row>
+                    </x-detail-grid>
                 @else
                     <x-empty-state compact icon="desktop_access_disabled"
                                    :title="__('Kein Betriebssystem')"
@@ -362,7 +350,7 @@
             @endif
 
             @if ($isDefectBlocked && ! $isCheckedOut)
-                <div class="alert alert-warning mb-3">
+                <div role="alert" class="alert alert-warning mb-3">
                     <x-icon name="lock" />
                     <span>{{ __('Gesperrt wegen Defekt — keine Ausgabe möglich.') }}</span>
                 </div>
@@ -370,7 +358,7 @@
 
             @if (! empty($activeBlocks) && ! $isCheckedOut)
                 {{-- Vollaudit 2026-07 (H2/H3): D12-Sperren sichtbar machen. --}}
-                <div class="alert alert-warning mb-3">
+                <div role="alert" class="alert alert-warning mb-3">
                     <x-icon name="lock" />
                     <span>
                         {{ __('Gesperrt (:reasons) — keine Ausgabe möglich.', ['reasons' => collect($activeBlocks)->pluck('reason_label')->implode(', ')]) }}
@@ -480,7 +468,7 @@
                                         @if ($defect->attachments->isNotEmpty())
                                             <div class="mt-1 flex flex-wrap gap-1">
                                                 @foreach ($defect->attachments as $photo)
-                                                    <a href="{{ URL::signedRoute('attachments.download', $photo) }}" target="_blank" rel="noopener"
+                                                    <a href="{{ \App\Http\Controllers\Attachments\AttachmentController::downloadUrl($photo) }}" target="_blank" rel="noopener"
                                                        class="badge badge-ghost badge-sm gap-1" title="{{ $photo->original_name }}">
                                                         <x-icon name="image" class="text-sm" />
                                                         {{ \Illuminate\Support\Str::limit($photo->original_name, 16) }}
@@ -509,12 +497,12 @@
                                                             <x-icon-btn type="submit" tone="ghost" size="xs" icon="build" :label="__('In Reparatur')" />
                                                         </x-action-form>
                                                     @endif
-                                                    <a class="btn btn-xs btn-ghost text-success join-item" title="{{ __('Erledigen') }}"
-                                                       data-entry-modal-trigger
-                                                       href="{{ route('assets.defects.resolve-form', [$asset, $defect, 'action' => 'resolve']) }}"><x-icon name="check" /></a>
-                                                    <a class="btn btn-xs btn-ghost text-error join-item" title="{{ __('Ausbuchen') }}"
-                                                       data-entry-modal-trigger
-                                                       href="{{ route('assets.defects.resolve-form', [$asset, $defect, 'action' => 'writeOff']) }}"><x-icon name="delete_forever" /></a>
+                                                    <x-icon-btn icon="check"
+                                                            :href="route('assets.defects.resolve-form', [$asset, $defect, 'action' => 'resolve'])"
+                                                            :label="__('Erledigen')" class="text-success join-item" data-entry-modal-trigger />
+                                                    <x-icon-btn icon="delete_forever" tone="error"
+                                                            :href="route('assets.defects.resolve-form', [$asset, $defect, 'action' => 'writeOff'])"
+                                                            :label="__('Ausbuchen')" class="join-item" data-entry-modal-trigger />
                                                 </div>
                                             @else
                                                 <span class="text-xs text-muted">{{ optional($defect->resolved_at)->fdate() }}</span>
@@ -653,7 +641,7 @@
                     <ul class="divide-y divide-base-300 text-sm">
                         @foreach ($attachments as $attachment)
                             <li class="flex items-center justify-between gap-3 py-2">
-                                <a href="{{ URL::signedRoute('attachments.download', $attachment) }}" class="link link-hover truncate">{{ $attachment->original_name }}</a>
+                                <a href="{{ \App\Http\Controllers\Attachments\AttachmentController::downloadUrl($attachment) }}" class="link link-hover truncate">{{ $attachment->original_name }}</a>
                                 <span class="text-muted">{{ $attachment->humanSize() }}</span>
                             </li>
                         @endforeach

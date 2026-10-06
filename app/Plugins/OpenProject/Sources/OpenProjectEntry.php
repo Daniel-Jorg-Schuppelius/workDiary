@@ -10,6 +10,7 @@
 
 namespace App\Plugins\OpenProject\Sources;
 
+use App\Plugins\OpenProject\Api\OpenProjectApiClient;
 use Carbon\CarbonImmutable;
 
 /**

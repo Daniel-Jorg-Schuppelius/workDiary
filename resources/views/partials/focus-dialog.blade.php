@@ -43,7 +43,7 @@
                         class="group relative flex h-full w-full flex-col gap-3 rounded-box border p-4 text-left transition hover:-translate-y-0.5 hover:shadow-md
                                {{ $active ? 'border-primary bg-primary/10 ring-1 ring-primary' : 'border-base-300 bg-base-100 hover:border-primary/40 hover:bg-base-200' }}">
                     @if ($active)
-                        <span class="absolute right-3 top-3 badge badge-primary badge-sm">{{ __('scope.focus.active') }}</span>
+                        <x-status-badge tone="primary" class="absolute right-3 top-3">{{ __('scope.focus.active') }}</x-status-badge>
                     @endif
                     <span class="flex size-12 items-center justify-center rounded-field {{ $active ? 'bg-primary text-primary-content' : 'bg-base-200 text-primary' }}">
                         <x-icon :name="$focus['icon']" class="text-[1.6rem]" />
@@ -57,14 +57,13 @@
 
     <div class="mt-6 flex items-center gap-2 border-t border-base-300 pt-4">
         <h3 class="text-sm font-semibold">{{ __('scope.focus.personal.heading') }}</h3>
-        <a href="{{ route('me.workspaces.index') }}" class="btn btn-ghost btn-xs ml-auto gap-1">
-            <x-icon name="tune" class="text-[1rem]" />
+        <x-button :href="route('me.workspaces.index')" tone="ghost" size="xs" icon="tune" icon-size="1rem" class="ml-auto">
             {{ __('scope.focus.personal.manage') }}
-        </a>
+        </x-button>
     </div>
 
     @if ($_focusPersonal === [])
-        <p class="mt-2 text-xs text-muted">{{ __('scope.workspace.empty') }}</p>
+        <x-empty-state icon="workspaces" :title="__('scope.workspace.empty')" compact class="mt-2" />
     @else
         <div class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             @foreach ($_focusPersonal as $focus)
@@ -75,7 +74,7 @@
                             class="group relative flex h-full w-full flex-col gap-3 rounded-box border p-4 text-left transition hover:-translate-y-0.5 hover:shadow-md
                                    {{ $active ? 'border-primary bg-primary/10 ring-1 ring-primary' : 'border-base-300 bg-base-100 hover:border-primary/40 hover:bg-base-200' }}">
                         @if ($active)
-                            <span class="absolute right-3 top-3 badge badge-primary badge-sm">{{ __('scope.focus.active') }}</span>
+                            <x-status-badge tone="primary" class="absolute right-3 top-3">{{ __('scope.focus.active') }}</x-status-badge>
                         @endif
                         <span class="flex size-12 items-center justify-center rounded-field {{ $active ? 'bg-primary text-primary-content' : 'bg-base-200 text-primary' }}">
                             <x-icon :name="$focus['icon']" class="text-[1.6rem]" />

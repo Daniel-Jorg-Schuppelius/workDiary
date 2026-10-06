@@ -62,9 +62,9 @@
                     <tr>
                         <td class="font-medium">{{ $row['user']->name }}</td>
                         <td>
-                            <span class="badge badge-sm {{ $row['model'] === \App\Enums\User\CompensationModel::NachZeitaufwand ? 'badge-info' : 'badge-warning' }}">
+                            <x-status-badge :tone="$row['model'] === \App\Enums\User\CompensationModel::NachZeitaufwand ? 'info' : 'warning'">
                                 {{ $row['model']?->label() }}
-                            </span>
+                            </x-status-badge>
                         </td>
                         <td class="text-sm text-base-content/70">{{ $row['basis'] }}</td>
                         <td class="text-right tabular-nums">{{ $money($row['amount']) }}</td>

@@ -12,7 +12,8 @@ namespace App\Http\Controllers\Platform;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Platform\SaveUserBookmarkRequest;
-use App\Models\Platform\UserBookmark;
+use App\Models\Platform\{User, UserBookmark};
+use App\Support\SortableQuery;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -21,11 +22,19 @@ class UserBookmarkController extends Controller {
     public function index(Request $request): View {
         Gate::authorize('viewAny', UserBookmark::class);
         $search = $request->string('q')->toString();
-        $bookmarks = Auth::user()?->bookmarks()
-            ->when($search !== '', fn($q) => $q->search($search))
-            ->get() ?? collect();
+        /** @var User $user */
+        $user = Auth::user();
+        // reorder(): die Beziehung sortiert schon nach sort_order — die gewählte Spalte muss vorn stehen.
+        $query = $user->bookmarks()->getQuery()->reorder()
+            ->when($search !== '', fn($q) => $q->search($search));
+        [$sort, $dir] = SortableQuery::apply($query, $request, [
+            'sort_order' => 'sort_order',
+            'label' => 'label',
+            'url' => 'url',
+        ], 'sort_order', 'asc');
+        $bookmarks = $query->orderBy('id')->paginate(25)->withQueryString();
 
-        return view('bookmarks.index', compact('bookmarks', 'search'));
+        return view('bookmarks.index', compact('bookmarks', 'search', 'sort', 'dir'));
     }
 
     public function create(Request $request): View {

@@ -14,6 +14,7 @@ namespace App\Plugins\Msgraph\Jobs;
 
 use App\Jobs\Concerns\RetriesTransientFailures;
 use App\Models\Platform\Organization;
+use App\Plugins\Msgraph\Enums\MsgraphTaskListLinkStatus;
 use App\Plugins\Msgraph\Models\{MsgraphTaskConnection, MsgraphTaskListLink};
 use App\Plugins\Msgraph\MsgraphPlugin;
 use App\Plugins\Msgraph\Services\MsgraphTodoSyncService;
@@ -57,7 +58,7 @@ class MsgraphTodoWakeJob implements ShouldQueue {
             $link = MsgraphTaskListLink::query()
                 ->where('organization_id', $org->id)
                 ->whereKey($this->linkId)
-                ->where('status', MsgraphTaskListLink::STATUS_ACTIVE)
+                ->where('status', MsgraphTaskListLinkStatus::Active)
                 ->first();
             $connection = MsgraphTaskConnection::query()
                 ->where('organization_id', $org->id)

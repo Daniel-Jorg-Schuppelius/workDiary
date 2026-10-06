@@ -62,7 +62,7 @@ class OrderResponseImportService {
                     $kinds[] = 'quantity';
                 }
                 $orderedPrice = $line->unit_price?->getAmount();
-                if ($price !== null && $orderedPrice !== null && bccomp($price, $orderedPrice, 2) !== 0) {
+                if ($price !== null && $orderedPrice !== null && NumberHelper::comparePrecise($price, $orderedPrice, 2) !== 0) {
                     $kinds[] = 'price';
                 }
                 if ($delivery !== null && $order->expected_at !== null && $delivery !== $order->expected_at->format('Y-m-d')) {

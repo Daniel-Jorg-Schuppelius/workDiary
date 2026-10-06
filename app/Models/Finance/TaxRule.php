@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Models\Finance;
 
 use App\Casts\PercentageCast;
+use App\Enums\Finance\TaxRuleStatus;
 use App\Models\Concerns\{Auditable, HasSqid};
 use Illuminate\Database\Eloquent\Model;
 
@@ -36,7 +37,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $valid_to
  * @property string|null $source
  * @property string|null $note
- * @property string $status
+ * @property TaxRuleStatus $status
  */
 class TaxRule extends Model {
     use Auditable;
@@ -56,5 +57,6 @@ class TaxRule extends Model {
         'rate' => PercentageCast::class . ':2',
         'valid_from' => 'date',
         'valid_to' => 'date',
+        'status' => TaxRuleStatus::class,
     ];
 }

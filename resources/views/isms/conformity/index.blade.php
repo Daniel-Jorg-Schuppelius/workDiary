@@ -19,9 +19,10 @@
 
 @section('title', __('isms.title.conformity'))
 @section('nav-title', __('isms.title.conformity'))
+@include('partials.page-fill')
 
 @section('content')
-    <x-index-page :subtitle="$scope !== null ? __('isms.subtitle.conformity_scope', ['scope' => $scope->name]) : __('isms.subtitle.conformity')">
+    <x-index-page overflow="clip" :subtitle="$scope !== null ? __('isms.subtitle.conformity_scope', ['scope' => $scope->name]) : __('isms.subtitle.conformity')">
         <x-slot:actions>
             @if ($canManage)
                 <x-icon-btn icon="add" tone="primary" size="sm"
@@ -50,7 +51,7 @@
         </div>
 
         @if ($missingPairs->isNotEmpty() && $canManage && $scope !== null)
-            <div class="alert bg-base-200 text-sm">
+            <div role="status" class="alert bg-base-200 text-sm">
                 <x-icon name="playlist_add" />
                 <span>{{ __('isms.conformity.missing_for_scope', ['scope' => $scope->name, 'norms' => $missingPairs->implode(', ')]) }}</span>
                 <form method="POST" action="{{ route('isms.conformity.ensure', $scope) }}">
@@ -61,33 +62,33 @@
             </div>
         @endif
 
-            {{-- Stichtags-Rekonstruktion (Nachtrag 046b). --}}
-    <x-card>
-        <form method="GET" class="flex flex-wrap items-end gap-2">
-            @if ($scope !== null)
-                <input type="hidden" name="scope" value="{{ $scope->sqid }}">
-            @endif
-            <x-filter-field :label="__('Bewertungsstand zum Stichtag')" for="isms-conformity-as-of" show-label>
-                <input type="date" id="isms-conformity-as-of" name="as_of" value="{{ request('as_of') }}" class="input input-sm input-bordered">
-            </x-filter-field>
-            <x-icon-btn icon="history" tone="outline" size="sm" type="submit" show-label>{{ __('Rekonstruieren') }}</x-icon-btn>
-        </form>
-        @if (($reconstruction ?? null) !== null)
-            <div class="mt-3 rounded-box border border-base-300 p-3 text-sm">
-                <p class="font-medium">{{ __('Stand zum :date', ['date' => $reconstruction['as_of']]) }}</p>
-                <p class="text-base-content/70">{{ __(':total SoA-Aussagen erfasst, davon :applicable anwendbar.', ['total' => $reconstruction['statements']['total'], 'applicable' => $reconstruction['statements']['applicable']]) }}</p>
-                @if ($reconstruction['norm_statuses'] !== [])
-                    <ul class="mt-1 space-y-0.5 text-xs text-base-content/70">
-                        @foreach ($reconstruction['norm_statuses'] as $entry)
-                            <li>{{ $entry['norm'] }} {{ $entry['edition'] }} — {{ $entry['status_label'] }}</li>
-                        @endforeach
-                    </ul>
+        {{-- Stichtags-Rekonstruktion (Nachtrag 046b). --}}
+        <x-card>
+            <form method="GET" class="flex flex-wrap items-end gap-2">
+                @if ($scope !== null)
+                    <input type="hidden" name="scope" value="{{ $scope->sqid }}">
                 @endif
-            </div>
-        @endif
-    </x-card>
+                <x-filter-field :label="__('Bewertungsstand zum Stichtag')" for="isms-conformity-as-of" show-label>
+                    <input type="date" id="isms-conformity-as-of" name="as_of" value="{{ request('as_of') }}" class="input input-sm input-bordered">
+                </x-filter-field>
+                <x-icon-btn icon="history" tone="outline" size="sm" type="submit" show-label>{{ __('Rekonstruieren') }}</x-icon-btn>
+            </form>
+            @if (($reconstruction ?? null) !== null)
+                <div class="mt-3 rounded-box border border-base-300 p-3 text-sm">
+                    <p class="font-medium">{{ __('Stand zum :date', ['date' => $reconstruction['as_of']]) }}</p>
+                    <p class="text-base-content/70">{{ __(':total SoA-Aussagen erfasst, davon :applicable anwendbar.', ['total' => $reconstruction['statements']['total'], 'applicable' => $reconstruction['statements']['applicable']]) }}</p>
+                    @if ($reconstruction['norm_statuses'] !== [])
+                        <ul class="mt-1 space-y-0.5 text-xs text-base-content/70">
+                            @foreach ($reconstruction['norm_statuses'] as $entry)
+                                <li>{{ $entry['norm'] }} {{ $entry['edition'] }} — {{ $entry['status_label'] }}</li>
+                            @endforeach
+                        </ul>
+                    @endif
+                </div>
+            @endif
+        </x-card>
 
-<x-table>
+        <x-table scroll="flex">
             <x-slot:head>
                 <tr>
                     <th>{{ __('isms.field.norm') }}</th>
@@ -122,7 +123,7 @@
                                 @if ($status->profile_version !== null)
                                     <p>
                                         {{ __('Bewertet gegen Profilversion :version', ['version' => $status->profile_version]) }}
-                                        @if ($status->profile_as_of){{ ' ' }}({{ __('Stand') }} {{ $status->profile_as_of->format('d.m.Y') }})@endif
+                                        @if ($status->profile_as_of){{ ' ' }}({{ __('Stand') }} {{ $status->profile_as_of->fdate() }})@endif
                                         @if ($currentProfile !== null && $currentProfile['version'] !== $status->profile_version)
                                             <x-status-badge tone="warning" size="xs" class="ml-1">{{ __('Profil aktualisiert: :version', ['version' => $currentProfile['version']]) }}</x-status-badge>
                                         @endif
@@ -144,8 +145,8 @@
                                         </div>
                                         <p>
                                             {{ __('isms.field.certified_organization') }}: {{ $certificate->certified_organization }}
-                                            · {{ __('isms.field.issued_on') }}: {{ $certificate->issued_on->format('d.m.Y') }}
-                                            · {{ __('isms.field.validity') }}: {{ $certificate->valid_from->format('d.m.Y') }} – {{ $certificate->valid_until->format('d.m.Y') }}
+                                            · {{ __('isms.field.issued_on') }}: {{ $certificate->issued_on->fdate() }}
+                                            · {{ __('isms.field.validity') }}: {{ $certificate->valid_from->fdate() }} – {{ $certificate->valid_until->fdate() }}
                                         </p>
                                         <p>{{ __('isms.field.scope_description') }}: {{ $certificate->scope_description }}</p>
                                         @if ($certificate->surveillance_audit_1_on !== null || $certificate->surveillance_audit_2_on !== null)
@@ -189,7 +190,7 @@
                     <td>
                         @if ($activeCertificate !== null)
                             <span class="{{ $activeCertificate->valid_until->lte($today->copy()->addDays(60)) ? 'text-warning font-semibold' : 'text-base-content/70' }}">
-                                {{ $activeCertificate->valid_until->format('d.m.Y') }}
+                                {{ $activeCertificate->valid_until->fdate() }}
                             </span>
                         @else
                             <span class="text-muted">—</span>

@@ -4074,30 +4074,6 @@ CREATE INDEX "inventory_outbox_org_status_idx" on "inventory_outbox"(
   "organization_id",
   "status"
 );
-CREATE TABLE IF NOT EXISTS "stock_lots"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "article_variant_id" integer not null,
-  "lot_no" varchar not null,
-  "mfg_date" date,
-  "best_before" date,
-  "supplier_ref" varchar,
-  "status" varchar not null default 'active',
-  "note" varchar,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("article_variant_id") references "article_variants"("id") on delete cascade
-);
-CREATE UNIQUE INDEX "stock_lots_org_variant_no_uq" on "stock_lots"(
-  "organization_id",
-  "article_variant_id",
-  "lot_no"
-);
-CREATE INDEX "stock_lots_variant_bb_idx" on "stock_lots"(
-  "article_variant_id",
-  "best_before"
-);
 CREATE TABLE IF NOT EXISTS "stock_valuation_layers"(
   "id" integer primary key autoincrement not null,
   "organization_id" integer not null,
@@ -8754,6 +8730,7 @@ CREATE TABLE IF NOT EXISTS "approvals"(
   "decided_at" datetime,
   "created_at" datetime,
   "updated_at" datetime,
+  "round" integer not null default '1',
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("decided_by") references "users"("id") on delete set null
 );
@@ -9291,6 +9268,7 @@ CREATE TABLE IF NOT EXISTS "application_contract_versions"(
   "created_by" integer,
   "created_at" datetime,
   "updated_at" datetime,
+  "approval_round" integer not null default '1',
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("negotiation_id") references "application_contract_negotiations"("id") on delete cascade,
   foreign key("document_id") references "documents"("id") on delete set null,
@@ -11838,6 +11816,7 @@ CREATE TABLE IF NOT EXISTS "domain_dns_zone_projections"(
   "synced_at" datetime,
   "created_at" datetime,
   "updated_at" datetime,
+  "unparsed_records" text,
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("connection_id") references "domain_provider_connections"("id") on delete cascade,
   foreign key("domain_projection_id") references "domain_projections"("id") on delete set null
@@ -14709,26 +14688,6 @@ CREATE TABLE IF NOT EXISTS "patrol_checkpoints"(
 CREATE UNIQUE INDEX "patrol_cp_org_token_uq" on "patrol_checkpoints"(
   "organization_id",
   "token_hash"
-);
-CREATE TABLE IF NOT EXISTS "patrol_runs"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "patrol_route_id" integer not null,
-  "started_by" integer,
-  "status" varchar not null default 'running',
-  "started_at" datetime not null,
-  "finished_at" datetime,
-  "deviation_note" varchar,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("patrol_route_id") references "patrol_routes"("id") on delete cascade,
-  foreign key("started_by") references "users"("id") on delete set null
-);
-CREATE INDEX "patrol_runs_org_route_idx" on "patrol_runs"(
-  "organization_id",
-  "patrol_route_id",
-  "started_at"
 );
 CREATE TABLE IF NOT EXISTS "patrol_scans"(
   "id" integer primary key autoincrement not null,
@@ -21439,6 +21398,7 @@ CREATE TABLE IF NOT EXISTS "investment_cases"(
   "estimated_amount" numeric,
   "currency" varchar,
   "strategic_objective_id" integer,
+  "deferred_from_status" varchar,
   foreign key("submitter_user_id") references users("id") on delete set null on update no action,
   foreign key("created_by") references users("id") on delete set null on update no action,
   foreign key("project_id") references projects("id") on delete set null on update no action,
@@ -23274,6 +23234,70 @@ CREATE INDEX "ebce_chrono_idx" on "ebics_connection_events"(
   "ebics_connection_id",
   "occurred_at"
 );
+CREATE TABLE IF NOT EXISTS "stock_lots"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "article_variant_id" integer not null,
+  "lot_no" varchar not null,
+  "mfg_date" date,
+  "best_before" date,
+  "supplier_ref" varchar,
+  "status" varchar not null default('active'),
+  "note" varchar,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "blocked_reason" varchar,
+  "blocked_at" datetime,
+  "blocked_by_user_id" integer,
+  "merged_into_lot_id" integer,
+  foreign key("article_variant_id") references article_variants("id") on delete cascade on update no action,
+  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("blocked_by_user_id") references "users"("id") on delete set null,
+  foreign key("merged_into_lot_id") references "stock_lots"("id") on delete set null
+);
+CREATE UNIQUE INDEX "stock_lots_org_variant_no_uq" on "stock_lots"(
+  "organization_id",
+  "article_variant_id",
+  "lot_no"
+);
+CREATE INDEX "stock_lots_variant_bb_idx" on "stock_lots"(
+  "article_variant_id",
+  "best_before"
+);
+CREATE TABLE IF NOT EXISTS "patrol_runs"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "patrol_route_id" integer not null,
+  "started_by" integer,
+  "status" varchar not null default('running'),
+  "started_at" datetime not null,
+  "finished_at" datetime,
+  "deviation_note" varchar,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "abort_reason" varchar,
+  "aborted_by_user_id" integer,
+  foreign key("started_by") references users("id") on delete set null on update no action,
+  foreign key("patrol_route_id") references patrol_routes("id") on delete cascade on update no action,
+  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("aborted_by_user_id") references "users"("id") on delete set null
+);
+CREATE INDEX "patrol_runs_org_route_idx" on "patrol_runs"(
+  "organization_id",
+  "patrol_route_id",
+  "started_at"
+);
+CREATE TABLE IF NOT EXISTS "fritzbox_dismissed_calls"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "call_hash" varchar not null,
+  "dismissed_at" datetime not null,
+  foreign key("organization_id") references "organizations"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "fdc_org_hash_unique" on "fritzbox_dismissed_calls"(
+  "organization_id",
+  "call_hash"
+);
 
 INSERT INTO migrations VALUES(1,'0001_01_01_000000_create_users_table',1);
 INSERT INTO migrations VALUES(2,'0001_01_01_000001_create_cache_table',1);
@@ -24218,3 +24242,14 @@ INSERT INTO migrations VALUES(950,'2027_03_09_120000_create_datev_online_tables'
 INSERT INTO migrations VALUES(951,'2027_03_09_130000_create_ebics_tables',56);
 INSERT INTO migrations VALUES(952,'2027_03_09_140000_add_open_masterdata_to_supplier_catalog_sources',57);
 INSERT INTO migrations VALUES(953,'2027_03_09_150000_reslug_customers_with_reserved_slugs',58);
+INSERT INTO migrations VALUES(954,'2027_03_09_160000_add_unparsed_records_to_domain_dns_zone_projections',59);
+INSERT INTO migrations VALUES(955,'2027_03_10_100000_add_block_and_merge_fields_to_stock_lots',60);
+INSERT INTO migrations VALUES(956,'2027_03_10_100100_add_abort_fields_to_patrol_runs',60);
+INSERT INTO migrations VALUES(957,'2027_03_10_100200_backfill_resolved_at_on_closed_inbox_items',61);
+INSERT INTO migrations VALUES(958,'2027_03_10_100300_add_round_to_approvals_table',62);
+INSERT INTO migrations VALUES(959,'2027_03_10_100400_add_approval_round_to_application_contract_versions_table',62);
+INSERT INTO migrations VALUES(960,'2027_03_10_100500_create_fritzbox_dismissed_calls_table',63);
+INSERT INTO migrations VALUES(961,'2027_03_10_100600_backfill_fritzbox_dismissed_calls',63);
+INSERT INTO migrations VALUES(962,'2027_03_10_100700_add_deferred_from_status_to_investment_cases',64);
+INSERT INTO migrations VALUES(963,'2027_03_10_100800_normalize_orgamax_invoice_status',65);
+INSERT INTO migrations VALUES(964,'2027_03_10_100900_post_lot_block_balances',66);

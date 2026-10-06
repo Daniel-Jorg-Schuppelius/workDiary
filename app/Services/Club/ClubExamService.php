@@ -101,6 +101,10 @@ class ClubExamService {
             if (! $offer->targetGrades()->whereKey($targetGrade->id)->exists()) {
                 throw ValidationException::withMessages(['target_grade_id' => __('club.exams.error.grade_not_offered')]);
             }
+            if ($selfService) {
+                // Die Zulassung meldet mit `force` an — die Regeln der Selbstanmeldung gelten deshalb schon hier.
+                $this->events->assertSelfRegistrable($offer->event()->firstOrFail(), $member);
+            }
             /** @var ClubExamCandidate|null $existing */
             $existing = $offer->candidates()->where('club_member_id', $member->id)->first();
             if ($existing !== null) {

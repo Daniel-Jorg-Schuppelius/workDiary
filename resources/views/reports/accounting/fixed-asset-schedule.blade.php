@@ -15,8 +15,7 @@
 @section('title', __('accounting.reports.card.fixed_asset_schedule.title'))
 @section('nav-title', __('accounting.reports.card.fixed_asset_schedule.title'))
 
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
     @php $columns = \App\Services\Accounting\Reports\FixedAssetScheduleBuilder::COLUMNS; @endphp
@@ -30,14 +29,7 @@
                 </select>
                 <x-icon-btn icon="search" tone="ghost" size="sm" type="submit" :label="__('accounting.reports.fixed_asset_schedule.show')" />
             </form>
-            <x-icon-btn icon="picture_as_pdf" size="sm" tone="ghost" show-label
-                        :href="route('reports.accounting.fixed-asset-schedule', ['year' => $year, 'export' => 'pdf'])" :label="__('PDF')" />
-            <x-action-menu icon="download" :label="__('Export')">
-                <x-icon-btn icon="download" size="sm" tone="ghost" show-label
-                            :href="route('reports.accounting.fixed-asset-schedule', ['year' => $year, 'export' => 'csv'])" :label="__('CSV')" />
-                <x-icon-btn icon="table_view" size="sm" tone="ghost" show-label
-                            :href="route('reports.accounting.fixed-asset-schedule', ['year' => $year, 'export' => 'xlsx'])" :label="__('Excel')" />
-            </x-action-menu>
+            <x-report-export :url="fn (string $format) => route('reports.accounting.fixed-asset-schedule', ['year' => $year, 'export' => $format])" tone="ghost" />
         </x-slot:actions>
 
         <p class="text-xs text-muted">{{ __('accounting.reports.fixed_asset_schedule.hint') }}</p>

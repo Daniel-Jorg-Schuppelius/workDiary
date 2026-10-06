@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Console\Concerns\IteratesOrganizations;
+use App\Enums\Integration\IntegrationInboxStatus;
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use App\Models\Platform\Organization;
 use App\Services\Integration\{InboxActionService, MatchProfileRegistry};
@@ -80,7 +81,7 @@ class IntegrationResolveInboxCommand extends Command {
 
         $query = IntegrationInboxItem::query()
             ->where('organization_id', $org->id)
-            ->where('status', IntegrationInboxItem::STATUS_OPEN)
+            ->where('status', IntegrationInboxStatus::Open)
             ->where('case_type', $case)
             ->when($plugin !== '', fn($q) => $q->where('plugin_id', $plugin))
             ->orderBy('id');

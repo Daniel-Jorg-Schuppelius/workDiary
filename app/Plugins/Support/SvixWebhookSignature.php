@@ -26,7 +26,7 @@ final class SvixWebhookSignature {
     public static function valid(string $webhookId, string $timestamp, string $rawBody, ?string $secret, string $signatureHeader): bool {
         $key = self::decodeSecret($secret);
         if ($key === null || $webhookId === '' || $timestamp === '' || trim($signatureHeader) === '') {
-            self::reportInvalid();
+            WebhookSignature::reportInvalid();
 
             return false;
         }
@@ -40,7 +40,7 @@ final class SvixWebhookSignature {
             }
         }
 
-        self::reportInvalid();
+        WebhookSignature::reportInvalid();
 
         return false;
     }
@@ -58,17 +58,5 @@ final class SvixWebhookSignature {
         $key = base64_decode($secret, true);
 
         return ($key === false || $key === '') ? null : $key;
-    }
-
-    /** fail2ban-Signal (Feature 096) — identisch zur {@see WebhookSignature}. */
-    private static function reportInvalid(): void {
-        try {
-            app(\App\Services\Security\SecurityEventLogger::class)->log(
-                \App\Enums\Security\SecurityEventType::WebhookSignatureInvalid,
-                ['path' => request()->path()],
-            );
-        } catch (\Throwable) {
-            // Signaturprüfung darf nie am Logging scheitern.
-        }
     }
 }

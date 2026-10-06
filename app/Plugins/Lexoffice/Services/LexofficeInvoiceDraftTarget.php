@@ -15,7 +15,7 @@ namespace App\Plugins\Lexoffice\Services;
 use App\Enums\Finance\BillingMode;
 use App\Models\Customer\Customer;
 use App\Models\Platform\{Organization, User};
-use App\Plugins\Lexoffice\{LexofficeConfig, LexofficeDraftInvoiceService};
+use App\Plugins\Lexoffice\LexofficeConfig;
 use App\Services\Billing\BillingModeResolver;
 use App\Services\Invoicing\TaxResolver;
 use App\Services\Reselling\Draft\{DraftResult, InvoiceDraftTarget};
@@ -81,7 +81,7 @@ final class LexofficeInvoiceDraftTarget implements InvoiceDraftTarget {
         }
 
         $tax = $this->taxes->resolve($organization, $recipient);
-        $service = $this->service ?? new LexofficeDraftInvoiceService((string) $config['api_key'], (string) $config['base_url']);
+        $service = $this->service ?? new LexofficeDraftInvoiceService((string) $config['api_key'], (string) $config['base_url'], $config['request_interval']);
         $draftId = $service->createDraft(
             $contact,
             $items,

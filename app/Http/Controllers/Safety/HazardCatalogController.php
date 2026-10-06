@@ -15,6 +15,7 @@ namespace App\Http\Controllers\Safety;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Safety\{HazardAssessment, HazardCatalogItem};
+use App\Support\SortableQuery;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
@@ -24,12 +25,22 @@ use Illuminate\View\View;
 class HazardCatalogController extends Controller {
     use ResolvesCurrentOrganization;
 
-    public function index(): View {
+    public function index(Request $request): View {
         Gate::authorize('viewAny', HazardAssessment::class);
 
+        // Standard wie bisher: aktive Einträge zuerst, darin nach Kategorie und Gefährdung.
+        [$sort, $dir] = SortableQuery::resolve($request, ['category', 'hazard', 'risk', 'source', 'is_active'], 'is_active', 'desc');
+        $query = HazardCatalogItem::query()->where('organization_id', $this->currentOrganizationId());
+        match ($sort) {
+            'risk' => $query->orderByRaw($dir === 'asc' ? 'severity * likelihood asc' : 'severity * likelihood desc'),
+            'source' => $query->orderBy('source_profile', $dir),
+            default => $query->orderBy($sort, $dir),
+        };
+
         return view('safety.hazard-catalog.index', [
-            'items' => HazardCatalogItem::query()->where('organization_id', $this->currentOrganizationId())
-                ->orderByDesc('is_active')->orderBy('category')->orderBy('hazard')->get(),
+            'items' => $query->orderBy('category')->orderBy('hazard')->orderBy('id')->paginate(30)->withQueryString(),
+            'sort' => $sort,
+            'dir' => $dir,
             'canManage' => Gate::allows('create', HazardAssessment::class),
         ]);
     }
@@ -49,7 +60,7 @@ class HazardCatalogController extends Controller {
             'created_by' => $request->user()?->id,
         ]);
 
-        return redirect()->route('safety.hazard-catalog.index')->with('success', __('safety.catalog.flash.saved'));
+        return redirect()->toList('safety.hazard-catalog.index')->with('success', __('safety.catalog.flash.saved'));
     }
 
     public function update(Request $request, HazardCatalogItem $hazardCatalogItem): RedirectResponse {
@@ -57,7 +68,7 @@ class HazardCatalogController extends Controller {
         abort_unless((int) $hazardCatalogItem->organization_id === $this->currentOrganizationId(), 404);
         $hazardCatalogItem->update($this->validated($request, false));
 
-        return redirect()->route('safety.hazard-catalog.index')->with('success', __('safety.catalog.flash.saved'));
+        return redirect()->toList('safety.hazard-catalog.index')->with('success', __('safety.catalog.flash.saved'));
     }
 
     /** @return array<string, mixed> */

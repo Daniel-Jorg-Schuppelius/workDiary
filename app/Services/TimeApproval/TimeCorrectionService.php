@@ -122,7 +122,7 @@ class TimeCorrectionService {
 
     /** draft → submitted. */
     public function submit(TimeCorrectionRequest $request, ?User $actor = null): TimeCorrectionRequest {
-        $this->assertStatus($request, [TimeCorrectionStatus::Draft]);
+        $this->ensureTransition($request, TimeCorrectionStatus::Submitted);
         if ($request->items()->count() === 0) {
             throw new TimeCorrectionWorkflowException(
                 'noItems',
@@ -166,7 +166,7 @@ class TimeCorrectionService {
 
     /** submitted → withdrawn (nur durch Antragsteller). */
     public function withdraw(TimeCorrectionRequest $request, User $actor): TimeCorrectionRequest {
-        $this->assertStatus($request, [TimeCorrectionStatus::Submitted, TimeCorrectionStatus::Draft]);
+        $this->ensureTransition($request, TimeCorrectionStatus::Withdrawn);
         if ((int) $actor->id !== (int) $request->requested_by_user_id) {
             throw new TimeCorrectionWorkflowException(
                 'notRequester',
@@ -181,7 +181,7 @@ class TimeCorrectionService {
 
     /** submitted → approved. */
     public function approve(TimeCorrectionRequest $request, User $actor, ?string $note = null): TimeCorrectionRequest {
-        $this->assertStatus($request, [TimeCorrectionStatus::Submitted]);
+        $this->ensureTransition($request, TimeCorrectionStatus::Approved);
 
         // MVP-531: konfigurierbare Stufen — Zwischenstufe lässt den Antrag
         // eingereicht (Vier-Augen erzwingt der ApprovalFlowService).
@@ -267,7 +267,7 @@ class TimeCorrectionService {
      * self_applied; formale Genehmigung durch den Antragsteller selbst.
      */
     public function selfApply(TimeCorrectionRequest $request): TimeCorrectionRequest {
-        $this->assertStatus($request, [TimeCorrectionStatus::Submitted]);
+        $this->ensureTransition($request, TimeCorrectionStatus::Approved);
 
         $request->fill([
             'status' => TimeCorrectionStatus::Approved,
@@ -282,7 +282,7 @@ class TimeCorrectionService {
 
     /** submitted → rejected. Pflicht-Begründung. */
     public function reject(TimeCorrectionRequest $request, User $actor, string $reason): TimeCorrectionRequest {
-        $this->assertStatus($request, [TimeCorrectionStatus::Submitted]);
+        $this->ensureTransition($request, TimeCorrectionStatus::Rejected);
         $this->assertReason($reason);
 
         $request->fill([
@@ -308,7 +308,7 @@ class TimeCorrectionService {
         if ($request->status === TimeCorrectionStatus::Applied) {
             return $request;
         }
-        $this->assertStatus($request, [TimeCorrectionStatus::Approved]);
+        $this->ensureTransition($request, TimeCorrectionStatus::Applied);
 
         $owner = $request->user;
         if (! $owner instanceof User) {
@@ -548,13 +548,12 @@ class TimeCorrectionService {
         }
     }
 
-    /** @param  list<TimeCorrectionStatus>  $allowed */
-    private function assertStatus(TimeCorrectionRequest $request, array $allowed): void {
-        if (! in_array($request->status, $allowed, true)) {
+    private function ensureTransition(TimeCorrectionRequest $request, TimeCorrectionStatus $target): void {
+        if (! $request->status->canTransitionTo($target)) {
             throw new TimeCorrectionWorkflowException(
                 'illegalTransition',
                 __('Aktion nicht erlaubt: Antragsstatus ist :status.', ['status' => $request->status->value]),
-                ['from' => $request->status->value, 'allowed' => array_map(fn(TimeCorrectionStatus $s) => $s->value, $allowed)],
+                ['from' => $request->status->value, 'to' => $target->value],
             );
         }
     }

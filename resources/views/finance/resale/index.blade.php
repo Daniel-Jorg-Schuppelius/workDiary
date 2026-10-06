@@ -13,7 +13,7 @@
 @extends('layouts.app')
 @section('title', __('resale.title.index'))
 @section('nav-title', __('resale.title.menu'))
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
     <x-index-page overflow="clip" :subtitle="__('resale.subtitle')">
@@ -59,7 +59,7 @@
             </select>
             @if ($filterCustomer !== null)
                 <input type="hidden" name="customer" value="{{ $filterCustomer->sqid }}">
-                <span class="badge badge-outline badge-sm">{{ $filterCustomer->name }}</span>
+                <x-status-badge tone="plain" outline>{{ $filterCustomer->name }}</x-status-badge>
             @endif
             <x-filter-toggle name="open" :label="__('resale.filter.open_only')" :checked="$filters['open']" tone="warning" />
         </x-filter-bar>
@@ -110,7 +110,7 @@
                         @if ($subscription->is_own_holding)
                             <span class="text-muted" title="{{ __('resale.holder.own') }}">—</span>
                         @elseif ($subscription->open_periods_count > 0)
-                            <span class="badge badge-error badge-sm">{{ $subscription->open_periods_count }}</span>
+                            <x-status-badge tone="error">{{ $subscription->open_periods_count }}</x-status-badge>
                         @else
                             <span class="text-muted">0</span>
                         @endif

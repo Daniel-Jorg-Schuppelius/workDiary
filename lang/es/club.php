@@ -1304,6 +1304,7 @@ return [
             'record_result' => 'Registrar resultado',
             'record_performance' => 'Registrar marca',
             'correct_performance' => 'Corregir marca',
+            'delete_performance' => 'Eliminar marca',
             'confirm' => 'Confirmar',
             'grant_start_right' => 'Documentar derecho de participación',
             'revoke_start_right' => 'Eliminar derecho',
@@ -1360,6 +1361,7 @@ return [
         ],
         'confirm' => [
             'delete_requirement' => '¿Eliminar el requisito «:name»?',
+            'delete_performance' => '¿Eliminar la marca :discipline del :date? Dejará de contar para las mejores marcas.',
         ],
         'flash' => [
             'created' => 'Competición creada.',
@@ -1666,6 +1668,7 @@ return [
         ],
         'error' => [
             'claim_not_open' => 'La reclamación no está abierta.',
+            'credit_already_applied' => 'El saldo a favor de este pago bancario ya se ha compensado con cuotas pendientes; por eso no se puede deshacer la asignación.',
             'not_compensatable' => 'Este apunte no puede compensarse.',
             'already_compensated' => 'Este pago ya fue compensado.',
             'not_overdue' => 'Solo pueden reclamarse reclamaciones vencidas.',

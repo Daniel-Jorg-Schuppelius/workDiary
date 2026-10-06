@@ -14,7 +14,7 @@
     </x-slot:actions>
 
     @if ($bookmarks->isEmpty())
-        <p class="text-sm text-muted">{{ __('Noch keine Lesezeichen gespeichert.') }}</p>
+        <x-empty-state icon="bookmark" :title="__('Noch keine Lesezeichen gespeichert.')" compact />
     @else
         <ul class="flex flex-col gap-1">
             @foreach ($bookmarks as $bookmark)

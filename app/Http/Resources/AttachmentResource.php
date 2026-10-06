@@ -23,12 +23,8 @@ class AttachmentResource extends JsonResource {
 
     /** @return array<string, mixed> */
     public function toArray(Request $request): array {
-        $attachableId = null;
-        if (class_exists($this->attachable_type)) {
-            /** @var class-string $attachableType */
-            $attachableType = $this->attachable_type;
-            $attachableId = Sqid::encodeOrNull($attachableType, $this->attachable_id);
-        }
+        $attachableType = MorphMap::classFor($this->attachable_type);
+        $attachableId = $attachableType !== null ? Sqid::encodeOrNull($attachableType, $this->attachable_id) : null;
 
         return [
             'id' => $this->sqid,

@@ -10,6 +10,7 @@
 
 namespace App\Plugins\Fritzbox;
 
+use App\Plugins\Fritzbox\Services\{FritzboxGroupBooker, FritzboxImportService};
 use App\Plugins\Support\PluginServiceProviderBase;
 use App\Services\Contacts\ExternalPhoneContactDirectory;
 use App\Services\Integration\InboxGroupBookerRegistry;
@@ -34,7 +35,7 @@ class FritzboxServiceProvider extends PluginServiceProviderBase {
 
     protected function bootPlugin(): void {
         // Erweiterungspunkt des Moduls (MVP-1045): Anrufberichte aus dem Mail-Eingang.
-        $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Mail\Contracts\MailIntakeHandler::class, \App\Plugins\Fritzbox\FritzboxCallReportMailHandler::class);
+        $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Mail\Contracts\MailIntakeHandler::class, \App\Plugins\Fritzbox\Services\FritzboxCallReportMailHandler::class);
         // Gruppierte Auflösung der Import-Inbox (MVP-1030).
         $this->app->make(InboxGroupBookerRegistry::class)->register(FritzboxPlugin::ID, FritzboxGroupBooker::class);
     }

@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Supplier;
 
+use App\Enums\Organization\TenantStatus;
 use App\Enums\Supplier\SupplierQuestionnaireStatus;
 use App\Mail\SupplierQuestionnaireMail;
 use App\Models\Platform\User;
@@ -60,6 +61,25 @@ final class SupplierQuestionnaireTest extends TestCase {
         return SupplierQuestionnaire::query()->sole();
     }
 
+    /** Die Anfragen blättern, statt nach den jüngsten 50 abzuschneiden; die Fragebögen stehen auf jeder Seite. */
+    public function test_index_pages_through_all_requests(): void {
+        $questionnaire = $this->questionnaire();
+        foreach (range(1, 27) as $i) {
+            SupplierQuestionnaireRequest::query()->create([
+                'organization_id' => $this->organization->id, 'supplier_questionnaire_id' => $questionnaire->id, 'supplier_id' => $this->supplier->id,
+                'status' => SupplierQuestionnaireStatus::Sent, 'token_hash' => hash('sha256', 'anfrage-' . $i), 'recipient_email' => sprintf('kontakt%02d@stahl.test', $i),
+                'schema_snapshot' => $questionnaire->schema, 'sent_at' => now(), 'expires_at' => now()->addDays(30), 'created_by' => $this->admin->id,
+            ]);
+        }
+
+        $first = $this->actingAs($this->admin)->get(route('supplier-questionnaires.index'))->assertOk()->assertSee('ESG-Basis');
+        $this->assertSame(27, $first->viewData('requests')->total());
+        $this->assertCount(25, $first->viewData('requests')->items());
+
+        $second = $this->actingAs($this->admin)->get(route('supplier-questionnaires.index', ['page' => 2]))->assertOk()->assertSee('ESG-Basis');
+        $this->assertSame(['kontakt02@stahl.test', 'kontakt01@stahl.test'], collect($second->viewData('requests')->items())->pluck('recipient_email')->all());
+    }
+
     public function test_supplier_answers_via_link_and_answer_is_reviewed(): void {
         $questionnaire = $this->questionnaire();
         $this->actingAs($this->admin)->post(route('supplier-questionnaires.send', $this->supplier), ['questionnaire_id' => $questionnaire->sqid, 'recipient_email' => 'esg@stahl.test'])->assertSessionHas('success');
@@ -94,5 +114,23 @@ final class SupplierQuestionnaireTest extends TestCase {
     public function test_rights(): void {
         $user = User::factory()->create(['organization_id' => $this->organization->id]);
         $this->actingAs($user)->post(route('supplier-questionnaires.store'), ['name' => 'x', 'validity_months' => 1, 'fields' => []])->assertForbidden();
+    }
+
+    /** Sicherheitsaudit 2026-10-04, pub-3: der Link endet mit der Mandantensperre. */
+    public function test_link_is_locked_for_a_suspended_tenant(): void {
+        $questionnaire = $this->questionnaire();
+        $this->actingAs($this->admin)->post(route('supplier-questionnaires.send', $this->supplier), ['questionnaire_id' => $questionnaire->sqid, 'recipient_email' => 'esg@stahl.test'])->assertSessionHas('success');
+        $token = null;
+        Mail::assertQueued(SupplierQuestionnaireMail::class, function (SupplierQuestionnaireMail $mail) use (&$token): bool {
+            $token = $mail->token;
+
+            return true;
+        });
+        auth()->logout();
+        app()->forgetInstance('currentOrganization');
+        $this->organization->forceFill(['tenant_status' => TenantStatus::Suspended])->save();
+
+        $this->get(route('supplier-questionnaire.public', $token))->assertStatus(423);
+        $this->post(route('supplier-questionnaire.public.store', $token), ['values' => ['umweltmanagement_zertifiziert' => '1', 'co2_emissionen_scope_1_t' => '120']])->assertStatus(423);
     }
 }

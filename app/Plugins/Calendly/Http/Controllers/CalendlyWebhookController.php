@@ -13,9 +13,11 @@ declare(strict_types=1);
 namespace App\Plugins\Calendly\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Plugins\Calendly\Enums\CalendlyWebhookSubscriptionStatus;
 use App\Plugins\Calendly\Jobs\CalendlyIngestJob;
 use App\Plugins\Calendly\Models\{CalendlyWebhookDelivery, CalendlyWebhookSubscription};
 use App\Plugins\Support\{RecordsWebhookDeliveries, WebhookSignature};
+use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Http\{JsonResponse, Request};
 
 /**
@@ -34,13 +36,11 @@ use Illuminate\Http\{JsonResponse, Request};
 class CalendlyWebhookController extends Controller {
     use RecordsWebhookDeliveries;
 
-    private const MAX_SKEW_SECONDS = 300;
-
     public function __invoke(Request $request, string $token): JsonResponse {
         $subscription = CalendlyWebhookSubscription::query()
             ->withoutGlobalScopes()
             ->where('url_token', $token)
-            ->where('status', CalendlyWebhookSubscription::STATUS_ACTIVE)
+            ->where('status', CalendlyWebhookSubscriptionStatus::Active)
             ->first();
 
         if (! $subscription instanceof CalendlyWebhookSubscription) {
@@ -53,11 +53,15 @@ class CalendlyWebhookController extends Controller {
         if ($timestamp === null || $signature === null) {
             return response()->json(['message' => 'invalid signature'], 401);
         }
-        if (abs(now()->getTimestamp() - $timestamp) > self::MAX_SKEW_SECONDS) {
+        if (! WebhookSignature::timestampFresh($timestamp)) {
             return response()->json(['message' => 'stale'], 401);
         }
         if (! WebhookSignature::hmacValid($timestamp . '.' . $raw, $subscription->signing_key, $signature, 'sha256', encoding: 'hex')) {
             return response()->json(['message' => 'invalid signature'], 401);
+        }
+        // Gesperrter Mandant: nichts verarbeiten (Entscheidung 2026-10-05) — erst nach der Signaturprüfung, kein Rückschluss von außen.
+        if (\App\Plugins\Support\PluginTenantGate::blocks((int) $subscription->organization_id)) {
+            return \App\Plugins\Support\PluginTenantGate::refusal();
         }
 
         /** @var array<string, mixed> $payload */
@@ -66,7 +70,7 @@ class CalendlyWebhookController extends Controller {
         $inviteeUri = is_string($inviteePayload['uri'] ?? null) ? $inviteePayload['uri'] : null;
 
         $delivery = $this->recordDelivery(fn (): CalendlyWebhookDelivery => CalendlyWebhookDelivery::query()->create([
-            'delivery_hash' => $this->deliveryHash($raw),
+            'delivery_hash' => CryptoHelper::hash($raw),
             'event_name' => isset($payload['event']) ? (string) $payload['event'] : null,
             'invitee_uri' => $inviteeUri,
             'organization_id' => (int) $subscription->organization_id,

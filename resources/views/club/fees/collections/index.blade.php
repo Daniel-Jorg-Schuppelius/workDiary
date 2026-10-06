@@ -23,16 +23,7 @@
 
     @include('club.fees._tabs')
 
-    @if ($errors->any())
-        <div class="alert alert-error text-sm" role="alert">
-            <x-icon name="error" />
-            <ul class="list-inside list-disc">
-                @foreach ($errors->all() as $message)
-                    <li>{{ $message }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
+    <x-validation-errors />
     @unless ($formatsAvailable)
         <div class="alert alert-info text-sm" role="status"><x-icon name="info" /><span>{{ __('club.fees.hint.formats_missing') }}</span></div>
     @endunless
@@ -60,7 +51,7 @@
                                     <td>@if ($row['blocked'] === null)<input type="checkbox" class="checkbox checkbox-sm" name="claim_ids[]" value="{{ $row['claim']->sqid }}" checked aria-label="{{ $row['claim']->number }}">@endif</td>
                                     <td class="font-medium"><a href="{{ route('club.fees.claims.show', $row['claim']) }}" class="link link-hover">{{ $row['claim']->number }}</a></td>
                                     <td class="text-sm">{{ $row['account']->name }}</td>
-                                    <td class="whitespace-nowrap text-sm tabular-nums">{{ $row['claim']->due_on->format('d.m.Y') }}</td>
+                                    <td class="whitespace-nowrap text-sm tabular-nums">{{ $row['claim']->due_on->fdate() }}</td>
                                     <td class="text-xs">{{ $row['mandate']?->reference ?? '–' }} @if ($row['blocked'])<x-status-badge tone="warning" size="xs" :label="$row['blocked']" />@endif</td>
                                     <td class="text-right tabular-nums">{{ $row['amount']->format() }}</td>
                                 </tr>
@@ -99,7 +90,7 @@
                                 <x-status-badge :tone="$run->isExported() ? 'success' : ($run->isReleased() ? 'info' : ($run->status === \App\Enums\Finance\PaymentRunStatus::Cancelled ? 'warning' : 'neutral'))" size="xs">{{ $run->status->label() }}</x-status-badge>
                                 <span class="ml-auto tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $run->total, 2, withThousandsSeparator: true) }}</span>
                             </div>
-                            <p class="text-xs text-muted">{{ __('club.fees.field.execution_date') }}: {{ $run->execution_date?->format('d.m.Y') }}</p>
+                            <p class="text-xs text-muted">{{ __('club.fees.field.execution_date') }}: {{ $run->execution_date?->fdate() }}</p>
                             @if ($canManage)
                                 <div class="mt-1 flex flex-wrap gap-1">
                                     @if ($run->isDraft() || $run->isReleased())

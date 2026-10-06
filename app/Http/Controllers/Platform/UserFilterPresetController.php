@@ -13,6 +13,7 @@ namespace App\Http\Controllers\Platform;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Platform\SaveUserFilterPresetRequest;
 use App\Models\Platform\UserFilterPreset;
+use App\Support\SortableQuery;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, DB, Gate};
 use Illuminate\View\View;
@@ -23,16 +24,27 @@ class UserFilterPresetController extends Controller {
         $user = Auth::user();
 
         $scope = $request->string('scope')->toString();
-        $presets = $user->filterPresets()
-            ->when($scope !== '', fn($q) => $q->where('scope', $scope))
+        // reorder(): die Beziehung sortiert schon nach sort_order, id — danach griff der Bereich nie.
+        $query = $user->filterPresets()->getQuery()->reorder()
+            ->when($scope !== '', fn($q) => $q->where('scope', $scope));
+        [$sort, $dir] = SortableQuery::apply($query, $request, [
+            'scope' => 'scope',
+            'name' => 'name',
+            'is_default' => 'is_default',
+        ], 'scope', 'asc');
+        $presets = $query
             ->orderBy('scope')
             ->orderBy('sort_order')
             ->orderBy('name')
-            ->get();
+            ->orderBy('id')
+            ->paginate(25)
+            ->withQueryString();
 
         return view('filter_presets.index', [
             'presets' => $presets,
             'scope' => $scope,
+            'sort' => $sort,
+            'dir' => $dir,
         ]);
     }
 
@@ -61,6 +73,12 @@ class UserFilterPresetController extends Controller {
         });
 
         return back()->with('status', __('Filter gespeichert.'));
+    }
+
+    public function edit(UserFilterPreset $preset): View {
+        Gate::authorize('update', $preset);
+
+        return view('filter_presets._form_dialog', ['preset' => $preset]);
     }
 
     public function update(SaveUserFilterPresetRequest $request, UserFilterPreset $preset): RedirectResponse {

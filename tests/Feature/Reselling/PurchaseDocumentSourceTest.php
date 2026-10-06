@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Reselling;
 
 use App\Enums\Expense\ExpenseStatus;
+use App\Enums\Invoicing\IncomingEInvoiceStatus;
 use App\Enums\Reselling\SubscriptionProvider;
 use App\Models\Document\Document;
 use App\Models\Invoicing\IncomingEInvoice;
@@ -67,7 +68,7 @@ class PurchaseDocumentSourceTest extends TestCase {
         ]);
     }
 
-    private function einvoice(?string $number, string $date, string $net, string $status): IncomingEInvoice {
+    private function einvoice(?string $number, string $date, string $net, IncomingEInvoiceStatus $status): IncomingEInvoice {
         $document = Document::factory()->create(['organization_id' => $this->organization->id]);
 
         return IncomingEInvoice::query()->create([
@@ -103,8 +104,8 @@ class PurchaseDocumentSourceTest extends TestCase {
         $expense = $this->expense('Telekom Deutschland GmbH', '2026-03-30', '400.00', ExpenseStatus::Approved, 'AUS-77');
         $this->expense('Storniert GmbH', '2026-03-31', '10.00', ExpenseStatus::Cancelled);
         $this->expense('Entwurf GmbH', '2026-03-31', '10.00', ExpenseStatus::Draft);
-        $einvoice = $this->einvoice('ER-2026-5', '2026-04-02', '250.00', IncomingEInvoice::STATUS_APPROVED);
-        $received = $this->einvoice('ER-2026-6', '2026-04-03', '99.00', IncomingEInvoice::STATUS_RECEIVED);
+        $einvoice = $this->einvoice('ER-2026-5', '2026-04-02', '250.00', IncomingEInvoiceStatus::Approved);
+        $received = $this->einvoice('ER-2026-6', '2026-04-03', '99.00', IncomingEInvoiceStatus::Received);
         $voucher = $this->purchaseVoucher('pv-1', '726 039 1495', '2026-02-15');
 
         $documents = $registry->search($this->organization, null, CarbonImmutable::parse('2025-01-01'), 50);
@@ -169,7 +170,7 @@ class PurchaseDocumentSourceTest extends TestCase {
 
     public function test_incoming_einvoice_is_a_source_and_allocates_with_its_morph(): void {
         $this->subscription('ent-1', 'A', '2026-01-01', 1);
-        $einvoice = $this->einvoice('ER-2026-5', '2026-05-04', '250.00', IncomingEInvoice::STATUS_PAYMENT_RELEASED);
+        $einvoice = $this->einvoice('ER-2026-5', '2026-05-04', '250.00', IncomingEInvoiceStatus::PaymentReleased);
         $document = $this->documentFor(IncomingEInvoice::class, $einvoice->id);
         $this->assertSame('incoming_einvoice', $document->sourceKey);
         $this->assertSame('Lieferant GmbH', $document->vendorName);
@@ -226,7 +227,7 @@ class PurchaseDocumentSourceTest extends TestCase {
         $admin = $this->orgAdmin();
         $this->subscription('ent-1', 'A', '2026-01-01', 1);
         $expense = $this->expense('Telekom Deutschland GmbH', '2026-03-30', '400.00', ExpenseStatus::Approved);
-        $einvoice = $this->einvoice(null, '2026-04-02', '250.00', IncomingEInvoice::STATUS_APPROVED);
+        $einvoice = $this->einvoice(null, '2026-04-02', '250.00', IncomingEInvoiceStatus::Approved);
         $registry = app(PurchaseDocuments::class);
         $numbers = static fn(\Illuminate\Support\Collection $documents): array => $documents->map(static fn(PurchaseDocument $d): ?string => $d->number)->all();
 
@@ -254,7 +255,7 @@ class PurchaseDocumentSourceTest extends TestCase {
         $admin = $this->orgAdmin();
         $this->subscription('ent-1', 'A', '2026-01-01', 1);
         $expense = $this->expense('Telekom Deutschland GmbH', '2026-03-30', '400.00', ExpenseStatus::Approved, 'AUS-77');
-        $this->einvoice('ER-2026-5', '2026-04-02', '250.00', IncomingEInvoice::STATUS_APPROVED);
+        $this->einvoice('ER-2026-5', '2026-04-02', '250.00', IncomingEInvoiceStatus::Approved);
         $this->purchaseVoucher('pv-1', '726 039 1495', '2026-02-15');
 
         $this->actingAs($admin)->get(route('finance.resale.purchases.create'))->assertOk()

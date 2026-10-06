@@ -113,14 +113,12 @@ class LearningAccessService {
     public function resolve(string $token, ?Carbon $now = null): ?LearningEnrollment {
         $now ??= Carbon::now();
 
-        $record = LearningAccessToken::query()
-            ->with('enrollment.course')
-            ->where('token_hash', CryptoHelper::hash($token))
-            ->first();
+        $record = LearningAccessToken::findByAccessToken($token);
 
         if ($record === null || ! $record->isUsable($now)) {
             return null;
         }
+        $record->load('enrollment.course');
 
         $record->update([
             'first_used_at' => $record->first_used_at ?? $now,

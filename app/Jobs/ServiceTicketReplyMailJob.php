@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
-use App\Enums\ServiceTicket\TicketMessageKind;
+use App\Enums\ServiceTicket\{TicketMessageDeliveryStatus, TicketMessageKind};
 use App\Models\ServiceTicket\ServiceTicketMessage;
 use CommonToolkit\Helper\Data\EmailHelper;
 use Illuminate\Bus\Queueable;
@@ -48,8 +48,8 @@ class ServiceTicketReplyMailJob implements ShouldQueue {
     public function failed(?\Throwable $exception): void {
         ServiceTicketMessage::query()->withoutGlobalScopes()
             ->whereKey($this->messageId)
-            ->where('delivery_status', 'queued')
-            ->update(['delivery_status' => 'failed']);
+            ->where('delivery_status', TicketMessageDeliveryStatus::Queued)
+            ->update(['delivery_status' => TicketMessageDeliveryStatus::Failed]);
     }
 
     public function handle(): void {
@@ -65,7 +65,7 @@ class ServiceTicketReplyMailJob implements ShouldQueue {
 
         $recipients = array_values(array_filter((array) ($message->to ?? []), fn($mail) => EmailHelper::isEmail($mail)));
         if ($recipients === []) {
-            $message->update(['delivery_status' => 'failed']);
+            $message->update(['delivery_status' => TicketMessageDeliveryStatus::Failed]);
 
             return;
         }
@@ -77,6 +77,6 @@ class ServiceTicketReplyMailJob implements ShouldQueue {
             $mail->to($recipients)->subject($subject);
         });
 
-        $message->update(['delivery_status' => 'sent']);
+        $message->update(['delivery_status' => TicketMessageDeliveryStatus::Sent]);
     }
 }

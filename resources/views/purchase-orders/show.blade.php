@@ -135,7 +135,7 @@
                                     <input aria-label="{{ __('inventory.serial.field.serial_no') }}" name="serial_no" required placeholder="{{ __('inventory.serial.field.serial_no') }}" class="input input-xs input-bordered w-24">
                                 @endif
                                 <input name="qty" type="number" step="0.0001" min="0.0001" value="{{ $lineArticle?->serial_required ? 1 : $line->openQty() }}" class="input input-xs input-bordered w-20">
-                                <button type="submit" class="btn btn-xs">{{ __('procurement.action.receive') }}</button>
+                                <x-button type="submit" tone="plain" size="xs">{{ __('procurement.action.receive') }}</x-button>
                             </form>
                         </td>
                     @endif
@@ -231,8 +231,8 @@
                     @foreach ($order->advices as $advice)
                         <tr>
                             <td>{{ $advice->reference ?? '—' }}</td>
-                            <td>{{ $advice->expected_at?->format('d.m.Y') ?? '—' }}</td>
-                            <td><span class="badge badge-sm badge-ghost">{{ $advice->status->label() }}</span></td>
+                            <td>{{ $advice->expected_at?->fdate() ?? '—' }}</td>
+                            <td><x-status-badge>{{ $advice->status->label() }}</x-status-badge></td>
                             @if ($canManage)
                                 <td class="text-right">
                                     @if ($advice->status->isOpen())
@@ -240,7 +240,7 @@
                                             <x-button type="submit" tone="primary" size="xs">{{ __('procurement.advice.receive') }}</x-button>
                                         </form>
                                         <form method="POST" action="{{ route('purchase-orders.advices.cancel', $advice) }}" class="inline">@csrf
-                                            <button type="submit" class="btn btn-xs">{{ __('procurement.action.cancel') }}</button>
+                                            <x-button type="submit" tone="plain" size="xs">{{ __('procurement.action.cancel') }}</x-button>
                                         </form>
                                     @endif
                                 </td>

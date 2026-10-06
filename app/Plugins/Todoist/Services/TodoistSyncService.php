@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\Todoist\Services;
 
 use App\Models\Platform\Organization;
+use App\Plugins\Todoist\Enums\TodoistProjectLinkStatus;
 use App\Plugins\Todoist\Models\{TodoistConnection, TodoistProjectLink};
 use Throwable;
 
@@ -37,7 +38,7 @@ class TodoistSyncService {
 
         $links = TodoistProjectLink::query()
             ->where('organization_id', $organization->id)
-            ->where('status', TodoistProjectLink::STATUS_ACTIVE)
+            ->where('status', TodoistProjectLinkStatus::Active)
             ->get();
 
         foreach ($links as $link) {

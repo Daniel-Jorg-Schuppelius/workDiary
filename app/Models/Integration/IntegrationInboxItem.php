@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Integration;
 
+use App\Enums\Integration\IntegrationInboxStatus;
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
@@ -31,7 +32,7 @@ use Illuminate\Support\Carbon;
  * @property string $dedupe_key
  * @property string|null $group_key
  * @property string $case_type
- * @property string $status
+ * @property IntegrationInboxStatus $status
  * @property string|null $referenceable_type
  * @property int|null $referenceable_id
  * @property array<int, array{id: int, score?: float, reasons?: list<string>}>|null $candidate_ids
@@ -65,14 +66,6 @@ class IntegrationInboxItem extends Model {
 
     public const CASE_CONFLICT = 'conflict';
     public const CASE_AMBIGUOUS = 'ambiguous';
-
-    // Status
-    public const STATUS_OPEN = 'open';
-    public const STATUS_RESOLVED_LINKED = 'resolved_linked';
-    public const STATUS_RESOLVED_CREATED = 'resolved_created';
-    public const STATUS_RESOLVED_LOCAL = 'resolved_local';
-    public const STATUS_RESOLVED_REMOTE = 'resolved_remote';
-    public const STATUS_DISMISSED = 'dismissed';
 
     // Quelle des Imports (für csv-import)
     public const PLUGIN_CSV = 'csv-import';
@@ -109,6 +102,7 @@ class IntegrationInboxItem extends Model {
 
     /** @var array<string, string> */
     protected $casts = [
+        'status' => IntegrationInboxStatus::class,
         'candidate_ids' => 'array',
         'remote_snapshot' => 'array',
         'mapped_snapshot' => 'array',
@@ -119,7 +113,7 @@ class IntegrationInboxItem extends Model {
     ];
 
     public function isOpen(): bool {
-        return $this->status === self::STATUS_OPEN;
+        return $this->status === IntegrationInboxStatus::Open;
     }
 
     /**
@@ -172,5 +166,15 @@ class IntegrationInboxItem extends Model {
      */
     public function resolvedTo(): MorphTo {
         return $this->morphTo(__FUNCTION__, 'resolved_to_type', 'resolved_to_id');
+    }
+
+    /** Offene Fälle eines Plugins; `grouped` zählt nur Fälle mit Gruppenschlüssel (Import-Gruppen). */
+    public static function openCount(int $organizationId, string $pluginId, bool $grouped = false): int {
+        return self::query()
+            ->where('organization_id', $organizationId)
+            ->where('plugin_id', $pluginId)
+            ->where('status', IntegrationInboxStatus::Open)
+            ->when($grouped, static fn($query) => $query->whereNotNull('group_key'))
+            ->count();
     }
 }

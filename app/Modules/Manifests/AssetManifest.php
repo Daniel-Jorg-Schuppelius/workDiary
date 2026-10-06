@@ -73,8 +73,6 @@ final class AssetManifest extends Manifest {
     public function plugins(): array {
         return [
             'remote-support',
-            'teamviewer',
-            'anydesk',
         ];
     }
 

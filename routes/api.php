@@ -76,7 +76,7 @@ $sanctumRoutes = static function (): void {
     Route::delete('comments/{comment}', [CommentController::class, 'destroy'])->middleware('ability:comments:write')->name('comments.destroy');
 
     Route::post('attachments/{type}/{id}', [AttachmentController::class, 'store'])
-        ->whereIn('type', ['diary', 'comment', 'shift', 'assignment', 'asset'])
+        ->whereIn('type', array_keys(\App\Http\Controllers\Attachments\AttachmentController::TYPE_MAP))
         ->middleware('ability:attachments:write')
         ->name('attachments.store');
     Route::get('attachments/{attachment}/download', [AttachmentController::class, 'download'])->middleware('ability:attachments:read')->name('attachments.download');

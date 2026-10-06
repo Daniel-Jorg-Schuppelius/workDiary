@@ -28,7 +28,9 @@ use App\Models\Platform\Organization;
  * selbst; Kompensations- (`compensate:`) und Übernahme-Buchungen
  * (`takeover:`) dürfen NIE zurückgespiegelt werden (das Fremdsystem hat die
  * Ursprungsbuchung nie bzw. bereits erhalten — Rückspiegelung wäre eine
- * Doppel-/Geisterbuchung).
+ * Doppel-/Geisterbuchung). Umbuchungen zwischen Chargen (`lot-merge:`,
+ * `lot-split:`, `lot-repair:`) heben sich je Variante und Lager auf, und der
+ * Spiegel kennt keine Chargen.
  */
 class ExternalStockMirror {
     public function __construct(
@@ -39,8 +41,10 @@ class ExternalStockMirror {
     /** Zentraler Einhängepunkt: entscheidet selbst, ob die Bewegung extern relevant ist. */
     public function mirrorMovement(StockMovement $movement): void {
         $key = (string) ($movement->idempotency_key ?? '');
-        if (str_starts_with($key, 'compensate:') || str_starts_with($key, 'takeover:')) {
-            return;
+        foreach (['compensate:', 'takeover:', LotSplitService::MERGE_KEY_PREFIX, LotSplitService::SPLIT_KEY_PREFIX, LotService::REPAIR_KEY_PREFIX] as $prefix) {
+            if (str_starts_with($key, $prefix)) {
+                return;
+            }
         }
 
         if (in_array($movement->movement_type, [StockMovementType::Reserve, StockMovementType::ReleaseReservation], true)) {

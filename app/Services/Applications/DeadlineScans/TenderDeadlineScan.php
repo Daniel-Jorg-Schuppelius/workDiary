@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Applications\DeadlineScans;
 
+use App\Enums\Applications\ApplicationOpportunityStatus;
 use App\Enums\Notification\NotificationEvent;
 use App\Models\Applications\ApplicationOpportunity;
 use App\Models\Platform\User;
@@ -42,7 +43,7 @@ class TenderDeadlineScan extends AbstractDeadlineScan {
 
         /** @var Closure(): \Illuminate\Database\Eloquent\Builder<ApplicationOpportunity> $open */
         $open = static fn (): \Illuminate\Database\Eloquent\Builder => ApplicationOpportunity::query()
-            ->whereIn('status', ApplicationOpportunity::OPEN_STATUSES)
+            ->whereIn('status', ApplicationOpportunityStatus::open())
             ->with('responsible');
 
         $sent = $this->runScan($dispatcher, [

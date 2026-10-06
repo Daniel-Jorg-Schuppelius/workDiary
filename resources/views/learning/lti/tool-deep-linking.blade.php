@@ -36,9 +36,9 @@
         @endforelse
 
         <div class="flex flex-wrap justify-end gap-2">
-            <button type="submit" name="course" value="" class="btn btn-ghost btn-sm">{{ __('learning.lti_tool.cancel') }}</button>
+            <x-button type="submit" tone="ghost" name="course" value="">{{ __('learning.lti_tool.cancel') }}</x-button>
             @if ($courses->isNotEmpty())
-                <button type="submit" class="btn btn-primary btn-sm">{{ __('learning.lti_tool.choose') }}</button>
+                <x-button type="submit">{{ __('learning.lti_tool.choose') }}</x-button>
             @endif
         </div>
     </form>

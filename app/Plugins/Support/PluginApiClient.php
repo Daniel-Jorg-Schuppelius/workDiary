@@ -12,8 +12,10 @@ namespace App\Plugins\Support;
 
 use APIToolkit\Contracts\Abstracts\API\ClientAbstract;
 use APIToolkit\Exceptions\ApiException;
+use App\Support\UrlSafety;
 use GuzzleHttp\Client as GuzzleClient;
 use Illuminate\Http\Client\Response;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Gemeinsame HTTP-Basis der Plugins auf dem `php-api-toolkit`-Fundament
@@ -36,9 +38,18 @@ class PluginApiClient extends ClientAbstract {
     /** Ziele im privaten Netz sind für dieses Plugin ausdrücklich freigegeben (allow_private_network). */
     private bool $privateNetworkAllowed = false;
 
+    /** Nur der eigene Transport baut Verbindungen auf — ein injizierter Client (Tests) wird nicht gebunden. */
+    private bool $pinsConnections = false;
+
+    /** @var list<string>|null Bindung des Basis-Hosts; erst beim ersten Abruf ermittelt */
+    private ?array $pin = null;
+
+    private bool $pinResolved = false;
+
     public function __construct(string $pluginId, string $baseUrl, ?GuzzleClient $httpClient = null, bool $allowPrivateNetwork = false) {
         // Vor parent::__construct(): dort entsteht der Guzzle-Client aus buildClientConfig().
         $this->privateNetworkAllowed = $allowPrivateNetwork;
+        $this->pinsConnections = $httpClient === null && ! $allowPrivateNetwork;
         parent::__construct($baseUrl, null, false, $httpClient);
 
         $this->setUserAgent('workDiary-plugin/' . $pluginId);
@@ -106,6 +117,42 @@ class PluginApiClient extends ClientAbstract {
     }
 
     /**
+     * Abruf einer vom Server genannten Folge-URL (Paginierung, Delta) — nur
+     * auf dem Host der Verbindung. Der Abruf trägt die Zugangsdaten; eine
+     * Folge-URL auf einen anderen Host würde sie dorthin senden
+     * (Sicherheitsaudit 2026-10-04, sf-4).
+     *
+     * @param  array<string, mixed>  $options
+     */
+    public function getFollowUp(string $url, array $options = []): Response {
+        if (! $this->staysOnBaseHost($url)) {
+            throw new PluginApiException('Folge-URL zeigt auf einen anderen Host als die Verbindung.', 0, (string) parse_url($url, PHP_URL_HOST));
+        }
+
+        return $this->getResponse($url, [], $options);
+    }
+
+    /** Relative Pfade bleiben auf der Verbindung; absolute URLs müssen Schema, Host und Port der Basis-URL tragen. */
+    private function staysOnBaseHost(string $url): bool {
+        $target = parse_url(trim($url));
+        if ($target === false) {
+            return false;
+        }
+        if (! isset($target['scheme']) && ! isset($target['host'])) {
+            return true;
+        }
+        $base = parse_url($this->getBaseUrl());
+        if ($base === false || ! isset($target['scheme'], $target['host'], $base['scheme'], $base['host'])) {
+            return false;
+        }
+        $port = static fn(array $parts): int => (int) ($parts['port'] ?? (strtolower((string) $parts['scheme']) === 'https' ? 443 : 80));
+
+        return strtolower($target['scheme']) === strtolower($base['scheme'])
+            && strtolower($target['host']) === strtolower($base['host'])
+            && $port($target) === $port($base);
+    }
+
+    /**
      * Generischer Request für Sonderfälle (Multipart-Upload, abweichende
      * Accept-Header, Raw-Body) und beliebige Verben inkl. WebDAV/CalDAV
      * (PROPFIND, REPORT, MKCOL, MOVE, …; api-toolkit ≥ v2.9.2 stuft sie
@@ -126,6 +173,8 @@ class PluginApiClient extends ClientAbstract {
      * @param  array<string, mixed>  $options
      */
     protected function send(string $method, string $url, array $options): Response {
+        $options = $this->withPinnedResolution($options);
+
         try {
             // request() statt Verb-Methoden: trägt auch WebDAV-Verben durch
             // dieselbe Pipeline (Throttle, Auth, methodenbewusster Retry).
@@ -138,6 +187,40 @@ class PluginApiClient extends ClientAbstract {
         }
 
         return new Response($psrResponse);
+    }
+
+    /**
+     * Bindet den Verbindungsaufbau an die geprüften Adressen des Basis-Hosts
+     * (Sicherheitsaudit 2026-10-04, sf-3): die Fabrik prüft das Ziel beim Bau,
+     * verbunden wird später — dazwischen kann der Name auf eine interne
+     * Adresse wechseln. Tolerant gegenüber DNS-Störungen (Entscheidung
+     * 2026-10-05): löst der Host gerade nicht auf, läuft der Abruf ungebunden
+     * und wird protokolliert; zeigt er nach innen, unterbleibt er.
+     *
+     * @param  array<string, mixed>  $options
+     * @return array<string, mixed>
+     */
+    private function withPinnedResolution(array $options): array {
+        if (! $this->pinsConnections) {
+            return $options;
+        }
+        if (! $this->pinResolved) {
+            $unresolved = false;
+            $this->pin = UrlSafety::tolerantPinnedResolution($this->getBaseUrl(), $unresolved);
+            $this->pinResolved = true;
+            if ($unresolved) {
+                Log::warning('Plugin-Abruf ohne Adressbindung: der Host löst gerade nicht auf.', ['host' => (string) parse_url($this->getBaseUrl(), PHP_URL_HOST)]);
+            }
+        }
+        if ($this->pin === null) {
+            throw new PluginApiException('Das Ziel der Verbindung zeigt auf eine interne Adresse — Abruf unterlassen.', 0, (string) parse_url($this->getBaseUrl(), PHP_URL_HOST));
+        }
+        if ($this->pin !== []) {
+            $curl = is_array($options['curl'] ?? null) ? $options['curl'] : [];
+            $options['curl'] = $curl + [CURLOPT_RESOLVE => $this->pin];
+        }
+
+        return $options;
     }
 
     /**

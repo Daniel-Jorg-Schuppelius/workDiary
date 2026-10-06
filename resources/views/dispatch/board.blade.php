@@ -10,8 +10,7 @@
 
 @section('title', __('Leitstelle') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('Leitstelle'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
     <x-index-page :subtitle="__('Offene und geplante Aufträge des Zeitraums kompakt nach Disposition.')">
@@ -71,24 +70,23 @@
             {{-- Swimlanes je Mitarbeiter --}}
             <div class="flex min-h-0 flex-1 flex-col gap-3 overflow-auto" data-dispatch-board>
                 @forelse ($employees as $userId => $lane)
-                    <section class="rounded-box border border-base-300 bg-base-100 shadow-xs"
-                             data-dispatch-lane data-user="{{ $userId }}">
+                    <x-card as="section" padding="p-0" data-dispatch-lane data-user="{{ $userId }}">
                         <header class="flex items-center justify-between border-b border-base-300 px-3 py-2">
                             <span class="flex items-center gap-2 font-['Space_Grotesk'] font-semibold">
                                 {{ $lane['name'] !== '' ? $lane['name'] : __('Nicht zugewiesen') }}
                                 {{-- Feature 144: Rest-Lenkzeit / nächste Fahrtunterbrechung des Fahrers --}}
                                 <x-driving-time-badge :budget="$drivingBudgets[$userId] ?? null" />
                             </span>
-                            <span class="badge badge-sm">{{ count($lane['items']) }}</span>
+                            <x-status-badge tone="plain">{{ count($lane['items']) }}</x-status-badge>
                         </header>
                         <div class="grid grid-cols-1 gap-2 p-2 sm:grid-cols-2 xl:grid-cols-3">
                             @foreach ($lane['items'] as $item)
                                 @include('dispatch._board_card', ['item' => $item])
                             @endforeach
                         </div>
-                    </section>
+                    </x-card>
                 @empty
-                    <p class="px-2 py-8 text-center text-sm text-muted">{{ __('Keine Aufträge im gewählten Zeitraum.') }}</p>
+                    <x-empty-state icon="event_busy" :title="__('Keine Aufträge im gewählten Zeitraum.')" compact />
                 @endforelse
             </div>
         @else
@@ -97,22 +95,22 @@
                  data-dispatch-board>
                 @foreach ($statusOptions as $option)
                     @php $items = $columns[$option->value] ?? []; @endphp
-                    <section class="flex min-h-0 flex-col rounded-box border border-base-300 bg-base-100 shadow-xs"
-                             data-dispatch-column data-status="{{ $option->value }}">
+                    <x-card as="section" padding="p-0" class="flex min-h-0 flex-col" data-dispatch-column data-status="{{ $option->value }}">
                         <header class="flex items-center justify-between border-b border-base-300 px-3 py-2">
                             <div class="flex items-center gap-2">
                                 <span class="wd-week-legend wd-week-entry--{{ $option->tone() }}"></span>
                                 <span class="font-['Space_Grotesk'] font-semibold">{{ $option->label() }}</span>
                             </div>
-                            <span class="badge badge-sm" data-dispatch-count>{{ count($items) }}</span>
+                            <x-status-badge tone="plain" data-dispatch-count>{{ count($items) }}</x-status-badge>
                         </header>
                         <div class="flex min-h-0 flex-1 flex-col gap-2 overflow-auto p-2" data-dispatch-list>
                             @foreach ($items as $item)
                                 @include('dispatch._board_card', ['item' => $item])
                             @endforeach
+                            {{-- raw-markup-ok: Board-Spalte (Ablagefläche): einzeiliger Platzhalter in schmaler Spalte --}}
                             <p class="px-2 py-4 text-center text-xs text-muted {{ count($items) ? 'hidden' : '' }}">{{ __('Keine Aufträge') }}</p>
                         </div>
-                    </section>
+                    </x-card>
                 @endforeach
             </div>
         @endif

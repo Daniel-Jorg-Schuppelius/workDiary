@@ -21,7 +21,7 @@ use Illuminate\Database\Eloquent\Model;
  * Der Abgleich lief ursprünglich über einen LIKE-Vorfilter auf die letzten
  * sieben Ziffern von `phone`/`mobile` — wortgleich kopiert im
  * {@see \App\Services\Cti\CtiCallService} und im
- * {@see \App\Plugins\Fritzbox\FritzboxImportService}. Der Vorfilter hatte eine
+ * {@see \App\Plugins\Fritzbox\Services\FritzboxImportService}. Der Vorfilter hatte eine
  * Lücke: Trennzeichen INNERHALB dieser sieben Ziffern („0511 / 123 456 78")
  * hebelten ihn aus, der Datensatz blieb unauffindbar, und im Alltag sah das
  * aus wie „der Anrufer wird nicht erkannt".

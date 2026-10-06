@@ -10,8 +10,7 @@
 @extends('layouts.app')
 @section('title', __('club.teams.title.profiles'))
 @section('nav-title', __('club.teams.title.profiles'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('club.teams.subtitle.profiles')">
     <x-slot:actions>
@@ -50,7 +49,7 @@
         @forelse ($profiles as $profile)
             <tr class="hover">
                 <td class="font-medium"><x-icon :name="$profile->family->icon()" class="mr-1 text-muted" />{{ $profile->name }}</td>
-                <td class="text-sm">{{ $profile->family->label() }}@if ($profile->has_doubles) <span class="badge badge-ghost badge-xs">{{ __('club.teams.label.doubles') }}</span>@endif</td>
+                <td class="text-sm">{{ $profile->family->label() }}@if ($profile->has_doubles) <x-status-badge size="xs">{{ __('club.teams.label.doubles') }}</x-status-badge>@endif</td>
                 <td class="text-sm">{{ $profile->result_format->label() }}</td>
                 <td class="text-center text-sm tabular-nums">{{ $profile->squad_size_field ?? '–' }} / {{ $profile->squad_size_bench ?? '–' }}</td>
                 <td class="text-center text-sm tabular-nums">{{ count($profile->positions ?? []) }}</td>
@@ -72,5 +71,6 @@
             <x-table.empty icon="sports" :colspan="9" :title="__('club.teams.empty.profiles')" :message="__('club.teams.hint.profiles_empty')" compact />
         @endforelse
     </x-table>
+    <x-pagination :paginator="$profiles" standing />
 </x-index-page>
 @endsection

@@ -49,8 +49,7 @@
         </x-slot:toolbar>
 
         <div class="grid gap-4 lg:grid-cols-2">
-            <form method="POST" action="{{ route('tours.update', $tour) }}"
-                  class="space-y-4 rounded-box border border-base-300 bg-base-100 p-4">
+            <x-card as="form" class="space-y-4" method="POST" action="{{ route('tours.update', $tour) }}">
                 @csrf
                 @method('PUT')
                 <input type="hidden" name="user_id" value="{{ \App\Support\Sqid::encode(\App\Models\Platform\User::class, (int) $tour->user_id) }}">
@@ -88,10 +87,11 @@
                 <fieldset class="rounded-box border border-base-300 p-3">
                     <legend class="px-1 text-sm font-medium">{{ __('Stopps') }}</legend>
                     <p class="mb-2 text-xs text-muted">{{ __('Per Drag & Drop sortieren. „Optimieren" sortiert automatisch.') }}</p>
+                    {{-- Sortierlogik: resources/js/tour-stops.js --}}
                     <ol class="space-y-1" data-stop-list>
                         @foreach ($stops as $s)
-                            <li class="flex items-center gap-2 rounded-box border border-base-200 p-2" draggable="true" data-stop-item>
-                                <x-icon name="drag_indicator" class="cursor-grab text-muted select-none" data-stop-handle />
+                            <li class="flex items-center gap-2 rounded-box border border-base-200 p-2" data-stop-item>
+                                <x-icon name="drag_indicator" class="cursor-grab touch-none text-muted select-none" data-stop-handle />
                                 <input type="hidden" name="order_ids[]" value="{{ $s->sqid }}">
                                 <x-status-badge tone="primary" size="sm" data-stop-pos>{{ $s->tour_position ?? '?' }}</x-status-badge>
                                 <div class="flex-1">
@@ -102,7 +102,7 @@
                         @endforeach
                     </ol>
                     @if ($stops->isEmpty())
-                        <p class="text-sm text-muted">{{ __('Noch keine Stopps zugewiesen.') }}</p>
+                        <x-empty-state icon="route" :title="__('Noch keine Stopps zugewiesen.')" compact />
                     @endif
                 </fieldset>
 
@@ -110,17 +110,17 @@
                     <x-icon-btn icon="close" size="sm" :href="route('tours.index')" show-label>{{ __('Schließen') }}</x-icon-btn>
                     <x-icon-btn icon="save" tone="primary" size="sm" type="submit" show-label>{{ __('Speichern') }}</x-icon-btn>
                 </div>
-            </form>
+            </x-card>
 
             <div class="space-y-4">
                 @if ($markers !== [])
                     <x-map :center="$center" :markers="$markers" :route="$geometry" :zoom="11" height="380px" />
                 @endif
 
-                <div class="rounded-box border border-base-300 bg-base-100 p-4">
+                <x-card>
                     <h2 class="mb-2 text-sm font-medium">{{ __('Verfügbare Aufträge') }}</h2>
                     @if ($available->isEmpty() && $flexBacklog->isEmpty())
-                        <p class="text-sm text-muted">{{ __('Keine offenen Aufträge für dieses Datum.') }}</p>
+                        <x-empty-state icon="assignment" :title="__('Keine offenen Aufträge für dieses Datum.')" compact />
                     @else
                         <form method="POST" action="{{ route('tours.update', $tour) }}">
                             @csrf
@@ -185,53 +185,8 @@
                             </div>
                         </form>
                     @endif
-                </div>
+                </x-card>
             </div>
         </div>
     </x-page-shell>
 @endsection
-
-@push('scripts')
-    <script @cspNonce>
-        (function () {
-            const list = document.querySelector('[data-stop-list]');
-            if (!list) {
-                return;
-            }
-            let dragged = null;
-
-            const renumber = () => {
-                list.querySelectorAll('[data-stop-item]').forEach((li, i) => {
-                    const badge = li.querySelector('[data-stop-pos]');
-                    if (badge) {
-                        badge.textContent = String(i + 1);
-                    }
-                });
-            };
-
-            list.querySelectorAll('[data-stop-item]').forEach((li) => {
-                li.addEventListener('dragstart', (e) => {
-                    dragged = li;
-                    li.classList.add('opacity-50');
-                    e.dataTransfer.effectAllowed = 'move';
-                });
-                li.addEventListener('dragend', () => {
-                    if (dragged) {
-                        dragged.classList.remove('opacity-50');
-                    }
-                    dragged = null;
-                    renumber();
-                });
-                li.addEventListener('dragover', (e) => {
-                    e.preventDefault();
-                    if (!dragged || dragged === li) {
-                        return;
-                    }
-                    const rect = li.getBoundingClientRect();
-                    const after = (e.clientY - rect.top) / rect.height > 0.5;
-                    list.insertBefore(dragged, after ? li.nextSibling : li);
-                });
-            });
-        })();
-    </script>
-@endpush

@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Applications;
 
+use App\Http\Controllers\Concerns\ChecksTenantPublicSurfaces;
 use App\Http\Controllers\Controller;
 use App\Models\Applications\{JobApplication, JobInterviewOffer};
 use App\Services\Applications\InterviewOfferService;
@@ -22,6 +23,8 @@ use RuntimeException;
 
 /** Öffentliche Terminwahl des Bewerbers (MVP-925); unbekannter, abgelaufener oder benutzter Link → 404. */
 class PublicInterviewOfferController extends Controller {
+    use ChecksTenantPublicSurfaces;
+
     public function __construct(private readonly InterviewOfferService $offers) {}
 
     public function show(string $token): View {
@@ -55,6 +58,7 @@ class PublicInterviewOfferController extends Controller {
         $offer = $this->offers->resolve($token);
         abort_unless($offer instanceof JobInterviewOffer, 404);
         $offer->load('organization');
+        $this->assertTenantPublicSurfacesAvailable($offer->organization);
 
         return $offer;
     }

@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\Integration\IntegrationInboxStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Customer\Customer;
 use App\Models\Integration\IntegrationInboxItem;
@@ -48,7 +49,7 @@ class MailAdminController extends Controller {
             'openCount' => IntegrationInboxItem::query()
                 ->where('organization_id', $organization->id)
                 ->where('plugin_id', MailIntakeService::PLUGIN_ID)
-                ->where('status', IntegrationInboxItem::STATUS_OPEN)
+                ->where('status', IntegrationInboxStatus::Open)
                 ->count(),
         ]);
     }

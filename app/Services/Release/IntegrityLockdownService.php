@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Release;
 
+use App\Enums\Crisis\CrisisCaseStatus;
 use App\Enums\Notification\NotificationEvent;
 use App\Enums\Security\IntegrityCheckStatus;
 use App\Events\Release\IntegrityCrisisRaised;
@@ -220,7 +221,7 @@ class IntegrityLockdownService {
                 'title' => (string) __('integrity.lockdown.crisis_title'),
                 'category' => 'security',
                 'severity' => 'critical',
-                'status' => 'activated',
+                'status' => CrisisCaseStatus::Activated,
                 'trigger_source' => 'integrity',
                 'description' => (string) __('integrity.lockdown.crisis_description', [
                     'modified' => $reason['modified'],

@@ -7,7 +7,7 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 
   Spenden und Zuwendungsbestätigungen eines Jahres (Feature 159, MVP-1003).
-  Variablen: $year, $donations, $receipts, $openByDonor, $exemptionComplete, $canManage
+  Variablen: $year, $donations (Seite), $receipts, $openByDonor, $exemptionComplete, $canManage
 --}}
 @extends('layouts.app')
 @section('title', __('club.donations.title'))
@@ -38,16 +38,14 @@
         </x-filter-field>
     </x-filter-bar>
 
-    @if ($errors->any())
-        <div class="alert alert-error text-sm" role="alert"><x-icon name="error" /><span>{{ $errors->first() }}</span></div>
-    @endif
+    <x-validation-errors first />
     @unless ($exemptionComplete)
         <div class="alert alert-warning text-sm" role="status"><x-icon name="warning" /><span>{{ __('club.donations.hint.exemption_missing') }}</span></div>
     @endunless
 
     <div class="grid gap-4 lg:grid-cols-3">
         <div class="space-y-4 lg:col-span-2">
-            <x-card :title="__('club.donations.card.donations')" icon="volunteer_activism" :count="$donations->count()">
+            <x-card :title="__('club.donations.card.donations')" icon="volunteer_activism" :count="$donations->total()">
                 <x-table :bare="true" size="sm">
                     <x-slot:head>
                         <tr>
@@ -61,7 +59,7 @@
                     </x-slot:head>
                     @forelse ($donations as $donation)
                         <tr>
-                            <td class="whitespace-nowrap">{{ $donation->received_on->format('d.m.Y') }}</td>
+                            <td class="whitespace-nowrap">{{ $donation->received_on->fdate() }}</td>
                             <td>{{ $donation->donorLabel() }}@if ($donation->is_expense_waiver)<x-status-badge tone="ghost" size="xs" class="ml-1">{{ __('club.donations.field.expense_waiver_short') }}</x-status-badge>@endif</td>
                             <td>{{ $donation->kind->label() }}</td>
                             <td class="text-right tabular-nums">{{ $donation->amount->format() }}</td>
@@ -112,7 +110,7 @@
                         @foreach ($receipts as $receipt)
                             <li class="flex items-center justify-between gap-2 py-2">
                                 <span><span class="font-medium">{{ $receipt->displayNo() }}</span> · {{ $receipt->donor_snapshot['name'] ?? '' }}
-                                    <span class="block text-xs text-muted">{{ $receipt->kind->label() }} · {{ $receipt->total_amount->format() }} · {{ $receipt->issued_on->format('d.m.Y') }}</span></span>
+                                    <span class="block text-xs text-muted">{{ $receipt->kind->label() }} · {{ $receipt->total_amount->format() }} · {{ $receipt->issued_on->fdate() }}</span></span>
                                 <x-icon-btn icon="picture_as_pdf" size="sm" :href="route('club.fees.donations.receipts.pdf', $receipt)" :label="__('club.donations.action.pdf')" />
                             </li>
                         @endforeach
@@ -121,5 +119,7 @@
             </x-card>
         </div>
     </div>
+
+    <x-pagination :paginator="$donations" standing />
 </x-page-shell>
 @endsection

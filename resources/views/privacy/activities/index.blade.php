@@ -10,8 +10,7 @@
 
 @section('title', __('Verarbeitungstätigkeiten'))
 @section('nav-title', __('Verzeichnis von Verarbeitungstätigkeiten'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
     <x-index-page overflow="clip" :subtitle="__('Verarbeitungstätigkeiten dokumentieren, prüfen und freigeben.')">
@@ -66,7 +65,7 @@
                     <td><a class="link" href="{{ route('dataprotection.activities.show', $a) }}">{{ $a->name }}</a></td>
                     <td>{{ $a->controller_role->label() }}</td>
                     <td><x-status-badge tone="ghost" size="sm">{{ $a->status->label() }}</x-status-badge></td>
-                    <td class="{{ $a->isReviewOverdue() ? 'text-error font-semibold' : '' }}">{{ $a->review_due_at?->format('d.m.Y') ?? '—' }}</td>
+                    <td class="{{ $a->isReviewOverdue() ? 'text-error font-semibold' : '' }}">{{ $a->review_due_at?->fdate() ?? '—' }}</td>
                     <td>{{ $a->dsfa_required ? __('ja') : '—' }}</td>
                 </tr>
             @empty

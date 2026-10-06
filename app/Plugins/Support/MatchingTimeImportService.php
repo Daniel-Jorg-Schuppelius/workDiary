@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Support;
 
+use App\Enums\Integration\IntegrationInboxStatus;
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use App\Models\Platform\Organization;
@@ -263,7 +264,7 @@ abstract class MatchingTimeImportService {
                 'case_type' => IntegrationInboxItem::CASE_CONFLICT,
                 'referenceable_type' => $timeEntry->getMorphClass(),
                 'referenceable_id' => $timeEntry->getKey(),
-                'status' => IntegrationInboxItem::STATUS_OPEN,
+                'status' => IntegrationInboxStatus::Open,
                 'remote_snapshot' => [
                     'reason' => 'remote_changed_after_export',
                     // Die Zeit hängt an einem Beleg: der Fremdstand darf hier

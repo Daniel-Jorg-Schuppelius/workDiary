@@ -109,7 +109,7 @@ class ResaleDraftAndPricesTest extends TestCase {
             ->assertSessionHas('success');
 
         $invoice = \App\Models\Invoicing\Invoice::query()->where('customer_id', $customer->id)->firstOrFail();
-        $this->assertSame(\App\Models\Invoicing\Invoice::STATUS_DRAFT, $invoice->status);
+        $this->assertSame(\App\Enums\Invoicing\InvoiceStatus::Draft, $invoice->status);
         $this->assertSame('resale', $invoice->category);
         $this->assertCount(2, $invoice->items, 'eine Position je Periode');
         $this->assertSame('24.000', $invoice->items->first()?->quantity, '2 Lizenzen × 12 Monate');

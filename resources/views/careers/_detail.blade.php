@@ -79,7 +79,7 @@
                 <p class="muted">{{ \Illuminate\Support\Str::limit($privacyNoticeText, 600) }}</p>
             @endif
 
-            <p><button type="submit" class="btn">{{ __('Bewerbung absenden') }}</button></p>
+            <p><x-button type="submit" tone="plain" size="md">{{ __('Bewerbung absenden') }}</x-button></p>
         </form>
     @endunless
 </div>

@@ -16,7 +16,7 @@
         <x-select-field name="snapshot_id" :label="__('sustainability.excerpt.snapshot')">
             <option value="">{{ __('sustainability.excerpt.none') }}</option>
             @foreach ($snapshots as $snapshot)
-                <option value="{{ $snapshot->sqid }}" @selected($publication['snapshot_id'] === $snapshot->id)>{{ $snapshot->period_start->format('d.m.Y') }} – {{ $snapshot->period_end->format('d.m.Y') }} ({{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(((float) ($snapshot->data['co2e_total_kg'] ?? 0)) / 1000, 1, withThousandsSeparator: true) }} t CO₂e)</option>
+                <option value="{{ $snapshot->sqid }}" @selected($publication['snapshot_id'] === $snapshot->id)>{{ $snapshot->period_start->fdate() }} – {{ $snapshot->period_end->fdate() }} ({{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(((float) ($snapshot->data['co2e_total_kg'] ?? 0)) / 1000, 1, withThousandsSeparator: true) }} t CO₂e)</option>
             @endforeach
         </x-select-field>
         <x-checkbox-field name="targets" :label="__('sustainability.excerpt.with_targets')" :checked="$publication['targets']" />
@@ -25,7 +25,7 @@
     </form>
 
     @if ($token)
-        <div class="alert alert-warning mt-4 items-start">
+        <div role="alert" class="alert alert-warning mt-4 items-start">
             <x-icon name="key" />
             <div class="min-w-0">
                 <div class="font-semibold">{{ __('sustainability.excerpt.token_once') }}</div>
@@ -52,17 +52,17 @@
                     @csrf
                     @method('PATCH')
                     <input type="hidden" name="enabled" value="{{ $status['enabled'] ? 0 : 1 }}">
-                    <button type="submit" class="btn btn-sm">{{ $status['enabled'] ? __('sustainability.excerpt.pause') : __('sustainability.excerpt.resume') }}</button>
+                    <x-button type="submit" tone="plain">{{ $status['enabled'] ? __('sustainability.excerpt.pause') : __('sustainability.excerpt.resume') }}</x-button>
                 </form>
                 <form method="POST" action="{{ route('sustainability.excerpt.revoke') }}" class="contents">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" class="btn btn-sm btn-error btn-outline">{{ __('sustainability.excerpt.revoke') }}</button>
+                    <x-button type="submit" tone="error" class="btn-outline">{{ __('sustainability.excerpt.revoke') }}</x-button>
                 </form>
             @endif
             <form method="POST" action="{{ route('sustainability.excerpt.rotate') }}" class="contents">
                 @csrf
-                <button type="submit" class="btn btn-sm btn-primary">{{ $status['issued'] ? __('sustainability.excerpt.rotate') : __('sustainability.excerpt.issue') }}</button>
+                <x-button type="submit">{{ $status['issued'] ? __('sustainability.excerpt.rotate') : __('sustainability.excerpt.issue') }}</x-button>
             </form>
         </x-slot:actions>
     @endif

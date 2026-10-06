@@ -53,7 +53,7 @@
         </x-card>
     </div>
 
-    <div class="alert">
+    <div role="status" class="alert">
         <x-icon name="info" />
         <span>{{ __('access.hint.hub') }}</span>
     </div>

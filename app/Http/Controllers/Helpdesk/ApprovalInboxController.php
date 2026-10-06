@@ -16,10 +16,12 @@ use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\Approval\Approval;
 use App\Models\Platform\User;
-use App\Models\ServiceTicket\{Change, ServiceRequest};
-use App\Services\ServiceTicket\{ChangeService, ServiceRequestService};
-use App\Support\{ErrorText, Sqid};
-use App\Support\MorphMap;
+use App\Modules\ModuleRegistry;
+use App\Services\Approval\ApprovalResponsibility;
+use App\Services\Approval\Contracts\ApprovalInboxSubject;
+use App\Services\Approval\Dto\ApprovalInboxEntry;
+use App\Support\{ErrorText, MorphMap, Sqid};
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Pagination\{LengthAwarePaginator, Paginator};
 use Illuminate\Support\Collection;
@@ -30,20 +32,30 @@ use Illuminate\View\View;
 /**
  * Genehmigungs-Inbox (Feature 065, MVP-154): offene Approval-Schritte
  * (decision null ODER question), je approvable nur der NIEDRIGSTE offene
- * Schritt, Zuständigkeit über approver_rule (user-Id bzw. Rolle). Zeigt
- * ServiceRequests UND Changes (eine Mechanik, MVP-157 nutzt sie mit) —
- * decide() verzweigt nach approvable_type auf den Domänen-Service.
+ * Schritt, Zuständigkeit über {@see ApprovalResponsibility}. Welche
+ * Gegenstände erscheinen, melden die Module über {@see ApprovalInboxSubject}
+ * an (Service-Requests, Changes, Vertragsverhandlungen); entschieden wird
+ * auf dem Weg des Gegenstands. Es zählt nur die geltende (höchste) Runde.
  */
 class ApprovalInboxController extends Controller {
+    /** @var array<class-string, ApprovalInboxSubject>|null */
+    private ?array $subjects = null;
+
+    public function __construct(
+        private readonly ApprovalResponsibility $responsibility,
+        private readonly ModuleRegistry $modules,
+    ) {}
+
     public function index(): View {
         Gate::authorize(Permission::ServiceRequestApprove->value);
 
-        $mine = $this->openStepsFor($this->approver());
+        $user = $this->approver();
+        $mine = $this->openStepsFor($user);
 
         $page = LengthAwarePaginator::resolveCurrentPage();
         $perPage = 25;
-        $items = new \Illuminate\Database\Eloquent\Collection($mine->forPage($page, $perPage)->values()->all());
-        $items->load('approvable');
+        $items = new EloquentCollection($mine->forPage($page, $perPage)->values()->all());
+        $this->preload($items);
 
         $approvals = new LengthAwarePaginator(
             $items,
@@ -55,6 +67,9 @@ class ApprovalInboxController extends Controller {
 
         return view('helpdesk.approvals.index', [
             'approvals' => $approvals,
+            'entries' => $items->mapWithKeys(fn(Approval $a): array => [$a->id => $this->entryFor($a, $user)])->all(),
+            'kinds' => $items->mapWithKeys(fn(Approval $a): array => [$a->id => $this->responsibility->kindOf($a)])->all(),
+            'mappedRoles' => $items->mapWithKeys(fn(Approval $a): array => [$a->id => $this->responsibility->mappedRole($a)])->all(),
         ]);
     }
 
@@ -62,10 +77,12 @@ class ApprovalInboxController extends Controller {
         Gate::authorize(Permission::ServiceRequestApprove->value);
 
         $user = $this->approver();
-        abort_unless($this->isResponsible($approval, $user), 403);
+        abort_unless($this->subjectFor($approval) !== null && $this->responsibility->isResponsible($approval, $user), 403);
+        $this->preload(new EloquentCollection([$approval]));
 
         return view('helpdesk.approvals._decide_dialog', [
-            'approval' => $approval->loadMissing('approvable'),
+            'approval' => $approval,
+            'entry' => $this->entryFor($approval, $user),
             'orgUsers' => User::query()
                 ->where('organization_id', (int) $user->organization_id)
                 ->whereKeyNot($user->id)
@@ -78,7 +95,8 @@ class ApprovalInboxController extends Controller {
         Gate::authorize(Permission::ServiceRequestApprove->value);
 
         $user = $this->approver();
-        abort_unless($this->isResponsible($approval, $user), 403);
+        $subject = $this->subjectFor($approval);
+        abort_unless($subject !== null && $this->responsibility->isResponsible($approval, $user), 403);
 
         if (! $this->isLowestOpenStep($approval)) {
             return back()->with('error', __('Erst müssen die vorgelagerten Schritte entschieden werden.'));
@@ -105,13 +123,7 @@ class ApprovalInboxController extends Controller {
         }
 
         try {
-            match (MorphMap::classFor($approval->approvable_type)) {
-                ServiceRequest::class => app(ServiceRequestService::class)
-                    ->decide($approval, $user, $data['decision'], $data['reason'] ?? null, $delegateId),
-                Change::class => app(ChangeService::class)
-                    ->decide($approval, $user, $data['decision'], $data['reason'] ?? null, $delegateId),
-                default => abort(422, (string) __('Unbekannter Genehmigungsgegenstand.')),
-            };
+            $subject->decide($approval, $user, $data['decision'], $data['reason'] ?? null, $delegateId);
         } catch (\RuntimeException|\InvalidArgumentException $e) {
             return back()->with('error', ErrorText::for($e));
         }
@@ -126,14 +138,24 @@ class ApprovalInboxController extends Controller {
     }
 
     /**
-     * Offene Schritte (decision null ODER question), je approvable nur der
-     * niedrigste offene Step, gefiltert auf die Zuständigkeit des Actors.
+     * Offene Schritte (decision null ODER question) angemeldeter Gegenstände,
+     * je approvable nur der niedrigste offene Step, gefiltert auf die
+     * Zuständigkeit des Actors und auf Gegenstände, die noch entscheiden lassen.
      *
      * @return Collection<int, Approval>
      */
     private function openStepsFor(User $user): Collection {
-        return Approval::query()
+        $subjects = $this->subjects();
+        $steps = Approval::query()
+            ->currentRound()
+            ->whereIn('approvable_type', array_map(MorphMap::alias(...), array_keys($subjects)))
             ->where(fn($q) => $q->whereNull('decision')->orWhere('decision', 'question'))
+            // Nach einer Ablehnung ist die Kette beendet — ihre offenen Stufen stehen nicht mehr zur Entscheidung.
+            ->whereNotExists(fn($q) => $q->from('approvals as rejected')
+                ->whereColumn('rejected.approvable_type', 'approvals.approvable_type')
+                ->whereColumn('rejected.approvable_id', 'approvals.approvable_id')
+                ->whereColumn('rejected.round', 'approvals.round')
+                ->where('rejected.decision', 'rejected'))
             ->orderBy('step')
             ->orderBy('id')
             ->get()
@@ -143,19 +165,15 @@ class ApprovalInboxController extends Controller {
 
                 return $steps->filter(fn(Approval $a): bool => (int) $a->step === $lowest);
             })
-            ->filter(fn(Approval $a): bool => $this->isResponsible($a, $user))
+            ->filter(fn(Approval $a): bool => $this->responsibility->isResponsible($a, $user))
             ->values();
-    }
 
-    /** Zuständigkeit laut approver_rule: user → Id-Match, role → hasRole. */
-    private function isResponsible(Approval $approval, User $user): bool {
-        $rule = (array) $approval->approver_rule;
+        $steps = new EloquentCollection($steps->all());
+        $steps->load('approvable');
 
-        return match ((string) ($rule['type'] ?? '')) {
-            'user' => (int) ($rule['value'] ?? 0) === (int) $user->id,
-            'role' => $user->hasRole((string) ($rule['value'] ?? '')),
-            default => false,
-        };
+        return $steps->toBase()
+            ->filter(fn(Approval $a): bool => $a->approvable !== null && (bool) $this->subjectFor($a)?->awaitsDecision($a->approvable))
+            ->values();
     }
 
     /** question-Schritte zählen nicht als erledigt — nur echte Entscheide. */
@@ -163,9 +181,48 @@ class ApprovalInboxController extends Controller {
         return ! Approval::query()
             ->where('approvable_type', $approval->approvable_type)
             ->where('approvable_id', $approval->approvable_id)
+            ->where('round', $approval->round)
             ->where(fn($q) => $q->whereNull('decision')->orWhere('decision', 'question'))
             ->where('step', '<', $approval->step)
             ->exists();
+    }
+
+    /** @param EloquentCollection<int, Approval> $approvals */
+    private function preload(EloquentCollection $approvals): void {
+        $approvals->loadMissing('approvable');
+        $approvals->loadMorph('approvable', array_map(
+            static fn(ApprovalInboxSubject $subject): array => $subject->eagerLoad(),
+            $this->subjects(),
+        ));
+    }
+
+    private function entryFor(Approval $approval, User $viewer): ApprovalInboxEntry {
+        $approvable = $approval->approvable;
+        $subject = $this->subjectFor($approval);
+
+        return $approvable === null || $subject === null
+            ? new ApprovalInboxEntry('—')
+            : $subject->present($approvable, $viewer);
+    }
+
+    private function subjectFor(Approval $approval): ?ApprovalInboxSubject {
+        $class = MorphMap::classFor($approval->approvable_type);
+
+        return $class === null ? null : ($this->subjects()[$class] ?? null);
+    }
+
+    /** @return array<class-string, ApprovalInboxSubject> Modellklasse → angemeldeter Gegenstand */
+    private function subjects(): array {
+        if ($this->subjects === null) {
+            $this->subjects = [];
+            foreach ($this->modules->extensions(ApprovalInboxSubject::class) as $class) {
+                /** @var ApprovalInboxSubject $subject */
+                $subject = app($class);
+                $this->subjects[$subject->approvableClass()] = $subject;
+            }
+        }
+
+        return $this->subjects;
     }
 
     private function approver(): User {

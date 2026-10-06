@@ -14,6 +14,7 @@ namespace App\Services\Investments;
 
 use App\Models\Investments\{InvestmentCase, StrategicObjective};
 use App\Models\Platform\{Organization, User};
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -68,9 +69,9 @@ final class StrategicObjectiveService {
         foreach ($objective->cases()->orderBy('title')->get() as $case) {
             $amount = $this->programs->plannedAmount($case);
             $cases[] = ['case' => $case, 'planned' => $amount];
-            $planned = bcadd($planned, $amount, 2);
+            $planned = NumberHelper::addPrecise($planned, $amount, 2);
             $approved += $case->approvedBudget() !== null ? 1 : 0;
-            $byStatus[$case->status] = ($byStatus[$case->status] ?? 0) + 1;
+            $byStatus[$case->status->value] = ($byStatus[$case->status->value] ?? 0) + 1;
         }
 
         return ['cases' => $cases, 'planned' => $planned, 'approved' => $approved, 'by_status' => $byStatus];

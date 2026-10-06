@@ -30,16 +30,7 @@ class RawMorphClassLiteralRuleTest extends TestCase {
     use ScansSourceTree;
 
     /** @var array<string, string> Pfad-Präfix → Begründung */
-    private const ALLOWLIST = [
-        // Report-Exporte schreiben den Controller als Träger ins Audit-Log —
-        // kein Modell, kein Morph-Ziel (AuditLogController lädt 'auditable'
-        // deshalb nie eager).
-        'app/Http/Controllers/Reporting/Concerns/WritesReportCsv.php' => 'self::class ist ein Controller, kein Modell.',
-        'app/Http/Controllers/Article/ArticleExportController.php' => 'self::class ist ein Controller, kein Modell.',
-        // Prüft selbst per Substring auf das alte Muster.
-        'tests/Unit/Architecture/AuditTranslationCoverageTest.php' => 'Gate-Quelltext, keine Schreibstelle.',
-        'tests/Unit/Architecture/RawMorphClassLiteralRuleTest.php' => 'Dieses Gate.',
-    ];
+    private const ALLOWLIST = [];
 
     public function test_no_class_names_as_morph_values(): void {
         $violations = [];
@@ -58,6 +49,37 @@ class RawMorphClassLiteralRuleTest extends TestCase {
         sort($violations);
 
         $this->assertSame([], $violations, "Klassenname als Morph-Wert (MVP-860, Morph-Map):\n" . implode("\n", $violations));
+    }
+
+    /**
+     * Leseseite (Konsolidierungs-Audit 2026-10, k3-2): der Typwert ist der
+     * Alias — `class_exists()`, `class_basename()`, `new` oder ein statischer
+     * Aufruf darauf greifen ins Leere. Richtig: `MorphMap::classFor()` bzw.
+     * `MorphMap::basename()`.
+     */
+    public function test_morph_type_values_are_not_read_as_class_names(): void {
+        $patterns = [
+            '/\b(?:class_exists|is_subclass_of|is_a)\(\s*\$[\w>\-\[\]\']*_type\b/',
+            '/\bclass_basename\(\s*(?:\(string\)\s*)?\$[\w>\-\[\]\']*_type\b/',
+            '/\bnew\s+\$[\w>\-]*_type\b/',
+            '/\$[\w>\-]*_type::/',
+            '/\$\w*[cC]lass\w*\s*=\s*\$[\w>\-]*_type\s*;/',
+        ];
+        $violations = [];
+        foreach ($this->phpFiles('app') as $file) {
+            $relative = $this->relativePath($file);
+            $source = $this->stripComments((string) file_get_contents($file));
+            foreach ($patterns as $pattern) {
+                if (preg_match_all($pattern, $source, $m, PREG_OFFSET_CAPTURE) > 0) {
+                    foreach ($m[0] as [$snippet, $offset]) {
+                        $violations[] = sprintf('%s:%d — %s', $relative, $this->lineOf($source, $offset), $snippet);
+                    }
+                }
+            }
+        }
+        sort($violations);
+
+        $this->assertSame([], $violations, "Morph-Typwert als Klassenname gelesen — MorphMap::classFor()/basename() nutzen (MVP-860):\n" . implode("\n", $violations));
     }
 
     /** @return list<array{int, string}> */

@@ -17,6 +17,7 @@ use App\Models\Article\{Article, ArticleSupply, ArticleVariant};
 use App\Models\Supplier\SupplierCatalogItem;
 use App\Services\Article\MetalSurchargeService;
 use App\Services\Integration\Match\Normalize;
+use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
@@ -163,7 +164,7 @@ class CatalogLinkService {
 
         $matches = $this->purchasableArticles($item)
             ->get(['id', 'name'])
-            ->filter(fn (Article $a): bool => Normalize::similarity($needle, Normalize::text($a->name)) >= self::FUZZY_THRESHOLD);
+            ->filter(fn (Article $a): bool => StringHelper::similarity($needle, Normalize::text($a->name)) >= self::FUZZY_THRESHOLD);
 
         $match = $matches->count() === 1 ? $matches->first() : null;
         if (! $match instanceof Article) {

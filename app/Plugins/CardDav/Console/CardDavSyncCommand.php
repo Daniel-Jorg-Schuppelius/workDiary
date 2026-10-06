@@ -14,7 +14,9 @@ namespace App\Plugins\CardDav\Console;
 
 use App\Console\Concerns\IteratesOrganizations;
 use App\Models\Platform\Organization;
+use App\Plugins\CardDav\CardDavPlugin;
 use App\Plugins\CardDav\Services\CardDavContactImporter;
+use App\Plugins\Support\Console\ChecksPluginSwitch;
 use Illuminate\Console\Command;
 
 /**
@@ -24,6 +26,7 @@ use Illuminate\Console\Command;
  * wiederholte Läufe erzeugen keine Duplikate.
  */
 class CardDavSyncCommand extends Command {
+    use ChecksPluginSwitch;
     use IteratesOrganizations;
 
     protected $signature = 'carddav:sync ' . self::ORGANIZATION_OPTION;
@@ -32,6 +35,9 @@ class CardDavSyncCommand extends Command {
 
     public function handle(CardDavContactImporter $importer): int {
         $this->forEachOrganization(function (Organization $org) use ($importer): void {
+            if (! $this->pluginEnabledFor(CardDavPlugin::ID, (int) $org->id)) {
+                return;
+            }
             $r = $importer->sync($org);
             $this->info(sprintf(
                 'Organisation #%d (%s): connections %d, changed %d, linked %d, staged %d, skipped %d, deleted %d, failed %d',

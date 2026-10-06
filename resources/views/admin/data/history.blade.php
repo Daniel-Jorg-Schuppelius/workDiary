@@ -45,7 +45,7 @@
                     <td class="font-mono text-sm">#{{ $run->id }}</td>
                     <td>{{ $run->entity->label() }}</td>
                     <td class="font-mono text-xs">{{ $run->input_filename }}</td>
-                    <td><span class="badge badge-sm">{{ $run->state->label() }}</span></td>
+                    <td><x-status-badge tone="plain">{{ $run->state->label() }}</x-status-badge></td>
                     <td class="text-right tabular-nums">{{ $run->rows_created }} / {{ $run->rows_updated }} / {{ $run->rows_skipped }} / {{ $run->rows_failed }}</td>
                     <td class="text-sm" data-sort-value="{{ $run->created_at?->orgTz()->format('Y-m-d H:i') ?? '' }}">{{ $run->created_at?->orgTz()->format('Y-m-d H:i') }}</td>
                     <td class="text-right"><x-icon-btn icon="visibility" size="sm" :href="route('admin.imports.show', $run)" /></td>
@@ -76,8 +76,8 @@
                 <tr>
                     <td class="font-mono text-sm">#{{ $run->id }}</td>
                     <td>{{ $run->entity->label() }}</td>
-                    <td><span class="badge badge-sm badge-ghost uppercase">{{ $run->format->label() }}</span></td>
-                    <td><span class="badge badge-sm">{{ $run->state->label() }}</span></td>
+                    <td><x-status-badge class="uppercase">{{ $run->format->label() }}</x-status-badge></td>
+                    <td><x-status-badge tone="plain">{{ $run->state->label() }}</x-status-badge></td>
                     <td class="text-right tabular-nums">{{ $run->rows_total }}</td>
                     <td class="text-sm" data-sort-value="{{ $run->created_at?->orgTz()->format('Y-m-d H:i') ?? '' }}">{{ $run->created_at?->orgTz()->format('Y-m-d H:i') }}</td>
                     <td class="text-right">

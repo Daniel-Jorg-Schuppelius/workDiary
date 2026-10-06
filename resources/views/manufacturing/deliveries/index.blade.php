@@ -11,8 +11,7 @@
 @extends('layouts.app')
 @section('title', __('manufacturing.delivery_list.title') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('manufacturing.delivery_list.title'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('manufacturing.delivery_list.subtitle')">
@@ -58,7 +57,7 @@
                 </td>
                 <td>
                     @if ($delivery->shipment)
-                        <span class="badge badge-sm">{{ $delivery->shipment->status->label() }}</span>
+                        <x-status-badge tone="plain">{{ $delivery->shipment->status->label() }}</x-status-badge>
                         @if ($delivery->shipment->tracking_number)
                             <span class="text-xs text-muted">{{ strtoupper($delivery->shipment->carrier) }}: {{ $delivery->shipment->tracking_number }}</span>
                         @endif

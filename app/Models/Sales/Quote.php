@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Models\Sales;
 
 use App\Casts\MoneyCast;
+use App\Enums\Sales\QuoteStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, DisclosesLabourCosts, HasSqid};
 use App\Models\Contracts\{AuditsChanges, HasDocumentLines};
 use App\Models\Customer\Customer;
@@ -36,7 +37,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property int $customer_id
  * @property string $number
  * @property int $version
- * @property string $status
+ * @property QuoteStatus $status
  * @property \Illuminate\Support\Carbon|null $valid_until
  * @property string|null $acceptance_token_hash
  * @property \Illuminate\Support\Carbon|null $follow_up_at
@@ -58,8 +59,6 @@ class Quote extends Model implements AuditsChanges, HasDocumentLines {
     use HasFactory;
     use HasSqid;
 
-    public const STATUSES = ['draft', 'approved', 'sent', 'accepted', 'partially_accepted', 'rejected', 'expired'];
-
     protected $fillable = [
         'organization_id', 'customer_id', 'project_id', 'number', 'version',
         'previous_version_id', 'status', 'valid_until', 'terms',
@@ -71,6 +70,7 @@ class Quote extends Model implements AuditsChanges, HasDocumentLines {
 
     /** @var array<string, string> */
     protected $casts = [
+        'status' => QuoteStatus::class,
         'valid_until' => 'date',
         'is_labour_cost_disclosed' => 'boolean',
         'follow_up_at' => 'date',
@@ -85,7 +85,7 @@ class Quote extends Model implements AuditsChanges, HasDocumentLines {
     ];
 
     /** @var array<string, mixed> */
-    protected $attributes = ['status' => 'draft', 'version' => 1];
+    protected $attributes = ['status' => QuoteStatus::Draft->value, 'version' => 1];
 
     /** @return HasMany<QuoteItem, $this> */
     public function items(): HasMany {
@@ -118,12 +118,12 @@ class Quote extends Model implements AuditsChanges, HasDocumentLines {
         return $this->follow_up_at !== null
             && $this->followed_up_at === null
             && ! $this->follow_up_at->isFuture()
-            && in_array($this->status, ['approved', 'sent'], true);
+            && $this->status->isPending();
     }
 
     public function isExpired(): bool {
         return $this->valid_until !== null && $this->valid_until->isPast()
-            && in_array($this->status, ['approved', 'sent'], true);
+            && $this->status->isPending();
     }
 
     public function recalculate(): void {

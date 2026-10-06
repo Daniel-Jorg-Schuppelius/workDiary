@@ -111,6 +111,7 @@ return [
             'post' => 'Registrare',
             'reverse' => 'Stornare',
             'reverse_submit' => 'Creare contro-registrazione',
+            'import' => 'Importa piano dei conti',
         ],
         'column' => [
             'fiscal_year' => 'Esercizio',
@@ -254,6 +255,11 @@ return [
         ],
         'import' => [
             'line_invalid' => 'Riga :line ignorata (numero, nome o tipo di conto mancante).',
+            'title' => 'Importa piano dei conti da CSV',
+            'hint' => 'I numeri di conto esistenti vengono aggiornati, i nuovi conti creati; non viene eliminato nulla. Le righe errate vengono ignorate e contate.',
+            'file' => 'File CSV',
+            'columns' => 'Riga di intestazione con le colonne number, name e type (:types); facoltative normal_balance (debit o credit), is_open_item, datev_account, euer_category e deductible_percent.',
+            'submit' => 'Importa',
         ],
     ],
 
@@ -304,6 +310,7 @@ return [
             'no_amount' => 'Il documento non ha importo.',
             'no_lines' => 'La proposta non ha righe di registrazione.',
             'sovereignty' => 'In questo periodo l\'organizzazione non tiene un libro mastro locale.',
+            'changed_since_posting' => 'L’origine è cambiata dopo la registrazione (ad es. un rimborso): stornare la registrazione e registrarla di nuovo.',
             'foreign_currency' => 'L’operazione è in :currency, la contabilità in :base — pagamenti, cassa e cespiti in valuta estera non vengono registrati.',
             'unsupported_target' => 'Per questa destinazione di pagamento non esiste ancora un percorso contabile.',
             'year_closed' => 'L\'esercizio :year è chiuso.',

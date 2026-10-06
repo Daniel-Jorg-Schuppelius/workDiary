@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Billbee\Services;
 
+use App\Enums\Integration\ExternalArticleSyncStatus;
 use App\Models\Article\ArticleVariant;
 use App\Models\Integration\ExternalArticleMapping;
 use App\Models\Platform\Organization;
@@ -78,7 +79,7 @@ class BillbeeArticleMappingService {
                 'external_number' => $sku !== '' ? $sku : null,
                 'article_variant_id' => $variant?->id,
                 'article_id' => $variant?->article_id,
-                'sync_status' => $variant !== null ? 'synced' : 'pending',
+                'sync_status' => $variant !== null ? ExternalArticleSyncStatus::Synced : ExternalArticleSyncStatus::Pending,
                 'last_synced_at' => now(),
             ],
         );

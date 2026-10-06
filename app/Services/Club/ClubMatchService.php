@@ -20,7 +20,8 @@ use App\Models\Platform\{Organization, User};
 use App\Services\Concerns\AssertsStatusTransition;
 use App\Support\Tz;
 use Carbon\{CarbonImmutable, CarbonInterface};
-use CommonToolkit\Helper\Data\CryptoHelper;
+use CommonToolkit\Enums\DateTimeFormat;
+use CommonToolkit\Helper\Data\{CryptoHelper, DateHelper, StringHelper};
 use CommonToolkit\Helper\Data\CSV\StringHelper as CsvStringHelper;
 use CommonToolkit\Parsers\{CSVDocumentParser, ICalendarParser};
 use DateTimeZone;
@@ -41,6 +42,11 @@ class ClubMatchService {
     use AssertsStatusTransition;
 
     public const DEFAULT_DURATION_MINUTES = 120;
+
+    /** Spalte „Heim/Auswärts“ im Spielplan-Import. */
+    private const HOME_WORDS = ['h', 'heim', 'home', 'ja', 'yes', '1', 'true', 'heimspiel'];
+
+    private const AWAY_WORDS = ['a', 'g', 'auswärts', 'auswaerts', 'away', 'gast', 'nein', 'no', '0', 'false'];
 
     public function __construct(
         private readonly ClubEventService $events,
@@ -654,7 +660,7 @@ class ClubMatchService {
             if ($opponentIdx !== null) {
                 $opponent = $header->getValueByIndex($line, $opponentIdx);
                 if ($homeFlagIdx !== null) {
-                    $isHome = $this->parseHomeFlag($header->getValueByIndex($line, $homeFlagIdx)) ?? true;
+                    $isHome = StringHelper::parseBool((string) $header->getValueByIndex($line, $homeFlagIdx), null, self::HOME_WORDS, self::AWAY_WORDS) ?? true;
                 }
             }
             if (($opponent === null || $opponent === '') && $homeTeamIdx !== null && $awayTeamIdx !== null) {
@@ -751,31 +757,9 @@ class ClubMatchService {
             return null;
         }
         $time = trim((string) $time);
-        $candidates = $time !== '' ? [$date . ' ' . $time] : [$date];
-        if ($time === '' && preg_match('/^(.+?)\s+(\d{1,2}:\d{2})$/', $date, $m) === 1) {
-            $candidates = [$date];
-        }
-        foreach ($candidates as $candidate) {
-            foreach (['d.m.Y H:i', 'd.m.y H:i', 'Y-m-d H:i', 'd.m.Y H:i:s', 'Y-m-d H:i:s', 'Y-m-d\TH:i', 'd.m.Y', 'd.m.y', 'Y-m-d'] as $format) {
-                $parsed = CarbonImmutable::createFromFormat($format, $candidate, $tz);
-                if ($parsed instanceof CarbonImmutable && $parsed->format($format) === $candidate) {
-                    return str_contains($format, 'H') ? $parsed : $parsed->startOfDay();
-                }
-            }
-        }
+        $iso = DateHelper::normalizeToIso($time !== '' ? $date . ' ' . $time : $date, DateTimeFormat::DE);
 
-        return null;
-    }
-
-    private function parseHomeFlag(?string $value): ?bool {
-        $value = mb_strtolower(trim((string) $value));
-
-        return match (true) {
-            $value === '' => null,
-            in_array($value, ['h', 'heim', 'home', 'ja', 'yes', '1', 'true', 'heimspiel'], true) => true,
-            in_array($value, ['a', 'g', 'auswärts', 'auswaerts', 'away', 'gast', 'nein', 'no', '0', 'false'], true) => false,
-            default => null,
-        };
+        return $iso === null ? null : CarbonImmutable::parse($iso, $tz);
     }
 
     private function resolveSeason(int $organizationId, mixed $seasonId, CarbonInterface $start): ?ClubSeason {

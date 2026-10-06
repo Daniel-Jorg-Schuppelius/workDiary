@@ -36,7 +36,9 @@ class ServiceQueueController extends Controller {
                 ->with('team:id,name')
                 ->orderByDesc('is_default')
                 ->orderBy('name')
-                ->get(),
+                ->orderBy('id')
+                ->paginate(25)
+                ->withQueryString(),
             'teams' => Team::query()->orderBy('name')->get(['id', 'name']),
             'slaContracts' => SlaContract::query()->orderBy('label')->get(['id', 'label']),
             'canManage' => Gate::allows('create', ServiceQueue::class),
@@ -77,7 +79,7 @@ class ServiceQueueController extends Controller {
             }
         });
 
-        return redirect()->route('helpdesk.queues.index')
+        return redirect()->toList('helpdesk.queues.index')
             ->with('success', __('Queue angelegt.'));
     }
 
@@ -93,7 +95,7 @@ class ServiceQueueController extends Controller {
             }
         });
 
-        return redirect()->route('helpdesk.queues.index')
+        return redirect()->toList('helpdesk.queues.index')
             ->with('success', __('Queue gespeichert.'));
     }
 
@@ -109,7 +111,7 @@ class ServiceQueueController extends Controller {
 
         $queue->delete();
 
-        return redirect()->route('helpdesk.queues.index')
+        return redirect()->toList('helpdesk.queues.index')
             ->with('success', __('Queue gelöscht.'));
     }
 

@@ -14,6 +14,7 @@ use App\Models\Platform\PluginSetting;
 use App\Plugins\Etsy\EtsyPlugin;
 use App\Plugins\Etsy\Models\{EtsyConnection, EtsyLedgerEntry};
 use App\Plugins\Etsy\Services\EtsyLedgerImportService;
+use App\Plugins\Support\OAuthConnectionStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Psr\Http\Message\RequestInterface;
 use Tests\Concerns\WithOrganization;
@@ -48,7 +49,7 @@ final class EtsyLedgerImportTest extends TestCase {
             'shop_id' => 77,
             'etsy_user_id' => 12345,
             'access_token' => '12345.tok',
-            'status' => EtsyConnection::STATUS_ACTIVE,
+            'status' => OAuthConnectionStatus::Active,
             'webhook_token' => 'hook-123',
         ]);
     }
@@ -146,7 +147,7 @@ final class EtsyLedgerImportTest extends TestCase {
     }
 
     public function test_without_active_connection_import_is_a_silent_noop(): void {
-        $this->connection->forceFill(['status' => EtsyConnection::STATUS_DISCONNECTED])->save();
+        $this->connection->forceFill(['status' => OAuthConnectionStatus::Disconnected])->save();
         $fake = FakePluginHttp::fake([]);
 
         $result = app(EtsyLedgerImportService::class)->import($this->organization);

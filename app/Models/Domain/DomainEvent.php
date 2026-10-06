@@ -10,6 +10,7 @@
 
 namespace App\Models\Domain;
 
+use App\Enums\Domain\DomainEventStatus;
 use App\Models\Concerns\BelongsToOrganization;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
@@ -28,7 +29,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $event_class
  * @property string|null $event_action
  * @property string|null $object
- * @property string $status
+ * @property DomainEventStatus $status
  * @property string $raw_hash
  * @property Carbon|null $occurred_at
  * @property Carbon|null $stored_at
@@ -56,13 +57,14 @@ class DomainEvent extends Model {
 
     /** @var array<string, string> */
     protected $casts = [
+        'status' => DomainEventStatus::class,
         'occurred_at' => 'datetime',
         'stored_at' => 'datetime',
         'acknowledged_at' => 'datetime',
     ];
 
     public function isAcknowledged(): bool {
-        return $this->status === 'acknowledged';
+        return $this->status === DomainEventStatus::Acknowledged;
     }
 
     /** @return BelongsTo<DomainProviderConnection, $this> */

@@ -18,22 +18,22 @@
         <x-empty-state compact icon="check_circle" :title="__('resale.widget.all_clear')" :message="__('resale.widget.all_clear_hint')" />
     @else
         <div class="grid gap-3 sm:grid-cols-3">
-            <a href="{{ route('finance.resale.periods.index') }}" class="rounded-box border border-base-300 bg-base-100 px-4 py-3 shadow-xs hover:bg-base-200">
+            <x-card as="a" padding="px-4 py-3" class="hover:bg-base-200" href="{{ route('finance.resale.periods.index') }}">
                 <p class="text-xs uppercase tracking-wider text-muted">{{ __('resale.widget.open') }}</p>
                 <p class="mt-1 font-['Space_Grotesk'] text-2xl font-bold tabular-nums {{ $open > 0 ? 'text-error' : '' }}">{{ $open }}</p>
                 <p class="text-xs text-muted">{{ $openAmount !== '' ? $openAmount : '—' }}</p>
-            </a>
-            <a href="{{ route('finance.resale.periods.index') }}" class="rounded-box border border-base-300 bg-base-100 px-4 py-3 shadow-xs hover:bg-base-200">
+            </x-card>
+            <x-card as="a" padding="px-4 py-3" class="hover:bg-base-200" href="{{ route('finance.resale.periods.index') }}">
                 <p class="text-xs uppercase tracking-wider text-muted">{{ __('resale.widget.proposed') }}</p>
                 <p class="mt-1 font-['Space_Grotesk'] text-2xl font-bold tabular-nums {{ $proposed > 0 ? 'text-info' : '' }}">{{ $proposed }}</p>
                 <p class="text-xs text-muted">{{ __('resale.link.proposed_hint') }}</p>
-            </a>
+            </x-card>
             @can(\App\Enums\User\Permission::ResellingManage->value)
-                <a href="{{ route('finance.resale.inbox') }}" class="rounded-box border border-base-300 bg-base-100 px-4 py-3 shadow-xs hover:bg-base-200">
+                <x-card as="a" padding="px-4 py-3" class="hover:bg-base-200" href="{{ route('finance.resale.inbox') }}">
                     <p class="text-xs uppercase tracking-wider text-muted">{{ __('resale.summary.unassigned') }}</p>
                     <p class="mt-1 font-['Space_Grotesk'] text-2xl font-bold tabular-nums {{ $unassigned > 0 ? 'text-warning' : '' }}">{{ $unassigned }}</p>
                     <p class="text-xs text-muted">{{ __('resale.inbox.title') }}</p>
-                </a>
+                </x-card>
             @endcan
         </div>
     @endif

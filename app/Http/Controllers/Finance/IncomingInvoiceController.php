@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Finance;
 
 use App\Enums\Document\DocumentType;
+use App\Enums\Invoicing\IncomingEInvoiceStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Accounting\FixedAsset;
 use App\Models\Document\Document;
@@ -146,7 +147,7 @@ class IncomingInvoiceController extends Controller {
     public function transfer(\App\Models\Invoicing\IncomingEInvoice $incoming): RedirectResponse {
         abort_unless(Auth::user()?->canManageBilling() ?? false, 403);
 
-        if (! in_array($incoming->status, [\App\Models\Invoicing\IncomingEInvoice::STATUS_APPROVED, \App\Models\Invoicing\IncomingEInvoice::STATUS_PAYMENT_RELEASED], true)) {
+        if (! in_array($incoming->status, [IncomingEInvoiceStatus::Approved, IncomingEInvoiceStatus::PaymentReleased], true)) {
             return back()->with('error', __('Nur fachlich freigegebene Eingänge werden an die Buchhaltung übergeben.'));
         }
 
@@ -177,15 +178,11 @@ class IncomingInvoiceController extends Controller {
             'note' => ['nullable', 'string', 'max:500', 'required_if:decision,rejected'],
         ]);
 
-        $target = $data['decision'];
-        $allowed = match ($incoming->status) {
-            \App\Models\Invoicing\IncomingEInvoice::STATUS_RECEIVED,
-            \App\Models\Invoicing\IncomingEInvoice::STATUS_QUESTION => ['approved', 'rejected', 'question'],
-            \App\Models\Invoicing\IncomingEInvoice::STATUS_APPROVED => ['payment_released', 'rejected'],
-            default => [],
-        };
-        if (! in_array($target, $allowed, true)) {
-            return back()->with('error', __('Übergang :from → :to ist nicht zulässig.', ['from' => $incoming->status, 'to' => $target]));
+        $target = IncomingEInvoiceStatus::from((string) $data['decision']);
+        // Eine Rückfrage darf mit neuer Anmerkung wiederholt werden.
+        $repeatedQuestion = $target === IncomingEInvoiceStatus::Question && $incoming->status === $target;
+        if (! $repeatedQuestion && ! $incoming->status->canTransitionTo($target)) {
+            return back()->with('error', __('Übergang :from → :to ist nicht zulässig.', ['from' => $incoming->status->value, 'to' => $target->value]));
         }
 
         $incoming->update([
@@ -194,7 +191,7 @@ class IncomingInvoiceController extends Controller {
             'decided_at' => now(),
             'decision_note' => $data['note'] ?? null,
         ]);
-        $incoming->audit('incoming_einvoice.decided', ['to' => $target]);
+        $incoming->audit('incoming_einvoice.decided', ['to' => $target->value]);
 
         $redirect = redirect()->route('finance.incoming-invoices.show', $incoming->document_id)
             ->with('success', __('Entscheidung gespeichert.'));
@@ -203,7 +200,7 @@ class IncomingInvoiceController extends Controller {
         // Pflichtnachweise fehlen. Sperren wäre hier zu spät — die Leistung
         // ist erbracht —, aber schweigen wäre falsch: Genau die Altfälle,
         // deren Bestellung vor der Sperre entstand, laufen hier durch.
-        $warning = $target === \App\Models\Invoicing\IncomingEInvoice::STATUS_PAYMENT_RELEASED
+        $warning = $target === IncomingEInvoiceStatus::PaymentReleased
             ? $this->credentialWarning($incoming)
             : null;
 

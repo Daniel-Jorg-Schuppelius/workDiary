@@ -15,8 +15,7 @@
 @section('title', __('construction.title'))
 @section('nav-title', __('construction.title'))
 
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
     <x-index-page overflow="clip" :subtitle="__('construction.subtitle')">
@@ -68,7 +67,7 @@
                     <td>{{ $notice->kind->label() }}</td>
                     <td>{{ $notice->subject }}</td>
                     <td>{{ $notice->project?->name ?? $notice->site?->name ?? '—' }}</td>
-                    <td class="whitespace-nowrap">{{ $notice->occurred_on?->format('d.m.Y') }}</td>
+                    <td class="whitespace-nowrap">{{ $notice->occurred_on?->fdate() }}</td>
                     <td>
                         <x-status-badge :tone="$notice->status === \App\Enums\Construction\ConstructionNoticeStatus::Draft ? 'ghost' : 'success'" size="sm">
                             {{ $notice->status->label() }}

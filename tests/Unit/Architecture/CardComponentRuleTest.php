@@ -51,8 +51,7 @@ final class CardComponentRuleTest extends TestCase {
         $viewsDir = dirname(__DIR__, 3) . '/resources/views';
         $violations = [];
 
-        foreach ($this->bladeFiles($viewsDir) as $file) {
-            $rel = str_replace($viewsDir . '/', '', $file->getPathname());
+        foreach ($this->viewFiles() as $rel => $file) {
             if ($this->exempt($rel)) {
                 continue;
             }
@@ -112,6 +111,22 @@ final class CardComponentRuleTest extends TestCase {
         }
 
         return false;
+    }
+
+    /**
+     * Views des Kerns (Pfad ab `resources/views`) und der Plugins (Pfad ab
+     * `app/Plugins`) — ohne die Plugins sah das Gate 53 Views nicht (k3-18).
+     *
+     * @return iterable<string, SplFileInfo>
+     */
+    private function viewFiles(): iterable {
+        $root = dirname(__DIR__, 3);
+        foreach ($this->bladeFiles($root . '/resources/views') as $file) {
+            yield str_replace($root . '/resources/views/', '', $file->getPathname()) => $file;
+        }
+        foreach ($this->bladeFiles($root . '/app/Plugins') as $file) {
+            yield str_replace($root . '/', '', $file->getPathname()) => $file;
+        }
     }
 
     /**

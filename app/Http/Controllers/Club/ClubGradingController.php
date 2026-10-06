@@ -39,7 +39,7 @@ class ClubGradingController extends Controller {
         Gate::authorize('viewAny', ClubGradingSystem::class);
 
         return view('club.grading.index', [
-            'systems' => ClubGradingSystem::query()->withCount(['grades', 'versions', 'memberGrades'])->orderBy('name')->get(),
+            'systems' => ClubGradingSystem::query()->withCount(['grades', 'versions', 'memberGrades'])->orderBy('name')->orderBy('id')->paginate(30)->withQueryString(),
             'enabled' => $this->grading->isEnabled($this->currentOrganization()),
             'canManage' => Gate::allows('create', ClubGradingSystem::class),
             'canSettings' => Gate::allows('create', \App\Models\Club\ClubMember::class),
@@ -94,7 +94,7 @@ class ClubGradingController extends Controller {
         Gate::authorize('delete', $system);
         $this->grading->deleteSystem($system);
 
-        return redirect()->route('club.grading.index')->with('success', __('club.grading.flash.system_deleted'));
+        return redirect()->toList('club.grading.index')->with('success', __('club.grading.flash.system_deleted'));
     }
 
     // ── Grade ────────────────────────────────────────────────────────────
@@ -195,10 +195,7 @@ class ClubGradingController extends Controller {
         Gate::authorize('update', $system);
         abort_unless($grade->club_grading_system_id === $system->id, 404);
         $data = $request->validated();
-        $data['counted_group_ids'] = array_values(array_filter(array_map(
-            static fn(string $sqid): ?int => Sqid::decodeOrNumeric(ClubGroup::class, $sqid),
-            array_map('strval', (array) ($data['counted_group_ids'] ?? [])),
-        )));
+        $data['counted_group_ids'] = array_values(array_map('intval', (array) ($data['counted_group_ids'] ?? [])));
         $this->grading->saveRequirement($version, $grade, $data);
 
         return redirect()->route('club.grading.show', [$system, 'version' => $version->sqid])->with('success', __('club.grading.flash.requirement_saved'));

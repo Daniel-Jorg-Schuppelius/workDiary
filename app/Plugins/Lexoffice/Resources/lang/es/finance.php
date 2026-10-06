@@ -15,6 +15,7 @@ return [
         'lexoffice_delivery_not_linked' => 'No hay ningún albarán de Lexoffice vinculado a esta entrega.',
         'lexoffice_dunning_not_invoice' => 'Solo se puede crear un aviso de pago para una factura.',
         'lexoffice_not_configured' => 'Lexoffice no está configurado para esta organización (falta la clave API).',
+        'lexoffice_outcome_unclear' => 'Resultado del traspaso a Lexoffice incierto (tiempo de espera agotado tras el envío): no repita a ciegas; la próxima ejecución busca el borrador mediante el marcador de origen.',
         'lexoffice_oc_no_customer' => 'Una orden de fabricación sin cliente no puede transferirse como confirmación de pedido.',
         'lexoffice_oc_not_linked' => 'No hay ninguna confirmación de pedido de Lexoffice vinculada a esta orden de fabricación.',
         'lexoffice_quote_no_customer' => 'Una orden de fabricación sin cliente no puede transferirse como oferta.',
@@ -23,5 +24,6 @@ return [
     'lexoffice' => [
         'introduction' => 'Les facturamos como sigue nuestras entregas y servicios.',
         'delivery_title' => 'Albarán',
+        'transfer_marker' => 'Referencia de traspaso :marker',
     ],
 ];

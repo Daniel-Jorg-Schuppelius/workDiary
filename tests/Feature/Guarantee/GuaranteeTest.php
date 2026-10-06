@@ -11,6 +11,7 @@
 namespace Tests\Feature\Guarantee;
 
 use App\Enums\Guarantee\{GuaranteeDirection, GuaranteeKind, GuaranteeStatus};
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Enums\Invoicing\{RetentionKind, RetentionStatus};
 use App\Enums\Notification\{NotificationChannel, NotificationEvent};
 use App\Models\Customer\Customer;
@@ -66,7 +67,7 @@ class GuaranteeTest extends TestCase {
             'organization_id' => $this->org->id,
             'customer_id' => $this->customer->id,
             'number' => 'R-' . uniqid(),
-            'status' => Invoice::STATUS_DRAFT,
+            'status' => InvoiceStatus::Draft,
             'currency' => 'EUR',
             'tax_rate' => '0.00',
             'created_by' => $this->admin->id,
@@ -197,6 +198,75 @@ class GuaranteeTest extends TestCase {
         $guarantee = Guarantee::query()->where('reference', 'BG-NEU')->sole();
         $this->assertSame((int) $this->customer->id, (int) $guarantee->customer_id);
         $this->assertSame('2500.00', $guarantee->amount->getAmount());
+    }
+
+    /** Ziehen und Ablösen stehen nur an aktiven Bürgschaften. */
+    public function test_index_offers_draw_and_secure_only_for_active_guarantees(): void {
+        $active = $this->guarantee();
+        $returned = $this->guarantee(['status' => GuaranteeStatus::Returned->value]);
+
+        $this->actingAs($this->admin)->get(route('guarantees.index', ['status' => '']))
+            ->assertOk()
+            ->assertSee(route('guarantees.drawn', $active), false)
+            ->assertSee(route('guarantees.secure-dialog', $active), false)
+            ->assertDontSee(route('guarantees.drawn', $returned), false)
+            ->assertDontSee(route('guarantees.secure-dialog', $returned), false);
+    }
+
+    public function test_endpoint_records_the_drawing(): void {
+        $guarantee = $this->guarantee();
+
+        $this->actingAs($this->admin)->from(route('guarantees.index'))
+            ->post(route('guarantees.drawn', $guarantee), ['note' => 'Mängel nicht beseitigt.'])
+            ->assertRedirect(route('guarantees.index'))
+            ->assertSessionHas('status', __('guarantee.drawn'));
+
+        $guarantee->refresh();
+        $this->assertSame(GuaranteeStatus::Drawn, $guarantee->status);
+        $this->assertSame('Mängel nicht beseitigt.', $guarantee->returned_note);
+    }
+
+    /** Der Dialog bietet nur an, was der Dienst annimmt: offen und von der Bürgschaft gedeckt. */
+    public function test_secure_dialog_offers_only_open_retentions_the_guarantee_covers(): void {
+        [, $covered] = $this->invoiceWithRetention(5.0);
+        [, $tooLarge] = $this->invoiceWithRetention(10.0);
+        [, $released] = $this->invoiceWithRetention(5.0);
+        $released->forceFill(['status' => RetentionStatus::Released->value])->save();
+        $guarantee = $this->guarantee();
+
+        $this->actingAs($this->admin)->get(route('guarantees.secure-dialog', $guarantee))
+            ->assertOk()
+            ->assertSee(route('guarantees.secure', $guarantee), false)
+            ->assertSee('value="' . $covered->sqid . '"', false)
+            ->assertDontSee('value="' . $tooLarge->sqid . '"', false)
+            ->assertDontSee('value="' . $released->sqid . '"', false);
+    }
+
+    public function test_secure_dialog_has_no_form_without_a_matching_retention(): void {
+        $guarantee = $this->guarantee();
+
+        $this->actingAs($this->admin)->get(route('guarantees.secure-dialog', $guarantee))
+            ->assertOk()
+            ->assertSee(__('guarantee.secure.empty'))
+            ->assertDontSee(route('guarantees.secure', $guarantee), false);
+    }
+
+    public function test_endpoint_replaces_the_retention_chosen_in_the_dialog(): void {
+        [, $retention] = $this->invoiceWithRetention();
+        $guarantee = $this->guarantee();
+
+        $this->actingAs($this->admin)->from(route('guarantees.index'))
+            ->post(route('guarantees.secure', $guarantee), ['retention' => $retention->sqid])
+            ->assertRedirect(route('guarantees.index'))
+            ->assertSessionHas('status', __('guarantee.secured'));
+
+        $this->assertSame(RetentionStatus::Secured, $retention->refresh()->status);
+        $this->assertSame((int) $retention->id, (int) $guarantee->refresh()->invoice_retention_id);
+
+        // Abgelöst ist abgelöst: Die Liste bietet es nicht ein zweites Mal an.
+        $this->actingAs($this->admin)->get(route('guarantees.index'))
+            ->assertSee(route('guarantees.drawn', $guarantee), false)
+            ->assertDontSee(route('guarantees.secure-dialog', $guarantee), false);
     }
 
     public function test_non_billing_user_is_forbidden(): void {

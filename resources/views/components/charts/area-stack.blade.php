@@ -24,6 +24,8 @@
 
 @php
     $points = collect($series)->values();
+    $range = $points->isNotEmpty() ? [$points->first()['x'], $points->last()['x']] : null;
+    $empty = $points->count() < 2;
     $width = 640; $height = 240; $pad = 36;
     $totals = $points->map(fn(array $p): float => (float) collect($bands)->sum(fn(array $b) => (float) ($p[$b['key']] ?? 0)));
     $maxY = max(1, (int) ceil((float) $totals->max()));
@@ -31,7 +33,6 @@
     $sx = fn(int $i): float => $pad + $i * $stepX;
     $sy = fn(float $v): float => $height - $pad - ($v / $maxY) * ($height - 2 * $pad);
     $fills = ['fill-primary/70', 'fill-secondary/60', 'fill-accent/50', 'fill-info/50'];
-    $uid = 'as-' . uniqid();
 
     // Kumulierte Pfade je Band (unten beginnend).
     $paths = [];
@@ -47,34 +48,18 @@
     }
 @endphp
 
-<figure class="wd-chart rounded-box border border-base-300 bg-base-100 p-3">
-    <figcaption>
-        <span class="font-['Space_Grotesk'] text-sm font-semibold">{{ $title }}</span>
-        <span class="ml-2 text-xs text-muted">
-            {{ $unit }}
-            @if ($points->isNotEmpty()) · {{ $points->first()['x'] }} – {{ $points->last()['x'] }} @endif
-            @if ($computedAt) · {{ __('Stand:') }} {{ \Illuminate\Support\Carbon::parse($computedAt)->isoFormat('L LT') }} @endif
-        </span>
-    </figcaption>
+<x-charts.frame :title="$title" :unit="$unit" :range="$range" :computed-at="$computedAt" :note="$note"
+                :empty="$empty" empty-icon="area_chart"
+                :view-box="[$width, $height]">
+    <line x1="{{ $pad }}" y1="{{ $height - $pad }}" x2="{{ $width - $pad }}" y2="{{ $height - $pad }}" class="stroke-base-300" stroke-width="1" />
+    <line x1="{{ $pad }}" y1="{{ $pad }}" x2="{{ $pad }}" y2="{{ $height - $pad }}" class="stroke-base-300" stroke-width="1" />
+    <text x="{{ $pad - 6 }}" y="{{ $pad }}" text-anchor="end" class="fill-muted text-[10px]">{{ $maxY }}</text>
+    <text x="{{ $pad - 6 }}" y="{{ $height - $pad }}" text-anchor="end" class="fill-muted text-[10px]">0</text>
+    @foreach ($bands as $bandIndex => $band)
+        <path d="{{ $paths[$bandIndex] }}" class="{{ $fills[$bandIndex % count($fills)] }} stroke-base-100" stroke-width="0.5" />
+    @endforeach
 
-    @if ($note)
-        <p class="mt-1 text-xs text-muted">{{ $note }}</p>
-    @endif
-
-    @if ($points->count() < 2)
-        <div class="wd-chart-empty">
-            <x-empty-state icon="area_chart" :title="__('Noch keine Daten für dieses Diagramm.')" compact />
-        </div>
-    @else
-        <svg viewBox="0 0 {{ $width }} {{ $height }}" role="img" aria-label="{{ $title }}" class="mt-2 w-full">
-            <line x1="{{ $pad }}" y1="{{ $height - $pad }}" x2="{{ $width - $pad }}" y2="{{ $height - $pad }}" class="stroke-base-300" stroke-width="1" />
-            <line x1="{{ $pad }}" y1="{{ $pad }}" x2="{{ $pad }}" y2="{{ $height - $pad }}" class="stroke-base-300" stroke-width="1" />
-            <text x="{{ $pad - 6 }}" y="{{ $pad }}" text-anchor="end" class="fill-muted text-[10px]">{{ $maxY }}</text>
-            <text x="{{ $pad - 6 }}" y="{{ $height - $pad }}" text-anchor="end" class="fill-muted text-[10px]">0</text>
-            @foreach ($bands as $bandIndex => $band)
-                <path d="{{ $paths[$bandIndex] }}" class="{{ $fills[$bandIndex % count($fills)] }} stroke-base-100" stroke-width="0.5" />
-            @endforeach
-        </svg>
+    <x-slot:legend>
         <p class="mt-1 flex flex-wrap gap-3 text-xs">
             @foreach ($bands as $bandIndex => $band)
                 <span class="inline-flex items-center gap-1">
@@ -83,22 +68,20 @@
                 </span>
             @endforeach
         </p>
+    </x-slot:legend>
 
-        <div class="wd-chart-table mt-2 max-h-48 overflow-y-auto">
-            <x-table bare>
-                <x-slot:head>
-                    <tr>
-                        <th>{{ $xLabel ?? __('Datum') }}</th>
-                        @foreach ($bands as $band)<th class="text-right">{{ $band['label'] }}</th>@endforeach
-                    </tr>
-                </x-slot:head>
-                @foreach ($points as $point)
-                    <tr>
-                        <td>{{ $point['x'] }}</td>
-                        @foreach ($bands as $band)<td class="text-right tabular-nums">{{ $point[$band['key']] ?? 0 }}</td>@endforeach
-                    </tr>
-                @endforeach
-            </x-table>
-        </div>
-    @endif
-</figure>
+    <x-slot:head>
+        <tr>
+            <th>{{ $xLabel ?? __('Datum') }}</th>
+            @foreach ($bands as $band)<th class="text-right">{{ $band['label'] }}</th>@endforeach
+        </tr>
+    </x-slot:head>
+    <x-slot:rows>
+        @foreach ($points as $point)
+            <tr>
+                <td>{{ $point['x'] }}</td>
+                @foreach ($bands as $band)<td class="text-right tabular-nums">{{ $point[$band['key']] ?? 0 }}</td>@endforeach
+            </tr>
+        @endforeach
+    </x-slot:rows>
+</x-charts.frame>

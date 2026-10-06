@@ -10,9 +10,10 @@
 
 @section('title', __('problemreport.title.inbox'))
 @section('nav-title', __('problemreport.title.inbox'))
+@include('partials.page-fill')
 
 @section('content')
-<x-index-page :subtitle="__('problemreport.title.inbox_subtitle')">
+<x-index-page overflow="clip" :subtitle="__('problemreport.title.inbox_subtitle')">
     <x-slot:actions>
         <form method="GET" action="{{ route('admin.problem-reports.index') }}" class="flex items-center gap-2">
             <select name="status" class="select select-bordered select-sm" data-autosubmit>
@@ -27,7 +28,7 @@
     @if ($reports->isEmpty())
         <x-empty-state framed icon="flag" :title="__('problemreport.empty.inbox_title')" :message="__('problemreport.empty.inbox_message')" />
     @else
-        <x-table>
+        <x-table scroll="flex">
             <x-slot:head>
                 <tr>
                     <th>{{ __('problemreport.field.reference') }}</th>
@@ -46,7 +47,7 @@
                     <td class="text-sm">{{ $report->reporter?->name ?? '—' }}</td>
                     <td><x-status-badge size="xs" :tone="$report->severity->tone()">{{ $report->severity->label() }}</x-status-badge></td>
                     <td><x-status-badge size="xs" :tone="$report->status->tone()">{{ $report->status->label() }}</x-status-badge></td>
-                    <td class="text-sm">{{ $report->created_at?->orgTz()->format('d.m.Y H:i') }}</td>
+                    <td class="text-sm">{{ $report->created_at?->fdatetime() }}</td>
                     <td class="text-right">
                         <x-icon-btn icon="open_in_new" :href="route('admin.problem-reports.show', $report)" :label="__('problemreport.action.open')" />
                     </td>

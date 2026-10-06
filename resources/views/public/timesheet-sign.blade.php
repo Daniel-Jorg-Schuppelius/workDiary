@@ -6,17 +6,7 @@
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
-<!doctype html>
-<html lang="de" data-theme="light">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{{ __('Stundenzettel signieren') }}</title>
-@include('partials.font-bootstrap', ['icons' => false])
-@vite(['resources/css/app.css','resources/js/app.js','resources/js/signature.js'])
-</head>
-<body class="min-h-screen bg-base-200">
-<main class="mx-auto max-w-3xl p-4">
+<x-public-page :title="__('Stundenzettel signieren')" :assets="['resources/css/app.css', 'resources/js/app.js', 'resources/js/signature.js']">
     <div class="mb-4 rounded-box bg-base-100 p-4 shadow">
         <h1 class="font-['Space_Grotesk'] text-xl font-semibold">{{ __('Stundenzettel signieren') }}</h1>
         <div class="mt-1 text-sm text-base-content/70">
@@ -60,6 +50,4 @@
     <div class="rounded-box bg-base-100 p-4 shadow">
         @include('timesheets._signature_pad', ['action' => route('timesheets.public-sign.submit', $token), 'timesheet' => $timesheet])
     </div>
-</main>
-</body>
-</html>
+</x-public-page>

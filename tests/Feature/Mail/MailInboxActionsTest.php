@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Mail;
 
+use App\Enums\Integration\IntegrationInboxStatus;
 use App\Models\Customer\Customer;
 use App\Models\Document\Document;
 use App\Models\Integration\IntegrationInboxItem;
@@ -94,7 +95,7 @@ final class MailInboxActionsTest extends TestCase {
         $this->assertSame('email', $ticket->source->value);
 
         $item->refresh();
-        $this->assertSame(IntegrationInboxItem::STATUS_RESOLVED_LINKED, $item->status);
+        $this->assertSame(IntegrationInboxStatus::ResolvedLinked, $item->status);
 
         // Idempotenz: ein zweiter Klick erzeugt KEIN zweites Ticket.
         $this->actingAs($this->admin)

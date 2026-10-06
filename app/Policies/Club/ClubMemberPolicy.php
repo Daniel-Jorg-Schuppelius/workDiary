@@ -18,8 +18,8 @@ use App\Policies\Concerns\HasAdminBypass;
 
 /**
  * Mitglieder (MVP-842): Register mit club.viewAny/manage; Gruppenleitung
- * sieht Mitglieder ihrer Gruppen; ein Mitglied sieht den eigenen Datensatz,
- * eine Vertretung nur zugeordnete Mitglieder. Pflege nur mit club.manage.
+ * sieht Mitglieder ihrer Gruppen. Mitglied und Vertretung arbeiten in
+ * „Mein Verein“, nicht auf der Verwaltungsseite. Pflege nur mit club.manage.
  */
 class ClubMemberPolicy {
     use ClubAccess;
@@ -34,15 +34,14 @@ class ClubMemberPolicy {
         return $this->canReadRegister($user);
     }
 
+    /**
+     * Verwaltungsseite des Mitglieds: Registerrecht oder Leitung einer Gruppe
+     * des Mitglieds. Mitglied und Vertretung nutzen „Mein Verein“ — die
+     * Verwaltungsseite zeigt interne Vermerke und die Kontaktdaten anderer
+     * Vertretungen (Entscheidung zu authz-a-9).
+     */
     public function view(User $user, ClubMember $member): bool {
-        if ($this->canReadRegister($user)) {
-            return true;
-        }
-        if ($member->user_id !== null && $member->user_id === $user->id) {
-            return true;
-        }
-
-        return $this->leadsMemberGroup($user, $member) || $this->isGuardianOf($user, $member);
+        return $this->canReadRegister($user) || $this->leadsMemberGroup($user, $member);
     }
 
     public function create(User $user): bool {

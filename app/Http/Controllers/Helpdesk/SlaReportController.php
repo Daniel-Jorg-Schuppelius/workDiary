@@ -146,7 +146,7 @@ class SlaReportController extends Controller {
         $service->acknowledge($violation, $user, $data['cause'] ?? null);
 
         return redirect()
-            ->route('reports.sla')
+            ->toList('reports.sla')
             ->with('success', __('sla.report.acknowledged'));
     }
 

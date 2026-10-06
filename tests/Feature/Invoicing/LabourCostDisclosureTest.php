@@ -11,6 +11,7 @@
 namespace Tests\Feature\Invoicing;
 
 use App\Enums\Article\ArticleType;
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Article\Article;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\{Invoice, InvoiceItem};
@@ -79,7 +80,7 @@ class LabourCostDisclosureTest extends TestCase {
             'organization_id' => $this->organization->id,
             'customer_id' => ($customer ?? $this->privateCustomer)->id,
             'number' => 'R2026-' . str_pad((string) random_int(1, 9999), 4, '0', STR_PAD_LEFT),
-            'status' => Invoice::STATUS_DRAFT,
+            'status' => InvoiceStatus::Draft,
             'issued_on' => '2026-10-01',
             'due_on' => '2026-10-15',
             'currency' => 'EUR',
@@ -171,7 +172,7 @@ class LabourCostDisclosureTest extends TestCase {
         $invoice = $this->invoice([
             ['unit_price' => '100.00', 'labour_share_percent' => '100'],
             ['unit_price' => '50.00', 'labour_share_percent' => '0'],
-        ], ['status' => Invoice::STATUS_ISSUED]);
+        ], ['status' => InvoiceStatus::Issued]);
 
         $html = view('invoices.pdf', app(InvoicePdfRenderer::class)->viewData($invoice))->render();
         $this->assertStringContainsString('§ 35a EStG', $html);
@@ -192,7 +193,7 @@ class LabourCostDisclosureTest extends TestCase {
 
     public function test_cancellation_and_quote_conversion_carry_share_and_override(): void {
         $original = $this->invoice([['unit_price' => '100.00', 'labour_share_percent' => '60']], [
-            'status' => Invoice::STATUS_ISSUED,
+            'status' => InvoiceStatus::Issued,
             'is_labour_cost_disclosed' => true,
         ]);
         $cancellation = app(InvoiceGenerator::class)->cancellationFor($original, 'Test', $this->admin->id);

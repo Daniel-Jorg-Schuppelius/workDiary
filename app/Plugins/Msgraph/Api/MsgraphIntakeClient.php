@@ -172,7 +172,7 @@ class MsgraphIntakeClient implements GraphSubscriptionClient {
             $response = $this->api->getResponse($url, ['$top' => MsgraphConfig::resolve()['intake_page_size']]);
         } else {
             // Checkpoint ist die absolute next-/deltaLink-URL von Graph.
-            $response = $this->api->getResponse($checkpoint);
+            $response = $this->api->getFollowUp($checkpoint);
         }
 
         if ($response->status() === 410) {

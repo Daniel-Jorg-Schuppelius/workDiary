@@ -43,7 +43,7 @@
                     @endforeach
                 </select>
             </label>
-            <button type="submit" class="btn btn-sm btn-outline">{{ __('Speichern') }}</button>
+            <x-button type="submit" tone="outline">{{ __('Speichern') }}</x-button>
         </form>
     </x-card>
 @endif
@@ -97,11 +97,11 @@
             @endif
             <span class="flex flex-wrap gap-1">
                 @forelse ($billingAgreement->rates as $rate)
-                    <span class="badge badge-ghost badge-sm tabular-nums">
+                    <x-status-badge class="tabular-nums">
                         {{ $rate->activityCategory?->label ?? __('customer-billing.all_categories') }}
                         · {{ $rate->day_type->label() }}
                         · {{ $money($rate->hourly_rate) }}
-                    </span>
+                    </x-status-badge>
                 @empty
                     <span class="text-warning">{{ __('customer-billing.no_rates_hint') }}</span>
                 @endforelse
@@ -161,8 +161,8 @@
                             <td class="text-sm">
                                 @if ($statement->retainerInvoice)
                                     <span class="tabular-nums">{{ $statement->retainerInvoice->number }}</span>
-                                    <x-status-badge :tone="$statement->retainerInvoice->status === \App\Models\Invoicing\Invoice::STATUS_PAID ? 'success' : 'ghost'">
-                                        {{ __('values.' . $statement->retainerInvoice->status) }}
+                                    <x-status-badge :tone="$statement->retainerInvoice->status === \App\Enums\Invoicing\InvoiceStatus::Paid ? 'success' : 'ghost'">
+                                        {{ $statement->retainerInvoice->status->label() }}
                                     </x-status-badge>
                                 @elseif ($linkedVoucher = $billingVouchers[$statement->id] ?? null)
                                     {{-- Direkt im Buchhaltungsprogramm geführter Beleg (verknüpft, nicht gepusht). --}}

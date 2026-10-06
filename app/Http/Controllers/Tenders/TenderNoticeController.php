@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Tenders;
 
+use App\Enums\Tenders\TenderNoticeMatchState;
 use App\Http\Controllers\Controller;
 use App\Models\Applications\ApplicationOpportunity;
 use App\Models\Platform\User;
@@ -37,13 +38,10 @@ use RuntimeException;
  * Vergabeakte führen darf, führt auch den Radar.
  */
 class TenderNoticeController extends Controller {
-    private const STATES = [TenderNoticeMatch::STATE_NEW, TenderNoticeMatch::STATE_MUTED, TenderNoticeMatch::STATE_CONVERTED];
-
     public function index(Request $request): View {
         Gate::authorize('viewAny', ApplicationOpportunity::class);
 
-        $state = $request->string('state')->toString();
-        $state = in_array($state, self::STATES, true) ? $state : TenderNoticeMatch::STATE_NEW;
+        $state = TenderNoticeMatchState::tryFrom($request->string('state')->toString()) ?? TenderNoticeMatchState::New;
 
         $matches = TenderNoticeMatch::query()
             ->where('state', $state)
@@ -58,7 +56,7 @@ class TenderNoticeController extends Controller {
 
         return view('tenders.radar.index', [
             'matches' => $matches,
-            'state' => $state,
+            'state' => $state->value,
             'counts' => $this->counts(),
             'profileCount' => TenderFilterProfile::query()->count(),
             'canManage' => Gate::allows('create', ApplicationOpportunity::class),
@@ -77,8 +75,8 @@ class TenderNoticeController extends Controller {
         Gate::authorize('create', ApplicationOpportunity::class);
         $this->guard($match);
 
-        if ($match->state === TenderNoticeMatch::STATE_NEW) {
-            $match->forceFill(['state' => TenderNoticeMatch::STATE_MUTED])->save();
+        if ($match->state->canTransitionTo(TenderNoticeMatchState::Muted)) {
+            $match->forceFill(['state' => TenderNoticeMatchState::Muted])->save();
         }
 
         if ($request->boolean('exclude_buyer')) {
@@ -122,8 +120,8 @@ class TenderNoticeController extends Controller {
         Gate::authorize('create', ApplicationOpportunity::class);
         $this->guard($match);
 
-        if ($match->state === TenderNoticeMatch::STATE_MUTED) {
-            $match->forceFill(['state' => TenderNoticeMatch::STATE_NEW])->save();
+        if ($match->state->canTransitionTo(TenderNoticeMatchState::New)) {
+            $match->forceFill(['state' => TenderNoticeMatchState::New])->save();
         }
 
         return back()->with('success', __('Bekanntmachung wieder eingeblendet.'));
@@ -153,7 +151,7 @@ class TenderNoticeController extends Controller {
             // Die Verwerfungsquote ist der Pflegehinweis: Wer fast alles
             // ausblendet, hat ein zu weit gefasstes Profil.
             'profiles' => TenderFilterProfile::query()
-                ->withCount(['matches', 'matches as muted_count' => fn ($q) => $q->where('state', TenderNoticeMatch::STATE_MUTED)])
+                ->withCount(['matches', 'matches as muted_count' => fn ($q) => $q->where('state', TenderNoticeMatchState::Muted)])
                 ->orderBy('name')
                 ->get(),
             'canManage' => Gate::allows('create', ApplicationOpportunity::class),

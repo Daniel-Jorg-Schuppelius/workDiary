@@ -6,7 +6,7 @@
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
-{{-- Abrufe eines Rahmen-LV (MVP-931). Erwartet: $bill, $callOffs, $remaining, $canManage, $canInvoice --}}
+{{-- Abrufe eines Rahmen-LV (MVP-931). Erwartet: $bill, $callOffs (Paginator), $remaining, $canManage, $canInvoice --}}
 @extends('layouts.app')
 
 @section('title', __('gaeb.call_off.title') . ' — ' . $bill->name)
@@ -63,8 +63,8 @@
                             @endforeach
                         </div>
                     </td>
-                    <td>{{ $callOff->ordered_on?->format('d.m.Y') ?? '—' }}</td>
-                    <td>{{ $callOff->due_on?->format('d.m.Y') ?? '—' }}</td>
+                    <td>{{ $callOff->ordered_on?->fdate() ?? '—' }}</td>
+                    <td>{{ $callOff->due_on?->fdate() ?? '—' }}</td>
                     <td class="text-right tabular-nums">{{ $callOff->items->count() }}</td>
                     <td><span class="wd-badge badge-ghost">{{ $callOff->status->label() }}</span></td>
                     <td>
@@ -81,14 +81,14 @@
                                     <form method="POST" action="{{ route('bill-of-quantities.call-offs.transition', $callOff) }}">
                                         @csrf
                                         <input type="hidden" name="status" value="{{ $target->value }}">
-                                        <button type="submit" class="btn btn-xs {{ $target === \App\Enums\Gaeb\BoqCallOffStatus::Cancelled ? 'btn-ghost text-error' : 'btn-ghost' }}">{{ __('gaeb.call_off.transition.' . $target->value) }}</button>
+                                        <x-button type="submit" tone="ghost" size="xs" :class="$target === \App\Enums\Gaeb\BoqCallOffStatus::Cancelled ? 'text-error' : null">{{ __('gaeb.call_off.transition.' . $target->value) }}</x-button>
                                     </form>
                                 @endforeach
                             @endif
                             @if ($canInvoice && $invoice === null && $callOff->status->isBillable())
                                 <form method="POST" action="{{ route('bill-of-quantities.call-offs.invoice', $callOff) }}">
                                     @csrf
-                                    <button type="submit" class="btn btn-xs btn-primary">{{ __('gaeb.call_off.invoice') }}</button>
+                                    <x-button type="submit" size="xs">{{ __('gaeb.call_off.invoice') }}</x-button>
                                 </form>
                             @endif
                         </div>
@@ -99,6 +99,8 @@
             @endforelse
         </x-table>
     </x-card>
+
+    <x-pagination :paginator="$callOffs" standing />
 
     @if ($bill->is_framework)
         <x-card padding="p-0" class="mt-4" :title="__('gaeb.call_off.remaining')">

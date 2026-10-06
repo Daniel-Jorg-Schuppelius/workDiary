@@ -13,6 +13,7 @@ namespace Tests\Feature\Plugins\Msgraph;
 use App\Models\Calendar\Event;
 use App\Models\Integration\ExternalReference;
 use App\Models\Platform\Organization;
+use App\Plugins\Msgraph\Enums\MsgraphConnectionStatus;
 use App\Plugins\Msgraph\Models\MsgraphConnection;
 use App\Plugins\Msgraph\MsgraphPlugin;
 use App\Plugins\Support\Calendar\RemoteCalendarPublishService;
@@ -42,7 +43,7 @@ final class MsgraphPublishTest extends TestCase {
         return MsgraphConnection::query()->create($attributes + [
             'organization_id' => $this->organization->id,
             'access_token' => 'secret-token-123',
-            'status' => MsgraphConnection::STATUS_ACTIVE,
+            'status' => MsgraphConnectionStatus::Active,
         ]);
     }
 

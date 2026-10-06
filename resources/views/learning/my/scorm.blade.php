@@ -39,14 +39,13 @@
         <span data-scorm-message>{{ __('learning.scorm.running') }}</span>
     </div>
 
-    <div class="rounded-box border border-base-300 overflow-hidden bg-base-100"
-         style="height: calc(100vh - 16rem); min-height: 24rem;">
+    <x-card padding="p-0" class="overflow-hidden" style="height: calc(100vh - 16rem); min-height: 24rem;">
         <iframe id="scorm-frame"
                 title="{{ $package->title }}"
                 src="{{ $contentWrapperUrl ?? $launchUrl }}"
                 class="w-full h-full border-0"
                 referrerpolicy="no-referrer"></iframe>
-    </div>
+    </x-card>
 </x-page-shell>
 
 <script @cspNonce>

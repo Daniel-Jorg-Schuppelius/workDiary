@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Integration;
 
 use App\Enums\Integration\WebhookEvent;
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Enums\ServiceTicket\ServiceTicketStatus;
 use App\Enums\Timesheet\TimesheetStatus;
 use App\Jobs\Integration\WebhookDeliveryJob;
@@ -81,7 +82,7 @@ final class LifecycleWebhookTest extends TestCase {
             'organization_id' => $this->organization->id,
             'customer_id' => $customer->id,
             'number' => 'R2026-' . random_int(1000, 9999),
-            'status' => Invoice::STATUS_DRAFT,
+            'status' => InvoiceStatus::Draft,
             'type' => Invoice::TYPE_INVOICE,
             'tax_rate' => '19.00',
         ]);
@@ -109,10 +110,10 @@ final class LifecycleWebhookTest extends TestCase {
     public function test_invoice_paid_transition_publishes_from_every_write_site(): void {
         $this->subscribe(WebhookEvent::InvoicePaid);
         $invoice = $this->draftInvoice();
-        $invoice->update(['status' => Invoice::STATUS_ISSUED, 'issued_on' => now()]);
+        $invoice->update(['status' => InvoiceStatus::Issued, 'issued_on' => now()]);
         $this->assertSame(0, WebhookDelivery::query()->withoutGlobalScopes()->count(), 'issued ist nicht paid');
 
-        $invoice->update(['status' => Invoice::STATUS_PAID, 'paid_on' => now()]);
+        $invoice->update(['status' => InvoiceStatus::Paid, 'paid_on' => now()]);
 
         $this->assertSame(1, WebhookDelivery::query()->withoutGlobalScopes()->where('event', 'invoice.paid')->count());
         $invoice->update(['notes' => 'nachträglich']);

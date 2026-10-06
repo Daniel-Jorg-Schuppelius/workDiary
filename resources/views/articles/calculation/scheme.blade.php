@@ -71,7 +71,7 @@
             </x-table>
         </x-card>
         <x-validation-errors />
-        <div class="flex justify-end"><button type="submit" class="btn btn-sm btn-primary">{{ __('Speichern') }}</button></div>
+        <div class="flex justify-end"><x-button type="submit">{{ __('Speichern') }}</x-button></div>
     </form>
 
     <x-card :title="__('article.calculation.wage_groups')" padding="p-0">

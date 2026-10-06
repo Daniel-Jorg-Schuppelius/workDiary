@@ -16,6 +16,7 @@ use App\Plugins\GoogleCalendar\Api\{GoogleCalendarClient, GoogleCalendarOAuth};
 use App\Plugins\GoogleCalendar\GoogleCalendarPlugin;
 use App\Plugins\GoogleCalendar\Models\GoogleCalendarConnection;
 use App\Plugins\{PluginDiscovery, PluginHealth};
+use App\Plugins\Support\OAuthConnectionStatus;
 use App\Support\MorphMap;
 use GuzzleHttp\{Client as GuzzleClient, HandlerStack};
 use GuzzleHttp\Handler\MockHandler;
@@ -97,7 +98,7 @@ final class GoogleCalendarConnectionTest extends TestCase {
         return GoogleCalendarConnection::query()->create($attributes + [
             'organization_id' => $this->organization->id,
             'access_token' => 'secret-token-123',
-            'status' => GoogleCalendarConnection::STATUS_ACTIVE,
+            'status' => OAuthConnectionStatus::Active,
         ]);
     }
 
@@ -133,7 +134,7 @@ final class GoogleCalendarConnectionTest extends TestCase {
         $response->assertRedirect(route('admin.google-calendar.index'))->assertSessionHas('success');
 
         $connection = GoogleCalendarConnection::query()->firstOrFail();
-        $this->assertSame(GoogleCalendarConnection::STATUS_ACTIVE, $connection->status);
+        $this->assertSame(OAuthConnectionStatus::Active, $connection->status);
         $this->assertSame('secret-token-123', $connection->access_token); // entschlüsselt über Cast
         $this->assertSame('refresh-token-456', $connection->refresh_token);
 
@@ -190,7 +191,7 @@ final class GoogleCalendarConnectionTest extends TestCase {
 
         $fresh = $connection->fresh();
         $this->assertInstanceOf(GoogleCalendarConnection::class, $fresh);
-        $this->assertSame(GoogleCalendarConnection::STATUS_DISCONNECTED, $fresh->status);
+        $this->assertSame(OAuthConnectionStatus::Disconnected, $fresh->status);
         $this->assertNull($fresh->access_token);
         $this->assertNull($fresh->refresh_token);
         $this->assertFalse($fresh->isActive());
@@ -199,6 +200,8 @@ final class GoogleCalendarConnectionTest extends TestCase {
             'auditable_id' => $connection->id,
             'event' => 'google_calendar.disconnected',
         ]);
+        // Getrennt heißt „keine Verbindung", nicht „inaktiv".
+        $this->assertSame(__('google_calendar::google_calendar.health.no_connection'), (new GoogleCalendarPlugin())->healthCheck()->message);
     }
 
     public function test_health_check_reflects_calendar_list_probe(): void {

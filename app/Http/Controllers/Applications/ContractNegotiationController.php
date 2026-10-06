@@ -49,8 +49,10 @@ class ContractNegotiationController extends Controller {
             'conditions.*' => ['nullable', 'string', 'max:1000'],
         ]);
 
+        $roundBefore = max(1, (int) $negotiation->approvals()->max('round'));
+
         try {
-            $this->negotiations->addVersion(
+            $version = $this->negotiations->addVersion(
                 $negotiation,
                 $data['kind'],
                 $data['summary'] ?? null,
@@ -61,7 +63,9 @@ class ContractNegotiationController extends Controller {
             return back()->with('error', ErrorText::for($e));
         }
 
-        return back()->with('success', __('Vertragsversion abgelegt.'));
+        return back()->with('success', $version->approval_round > $roundBefore
+            ? __('Vertragsversion abgelegt — die Freigabe beginnt neu (Runde :round).', ['round' => $version->approval_round])
+            : __('Vertragsversion abgelegt.'));
     }
 
     public function addReviewItem(Request $request, ApplicationContractNegotiation $negotiation): RedirectResponse {

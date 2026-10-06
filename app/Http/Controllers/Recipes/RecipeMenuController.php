@@ -40,7 +40,8 @@ class RecipeMenuController extends Controller {
                 ->where('organization_id', $organization->id)
                 ->withCount('items')
                 ->orderByDesc('id')
-                ->get(),
+                ->paginate(25)
+                ->withQueryString(),
         ]);
     }
 
@@ -147,7 +148,7 @@ class RecipeMenuController extends Controller {
         $user = Auth::user();
         $organization = $user->organization;
         abort_unless($organization instanceof Organization, 404);
-        abort_unless($this->recipes->isPartyserviceActive($organization), 404);
+        abort_unless($organization->hasBranchProfile(RecipeService::PROFILE_CODE), 404);
 
         return $organization;
     }

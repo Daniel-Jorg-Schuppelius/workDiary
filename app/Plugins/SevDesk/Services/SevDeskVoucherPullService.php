@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\SevDesk\Services;
 
 use App\Enums\Billing\{DocumentDirection, DocumentKind};
+use App\Enums\Finance\AccountingVoucherState;
 use App\Plugins\SevDesk\Api\SevDeskClientFactory;
 use App\Plugins\SevDesk\{SevDeskConfig, SevDeskPlugin};
 use App\Services\Finance\Accounting\Vouchers\{MirroredVoucher, VoucherMirror, VoucherPuller};
@@ -43,10 +44,10 @@ class SevDeskVoucherPullService implements VoucherPuller {
 
     /** sevDesk-Statuskatalog → normalisierter Belegzustand. */
     private const STATES = [
-        '50' => 'draft',
-        '100' => 'open',
-        '750' => 'open',
-        '1000' => 'paid',
+        '50' => AccountingVoucherState::Draft,
+        '100' => AccountingVoucherState::Open,
+        '750' => AccountingVoucherState::Open,
+        '1000' => AccountingVoucherState::Paid,
     ];
 
     public function __construct(
@@ -109,7 +110,7 @@ class SevDeskVoucherPullService implements VoucherPuller {
             kind: DocumentKind::Other,
             rawType: $creditDebit !== '' ? $creditDebit : null,
             rawStatus: $status !== '' ? $status : null,
-            state: self::STATES[$status] ?? 'open',
+            state: self::STATES[$status] ?? AccountingVoucherState::Open,
             number: trim((string) ($row['voucherNumber'] ?? ($row['description'] ?? ''))) ?: null,
             date: VoucherMirror::date($row['voucherDate'] ?? null),
             dueDate: VoucherMirror::date($row['dueDate'] ?? null),

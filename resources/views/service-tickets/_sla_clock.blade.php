@@ -25,55 +25,46 @@
 
 <x-card :title="__('SLA-Uhr')" icon="timer">
     @if ($ticket->reaction_due_at === null && $ticket->resolution_due_at === null)
-        <p class="text-sm text-muted">{{ __('Keine SLA-Frist hinterlegt.') }}</p>
+        <x-empty-state icon="timer_off" :title="__('Keine SLA-Frist hinterlegt.')" compact />
     @else
-        <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 text-sm">
-            <div>
-                <dt class="text-muted">{{ __('Reaktionsfrist') }}</dt>
-                <dd class="flex items-center gap-2">
-                    {{ $ticket->reaction_due_at?->orgTz()->translatedFormat('d.m.Y H:i') ?: '—' }}
-                    @if ($ticket->reaction_due_at)
-                        <x-status-badge :tone="$reactionStatus->tone()" size="sm" outline>{{ $reactionStatus->label() }}</x-status-badge>
-                    @endif
-                </dd>
-            </div>
-            <div>
-                <dt class="text-muted">{{ __('Lösungsfrist') }}</dt>
-                <dd class="flex items-center gap-2">
-                    {{ $ticket->resolution_due_at?->orgTz()->translatedFormat('d.m.Y H:i') ?: '—' }}
-                    @if ($ticket->resolution_due_at)
-                        <x-status-badge :tone="$resolutionStatus->tone()" size="sm" outline>{{ $resolutionStatus->label() }}</x-status-badge>
-                    @endif
-                    @if ($minutesRemaining !== null && $resolutionStatus->value !== 'met' && $resolutionStatus->value !== 'none')
-                        <span class="{{ $resolutionStatus->textClass() }} text-xs">
-                            {{ $minutesRemaining < 0 ? __('sla.overdue_by', ['min' => abs($minutesRemaining)]) : __('sla.remaining', ['min' => $minutesRemaining]) }}
+        <x-detail-grid layout="cells">
+            <x-detail-grid.row :label="__('Reaktionsfrist')" class="flex items-center gap-2">
+                {{ $ticket->reaction_due_at?->orgTz()->translatedFormat('d.m.Y H:i') ?: '—' }}
+                @if ($ticket->reaction_due_at)
+                    <x-status-badge :tone="$reactionStatus->tone()" size="sm" outline>{{ $reactionStatus->label() }}</x-status-badge>
+                @endif
+            </x-detail-grid.row>
+            <x-detail-grid.row :label="__('Lösungsfrist')" class="flex items-center gap-2">
+                {{ $ticket->resolution_due_at?->orgTz()->translatedFormat('d.m.Y H:i') ?: '—' }}
+                @if ($ticket->resolution_due_at)
+                    <x-status-badge :tone="$resolutionStatus->tone()" size="sm" outline>{{ $resolutionStatus->label() }}</x-status-badge>
+                @endif
+                @if ($minutesRemaining !== null && $resolutionStatus->value !== 'met' && $resolutionStatus->value !== 'none')
+                    <span class="{{ $resolutionStatus->textClass() }} text-xs">
+                        {{ $minutesRemaining < 0 ? __('sla.overdue_by', ['min' => abs($minutesRemaining)]) : __('sla.remaining', ['min' => $minutesRemaining]) }}
+                    </span>
+                @endif
+            </x-detail-grid.row>
+            @if ($snapshot !== [])
+                <x-detail-grid.row :label="__('Eingefrorener Vertragsstand')" full>
+                    {{ $snapshot['contract_name'] ?? $ticket->slaContract?->label ?? '—' }}
+                    @if (! empty($snapshot['frozen_at']))
+                        <span class="text-xs text-muted">
+                            · {{ __('eingefroren am :date', ['date' => \Illuminate\Support\Carbon::parse($snapshot['frozen_at'])->translatedFormat('d.m.Y H:i')]) }}
                         </span>
                     @endif
-                </dd>
-            </div>
-            @if ($snapshot !== [])
-                <div class="md:col-span-2">
-                    <dt class="text-muted">{{ __('Eingefrorener Vertragsstand') }}</dt>
-                    <dd>
-                        {{ $snapshot['contract_name'] ?? $ticket->slaContract?->label ?? '—' }}
-                        @if (! empty($snapshot['frozen_at']))
-                            <span class="text-xs text-muted">
-                                · {{ __('eingefroren am :date', ['date' => \Illuminate\Support\Carbon::parse($snapshot['frozen_at'])->translatedFormat('d.m.Y H:i')]) }}
-                            </span>
-                        @endif
-                    </dd>
-                </div>
+                </x-detail-grid.row>
             @endif
-        </dl>
+        </x-detail-grid>
     @endif
 
     @if ($ticket->status->isWaiting())
         <div class="divider my-2"></div>
-        <dl class="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-2 text-sm">
-            <div><dt class="text-muted">{{ __('Wartegrund') }}</dt><dd>{{ $ticket->wait_reason ?: '—' }}</dd></div>
-            <div><dt class="text-muted">{{ __('Wiedervorlage') }}</dt><dd>{{ $ticket->wait_until?->translatedFormat('d.m.Y H:i') ?: '—' }}</dd></div>
-            <div><dt class="text-muted">{{ __('Verantwortlich') }}</dt><dd>{{ $ticket->waitOwner?->name ?: '—' }}</dd></div>
-        </dl>
+        <x-detail-grid layout="cells" :cols="3">
+            <x-detail-grid.row :label="__('Wartegrund')">{{ $ticket->wait_reason ?: '—' }}</x-detail-grid.row>
+            <x-detail-grid.row :label="__('Wiedervorlage')">{{ $ticket->wait_until?->translatedFormat('d.m.Y H:i') ?: '—' }}</x-detail-grid.row>
+            <x-detail-grid.row :label="__('Verantwortlich')">{{ $ticket->waitOwner?->name ?: '—' }}</x-detail-grid.row>
+        </x-detail-grid>
     @endif
 
     @if ($openSegments->isNotEmpty())

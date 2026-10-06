@@ -11,7 +11,7 @@
 namespace App\Http\Controllers\CustomerPortal;
 
 use App\Enums\Customer\CustomerQueryStatus;
-use App\Http\Controllers\Attachments\AttachmentController;
+use App\Http\Controllers\Concerns\ValidatesUploadedFiles;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Helpdesk\Portal\TicketController;
 use App\Models\Attachments\Attachment;
@@ -20,9 +20,8 @@ use App\Models\Platform\User;
 use App\Services\Attachments\FileAttacher;
 use App\Services\Customer\CustomerQueryService;
 use App\Services\CustomerPortal\PortalQuerySubjects;
-use Illuminate\Http\{RedirectResponse, Request, UploadedFile};
+use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Storage};
-use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
@@ -35,6 +34,8 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
  * nicht editierbar; eine Rücknahme ist eine Statusänderung.
  */
 class QueryController extends Controller {
+    use ValidatesUploadedFiles;
+
     /** Obergrenze je Rückfrage — identisch zum Portal-Ticket. */
     public const MAX_FILES = 5;
 
@@ -91,7 +92,7 @@ class QueryController extends Controller {
             'question' => ['required', 'string', 'max:2000'],
         ]);
 
-        $files = $this->validatedUploads($request);
+        $files = $this->validatedUploads($request, self::MAX_FILES);
 
         $subject = $this->subjects->resolve($user, (string) $data['subject_type'], (string) $data['subject']);
         abort_if($subject === null, 404);
@@ -153,32 +154,6 @@ class QueryController extends Controller {
         }
 
         return response()->download($disk->path($attachment->path), $attachment->original_name);
-    }
-
-    /**
-     * Datei-Uploads nach der zentralen Policy des {@see AttachmentController}
-     * prüfen (Extension-Whitelist + Server-MIME via Fileinfo + Größenlimit) —
-     * exakt das Muster des Portal-Tickets.
-     *
-     * @return list<UploadedFile>
-     */
-    private function validatedUploads(Request $request): array {
-        $request->validate([
-            'files' => ['nullable', 'array', 'max:' . self::MAX_FILES],
-            'files.*' => ['file', 'max:' . FileAttacher::maxKb()],
-        ]);
-
-        $files = array_values(array_filter((array) $request->file('files', []), fn ($f) => $f instanceof UploadedFile));
-        foreach ($files as $file) {
-            $ext = strtolower($file->getClientOriginalExtension() ?: ($file->extension() ?? ''));
-            $serverMime = $file->getMimeType() ?? '';
-            if (! in_array($ext, AttachmentController::ALLOWED_EXTENSIONS, true)
-                || ! in_array($serverMime, AttachmentController::ALLOWED_MIMES, true)) {
-                throw ValidationException::withMessages(['files' => (string) __('Dateityp nicht erlaubt.')]);
-            }
-        }
-
-        return $files;
     }
 
     /** Rücknahme = protokollierte Statusänderung, kein spurloses Löschen. */

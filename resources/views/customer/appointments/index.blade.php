@@ -31,7 +31,7 @@
                 <span class="label-text">{{ __('Datum') }}</span>
                 <input type="date" name="day" value="{{ $day?->format('Y-m-d') }}" class="input input-bordered input-sm">
             </label>
-            <button type="submit" class="btn btn-primary btn-sm">{{ __('Fenster anzeigen') }}</button>
+            <x-button type="submit">{{ __('Fenster anzeigen') }}</x-button>
         </form>
 
         @if ($selected !== null)
@@ -48,9 +48,9 @@
                                 @csrf
                                 <input type="hidden" name="service" value="{{ $selected->sqid }}">
                                 <input type="hidden" name="start" value="{{ $window['start']->toIso8601String() }}">
-                                <button type="submit" class="btn btn-outline btn-sm">
+                                <x-button type="submit" tone="outline">
                                     {{ $window['start']->format('H:i') }}–{{ $window['end']->format('H:i') }}
-                                </button>
+                                </x-button>
                             </form>
                         @endforeach
                     </div>
@@ -71,19 +71,19 @@
         </x-slot:head>
         @forelse ($requests as $request)
             <tr>
-                <td class="whitespace-nowrap">{{ $request->start_at?->orgTz()->format('d.m.Y H:i') ?? '—' }}</td>
+                <td class="whitespace-nowrap">{{ $request->start_at?->fdatetime() ?? '—' }}</td>
                 <td>{{ $request->service_label ?? '—' }}</td>
                 <td>
-                    <x-status-badge :tone="$request->statusTone()" size="sm">{{ $request->statusLabel() }}</x-status-badge>
-                    @if ($request->status === 'declined' && $request->decline_reason)
+                    <x-status-badge :tone="$request->status->tone()" size="sm">{{ $request->status->label() }}</x-status-badge>
+                    @if ($request->status === \App\Enums\Calendar\AppointmentRequestStatus::Declined && $request->decline_reason)
                         <span class="block text-xs text-muted">{{ $request->decline_reason }}</span>
                     @endif
                 </td>
                 <td class="text-right">
-                    @if (in_array($request->status, ['requested', 'confirmed'], true))
+                    @if (in_array($request->status, [\App\Enums\Calendar\AppointmentRequestStatus::Requested, \App\Enums\Calendar\AppointmentRequestStatus::Confirmed], true))
                         <form method="POST" action="{{ route('customer.appointments.cancel', $request) }}">
                             @csrf
-                            <button type="submit" class="btn btn-ghost btn-xs">{{ __('Stornieren') }}</button>
+                            <x-button type="submit" tone="ghost" size="xs">{{ __('Stornieren') }}</x-button>
                         </form>
                     @endif
                 </td>
@@ -92,4 +92,6 @@
             <x-table.empty :colspan="4" :title="__('Noch keine Terminanfragen.')" />
         @endforelse
     </x-table>
+
+    <x-pagination :paginator="$requests" standing />
 @endsection

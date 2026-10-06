@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Invoicing;
 
 use App\Enums\Article\ArticleType;
-use App\Enums\Manufacturing\DeliveryFacturationStatus;
+use App\Enums\Invoicing\InvoiceStatus;
+use App\Enums\Manufacturing\{DeliveryFacturationStatus, DeliveryStockStatus};
 use App\Models\Article\{Article, ArticleVariant};
 use App\Models\Customer\Customer;
 use App\Models\Inventory\{StockDelivery, Warehouse};
@@ -166,13 +167,13 @@ final class DeliveryInvoicingTest extends TestCase {
         $this->assertSame($item->id, $delivery->invoice_item_id);
 
         // Gutschrift (nur zu bezahlten Rechnungen): keine Freigabe.
-        $draft->refresh()->forceFill(['status' => Invoice::STATUS_PAID])->saveQuietly();
+        $draft->refresh()->forceFill(['status' => InvoiceStatus::Paid])->saveQuietly();
         $credit = app(InvoiceGenerator::class)->creditNoteFor($draft->refresh(), $this->admin->id);
         $this->assertSame(DeliveryFacturationStatus::Invoiced, $delivery->refresh()->facturation_status);
         $this->assertNull($credit->items()->firstOrFail()->stock_delivery_id);
 
         // Vollstorno: frei zur erneuten Abrechnung, Herkunft am alten und am Stornoposten sichtbar.
-        $draft->refresh()->forceFill(['status' => Invoice::STATUS_ISSUED])->saveQuietly();
+        $draft->refresh()->forceFill(['status' => InvoiceStatus::Issued])->saveQuietly();
         $cancellation = app(InvoiceGenerator::class)->cancellationFor($draft->refresh(), 'Test', $this->admin->id);
         $this->assertNull($delivery->refresh()->invoice_item_id);
         $this->assertSame(DeliveryFacturationStatus::Pending, $delivery->facturation_status);
@@ -192,7 +193,7 @@ final class DeliveryInvoicingTest extends TestCase {
         $wrongCustomer = $this->delivery('1', ['customer_id' => $otherCustomer->id]);
         $external = $this->delivery('1', ['facturation_target' => 'lexoffice']);
         $foreignCurrency = $this->delivery('1', ['currency' => 'CHF']);
-        $notDelivered = $this->delivery('1', ['stock_status' => 'reserved']);
+        $notDelivered = $this->delivery('1', ['stock_status' => DeliveryStockStatus::Cancelled]);
         $other = Organization::factory()->create();
         $foreign = StockDelivery::query()->create(['organization_id' => $other->id, 'article_variant_id' => $this->variant->id, 'warehouse_id' => Warehouse::factory()->create(['organization_id' => $other->id])->id, 'customer_id' => Customer::factory()->create(['organization_id' => $other->id])->id, 'quantity' => '1', 'unit' => 'Stk', 'name_snapshot' => 'Fremd', 'unit_price_snapshot' => '1.0000', 'currency' => 'EUR', 'stock_status' => 'delivered', 'facturation_status' => 'pending', 'facturation_target' => 'workdiary', 'delivered_at' => now()]);
 

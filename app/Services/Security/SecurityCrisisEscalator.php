@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Security;
 
+use App\Enums\Crisis\CrisisCaseStatus;
 use App\Events\Security\SecurityCrisisRaised;
 use App\Models\Crisis\CrisisCase;
 use App\Models\Platform\{Organization, User};
@@ -64,7 +65,7 @@ class SecurityCrisisEscalator {
                 'title' => (string) __('security.crisis.mass_attack_title', $params),
                 'category' => 'security',
                 'severity' => 'critical',
-                'status' => 'activated',
+                'status' => CrisisCaseStatus::Activated,
                 'trigger_source' => $trigger,
                 'description' => (string) __('security.crisis.mass_attack_description', $params),
                 'activated_at' => now(),
@@ -100,7 +101,7 @@ class SecurityCrisisEscalator {
             return false;
         }
 
-        $case->update(['status' => 'all_clear', 'all_clear_at' => now()]);
+        $case->update(['status' => CrisisCaseStatus::AllClear, 'all_clear_at' => now()]);
         $case->audit('crisis.all_clear', ['trigger' => 'security.rate_normalized', 'count' => $count]);
 
         return true;
@@ -111,7 +112,7 @@ class SecurityCrisisEscalator {
             ->withoutGlobalScopes()
             ->where('organization_id', $organization->id)
             ->where('trigger_source', $trigger)
-            ->whereIn('status', CrisisCase::ACTIVE_STATUSES)
+            ->whereIn('status', CrisisCaseStatus::active())
             ->latest('id')
             ->first();
     }

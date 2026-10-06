@@ -13,6 +13,8 @@
     @if ($scenario !== null)
         @method('PUT')
     @endif
+    {{-- Ohne Vorbereitungsrecht nur Anzeige. --}}
+    <fieldset class="contents" @disabled(! $canEdit)>
     <x-input-field name="name" :id="'scenario-name-' . $suffix" :label="__('accounting.reports.scenario.field.name')" :value="$scenario?->name" required />
     <x-input-field name="receipt_delay_days" type="number" min="0" max="365" :id="'scenario-delay-' . $suffix" :label="__('accounting.reports.scenario.field.receipt_delay_days')" :value="$scenario?->receipt_delay_days" :hint="__('accounting.reports.scenario.hint.receipt_delay_days')" />
     <x-input-field name="inflow_change_percent" type="number" step="0.01" min="-100" :id="'scenario-in-' . $suffix" :label="__('accounting.reports.scenario.field.inflow_change_percent')" :value="$scenario?->inflow_change_percent" />
@@ -22,7 +24,10 @@
         <input type="checkbox" name="is_including_investments" value="1" class="checkbox checkbox-sm" @checked($scenario?->is_including_investments)>
         {{ __('accounting.reports.scenario.field.is_including_investments') }}
     </label>
-    <div class="sm:col-span-3 flex justify-end">
-        <button type="submit" class="btn btn-sm btn-primary">{{ $scenario !== null ? __('accounting.reports.scenario.save') : __('accounting.reports.scenario.create') }}</button>
-    </div>
+    </fieldset>
+    @if ($canEdit)
+        <div class="sm:col-span-3 flex justify-end">
+            <x-button type="submit">{{ $scenario !== null ? __('accounting.reports.scenario.save') : __('accounting.reports.scenario.create') }}</x-button>
+        </div>
+    @endif
 </form>

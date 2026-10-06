@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\DatevOnline\Services;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Invoicing\{IncomingEInvoice, Invoice};
 use App\Plugins\DatevOnline\Api\DatevOnlineClientFactory;
 use App\Plugins\DatevOnline\Enums\{DatevTransferKind, DatevTransferStatus};
@@ -50,7 +51,7 @@ class DatevDocumentUploader {
         $counts = ['transferred' => 0, 'failed' => 0];
 
         $invoices = $this->pending(Invoice::query(), $connection, DatevTransferKind::OutgoingDocument, Invoice::class)
-            ->whereIn('status', [Invoice::STATUS_ISSUED, Invoice::STATUS_PARTIALLY_PAID, Invoice::STATUS_PAID])
+            ->whereIn('status', [InvoiceStatus::Issued, InvoiceStatus::PartiallyPaid, InvoiceStatus::Paid])
             ->where('type', '!=', Invoice::TYPE_PROFORMA)
             ->where('issued_on', '>=', DateRange::day($since))
             ->orderBy('id')->limit($limit)->get();

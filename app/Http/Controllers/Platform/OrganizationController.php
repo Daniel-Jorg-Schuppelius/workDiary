@@ -157,8 +157,10 @@ class OrganizationController extends Controller {
             'settings.vacation.approval_stages' => ['nullable', 'integer', 'min:1', 'max:2'],
             // Vorbehalts-Eintragung beantragter Fehlzeiten (MVP-536, Q1 S. 43).
             'settings.vacation.provisional_booking' => ['nullable', 'in:0,1'],
-            // Antragsverfahren-Framework (MVP-531): Stufen je Antragstyp.
-            'settings.approvals.*' => ['nullable', 'integer', 'min:1', 'max:2'],
+            // Antragsverfahren-Framework (MVP-531): Stufen je Antragstyp — einzeln, weil
+            // `approvals.step_role.*` (Registry) in derselben Gruppe liegt.
+            'settings.approvals.overtime_stages' => ['nullable', 'integer', 'min:1', 'max:2'],
+            'settings.approvals.time_correction_stages' => ['nullable', 'integer', 'min:1', 'max:2'],
             // Anwesenheits-Board (MVP-524): Opt-in je Organisation.
             'settings.presence.board_enabled' => ['nullable', 'in:0,1'],
             // Outlook-Abwesenheitsnotiz bei genehmigtem Urlaub (Feature-103-Delta).
@@ -280,7 +282,7 @@ class OrganizationController extends Controller {
         // Löschen muss bewusst über die `purge`-Aktion erfolgen (mit
         // Slug-Bestätigung und Cooldown nach Deaktivierung).
         return redirect()
-            ->route('admin.organizations.index')
+            ->toList('admin.organizations.index')
             ->with('error', __('Direktes Löschen ist nicht mehr möglich. Bitte zuerst deaktivieren, optional Daten exportieren und anschließend endgültig löschen.'));
     }
 

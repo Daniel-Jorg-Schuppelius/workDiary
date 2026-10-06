@@ -11,11 +11,13 @@
 namespace Tests\Feature\Compliance;
 
 use App\Enums\Vacation\{VacationStatus, VacationType};
+use App\Http\Controllers\Admin\AuditDiffController;
 use App\Models\Absence\Vacation;
+use App\Models\Audit\AuditLog;
 use App\Models\Platform\User;
 use App\Models\Reporting\SavedReportView;
 use App\Models\Time\WorkSchedule;
-use App\Support\MorphMap;
+use App\Support\{MorphMap, Sqid};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Tests\Concerns\WithOrganization;
@@ -105,6 +107,70 @@ class Q1SlimFeaturesTest extends TestCase {
         $this->actingAs($this->orgUser())
             ->get(route('admin.audit-diff.index'))
             ->assertForbidden();
+    }
+
+    public function test_audit_diff_timeline_pages_instead_of_cutting_off(): void {
+        $admin = $this->orgAdmin();
+        $member = $this->orgUser(['name' => 'Stand 00']);
+        $ids = $this->auditTrail($member, AuditDiffController::PER_PAGE + 1);
+        $params = ['type' => 'member', 'record' => Sqid::encode(User::class, (int) $member->id)];
+
+        $first = $this->actingAs($admin)->get(route('admin.audit-diff.index', $params))
+            ->assertOk()
+            ->assertSee(trans_choice(':count Eintrag|:count Einträge', count($ids), ['count' => count($ids)]));
+        $this->assertSame(count($ids), $first->viewData('logs')->total());
+        $this->assertSame(array_slice($ids, 0, AuditDiffController::PER_PAGE), $first->viewData('logs')->pluck('id')->all());
+
+        $second = $this->actingAs($admin)->get(route('admin.audit-diff.index', $params + ['page' => 2]))->assertOk();
+        $this->assertSame(array_slice($ids, AuditDiffController::PER_PAGE), $second->viewData('logs')->pluck('id')->all());
+    }
+
+    public function test_audit_diff_compares_states_on_different_pages(): void {
+        $admin = $this->orgAdmin();
+        $member = $this->orgUser(['name' => 'Stand 00']);
+        $updates = AuditDiffController::PER_PAGE + 1;
+        $ids = $this->auditTrail($member, $updates);
+        $oldest = $ids[count($ids) - 1];
+        $newest = $ids[0];
+        $afterOldest = AuditLog::query()->findOrFail($ids[count($ids) - 2]);
+
+        // A liegt auf Seite 2, B auf Seite 1 — vertauscht übergeben, der Controller ordnet A = älter.
+        $response = $this->actingAs($admin)
+            ->get(route('admin.audit-diff.index', [
+                'type' => 'member',
+                'record' => Sqid::encode(User::class, (int) $member->id),
+                'a' => $newest,
+                'b' => $oldest,
+            ]))
+            ->assertOk()
+            ->assertSee(__('Unterschiede zwischen Stand A und Stand B'))
+            ->assertSee('<input type="hidden" name="a" value="' . $oldest . '">', false);
+
+        $this->assertSame($oldest, (int) $response->viewData('stateA')->id);
+        $this->assertSame($newest, (int) $response->viewData('stateB')->id);
+        $name = collect($response->viewData('diff'))->firstWhere('field', 'name');
+        $this->assertSame((string) $afterOldest->changes['before']['name'], $name['before']);
+        $this->assertSame(sprintf('Stand %02d', $updates), $name['after']);
+    }
+
+    /**
+     * Benennt das Mitglied $updates-mal um.
+     *
+     * @return list<int> Audit-Ids des Mitglieds, neueste zuerst
+     */
+    private function auditTrail(User $member, int $updates): array {
+        for ($i = 1; $i <= $updates; $i++) {
+            $member->update(['name' => sprintf('Stand %02d', $i)]);
+        }
+
+        return AuditLog::query()
+            ->where('auditable_type', MorphMap::stableKey(User::class))
+            ->where('auditable_id', $member->id)
+            ->orderByDesc('id')
+            ->pluck('id')
+            ->map(static fn ($id): int => (int) $id)
+            ->values()
+            ->all();
     }
 
     // ── MVP-529: gespeicherte Report-Ansichten ───────────────────────────

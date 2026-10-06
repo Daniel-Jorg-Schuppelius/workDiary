@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Tenders;
 
-use App\Enums\Applications\TenderProcedureType;
+use App\Enums\Applications\{ApplicationOpportunityStatus, ApplicationRequirementStatus, TenderProcedureType};
 use App\Models\Applications\{ApplicationOpportunity, TenderCompetitorBid};
 use App\Models\Platform\User;
 use App\Services\Applications\TenderSubmissionPreflight;
@@ -46,7 +46,7 @@ final class TenderSubmissionWizardTest extends TestCase {
             'organization_id' => $this->organization->id,
             'title' => 'Neubau Kita',
             'kind' => 'tender',
-            'status' => 'in_progress',
+            'status' => ApplicationOpportunityStatus::InProgress,
             'go_decision' => 'go',
             'estimated_value' => '250000',
             'procedure_type' => TenderProcedureType::PublicInvitation,
@@ -84,7 +84,7 @@ final class TenderSubmissionWizardTest extends TestCase {
             'label' => 'Referenzliste',
             'kind' => 'document',
             'required' => true,
-            'status' => 'open',
+            'status' => ApplicationRequirementStatus::Open,
             'position' => 1,
         ]);
 
@@ -112,7 +112,7 @@ final class TenderSubmissionWizardTest extends TestCase {
         // Und die Dokumentation gelingt trotzdem.
         $this->actingAs($this->admin)->post(route('tenders.submit', $opportunity), ['channel' => 'portal'])
             ->assertRedirect();
-        $this->assertSame('submitted', $opportunity->refresh()->status);
+        $this->assertSame(ApplicationOpportunityStatus::Submitted, $opportunity->refresh()->status);
     }
 
     /** Fehlende Nebenangaben melden sich, ohne aufzuhalten. */

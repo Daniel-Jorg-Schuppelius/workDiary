@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Learning;
 
 use App\Enums\Learning\LearningProgressStatus;
+use App\Http\Controllers\Concerns\ChecksTenantPublicSurfaces;
 use App\Http\Controllers\Controller;
 use App\Models\Learning\{LearningEnrollment, LearningUnit};
 use App\Services\Learning\{LearningAccessService, LearningEnrollmentService};
@@ -31,6 +32,8 @@ use Illuminate\View\View;
  * Token unbekannt, abgelaufen oder widerrufen ist, verrät die Seite nicht.
  */
 class ExternalLearningController extends Controller {
+    use ChecksTenantPublicSurfaces;
+
     /** Session-Schlüssel der freigeschalteten Einschreibung; auch der LTI-Start legt sie hier ab. */
     public const SESSION_KEY = 'learning.external_enrollment_id';
 
@@ -55,6 +58,7 @@ class ExternalLearningController extends Controller {
                 ->route('learning.external.denied')
                 ->with('error', __('learning.external.link_invalid'));
         }
+        $this->assertTenantPublicSurfacesAvailable((int) $enrollment->organization_id);
 
         $request->session()->put(self::SESSION_KEY, $enrollment->id);
         // Einstieg über den Link: ein früherer LTI-Marker gilt nicht mehr.
@@ -128,6 +132,7 @@ class ExternalLearningController extends Controller {
         // (Fortschritt, Zertifikat) hätten keinen Mandanten. Deshalb wird er
         // hier aus der Einschreibung gesetzt, nicht aus einer Eingabe.
         $organization = $enrollment->organization;
+        $this->assertTenantPublicSurfacesAvailable($organization);
         if ($organization !== null && ! app()->bound('currentOrganization')) {
             app()->instance('currentOrganization', $organization);
         }

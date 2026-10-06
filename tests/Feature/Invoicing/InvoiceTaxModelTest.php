@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Invoicing;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\{Organization, User};
@@ -55,7 +56,7 @@ final class InvoiceTaxModelTest extends TestCase {
             'organization_id' => $this->org->id,
             'customer_id' => $this->customer->id,
             'number' => 'R2026-' . str_pad((string) ++self::$invoiceNo, 4, '0', STR_PAD_LEFT),
-            'status' => Invoice::STATUS_DRAFT,
+            'status' => InvoiceStatus::Draft,
             'type' => Invoice::TYPE_INVOICE,
             'tax_rate' => '19.00',
             ...$overrides,
@@ -104,7 +105,7 @@ final class InvoiceTaxModelTest extends TestCase {
             ->assertRedirect(route('invoices.show', $invoice));
 
         $issued = $invoice->fresh();
-        $this->assertSame(Invoice::STATUS_ISSUED, $issued->status);
+        $this->assertSame(InvoiceStatus::Issued, $issued->status);
         $this->assertSame('ACME GmbH', $issued->party_snapshot['buyer']['name']);
 
         // Stammdatenänderung deutet den Snapshot NICHT um.
@@ -117,13 +118,13 @@ final class InvoiceTaxModelTest extends TestCase {
     }
 
     public function test_whitelisted_lifecycle_fields_stay_mutable_after_issue(): void {
-        $invoice = $this->invoice(['status' => Invoice::STATUS_ISSUED, 'issued_on' => now()]);
+        $invoice = $this->invoice(['status' => InvoiceStatus::Issued, 'issued_on' => now()]);
 
         $invoice->markSent();
         $this->assertSame(1, (int) $invoice->fresh()->sent_count);
 
-        $invoice->fresh()->update(['status' => Invoice::STATUS_PAID, 'paid_on' => now()]);
-        $this->assertSame(Invoice::STATUS_PAID, $invoice->fresh()->status);
+        $invoice->fresh()->update(['status' => InvoiceStatus::Paid, 'paid_on' => now()]);
+        $this->assertSame(InvoiceStatus::Paid, $invoice->fresh()->status);
     }
 
     public function test_cancellation_invoice_negates_and_keeps_tax_context(): void {
@@ -136,7 +137,7 @@ final class InvoiceTaxModelTest extends TestCase {
         $invoice->load('items');
         $invoice->recalculate();
         $invoice->save();
-        $invoice->update(['status' => Invoice::STATUS_ISSUED, 'issued_on' => now()]);
+        $invoice->update(['status' => InvoiceStatus::Issued, 'issued_on' => now()]);
 
         $cancellation = app(InvoiceGenerator::class)->cancellationFor($invoice->fresh(), 'Falsch adressiert', $this->user->id);
 
@@ -146,11 +147,11 @@ final class InvoiceTaxModelTest extends TestCase {
         $this->assertTrue($cancellation->is_reverse_charge, 'Steuerkontext des Originals übernommen (§ 14c).');
         $this->assertSame(0.0, $cancellation->tax_amount?->toFloat(), 'Reverse Charge → keine Steuer.');
         $this->assertSame((int) $invoice->id, (int) $cancellation->parent_invoice_id);
-        $this->assertSame(Invoice::STATUS_CANCELLED, $invoice->fresh()->status);
+        $this->assertSame(InvoiceStatus::Cancelled, $invoice->fresh()->status);
     }
 
     public function test_credit_note_carries_reverse_charge(): void {
-        $invoice = $this->invoice(['is_reverse_charge' => true, 'status' => Invoice::STATUS_PAID, 'issued_on' => now(), 'paid_on' => now()]);
+        $invoice = $this->invoice(['is_reverse_charge' => true, 'status' => InvoiceStatus::Paid, 'issued_on' => now(), 'paid_on' => now()]);
         $invoice->items()->create([
             'organization_id' => $this->org->id,
             'description' => 'Leistung', 'quantity' => '1', 'unit' => 'h', 'unit_price' => '100.00', 'position' => 1,

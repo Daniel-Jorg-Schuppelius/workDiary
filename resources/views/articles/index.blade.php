@@ -9,8 +9,7 @@
 @extends('layouts.app')
 @section('title', __('article.title') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('article.title'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @php
     /** @var \Illuminate\Pagination\LengthAwarePaginator $articles */
@@ -22,7 +21,7 @@
 
 @section('content')
 @if (($datanormOversized ?? 0) > 0)
-    <div class="alert alert-warning mb-3 text-sm">
+    <div role="alert" class="alert alert-warning mb-3 text-sm">
         {{ trans_choice('article.datanorm_oversized', $datanormOversized, ['count' => $datanormOversized]) }}
     </div>
 @endif
@@ -119,9 +118,9 @@
                     <td>{{ $article->type->label() }}</td>
                     <td class="text-right tabular-nums">{{ $article->variants_count }}</td>
                     <td>
-                        <span class="badge badge-sm {{ $article->status->value === 'active' ? 'badge-success' : ($article->status->value === 'retired' ? 'badge-ghost' : 'badge-warning') }}">
+                        <x-status-badge :tone="$article->status->value === 'active' ? 'success' : ($article->status->value === 'retired' ? 'ghost' : 'warning')">
                             {{ $article->status->label() }}
-                        </span>
+                        </x-status-badge>
                     </td>
                     <x-custom-field-cells :columns="$customColumns" :model="$article" />
                     <td class="text-right">

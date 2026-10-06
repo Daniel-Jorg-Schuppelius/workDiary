@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Invoicing;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Mail\DunningMail;
 use App\Models\Audit\AuditLog;
 use App\Models\Customer\Customer;
@@ -55,7 +56,7 @@ final class DunningRunTest extends TestCase {
             'organization_id' => $this->org->id,
             'customer_id' => $this->customer->id,
             'number' => $number,
-            'status' => Invoice::STATUS_ISSUED,
+            'status' => InvoiceStatus::Issued,
             'type' => Invoice::TYPE_INVOICE,
             'tax_rate' => '19.00',
             'total' => '119.00',

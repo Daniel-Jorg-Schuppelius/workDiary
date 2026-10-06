@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\JtlWawi\Services;
 
+use App\Enums\Integration\IntegrationInboxStatus;
 use App\Enums\Inventory\StockState;
 use App\Models\Article\ArticleVariant;
 use App\Models\Integration\ExternalArticleMapping;
@@ -120,7 +121,7 @@ class JtlTakeoverService {
         $unmatchedOpen = \App\Models\Integration\IntegrationInboxItem::query()
             ->where('organization_id', $organization->id)
             ->where('plugin_id', JtlWawiPlugin::ID)
-            ->where('status', \App\Models\Integration\IntegrationInboxItem::STATUS_OPEN)
+            ->where('status', IntegrationInboxStatus::Open)
             ->count();
 
         return [

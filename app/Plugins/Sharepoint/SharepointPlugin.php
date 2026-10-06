@@ -15,7 +15,7 @@ use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\Plugin;
 use App\Plugins\Sharepoint\Api\SharepointDriveClient;
 use App\Plugins\Sharepoint\Models\SharepointConnection;
-use App\Plugins\Support\PluginOrgContext;
+use App\Plugins\Support\{OAuthConnectionStatus, PluginOrgContext};
 use Throwable;
 
 /**
@@ -93,7 +93,7 @@ class SharepointPlugin extends AbstractPlugin implements \App\Plugins\Contracts\
         }
 
         $connection = SharepointConnection::query()->where('organization_id', $org->id)->first();
-        if (! $connection instanceof SharepointConnection || $connection->status === SharepointConnection::STATUS_DISCONNECTED) {
+        if (! $connection instanceof SharepointConnection || $connection->status === OAuthConnectionStatus::Disconnected) {
             return PluginHealth::degraded(__('sharepoint::sharepoint.health.no_connection'));
         }
         if (! $connection->isActive()) {

@@ -14,6 +14,7 @@ use App\Models\Platform\{Organization, PluginSetting, User};
 use App\Plugins\Etsy\Api\EtsyOAuthGrant;
 use App\Plugins\Etsy\EtsyPlugin;
 use App\Plugins\Etsy\Models\EtsyConnection;
+use App\Plugins\Support\OAuthConnectionStatus;
 use GuzzleHttp\{Client as GuzzleClient, HandlerStack};
 use GuzzleHttp\Handler\MockHandler;
 use GuzzleHttp\Psr7\Response as Psr7Response;
@@ -113,7 +114,7 @@ final class EtsyOAuthTest extends TestCase {
             ->assertSessionHas('success');
 
         $connection = EtsyConnection::query()->firstOrFail();
-        $this->assertSame(EtsyConnection::STATUS_ACTIVE, $connection->status);
+        $this->assertSame(OAuthConnectionStatus::Active, $connection->status);
         $this->assertSame('12345.acc-token', $connection->access_token);
         $this->assertSame('ref-token-1', $connection->refresh_token);
         $this->assertSame(12345, (int) $connection->etsy_user_id);
@@ -144,7 +145,7 @@ final class EtsyOAuthTest extends TestCase {
         EtsyConnection::create([
             'organization_id' => $other->id,
             'shop_id' => 77,
-            'status' => EtsyConnection::STATUS_ACTIVE,
+            'status' => OAuthConnectionStatus::Active,
             'webhook_token' => 'hook-other',
         ]);
 

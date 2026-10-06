@@ -49,7 +49,8 @@ class OperationsTaskController extends Controller {
             ->when($type !== null, fn($q) => $q->where('type', $type?->value))
             ->when($severity !== null, fn($q) => $q->where('severity', $severity?->value))
             ->orderByRaw("case severity when 'critical' then 0 when 'warning' then 1 else 2 end")
-            ->orderByDesc('last_seen_at');
+            ->orderByDesc('last_seen_at')
+            ->orderByDesc('id');
 
         return view('admin.operations.index', [
             // Kandidaten fuer die Delegation: bis zum Sicherheitsaudit 2026-09-13

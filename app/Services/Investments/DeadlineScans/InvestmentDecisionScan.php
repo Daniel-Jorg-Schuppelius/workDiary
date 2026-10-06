@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Investments\DeadlineScans;
 
+use App\Enums\Investments\InvestmentBudgetRequestStatus;
 use App\Enums\Notification\NotificationEvent;
 use App\Models\Investments\InvestmentBudgetRequest;
 use App\Services\Notification\DeadlineScans\{AbstractDeadlineScan, DeadlineScanOptions};
@@ -33,7 +34,7 @@ class InvestmentDecisionScan extends AbstractDeadlineScan {
             'due' => [
                 'query' => fn() => InvestmentBudgetRequest::query()
                     ->withoutGlobalScopes()
-                    ->where('status', 'in_approval')
+                    ->where('status', InvestmentBudgetRequestStatus::InApproval)
                     ->where('created_at', '<=', now()->subDays($dueDays)),
                 'event' => NotificationEvent::InvestmentDecisionDue,
                 'payload' => function (InvestmentBudgetRequest $request): array {

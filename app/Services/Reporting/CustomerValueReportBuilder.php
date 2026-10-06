@@ -10,16 +10,17 @@
 
 namespace App\Services\Reporting;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Customer\Customer;
 use App\Models\Diary\DiaryEntry;
 use App\Models\Invoicing\Invoice;
 use App\Models\Project\Project;
 use App\Models\Time\TimeEntry;
 use App\Services\Billing\Contracts\ExternalRevenue;
+use App\Services\Reporting\Support\ReportStatistics;
 use App\Support\ChartBucket;
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
-use Illuminate\Support\Collection;
 
 /**
  * Kundenwert & Portfolio (MVP-465, Feature 002): RFM-Segmentierung
@@ -37,6 +38,9 @@ use Illuminate\Support\Collection;
  * folgen den Projekt-/Nutzerfiltern.
  */
 class CustomerValueReportBuilder {
+    /** Segmentnamen dieses Reports zu den Stufen von {@see ReportStatistics::rfmSegment()}. */
+    private const SEGMENTS = ['inactive' => 'inactive', 'new' => 'new', 'top' => 'champion', 'lapsed' => 'at_risk', 'regular' => 'loyal', 'occasional' => 'potential'];
+
     /** HHI-Ampelschwellen (Marktkonzentrations-Konvention). */
     public const HHI_MODERATE = 1500;
 
@@ -113,15 +117,15 @@ class CustomerValueReportBuilder {
             $last = $lastActivity[$cid] ?? null;
             $recencyByCustomer[$cid] = $last !== null ? (int) max(0, CarbonImmutable::parse($last)->diffInDays($to, false)) : null;
         }
-        $rScores = $this->quintileScores(
+        $rScores = ReportStatistics::quintileScores(
             $active->mapWithKeys(fn(Customer $c): array => [(int) $c->id => (float) ($recencyByCustomer[(int) $c->id] ?? 0)])->all(),
             higherIsBetter: false,
         );
-        $fScores = $this->quintileScores(
+        $fScores = ReportStatistics::quintileScores(
             $active->mapWithKeys(fn(Customer $c): array => [(int) $c->id => (float) count($activityDays[(int) $c->id] ?? [])])->all(),
             higherIsBetter: true,
         );
-        $mScores = $this->quintileScores(
+        $mScores = ReportStatistics::quintileScores(
             $active->mapWithKeys(fn(Customer $c): array => [(int) $c->id => (float) ($revenue[(int) $c->id] ?? 0.0)])->all(),
             higherIsBetter: true,
         );
@@ -135,7 +139,8 @@ class CustomerValueReportBuilder {
             $r = $rScores[$cid] ?? null;
             $f = $fScores[$cid] ?? null;
             $m = $mScores[$cid] ?? null;
-            $segment = $this->segment($freq, $r, $f, $m, $firstActivity[$cid] ?? null, $from);
+            $first = $firstActivity[$cid] ?? null;
+            $segment = ReportStatistics::rfmSegment($freq !== 0, $first !== null && $first >= $from->toDateString(), $r, $f, $m, self::SEGMENTS);
             $segments[$segment]++;
 
             $rows[] = [
@@ -296,7 +301,7 @@ class CustomerValueReportBuilder {
         $sums = [];
         Invoice::query()
             ->whereBetween('issued_on', DateRange::days($from, $to))
-            ->whereIn('status', [Invoice::STATUS_ISSUED, Invoice::STATUS_PARTIALLY_PAID, Invoice::STATUS_PAID])
+            ->whereIn('status', [InvoiceStatus::Issued, InvoiceStatus::PartiallyPaid, InvoiceStatus::Paid])
             ->whereIn('type', [Invoice::TYPE_INVOICE, Invoice::TYPE_PARTIAL, Invoice::TYPE_FINAL])
             ->get(['customer_id', 'total'])
             ->each(function (Invoice $inv) use (&$sums): void {
@@ -310,81 +315,19 @@ class CustomerValueReportBuilder {
         return $sums;
     }
 
-    /**
-     * Quintil-Scores 1–5 über die Perzentil-Position des Werts; gleiche
-     * Werte erhalten denselben Score (stabil bei Bindungen).
-     *
-     * @param  array<int, float>  $values  Schlüssel → Wert
-     * @return array<int, int>
-     */
-    private function quintileScores(array $values, bool $higherIsBetter): array {
-        $n = count($values);
-        if ($n === 0) {
-            return [];
-        }
-
-        $sorted = array_values($values);
-        sort($sorted);
-        $scores = [];
-        foreach ($values as $key => $value) {
-            $below = 0;
-            foreach ($sorted as $v) {
-                if ($v < $value) {
-                    $below++;
-                } else {
-                    break;
-                }
-            }
-            $score = min(5, (int) floor($below / $n * 5) + 1);
-            $scores[$key] = $higherIsBetter ? $score : 6 - $score;
-        }
-
-        return $scores;
-    }
-
     /** Sequenzielle Segment-Zuordnung (erste zutreffende Regel gewinnt). */
-    private function segment(int $frequencyDays, ?int $r, ?int $f, ?int $m, ?string $firstActivity, CarbonImmutable $from): string {
-        if ($frequencyDays === 0) {
-            return 'inactive';
-        }
-        if ($firstActivity !== null && $firstActivity >= $from->toDateString()) {
-            return 'new';
-        }
-        if (($r ?? 0) >= 4 && ($f ?? 0) >= 4 && ($m ?? 0) >= 4) {
-            return 'champion';
-        }
-        if (($r ?? 0) <= 2 && ($m ?? 0) >= 4) {
-            return 'at_risk';
-        }
-        if (($r ?? 0) <= 2) {
-            return 'inactive';
-        }
-        if (($f ?? 0) >= 3) {
-            return 'loyal';
-        }
-
-        return 'potential';
-    }
-
     /**
      * @param  list<array{customerId:int, customerName:string, recencyDays:?int, frequencyDays:int, revenue:float, invoiced:float, totalMinutes:int, r:?int, f:?int, m:?int, segment:string, firstActivity:?string, lastActivity:?string}>  $rows
      * @return array{totalRevenue:float, top5Share:?float, top10Share:?float, hhi:?int, activeCustomers:int}
      */
     private function concentration(array $rows): array {
-        $revenues = collect($rows)->pluck('revenue')->filter(static fn(float $v): bool => $v > 0)->sortDesc()->values();
-        $total = (float) $revenues->sum();
-        $share = fn(Collection $part): ?float => $total > 0 ? round((float) $part->sum() / $total * 100, 1) : null;
-
-        $hhi = null;
-        if ($total > 0) {
-            $hhi = (int) round($revenues->reduce(static fn(float $carry, float $v): float => $carry + (($v / $total * 100) ** 2), 0.0));
-        }
+        $concentration = ReportStatistics::concentration(array_column($rows, 'revenue'));
 
         return [
-            'totalRevenue' => round($total, 2),
-            'top5Share' => $share($revenues->take(5)),
-            'top10Share' => $share($revenues->take(10)),
-            'hhi' => $hhi,
+            'totalRevenue' => $concentration['total'],
+            'top5Share' => $concentration['top5Share'],
+            'top10Share' => $concentration['top10Share'],
+            'hhi' => $concentration['hhi'],
             'activeCustomers' => collect($rows)->filter(static fn(array $row): bool => $row['frequencyDays'] > 0)->count(),
         ];
     }

@@ -516,6 +516,16 @@ return [
             // liegen bleiben, Freigabe ist kein Notfall.
             'runs_in_maintenance' => false,
         ],
+        // Stellenanzeigen nach Ablaufdatum/Bewerbungsschluss auf „abgelaufen“
+        // setzen. Der Lauf rechnet den Tag in UTC wie `JobPosting::isApplyable()`
+        // — nach 02:00 Ortszeit ist der UTC-Tag in Sommer- und Winterzeit gewechselt.
+        'recruiting.expire_postings' => [
+            'command' => 'recruiting:expire-postings',
+            'cadence' => ['type' => 'dailyAt', 'time' => '02:50'],
+            'allowed' => ['dailyAt', 'hourly'],
+            'criticality' => 'core',
+            'expected_runtime_minutes' => 1,
+        ],
         'whistleblowing.scan' => [
             'command' => 'whistleblowing:scan',
             'cadence' => ['type' => 'everyFiveMinutes'],

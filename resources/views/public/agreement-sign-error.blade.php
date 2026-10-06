@@ -6,22 +6,9 @@
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
-<!doctype html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-theme="light">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="robots" content="noindex,nofollow">
-<title>{{ __('contract-signing.public.error_title') }}</title>
-@include('partials.font-bootstrap', ['icons' => false])
-@vite(['resources/css/app.css', 'resources/js/app.js'])
-</head>
-<body class="min-h-screen bg-base-200">
-<main class="mx-auto max-w-xl p-4">
-    <div class="alert alert-error">
+<x-public-page :title="__('contract-signing.public.error_title')" main="mx-auto max-w-xl p-4">
+    <div role="alert" class="alert alert-error">
         <span>{{ $message ?? __('contract-signing.error.link_unusable') }}</span>
     </div>
     <p class="mt-3 text-sm text-muted">{{ __('contract-signing.public.error_hint') }}</p>
-</main>
-</body>
-</html>
+</x-public-page>

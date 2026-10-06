@@ -114,6 +114,8 @@ class ProtocolController extends Controller {
         if ($subject === null) {
             abort(404);
         }
+        // Der Dialog prüft den Bezug schon; der Schreibweg muss es auch (Sicherheitsaudit 2026-10-04, authz-b-4).
+        Gate::authorize('view', $subject);
 
         /** @var User $creator */
         $creator = Auth::user();

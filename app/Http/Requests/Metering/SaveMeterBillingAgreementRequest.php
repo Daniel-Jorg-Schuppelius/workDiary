@@ -10,6 +10,7 @@
 
 namespace App\Http\Requests\Metering;
 
+use App\Enums\Metering\MeterBillingAgreementStatus;
 use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Rules\ExistsInCurrentOrganization;
@@ -44,7 +45,7 @@ class SaveMeterBillingAgreementRequest extends BaseFormRequest {
             'interval_count' => ['nullable', 'integer', 'min:1', 'max:12'],
             'next_run_on' => ['required', 'date'],
             'end_on' => ['nullable', 'date', 'after:next_run_on'],
-            'status' => ['nullable', Rule::in(['active', 'paused', 'ended'])],
+            'status' => ['nullable', Rule::enum(MeterBillingAgreementStatus::class)],
             // Staffel als Zeilen „ab;Preis" — die JSON-Form entsteht daraus,
             // damit niemand JSON in ein Formular tippen muss.
             'tiers' => ['nullable', 'array'],

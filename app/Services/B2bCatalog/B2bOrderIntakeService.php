@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\B2bCatalog;
 
+use App\Enums\B2b\B2bOrderStatus;
 use App\Enums\Diary\Status;
 use App\Models\Article\Article;
 use App\Models\B2b\{B2bCatalogAccess, B2bOrder};
@@ -75,7 +76,7 @@ class B2bOrderIntakeService {
                 'total_net' => $this->totalNet($parsed),
                 'lines' => $this->lineSnapshots($organization, $parsed),
                 'source' => $source,
-                'status' => B2bOrder::STATUS_OPEN,
+                'status' => B2bOrderStatus::Open,
                 'ordered_at' => $parsed->getIssueDate()->format('Y-m-d H:i:s'),
                 'requested_delivery_date' => $parsed->getRequestedDeliveryStartDate()?->format('Y-m-d'),
             ]);
@@ -105,7 +106,7 @@ class B2bOrderIntakeService {
 
     /** Bucht die Bestellung: erzeugt den Auftrag (DiaryEntry) — idempotent. */
     public function book(B2bOrder $order, Customer $customer, User $actor): DiaryEntry {
-        if (! $order->isOpen()) {
+        if (! $order->status->canTransitionTo(B2bOrderStatus::Booked)) {
             $entry = $order->diaryEntry;
             if ($entry instanceof DiaryEntry) {
                 return $entry;
@@ -129,7 +130,7 @@ class B2bOrderIntakeService {
 
             $order->forceFill([
                 'customer_id' => $customer->id,
-                'status' => B2bOrder::STATUS_BOOKED,
+                'status' => B2bOrderStatus::Booked,
                 'diary_entry_id' => $entry->id,
                 'booked_by' => $actor->id,
                 'booked_at' => now(),
@@ -142,10 +143,10 @@ class B2bOrderIntakeService {
     }
 
     public function dismiss(B2bOrder $order): void {
-        if (! $order->isOpen()) {
+        if (! $order->status->canTransitionTo(B2bOrderStatus::Dismissed)) {
             return;
         }
-        $order->forceFill(['status' => B2bOrder::STATUS_DISMISSED])->save();
+        $order->forceFill(['status' => B2bOrderStatus::Dismissed])->save();
         $order->audit('b2b_order.dismissed', ['external_order_id' => $order->external_order_id]);
     }
 

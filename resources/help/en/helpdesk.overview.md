@@ -1,7 +1,7 @@
 ---
 title: "Helpdesk & service desk"
 topic: helpdesk.overview
-version: 1
+version: 2
 audience: []
 related:
     - open-issues
@@ -38,6 +38,15 @@ remains recorded on the ticket.
 into a queue, with a priority or an assignee — and are applied in a defined
 order. A test mode checks a rule against a sample ticket and logs the
 result without changing anything.
+
+**Approvals:** Open approval steps of service requests, changes and
+contract negotiations are collected under “Approvals” — per item only the
+next open step, and only for those responsible: a person, a role or, for
+contract negotiations, the role the organization assigns to the step kind
+(default: commercial → Accounting, technical → Team Lead, HR → Personnel
+Administration). Approving, rejecting, asking a question and delegating
+have the same effect as on the record; a rejection ends the round, and
+self-approval stays blocked.
 
 **Satisfaction & reports:** After closure, the customer can leave a short
 rating in the portal — one per ticket. Reports show volume per queue,

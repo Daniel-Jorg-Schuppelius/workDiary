@@ -11,7 +11,9 @@
 namespace App\Plugins\Toggl\Console;
 
 use App\Console\Concerns\IteratesOrganizations;
-use App\Plugins\Toggl\{TogglConfig, TogglExportService};
+use App\Plugins\Support\Console\ChecksPluginSwitch;
+use App\Plugins\Toggl\Services\TogglExportService;
+use App\Plugins\Toggl\{TogglConfig, TogglPlugin};
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
 
@@ -22,6 +24,7 @@ use Illuminate\Console\Command;
  * Sync-Zeitfenster den Lauf (kein Historien-Blast beim ersten Aktivieren).
  */
 class TogglPushCommand extends Command {
+    use ChecksPluginSwitch;
     use IteratesOrganizations;
 
     protected $signature = 'toggl:push '
@@ -41,7 +44,7 @@ class TogglPushCommand extends Command {
 
         foreach ($organizations as $org) {
             $config = TogglConfig::resolve($org->id);
-            if (! $config['enabled'] || ! $config['export_enabled']) {
+            if (! $this->pluginEnabledFor(TogglPlugin::ID, (int) $org->id) || ! $config['export_enabled']) {
                 continue;
             }
             if ($config['api_token'] === null) {

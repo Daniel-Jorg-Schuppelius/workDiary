@@ -11,8 +11,7 @@
 
 @section('title', __('Beleg-Mail-Templates'))
 @section('nav-title', __('Mail-Templates'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('E-Mail-Vorlagen für den Belegversand (Rechnung, Angebot, AB, Bestellung, Lieferschein) verwalten.')">
@@ -43,14 +42,18 @@
         @endforeach
     </div>
 
-    <x-table scroll="flex" :pinRows="true" table-sort="client">
+    <x-table scroll="flex" :pinRows="true" table-sort="server"
+             :route="route('admin.invoice-mail-templates.index')"
+             :current-sort="$sort"
+             :current-dir="$dir"
+             :sort-params="request()->except(['sort', 'dir', 'page'])">
         <x-slot:head>
             <tr>
-                <x-table.th sort type="string">{{ __('Name') }}</x-table.th>
-                <x-table.th sort type="string">{{ __('Belegart') }}</x-table.th>
-                <x-table.th sort type="string">{{ __('Betreff') }}</x-table.th>
-                <x-table.th sort type="string">{{ __('Scope') }}</x-table.th>
-                <x-table.th sort type="number">{{ __('Standard') }}</x-table.th>
+                <x-table.th sort="name">{{ __('Name') }}</x-table.th>
+                <x-table.th sort="kind" default>{{ __('Belegart') }}</x-table.th>
+                <x-table.th sort="subject">{{ __('Betreff') }}</x-table.th>
+                <x-table.th sort="scope">{{ __('Scope') }}</x-table.th>
+                <x-table.th sort="default">{{ __('Standard') }}</x-table.th>
                 <th></th>
             </tr>
         </x-slot:head>
@@ -60,7 +63,7 @@
                 <td>{{ \App\Enums\DocumentDesign\RenderDocumentKind::tryFrom($tpl->document_kind)?->label() ?? $tpl->document_kind }}</td>
                 <td class="text-sm">{{ $tpl->subject }}</td>
                 <td>{{ $tpl->organization_id === null ? __('Global') : __('Organisation') }}</td>
-                <td data-sort-value="{{ $tpl->is_default ? 1 : 0 }}">
+                <td>
                     @if ($tpl->is_default)
                         <x-status-badge tone="success" size="md">{{ __('Ja') }}</x-status-badge>
                     @endif
@@ -82,5 +85,6 @@
         @endforelse
     </x-table>
 
+    <x-pagination :paginator="$templates" standing />
 </x-index-page>
 @endsection

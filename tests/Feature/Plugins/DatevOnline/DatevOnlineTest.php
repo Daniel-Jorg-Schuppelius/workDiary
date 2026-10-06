@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Plugins\DatevOnline;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Customer\Customer;
 use App\Models\Finance\DatevBookingBatch;
 use App\Models\Invoicing\Invoice;
@@ -130,17 +131,51 @@ final class DatevOnlineTest extends TestCase {
         $this->assertSame(DatevTransferStatus::Succeeded, $transfer->refresh()->status);
     }
 
+    /**
+     * Die Stapelliste blättert; der DATEV-Stand je Stapel bleibt sichtbar, auch
+     * wenn danach viele Belege übertragen wurden (früher: Fenster der letzten 200).
+     */
+    public function test_batch_list_pages_and_keeps_the_transfer_state_behind_many_documents(): void {
+        $this->connection();
+        FakePluginHttp::fake([self::CLIENTS . '*' => []]);
+        $batches = DatevBookingBatch::factory()->exported()->count(21)->create(['organization_id' => $this->organization->id, 'advisor_number' => 29098, 'client_number' => 55003]);
+        $oldest = $batches->sortBy('id')->first();
+        $base = [
+            'organization_id' => $this->organization->id, 'datev_client_number' => '29098-55003',
+            'attempts' => 1, 'created_at' => now(), 'updated_at' => now(),
+        ];
+        DatevOnlineTransfer::query()->insert($base + [
+            'kind' => DatevTransferKind::Extf->value, 'source_type' => $oldest->getMorphClass(), 'source_id' => $oldest->id,
+            'status' => DatevTransferStatus::Succeeded->value,
+        ]);
+        DatevOnlineTransfer::query()->insert(array_map(static fn (int $i): array => $base + [
+            'kind' => DatevTransferKind::OutgoingDocument->value, 'source_type' => 'invoices', 'source_id' => $i,
+            'status' => DatevTransferStatus::Transferred->value,
+        ], range(1, 201)));
+
+        $first = $this->actingAs($this->admin)->get(route('admin.datev-online.index'))->assertOk();
+        $this->assertSame(21, $first->viewData('batches')->total());
+        $this->assertCount(20, $first->viewData('batches')->items());
+        $this->assertCount(30, $first->viewData('documentTransfers'));
+        $first->assertSee(route('admin.datev-online.batches.transfer', $batches->sortBy('id')->last()), false);
+
+        $second = $this->actingAs($this->admin)->get(route('admin.datev-online.index', ['page' => 2]))->assertOk();
+        $this->assertSame([$oldest->id], $second->viewData('batches')->pluck('id')->all());
+        $this->assertSame(DatevTransferStatus::Succeeded, $second->viewData('batchTransfers')->get($oldest->id)?->status);
+        $second->assertDontSee(route('admin.datev-online.batches.transfer', $oldest), false);
+    }
+
     public function test_nightly_sync_uploads_issued_invoices_once(): void {
         $this->connection(['is_documents_enabled' => true, 'documents_since' => now()->subDay()->toDateString()]);
         $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
         $issued = Invoice::query()->create([
             'organization_id' => $this->organization->id, 'customer_id' => $customer->id, 'number' => 'R-2026-0300',
-            'status' => Invoice::STATUS_ISSUED, 'type' => Invoice::TYPE_INVOICE, 'tax_rate' => '19.00', 'total' => '119.00',
+            'status' => InvoiceStatus::Issued, 'type' => Invoice::TYPE_INVOICE, 'tax_rate' => '19.00', 'total' => '119.00',
             'issued_on' => now()->toDateString(), 'due_on' => now()->addDays(14)->toDateString(),
         ]);
         Invoice::query()->create([
             'organization_id' => $this->organization->id, 'customer_id' => $customer->id, 'number' => 'R-2026-0001',
-            'status' => Invoice::STATUS_ISSUED, 'type' => Invoice::TYPE_INVOICE, 'tax_rate' => '19.00', 'total' => '50.00',
+            'status' => InvoiceStatus::Issued, 'type' => Invoice::TYPE_INVOICE, 'tax_rate' => '19.00', 'total' => '50.00',
             'issued_on' => now()->subMonth()->toDateString(),
         ]);
         $http = FakePluginHttp::fake([self::DOCUMENTS => FakePluginHttp::response(['id' => 'doc-1'], 201)]);

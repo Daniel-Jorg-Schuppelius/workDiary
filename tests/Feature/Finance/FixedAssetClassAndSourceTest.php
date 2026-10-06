@@ -14,6 +14,7 @@ namespace Tests\Feature\Finance;
 
 use App\Enums\Expense\ExpenseStatus;
 use App\Enums\Finance\{AccountType, DepreciationMethod, ProfitDetermination};
+use App\Enums\Invoicing\IncomingEInvoiceStatus;
 use App\Models\Accounting\{AccountingAccount, FixedAsset, FixedAssetClass};
 use App\Models\Document\Document;
 use App\Models\Invoicing\IncomingEInvoice;
@@ -81,7 +82,7 @@ final class FixedAssetClassAndSourceTest extends TestCase {
     public function test_incoming_invoice_and_expense_become_a_fixed_asset_once(): void {
         $incoming = IncomingEInvoice::query()->create([
             'organization_id' => $this->org->id, 'document_id' => Document::factory()->create(['created_by_user_id' => $this->admin->id])->id,
-            'sha256' => hash('sha256', 'er-1'), 'source' => 'upload', 'received_at' => now(), 'status' => 'approved',
+            'sha256' => hash('sha256', 'er-1'), 'source' => 'upload', 'received_at' => now(), 'status' => IncomingEInvoiceStatus::Approved,
             'invoice_number' => 'ER-4711', 'seller_name' => 'Autohaus Nord', 'issue_date' => '2026-03-10', 'currency' => 'EUR',
             'amount_net' => '30000.00', 'amount_gross' => '35700.00',
         ]);

@@ -10,9 +10,11 @@
 
 namespace Tests\Feature\Plugins\JtlWawi;
 
+use App\Enums\Integration\IntegrationInboxStatus;
 use App\Models\Article\{Article, ArticleVariant};
 use App\Models\Integration\{ExternalArticleMapping, IntegrationInboxItem};
 use App\Models\Inventory\Warehouse;
+use App\Plugins\JtlWawi\Enums\JtlConnectionStatus;
 use App\Plugins\JtlWawi\Models\{JtlConnection, JtlStockSnapshot, JtlWarehouseMapping};
 use App\Plugins\JtlWawi\Services\{JtlArticleImporter, JtlStockChangePoller, JtlWarehouseImporter};
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -44,7 +46,7 @@ final class JtlSyncTest extends TestCase {
             'api_version' => '2.1',
             'allow_private_network' => true,
             'api_key' => 'KEY-TEST',
-            'status' => JtlConnection::STATUS_ACTIVE,
+            'status' => JtlConnectionStatus::Active,
         ]);
     }
 
@@ -125,7 +127,7 @@ final class JtlSyncTest extends TestCase {
             'plugin_id' => 'jtl_wawi',
             'external_id' => 'JTL-UNKNOWN',
             'case_type' => IntegrationInboxItem::CASE_UNMATCHED,
-            'status' => IntegrationInboxItem::STATUS_OPEN,
+            'status' => IntegrationInboxStatus::Open->value,
         ]);
 
         $this->assertNotNull($this->connection->refresh()->article_checkpoint_at);

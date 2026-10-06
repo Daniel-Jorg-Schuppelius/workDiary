@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Contract;
 
-use App\Enums\Contract\{ContractObligationKind, ContractStatus, ContractTermKind};
+use App\Enums\Contract\{ContractObligationKind, ContractObligationStatus, ContractStatus, ContractTermKind};
 use App\Enums\Notification\NotificationEvent;
 use App\Enums\Numbering\NumberScope;
 use App\Models\AssetFinance\AssetFinanceContract;
@@ -205,7 +205,7 @@ class ContractService implements ContractObligationSink {
 
         $exists = $contract->obligations()
             ->where('kind', ContractObligationKind::NoticeDeadline->value)
-            ->where('status', 'open')
+            ->where('status', ContractObligationStatus::Open)
             ->exists();
         if ($exists) {
             return null;
@@ -240,13 +240,13 @@ class ContractService implements ContractObligationSink {
      * Fälligkeit (due_on + recurrence_months) als neue offene Obligation.
      */
     public function completeObligation(ContractObligation $obligation, User $actor): ContractObligation {
-        if ($obligation->status === 'done') {
+        if ($obligation->status === ContractObligationStatus::Done) {
             return $obligation;
         }
 
         return DB::transaction(function () use ($obligation, $actor): ContractObligation {
             $obligation->forceFill([
-                'status' => 'done',
+                'status' => ContractObligationStatus::Done,
                 'done_at' => now(),
                 'done_by' => $actor->id,
             ])->save();
@@ -294,7 +294,7 @@ class ContractService implements ContractObligationSink {
             }
 
             if ($obligation->due_on->endOfDay()->isPast()) {
-                $obligation->forceFill(['status' => 'missed'])->save();
+                $obligation->forceFill(['status' => ContractObligationStatus::Missed])->save();
                 $contract->audit('contract.obligationMissed', ['obligation_id' => $obligation->id]);
             }
 

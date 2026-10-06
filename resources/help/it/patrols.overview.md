@@ -27,6 +27,14 @@ Avviare la ronda → scansionare i token (lo scanner-fotocamera digita come
 tastiera, o inserimento manuale) → concludere. Al massimo una ronda per
 percorso alla volta; le doppie scansioni contano una volta.
 
+## Interruzione
+
+Una ronda in corso può essere **interrotta** — solo con una **motivazione**.
+In tal caso non conta come conclusa; i punti di controllo confermati restano
+come prova, e il rapporto riporta l’interruzione con motivo, persona e ora. I
+punti aperti passano alla centrale come **punto aperto**, come per uno
+scostamento. Dopo, il percorso è di nuovo libero.
+
 ## Scostamenti
 
 Punti mancati o scansioni fuori finestra vengono **mostrati, mai livellati** —

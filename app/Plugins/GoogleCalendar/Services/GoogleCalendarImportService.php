@@ -12,12 +12,13 @@ declare(strict_types=1);
 
 namespace App\Plugins\GoogleCalendar\Services;
 
+use APIToolkit\API\Pagination\{CursorPage, CursorPaginator};
 use App\Models\Calendar\Event;
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use App\Plugins\GoogleCalendar\Api\GoogleCalendarClient;
 use App\Plugins\GoogleCalendar\GoogleCalendarPlugin;
 use App\Plugins\GoogleCalendar\Models\GoogleCalendarConnection;
-use App\Plugins\Support\Calendar\{CalendarSeriesStager, RemoteCalendarPublishService};
+use App\Plugins\Support\Calendar\{CalendarImportStager, RemoteCalendarPublishService};
 use App\Services\CloudIntake\StaleCheckpointException;
 use CommonToolkit\Entities\ICalendar\Document;
 use CommonToolkit\Parsers\ICalendarParser;
@@ -41,10 +42,9 @@ use Throwable;
  * eigenen PUTs erscheinen in der Änderungsliste ebenfalls.
  */
 class GoogleCalendarImportService {
-    /** Echo-Toleranz zwischen unserem PUT und Googles `updated`. */
-    private const ECHO_TOLERANCE_SECONDS = 120;
+    private const MAX_PAGES = 500;
 
-    public function __construct(private readonly CalendarSeriesStager $series) {}
+    public function __construct(private readonly CalendarImportStager $series) {}
 
     /** @return array{proposals: int, conflicts: int, deleted: int} */
     public function run(GoogleCalendarConnection $connection): array {
@@ -64,27 +64,26 @@ class GoogleCalendarImportService {
             ->keyBy('external_id');
 
         $syncToken = $connection->sync_token;
-        $pageToken = null;
-        do {
+        $items = new CursorPaginator(function (?string $pageToken) use ($client, &$syncToken, $windowStart, $windowEnd): CursorPage {
             try {
                 $page = $client->eventsDelta($syncToken, $pageToken, $windowStart, $windowEnd);
             } catch (StaleCheckpointException) {
                 // 410 Gone: genau EIN Vollabgleich ab Zeitfenster, danach
                 // wieder inkrementell (Muster Cloud-Dokumenteingang).
                 $syncToken = null;
-                $pageToken = null;
                 $page = $client->eventsDelta(null, null, $windowStart, $windowEnd);
             }
-
-            foreach ($page['items'] as $item) {
-                $this->handleItem($connection, $item, $references, $counters, $windowStart->toDateTimeImmutable(), $windowEnd->toDateTimeImmutable());
-            }
-
-            $pageToken = $page['pageToken'];
             if ($page['syncToken'] !== null) {
                 $syncToken = $page['syncToken'];
             }
-        } while ($pageToken !== null);
+
+            return new CursorPage($page['items'], $page['pageToken']);
+        }, maxPages: self::MAX_PAGES);
+
+        /** @var array<string, mixed> $item */
+        foreach ($items as $item) {
+            $this->handleItem($connection, $item, $references, $counters, $windowStart->toDateTimeImmutable(), $windowEnd->toDateTimeImmutable());
+        }
 
         $connection->forceFill([
             'sync_token' => $syncToken,
@@ -115,7 +114,7 @@ class GoogleCalendarImportService {
             if ($original === null) {
                 return;
             }
-            $key = CalendarSeriesStager::key($seriesId, $original);
+            $key = CalendarImportStager::key($seriesId, $original);
             if ($status === 'cancelled') {
                 $this->series->dismiss($connection->organization_id, GoogleCalendarPlugin::ID, $key);
             } elseif ($this->series->upsertOccurrence($connection->organization_id, GoogleCalendarPlugin::ID, $subtitle, $this->occurrence($item, $seriesId, $key))) {
@@ -126,8 +125,9 @@ class GoogleCalendarImportService {
         }
 
         if ($status === 'cancelled') {
-            // Nur publizierte Termine sind ein Handlungsfall — ein fremder
-            // gelöschter Termin geht uns nichts an.
+            // Nur publizierte Termine sind ein Handlungsfall; ein fremder
+            // gelöschter Termin nimmt nur seine offenen Vorschläge mit.
+            $this->series->dismissRemote($connection->organization_id, GoogleCalendarPlugin::ID, $remoteId);
             if ($reference instanceof ExternalReference && $this->stage(
                 $connection,
                 'calendar-deleted:' . $remoteId,
@@ -150,9 +150,7 @@ class GoogleCalendarImportService {
 
         if ($reference instanceof ExternalReference) {
             $updated = isset($item['updated']) ? Carbon::parse((string) $item['updated']) : null;
-            $syncedAt = $reference->synced_at;
-            if ($updated === null || $syncedAt === null
-                || $updated->lessThanOrEqualTo($syncedAt->copy()->addSeconds(self::ECHO_TOLERANCE_SECONDS))) {
+            if ($updated === null || CalendarImportStager::isOwnEcho($updated, $reference->synced_at)) {
                 return; // von uns selbst
             }
 
@@ -261,7 +259,7 @@ class GoogleCalendarImportService {
         $ics = implode("\r\n", ['BEGIN:VCALENDAR', 'BEGIN:VEVENT', 'UID:' . $item['id'], $start, ...($end !== null ? [$end] : []), ...$lines, 'END:VEVENT', 'END:VCALENDAR']);
         try {
             $groups = ICalendarParser::fromString($ics)->getSeries();
-            $instances = $groups === [] ? [] : Document::expand($groups[0], $from, $until, $this->zone(), CalendarSeriesStager::MAX_OCCURRENCES);
+            $instances = $groups === [] ? [] : Document::expand($groups[0], $from, $until, $this->zone(), CalendarImportStager::MAX_OCCURRENCES);
         } catch (Throwable) {
             return [];
         }
@@ -274,7 +272,7 @@ class GoogleCalendarImportService {
             if ($instance->getEnd() !== null) {
                 $copy['end'] = $allDay ? ['date' => $instance->getEnd()->format('Y-m-d')] : ['dateTime' => $instance->getEnd()->format(DATE_ATOM)];
             }
-            $out[] = $this->occurrence($copy, (string) $item['id'], CalendarSeriesStager::key((string) $item['id'], $instance->getRecurrenceStart()));
+            $out[] = $this->occurrence($copy, (string) $item['id'], CalendarImportStager::key((string) $item['id'], $instance->getRecurrenceStart()));
         }
 
         return $out;
@@ -335,35 +333,9 @@ class GoogleCalendarImportService {
      * @param  array<string, mixed>|null  $mapped
      * @return bool true = NEUER Fall
      */
-    private function stage(
-        GoogleCalendarConnection $connection,
-        string $dedupeKey,
-        string $caseType,
-        array $snapshot,
-        string $title,
-        ?ExternalReference $reference,
-        ?array $mapped = null,
-    ): bool {
-        $item = IntegrationInboxItem::query()->firstOrCreate([
-            'organization_id' => $connection->organization_id,
-            'plugin_id' => GoogleCalendarPlugin::ID,
-            'dedupe_key' => $dedupeKey,
-        ], [
-            'source' => GoogleCalendarPlugin::ID,
-            'target_type' => (new Event)->getMorphClass(),
-            'external_type' => RemoteCalendarPublishService::EXTERNAL_TYPE,
-            'external_id' => (string) ($snapshot['remote_id'] ?? ''),
-            'case_type' => $caseType,
-            'status' => IntegrationInboxItem::STATUS_OPEN,
-            'referenceable_type' => $reference?->referenceable_type,
-            'referenceable_id' => $reference?->referenceable_id,
-            'remote_snapshot' => $snapshot,
-            'mapped_snapshot' => $mapped,
-            'display_title' => $title !== '' ? $title : '—',
-            'display_subtitle' => (string) ($connection->calendar_name ?? __('google_calendar::google_calendar.calendar.default')),
-            'occurred_at' => now(),
-        ]);
+    private function stage(GoogleCalendarConnection $connection, string $dedupeKey, string $caseType, array $snapshot, string $title, ?ExternalReference $reference, ?array $mapped = null): bool {
+        $subtitle = (string) ($connection->calendar_name ?? __('google_calendar::google_calendar.calendar.default'));
 
-        return $item->wasRecentlyCreated;
+        return $this->series->stageCase($connection->organization_id, GoogleCalendarPlugin::ID, $subtitle, $dedupeKey, $caseType, $snapshot, $title, $reference, $mapped);
     }
 }

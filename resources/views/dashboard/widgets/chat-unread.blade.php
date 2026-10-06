@@ -23,7 +23,7 @@
                     <a href="{{ route('chat.index', $row['channel']) }}" class="link min-w-0 truncate">
                         {{ $row['channel']->name ?? __('Direktnachricht') }}
                     </a>
-                    <span class="badge badge-primary badge-sm tabular-nums">{{ $row['unread'] }}</span>
+                    <x-status-badge tone="primary" class="tabular-nums">{{ $row['unread'] }}</x-status-badge>
                 </li>
             @endforeach
         </ul>

@@ -11,6 +11,7 @@
 namespace Tests\Feature\DocumentDesign;
 
 use App\Enums\DocumentDesign\{LetterheadPageRole, RenderDocumentKind};
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Customer\Customer;
 use App\Models\DocumentDesign\DocumentRenderSnapshot;
 use App\Models\Invoicing\Invoice;
@@ -46,7 +47,7 @@ class RenderPipelineTest extends TestCase {
             'organization_id' => $org->id,
             'customer_id' => $customer->id,
             'number' => 'R-' . uniqid(),
-            'status' => Invoice::STATUS_DRAFT,
+            'status' => InvoiceStatus::Draft,
             'currency' => 'EUR',
             'tax_rate' => '19.00',
         ]);

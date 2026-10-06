@@ -32,6 +32,7 @@
 
     <x-card :title="__('1. Fachlicher Preflight (§ 14 UStG, EN-16931-Kernfelder)')">
         @if ($report['preflight_errors'] === [] && $report['preflight_warnings'] === [])
+            {{-- raw-markup-ok: Prüfergebnis (Erfolgsaussage), kein Leerzustand einer Liste --}}
             <p class="text-sm text-success">{{ __('Keine Beanstandungen.') }}</p>
         @else
             <ul class="space-y-1 text-sm">
@@ -61,7 +62,7 @@
 
     <x-card :title="__('3. EN-16931-Schematron + XRechnung-CIUS (KoSIT)')">
         @if (! $report['kosit_available'])
-            <div class="alert alert-warning">
+            <div role="alert" class="alert alert-warning">
                 <x-icon name="info" />
                 <span>{{ __('KoSIT-Validator nicht verfügbar (Java-Laufzeit oder Validator-JAR fehlt) — die Regelprüfung wurde NICHT durchgeführt.') }}</span>
             </div>

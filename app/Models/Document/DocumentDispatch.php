@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Document;
 
+use App\Enums\Document\DocumentDispatchStatus;
 use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
 use App\Models\Invoicing\Invoice;
@@ -35,7 +36,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int|null $document_id
  * @property string $channel
  * @property string|null $format
- * @property string $status
+ * @property DocumentDispatchStatus $status
  * @property string|null $recipient
  * @property string|null $sha256
  * @property array<string, mixed>|null $meta
@@ -63,6 +64,7 @@ class DocumentDispatch extends Model {
 
     /** @var array<string, string> */
     protected $casts = [
+        'status' => DocumentDispatchStatus::class,
         'meta' => 'array',
     ];
 

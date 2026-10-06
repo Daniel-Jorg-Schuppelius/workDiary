@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\ServiceTicket;
 
-use App\Enums\ServiceTicket\TicketMessageKind;
+use App\Enums\ServiceTicket\{TicketMessageDeliveryStatus, TicketMessageKind};
 use App\Models\Concerns\{BelongsToOrganization, HasAttachments, HasSqid};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphTo};
@@ -34,7 +34,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphTo};
  * @property string $channel
  * @property string|null $message_id
  * @property string|null $in_reply_to
- * @property string|null $delivery_status
+ * @property TicketMessageDeliveryStatus|null $delivery_status
  */
 class ServiceTicketMessage extends Model {
     use BelongsToOrganization;
@@ -60,6 +60,7 @@ class ServiceTicketMessage extends Model {
     /** @var array<string, string> */
     protected $casts = [
         'kind' => TicketMessageKind::class,
+        'delivery_status' => TicketMessageDeliveryStatus::class,
         'to' => 'array',
         'cc' => 'array',
     ];

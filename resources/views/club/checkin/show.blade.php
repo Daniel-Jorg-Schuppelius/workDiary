@@ -15,12 +15,10 @@
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar :subtitle="$event->title . ' · ' . $event->started_at->orgTz()->format('d.m.Y H:i')" back-route="club.my.index" :back-label="__('club.nav.my')" />
+        <x-page-toolbar :subtitle="$event->title . ' · ' . $event->started_at->fdatetime()" back-route="club.my.index" :back-label="__('club.nav.my')" />
     </x-slot:toolbar>
 
-    @if ($errors->any())
-        <div class="alert alert-error text-sm" role="alert"><x-icon name="error" /><span>{{ $errors->first() }}</span></div>
-    @endif
+    <x-validation-errors first />
     @if ($confirmed)
         <div class="alert alert-info text-sm" role="status"><x-icon name="lock" /><span>{{ __('club.checkin.hint.confirmed') }}</span></div>
     @endif

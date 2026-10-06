@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Communication;
 
+use App\Enums\Communication\CustomerCircularRecipientStatus;
 use App\Models\Concerns\BelongsToOrganization;
 use App\Models\Customer\Customer;
 use Illuminate\Database\Eloquent\Model;
@@ -20,20 +21,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /**
  * Nachweis je Empfänger (Feature 119, MVP-608).
  *
+ * @property CustomerCircularRecipientStatus $status
+ *
  * Die Zeile entsteht auch für **übersprungene** Empfänger: „nicht erreicht,
  * weil keine Adresse" ist die wichtigere Information als „versendet" — nur so
  * fällt auf, dass ein Teil des Kundenkreises die Mitteilung nie gesehen hat.
  */
 class CustomerCircularRecipient extends Model {
     use BelongsToOrganization;
-
-    public const STATUS_PENDING = 'pending';
-
-    public const STATUS_SENT = 'sent';
-
-    public const STATUS_SKIPPED = 'skipped';
-
-    public const STATUS_FAILED = 'failed';
 
     protected $fillable = [
         'organization_id',
@@ -47,7 +42,7 @@ class CustomerCircularRecipient extends Model {
     ];
 
     /** @var array<string, string> */
-    protected $casts = ['sent_at' => 'datetime'];
+    protected $casts = ['sent_at' => 'datetime', 'status' => CustomerCircularRecipientStatus::class];
 
     /** @return BelongsTo<CustomerCircular, $this> */
     public function circular(): BelongsTo {

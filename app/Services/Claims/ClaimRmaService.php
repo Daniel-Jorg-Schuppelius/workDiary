@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Claims;
 
 use App\Enums\Claims\{ClaimRmaDisposition, ClaimRmaStatus};
+use App\Enums\Inventory\StockState;
 use App\Enums\Numbering\NumberScope;
 use App\Models\Claims\{ClaimCase, ClaimInspection, ClaimRmaReturn};
 use App\Models\Platform\User;
@@ -28,9 +29,6 @@ use Illuminate\Support\Facades\DB;
  * dieser Service bucht nur nachvollziehbare Bewegungen.
  */
 class ClaimRmaService {
-    /** Zulässige Quarantäne-Bestandszustände beim Wareneingang. */
-    public const QUARANTINE_STATES = ['quality', 'blocked', 'damaged'];
-
     public function __construct(
         private readonly NumberSequenceService $numbers,
         private readonly RmaStockHandler $stock,
@@ -53,9 +51,10 @@ class ClaimRmaService {
      * @param array<string, mixed> $attributes warehouse_id, qty?, stock_state?, condition_note?
      */
     public function receive(ClaimRmaReturn $rma, User $actor, array $attributes): ClaimRmaReturn {
-        $state = (string) ($attributes['stock_state'] ?? 'quality');
-        if (! in_array($state, self::QUARANTINE_STATES, true)) {
-            throw new \InvalidArgumentException('Unzulässiger Quarantäne-Zustand: ' . $state);
+        $requested = $attributes['stock_state'] ?? StockState::Quality;
+        $state = $requested instanceof StockState ? $requested : StockState::tryFrom((string) $requested);
+        if ($state === null || ! in_array($state, StockState::quarantine(), true)) {
+            throw new \InvalidArgumentException('Unzulässiger Quarantäne-Zustand: ' . ($state->value ?? (string) $requested));
         }
 
         return DB::transaction(function () use ($rma, $actor, $attributes, $state): ClaimRmaReturn {
@@ -72,7 +71,7 @@ class ClaimRmaService {
             ])->save();
 
             $rma->refresh();
-            $this->stock->bookReturn($rma, $state, $actor);
+            $this->stock->bookReturn($rma, $state->value, $actor);
 
             return $rma;
         });

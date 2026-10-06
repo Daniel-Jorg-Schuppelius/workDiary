@@ -13,8 +13,7 @@
 
 @section('title', __('Supportfreigaben'))
 @section('nav-title', __('Supportfreigaben'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('Zeitlich begrenzte Freigaben für den Plattform-Support. Impersonation ist nur bei aktiver Freigabe möglich; jeder Zugriff wird auditiert.')">

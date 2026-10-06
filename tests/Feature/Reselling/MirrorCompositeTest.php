@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Reselling;
 
 use App\Enums\Finance\BillingMode;
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Enums\Reselling\PeriodStatus;
 use App\Models\Article\Article;
 use App\Models\Customer\Customer;
@@ -74,7 +75,7 @@ class MirrorCompositeTest extends TestCase {
 
         // Lokale Rechnung für den einen, Lexoffice-Spiegel für den anderen — beide decken die erste Periode.
         $invoice = Invoice::query()->create([
-            'organization_id' => $this->organization->id, 'customer_id' => $this->local->id, 'number' => 'RE-2025-0820', 'status' => Invoice::STATUS_ISSUED,
+            'organization_id' => $this->organization->id, 'customer_id' => $this->local->id, 'number' => 'RE-2025-0820', 'status' => InvoiceStatus::Issued,
             'type' => Invoice::TYPE_INVOICE, 'category' => 'resale', 'issued_on' => '2025-08-06', 'currency' => 'EUR',
         ]);
         $invoice->items()->create([

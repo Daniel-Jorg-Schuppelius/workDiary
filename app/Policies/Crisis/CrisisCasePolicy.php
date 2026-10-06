@@ -15,7 +15,6 @@ namespace App\Policies\Crisis;
 use App\Enums\User\Permission as P;
 use App\Models\Crisis\CrisisCase;
 use App\Models\Platform\User;
-use App\Policies\Concerns\HasAdminBypass;
 
 /**
  * Krisenakten (Feature 070): eigene Rechte — normale Projekt-/Ticket-
@@ -23,9 +22,23 @@ use App\Policies\Concerns\HasAdminBypass;
  * Stabsmitglieder (inkl. Stellvertretung) sehen IHRE Akte auch ohne
  * crisis.view — zeitlich implizit begrenzt auf die Stabsbenennung,
  * auditiert über die Assignment-Anlage.
+ *
+ * Schreibschutz: eine geschlossene oder verworfene Akte nimmt nichts mehr an
+ * — jede schreibende Fähigkeit scheitert in before(), also auch für Admins;
+ * Lesen bleibt.
  */
 class CrisisCasePolicy {
-    use HasAdminBypass;
+    /** @var list<string> */
+    private const WRITING_ABILITIES = ['update', 'approve', 'acknowledge'];
+
+    public function before(User $user, string $ability, mixed ...$arguments): ?bool {
+        $case = $arguments[0] ?? null;
+        if ($case instanceof CrisisCase && $case->status->isShelved() && in_array($ability, self::WRITING_ABILITIES, true)) {
+            return false;
+        }
+
+        return $user->isAdmin() ? true : null;
+    }
 
     public function viewAny(User $user): bool {
         return $user->can(P::CrisisViewAny->value);

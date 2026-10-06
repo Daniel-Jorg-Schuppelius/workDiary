@@ -190,7 +190,7 @@ class OpenTimesWorklistTest extends TestCase {
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
             'number' => 'R-0001',
-            'status' => \App\Models\Invoicing\Invoice::STATUS_ISSUED,
+            'status' => \App\Enums\Invoicing\InvoiceStatus::Issued,
             'currency' => 'EUR',
             'tax_rate' => '19.00',
             'created_by' => $this->accountant->id,

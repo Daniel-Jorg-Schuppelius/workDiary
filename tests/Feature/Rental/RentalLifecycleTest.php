@@ -11,7 +11,7 @@
 namespace Tests\Feature\Rental;
 
 use App\Enums\Asset\AssetBlockReason;
-use App\Enums\Rental\{RentalCaseStatus, RentalChargeKind, RentalChargeStatus, RentalDepositStatus, RentalRateCardStatus, RentalReturnFollowUp};
+use App\Enums\Rental\{RentalCaseAssetStatus, RentalCaseStatus, RentalChargeKind, RentalChargeStatus, RentalDepositStatus, RentalRateCardStatus, RentalReturnFollowUp};
 use App\Exceptions\{AssetNotUsableException, RentalConflictException};
 use App\Models\Asset\Asset;
 use App\Models\Customer\Customer;
@@ -266,7 +266,7 @@ final class RentalLifecycleTest extends TestCase {
         $current = $case->caseAssets()->firstOrFail();
         $service->swapAsset($case->fresh(), $current, $replacement, $this->admin, 'Hydraulikproblem');
 
-        $this->assertSame('swapped', (string) $current->fresh()->status);
+        $this->assertSame(RentalCaseAssetStatus::Swapped, $current->fresh()->status);
         $this->assertDatabaseHas('rental_case_assets', [
             'rental_case_id' => $case->id,
             'asset_id' => $replacement->id,
@@ -590,5 +590,139 @@ final class RentalLifecycleTest extends TestCase {
         $this->actingAs($this->admin)->get(route('rental.profiles.index'))
             ->assertOk()
             ->assertSee('Tieflöffel');
+    }
+
+    /** Das Zubehörfeld bleibt im Browser meist leer und kommt dann als null an. */
+    public function test_profile_can_be_stored_with_an_empty_accessories_field(): void {
+        $asset = Asset::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Rüttelplatte']);
+
+        $this->actingAs($this->admin)->from(route('rental.profiles.index'))
+            ->post(route('rental.profiles.store'), [
+                'asset_id' => $asset->sqid,
+                'buffer_before_hours' => 0,
+                'buffer_after_hours' => 0,
+                'is_rentable' => '1',
+                'accessories' => '',
+                'notes' => '',
+            ])
+            ->assertSessionHasNoErrors()
+            ->assertRedirect(route('rental.profiles.index'));
+
+        $this->assertEmpty(RentalProfile::query()->where('asset_id', $asset->id)->sole()->accessories);
+    }
+
+    public function test_profile_list_offers_the_edit_dialog(): void {
+        $profile = RentalProfile::query()->where('asset_id', $this->asset->id)->sole();
+
+        $this->actingAs($this->admin)->get(route('rental.profiles.index'))
+            ->assertOk()
+            ->assertSee(route('rental.profiles.edit', $profile), false);
+
+        $this->actingAs($this->admin)->get(route('rental.profiles.edit', $profile))
+            ->assertOk()
+            ->assertSee(route('rental.profiles.update', $profile), false)
+            ->assertSee('Minibagger')
+            ->assertSee('value="bagger"', false);
+    }
+
+    public function test_profile_update_saves_what_the_dialog_sends(): void {
+        $profile = RentalProfile::query()->where('asset_id', $this->asset->id)->sole();
+        $card = $this->rateCard();
+
+        // Wie der Dialog sendet: Asset als Sqid, jede Checkbox mit ihrem 0-Feld davor.
+        $this->actingAs($this->admin)->from(route('rental.profiles.index'))
+            ->put(route('rental.profiles.update', $profile), [
+                'asset_id' => $this->asset->sqid,
+                'group_code' => 'minibagger',
+                'default_rate_card_id' => $card->sqid,
+                'buffer_before_hours' => 2,
+                'buffer_after_hours' => 6,
+                'is_rentable' => '0',
+                'portal_bookable' => '1',
+                'requires_inspection' => '1',
+                'accessories' => "Schaufel 60 cm\nTieflöffel",
+                'notes' => 'Nur mit Einweisung.',
+            ])
+            ->assertRedirect(route('rental.profiles.index'))
+            ->assertSessionHas('status', __('Verleihprofil aktualisiert.'));
+
+        $profile->refresh();
+        $this->assertSame('minibagger', $profile->group_code);
+        $this->assertSame((int) $card->id, (int) $profile->default_rate_card_id);
+        $this->assertSame(2, $profile->buffer_before_hours);
+        $this->assertSame(6, $profile->buffer_after_hours);
+        $this->assertFalse($profile->is_rentable);
+        $this->assertTrue($profile->portal_bookable);
+        $this->assertTrue($profile->requires_inspection);
+        $this->assertSame(['Schaufel 60 cm', 'Tieflöffel'], $profile->accessories);
+        $this->assertSame('Nur mit Einweisung.', $profile->notes);
+        $this->assertSame((int) $this->asset->id, (int) $profile->asset_id);
+    }
+
+    /** Geleerte Felder des Dialogs: Zubehör und Preisliste lassen sich wieder entfernen. */
+    public function test_profile_update_clears_emptied_fields(): void {
+        $profile = RentalProfile::query()->where('asset_id', $this->asset->id)->sole();
+        $profile->forceFill(['accessories' => ['Tieflöffel'], 'default_rate_card_id' => $this->rateCard()->id, 'notes' => 'alt'])->save();
+
+        $this->actingAs($this->admin)->from(route('rental.profiles.index'))
+            ->put(route('rental.profiles.update', $profile), [
+                'asset_id' => $this->asset->sqid,
+                'group_code' => '',
+                'default_rate_card_id' => '',
+                'buffer_before_hours' => 0,
+                'buffer_after_hours' => 0,
+                'is_rentable' => '1',
+                'portal_bookable' => '0',
+                'requires_inspection' => '0',
+                'accessories' => '',
+                'notes' => '',
+            ])
+            ->assertSessionHasNoErrors()
+            ->assertRedirect(route('rental.profiles.index'));
+
+        $profile->refresh();
+        $this->assertNull($profile->group_code);
+        $this->assertNull($profile->default_rate_card_id);
+        $this->assertEmpty($profile->accessories);
+        $this->assertNull($profile->notes);
+    }
+
+    /** Die Pufferspalten nehmen kein NULL: ein geleertes Feld warf einen Serverfehler. */
+    public function test_profile_update_reads_an_emptied_buffer_as_zero(): void {
+        $profile = RentalProfile::query()->where('asset_id', $this->asset->id)->sole();
+        $this->assertSame(4, $profile->buffer_after_hours);
+
+        $this->actingAs($this->admin)->from(route('rental.profiles.index'))
+            ->put(route('rental.profiles.update', $profile), [
+                'asset_id' => $this->asset->sqid,
+                'buffer_before_hours' => '',
+                'buffer_after_hours' => '',
+            ])
+            ->assertSessionHasNoErrors()
+            ->assertRedirect(route('rental.profiles.index'));
+
+        $this->assertSame(0, $profile->refresh()->buffer_before_hours);
+        $this->assertSame(0, $profile->buffer_after_hours);
+    }
+
+    public function test_profile_edit_needs_the_manage_right_and_the_own_organization(): void {
+        $profile = RentalProfile::query()->where('asset_id', $this->asset->id)->sole();
+        // Buchhaltung liest den Verleih, pflegt ihn aber nicht.
+        $reader = $this->userWithRole(\App\Enums\User\UserRole::Buchhaltung->value);
+        $payload = ['asset_id' => $this->asset->sqid, 'group_code' => 'fremd'];
+
+        $this->actingAs($reader)->get(route('rental.profiles.index'))
+            ->assertOk()
+            ->assertDontSee(route('rental.profiles.edit', $profile), false);
+        $this->actingAs($reader)->get(route('rental.profiles.edit', $profile))->assertForbidden();
+        $this->actingAs($reader)->put(route('rental.profiles.update', $profile), $payload)->assertForbidden();
+
+        $otherOrg = \App\Models\Platform\Organization::factory()->create();
+        $otherAsset = Asset::factory()->create(['organization_id' => $otherOrg->id]);
+        $foreign = RentalProfile::query()->create(['organization_id' => $otherOrg->id, 'asset_id' => $otherAsset->id, 'group_code' => 'kran']);
+
+        $this->actingAs($this->admin)->get(route('rental.profiles.edit', $foreign))->assertNotFound();
+        $this->actingAs($this->admin)->put(route('rental.profiles.update', $foreign), $payload)->assertNotFound();
+        $this->assertSame('kran', $foreign->refresh()->group_code);
     }
 }

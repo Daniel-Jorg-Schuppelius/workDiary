@@ -130,10 +130,10 @@
                                 <td class="tabular-nums">
                                     {{ \Carbon\Carbon::parse($f['date'])->fdate() }}
                                     @if ($f['corrected'])
-                                        <span class="badge badge-ghost badge-sm ml-1" title="{{ __('compliance.report.corrected_hint') }}">
+                                        <x-status-badge class="ml-1" title="{{ __('compliance.report.corrected_hint') }}">
                                             <x-icon name="history" class="text-[14px] align-middle" />
                                             {{ __('compliance.report.corrected') }}
-                                        </span>
+                                        </x-status-badge>
                                     @endif
                                 </td>
                                 <td>{{ __('compliance.report.kind.' . $f['kind']) }}</td>

@@ -48,16 +48,7 @@
         </x-page-toolbar>
     </x-slot:toolbar>
 
-    @if ($errors->any())
-        <div class="alert alert-error text-sm" role="alert">
-            <x-icon name="error" />
-            <ul class="list-inside list-disc">
-                @foreach ($errors->all() as $message)
-                    <li>{{ $message }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
+    <x-validation-errors />
 
     <div class="grid gap-4 lg:grid-cols-3">
         <div class="space-y-4 lg:col-span-2">
@@ -83,7 +74,7 @@
                         @endphp
                         <tr class="align-top">
                             <td class="whitespace-nowrap text-sm tabular-nums">
-                                {{ $event->started_at->orgTz()->format('d.m.Y H:i') }}
+                                {{ $event->started_at->fdatetime() }}
                                 <span class="block text-xs text-muted">{{ $event->ended_at->orgTz()->format($event->started_at->orgTz()->isSameDay($event->ended_at->orgTz()) ? 'H:i' : 'd.m.Y H:i') }}</span>
                             </td>
                             <td class="text-sm">
@@ -100,7 +91,7 @@
                                     <span class="block text-xs"><x-icon name="bedroom_baby" class="text-muted" /> {{ $horseAssignment->horse?->name ?? __('club.horses.label.own_horse') }}@if ($horseAssignment->needsReview()) <span class="text-warning">({{ __('club.resources.label.replan') }})</span>@endif</span>
                                 @endif
                                 @if ($registrationCloses && ! $event->isCancelled())
-                                    <span class="block text-xs text-muted">{{ __('club.my.label.registration_until', ['when' => $registrationCloses->orgTz()->format('d.m.Y H:i')]) }}</span>
+                                    <span class="block text-xs text-muted">{{ __('club.my.label.registration_until', ['when' => $registrationCloses->fdatetime()]) }}</span>
                                 @endif
                             </td>
                             <td>
@@ -176,7 +167,7 @@
                             @php($event = $row['event'])
                             @php($match = $row['match'])
                             <tr class="align-top">
-                                <td class="whitespace-nowrap text-sm tabular-nums">{{ $event->started_at->orgTz()->format('d.m.Y H:i') }}@if ($match->meet_at)<span class="block text-xs text-muted">{{ __('club.matches.label.meet_at', ['when' => $match->meet_at->orgTz()->format('H:i')]) }}</span>@endif</td>
+                                <td class="whitespace-nowrap text-sm tabular-nums">{{ $event->started_at->fdatetime() }}@if ($match->meet_at)<span class="block text-xs text-muted">{{ __('club.matches.label.meet_at', ['when' => $match->meet_at->orgTz()->format('H:i')]) }}</span>@endif</td>
                                 <td class="text-sm">
                                     <span class="font-medium">{{ $match->team?->name }} · {{ $match->opponent_name }}</span>
                                     <span class="block text-xs text-muted">{{ $match->is_home ? __('club.matches.label.home') : __('club.matches.label.away') }}@if ($match->venue) · {{ $match->venue }}@endif @if ($match->competition) · {{ $match->competition }}@endif</span>
@@ -214,7 +205,7 @@
                     <ul class="space-y-1 text-sm">
                         @foreach ($recent as $row)
                             <li class="flex flex-wrap items-center gap-2">
-                                <span class="tabular-nums">{{ $row['event']->started_at->orgTz()->format('d.m.Y H:i') }}</span>
+                                <span class="tabular-nums">{{ $row['event']->started_at->fdatetime() }}</span>
                                 <span class="font-medium">{{ $row['event']->title }}</span>
                                 @if ($row['participation'])
                                     <x-status-badge :tone="$row['participation']->status->tone()" size="xs">{{ $row['participation']->status->label() }}</x-status-badge>
@@ -264,7 +255,7 @@
                     <div class="border-b border-base-200 py-2 text-sm last:border-0">
                         <div class="flex items-center gap-2">
                             <x-icon :name="match ($change->kind) { 'cancelled' => 'event_busy', 'promoted' => 'how_to_reg', default => 'update' }" class="text-muted" />
-                            <span class="text-xs text-muted">{{ $change->created_at?->orgTz()->format('d.m.Y H:i') }}</span>
+                            <span class="text-xs text-muted">{{ $change->created_at?->fdatetime() }}</span>
                             @if ($change->isFailed())
                                 <x-status-badge tone="error" size="xs" :label="__('club.my.label.delivery_failed')" />
                             @endif

@@ -259,6 +259,32 @@ final class UrlSafety {
      * @return list<string>|null null = nicht bindbar ⇒ Abruf unterlassen
      */
     public static function pinnedResolution(string $url, bool $allowPrivateNetwork = false): ?array {
+        return self::computePins($url, $allowPrivateNetwork);
+    }
+
+    /**
+     * Bindung für Abrufe, die eine DNS-Störung überstehen sollen
+     * (Sicherheitsaudit 2026-10-04, sf-3): wie {@see pinnedResolution()}, aber
+     * ein Host, der gerade nicht auflöst, ergibt eine leere Bindung statt null —
+     * der Abruf läuft dann ungebunden, `$unresolved` meldet es. Zeigt eine
+     * aufgelöste Adresse nach innen, bleibt es bei null: genau diesen Wechsel
+     * soll die Bindung verhindern.
+     *
+     * @param-out bool $unresolved
+     * @return list<string>|null null = Ziel zeigt nach innen ⇒ Abruf unterlassen
+     */
+    public static function tolerantPinnedResolution(string $url, bool &$unresolved = false): ?array {
+        $pins = self::computePins($url, false, $unresolved);
+
+        return $unresolved ? [] : $pins;
+    }
+
+    /**
+     * @param-out bool $unresolved
+     * @return list<string>|null
+     */
+    private static function computePins(string $url, bool $allowPrivateNetwork, bool &$unresolved = false): ?array {
+        $unresolved = false;
         $parts = parse_url(trim($url));
         if ($parts === false || ! in_array($parts['scheme'] ?? '', ['http', 'https'], true)) {
             return null;
@@ -276,6 +302,8 @@ final class UrlSafety {
         $port = (int) ($parts['port'] ?? ($parts['scheme'] === 'https' ? 443 : 80));
         $ips = self::resolveHost($host);
         if ($ips === []) {
+            $unresolved = true;
+
             return $allowPrivateNetwork ? [] : null;
         }
 

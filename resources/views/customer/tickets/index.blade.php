@@ -15,7 +15,7 @@
         <h1 class="text-2xl font-semibold">{{ __('Meine Tickets') }}</h1>
     </div>
 
-    <details class="mb-4 rounded-box border border-base-300 bg-base-100 p-3">
+    <x-card as="details" padding="p-3" class="mb-4">
         <summary class="cursor-pointer text-sm font-semibold">{{ __('Neues Ticket melden') }}</summary>
         <form method="POST" action="{{ route('customer.tickets.store') }}" enctype="multipart/form-data" class="mt-2 space-y-2">
             @csrf
@@ -24,12 +24,12 @@
             <div class="flex flex-wrap items-center gap-2">
                 <input name="files[]" type="file" multiple class="file-input file-input-sm file-input-bordered"
                        aria-label="{{ __('Anhänge (optional)') }}">
-                <button type="submit" class="btn btn-primary btn-sm">{{ __('Ticket anlegen') }}</button>
+                <x-button type="submit">{{ __('Ticket anlegen') }}</x-button>
             </div>
             @error('files')<p class="text-error text-xs">{{ $message }}</p>@enderror
             @error('files.*')<p class="text-error text-xs">{{ $message }}</p>@enderror
         </form>
-    </details>
+    </x-card>
 
     <x-table>
         <x-slot:head>

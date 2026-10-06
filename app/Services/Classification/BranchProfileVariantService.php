@@ -16,7 +16,8 @@ use App\Enums\Classification\ClassificationDomain;
 use App\Models\Classification\BranchProfileVariant;
 use App\Models\Platform\{Organization, User};
 use App\Services\Licensing\ModuleCatalog;
-use CommonToolkit\Helper\FileSystem\{File, Folder};
+use App\Support\BranchProfileFiles;
+use CommonToolkit\Helper\FileSystem\Folder;
 
 /**
  * Profilvarianten (MVP-933): Die Variante überlagert ein mitgeliefertes
@@ -38,7 +39,7 @@ final class BranchProfileVariantService {
         $out = [];
         foreach (Folder::findByPattern(database_path('data/branchprofiles'), '*.php') as $file) {
             $code = pathinfo($file, PATHINFO_FILENAME);
-            $profile = $this->baseProfile($code);
+            $profile = BranchProfileFiles::profile($code);
             if ($profile !== null) {
                 $out[$code] = (string) ($profile['label'] ?? $code);
             }
@@ -46,16 +47,6 @@ final class BranchProfileVariantService {
         asort($out);
 
         return $out;
-    }
-
-    /** @return array<string, mixed>|null */
-    public function baseProfile(string $code): ?array {
-        if (preg_match('/^[a-z0-9-]+$/', $code) !== 1) {
-            return null;
-        }
-        $path = database_path("data/branchprofiles/{$code}.php");
-
-        return File::isFile($path) ? (array) require $path : null;
     }
 
     /** Schlüssel eines Bausteins: Code, Name oder (Pflichtregel) Eintragsart/Domäne; Textzeilen stehen für sich. */
@@ -131,7 +122,7 @@ final class BranchProfileVariantService {
 
     /** @return array<string, mixed> Zusammengesetztes Profil unter dem Code des Basisprofils */
     public function compose(BranchProfileVariant $variant): array {
-        $profile = $this->baseProfile($variant->base_code) ?? throw new \InvalidArgumentException('Unknown base profile ' . $variant->base_code);
+        $profile = BranchProfileFiles::profile($variant->base_code) ?? throw new \InvalidArgumentException('Unknown base profile ' . $variant->base_code);
         $removed = [];
         foreach ((array) $variant->removals as $section => $keys) {
             $removed[(string) $section] = array_flip(array_map('strval', (array) $keys));

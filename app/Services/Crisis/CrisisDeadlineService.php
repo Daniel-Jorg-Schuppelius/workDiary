@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Crisis;
 
+use App\Enums\Crisis\CrisisCaseStatus;
 use App\Models\Crisis\{CrisisCase, CrisisDeadlineTemplate};
 
 /**
@@ -50,7 +51,7 @@ class CrisisDeadlineService {
                 'source' => $template->source,
                 'due_at' => $due,
                 'immediate' => $template->offset_hours === null,
-                'overdue' => $due !== null && $due->isPast() && ! in_array($case->status, ['closed', 'post_review', 'discarded', 'all_clear'], true),
+                'overdue' => $due !== null && $due->isPast() && ! in_array($case->status, [...CrisisCaseStatus::ended(), CrisisCaseStatus::Discarded], true),
             ];
         }
 

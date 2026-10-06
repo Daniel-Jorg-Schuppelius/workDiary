@@ -219,7 +219,7 @@ class AccountingOpeningAndDatevTest extends TestCase {
             'organization_id' => $this->org->id,
             'customer_id' => $customer->id,
             'number' => 'RE-J1',
-            'status' => \App\Models\Invoicing\Invoice::STATUS_ISSUED,
+            'status' => \App\Enums\Invoicing\InvoiceStatus::Issued,
             'issued_on' => $this->startsOn->addDays(3)->toDateString(),
             'due_on' => $this->startsOn->addDays(17)->toDateString(),
             'currency' => 'EUR',

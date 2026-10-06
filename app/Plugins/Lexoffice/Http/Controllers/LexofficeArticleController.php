@@ -13,12 +13,15 @@ namespace App\Plugins\Lexoffice\Http\Controllers;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
-use App\Plugins\Lexoffice\{LexofficeArticleSync, LexofficeConfig};
+use App\Plugins\Lexoffice\Enums\LexofficeMatchPolicy;
+use App\Plugins\Lexoffice\LexofficeConfig;
 use App\Plugins\Lexoffice\Models\LexofficeArticle;
-use App\Support\ErrorText;
+use App\Plugins\Lexoffice\Services\LexofficeArticleSync;
+use App\Support\{ErrorText, SortableQuery};
+use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\{Auth, Cache};
 use Illuminate\View\View;
 use Throwable;
 
@@ -39,10 +42,7 @@ class LexofficeArticleController extends Controller {
         $type = (string) $request->input('type', '');
         $status = (string) $request->input('status', 'active');
 
-        $sort = in_array($request->string('sort')->toString(), self::ALLOWED_SORTS, true)
-            ? $request->string('sort')->toString()
-            : 'name';
-        $dir = $request->string('dir')->toString() === 'desc' ? 'desc' : 'asc';
+        [$sort, $dir] = SortableQuery::resolve($request, self::ALLOWED_SORTS, 'name', 'asc');
 
         $query = LexofficeArticle::query()
             ->where('organization_id', $user->organization_id)
@@ -103,14 +103,27 @@ class LexofficeArticleController extends Controller {
             return back()->with('error', __('Keine Organisation zugeordnet.'));
         }
 
-        try {
-            $result = (new LexofficeArticleSync($config['api_key'], $config['base_url']))->sync($organization);
+        // Die Konflikt-Strategie der Plugin-Einstellung gilt auch für Artikel (Entscheidung 2026-10-06).
+        $policy = LexofficeMatchPolicy::fromSetting((string) $config['match_policy']);
 
-            return back()->with('success', __('Sync abgeschlossen: :created neu, :updated aktualisiert, :archived archiviert.', [
+        try {
+            $result = Cache::lock(LexofficeConfig::apiLockKey((int) $organization->id), 1800)
+                ->block(LexofficeConfig::API_LOCK_WAIT_SHORT, static fn (): array => (new LexofficeArticleSync($config['api_key'], $config['base_url'], $config['request_interval']))
+                    ->withPolicy($policy)
+                    ->sync($organization));
+
+            $summary = __('Sync abgeschlossen: :created neu, :updated aktualisiert, :archived archiviert.', [
                 'created' => $result['created'],
                 'updated' => $result['updated'],
                 'archived' => $result['archived'],
-            ]));
+            ]);
+            if ($result['conflicts'] > 0) {
+                $summary .= ' ' . __('Konflikte zur manuellen Prüfung: :count.', ['count' => $result['conflicts']]);
+            }
+
+            return back()->with('success', $summary);
+        } catch (LockTimeoutException) {
+            return back()->with('error', __('Lexoffice wird gerade von einem anderen Lauf abgeglichen. Bitte versuchen Sie es in einigen Minuten erneut.'));
         } catch (Throwable $e) {
             return back()->with('error', __('Sync fehlgeschlagen: :msg', ['msg' => ErrorText::for($e)]));
         }

@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Privacy;
 
 use App\Enums\Numbering\NumberScope;
-use App\Enums\Privacy\{ControllerRole, IncidentStatus, IncidentType};
+use App\Enums\Privacy\{ControllerRole, IncidentStatus, IncidentType, MeasureStatus};
 use App\Models\Customer\Customer;
 use App\Models\Platform\{Organization, User};
 use App\Models\Privacy\{Incident, Measure};
@@ -170,7 +170,7 @@ class IncidentService {
             'title' => $title,
             'description' => $description,
             'due_at' => $dueAt?->toDateString(),
-            'status' => 'open',
+            'status' => MeasureStatus::Open,
             'created_by' => $actor?->id,
         ]);
         $this->event($incident, 'measure_added', $actor, ['measure_id' => $measure->id]);
@@ -179,7 +179,7 @@ class IncidentService {
     }
 
     public function completeMeasure(Measure $measure, ?User $actor = null): Measure {
-        $measure->forceFill(['status' => 'done', 'completed_at' => Carbon::now()])->save();
+        $measure->forceFill(['status' => MeasureStatus::Done, 'completed_at' => Carbon::now()])->save();
         $incident = $measure->incident;
         if ($incident !== null) {
             $this->event($incident, 'measure_completed', $actor, ['measure_id' => $measure->id]);

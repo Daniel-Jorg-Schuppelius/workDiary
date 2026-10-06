@@ -43,12 +43,12 @@
                     <div class="flex items-center gap-2">
                         @if ($conn)
                             @if ($conn->active)
-                                <span class="badge badge-success badge-sm">{{ __('sso.status.active') }}</span>
+                                <x-status-badge tone="success">{{ __('sso.status.active') }}</x-status-badge>
                             @else
-                                <span class="badge badge-ghost badge-sm">{{ __('sso.status.inactive') }}</span>
+                                <x-status-badge>{{ __('sso.status.inactive') }}</x-status-badge>
                             @endif
                             @if ($conn->enforced)
-                                <span class="badge badge-warning badge-sm">{{ __('sso.status.enforced') }}</span>
+                                <x-status-badge tone="warning">{{ __('sso.status.enforced') }}</x-status-badge>
                             @endif
                         @endif
                     </div>
@@ -159,7 +159,7 @@
                     </div>
 
                     <div class="flex flex-wrap items-center gap-2">
-                        <button type="submit" class="btn btn-sm btn-primary">{{ __('sso.action.save_connection') }}</button>
+                        <x-button type="submit">{{ __('sso.action.save_connection') }}</x-button>
                     </div>
                 </form>
 
@@ -167,12 +167,12 @@
                     <div class="mt-2 flex flex-wrap items-center gap-2">
                         <form method="POST" action="{{ route('admin.sso.connections.test', $conn->sqid) }}">
                             @csrf
-                            <button type="submit" class="btn btn-ghost btn-xs">{{ __('sso.action.test_connection') }}</button>
+                            <x-button type="submit" tone="ghost" size="xs">{{ __('sso.action.test_connection') }}</x-button>
                         </form>
                         <form method="POST" action="{{ route('admin.sso.connections.destroy', $conn->sqid) }}">
                             @csrf
                             @method('DELETE')
-                            <button type="submit" class="btn btn-ghost btn-xs text-error">{{ __('sso.action.remove_connection') }}</button>
+                            <x-button type="submit" tone="ghost" size="xs" class="text-error">{{ __('sso.action.remove_connection') }}</x-button>
                         </form>
                     </div>
                 @endif
@@ -195,20 +195,20 @@
                                 {{ $ssoDomain->domain }}
                                 {{-- Erst der DNS-Nachweis macht die Domain wirksam (S-49). --}}
                                 @if ($ssoDomain->verified_at === null)
-                                    <span class="badge badge-warning badge-sm ml-1">{{ __('sso.domain_unverified') }}</span>
+                                    <x-status-badge tone="warning" class="ml-1">{{ __('sso.domain_unverified') }}</x-status-badge>
                                 @endif
                             </span>
                             <span class="flex items-center gap-1">
                                 @if ($ssoDomain->verified_at === null)
                                     <form method="POST" action="{{ route('admin.sso.domains.verify', $ssoDomain->sqid) }}">
                                         @csrf
-                                        <button type="submit" class="btn btn-ghost btn-xs">{{ __('sso.action.domain_verify') }}</button>
+                                        <x-button type="submit" tone="ghost" size="xs">{{ __('sso.action.domain_verify') }}</x-button>
                                     </form>
                                 @endif
                                 <form method="POST" action="{{ route('admin.sso.domains.remove', $ssoDomain->sqid) }}">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-ghost btn-xs text-error">{{ __('sso.action.domain_remove') }}</button>
+                                    <x-button type="submit" tone="ghost" size="xs" class="text-error">{{ __('sso.action.domain_remove') }}</x-button>
                                 </form>
                             </span>
                         </li>
@@ -227,7 +227,7 @@
                     <span class="label-text">{{ __('sso.field.domain') }}</span>
                     <input type="text" name="domain" value="{{ old('domain') }}" placeholder="{{ __('sso.field.domain_placeholder') }}" class="input input-bordered input-sm w-64">
                 </label>
-                <button type="submit" class="btn btn-sm btn-primary">{{ __('sso.action.domain_add') }}</button>
+                <x-button type="submit">{{ __('sso.action.domain_add') }}</x-button>
             </form>
         </x-card>
 
@@ -247,7 +247,7 @@
                             <form method="POST" action="{{ route('admin.sso.break-glass.toggle') }}">
                                 @csrf
                                 <input type="hidden" name="user" value="{{ $bgUser->sqid }}">
-                                <button type="submit" class="btn btn-ghost btn-xs text-error">{{ __('sso.action.break_glass_remove') }}</button>
+                                <x-button type="submit" tone="ghost" size="xs" class="text-error">{{ __('sso.action.break_glass_remove') }}</x-button>
                             </form>
                         </li>
                     @endforeach
@@ -267,7 +267,7 @@
                         @endforeach
                     </select>
                 </label>
-                <button type="submit" class="btn btn-sm">{{ __('sso.action.break_glass_add') }}</button>
+                <x-button type="submit" tone="plain">{{ __('sso.action.break_glass_add') }}</x-button>
             </form>
         </x-card>
 
@@ -281,8 +281,7 @@
         @endif
 
         {{-- Token ausstellen --}}
-        <form method="POST" action="{{ route('admin.sso.tokens.issue') }}"
-              class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+        <x-card as="form" method="POST" action="{{ route('admin.sso.tokens.issue') }}">
             @csrf
             <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('sso.issue_heading') }}</h2>
             <div class="flex flex-wrap items-end gap-2">
@@ -291,9 +290,9 @@
                     <input type="text" name="label" value="{{ old('label') }}"
                            placeholder="{{ __('sso.field.label_placeholder') }}" class="input input-bordered input-sm" required>
                 </label>
-                <button type="submit" class="btn btn-sm btn-primary">{{ __('sso.action.issue') }}</button>
+                <x-button type="submit">{{ __('sso.action.issue') }}</x-button>
             </div>
-        </form>
+        </x-card>
 
         {{-- Token-Liste --}}
         <x-card>
@@ -315,9 +314,9 @@
                                     <td>{{ $token->label }}</td>
                                     <td>
                                         @if ($token->isActive())
-                                            <span class="badge badge-success badge-sm">{{ __('sso.status.active') }}</span>
+                                            <x-status-badge tone="success">{{ __('sso.status.active') }}</x-status-badge>
                                         @else
-                                            <span class="badge badge-ghost badge-sm">{{ __('sso.status.revoked') }}</span>
+                                            <x-status-badge>{{ __('sso.status.revoked') }}</x-status-badge>
                                         @endif
                                     </td>
                                     <td class="text-muted">{{ $token->last_used_at?->diffForHumans() ?? '—' }}</td>
@@ -325,7 +324,7 @@
                                         @if ($token->isActive())
                                             <form method="POST" action="{{ route('admin.sso.tokens.revoke', $token->sqid) }}">
                                                 @csrf
-                                                <button type="submit" class="btn btn-ghost btn-xs text-error">{{ __('sso.action.revoke') }}</button>
+                                                <x-button type="submit" tone="ghost" size="xs" class="text-error">{{ __('sso.action.revoke') }}</x-button>
                                             </form>
                                         @endif
                                     </td>
@@ -365,7 +364,7 @@
                                                     <option value="{{ $team->sqid }}" @selected($group->team_id === $team->id)>{{ $team->name }}</option>
                                                 @endforeach
                                             </select>
-                                            <button type="submit" class="btn btn-ghost btn-xs">{{ __('sso.action.save_mapping') }}</button>
+                                            <x-button type="submit" tone="ghost" size="xs">{{ __('sso.action.save_mapping') }}</x-button>
                                         </form>
                                     </td>
                                 </tr>

@@ -21,7 +21,7 @@
             @foreach ($fields as $name => $value)
                 <input type="hidden" name="{{ $name }}" value="{{ $value }}">
             @endforeach
-            <button type="submit" class="btn">{{ __('b2b_catalog.public.transfer_submit') }}</button>
+            <x-button type="submit" tone="plain" size="md">{{ __('b2b_catalog.public.transfer_submit') }}</x-button>
         </form>
     </div>
 

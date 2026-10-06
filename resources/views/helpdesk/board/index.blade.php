@@ -15,8 +15,7 @@
 @extends('layouts.app')
 @section('title', __('Queue-Board'))
 @section('nav-title', __('Queue-Board'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 <x-index-page :subtitle="__('Tickets nach Status — mit Massenzuweisung und Queue-Wechsel.')">
@@ -91,10 +90,10 @@
         <div class="flex min-h-0 flex-1 gap-3 overflow-x-auto pb-2">
             @foreach ($columns as $status)
                 @php $items = $byStatus->get($status->value, collect()); @endphp
-                <section class="flex min-h-0 w-72 shrink-0 flex-col rounded-box border border-base-300 bg-base-100 shadow-xs">
+                <x-card as="section" padding="p-0" class="flex min-h-0 w-72 shrink-0 flex-col">
                     <header class="flex items-center justify-between border-b border-base-300 px-3 py-2">
                         <span class="font-['Space_Grotesk'] font-semibold text-sm">{{ $status->label() }}</span>
-                        <span class="badge badge-sm">{{ $items->count() }}</span>
+                        <x-status-badge tone="plain">{{ $items->count() }}</x-status-badge>
                     </header>
                     <div class="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto p-2">
                         @forelse ($items as $ticket)
@@ -115,7 +114,7 @@
                                         <a href="{{ route('service-tickets.show', $ticket) }}"
                                            class="link link-hover block truncate font-medium">{{ $ticket->title }}</a>
                                         <div class="mt-1 flex flex-wrap items-center gap-1">
-                                            <span class="badge badge-xs">{{ $ticket->priority->label() }}</span>
+                                            <x-status-badge tone="plain" size="xs">{{ $ticket->priority->label() }}</x-status-badge>
                                             @if ($ticket->queue)
                                                 <x-status-badge tone="ghost" size="xs">{{ $ticket->queue->name }}</x-status-badge>
                                             @endif
@@ -132,10 +131,11 @@
                                 </div>
                             </article>
                         @empty
+                            {{-- raw-markup-ok: Board-Spalte (Ablagefläche): einzeiliger Platzhalter in schmaler Spalte --}}
                             <p class="px-2 py-4 text-center text-xs text-muted">{{ __('Keine Tickets') }}</p>
                         @endforelse
                     </div>
-                </section>
+                </x-card>
             @endforeach
         </div>
     </form>

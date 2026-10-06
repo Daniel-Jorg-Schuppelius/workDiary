@@ -14,12 +14,13 @@ use App\Enums\Asset\{AssetClass, AssetOwnership};
 use App\Enums\Project\ProjectStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Asset\Asset;
-use App\Models\Auth\RemotePendingSession;
 use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Platform\Organization;
 use App\Models\Project\Project;
-use App\Plugins\RemoteSupport\Providers\{AnyDeskClient, TeamViewerClient};
-use App\Plugins\RemoteSupport\{RemoteDeviceRegistry, RemotePendingAssignmentService, RemoteSupportSuggestionService};
+use App\Plugins\RemoteSupport\Api\{AnyDeskClient, TeamViewerClient};
+use App\Plugins\RemoteSupport\Enums\RemotePendingSessionStatus;
+use App\Plugins\RemoteSupport\Models\RemotePendingSession;
+use App\Plugins\RemoteSupport\Services\{RemoteDeviceRegistry, RemotePendingAssignmentService, RemoteSupportSuggestionService};
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
 use App\Services\Asset\AssetService;
 use App\Support\{Setting, Sqid};
@@ -431,7 +432,7 @@ class RemoteSupportPendingController extends Controller {
 
         return RemotePendingSession::query()
             ->where('organization_id', $organization->id)
-            ->where('status', RemotePendingSession::STATUS_OPEN)
+            ->where('status', RemotePendingSessionStatus::Open)
             ->whereNotNull('asset_id')
             ->whereIn('id', $ids)
             ->with('asset')

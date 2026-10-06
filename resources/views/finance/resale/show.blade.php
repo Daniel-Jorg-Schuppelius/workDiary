@@ -53,9 +53,8 @@
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
             <x-card :title="__('resale.section.holder')">
-                <dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
-                    <dt class="text-muted">{{ __('resale.field.holder') }}</dt>
-                    <dd>
+                <x-detail-grid>
+                    <x-detail-grid.row :label="__('resale.field.holder')">
                         @if (! $subscription->hasHolder())
                             <x-status-badge size="xs" tone="warning" :label="__('resale.holder.unassigned')" />
                         @elseif ($subscription->is_own_holding)
@@ -66,98 +65,77 @@
                         @else
                             <a href="{{ route('customers.show', $subscription->customer) }}" class="link link-hover">{{ $subscription->customer?->name }}</a>
                         @endif
-                    </dd>
-                    <dt class="text-muted">{{ __('resale.field.billed_to') }}</dt>
-                    <dd>
+                    </x-detail-grid.row>
+                    <x-detail-grid.row :label="__('resale.field.billed_to')">
                         @if ($billedTo !== null)
                             <a href="{{ route('customers.show', $billedTo) }}" class="link link-hover">{{ $billedTo->name }}</a>
                         @else
                             <span class="text-muted">—</span>
                         @endif
-                    </dd>
-                    <dt class="text-muted">{{ __('resale.field.status') }}</dt>
-                    <dd><x-status-badge size="xs" :tone="$subscription->status->tone()" :label="$subscription->status->label()" /></dd>
+                    </x-detail-grid.row>
+                    <x-detail-grid.row :label="__('resale.field.status')"><x-status-badge size="xs" :tone="$subscription->status->tone()" :label="$subscription->status->label()" /></x-detail-grid.row>
                     @if ($subscription->contract !== null)
-                        <dt class="text-muted">{{ __('resale.contract.field') }}</dt>
-                        <dd>
+                        <x-detail-grid.row :label="__('resale.contract.field')">
                             @if ($contractLink !== null)
                                 <a href="{{ $contractLink }}" class="link link-hover">{{ $subscription->contract->number }} · {{ $subscription->contract->title }}</a>
                             @else
                                 {{ $subscription->contract->number }} · {{ $subscription->contract->title }}
                             @endif
-                        </dd>
+                        </x-detail-grid.row>
                     @endif
                     @if ($subscription->company_name)
-                        <dt class="text-muted">{{ __('resale.field.company_name') }}</dt>
-                        <dd>{{ $subscription->company_name }}</dd>
+                        <x-detail-grid.row :label="__('resale.field.company_name')">{{ $subscription->company_name }}</x-detail-grid.row>
                     @endif
                     @if ($subscription->successor !== null)
-                        <dt class="text-muted">{{ __('resale.field.successor') }}</dt>
-                        <dd><a href="{{ route('finance.resale.show', $subscription->successor->sqid) }}" class="link link-hover">{{ $subscription->successor->label }} ({{ $subscription->successor->provider->label() }})</a></dd>
+                        <x-detail-grid.row :label="__('resale.field.successor')"><a href="{{ route('finance.resale.show', $subscription->successor->sqid) }}" class="link link-hover">{{ $subscription->successor->label }} ({{ $subscription->successor->provider->label() }})</a></x-detail-grid.row>
                     @endif
                     @foreach ($subscription->predecessors as $predecessor)
-                        <dt class="text-muted">{{ __('resale.field.predecessor') }}</dt>
-                        <dd><a href="{{ route('finance.resale.show', $predecessor->sqid) }}" class="link link-hover">{{ $predecessor->label }} ({{ $predecessor->provider->label() }})</a></dd>
+                        <x-detail-grid.row :label="__('resale.field.predecessor')"><a href="{{ route('finance.resale.show', $predecessor->sqid) }}" class="link link-hover">{{ $predecessor->label }} ({{ $predecessor->provider->label() }})</a></x-detail-grid.row>
                     @endforeach
                     @if ($subscription->parent !== null)
-                        <dt class="text-muted">{{ __('resale.transfer.from') }}</dt>
-                        <dd><a href="{{ route('finance.resale.show', $subscription->parent->sqid) }}" class="link link-hover">{{ $subscription->parent->holderLabel() }} · {{ $subscription->parent->identityLabel() }}</a></dd>
+                        <x-detail-grid.row :label="__('resale.transfer.from')"><a href="{{ route('finance.resale.show', $subscription->parent->sqid) }}" class="link link-hover">{{ $subscription->parent->holderLabel() }} · {{ $subscription->parent->identityLabel() }}</a></x-detail-grid.row>
                     @endif
                     @foreach ($subscription->assignments as $assignment)
-                        <dt class="text-muted">{{ __('resale.transfer.section') }}</dt>
-                        <dd>
+                        <x-detail-grid.row :label="__('resale.transfer.section')">
                             <a href="{{ route('finance.resale.show', $assignment->sqid) }}" class="link link-hover">{{ $assignment->holderLabel() }}</a>
                             · ×{{ $assignment->quantity }} · {{ $assignment->starts_on->fdate() }}@if ($assignment->ends_on) – {{ $assignment->ends_on->fdate() }}@endif
-                        </dd>
+                        </x-detail-grid.row>
                     @endforeach
-                </dl>
+                </x-detail-grid>
             </x-card>
 
             <x-card :title="__('resale.section.terms')">
-                <dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
-                    <dt class="text-muted">{{ __('resale.field.quantity') }}</dt>
-                    <dd class="tabular-nums">
+                <x-detail-grid>
+                    <x-detail-grid.row :label="__('resale.field.quantity')" class="tabular-nums">
                         {{ $subscription->quantity }}
                         @if ($subscription->assignments->isNotEmpty())
                             <span class="block text-xs text-warning">{{ trans_choice('resale.transfer.assigned_hint', $assignedNow, ['count' => $assignedNow]) }}</span>
                         @endif
-                    </dd>
-                    <dt class="text-muted">{{ __('resale.field.starts_on') }}</dt>
-                    <dd class="tabular-nums">{{ $subscription->starts_on->fdate() }}</dd>
-                    <dt class="text-muted">{{ __('resale.field.ends_on') }}</dt>
-                    <dd class="tabular-nums">{{ $subscription->ends_on?->fdate() ?? __('resale.value.open_end') }}</dd>
-                    <dt class="text-muted">{{ __('resale.field.term_months') }}</dt>
-                    <dd class="tabular-nums">{{ $subscription->term_months }}</dd>
-                    <dt class="text-muted">{{ __('resale.field.interval') }}</dt>
-                    <dd>{{ $subscription->interval->label() }}</dd>
-                    <dt class="text-muted">{{ __('resale.field.renewal') }}</dt>
-                    <dd>{{ $subscription->renewal->label() }}</dd>
+                    </x-detail-grid.row>
+                    <x-detail-grid.row :label="__('resale.field.starts_on')" class="tabular-nums">{{ $subscription->starts_on->fdate() }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('resale.field.ends_on')" class="tabular-nums">{{ $subscription->ends_on?->fdate() ?? __('resale.value.open_end') }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('resale.field.term_months')" class="tabular-nums">{{ $subscription->term_months }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('resale.field.interval')">{{ $subscription->interval->label() }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('resale.field.renewal')">{{ $subscription->renewal->label() }}</x-detail-grid.row>
                     @if ($subscription->external_id)
-                        <dt class="text-muted">{{ __('resale.field.external_id') }}</dt>
-                        <dd class="font-mono text-xs">{{ $subscription->external_id }}</dd>
+                        <x-detail-grid.row :label="__('resale.field.external_id')" class="font-mono text-xs">{{ $subscription->external_id }}</x-detail-grid.row>
                     @endif
                     @if ($subscription->external_order_id)
-                        <dt class="text-muted">{{ __('resale.field.external_order_id') }}</dt>
-                        <dd class="font-mono text-xs">{{ $subscription->external_order_id }}</dd>
+                        <x-detail-grid.row :label="__('resale.field.external_order_id')" class="font-mono text-xs">{{ $subscription->external_order_id }}</x-detail-grid.row>
                     @endif
-                </dl>
+                </x-detail-grid>
             </x-card>
 
             <x-card :title="__('resale.section.prices')">
-                <dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
-                    <dt class="text-muted">{{ __('resale.field.article') }}</dt>
-                    <dd>{{ $subscription->productLabel() ?? '—' }}</dd>
-                    <dt class="text-muted">{{ __('resale.field.purchase_unit_price') }}</dt>
-                    <dd class="tabular-nums">{{ $subscription->purchase_unit_price?->withScale(2)->format() ?? '—' }}</dd>
-                    <dt class="text-muted">{{ __('resale.field.sale_unit_price') }}</dt>
-                    <dd class="tabular-nums">{{ $subscription->sale_unit_price?->withScale(2)->format() ?? '—' }}</dd>
-                    <dt class="text-muted">{{ __('resale.field.expected_sale') }}</dt>
-                    <dd class="tabular-nums">{{ $subscription->expectedSalePerPeriod()?->withScale(2)->format() ?? '—' }}</dd>
+                <x-detail-grid>
+                    <x-detail-grid.row :label="__('resale.field.article')">{{ $subscription->productLabel() ?? '—' }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('resale.field.purchase_unit_price')" class="tabular-nums">{{ $subscription->purchase_unit_price?->withScale(2)->format() ?? '—' }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('resale.field.sale_unit_price')" class="tabular-nums">{{ $subscription->sale_unit_price?->withScale(2)->format() ?? '—' }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('resale.field.expected_sale')" class="tabular-nums">{{ $subscription->expectedSalePerPeriod()?->withScale(2)->format() ?? '—' }}</x-detail-grid.row>
                     @if ($subscription->purchase_unit_price !== null && $subscription->sale_unit_price !== null)
-                        <dt class="text-muted">{{ __('resale.field.margin') }}</dt>
-                        <dd class="tabular-nums">{{ $subscription->sale_unit_price->minus($subscription->purchase_unit_price)->withScale(2)->format() }}</dd>
+                        <x-detail-grid.row :label="__('resale.field.margin')" class="tabular-nums">{{ $subscription->sale_unit_price->minus($subscription->purchase_unit_price)->withScale(2)->format() }}</x-detail-grid.row>
                     @endif
-                </dl>
+                </x-detail-grid>
                 @if ($subscription->notes)
                     <p class="mt-3 text-sm whitespace-pre-line">{{ $subscription->notes }}</p>
                 @endif
@@ -168,11 +146,11 @@
             <div class="flex items-center justify-between gap-2 border-b border-base-300 px-4 py-2 text-sm">
                 <span class="text-base-content/70">{{ trans_choice('resale.periods.count', $subscription->periods->count(), ['count' => $subscription->periods->count()]) }}</span>
                 @if ($subscription->is_own_holding)
-                    <span class="badge badge-ghost badge-sm">{{ __('resale.holder.own') }}</span>
+                    <x-status-badge>{{ __('resale.holder.own') }}</x-status-badge>
                 @elseif ($openCount > 0)
-                    <span class="badge badge-error badge-sm">{{ trans_choice('resale.periods.open_count', $openCount, ['count' => $openCount]) }}</span>
+                    <x-status-badge tone="error">{{ trans_choice('resale.periods.open_count', $openCount, ['count' => $openCount]) }}</x-status-badge>
                 @else
-                    <span class="badge badge-success badge-sm">{{ __('resale.periods.all_decided') }}</span>
+                    <x-status-badge tone="success">{{ __('resale.periods.all_decided') }}</x-status-badge>
                 @endif
             </div>
             <x-table bare>
@@ -207,7 +185,7 @@
                     </span>
                     <span class="flex items-center gap-2">
                         @if ($invoices['pending'] > 0)
-                            <span class="badge badge-warning badge-sm" title="{{ __('resale.link_ui.pending_hint') }}">{{ trans_choice('resale.invoices.pending', $invoices['pending'], ['count' => $invoices['pending']]) }}</span>
+                            <x-status-badge tone="warning" title="{{ __('resale.link_ui.pending_hint') }}">{{ trans_choice('resale.invoices.pending', $invoices['pending'], ['count' => $invoices['pending']]) }}</x-status-badge>
                         @endif
                         @if ($billedTo !== null)
                             <x-icon-btn icon="compare_arrows" size="xs" tone="ghost" :href="route('finance.resale.reconcile.show', $billedTo)" show-label>{{ __('resale.reconcile.title') }}</x-icon-btn>
@@ -238,7 +216,7 @@
                                             <span class="font-mono text-xs">{{ $voucher->voucherNumber }}</span>
                                             <span class="block text-xs text-muted tabular-nums">{{ $voucher->voucherDate?->fdate() }}</span>
                                             @if ($voucher->voucherTextHint !== null)
-                                                <span class="badge badge-info badge-outline badge-sm mt-1" title="{{ $voucher->voucherText }}">{{ $voucher->voucherTextHint }}</span>
+                                                <x-status-badge tone="info" outline class="mt-1" title="{{ $voucher->voucherText }}">{{ $voucher->voucherTextHint }}</x-status-badge>
                                             @elseif ($voucher->voucherText)
                                                 <span class="block text-xs text-muted max-w-xs truncate" title="{{ $voucher->voucherText }}">{{ \Illuminate\Support\Str::limit($voucher->voucherText, 60) }}</span>
                                             @endif
@@ -247,7 +225,7 @@
                                                     <x-icon-btn icon="picture_as_pdf" size="xs" tone="ghost" data-entry-modal-trigger :href="$voucher->previewUrl" :title="__('resale.invoices.preview')" />
                                                 @endif
                                                 @if ($entry['permalink'] !== null)
-                                                    <a href="{{ $entry['permalink'] }}" target="_blank" rel="noopener" class="btn btn-ghost btn-xs" title="{{ __('resale.mirror.open_source', ['source' => __('resale.mirror.source_' . $voucher->sourceKey)]) }}"><x-icon name="open_in_new" size="1rem" /></a>
+                                                    <x-external-link :url="$entry['permalink']" plain class="btn btn-ghost btn-xs" :title="__('resale.mirror.open_source', ['source' => __('resale.mirror.source_' . $voucher->sourceKey)])"><x-icon name="open_in_new" size="1rem" /></x-external-link>
                                                 @endif
                                             </span>
                                         </td>

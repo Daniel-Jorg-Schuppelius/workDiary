@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Services\Import\Specs;
 
 use App\Enums\Import\ImportErrorCode;
+use App\Enums\Sales\QuoteStatus;
 use App\Models\Article\Article;
 use App\Models\Customer\Customer;
 use App\Models\Platform\Organization;
@@ -88,7 +89,7 @@ class QuoteSpecTest extends TestCase {
         $this->assertSame(ImportOutcome::Updated, $o2);
 
         $quote = Quote::query()->where('number', 'A-2024-7')->firstOrFail();
-        $this->assertSame('sent', $quote->status);
+        $this->assertSame(QuoteStatus::Sent, $quote->status);
         $this->assertSame('2024-06-30', $quote->valid_until?->toDateString());
         $this->assertSame(2, $quote->items()->count());
         $this->assertSame((int) $article->id, (int) $quote->items()->where('position', 2)->value('article_id'));

@@ -64,7 +64,7 @@
                 <div class="text-sm opacity-70 mt-1">{{ __('manufacturing.order.field.target_qty') }}: <strong>{{ $order->target_qty?->getNumericValue() }} {{ $order->unit }}</strong>
                     · {{ __('manufacturing.order.field.good') }}: <strong>{{ $order->goodTotal() }}</strong></div>
             </div>
-            <span class="badge badge-sm">{{ $order->status->label() }}</span>
+            <x-status-badge tone="plain">{{ $order->status->label() }}</x-status-badge>
         </div>
     </x-card>
 
@@ -98,7 +98,7 @@
                                     @csrf
                                     <input name="quantity" type="number" step="0.0001" min="0.0001" required
                                            class="input input-xs input-bordered w-20" aria-label="{{ __('manufacturing.order.field.quantity') }}">
-                                    <button type="submit" class="btn btn-xs">{{ __('manufacturing.order.action.consume') }}</button>
+                                    <x-button type="submit" tone="plain" size="xs">{{ __('manufacturing.order.action.consume') }}</x-button>
                                 </form>
                             @endunless
                         </td>
@@ -131,7 +131,7 @@
                     <input id="quantity" name="quantity" type="number" step="0.0001" min="0.0001" required class="input input-sm input-bordered w-24"></div>
                 <div class="fieldset grow"><label for="reason" class="fieldset-label">{{ __('Begründung') }}</label>
                     <input id="reason" name="reason" required minlength="5" maxlength="500" class="input input-sm input-bordered w-full"></div>
-                <button type="submit" class="btn btn-sm">{{ __('Ersatz beantragen') }}</button>
+                <x-button type="submit" tone="plain">{{ __('Ersatz beantragen') }}</x-button>
             </form>
 
             @if ($substitutes->isNotEmpty())
@@ -146,11 +146,11 @@
                                 <span class="flex items-center gap-1">
                                     <x-action-form :action="route('manufacturing-orders.substitutes.decide', [$order, $substitute])">
                                         <input type="hidden" name="decision" value="approve">
-                                        <button type="submit" class="btn btn-xs btn-success">{{ __('Genehmigen') }}</button>
+                                        <x-button type="submit" tone="success" size="xs">{{ __('Genehmigen') }}</x-button>
                                     </x-action-form>
                                     <x-action-form :action="route('manufacturing-orders.substitutes.decide', [$order, $substitute])">
                                         <input type="hidden" name="decision" value="reject">
-                                        <button type="submit" class="btn btn-xs btn-error">{{ __('Ablehnen') }}</button>
+                                        <x-button type="submit" tone="error" size="xs">{{ __('Ablehnen') }}</x-button>
                                     </x-action-form>
                                 </span>
                             @else
@@ -175,7 +175,7 @@
                             <option value="{{ $supplier->sqid }}">{{ $supplier->name }}</option>
                         @endforeach
                     </select></div>
-                <button type="submit" class="btn btn-sm">{{ __('manufacturing.order.action.subcontract') }}</button>
+                <x-button type="submit" tone="plain">{{ __('manufacturing.order.action.subcontract') }}</x-button>
             </form>
         </x-card>
     @endif
@@ -196,7 +196,7 @@
                     <input id="minutes" name="minutes" type="number" min="0" value="{{ $order->planned_minutes ?? 0 }}" class="input input-sm input-bordered w-24"></div>
                 <div class="fieldset"><label for="day" class="fieldset-label">{{ __('manufacturing.capacity.day') }}</label>
                     <input id="day" name="day" type="date" value="{{ $order->planned_start?->toDateString() }}" class="input input-sm input-bordered"></div>
-                <button type="submit" class="btn btn-sm">{{ __('manufacturing.capacity.assign') }}</button>
+                <x-button type="submit" tone="plain">{{ __('manufacturing.capacity.assign') }}</x-button>
             </form>
         </x-card>
     @endif
@@ -225,7 +225,7 @@
                     @csrf
                     <div class="fieldset"><label for="quantity-2" class="fieldset-label">{{ __('manufacturing.order.field.quantity') }}</label>
                         <input id="quantity-2" name="quantity" type="number" step="0.0001" min="0.0001" class="input input-sm input-bordered w-28"></div>
-                    <button type="submit" class="btn btn-sm">{{ __('manufacturing.order.action.deliver') }}</button>
+                    <x-button type="submit" tone="plain">{{ __('manufacturing.order.action.deliver') }}</x-button>
                 </form>
             </x-card>
         </div>
@@ -251,7 +251,7 @@
                         <td class="tabular-nums">{{ $report->good_qty }}</td>
                         <td class="tabular-nums">{{ $report->scrap_qty }}</td>
                         <td class="tabular-nums">{{ $report->rework_qty }}</td>
-                        <td>{{ $report->reported_at?->orgTz()->format('d.m.Y H:i') }}</td>
+                        <td>{{ $report->reported_at?->fdatetime() }}</td>
                     </tr>
                 @endforeach
             </x-table>
@@ -282,38 +282,36 @@
                     <tr>
                         <td>{{ $delivery->name_snapshot }}</td>
                         <td class="text-right tabular-nums">{{ $delivery->quantity?->getNumericValue() }} {{ $delivery->unit }}</td>
-                        <td><span class="badge badge-sm">{{ $delivery->facturation_status->label() }}</span>
+                        <td><x-status-badge tone="plain">{{ $delivery->facturation_status->label() }}</x-status-badge>
                             {{-- Feature 160 (MVP-858): lokale Abrechnung — aktive Reservierung oder Historie mit Belegnummer. --}}
                             @foreach ($delivery->invoiceItems->sortByDesc('id')->take(2) as $billedItem)
                                 @if ($billedItem->invoice !== null)
                                     <div class="text-xs text-muted">
                                         @can('view', $billedItem->invoice)<a href="{{ route('invoices.show', $billedItem->invoice) }}" class="link">{{ $billedItem->invoice->number }}</a>@else{{ $billedItem->invoice->number }}@endcan
-                                        · {{ $billedItem->invoice->status === \App\Models\Invoicing\Invoice::STATUS_DRAFT ? __('invoicing.free.label.reserved') : __('values.' . $billedItem->invoice->status) }}
+                                        · {{ $billedItem->invoice->status === \App\Enums\Invoicing\InvoiceStatus::Draft ? __('invoicing.free.label.reserved') : $billedItem->invoice->status->label() }}
                                     </div>
                                 @endif
                             @endforeach
                         </td>
                         <td class="text-right">
                             <div class="flex items-center justify-end gap-2">
-                                <a href="{{ route('manufacturing-orders.deliveries.pdf', [$order, $delivery]) }}" target="_blank"
-                                   class="btn btn-xs btn-ghost">{{ __('manufacturing.delivery_note.title') }}</a>
+                                <x-button :href="route('manufacturing-orders.deliveries.pdf', [$order, $delivery])" tone="ghost" size="xs"
+                                        target="_blank">{{ __('manufacturing.delivery_note.title') }}</x-button>
                                 {{-- Feature 128 (MVP-692): Lieferschein per E-Mail an den Kunden. --}}
-                                <a href="{{ route('manufacturing-orders.deliveries.mail.form', [$order, $delivery]) }}"
-                                   data-entry-modal-trigger
-                                   class="btn btn-xs btn-ghost">{{ __('Per E-Mail senden') }}</a>
+                                <x-button :href="route('manufacturing-orders.deliveries.mail.form', [$order, $delivery])" tone="ghost"
+                                        size="xs" data-entry-modal-trigger>{{ __('Per E-Mail senden') }}</x-button>
                                 {{-- MVP-1007: Handels- bzw. Proformarechnung für den Export. --}}
                                 @if ($canManage && $delivery->customer_id)
-                                    <a href="{{ route('manufacturing-orders.deliveries.customs.form', [$order, $delivery]) }}"
-                                       data-entry-modal-trigger
-                                       class="btn btn-xs btn-ghost">{{ __('shipping.customs.action') }}</a>
+                                    <x-button :href="route('manufacturing-orders.deliveries.customs.form', [$order, $delivery])" tone="ghost"
+                                            size="xs" data-entry-modal-trigger>{{ __('shipping.customs.action') }}</x-button>
                                 @endif
                                 {!! app(\App\Plugins\PluginManager::class)->renderSlot('manufacturing-delivery.actions', $delivery) !!}
 
                                 {{-- Packstücke mit Seriennummern (MVP-900) --}}
                                 @foreach ($delivery->parcels as $parcel)
-                                    <span class="badge badge-sm badge-ghost" title="{{ $parcel->serials->pluck('serial_no')->implode(', ') }}">
+                                    <x-status-badge title="{{ $parcel->serials->pluck('serial_no')->implode(', ') }}">
                                         {{ __('shipping.parcel.label', ['no' => $parcel->position, 'of' => $delivery->parcels->count()]) }} · {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($parcel->weight_grams / 1000, 2) }} kg · {{ __('shipping.parcel.serial_count', ['count' => $parcel->serials->count()]) }}
-                                    </span>
+                                    </x-status-badge>
                                     @if ($canManage && ! $delivery->shipment)
                                         <x-icon-btn icon="edit" size="xs" data-entry-modal-trigger :href="route('manufacturing-orders.deliveries.parcels.edit', [$order, $delivery, $parcel])" :label="__('shipping.parcel.edit', ['no' => $parcel->position])" />
                                         <x-action-form :action="route('manufacturing-orders.deliveries.parcels.destroy', [$order, $delivery, $parcel])" method="DELETE" :confirm="__('shipping.parcel.confirm_delete', ['no' => $parcel->position])" confirm-icon="delete" confirm-tone="error">
@@ -327,7 +325,7 @@
 
                                 {{-- Versandauftrag (Feature 059, Rang 20) --}}
                                 @if ($delivery->shipment)
-                                    <span class="badge badge-sm">{{ __('shipping.label_short') }}: {{ $delivery->shipment->status->label() }}</span>
+                                    <x-status-badge tone="plain">{{ __('shipping.label_short') }}: {{ $delivery->shipment->status->label() }}</x-status-badge>
                                     @if ($delivery->shipment->tracking_number)
                                         <span class="text-xs text-muted">{{ strtoupper($delivery->shipment->carrier) }}: {{ $delivery->shipment->tracking_number }}</span>
                                     @endif
@@ -353,7 +351,7 @@
                                                class="join-item input input-xs input-bordered w-12"
                                                title="{{ __('shipping.field.height_cm') }}">
                                         @endif
-                                        <button type="submit" class="join-item btn btn-xs">{{ __('shipping.action.create') }}</button>
+                                        <x-button type="submit" tone="plain" size="xs" class="join-item">{{ __('shipping.action.create') }}</x-button>
                                     </form>
                                 @endif
                             </div>

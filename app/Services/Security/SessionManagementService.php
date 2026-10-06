@@ -11,14 +11,16 @@
 namespace App\Services\Security;
 
 use App\Models\Audit\AuditLog;
-use App\Models\Auth\RemotePendingSession;
 use App\Models\Location\LocationDeviceToken;
 use App\Models\Platform\{Organization, User};
 use App\Models\Time\AttendanceTerminal;
+use App\Plugins\Contracts\ProvidesRemoteSessions;
+use App\Plugins\PluginManager;
 use App\Support\{MorphMap, Sqid};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\UserAgentHelper;
 use CommonToolkit\Helper\Geo\IpLocationHelper;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\{DB, Schema};
 use Laravel\Sanctum\PersonalAccessToken;
 
@@ -35,6 +37,21 @@ use Laravel\Sanctum\PersonalAccessToken;
  * Die „Anmeldezeit" wird aus dem AuditLog (`auth.login`) je Nutzer aufgelöst
  * (treiberunabhängig); eine exakte Zuordnung Login→Session leistet Laravel
  * nicht, daher ist es der letzte Login des Nutzers, nicht der der Sitzung.
+ *
+ * @phpstan-type UserRow array{
+ *     user_id: int,
+ *     sqid: string,
+ *     name: string,
+ *     email: string,
+ *     sessions: list<array<string, mixed>>,
+ *     tokens: list<array<string, mixed>>,
+ *     location_devices: list<array<string, mixed>>,
+ *     session_count: int,
+ *     token_count: int,
+ *     device_count: int,
+ *     is_online: bool,
+ *     last_login_at: CarbonImmutable|null
+ * }
  */
 class SessionManagementService {
     /** „Online jetzt": jünger als diese Schwelle (kurz, für Live-Sicht). */
@@ -43,8 +60,12 @@ class SessionManagementService {
     /** Anzahl der jüngsten Fernwartungssitzungen in der read-only Historie. */
     public const REMOTE_RECENT = 15;
 
+    /** Nutzer je Seite der Admin-Ansicht. */
+    public const PER_PAGE = 20;
+
     /**
-     * Baut das je Nutzer gruppierte Aggregat für eine Organisation.
+     * Baut das je Nutzer gruppierte Aggregat für eine Organisation. Die
+     * Kennzahlen zählen über alle Mitglieder, `users` ist die aktuelle Seite.
      *
      * @param  string|null  $currentSessionId  Session-ID des Aufrufers (markiert
      *                                          die eigene Sitzung → kein Selbst-Aussperren).
@@ -52,7 +73,7 @@ class SessionManagementService {
      *     driver: string,
      *     available: bool,
      *     online_threshold: int,
-     *     users: list<array<string, mixed>>,
+     *     users: LengthAwarePaginator<int, UserRow>,
      *     terminals: list<array<string, mixed>>,
      *     remote_support: list<array<string, mixed>>,
      *     totals: array{users: int, sessions: int, online: int, tokens: int, devices: int}
@@ -110,14 +131,24 @@ class SessionManagementService {
             ];
         }
 
-        // Online-Nutzer zuerst, dann alphabetisch (Reihenfolge kam aus der Query).
+        // Online-Nutzer zuerst, dann alphabetisch — vor dem Schneiden, sonst stünde
+        // ein Online-Nutzer auf Seite 3, nur weil sein Name spät im Alphabet kommt.
+        // Geblättert wird in PHP: Online-Status und Sichtbarkeit stammen aus drei
+        // Quellen (Sitzungen nur beim database-Treiber), die Kennzahlen brauchen alle.
         usort($users, static fn(array $a, array $b): int => ($b['is_online'] <=> $a['is_online']) ?: strcasecmp($a['name'], $b['name']));
+        $page = LengthAwarePaginator::resolveCurrentPage();
 
         return [
             'driver' => $driver,
             'available' => $available,
             'online_threshold' => $threshold,
-            'users' => $users,
+            'users' => new LengthAwarePaginator(
+                collect($users)->forPage($page, self::PER_PAGE)->values(),
+                count($users),
+                self::PER_PAGE,
+                $page,
+                ['path' => LengthAwarePaginator::resolveCurrentPath()],
+            ),
             // Org-weite Geräte-/Fernwartungsquellen (Feature 085, Phase 3):
             'terminals' => $this->terminals($organization, $threshold),
             'remote_support' => $this->remoteSupportSessions($organization),
@@ -313,24 +344,11 @@ class SessionManagementService {
      * @return list<array<string, mixed>>
      */
     private function remoteSupportSessions(Organization $organization): array {
-        if (! Schema::hasTable((new RemotePendingSession())->getTable())) {
-            return [];
-        }
+        $provider = app(PluginManager::class)->implementing(ProvidesRemoteSessions::class)->first();
 
-        return array_values(RemotePendingSession::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $organization->id)
-            ->orderByDesc('started_at')
-            ->limit(self::REMOTE_RECENT)
-            ->get()
-            ->map(static fn(RemotePendingSession $s): array => [
-                'provider' => (string) $s->provider,
-                'label' => $s->alias !== null && $s->alias !== '' ? (string) $s->alias : (string) $s->remote_id,
-                'started_at' => $s->started_at,
-                'ended_at' => $s->ended_at,
-                'status' => (string) $s->status,
-            ])
-            ->all());
+        return $provider instanceof ProvidesRemoteSessions
+            ? $provider->recentRemoteSessions((int) $organization->id, self::REMOTE_RECENT)
+            : [];
     }
 
     /**

@@ -20,10 +20,8 @@
  *
  * Zwei gleichwertige Eingabewege (MVP-725, Vollscan 2026-08-23 D4):
  *
- *  1. **Zeigergeste** über Pointer Events statt HTML5-Drag-and-drop. HTML5-DnD
- *     kennt weder Touch noch Stift (mobile Browser lösen dragstart nicht aus)
- *     und ist synthetisch kaum testbar. Pointer Events decken Maus, Touch und
- *     Stift mit einem Codepfad ab. Die Karte trägt `touch-pan-y`: vertikales
+ *  1. **Zeigergeste** über lib/pointer-sort.js (Pointer Events: Maus, Touch
+ *     und Stift in einem Codepfad). Die Karte trägt `touch-pan-y`: vertikales
  *     Scrollen der Spalte bleibt Sache des Browsers, der Zug beginnt erst nach
  *     einer Bewegung über der Schwelle (sonst wäre jeder Tap ein Zug).
  *  2. **Tastatur/Barrierefreiheit**: Karte fokussieren, `m` oder Leertaste →
@@ -35,6 +33,7 @@
 import { __ } from "./i18n.js";
 import { submitForm } from "./lib/http.js";
 import { sameOriginPath } from "./lib/html.js";
+import { pointerSort } from "./lib/pointer-sort.js";
 
 // from-Status → to-Status → Aktion (Status-Codes aus App\Enums\Diary\Status).
 // dialog: Dialog-ID für Pflichtangaben; fields: feste Zusatzfelder;
@@ -59,10 +58,6 @@ const TRANSITIONS = {
     "-1": { 6: { blockedMessage: "js.kanban.handover_via_order" } },
     6: { 7: { action: "markInvoiced", dialog: "kanban-invoice-dialog" } },
 };
-
-// Ab dieser Bewegung (px) gilt eine Zeigergeste als Zug und nicht mehr als
-// Klick auf die Karte (die Karte ist ein Link auf den Eintrag).
-const DRAG_THRESHOLD = 6;
 
 const MOVE_DIALOG_ID = "kanban-move-dialog";
 
@@ -200,115 +195,17 @@ function init() {
     );
     if (!board) return;
 
-    const columns = () => board.querySelectorAll("[data-kanban-column]");
-
-    const clearHighlights = () => {
-        columns().forEach((col) => col.classList.remove("ring-2", "ring-primary"));
-    };
-
-    /** Spalte unter dem Zeiger (die Karte selbst liegt darunter → closest). */
-    const columnAt = (x, y) => {
-        const element = document.elementFromPoint(x, y);
-        return element instanceof Element
-            ? /** @type {HTMLElement | null} */ (
-                  element.closest("[data-kanban-column]")
-              )
-            : null;
-    };
-
-    /** @type {{card: HTMLElement, pointerId: number, startX: number, startY: number, dragging: boolean} | null} */
-    let drag = null;
-    // Ein Zug endet auf der Karte — der folgende Klick würde sonst den
-    // Eintrags-Dialog öffnen.
-    let suppressClick = false;
-
-    const endDrag = () => {
-        if (!drag) return null;
-        const { card, dragging } = drag;
-        card.classList.remove("opacity-50");
-        board.classList.remove("wd-kanban-dragging");
-        clearHighlights();
-        drag = null;
-        return dragging ? card : null;
-    };
-
-    board.addEventListener("pointerdown", (event) => {
-        if (event.button !== 0 && event.pointerType === "mouse") return;
-        const target = event.target instanceof Element ? event.target : null;
-        if (!target || target.closest("[data-kanban-move]")) return;
-        const card = /** @type {HTMLElement | null} */ (
-            target.closest("[data-kanban-card]")
-        );
-        if (!card) return;
-
-        drag = {
-            card,
-            pointerId: event.pointerId,
-            startX: event.clientX,
-            startY: event.clientY,
-            dragging: false,
-        };
+    // Die Karte ist ein Link auf den Eintrag und zieht als Ganzes; nur der
+    // Menü-Knopf behält seinen Klick. Ziel ist die Spalte unter dem Zeiger.
+    pointerSort(board, {
+        item: "[data-kanban-card]",
+        target: "[data-kanban-column]",
+        ignore: "[data-kanban-move]",
+        axis: "both",
+        draggingClass: ["opacity-50"],
+        targetClass: ["ring-2", "ring-primary"],
+        onDrop: ({ item, target }) => applyMove(item, target.dataset.status ?? ""),
     });
-
-    board.addEventListener("pointermove", (event) => {
-        if (!drag || event.pointerId !== drag.pointerId) return;
-
-        if (!drag.dragging) {
-            const dx = event.clientX - drag.startX;
-            const dy = event.clientY - drag.startY;
-            if (Math.hypot(dx, dy) < DRAG_THRESHOLD) return;
-            drag.dragging = true;
-            drag.card.classList.add("opacity-50");
-            board.classList.add("wd-kanban-dragging");
-            // Pointer-Capture: Bewegungen über Spaltengrenzen hinweg kommen
-            // weiterhin bei der Karte an (und bubbeln zum Board).
-            try {
-                drag.card.setPointerCapture(event.pointerId);
-            } catch (_e) {
-                /* ältere Engines ohne Capture */
-            }
-        }
-
-        event.preventDefault();
-        clearHighlights();
-        columnAt(event.clientX, event.clientY)?.classList.add(
-            "ring-2",
-            "ring-primary",
-        );
-    });
-
-    board.addEventListener("pointerup", (event) => {
-        if (!drag || event.pointerId !== drag.pointerId) return;
-        const column = columnAt(event.clientX, event.clientY);
-        const card = endDrag();
-        if (!card) return;
-        // Der Browser feuert nach dem Zug noch einen Klick (die Karte ist ein
-        // Link auf den Eintrag) — genau diesen einen verschlucken. Endet der Zug
-        // über einer anderen Spalte, bleibt der Klick manchmal aus; das
-        // setTimeout verhindert, dass die Sperre auf den NÄCHSTEN Klick fällt.
-        suppressClick = true;
-        window.setTimeout(() => {
-            suppressClick = false;
-        }, 0);
-        if (column) applyMove(card, column.dataset.status ?? "");
-    });
-
-    board.addEventListener("pointercancel", (event) => {
-        if (!drag || event.pointerId !== drag.pointerId) return;
-        endDrag();
-    });
-
-    // Capture-Phase: der Klick darf den Eintrags-Dialog gar nicht erst erreichen.
-    board.addEventListener(
-        "click",
-        (event) => {
-            if (!suppressClick) return;
-            suppressClick = false;
-            event.preventDefault();
-            event.stopPropagation();
-        },
-        true,
-    );
 
     // Touch-/Maus-Weg ins Menü (Karten-Button) …
     board.addEventListener("click", (event) => {

@@ -10,6 +10,7 @@
 
 namespace App\Services\Invoicing;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Enums\Numbering\NumberScope;
 use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Invoicing\Invoice;
@@ -108,7 +109,7 @@ class InvoiceGenerator {
                 'project_id' => $project?->id,
                 'foreign_customer_id' => $foreignCustomer?->id,
                 'number' => $this->nextNumber($customer->organization_id),
-                'status' => Invoice::STATUS_DRAFT,
+                'status' => InvoiceStatus::Draft,
                 'currency' => $customer->currency,
                 'tax_rate' => $tax['rate'],
                 'is_reverse_charge' => $tax['reverse_charge'],
@@ -317,7 +318,7 @@ class InvoiceGenerator {
                 'customer_id' => $customer->id,
                 'project_id' => $project?->id,
                 'number' => $this->numberSequence->next((int) $customer->organization_id, NumberScope::Proforma, now()),
-                'status' => Invoice::STATUS_DRAFT,
+                'status' => InvoiceStatus::Draft,
                 'type' => Invoice::TYPE_PROFORMA,
                 'currency' => $customer->currency,
                 'tax_rate' => $tax['rate'],
@@ -351,7 +352,7 @@ class InvoiceGenerator {
                 'project_id' => $project?->id,
                 'foreign_customer_id' => $foreignCustomer?->id,
                 'number' => $this->nextNumber($customer->organization_id),
-                'status' => Invoice::STATUS_DRAFT,
+                'status' => InvoiceStatus::Draft,
                 'type' => Invoice::TYPE_INVOICE,
                 'currency' => $customer->currency,
                 'tax_rate' => $tax['rate'],
@@ -426,7 +427,7 @@ class InvoiceGenerator {
                 'project_id' => $project?->id,
                 'foreign_customer_id' => $foreignCustomer?->id,
                 'number' => $this->nextNumber($customer->organization_id),
-                'status' => Invoice::STATUS_DRAFT,
+                'status' => InvoiceStatus::Draft,
                 'category' => Invoice::CATEGORY_MATERIAL,
                 'currency' => $customer->currency,
                 'tax_rate' => ($materialTax = app(TaxResolver::class)->resolve($customer->organization()->firstOrFail(), $customer))['rate'],
@@ -585,8 +586,8 @@ class InvoiceGenerator {
      * markiert. Nur für ausgestellte, unbezahlte Rechnungen.
      */
     public function cancellationFor(Invoice $original, ?string $reason = null, ?int $userId = null): Invoice {
-        if ($original->status !== Invoice::STATUS_ISSUED || $original->isCreditNote()) {
-            throw new \LogicException('Only issued invoices can be reversed (status: ' . $original->status . ')');
+        if ($original->status !== InvoiceStatus::Issued || $original->isCreditNote()) {
+            throw new \LogicException('Only issued invoices can be reversed (status: ' . $original->status->value . ')');
         }
 
         return DB::transaction(function () use ($original, $reason, $userId): Invoice {
@@ -597,7 +598,7 @@ class InvoiceGenerator {
                 'customer_id' => $original->customer_id,
                 'project_id' => $original->project_id,
                 'number' => $this->numberSequence->next((int) $original->organization_id, \App\Enums\Numbering\NumberScope::Cancellation, now()),
-                'status' => Invoice::STATUS_DRAFT,
+                'status' => InvoiceStatus::Draft,
                 'type' => Invoice::TYPE_CANCELLATION,
                 'category' => $original->category,
                 'parent_invoice_id' => $original->id,
@@ -683,7 +684,7 @@ class InvoiceGenerator {
                 'customer_id' => $customer->id,
                 'project_id' => $project?->id,
                 'number' => $this->nextNumber($customer->organization_id),
-                'status' => Invoice::STATUS_DRAFT,
+                'status' => InvoiceStatus::Draft,
                 'type' => Invoice::TYPE_DOWN_PAYMENT,
                 'currency' => $customer->currency,
                 'tax_rate' => $tax['rate'],
@@ -717,7 +718,7 @@ class InvoiceGenerator {
      * Eine einzige custom-Position; überspringt BEWUSST assertLocalBillingAllowed,
      * weil die Rechnung sofort mit finalize=true an Lexoffice geht (Nummernkreis/
      * Festschreibung/Zahlung liegen dort). Die übergebene $placeholderNumber ist
-     * transient — {@see \App\Plugins\Lexoffice\LexofficeInvoiceService::publish}
+     * transient — {@see \App\Plugins\Lexoffice\Services\LexofficeInvoiceService::publish}
      * überschreibt sie mit der Lexoffice-Belegnummer. NICHT für lokale Faktura.
      */
     public function retainerChargeFor(
@@ -739,7 +740,7 @@ class InvoiceGenerator {
                 'organization_id' => $customer->organization_id,
                 'customer_id' => $customer->id,
                 'number' => $placeholderNumber,
-                'status' => Invoice::STATUS_DRAFT,
+                'status' => InvoiceStatus::Draft,
                 'type' => $type,
                 'currency' => $customer->currency,
                 'tax_rate' => $tax['rate'],
@@ -779,12 +780,12 @@ class InvoiceGenerator {
             ->where('organization_id', $customer->organization_id)
             ->where('customer_id', $customer->id)
             ->where('type', Invoice::TYPE_DOWN_PAYMENT)
-            ->whereIn('status', [Invoice::STATUS_ISSUED, Invoice::STATUS_PARTIALLY_PAID, Invoice::STATUS_PAID])
+            ->whereIn('status', [InvoiceStatus::Issued, InvoiceStatus::PartiallyPaid, InvoiceStatus::Paid])
             ->when($projectId !== null, fn($q) => $q->where('project_id', $projectId), fn($q) => $q->whereNull('project_id'))
             ->when($currency !== null, fn($q) => $q->where('currency', $currency))
             ->whereDoesntHave('settlementItems', fn($q) => $q->whereHas(
                 'invoice',
-                fn($iq) => $iq->where('status', '!=', Invoice::STATUS_CANCELLED),
+                fn($iq) => $iq->where('status', '!=', InvoiceStatus::Cancelled),
             ))
             ->orderBy('issued_on')
             ->orderBy('id')
@@ -802,8 +803,8 @@ class InvoiceGenerator {
      * Schlussrechnung öffnet die Abschläge dadurch automatisch wieder.
      */
     public function finalFromDraft(Invoice $draft): Invoice {
-        if ($draft->status !== Invoice::STATUS_DRAFT || $draft->type !== Invoice::TYPE_INVOICE) {
-            throw new \LogicException('Only draft standard invoices can become a final invoice (type: ' . $draft->type . ', status: ' . $draft->status . ')');
+        if ($draft->status !== InvoiceStatus::Draft || $draft->type !== Invoice::TYPE_INVOICE) {
+            throw new \LogicException('Only draft standard invoices can become a final invoice (type: ' . $draft->type . ', status: ' . $draft->status->value . ')');
         }
 
         return DB::transaction(function () use ($draft): Invoice {
@@ -888,7 +889,7 @@ class InvoiceGenerator {
 
     public function creditNoteFor(Invoice $original, ?int $userId = null): Invoice {
         if (! $original->needsCreditNoteToCancel()) {
-            throw new \LogicException('Original invoice is not eligible for credit note (status: ' . $original->status . ')');
+            throw new \LogicException('Original invoice is not eligible for credit note (status: ' . $original->status->value . ')');
         }
 
         return DB::transaction(function () use ($original, $userId): Invoice {
@@ -899,7 +900,7 @@ class InvoiceGenerator {
                 'customer_id' => $original->customer_id,
                 'project_id' => $original->project_id,
                 'number' => $this->nextNumber($original->organization_id, prefixLetter: 'G'),
-                'status' => Invoice::STATUS_DRAFT,
+                'status' => InvoiceStatus::Draft,
                 'type' => Invoice::TYPE_CREDIT_NOTE,
                 'category' => $original->category,
                 'parent_invoice_id' => $original->id,

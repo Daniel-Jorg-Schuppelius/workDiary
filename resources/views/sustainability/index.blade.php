@@ -19,11 +19,7 @@
                 @if ($canManage)
                     <x-icon-btn icon="public" size="sm" data-entry-modal-trigger :href="route('sustainability.excerpt.edit')" show-label>{{ __('sustainability.excerpt.title') }}</x-icon-btn>
                 @endif
-                <x-icon-btn icon="picture_as_pdf" size="sm" tone="ghost" :href="route('sustainability.index', ['export' => 'pdf', 'from' => $from, 'to' => $to])" show-label>{{ __('PDF') }}</x-icon-btn>
-                <x-action-menu icon="download" :label="__('Export')">
-                    <x-icon-btn icon="download" size="sm" :href="route('sustainability.index', ['export' => 'csv', 'from' => $from, 'to' => $to])" show-label>{{ __('CSV') }}</x-icon-btn>
-                    <x-icon-btn icon="table_view" size="sm" :href="route('sustainability.index', ['export' => 'xlsx', 'from' => $from, 'to' => $to])" show-label>Excel</x-icon-btn>
-                </x-action-menu>
+                <x-report-export :url="fn (string $format) => route('sustainability.index', ['export' => $format, 'from' => $from, 'to' => $to])" tone="ghost" />
                 @if ($canManage)
                     <x-action-form :action="route('sustainability.snapshot.store')">
                         <input type="hidden" name="from" value="{{ $from }}">
@@ -49,7 +45,7 @@
     </div>
 
     @if ($aggregate['missing_factors'] !== [])
-        <div class="alert alert-warning rounded-2xl px-5 py-3 text-sm shadow-xs">
+        <div role="alert" class="alert alert-warning rounded-2xl px-5 py-3 text-sm shadow-xs">
             <x-icon name="warning" class="text-base" />
             <span>{{ __('Für folgende Aktivitäten fehlt ein gültiger Emissionsfaktor (keine stille 0): :codes', ['codes' => implode(', ', $aggregate['missing_factors'])]) }}</span>
         </div>
@@ -127,13 +123,15 @@
 
     {{-- Bewertungen, Kriterien, Maßnahmen --}}
     <div class="grid gap-4 lg:grid-cols-3">
-        <x-card :title="__('Bewertungen (versioniert)')" icon="grade" :count="$assessments->count()">
-            @if ($canManage)
-                <x-slot:actions>
+        {{-- Die Karte zeigt die jüngsten Einträge, gezählt wird die ganze Menge — sie steht hinter „Alle anzeigen". --}}
+        <x-card :title="__('Bewertungen (versioniert)')" icon="grade" :count="$assessmentCount">
+            <x-slot:actions>
+                <x-button size="sm" tone="ghost" :href="route('sustainability.assessments.index')">{{ __('Alle anzeigen') }}</x-button>
+                @if ($canManage)
                     <x-button size="sm" tone="ghost" icon="add" data-open-dialog="assessment-create"
                               :disabled="$criteria->where('active', true)->isEmpty()">{{ __('Bewertung starten') }}</x-button>
-                </x-slot:actions>
-            @endif
+                @endif
+            </x-slot:actions>
             @if ($canManage && $criteria->where('active', true)->isEmpty())
                 <p class="mb-3 text-xs text-warning">{{ __('Blockiert: erst Kriterien anlegen (rechts).') }}</p>
             @endif
@@ -144,7 +142,7 @@
                     @foreach ($assessments as $assessment)
                         <li class="flex flex-wrap items-center gap-2">
                             <a class="link link-hover font-medium" href="{{ route('sustainability.assessments.show', $assessment) }}">{{ $assessment->subject_label }} <span class="text-xs text-muted">V{{ $assessment->version }}</span></a>
-                            <x-status-badge size="xs" outline>{{ __("values.{$assessment->status}") }}</x-status-badge>
+                            <x-status-badge size="xs" outline>{{ $assessment->status->label() }}</x-status-badge>
                             @if ($assessment->rating)
                                 <x-status-badge size="xs" :tone="$assessment->rating === 'green' ? 'success' : ($assessment->rating === 'yellow' ? 'warning' : 'error')">{{ $assessment->total_score }}</x-status-badge>
                             @endif
@@ -165,25 +163,26 @@
             @else
                 <div class="flex flex-wrap gap-1 text-xs">
                     @foreach ($criteria as $criterion)
-                        <span class="badge badge-outline badge-sm">{{ __("values.{$criterion->dimension}") }}: {{ $criterion->label }} (×{{ $criterion->weight }})</span>
+                        <x-status-badge tone="plain" outline>{{ __("values.{$criterion->dimension}") }}: {{ $criterion->label }} (×{{ $criterion->weight }})</x-status-badge>
                     @endforeach
                 </div>
             @endif
         </x-card>
 
-        <x-card :title="__('Maßnahmenregister')" icon="task_alt" :count="$measures->count()">
-            @if ($canManage)
-                <x-slot:actions>
+        <x-card :title="__('Maßnahmenregister')" icon="task_alt" :count="$measureCount">
+            <x-slot:actions>
+                <x-button size="sm" tone="ghost" :href="route('sustainability.measures.index')">{{ __('Alle anzeigen') }}</x-button>
+                @if ($canManage)
                     <x-button size="sm" tone="ghost" icon="add" data-open-dialog="measure-create">{{ __('Erfassen') }}</x-button>
-                </x-slot:actions>
-            @endif
+                @endif
+            </x-slot:actions>
             @if ($measures->isEmpty())
                 <x-empty-state icon="task_alt" :title="__('Keine Maßnahmen.')" compact />
             @else
                 <ul class="space-y-2 text-sm">
                     @foreach ($measures as $measure)
                         <li class="flex flex-wrap items-center gap-2">
-                            <x-status-badge size="xs" outline>{{ __("values.{$measure->status}") }}</x-status-badge>
+                            <x-status-badge size="xs" outline>{{ $measure->status->label() }}</x-status-badge>
                             <span class="min-w-0 flex-1">{{ $measure->title }}</span>
                             @if ($measure->responsible)<span class="text-xs text-muted">{{ $measure->responsible->name }}</span>@endif
                             @if ($measure->due_on)<span class="text-xs text-muted">{{ $measure->due_on->fdate() }}</span>@endif
@@ -191,23 +190,7 @@
                                 <x-status-badge size="xs" :tone="$measure->effectiveness === 'effective' ? 'success' : 'warning'">{{ __("values.{$measure->effectiveness}") }}</x-status-badge>
                             @endif
                             @if ($canManage)
-                                <form method="POST" action="{{ route('sustainability.measures.update', $measure) }}" class="ml-auto flex items-center gap-1">
-                                    @csrf @method('PUT')
-                                    <select name="status" class="select select-xs select-bordered">
-                                        @foreach (\App\Models\Sustainability\SustainabilityMeasure::STATUSES as $status)
-                                            <option value="{{ $status }}" @selected($measure->status === $status)>{{ __("values.$status") }}</option>
-                                        @endforeach
-                                    </select>
-                                    @if ($measure->status === 'done' && $measure->effectiveness === null)
-                                        <select name="effectiveness" class="select select-xs select-bordered">
-                                            <option value="">{{ __('Wirksamkeit …') }}</option>
-                                            <option value="effective">{{ __('values.effective') }}</option>
-                                            <option value="partly">{{ __('values.partly') }}</option>
-                                            <option value="ineffective">{{ __('values.ineffective') }}</option>
-                                        </select>
-                                    @endif
-                                    <button type="submit" class="btn btn-xs">{{ __('OK') }}</button>
-                                </form>
+                                @include('sustainability._measure_status_form', ['measure' => $measure])
                             @endif
                         </li>
                     @endforeach
@@ -230,14 +213,14 @@
                         <span class="font-medium">{{ $set->name }} {{ $set->year }}</span>
                         <span class="text-xs text-muted">{{ $set->source ?? '—' }}</span>
                         @if ($set->organization_id !== null)
-                            <span class="badge badge-info badge-xs">{{ __('Org-Override') }}</span>
+                            <x-status-badge tone="info" size="xs">{{ __('Org-Override') }}</x-status-badge>
                         @endif
                     </div>
                     <div class="mt-1 flex flex-wrap gap-1 text-xs">
                         @foreach ($set->factors as $factor)
-                            <span class="badge badge-outline badge-sm" title="{{ $factor->source_note }} · gültig ab {{ $factor->valid_from->fdate() }}">
+                            <x-status-badge tone="plain" outline title="{{ $factor->source_note }} · gültig ab {{ $factor->valid_from->fdate() }}">
                                 {{ __("values.{$factor->activity_code}") }}: {{ rtrim(rtrim((string) $factor->factor, '0'), '.') }} ({{ $factor->unit_code }}, S{{ $factor->scope }})
-                            </span>
+                            </x-status-badge>
                         @endforeach
                     </div>
                 </div>

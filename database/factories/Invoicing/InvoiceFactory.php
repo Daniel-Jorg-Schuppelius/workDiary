@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Database\Factories\Invoicing;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -28,7 +29,7 @@ class InvoiceFactory extends Factory {
             'organization_id' => null, // wird über Global Scope / explizit gesetzt
             'customer_id' => Customer::factory(),
             'number' => 'R-' . fake()->unique()->numerify('######'),
-            'status' => Invoice::STATUS_DRAFT,
+            'status' => InvoiceStatus::Draft,
             'currency' => 'EUR',
             'tax_rate' => '19.00',
         ];

@@ -175,14 +175,14 @@ final class GaebPackageIntakeService {
     private function isAllowedDocument(array $entry): bool {
         $name = basename($entry['name']);
         $ext = strtolower((string) pathinfo($name, PATHINFO_EXTENSION));
-        if (! in_array($ext, \App\Services\Document\DocumentService::ALLOWED_EXTENSIONS, true)) {
+        if (! in_array($ext, \App\Services\Attachments\FileAttacher::ALLOWED_EXTENSIONS, true)) {
             return false;
         }
 
         // finfo, bei unklarem Ergebnis Magic Bytes; leerer Inhalt (false) fällt durch.
         $mime = File::mimeTypeFromContent($entry['contents']);
 
-        return $mime !== false && in_array($mime, \App\Services\Document\DocumentService::ALLOWED_MIMES, true);
+        return $mime !== false && in_array($mime, \App\Services\Attachments\FileAttacher::ALLOWED_MIMES, true);
     }
 
     /** @param array{name: string, contents: string} $entry */

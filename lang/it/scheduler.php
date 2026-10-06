@@ -178,7 +178,7 @@ return [
         'metering' => ['generate-invoices' => 'Genera fatture da letture contatore'],
         'maintenance' => ['scan_due' => 'Controllare i piani di manutenzione in scadenza'],
         'notifications' => ['scan_deadlines' => 'Controllare le scadenze e notificare'],
-        'recruiting' => ['scan_uploads' => 'Analizzare i documenti di candidatura alla ricerca di malware'],
+        'recruiting' => ['scan_uploads' => 'Analizzare i documenti di candidatura alla ricerca di malware', 'expire_postings' => 'Contrassegnare come scaduti gli annunci di lavoro scaduti'],
         'org' => ['offboard_due' => 'Eseguire le uscite dei collaboratori scadute'],
         'travel_logs' => ['lock_due' => 'Bloccare i viaggi del libretto dopo fine giornata'],
         'news-feed' => ['refresh' => 'Aggiorna il feed di notizie'],

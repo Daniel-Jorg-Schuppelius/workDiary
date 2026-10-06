@@ -1,7 +1,7 @@
 ---
-title: "Bestands-Konflikte (externe Übertragung)"
+title: "Konflikte mit Fremdsystemen (Bestand und Artikel)"
 topic: inventory.conflicts
-version: 1
+version: 3
 audience:
     - admin
     - geschaeftsfuehrung
@@ -38,10 +38,26 @@ aus. Es wird niemals nachträglich gelöscht oder technisch zurückgerollt; das
 Lagerjournal bleibt lückenlos und jede Entscheidung wird mit Person und
 Zeitpunkt festgehalten.
 
-**Rechte & Filter:** Zum Ansehen genügt das Bestands-Leserecht; zum Auflösen
-ist zusätzlich das Buchungsrecht erforderlich, weil die Kompensation eine
-echte Lagerbuchung ist. Die Liste lässt sich nach offenen bzw. allen
-Konflikten filtern.
+**Artikelkonflikte:** Dieselbe Liste zeigt Artikel, die lokal geändert
+wurden und deren Stand im angebundenen Fremdsystem (etwa Lexware Office)
+abweicht — bei Konflikt-Strategie „Manuelle Prüfung“ des Plugins. Je
+Konflikt stehen der Artikel, die abweichenden Felder und beide Werte
+nebeneinander. Drei Wege: *Lokal belassen* schließt den Konflikt, der
+lokale Stand bleibt und geht beim nächsten Abgleich an das Fremdsystem.
+*Stand des Fremdsystems übernehmen* (etwa „Lexoffice-Stand übernehmen“)
+holt den Artikel frisch aus dem Fremdsystem und überschreibt die lokale
+Änderung. *Verwerfen* schließt den Konflikt ohne Abgleich — beide Stände
+bleiben, wie sie sind; weicht der Artikel beim nächsten Abgleich weiter
+ab, entsteht ein neuer Konflikt.
+
+**Rechte & Filter:** Der Reiter „Konflikte“ in der Lager-Reiterleiste
+zeigt die Zahl der offenen Konflikte. Zum Ansehen genügt das
+Bestands-Leserecht oder das Artikel-Leserecht; ohne Bestandsrecht sehen
+Sie nur Artikelkonflikte, ohne Artikelrecht nur Bestandskonflikte.
+Aufgelöst wird je Art: Bestandskonflikte mit dem Buchungsrecht, weil die
+Kompensation eine echte Lagerbuchung ist; Artikelkonflikte mit dem Recht
+zur Artikelpflege. Die Liste lässt sich nach offenen bzw. allen Konflikten
+und nach der Art (Bestand, Artikel) filtern.
 
 Offene Konflikte sollten zeitnah geprüft werden: Solange sie bestehen,
 weichen lokaler und externer Bestand voneinander ab — mit Folgen für

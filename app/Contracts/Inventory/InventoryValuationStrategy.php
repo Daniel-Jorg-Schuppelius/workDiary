@@ -14,7 +14,8 @@ namespace App\Contracts\Inventory;
 
 use App\Enums\Inventory\ValuationMethod;
 use App\Models\Article\ArticleVariant;
-use App\Models\Inventory\{StockMovement, Warehouse};
+use App\Models\Inventory\{StockLot, StockMovement, Warehouse};
+use App\Services\Inventory\StockIssue;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -28,8 +29,8 @@ interface InventoryValuationStrategy {
     /** Wareneingang mit Einzelkosten; optional mit Herkunftsbeleg (z. B. Bestellzeile). */
     public function receipt(ArticleVariant $variant, Warehouse $warehouse, string $qty, string $unitCost, string $currency = 'EUR', ?int $actorUserId = null, ?Model $source = null): StockMovement;
 
-    /** Abgang, verfahrensgemäß bewertet. */
-    public function issue(ArticleVariant $variant, Warehouse $warehouse, string $qty, bool $allowNegative = false, ?int $actorUserId = null): StockMovement;
+    /** Abgang je Charge (gewählt oder FEFO-zugeteilt), jeder Teil verfahrensgemäß bewertet; `$requireLot` weist einen Teil ohne Charge ab. */
+    public function issue(ArticleVariant $variant, Warehouse $warehouse, string $qty, bool $allowNegative = false, ?int $actorUserId = null, ?StockLot $lot = null, bool $requireLot = false): StockIssue;
 
     /** Bewerteter Bestand in Basiseinheit. @return numeric-string */
     public function onHand(ArticleVariant $variant, Warehouse $warehouse): string;

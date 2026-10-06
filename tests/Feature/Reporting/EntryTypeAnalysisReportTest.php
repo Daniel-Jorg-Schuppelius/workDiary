@@ -151,10 +151,10 @@ class EntryTypeAnalysisReportTest extends TestCase {
             'entry_type' => Sqid::encode(\App\Models\Classification\EntryType::class, $this->entryType->id),
         ]));
         $response->assertSee(route('reports.entry-types.drilldown.protocols', [
-            'entry_type_id' => $this->entryType->id,
+            'entry_type_id' => Sqid::encode(EntryType::class, $this->entryType->id),
         ]), false);
         $response->assertSee(route('reports.entry-types.drilldown.open-issues', [
-            'entry_type_id' => $this->entryType->id,
+            'entry_type_id' => Sqid::encode(EntryType::class, $this->entryType->id),
             'escalated' => 1,
         ]));
     }
@@ -243,6 +243,20 @@ class EntryTypeAnalysisReportTest extends TestCase {
 
         $response->assertOk();
         $response->assertSeeText('EntryType Drilldown Issue');
+    }
+
+    public function test_drilldown_accepts_the_sqid_and_its_links_carry_it(): void {
+        $entry = $this->createEntryTypeDiaryEntry(null);
+        $this->createEntryTypeOpenIssue($entry, 'EntryType Drilldown Issue');
+        $sqid = Sqid::encode(EntryType::class, $this->entryType->id);
+
+        $response = $this->getWithDateRange('reports.entry-types.drilldown.open-issues', ['entry_type_id' => $sqid]);
+
+        $response->assertOk();
+        $response->assertSeeText('EntryType Drilldown Issue');
+        // Export und Rücksprung tragen die Sqid, nicht die Datenbank-ID.
+        $response->assertSee('entry_type_id=' . $sqid, false);
+        $response->assertDontSee('entry_type_id=' . $this->entryType->id . '&amp;', false);
     }
 
     public function test_protocols_drilldown_route_renders_for_entry_type(): void {

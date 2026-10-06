@@ -98,6 +98,19 @@ final class CollectableTypes {
         return null;
     }
 
+    /** Inhalt aus Typ und Kennung — 404, wenn es ihn nicht gibt oder die Person ihn nicht sehen darf. */
+    public function findVisibleOrFail(string $type, string $sqid, User $user): Model {
+        $class = $this->classFor($type);
+        abort_if($class === null, 404);
+        $id = Sqid::decode($class, $sqid);
+        abort_if($id === null, 404);
+
+        $visible = $this->visible($type, $user, [$id]);
+        abort_if($visible === [], 404);
+
+        return $visible[0];
+    }
+
     /** @return class-string<Model>|null */
     public function classFor(string $key): ?string {
         return self::TYPES[$key]['class'] ?? null;

@@ -17,6 +17,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Platform\SaveUserWorkspaceRequest;
 use App\Models\Platform\{User, UserWorkspace};
 use App\Services\Navigation\{NavFocusService, NavigationRegistry};
+use App\Support\SortableQuery;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -44,9 +45,15 @@ class UserWorkspaceController extends Controller {
         private readonly NavFocusService $focus,
     ) {}
 
-    public function index(): View {
+    public function index(Request $request): View {
+        // reorder(): forUser() sortiert schon nach Reihenfolge und Name.
+        $query = UserWorkspace::query()->forUser($this->user())->reorder();
+        [$sort, $dir] = SortableQuery::apply($query, $request, ['position' => 'sort', 'name' => 'name'], 'position', 'asc');
+
         return view('me.workspaces.index', [
-            'workspaces' => UserWorkspace::query()->forUser($this->user())->get(),
+            'workspaces' => $query->orderBy('name')->orderBy('id')->paginate(25)->withQueryString(),
+            'sort' => $sort,
+            'dir' => $dir,
             'activeKey' => $this->focus->resolveActive(
                 $this->user(),
                 $this->currentOrganization(),
@@ -71,7 +78,7 @@ class UserWorkspaceController extends Controller {
             'items' => $this->items($request),
         ]);
 
-        return redirect()->route('me.workspaces.index')->with('status', __('scope.workspace.flash.created'));
+        return redirect()->toList('me.workspaces.index')->with('status', __('scope.workspace.flash.created'));
     }
 
     public function edit(UserWorkspace $workspace): View {
@@ -88,7 +95,7 @@ class UserWorkspaceController extends Controller {
             'items' => $this->items($request),
         ]);
 
-        return redirect()->route('me.workspaces.index')->with('status', __('scope.workspace.flash.updated'));
+        return redirect()->toList('me.workspaces.index')->with('status', __('scope.workspace.flash.updated'));
     }
 
     public function destroy(Request $request, UserWorkspace $workspace): RedirectResponse {
@@ -105,7 +112,7 @@ class UserWorkspaceController extends Controller {
             $this->user()->setPreference(NavFocusService::PREFERENCE_KEY, 'all');
         }
 
-        return redirect()->route('me.workspaces.index')->with('status', __('scope.workspace.flash.deleted'));
+        return redirect()->toList('me.workspaces.index')->with('status', __('scope.workspace.flash.deleted'));
     }
 
     private function form(UserWorkspace $workspace, bool $isEdit): View {

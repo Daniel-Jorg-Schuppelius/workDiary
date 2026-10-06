@@ -27,16 +27,7 @@
         </x-page-toolbar>
     </x-slot:toolbar>
 
-    @if ($errors->any())
-        <div class="alert alert-error text-sm" role="alert">
-            <x-icon name="error" />
-            <ul class="list-inside list-disc">
-                @foreach ($errors->all() as $message)
-                    <li>{{ $message }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
+    <x-validation-errors />
 
     <div class="grid gap-4 lg:grid-cols-3">
         <div class="space-y-4 lg:col-span-2">
@@ -58,12 +49,12 @@
                             <td class="font-medium">
                                 @if ($assignment->member)
                                     <a href="{{ route('club.members.show', $assignment->member) }}" class="link link-hover">{{ $assignment->member->fullName() }}</a>
-                                    <span class="block text-xs text-muted">{{ $assignment->member->displayNo() }}@if ($assignment->member->left_on) · {{ __('club.label.left') }} {{ $assignment->member->left_on->format('d.m.Y') }}@endif</span>
+                                    <span class="block text-xs text-muted">{{ $assignment->member->displayNo() }}@if ($assignment->member->left_on) · {{ __('club.label.left') }} {{ $assignment->member->left_on->fdate() }}@endif</span>
                                 @endif
                                 @if ($assignment->needsReview())<x-status-badge tone="warning" size="xs" :label="__('club.fees.label.review_required')" :title="$assignment->review_note" />@endif
                             </td>
                             <td class="text-sm">{{ $assignment->tariff?->name }} @if ($assignment->tariff?->isFamily())<x-status-badge tone="info" size="xs" :label="$assignment->tariff->kind->label()" />@endif</td>
-                            <td class="text-sm tabular-nums">{{ $assignment->valid_from->format('d.m.Y') }} – {{ $assignment->valid_to?->format('d.m.Y') ?? __('club.label.open_end') }}</td>
+                            <td class="text-sm tabular-nums">{{ $assignment->valid_from->fdate() }} – {{ $assignment->valid_to?->fdate() ?? __('club.label.open_end') }}</td>
                             <td class="text-sm">@if ($assignment->discount_percent !== null){{ $assignment->discountPercent() }} % <span class="text-xs text-muted">{{ $assignment->discount_reason }}</span>@else–@endif</td>
                             <td class="text-right">
                                 @if ($canManage)
@@ -98,7 +89,7 @@
                         <li class="flex flex-wrap items-center gap-2">
                             <span class="font-medium">{{ $exemption->member?->fullName() }}</span>
                             <x-status-badge :tone="$exemption->kind === \App\Enums\Club\ClubFeeExemptionKind::Exemption ? 'warning' : 'info'" size="xs">{{ $exemption->kind->label() }}@if ($exemption->percent !== null) {{ $exemption->percent }} %@endif</x-status-badge>
-                            <span class="tabular-nums">{{ $exemption->starts_on->format('d.m.Y') }} – {{ $exemption->ends_on?->format('d.m.Y') ?? __('club.label.open_end') }}</span>
+                            <span class="tabular-nums">{{ $exemption->starts_on->fdate() }} – {{ $exemption->ends_on?->fdate() ?? __('club.label.open_end') }}</span>
                             <span class="text-xs text-muted">{{ $exemption->reason }}@if ($exemption->createdBy) · {{ $exemption->createdBy->name }}@endif</span>
                             @if ($canManage)
                                 <span class="ml-auto flex gap-1">
@@ -118,11 +109,10 @@
 
         <div class="space-y-4">
             <x-card :title="__('club.fees.card.payer')" icon="account_balance_wallet">
-                <dl class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
-                    <dt class="text-muted">{{ __('club.fees.field.customer') }}</dt>
-                    <dd>@if ($account->customer)<a href="{{ route('customers.show', $account->customer) }}" class="link link-hover">{{ $account->customer->name }}</a>@if ($account->customer->number) <span class="text-xs text-muted">· {{ $account->customer->number }}</span>@endif @endif</dd>
-                    <dt class="text-muted">{{ __('club.field.email') }}</dt><dd>{{ $account->email ?? '–' }}</dd>
-                </dl>
+                <x-detail-grid>
+                    <x-detail-grid.row :label="__('club.fees.field.customer')">@if ($account->customer)<a href="{{ route('customers.show', $account->customer) }}" class="link link-hover">{{ $account->customer->name }}</a>@if ($account->customer->number) <span class="text-xs text-muted">· {{ $account->customer->number }}</span>@endif @endif</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('club.field.email')">{{ $account->email ?? '–' }}</x-detail-grid.row>
+                </x-detail-grid>
                 @if ($account->notes)<p class="mt-2 whitespace-pre-line text-sm">{{ $account->notes }}</p>@endif
                 <p class="mt-2 text-xs text-muted">{{ __('club.fees.hint.payer') }}</p>
             </x-card>
@@ -134,7 +124,7 @@
                     @forelse ($claims as $claim)
                         <li class="flex flex-wrap items-center gap-2">
                             <a href="{{ route('club.fees.claims.show', $claim) }}" class="link link-hover font-medium">{{ $claim->number }}</a>
-                            <span class="text-xs text-muted tabular-nums">{{ $claim->due_on->format('d.m.Y') }}</span>
+                            <span class="text-xs text-muted tabular-nums">{{ $claim->due_on->fdate() }}</span>
                             <span class="ml-auto tabular-nums">{{ $claim->total->format() }}</span>
                             <x-status-badge :tone="$claim->status->tone()" size="xs">{{ $claim->status->label() }}</x-status-badge>
                         </li>
@@ -160,7 +150,7 @@
                 <ul class="space-y-1 text-sm">
                     @forelse ($payments as $payment)
                         <li class="flex flex-wrap items-center gap-2">
-                            <span class="tabular-nums">{{ $payment->paid_on->format('d.m.Y') }}</span>
+                            <span class="tabular-nums">{{ $payment->paid_on->fdate() }}</span>
                             @if ($payment->claim)<a href="{{ route('club.fees.claims.show', $payment->claim) }}" class="link link-hover text-xs">{{ $payment->claim->number }}</a>@else<span class="text-xs text-muted">{{ __('club.fees.label.credit_entry') }}</span>@endif
                             <span class="text-xs text-muted">{{ $payment->method->label() }} · {{ $payment->source->label() }}</span>
                             <span class="ml-auto tabular-nums {{ $payment->amount->isNegative() ? 'text-error' : '' }}">{{ $payment->amount->format() }}</span>
@@ -175,10 +165,10 @@
             </x-card>
 
             <x-card :title="__('club.fees.card.collection')" icon="account_balance">
-                <dl class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
-                    <dt class="text-muted">{{ __('club.fees.field.mandate') }}</dt><dd>@if ($mandate){{ $mandate->reference }} <x-status-badge :tone="$mandate->isUsable() ? 'success' : 'warning'" size="xs">{{ $mandate->status->label() }}</x-status-badge>@else<span class="text-muted">{{ __('club.fees.label.no_mandate') }}</span>@endif</dd>
-                    <dt class="text-muted">{{ __('club.fees.field.portal_user') }}</dt><dd>{{ $portalUser?->name ?? '–' }}</dd>
-                </dl>
+                <x-detail-grid>
+                    <x-detail-grid.row :label="__('club.fees.field.mandate')">@if ($mandate){{ $mandate->reference }} <x-status-badge :tone="$mandate->isUsable() ? 'success' : 'warning'" size="xs">{{ $mandate->status->label() }}</x-status-badge>@else<span class="text-muted">{{ __('club.fees.label.no_mandate') }}</span>@endif</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('club.fees.field.portal_user')">{{ $portalUser?->name ?? '–' }}</x-detail-grid.row>
+                </x-detail-grid>
                 <p class="mt-2 text-xs text-muted">{{ __('club.fees.hint.collection_account') }}</p>
             </x-card>
         </div>

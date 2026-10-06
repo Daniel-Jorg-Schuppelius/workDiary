@@ -13,12 +13,11 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Scim;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Scim\Concerns\GuardsScimRequests;
 use App\Models\Platform\{Organization, User};
 use App\Services\Scim\{ScimException, ScimResponse, ScimUserService};
 use App\Support\SqidEncoder;
-use Closure;
 use Illuminate\Http\{JsonResponse, Request};
-use Throwable;
 
 /**
  * SCIM-2.0-Benutzerendpunkt (Feature 057, MVP-121). Authentifizierung/Org-
@@ -27,6 +26,8 @@ use Throwable;
  * (`customer_id IS NULL`); die SCIM-`id` ist die WorkDiary-Sqid.
  */
 class ScimUserController extends Controller {
+    use GuardsScimRequests;
+
     /** Bulk-Limits (RFC 7644 §3.7) — bewusst klein, Entra/Okta senden ohnehin kein Bulk. */
     public const MAX_OPERATIONS = 100;
 
@@ -268,25 +269,6 @@ class ScimUserController extends Controller {
     }
 
     /** Fängt SCIM-Fehler ein und übersetzt sie in SCIM-Fehlerantworten. */
-    private function guard(Closure $fn): JsonResponse {
-        try {
-            return $fn();
-        } catch (ScimException $e) {
-            return ScimResponse::error($e->status, $e->getMessage(), $e->scimType);
-        } catch (Throwable $e) {
-            return ScimResponse::error(500, class_basename($e));
-        }
-    }
-
-    private function organization(): Organization {
-        $org = app('currentOrganization');
-        if (! $org instanceof Organization) {
-            throw new ScimException(401, 'No organization context.');
-        }
-
-        return $org;
-    }
-
     /** Löst die SCIM-`id` (Sqid) auf ein internes Konto der Organisation auf. */
     private function resolve(string $id): User {
         $org = $this->organization();

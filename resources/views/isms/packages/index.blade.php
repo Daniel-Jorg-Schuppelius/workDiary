@@ -19,9 +19,10 @@
 
 @section('title', __('isms.title.packages'))
 @section('nav-title', __('isms.title.packages'))
+@include('partials.page-fill')
 
 @section('content')
-    <x-index-page :subtitle="__('isms.subtitle.packages')">
+    <x-index-page overflow="clip" :subtitle="__('isms.subtitle.packages')">
         <x-slot:actions>
             @if ($canManage)
                 <x-icon-btn icon="add" tone="primary" size="sm"
@@ -52,7 +53,7 @@
             <span>{{ __('isms.package.as_of_note') }}</span>
         </div>
 
-        <x-table>
+        <x-table scroll="flex">
             <x-slot:head>
                 <tr>
                     <th>{{ __('isms.field.package_no') }}</th>
@@ -76,7 +77,7 @@
                     <td class="font-mono">{{ $package->displayNo() }}</td>
                     <td class="font-medium">{{ $package->title }}</td>
                     <td class="text-base-content/70">{{ $package->scope?->name ?? '—' }}</td>
-                    <td>{{ $package->as_of_date->format('d.m.Y') }}</td>
+                    <td>{{ $package->as_of_date->fdate() }}</td>
                     <td class="text-base-content/70">{{ $package->normLabel() ?? __('isms.package.norm_all') }}</td>
                     <td><x-status-badge :tone="$package->status->tone()">{{ $package->status->label() }}</x-status-badge></td>
                     <td>
@@ -89,7 +90,7 @@
                     <td class="text-base-content/70 text-xs">
                         @if ($package->isFinalized())
                             {{ $package->finalizedBy?->name ?? '—' }}<br>
-                            {{ $package->finalized_at?->orgTz()->format('d.m.Y H:i') }}
+                            {{ $package->finalized_at?->fdatetime() }}
                         @else
                             —
                         @endif
@@ -114,9 +115,9 @@
                                                 @endif
                                             </div>
                                             <p>
-                                                {{ __('isms.field.token_expires_at') }}: {{ $token->expires_at->orgTz()->format('d.m.Y H:i') }}
+                                                {{ __('isms.field.token_expires_at') }}: {{ $token->expires_at->fdatetime() }}
                                                 · {{ __('isms.field.token_last_accessed') }}:
-                                                {{ $token->last_accessed_at?->orgTz()->format('d.m.Y H:i') ?? '—' }}
+                                                {{ $token->last_accessed_at?->fdatetime() ?? '—' }}
                                             </p>
                                             @if ($canManage && $token->revoked_at === null)
                                                 <x-action-form :action="route('isms.packages.tokens.revoke', $token)"
@@ -178,5 +179,7 @@
                                :message="__('isms.empty_packages')" />
             @endforelse
         </x-table>
+
+        <x-pagination :paginator="$packages" standing />
     </x-index-page>
 @endsection

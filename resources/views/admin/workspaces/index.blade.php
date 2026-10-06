@@ -27,7 +27,7 @@
             </x-page-toolbar>
         </x-slot:toolbar>
 
-        <div class="alert alert-info rounded-2xl px-5 py-3 text-sm shadow-xs">
+        <div role="status" class="alert alert-info rounded-2xl px-5 py-3 text-sm shadow-xs">
             <x-icon name="info" class="text-base" />
             <span>{{ __('scope.focus.admin.hint') }}</span>
         </div>
@@ -51,10 +51,10 @@
                                 <div class="flex flex-wrap items-center gap-2">
                                     <span class="font-semibold">{{ $row['default_label'] }}</span>
                                     @if ($row['mandatory'])
-                                        <span class="badge badge-ghost badge-sm">{{ __('scope.focus.admin.mandatory') }}</span>
+                                        <x-status-badge>{{ __('scope.focus.admin.mandatory') }}</x-status-badge>
                                     @endif
                                     @if ($row['key'] === $default)
-                                        <span class="badge badge-primary badge-sm">{{ __('scope.focus.admin.is_default') }}</span>
+                                        <x-status-badge tone="primary">{{ __('scope.focus.admin.is_default') }}</x-status-badge>
                                     @endif
                                 </div>
                                 <p class="mt-0.5 text-xs text-base-content/70">{{ $row['description'] }}</p>

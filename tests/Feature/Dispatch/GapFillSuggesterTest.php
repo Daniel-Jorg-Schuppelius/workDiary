@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Dispatch;
 
+use App\Enums\Diary\DispatchStatus;
 use App\Enums\Diary\{Mode, Status};
 use App\Models\Customer\Customer;
 use App\Models\Diary\{DiaryEntry, DiaryEntryEvent};
@@ -147,7 +148,7 @@ final class GapFillSuggesterTest extends TestCase {
         $this->assertSame((int) $this->worker->id, (int) $fresh->assigned_user_id);
         $this->assertSame($date->toDateString(), $fresh->scheduled_for->toDateString());
         $this->assertSame('13:00', substr((string) $fresh->time_window_start, 0, 5));
-        $this->assertSame('planned', (string) $fresh->getAttribute('dispatch_status'));
+        $this->assertSame(DispatchStatus::Planned, $fresh->dispatch_status);
 
         $this->assertDatabaseHas('diary_entry_events', [
             'diary_entry_id' => $entry->id,

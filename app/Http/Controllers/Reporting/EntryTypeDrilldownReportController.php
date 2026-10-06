@@ -14,9 +14,11 @@ use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{BuildsOpenIssueDrilldown, RendersReportPdf, WritesReportCsv};
 use App\Models\Classification\EntryType;
+use App\Models\Customer\Customer;
 use App\Models\Diary\{DiaryEntry, OpenIssue};
+use App\Models\Platform\User;
 use App\Models\Protocol\Protocol;
-use App\Support\MorphMap;
+use App\Support\{MorphMap, Sqid};
 use Illuminate\Http\{Request, Response};
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
@@ -34,9 +36,9 @@ class EntryTypeDrilldownReportController extends Controller {
         $range = $this->globalDateRange();
         [$from, $to] = $this->globalDateRangeBounds();
 
-        $entryTypeId = (int) $request->integer('entry_type_id');
-        $customerId = $request->filled('customer_id') ? (int) $request->integer('customer_id') : null;
-        $userId = $request->filled('user_id') ? (int) $request->integer('user_id') : null;
+        $entryTypeId = Sqid::decodeOrNumeric(EntryType::class, $request->query('entry_type_id')) ?? 0;
+        $customerId = Sqid::decodeOrNumeric(Customer::class, $request->query('customer_id'));
+        $userId = Sqid::decodeOrNumeric(User::class, $request->query('user_id'));
         $statusFilter = $request->filled('status') ? (int) $request->integer('status') : null;
         $escalatedOnly = $request->boolean('escalated');
 
@@ -113,9 +115,9 @@ class EntryTypeDrilldownReportController extends Controller {
         $range = $this->globalDateRange();
         [$from, $to] = $this->globalDateRangeBounds();
 
-        $entryTypeId = (int) $request->integer('entry_type_id');
-        $customerId = $request->filled('customer_id') ? (int) $request->integer('customer_id') : null;
-        $userId = $request->filled('user_id') ? (int) $request->integer('user_id') : null;
+        $entryTypeId = Sqid::decodeOrNumeric(EntryType::class, $request->query('entry_type_id')) ?? 0;
+        $customerId = Sqid::decodeOrNumeric(Customer::class, $request->query('customer_id'));
+        $userId = Sqid::decodeOrNumeric(User::class, $request->query('user_id'));
         $statusFilter = $request->filled('status') ? (int) $request->integer('status') : null;
 
         $entryType = $entryTypeId > 0

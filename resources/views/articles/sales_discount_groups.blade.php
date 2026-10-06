@@ -30,7 +30,7 @@
                 <x-input-field name="value" type="number" step="0.0001" min="0" :label="__('article.discount_group.col.value')" required />
                 <x-input-field name="label" :label="__('article.discount_group.col.label')" maxlength="191" />
                 <div class="flex items-end">
-                    <button type="submit" class="btn btn-primary btn-sm">{{ __('article.discount_group.action.add') }}</button>
+                    <x-button type="submit">{{ __('article.discount_group.action.add') }}</x-button>
                 </div>
             </form>
 
@@ -59,7 +59,7 @@
                                           data-confirm-message="{{ __('article.discount_group.confirm_delete') }}"
                                           data-confirm-tone="error">
                                         @csrf @method('DELETE')
-                                        <button type="submit" class="btn btn-ghost btn-xs text-error">{{ __('article.discount_group.action.delete') }}</button>
+                                        <x-button type="submit" tone="ghost" size="xs" class="text-error">{{ __('article.discount_group.action.delete') }}</x-button>
                                     </form>
                                 </td>
                             </tr>
@@ -93,7 +93,7 @@
                 </x-select-field>
                 <x-input-field name="value" type="number" step="0.0001" min="0" :label="__('article.discount_group.col.value')" required />
                 <div class="flex items-end">
-                    <button type="submit" class="btn btn-primary btn-sm">{{ __('article.discount_group.action.add') }}</button>
+                    <x-button type="submit">{{ __('article.discount_group.action.add') }}</x-button>
                 </div>
             </form>
 
@@ -116,7 +116,7 @@
                                 <td class="text-right">
                                     <form method="POST" action="{{ route('articles.sales-discount-groups.overrides.destroy', $override) }}">
                                         @csrf @method('DELETE')
-                                        <button type="submit" class="btn btn-ghost btn-xs text-error">{{ __('article.discount_group.action.delete') }}</button>
+                                        <x-button type="submit" tone="ghost" size="xs" class="text-error">{{ __('article.discount_group.action.delete') }}</x-button>
                                     </form>
                                 </td>
                             </tr>

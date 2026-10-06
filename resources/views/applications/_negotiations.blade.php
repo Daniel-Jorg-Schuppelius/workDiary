@@ -29,7 +29,7 @@
                 <div class="rounded-box border border-base-300 p-3">
                     <div class="flex flex-wrap items-center gap-2">
                         <span class="font-medium">{{ $negotiation->title }}</span>
-                        <x-status-badge size="xs" outline>{{ __("values.{$negotiation->status}") }}</x-status-badge>
+                        <x-status-badge size="xs" outline>{{ $negotiation->status->label() }}</x-status-badge>
                         @if ($negotiation->due_on)<span class="text-xs text-muted">{{ __('Frist: :date', ['date' => $negotiation->due_on->fdate()]) }}</span>@endif
                         @if ($negotiation->decided_at)<span class="text-xs text-muted">{{ __('Entschieden: :date', ['date' => $negotiation->decided_at->fdatetime()]) }}</span>@endif
                     </div>
@@ -38,7 +38,7 @@
                     <div class="mt-2 text-sm">
                         <span class="font-semibold">{{ __('Versionen:') }}</span>
                         @forelse ($negotiation->versions as $version)
-                            <span class="badge badge-outline badge-sm">V{{ $version->version }} · {{ __("values.{$version->kind}") }}@if ($version->summary) · {{ \Illuminate\Support\Str::limit($version->summary, 40) }}@endif</span>
+                            <x-status-badge tone="plain" outline>V{{ $version->version }} · {{ __("values.{$version->kind}") }}@if ($version->summary) · {{ \Illuminate\Support\Str::limit($version->summary, 40) }}@endif</x-status-badge>
                         @empty
                             <span class="text-muted">{{ __('noch keine') }}</span>
                         @endforelse
@@ -48,11 +48,12 @@
                     @if ($negotiation->reviewItems->isNotEmpty())
                         <ul class="mt-2 space-y-1 text-sm">
                             @foreach ($negotiation->reviewItems as $item)
+                                @php $itemOpen = $item->status === \App\Enums\Applications\ApplicationContractReviewStatus::Open; @endphp
                                 <li class="flex flex-wrap items-center gap-2">
-                                    <x-status-badge size="xs" :tone="$item->severity === 'blocker' && $item->status === 'open' ? 'error' : 'outline'">{{ __("values.{$item->severity}") }}</x-status-badge>
-                                    <span @class(['line-through opacity-60' => $item->status !== 'open'])>{{ $item->label }}</span>
-                                    <span class="text-xs text-muted">{{ __("values.{$item->status}") }}</span>
-                                    @if ($item->status === 'open' && ! $negotiation->isDecided())
+                                    <x-status-badge size="xs" :tone="$item->severity === 'blocker' && $itemOpen ? 'error' : 'ghost'">{{ __("values.{$item->severity}") }}</x-status-badge>
+                                    <span @class(['line-through opacity-60' => ! $itemOpen])>{{ $item->label }}</span>
+                                    <span class="text-xs text-muted">{{ $item->status->label() }}</span>
+                                    @if ($itemOpen && ! $negotiation->isDecided())
                                         @can('update', $negotiation)
                                             <form method="POST" action="{{ route('applications.negotiations.reviews.resolve', [$negotiation, $item->sqid]) }}" class="ml-auto flex items-center gap-1">
                                                 @csrf
@@ -60,7 +61,7 @@
                                                     <option value="resolved">{{ __('gelöst') }}</option>
                                                     <option value="accepted">{{ __('akzeptiert') }}</option>
                                                 </select>
-                                                <button type="submit" class="btn btn-xs">{{ __('Entscheiden') }}</button>
+                                                <x-button type="submit" tone="plain" size="xs">{{ __('Entscheiden') }}</x-button>
                                             </form>
                                         @endcan
                                     @endif
@@ -69,15 +70,39 @@
                         </ul>
                     @endif
 
-                    {{-- Freigaben --}}
+                    {{-- Freigaben: die letzte Runde gilt, frühere stehen als Historie darunter --}}
+                    @php
+                        $approvalRounds = $negotiation->approvalRounds();
+                        $currentRound = $approvalRounds->keys()->last();
+                    @endphp
                     <div class="mt-2 text-sm">
-                        <span class="font-semibold">{{ __('Freigaben:') }}</span>
-                        @foreach ($negotiation->approvals->sortBy('step') as $approval)
-                            <span class="badge badge-sm {{ $approval->decision === 'approved' ? 'badge-success' : 'badge-ghost' }}">
+                        <span class="font-semibold">{{ $approvalRounds->count() > 1 ? __('Freigaben (Runde :round):', ['round' => $currentRound]) : __('Freigaben:') }}</span>
+                        @foreach ($approvalRounds->last() ?? [] as $approval)
+                            <x-status-badge :tone="$approval->decision === 'approved' ? 'success' : 'ghost'">
                                 {{ __('Stufe :step', ['step' => $approval->step]) }}: {{ $approval->decision !== null ? __("values.{$approval->decision}") : __('offen') }}
-                            </span>
+                            </x-status-badge>
                         @endforeach
                     </div>
+                    @if ($approvalRounds->count() > 1)
+                        <details class="mt-1 text-sm">
+                            <summary class="cursor-pointer text-muted">{{ __('Frühere Freigaberunden') }}</summary>
+                            <ul class="mt-1 space-y-1">
+                                @foreach ($approvalRounds->except($currentRound) as $round => $steps)
+                                    <li class="flex flex-wrap items-center gap-2">
+                                        <span class="font-medium">{{ __('Runde :round – abgelöst durch Version :version', ['round' => $round, 'version' => $negotiation->supersedingVersion((int) $round)?->version ?? '–']) }}</span>
+                                        @foreach ($steps as $approval)
+                                            <x-status-badge size="xs" :tone="$approval->decision === 'approved' ? 'success' : 'ghost'">
+                                                {{ __('Stufe :step', ['step' => $approval->step]) }}: {{ $approval->decision !== null ? __("values.{$approval->decision}") : __('nicht entschieden') }}
+                                            </x-status-badge>
+                                            @if ($approval->decided_at)
+                                                <span class="text-xs text-muted">{{ $approval->decidedBy?->name ?? '—' }}, {{ $approval->decided_at->fdatetime() }}</span>
+                                            @endif
+                                        @endforeach
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </details>
+                    @endif
 
                     @unless ($negotiation->isDecided())
                         <div class="mt-3 flex flex-wrap gap-2">
@@ -90,7 +115,7 @@
                                         <option value="final">{{ __('Endstand') }}</option>
                                     </select>
                                     <input aria-label="{{ __('Zusammenfassung/Änderung') }}" name="summary" maxlength="500" class="input input-xs input-bordered w-52" placeholder="{{ __('Zusammenfassung/Änderung') }}">
-                                    <button type="submit" class="btn btn-xs">{{ __('Version ablegen') }}</button>
+                                    <x-button type="submit" tone="plain" size="xs">{{ __('Version ablegen') }}</x-button>
                                 </form>
                                 <form method="POST" action="{{ route('applications.negotiations.reviews.store', $negotiation) }}" class="flex flex-wrap items-end gap-1">
                                     @csrf
@@ -100,7 +125,7 @@
                                         <option value="important">{{ __('Wichtig') }}</option>
                                         <option value="blocker">{{ __('Blocker') }}</option>
                                     </select>
-                                    <button type="submit" class="btn btn-xs">{{ __('Erfassen') }}</button>
+                                    <x-button type="submit" tone="plain" size="xs">{{ __('Erfassen') }}</x-button>
                                 </form>
                             @endcan
                             @can('decide', $negotiation)

@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands\Integration;
 
+use App\Enums\Integration\IntegrationInboxStatus;
 use App\Models\Integration\IntegrationInboxItem;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
@@ -32,11 +33,11 @@ class PurgeResolvedInboxItems extends Command {
 
     /** Abgeschlossene (nicht mehr offene) Zustände, die gepurgt werden dürfen. */
     private const RESOLVED_STATUSES = [
-        IntegrationInboxItem::STATUS_RESOLVED_LINKED,
-        IntegrationInboxItem::STATUS_RESOLVED_CREATED,
-        IntegrationInboxItem::STATUS_RESOLVED_LOCAL,
-        IntegrationInboxItem::STATUS_RESOLVED_REMOTE,
-        IntegrationInboxItem::STATUS_DISMISSED,
+        IntegrationInboxStatus::ResolvedLinked,
+        IntegrationInboxStatus::ResolvedCreated,
+        IntegrationInboxStatus::ResolvedLocal,
+        IntegrationInboxStatus::ResolvedRemote,
+        IntegrationInboxStatus::Dismissed,
     ];
 
     public function handle(): int {

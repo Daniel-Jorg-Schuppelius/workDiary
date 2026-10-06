@@ -34,7 +34,9 @@ class WebhookEndpointController extends Controller {
         $endpoints = WebhookEndpoint::query()
             ->with(['deliveries' => fn($q) => $q->latest()->limit(5)])
             ->orderByDesc('created_at')
-            ->get();
+            ->orderByDesc('id')
+            ->paginate(25)
+            ->withQueryString();
 
         return view('admin.webhooks.index', [
             'endpoints' => $endpoints,
@@ -63,7 +65,7 @@ class WebhookEndpointController extends Controller {
         $endpoint->created_by_user_id = $this->authUser()->id;
         $endpoint->save();
 
-        return redirect()->route('admin.webhooks.index')
+        return redirect()->toList('admin.webhooks.index')
             ->with('success', __('integration.webhook.flash.created'))
             // Einmalige Klartext-Anzeige des Signing-Keys (nur in dieser Session).
             ->with('webhook_secret', $secret);
@@ -91,7 +93,7 @@ class WebhookEndpointController extends Controller {
 
         $webhook->fill($data)->save();
 
-        return redirect()->route('admin.webhooks.index')
+        return redirect()->toList('admin.webhooks.index')
             ->with('success', __('integration.webhook.flash.updated'));
     }
 
@@ -102,7 +104,7 @@ class WebhookEndpointController extends Controller {
         $webhook->secret = $secret;
         $webhook->save();
 
-        return redirect()->route('admin.webhooks.index')
+        return redirect()->toList('admin.webhooks.index')
             ->with('success', __('integration.webhook.flash.secret_rotated'))
             ->with('webhook_secret', $secret);
     }
@@ -112,11 +114,11 @@ class WebhookEndpointController extends Controller {
 
         // Unter QUEUE_CONNECTION=sync steht das Ergebnis schon fest — dann nicht „eingereiht" melden.
         if ($service->sendTest($webhook)->refresh()->status === WebhookDeliveryStatus::Failed) {
-            return redirect()->route('admin.webhooks.index')
+            return redirect()->toList('admin.webhooks.index')
                 ->with('error', __('integration.webhook.flash.test_failed'));
         }
 
-        return redirect()->route('admin.webhooks.index')
+        return redirect()->toList('admin.webhooks.index')
             ->with('success', __('integration.webhook.flash.test_sent'));
     }
 
@@ -125,7 +127,7 @@ class WebhookEndpointController extends Controller {
 
         $webhook->delete();
 
-        return redirect()->route('admin.webhooks.index')
+        return redirect()->toList('admin.webhooks.index')
             ->with('success', __('integration.webhook.flash.deleted'));
     }
 

@@ -82,7 +82,7 @@
                     <tr>
                         <td>
                             @if ($row['color'] !== null)
-                                <span class="badge badge-sm border-0 mr-1" style="background-color:{{ $row['color'] }};color:#fff;">{{ $row['name'] }}</span>
+                                <x-status-badge tone="plain" class="border-0 mr-1" style="background-color:{{ $row['color'] }};color:#fff;">{{ $row['name'] }}</x-status-badge>
                             @else
                                 {{ $row['name'] }}
                             @endif

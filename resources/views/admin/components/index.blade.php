@@ -51,7 +51,7 @@
             @endforeach
         </ul>
         @if ($health['warnings'] !== [])
-            <div class="alert alert-warning items-start text-sm">
+            <div role="alert" class="alert alert-warning items-start text-sm">
                 <x-icon name="warning" />
                 <div>
                     <p class="font-semibold">{{ __('isms.components.health.warnings') }}</p>
@@ -72,16 +72,10 @@
                 <x-icon name="deployed_code" />
                 <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('isms.components.section.app') }}</h2>
             </header>
-            <dl class="grid grid-cols-1 gap-1 text-sm">
-                <div class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1">
-                    <dt class="text-muted">{{ __('isms.components.field.app_version') }}</dt>
-                    <dd class="font-mono text-xs">{{ $appVersion }}</dd>
-                </div>
-                <div class="flex items-baseline justify-between gap-2">
-                    <dt class="text-muted">{{ __('isms.components.field.build') }}</dt>
-                    <dd class="font-mono text-xs">{{ $gitHash ?? '—' }}</dd>
-                </div>
-            </dl>
+            <x-detail-grid layout="split" divided>
+                <x-detail-grid.row :label="__('isms.components.field.app_version')" class="font-mono text-xs">{{ $appVersion }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('isms.components.field.build')" class="font-mono text-xs">{{ $gitHash ?? '—' }}</x-detail-grid.row>
+            </x-detail-grid>
         </x-card>
 
         {{-- Laufzeitumgebung --}}
@@ -90,20 +84,11 @@
                 <x-icon name="memory" />
                 <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('isms.components.section.runtime') }}</h2>
             </header>
-            <dl class="grid grid-cols-1 gap-1 text-sm">
-                <div class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1">
-                    <dt class="text-muted">{{ __('isms.components.field.php') }}</dt>
-                    <dd class="font-mono text-xs">{{ $phpVersion }}</dd>
-                </div>
-                <div class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1">
-                    <dt class="text-muted">{{ __('isms.components.field.laravel') }}</dt>
-                    <dd class="font-mono text-xs">{{ $laravelVersion }}</dd>
-                </div>
-                <div class="flex items-baseline justify-between gap-2">
-                    <dt class="text-muted">{{ __('isms.components.field.database') }}</dt>
-                    <dd class="font-mono text-xs">{{ $dbDriver }}{{ $dbVersion !== null ? ' (' . $dbVersion . ')' : '' }}</dd>
-                </div>
-            </dl>
+            <x-detail-grid layout="split" divided>
+                <x-detail-grid.row :label="__('isms.components.field.php')" class="font-mono text-xs">{{ $phpVersion }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('isms.components.field.laravel')" class="font-mono text-xs">{{ $laravelVersion }}</x-detail-grid.row>
+                <x-detail-grid.row :label="__('isms.components.field.database')" class="font-mono text-xs">{{ $dbDriver }}{{ $dbVersion !== null ? ' (' . $dbVersion . ')' : '' }}</x-detail-grid.row>
+            </x-detail-grid>
         </x-card>
 
         {{-- Module --}}
@@ -153,28 +138,13 @@
                 <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('isms.components.section.sbom') }}</h2>
             </header>
             @if ($sbom !== null)
-                <dl class="grid grid-cols-1 gap-1 text-sm md:grid-cols-2">
-                    <div class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1">
-                        <dt class="text-muted">{{ __('isms.components.field.generated_at') }}</dt>
-                        <dd class="font-mono text-xs">{{ $sbom['generated_at'] ?? '—' }}</dd>
-                    </div>
-                    <div class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1">
-                        <dt class="text-muted">{{ __('isms.components.field.component_count') }}</dt>
-                        <dd class="font-mono text-xs">{{ $sbom['total'] }}</dd>
-                    </div>
-                    <div class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1">
-                        <dt class="text-muted">{{ __('isms.components.field.composer_count') }}</dt>
-                        <dd class="font-mono text-xs">{{ $sbom['composer'] }}</dd>
-                    </div>
-                    <div class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1">
-                        <dt class="text-muted">{{ __('isms.components.field.npm_count') }}</dt>
-                        <dd class="font-mono text-xs">{{ $sbom['npm'] }}</dd>
-                    </div>
-                    <div class="flex items-baseline justify-between gap-2 md:col-span-2">
-                        <dt class="text-muted">{{ __('isms.components.field.sha256') }}</dt>
-                        <dd class="break-all font-mono text-xs">{{ $sbom['sha256'] }}</dd>
-                    </div>
-                </dl>
+                <x-detail-grid layout="split" :cols="2" divided>
+                    <x-detail-grid.row :label="__('isms.components.field.generated_at')" class="font-mono text-xs">{{ $sbom['generated_at'] ?? '—' }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('isms.components.field.component_count')" class="font-mono text-xs">{{ $sbom['total'] }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('isms.components.field.composer_count')" class="font-mono text-xs">{{ $sbom['composer'] }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('isms.components.field.npm_count')" class="font-mono text-xs">{{ $sbom['npm'] }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('isms.components.field.sha256')" full class="break-all font-mono text-xs">{{ $sbom['sha256'] }}</x-detail-grid.row>
+                </x-detail-grid>
             @else
                 <p class="text-sm italic text-muted">
                     {{ __('isms.components.sbom_missing', ['command' => 'php artisan sbom:generate']) }}
@@ -210,44 +180,29 @@
             </header>
             <p class="text-sm text-muted">{{ __('isms.components.manifest.note') }}</p>
             @if ($manifest !== null)
-                <dl class="grid grid-cols-1 gap-1 text-sm md:grid-cols-2">
-                    <div class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1">
-                        <dt class="text-muted">{{ __('isms.components.field.generated_at') }}</dt>
-                        <dd class="font-mono text-xs">{{ $manifest['generated_at'] ?? '—' }}</dd>
-                    </div>
-                    <div class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1">
-                        <dt class="text-muted">{{ __('isms.components.field.build') }}</dt>
-                        <dd class="font-mono text-xs">{{ $manifest['build'] ?? '—' }}</dd>
-                    </div>
-                    <div class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1">
-                        <dt class="text-muted">{{ __('isms.components.manifest.artifacts') }}</dt>
-                        <dd class="font-mono text-xs">{{ $manifest['artifacts'] }}</dd>
-                    </div>
-                    <div class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1">
-                        <dt class="text-muted">{{ __('isms.components.manifest.signature') }}</dt>
-                        <dd class="text-xs">
-                            @if (! $manifest['signed'])
-                                <x-status-badge tone="ghost" size="sm">{{ __('isms.components.manifest.unsigned') }}</x-status-badge>
-                            @elseif ($manifest['signature_valid'] === true)
-                                <x-status-badge tone="success" size="sm">{{ __('isms.components.manifest.signature_valid') }}</x-status-badge>
-                            @elseif ($manifest['signature_valid'] === null)
-                                {{-- Dritter Zustand (S-52): ohne konfigurierten Herausgeber-Schlüssel
-                                     ist die Signatur nicht prüfbar — weder gültig noch ungültig. --}}
-                                <x-status-badge tone="warning" size="sm">{{ __('isms.components.manifest.signature_unverifiable') }}</x-status-badge>
-                            @else
-                                <x-status-badge tone="error" size="sm">{{ __('isms.components.manifest.signature_invalid') }}</x-status-badge>
-                            @endif
-                        </dd>
-                    </div>
-                    <div class="flex items-baseline justify-between gap-2 md:col-span-2">
-                        <dt class="text-muted">{{ __('isms.components.manifest.integrity') }}</dt>
-                        <dd class="text-xs">
-                            <x-status-badge :tone="$manifest['valid'] ? 'success' : 'error'" size="sm">
-                                {{ $manifest['valid'] ? __('isms.components.manifest.integrity_ok') : __('isms.components.manifest.integrity_broken') }}
-                            </x-status-badge>
-                        </dd>
-                    </div>
-                </dl>
+                <x-detail-grid layout="split" :cols="2" divided>
+                    <x-detail-grid.row :label="__('isms.components.field.generated_at')" class="font-mono text-xs">{{ $manifest['generated_at'] ?? '—' }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('isms.components.field.build')" class="font-mono text-xs">{{ $manifest['build'] ?? '—' }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('isms.components.manifest.artifacts')" class="font-mono text-xs">{{ $manifest['artifacts'] }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('isms.components.manifest.signature')" class="text-xs">
+                        @if (! $manifest['signed'])
+                            <x-status-badge tone="ghost" size="sm">{{ __('isms.components.manifest.unsigned') }}</x-status-badge>
+                        @elseif ($manifest['signature_valid'] === true)
+                            <x-status-badge tone="success" size="sm">{{ __('isms.components.manifest.signature_valid') }}</x-status-badge>
+                        @elseif ($manifest['signature_valid'] === null)
+                            {{-- Dritter Zustand (S-52): ohne konfigurierten Herausgeber-Schlüssel
+                                 ist die Signatur nicht prüfbar — weder gültig noch ungültig. --}}
+                            <x-status-badge tone="warning" size="sm">{{ __('isms.components.manifest.signature_unverifiable') }}</x-status-badge>
+                        @else
+                            <x-status-badge tone="error" size="sm">{{ __('isms.components.manifest.signature_invalid') }}</x-status-badge>
+                        @endif
+                    </x-detail-grid.row>
+                    <x-detail-grid.row :label="__('isms.components.manifest.integrity')" full class="text-xs">
+                        <x-status-badge :tone="$manifest['valid'] ? 'success' : 'error'" size="sm">
+                            {{ $manifest['valid'] ? __('isms.components.manifest.integrity_ok') : __('isms.components.manifest.integrity_broken') }}
+                        </x-status-badge>
+                    </x-detail-grid.row>
+                </x-detail-grid>
             @else
                 <p class="text-sm italic text-muted">
                     {{ __('isms.components.manifest.missing', ['command' => 'php artisan release:manifest']) }}
@@ -334,7 +289,7 @@
                                         @if (($requires['migrations'] ?? false))<x-status-badge size="xs" tone="ghost">{{ __('updates.requires.migrations') }}</x-status-badge>@endif
                                         @if (is_string($requires['manual_steps'] ?? null))<span class="text-muted">{{ $requires['manual_steps'] }}</span>@endif
                                         @if ($update->changelog_url)
-                                            <a href="{{ $update->changelog_url }}" target="_blank" rel="noopener noreferrer" class="link link-hover">{{ __('updates.field.changelog') }}</a>
+                                            <x-external-link :url="$update->changelog_url" :label="__('updates.field.changelog')" class="link-hover" />
                                         @endif
                                     </div>
                                 </td>

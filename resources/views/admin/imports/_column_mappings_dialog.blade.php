@@ -18,9 +18,9 @@
         <ul class="divide-y divide-base-300 text-sm">
             @foreach ($rows as $mapping)
                 <li class="flex flex-wrap items-center gap-2 py-1.5">
-                    <span class="badge badge-ghost badge-sm font-mono">{{ $mapping->source_header }}</span>
+                    <x-status-badge class="font-mono">{{ $mapping->source_header }}</x-status-badge>
                     <x-icon name="arrow_forward" class="text-muted" />
-                    <span class="badge badge-info badge-sm font-mono">{{ $mapping->target_column }}</span>
+                    <x-status-badge tone="info" class="font-mono">{{ $mapping->target_column }}</x-status-badge>
                     <x-action-form class="ml-auto" :action="route('admin.imports.column-mappings.destroy', $mapping)" method="DELETE"
                                    :confirm="__('import.columns.confirm_delete', ['header' => $mapping->source_header])"
                                    confirm-icon="delete" confirm-tone="error" :confirm-label="__('import.columns.delete')">
@@ -30,6 +30,6 @@
             @endforeach
         </ul>
     @empty
-        <p class="text-sm text-muted">{{ __('import.columns.saved_empty') }}</p>
+        <x-empty-state icon="view_column" :title="__('import.columns.saved_empty')" compact />
     @endforelse
 </x-modal>

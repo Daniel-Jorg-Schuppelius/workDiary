@@ -10,7 +10,7 @@
   Plattformen, die WorkDiary starten. Variablen: $tools, $platforms, $issuer
 --}}
 @extends('layouts.app')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 @section('title', __('learning.lti_registration.title'))
 @section('nav-title', __('learning.lti_registration.title'))
 @section('content')

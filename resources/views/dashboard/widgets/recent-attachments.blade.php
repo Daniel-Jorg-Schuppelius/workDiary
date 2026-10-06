@@ -16,7 +16,11 @@
         <ul class="space-y-2 text-sm">
             @foreach ($attachments as $att)
                 <li class="flex flex-wrap items-center justify-between gap-2 rounded-box border border-base-300 bg-base-200 px-3 py-2">
-                    <a href="{{ route('diary.show', $att->attachable_id) }}#attachments" class="link link-primary break-all"><x-icon name="attachment" class="align-middle" /> {{ $att->original_name }}</a>
+                    @if ($att->attachable)
+                        <a href="{{ route('diary.show', $att->attachable) }}#attachments" class="link link-primary break-all"><x-icon name="attachment" class="align-middle" /> {{ $att->original_name }}</a>
+                    @else
+                        <span class="break-all"><x-icon name="attachment" class="align-middle" /> {{ $att->original_name }}</span>
+                    @endif
                     <span class="text-xs text-muted">{{ optional($att->uploader)->name ?? '—' }} · {{ $att->created_at->diffForHumans() }}</span>
                 </li>
             @endforeach

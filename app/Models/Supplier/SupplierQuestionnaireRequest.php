@@ -15,6 +15,7 @@ namespace App\Models\Supplier;
 use App\Casts\{FieldSchemaCast, FieldValuesCast};
 use App\Enums\Supplier\SupplierQuestionnaireStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Concerns\HasAccessToken;
 use App\Services\Fields\{FieldSchema, FieldValues};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -45,6 +46,7 @@ use Illuminate\Support\Carbon;
 class SupplierQuestionnaireRequest extends Model {
     use Auditable;
     use BelongsToOrganization;
+    use HasAccessToken;
     use HasSqid;
 
     protected $fillable = [

@@ -56,7 +56,7 @@
                                     <x-status-badge tone="success" size="sm">{{ __('training.field.is_active') }}</x-status-badge>
                                 @endif
                             </td>
-                            <td class="text-sm">{{ $version->valid_from?->format('d.m.Y') ?? '–' }}</td>
+                            <td class="text-sm">{{ $version->valid_from?->fdate() ?? '–' }}</td>
                             <td class="text-sm text-base-content/70">{{ \Illuminate\Support\Str::limit((string) $version->content_summary, 80) }}</td>
                             <td class="text-right">
                                 @if ($canManage)

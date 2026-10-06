@@ -128,7 +128,7 @@ class MsgraphOneNoteClient {
         $paginator = new CursorPaginator(function (?string $nextLink) use ($firstUrl, $query, $label): CursorPage {
             $response = $nextLink === null
                 ? $this->api->getResponse($firstUrl, $query)
-                : $this->api->getResponse($nextLink);
+                : $this->api->getFollowUp($nextLink);
             if (! $response->successful()) {
                 throw new RuntimeException($label . ' fehlgeschlagen (HTTP ' . $response->status() . ').');
             }

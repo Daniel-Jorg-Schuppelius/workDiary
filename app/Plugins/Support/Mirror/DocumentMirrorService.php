@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Support\Mirror;
 
+use App\Enums\Integration\IntegrationInboxStatus;
 use App\Models\Document\{Document, DocumentVersion};
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use CommonToolkit\Helper\Data\CryptoHelper;
@@ -181,7 +182,7 @@ class DocumentMirrorService {
                 'external_type' => $externalType,
                 'external_id' => $path,
                 'case_type' => IntegrationInboxItem::CASE_CONFLICT,
-                'status' => IntegrationInboxItem::STATUS_OPEN,
+                'status' => IntegrationInboxStatus::Open,
                 'referenceable_type' => $morph->getMorphClass(),
                 'referenceable_id' => $morph->getKey(),
                 'local_snapshot' => ['sha256' => $localSha, 'remote_path' => $path],

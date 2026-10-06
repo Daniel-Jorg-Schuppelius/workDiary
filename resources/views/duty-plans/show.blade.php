@@ -67,16 +67,16 @@
     </x-slot:toolbar>
 
     @if ($dutyPlan->note)
-        <div class="alert alert-info text-sm">{{ $dutyPlan->note }}</div>
+        <div role="status" class="alert alert-info text-sm">{{ $dutyPlan->note }}</div>
     @endif
 
     {{-- Soll/Ist-Heatmap --}}
-    <details class="rounded-box border border-base-300 bg-base-100 p-3" open>
+    <x-card as="details" padding="p-3" open>
         <summary class="cursor-pointer font-semibold">{{ __('Soll/Ist-Besetzung') }}</summary>
         <div class="mt-3">
             @include('coverage-requirements._heatmap', ['dutyPlan' => $dutyPlan])
         </div>
-    </details>
+    </x-card>
 
     {{-- Kalender-Raster --}}
     <div class="rounded-box border border-base-300">
@@ -100,14 +100,11 @@
                         @else
                             <div class="flex flex-wrap gap-1">
                                 @foreach ($dayShifts as $shift)
-                                    <span class="badge badge-sm"
-                                        @if ($shift->shiftType?->color)
-                                            style="background-color:{{ $shift->shiftType->color }};color:#fff;"
-                                        @endif
-                                    >
+                                    <x-status-badge tone="plain"
+                                        :style="$shift->shiftType?->color ? 'background-color:'.$shift->shiftType->color.';color:#fff;' : null">
                                         {{ $shift->user?->name ?? '–' }}
                                         @if ($shift->shiftType) ({{ $shift->shiftType->abbreviation }}) @endif
-                                    </span>
+                                    </x-status-badge>
                                 @endforeach
                             </div>
                         @endif

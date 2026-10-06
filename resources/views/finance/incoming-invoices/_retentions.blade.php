@@ -56,7 +56,7 @@
             @endforeach
         </x-table>
     @else
-        <p class="px-4 py-3 text-sm text-muted">{{ __('sepa.retention.empty') }}</p>
+        <x-empty-state icon="savings" :message="__('sepa.retention.empty')" compact class="m-4" />
     @endif
     @if ($canManage && $incoming->paid_in_run_id === null)
         <form method="POST" action="{{ route('finance.incoming-invoices.retentions.store', $incoming) }}" class="flex flex-wrap items-end gap-2 border-t border-base-300 px-4 py-3" data-entry-form>
@@ -70,7 +70,7 @@
             <x-input-field name="amount" type="number" step="0.01" min="0.01" :label="__('sepa.retention.field.amount')" />
             <x-input-field name="due_on" type="date" :label="__('sepa.retention.field.due_on')" />
             <x-input-field name="note" :label="__('sepa.retention.field.note')" />
-            <button type="submit" class="btn btn-sm">{{ __('sepa.retention.add') }}</button>
+            <x-button type="submit" tone="plain">{{ __('sepa.retention.add') }}</x-button>
         </form>
     @endif
 </x-card>

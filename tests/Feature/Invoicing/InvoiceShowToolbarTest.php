@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Invoicing;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\{Invoice, InvoiceItem};
 use App\Models\Platform\User;
@@ -41,7 +42,7 @@ class InvoiceShowToolbarTest extends TestCase {
         ]);
     }
 
-    private function invoice(string $status): Invoice {
+    private function invoice(InvoiceStatus|string $status): Invoice {
         $invoice = Invoice::factory()->create([
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
@@ -74,7 +75,7 @@ class InvoiceShowToolbarTest extends TestCase {
     }
 
     public function test_draft_pins_issuing_and_moves_rare_and_destructive_actions_into_the_menu(): void {
-        $html = $this->page($this->invoice(Invoice::STATUS_DRAFT));
+        $html = $this->page($this->invoice(InvoiceStatus::Draft));
 
         $this->assertStringContainsString('data-toolbar-placement="bar"', $this->buttonTag($html, 'Stellen'));
         $this->assertStringContainsString('data-toolbar-placement="danger"', $this->buttonTag($html, 'Löschen'));
@@ -83,7 +84,7 @@ class InvoiceShowToolbarTest extends TestCase {
     }
 
     public function test_draft_adds_positions_at_the_table_not_in_the_page_header(): void {
-        $html = $this->page($this->invoice(Invoice::STATUS_DRAFT));
+        $html = $this->page($this->invoice(InvoiceStatus::Draft));
 
         $this->assertStringNotContainsString('Position hinzufügen', $this->toolbar($html));
         $card = substr($html, (int) strpos($html, '>' . __('Positionen') . '<'));
@@ -91,7 +92,7 @@ class InvoiceShowToolbarTest extends TestCase {
     }
 
     public function test_issued_invoice_pins_payment_and_bundles_the_formats(): void {
-        $html = $this->page($this->invoice(Invoice::STATUS_ISSUED));
+        $html = $this->page($this->invoice(InvoiceStatus::Issued));
 
         $this->assertStringContainsString('data-toolbar-placement="bar"', $this->buttonTag($html, 'Bezahlt markieren'));
         $this->assertStringContainsString('data-toolbar-placement="danger"', $this->buttonTag($html, 'Stornieren'));

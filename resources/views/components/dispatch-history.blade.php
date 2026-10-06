@@ -52,7 +52,7 @@
                 @if ($showKind)<td>{{ \App\Enums\DocumentDesign\RenderDocumentKind::tryFrom((string) $dispatch->document_kind)?->label() ?? '—' }}</td>@endif
                 <td>{{ __('values.' . $dispatch->channel) }}</td>
                 <td class="break-all">{{ $dispatch->recipient ?? '—' }}</td>
-                <td><x-status-badge :tone="$dispatch->status === 'sent' ? 'success' : ($dispatch->status === 'failed' ? 'error' : 'ghost')" size="sm">{{ __('values.' . $dispatch->status) }}</x-status-badge></td>
+                <td><x-status-badge :tone="$dispatch->status->tone()" size="sm">{{ $dispatch->status->label() }}</x-status-badge></td>
             </tr>
         @empty
             <x-table.empty :colspan="$colspan" :title="$empty ?? __('document.dispatch.none')" compact />

@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Passenger;
 
+use App\Enums\Passenger\ShiftSettlementStatus;
 use App\Http\Controllers\Concerns\{ResolvesCurrentOrganization, ResolvesGlobalDateRange};
 use App\Http\Controllers\Controller;
 use App\Models\Fleet\Vehicle;
@@ -35,8 +36,6 @@ class PassengerSettlementController extends Controller {
     use ResolvesCurrentOrganization;
     use ResolvesGlobalDateRange;
 
-    public function __construct(private readonly PassengerRideService $rides) {}
-
     public function index(Request $request): View {
         Gate::authorize('viewAny', PassengerShiftSettlement::class);
         $this->passengerOrganization();
@@ -46,7 +45,7 @@ class PassengerSettlementController extends Controller {
             ->with(['driver', 'vehicle'])
             // Offene immer zeigen; geschlossene nur im globalen Zeitraum.
             ->where(function ($query) use ($from, $to): void {
-                $query->where('status', PassengerShiftSettlement::STATUS_OPEN)
+                $query->where('status', ShiftSettlementStatus::Open)
                     ->orWhereBetween('shift_date', DateRange::days($from, $to));
             })
             ->when($request->filled('status'), fn($q) => $q->where('status', $request->string('status')->toString()))
@@ -60,7 +59,7 @@ class PassengerSettlementController extends Controller {
 
         return view('passenger.settlements.index', [
             'settlements' => $settlements,
-            'openCount' => PassengerShiftSettlement::query()->where('status', PassengerShiftSettlement::STATUS_OPEN)->count(),
+            'openCount' => PassengerShiftSettlement::query()->where('status', ShiftSettlementStatus::Open)->count(),
             'cashRegisters' => $cashEnabled
                 ? \App\Models\Finance\CashRegister::query()->where('active', true)->orderBy('name')->get(['id', 'name'])
                 : collect(),
@@ -116,7 +115,7 @@ class PassengerSettlementController extends Controller {
     public function update(Request $request, PassengerShiftSettlement $settlement): RedirectResponse {
         Gate::authorize('settle', $settlement);
         $this->assertInOrganization($settlement->organization_id);
-        if ($settlement->status !== PassengerShiftSettlement::STATUS_OPEN) {
+        if ($settlement->status !== ShiftSettlementStatus::Open) {
             throw ValidationException::withMessages(['status' => (string) __('passenger.error.settlement_closed')]);
         }
 
@@ -136,25 +135,26 @@ class PassengerSettlementController extends Controller {
     public function close(Request $request, PassengerShiftSettlement $settlement): RedirectResponse {
         Gate::authorize('settle', $settlement);
         $this->assertInOrganization($settlement->organization_id);
-        if ($settlement->status !== PassengerShiftSettlement::STATUS_OPEN) {
+        $difference = $settlement->computeDifference();
+        $balanced = bccomp($difference, '0', 2) === 0;
+        $target = $balanced ? ShiftSettlementStatus::Balanced : ShiftSettlementStatus::Disputed;
+        if (! $settlement->status->canTransitionTo($target)) {
             throw ValidationException::withMessages(['status' => (string) __('passenger.error.settlement_closed')]);
         }
 
         $validated = $request->validate(['difference_reason' => ['nullable', 'string', 'max:1000']]);
-        $difference = $settlement->computeDifference();
-        $balanced = bccomp($difference, '0', 2) === 0;
         if (! $balanced && trim((string) ($validated['difference_reason'] ?? '')) === '') {
             throw ValidationException::withMessages(['difference_reason' => (string) __('passenger.error.difference_reason_required')]);
         }
 
         $settlement->forceFill([
-            'status' => $balanced ? PassengerShiftSettlement::STATUS_BALANCED : PassengerShiftSettlement::STATUS_DISPUTED,
+            'status' => $target,
             'difference' => $difference,
             'difference_reason' => trim((string) ($validated['difference_reason'] ?? '')) ?: null,
             'closed_by' => ($request->user() ?? abort(401))->id,
             'closed_at' => now(),
         ])->save();
-        $settlement->audit('passenger.settlement_closed', ['status' => $settlement->status, 'difference' => $difference]);
+        $settlement->audit('passenger.settlement_closed', ['status' => $target->value, 'difference' => $difference]);
 
         return redirect()->toList('passenger-settlements.index')->with('status', (string) __('passenger.flash.settlement_closed'));
     }
@@ -171,7 +171,7 @@ class PassengerSettlementController extends Controller {
         abort_unless(app(\App\Services\Licensing\FeatureFlagResolver::class)->isEnabled('module.kasse'), 404);
         Gate::authorize(\App\Enums\User\Permission::CashManage->value);
 
-        if ($settlement->status === PassengerShiftSettlement::STATUS_OPEN) {
+        if ($settlement->status === ShiftSettlementStatus::Open) {
             throw ValidationException::withMessages(['status' => (string) __('passenger.error.settlement_not_closed')]);
         }
         if ($settlement->cash_entry_id !== null) {
@@ -244,7 +244,7 @@ class PassengerSettlementController extends Controller {
     /** Branchenprofil-Gate: 404 ohne installiertes Profil (Muster Recipes). */
     private function passengerOrganization(): Organization {
         $organization = $this->currentOrganization();
-        abort_unless($this->rides->isPassengerProfileActive($organization), 404);
+        abort_unless($organization->hasBranchProfile(PassengerRideService::PROFILE_CODE), 404);
 
         return $organization;
     }

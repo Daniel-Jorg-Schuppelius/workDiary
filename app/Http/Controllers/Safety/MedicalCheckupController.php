@@ -105,7 +105,7 @@ class MedicalCheckupController extends Controller {
         $checkup->delete();
 
         return redirect()
-            ->route('safety.checkups.index')
+            ->toList('safety.checkups.index')
             ->with('success', __('safety.register.flash.checkup_deleted'));
     }
 

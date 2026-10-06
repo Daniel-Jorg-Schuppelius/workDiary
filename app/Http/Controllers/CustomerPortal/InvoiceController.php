@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers\CustomerPortal;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
@@ -25,7 +26,7 @@ class InvoiceController extends Controller {
         // Entwürfe sind interne Arbeitsstände (MVP-1019) — der Kunde sieht nur Ausgestelltes.
         $invoices = Invoice::query()
             ->where('customer_id', $user->customer_id)
-            ->where('status', '!=', Invoice::STATUS_DRAFT)
+            ->where('status', '!=', InvoiceStatus::Draft)
             ->orderByDesc('issued_on')
             ->orderByDesc('id')
             ->paginate(25);

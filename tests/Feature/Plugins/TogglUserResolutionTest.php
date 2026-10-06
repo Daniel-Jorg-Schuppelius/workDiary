@@ -10,13 +10,15 @@
 
 namespace Tests\Feature\Plugins;
 
+use App\Enums\Integration\IntegrationInboxStatus;
 use App\Models\Customer\Customer;
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use App\Models\Platform\{PluginSetting, User};
 use App\Models\Project\Project;
 use App\Models\Time\TimeEntry;
 use App\Plugins\Support\MatchingTimeImportService;
-use App\Plugins\Toggl\{TogglConfig, TogglImportService, TogglPlugin};
+use App\Plugins\Toggl\Services\TogglImportService;
+use App\Plugins\Toggl\{TogglConfig, TogglPlugin};
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -162,7 +164,7 @@ class TogglUserResolutionTest extends TestCase {
         $item = IntegrationInboxItem::query()
             ->where('plugin_id', TogglPlugin::ID)
             ->where('group_key', MatchingTimeImportService::PENDING_USER_GROUP_PREFIX . 'fremd@toggl.example')
-            ->where('status', IntegrationInboxItem::STATUS_OPEN)
+            ->where('status', IntegrationInboxStatus::Open)
             ->first();
         $this->assertNotNull($item, 'Unbekannter Benutzer wird als offener Zuordnungsfall abgelegt.');
     }
@@ -231,7 +233,7 @@ class TogglUserResolutionTest extends TestCase {
 
         $open = IntegrationInboxItem::query()
             ->where('group_key', MatchingTimeImportService::PENDING_USER_GROUP_PREFIX . 'fremd@toggl.example')
-            ->where('status', IntegrationInboxItem::STATUS_OPEN)
+            ->where('status', IntegrationInboxStatus::Open)
             ->firstOrFail();
 
         // Zuordnung pflegen (wie über „Zuordnungen verwalten"), dann Folgelauf.
@@ -242,7 +244,7 @@ class TogglUserResolutionTest extends TestCase {
 
         $this->assertSame(1, $result['created'], 'Folgelauf bucht den zuvor offenen Eintrag.');
         $this->assertSame(1, TimeEntry::query()->where('user_id', $target->id)->count());
-        $this->assertSame(IntegrationInboxItem::STATUS_RESOLVED_CREATED, $open->fresh()->status, 'Der offene Fall wird geschlossen.');
+        $this->assertSame(IntegrationInboxStatus::ResolvedCreated, $open->fresh()->status, 'Der offene Fall wird geschlossen.');
     }
 
     public function test_booking_user_group_via_inbox_remembers_mapping_and_books_per_entry_project(): void {
@@ -323,7 +325,7 @@ class TogglUserResolutionTest extends TestCase {
             'dedupe_key' => 'entry:csv:regroup-1',
             'group_key' => 'acme|website',
             'case_type' => IntegrationInboxItem::CASE_UNMATCHED,
-            'status' => IntegrationInboxItem::STATUS_OPEN,
+            'status' => IntegrationInboxStatus::Open,
             'remote_snapshot' => [
                 'source' => 'csv',
                 'entry_key' => 'csv:regroup-1',
@@ -346,7 +348,7 @@ class TogglUserResolutionTest extends TestCase {
         $this->assertDatabaseHas('integration_inbox_items', [
             'external_id' => 'csv:regroup-1',
             'group_key' => MatchingTimeImportService::PENDING_USER_GROUP_PREFIX . 'unbekannt@toggl.example',
-            'status' => IntegrationInboxItem::STATUS_OPEN,
+            'status' => IntegrationInboxStatus::Open->value,
         ]);
     }
 
@@ -451,7 +453,7 @@ class TogglUserResolutionTest extends TestCase {
         $this->assertSame(2, IntegrationInboxItem::query()
             ->where('plugin_id', TogglPlugin::ID)
             ->where('group_key', 'like', MatchingTimeImportService::PENDING_USER_GROUP_PREFIX . '%')
-            ->where('status', IntegrationInboxItem::STATUS_OPEN)
+            ->where('status', IntegrationInboxStatus::Open)
             ->count());
     }
 

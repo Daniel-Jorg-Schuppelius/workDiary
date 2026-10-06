@@ -9,8 +9,7 @@
 @extends('layouts.app')
 @section('title', __('manufacturing.capacity.title') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('manufacturing.capacity.title'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('manufacturing.capacity.subtitle')">
@@ -25,7 +24,7 @@
         {{ __('manufacturing.capacity.period_note', ['from' => $from->isoFormat('L'), 'to' => $to->isoFormat('L')]) }}
     </x-slot:note>
 
-    @if ($board->isEmpty())
+    @if ($board->total() === 0)
         <x-empty-state framed icon="precision_manufacturing"
                        :title="__('manufacturing.capacity.empty')" />
     @else
@@ -50,5 +49,7 @@
             @endforeach
         </x-table>
     @endif
+
+    <x-pagination :paginator="$board" standing />
 </x-index-page>
 @endsection

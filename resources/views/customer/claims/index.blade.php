@@ -28,7 +28,7 @@
             <tr class="hover">
                 <td><a class="link font-mono" href="{{ route('customer.claims.show', $case) }}">{{ $case->number }}</a></td>
                 <td>{{ $case->title }}</td>
-                <td><span class="badge badge-outline">{{ $case->status->label() }}</span></td>
+                <td><x-status-badge tone="plain" size="md" outline>{{ $case->status->label() }}</x-status-badge></td>
                 <td>{{ $case->reported_at->fdate() }}</td>
             </tr>
         @empty

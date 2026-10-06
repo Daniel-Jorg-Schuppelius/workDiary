@@ -10,7 +10,7 @@
 
 namespace App\Models\Isms;
 
-use App\Models\Concerns\HasSqid;
+use App\Models\Concerns\{HasAccessToken, HasSqid};
 use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -44,6 +44,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $created_at
  */
 class IsmsAuditPackageToken extends Model {
+    use HasAccessToken;
     use HasSqid;
 
     /** Append-only-Lebenszyklus: nur created_at (kein updated_at). */

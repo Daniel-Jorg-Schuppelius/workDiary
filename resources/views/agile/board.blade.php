@@ -62,7 +62,7 @@
     @else
         <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
             @foreach ($board->columns as $column)
-                <div class="rounded-box border border-base-300 bg-base-100 p-3">
+                <x-card padding="p-3">
                     <div class="mb-2 flex items-center justify-between">
                         <h2 class="font-['Space_Grotesk'] text-sm font-semibold">{{ $column->name }}</h2>
                         <span class="inline-flex items-center gap-1">
@@ -73,6 +73,7 @@
                         </span>
                     </div>
                     @if ($column->workItems->isEmpty())
+                        {{-- raw-markup-ok: Board-Spalte (Ablagefläche): einzeiliger Platzhalter in schmaler Spalte --}}
                         <p class="text-xs text-muted">{{ __('Keine Elemente.') }}</p>
                     @else
                         <ul class="space-y-1">
@@ -83,11 +84,12 @@
                                             {{ $item->task?->title ?? '—' }}
                                             <x-status-badge tone="neutral" size="xs">{{ $item->item_type->label() }}</x-status-badge>
                                             @if ($item->story_points !== null)
-                                                <span class="badge badge-ghost badge-xs">{{ $item->story_points }} SP</span>
+                                                <x-status-badge size="xs">{{ $item->story_points }} SP</x-status-badge>
                                             @endif
                                             @php($bookedMinutes = (int) ($item->task?->time_entries_sum_minutes ?? 0))
                                             @if ($bookedMinutes > 0)
-                                                <span class="badge badge-ghost badge-xs" title="{{ __('Gebuchte Zeit') }}{{ $seesAllTimes ? '' : ' (' . __('nur eigene Zeiten') . ')' }}">{{ \App\Support\Formats::duration((int) $bookedMinutes, 'clock') }}</span>
+                                                <x-status-badge size="xs"
+                                                        title="{{ __('Gebuchte Zeit') }}{{ $seesAllTimes ? '' : ' (' . __('nur eigene Zeiten') . ')' }}">{{ \App\Support\Formats::duration((int) $bookedMinutes, 'clock') }}</x-status-badge>
                                             @endif
                                             @if ($item->isBlocked())
                                                 <x-status-badge tone="error" size="xs" :title="$item->blocked_reason">{{ __('blockiert') }}</x-status-badge>
@@ -124,7 +126,7 @@
                             @endforeach
                         </ul>
                     @endif
-                </div>
+                </x-card>
             @endforeach
         </div>
 

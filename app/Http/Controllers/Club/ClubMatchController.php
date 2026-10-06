@@ -14,6 +14,7 @@ namespace App\Http\Controllers\Club;
 
 use App\Enums\Club\{ClubAvailabilityStatus, ClubEventKind, ClubEventRoleKind, ClubLineupSlot};
 use App\Enums\Event\EventStatus;
+use App\Http\Controllers\Club\Concerns\ConvertsEventTimesToUtc;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Club\{SaveClubMatchRequest, SaveEventRoleRequest, SaveLineupRequest, SaveMatchResultRequest};
@@ -38,6 +39,8 @@ use RuntimeException;
  * die Vereinstermin-Policy (Verwaltung oder Leitung der Mannschaft).
  */
 class ClubMatchController extends Controller {
+    use ConvertsEventTimesToUtc;
+
     use ResolvesCurrentOrganization;
 
     public function __construct(
@@ -103,7 +106,7 @@ class ClubMatchController extends Controller {
         /** @var User $actor */
         $actor = Auth::user();
         try {
-            $event = $this->matches->createMatch($this->currentOrganization(), $actor, $this->withUtcTimes($request->validated()));
+            $event = $this->matches->createMatch($this->currentOrganization(), $actor, $this->withUtcTimes($request->validated(), ['started_at', 'ended_at', 'meet_at']));
         } catch (RuntimeException $e) {
             return back()->withErrors(['room_id' => ErrorText::for($e)])->withInput();
         }
@@ -153,7 +156,7 @@ class ClubMatchController extends Controller {
         /** @var User $actor */
         $actor = Auth::user();
         try {
-            $this->matches->updateMatch($event, $actor, $this->withUtcTimes($request->validated()));
+            $this->matches->updateMatch($event, $actor, $this->withUtcTimes($request->validated(), ['started_at', 'ended_at', 'meet_at']));
         } catch (RuntimeException $e) {
             return back()->withErrors(['room_id' => ErrorText::for($e)])->withInput();
         }
@@ -287,23 +290,6 @@ class ClubMatchController extends Controller {
         abort_if($details === null || $details->kind !== ClubEventKind::Match, 404);
 
         return $details;
-    }
-
-    /**
-     * @param  array<string, mixed>  $data
-     * @return array<string, mixed>
-     */
-    private function withUtcTimes(array $data): array {
-        $tz = trim((string) ($data['timezone'] ?? ''));
-        $tz = Tz::isValid($tz) && $tz !== 'UTC' ? $tz : Tz::current();
-        $data['timezone'] = $tz;
-        foreach (['started_at', 'ended_at', 'meet_at'] as $key) {
-            if (array_key_exists($key, $data) && $data[$key] !== null && $data[$key] !== '') {
-                $data[$key] = CarbonImmutable::parse((string) $data[$key], $tz)->utc()->format('Y-m-d H:i:s');
-            }
-        }
-
-        return $data;
     }
 
     /** @return array<string, mixed> */

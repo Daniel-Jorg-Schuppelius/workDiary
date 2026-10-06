@@ -37,7 +37,7 @@
 
     @include('reports.plan-ist._dimensions')
 
-    <div class="alert alert-info alert-soft text-sm">
+    <div role="status" class="alert alert-info alert-soft text-sm">
         <x-icon name="info" />
         <span>{{ __('Für Standorte existieren keine Solldaten (Schichten und Arbeitszeitmodelle sind nicht standortbezogen) — diese Sicht zeigt die Ist-Verteilung der ortsbasiert erfassten Zeiten.') }}</span>
     </div>

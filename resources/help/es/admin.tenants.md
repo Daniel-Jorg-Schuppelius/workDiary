@@ -1,7 +1,7 @@
 ---
 title: "Organizaciones e inquilinos"
 topic: admin.tenants
-version: 1
+version: 2
 audience:
     - admin
 related:
@@ -20,3 +20,9 @@ organización determina los módulos habilitados (véase el capítulo
 **Licencia**). El **purge es irreversible**: ofrezca antes un exporte y
 compruebe las obligaciones de conservación; desactivar es la
 alternativa segura si solo debe cerrarse el acceso.
+
+Aprobaciones: en la sección del mismo nombre define qué rol ve las etapas
+de aprobación de una negociación contractual en «Aprobaciones», por tipo
+de etapa (comercial, técnica, RR. HH.). Si se deja vacío, se aplica el
+valor predeterminado: Contabilidad, Jefe de equipo, Administración de
+personal. La aprobación desde el expediente no se ve afectada.

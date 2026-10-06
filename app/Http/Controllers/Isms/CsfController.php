@@ -11,9 +11,9 @@
 namespace App\Http\Controllers\Isms;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Isms\Concerns\ResolvesIsmsScope;
 use App\Models\Isms\{IsmsRequirement, IsmsScope};
 use App\Services\Isms\CsfReadinessService;
-use App\Support\SqidEncoder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
@@ -28,16 +28,17 @@ use Illuminate\View\View;
  * ISMS-Lesezugriff über die IsmsRequirementPolicy (isms.viewAny).
  */
 class CsfController extends Controller {
+    use ResolvesIsmsScope;
+
     public function __construct(
         private readonly CsfReadinessService $service,
-        private readonly SqidEncoder $sqids,
     ) {}
 
     public function dashboard(Request $request): View {
         Gate::authorize('viewAny', IsmsRequirement::class);
 
         $scopes = $this->scopes();
-        $scope = $this->resolveScope($request->query('scope'), $scopes);
+        $scope = $this->scopeForView($request->query('scope'), $scopes);
 
         return view('isms.csf.dashboard', [
             'scope' => $scope,
@@ -50,7 +51,7 @@ class CsfController extends Controller {
         Gate::authorize('viewAny', IsmsRequirement::class);
 
         $scopes = $this->scopes();
-        $scope = $this->resolveScope($request->query('scope'), $scopes);
+        $scope = $this->scopeForView($request->query('scope'), $scopes);
 
         return view('isms.csf.crosswalk', [
             'scope' => $scope,
@@ -65,25 +66,5 @@ class CsfController extends Controller {
             ->orderByDesc('is_default')
             ->orderBy('name')
             ->get();
-    }
-
-    /**
-     * Löst den Scope-Query-Parameter (Sqid) auf — ungültige, fremde oder
-     * fehlende Werte fallen auf den Default-Scope zurück (Muster
-     * DashboardController).
-     *
-     * @param  Collection<int, IsmsScope>  $scopes
-     */
-    private function resolveScope(mixed $sqid, Collection $scopes): ?IsmsScope {
-        if (is_string($sqid) && $sqid !== '') {
-            $id = $this->sqids->decode(IsmsScope::class, $sqid);
-            $scope = $id === null ? null : $scopes->firstWhere('id', $id);
-
-            if ($scope !== null) {
-                return $scope;
-            }
-        }
-
-        return $scopes->firstWhere('is_default', true) ?? $scopes->first();
     }
 }

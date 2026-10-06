@@ -33,14 +33,14 @@
             <x-detail-grid.row :label="__('inspection_order.field.status')">{{ $order->status->label() }}</x-detail-grid.row>
             <x-detail-grid.row :label="__('inspection_order.field.recipient_email')">{{ $order->recipient_email }}</x-detail-grid.row>
             <x-detail-grid.row :label="__('inspection_order.field.offer_amount')">{{ $order->offer_amount !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($order->offer_amount, 2, withThousandsSeparator: true) . ' ' . $order->currency : '—' }}</x-detail-grid.row>
-            <x-detail-grid.row :label="__('inspection_order.field.offer_planned_on')">{{ $order->offer_planned_on?->format('d.m.Y') ?? '—' }}</x-detail-grid.row>
+            <x-detail-grid.row :label="__('inspection_order.field.offer_planned_on')">{{ $order->offer_planned_on?->fdate() ?? '—' }}</x-detail-grid.row>
         </x-detail-grid>
         @if ($order->offer_note)<p class="mt-2 whitespace-pre-line text-sm">{{ $order->offer_note }}</p>@endif
         @if ($canManage && $order->status === S::Offered)
             <form method="POST" action="{{ route('asset-compliance.orders.decide', $order) }}" class="mt-3 flex justify-end gap-2">
                 @csrf
-                <button type="submit" name="decision" value="reject" class="btn btn-sm btn-outline">{{ __('inspection_order.reject') }}</button>
-                <button type="submit" name="decision" value="accept" class="btn btn-sm btn-primary">{{ __('inspection_order.accept') }}</button>
+                <x-button type="submit" tone="outline" name="decision" value="reject">{{ __('inspection_order.reject') }}</x-button>
+                <x-button type="submit" name="decision" value="accept">{{ __('inspection_order.accept') }}</x-button>
             </form>
         @endif
     </x-card>
@@ -61,8 +61,8 @@
                 <tr>
                     <td>{{ $item->asset?->name }} <span class="text-muted">({{ $item->asset?->asset_no }})</span></td>
                     <td>{{ $item->result?->label() ?? '—' }}</td>
-                    <td>{{ $item->performed_on?->format('d.m.Y') ?? '—' }}</td>
-                    <td>{{ $item->valid_until?->format('d.m.Y') ?? '—' }}</td>
+                    <td>{{ $item->performed_on?->fdate() ?? '—' }}</td>
+                    <td>{{ $item->valid_until?->fdate() ?? '—' }}</td>
                     <td>{{ $item->certificate_no ?? '—' }}@if ($item->attachments->isNotEmpty()) <x-icon name="attach_file" class="text-muted" />@endif</td>
                     <td class="text-right">{{ $item->asset_inspection_event_id ? __('inspection_order.taken_over') : '—' }}</td>
                 </tr>

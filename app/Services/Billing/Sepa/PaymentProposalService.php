@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Billing\Sepa;
 
+use App\Enums\Invoicing\IncomingEInvoiceStatus;
 use App\Models\Invoicing\IncomingEInvoice;
 use App\Models\Supplier\Supplier;
 use Carbon\CarbonImmutable;
@@ -37,7 +38,7 @@ class PaymentProposalService {
         $today = $today ?? CarbonImmutable::today();
 
         return IncomingEInvoice::query()
-            ->where('status', IncomingEInvoice::STATUS_PAYMENT_RELEASED)
+            ->where('status', IncomingEInvoiceStatus::PaymentReleased)
             ->whereNull('paid_in_run_id')
             ->orderBy('due_date')
             ->get()

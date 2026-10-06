@@ -10,8 +10,7 @@
 
 @section('title', __('Baukostenkataloge') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('Baukostenkataloge'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('Kennwerte als Nachschlagewerk — was ein Bauteil üblicherweise kostet.')">
@@ -34,7 +33,7 @@
         </x-card>
     @endif
 
-    @if ($catalogs->isEmpty())
+    @if ($catalogs->total() === 0)
         <x-empty-state framed icon="price_change"
                        :title="__('Noch kein Baukostenkatalog vorhanden.')"
                        :message="__('Ein Baukostenkatalog (GAEB X50) liefert Kennwerte für die frühen Kostenstufen — Kostenschätzung und -berechnung, für die aus dem eigenen Bestand keine Zahlen vorliegen.')" />
@@ -55,7 +54,7 @@
                         <a class="link" href="{{ route('cost-catalogs.show', $catalog) }}">{{ $catalog->name }}</a>
                         @unless ($catalog->active)<span class="wd-badge badge-outline">{{ __('Inaktiv') }}</span>@endunless
                     </td>
-                    <td class="text-base-content/70 tabular-nums">{{ $catalog->valid_on?->format('d.m.Y') ?? '—' }}</td>
+                    <td class="text-base-content/70 tabular-nums">{{ $catalog->valid_on?->fdate() ?? '—' }}</td>
                     {{-- X50.2 nummeriert vollständig, X50.1 in Teilen — der Export
                          muss dieselbe Form wählen. --}}
                     <td class="text-xs text-base-content/70">{{ $catalog->full_element_numbers ? __('vollständig (X50.2)') : __('in Teilen (X50.1)') }}</td>
@@ -76,6 +75,8 @@
                 </tr>
             @endforeach
         </x-table>
+
+        <x-pagination :paginator="$catalogs" standing />
     @endif
 </x-index-page>
 @endsection

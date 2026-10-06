@@ -211,9 +211,7 @@ class AuditPackageService {
      * (Controller antwortet 404, keine Detail-Preisgabe).
      */
     public function resolveUsableToken(string $plainToken): ?IsmsAuditPackageToken {
-        $token = IsmsAuditPackageToken::query()
-            ->where('token_hash', CryptoHelper::hash($plainToken))
-            ->first();
+        $token = IsmsAuditPackageToken::findByAccessToken($plainToken);
 
         return $token !== null && $token->isUsable() ? $token : null;
     }

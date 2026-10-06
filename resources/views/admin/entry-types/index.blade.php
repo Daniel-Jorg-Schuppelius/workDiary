@@ -10,8 +10,7 @@
 
 @section('title', __('Eintragstypen'))
 @section('nav-title', __('Eintragstypen'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('Auftragstypen und ihre Pflichtklassifikationen pro Mandant verwalten.')">

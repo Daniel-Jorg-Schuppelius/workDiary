@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Finance;
 
 use App\Enums\Finance\{RecurringInterval, RecurringTemplateKind, RecurringTemplateStatus};
+use App\Enums\Invoicing\InvoiceScheduleStatus;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
@@ -57,7 +58,7 @@ class RecurringAccountingController extends Controller {
             // Serienrechnungen bleiben, wo sie sind — hier nur sichtbar gemacht.
             'invoiceSchedules' => InvoiceSchedule::query()
                 ->where('organization_id', $organization->id)
-                ->where('status', 'active')
+                ->where('status', InvoiceScheduleStatus::Active)
                 ->orderBy('next_run_on')
                 ->get(),
             'canConfigure' => Gate::allows(Permission::AccountingLedgerConfigure->value),

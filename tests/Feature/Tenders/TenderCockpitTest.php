@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Tenders;
 
+use App\Enums\Applications\ApplicationOpportunityStatus;
 use App\Models\Applications\ApplicationOpportunity;
 use App\Models\Platform\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -44,15 +45,15 @@ final class TenderCockpitTest extends TestCase {
             'organization_id' => $this->organization->id,
             'title' => 'Vorgang',
             'kind' => 'tender',
-            'status' => 'in_progress',
+            'status' => ApplicationOpportunityStatus::InProgress,
             'estimated_value' => '10000',
             'created_by' => $this->admin->id,
         ], $attributes));
     }
 
     public function test_cockpit_renders_pipeline_and_win_rate(): void {
-        $this->opportunity(['title' => 'Gewonnen', 'status' => 'won', 'estimated_value' => '30000']);
-        $this->opportunity(['title' => 'Verloren', 'status' => 'lost', 'loss_reason' => 'Preis zu hoch']);
+        $this->opportunity(['title' => 'Gewonnen', 'status' => ApplicationOpportunityStatus::Won, 'estimated_value' => '30000']);
+        $this->opportunity(['title' => 'Verloren', 'status' => ApplicationOpportunityStatus::Lost, 'loss_reason' => 'Preis zu hoch']);
 
         $this->actingAs($this->admin)
             ->get(route('tenders.cockpit'))
@@ -71,7 +72,7 @@ final class TenderCockpitTest extends TestCase {
     public function test_deadline_view_ignores_the_period_filter(): void {
         $this->opportunity([
             'title' => 'Überfällig',
-            'status' => 'in_progress',
+            'status' => ApplicationOpportunityStatus::InProgress,
             'submission_deadline' => now()->subDays(3)->toDateString(),
             'responsible_user_id' => $this->admin->id,
         ]);
@@ -89,8 +90,8 @@ final class TenderCockpitTest extends TestCase {
 
     /** Entschiedene und zurückgezogene Vorgänge tauchen nicht als offene Frist auf. */
     public function test_decided_cases_leave_the_deadline_load(): void {
-        $this->opportunity(['status' => 'won', 'submission_deadline' => now()->subDays(2)->toDateString()]);
-        $this->opportunity(['status' => 'withdrawn', 'submission_deadline' => now()->subDays(2)->toDateString()]);
+        $this->opportunity(['status' => ApplicationOpportunityStatus::Won, 'submission_deadline' => now()->subDays(2)->toDateString()]);
+        $this->opportunity(['status' => ApplicationOpportunityStatus::Withdrawn, 'submission_deadline' => now()->subDays(2)->toDateString()]);
 
         $response = $this->actingAs($this->admin)->get(route('tenders.cockpit'));
 
@@ -100,7 +101,7 @@ final class TenderCockpitTest extends TestCase {
 
     /** Ohne entschiedene Vorgänge gibt es keine Quote — 0 % wäre gelogen. */
     public function test_win_rate_is_empty_without_decisions(): void {
-        $this->opportunity(['status' => 'in_progress']);
+        $this->opportunity(['status' => ApplicationOpportunityStatus::InProgress]);
 
         $response = $this->actingAs($this->admin)->get(route('tenders.cockpit'));
 
@@ -126,8 +127,8 @@ final class TenderCockpitTest extends TestCase {
     }
 
     public function test_csv_export_carries_every_block(): void {
-        $this->opportunity(['status' => 'lost', 'loss_reason' => 'Preis zu hoch']);
-        $this->opportunity(['status' => 'in_progress', 'submission_deadline' => now()->addDays(3)->toDateString()]);
+        $this->opportunity(['status' => ApplicationOpportunityStatus::Lost, 'loss_reason' => 'Preis zu hoch']);
+        $this->opportunity(['status' => ApplicationOpportunityStatus::InProgress, 'submission_deadline' => now()->addDays(3)->toDateString()]);
 
         $csv = $this->actingAs($this->admin)->get(route('tenders.cockpit', ['export' => 'csv']));
 

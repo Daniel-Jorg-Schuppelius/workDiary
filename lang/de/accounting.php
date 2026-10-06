@@ -111,6 +111,7 @@ return [
             'post' => 'Festschreiben',
             'reverse' => 'Stornieren',
             'reverse_submit' => 'Gegenbuchung erzeugen',
+            'import' => 'Kontenplan importieren',
         ],
         'column' => [
             'fiscal_year' => 'Geschäftsjahr',
@@ -254,6 +255,11 @@ return [
         ],
         'import' => [
             'line_invalid' => 'Zeile :line übersprungen (Nummer, Name oder Kontoart fehlt).',
+            'title' => 'Kontenplan aus CSV importieren',
+            'hint' => 'Bestehende Kontonummern werden aktualisiert, neue Konten angelegt; gelöscht wird nichts. Fehlerhafte Zeilen werden übersprungen und gezählt.',
+            'file' => 'CSV-Datei',
+            'columns' => 'Kopfzeile mit den Spalten number, name und type (:types); optional normal_balance (debit oder credit), is_open_item, datev_account, euer_category und deductible_percent.',
+            'submit' => 'Importieren',
         ],
     ],
 
@@ -304,6 +310,7 @@ return [
             'no_amount' => 'Der Beleg hat keinen Betrag.',
             'no_lines' => 'Der Vorschlag hat keine Buchungszeilen.',
             'sovereignty' => 'Für diesen Zeitraum führt die Organisation kein lokales Hauptbuch.',
+            'changed_since_posting' => 'Die Quelle hat sich nach dem Buchen geändert (z. B. Erstattung) — Buchungssatz stornieren und neu buchen.',
             'foreign_currency' => 'Der Vorgang lautet auf :currency, die Buchhaltung führt :base — Zahlungen, Kasse und Anlagen in Fremdwährung bucht sie nicht.',
             'unsupported_target' => 'Für dieses Zahlungsziel gibt es noch keinen Buchungsweg.',
             'year_closed' => 'Das Geschäftsjahr :year ist geschlossen.',

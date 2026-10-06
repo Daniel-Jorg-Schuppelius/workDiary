@@ -65,7 +65,7 @@ final class RetentionReviewTest extends TestCase {
         $this->assertNotNull($export->fresh(), 'Datensatz darf beim Scan NICHT gelöscht werden.');
         $proposal = RetentionProposal::query()->firstOrFail();
         $this->assertSame('exports', $proposal->area);
-        $this->assertSame(RetentionProposal::STATUS_PENDING, $proposal->status);
+        $this->assertSame(\App\Enums\Privacy\RetentionProposalStatus::Pending, $proposal->status);
 
         // Idempotenz: zweiter Scan erzeugt keinen Doppel-Vorschlag.
         $again = app(RetentionScanService::class)->scan($org);
@@ -141,7 +141,7 @@ final class RetentionReviewTest extends TestCase {
 
         $service->purge($proposal->fresh(), $admin);
         $this->assertNull($export->fresh());
-        $this->assertSame(RetentionProposal::STATUS_PURGED, $proposal->fresh()->status);
+        $this->assertSame(\App\Enums\Privacy\RetentionProposalStatus::Purged, $proposal->fresh()->status);
         $this->assertSame(1, AuditLog::query()->where('event', 'retention.approved')->count());
         $this->assertSame(1, AuditLog::query()->where('event', 'retention.purged')->count());
     }
@@ -178,7 +178,7 @@ final class RetentionReviewTest extends TestCase {
             ->post(route('dataprotection.retention.decide', $proposal), ['action' => 'reject'])
             ->assertRedirect();
 
-        $this->assertSame(RetentionProposal::STATUS_REJECTED, $proposal->fresh()->status);
+        $this->assertSame(\App\Enums\Privacy\RetentionProposalStatus::Rejected, $proposal->fresh()->status);
         $this->assertNotNull($export->fresh());
     }
 }

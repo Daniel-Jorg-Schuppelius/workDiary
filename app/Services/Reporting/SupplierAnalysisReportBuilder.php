@@ -17,6 +17,7 @@ use App\Models\Material\MaterialUsage;
 use App\Models\Procurement\{PurchaseOrder, PurchaseOrderLine};
 use App\Models\Supplier\Supplier;
 use App\Services\Billing\Contracts\ExternalPurchases;
+use App\Services\Reporting\Support\ReportStatistics;
 use App\Support\ChartBucket;
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
@@ -447,21 +448,14 @@ class SupplierAnalysisReportBuilder {
      * @return array{totalSpend:float, top5Share:?float, top10Share:?float, hhi:?int, activeSuppliers:int}
      */
     private function concentration(array $rows): array {
-        $spends = collect($rows)->pluck('spend')->filter(static fn(float $v): bool => $v > 0)->sortDesc()->values();
-        $total = (float) $spends->sum();
-        $share = fn(Collection $part): ?float => $total > 0 ? round((float) $part->sum() / $total * 100, 1) : null;
-
-        $hhi = null;
-        if ($total > 0) {
-            $hhi = (int) round($spends->reduce(static fn(float $carry, float $v): float => $carry + (($v / $total * 100) ** 2), 0.0));
-        }
+        $concentration = ReportStatistics::concentration(array_column($rows, 'spend'));
 
         return [
-            'totalSpend' => round($total, 2),
-            'top5Share' => $share($spends->take(5)),
-            'top10Share' => $share($spends->take(10)),
-            'hhi' => $hhi,
-            'activeSuppliers' => $spends->count(),
+            'totalSpend' => $concentration['total'],
+            'top5Share' => $concentration['top5Share'],
+            'top10Share' => $concentration['top10Share'],
+            'hhi' => $concentration['hhi'],
+            'activeSuppliers' => $concentration['positive'],
         ];
     }
 }

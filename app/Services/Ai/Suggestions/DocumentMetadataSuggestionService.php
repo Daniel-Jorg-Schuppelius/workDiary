@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Ai\Suggestions;
 
+use App\Enums\Ai\AiTextSuggestionStatus;
 use App\Enums\Document\{DocumentTextFailure, DocumentType};
 use App\Exceptions\DocumentTextUnavailableException;
 use App\Models\Ai\AiTextSuggestion;
@@ -145,7 +146,7 @@ class DocumentMetadataSuggestionService {
 
         $remaining = array_values(array_filter($entries, static fn (array $e): bool => $e['field'] !== $field));
         if ($remaining === []) {
-            $this->markDecided($suggestion, AiTextSuggestion::STATUS_ACCEPTED, $user);
+            $this->markDecided($suggestion, AiTextSuggestionStatus::Accepted, $user);
         } else {
             $suggestion->forceFill(['suggestion' => JsonHelper::encode($remaining, JSON_UNESCAPED_UNICODE)])->save();
         }

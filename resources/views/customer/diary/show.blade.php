@@ -19,13 +19,13 @@
             <h1 class="text-2xl font-semibold">{{ $diary->title }}</h1>
             <p class="text-sm opacity-70">{{ optional($diary->start_at)->fdate() }} · {{ $diary->status?->label() }}</p>
         </div>
-        <a href="{{ $pdfUrl }}" class="btn btn-outline btn-sm">{{ __('Fallakte als PDF') }}</a>
+        <x-button :href="$pdfUrl" tone="outline">{{ __('Fallakte als PDF') }}</x-button>
     </div>
 
     <x-validation-errors first class="mb-3" />
 
     <div class="space-y-6">
-        <section class="rounded-box border border-base-300 bg-base-100 p-4">
+        <x-card as="section">
             <h2 class="mb-2 font-semibold">{{ __('Fotos') }}</h2>
             @if ($photos->isEmpty())
                 <x-empty-state icon="photo_library" :title="__('Keine freigegebenen Fotos.')" compact />
@@ -36,7 +36,7 @@
                             <span class="min-w-0 truncate">{{ $photo->original_name }}</span>
                             <span class="flex items-center gap-2">
                                 @if ($confirmedByMe->has($photo->id))
-                                    <span class="badge badge-success badge-sm">{{ __('Bestätigt am :date', ['date' => $confirmedByMe[$photo->id]->confirmed_at->fdate()]) }}</span>
+                                    <x-status-badge tone="success">{{ __('Bestätigt am :date', ['date' => $confirmedByMe[$photo->id]->confirmed_at->fdate()]) }}</x-status-badge>
                                 @else
                                     <form method="POST" action="{{ route('customer.diary.photos.confirm', [$diary, $photo]) }}">
                                         @csrf
@@ -58,9 +58,9 @@
                     @endforeach
                 </ul>
             @endif
-        </section>
+        </x-card>
 
-        <section class="rounded-box border border-base-300 bg-base-100 p-4">
+        <x-card as="section">
             <h2 class="mb-2 font-semibold">{{ __('Material') }}</h2>
             @if ($materials->isEmpty())
                 <x-empty-state icon="inventory_2" :title="__('Kein Material erfasst.')" compact />
@@ -80,9 +80,9 @@
                     @endforeach
                 </x-table>
             @endif
-        </section>
+        </x-card>
 
-        <section class="rounded-box border border-base-300 bg-base-100 p-4">
+        <x-card as="section">
             <h2 class="mb-2 font-semibold">{{ __('Protokolle') }}</h2>
             @if ($protocols->isEmpty())
                 <x-empty-state icon="description" :title="__('Keine freigegebenen Protokolle.')" compact />
@@ -96,10 +96,10 @@
                     @endforeach
                 </ul>
             @endif
-        </section>
+        </x-card>
 
         {{-- Vollaudit 2026-07 (H9): freigegebene Kommunikationsnotizen (Spec §4/§11.4). --}}
-        <section class="rounded-box border border-base-300 bg-base-100 p-4">
+        <x-card as="section">
             <h2 class="mb-2 font-semibold">{{ __('Kommunikation') }}</h2>
             @if ($notes->isEmpty())
                 <x-empty-state icon="forum" :title="__('Keine freigegebenen Notizen.')" compact />
@@ -118,7 +118,7 @@
                     @endforeach
                 </ul>
             @endif
-        </section>
+        </x-card>
 
         {{-- Rückfragen und Kommentare (MVP-512): nur mit queries-Capability;
              die Capability erweitert diesen freigegebenen Bereich, macht aber
@@ -141,11 +141,10 @@
                     ->orderByDesc('created_at')
                     ->get();
             @endphp
-            <section class="rounded-box border border-base-300 bg-base-100 p-4">
+            <x-card as="section">
                 <div class="mb-2 flex items-center justify-between gap-2">
                     <h2 class="font-semibold">{{ __('Rückfragen und Kommentare') }}</h2>
-                    <a href="{{ route('customer.queries.create', ['subject_type' => 'diary', 'subject' => $diary->sqid]) }}"
-                       class="btn btn-primary btn-sm">{{ __('Rückfrage stellen') }}</a>
+                    <x-button :href="route('customer.queries.create', ['subject_type' => 'diary', 'subject' => $diary->sqid])">{{ __('Rückfrage stellen') }}</x-button>
                 </div>
                 @if ($diaryQueries->isEmpty())
                     <x-empty-state icon="contact_support" :title="__('Noch keine Rückfragen zu diesem Auftrag.')" compact />
@@ -165,7 +164,7 @@
                         @endforeach
                     </ul>
                 @endif
-            </section>
+            </x-card>
         @endif
     </div>
 @endsection

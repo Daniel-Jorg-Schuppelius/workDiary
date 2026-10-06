@@ -36,18 +36,9 @@
         </x-page-toolbar>
     </x-slot:toolbar>
 
-    @if ($errors->any())
-        <div class="alert alert-error text-sm" role="alert">
-            <x-icon name="error" />
-            <ul class="list-inside list-disc">
-                @foreach ($errors->all() as $message)
-                    <li>{{ $message }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
+    <x-validation-errors />
     @if ($isCancelled)
-        <div class="alert alert-warning text-sm" role="status"><x-icon name="block" /><span>{{ __('club.fees.label.cancelled_on', ['date' => $claim->cancelled_at?->orgTz()->format('d.m.Y H:i'), 'by' => $claim->cancelledBy?->name ?? '–']) }} — {{ $claim->reason }}</span></div>
+        <div class="alert alert-warning text-sm" role="status"><x-icon name="block" /><span>{{ __('club.fees.label.cancelled_on', ['date' => $claim->cancelled_at?->fdatetime(), 'by' => $claim->cancelledBy?->name ?? '–']) }} — {{ $claim->reason }}</span></div>
     @endif
 
     <div class="grid gap-4 lg:grid-cols-3">
@@ -66,7 +57,7 @@
                         <tr>
                             <td class="text-sm">{{ $item->member?->fullName() ?? __('club.fees.label.whole_account') }}</td>
                             <td class="text-sm">{{ $item->label }} <span class="text-xs text-muted">({{ \App\Enums\Club\ClubFeePositionKind::tryFrom($item->kind)?->label() ?? $item->kind }})</span></td>
-                            <td class="whitespace-nowrap text-sm tabular-nums">{{ $item->period_start->format('d.m.Y') }} – {{ $item->period_end->format('d.m.Y') }}</td>
+                            <td class="whitespace-nowrap text-sm tabular-nums">{{ $item->period_start->fdate() }} – {{ $item->period_end->fdate() }}</td>
                             <td class="text-right tabular-nums">{{ $item->amount->format() }}</td>
                         </tr>
                     @endforeach
@@ -94,21 +85,21 @@
 
         <div class="space-y-4">
             <x-card :title="__('club.fees.card.claim')" icon="info">
-                <dl class="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">
-                    <dt class="text-muted">{{ __('club.fees.field.account') }}</dt><dd>@if ($claim->account)<a href="{{ route('club.fees.accounts.show', $claim->account) }}" class="link link-hover">{{ $claim->account->name }}</a>@endif</dd>
-                    <dt class="text-muted">{{ __('club.fees.field.issued_on') }}</dt><dd>{{ $claim->issued_on->format('d.m.Y') }}</dd>
-                    <dt class="text-muted">{{ __('club.fees.field.due_on') }}</dt><dd class="{{ $claim->isOverdue($today) ? 'text-error font-medium' : '' }}">{{ $claim->due_on->format('d.m.Y') }}</dd>
-                    <dt class="text-muted">{{ __('club.field.period') }}</dt><dd>{{ $claim->period_start->format('d.m.Y') }} – {{ $claim->period_end->format('d.m.Y') }}</dd>
-                    <dt class="text-muted">{{ __('club.fees.field.payment_reference') }}</dt><dd class="font-mono">{{ $claim->number }}</dd>
-                    @if ($claim->run)<dt class="text-muted">{{ __('club.fees.field.run') }}</dt><dd><a href="{{ route('club.fees.runs.show', $claim->run) }}" class="link link-hover">{{ $claim->run->monthLabel() }}</a></dd>@endif
-                </dl>
+                <x-detail-grid>
+                    <x-detail-grid.row :label="__('club.fees.field.account')">@if ($claim->account)<a href="{{ route('club.fees.accounts.show', $claim->account) }}" class="link link-hover">{{ $claim->account->name }}</a>@endif</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('club.fees.field.issued_on')">{{ $claim->issued_on->fdate() }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('club.fees.field.due_on')" class="{{ $claim->isOverdue($today) ? 'text-error font-medium' : '' }}">{{ $claim->due_on->fdate() }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('club.field.period')">{{ $claim->period_start->fdate() }} – {{ $claim->period_end->fdate() }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('club.fees.field.payment_reference')" class="font-mono">{{ $claim->number }}</x-detail-grid.row>
+                    @if ($claim->run)<x-detail-grid.row :label="__('club.fees.field.run')"><a href="{{ route('club.fees.runs.show', $claim->run) }}" class="link link-hover">{{ $claim->run->monthLabel() }}</a></x-detail-grid.row>@endif
+                </x-detail-grid>
             </x-card>
 
             <x-card :title="__('club.fees.card.payments')" icon="payments" :count="$payments->count()">
                 <ul class="space-y-1 text-sm">
                     @forelse ($payments as $payment)
                         <li class="flex flex-wrap items-center gap-2">
-                            <span class="tabular-nums">{{ $payment->paid_on->format('d.m.Y') }}</span>
+                            <span class="tabular-nums">{{ $payment->paid_on->fdate() }}</span>
                             <span class="text-xs text-muted">{{ $payment->method->label() }} · {{ $payment->source->label() }}@if ($payment->reference) · {{ $payment->reference }}@endif</span>
                             <span class="ml-auto tabular-nums {{ $payment->amount->isNegative() ? 'text-error' : '' }}">{{ $payment->amount->format() }}</span>
                             @if ($canManage && $payment->amount->isPositive() && ! $payment->isChargeback() && $claim->account)
@@ -136,8 +127,8 @@
                     @forelse ($dunnings as $dunning)
                         <li class="flex flex-wrap items-center gap-2">
                             <span class="font-medium">{{ __('club.fees.label.dunning_level', ['level' => $dunning->level]) }}</span>
-                            <span class="tabular-nums text-muted">{{ $dunning->issued_on->format('d.m.Y') }}</span>
-                            @if ($dunning->pay_until)<span class="text-xs text-muted">{{ __('club.fees.pdf.pay_until', ['date' => $dunning->pay_until->format('d.m.Y')]) }}</span>@endif
+                            <span class="tabular-nums text-muted">{{ $dunning->issued_on->fdate() }}</span>
+                            @if ($dunning->pay_until)<span class="text-xs text-muted">{{ __('club.fees.pdf.pay_until', ['date' => $dunning->pay_until->fdate()]) }}</span>@endif
                             @if ($dunning->fee)<span class="text-xs text-muted">{{ __('club.fees.field.dunning_fee') }} {{ $dunning->fee->format() }}</span>@endif
                             <x-icon-btn icon="picture_as_pdf" tone="ghost" size="xs" class="ml-auto" :href="route('club.fees.claims.dunning.pdf', [$claim, $dunning])" :label="__('club.fees.action.pdf')" />
                         </li>
@@ -163,10 +154,10 @@
                 <ul class="space-y-1 text-xs">
                     @forelse ($dispatches as $dispatch)
                         <li class="flex flex-wrap items-center gap-2">
-                            <span class="tabular-nums text-muted">{{ $dispatch->created_at?->orgTz()->format('d.m.Y H:i') }}</span>
+                            <span class="tabular-nums text-muted">{{ $dispatch->created_at?->fdatetime() }}</span>
                             <span>{{ __('club.fees.channel.' . $dispatch->channel) }}</span>
                             @if ($dispatch->recipient)<span class="text-muted">{{ $dispatch->recipient }}</span>@endif
-                            <x-status-badge :tone="$dispatch->status === 'sent' ? 'success' : ($dispatch->status === 'failed' ? 'error' : 'warning')" size="xs">{{ __('club.fees.dispatch.' . $dispatch->status) }}</x-status-badge>
+                            <x-status-badge :tone="$dispatch->status === \App\Enums\Document\DocumentDispatchStatus::Queued ? 'warning' : $dispatch->status->tone()" size="xs">{{ __('club.fees.dispatch.' . $dispatch->status->value) }}</x-status-badge>
                         </li>
                     @empty
                         <li class="text-muted">{{ __('club.fees.empty.dispatches') }}</li>

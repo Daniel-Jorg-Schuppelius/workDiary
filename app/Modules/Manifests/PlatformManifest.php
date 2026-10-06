@@ -74,7 +74,6 @@ final class PlatformManifest extends Manifest {
             'plugin_errors',
             'plugin_settings',
             'plugin_states',
-            'remote_pending_sessions',
             'role_has_permissions',
             'roles',
             'scheduled_job_overrides',

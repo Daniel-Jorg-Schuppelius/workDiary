@@ -25,6 +25,9 @@ return [
         'command_status' => ['draft' => 'Bozza', 'approved' => 'Approvato', 'pending' => 'In sospeso', 'confirmed' => 'Confermato', 'failed' => 'Fallito', 'unknown' => 'Incerto', 'conflict' => 'Conflitto'],
         'capability_area' => ['authentication' => 'Autenticazione', 'subuser' => 'Sottoutente', 'domains' => 'Domini', 'contacts' => 'Contatti', 'nameservers' => 'Nameserver', 'dns' => 'Zone DNS', 'events' => 'Eventi', 'renewal' => 'Rinnovo', 'transfer' => 'Trasferimento', 'accounting' => 'Contabilità', 'invoices' => 'Fatture'],
     ],
+    'approval' => [
+        'step-kind' => ['commercial' => 'Commerciale', 'technical' => 'Tecnica', 'hr' => 'Risorse umane', 'management' => 'Direzione'],
+    ],
     'asset' => [
         'defect-severity' => [
             'low' => 'Bassa',

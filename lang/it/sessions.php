@@ -36,9 +36,6 @@ return [
     ],
 
     'section' => [
-        'sessions' => 'Sessioni web/app',
-        'tokens' => 'Token API',
-        'devices' => 'Dispositivi di localizzazione',
         'terminals' => 'Terminali di timbratura',
         'remote_support' => 'Assistenza remota recente',
     ],
@@ -58,6 +55,13 @@ return [
         'remote' => 'Identificativo',
         'started' => 'Inizio',
         'ended' => 'Fine',
+        'kind' => 'Tipo',
+    ],
+
+    'kind' => [
+        'session' => 'Sessione web/app',
+        'token' => 'Token API',
+        'device' => 'Dispositivo di localizzazione',
     ],
 
     'terminal' => [

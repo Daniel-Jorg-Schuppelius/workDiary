@@ -154,6 +154,7 @@
                             </li>
                         </template>
                     </ul>
+                    {{-- raw-markup-ok: schwebender Hinweis der Projektsuche (absolute, Dropdown), keine Seitenliste --}}
                     <p x-show="showEmpty" x-cloak
                        class="absolute z-30 mt-1 w-full rounded-box border border-base-300 bg-base-100 px-3 py-2 text-sm text-muted shadow-lg">
                         {{ __('Kein Projekt gefunden.') }}
@@ -165,13 +166,13 @@
                      Manuell um. Nur mit JS nutzbar (x-cloak). --}}
                 <div class="join" x-cloak>
                     @if ($isToday)
-                        <button type="button" class="btn btn-sm join-item" :class="timerBtnClass"
-                                @click="setModeTimer()">{{ __('Timer') }}</button>
+                        <x-button tone="plain" class="join-item" ::class="timerBtnClass"
+                                @click="setModeTimer()">{{ __('Timer') }}</x-button>
                     @endif
-                    <button type="button" class="btn btn-sm join-item" :class="durationBtnClass"
-                            @click="setDuration()">{{ __('Dauer') }}</button>
-                    <button type="button" class="btn btn-sm join-item" :class="rangeBtnClass"
-                            @click="setRange()">{{ __('Von / Bis') }}</button>
+                    <x-button tone="plain" class="join-item" ::class="durationBtnClass"
+                            @click="setDuration()">{{ __('Dauer') }}</x-button>
+                    <x-button tone="plain" class="join-item" ::class="rangeBtnClass"
+                            @click="setRange()">{{ __('Von / Bis') }}</x-button>
                 </div>
 
                 {{-- fieldset statt x-show/:disabled am Input: flatpickr (altInput)
@@ -220,11 +221,11 @@
                     </div>
                 </fieldset>
 
-                <button type="button" class="btn btn-sm btn-ghost btn-square" x-cloak x-show="hasProject"
+                <x-button tone="ghost" class="btn-square" x-cloak x-show="hasProject"
                         @click="toggleMore()"
                         title="{{ __('Weitere Felder') }}" aria-label="{{ __('Weitere Felder') }}">
                     <x-icon name="expand_more" x-text="moreChevron" />
-                </button>
+                </x-button>
 
                 <x-button type="submit" tone="primary" size="sm" class="gap-1">
                     <span class="flex items-center gap-1" x-cloak x-show="isTimer">

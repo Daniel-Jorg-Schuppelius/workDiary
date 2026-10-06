@@ -80,7 +80,7 @@ final class CreateInvoiceDraftTool extends GuardedTool {
 
         return Response::structured([
             'id' => $invoice->sqid,
-            'status' => $invoice->status,
+            'status' => $invoice->status->value,
             'total' => $invoice->total,
             'positions' => $invoice->items()->count(),
             'url' => route('invoices.show', $invoice),

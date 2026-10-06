@@ -11,8 +11,7 @@
 
 @section('title', __('Umfragen'))
 @section('nav-title', __('Umfragen'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('Wiederverwendbare Fragebögen mit Einmal-Links und Ermüdungsschutz — keine Marketing-Automation.')">
@@ -43,15 +42,15 @@
                     <td>
                         <a class="link link-hover font-medium" href="{{ route('surveys.show', $survey) }}">{{ $survey->title }}</a>
                         @unless ($survey->active)
-                            <span class="badge badge-ghost badge-xs align-middle">{{ __('inaktiv') }}</span>
+                            <x-status-badge size="xs" class="align-middle">{{ __('inaktiv') }}</x-status-badge>
                         @endunless
                     </td>
                     <td class="text-sm tabular-nums">{{ $survey->questions_count }}</td>
                     <td class="text-sm tabular-nums">{{ $survey->invitations_count }}</td>
                     <td class="text-sm tabular-nums">{{ $survey->responses_count }}</td>
                     <td class="text-sm text-base-content/70">
-                        @if ($survey->anonymous)<span class="badge badge-outline badge-xs">{{ __('anonym') }}</span>@endif
-                        @if ($survey->trigger_on_ticket_close)<span class="badge badge-outline badge-xs">{{ __('nach Ticketabschluss') }}</span>@endif
+                        @if ($survey->anonymous)<x-status-badge tone="plain" size="xs" outline>{{ __('anonym') }}</x-status-badge>@endif
+                        @if ($survey->trigger_on_ticket_close)<x-status-badge tone="plain" size="xs" outline>{{ __('nach Ticketabschluss') }}</x-status-badge>@endif
                     </td>
                 </tr>
             @endforeach

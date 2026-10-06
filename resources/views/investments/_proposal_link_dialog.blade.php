@@ -11,7 +11,7 @@
     <p class="text-sm opacity-70">{{ __('investment.proposal.link_intro') }}</p>
 
     @if ($token)
-        <div class="alert alert-warning mt-4 items-start">
+        <div role="alert" class="alert alert-warning mt-4 items-start">
             <x-icon name="key" />
             <div class="min-w-0">
                 <div class="font-semibold">{{ __('investment.proposal.token_once') }}</div>
@@ -36,17 +36,17 @@
                 @csrf
                 @method('PATCH')
                 <input type="hidden" name="enabled" value="{{ $status['enabled'] ? 0 : 1 }}">
-                <button type="submit" class="btn btn-sm">{{ $status['enabled'] ? __('investment.proposal.pause') : __('investment.proposal.resume') }}</button>
+                <x-button type="submit" tone="plain">{{ $status['enabled'] ? __('investment.proposal.pause') : __('investment.proposal.resume') }}</x-button>
             </form>
             <form method="POST" action="{{ route('investments.proposals.revoke') }}" class="contents">
                 @csrf
                 @method('DELETE')
-                <button type="submit" class="btn btn-sm btn-error btn-outline">{{ __('investment.proposal.revoke') }}</button>
+                <x-button type="submit" tone="error" class="btn-outline">{{ __('investment.proposal.revoke') }}</x-button>
             </form>
         @endif
         <form method="POST" action="{{ route('investments.proposals.rotate') }}" class="contents">
             @csrf
-            <button type="submit" class="btn btn-sm btn-primary">{{ $status['issued'] ? __('investment.proposal.rotate') : __('investment.proposal.issue') }}</button>
+            <x-button type="submit">{{ $status['issued'] ? __('investment.proposal.rotate') : __('investment.proposal.issue') }}</x-button>
         </form>
     </x-slot:actions>
 </x-modal>

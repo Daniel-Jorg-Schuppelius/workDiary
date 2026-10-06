@@ -10,8 +10,7 @@
 
 @section('title', __('Hinweisgeber-Meldungen'))
 @section('nav-title', __('Hinweisgeber-Meldungen'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
     <x-index-page overflow="clip" :subtitle="__('Eingegangene Hinweisgeber-Meldungen einsehen und bearbeiten.')">

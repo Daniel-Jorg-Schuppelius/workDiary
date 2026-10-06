@@ -50,7 +50,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphMany};
  * @property string|null $discount_percent
  * @property string|null $vat_rate
  * @property string|null $bidder_comment
- * @property string|null $alternative_bid_status
+ * @property \ERechnungToolkit\Enums\GaebAlternativeBidStatus|null $alternative_bid_status
  * @property \CommonToolkit\ValueObjects\Money|null $total_price
  * @property \CommonToolkit\Enums\CurrencyCode $currency
  * @property bool $is_addendum
@@ -113,6 +113,8 @@ class BoqItem extends Model implements DocumentLine {
         'total_price' => MoneyCast::class . ':currency,4',
         'is_addendum' => 'boolean',
         'change_order_status' => \App\Enums\Gaeb\BoqChangeOrderStatus::class,
+        // GAEB-Standardwert (AlterBidStatus): der Import schreibt nur Fälle des Toolkit-Enums.
+        'alternative_bid_status' => \ERechnungToolkit\Enums\GaebAlternativeBidStatus::class,
         'position' => 'integer',
         'alternative_no' => 'integer',
         'sub_descriptions' => 'array',

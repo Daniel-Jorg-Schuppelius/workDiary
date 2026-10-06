@@ -61,6 +61,12 @@ class TimeEntryEditPolicy {
         return $now->lessThanOrEqualTo($deadline);
     }
 
+    /** Liegt der Tag des Eintrags für diese Person in einem abgeschlossenen Monat? */
+    public function isMonthClosedFor(User $user, TimeEntry $entry): bool {
+        return $entry->date !== null
+            && app(MonthClosureService::class)->isPeriodLockedForUser($user, CarbonImmutable::instance($entry->date));
+    }
+
     /**
      * @return array{locked: bool, reason: ?string}
      */
@@ -78,8 +84,7 @@ class TimeEntryEditPolicy {
         // Lohnzeilen (Reisezeit, Bereitschaft, Überstundenzuschlag) werden zur
         // Exportzeit gerechnet und stiegen mit.
         $owner = $entry->user;
-        if ($owner instanceof User && $entry->date !== null
-            && app(MonthClosureService::class)->isPeriodLockedForUser($owner, CarbonImmutable::instance($entry->date))) {
+        if ($owner instanceof User && $this->isMonthClosedFor($owner, $entry)) {
             return ['locked' => true, 'reason' => self::REASON_MONTH_CLOSED];
         }
 

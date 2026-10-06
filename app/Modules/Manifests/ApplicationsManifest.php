@@ -118,6 +118,9 @@ final class ApplicationsManifest extends Manifest {
             \App\Services\Retention\Contracts\RetentionPolicyProvider::class => [
                 \App\Services\Applications\Retention\ApplicationsRetentionPolicies::class,
             ],
+            \App\Services\Approval\Contracts\ApprovalInboxSubject::class => [
+                \App\Services\Applications\Approvals\NegotiationInboxSubject::class,
+            ],
         ];
     }
 }

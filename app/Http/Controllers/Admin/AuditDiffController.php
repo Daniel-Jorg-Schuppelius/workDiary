@@ -18,6 +18,7 @@ use App\Models\Schedule\ShiftType;
 use App\Models\Time\{TimeAccount, WorkSchedule};
 use App\Support\{MorphMap, Sqid};
 use CommonToolkit\Helper\Data\JsonHelper;
+use Illuminate\Database\Eloquent\{Builder, Collection as EloquentCollection};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -34,6 +35,9 @@ class AuditDiffController extends Controller {
     /** Anzeige-Maskierung zusätzlich zur Schreib-Maskierung des Auditable-Traits. */
     private const MASKED_PATTERNS = ['password', 'secret', 'token', 'tax_identification', 'social_security', 'recovery'];
 
+    /** Timeline-Einträge je Seite. */
+    public const PER_PAGE = 25;
+
     public function index(Request $request): View {
         $this->authorizeAdmin();
 
@@ -47,6 +51,8 @@ class AuditDiffController extends Controller {
         $diff = null;
         $selectedA = null;
         $selectedB = null;
+        $stateA = null;
+        $stateB = null;
 
         if ($type !== null) {
             $records = ($type['records'])();
@@ -58,22 +64,32 @@ class AuditDiffController extends Controller {
             }
 
             if ($record !== null) {
-                $logs = AuditLog::query()
-                    ->where('auditable_type', MorphMap::stableKey($type['class']))
-                    ->where('auditable_id', $record->id)
+                $logs = $this->timeline($type['class'], (int) $record->id)
                     ->with('user:id,name')
                     ->orderByDesc('id')
-                    ->limit(100)
-                    ->get();
+                    ->paginate(self::PER_PAGE)
+                    ->withQueryString();
 
                 $selectedA = (int) $request->input('a', 0);
                 $selectedB = (int) $request->input('b', 0);
-                if ($selectedA > 0 && $selectedB > 0) {
+                if ($selectedA > 0 && $selectedB > 0 && $selectedA > $selectedB) {
                     // A = älterer, B = jüngerer Stand — Reihenfolge normalisieren.
-                    if ($selectedA > $selectedB) {
-                        [$selectedA, $selectedB] = [$selectedB, $selectedA];
-                    }
-                    $diff = $this->diff($logs, $selectedA, $selectedB);
+                    [$selectedA, $selectedB] = [$selectedB, $selectedA];
+                }
+
+                // Per Id statt aus der Seite: A und B dürfen auf verschiedenen Seiten liegen.
+                $selectedIds = array_values(array_filter([$selectedA, $selectedB]));
+                if ($selectedIds !== []) {
+                    $states = $this->timeline($type['class'], (int) $record->id)->whereKey($selectedIds)->with('user:id,name')->get()->keyBy('id');
+                    $stateA = $states->get($selectedA);
+                    $stateB = $states->get($selectedB);
+                }
+                if ($stateA !== null && $stateB !== null) {
+                    $diff = $this->diff($this->timeline($type['class'], (int) $record->id)
+                        ->where('id', '>', $selectedA)
+                        ->where('id', '<=', $selectedB)
+                        ->orderBy('id')
+                        ->get());
                 }
             }
         }
@@ -88,22 +104,31 @@ class AuditDiffController extends Controller {
             'diff' => $diff,
             'selectedA' => $selectedA,
             'selectedB' => $selectedB,
+            'stateA' => $stateA,
+            'stateB' => $stateB,
         ]);
     }
 
     /**
-     * Feld-Diff zwischen zwei Audit-Ständen: alle updated-Events mit
-     * A < id ≤ B; je Feld ältestes `before` und jüngstes `after`.
+     * Audit-Einträge eines Datensatzes.
      *
-     * @param  \Illuminate\Database\Eloquent\Collection<int, AuditLog>  $logs
+     * @param  class-string  $class
+     * @return Builder<AuditLog>
+     */
+    private function timeline(string $class, int $recordId): Builder {
+        return AuditLog::query()
+            ->where('auditable_type', MorphMap::stableKey($class))
+            ->where('auditable_id', $recordId);
+    }
+
+    /**
+     * Feld-Diff über die Events zwischen zwei Audit-Ständen (A < id ≤ B,
+     * aufsteigend): je Feld ältestes `before` und jüngstes `after`.
+     *
+     * @param  EloquentCollection<int, AuditLog>  $window
      * @return list<array{field: string, before: string, after: string}>
      */
-    private function diff($logs, int $a, int $b): array {
-        $window = $logs
-            ->filter(fn (AuditLog $log): bool => $log->id > $a && $log->id <= $b)
-            ->sortBy('id')
-            ->values();
-
+    private function diff(EloquentCollection $window): array {
         /** @var array<string, array{before: mixed, after: mixed}> $fields */
         $fields = [];
         foreach ($window as $log) {

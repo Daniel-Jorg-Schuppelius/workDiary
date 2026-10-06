@@ -19,8 +19,7 @@
 
 <div class="flex flex-col gap-3">
     {{-- Taktung & Zusammenfassung --}}
-    <div class="rounded-box border border-base-300 bg-base-100 shadow-xs"
-         x-data="reveal('{{ $increment === null ? '' : ($isPreset ? (int) $increment : 'custom') }}')">
+    <x-card padding="p-0" x-data="reveal('{{ $increment === null ? '' : ($isPreset ? (int) $increment : 'custom') }}')">
         <header class="border-b border-base-300 px-4 py-3">
             <span class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('Taktung & Zusammenfassung') }}</span>
             <p class="mt-0.5 text-xs text-muted">
@@ -66,7 +65,7 @@
                 <x-button type="submit" tone="primary" size="sm" icon="save">{{ __('Taktung speichern') }}</x-button>
             </div>
         </form>
-    </div>
+    </x-card>
 
     {{-- Sätze: Projektstufe der Satzhierarchie (Kunde bzw. Org-Standard erben). --}}
     @php

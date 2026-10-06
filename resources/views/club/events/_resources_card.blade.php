@@ -16,7 +16,7 @@
             <li class="flex flex-wrap items-center gap-2">
                 <x-icon :name="$booking->resource?->kind->icon() ?? 'category'" class="text-muted" />
                 @if ($booking->resource)<a href="{{ route('club.resources.show', $booking->resource) }}" class="link link-hover font-medium">{{ $booking->resource->fullName() }}</a>@endif
-                @if ($booking->quantity > 1)<span class="badge badge-ghost badge-xs">× {{ $booking->quantity }}</span>@endif
+                @if ($booking->quantity > 1)<x-status-badge size="xs">× {{ $booking->quantity }}</x-status-badge>@endif
                 <span class="text-xs tabular-nums text-muted">{{ $booking->starts_at->orgTz()->format('H:i') }}–{{ $booking->ends_at->orgTz()->format('H:i') }}</span>
                 @if ($booking->member)<span class="text-xs text-muted">{{ $booking->member->fullName() }}</span>@endif
                 @if ($booking->isFlagged())<x-status-badge tone="warning" size="xs" icon="warning" :label="$booking->flag_reason ?? __('club.resources.label.replan')" />@endif

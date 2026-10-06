@@ -12,11 +12,11 @@ declare(strict_types=1);
 
 namespace App\Plugins\Support;
 
+use App\Enums\Integration\IntegrationInboxStatus;
 use App\Models\Customer\{Customer, ForeignCustomer};
 use App\Models\Integration\{ExternalReference, ExternalReferenceAlias, IntegrationInboxItem};
 use App\Models\Platform\{Organization, User};
 use App\Models\Project\Project;
-use App\Models\Time\TimeEntry;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\EmailHelper;
 use Illuminate\Support\Collection;
@@ -72,7 +72,7 @@ trait BooksTimeImportInboxGroups {
             ->where('organization_id', $organization->id)
             ->where('plugin_id', $this->pluginId())
             ->where('dedupe_key', $legacyDedupe)
-            ->where('status', IntegrationInboxItem::STATUS_OPEN)
+            ->where('status', IntegrationInboxStatus::Open)
             ->get();
         foreach ($items as $item) {
             $snapshot = (array) ($item->remote_snapshot ?? []);
@@ -105,24 +105,6 @@ trait BooksTimeImportInboxGroups {
             'display_subtitle' => trim((string) $entry->projectName) !== '' ? trim((string) $entry->projectName) : null,
             'occurred_at' => $entry->startedAt,
         ]);
-    }
-
-    /**
-     * Schließt offene Inbox-Fälle eines Eintrags, sobald er (auf welchem Weg
-     * auch immer) gebucht wurde — sonst bliebe z. B. ein Benutzer-Fall offen,
-     * obwohl der Folgelauf nach gepflegter Zuordnung längst gebucht hat.
-     */
-    protected function closePendingItems(Organization $organization, string $entryKey, TimeEntry $timeEntry): void {
-        $items = IntegrationInboxItem::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $organization->id)
-            ->where('plugin_id', $this->pluginId())
-            ->where('dedupe_key', $this->entryExternalType() . ':' . $entryKey)
-            ->where('status', IntegrationInboxItem::STATUS_OPEN)
-            ->get();
-        foreach ($items as $item) {
-            $this->resolveItem($item, IntegrationInboxItem::STATUS_RESOLVED_CREATED, $timeEntry);
-        }
     }
 
     /**
@@ -297,7 +279,7 @@ trait BooksTimeImportInboxGroups {
             $entry = $this->entryFromSnapshot((array) $item->remote_snapshot);
 
             if ($this->alreadyImported($organization, $entry->entryKey)) {
-                $this->resolveItem($item, IntegrationInboxItem::STATUS_RESOLVED_LINKED, null);
+                $this->resolveItem($item, IntegrationInboxStatus::ResolvedLinked, null);
                 $skipped++;
 
                 continue;
@@ -331,7 +313,7 @@ trait BooksTimeImportInboxGroups {
             }
 
             $timeEntry = $this->createTimeEntry($organization, $itemProject, $entry, $entryUserId, (bool) ($config['default_billable'] ?? true));
-            $this->resolveItem($item, IntegrationInboxItem::STATUS_RESOLVED_CREATED, $timeEntry);
+            $this->resolveItem($item, IntegrationInboxStatus::ResolvedCreated, $timeEntry);
             $created++;
         }
 
@@ -353,7 +335,7 @@ trait BooksTimeImportInboxGroups {
     public function dismissInboxGroup(Organization $organization, string $groupKey): int {
         $items = $this->openInboxItems($organization)->where('group_key', $groupKey);
         foreach ($items as $item) {
-            $this->resolveItem($item, IntegrationInboxItem::STATUS_DISMISSED, null);
+            $this->resolveItem($item, IntegrationInboxStatus::Dismissed, null);
         }
 
         return $items->count();

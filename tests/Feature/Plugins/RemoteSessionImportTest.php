@@ -16,13 +16,14 @@ use App\Enums\Asset\AssetClass;
 use App\Enums\Import\{ImportEntity, ImportRunState};
 use App\Jobs\ProcessCsvImportJob;
 use App\Models\Asset\Asset;
-use App\Models\Auth\RemotePendingSession;
 use App\Models\Customer\Customer;
 use App\Models\Integration\ImportRun;
 use App\Models\Platform\User;
 use App\Models\Time\TimeEntry;
-use App\Plugins\RemoteSupport\Providers\AnyDeskClient;
-use App\Plugins\RemoteSupport\RemoteDeviceRegistry;
+use App\Plugins\RemoteSupport\Api\AnyDeskClient;
+use App\Plugins\RemoteSupport\Enums\RemotePendingSessionStatus;
+use App\Plugins\RemoteSupport\Models\RemotePendingSession;
+use App\Plugins\RemoteSupport\Services\RemoteDeviceRegistry;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -108,7 +109,7 @@ class RemoteSessionImportTest extends TestCase {
             'organization_id' => $this->organization->id,
             'provider' => 'anydesk',
             'remote_id' => '999999999',
-            'status' => RemotePendingSession::STATUS_OPEN,
+            'status' => RemotePendingSessionStatus::Open->value,
         ]);
     }
 
@@ -145,5 +146,19 @@ class RemoteSessionImportTest extends TestCase {
         $run = ImportRun::query()->latest('id')->firstOrFail();
         $this->assertSame(ImportRunState::Failed, $run->state);
         $this->assertGreaterThan(0, $run->errors()->count());
+    }
+
+    /** k1-05: ohne Überlaufprüfung wurde aus dem 31.02. still der 3. März. */
+    public function test_impossible_date_is_a_format_error(): void {
+        $spec = app(\App\Plugins\RemoteSupport\Import\RemoteSessionSpec::class);
+
+        $row = $spec->normalize(['remote_id' => '362798056', 'start' => '31.02.2026, 09:42:09', 'end' => '28.05.2026']);
+        $this->assertNull($row['started_at']);
+        $this->assertNull($row['ended_at']);
+        $this->assertCount(2, $spec->validateRow($row, $this->organization));
+
+        $row = $spec->normalize(['remote_id' => '362798056', 'start' => '28.05.2026, 09:42', 'end' => '2026-05-28 10:44:08']);
+        $this->assertSame('2026-05-28 09:42:00', $row['started_at']?->format('Y-m-d H:i:s'));
+        $this->assertSame('2026-05-28 10:44:08', $row['ended_at']?->format('Y-m-d H:i:s'));
     }
 }

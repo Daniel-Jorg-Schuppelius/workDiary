@@ -49,10 +49,6 @@ class ImportColumnMapping extends Model {
         'entity' => ImportEntity::class,
     ];
 
-    public static function normalize(string $header): string {
-        return mb_strtolower(trim($header));
-    }
-
     /**
      * {normalisierte Kopfzelle => kanonische Spalte} der Organisation.
      *

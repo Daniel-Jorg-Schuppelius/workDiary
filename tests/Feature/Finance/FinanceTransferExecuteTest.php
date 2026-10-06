@@ -24,6 +24,7 @@ use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\Lexoffice\Services\LexofficeTarget;
 use App\Services\Finance\BillingTransferService;
 use App\Services\Finance\Targets\FileTarget;
+use GuzzleHttp\Exception\ConnectException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Psr\Http\Message\RequestInterface;
@@ -284,6 +285,96 @@ class FinanceTransferExecuteTest extends TestCase {
         $this->assertFalse((bool) $entry->fresh()->exported);
         $this->assertSame(0, ExternalReference::query()
             ->where('external_type', LexofficeTarget::EXT_TYPE_INVOICE)->count());
+    }
+
+    /**
+     * Konsolidierungs-Audit 2026-10, k2-01: ein Abbruch nach dem Senden ist
+     * „Ausgang unklar"; der nächste Lauf findet den Entwurf über den Marker in
+     * der Schlussbemerkung und legt keinen zweiten an.
+     */
+    public function test_execute_lexoffice_adopts_the_draft_after_an_unclear_outcome(): void {
+        $this->makeTimeEntry();
+        $transfer = $this->confirmedTransfer(TransferTarget::Lexoffice);
+        $marker = LexofficeTarget::MARKER_PREFIX . substr($transfer->payload_hash, 0, 16);
+
+        FakePluginHttp::fake([
+            'https://api.lexoffice.io/v1/contacts*' => FakePluginHttp::response(['content' => [['id' => 'contact-uuid-1']]], 200),
+            'https://api.lexoffice.io/v1/invoices*' => fn (RequestInterface $request) => throw new ConnectException('cURL error 28: Operation timed out', $request),
+        ]);
+
+        $this->post(route('finance.transfers.execute', $transfer))->assertSessionHasErrors('transfer');
+        $transfer = $transfer->fresh();
+        $this->assertSame(TransferStatus::Failed, $transfer->status);
+        $this->assertSame((string) __('lexoffice::finance.error.lexoffice_outcome_unclear'), $transfer->failure_reason);
+
+        $this->service->confirm($transfer, $this->accountant);
+
+        $fake = FakePluginHttp::fake([
+            'https://api.lexoffice.io/v1/voucherlist*' => FakePluginHttp::response(['content' => [
+                ['id' => 'lex-foreign', 'createdDate' => now()->toIso8601String()],
+                ['id' => 'lex-draft-9', 'createdDate' => now()->toIso8601String()],
+                ['id' => 'lex-old', 'createdDate' => now()->subMonth()->toIso8601String()],
+            ]], 200),
+            'https://api.lexoffice.io/v1/invoices/lex-foreign' => FakePluginHttp::response(['id' => 'lex-foreign', 'remark' => 'Vielen Dank.'], 200),
+            'https://api.lexoffice.io/v1/invoices/lex-draft-9' => FakePluginHttp::response(['id' => 'lex-draft-9', 'remark' => 'Übergabenachweis ' . $marker], 200),
+        ]);
+
+        $this->post(route('finance.transfers.execute', $transfer->fresh()))
+            ->assertSessionHasNoErrors()
+            ->assertRedirect();
+
+        $transfer = $transfer->fresh();
+        $this->assertSame(TransferStatus::Transferred, $transfer->status);
+        $reference = ExternalReference::query()->findOrFail($transfer->external_reference_id);
+        $this->assertSame('lex-draft-9', $reference->external_id);
+        $this->assertTrue((bool) data_get($reference->payload, 'adopted_via_reconciliation'));
+        $this->assertSame($marker, data_get($reference->payload, 'marker'));
+
+        $fake->assertNotSent(fn (RequestInterface $request): bool => $request->getMethod() === 'POST');
+        $fake->assertNotSent(fn (RequestInterface $request): bool => str_contains((string) $request->getUri(), 'lex-old'));
+    }
+
+    public function test_execute_lexoffice_writes_the_source_marker_into_the_remark(): void {
+        $this->makeTimeEntry();
+        $transfer = $this->confirmedTransfer(TransferTarget::Lexoffice);
+        $transfer->forceFill(['closing_text' => 'Zahlbar binnen 14 Tagen.'])->save();
+        $marker = LexofficeTarget::MARKER_PREFIX . substr($transfer->payload_hash, 0, 16);
+
+        $fake = FakePluginHttp::fake([
+            'https://api.lexoffice.io/v1/contacts*' => FakePluginHttp::response(['content' => [['id' => 'contact-uuid-1']]], 200),
+            'https://api.lexoffice.io/v1/invoices*' => FakePluginHttp::response(['id' => 'lex-invoice-1'], 201),
+        ]);
+
+        $this->post(route('finance.transfers.execute', $transfer))->assertSessionHasNoErrors();
+
+        $fake->assertSent(function (RequestInterface $request) use ($marker): bool {
+            if ($request->getMethod() !== 'POST') {
+                return false;
+            }
+            $remark = (string) (json_decode((string) $request->getBody(), true)['remark'] ?? '');
+
+            return str_starts_with($remark, 'Zahlbar binnen 14 Tagen.') && str_contains($remark, $marker);
+        });
+        // Erster Versuch: kein Marker-Scan.
+        $fake->assertNotSent(fn (RequestInterface $request): bool => str_contains((string) $request->getUri(), '/voucherlist'));
+    }
+
+    public function test_lexoffice_target_returns_the_existing_reference_instead_of_a_second_draft(): void {
+        $this->makeTimeEntry();
+        $transfer = $this->confirmedTransfer(TransferTarget::Lexoffice);
+
+        $fake = FakePluginHttp::fake([
+            'https://api.lexoffice.io/v1/contacts*' => FakePluginHttp::response(['content' => [['id' => 'contact-uuid-1']]], 200),
+            'https://api.lexoffice.io/v1/invoices*' => FakePluginHttp::response(['id' => 'lex-invoice-1'], 201),
+        ]);
+
+        $target = app(LexofficeTarget::class);
+        $first = $target->transfer($transfer)->externalReference;
+        $second = $target->transfer($transfer->fresh())->externalReference;
+
+        $this->assertNotNull($first);
+        $this->assertSame($first->id, $second?->id);
+        $this->assertCount(1, array_filter($fake->recorded(), static fn (array $entry): bool => $entry['request']->getMethod() === 'POST'));
     }
 
     public function test_execute_lexoffice_unconfigured_marks_failed_without_http(): void {

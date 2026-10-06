@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\Etsy\Models;
 
 use App\Casts\MoneyCast;
+use App\Enums\Integration\MarketplaceInboxStatus;
 use App\Models\Concerns\BelongsToOrganization;
 use App\Models\Customer\Customer;
 use CommonToolkit\Enums\CurrencyCode;
@@ -46,15 +47,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property \Illuminate\Support\Carbon|null $ordered_at
  * @property \Illuminate\Support\Carbon|null $etsy_modified_at
  * @property int|null $customer_id
- * @property string $inbox_status
+ * @property MarketplaceInboxStatus $inbox_status
  * @property \Illuminate\Support\Carbon|null $shipped_pushed_at
  */
 class EtsyReceipt extends Model {
     use BelongsToOrganization;
-
-    public const INBOX_OPEN = 'open';
-
-    public const INBOX_LINKED = 'linked';
 
     protected $fillable = [
         'organization_id',
@@ -84,6 +81,7 @@ class EtsyReceipt extends Model {
         'was_paid' => 'boolean',
         'was_shipped' => 'boolean',
         'currency' => CurrencyCode::class,
+        'inbox_status' => MarketplaceInboxStatus::class,
         'total_gross' => MoneyCast::class . ':currency,2',
         'total_shipping' => MoneyCast::class . ':currency,2',
         'total_tax' => MoneyCast::class . ':currency,2',

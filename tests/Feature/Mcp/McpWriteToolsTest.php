@@ -10,7 +10,9 @@
 
 namespace Tests\Feature\Mcp;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Enums\Project\ProjectStatus;
+use App\Enums\Sales\QuoteStatus;
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\Audit\AuditLog;
 use App\Models\Customer\Customer;
@@ -76,7 +78,7 @@ class McpWriteToolsTest extends TestCase {
         ])->assertOk()->assertHasNoErrors();
 
         $quote = Quote::query()->with('items')->firstOrFail();
-        $this->assertSame('draft', $quote->status);
+        $this->assertSame(QuoteStatus::Draft, $quote->status);
         $this->assertCount(2, $quote->items);
         $this->assertSame('629.00', $quote->subtotal?->getAmount());
         $this->assertTrue($this->audited($quote));
@@ -92,7 +94,7 @@ class McpWriteToolsTest extends TestCase {
 
         WorkDiaryMcpServer::tool(CreateInvoiceDraftTool::class, ['source' => 'time', 'customer' => $this->customer->sqid])->assertOk()->assertHasNoErrors();
         $fromTime = Invoice::query()->firstOrFail();
-        $this->assertSame(Invoice::STATUS_DRAFT, $fromTime->status);
+        $this->assertSame(InvoiceStatus::Draft, $fromTime->status);
         $this->assertSame('180.00', $fromTime->subtotal?->getAmount());
         $this->assertTrue($this->audited($fromTime));
 
@@ -104,11 +106,11 @@ class McpWriteToolsTest extends TestCase {
         $this->mcpAs($this->admin);
 
         WorkDiaryMcpServer::tool(CreateInvoiceDraftTool::class, ['source' => 'quote', 'quote' => $quote->sqid])->assertOk()->assertHasNoErrors();
-        $this->assertSame(2, Invoice::query()->where('status', Invoice::STATUS_DRAFT)->count());
+        $this->assertSame(2, Invoice::query()->where('status', InvoiceStatus::Draft)->count());
     }
 
     public function test_dunning_proposal_lists_ripe_invoices(): void {
-        Invoice::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $this->customer->id, 'status' => Invoice::STATUS_ISSUED, 'number' => 'RE-2026-0099', 'issued_on' => now()->subDays(60), 'due_on' => now()->subDays(30)]);
+        Invoice::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $this->customer->id, 'status' => InvoiceStatus::Issued, 'number' => 'RE-2026-0099', 'issued_on' => now()->subDays(60), 'due_on' => now()->subDays(30)]);
         $this->mcpAs($this->admin, ['mcp:read']);
 
         WorkDiaryMcpServer::tool(DunningProposalTool::class, [])->assertOk()->assertSee('RE-2026-0099')->assertSee('next_level');
@@ -139,5 +141,17 @@ class McpWriteToolsTest extends TestCase {
 
         WorkDiaryMcpServer::tool(CreateCustomerTool::class, ['name' => 'Korn doppelt', 'vat_id' => 'DE123456789'])->assertOk()->assertSee('"created":false');
         $this->assertSame(0, Customer::query()->where('name', 'Korn doppelt')->count());
+    }
+
+    /** k1-10: `size:2` ließ „xx“ und „UK“ durch und speicherte Kleinschreibung. */
+    public function test_customer_country_is_an_iso_code_stored_in_upper_case(): void {
+        $this->mcpAs($this->admin);
+
+        WorkDiaryMcpServer::tool(CreateCustomerTool::class, ['name' => 'Kein Land', 'country' => 'xx'])->assertHasErrors();
+        WorkDiaryMcpServer::tool(CreateCustomerTool::class, ['name' => 'Britisch', 'country' => 'UK'])->assertHasErrors();
+        $this->assertSame(0, Customer::query()->whereIn('name', ['Kein Land', 'Britisch'])->count());
+
+        WorkDiaryMcpServer::tool(CreateCustomerTool::class, ['name' => 'Klein geschrieben', 'country' => 'at'])->assertOk()->assertHasNoErrors();
+        $this->assertSame('AT', Customer::query()->where('name', 'Klein geschrieben')->firstOrFail()->country);
     }
 }

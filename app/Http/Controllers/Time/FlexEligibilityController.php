@@ -14,6 +14,7 @@ use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
 use App\Models\Time\FlexEligibility;
+use App\Support\SortableQuery;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -27,18 +28,28 @@ use Illuminate\View\View;
 class FlexEligibilityController extends Controller {
     use ResolvesCurrentOrganization;
 
-    public function index(User $user): View {
+    public function index(Request $request, User $user): View {
         Gate::authorize('viewAny', [FlexEligibility::class, $user]);
         $this->ensureSameOrg($user);
 
-        $periods = FlexEligibility::query()
-            ->where('user_id', $user->id)
+        $query = FlexEligibility::query()->where('user_id', $user->id);
+        [$sort, $dir] = SortableQuery::resolve($request, ['valid_from', 'valid_to', 'note'], 'valid_from', 'desc');
+        if ($sort === 'valid_to') {
+            // Offene Perioden zählen als „bis auf Weiteres" und stehen hinter jedem Enddatum.
+            $query->orderByRaw($dir === 'asc' ? 'valid_to IS NULL asc' : 'valid_to IS NULL desc');
+        }
+        $periods = $query
+            ->orderBy($sort, $dir)
             ->orderByDesc('valid_from')
-            ->get();
+            ->orderBy('id')
+            ->paginate(25)
+            ->withQueryString();
 
         return view('flex-eligibilities.index', [
             'member' => $user,
             'periods' => $periods,
+            'sort' => $sort,
+            'dir' => $dir,
             'isCurrentlyEligible' => $user->isFlexEligible(),
         ]);
     }
@@ -68,7 +79,7 @@ class FlexEligibilityController extends Controller {
             ]
         );
 
-        return redirect()->route('users.flex-eligibility.index', $user)
+        return redirect()->toList('users.flex-eligibility.index', [$user])
             ->with('success', __('flex.eligibility.flash.saved'));
     }
 
@@ -84,7 +95,7 @@ class FlexEligibilityController extends Controller {
 
         $eligibility->update($data);
 
-        return redirect()->route('users.flex-eligibility.index', $user)
+        return redirect()->toList('users.flex-eligibility.index', [$user])
             ->with('success', __('flex.eligibility.flash.saved'));
     }
 
@@ -95,7 +106,7 @@ class FlexEligibilityController extends Controller {
 
         $eligibility->delete();
 
-        return redirect()->route('users.flex-eligibility.index', $user)
+        return redirect()->toList('users.flex-eligibility.index', [$user])
             ->with('success', __('flex.eligibility.flash.deleted'));
     }
 

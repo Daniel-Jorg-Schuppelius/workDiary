@@ -14,6 +14,7 @@ namespace App\Models\Contract;
 
 use App\Enums\Contract\SignatureLinkPurpose;
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
+use App\Models\Concerns\HasAccessToken;
 use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -40,6 +41,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class ContractSignatureLink extends Model {
     use BelongsToOrganization;
+    use HasAccessToken;
     use HasSqid;
 
     protected $fillable = [

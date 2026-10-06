@@ -10,6 +10,7 @@
 
 namespace App\Models\Platform;
 
+use App\Enums\Plugin\PluginHealthStatus;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -23,11 +24,11 @@ use Illuminate\Support\Carbon;
  * @property string|null $installed_version
  * @property Carbon|null $installed_at
  * @property Carbon|null $last_health_check_at
- * @property string|null $last_health_status
+ * @property PluginHealthStatus|null $last_health_status
  * @property string|null $last_health_message
  * @property int|null $last_health_latency_ms
  * @property string|null $last_health_code
- * @property string|null $last_announced_status
+ * @property PluginHealthStatus|null $last_announced_status
  * @property int $health_streak
  * @property Carbon|null $last_ok_at
  * @property int $failure_count
@@ -63,6 +64,8 @@ class PluginState extends Model {
         'organization_id' => 'integer',
         'installed_at' => 'datetime',
         'last_health_check_at' => 'datetime',
+        'last_health_status' => PluginHealthStatus::class,
+        'last_announced_status' => PluginHealthStatus::class,
         'last_ok_at' => 'datetime',
         'failure_count' => 'integer',
         'failure_window_started_at' => 'datetime',

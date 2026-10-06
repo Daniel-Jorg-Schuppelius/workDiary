@@ -10,13 +10,15 @@
 
 namespace App\Plugins\OpenProject\Services;
 
+use App\Enums\Integration\IntegrationInboxStatus;
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use App\Models\Platform\Organization;
 use App\Models\Project\{Project, Task};
 use App\Models\Time\TimeEntry;
+use App\Plugins\OpenProject\Api\OpenProjectApiClient;
 use App\Plugins\OpenProject\{OpenProjectConfig, OpenProjectPlugin};
-use App\Plugins\OpenProject\Sources\{OpenProjectApiClient, OpenProjectEntry};
+use App\Plugins\OpenProject\Sources\OpenProjectEntry;
 use App\Plugins\Support\{PersistsTimeImportInbox, ReconcilesRemoteDeletions, RemoteSyncWindow, RemoteTimeFingerprint, TimeWritebackObserver};
 use App\Support\MorphMap;
 use Carbon\CarbonImmutable;
@@ -220,7 +222,7 @@ class OpenProjectImportService {
                 'case_type' => IntegrationInboxItem::CASE_CONFLICT,
                 'referenceable_type' => $timeEntry->getMorphClass(),
                 'referenceable_id' => $timeEntry->getKey(),
-                'status' => IntegrationInboxItem::STATUS_OPEN,
+                'status' => IntegrationInboxStatus::Open,
                 'remote_snapshot' => [
                     'reason' => 'remote_changed_after_export',
                     // Die Zeit hängt an einem Beleg: der Fremdstand darf hier
@@ -269,6 +271,9 @@ class OpenProjectImportService {
             ],
             'synced_at' => now(),
         ]);
+
+        // Wie MatchingTimeImportService: ein Fall, der nach gepflegter Zuordnung im Folgelauf gebucht wird, ist erledigt.
+        $this->closePendingItems($organization, $entry->entryKey, $timeEntry);
 
         return $timeEntry;
     }
@@ -366,7 +371,7 @@ class OpenProjectImportService {
             $entry = $this->entryFromSnapshot($snap);
 
             if ($this->alreadyImported($organization, $entry->entryKey)) {
-                $this->resolveItem($item, IntegrationInboxItem::STATUS_RESOLVED_LINKED, null);
+                $this->resolveItem($item, IntegrationInboxStatus::ResolvedLinked, null);
                 $skipped++;
 
                 continue;
@@ -376,7 +381,7 @@ class OpenProjectImportService {
             $userId = $this->structure->resolveUserId($organization, $snap['user_external_id'] ?? null) ?? $fallbackUserId;
 
             $timeEntry = $this->createTimeEntry($organization, $project, $task, $entry, $userId, (bool) $config['default_billable']);
-            $this->resolveItem($item, IntegrationInboxItem::STATUS_RESOLVED_CREATED, $timeEntry);
+            $this->resolveItem($item, IntegrationInboxStatus::ResolvedCreated, $timeEntry);
             $created++;
         }
 
@@ -387,7 +392,7 @@ class OpenProjectImportService {
     public function dismissInboxGroup(Organization $organization, string $groupKey): int {
         $items = $this->openInboxItems($organization)->where('group_key', $groupKey);
         foreach ($items as $item) {
-            $this->resolveItem($item, IntegrationInboxItem::STATUS_DISMISSED, null);
+            $this->resolveItem($item, IntegrationInboxStatus::Dismissed, null);
         }
 
         return $items->count();

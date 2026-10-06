@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Rental;
 
-use App\Enums\Rental\RentalReservationKind;
+use App\Enums\Rental\{RentalReservationKind, RentalReservationStatus};
 use App\Exceptions\{AssetNotUsableException, RentalConflictException};
 use App\Models\Asset\Asset;
 use App\Models\Rental\{RentalProfile, RentalReservation};
@@ -136,7 +136,7 @@ class RentalAvailabilityService {
             'rental_case_id' => $rentalCaseId,
             'asset_id' => $asset->id,
             'kind' => $kind->value,
-            'status' => 'active',
+            'status' => RentalReservationStatus::Active,
             'starts_at' => $from,
             'ends_at' => $to,
             'note' => $note,

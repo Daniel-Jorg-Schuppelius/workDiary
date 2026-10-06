@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Invoicing;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\{Organization, User};
@@ -58,7 +59,7 @@ final class DownPaymentSettlementTest extends TestCase {
             'organization_id' => $this->org->id,
             'customer_id' => $this->customer->id,
             'number' => 'R2026-' . str_pad((string) random_int(1, 9999), 4, '0', STR_PAD_LEFT),
-            'status' => Invoice::STATUS_DRAFT,
+            'status' => InvoiceStatus::Draft,
             'type' => Invoice::TYPE_INVOICE,
             // Produktivpfade setzen currency immer (Generator); ohne explizite
             // Angabe greift der DB-Default erst nach einem Reload.
@@ -83,7 +84,7 @@ final class DownPaymentSettlementTest extends TestCase {
     private function issuedDownPayment(string $net): Invoice {
         $dp = $this->generator()->downPaymentFor($this->customer, null, 'Abschlag Projektstart', $net);
         // Ohne Partei-Snapshot bleibt der Fixture-Beleg schreibbar (Guard-Anker).
-        $dp->update(['status' => Invoice::STATUS_ISSUED, 'issued_on' => now()]);
+        $dp->update(['status' => InvoiceStatus::Issued, 'issued_on' => now()]);
 
         return $dp->fresh();
     }
@@ -92,7 +93,7 @@ final class DownPaymentSettlementTest extends TestCase {
         $dp = $this->generator()->downPaymentFor($this->customer, null, 'Abschlag Projektstart', '300.00');
 
         $this->assertSame(Invoice::TYPE_DOWN_PAYMENT, $dp->type);
-        $this->assertSame(Invoice::STATUS_DRAFT, $dp->status);
+        $this->assertSame(InvoiceStatus::Draft, $dp->status);
         $this->assertStringStartsWith('R', $dp->number);
         $this->assertCount(1, $dp->items);
         $this->assertSame('300.00', $dp->subtotal?->getAmount());
@@ -139,7 +140,7 @@ final class DownPaymentSettlementTest extends TestCase {
 
         // Storno der Schlussrechnung öffnet den Abschlag wieder (Abfrage-
         // Semantik statt Mutation der Abschlagsrechnung).
-        $final->update(['status' => Invoice::STATUS_CANCELLED]);
+        $final->update(['status' => InvoiceStatus::Cancelled]);
         $this->assertSame([$dp->id], $this->generator()->openDownPaymentsFor($this->customer, null, 'EUR')->pluck('id')->all());
     }
 
@@ -170,7 +171,7 @@ final class DownPaymentSettlementTest extends TestCase {
         $dp->load('items');
         $dp->recalculate();
         $dp->save();
-        $dp->update(['status' => Invoice::STATUS_ISSUED, 'issued_on' => now()]);
+        $dp->update(['status' => InvoiceStatus::Issued, 'issued_on' => now()]);
 
         $final = $this->generator()->finalFromDraft($this->draftInvoice());
 

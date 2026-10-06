@@ -34,9 +34,4 @@ final class Normalize {
 
         return StringHelper::removeWhitespace(mb_strtolower(is_scalar($value) ? (string) $value : ''));
     }
-
-    /** Ähnlichkeit zweier Strings als 0..1-Score (Toolkit, B20/v1.26). */
-    public static function similarity(string $a, string $b): float {
-        return StringHelper::similarity($a, $b);
-    }
 }

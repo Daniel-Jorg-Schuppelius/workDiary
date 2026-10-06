@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\SevenIo\Api;
 
 use APIToolkit\API\Authentication\ApiKeyAuthentication;
-use App\Plugins\SevenIo\{SevenIoConfig, SevenIoPlugin};
+use App\Plugins\SevenIo\{SevenIoPlugin};
 use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
 use App\Plugins\Support\Sms\SmsSendResult;
 use Illuminate\Http\Client\Response;
@@ -98,9 +98,5 @@ class SevenIoSmsClient {
         }
 
         return $this->api;
-    }
-
-    public static function forOrganization(?int $organizationId = null): self {
-        return new self(SevenIoConfig::resolve($organizationId));
     }
 }

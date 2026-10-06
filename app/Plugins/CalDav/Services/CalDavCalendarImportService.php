@@ -17,7 +17,7 @@ use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use App\Plugins\CalDav\CalDavPlugin;
 use App\Plugins\CalDav\Contracts\CalDavGatewayFactory;
 use App\Plugins\CalDav\Models\CalDavConnection;
-use App\Plugins\Support\Calendar\{CalendarSeriesStager, RemoteCalendarPublishService};
+use App\Plugins\Support\Calendar\{CalendarImportStager, RemoteCalendarPublishService};
 use CommonToolkit\Entities\ICalendar\{Document, Event as CalendarEvent};
 use CommonToolkit\Parsers\ICalendarParser;
 use DateTimeImmutable;
@@ -33,15 +33,12 @@ use Throwable;
  * rollierendes Zeitfenster mit ETag-Vergleich. Die Haltung bleibt die des
  * Microsoft- und Google-Zwillings: aus dem Kalender entstehen NUR
  * Integrations-Inbox-Fälle, nie blind angelegte Termine. Serien kommen als
- * Einzelvorkommen im Importfenster ({@see CalendarSeriesStager}, MVP-977).
+ * Einzelvorkommen im Importfenster ({@see CalendarImportStager}, MVP-977).
  */
 class CalDavCalendarImportService {
-    /** Echo-Toleranz zwischen unserem PUT und dem LAST-MODIFIED des Servers. */
-    private const ECHO_TOLERANCE_SECONDS = 120;
-
     public function __construct(
         private readonly CalDavGatewayFactory $gateways,
-        private readonly CalendarSeriesStager $series,
+        private readonly CalendarImportStager $series,
     ) {}
 
     /** @return array{proposals: int, conflicts: int, deleted: int} */
@@ -119,7 +116,7 @@ class CalDavCalendarImportService {
                 CalDavPlugin::ID,
                 $parsed['series']['uid'],
                 (string) $connection->name,
-                $this->occurrences($parsed['series']['group'], $windowStart, $windowEnd),
+                $this->occurrences($parsed['series']['group'], $windowStart, $windowEnd, $objectName),
             );
 
             return;
@@ -131,9 +128,7 @@ class CalDavCalendarImportService {
             $this->rememberEtag($reference, $change->etag);
 
             $modified = $parsed['last_modified'];
-            $syncedAt = $reference->synced_at;
-            if ($modified === null || $syncedAt === null
-                || $modified->lessThanOrEqualTo($syncedAt->copy()->addSeconds(self::ECHO_TOLERANCE_SECONDS))) {
+            if ($modified === null || CalendarImportStager::isOwnEcho($modified, $reference->synced_at)) {
                 return; // unser eigenes PUT
             }
 
@@ -171,7 +166,10 @@ class CalDavCalendarImportService {
     private function handleDeleted(CalDavConnection $connection, string $objectName, Collection $references, array &$counters): void {
         $reference = $references->get($objectName);
         if (! $reference instanceof ExternalReference) {
-            return; // fremdes Objekt: geht uns nichts an
+            // Fremdes Objekt: kein Handlungsfall, aber seine offenen Vorschläge gibt es nicht mehr.
+            $this->series->dismissRemote($connection->organization_id, CalDavPlugin::ID, $objectName);
+
+            return;
         }
 
         if ($this->stage(
@@ -241,10 +239,10 @@ class CalDavCalendarImportService {
      * @param  list<CalendarEvent>  $group
      * @return list<array{key: string, title: string, snapshot: array<string, mixed>, mapped: array<string, mixed>}>
      */
-    private function occurrences(array $group, DateTimeImmutable $from, DateTimeImmutable $until): array {
+    private function occurrences(array $group, DateTimeImmutable $from, DateTimeImmutable $until, string $objectName): array {
         $zone = new DateTimeZone(date_default_timezone_get());
         try {
-            $instances = Document::expand($group, $from, $until, $zone, CalendarSeriesStager::MAX_OCCURRENCES);
+            $instances = Document::expand($group, $from, $until, $zone, CalendarImportStager::MAX_OCCURRENCES);
         } catch (Throwable) {
             return [];
         }
@@ -255,11 +253,12 @@ class CalDavCalendarImportService {
                 continue;
             }
             $mapped = $this->map($instance->getEvent(), $instance->getStart(), $instance->getEnd());
-            $snapshot = $mapped['snapshot'] + ['series_uid' => $group[0]->getUid(), 'series_title' => $mapped['snapshot']['subject']];
+            // Der Schlüssel trägt die UID; gelöscht meldet der Server nur den Objektnamen.
+            $snapshot = $mapped['snapshot'] + ['series_uid' => $group[0]->getUid(), 'series_title' => $mapped['snapshot']['subject'], 'object_name' => $objectName];
             unset($snapshot['recurrence']);
             unset($mapped['attributes']['recurrence_rule']);
             $out[] = [
-                'key' => CalendarSeriesStager::key($group[0]->getUid(), $instance->getRecurrenceStart()),
+                'key' => CalendarImportStager::key($group[0]->getUid(), $instance->getRecurrenceStart()),
                 'title' => (string) $snapshot['subject'],
                 'snapshot' => $snapshot,
                 'mapped' => $mapped['attributes'],
@@ -325,35 +324,7 @@ class CalDavCalendarImportService {
      * @param  array<string, mixed>|null  $mapped
      * @return bool true = NEUER Fall
      */
-    private function stage(
-        CalDavConnection $connection,
-        string $dedupeKey,
-        string $caseType,
-        array $snapshot,
-        string $title,
-        ?ExternalReference $reference,
-        ?array $mapped = null,
-    ): bool {
-        $item = IntegrationInboxItem::query()->firstOrCreate([
-            'organization_id' => $connection->organization_id,
-            'plugin_id' => CalDavPlugin::ID,
-            'dedupe_key' => $dedupeKey,
-        ], [
-            'source' => CalDavPlugin::ID,
-            'target_type' => (new Event)->getMorphClass(),
-            'external_type' => RemoteCalendarPublishService::EXTERNAL_TYPE,
-            'external_id' => (string) ($snapshot['remote_id'] ?? ''),
-            'case_type' => $caseType,
-            'status' => IntegrationInboxItem::STATUS_OPEN,
-            'referenceable_type' => $reference?->referenceable_type,
-            'referenceable_id' => $reference?->referenceable_id,
-            'remote_snapshot' => $snapshot,
-            'mapped_snapshot' => $mapped,
-            'display_title' => $title !== '' ? $title : '—',
-            'display_subtitle' => (string) $connection->name,
-            'occurred_at' => now(),
-        ]);
-
-        return $item->wasRecentlyCreated;
+    private function stage(CalDavConnection $connection, string $dedupeKey, string $caseType, array $snapshot, string $title, ?ExternalReference $reference, ?array $mapped = null): bool {
+        return $this->series->stageCase($connection->organization_id, CalDavPlugin::ID, (string) $connection->name, $dedupeKey, $caseType, $snapshot, $title, $reference, $mapped);
     }
 }

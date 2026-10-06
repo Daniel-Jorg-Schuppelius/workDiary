@@ -94,6 +94,7 @@
                     </td>
                 </tr>
             @empty
+                {{-- raw-markup-ok: Standalone-Seite mit eigenem Stylesheet, ohne App-CSS --}}
                 <tr>
                     <td colspan="8" class="muted">{{ __('isms.empty_requirements') }}</td>
                 </tr>

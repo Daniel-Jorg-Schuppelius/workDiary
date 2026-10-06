@@ -11,8 +11,7 @@
 
 @section('title', __('Korrekturen-Inbox'))
 @section('nav-title', __('Korrekturen-Inbox'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
     <x-index-page overflow="clip" :subtitle="__('Offene und entschiedene Korrekturanträge der Organisation.')">
@@ -53,6 +52,9 @@
                         <td>{{ $r->requestedBy?->name }}</td>
                         <td>
                             <x-status-badge :tone="$r->status->tone()" size="sm">{{ $r->status->label() }}</x-status-badge>
+                            @if ($r->self_applied)
+                                <x-status-badge tone="warning" size="sm">{{ __('selbst nachgetragen') }}</x-status-badge>
+                            @endif
                         </td>
                         <td class="text-right tabular-nums">{{ $r->items->count() }}</td>
                         <td class="text-right">

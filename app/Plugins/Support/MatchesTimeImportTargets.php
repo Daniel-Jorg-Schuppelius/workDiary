@@ -17,7 +17,7 @@ use App\Models\Integration\{ExternalReference, ExternalReferenceAlias};
 use App\Models\Platform\{Organization, User};
 use App\Models\Project\Project;
 use App\Services\Integration\ProjectKeywordMatcher;
-use CommonToolkit\Helper\Data\EmailHelper;
+use CommonToolkit\Helper\Data\{EmailHelper, StringHelper};
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -151,7 +151,7 @@ trait MatchesTimeImportTargets {
         $best = null;
         $bestScore = 0.0;
         foreach (Customer::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->whereNull('archived_at')->get() as $customer) {
-            $score = max($this->similarity($needle, $this->normalize($customer->name)), $this->similarity($needle, $this->normalize($customer->company)));
+            $score = max(StringHelper::similarity($needle, $this->normalize($customer->name)), StringHelper::similarity($needle, $this->normalize($customer->company)));
             if ($score > $bestScore) {
                 $bestScore = $score;
                 $best = $customer;
@@ -181,7 +181,7 @@ trait MatchesTimeImportTargets {
         $best = null;
         $bestScore = 0.0;
         foreach (ForeignCustomer::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->whereNull('archived_at')->get() as $foreign) {
-            $score = max($this->similarity($needle, $this->normalize($foreign->name)), $this->similarity($needle, $this->normalize($foreign->company)));
+            $score = max(StringHelper::similarity($needle, $this->normalize($foreign->name)), StringHelper::similarity($needle, $this->normalize($foreign->company)));
             if ($score > $bestScore) {
                 $bestScore = $score;
                 $best = $foreign;
@@ -207,7 +207,7 @@ trait MatchesTimeImportTargets {
         $best = null;
         $bestScore = 0.0;
         foreach ($query->get() as $project) {
-            $score = $this->similarity($needle, $this->normalize($project->name));
+            $score = StringHelper::similarity($needle, $this->normalize($project->name));
             if ($score > $bestScore) {
                 $bestScore = $score;
                 $best = $project;
@@ -327,10 +327,5 @@ trait MatchesTimeImportTargets {
 
     protected function normalize(?string $value): string {
         return mb_strtolower(\CommonToolkit\Helper\Data\StringHelper::normalizeWhitespace($value));
-    }
-
-    protected function similarity(string $a, string $b): float {
-        // Toolkit (Vollscan 2026-08-23, B20, common-toolkit v1.26).
-        return \CommonToolkit\Helper\Data\StringHelper::similarity($a, $b);
     }
 }

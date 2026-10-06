@@ -10,9 +10,11 @@
 
 namespace Tests\Feature\Plugins\OrgaMax;
 
+use App\Enums\Integration\IntegrationInboxStatus;
 use App\Models\Customer\Customer;
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem};
 use App\Models\Platform\User;
+use App\Plugins\OrgaMax\Enums\{OrgaMaxConnectionStatus, OrgaMaxInvoiceStatus};
 use App\Plugins\OrgaMax\Models\{OrgaMaxConnection, OrgaMaxInvoice};
 use App\Plugins\OrgaMax\OrgaMaxPlugin;
 use App\Plugins\OrgaMax\Services\{OrgaMaxInvoiceProjector, OrgaMaxSyncService};
@@ -49,7 +51,7 @@ class OrgaMaxSyncTest extends TestCase {
             'ownership_id' => 'own-1',
             'bearer_token' => 'token',
             'token_expires_at' => Carbon::now()->addHour(),
-            'status' => OrgaMaxConnection::STATUS_ACTIVE,
+            'status' => OrgaMaxConnectionStatus::Active,
             'capabilities' => [
                 'customers' => ['enabled' => true, 'leader' => 'orgamax'],
                 'billing' => ['enabled' => true, 'leader' => 'orgamax'],
@@ -88,7 +90,7 @@ class OrgaMaxSyncTest extends TestCase {
         // Unbekannter Datensatz → Inbox statt Schattenstammdaten.
         $this->assertSame(1, IntegrationInboxItem::query()
             ->where('plugin_id', OrgaMaxPlugin::ID)
-            ->where('status', IntegrationInboxItem::STATUS_OPEN)
+            ->where('status', IntegrationInboxStatus::Open)
             ->count());
         $this->assertSame(1, Customer::query()->count());
     }
@@ -155,7 +157,7 @@ class OrgaMaxSyncTest extends TestCase {
 
         $mirror = OrgaMaxInvoice::query()->where('external_id', '502')->firstOrFail();
         $this->assertSame('RE-2026-002', $mirror->invoice_number);
-        $this->assertSame('paid', $mirror->invoice_status);
+        $this->assertSame(OrgaMaxInvoiceStatus::Paid, $mirror->invoice_status, 'Der Spiegel trägt das Plugin-Enum mit dem SDK-Wert.');
         $this->assertSame($customer->id, $mirror->customer_id, 'Der bestätigte Kunde wird verknüpft.');
         $this->assertSame(1, OrgaMaxInvoice::query()->open()->count(), 'Nur der offene Beleg zählt als offen.');
 
@@ -170,6 +172,26 @@ class OrgaMaxSyncTest extends TestCase {
         // Zweiter Lauf aktualisiert, statt zu duplizieren.
         app(OrgaMaxSyncService::class)->run($this->connection->refresh());
         $this->assertSame(2, OrgaMaxInvoice::query()->count());
+    }
+
+    public function test_unknown_sdk_state_is_projected_as_unknown(): void {
+        // Das SDK setzt `state` bei einem Wert, den es nicht kennt, auf null
+        // (nullable Property); der Spiegel darf daran nicht scheitern.
+        FakePluginHttp::fake([
+            'https://api.orgamax.de/openapi/customer*' => self::listResponse([]),
+            'https://api.orgamax.de/openapi/invoice*' => self::listResponse([
+                ['id' => 601, 'number' => 'RE-2026-601', 'state' => 'overdue', 'totalGross' => 50.0],
+                ['id' => 602, 'number' => 'RE-2026-602', 'totalGross' => 60.0],
+                ['id' => 603, 'number' => 'RE-2026-603', 'state' => 'partiallyPaid', 'totalGross' => 70.0, 'outstandingAmount' => 20.0],
+            ]),
+        ]);
+
+        app(OrgaMaxSyncService::class)->run($this->connection);
+
+        $this->assertSame(OrgaMaxInvoiceStatus::Unknown, OrgaMaxInvoice::query()->where('external_id', '601')->firstOrFail()->invoice_status);
+        $this->assertSame(OrgaMaxInvoiceStatus::Unknown, OrgaMaxInvoice::query()->where('external_id', '602')->firstOrFail()->invoice_status);
+        $this->assertSame(OrgaMaxInvoiceStatus::PartiallyPaid, OrgaMaxInvoice::query()->where('external_id', '603')->firstOrFail()->invoice_status);
+        $this->assertSame(3, OrgaMaxInvoice::query()->open()->count(), 'Unbekannt und teilbezahlt gelten als offen.');
     }
 
     public function test_budgeted_sweep_advances_offset_checkpoint_and_resets_after_full_pass(): void {

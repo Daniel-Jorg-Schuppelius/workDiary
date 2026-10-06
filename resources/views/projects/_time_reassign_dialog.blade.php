@@ -59,7 +59,7 @@
     </div>
 
     @if ($missing > 0)
-        <div class="alert alert-warning alert-soft text-sm">
+        <div role="alert" class="alert alert-warning alert-soft text-sm">
             <x-icon name="warning" />
             @if ($project)
                 <span>{{ trans_choice(':n Eintrag der Auswahl gehört nicht (mehr) zu diesem Projekt und wurde entfernt.|:n Einträge der Auswahl gehören nicht (mehr) zu diesem Projekt und wurden entfernt.', $missing, ['n' => $missing]) }}</span>
@@ -70,7 +70,7 @@
     @endif
 
     @if ($blocked !== [])
-        <div class="alert alert-error alert-soft items-start text-sm">
+        <div role="alert" class="alert alert-error alert-soft items-start text-sm">
             <x-icon name="lock" />
             <div>
                 <p class="font-medium">{{ __('Gesperrte Einträge in der Auswahl — bitte Auswahl bereinigen:') }}</p>
@@ -102,18 +102,18 @@
             @error('ids')<p class="text-error text-sm">{{ $message }}</p>@enderror
         </div>
     @else
-        <div class="alert alert-warning alert-soft text-sm">
+        <div role="alert" class="alert alert-warning alert-soft text-sm">
             <x-icon name="info" />
             <span>{{ __('Keine zuordenbaren Einträge in der Auswahl.') }}</span>
         </div>
     @endif
 
     <x-slot:actions>
-        <button type="button" class="btn btn-ghost gap-2" data-entry-modal-close>
-            <x-icon name="close" /> {{ __('Abbrechen') }}
-        </button>
-        <button type="submit" form="time-reassign-form" class="btn btn-primary gap-2" @disabled($hasBlockers)>
-            <x-icon name="check" /> {{ __('Zuordnen') }}
-        </button>
+        <x-button tone="ghost" size="md" icon="close" class="gap-2" data-entry-modal-close>
+            {{ __('Abbrechen') }}
+        </x-button>
+        <x-button type="submit" form="time-reassign-form" size="md" icon="check" class="gap-2" :disabled="$hasBlockers">
+            {{ __('Zuordnen') }}
+        </x-button>
     </x-slot:actions>
 </x-modal>

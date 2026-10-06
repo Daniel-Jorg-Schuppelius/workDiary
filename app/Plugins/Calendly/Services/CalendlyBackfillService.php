@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Calendly\Services;
 
+use APIToolkit\API\Pagination\{CursorPage, CursorPaginator};
 use App\Models\Platform\Organization;
 use App\Plugins\Calendly\Api\CalendlyClient;
 use App\Plugins\Calendly\CalendlyConfig;
@@ -51,39 +52,39 @@ class CalendlyBackfillService {
         $min = CarbonImmutable::now()->subDays($config['backfill_days_past'])->toIso8601ZuluString();
         $max = CarbonImmutable::now()->addDays($config['backfill_days_future'])->toIso8601ZuluString();
 
-        $pageToken = null;
-        $pages = 0;
         $apiSuccess = true;
-        do {
+        $events = new CursorPaginator(function (?string $pageToken) use ($client, $organizationUri, $min, $max, &$apiSuccess): CursorPage {
             $page = $client->listScheduledEvents($organizationUri, $min, $max, $pageToken);
             if (! $page['success']) {
                 $apiSuccess = false;
-                break;
+
+                return new CursorPage([], null);
             }
-            foreach ($page['collection'] as $event) {
-                $eventUri = is_string($event['uri'] ?? null) ? $event['uri'] : '';
-                if ($eventUri === '') {
+
+            return new CursorPage($page['collection'], $page['next_page_token']);
+        }, maxPages: self::MAX_PAGES);
+        /** @var array<string, mixed> $event */
+        foreach ($events as $event) {
+            $eventUri = is_string($event['uri'] ?? null) ? $event['uri'] : '';
+            if ($eventUri === '') {
+                continue;
+            }
+            foreach ($client->listEventInvitees($eventUri) as $invitee) {
+                // Der Backfill-Invitee referenziert das Event nur per URI —
+                // die volle Event-Resource für das Feld-Mapping mitgeben.
+                $invitee['scheduled_event'] = $event;
+                $result = $this->ingest->handleInvitee($organization, '', $invitee);
+                if ($result === null) {
+                    $stats['skipped']++;
+
                     continue;
                 }
-                foreach ($client->listEventInvitees($eventUri) as $invitee) {
-                    // Der Backfill-Invitee referenziert das Event nur per URI —
-                    // die volle Event-Resource für das Feld-Mapping mitgeben.
-                    $invitee['scheduled_event'] = $event;
-                    $result = $this->ingest->handleInvitee($organization, '', $invitee);
-                    if ($result === null) {
-                        $stats['skipped']++;
-
-                        continue;
-                    }
-                    $result->wasRecentlyCreated ? $stats['created']++ : $stats['updated']++;
-                    if ($result->customer_id === null) {
-                        $stats['unmatched']++;
-                    }
+                $result->wasRecentlyCreated ? $stats['created']++ : $stats['updated']++;
+                if ($result->customer_id === null) {
+                    $stats['unmatched']++;
                 }
             }
-            $pageToken = $page['next_page_token'];
-            $pages++;
-        } while ($pageToken !== null && $pages < self::MAX_PAGES);
+        }
 
         if ($apiSuccess) {
             $connection->forceFill(['last_synced_at' => now()])->save();

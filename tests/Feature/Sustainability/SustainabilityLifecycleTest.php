@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Sustainability;
 
+use App\Enums\Sustainability\SustainabilityAssessmentStatus;
 use App\Enums\User\UserRole;
 use App\Models\Platform\{Organization, User};
 use App\Models\Sustainability\{SustainabilityActivityRecord, SustainabilityCriterion, SustainabilityFactorSet, SustainabilityMeasure};
@@ -138,7 +139,7 @@ final class SustainabilityLifecycleTest extends TestCase {
             ->assertForbidden();
         $next = $service->newVersion($final, $this->admin);
         $this->assertSame(2, $next->version);
-        $this->assertSame('draft', $next->status);
+        $this->assertSame(SustainabilityAssessmentStatus::Draft, $next->status);
     }
 
     public function test_measure_effectiveness_only_after_done_and_target_path(): void {

@@ -20,9 +20,9 @@
                         back-route="contracts.index" :back-label="__('Zur Liste')">
             <div class="flex flex-wrap items-center gap-2 text-sm">
                 <x-status-badge size="md" outline>{{ $contract->status->label() }}</x-status-badge>
-                <span class="badge badge-outline">{{ $contract->kind->label() }}</span>
-                <span class="badge badge-outline">{{ $contract->term_kind->label() }}</span>
-                <span class="badge badge-outline">{{ $contract->starts_on->fdate() }} – {{ optional($contract->ends_on)->fdate() ?? __('unbefristet') }}</span>
+                <x-status-badge tone="plain" size="md" outline>{{ $contract->kind->label() }}</x-status-badge>
+                <x-status-badge tone="plain" size="md" outline>{{ $contract->term_kind->label() }}</x-status-badge>
+                <x-status-badge tone="plain" size="md" outline>{{ $contract->starts_on->fdate() }} – {{ optional($contract->ends_on)->fdate() ?? __('unbefristet') }}</x-status-badge>
             </div>
             @php
                 // Kundenvereinbarungen (Feature 157): Aktivierung erst nach vollständiger Unterzeichnung — der Service blockt serverseitig.
@@ -102,9 +102,9 @@
                         <div class="mt-1 text-sm text-base-content/70">
                             {{ __('Kündigung muss bis :date eingehen.', ['date' => $noticeDeadline->fdate()]) }}
                             @if ($noticeDeadline->isToday() || $noticeDeadline->isPast())
-                                <span class="badge badge-error badge-sm">{{ __('Frist erreicht') }}</span>
+                                <x-status-badge tone="error">{{ __('Frist erreicht') }}</x-status-badge>
                             @elseif ($noticeDeadline->lte(now()->addDays(30)))
-                                <span class="badge badge-warning badge-sm">{{ __('Frist bald') }}</span>
+                                <x-status-badge tone="warning">{{ __('Frist bald') }}</x-status-badge>
                             @endif
                         </div>
                     @endif
@@ -113,7 +113,7 @@
                     {{ __('Berechnet aus Laufzeitmodell, Kündigungsfrist und automatischer Verlängerung. Kein Rechtsrat — maßgeblich bleibt der Vertragstext.') }}
                 </p>
             @else
-                <p class="text-sm text-muted">{{ __('Kein Kündigungstermin — Vertrag beendet/storniert.') }}</p>
+                <x-empty-state icon="event_busy" :title="__('Kein Kündigungstermin — Vertrag beendet/storniert.')" compact />
             @endif
         </x-card>
     </div>
@@ -135,25 +135,19 @@
                 </tr>
             </x-slot:head>
             @forelse ($contract->obligations as $obligation)
-                <tr @class(['opacity-60' => $obligation->status === 'done'])>
+                <tr @class(['opacity-60' => $obligation->status === \App\Enums\Contract\ContractObligationStatus::Done])>
                     <td>{{ $obligation->kind->label() }}</td>
-                    <td>{{ $obligation->title }} @if ($obligation->recurring) <span class="badge badge-ghost badge-sm">{{ __('wiederkehrend') }}</span> @endif</td>
+                    <td>{{ $obligation->title }} @if ($obligation->recurring) <x-status-badge>{{ __('wiederkehrend') }}</x-status-badge> @endif</td>
                     <td>{{ $obligation->due_on->fdate() }}</td>
                     <td>{{ $obligation->warn_days_before }} {{ __('Tage') }}</td>
                     <td>
-                        @if ($obligation->status === 'missed')
-                            <span class="badge badge-error badge-sm">{{ __('versäumt') }}</span>
-                        @elseif ($obligation->status === 'done')
-                            <span class="badge badge-success badge-sm">{{ __('erledigt') }}</span>
-                        @else
-                            <span class="badge badge-info badge-outline badge-sm">{{ __('offen') }}</span>
-                        @endif
+                        <x-status-badge :tone="$obligation->status->tone()" :outline="$obligation->status === \App\Enums\Contract\ContractObligationStatus::Open">{{ $obligation->status->label() }}</x-status-badge>
                     </td>
                     <td class="text-right">
-                        @if ($obligation->status !== 'done')
+                        @if ($obligation->status !== \App\Enums\Contract\ContractObligationStatus::Done)
                             @can('update', $contract)
                                 <form method="POST" action="{{ route('contracts.obligations.complete', $obligation) }}">@csrf
-                                    <button type="submit" class="btn btn-xs">{{ __('Erledigt') }}</button>
+                                    <x-button type="submit" tone="plain" size="xs">{{ __('Erledigt') }}</x-button>
                                 </form>
                             @endcan
                         @endif
@@ -183,7 +177,7 @@
                 </x-select-field>
                 <x-input-field name="recurrence_months" type="number" min="1" :label="__('Wiederholung (Monate)')" />
                 <x-checkbox-field name="recurring" :label="__('Wiederkehrend')" :toggle="false" />
-                <div class="flex items-end"><button type="submit" class="btn btn-sm btn-primary">{{ __('Obligation ergänzen') }}</button></div>
+                <div class="flex items-end"><x-button type="submit">{{ __('Obligation ergänzen') }}</x-button></div>
             </form>
         @endcan
     </x-card>
@@ -249,7 +243,7 @@
                         <option value="{{ $af->sqid }}">{{ $af->number }} — {{ $af->partner_name }}</option>
                     @endforeach
                 </x-select-field>
-                <button type="submit" class="btn btn-sm">{{ __('Verknüpfen') }}</button>
+                <x-button type="submit" tone="plain">{{ __('Verknüpfen') }}</x-button>
             </form>
         @endcan
     </x-card>

@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Invoicing\Import;
 
 use App\Enums\Import\{ImportEntity, ImportErrorCode};
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\Organization;
@@ -276,9 +277,9 @@ class InvoiceSpec extends AbstractEntitySpec {
             }
 
             $status = match (true) {
-                $paid->compareTo($amounts['gross']) >= 0 => Invoice::STATUS_PAID,
-                $paid->isPositive() => Invoice::STATUS_PARTIALLY_PAID,
-                default => Invoice::STATUS_ISSUED,
+                $paid->compareTo($amounts['gross']) >= 0 => InvoiceStatus::Paid,
+                $paid->isPositive() => InvoiceStatus::PartiallyPaid,
+                default => InvoiceStatus::Issued,
             };
 
             $issuedOn = (string) $this->dateString($row['issued_on']);
@@ -306,7 +307,7 @@ class InvoiceSpec extends AbstractEntitySpec {
                 'issued_on' => $issuedOn,
                 'due_on' => $dueOn,
                 // paid_on = Datum der vollständigen Bezahlung; bei Teilzahlung offen.
-                'paid_on' => $status === Invoice::STATUS_PAID ? ($paidOn ?? $issuedOn) : null,
+                'paid_on' => $status === InvoiceStatus::Paid ? ($paidOn ?? $issuedOn) : null,
                 'currency' => $currency->value,
                 'subtotal' => $amounts['net']->getAmount(),
                 'tax_rate' => $amounts['rate'],

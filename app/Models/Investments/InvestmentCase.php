@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Investments;
 
-use App\Enums\Investments\InvestmentOrigin;
+use App\Enums\Investments\{InvestmentBudgetRequestStatus, InvestmentCaseStatus, InvestmentOrigin};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Finance\CostCenter;
 use App\Models\Platform\User;
@@ -34,7 +34,8 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, HasOne};
  * @property string|null $objective
  * @property string $urgency
  * @property string|null $risk_note
- * @property string $status
+ * @property InvestmentCaseStatus $status
+ * @property InvestmentCaseStatus|null $deferred_from_status
  * @property int|null $responsible_user_id
  * @property int|null $cost_center_id
  * @property string|null $cost_center_label
@@ -61,20 +62,17 @@ class InvestmentCase extends Model {
 
     public const CATEGORIES = ['replacement', 'expansion', 'project', 'machine', 'it', 'infrastructure', 'inventory', 'compliance'];
 
-    public const STATUSES = ['idea', 'screening', 'comparison', 'budget_request', 'in_approval', 'approved', 'rejected', 'deferred', 'in_progress', 'completed', 'cancelled', 'post_review'];
-
-    /** Vor der Freigabe editierbare Phasen. */
-    public const PLANNING_STATUSES = ['idea', 'screening', 'comparison', 'budget_request'];
-
     protected $fillable = [
         'organization_id', 'title', 'category', 'reason', 'objective', 'urgency',
-        'risk_note', 'status', 'responsible_user_id', 'cost_center_id',
+        'risk_note', 'status', 'deferred_from_status', 'responsible_user_id', 'cost_center_id',
         'cost_center_label', 'project_id', 'investment_program_id', 'planned_year', 'starts_on', 'ends_on', 'created_by',
         'strategic_objective_id', 'origin', 'submitter_user_id', 'submitter_name', 'submitter_email', 'estimated_amount', 'currency',
     ];
 
     /** @var array<string, string> */
     protected $casts = [
+        'status' => InvestmentCaseStatus::class,
+        'deferred_from_status' => InvestmentCaseStatus::class,
         'planned_year' => 'integer',
         'starts_on' => 'date',
         'ends_on' => 'date',
@@ -127,10 +125,15 @@ class InvestmentCase extends Model {
         return $this->belongsTo(User::class, 'responsible_user_id');
     }
 
+    /** Phase, in die „Wieder aufnehmen“ zurückführt — Altbestand ohne gemerkte Phase: die Idee. */
+    public function resumeTarget(): InvestmentCaseStatus {
+        return $this->deferred_from_status ?? InvestmentCaseStatus::Idea;
+    }
+
     /** Genehmigter Budgetantrag (aktueller Stand, nicht superseded). */
     public function approvedBudget(): ?InvestmentBudgetRequest {
         /** @var InvestmentBudgetRequest|null $request */
-        $request = $this->budgetRequests()->where('status', 'approved')->orderByDesc('version')->first();
+        $request = $this->budgetRequests()->where('status', InvestmentBudgetRequestStatus::Approved)->orderByDesc('version')->first();
 
         return $request;
     }
@@ -143,19 +146,6 @@ class InvestmentCase extends Model {
         }
 
         return $this->cost_center_label;
-    }
-
-    /** DaisyUI badge tone */
-    public function statusTone(): string {
-        return match ($this->status) {
-            'approved', 'completed' => 'success',
-            'rejected' => 'error',
-            'budget_request', 'in_approval' => 'warning',
-            'in_progress' => 'primary',
-            'post_review' => 'info',
-            'deferred', 'cancelled' => 'neutral',
-            default => 'ghost',
-        };
     }
 
     /** @return BelongsTo<InvestmentProgram, $this> */

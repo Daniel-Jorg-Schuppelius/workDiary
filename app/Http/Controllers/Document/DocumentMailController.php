@@ -13,7 +13,9 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Document;
 
 use App\Enums\DocumentDesign\RenderDocumentKind;
+use App\Enums\Sales\QuoteStatus;
 use App\Enums\User\Permission as P;
+use App\Http\Controllers\Concerns\SplitsRecipientLists;
 use App\Http\Controllers\Controller;
 use App\Models\Construction\ConstructionNotice;
 use App\Models\Inventory\StockDelivery;
@@ -40,20 +42,22 @@ use Illuminate\Support\Facades\Gate;
  * erzeugt das Portal-Token, quotes.mail verschickt das PDF per E-Mail.
  */
 class DocumentMailController extends Controller {
+    use SplitsRecipientLists;
+
     public function __construct(private readonly DocumentMailService $mailer) {}
 
     // ── Angebot ──────────────────────────────────────────────────────────
 
     public function quoteForm(Quote $quote): View {
         Gate::authorize('view', $quote);
-        abort_unless($quote->status !== 'draft', 422, (string) __('Entwürfe erst freigeben, dann versenden.'));
+        abort_unless($quote->status !== QuoteStatus::Draft, 422, (string) __('Entwürfe erst freigeben, dann versenden.'));
 
         return $this->form($quote, RenderDocumentKind::Quote, route('quotes.mail', $quote), __('Angebot :nr per E-Mail senden', ['nr' => $quote->number]));
     }
 
     public function quoteSend(Request $request, Quote $quote): RedirectResponse {
         Gate::authorize('view', $quote);
-        abort_unless($quote->status !== 'draft', 422, (string) __('Entwürfe erst freigeben, dann versenden.'));
+        abort_unless($quote->status !== QuoteStatus::Draft, 422, (string) __('Entwürfe erst freigeben, dann versenden.'));
 
         return $this->send($request, $quote, RenderDocumentKind::Quote, route('quotes.show', $quote));
     }
@@ -150,6 +154,8 @@ class DocumentMailController extends Controller {
     }
 
     private function send(Request $request, Model $document, RenderDocumentKind $kind, string $redirectTo): RedirectResponse {
+        $this->splitRecipientLists($request);
+
         $data = $request->validate([
             'template_id' => ['nullable', 'string', 'max:64'],
             'to' => ['required', 'array', 'min:1', 'max:20'],
@@ -203,6 +209,6 @@ class DocumentMailController extends Controller {
     }
 
     private function assertAccepted(Quote $quote): void {
-        abort_unless(in_array($quote->status, ['accepted', 'partially_accepted'], true), 422, (string) __('Nur angenommene Angebote können bestätigt werden.'));
+        abort_unless($quote->status->isWon(), 422, (string) __('Nur angenommene Angebote können bestätigt werden.'));
     }
 }

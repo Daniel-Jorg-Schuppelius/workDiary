@@ -14,6 +14,7 @@ namespace App\Plugins\Etsy\Api;
 
 use APIToolkit\API\Authentication\OAuth2\OAuth2BearerAuthentication;
 use App\Plugins\Etsy\EtsyPlugin;
+use App\Plugins\Etsy\Exceptions\EtsyApiException;
 use App\Plugins\Etsy\Models\EtsyConnection;
 use App\Plugins\Support\{ConnectionTokenStore, GuardsPluginApiResponses, PluginApiClient, PluginHttpFactory};
 

@@ -23,7 +23,7 @@
 >
     <div class="text-sm text-base-content/70">{{ __('resale.draft.hint') }}</div>
     @if ($recipients === [])
-        <div class="alert alert-info text-sm"><span>{{ __('resale.draft.error.nothing_open') }}</span></div>
+        <div role="status" class="alert alert-info text-sm"><span>{{ __('resale.draft.error.nothing_open') }}</span></div>
     @endif
     <x-select-field name="customer_id" :label="__('resale.field.billed_to')" required>
         <option value="">—</option>

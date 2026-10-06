@@ -24,7 +24,7 @@
            class="tab {{ $tab === $key ? 'tab-active' : '' }}">
             {{ $info['label'] }}
             @isset($info['count'])
-                <span class="badge badge-sm ml-2">{{ $info['count'] }}</span>
+                <x-status-badge tone="plain" class="ml-2">{{ $info['count'] }}</x-status-badge>
             @endisset
         </a>
     @endforeach

@@ -38,14 +38,11 @@ class OrderLinkRuleTest extends TestCase {
         'resources/views/dashboard/widgets/recent-attachments.blade.php' => 'DashboardService liefert nur Anhänge eigener Aufträge.',
         'resources/views/dashboard/widgets/team-activity.blade.php' => 'Kachel nur für Admins.',
         'resources/views/reports/data-quality.blade.php' => 'Team-Bericht, nur mit report.view.',
-        'resources/views/reports/drilldown/asset-protocols.blade.php' => 'Team-Bericht, nur mit report.view.',
-        'resources/views/reports/drilldown/customer-protocols.blade.php' => 'Team-Bericht, nur mit report.view.',
-        'resources/views/reports/drilldown/entry-type-protocols.blade.php' => 'Team-Bericht, nur mit report.view.',
     ];
 
     public function test_views_link_orders_through_the_order_link_component(): void {
         $violations = [];
-        foreach (array_merge($this->bladeFiles('resources/views'), $this->bladeFiles('app/Plugins')) as $file) {
+        foreach ($this->bladeFiles() as $file) {
             $relative = $this->relativePath($file);
             if (isset(self::ALLOWED[$relative])) {
                 continue;

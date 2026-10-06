@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Rental;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Enums\Rental\{RentalChargeKind, RentalChargeStatus, RentalDepositStatus, RentalRateCardStatus};
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
@@ -235,7 +236,7 @@ class RentalBillingService {
                 'customer_id' => $customer->id,
                 'project_id' => $case->project_id,
                 'number' => $this->invoices->nextNumber($case->organization_id),
-                'status' => Invoice::STATUS_DRAFT,
+                'status' => InvoiceStatus::Draft,
                 'currency' => $customer->currency,
                 'tax_rate' => $tax['rate'],
                 'is_reverse_charge' => $tax['reverse_charge'],

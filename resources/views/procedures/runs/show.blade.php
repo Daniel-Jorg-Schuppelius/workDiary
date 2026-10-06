@@ -40,7 +40,7 @@
             </x-slot:actions>
         </x-page-toolbar>
 
-        <div class="min-h-0 flex-1 overflow-auto rounded-box border border-base-300 bg-base-100 p-4 shadow-xs md:p-6">
+        <x-card padding="p-4 md:p-6" class="min-h-0 flex-1 overflow-auto">
             <div class="mx-auto max-w-2xl space-y-4">
                 @if ($run->status === \App\Enums\Procedure\ProcedureRunStatus::Blocked && $run->blocked_reason !== null)
                     <div role="status" class="alert alert-error text-sm">{{ __('procedure.blocked_report.run_hint', ['reason' => __('procedure.blocked.' . $run->blocked_reason)]) }}</div>
@@ -77,14 +77,14 @@
                             <div class="flex items-start justify-between gap-2">
                                 <div>
                                     <div class="flex items-center gap-2">
-                                        <span class="badge badge-sm badge-ghost">{{ $def?->sort_order ?? $i + 1 }}</span>
+                                        <x-status-badge>{{ $def?->sort_order ?? $i + 1 }}</x-status-badge>
                                         <span class="font-medium">{{ $def?->label ?? __('procedure.print.unknownStep') }}</span>
                                     </div>
                                     <div class="mt-1 flex flex-wrap items-center gap-1 text-xs text-muted">
                                         <span>{{ $def?->step_type?->label() ?? '—' }}</span>
-                                        @if ($def?->required)<span class="badge badge-xs">{{ __('procedure.field.required') }}</span>@endif
-                                        @if ($def?->requires_second_person)<span class="badge badge-xs">{{ __('procedure.field.secondPerson') }}</span>@endif
-                                        @if (! $step['applicable'])<span class="badge badge-xs badge-ghost">{{ __('procedure.run.notApplicable') }}</span>@endif
+                                        @if ($def?->required)<x-status-badge tone="plain" size="xs">{{ __('procedure.field.required') }}</x-status-badge>@endif
+                                        @if ($def?->requires_second_person)<x-status-badge tone="plain" size="xs">{{ __('procedure.field.secondPerson') }}</x-status-badge>@endif
+                                        @if (! $step['applicable'])<x-status-badge size="xs">{{ __('procedure.run.notApplicable') }}</x-status-badge>@endif
                                     </div>
                                     @if ($def?->description)
                                         <p class="mt-2 text-sm text-base-content/70">{{ $def->description }}</p>
@@ -97,7 +97,7 @@
                             @if ($isFinal)
                                 <div class="mt-2 text-xs text-muted">
                                     @if ($sr->executedBy){{ __('procedure.print.executedBy') }}: {{ $sr->executedBy->name }}@endif
-                                    @if ($sr->executed_at) · {{ $sr->executed_at->orgTz()->format('d.m.Y H:i') }}@endif
+                                    @if ($sr->executed_at) · {{ $sr->executed_at->fdatetime() }}@endif
                                     @if (data_get($sr->value_json, 'value')) · {{ __('procedure.run.value') }}: {{ data_get($sr->value_json, 'value') }}@endif
                                     @if ($sr->second_person_signed_at) · {{ __('procedure.field.secondPerson') }}: {{ $sr->secondPerson?->name }}@endif
                                 </div>
@@ -117,9 +117,9 @@
                                 @if ($needsSecondPerson)
                                     <form method="POST" action="{{ route('procedure-runs.steps.second-person', [$run, $sr]) }}" class="mt-3">
                                         @csrf
-                                        <button type="submit" class="btn btn-sm btn-secondary">
-                                            <x-icon name="how_to_reg" /> {{ __('procedure.run.signSecondPerson') }}
-                                        </button>
+                                        <x-button type="submit" tone="secondary" icon="how_to_reg">
+                                            {{ __('procedure.run.signSecondPerson') }}
+                                        </x-button>
                                     </form>
                                 @elseif ($isWait)
                                     @php $remaining = $step['waitRemaining']; @endphp
@@ -132,9 +132,9 @@
                                                     <input type="number" name="seconds" min="1" value="60" class="input input-bordered input-sm w-32" required>
                                                 </label>
                                             @endif
-                                            <button type="submit" class="btn btn-sm btn-primary">
-                                                <x-icon name="hourglass_top" /> {{ __('procedure.run.startWait') }}
-                                            </button>
+                                            <x-button type="submit" icon="hourglass_top">
+                                                {{ __('procedure.run.startWait') }}
+                                            </x-button>
                                         </form>
                                     @elseif ($remaining > 0)
                                         <div class="mt-3 space-y-2">
@@ -149,16 +149,16 @@
                                                     <textarea aria-label="{{ __('procedure.run.overrideReason') }}" name="reason" rows="2" minlength="5" required
                                                               class="textarea textarea-bordered textarea-sm w-full"
                                                               placeholder="{{ __('procedure.run.overrideReason') }}"></textarea>
-                                                    <button type="submit" class="btn btn-xs btn-warning">{{ __('procedure.run.overrideWaitConfirm') }}</button>
+                                                    <x-button type="submit" tone="warning" size="xs">{{ __('procedure.run.overrideWaitConfirm') }}</x-button>
                                                 </form>
                                             </details>
                                         </div>
                                     @else
                                         <form method="POST" action="{{ route('procedure-runs.steps.wait.continue', [$run, $sr]) }}" class="mt-3">
                                             @csrf
-                                            <button type="submit" class="btn btn-sm btn-primary">
-                                                <x-icon name="play_arrow" /> {{ __('procedure.run.continueWait') }}
-                                            </button>
+                                            <x-button type="submit" icon="play_arrow">
+                                                {{ __('procedure.run.continueWait') }}
+                                            </x-button>
                                         </form>
                                     @endif
                                 @else
@@ -175,13 +175,13 @@
                                         <textarea aria-label="{{ __('procedure.run.notePlaceholder') }}" name="note" rows="2" class="textarea textarea-bordered textarea-sm w-full"
                                                   placeholder="{{ __('procedure.run.notePlaceholder') }}"></textarea>
                                         <div class="flex flex-wrap gap-2">
-                                            <button type="submit" name="status" value="done" class="btn btn-sm btn-primary">
-                                                <x-icon name="check" /> {{ __('procedure.run.markDone') }}
-                                            </button>
+                                            <x-button type="submit" icon="check" name="status" value="done">
+                                                {{ __('procedure.run.markDone') }}
+                                            </x-button>
                                             @unless ($def?->required)
-                                                <button type="submit" name="status" value="n_a" class="btn btn-sm btn-ghost">{{ __('procedure.run.markNa') }}</button>
+                                                <x-button type="submit" tone="ghost" name="status" value="n_a">{{ __('procedure.run.markNa') }}</x-button>
                                             @endunless
-                                            <button type="submit" name="status" value="failed" class="btn btn-sm btn-outline btn-error">{{ __('procedure.run.markFailed') }}</button>
+                                            <x-button type="submit" tone="error" class="btn-outline" name="status" value="failed">{{ __('procedure.run.markFailed') }}</x-button>
                                         </div>
                                     </form>
 
@@ -212,16 +212,16 @@
                                                   aria-label="{{ __('procedure.run.deviationReason') }}"
                                                   class="textarea textarea-bordered textarea-sm w-full"
                                                   placeholder="{{ __('procedure.run.deviationReason') }}"></textarea>
-                                        <button type="submit" class="btn btn-sm btn-outline btn-warning">
-                                            <x-icon name="alert" /> {{ __('procedure.run.recordDeviation') }}
-                                        </button>
+                                        <x-button type="submit" tone="warning" icon="alert" class="btn-outline">
+                                            {{ __('procedure.run.recordDeviation') }}
+                                        </x-button>
                                     </form>
                                 @endif
                             @elseif ($canExecute && $runActive && ! $isFinal && ! $step['applicable'] && $step['blockReason'] === null)
                                 {{-- Nicht zutreffender bedingter Schritt: schnelle N/A-Erledigung --}}
                                 <form method="POST" action="{{ route('procedure-runs.steps.execute', [$run, $sr]) }}" class="mt-3">
                                     @csrf
-                                    <button type="submit" name="status" value="n_a" class="btn btn-xs btn-ghost">{{ __('procedure.run.markNa') }}</button>
+                                    <x-button type="submit" tone="ghost" size="xs" name="status" value="n_a">{{ __('procedure.run.markNa') }}</x-button>
                                 </form>
                             @endif
                         </li>
@@ -233,9 +233,9 @@
                     <div class="flex flex-wrap items-center justify-between gap-2 border-t border-base-300 pt-4">
                         <form method="POST" action="{{ route('procedure-runs.complete', $run) }}">
                             @csrf
-                            <button type="submit" class="btn btn-sm btn-success" @disabled(! empty($missingRequired))>
-                                <x-icon name="task_alt" /> {{ __('procedure.run.complete') }}
-                            </button>
+                            <x-button type="submit" tone="success" icon="task_alt" :disabled="! empty($missingRequired)">
+                                {{ __('procedure.run.complete') }}
+                            </x-button>
                         </form>
                         @if ($canAbort)
                             <details class="dropdown dropdown-end">
@@ -245,7 +245,7 @@
                                     @csrf
                                     <textarea aria-label="{{ __('procedure.print.abortReason') }}" name="reason" rows="2" class="textarea textarea-bordered textarea-sm w-full"
                                               placeholder="{{ __('procedure.print.abortReason') }}"></textarea>
-                                    <button type="submit" class="btn btn-xs btn-error">{{ __('procedure.run.abortConfirm') }}</button>
+                                    <x-button type="submit" tone="error" size="xs">{{ __('procedure.run.abortConfirm') }}</x-button>
                                 </form>
                             </details>
                         @endif
@@ -255,6 +255,6 @@
                     @endif
                 @endif
             </div>
-        </div>
+        </x-card>
     </x-page-shell>
 @endsection

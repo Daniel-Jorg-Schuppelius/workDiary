@@ -12,10 +12,11 @@ declare(strict_types=1);
 
 namespace App\Services\Retention;
 
+use App\Enums\Privacy\RetentionProposalStatus;
 use App\Models\Platform\{Organization, User};
 use App\Models\Privacy\RetentionProposal;
+use App\Services\Concerns\AssertsStatusTransition;
 use Illuminate\Database\Eloquent\Model;
-use RuntimeException;
 
 /**
  * Retention-Review (Restpunkt 66): der Scan erzeugt Lösch-VORSCHLÄGE für
@@ -24,6 +25,8 @@ use RuntimeException;
  * (approve → purge), jede Entscheidung auditiert.
  */
 class RetentionScanService {
+    use AssertsStatusTransition;
+
     public function __construct(
         private readonly RetentionRegistry $registry,
         private readonly LegalHoldService $legalHolds,
@@ -72,7 +75,7 @@ class RetentionScanService {
                         __('Aufbewahrungsfrist abgelaufen'),
                         $basis ?? $policy->area,
                     )),
-                    'status' => RetentionProposal::STATUS_PENDING,
+                    'status' => RetentionProposalStatus::Pending,
                 ]);
                 if ($proposal->wasRecentlyCreated) {
                     $proposed++;
@@ -85,11 +88,11 @@ class RetentionScanService {
 
     /** Erste Stufe: Vorschlag bestätigen (noch keine Löschung). */
     public function approve(RetentionProposal $proposal, User $actor): RetentionProposal {
-        $this->assertStatus($proposal, RetentionProposal::STATUS_PENDING);
+        $this->assertStatusTransition($proposal->status, RetentionProposalStatus::Approved);
         $this->assertSubjectNotHeld($proposal);
 
         $proposal->update([
-            'status' => RetentionProposal::STATUS_APPROVED,
+            'status' => RetentionProposalStatus::Approved,
             'decided_by' => $actor->id,
             'decided_at' => now(),
         ]);
@@ -99,10 +102,10 @@ class RetentionScanService {
     }
 
     public function reject(RetentionProposal $proposal, User $actor): RetentionProposal {
-        $this->assertStatus($proposal, RetentionProposal::STATUS_PENDING);
+        $this->assertStatusTransition($proposal->status, RetentionProposalStatus::Rejected);
 
         $proposal->update([
-            'status' => RetentionProposal::STATUS_REJECTED,
+            'status' => RetentionProposalStatus::Rejected,
             'decided_by' => $actor->id,
             'decided_at' => now(),
         ]);
@@ -117,7 +120,7 @@ class RetentionScanService {
      * Policy-Löschlogik (Default delete()) entfernt.
      */
     public function purge(RetentionProposal $proposal, User $actor): RetentionProposal {
-        $this->assertStatus($proposal, RetentionProposal::STATUS_APPROVED);
+        $this->assertStatusTransition($proposal->status, RetentionProposalStatus::Purged);
 
         $policy = $this->registry->policy($proposal->area);
 
@@ -137,7 +140,7 @@ class RetentionScanService {
         }
 
         $proposal->update([
-            'status' => RetentionProposal::STATUS_PURGED,
+            'status' => RetentionProposalStatus::Purged,
             'decided_by' => $actor->id,
             'decided_at' => now(),
         ]);
@@ -154,12 +157,6 @@ class RetentionScanService {
         $subject = $proposal->subject()->first();
         if ($subject instanceof Model) {
             $this->legalHolds->assertNotHeld($subject);
-        }
-    }
-
-    private function assertStatus(RetentionProposal $proposal, string $expected): void {
-        if ($proposal->status !== $expected) {
-            throw new RuntimeException("Vorschlag ist nicht im Status {$expected}.");
         }
     }
 }

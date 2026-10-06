@@ -16,15 +16,18 @@ use App\Enums\Claims\ClaimRmaDisposition;
 use App\Enums\Inventory\{OwnershipType, StockMovementType, StockState};
 use App\Models\Claims\ClaimRmaReturn;
 use App\Models\Customer\Customer;
+use App\Models\Inventory\StockMovement;
 use App\Models\Platform\User;
 use App\Services\Claims\Contracts\RmaStockHandler;
-use App\Services\Inventory\{InventoryLedger, SerialService, StockPosting};
+use App\Services\Inventory\{InventoryLedger, LotService, SerialService, StockPosting};
+use CommonToolkit\Helper\Data\NumberHelper;
 
 /** Reklamationsrückläufer im Lagerkern (MVP-250): Quarantäne, Wiedereinlagerung, Verschrottung, Rücksendung. */
 final class InventoryRmaStockHandler implements RmaStockHandler {
     public function __construct(
         private readonly InventoryLedger $ledger,
         private readonly SerialService $serials,
+        private readonly LotService $lots,
     ) {}
 
     public function wasShippedTo(int $organizationId, string $serialNo, Customer $customer): bool {
@@ -33,7 +36,7 @@ final class InventoryRmaStockHandler implements RmaStockHandler {
 
     public function bookReturn(ClaimRmaReturn $rma, string $state, User $actor): void {
         $qtyRaw = (string) $rma->qty;
-        $qty = is_numeric($qtyRaw) ? bcadd($qtyRaw, '0', 4) : '0.0000';
+        $qty = is_numeric($qtyRaw) ? NumberHelper::roundPrecise($qtyRaw, 4) : '0.0000';
         if ($rma->articleVariant !== null && $rma->warehouse !== null && (float) $qty > 0) {
             $this->ledger->post(new StockPosting(
                 $rma->articleVariant,
@@ -58,17 +61,20 @@ final class InventoryRmaStockHandler implements RmaStockHandler {
         $variant = $rma->articleVariant;
         $warehouse = $rma->warehouse;
         $qtyRaw = (string) $rma->qty;
-        $qtyIn = is_numeric($qtyRaw) ? bcadd($qtyRaw, '0', 4) : '0.0000';
-        $qtyOut = bcmul($qtyIn, '-1', 4);
-        $state = $rma->stock_state !== null ? StockState::from($rma->stock_state) : StockState::Quality;
+        $qtyIn = is_numeric($qtyRaw) ? NumberHelper::roundPrecise($qtyRaw, 4) : '0.0000';
+        $qtyOut = NumberHelper::negatePrecise($qtyIn);
+        $state = $rma->stock_state ?? StockState::Quality;
         $hasStock = $variant !== null && $warehouse !== null && (float) $qtyIn > 0;
 
         switch ($disposition) {
             case ClaimRmaDisposition::Restock:
                 if ($hasStock) {
-                    // Quarantäne → frei verfügbar (zwei Korrekturzeilen).
-                    $this->ledger->post(new StockPosting($variant, $warehouse, $state, $qtyOut, StockMovementType::Correction, OwnershipType::Own, idempotencyKey: 'claim-rma:' . $rma->id . ':restock-out', actorUserId: $actor->id, source: $rma, stockLotId: $rma->stock_lot_id, stockSerialId: $rma->stock_serial_id));
-                    $this->ledger->post(new StockPosting($variant, $warehouse, StockState::Physical, $qtyIn, StockMovementType::Correction, OwnershipType::Own, idempotencyKey: 'claim-rma:' . $rma->id . ':restock-in', actorUserId: $actor->id, source: $rma, stockLotId: $rma->stock_lot_id, stockSerialId: $rma->stock_serial_id));
+                    // Quarantäne → frei verfügbar (zwei Korrekturzeilen); in eine gesperrte Charge bleibt die Ware gesperrt.
+                    $this->lots->holdArrival($rma->stockLot, function () use ($variant, $warehouse, $state, $qtyOut, $qtyIn, $rma, $actor): StockMovement {
+                        $this->ledger->post(new StockPosting($variant, $warehouse, $state, $qtyOut, StockMovementType::Correction, OwnershipType::Own, idempotencyKey: 'claim-rma:' . $rma->id . ':restock-out', actorUserId: $actor->id, source: $rma, stockLotId: $rma->stock_lot_id, stockSerialId: $rma->stock_serial_id));
+
+                        return $this->ledger->post(new StockPosting($variant, $warehouse, StockState::Physical, $qtyIn, StockMovementType::Correction, OwnershipType::Own, idempotencyKey: 'claim-rma:' . $rma->id . ':restock-in', actorUserId: $actor->id, source: $rma, stockLotId: $rma->stock_lot_id, stockSerialId: $rma->stock_serial_id));
+                    });
                 }
                 if ($rma->stockSerial !== null) {
                     $this->serials->unblock($rma->stockSerial, $warehouse);

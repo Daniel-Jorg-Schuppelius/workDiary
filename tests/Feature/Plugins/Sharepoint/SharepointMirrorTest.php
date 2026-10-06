@@ -11,13 +11,16 @@
 namespace Tests\Feature\Plugins\Sharepoint;
 
 use App\Enums\Document\{DocumentStatus, DocumentType};
+use App\Enums\Integration\IntegrationInboxStatus;
 use App\Models\Document\{Document, DocumentVersion};
 use App\Models\Integration\{ExternalReference, IntegrationInboxItem, IntegrationOutboxEntry};
 use App\Models\Platform\{Organization, User};
 use App\Plugins\Sharepoint\Api\SharepointDriveClient;
 use App\Plugins\Sharepoint\Models\SharepointConnection;
-use App\Plugins\Sharepoint\{SharepointMirrorTarget, SharepointPlugin};
+use App\Plugins\Sharepoint\Services\SharepointMirrorTarget;
+use App\Plugins\Sharepoint\SharepointPlugin;
 use App\Plugins\Support\Mirror\MirrorOutboxDispatcher;
+use App\Plugins\Support\OAuthConnectionStatus;
 use App\Plugins\Webdav\Models\WebdavConnection;
 use App\Plugins\Webdav\WebdavPlugin;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -58,7 +61,7 @@ final class SharepointMirrorTest extends TestCase {
         return SharepointConnection::query()->create($attributes + [
             'organization_id' => $this->organization->id,
             'access_token' => 'secret-token',
-            'status' => SharepointConnection::STATUS_ACTIVE,
+            'status' => OAuthConnectionStatus::Active,
             'site_id' => 'site-1',
             'site_name' => 'Bau-Projekte',
             'drive_id' => 'drive-1',
@@ -242,7 +245,7 @@ final class SharepointMirrorTest extends TestCase {
             ->where('plugin_id', SharepointPlugin::ID)
             ->where('case_type', IntegrationInboxItem::CASE_CONFLICT)
             ->firstOrFail();
-        $this->assertSame(IntegrationInboxItem::STATUS_OPEN, $item->status);
+        $this->assertSame(IntegrationInboxStatus::Open, $item->status);
     }
 
     public function test_transient_failure_counts_health_and_rethrows(): void {
@@ -282,7 +285,7 @@ final class SharepointMirrorTest extends TestCase {
         SharepointConnection::query()->create([
             'organization_id' => $other->id,
             'access_token' => 'secret-token',
-            'status' => SharepointConnection::STATUS_ACTIVE,
+            'status' => OAuthConnectionStatus::Active,
             'site_id' => 'site-1',
             'drive_id' => 'drive-1',
             'active' => true,
@@ -319,7 +322,7 @@ final class SharepointMirrorTest extends TestCase {
         $this->assertFalse($document->isMirrorDetached('webdav')); // nur DIESER Zweig getrennt
         $this->assertSame($admin->id, $document->mirrorDetachments->first()?->detached_by_user_id);
         $this->assertSame(0, ExternalReference::query()->where('plugin_id', SharepointPlugin::ID)->count());
-        $this->assertSame(IntegrationInboxItem::STATUS_DISMISSED, $item->fresh()->status);
+        $this->assertSame(IntegrationInboxStatus::Dismissed, $item->fresh()->status);
 
         // Getrennt → Dispatcher bestätigt ohne Upload (RESULT_SKIPPED).
         $fake = FakePluginHttp::fake();

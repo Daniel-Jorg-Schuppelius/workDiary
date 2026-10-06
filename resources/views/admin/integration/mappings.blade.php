@@ -58,7 +58,7 @@
                         @foreach ($references as $ref)
                             @php $target = $ref->referenceable; @endphp
                             <tr>
-                                <td><span class="badge badge-sm badge-outline">{{ $ref->plugin_id }}</span></td>
+                                <td><x-status-badge tone="plain" outline>{{ $ref->plugin_id }}</x-status-badge></td>
                                 <td class="text-xs">{{ \App\Support\Trans::or('integration.external_type.' . $ref->external_type, $ref->external_type) }}</td>
                                 <td class="font-mono text-xs">{{ $ref->external_id }}</td>
                                 <td>
@@ -69,12 +69,12 @@
                                         <span class="text-error">{{ __('(verwaist)') }}</span>
                                     @endif
                                 </td>
-                                <td class="text-xs text-muted">{{ $ref->synced_at?->orgTz()->format('d.m.Y H:i') }}</td>
+                                <td class="text-xs text-muted">{{ $ref->synced_at?->fdatetime() }}</td>
                                 <td class="text-right">
                                     <form method="POST" action="{{ route('admin.integration.mappings.destroy', $ref) }}"
                                           data-confirm-dialog data-confirm-message="{{ __('Diese Verknüpfung wirklich lösen?') }}">
                                         @csrf @method('DELETE')
-                                        <button class="btn btn-xs btn-ghost text-error">{{ __('Lösen') }}</button>
+                                        <x-button type="submit" tone="ghost" size="xs" class="text-error">{{ __('Lösen') }}</x-button>
                                     </form>
                                 </td>
                             </tr>

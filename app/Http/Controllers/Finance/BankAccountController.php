@@ -28,7 +28,7 @@ class BankAccountController extends Controller {
     public function index(): View {
         Gate::authorize('viewAny', BankAccount::class);
 
-        $accounts = BankAccount::query()->orderBy('label')->get();
+        $accounts = BankAccount::query()->orderBy('label')->orderBy('id')->paginate(25)->withQueryString();
 
         return view('finance.bank-accounts.index', compact('accounts'));
     }
@@ -53,7 +53,7 @@ class BankAccountController extends Controller {
         $account->is_active = (bool) ($data['is_active'] ?? false);
         $account->save();
 
-        return redirect()->route('finance.bank-accounts.index')->with('success', __('bank.account.flash.created'));
+        return redirect()->toList('finance.bank-accounts.index')->with('success', __('bank.account.flash.created'));
     }
 
     public function edit(BankAccount $bankAccount): View {
@@ -74,7 +74,7 @@ class BankAccountController extends Controller {
         $bankAccount->is_active = (bool) ($data['is_active'] ?? false);
         $bankAccount->save();
 
-        return redirect()->route('finance.bank-accounts.index')->with('success', __('bank.account.flash.updated'));
+        return redirect()->toList('finance.bank-accounts.index')->with('success', __('bank.account.flash.updated'));
     }
 
     public function destroy(BankAccount $bankAccount): RedirectResponse {
@@ -82,7 +82,7 @@ class BankAccountController extends Controller {
 
         $bankAccount->delete();
 
-        return redirect()->route('finance.bank-accounts.index')->with('success', __('bank.account.flash.deleted'));
+        return redirect()->toList('finance.bank-accounts.index')->with('success', __('bank.account.flash.deleted'));
     }
 
     private function ibanExists(string $iban, ?int $ignoreId = null): bool {

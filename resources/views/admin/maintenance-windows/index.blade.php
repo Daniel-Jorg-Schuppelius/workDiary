@@ -10,9 +10,10 @@
 
 @section('title', __('maintenance.window.title'))
 @section('nav-title', __('maintenance.window.title'))
+@include('partials.page-fill')
 
 @section('content')
-<x-index-page :subtitle="__('maintenance.window.subtitle')">
+<x-index-page overflow="clip" :subtitle="__('maintenance.window.subtitle')">
     <x-slot:actions>
         <x-button data-entry-modal-trigger :href="route('admin.maintenance-windows.create')" tone="primary" size="sm" icon="add">
             {{ __('maintenance.window.action.plan') }}
@@ -22,7 +23,7 @@
     @if ($windows->isEmpty())
         <x-empty-state framed icon="engineering" :title="__('maintenance.window.empty.title')" :message="__('maintenance.window.empty.message')" />
     @else
-        <x-table>
+        <x-table scroll="flex">
             <x-slot:head>
                 <tr>
                     <th>{{ __('maintenance.window.field.window') }}</th>
@@ -35,12 +36,12 @@
             @foreach ($windows as $window)
                 <tr>
                     <td>
-                        <div class="font-medium">{{ $window->starts_at->orgTz()->format('d.m.Y H:i') }} – {{ $window->ends_at->orgTz()->format('d.m.Y H:i') }}</div>
+                        <div class="font-medium">{{ $window->starts_at->fdatetime() }} – {{ $window->ends_at->fdatetime() }}</div>
                         @if ($window->message)
                             <div class="text-xs text-muted">{{ $window->message }}</div>
                         @endif
                         @if ($window->announce_from)
-                            <div class="text-xs text-muted">{{ __('maintenance.window.field.announce_from') }}: {{ $window->announce_from->orgTz()->format('d.m.Y H:i') }}</div>
+                            <div class="text-xs text-muted">{{ __('maintenance.window.field.announce_from') }}: {{ $window->announce_from->fdatetime() }}</div>
                         @endif
                     </td>
                     <td>

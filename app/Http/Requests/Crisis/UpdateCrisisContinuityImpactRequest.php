@@ -12,8 +12,9 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Crisis;
 
+use App\Enums\Crisis\CrisisContinuityImpactStatus;
 use App\Http\Requests\BaseFormRequest;
-use App\Models\Crisis\CrisisContinuityImpact;
+use Illuminate\Validation\Rule;
 
 /**
  * Validierung für die Wiederanlauf-Statuspflege (BCM, MVP-219).
@@ -23,7 +24,7 @@ class UpdateCrisisContinuityImpactRequest extends BaseFormRequest {
     /** @return array<string, mixed> */
     public function rules(): array {
         return [
-            'status' => ['required', 'in:' . implode(',', CrisisContinuityImpact::STATUSES)],
+            'status' => ['required', Rule::enum(CrisisContinuityImpactStatus::class)],
             'residual_note' => ['nullable', 'string', 'max:1000'],
         ];
     }

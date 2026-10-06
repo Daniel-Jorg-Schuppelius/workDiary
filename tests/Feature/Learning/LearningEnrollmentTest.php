@@ -66,6 +66,12 @@ class LearningEnrollmentTest extends TestCase {
         $this->assertSame(LearningEnrollmentStatus::Assigned, $enrollment->status);
         $this->assertSame($course->currentVersion()?->id, $enrollment->learning_course_version_id);
         $this->assertSame(1, $enrollment->journal()->count());
+
+        // k3-10: das Journal liest den Wechsel als Enum und speichert weiter den Rohwert.
+        $event = $enrollment->journal()->firstOrFail();
+        $this->assertNull($event->from_status);
+        $this->assertSame(LearningEnrollmentStatus::Assigned, $event->to_status);
+        $this->assertDatabaseHas('learning_enrollment_events', ['id' => $event->id, 'from_status' => null, 'to_status' => LearningEnrollmentStatus::Assigned->value]);
     }
 
     public function test_entwurf_nimmt_keine_einschreibung_an(): void {
@@ -107,6 +113,10 @@ class LearningEnrollmentTest extends TestCase {
         $this->enrollments()->completeUnit($enrollment, $units[1]);
         $this->assertSame(LearningEnrollmentStatus::Completed, $enrollment->refresh()->status);
         $this->assertNotNull($enrollment->completed_at);
+        $this->assertSame(
+            [[null, LearningEnrollmentStatus::Assigned], [LearningEnrollmentStatus::Assigned, LearningEnrollmentStatus::InProgress], [LearningEnrollmentStatus::InProgress, LearningEnrollmentStatus::Completed]],
+            $enrollment->journal()->reorder('id')->get()->map(fn ($event): array => [$event->from_status, $event->to_status])->all(),
+        );
     }
 
     public function test_optionale_einheit_blockiert_den_abschluss_nicht(): void {

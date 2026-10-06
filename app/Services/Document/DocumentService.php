@@ -14,6 +14,7 @@ use App\Enums\Document\{DocumentStatus, DocumentType};
 use App\Jobs\ExtractDocumentTextJob;
 use App\Models\Document\{Document, DocumentVersion};
 use App\Models\Platform\User;
+use App\Services\Attachments\FileAttacher;
 use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
@@ -36,33 +37,6 @@ use Illuminate\Validation\ValidationException;
  * trennung ausschließlich auf Anwendungsebene).
  */
 class DocumentService implements \App\Plugins\Support\Mirror\Contracts\DocumentVersionImporter {
-    /**
-     * Erlaubte Datei-Endungen (analog AttachmentController) — eine Wahrheit für
-     * Formular-Upload und Dokument-ZIP-Import (MVP-707).
-     *
-     * @var list<string>
-     */
-    public const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'txt', 'csv', 'log', 'zip', 'docx', 'xlsx'];
-
-    /**
-     * Serverseitig akzeptierte MIME-Typen (PHP Fileinfo, nicht Client-Header).
-     *
-     * @var list<string>
-     */
-    public const ALLOWED_MIMES = [
-        'image/jpeg',
-        'image/png',
-        'image/gif',
-        'image/webp',
-        'application/pdf',
-        'text/plain',
-        'text/csv',
-        'application/zip',
-        'application/x-zip-compressed',
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    ];
-
     /**
      * Legt ein Dokument inkl. Erst-Version aus dem Upload an.
      *
@@ -342,9 +316,7 @@ class DocumentService implements \App\Plugins\Support\Mirror\Contracts\DocumentV
      * eine Wahrheit für Dokument-Upload, Versions-Upload und Personalakte.
      */
     public function assertAllowedFile(UploadedFile $file): void {
-        $ext = strtolower($file->getClientOriginalExtension() ?: ($file->extension() ?? ''));
-        $serverMime = $file->getMimeType() ?? '';
-        if (! in_array($ext, self::ALLOWED_EXTENSIONS, true) || ! in_array($serverMime, self::ALLOWED_MIMES, true)) {
+        if (! FileAttacher::accepts($file)) {
             throw ValidationException::withMessages([
                 'file' => (string) __('Dateityp nicht erlaubt.'),
             ]);

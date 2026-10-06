@@ -10,6 +10,7 @@
 
 namespace App\Plugins\Toggl\Sources;
 
+use App\Plugins\Toggl\Api\TogglApiClient;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\HashAlgorithm;
 use CommonToolkit\Helper\Data\CryptoHelper;
@@ -18,7 +19,7 @@ use CommonToolkit\Helper\Data\CryptoHelper;
  * Normalisierte Repräsentation eines einzelnen Toggl-Zeiteintrags, unabhängig
  * von der Quelle (API oder CSV-Export). {@see TogglApiClient} und
  * {@see TogglCsvParser} mappen ihre Rohdaten auf dieses DTO; der
- * {@see \App\Plugins\Toggl\TogglImportService} verarbeitet ausschließlich diese Struktur.
+ * {@see \App\Plugins\Toggl\Services\TogglImportService} verarbeitet ausschließlich diese Struktur.
  */
 final class TogglEntry {
     public const SOURCE_API = 'api';

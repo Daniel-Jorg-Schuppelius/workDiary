@@ -20,14 +20,7 @@
         <x-slot:actions>
             <x-icon-btn icon="timeline" size="sm" tone="outline" show-label
                         :href="route('reports.accounting.liquidity-forecast')" :label="__('accounting.reports.card.liquidity_forecast.title')" />
-            <x-icon-btn icon="picture_as_pdf" size="sm" tone="ghost" show-label
-                        :href="route('reports.accounting.liquidity', ['export' => 'pdf'])" :label="__('PDF')" />
-            <x-action-menu icon="download" :label="__('Export')">
-                <x-icon-btn icon="download" size="sm" tone="ghost" show-label
-                            :href="route('reports.accounting.liquidity', ['export' => 'csv'])" :label="__('CSV')" />
-                <x-icon-btn icon="table_view" size="sm" tone="ghost" show-label
-                            :href="route('reports.accounting.liquidity', ['export' => 'xlsx'])" :label="__('Excel')" />
-            </x-action-menu>
+            <x-report-export :url="fn (string $format) => route('reports.accounting.liquidity', ['export' => $format])" tone="ghost" />
         </x-slot:actions>
 
         <div class="grid gap-3 sm:grid-cols-4">

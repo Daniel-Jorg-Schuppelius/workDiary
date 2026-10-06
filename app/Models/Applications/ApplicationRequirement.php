@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Applications;
 
+use App\Enums\Applications\ApplicationRequirementStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Document\Document;
 use Illuminate\Database\Eloquent\Model;
@@ -28,7 +29,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $kind
  * @property bool $required
  * @property \Illuminate\Support\Carbon|null $due_on
- * @property string $status
+ * @property ApplicationRequirementStatus $status
  * @property int|null $document_id
  * @property string|null $note
  * @property int $position
@@ -37,8 +38,6 @@ class ApplicationRequirement extends Model {
     use Auditable;
     use BelongsToOrganization;
     use HasSqid;
-
-    public const STATUSES = ['open', 'in_progress', 'done', 'not_applicable'];
 
     protected $fillable = [
         'organization_id', 'application_opportunity_id', 'label', 'kind',
@@ -49,6 +48,7 @@ class ApplicationRequirement extends Model {
     protected $casts = [
         'required' => 'boolean',
         'due_on' => 'date',
+        'status' => ApplicationRequirementStatus::class,
         'position' => 'integer',
     ];
 

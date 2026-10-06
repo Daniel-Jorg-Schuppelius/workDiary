@@ -20,7 +20,7 @@
         @endforeach
     </select>
     {{-- Immer vorhandener Submit-Fallback: data-autosubmit deckt nur Zeiger/JS ab; Tastatur-/No-JS-Nutzer brauchen einen echten Absende-Button (WCAG2AA). --}}
-    <button type="submit" class="btn btn-sm">{{ __('Aktualisieren') }}</button>
+    <x-button type="submit" tone="plain">{{ __('Aktualisieren') }}</x-button>
 </form>
 
 <div class="overflow-x-auto">

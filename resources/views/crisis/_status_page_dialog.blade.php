@@ -18,7 +18,7 @@
 
     @if ($token)
         {{-- Einmalige Anzeige: der Klartext ist nirgends gespeichert. --}}
-        <div class="alert alert-warning mt-4 items-start">
+        <div role="alert" class="alert alert-warning mt-4 items-start">
             <x-icon name="key" />
             <div class="min-w-0">
                 <div class="font-semibold">{{ __('crisis.status_page.token_once') }}</div>
@@ -27,9 +27,8 @@
         </div>
     @endif
 
-    <dl class="mt-4 grid grid-cols-[auto,1fr] gap-x-4 gap-y-2 text-sm">
-        <dt class="opacity-70">{{ __('crisis.status_page.state') }}</dt>
-        <dd>
+    <x-detail-grid class="mt-4">
+        <x-detail-grid.row :label="__('crisis.status_page.state')">
             @if (! $status['issued'])
                 <span class="wd-badge badge-ghost">{{ __('crisis.status_page.state_none') }}</span>
             @elseif ($status['enabled'])
@@ -37,18 +36,16 @@
             @else
                 <span class="wd-badge badge-warning">{{ __('crisis.status_page.state_paused') }}</span>
             @endif
-        </dd>
+        </x-detail-grid.row>
 
         @if ($status['issued'])
-            <dt class="opacity-70">{{ __('crisis.status_page.hint') }}</dt>
-            <dd><code>{{ $status['hint'] }}…</code></dd>
+            <x-detail-grid.row :label="__('crisis.status_page.hint')"><code>{{ $status['hint'] }}…</code></x-detail-grid.row>
 
             @if ($status['issued_at'])
-                <dt class="opacity-70">{{ __('crisis.status_page.issued_at') }}</dt>
-                <dd>{{ \App\Support\Tz::parse($status['issued_at'])->timezone(\App\Support\Tz::current())->format('d.m.Y H:i') }}</dd>
+                <x-detail-grid.row :label="__('crisis.status_page.issued_at')">{{ \App\Support\Tz::parse($status['issued_at'])->timezone(\App\Support\Tz::current())->format('d.m.Y H:i') }}</x-detail-grid.row>
             @endif
         @endif
-    </dl>
+    </x-detail-grid>
 
     <x-slot:actions>
         @if ($status['issued'])
@@ -56,35 +53,33 @@
                 @csrf
                 @method('PATCH')
                 <input type="hidden" name="enabled" value="{{ $status['enabled'] ? 0 : 1 }}">
-                <button type="submit" class="btn btn-sm">
+                <x-button type="submit" tone="plain">
                     {{ $status['enabled'] ? __('crisis.status_page.action.pause') : __('crisis.status_page.action.resume') }}
-                </button>
+                </x-button>
             </form>
 
             <form method="POST" action="{{ route('crisis.status-page.revoke') }}" class="contents">
                 @csrf
                 @method('DELETE')
-                <button type="submit" class="btn btn-sm btn-error btn-outline"
-                        data-confirm-dialog
-                        data-confirm-message="{{ __('crisis.status_page.confirm.revoke') }}"
-                        data-confirm-icon="link_off"
-                        data-confirm-tone="error"
-                        data-confirm-label="{{ __('crisis.status_page.action.revoke') }}">{{ __('crisis.status_page.action.revoke') }}</button>
+                <x-button type="submit" tone="error" class="btn-outline" data-confirm-dialog
+                        data-confirm-message="{{ __('crisis.status_page.confirm.revoke') }}" data-confirm-icon="link_off"
+                        data-confirm-tone="error" data-confirm-label="{{ __('crisis.status_page.action.revoke') }}">{{ __('crisis.status_page.action.revoke') }}</x-button>
             </form>
         @endif
 
         <form method="POST" action="{{ route('crisis.status-page.rotate') }}" class="contents">
             @csrf
-            <button type="submit" class="btn btn-sm btn-primary"
-                    @if ($status['issued'])
-                        data-confirm-dialog
-                        data-confirm-message="{{ __('crisis.status_page.confirm.rotate') }}"
-                        data-confirm-icon="autorenew"
-                        data-confirm-tone="warning"
-                        data-confirm-label="{{ __('crisis.status_page.action.rotate') }}"
-                    @endif>
-                {{ $status['issued'] ? __('crisis.status_page.action.rotate') : __('crisis.status_page.action.issue') }}
-            </button>
+            @if ($status['issued'])
+                <x-button type="submit" data-confirm-dialog
+                          data-confirm-message="{{ __('crisis.status_page.confirm.rotate') }}"
+                          data-confirm-icon="autorenew"
+                          data-confirm-tone="warning"
+                          data-confirm-label="{{ __('crisis.status_page.action.rotate') }}">
+                    {{ __('crisis.status_page.action.rotate') }}
+                </x-button>
+            @else
+                <x-button type="submit">{{ __('crisis.status_page.action.issue') }}</x-button>
+            @endif
         </form>
     </x-slot:actions>
 </x-modal>

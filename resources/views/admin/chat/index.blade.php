@@ -42,11 +42,11 @@
                                     <td class="text-muted">{{ __('chat.kind.' . $webhook->kind) }}</td>
                                     <td>
                                         @if ($webhook->isActive())
-                                            <span class="badge badge-success badge-sm">{{ __('chat.status.active') }}</span>
+                                            <x-status-badge tone="success">{{ __('chat.status.active') }}</x-status-badge>
                                         @elseif ($webhook->disabled_at)
-                                            <span class="badge badge-error badge-sm">{{ __('chat.status.auto_disabled') }}</span>
+                                            <x-status-badge tone="error">{{ __('chat.status.auto_disabled') }}</x-status-badge>
                                         @else
-                                            <span class="badge badge-ghost badge-sm">{{ __('chat.status.inactive') }}</span>
+                                            <x-status-badge>{{ __('chat.status.inactive') }}</x-status-badge>
                                         @endif
                                     </td>
                                     <td class="text-right">
@@ -55,12 +55,12 @@
                                                 <form method="POST" action="{{ route('admin.chat.test') }}">
                                                     @csrf
                                                     <input type="hidden" name="webhook" value="{{ $webhook->sqid }}">
-                                                    <button type="submit" class="btn btn-ghost btn-xs">{{ __('chat.action.test') }}</button>
+                                                    <x-button type="submit" tone="ghost" size="xs">{{ __('chat.action.test') }}</x-button>
                                                 </form>
                                                 <form method="POST" action="{{ route('admin.chat.disconnect') }}">
                                                     @csrf
                                                     <input type="hidden" name="webhook" value="{{ $webhook->sqid }}">
-                                                    <button type="submit" class="btn btn-ghost btn-xs text-error">{{ __('chat.action.disconnect') }}</button>
+                                                    <x-button type="submit" tone="ghost" size="xs" class="text-error">{{ __('chat.action.disconnect') }}</x-button>
                                                 </form>
                                             </div>
                                         @endif
@@ -72,8 +72,7 @@
         </x-card>
 
         {{-- Kanal hinzufügen --}}
-        <form method="POST" action="{{ route('admin.chat.connection.store') }}"
-              class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
+        <x-card as="form" method="POST" action="{{ route('admin.chat.connection.store') }}">
             @csrf
             <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('chat.add_heading') }}</h2>
             <div class="grid gap-3 md:grid-cols-2">
@@ -96,9 +95,9 @@
                 </label>
             </div>
             <div class="mt-3 flex justify-end">
-                <button type="submit" class="btn btn-sm btn-primary">{{ __('chat.action.save') }}</button>
+                <x-button type="submit">{{ __('chat.action.save') }}</x-button>
             </div>
-        </form>
+        </x-card>
     </div>
 </x-page-shell>
 @endsection

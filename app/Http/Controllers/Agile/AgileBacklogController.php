@@ -161,6 +161,17 @@ class AgileBacklogController extends Controller {
         return redirect()->route('agile.backlog', $project);
     }
 
+    public function editItem(Project $project, AgileWorkItem $item): View {
+        $this->assertItemOnProject($item, $project);
+        Gate::authorize('prioritize', $item);
+
+        return view('agile._item_dialog', [
+            'project' => $project,
+            'item' => $item->load('task:id,title,parent_task_id'),
+            'types' => $this->selectableTypes($item),
+        ]);
+    }
+
     public function updateItem(Request $request, Project $project, AgileWorkItem $item): RedirectResponse {
         $this->assertItemOnProject($item, $project);
         Gate::authorize('prioritize', $item);
@@ -248,6 +259,30 @@ class AgileBacklogController extends Controller {
         $criterion->delete();
 
         return back()->with('success', __('Kriterium entfernt.'));
+    }
+
+    /**
+     * Typen, die der Dialog anbietet, ohne die Epic-Regeln der Zuordnung zu
+     * brechen: Ein Epic mit Kindern bleibt Epic, ein Kind eines Epics wird keins.
+     *
+     * @return list<AgileItemType>
+     */
+    private function selectableTypes(AgileWorkItem $item): array {
+        $onBoard = AgileWorkItem::query()->where('board_id', $item->board_id);
+
+        if ($item->item_type === AgileItemType::Epic) {
+            $hasChildren = $onBoard->whereHas('task', fn($q) => $q->where('parent_task_id', $item->task_id))->exists();
+
+            return $hasChildren ? [AgileItemType::Epic] : AgileItemType::cases();
+        }
+
+        $parentTaskId = $item->task?->parent_task_id;
+        $underEpic = $parentTaskId !== null
+            && $onBoard->where('task_id', $parentTaskId)->where('item_type', AgileItemType::Epic->value)->exists();
+
+        return $underEpic
+            ? array_values(array_filter(AgileItemType::cases(), static fn(AgileItemType $type): bool => $type !== AgileItemType::Epic))
+            : AgileItemType::cases();
     }
 
     private function boardFor(Project $project): AgileBoard {

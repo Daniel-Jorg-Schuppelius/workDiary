@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Reselling;
 
 use App\Enums\Finance\BillingMode;
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Enums\Reselling\{LinkOrigin, PeriodStatus, ResaleArticleRole};
 use App\Models\Article\Article;
 use App\Models\Customer\Customer;
@@ -67,10 +68,10 @@ class MirrorLocalSourceTest extends TestCase {
      *
      * @param  list<array{article?: Article|null, description: string, quantity: float, unit?: string, unit_price?: string, service_date?: string|null}>  $items
      */
-    private function invoice(string $number, string $issuedOn, array $items, string $status = Invoice::STATUS_ISSUED, ?Customer $customer = null): Invoice {
+    private function invoice(string $number, string $issuedOn, array $items, InvoiceStatus $status = InvoiceStatus::Issued, ?Customer $customer = null): Invoice {
         $invoice = Invoice::query()->create([
             'organization_id' => $this->organization->id, 'customer_id' => ($customer ?? $this->customer)->id, 'number' => $number, 'status' => $status,
-            'type' => Invoice::TYPE_INVOICE, 'category' => 'resale', 'issued_on' => $status === Invoice::STATUS_DRAFT ? null : $issuedOn, 'currency' => 'EUR',
+            'type' => Invoice::TYPE_INVOICE, 'category' => 'resale', 'issued_on' => $status === InvoiceStatus::Draft ? null : $issuedOn, 'currency' => 'EUR',
         ]);
         foreach ($items as $position => $item) {
             $invoice->items()->create([
@@ -112,7 +113,7 @@ class MirrorLocalSourceTest extends TestCase {
         $subscription = $this->subscription(['article_ref' => null]);
         $period = $subscription->periods()->orderBy('starts_on')->firstOrFail();
         // Entwurf allein: kein Kandidat.
-        $this->invoice('RE-2025-0001', '2025-08-06', [['article' => null, 'description' => 'Microsoft 365 Business Premium · 05.08.2025 – 04.08.2026', 'quantity' => 12, 'service_date' => '2025-08-05']], Invoice::STATUS_DRAFT);
+        $this->invoice('RE-2025-0001', '2025-08-06', [['article' => null, 'description' => 'Microsoft 365 Business Premium · 05.08.2025 – 04.08.2026', 'quantity' => 12, 'service_date' => '2025-08-05']], InvoiceStatus::Draft);
         (new LinkProposer)->propose($this->organization);
         $this->assertSame(PeriodStatus::Open, $period->fresh()?->status, 'Rechnungsentwurf deckt nichts');
         $this->assertSame(0, ResalePeriodLink::query()->count());
@@ -160,7 +161,7 @@ class MirrorLocalSourceTest extends TestCase {
         $subscription = $this->subscription();
         $period = $subscription->periods()->orderBy('starts_on')->firstOrFail();
         $other = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Fremde GmbH', 'billing_mode' => BillingMode::Workdiary]);
-        $theirs = $this->invoice('RE-2025-0900', '2025-08-06', [['article' => $this->premium, 'description' => 'Microsoft 365 Business Premium', 'quantity' => 12]], Invoice::STATUS_ISSUED, $other);
+        $theirs = $this->invoice('RE-2025-0900', '2025-08-06', [['article' => $this->premium, 'description' => 'Microsoft 365 Business Premium', 'quantity' => 12]], InvoiceStatus::Issued, $other);
         $theirLine = $theirs->items()->firstOrFail();
 
         // Position eines anderen Kunden: abgelehnt (B13), nichts geschrieben.

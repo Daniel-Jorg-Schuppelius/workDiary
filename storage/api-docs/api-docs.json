@@ -367,7 +367,20 @@
                                 "comment",
                                 "shift",
                                 "assignment",
-                                "asset"
+                                "task",
+                                "customer",
+                                "supplier",
+                                "organization",
+                                "user",
+                                "asset",
+                                "knowledge",
+                                "service-ticket",
+                                "expense",
+                                "damage",
+                                "recall",
+                                "hazard-assessment",
+                                "safety-instruction",
+                                "takeoff"
                             ]
                         }
                     },

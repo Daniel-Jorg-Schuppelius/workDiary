@@ -12,10 +12,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Patrols;
 
+use App\Enums\Patrol\PatrolRunStatus;
 use App\Models\Classification\EntryType;
 use App\Models\Diary\DiaryEntry;
 use App\Models\Location\LocationDeviceToken;
-use App\Models\Patrol\{PatrolRoute, PatrolRun};
+use App\Models\Patrol\{PatrolRoute};
 use App\Models\Platform\User;
 use App\Services\Patrol\PatrolService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -122,7 +123,7 @@ final class PatrolFollowUpTest extends TestCase {
         $service->scan($run, $tokens[0]);
         $service->complete($run, $this->admin);
 
-        $this->assertSame(PatrolRun::STATUS_COMPLETED, $run->fresh()?->status);
+        $this->assertSame(PatrolRunStatus::Completed, $run->fresh()?->status);
         $this->assertSame(0, DiaryEntry::query()->count());
     }
 

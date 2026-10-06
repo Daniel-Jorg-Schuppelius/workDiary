@@ -15,6 +15,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
 use App\Models\Procedure\{ProcedureTemplate, ProcedureTemplateVersion};
 use App\Services\Procedure\ProcedureTemplateService;
+use App\Services\Recipes\RecipeService;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\Rule;
@@ -132,7 +133,7 @@ class ProcedureTemplateController extends Controller {
             'recipeVersion' => $version,
             'recipeRequirements' => collect(),
             'recipeArticles' => collect(),
-            'recipePartyActive' => $organization !== null && $recipes->isPartyserviceActive($organization),
+            'recipePartyActive' => $organization !== null && $organization->hasBranchProfile(RecipeService::PROFILE_CODE),
             'recipeProfile' => null,
             'recipeAllergens' => null,
             'recipeAllergenOptions' => collect(),

@@ -12,10 +12,11 @@ namespace App\Http\Controllers\Isms;
 
 use App\Enums\Isms\{AuditKind, AuditStatus, CorrectiveActionStatus, FindingKind, FindingStatus};
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Isms\Concerns\ResolvesIsmsScope;
 use App\Models\Isms\{IsmsAudit, IsmsAuditFinding, IsmsCorrectiveAction, IsmsRequirement, IsmsScope};
 use App\Models\Platform\User;
 use App\Services\Isms\AuditService;
-use App\Support\{Sqid, SqidEncoder};
+use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -33,9 +34,10 @@ use Illuminate\View\View;
  * und Maßnahmen via manageFindings am Audit).
  */
 class AuditController extends Controller {
+    use ResolvesIsmsScope;
+
     public function __construct(
         private readonly AuditService $service,
-        private readonly SqidEncoder $sqids,
     ) {}
 
     public function index(Request $request): View {
@@ -61,7 +63,7 @@ class AuditController extends Controller {
             ])
             ->withCount(['findings', 'openFindings']);
 
-        $scopeFilter = $this->resolveScope($filters['scope'], $scopes);
+        $scopeFilter = $filters['scope'] === 'all' ? null : $this->scopeOrNull($filters['scope'], $scopes);
         if ($scopeFilter !== null) {
             $query->where('isms_scope_id', $scopeFilter->id);
         } else {
@@ -119,7 +121,7 @@ class AuditController extends Controller {
 
         /** @var User $creator */
         $creator = Auth::user();
-        $scope = $this->resolveScope($data['scope'], null)
+        $scope = $this->scopeOrNull($data['scope'])
             ?? IsmsScope::query()->orderByDesc('is_default')->firstOrFail();
         $this->service->createAudit($creator, $scope, $data);
 
@@ -175,7 +177,7 @@ class AuditController extends Controller {
         $this->service->deleteAudit($audit, $actor);
 
         return redirect()
-            ->route('isms.audits.index')
+            ->toList('isms.audits.index')
             ->with('success', __('isms.flash.audit_deleted'));
     }
 
@@ -445,26 +447,5 @@ class AuditController extends Controller {
             ->orderBy('norm')
             ->orderBy('ref_no')
             ->get(['id', 'norm', 'edition', 'ref_no', 'title']);
-    }
-
-    /**
-     * Löst den Scope-Parameter (Sqid) auf — ungültige/fremde Werte ergeben
-     * null (Filter „alle" bzw. Default-Scope-Fallback im store()).
-     *
-     * @param  Collection<int, IsmsScope>|null  $scopes
-     */
-    private function resolveScope(mixed $sqid, ?Collection $scopes): ?IsmsScope {
-        if (! is_string($sqid) || $sqid === '' || $sqid === 'all') {
-            return null;
-        }
-
-        $id = $this->sqids->decode(IsmsScope::class, $sqid);
-        if ($id === null) {
-            return null;
-        }
-
-        return $scopes !== null
-            ? $scopes->firstWhere('id', $id)
-            : IsmsScope::query()->whereKey($id)->first();
     }
 }

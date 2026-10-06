@@ -16,12 +16,12 @@
 <x-card :title="__('Finanzen & Reisen')" icon="payments"
         :subtitle="__('Monat') . ' · ' . ($month['label'] ?? '')">
     <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <div class="rounded-box border border-base-300 bg-base-100 px-4 py-3 shadow-xs">
+        <x-card padding="px-4 py-3">
             <p class="text-xs uppercase tracking-wider text-muted">{{ __('Spesen eingereicht (Brutto)') }}</p>
             <p class="mt-1 font-['Space_Grotesk'] text-2xl font-bold tabular-nums">
                 {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) ($month['expenses_submitted_gross'] ?? 0), 2, withThousandsSeparator: true) }} €
             </p>
-        </div>
+        </x-card>
         <div class="rounded-box border border-success/40 bg-success/5 px-4 py-3">
             <p class="text-xs uppercase tracking-wider text-muted">{{ __('Davon erstattet') }}</p>
             <p class="mt-1 font-['Space_Grotesk'] text-2xl font-bold tabular-nums text-success">
@@ -36,14 +36,14 @@
                 <span class="opacity-70">{{ $month['expenses_draft_count'] ?? 0 }}</span>
             </p>
         </div>
-        <div class="rounded-box border border-base-300 bg-base-100 px-4 py-3 shadow-xs">
+        <x-card padding="px-4 py-3">
             <p class="text-xs uppercase tracking-wider text-muted">{{ __('Reisen (Monat) / Entwürfe') }}</p>
             <p class="mt-1 font-['Space_Grotesk'] text-2xl font-bold">
                 {{ $month['trips_count'] ?? 0 }}
                 <span class="text-muted text-base font-normal">/</span>
                 <span class="opacity-70">{{ $month['trip_drafts'] ?? 0 }}</span>
             </p>
-        </div>
+        </x-card>
     </div>
 
     @if (! empty($approver))

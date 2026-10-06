@@ -9,8 +9,7 @@
 @extends('layouts.app')
 @section('title', __('inventory.serial.title') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('inventory.serial.title'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('inventory.serial.subtitle')">
@@ -49,7 +48,7 @@
             <tr>
                 <td><a href="{{ route('serials.show', $serial) }}" class="link link-hover font-mono">{{ $serial->serial_no }}</a></td>
                 <td>{{ $serial->article?->name }}</td>
-                <td><span class="badge badge-sm badge-ghost">{{ $serial->status->label() }}</span></td>
+                <td><x-status-badge>{{ $serial->status->label() }}</x-status-badge></td>
                 <td>{{ $serial->customer?->name ?? '—' }}</td>
             </tr>
         @empty

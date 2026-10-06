@@ -12,6 +12,7 @@ namespace Tests\Feature\Claims;
 
 use App\Enums\Claims\{ClaimFinancialKind, ClaimKind, ClaimRmaDisposition, ClaimStatus, ClaimVerdict};
 use App\Enums\Inventory\{SerialSource, SerialStatus, StockState};
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Article\{Article, ArticleVariant};
 use App\Models\Claims\ClaimCase;
 use App\Models\Customer\Customer;
@@ -19,7 +20,7 @@ use App\Models\Inventory\{StockSerial, Warehouse};
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
 use App\Services\Claims\{ClaimCaseService, ClaimFinancialService, ClaimRmaService};
-use App\Services\Inventory\InventoryLedger;
+use App\Services\Inventory\{InventoryLedger, LotService, LotStockReader};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\{WithOrganization, WithPortalVisibility};
@@ -166,12 +167,42 @@ final class ClaimsLifecycleTest extends TestCase {
         $this->assertSame(SerialStatus::Scrapped, $serial->fresh()->status);
     }
 
+    /** Wiedereinlagerung in eine gesperrte Charge: der Bestand kommt zurück, bleibt aber mitgesperrt (Chargensperre als Buchung). */
+    public function test_restock_into_a_blocked_lot_stays_blocked(): void {
+        $article = Article::factory()->create(['organization_id' => $this->organization->id, 'batch_required' => true]);
+        $variant = ArticleVariant::factory()->create(['organization_id' => $this->organization->id, 'article_id' => $article->id]);
+        $warehouse = Warehouse::factory()->create(['organization_id' => $this->organization->id]);
+        $lots = app(LotService::class);
+        $lot = $lots->block($lots->register($variant, 'L-RMA'), 'Rückruf', $this->admin);
+        $rmaService = app(ClaimRmaService::class);
+        $rma = $rmaService->announce($this->openCase(), [
+            'article_id' => $article->id,
+            'article_variant_id' => $variant->id,
+            'stock_lot_id' => $lot->id,
+            'qty' => '2',
+            'warehouse_id' => $warehouse->id,
+        ]);
+        $rmaService->receive($rma, $this->admin, ['stock_state' => 'quality']);
+
+        $rmaService->decideDisposition($rma->fresh(), $this->admin, ClaimRmaDisposition::Restock, 'ohne Befund');
+
+        $ledger = app(InventoryLedger::class);
+        $this->assertSame(
+            ['2.0000', '2.0000', '0.0000', '0.0000'],
+            [$ledger->balance($variant, $warehouse, StockState::Physical), $ledger->balance($variant, $warehouse, StockState::Blocked), $ledger->balance($variant, $warehouse, StockState::Quality), $ledger->available($variant, $warehouse)],
+        );
+        $this->assertSame('2.0000', app(LotStockReader::class)->balanceOf($lot));
+
+        $lots->unblock($lot, 'Prüfung ohne Befund', $this->admin);
+        $this->assertSame('2.0000', $ledger->available($variant, $warehouse));
+    }
+
     public function test_financial_outcome_requires_four_eyes_and_sets_reason_kind(): void {
         $invoice = Invoice::query()->create([
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
             'number' => 'RE-2026-0042',
-            'status' => Invoice::STATUS_PAID,
+            'status' => InvoiceStatus::Paid,
             'type' => Invoice::TYPE_INVOICE,
             'category' => Invoice::CATEGORY_SERVICE,
             'issued_on' => '2026-06-01',
@@ -273,6 +304,44 @@ final class ClaimsLifecycleTest extends TestCase {
 
         // Support: Annahme/Pflege, aber kein Lagerprozess.
         $this->actingAs($support)->post(route('claims.rma.store', $case), [])->assertForbidden();
+    }
+
+    /**
+     * k3-10: der Quarantäne-Zustand des Rückläufers ist ein StockState. Die
+     * Fallakte nennt ihn weiter mit dem Speicherwert, zur Wahl stehen nur die
+     * drei Quarantäne-Zustände.
+     */
+    public function test_rma_quarantine_state_is_cast_shown_and_limited_to_quarantine(): void {
+        $case = $this->openCase();
+        $rmaService = app(ClaimRmaService::class);
+        $announced = $rmaService->announce($case, ['qty' => '1']);
+        $received = $rmaService->receive($rmaService->announce($case, ['qty' => '1']), $this->admin, ['stock_state' => 'blocked']);
+
+        $this->assertNull($announced->fresh()->stock_state);
+        $this->assertSame(StockState::Blocked, $received->stock_state);
+        $this->assertDatabaseHas('claim_rma_returns', ['id' => $received->id, 'stock_state' => StockState::Blocked->value]);
+
+        $html = (string) $this->actingAs($this->admin)->get(route('claims.show', $case))->assertOk()->getContent();
+        $this->assertStringContainsString(e(__('Quarantäne: :state', ['state' => StockState::Blocked->label()])), $html);
+        preg_match('/<select name="stock_state".*?<\/select>/s', $html, $select);
+        foreach (StockState::cases() as $state) {
+            $this->assertSame(
+                in_array($state, StockState::quarantine(), true),
+                str_contains($select[0] ?? '', '<option value="' . $state->value . '">' . $state->value . '</option>'),
+                $state->value,
+            );
+        }
+
+        $this->actingAs($this->admin)
+            ->post(route('claims.rma.receive', $announced), ['stock_state' => StockState::Physical->value])
+            ->assertSessionHasErrors('stock_state');
+        $this->actingAs($this->admin)
+            ->post(route('claims.rma.receive', $announced), ['stock_state' => StockState::Damaged->value])
+            ->assertSessionHasNoErrors();
+        $this->assertSame(StockState::Damaged, $announced->fresh()->stock_state);
+
+        $this->expectException(\InvalidArgumentException::class);
+        $rmaService->receive($rmaService->announce($case, ['qty' => '1']), $this->admin, ['stock_state' => StockState::Scrap]);
     }
 
     /** B1/MVP-007: Ursachencode-Selects der Fallakte senden Sqids (Konvention: Sqid in Formularen). */

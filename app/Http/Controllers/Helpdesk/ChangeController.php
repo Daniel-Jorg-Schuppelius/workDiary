@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Helpdesk;
 
+use App\Enums\ServiceTicket\ChangeStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ServiceTicket\SaveChangeRequest;
 use App\Models\Asset\Asset;
@@ -39,8 +40,6 @@ use Illuminate\View\View;
  * nach approvable_type auf ChangeService::decide().
  */
 class ChangeController extends Controller {
-    private const STATUSES = ['draft', 'pending_approval', 'approved', 'implementing', 'done', 'cancelled'];
-
     public function __construct(private readonly ChangeService $changes) {}
 
     public function index(Request $request): View {
@@ -56,7 +55,7 @@ class ChangeController extends Controller {
         if (in_array($type, ['standard', 'normal', 'emergency'], true)) {
             $query->where('change_type', $type);
         }
-        if (in_array($status, self::STATUSES, true)) {
+        if (ChangeStatus::tryFrom($status) !== null) {
             $query->where('status', $status);
         }
         if (in_array($outcome, Change::OUTCOMES, true)) {
@@ -73,7 +72,7 @@ class ChangeController extends Controller {
             'changes' => $query->paginate(25)->withQueryString(),
             'filters' => ['change_type' => $type, 'status' => $status, 'outcome' => $outcome],
             'typeLabels' => self::typeLabels(),
-            'statusLabels' => self::statusLabels(),
+            'statusLabels' => ChangeStatus::options(),
             'outcomeLabels' => self::outcomeLabels(),
             'canManage' => Gate::allows('create', Change::class),
         ]);
@@ -96,13 +95,12 @@ class ChangeController extends Controller {
         return view('helpdesk.changes.show', [
             'change' => $change,
             'typeLabels' => self::typeLabels(),
-            'statusLabels' => self::statusLabels(),
             'outcomeLabels' => self::outcomeLabels(),
             'canManage' => $canManage,
-            'assetOptions' => $canManage && in_array($change->status, ['draft', 'pending_approval', 'approved', 'implementing'], true)
+            'assetOptions' => $canManage && $change->status->isOpen()
                 ? Asset::query()->orderBy('name')->limit(200)->get(['id', 'asset_no', 'name'])
                 : collect(),
-            'procedureTemplates' => $canManage && $change->status === 'approved'
+            'procedureTemplates' => $canManage && $change->status === ChangeStatus::Approved
                 ? ProcedureTemplate::query()->orderBy('name')->get(['id', 'name'])
                 : collect(),
         ]);
@@ -248,18 +246,6 @@ class ChangeController extends Controller {
             'standard' => (string) __('Standard'),
             'normal' => (string) __('Normal'),
             'emergency' => (string) __('Emergency'),
-        ];
-    }
-
-    /** @return array<string, string> Labels je Change-Status (Strings, kein Enum). */
-    public static function statusLabels(): array {
-        return [
-            'draft' => (string) __('Entwurf'),
-            'pending_approval' => (string) __('Wartet auf Freigabe'),
-            'approved' => (string) __('Genehmigt'),
-            'implementing' => (string) __('In Umsetzung'),
-            'done' => (string) __('Abgeschlossen'),
-            'cancelled' => (string) __('Abgebrochen'),
         ];
     }
 

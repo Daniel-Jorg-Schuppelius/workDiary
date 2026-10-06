@@ -11,8 +11,7 @@
 
 @section('title', __('Quelltext-Integrität'))
 @section('nav-title', __('Quelltext-Integrität'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('Datei-Hash-Baseline des Quelltexts: Prüfläufe, Abweichungen und Baseline-Stand.')">
@@ -33,12 +32,12 @@
     </x-slot:actions>
 
     <div class="grid gap-3 sm:grid-cols-3 mb-3 shrink-0">
-        <div class="rounded-box border border-base-300 bg-base-100 p-3">
+        <x-card padding="p-3">
             <div class="text-xs uppercase tracking-wide text-muted">{{ __('Letzter Prüflauf') }}</div>
             @if ($latest !== null)
                 <div class="mt-1 flex items-center gap-2">
                     <x-status-badge :tone="$latest->status->tone()" size="sm">{{ $latest->status->label() }}</x-status-badge>
-                    <span class="text-xs text-base-content/70">{{ $latest->ran_at->orgTz()->format('d.m.Y H:i') }}</span>
+                    <span class="text-xs text-base-content/70">{{ $latest->ran_at->fdatetime() }}</span>
                 </div>
                 @if ($latest->deviationCount() > 0)
                     <div class="mt-1 text-xs text-base-content/70">
@@ -46,10 +45,11 @@
                     </div>
                 @endif
             @else
+                {{-- raw-markup-ok: Kennzahl-Kachel: Platzhalter für den fehlenden Einzelwert, keine Liste --}}
                 <div class="mt-1 text-sm text-base-content/70">{{ __('Noch kein Prüflauf') }}</div>
             @endif
-        </div>
-        <div class="rounded-box border border-base-300 bg-base-100 p-3">
+        </x-card>
+        <x-card padding="p-3">
             <div class="text-xs uppercase tracking-wide text-muted">{{ __('Baseline') }}</div>
             @if ($baseline !== null)
                 <div class="mt-1 flex items-center gap-2">
@@ -61,17 +61,18 @@
                     {{ __(':files Dateien, :packages Pakete', ['files' => $baseline['files'], 'packages' => $baseline['packages']]) }}
                 </div>
             @else
+                {{-- raw-markup-ok: Kennzahl-Kachel: Warnwert statt Einzelwert, keine Liste --}}
                 <div class="mt-1 text-sm text-warning">{{ __('Keine Baseline vorhanden') }}</div>
             @endif
-        </div>
-        <div class="rounded-box border border-base-300 bg-base-100 p-3">
+        </x-card>
+        <x-card padding="p-3">
             <div class="text-xs uppercase tracking-wide text-muted">{{ __('Root-Hash') }}</div>
             @if ($baseline !== null)
                 <code class="mt-1 block text-xs break-all">{{ $baseline['root'] }}</code>
             @else
                 <div class="mt-1 text-sm text-base-content/70">—</div>
             @endif
-        </div>
+        </x-card>
     </div>
 
     @if ($latest !== null && $latest->findings !== null && $latest->findings !== [])

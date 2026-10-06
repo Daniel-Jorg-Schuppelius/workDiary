@@ -25,6 +25,9 @@ use Illuminate\View\View;
  * Admin-gebunden wie die Terminal-Verwaltung.
  */
 class TimeDimensionAdminController extends Controller {
+    /** Dimensionstypen je Seite; die Werte eines Typs stehen vollständig darunter. */
+    public const PER_PAGE = 10;
+
     public function index(): View {
         $admin = $this->admin();
         $organization = $this->organization($admin);
@@ -34,7 +37,9 @@ class TimeDimensionAdminController extends Controller {
                 ->where('organization_id', $organization->id)
                 ->with('values')
                 ->orderBy('name')
-                ->get(),
+                ->orderBy('id')
+                ->paginate(self::PER_PAGE)
+                ->withQueryString(),
         ]);
     }
 
@@ -56,7 +61,7 @@ class TimeDimensionAdminController extends Controller {
         $type = TimeDimensionType::query()->create($data + ['organization_id' => $organization->id, 'enabled' => true]);
         $type->audit('timeDimension.type_created', ['by_user_id' => (int) $admin->id]);
 
-        return back()->with('success', __('allocation.dimensions.flash.type_created'));
+        return redirect()->toList('admin.time-dimensions.index')->with('success', __('allocation.dimensions.flash.type_created'));
     }
 
     public function toggleType(Request $request, TimeDimensionType $type): RedirectResponse {
@@ -66,7 +71,7 @@ class TimeDimensionAdminController extends Controller {
         $type->forceFill(['enabled' => ! $type->enabled])->save();
         $type->audit('timeDimension.type_toggled', ['enabled' => (bool) $type->enabled, 'by_user_id' => (int) $admin->id]);
 
-        return back()->with('success', __($type->enabled ? 'allocation.dimensions.flash.type_enabled' : 'allocation.dimensions.flash.type_disabled'));
+        return redirect()->toList('admin.time-dimensions.index')->with('success', __($type->enabled ? 'allocation.dimensions.flash.type_enabled' : 'allocation.dimensions.flash.type_disabled'));
     }
 
     public function storeValue(Request $request, TimeDimensionType $type): RedirectResponse {
@@ -88,7 +93,7 @@ class TimeDimensionAdminController extends Controller {
         $value = $type->values()->create($data + ['organization_id' => $type->organization_id]);
         $value->audit('timeDimension.value_created', ['by_user_id' => (int) $admin->id]);
 
-        return back()->with('success', __('allocation.dimensions.flash.value_created'));
+        return redirect()->toList('admin.time-dimensions.index')->with('success', __('allocation.dimensions.flash.value_created'));
     }
 
     public function destroyValue(TimeDimensionValue $value): RedirectResponse {
@@ -98,7 +103,7 @@ class TimeDimensionAdminController extends Controller {
         $value->audit('timeDimension.value_deleted', ['by_user_id' => (int) $admin->id, 'name' => $value->name]);
         $value->delete();
 
-        return back()->with('success', __('allocation.dimensions.flash.value_deleted'));
+        return redirect()->toList('admin.time-dimensions.index')->with('success', __('allocation.dimensions.flash.value_deleted'));
     }
 
     private function admin(): User {

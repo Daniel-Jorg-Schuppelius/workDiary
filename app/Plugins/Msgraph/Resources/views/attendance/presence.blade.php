@@ -8,7 +8,7 @@
 --}}
 {{-- Teams-Presence-Panel der Anwesenheitsseite (Feature 102, F).
      Variablen: $members (Collection<User>), $presence (email → availability). --}}
-<div class="mb-3 rounded-box border border-base-300 bg-base-100 p-3" data-msgraph-presence>
+<x-card padding="p-3" class="mb-3" data-msgraph-presence>
     <h3 class="mb-2 text-sm font-semibold">{{ __('msgraph::msgraph.presence.heading') }}</h3>
     <ul class="flex flex-wrap gap-x-4 gap-y-1 text-sm">
         @foreach ($members as $member)
@@ -28,4 +28,4 @@
             </li>
         @endforeach
     </ul>
-</div>
+</x-card>

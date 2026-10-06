@@ -121,7 +121,7 @@ class SoftwareController extends Controller {
         $this->service->deleteProduct($product, $actor);
 
         return redirect()
-            ->route('isms.software.index')
+            ->toList('isms.software.index')
             ->with('success', __('isms.flash.software_deleted'));
     }
 

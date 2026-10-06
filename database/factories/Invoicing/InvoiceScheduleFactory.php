@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Database\Factories\Invoicing;
 
+use App\Enums\Invoicing\InvoiceScheduleStatus;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\InvoiceSchedule;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -32,7 +33,7 @@ class InvoiceScheduleFactory extends Factory {
             'interval_count' => 1,
             'billing_period_mode' => InvoiceSchedule::MODE_PREVIOUS,
             'next_run_on' => now()->addMonth()->startOfMonth()->toDateString(),
-            'status' => InvoiceSchedule::STATUS_ACTIVE,
+            'status' => InvoiceScheduleStatus::Active,
         ];
     }
 }

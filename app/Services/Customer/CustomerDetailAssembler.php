@@ -110,7 +110,7 @@ class CustomerDetailAssembler {
         // der Umsatztrend (Rechnungsarten ohne Stornos, ohne archivierte Belege).
         $invoicedRange = array_sum($this->externalRevenue->monthlyRevenue((int) $customer->getKey(), $rangeFrom, $rangeTo));
         foreach ($localInvoices as $inv) {
-            if (in_array($inv->type, CustomerTrendBuilder::INVOICE_TYPES, true) && ! in_array($inv->status, CustomerTrendBuilder::VOID_STATUSES, true)) {
+            if (in_array($inv->type, CustomerTrendBuilder::INVOICE_TYPES, true) && ! in_array($inv->status->value, CustomerTrendBuilder::VOID_STATUSES, true)) {
                 $invoicedRange += $inv->total?->toFloat() ?? 0.0;
             }
         }

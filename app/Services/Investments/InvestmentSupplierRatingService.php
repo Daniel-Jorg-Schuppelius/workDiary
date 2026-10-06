@@ -24,8 +24,6 @@ use RuntimeException;
  * abgeschlossen ist; die Übersicht mittelt je Lieferant über alle Investitionen.
  */
 final class InvestmentSupplierRatingService {
-    public const RATEABLE_STATUSES = ['in_progress', 'completed', 'post_review'];
-
     /** @return Collection<int, Supplier> */
     public function suppliersFor(InvestmentCase $case): Collection {
         return Supplier::query()
@@ -34,13 +32,9 @@ final class InvestmentSupplierRatingService {
             ->get();
     }
 
-    public function isRateable(InvestmentCase $case): bool {
-        return in_array((string) $case->status, self::RATEABLE_STATUSES, true);
-    }
-
     /** @param array{schedule_score: int, cost_score: int, quality_score: int, note?: ?string} $scores */
     public function rate(InvestmentCase $case, Supplier $supplier, array $scores, User $actor): InvestmentSupplierRating {
-        if (! $this->isRateable($case)) {
+        if (! $case->status->isRateable()) {
             throw new RuntimeException((string) __('investment.supplier_rating.error.not_rateable'));
         }
         if (! $this->suppliersFor($case)->contains('id', $supplier->id)) {

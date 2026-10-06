@@ -27,12 +27,13 @@ final class PluginCapabilityOverviewTest extends TestCase {
         return app(PluginCapabilityOverview::class);
     }
 
-    public function test_facturation_target_is_shown_although_the_plugin_declares_nothing(): void {
+    public function test_facturation_target_is_shown_although_the_plugin_does_not_declare_it(): void {
         $plugin = app(PluginManager::class)->get(SevDeskPlugin::ID);
         $this->assertNotNull($plugin);
 
-        // Vertrag unverändert: sevDesk erklärt bewusst keine Capability.
-        $this->assertSame([], $plugin->capabilities());
+        // Die Fakturierung erklärt sevDesk bewusst nicht als Capability —
+        // angekündigt ist nur, was die Klasse selbst implementiert.
+        $this->assertSame([PluginCapability::ContactSync], $plugin->capabilities());
 
         $labels = $this->overview()->labelsFor($plugin);
 

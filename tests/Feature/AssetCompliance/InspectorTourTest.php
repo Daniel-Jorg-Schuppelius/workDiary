@@ -76,7 +76,11 @@ final class InspectorTourTest extends TestCase {
         $this->assertSame($this->inspector->id, $entry->assigned_user_id);
         $this->assertSame($schedule->asset_id, $entry->asset_id);
 
-        // Verplante Termine erscheinen nicht erneut.
+        // Verplante Termine werden nicht zweimal verplant (k3-4) und erscheinen nicht erneut.
+        $orders = DiaryEntry::query()->count();
+        $this->actingAs($this->admin)->post(route('asset-compliance.tours.store'), ['inspector_user_id' => $this->inspector->sqid, 'date' => '2026-10-08', 'until' => '2026-10-31', 'schedule_ids' => $ids])
+            ->assertSessionHas('error', __('inspection_tour.none_selected'));
+        $this->assertSame($orders, DiaryEntry::query()->count());
         $this->actingAs($this->admin)->get(route('asset-compliance.tours.index', ['inspector' => $this->inspector->sqid, 'until' => '2026-10-31']))->assertOk()->assertDontSee('Waage nah');
     }
 

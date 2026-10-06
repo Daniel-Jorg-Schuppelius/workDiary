@@ -23,14 +23,7 @@
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="__('reporting.surcharge_forecast.subtitle')">
             <x-slot:actions>
-                <x-action-menu icon="download" tone="outline" :label="__('Export')">
-                    <x-icon-btn icon="download" tone="outline" size="sm"
-                                :href="route('reports.surcharge-forecast', array_merge($queryBase, ['export' => 'csv']))"
-                                show-label>CSV</x-icon-btn>
-                    <x-icon-btn icon="table_view" tone="outline" size="sm"
-                                :href="route('reports.surcharge-forecast', array_merge($queryBase, ['export' => 'xlsx']))"
-                                show-label>Excel</x-icon-btn>
-                </x-action-menu>
+                <x-report-export :url="fn (string $format) => route('reports.surcharge-forecast', array_merge($queryBase, ['export' => $format]))" :formats="['csv', 'xlsx']" />
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>

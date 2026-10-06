@@ -12,11 +12,13 @@ declare(strict_types=1);
 
 namespace App\Models\Applications;
 
+use App\Enums\Applications\{ApplicationContractNegotiationStatus, ApplicationContractReviewStatus};
 use App\Models\Approval\Approval;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphMany, MorphTo};
+use Illuminate\Support\Collection;
 
 /**
  * Vertragsverhandlung (Feature 068, MVP-195): eigener, versionierter
@@ -30,7 +32,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphMany, Morph
  * @property string $negotiable_type
  * @property int $negotiable_id
  * @property string $title
- * @property string $status
+ * @property ApplicationContractNegotiationStatus $status
  * @property \Illuminate\Support\Carbon|null $due_on
  * @property int|null $responsible_user_id
  * @property string|null $decision
@@ -44,8 +46,6 @@ class ApplicationContractNegotiation extends Model {
     use BelongsToOrganization;
     use HasSqid;
 
-    public const STATUSES = ['draft', 'in_review', 'counter', 'approved', 'concluded', 'declined'];
-
     protected $fillable = [
         'organization_id', 'negotiable_type', 'negotiable_id', 'title', 'status',
         'due_on', 'responsible_user_id', 'decision', 'decided_by', 'decided_at',
@@ -54,6 +54,7 @@ class ApplicationContractNegotiation extends Model {
 
     /** @var array<string, string> */
     protected $casts = [
+        'status' => ApplicationContractNegotiationStatus::class,
         'due_on' => 'date',
         'decided_at' => 'datetime',
     ];
@@ -78,6 +79,20 @@ class ApplicationContractNegotiation extends Model {
         return $this->morphMany(Approval::class, 'approvable');
     }
 
+    /**
+     * Freigaberunden, älteste zuerst — die letzte gilt, frühere sind Historie.
+     *
+     * @return Collection<int, Collection<int, Approval>>
+     */
+    public function approvalRounds(): Collection {
+        return $this->approvals->toBase()->sortBy([['step', 'asc'], ['id', 'asc']])->groupBy('round')->sortKeys();
+    }
+
+    /** Version, die eine frühere Runde abgelöst hat: die erste der Folgerunde. */
+    public function supersedingVersion(int $round): ?ApplicationContractVersion {
+        return $this->versions->where('approval_round', '>', $round)->sortBy('version')->first();
+    }
+
     /** @return BelongsTo<User, $this> */
     public function responsible(): BelongsTo {
         return $this->belongsTo(User::class, 'responsible_user_id');
@@ -89,6 +104,6 @@ class ApplicationContractNegotiation extends Model {
 
     /** Offene Blocker verhindern den Abschluss (MVP-196: Abweichungen sichtbar entscheiden). */
     public function hasOpenBlockers(): bool {
-        return $this->reviewItems()->where('severity', 'blocker')->where('status', 'open')->exists();
+        return $this->reviewItems()->where('severity', 'blocker')->where('status', ApplicationContractReviewStatus::Open)->exists();
     }
 }

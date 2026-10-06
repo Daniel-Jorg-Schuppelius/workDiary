@@ -43,40 +43,26 @@
 
     <div class="grid gap-4 lg:grid-cols-2">
         <x-card :title="__('problemreport.section.what')">
-            <dl class="space-y-2 text-sm">
-                <div>
-                    <dt class="text-xs uppercase tracking-wide text-muted">{{ __('problemreport.field.reporter') }}</dt>
-                    <dd>{{ $report->reporter?->name ?? '—' }}
-                        @if ($report->contact_ok)<x-status-badge size="xs" tone="success">{{ __('problemreport.field.contact_ok_short') }}</x-status-badge>@endif
-                    </dd>
-                </div>
-                <div>
-                    <dt class="text-xs uppercase tracking-wide text-muted">{{ __('problemreport.field.description') }}</dt>
-                    <dd class="whitespace-pre-wrap">{{ $report->description }}</dd>
-                </div>
+            <x-detail-grid layout="cells" :cols="1" small-labels>
+                <x-detail-grid.row :label="__('problemreport.field.reporter')">
+                    {{ $report->reporter?->name ?? '—' }}
+                    @if ($report->contact_ok)<x-status-badge size="xs" tone="success">{{ __('problemreport.field.contact_ok_short') }}</x-status-badge>@endif
+                </x-detail-grid.row>
+                <x-detail-grid.row :label="__('problemreport.field.description')" class="whitespace-pre-wrap">{{ $report->description }}</x-detail-grid.row>
                 @if ($report->expected_behavior)
-                    <div>
-                        <dt class="text-xs uppercase tracking-wide text-muted">{{ __('problemreport.field.expected') }}</dt>
-                        <dd class="whitespace-pre-wrap">{{ $report->expected_behavior }}</dd>
-                    </div>
+                    <x-detail-grid.row :label="__('problemreport.field.expected')" class="whitespace-pre-wrap">{{ $report->expected_behavior }}</x-detail-grid.row>
                 @endif
                 @if ($report->actual_behavior)
-                    <div>
-                        <dt class="text-xs uppercase tracking-wide text-muted">{{ __('problemreport.field.actual') }}</dt>
-                        <dd class="whitespace-pre-wrap">{{ $report->actual_behavior }}</dd>
-                    </div>
+                    <x-detail-grid.row :label="__('problemreport.field.actual')" class="whitespace-pre-wrap">{{ $report->actual_behavior }}</x-detail-grid.row>
                 @endif
                 @if ($report->attachments->isNotEmpty())
-                    <div>
-                        <dt class="text-xs uppercase tracking-wide text-muted">{{ __('problemreport.field.screenshots') }}</dt>
-                        <dd class="flex flex-wrap gap-2">
-                            @foreach ($report->attachments as $attachment)
-                                <span class="badge badge-ghost">{{ $attachment->original_name }} ({{ $attachment->humanSize() }})</span>
-                            @endforeach
-                        </dd>
-                    </div>
+                    <x-detail-grid.row :label="__('problemreport.field.screenshots')" class="flex flex-wrap gap-2">
+                        @foreach ($report->attachments as $attachment)
+                            <x-status-badge size="md">{{ $attachment->original_name }} ({{ $attachment->humanSize() }})</x-status-badge>
+                        @endforeach
+                    </x-detail-grid.row>
                 @endif
-            </dl>
+            </x-detail-grid>
         </x-card>
 
         <x-card :title="__('problemreport.section.context')">

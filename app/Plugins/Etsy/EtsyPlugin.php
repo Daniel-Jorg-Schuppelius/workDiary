@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Plugins\Etsy;
 
 use App\Plugins\{AbstractPlugin, PluginHealth};
-use App\Plugins\Etsy\Api\{EtsyApiException, EtsyClientFactory};
+use App\Plugins\Etsy\Api\EtsyClientFactory;
+use App\Plugins\Etsy\Exceptions\EtsyApiException;
 use App\Plugins\Etsy\Models\EtsyConnection;
 use Carbon\CarbonImmutable;
 use Throwable;

@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Crisis;
 
+use App\Enums\Crisis\CrisisActionStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Model;
@@ -29,7 +30,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int|null $assignee_id
  * @property \Illuminate\Support\Carbon|null $due_at
  * @property string $priority
- * @property string $status
+ * @property CrisisActionStatus $status
  * @property int|null $depends_on_id
  * @property string|null $evidence_note
  * @property \Illuminate\Support\Carbon|null $escalated_at
@@ -39,8 +40,6 @@ class CrisisAction extends Model {
     use BelongsToOrganization;
     use HasSqid;
 
-    public const STATUSES = ['open', 'in_progress', 'done', 'cancelled'];
-
     protected $fillable = [
         'organization_id', 'crisis_case_id', 'title', 'description',
         'assignee_id', 'due_at', 'priority', 'status', 'depends_on_id',
@@ -48,7 +47,7 @@ class CrisisAction extends Model {
     ];
 
     /** @var array<string, string> */
-    protected $casts = ['due_at' => 'datetime', 'escalated_at' => 'datetime'];
+    protected $casts = ['due_at' => 'datetime', 'escalated_at' => 'datetime', 'status' => CrisisActionStatus::class];
 
     /** @return BelongsTo<CrisisCase, $this> */
     public function crisisCase(): BelongsTo {

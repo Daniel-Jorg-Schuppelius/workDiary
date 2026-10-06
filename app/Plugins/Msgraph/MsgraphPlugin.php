@@ -16,6 +16,7 @@ use App\Models\Platform\Organization;
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{BackupTarget, CalendarPublisher, DocumentIntakeSource, PluginCapability};
 use App\Plugins\Msgraph\Api\{MsgraphBackupClient, MsgraphCalendarClient, MsgraphIntakeClient};
+use App\Plugins\Msgraph\Enums\MsgraphConnectionStatus;
 use App\Plugins\Msgraph\Models\MsgraphConnection;
 use App\Plugins\Support\Backup\BackupAccount;
 use App\Plugins\Support\Calendar\{OrganizationEventSource, RemoteCalendarEvent, RemoteCalendarPublishService};
@@ -432,7 +433,7 @@ class MsgraphPlugin extends AbstractPlugin implements \App\Plugins\Contracts\Bac
         $sideNotice = $this->blockedSideConnectionsNotice($org);
 
         $connection = MsgraphConnection::query()->where('organization_id', $org->id)->first();
-        if (! $connection instanceof MsgraphConnection || $connection->status === MsgraphConnection::STATUS_DISCONNECTED) {
+        if (! $connection instanceof MsgraphConnection || $connection->status === MsgraphConnectionStatus::Disconnected) {
             return PluginHealth::degraded($sideNotice ?? __('msgraph::msgraph.health.no_connection'));
         }
         if (! $connection->isActive()) {

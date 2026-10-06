@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers\Classification;
 
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Classification\Tag;
 use App\Support\{Setting, SortableQuery};
@@ -19,6 +20,8 @@ use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class TagController extends Controller {
+    use ResolvesCurrentOrganization;
+
     public function index(Request $request): View {
         Gate::authorize('viewAny', Tag::class);
 
@@ -47,8 +50,8 @@ class TagController extends Controller {
         Gate::authorize('create', Tag::class);
 
         $data = $request->validate([
-            'name' => ['required', 'string', 'max:' . (int) Setting::get('validation.tag.name_max', 60), Rule::unique('tags', 'name')],
-            'color' => ['nullable', 'string', 'max:16'],
+            'name' => ['required', 'string', 'max:' . (int) Setting::get('validation.tag.name_max', 60), Rule::unique('tags', 'name')->where('organization_id', $this->currentOrganization()->id)],
+            'color' => ['nullable', 'string', 'max:16', new \App\Rules\ColorValue],
             'name_i18n' => ['nullable', 'array'],
             'name_i18n.*' => ['nullable', 'string', 'max:60'],
         ]);
@@ -73,8 +76,8 @@ class TagController extends Controller {
         Gate::authorize('update', $tag);
 
         $data = $request->validate([
-            'name' => ['required', 'string', 'max:' . (int) Setting::get('validation.tag.name_max', 60), Rule::unique('tags', 'name')->ignore($tag->id)],
-            'color' => ['nullable', 'string', 'max:16'],
+            'name' => ['required', 'string', 'max:' . (int) Setting::get('validation.tag.name_max', 60), Rule::unique('tags', 'name')->where('organization_id', $this->currentOrganization()->id)->ignore($tag->id)],
+            'color' => ['nullable', 'string', 'max:16', new \App\Rules\ColorValue],
             'name_i18n' => ['nullable', 'array'],
             'name_i18n.*' => ['nullable', 'string', 'max:60'],
         ]);

@@ -10,10 +10,12 @@
 
 namespace Tests\Feature\Plugins\Calendly;
 
+use App\Enums\Calendar\AppointmentRequestStatus;
 use App\Enums\Diary\Status;
 use App\Models\Calendar\AppointmentRequest;
 use App\Models\Integration\IntegrationInboxItem;
 use App\Models\Platform\{PluginError, User};
+use App\Plugins\Calendly\Enums\CalendlyConnectionStatus;
 use App\Plugins\Calendly\Models\CalendlyConnection;
 use App\Plugins\Calendly\Services\{CalendlyConfirmService, CalendlyIngestService, CalendlyOutboundService};
 use App\Services\Diary\OrderService;
@@ -56,7 +58,7 @@ final class CalendlyOutboundTest extends TestCase {
         $this->connection = CalendlyConnection::query()->create([
             'organization_id' => $this->organization->id,
             'access_token' => 'tok',
-            'status' => CalendlyConnection::STATUS_ACTIVE,
+            'status' => CalendlyConnectionStatus::Active,
             'calendly_organization_uri' => 'https://api.calendly.com/organizations/o1',
             'calendly_user_uri' => 'https://api.calendly.com/users/u1',
         ]);
@@ -68,7 +70,7 @@ final class CalendlyOutboundTest extends TestCase {
             'organization_id' => $this->organization->id,
             'source' => AppointmentRequest::SOURCE_CALENDLY,
             'source_uri' => self::INVITEE_URI,
-            'status' => AppointmentRequest::STATUS_REQUESTED,
+            'status' => AppointmentRequestStatus::Requested,
             'invitee_name' => 'Jane Doe',
             'service_label' => 'Erstberatung',
             'start_at' => CarbonImmutable::parse('2026-08-01T10:00:00Z'),
@@ -85,6 +87,31 @@ final class CalendlyOutboundTest extends TestCase {
             ->assertOk()
             ->assertSee(route('admin.calendly.booking-link'))
             ->assertSee(__('Einmal-Buchungslink'));
+    }
+
+    /** Offene Terminwünsche blättern — früher endete die Liste still nach 100 Einträgen. */
+    public function test_open_requests_page_in_start_order(): void {
+        foreach (range(1, 101) as $i) {
+            AppointmentRequest::query()->create([
+                'organization_id' => $this->organization->id,
+                'source' => AppointmentRequest::SOURCE_CALENDLY,
+                'source_uri' => self::INVITEE_URI . '-' . $i,
+                'status' => AppointmentRequestStatus::Requested,
+                'invitee_name' => sprintf('Gast %03d', $i),
+                'service_label' => 'Erstberatung',
+                'start_at' => CarbonImmutable::parse('2026-08-01T10:00:00Z')->addHours($i),
+                'end_at' => CarbonImmutable::parse('2026-08-01T10:30:00Z')->addHours($i),
+            ]);
+        }
+
+        $first = $this->actingAs($this->admin)->get(route('admin.calendly.index'))->assertOk();
+        $this->assertSame(101, $first->viewData('requests')->total());
+        $this->assertCount(25, $first->viewData('requests')->items());
+        $first->assertSee('Gast 001')->assertSee(__('Einmal-Buchungslink'));
+
+        $last = $this->actingAs($this->admin)->get(route('admin.calendly.index', ['page' => 5]))->assertOk();
+        $this->assertSame(['Gast 101'], $last->viewData('requests')->pluck('invitee_name')->all());
+        $last->assertSee(route('admin.calendly.requests.confirm', $last->viewData('requests')->items()[0]));
     }
 
     public function test_booking_link_is_created_and_flashed(): void {
@@ -125,9 +152,23 @@ final class CalendlyOutboundTest extends TestCase {
             ->assertSessionMissing('calendly_booking_url');
     }
 
+    public function test_disconnect_marks_the_connection_disconnected(): void {
+        $fake = FakePluginHttp::fake();
+
+        $this->actingAs($this->admin)->post(route('admin.calendly.disconnect'))
+            ->assertRedirect()->assertSessionHas('success');
+
+        $fresh = $this->connection->fresh();
+        $this->assertInstanceOf(CalendlyConnection::class, $fresh);
+        $this->assertSame(CalendlyConnectionStatus::Disconnected, $fresh->status);
+        $this->assertNull($fresh->access_token);
+        $this->assertFalse($fresh->isActive());
+        $fake->assertNothingSent();
+    }
+
     public function test_booking_link_requires_active_connection(): void {
         $fake = FakePluginHttp::fake();
-        $this->connection->forceFill(['status' => CalendlyConnection::STATUS_DISCONNECTED])->save();
+        $this->connection->forceFill(['status' => CalendlyConnectionStatus::Disconnected])->save();
 
         $this->actingAs($this->admin)
             ->post(route('admin.calendly.booking-link'), ['name' => 'Erstberatung', 'duration' => 30])
@@ -158,7 +199,7 @@ final class CalendlyOutboundTest extends TestCase {
         });
 
         $request->refresh();
-        $this->assertSame(AppointmentRequest::STATUS_CANCELED, $request->status);
+        $this->assertSame(AppointmentRequestStatus::Canceled, $request->status);
         $this->assertSame('Kunde verhindert', $request->cancellation['reason'] ?? null);
         $this->assertSame(Status::Cancelled, $entry->fresh()?->status);
 
@@ -167,7 +208,7 @@ final class CalendlyOutboundTest extends TestCase {
             'uri' => self::INVITEE_URI,
             'cancellation' => ['canceler_type' => 'host', 'reason' => 'Kunde verhindert'],
         ]);
-        $this->assertSame(AppointmentRequest::STATUS_CANCELED, $request->refresh()->status);
+        $this->assertSame(AppointmentRequestStatus::Canceled, $request->refresh()->status);
         $this->assertSame(0, IntegrationInboxItem::query()->where('case_type', IntegrationInboxItem::CASE_CONFLICT)->count());
     }
 
@@ -184,7 +225,7 @@ final class CalendlyOutboundTest extends TestCase {
 
         $this->assertSame(Status::Cancelled, $entry->fresh()?->status);
         // Terminwunsch bleibt confirmed — bei Calendly ist der Termin noch aktiv.
-        $this->assertSame(AppointmentRequest::STATUS_CONFIRMED, $request->refresh()->status);
+        $this->assertSame(AppointmentRequestStatus::Confirmed, $request->refresh()->status);
         $this->assertSame(1, PluginError::query()
             ->where('plugin_id', 'calendly')
             ->where('phase', 'outbound-cancel')
@@ -201,7 +242,7 @@ final class CalendlyOutboundTest extends TestCase {
             'cancellation' => ['canceler_type' => 'invitee', 'reason' => 'Verhindert'],
         ]);
 
-        $this->assertSame(AppointmentRequest::STATUS_CANCELED, $request->refresh()->status);
+        $this->assertSame(AppointmentRequestStatus::Canceled, $request->refresh()->status);
         $this->assertSame(Status::Cancelled, $request->diaryEntry()->firstOrFail()->status);
         $fake->assertNothingSent();
     }

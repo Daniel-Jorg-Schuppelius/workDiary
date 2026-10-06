@@ -34,19 +34,17 @@
         @endif
     </x-slot:actions>
 
-    @if ($errors->any())
-        <div class="alert alert-error text-sm">{{ $errors->first() }}</div>
-    @endif
+    <x-validation-errors first />
     @unless ($configured)
-        <div class="alert alert-warning text-sm">{{ __('datev-online::datev.page.not_configured') }}</div>
+        <div role="alert" class="alert alert-warning text-sm">{{ __('datev-online::datev.page.not_configured') }}</div>
     @endunless
 
     @if ($connected)
         <x-card :title="__('datev-online::datev.page.client.heading')">
             @if ($clientsError !== null)
-                <div class="alert alert-error text-sm">{{ __('datev-online::datev.page.client.error', ['class' => $clientsError]) }}</div>
+                <div role="alert" class="alert alert-error text-sm">{{ __('datev-online::datev.page.client.error', ['class' => $clientsError]) }}</div>
             @elseif ($clients === [])
-                <p class="text-sm text-muted">{{ __('datev-online::datev.page.client.none') }}</p>
+                <x-empty-state icon="domain" :title="__('datev-online::datev.page.client.none')" compact />
             @else
                 <form method="POST" action="{{ route('admin.datev-online.client') }}" class="flex flex-wrap items-end gap-2">
                     @csrf
@@ -123,6 +121,7 @@
                     @endforelse
                 </x-table>
             </x-card>
+            <x-pagination :paginator="$batches" standing />
 
             <x-card padding="p-0" class="mt-4" :title="__('datev-online::datev.page.transfers.heading')">
                 <x-table :bare="true">

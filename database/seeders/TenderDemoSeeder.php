@@ -10,7 +10,8 @@
 
 namespace Database\Seeders;
 
-use App\Enums\Applications\TenderProcedureType;
+use App\Enums\Applications\{ApplicationOpportunityStatus, ApplicationRequirementStatus, TenderProcedureType};
+use App\Enums\Tenders\TenderNoticeMatchState;
 use App\Models\Applications\{ApplicationOpportunity, TenderCompetitorBid};
 use App\Models\Platform\{Organization, User};
 use App\Models\Tenders\{TenderFilterProfile, TenderNotice, TenderNoticeMatch};
@@ -75,7 +76,7 @@ class TenderDemoSeeder extends Seeder {
 
         TenderNoticeMatch::query()->firstOrCreate(
             ['organization_id' => $organization->id, 'tender_notice_id' => $notice->id],
-            ['tender_filter_profile_id' => $profile->id, 'state' => TenderNoticeMatch::STATE_NEW],
+            ['tender_filter_profile_id' => $profile->id, 'state' => TenderNoticeMatchState::New],
         );
 
         // Laufender Vorgang: Fristen offen, Unterlagen teils erledigt.
@@ -83,7 +84,7 @@ class TenderDemoSeeder extends Seeder {
             ['organization_id' => $organization->id, 'title' => 'Sanierung Turnhalle — Dach und Fassade'],
             [
                 'kind' => 'tender',
-                'status' => 'in_progress',
+                'status' => ApplicationOpportunityStatus::InProgress,
                 'go_decision' => 'go',
                 'awarding_body' => 'Kreis Ahrweiler',
                 'procedure_no' => 'VOB-2026-0117',
@@ -102,10 +103,10 @@ class TenderDemoSeeder extends Seeder {
 
         if ($running->requirements()->count() === 0) {
             foreach ([
-                ['Referenzliste vergleichbarer Vorhaben', 'document', 'done'],
-                ['Eigenerklärung zur Eignung', 'proof', 'done'],
-                ['Nachweis Berufshaftpflicht', 'proof', 'open'],
-                ['Rückfrage: Bauzeitenplan', 'question', 'open'],
+                ['Referenzliste vergleichbarer Vorhaben', 'document', ApplicationRequirementStatus::Done],
+                ['Eigenerklärung zur Eignung', 'proof', ApplicationRequirementStatus::Done],
+                ['Nachweis Berufshaftpflicht', 'proof', ApplicationRequirementStatus::Open],
+                ['Rückfrage: Bauzeitenplan', 'question', ApplicationRequirementStatus::Open],
             ] as $index => [$label, $kind, $status]) {
                 $running->requirements()->create([
                     'organization_id' => $organization->id,
@@ -123,7 +124,7 @@ class TenderDemoSeeder extends Seeder {
             ['organization_id' => $organization->id, 'title' => 'Erweiterung Feuerwehrgerätehaus'],
             [
                 'kind' => 'tender',
-                'status' => 'lost',
+                'status' => ApplicationOpportunityStatus::Lost,
                 'go_decision' => 'go',
                 'awarding_body' => 'Gemeinde Wachtberg',
                 'procedure_no' => 'VOB-2026-0088',

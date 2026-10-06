@@ -9,8 +9,7 @@
 @extends('layouts.app')
 @section('title', __('Fremdkunden') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('Fremdkunden'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @php
     /** @var \Illuminate\Pagination\LengthAwarePaginator $foreignCustomers */
@@ -33,7 +32,7 @@
     </x-slot:actions>
 
     @if ($customerFilter)
-        <div class="alert alert-info text-sm">
+        <div role="status" class="alert alert-info text-sm">
             {{ __('Gefiltert auf Kunde: :name', ['name' => $customerFilter->displayLabel()]) }}
             <a class="link" href="{{ route('foreign-customers.index') }}">{{ __('Filter entfernen') }}</a>
         </div>

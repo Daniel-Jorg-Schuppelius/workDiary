@@ -24,7 +24,7 @@
         @foreach ($decided as $request)
             <tr class="hover">
                 @include('appointments._request_cells', ['request' => $request])
-                <td><x-status-badge :tone="$request->statusTone()" size="sm">{{ $request->statusLabel() }}</x-status-badge></td>
+                <td><x-status-badge :tone="$request->status->tone()" size="sm">{{ $request->status->label() }}</x-status-badge></td>
                 <td>
                     <div class="whitespace-nowrap tabular-nums">{{ $request->decided_at?->fdatetime() ?? '—' }}</div>
                     @if ($request->decidedBy)
@@ -33,7 +33,7 @@
                 </td>
                 <td class="max-w-72">
                     @php($entryUrl = \App\Support\EntityUrl::byType(\App\Models\Diary\DiaryEntry::class, $request->diary_entry_id))
-                    @if ($request->status === \App\Models\Calendar\AppointmentRequest::STATUS_DECLINED && filled($request->decline_reason))
+                    @if ($request->status === \App\Enums\Calendar\AppointmentRequestStatus::Declined && filled($request->decline_reason))
                         <span class="line-clamp-2" title="{{ $request->decline_reason }}">{{ $request->decline_reason }}</span>
                     @elseif ($entryUrl !== null)
                         <a href="{{ $entryUrl }}" class="link link-hover inline-flex items-center gap-1">

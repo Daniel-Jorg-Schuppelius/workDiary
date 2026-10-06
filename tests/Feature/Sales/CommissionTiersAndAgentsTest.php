@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sales;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Enums\Sales\{CommissionReversalKind, CommissionScope, CommissionTierPeriod};
 use App\Events\Invoicing\InvoicePaymentReceived;
 use App\Models\Customer\Customer;
@@ -63,14 +64,14 @@ final class CommissionTiersAndAgentsTest extends TestCase {
 
         return Invoice::query()->create(array_replace([
             'organization_id' => $this->organization->id, 'customer_id' => $this->customer->id,
-            'number' => 'RE-' . fake()->unique()->numberBetween(1000, 9999), 'status' => Invoice::STATUS_ISSUED,
+            'number' => 'RE-' . fake()->unique()->numberBetween(1000, 9999), 'status' => InvoiceStatus::Issued,
             'type' => Invoice::TYPE_INVOICE, 'currency' => 'EUR', 'subtotal' => $net, 'tax_rate' => '19.00', 'total' => $gross,
             'issued_on' => Carbon::parse('2026-08-01'), 'sales_user_id' => $this->seller->id, 'created_by' => $this->admin->id,
         ], $attributes));
     }
 
     private function pay(Invoice $invoice, string $on): Invoice {
-        $invoice->status = Invoice::STATUS_PAID;
+        $invoice->status = InvoiceStatus::Paid;
         $invoice->paid_on = Carbon::parse($on);
         $invoice->save();
 
@@ -132,7 +133,7 @@ final class CommissionTiersAndAgentsTest extends TestCase {
         $invoice = $this->invoice('1000.00');
 
         $provider->paid = '595.00';
-        $invoice->status = Invoice::STATUS_PARTIALLY_PAID;
+        $invoice->status = InvoiceStatus::PartiallyPaid;
         $invoice->save();
         InvoicePaymentReceived::dispatch($invoice->refresh());
         InvoicePaymentReceived::dispatch($invoice);
@@ -145,7 +146,7 @@ final class CommissionTiersAndAgentsTest extends TestCase {
         // Ohne Kennzeichen entsteht auf Teilzahlungen nichts.
         CommissionRule::query()->update(['is_partial_accrual' => false]);
         $other = $this->invoice('200.00');
-        $other->status = Invoice::STATUS_PARTIALLY_PAID;
+        $other->status = InvoiceStatus::PartiallyPaid;
         $other->save();
         InvoicePaymentReceived::dispatch($other->refresh());
         $this->assertSame(0, InvoiceCommission::query()->where('invoice_id', $other->id)->count());
@@ -162,7 +163,7 @@ final class CommissionTiersAndAgentsTest extends TestCase {
 
         app(ReconciliationService::class)->confirm($tx, [['type' => Invoice::class, 'id' => $invoice->id, 'amount' => 119.00]], $this->admin);
 
-        $this->assertSame(Invoice::STATUS_PAID, $invoice->refresh()->status);
+        $this->assertSame(InvoiceStatus::Paid, $invoice->refresh()->status);
         $this->assertSame('5.00', InvoiceCommission::query()->sole()->commission_amount->getAmount());
     }
 
@@ -174,18 +175,18 @@ final class CommissionTiersAndAgentsTest extends TestCase {
 
         $reconciliation->confirm($first, [['type' => Invoice::class, 'id' => $invoice->id, 'amount' => 595.00]], $this->admin);
         $reconciliation->confirm($second, [['type' => Invoice::class, 'id' => $invoice->id, 'amount' => 595.00]], $this->admin);
-        $this->assertSame(Invoice::STATUS_PAID, $invoice->refresh()->status);
+        $this->assertSame(InvoiceStatus::Paid, $invoice->refresh()->status);
         $this->assertSame('1000.00', $this->netBase($invoice));
 
         $reconciliation->unmatch(PaymentAllocation::query()->where('bank_transaction_id', $second->id)->sole(), $this->admin);
-        $this->assertSame(Invoice::STATUS_PARTIALLY_PAID, $invoice->refresh()->status);
+        $this->assertSame(InvoiceStatus::PartiallyPaid, $invoice->refresh()->status);
         $this->assertSame('500.00', $this->netBase($invoice), 'zurück auf den bezahlten Anteil');
         $reversal = InvoiceCommission::query()->whereNotNull('reversal_of_id')->sole();
         $this->assertSame(CommissionReversalKind::Payment, $reversal->reversal_kind);
         $this->assertSame('-25.00', $reversal->commission_amount->getAmount());
 
         $reconciliation->unmatch(PaymentAllocation::query()->where('bank_transaction_id', $first->id)->sole(), $this->admin);
-        $this->assertSame(Invoice::STATUS_ISSUED, $invoice->refresh()->status);
+        $this->assertSame(InvoiceStatus::Issued, $invoice->refresh()->status);
         $this->assertSame('0.00', $this->netBase($invoice));
 
         $reconciliation->confirm($this->transaction('1190.00'), [['type' => Invoice::class, 'id' => $invoice->id, 'amount' => 1190.00]], $this->admin);

@@ -14,6 +14,7 @@ namespace App\Http\Controllers\Club;
 
 use App\Enums\Club\{ClubEntryStatus, ClubEventKind, ClubParticipationSource};
 use App\Enums\Event\EventStatus;
+use App\Http\Controllers\Club\Concerns\ConvertsEventTimesToUtc;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Club\{SaveCompetitionEntryRequest, SaveCompetitionRequest, SavePerformanceRequest};
@@ -33,6 +34,8 @@ use RuntimeException;
 
 /** Wettkämpfe (Feature 159, MVP-855): Liste, Anlage, Meldungen je Disziplin, Klärung, Ergebnisse. */
 class ClubCompetitionController extends Controller {
+    use ConvertsEventTimesToUtc;
+
     use ResolvesCurrentOrganization;
 
     public function __construct(
@@ -214,23 +217,6 @@ class ClubCompetitionController extends Controller {
         abort_if($details === null || $details->kind !== ClubEventKind::Competition, 404);
 
         return $details;
-    }
-
-    /**
-     * @param  array<string, mixed>  $data
-     * @return array<string, mixed>
-     */
-    private function withUtcTimes(array $data): array {
-        $tz = trim((string) ($data['timezone'] ?? ''));
-        $tz = Tz::isValid($tz) && $tz !== 'UTC' ? $tz : Tz::current();
-        $data['timezone'] = $tz;
-        foreach (['started_at', 'ended_at'] as $key) {
-            if (array_key_exists($key, $data)) {
-                $data[$key] = CarbonImmutable::parse((string) $data[$key], $tz)->utc()->format('Y-m-d H:i:s');
-            }
-        }
-
-        return $data;
     }
 
     /** @return array<string, mixed> */

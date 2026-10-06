@@ -16,7 +16,7 @@
 @extends('layouts.app')
 @section('title', __('resale.purchase.title'))
 @section('nav-title', __('resale.title.menu'))
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @php
     $canManage = auth()->user()?->can(\App\Enums\User\Permission::ResellingManage->value) ?? false;
@@ -51,7 +51,7 @@
         @if ($byDocument->isNotEmpty())
             <div class="flex flex-wrap gap-2 mb-3 text-xs">
                 @foreach ($byDocument as $doc)
-                    <span class="badge badge-outline">{{ $doc->document_number }} Â· {{ $doc->entry_date->fdate() }} Â· {{ \CommonToolkit\ValueObjects\Money::ofFloat((float) $doc->net, $doc->currency, 2)->format() }} Â· {{ $doc->n }}</span>
+                    <x-status-badge tone="plain" size="md" outline>{{ $doc->document_number }} Â· {{ $doc->entry_date->fdate() }} Â· {{ \CommonToolkit\ValueObjects\Money::ofFloat((float) $doc->net, $doc->currency, 2)->format() }} Â· {{ $doc->n }}</x-status-badge>
                 @endforeach
             </div>
         @endif
@@ -103,7 +103,7 @@
                                     <x-icon-btn icon="picture_as_pdf" size="xs" tone="ghost" data-entry-modal-trigger :href="$document->previewUrl" :title="__('resale.purchase_document.preview')" />
                                 @endif
                                 @if ($document->permalink !== null)
-                                    <a href="{{ $document->permalink }}" target="_blank" rel="noopener" class="btn btn-ghost btn-xs" title="{{ __('resale.purchase_document.open', ['source' => __('resale.purchase_document.source.' . $document->sourceKey)]) }}"><x-icon name="open_in_new" size="1rem" /></a>
+                                    <x-external-link :url="$document->permalink" plain class="btn btn-ghost btn-xs" :title="__('resale.purchase_document.open', ['source' => __('resale.purchase_document.source.' . $document->sourceKey)])"><x-icon name="open_in_new" size="1rem" /></x-external-link>
                                 @endif
                             </span>
                         @endif

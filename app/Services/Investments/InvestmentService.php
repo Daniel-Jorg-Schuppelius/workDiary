@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Investments;
 
+use App\Enums\Approval\ApprovalStepKind;
+use App\Enums\Investments\{InvestmentBudgetRequestStatus, InvestmentCaseStatus, InvestmentDeviationStatus};
 use App\Models\Investments\{InvestmentBudgetRequest, InvestmentCase, InvestmentDeviation};
 use App\Models\Platform\User;
 use App\Services\Approval\ApprovalService;
@@ -36,10 +38,10 @@ class InvestmentService {
      * @param array<string, mixed> $attributes
      */
     public function submitBudget(InvestmentCase $case, array $attributes, User $actor): InvestmentBudgetRequest {
-        if (! in_array($case->status, InvestmentCase::PLANNING_STATUSES, true)) {
+        if (! $case->status->isPlanning()) {
             throw new \RuntimeException((string) __('Budgetanträge sind nur in der Planungsphase möglich.'));
         }
-        if ($case->budgetRequests()->whereIn('status', ['draft', 'in_approval'])->exists()) {
+        if ($case->budgetRequests()->whereIn('status', InvestmentBudgetRequestStatus::open())->exists()) {
             throw new \RuntimeException((string) __('Es ist bereits ein Budgetantrag offen.'));
         }
 
@@ -54,17 +56,17 @@ class InvestmentService {
                 'financing' => (string) ($attributes['financing'] ?? 'cash'),
                 'payment_plan' => $attributes['payment_plan'] ?? null,
                 'note' => $attributes['note'] ?? null,
-                'status' => 'in_approval',
+                'status' => InvestmentBudgetRequestStatus::InApproval,
                 'requested_by' => $actor->id,
             ]);
 
-            $chain = [['rule' => ['kind' => 'commercial']]];
+            $chain = [['rule' => ['kind' => ApprovalStepKind::Commercial->value]]];
             if ((float) $amount >= $this->approvalThreshold($case)) {
-                $chain[] = ['rule' => ['kind' => 'management']];
+                $chain[] = ['rule' => ['kind' => ApprovalStepKind::Management->value]];
             }
             $this->approvals->createChain($request, $chain);
 
-            $case->update(['status' => 'in_approval']);
+            $case->update(['status' => InvestmentCaseStatus::InApproval]);
             $case->audit('investment.budget_submitted', ['version' => $request->version, 'amount' => $amount]);
 
             return $request;
@@ -73,10 +75,11 @@ class InvestmentService {
 
     /** Freigabestufe erteilen — Selbstfreigabe (Antragsteller) ist gesperrt. */
     public function approveBudget(InvestmentBudgetRequest $request, User $actor, ?string $reason = null): string {
-        if ($request->status !== 'in_approval') {
+        if (! $request->status->canTransitionTo(InvestmentBudgetRequestStatus::Approved)) {
             throw new \RuntimeException((string) __('Der Antrag ist nicht in Freigabe.'));
         }
         $pending = $request->approvals()
+            ->currentRound()
             ->where(fn($q) => $q->whereNull('decision')->orWhere('decision', 'question'))
             ->orderBy('step')
             ->first();
@@ -88,7 +91,7 @@ class InvestmentService {
         if ($result === 'approved_all') {
             $case = $request->investmentCase()->firstOrFail();
             $request->update([
-                'status' => 'approved',
+                'status' => InvestmentBudgetRequestStatus::Approved,
                 'decided_at' => now(),
                 // Genehmigter Stand als unveränderlicher Snapshot (MVP-203).
                 'snapshot' => [
@@ -100,7 +103,7 @@ class InvestmentService {
                     'approved_at' => now()->toIso8601String(),
                 ],
             ]);
-            $case->update(['status' => 'approved']);
+            $case->update(['status' => InvestmentCaseStatus::Approved]);
             $case->audit('investment.budget_approved', ['version' => $request->version, 'amount' => $request->amount]);
 
             // Vollaudit 2026-07 (M31): Entscheidung an den Antragsteller.
@@ -111,10 +114,11 @@ class InvestmentService {
     }
 
     public function rejectBudget(InvestmentBudgetRequest $request, User $actor, string $reason): void {
-        if ($request->status !== 'in_approval') {
+        if (! $request->status->canTransitionTo(InvestmentBudgetRequestStatus::Rejected)) {
             throw new \RuntimeException((string) __('Der Antrag ist nicht in Freigabe.'));
         }
         $pending = $request->approvals()
+            ->currentRound()
             ->where(fn($q) => $q->whereNull('decision')->orWhere('decision', 'question'))
             ->orderBy('step')
             ->first();
@@ -123,9 +127,9 @@ class InvestmentService {
         }
 
         $this->approvals->decide($pending, $actor, 'rejected', $reason, (int) $request->requested_by);
-        $request->update(['status' => 'rejected', 'decided_at' => now()]);
+        $request->update(['status' => InvestmentBudgetRequestStatus::Rejected, 'decided_at' => now()]);
         $case = $request->investmentCase()->firstOrFail();
-        $case->update(['status' => 'rejected']);
+        $case->update(['status' => InvestmentCaseStatus::Rejected]);
         $case->audit('investment.budget_rejected', ['version' => $request->version, 'reason' => $reason]);
 
         // Vollaudit 2026-07 (M31): Ablehnung inkl. Begründung an den Antragsteller.
@@ -163,7 +167,7 @@ class InvestmentService {
      * @param array<string, mixed> $attributes
      */
     public function supplementBudget(InvestmentCase $case, InvestmentDeviation $deviation, array $attributes, User $actor): InvestmentBudgetRequest {
-        if ($deviation->investment_case_id !== $case->id || $deviation->kind !== 'budget' || $deviation->status !== 'approved') {
+        if ($deviation->investment_case_id !== $case->id || $deviation->kind !== 'budget' || $deviation->status !== InvestmentDeviationStatus::Approved) {
             throw new \RuntimeException((string) __('Ein Nachtrag braucht eine genehmigte Budget-Abweichung.'));
         }
         $approved = $case->approvedBudget();
@@ -181,18 +185,18 @@ class InvestmentService {
                 'financing' => $approved->financing,
                 'payment_plan' => $approved->payment_plan,
                 'note' => $attributes['note'] ?? null,
-                'status' => 'in_approval',
+                'status' => InvestmentBudgetRequestStatus::InApproval,
                 'requested_by' => $actor->id,
             ]);
 
-            $chain = [['rule' => ['kind' => 'commercial']]];
+            $chain = [['rule' => ['kind' => ApprovalStepKind::Commercial->value]]];
             if ((float) $attributes['amount'] >= $this->approvalThreshold($case)) {
-                $chain[] = ['rule' => ['kind' => 'management']];
+                $chain[] = ['rule' => ['kind' => ApprovalStepKind::Management->value]];
             }
             $this->approvals->createChain($request, $chain);
 
-            $approved->update(['status' => 'superseded']);
-            $case->update(['status' => 'in_approval']);
+            $approved->update(['status' => InvestmentBudgetRequestStatus::Superseded]);
+            $case->update(['status' => InvestmentCaseStatus::InApproval]);
             $case->audit('investment.budget_supplement', ['from' => $approved->version, 'to' => $request->version]);
 
             return $request;
@@ -200,27 +204,50 @@ class InvestmentService {
     }
 
     public function decideDeviation(InvestmentDeviation $deviation, string $decision, ?string $note, User $actor): void {
-        if (! in_array($decision, ['approved', 'rejected'], true)) {
+        $target = InvestmentDeviationStatus::tryFrom($decision);
+        if (! in_array($target, [InvestmentDeviationStatus::Approved, InvestmentDeviationStatus::Rejected], true)) {
             throw new \RuntimeException((string) __('Ungültige Entscheidung.'));
         }
-        if ($deviation->status !== 'open') {
+        if (! $deviation->status->canTransitionTo($target)) {
             throw new \RuntimeException((string) __('Die Abweichung ist bereits entschieden.'));
         }
         if ((int) $deviation->created_by === (int) $actor->id) {
             throw new \RuntimeException((string) __('Selbstfreigabe ist nicht zulässig.'));
         }
+        $case = $deviation->investmentCase()->firstOrFail();
+        $cancels = $target === InvestmentDeviationStatus::Approved && $deviation->kind === 'cancellation';
+        if ($cancels && $case->status === InvestmentCaseStatus::Rejected) {
+            throw new \RuntimeException((string) __('Eine abgelehnte Akte bleibt abgelehnt.'));
+        }
 
         $deviation->update([
-            'status' => $decision,
+            'status' => $target,
             'decided_by' => $actor->id,
             'decided_at' => now(),
             'decision_note' => $note,
         ]);
-        $case = $deviation->investmentCase()->firstOrFail();
-        if ($decision === 'approved' && $deviation->kind === 'cancellation') {
-            $case->update(['status' => 'cancelled']);
+        if ($cancels) {
+            $case->update(['status' => InvestmentCaseStatus::Cancelled]);
         }
         $case->audit('investment.deviation_decided', ['kind' => $deviation->kind, 'decision' => $decision]);
+    }
+
+    /** Zurückstellen aus der Planung; die Phase bleibt für {@see self::resume()} gemerkt. */
+    public function defer(InvestmentCase $case): void {
+        if (! $case->status->isPlanning()) {
+            throw new \RuntimeException((string) __('Zurückstellen ist nur in der Planungsphase möglich.'));
+        }
+
+        $case->update(['status' => InvestmentCaseStatus::Deferred, 'deferred_from_status' => $case->status]);
+    }
+
+    /** Wieder aufnehmen: zurück in die gemerkte Phase, Altbestand ohne Phase in die Idee. */
+    public function resume(InvestmentCase $case): void {
+        if ($case->status !== InvestmentCaseStatus::Deferred) {
+            throw new \RuntimeException((string) __('Nur eine zurückgestellte Akte lässt sich wieder aufnehmen.'));
+        }
+
+        $case->update(['status' => $case->resumeTarget(), 'deferred_from_status' => null]);
     }
 
     /**

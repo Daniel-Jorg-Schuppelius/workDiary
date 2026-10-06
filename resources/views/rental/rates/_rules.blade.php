@@ -11,6 +11,7 @@
 <div class="border-t border-base-300 p-3">
     <h3 class="mb-1 text-sm font-semibold">{{ __('rental.rule.title') }}</h3>
     @if ($card->rules->isEmpty())
+        {{-- raw-markup-ok: Unterliste je Preislistenkarte — ein Leerzustandsfeld je Karte wäre höher als die Regelliste selbst --}}
         <p class="text-xs text-muted">{{ __('rental.rule.empty') }}</p>
     @else
         <ul class="text-sm">
@@ -19,7 +20,7 @@
                     <span>
                         {{ $rule->label }} · {{ $rule->kind->label() }} ·
                         @if ($rule->kind === \App\Enums\Rental\RentalRateRuleKind::Season)
-                            {{ $rule->valid_from?->format('d.m.Y') }} – {{ $rule->valid_until?->format('d.m.Y') ?? '…' }}
+                            {{ $rule->valid_from?->fdate() }} – {{ $rule->valid_until?->fdate() ?? '…' }}
                         @elseif ($rule->kind === \App\Enums\Rental\RentalRateRuleKind::Weekday)
                             {{ collect($rule->weekdays)->map(fn ($d) => __('rental.rule.weekday.' . $d))->implode(', ') }}
                         @else
@@ -31,7 +32,7 @@
                         @if ($isDraft)
                             <form method="POST" action="{{ route('rental.rates.rules.destroy', [$card, $rule]) }}" class="inline">
                                 @csrf @method('DELETE')
-                                <button type="submit" class="btn btn-xs btn-ghost text-error">{{ __('Entfernen') }}</button>
+                                <x-button type="submit" tone="ghost" size="xs" class="text-error">{{ __('Entfernen') }}</x-button>
                             </form>
                         @endif
                     @endcan
@@ -61,7 +62,7 @@
                     </fieldset>
                     <x-input-field name="utilization_min_percent" :id="'rule-util-' . $card->sqid" type="number" min="1" max="100" :label="__('rental.rule.field.utilization_min_percent')" />
                     <x-input-field name="adjust_percent" :id="'rule-adjust-' . $card->sqid" type="number" step="0.01" :label="__('rental.rule.field.adjust_percent')" required />
-                    <button type="submit" class="btn btn-sm">{{ __('rental.rule.add') }}</button>
+                    <x-button type="submit" tone="plain">{{ __('rental.rule.add') }}</x-button>
                 </form>
             </details>
         @endif

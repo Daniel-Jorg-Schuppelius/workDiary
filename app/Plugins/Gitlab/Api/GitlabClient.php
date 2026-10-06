@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Gitlab\Api;
 
+use App\Plugins\Gitlab\Exceptions\GitlabApiException;
 use App\Plugins\Gitlab\GitlabPlugin;
 use App\Plugins\Support\PluginHttpFactory;
 use Illuminate\Http\Client\Response;

@@ -21,13 +21,13 @@ use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
-use RuntimeException;
 
 /**
  * FIFO-Bestandsbewertung über Zugangsschichten (Feature 048, E3). Jeder
  * Wareneingang legt eine {@see StockValuationLayer} an; ein Abgang verbraucht die
  * ältesten Schichten zuerst (acquired_at, dann id) und schreibt die exakten
- * Schicht-Kosten als unveränderlichen Snapshot an die Abgangsbewegung. Historie
+ * Schicht-Kosten als unveränderlichen Snapshot an seine Bewegungen (je Charge
+ * eine, {@see InventoryLedger::issue()}). Historie
  * bleibt unverändert; Verfahren je Organisation wählbar
  * ({@see \App\Services\Inventory\InventoryValuationManager}).
  */
@@ -78,58 +78,66 @@ class FifoValuationService implements InventoryValuationStrategy {
         });
     }
 
-    public function issue(ArticleVariant $variant, Warehouse $warehouse, string $qty, bool $allowNegative = false, ?int $actorUserId = null): StockMovement {
-        $qty = DecimalQty::positive($qty);
+    /**
+     * Abgang über das Lagerbuch (Charge gewählt oder FEFO-zugeteilt); jeder
+     * Teil verbraucht zuerst die Schichten seiner Charge — der Teil ohne
+     * Charge die chargenlosen —, danach die übrigen in Verfahrensfolge.
+     */
+    public function issue(ArticleVariant $variant, Warehouse $warehouse, string $qty, bool $allowNegative = false, ?int $actorUserId = null, ?StockLot $lot = null, bool $requireLot = false): StockIssue {
+        return $this->ledger->issue(
+            $variant, $warehouse, $qty,
+            allowNegative: $allowNegative,
+            actorUserId: $actorUserId,
+            lot: $lot,
+            costing: fn (?StockLot $partLot, string $partQty): array => $this->consumeLayers($variant, $warehouse, $partLot, $partQty),
+            requireLot: $requireLot,
+        );
+    }
 
-        return DB::transaction(function () use ($variant, $warehouse, $qty, $allowNegative, $actorUserId): StockMovement {
-            // Verfügbarkeit gesperrt in der Transaktion prüfen, damit der Schichtverbrauch nicht gegen veralteten Saldo läuft.
-            if (! $allowNegative && bccomp($this->ledger->availableForUpdate($variant, $warehouse), $qty, self::SCALE) < 0) {
-                throw new RuntimeException('Abgang übersteigt den verfügbaren Bestand.');
+    /**
+     * Verbraucht Schichten für einen Teil des Abgangs und liefert dessen Kosten.
+     *
+     * @param  numeric-string  $qty
+     * @return array{unit: numeric-string, total: numeric-string}
+     */
+    private function consumeLayers(ArticleVariant $variant, Warehouse $warehouse, ?StockLot $lot, string $qty): array {
+        $remaining = $qty;
+        $costTotal = '0';
+        $lastCost = '0';
+
+        $layers = $this->layerQuery($variant, $warehouse)->lockForUpdate()->get();
+        $ofThisLot = fn (StockValuationLayer $layer): bool => $lot === null ? $layer->stock_lot_id === null : (int) $layer->stock_lot_id === $lot->id;
+
+        foreach ($layers->filter($ofThisLot)->concat($layers->reject($ofThisLot)) as $layer) {
+            if (bccomp($remaining, '0', self::SCALE) <= 0) {
+                break;
             }
+            $lastCost = $layer->unit_cost?->getAmount() ?? '0';
+            $take = bccomp($layer->qty_remaining, $remaining, self::SCALE) <= 0 ? $layer->qty_remaining : $remaining;
+            $costTotal = bcadd($costTotal, bcmul($take, $layer->unit_cost?->getAmount() ?? '0', self::SCALE), self::SCALE);
+            $layer->qty_remaining = bcsub($layer->qty_remaining, $take, self::SCALE);
+            $layer->save();
+            $remaining = bcsub($remaining, $take, self::SCALE);
+        }
 
-            $remaining = $qty;
-            $costTotal = '0';
-            $lastCost = '0';
-
-            $layers = $this->layerQuery($variant, $warehouse)->lockForUpdate()->get();
-
-            foreach ($layers as $layer) {
-                if (bccomp($remaining, '0', self::SCALE) <= 0) {
-                    break;
+        // Restmenge ohne deckende Schicht (Negativbestand) zum zuletzt bekannten Einzelpreis bewerten;
+        // ohne durchlaufene Schicht den Preis der jüngsten historischen Schicht (sonst 0-Bewertung, Verzerrung).
+        if (bccomp($remaining, '0', self::SCALE) > 0) {
+            if (bccomp($lastCost, '0', self::SCALE) === 0) {
+                $historic = StockValuationLayer::query()
+                    ->where('article_variant_id', $variant->id)
+                    ->where('warehouse_id', $warehouse->id)
+                    ->orderByDesc('acquired_at')
+                    ->orderByDesc('id')
+                    ->first();
+                if ($historic instanceof StockValuationLayer) {
+                    $lastCost = $historic->unit_cost?->getAmount() ?? '0';
                 }
-                $lastCost = $layer->unit_cost?->getAmount() ?? '0';
-                $take = bccomp($layer->qty_remaining, $remaining, self::SCALE) <= 0 ? $layer->qty_remaining : $remaining;
-                $costTotal = bcadd($costTotal, bcmul($take, $layer->unit_cost?->getAmount() ?? '0', self::SCALE), self::SCALE);
-                $layer->qty_remaining = bcsub($layer->qty_remaining, $take, self::SCALE);
-                $layer->save();
-                $remaining = bcsub($remaining, $take, self::SCALE);
             }
+            $costTotal = bcadd($costTotal, bcmul($remaining, $lastCost, self::SCALE), self::SCALE);
+        }
 
-            // Restmenge ohne deckende Schicht (Negativbestand) zum zuletzt bekannten Einzelpreis bewerten;
-            // ohne durchlaufene Schicht den Preis der jüngsten historischen Schicht (sonst 0-Bewertung, Verzerrung).
-            if (bccomp($remaining, '0', self::SCALE) > 0) {
-                if (bccomp($lastCost, '0', self::SCALE) === 0) {
-                    $historic = StockValuationLayer::query()
-                        ->where('article_variant_id', $variant->id)
-                        ->where('warehouse_id', $warehouse->id)
-                        ->orderByDesc('acquired_at')
-                        ->orderByDesc('id')
-                        ->first();
-                    if ($historic instanceof StockValuationLayer) {
-                        $lastCost = $historic->unit_cost?->getAmount() ?? '0';
-                    }
-                }
-                $costTotal = bcadd($costTotal, bcmul($remaining, $lastCost, self::SCALE), self::SCALE);
-            }
-
-            $unitCost = NumberHelper::divideOrDefault($costTotal, $qty, self::SCALE);
-
-            return $this->ledger->post(new StockPosting(
-                $variant, $warehouse, StockState::Physical, bcmul($qty, '-1', self::SCALE), StockMovementType::Issue,
-                OwnershipType::Own, actorUserId: $actorUserId,
-                costUnit: $unitCost, costTotal: $costTotal,
-            ));
-        });
+        return ['unit' => NumberHelper::divideOrDefault($costTotal, $qty, self::SCALE), 'total' => $costTotal];
     }
 
     /** Ist-Stückkosten = Kosten der nächsten zu entnehmenden Schicht (FIFO/FEFO). @return numeric-string */

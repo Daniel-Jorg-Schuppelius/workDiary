@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Listeners\Rental;
 
 use App\Enums\Notification\NotificationEvent;
-use App\Enums\Rental\RentalCaseStatus;
+use App\Enums\Rental\{RentalCaseAssetStatus, RentalCaseStatus};
 use App\Events\Asset\AssetPositionRecorded;
 use App\Listeners\ModuleListener;
 use App\Models\Asset\AssetPosition;
@@ -51,7 +51,7 @@ final class CheckRentalGeofence extends ModuleListener {
             ->where('organization_id', $organization->id)
             ->whereIn('status', [RentalCaseStatus::HandedOver->value, RentalCaseStatus::Overdue->value])
             ->where('starts_at', '<=', $position->recorded_at)
-            ->whereHas('caseAssets', fn ($q) => $q->where('asset_id', $position->asset_id)->where('status', 'handed_over'))
+            ->whereHas('caseAssets', fn ($q) => $q->where('asset_id', $position->asset_id)->where('status', RentalCaseAssetStatus::HandedOver))
             ->orderByDesc('starts_at')
             ->first();
         if ($case === null) {

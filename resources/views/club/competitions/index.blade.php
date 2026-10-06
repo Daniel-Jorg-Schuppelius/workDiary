@@ -10,8 +10,7 @@
 @extends('layouts.app')
 @section('title', __('club.competitions.title.index'))
 @section('nav-title', __('club.competitions.title.index'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('club.competitions.subtitle.index')">
     <x-slot:actions>
@@ -56,7 +55,7 @@
         @forelse ($events as $event)
             @php($competition = $event->clubCompetition)
             <tr class="hover {{ $event->cancelled_at ? 'opacity-60' : '' }}">
-                <td class="whitespace-nowrap text-sm tabular-nums">{{ $event->started_at->orgTz()->format('d.m.Y H:i') }}</td>
+                <td class="whitespace-nowrap text-sm tabular-nums">{{ $event->started_at->fdatetime() }}</td>
                 <td class="font-medium"><a href="{{ route('club.competitions.show', $event) }}" class="link link-hover">{{ $event->title }}</a></td>
                 <td class="text-sm">{{ $competition?->profile?->name ?? '–' }}</td>
                 <td class="text-sm">{{ count($competition?->disciplines ?? []) }}</td>

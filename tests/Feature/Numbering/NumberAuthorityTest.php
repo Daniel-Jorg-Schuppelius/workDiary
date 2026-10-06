@@ -12,7 +12,7 @@ namespace Tests\Feature\Numbering;
 
 use App\Enums\Numbering\NumberScope;
 use App\Models\Platform\Organization;
-use App\Plugins\Lexoffice\LexofficeNumberAuthority;
+use App\Plugins\Lexoffice\Services\LexofficeNumberAuthority;
 use App\Services\Numbering\{NumberAuthority, NumberSequenceService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;

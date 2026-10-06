@@ -104,7 +104,7 @@ class FormalAddressRuleTest extends TestCase {
         foreach ($this->helpLines('de') as $where => $line) {
             yield $where => $line;
         }
-        foreach ([...$this->bladeFiles(), ...$this->bladeFiles('app/Plugins')] as $file) {
+        foreach ($this->bladeFiles() as $file) {
             $source = $this->stripBladeComments((string) file_get_contents($file));
             $source = (string) preg_replace(['~\{\{.*?\}\}|\{!!.*?!!\}~s', '~<script\b.*?</script>|<style\b.*?</style>~s', '~@php\b.*?@endphp~s'], ' ', $source);
             if (preg_match_all('~>([^<>@]{3,})<~u', $source, $matches, PREG_OFFSET_CAPTURE) > 0) {

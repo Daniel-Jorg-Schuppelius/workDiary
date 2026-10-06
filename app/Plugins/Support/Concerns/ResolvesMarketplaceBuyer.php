@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Support\Concerns;
 
+use App\Enums\Integration\MarketplaceInboxStatus;
 use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
 use App\Models\Platform\Organization;
@@ -45,7 +46,6 @@ trait ResolvesMarketplaceBuyer {
         array $payload,
         string $source,
         string $mirrorModel,
-        string $linkedStatus,
     ): ?Customer {
         $outcome = $this->resolver->resolve(
             $organization,
@@ -75,7 +75,7 @@ trait ResolvesMarketplaceBuyer {
             ->where('organization_id', $organization->id)
             ->where('buyer_external_id', $buyerExternalId)
             ->whereNull('customer_id')
-            ->update(['customer_id' => $customer->id, 'inbox_status' => $linkedStatus]);
+            ->update(['customer_id' => $customer->id, 'inbox_status' => MarketplaceInboxStatus::Linked]);
 
         return $customer;
     }

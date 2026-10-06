@@ -1,7 +1,7 @@
 ---
 title: "Organisations et tenants"
 topic: admin.tenants
-version: 1
+version: 2
 audience:
     - admin
 related:
@@ -20,3 +20,9 @@ plan ou la licence liée à l'organisation détermine les modules
 activés — voir le chapitre **Licence**. Attention : la purge est
 irréversible ; proposez d'abord un export et vérifiez les obligations
 de conservation — la désactivation est l'alternative sûre.
+
+Approbations : dans la section du même nom, vous définissez quel rôle voit
+les étapes d'approbation d'une négociation contractuelle sous
+« Approbations », par type d'étape (commercial, technique, RH). Vide, la
+valeur par défaut s'applique : Comptabilité, Chef d'équipe, Gestion du
+personnel. L'approbation depuis le dossier n'est pas concernée.

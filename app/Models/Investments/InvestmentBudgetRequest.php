@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Investments;
 
+use App\Enums\Investments\InvestmentBudgetRequestStatus;
 use App\Models\Approval\Approval;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Model;
@@ -32,7 +33,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphMany};
  * @property string $financing
  * @property string|null $payment_plan
  * @property string|null $note
- * @property string $status
+ * @property InvestmentBudgetRequestStatus $status
  * @property array<string, mixed>|null $snapshot
  * @property int|null $requested_by
  * @property \Illuminate\Support\Carbon|null $decided_at
@@ -41,8 +42,6 @@ class InvestmentBudgetRequest extends Model {
     use Auditable;
     use BelongsToOrganization;
     use HasSqid;
-
-    public const STATUSES = ['draft', 'in_approval', 'approved', 'rejected', 'superseded'];
 
     protected $fillable = [
         'organization_id', 'investment_case_id', 'version', 'amount',
@@ -54,6 +53,7 @@ class InvestmentBudgetRequest extends Model {
     protected $casts = [
         'version' => 'integer',
         'amount' => 'decimal:2',
+        'status' => InvestmentBudgetRequestStatus::class,
         'snapshot' => 'array',
         'decided_at' => 'datetime',
     ];

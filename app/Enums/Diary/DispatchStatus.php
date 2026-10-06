@@ -23,7 +23,7 @@ use App\Enums\Contracts\{HasLabel, HasStatusTransitions};
  * unterwegs, erledigt). Der effektive Wert wird vom
  * {@see \App\Services\Dispatch\DispatchStatusResolver} aus den vorhandenen
  * Planungsfeldern abgeleitet bzw. aus der Spalte diary_entries.dispatch_status
- * gelesen, ohne dass die WIP-Modellklasse DiaryEntry angefasst werden muss.
+ * gelesen (Enum-Cast am Modell).
  */
 enum DispatchStatus: string implements HasLabel, HasStatusTransitions {
     use \App\Enums\Concerns\HasTransitions;
@@ -47,6 +47,16 @@ enum DispatchStatus: string implements HasLabel, HasStatusTransitions {
             self::Confirmed => 'progress',
             self::EnRoute => 'progress',
             self::Done => 'done',
+        };
+    }
+
+    /** Ton für `<x-status-badge>`; tone() bleibt die fachliche Stufe. */
+    public function badgeTone(): string {
+        return match ($this->tone()) {
+            'done' => 'success',
+            'progress' => 'info',
+            'open' => 'warning',
+            default => 'ghost',
         };
     }
 

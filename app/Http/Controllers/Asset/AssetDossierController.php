@@ -94,27 +94,12 @@ class AssetDossierController extends Controller {
 
         $maintenancePlans = $asset->maintenancePlans()->get();
 
-        $visibleDiaryIds = $diaryEntries->pluck('id')->all();
-        $visibleProtocolIds = $protocols->pluck('id')->all();
-        $visibleMaterialIds = $materialUsages->pluck('id')->all();
-        $visibleAttachmentIds = $attachments->pluck('id')->all();
-
-        $timelineItems = collect($timeline->build($asset, 500))
-            ->filter(function (array $event) use ($visibleAttachmentIds, $visibleDiaryIds, $visibleMaterialIds, $visibleProtocolIds): bool {
-                $kind = (string) ($event['kind'] ?? '');
-                $payload = is_array($event['payload'] ?? null) ? $event['payload'] : [];
-                $id = (int) ($payload['id'] ?? 0);
-
-                return match ($kind) {
-                    'order.linked' => in_array($id, $visibleDiaryIds, true),
-                    'protocol.linked' => in_array($id, $visibleProtocolIds, true),
-                    'material.linked' => in_array($id, $visibleMaterialIds, true),
-                    'attachment.linked' => in_array($id, $visibleAttachmentIds, true),
-                    default => true,
-                };
-            })
-            ->values()
-            ->all();
+        $timelineItems = $timeline->buildVisible($asset, 500, [
+            'orders' => $diaryEntries->pluck('id')->all(),
+            'protocols' => $protocols->pluck('id')->all(),
+            'materials' => $materialUsages->pluck('id')->all(),
+            'attachments' => $attachments->pluck('id')->all(),
+        ]);
 
         return view('assets.dossier', [
             'asset' => $asset,

@@ -59,7 +59,7 @@
                             <td>
                                 {{ $schedule->asset?->location_text ?? '—' }}
                                 @if ($schedule->asset?->location_lat === null)
-                                    <span class="badge badge-warning badge-outline badge-sm" title="{{ __('inspection_tour.no_coordinates_hint') }}">{{ __('inspection_tour.no_coordinates') }}</span>
+                                    <x-status-badge tone="warning" outline title="{{ __('inspection_tour.no_coordinates_hint') }}">{{ __('inspection_tour.no_coordinates') }}</x-status-badge>
                                 @endif
                             </td>
                         </tr>

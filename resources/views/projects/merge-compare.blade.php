@@ -60,6 +60,8 @@
         @endif
     </div>
 
+    <x-validation-errors class="mb-4" />
+
     <form method="POST" action="{{ route('projects.duplicates.merge') }}"
           data-confirm-dialog
           data-confirm-message="{{ __('„:source“ endgültig in „:target“ zusammenführen? Das Quell-Projekt wird gelöscht.', ['source' => $source->name, 'target' => $target->name]) }}"
@@ -73,11 +75,11 @@
                     <tr>
                         <th class="w-44">{{ __('Feld') }}</th>
                         <th>
-                            <span class="badge badge-sm badge-success">{{ __('Bleibt') }}</span>
+                            <x-status-badge tone="success">{{ __('Bleibt') }}</x-status-badge>
                             <a href="{{ route('projects.show', $target) }}" class="link ml-1">{{ $target->name }}</a>
                         </th>
                         <th>
-                            <span class="badge badge-sm badge-ghost">{{ __('Wird gelöscht') }}</span>
+                            <x-status-badge>{{ __('Wird gelöscht') }}</x-status-badge>
                             <a href="{{ route('projects.show', $source) }}" class="link ml-1">{{ $source->name }}</a>
                         </th>
                         <th class="w-40 text-center">{{ __('Wert aus Quelle übernehmen') }}</th>
@@ -120,9 +122,8 @@
         </x-table>
 
         <div class="mt-4 flex flex-wrap justify-end gap-2">
-            <a href="{{ route('projects.duplicates.compare', ['target' => $source->sqid, 'source' => $target->sqid]) }}"
-               class="btn btn-sm btn-outline">{{ __('Richtung tauschen') }}</a>
-            <button class="btn btn-sm btn-primary">{{ __('Zusammenführen →') }}</button>
+            <x-button :href="route('projects.duplicates.compare', ['target' => $source->sqid, 'source' => $target->sqid])" tone="outline">{{ __('Richtung tauschen') }}</x-button>
+            <x-button type="submit">{{ __('Zusammenführen →') }}</x-button>
         </div>
     </form>
 </x-index-page>

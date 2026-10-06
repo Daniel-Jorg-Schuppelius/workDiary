@@ -11,6 +11,7 @@
 namespace App\Http\Controllers\Finance;
 
 use App\Enums\Finance\{AllocationKind, MatchStatus};
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Finance\{BankAccount, BankStatement, BankTransaction, PaymentAllocation};
@@ -186,7 +187,7 @@ class PaymentReconciliationController extends Controller {
         $options = [];
 
         $invoices = Invoice::query()
-            ->whereNotIn('status', [Invoice::STATUS_PAID, Invoice::STATUS_CANCELLED])
+            ->whereNotIn('status', [InvoiceStatus::Paid, InvoiceStatus::Cancelled])
             ->where('type', Invoice::TYPE_INVOICE)
             ->orderBy('number')
             ->get();

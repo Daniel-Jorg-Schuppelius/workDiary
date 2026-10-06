@@ -9,8 +9,7 @@
 @extends('layouts.app')
 @section('title', __('Schichtplan') . ' — WorkDiary')
 @section('nav-title', __('Schichtplan'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 @php
@@ -76,7 +75,7 @@
 
     {{-- ── Flash messages ──────────────────────────────────────────────── --}}
     @if (session('import_errors'))
-        <div class="alert alert-warning alert-sm my-2 py-2">
+        <div role="alert" class="alert alert-warning alert-sm my-2 py-2">
             <ul class="list-disc pl-4 text-xs">
                 @foreach (session('import_errors') as $err)
                     <li>{{ $err }}</li>
@@ -113,9 +112,9 @@
              daher KEIN zusätzlicher Wrapper-Border (vermeidet Doppel-Rahmen). --}}
         @include('schedule.partials._month_matrix')
     @else
-        <div class="min-h-0 flex-1 overflow-auto rounded-box border border-base-300 bg-base-100 shadow-xs">
+        <x-card padding="p-0" class="min-h-0 flex-1 overflow-auto">
             @include('schedule.partials._week_matrix')
-        </div>
+        </x-card>
     @endif
 
 </x-index-page>

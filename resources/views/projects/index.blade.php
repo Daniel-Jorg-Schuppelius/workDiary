@@ -10,8 +10,7 @@
 @extends('layouts.app')
 @section('title', __('Projekte') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('Projekte'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 @php
@@ -40,8 +39,8 @@
                placeholder="{{ __('Suche') }}" aria-label="{{ __('Suche') }}" />
         <div class="join">
             @foreach ($statusOptions as $value => $label)
-                <a href="{{ route('projects.index', array_filter(['status' => $value === '' ? null : $value, 'q' => $search ?: null])) }}"
-                   class="join-item btn btn-sm {{ $statusFilter === $value ? 'btn-primary' : 'btn-ghost' }}">{{ $label }}</a>
+                <x-button :href="route('projects.index', array_filter(['status' => $value === '' ? null : $value, 'q' => $search ?: null]))"
+                   :tone="$statusFilter === $value ? 'primary' : 'ghost'" class="join-item">{{ $label }}</x-button>
             @endforeach
         </div>
     </x-filter-bar>
@@ -91,10 +90,9 @@
                                     <a href="{{ route('projects.show', $project) }}"
                                        class="font-['Space_Grotesk'] font-semibold hover:text-primary">{{ $project->name }}</a>
                                     @if ($isOrphan && $project->parent)
-                                        <span class="badge badge-xs badge-ghost"
-                                              title="{{ __('Sub-Projekt von :name', ['name' => $project->parent->name]) }}">
+                                        <x-status-badge size="xs" title="{{ __('Sub-Projekt von :name', ['name' => $project->parent->name]) }}">
                                             ↳ {{ $project->parent->name }}
-                                        </span>
+                                        </x-status-badge>
                                     @endif
                                 </div>
                                 @if ($project->description)
@@ -107,11 +105,10 @@
                                 <div class="flex items-center gap-2">
                                     <span>{{ $project->customer?->name ?? '—' }}</span>
                                     @if ($project->foreignCustomer)
-                                        <span class="badge badge-sm badge-outline gap-1"
-                                              title="{{ __('Fremdkunde') }}">
+                                        <x-status-badge tone="plain" outline class="gap-1" title="{{ __('Fremdkunde') }}">
                                             <x-icon name="handshake" class="text-[14px]" />
                                             {{ $project->foreignCustomer->name }}
-                                        </span>
+                                        </x-status-badge>
                                     @endif
                                 </div>
                             </td>

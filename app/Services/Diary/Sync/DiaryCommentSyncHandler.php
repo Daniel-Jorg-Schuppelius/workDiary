@@ -51,7 +51,8 @@ final class DiaryCommentSyncHandler implements SyncCommandHandler {
             ->whereKey(Sqid::decode(DiaryEntry::class, $data['diary']))
             ->first();
 
-        if ($diary === null) {
+        // Sichtrecht am Auftrag wie im Web- und API-Weg (authz-comment-1); gleiche Meldung, damit die Antwort keine Existenz verrät.
+        if ($diary === null || ! Gate::forUser($user)->allows('view', $diary)) {
             throw new RuntimeException((string) __('Auftrag nicht gefunden.'));
         }
 

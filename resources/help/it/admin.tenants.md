@@ -1,7 +1,7 @@
 ---
 title: "Organizzazioni e tenant"
 topic: admin.tenants
-version: 1
+version: 2
 audience:
     - admin
 related:
@@ -19,3 +19,9 @@ contesto** per gli admin globali. Il piano o la licenza
 dell'organizzazione determina i moduli abilitati. Attenzione: il purge
 è irreversibile — offra prima un export e verifichi gli obblighi di
 conservazione; la disattivazione è l'alternativa sicura.
+
+Approvazioni: nella sezione omonima stabilisce quale ruolo vede le fasi di
+approvazione di una trattativa contrattuale in «Approvazioni», per tipo di
+fase (commerciale, tecnica, risorse umane). Se lasciato vuoto vale il
+predefinito: Contabilità, Capo team, Gestione del personale.
+L'approvazione dalla pratica non ne è influenzata.

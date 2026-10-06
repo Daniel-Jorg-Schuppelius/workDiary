@@ -212,19 +212,4 @@ class AssetSpec extends AbstractEntitySpec {
 
         return $value;
     }
-
-    /**
-     * @param  list<ValidationIssue>  $issues
-     * @param  array<string, mixed>  $row
-     * @param  class-string<AssetClass|AssetStatus|AssetOwnership|AssetHealth>  $enum
-     */
-    private function validateEnum(array &$issues, array $row, string $field, string $enum): void {
-        $value = $row[$field] ?? null;
-        if ($value === null) {
-            return;
-        }
-        if ($enum::tryFrom((string) $value) === null) {
-            $issues[] = $this->formatIssue($field, (string) __('import.error.format.enum'));
-        }
-    }
 }

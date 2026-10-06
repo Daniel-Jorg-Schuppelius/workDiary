@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Tenders;
 
-use App\Enums\Applications\TenderProcedureType;
+use App\Enums\Applications\{ApplicationOpportunityStatus, TenderProcedureType};
+use App\Enums\Tenders\TenderNoticeMatchState;
 use App\Models\Applications\ApplicationOpportunity;
 use App\Models\Platform\User;
 use App\Models\Tenders\TenderNoticeMatch;
@@ -41,7 +42,7 @@ final class TenderNoticeConverter {
             'organization_id' => $match->organization_id,
             'title' => mb_substr($notice->title, 0, 200),
             'kind' => 'tender',
-            'status' => 'captured',
+            'status' => ApplicationOpportunityStatus::Captured,
             // Woher der Vorgang stammt, gehört in die Akte: Bei einer Rückfrage
             // ist die Bekanntmachung der Beleg.
             'source' => mb_substr((string) ($notice->url ?? 'Bekanntmachungsservice'), 0, 200),
@@ -61,7 +62,7 @@ final class TenderNoticeConverter {
         ]);
 
         $match->forceFill([
-            'state' => TenderNoticeMatch::STATE_CONVERTED,
+            'state' => TenderNoticeMatchState::Converted,
             'application_opportunity_id' => $tender->id,
         ])->save();
 

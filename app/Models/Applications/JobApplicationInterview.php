@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Applications;
 
+use App\Enums\Applications\JobApplicationInterviewStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Platform\User;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -28,7 +29,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property \Illuminate\Support\Carbon $scheduled_at
  * @property string $mode
  * @property int|null $interviewer_id
- * @property string $status
+ * @property JobApplicationInterviewStatus $status
  * @property string|null $notes
  * @property int|null $rating
  */
@@ -40,8 +41,6 @@ class JobApplicationInterview extends Model {
 
     public const MODES = ['onsite', 'remote', 'phone'];
 
-    public const STATUSES = ['planned', 'done', 'cancelled'];
-
     protected $fillable = [
         'organization_id', 'job_application_id', 'scheduled_at', 'mode',
         'interviewer_id', 'status', 'notes', 'rating',
@@ -50,6 +49,7 @@ class JobApplicationInterview extends Model {
     /** @var array<string, string> */
     protected $casts = [
         'scheduled_at' => 'datetime',
+        'status' => JobApplicationInterviewStatus::class,
         'notes' => 'encrypted',
         'rating' => 'integer',
     ];

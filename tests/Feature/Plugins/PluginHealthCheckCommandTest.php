@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Plugins;
 
+use App\Enums\Plugin\PluginHealthStatus;
 use App\Events\{PluginHealthChanged, PluginRecovered};
 use App\Models\Platform\PluginState;
 use App\Plugins\Contracts\{Plugin, PluginCapability};
@@ -41,10 +42,10 @@ class PluginHealthCheckCommandTest extends TestCase {
         $this->artisan('plugin:healthcheck')->assertExitCode(1); // failing plugin -> non-zero
 
         $healthy = PluginState::query()->where('plugin_id', 'healthy')->firstOrFail();
-        $this->assertSame(PluginHealth::STATUS_OK, $healthy->last_health_status);
+        $this->assertSame(PluginHealthStatus::Ok, $healthy->last_health_status);
 
         $failing = PluginState::query()->where('plugin_id', 'broken')->firstOrFail();
-        $this->assertSame(PluginHealth::STATUS_FAILING, $failing->last_health_status);
+        $this->assertSame(PluginHealthStatus::Failing, $failing->last_health_status);
         $this->assertSame(1, (int) $failing->failure_count);
     }
 
@@ -69,7 +70,7 @@ class PluginHealthCheckCommandTest extends TestCase {
         $this->artisan('plugin:healthcheck --no-fail')->assertExitCode(0);
 
         $failing = PluginState::query()->where('plugin_id', 'broken')->firstOrFail();
-        $this->assertSame(PluginHealth::STATUS_FAILING, $failing->last_health_status);
+        $this->assertSame(PluginHealthStatus::Failing, $failing->last_health_status);
         $this->assertSame(1, (int) $failing->failure_count);
     }
 }

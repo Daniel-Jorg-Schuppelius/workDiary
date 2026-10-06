@@ -10,8 +10,7 @@
 
 @section('title', __('integration.webhook.title.index'))
 @section('nav-title', __('integration.webhook.title.index'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('integration.webhook.title.subtitle')">
@@ -116,5 +115,7 @@
             <x-table.empty icon="webhook" :colspan="6" :title="__('integration.webhook.title.empty')" compact />
         @endforelse
     </x-table>
+
+    <x-pagination :paginator="$endpoints" standing />
 </x-index-page>
 @endsection

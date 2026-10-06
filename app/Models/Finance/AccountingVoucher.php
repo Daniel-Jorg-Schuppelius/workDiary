@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Finance;
 
+use App\Enums\Finance\AccountingVoucherState;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Customer\Customer;
 use App\Models\Supplier\Supplier;
@@ -27,6 +28,7 @@ use Illuminate\Support\Carbon;
  * liest es, um den Belegfluss vollständig zu zeigen — und schreibt es nie
  * zurück.
  *
+ * @property AccountingVoucherState|null $voucher_state
  * @property Carbon|null $voucher_date
  * @property Carbon|null $due_date
  * @property Carbon|null $paid_date
@@ -51,6 +53,7 @@ class AccountingVoucher extends Model {
 
     /** @var array<string, string> */
     protected $casts = [
+        'voucher_state' => AccountingVoucherState::class,
         'voucher_date' => 'date',
         'due_date' => 'date',
         'paid_date' => 'date',

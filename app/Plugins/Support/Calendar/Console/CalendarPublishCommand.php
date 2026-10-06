@@ -14,7 +14,8 @@ namespace App\Plugins\Support\Calendar\Console;
 
 use App\Console\Concerns\IteratesOrganizations;
 use App\Models\Platform\Organization;
-use App\Plugins\Contracts\CalendarPublisher;
+use App\Plugins\Contracts\{CalendarPublisher, Plugin};
+use App\Plugins\Support\Console\ChecksPluginSwitch;
 use Illuminate\Console\Command;
 
 /**
@@ -26,15 +27,19 @@ use Illuminate\Console\Command;
  * bei den Plugin-Ableitungen.
  */
 abstract class CalendarPublishCommand extends Command {
+    use ChecksPluginSwitch;
     use IteratesOrganizations;
 
     /** Das Kalender-Plugin dieses Commands (CalDAV, Microsoft 365, Google). */
-    abstract protected function plugin(): CalendarPublisher;
+    abstract protected function plugin(): Plugin&CalendarPublisher;
 
     public function handle(): int {
         $plugin = $this->plugin();
 
         $this->forEachOrganization(function (Organization $org) use ($plugin): void {
+            if (! $this->pluginEnabledFor($plugin->id(), (int) $org->id)) {
+                return;
+            }
             $r = $plugin->publishCalendar($org);
             $this->info(sprintf(
                 'Organisation #%d (%s): published %d, deleted %d, unchanged %d, failed %d',

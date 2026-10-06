@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Models\Gaeb;
 
 use App\Enums\Gaeb\BoqCallOffStatus;
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Invoicing\Invoice;
 use Illuminate\Database\Eloquent\Model;
@@ -65,6 +66,6 @@ class BoqCallOff extends Model {
     public function activeInvoice(): ?Invoice {
         $invoice = $this->invoice;
 
-        return $invoice instanceof Invoice && $invoice->status !== Invoice::STATUS_CANCELLED ? $invoice : null;
+        return $invoice instanceof Invoice && $invoice->status !== InvoiceStatus::Cancelled ? $invoice : null;
     }
 }

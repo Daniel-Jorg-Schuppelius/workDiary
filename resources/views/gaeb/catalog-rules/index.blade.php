@@ -10,8 +10,7 @@
 
 @section('title', __('Zuordnungsregeln') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('Zuordnungsregeln'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @php
     $matchLabels = [
@@ -29,7 +28,7 @@
         @endif
     </x-slot:actions>
 
-    @if ($rules->isEmpty())
+    @if ($rules->total() === 0)
         <x-empty-state framed icon="auto_fix_high"
                        :title="__('Noch keine Regel angelegt.')"
                        :message="__('Eine Regel hält fest, welche Leistung üblicherweise auf welche Kostengruppe schlägt. Angewandt wird sie nur auf Positionen ohne Zuordnung.')" />
@@ -64,6 +63,8 @@
                 </tr>
             @endforeach
         </x-table>
+
+        <x-pagination :paginator="$rules" standing />
     @endif
 </x-index-page>
 @endsection

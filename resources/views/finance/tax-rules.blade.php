@@ -20,7 +20,7 @@
     </x-slot:toolbar>
 
     @foreach ($gaps as $gap)
-        <div class="alert alert-warning text-sm">
+        <div role="alert" class="alert alert-warning text-sm">
             <x-icon name="warning" />
             {{ __('Lückenwarnung: :gap', ['gap' => $gap]) }}
         </div>
@@ -73,7 +73,7 @@
                     </tr>
             </x-slot:head>
                     @foreach ($rules as $rule)
-                        <tr @class(['opacity-50' => $rule->status !== 'active'])>
+                        <tr @class(['opacity-50' => $rule->status !== \App\Enums\Finance\TaxRuleStatus::Active])>
                             <td>{{ $rule->country }}@if ($rule->region)/{{ $rule->region }}@endif</td>
                             <td>{{ __("values.{$rule->category}") }}</td>
                             <td>{{ __("values.{$rule->rate_type}") }}</td>
@@ -81,9 +81,9 @@
                             <td>{{ $rule->valid_from->fdate() }} – {{ optional($rule->valid_to)->fdate() ?? '∞' }}</td>
                             <td class="max-w-xs truncate text-xs text-base-content/70" title="{{ $rule->source }}">{{ $rule->source ?? '—' }}</td>
                             <td>{{ $rule->organization_id !== null ? __('Org-Override') : __('Katalog') }}</td>
-                            <td><x-status-badge size="xs" outline>{{ __("values.{$rule->status}") }}</x-status-badge></td>
+                            <td><x-status-badge size="xs" outline>{{ $rule->status->label() }}</x-status-badge></td>
                             <td class="text-right">
-                                @if ($rule->organization_id !== null && $rule->status === 'active')
+                                @if ($rule->organization_id !== null && $rule->status === \App\Enums\Finance\TaxRuleStatus::Active)
                                     <x-action-form :action="route('finance.tax-rules.retire', $rule)"
                                           :confirm="__('Regel stilllegen (Rollback)? Ältere Regeln/Katalog greifen wieder.')"
                                           confirm-icon="history" confirm-tone="warning" :confirm-label="__('Stilllegen')">

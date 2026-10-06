@@ -25,6 +25,7 @@
         <section class="site-results" hidden data-site-results>
             <h2>{{ __('Treffer') }}</h2>
             <ul data-site-results-list></ul>
+            {{-- raw-markup-ok: öffentliche Hilfeseite mit eigenem Stylesheet, per JS ein-/ausgeblendet --}}
             <p hidden data-site-results-empty>{{ __('Keine passenden Hilfethemen gefunden.') }}</p>
         </section>
         <div class="site-sections" data-site-sections>

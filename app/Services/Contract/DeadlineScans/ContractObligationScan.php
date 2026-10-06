@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Contract\DeadlineScans;
 
+use App\Enums\Contract\ContractObligationStatus;
 use App\Models\Contract\ContractObligation;
 use App\Models\Platform\Organization;
 use App\Services\Contract\ContractService;
@@ -35,7 +36,7 @@ class ContractObligationScan extends AbstractDeadlineScan {
         return $this->sumPerOrganization(
             ContractObligation::query()
                 ->withoutGlobalScopes()
-                ->where('status', 'open'),
+                ->where('status', ContractObligationStatus::Open),
             fn(Organization $organization): int => $this->service->scanObligations($organization),
         );
     }

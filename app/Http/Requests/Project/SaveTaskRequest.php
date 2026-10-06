@@ -86,7 +86,7 @@ class SaveTaskRequest extends BaseFormRequest {
             'budget' => ['nullable', 'numeric', 'min:0', 'max:9999999999.99'],
             'budget_type' => ['nullable', Rule::in(['month', 'year'])],
             'billable' => ['sometimes', 'boolean'],
-            'color' => ['nullable', 'string', 'max:16'],
+            'color' => ['nullable', 'string', 'max:16', new \App\Rules\ColorValue],
         ];
     }
 }

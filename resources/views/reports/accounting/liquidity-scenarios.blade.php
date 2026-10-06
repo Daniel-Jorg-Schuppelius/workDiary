@@ -16,19 +16,23 @@
     <x-index-page :subtitle="__('accounting.reports.scenario.subtitle')"
                   back-route="reports.accounting.liquidity-forecast" :back-label="__('accounting.reports.card.liquidity_forecast.title')">
 
-        <x-card :title="__('accounting.reports.scenario.new')">
-            @include('reports.accounting._liquidity_scenario_form', ['scenario' => null])
-        </x-card>
+        @if ($canEdit)
+            <x-card :title="__('accounting.reports.scenario.new')">
+                @include('reports.accounting._liquidity_scenario_form', ['scenario' => null])
+            </x-card>
+        @endif
 
         @foreach ($scenarios as $scenario)
             <x-card :title="$scenario->name" class="mt-4" padding="p-0" id="scenario-{{ $scenario->sqid }}">
                 <x-slot:actions>
                     <x-icon-btn icon="insights" size="sm" :href="route('reports.accounting.liquidity-forecast', ['scenario' => $scenario->sqid])" show-label>{{ __('accounting.reports.scenario.open') }}</x-icon-btn>
-                    <form method="POST" action="{{ route('reports.accounting.liquidity-scenarios.destroy', $scenario) }}" data-confirm-dialog data-confirm-message="{{ __('accounting.reports.scenario.confirm_delete') }}">
-                        @csrf
-                        @method('DELETE')
-                        <x-icon-btn icon="delete" size="sm" type="submit" :title="__('Löschen')" />
-                    </form>
+                    @if ($canEdit)
+                        <form method="POST" action="{{ route('reports.accounting.liquidity-scenarios.destroy', $scenario) }}" data-confirm-dialog data-confirm-message="{{ __('accounting.reports.scenario.confirm_delete') }}">
+                            @csrf
+                            @method('DELETE')
+                            <x-icon-btn icon="delete" size="sm" type="submit" :title="__('Löschen')" />
+                        </form>
+                    @endif
                 </x-slot:actions>
                 <div class="px-4 py-3">
                     @include('reports.accounting._liquidity_scenario_form', ['scenario' => $scenario])
@@ -50,17 +54,20 @@
                             <td>{{ $item->expected_on->fdate() }}</td>
                             <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $item->amount, 2, withThousandsSeparator: true) }}</td>
                             <td class="text-right">
-                                <form method="POST" action="{{ route('reports.accounting.liquidity-scenarios.items.destroy', $item) }}">
-                                    @csrf
-                                    @method('DELETE')
-                                    <x-icon-btn icon="delete" size="xs" type="submit" :title="__('Entfernen')" />
-                                </form>
+                                @if ($canEdit)
+                                    <form method="POST" action="{{ route('reports.accounting.liquidity-scenarios.items.destroy', $item) }}">
+                                        @csrf
+                                        @method('DELETE')
+                                        <x-icon-btn icon="delete" size="xs" type="submit" :title="__('Entfernen')" />
+                                    </form>
+                                @endif
                             </td>
                         </tr>
                     @empty
                         <x-table.empty icon="list" :colspan="5" :title="__('accounting.reports.scenario.items_empty')" compact />
                     @endforelse
                 </x-table>
+                @if ($canEdit)
                 <form method="POST" action="{{ route('reports.accounting.liquidity-scenarios.items.store', $scenario) }}" class="flex flex-wrap items-end gap-2 border-t border-base-300 px-4 py-3" data-entry-form>
                     @csrf
                     <x-input-field name="label" :id="'item-label-' . $scenario->sqid" :label="__('accounting.reports.scenario.field.label')" required />
@@ -70,8 +77,9 @@
                     </x-select-field>
                     <x-input-field name="expected_on" type="date" :id="'item-date-' . $scenario->sqid" :label="__('accounting.reports.scenario.field.expected_on')" required />
                     <x-input-field name="amount" type="number" step="0.01" min="0.01" :id="'item-amount-' . $scenario->sqid" :label="__('accounting.reports.scenario.field.amount')" required />
-                    <button type="submit" class="btn btn-sm">{{ __('accounting.reports.scenario.add_item') }}</button>
+                    <x-button type="submit" tone="plain">{{ __('accounting.reports.scenario.add_item') }}</x-button>
                 </form>
+                @endif
             </x-card>
         @endforeach
     </x-index-page>

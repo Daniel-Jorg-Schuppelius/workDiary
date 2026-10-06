@@ -11,6 +11,7 @@
 namespace Tests\Feature\Finance;
 
 use App\Enums\Finance\{AllocationKind, BalanceCheck, MatchStatus, TransactionDirection};
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Customer\Customer;
 use App\Models\Finance\{BankStatement, BankTransaction, PaymentAllocation};
 use App\Models\Invoicing\Invoice;
@@ -64,7 +65,7 @@ class PaymentReconciliationTest extends TestCase {
         return app(BankImportService::class);
     }
 
-    private function makeInvoice(string $number = 'RE-2026-0007', string $total = '119.00', string $status = Invoice::STATUS_ISSUED): Invoice {
+    private function makeInvoice(string $number = 'RE-2026-0007', string $total = '119.00', InvoiceStatus $status = InvoiceStatus::Issued): Invoice {
         return Invoice::create([
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
@@ -139,7 +140,7 @@ class PaymentReconciliationTest extends TestCase {
 
         $invoice->refresh();
         $tx->refresh();
-        $this->assertSame(Invoice::STATUS_PAID, $invoice->status);
+        $this->assertSame(InvoiceStatus::Paid, $invoice->status);
         $this->assertSame('2026-05-15', $invoice->paid_on?->toDateString());
         $this->assertSame(MatchStatus::Matched, $tx->match_status);
         $this->assertDatabaseHas('payment_reconciliation_events', [
@@ -163,7 +164,7 @@ class PaymentReconciliationTest extends TestCase {
         $invoice->refresh();
         // MVP-162 (Feature 066): Teilzahlung ist jetzt ein sichtbarer
         // Zwischenstatus — vorher blieb die Rechnung stumm auf issued.
-        $this->assertSame(Invoice::STATUS_PARTIALLY_PAID, $invoice->status);
+        $this->assertSame(InvoiceStatus::PartiallyPaid, $invoice->status);
         $this->assertNull($invoice->paid_on);
     }
 
@@ -183,12 +184,12 @@ class PaymentReconciliationTest extends TestCase {
             'amount' => 119.00,
             'kind' => AllocationKind::Partial,
         ]]);
-        $this->assertSame(Invoice::STATUS_PARTIALLY_PAID, $invoice->refresh()->status);
+        $this->assertSame(InvoiceStatus::PartiallyPaid, $invoice->refresh()->status);
 
         $allocation = PaymentAllocation::query()->where('bank_transaction_id', $tx->id)->firstOrFail();
         app(ReconciliationService::class)->unmatch($allocation);
 
-        $this->assertSame(Invoice::STATUS_ISSUED, $invoice->refresh()->status);
+        $this->assertSame(InvoiceStatus::Issued, $invoice->refresh()->status);
         $this->assertNull($invoice->paid_on);
     }
 
@@ -208,7 +209,7 @@ class PaymentReconciliationTest extends TestCase {
 
         $invoice->refresh();
         $tx->refresh();
-        $this->assertSame(Invoice::STATUS_ISSUED, $invoice->status);
+        $this->assertSame(InvoiceStatus::Issued, $invoice->status);
         $this->assertNull($invoice->paid_on);
         // Bankumsatz unverändert, nur Status zurück auf offen.
         $this->assertSame(MatchStatus::Unmatched, $tx->match_status);
@@ -259,7 +260,7 @@ class PaymentReconciliationTest extends TestCase {
             'organization_id' => $otherOrg->id,
             'customer_id' => $otherCustomer->id,
             'number' => 'RE-2026-0007',
-            'status' => Invoice::STATUS_ISSUED,
+            'status' => InvoiceStatus::Issued,
             'type' => Invoice::TYPE_INVOICE,
             'category' => Invoice::CATEGORY_SERVICE,
             'currency' => 'EUR',

@@ -9,8 +9,7 @@
 @extends('layouts.app')
 @section('title', __('gaeb.title') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('gaeb.title'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('gaeb.subtitle')">
@@ -20,7 +19,7 @@
     </x-slot:actions>
 
     @if (session('gaebErrors'))
-        <div class="alert alert-error mb-4">
+        <div role="alert" class="alert alert-error mb-4">
             <div>
                 <ul class="list-disc list-inside text-sm">
                     @foreach (session('gaebErrors') as $err)

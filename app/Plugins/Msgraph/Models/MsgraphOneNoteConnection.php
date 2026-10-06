@@ -36,11 +36,6 @@ class MsgraphOneNoteConnection extends Model {
     use BelongsToOrganization;
     use HasConnectionHealth;
 
-    /** Rohwerte für die Hooks des gemeinsamen OAuth-Controllers. */
-    public const STATUS_ACTIVE = 'active';
-
-    public const STATUS_DISCONNECTED = 'disconnected';
-
     protected $table = 'msgraph_onenote_connections';
 
     /** Geheimnisse nie serialisieren/auditieren. */

@@ -20,7 +20,7 @@
     </p>
 
     <div class="space-y-6">
-        <section class="rounded-box border border-base-300 bg-base-100 p-4">
+        <x-card as="section">
             <h2 class="mb-2 font-semibold">{{ __('Prüf- & Wartungstermine') }}</h2>
             @if ($asset->maintenancePlans->isEmpty())
                 <x-empty-state icon="event" :title="__('Keine Termine hinterlegt.')" compact />
@@ -40,9 +40,9 @@
                     @endforeach
                 </x-table>
             @endif
-        </section>
+        </x-card>
 
-        <section class="rounded-box border border-base-300 bg-base-100 p-4">
+        <x-card as="section">
             <h2 class="mb-2 font-semibold">{{ __('Abgeschlossene Wartungen') }}</h2>
             @if ($timeline === [])
                 <x-empty-state icon="build" :title="__('Noch keine abgeschlossenen Wartungen.')" compact />
@@ -56,9 +56,9 @@
                     @endforeach
                 </ul>
             @endif
-        </section>
+        </x-card>
 
-        <section class="rounded-box border border-base-300 bg-base-100 p-4">
+        <x-card as="section">
             <h2 class="mb-2 font-semibold">{{ __('Protokolle') }}</h2>
             @if ($asset->protocols->isEmpty())
                 <x-empty-state icon="description" :title="__('Keine freigegebenen Protokolle.')" compact />
@@ -72,6 +72,6 @@
                     @endforeach
                 </ul>
             @endif
-        </section>
+        </x-card>
     </div>
 @endsection

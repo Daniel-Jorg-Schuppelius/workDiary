@@ -11,6 +11,7 @@
 namespace Tests\Feature\Finance;
 
 use App\Enums\Finance\{AllocationKind, MatchStatus, TransactionDirection};
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Customer\Customer;
 use App\Models\Finance\{BankStatement, BankTransaction, PaymentAllocation};
 use App\Models\Invoicing\Invoice;
@@ -61,7 +62,7 @@ class PaymentReturnTest extends TestCase {
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
             'number' => $number,
-            'status' => Invoice::STATUS_ISSUED,
+            'status' => InvoiceStatus::Issued,
             'type' => Invoice::TYPE_INVOICE,
             'category' => Invoice::CATEGORY_SERVICE,
             'issued_on' => '2026-05-01',
@@ -95,8 +96,8 @@ class PaymentReturnTest extends TestCase {
             ['type' => Invoice::class, 'id' => $second->id, 'amount' => 100.00],
         ]);
 
-        $this->assertSame(Invoice::STATUS_PAID, $first->refresh()->status);
-        $this->assertSame(Invoice::STATUS_PAID, $second->refresh()->status);
+        $this->assertSame(InvoiceStatus::Paid, $first->refresh()->status);
+        $this->assertSame(InvoiceStatus::Paid, $second->refresh()->status);
         $this->assertSame(MatchStatus::Matched, $tx->refresh()->match_status);
         $this->assertSame(2, $tx->allocations()->count());
     }
@@ -122,7 +123,7 @@ class PaymentReturnTest extends TestCase {
             'id' => $invoice->id,
             'amount' => 119.00,
         ]]);
-        $this->assertSame(Invoice::STATUS_PAID, $invoice->refresh()->status);
+        $this->assertSame(InvoiceStatus::Paid, $invoice->refresh()->status);
         $original = PaymentAllocation::query()->where('bank_transaction_id', $paymentTx->id)->firstOrFail();
 
         // Rückläufer importieren; Kandidaten-Vorschlag findet die Original-Zuordnung.
@@ -148,7 +149,7 @@ class PaymentReturnTest extends TestCase {
 
         // Offener Posten wieder offen, Rückläufer zugeordnet, Event geschrieben.
         $invoice->refresh();
-        $this->assertSame(Invoice::STATUS_ISSUED, $invoice->status);
+        $this->assertSame(InvoiceStatus::Issued, $invoice->status);
         $this->assertNull($invoice->paid_on);
         $this->assertSame(MatchStatus::Matched, $returnTx->refresh()->match_status);
         $this->assertDatabaseHas('payment_reconciliation_events', [

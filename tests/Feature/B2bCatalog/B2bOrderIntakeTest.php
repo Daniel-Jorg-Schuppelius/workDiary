@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\B2bCatalog;
 
+use App\Enums\B2b\B2bOrderStatus;
 use App\Models\Article\Article;
 use App\Models\B2b\{B2bCatalogAccess, B2bOrder};
 use App\Models\Customer\Customer;
@@ -87,7 +88,7 @@ class B2bOrderIntakeTest extends TestCase {
 
         $this->assertSame('created', $result['status']);
         $order = $result['order'];
-        $this->assertSame(B2bOrder::STATUS_OPEN, $order->status);
+        $this->assertSame(B2bOrderStatus::Open, $order->status);
         $this->assertSame('PO-2026-0815', $order->external_order_id);
         $this->assertSame($customer->id, $order->customer_id);
         $this->assertNull($order->diary_entry_id);
@@ -143,7 +144,7 @@ class B2bOrderIntakeTest extends TestCase {
         $entry = $service->book($order, $customer, $actor);
         $order->refresh();
 
-        $this->assertSame(B2bOrder::STATUS_BOOKED, $order->status);
+        $this->assertSame(B2bOrderStatus::Booked, $order->status);
         $this->assertSame($entry->id, $order->diary_entry_id);
         $this->assertSame($customer->id, $entry->customer_id);
         $this->assertStringContainsString('PO-2026-0815', (string) $entry->title);
@@ -157,8 +158,18 @@ class B2bOrderIntakeTest extends TestCase {
         // Verwerfen einer weiteren offenen Bestellung.
         $other = $service->intake($this->organization, $this->orderXml('PO-2026-0816'), B2bOrder::SOURCE_UPLOAD)['order'];
         $service->dismiss($other);
-        $this->assertSame(B2bOrder::STATUS_DISMISSED, $other->refresh()->status);
+        $this->assertSame(B2bOrderStatus::Dismissed, $other->refresh()->status);
         $this->assertSame(1, DiaryEntry::query()->count());
+
+        // Gebucht bleibt gebucht, verworfen lässt sich nicht mehr buchen.
+        $service->dismiss($order);
+        $this->assertSame(B2bOrderStatus::Booked, $order->refresh()->status);
+        try {
+            $service->book($other, $customer, $actor);
+            $this->fail('Verworfene Bestellung wurde gebucht.');
+        } catch (\RuntimeException) {
+            $this->assertSame(1, DiaryEntry::query()->count());
+        }
     }
 
     public function test_mail_channel_routes_opentrans_before_einvoice_pipeline(): void {
@@ -222,5 +233,7 @@ class B2bOrderIntakeTest extends TestCase {
             ->assertRedirect();
 
         $this->assertSame(1, B2bOrder::query()->where('source', B2bOrder::SOURCE_UPLOAD)->count());
+
+        $this->actingAs($admin)->get('/admin/b2b-katalog')->assertOk()->assertSee(B2bOrderStatus::Open->label());
     }
 }

@@ -14,9 +14,9 @@ namespace App\Services\Inventory;
 
 use App\Enums\Inventory\{ReservationStatus, StockState};
 use App\Models\Article\ArticleVariant;
-use App\Models\Inventory\{StockLot, StockMovement, StockReservation, Warehouse, WarehouseBin};
+use App\Models\Inventory\{StockLot, StockReservation, Warehouse, WarehouseBin};
 use App\Support\DecimalQty;
-use CommonToolkit\Helper\Data\NumberHelper;
+use CommonToolkit\ValueObjects\Decimal;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 
@@ -26,10 +26,15 @@ use Illuminate\Support\Collection;
  * Entnahmepositionen. Ohne festen Platz wird die Menge über die Plätze mit
  * physischem Bestand (Reihenfolge sort_order) verteilt, innerhalb eines
  * Platzes über Chargen nach FEFO (frühestes MHD zuerst); ein Rest ohne
- * Deckung bleibt als eigene Position sichtbar (Fehlmenge).
+ * Deckung bleibt als eigene Position sichtbar (Fehlmenge). Vorgeschlagen
+ * werden nur aktive Chargen: Bestand gesperrter Chargen bleibt liegen, der
+ * einer zusammengeführten Altcharge zählt bei ihrer Zielcharge.
  */
 final class PickListBuilder {
-    public function __construct(private readonly InventoryLedger $ledger) {}
+    public function __construct(
+        private readonly InventoryLedger $ledger,
+        private readonly LotStockReader $lotStock,
+    ) {}
 
     /** Aus den aktiven Reservierungen einer fachlichen Quelle (source_type/source_id). */
     public function forSource(Model $source): PickList {
@@ -73,8 +78,11 @@ final class PickListBuilder {
             $qty = DecimalQty::positive($line['qty']);
             $bin = $line['bin'] ?? null;
 
-            foreach ($this->allocateBins($variant, $warehouse, $qty, $bin) as [$place, $placeQty]) {
-                foreach ($this->allocateLots($variant, $warehouse, $place, $placeQty) as [$lot, $lotQty, $lotAvailable]) {
+            $physical = $this->ledger->balancesByBin($variant, $warehouse, StockState::Physical);
+            $lotStock = $this->lotStock->balances($variant, $warehouse);
+
+            foreach ($this->allocateBins($qty, $bin, $physical, $lotStock) as [$place, $placeQty]) {
+                foreach ($this->allocateLots($place, $placeQty, $physical, $lotStock) as [$lot, $lotQty, $lotAvailable]) {
                     $result[] = new PickListLine(
                         $variant,
                         $warehouse,
@@ -95,18 +103,20 @@ final class PickListBuilder {
 
     /**
      * Verteilt die Menge auf Plätze: fester Platz → genau dieser; sonst die
-     * Plätze mit physischem Bestand in sort_order, Rest ohne Platz.
+     * Plätze mit physischem Bestand in sort_order, Rest ohne Platz. Bestand
+     * gesperrter Chargen zählt am Platz nicht mit.
      *
      * @param  numeric-string  $qty
+     * @param  array<int, numeric-string>  $physical  bin_id|0 → physischer Saldo
+     * @param  array<int, array<int, array{0: StockLot, 1: Decimal}>>  $lotStock
      * @return list<array{0: WarehouseBin|null, 1: numeric-string}>
      */
-    private function allocateBins(ArticleVariant $variant, Warehouse $warehouse, string $qty, ?WarehouseBin $bin): array {
+    private function allocateBins(string $qty, ?WarehouseBin $bin, array $physical, array $lotStock): array {
         if ($bin !== null) {
             return [[$bin, $qty]];
         }
 
-        $balances = $this->ledger->balancesByBin($variant, $warehouse, StockState::Physical);
-        $binIds = array_values(array_filter(array_keys($balances), fn (int $id): bool => $id > 0));
+        $binIds = array_values(array_filter(array_keys($physical), fn (int $id): bool => $id > 0));
         if ($binIds === []) {
             return [[null, $qty]];
         }
@@ -115,7 +125,14 @@ final class PickListBuilder {
         $remaining = $qty;
         $parts = [];
         foreach ($bins as $candidate) {
-            $stock = $balances[(int) $candidate->id] ?? '0';
+            [$pickable, $blocked] = $this->lotStock->pickable($lotStock, (int) $candidate->id);
+            $onHand = Decimal::of($physical[(int) $candidate->id] ?? '0', InventoryLedger::SCALE);
+            if ($blocked->isPositive()) {
+                // Altbestand: frühere Abgänge trugen keine Charge, der gebuchte Saldo einer gesperrten Charge kann über
+                // dem liegen, was von ihr noch da ist. Was aktiven Chargen gebucht ist, bleibt deshalb entnehmbar.
+                $onHand = Decimal::min($onHand, Decimal::max($onHand->minus($blocked), Decimal::sum(array_column($pickable, 1), InventoryLedger::SCALE)));
+            }
+            $stock = $onHand->getValue();
             if (bccomp($stock, '0', InventoryLedger::SCALE) <= 0 || ! $candidate->isUsable()) {
                 continue;
             }
@@ -134,38 +151,28 @@ final class PickListBuilder {
     }
 
     /**
-     * Verteilt die Platzmenge über Chargen nach FEFO; ohne Chargenbestand eine
-     * Zeile ohne Charge. Verfügbar je Chargenzeile = physischer Chargenbestand am Ort.
+     * Verteilt die Platzmenge über die aktiven Chargen nach FEFO; ohne
+     * Chargenbestand im Lager eine Zeile ohne Charge. Verfügbar je Chargenzeile
+     * = physischer Chargenbestand am Ort; der Rest ohne Charge hat nur, was am
+     * Ort weder einer aktiven noch einer gesperrten Charge gehört.
      *
      * @param  numeric-string  $qty
+     * @param  array<int, numeric-string>  $physical  bin_id|0 → physischer Saldo
+     * @param  array<int, array<int, array{0: StockLot, 1: Decimal}>>  $lotStock
      * @return list<array{0: StockLot|null, 1: numeric-string, 2: numeric-string|null}>
      */
-    private function allocateLots(ArticleVariant $variant, Warehouse $warehouse, ?WarehouseBin $bin, string $qty): array {
-        $lotBalances = [];
-        $rows = StockMovement::query()
-            ->where('article_variant_id', $variant->id)
-            ->where('warehouse_id', $warehouse->id)
-            ->where('stock_state', StockState::Physical->value)
-            ->whereNotNull('stock_lot_id')
-            ->when($bin !== null, fn ($q) => $q->where('bin_id', $bin?->id))
-            ->toBase()
-            ->get(['stock_lot_id', 'qty_base']);
-        foreach ($rows as $row) {
-            $lotId = (int) $row->stock_lot_id;
-            $lotBalances[$lotId] = bcadd($lotBalances[$lotId] ?? '0', NumberHelper::normalizeDecimalString((string) $row->qty_base), InventoryLedger::SCALE);
-        }
-        $lotBalances = array_filter($lotBalances, fn (string $sum): bool => bccomp($sum, '0', InventoryLedger::SCALE) > 0);
-        if ($lotBalances === []) {
+    private function allocateLots(?WarehouseBin $bin, string $qty, array $physical, array $lotStock): array {
+        if ($lotStock === []) {
             return [[null, $qty, null]];
         }
 
-        $lots = StockLot::query()->whereIn('id', array_keys($lotBalances))
-            ->orderByRaw('best_before IS NULL')->orderBy('best_before')->orderBy('lot_no')
-            ->get();
+        $binKey = (int) ($bin->id ?? 0);
+        [$lots, $blocked] = $this->lotStock->pickable($lotStock, $binKey);
+
         $remaining = $qty;
         $parts = [];
-        foreach ($lots as $lot) {
-            $stock = $lotBalances[(int) $lot->id];
+        foreach ($lots as [$lot, $balance]) {
+            $stock = $balance->getValue();
             $take = bccomp($stock, $remaining, InventoryLedger::SCALE) < 0 ? $stock : $remaining;
             $parts[] = [$lot, $take, $stock];
             $remaining = bcsub($remaining, $take, InventoryLedger::SCALE);
@@ -174,7 +181,10 @@ final class PickListBuilder {
             }
         }
         if (bccomp($remaining, '0', InventoryLedger::SCALE) > 0) {
-            $parts[] = [null, $remaining, null];
+            $unlotted = Decimal::of($physical[$binKey] ?? '0', InventoryLedger::SCALE)
+                ->minus(Decimal::sum(array_column($lots, 1), InventoryLedger::SCALE))
+                ->minus($blocked);
+            $parts[] = [null, $remaining, Decimal::max($unlotted, Decimal::zero(InventoryLedger::SCALE))->getValue()];
         }
 
         return $parts;

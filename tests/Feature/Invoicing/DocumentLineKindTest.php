@@ -11,11 +11,13 @@
 namespace Tests\Feature\Invoicing;
 
 use App\Enums\Billing\DocumentLineKind;
+use App\Enums\Invoicing\InvoiceStatus;
+use App\Enums\Sales\QuoteStatus;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
 use App\Models\Sales\QuoteItem;
-use App\Plugins\Lexoffice\LexofficeInvoiceMapper;
+use App\Plugins\Lexoffice\Services\LexofficeInvoiceMapper;
 use App\Services\Billing\DocumentOutline;
 use App\Services\Invoicing\{InvoiceIssueException, InvoiceIssueService, InvoicePdfRenderer, QuoteService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -69,7 +71,7 @@ class DocumentLineKindTest extends TestCase {
     }
 
     /** @param list<array<string, mixed>> $lines */
-    private function invoice(array $lines, string $status = Invoice::STATUS_DRAFT): Invoice {
+    private function invoice(array $lines, InvoiceStatus $status = InvoiceStatus::Draft): Invoice {
         $invoice = Invoice::create([
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
@@ -100,7 +102,7 @@ class DocumentLineKindTest extends TestCase {
         return $invoice->fresh(['items', 'customer', 'organization']);
     }
 
-    private function structuredInvoice(string $status = Invoice::STATUS_DRAFT): Invoice {
+    private function structuredInvoice(InvoiceStatus $status = InvoiceStatus::Draft): Invoice {
         return $this->invoice([
             ['line_kind' => 'title', 'description' => 'Erdgeschoss'],
             ['description' => 'Wände streichen', 'unit_price' => '300.00'],
@@ -137,7 +139,7 @@ class DocumentLineKindTest extends TestCase {
     }
 
     public function test_xrechnung_carries_only_priced_lines_and_text_as_note(): void {
-        $invoice = $this->structuredInvoice(Invoice::STATUS_ISSUED);
+        $invoice = $this->structuredInvoice(InvoiceStatus::Issued);
 
         $response = $this->actingAs($this->admin)->get(route('invoices.einvoice', $invoice));
 
@@ -193,7 +195,7 @@ class DocumentLineKindTest extends TestCase {
 
         $decided = $quote->fresh('items');
         $this->assertSame('1500.00', $decided->subtotal?->getAmount());
-        $this->assertSame('partially_accepted', $decided->status);
+        $this->assertSame(QuoteStatus::PartiallyAccepted, $decided->status);
         $this->assertTrue((bool) $decided->items->first()->accepted, 'Titel wandert immer mit.');
 
         $invoice = $quotes->convertToInvoice($decided, $this->admin);

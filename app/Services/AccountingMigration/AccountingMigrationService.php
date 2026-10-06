@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\AccountingMigration;
 
-use App\Enums\Migration\{AccountingMigrationStatus, MigrationDataArea, MigrationProvider};
+use App\Enums\Migration\{AccountingMigrationItemStatus, AccountingMigrationStatus, MigrationDataArea, MigrationProvider};
 use App\Models\Migration\{AccountingMigrationEvent, AccountingMigrationItem, AccountingMigrationRun};
 use App\Models\Platform\{Organization, User};
 use Carbon\CarbonImmutable;
@@ -29,7 +29,7 @@ use RuntimeException;
  *  - ein Dry-Run verändert kein Fremdsystem (er schreibt ausschließlich
  *    lokale Migrationspositionen);
  *  - finalisierte Belege werden nie nachgebaut — sie bleiben Historie
- *    ({@see AccountingMigrationItem::STATUS_HISTORIC});
+ *    ({@see AccountingMigrationItemStatus::Historic});
  *  - die Umschaltung ist blockiert, solange Konflikte oder unklare
  *    Schreibausgänge bestehen;
  *  - jeder Schritt ist auditiert (Hash-Kette) und idempotent.
@@ -118,14 +118,8 @@ class AccountingMigrationService {
      * Konfliktentscheidung: der Datensatz wird verknüpft, übersprungen oder
      * als Historie markiert. Immer mit Akteur und Zeitpunkt.
      */
-    public function decideItem(AccountingMigrationItem $item, string $status, User $actor, ?string $note = null): AccountingMigrationItem {
-        $allowed = [
-            AccountingMigrationItem::STATUS_MATCHED,
-            AccountingMigrationItem::STATUS_SKIPPED,
-            AccountingMigrationItem::STATUS_HISTORIC,
-            AccountingMigrationItem::STATUS_CONFLICT,
-        ];
-        if (! in_array($status, $allowed, true)) {
+    public function decideItem(AccountingMigrationItem $item, AccountingMigrationItemStatus $status, User $actor, ?string $note = null): AccountingMigrationItem {
+        if (! in_array($status, AccountingMigrationItemStatus::decisions(), true)) {
             throw new RuntimeException((string) __('Unzulässige Entscheidung.'));
         }
 
@@ -141,7 +135,7 @@ class AccountingMigrationService {
             $this->recordEvent($run, 'item_decided', [
                 'item_id' => (int) $item->id,
                 'area' => $item->data_area->value,
-                'status' => $status,
+                'status' => $status->value,
             ], $actor);
         }
 
@@ -262,17 +256,17 @@ class AccountingMigrationService {
     public function cutoverBlockers(AccountingMigrationRun $run): array {
         $blockers = [];
 
-        $conflicts = $run->items()->where('status', AccountingMigrationItem::STATUS_CONFLICT)->count();
+        $conflicts = $run->items()->where('status', AccountingMigrationItemStatus::Conflict)->count();
         if ($conflicts > 0) {
             $blockers[] = (string) __(':n ungeklärte Zuordnungen blockieren die Umschaltung.', ['n' => $conflicts]);
         }
 
-        $failed = $run->items()->where('status', AccountingMigrationItem::STATUS_FAILED)->count();
+        $failed = $run->items()->where('status', AccountingMigrationItemStatus::Failed)->count();
         if ($failed > 0) {
             $blockers[] = (string) __(':n Schreibvorgänge mit unklarem Ausgang müssen geklärt werden.', ['n' => $failed]);
         }
 
-        $pending = $run->items()->where('status', AccountingMigrationItem::STATUS_PENDING)->count();
+        $pending = $run->items()->where('status', AccountingMigrationItemStatus::Pending)->count();
         if ($pending > 0) {
             $blockers[] = (string) __(':n Datensätze sind noch nicht entschieden.', ['n' => $pending]);
         }

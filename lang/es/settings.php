@@ -109,6 +109,11 @@ return [
         'on_documents' => 'Enlace de pago en la factura y en el correo',
         'on_documents_hint' => 'Si se desactiva, el pago en línea sigue disponible en el portal del cliente.',
     ],
+    'approvals' => [
+        'step_roles_hint' => 'Las etapas de aprobación de una negociación contractual aparecen en «Aprobaciones» para el rol asignado a su tipo de etapa. La aprobación desde el expediente sigue siendo posible.',
+        'step_role' => ':kind: rol responsable',
+        'default_role' => 'Predeterminado (:role)',
+    ],
     'mcp' => [
         'heading' => 'Asistentes de IA (MCP)',
         'description' => 'Los asistentes de IA como Claude o ChatGPT pueden conectarse con el consentimiento de cada usuario y leer o crear borradores con sus permisos.',

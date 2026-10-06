@@ -11,9 +11,9 @@
 namespace App\Plugins\Calendly\Console;
 
 use App\Console\Concerns\IteratesOrganizations;
-use App\Models\Platform\PluginSetting;
 use App\Plugins\Calendly\CalendlyPlugin;
 use App\Plugins\Calendly\Services\CalendlyBackfillService;
+use App\Plugins\Support\Console\ChecksPluginSwitch;
 use App\Support\OrganizationContext;
 use Illuminate\Console\Command;
 use Throwable;
@@ -25,6 +25,7 @@ use Throwable;
  * (`calendly.backfill`) sowie manuell aus der Admin-UI.
  */
 class CalendlyBackfillCommand extends Command {
+    use ChecksPluginSwitch;
     use IteratesOrganizations;
 
     protected $signature = 'calendly:backfill ' . self::ORGANIZATION_OPTION;
@@ -40,9 +41,7 @@ class CalendlyBackfillCommand extends Command {
         }
 
         foreach ($organizations as $org) {
-            $enabled = PluginSetting::forOrganization($org->id, CalendlyPlugin::ID)->enabled
-                || (bool) config('plugins.calendly.enabled', false);
-            if (! $enabled) {
+            if (! $this->pluginEnabledFor(CalendlyPlugin::ID, (int) $org->id)) {
                 continue;
             }
 

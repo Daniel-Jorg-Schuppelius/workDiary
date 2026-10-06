@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace App\Console\Commands\Billing;
 
+use App\Console\Concerns\MeasuresQueryLoad;
+use App\Enums\Sales\QuoteStatus;
 use App\Models\Customer\Customer;
 use App\Models\Diary\DiaryEntry;
 use App\Models\Platform\{Organization, User};
@@ -35,6 +37,8 @@ use Illuminate\Support\Facades\DB;
  * EXPLAIN — erst messen, dann optimieren.
  */
 class SeedQueryLoadCommand extends Command {
+    use MeasuresQueryLoad;
+
     protected $signature = 'perf:seed-load
         {--orgs=3 : Anzahl Organisationen}
         {--time-entries=50000 : Zeiteinträge insgesamt}
@@ -261,7 +265,7 @@ class SeedQueryLoadCommand extends Command {
     }
 
     private function seedQuotes(int $target): void {
-        $states = ['draft', 'sent', 'accepted', 'rejected'];
+        $states = [QuoteStatus::Draft->value, QuoteStatus::Sent->value, QuoteStatus::Accepted->value, QuoteStatus::Rejected->value];
 
         $this->bulkInsert('quotes', $target, function (int $index, int $slot) use ($states): array {
             $date = $this->dateFor($index);
@@ -326,7 +330,7 @@ class SeedQueryLoadCommand extends Command {
                 ->get(),
             'quotesByStatus' => fn (): mixed => DB::table('quotes')
                 ->where('organization_id', $organizationId)
-                ->where('status', 'sent')
+                ->where('status', QuoteStatus::Sent->value)
                 ->orderByDesc('id')
                 ->limit(50)
                 ->get(),
@@ -342,37 +346,7 @@ class SeedQueryLoadCommand extends Command {
         $this->newLine();
         $this->line('<info>Messung</info> (Zeitraum ' . $from->toDateString() . ' – ' . $to->toDateString() . ')');
 
-        /** @var list<array<string, mixed>> $queries */
-        $queries = [];
-        $recording = new \ArrayObject(['on' => false]);
-        DB::listen(static function ($query) use (&$queries, $recording): void {
-            if ($recording['on'] === true) {
-                $queries[] = ['sql' => $query->sql, 'bindings' => $query->bindings, 'time' => $query->time];
-            }
-        });
-
-        foreach ($cases as $name => $case) {
-            // Ein Aufwärmlauf: Die erste Abfrage misst den kalten Puffer der
-            // Datenbank, nicht das Verhalten der Anwendung.
-            $case();
-
-            $queries = [];
-            $recording['on'] = true;
-
-            $startedAt = microtime(true);
-            $case();
-            $elapsed = (microtime(true) - $startedAt) * 1000;
-            $recording['on'] = false;
-
-            $this->line(sprintf('  %-20s %8.1f ms  %3d Abfragen', $name, $elapsed, count($queries)));
-
-            foreach ($this->slowest($queries) as $query) {
-                $this->line(sprintf('    %6.1f ms  %s', $query['time'], mb_substr((string) $query['sql'], 0, 140)));
-                foreach ($this->explain($query) as $row) {
-                    $this->line('      EXPLAIN: ' . $row);
-                }
-            }
-        }
+        $this->measureCases($cases);
     }
 
     /**
@@ -397,38 +371,4 @@ class SeedQueryLoadCommand extends Command {
         ];
     }
 
-    /**
-     * @param  list<array<string, mixed>>  $queries
-     * @return list<array<string, mixed>>
-     */
-    private function slowest(array $queries): array {
-        usort($queries, static fn (array $a, array $b): int => $b['time'] <=> $a['time']);
-
-        return array_slice($queries, 0, 2);
-    }
-
-    /**
-     * @param  array<string, mixed>  $query
-     * @return list<string>
-     */
-    private function explain(array $query): array {
-        if (! str_starts_with(strtolower(trim((string) $query['sql'])), 'select')) {
-            return [];
-        }
-
-        try {
-            $rows = DB::select('EXPLAIN ' . $query['sql'], (array) $query['bindings']);
-        } catch (\Throwable $exception) {
-            return ['nicht verfügbar (' . $exception->getMessage() . ')'];
-        }
-
-        return array_values(array_map(static function (object $row): string {
-            $data = (array) $row;
-
-            return implode(' | ', array_map(
-                static fn (string $key): string => $key . '=' . (string) ($data[$key] ?? '—'),
-                array_values(array_filter(array_keys($data), static fn (string $key): bool => in_array($key, ['table', 'type', 'key', 'rows', 'Extra'], true))),
-            ));
-        }, $rows));
-    }
 }

@@ -9,6 +9,7 @@
 
 import { __ } from "../i18n.js";
 import { getJson } from "../lib/http.js";
+import { toMinutes } from "../lib/time.js";
 
 /**
  * Eingabeleiste auf „Heute" (Toggl-artig): Beschreibung + durchsuchbare
@@ -23,15 +24,6 @@ import { getJson } from "../lib/http.js";
 export function registerEntryBar(Alpine) {
     Alpine.data("entryBar", () => {
         const optionsCache = new Map();
-
-        const toMinutes = (val) => {
-            const parts = String(val || "").split(":");
-            if (parts.length !== 2) return null;
-            const h = parseInt(parts[0], 10);
-            const m = parseInt(parts[1], 10);
-            if (isNaN(h) || isNaN(m) || m < 0 || m > 59) return null;
-            return h * 60 + m;
-        };
 
         return {
             projects: [],

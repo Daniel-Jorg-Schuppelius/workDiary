@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Invoicing;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\{Organization, User};
@@ -71,7 +72,7 @@ class XRechnungTest extends TestCase {
         ];
     }
 
-    private function makeInvoice(string $status = Invoice::STATUS_ISSUED, ?Customer $customer = null, ?int $orgId = null): Invoice {
+    private function makeInvoice(InvoiceStatus $status = InvoiceStatus::Issued, ?Customer $customer = null, ?int $orgId = null): Invoice {
         $orgId ??= $this->organization->id;
         $customer ??= $this->customer;
 
@@ -152,7 +153,7 @@ class XRechnungTest extends TestCase {
             'body_html' => '<p>{{invoice_number}}</p>',
             'body_text' => '{{invoice_number}}',
         ]);
-        $invoice = $this->makeInvoice(Invoice::STATUS_DRAFT);
+        $invoice = $this->makeInvoice(InvoiceStatus::Draft);
 
         $this->actingAs($this->admin)->post(route('invoices.send', $invoice), [
             'template_id' => $template->id,
@@ -162,7 +163,7 @@ class XRechnungTest extends TestCase {
 
         $invoice->refresh();
         $dispatch = \App\Models\Document\DocumentDispatch::query()->where('invoice_id', $invoice->id)->firstOrFail();
-        $this->assertSame(Invoice::STATUS_ISSUED, $invoice->status);
+        $this->assertSame(InvoiceStatus::Issued, $invoice->status);
         $this->assertSame('xrechnung_ubl', $dispatch->format);
         $this->assertNotNull($dispatch->sha256);
     }
@@ -177,7 +178,7 @@ class XRechnungTest extends TestCase {
     }
 
     public function test_download_redirects_for_draft_invoice(): void {
-        $invoice = $this->makeInvoice(Invoice::STATUS_DRAFT);
+        $invoice = $this->makeInvoice(InvoiceStatus::Draft);
 
         $response = $this->actingAs($this->admin)->get(route('invoices.einvoice', $invoice));
 
@@ -195,7 +196,7 @@ class XRechnungTest extends TestCase {
     }
 
     public function test_button_hidden_for_draft_invoice(): void {
-        $invoice = $this->makeInvoice(Invoice::STATUS_DRAFT);
+        $invoice = $this->makeInvoice(InvoiceStatus::Draft);
 
         $this->actingAs($this->admin)
             ->get(route('invoices.show', $invoice))

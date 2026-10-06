@@ -12,8 +12,8 @@
 <x-card padding="p-0">
     <header class="flex items-center justify-between border-b border-base-300 px-4 py-3">
         <span class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('Aufträge') }}</span>
-        <a href="{{ route('diary.index', ['project' => \App\Support\Sqid::encode(\App\Models\Project\Project::class, $project->id)]) }}"
-           class="btn btn-sm btn-ghost">{{ __('In der Arbeitsliste öffnen') }}</a>
+        <x-button :href="route('diary.index', ['project' => \App\Support\Sqid::encode(\App\Models\Project\Project::class, $project->id)])"
+                tone="ghost">{{ __('In der Arbeitsliste öffnen') }}</x-button>
     </header>
     <ul class="divide-y divide-base-300">
         @forelse ($entries as $entry)
@@ -43,7 +43,7 @@
                             </x-status-badge>
                         @endif
                         @foreach ($entry->tags as $tag)
-                            <span class="badge badge-xs" style="background:{{ $tag->color ?? '#94a3b8' }};color:#fff">{{ $tag->displayName() }}</span>
+                            <x-status-badge tone="plain" size="xs" style="background:{{ $tag->color ?? '#94a3b8' }};color:#fff">{{ $tag->displayName() }}</x-status-badge>
                         @endforeach
                     </div>
                     <div class="line-clamp-2 text-sm">{{ \CommonToolkit\Helper\Data\StringHelper::truncate($entry->content, 200) }}</div>

@@ -29,6 +29,18 @@ return [
         'create' => 'Registrar aval',
         'edit' => 'Editar aval',
         'returned' => 'Documento devuelto',
+        'drawn' => 'Registrar como ejecutado',
+        'secure' => 'Sustituir retención',
+    ],
+    'confirm' => [
+        'drawn' => '¿Registrar la ejecución del aval :reference? Después ya no cuenta como garantía y el registro no se puede deshacer.',
+    ],
+    'secure' => [
+        'title' => 'Sustituir retención de garantía',
+        'hint' => 'El aval ocupa el lugar de la retención; el importe retenido se considera así pagado. Solo se ofrecen retenciones abiertas que el importe del aval cubre.',
+        'retention' => 'Retención de garantía',
+        'submit' => 'Sustituir',
+        'empty' => 'No hay ninguna retención abierta que este aval cubra.',
     ],
     'kpi' => [
         'issued' => 'Prestados (activos)',

@@ -111,6 +111,7 @@ return [
             'post' => 'Comptabiliser',
             'reverse' => 'Extourner',
             'reverse_submit' => 'Créer la contre-écriture',
+            'import' => 'Importer le plan comptable',
         ],
         'column' => [
             'fiscal_year' => 'Exercice',
@@ -254,6 +255,11 @@ return [
         ],
         'import' => [
             'line_invalid' => 'Ligne :line ignorée (numéro, nom ou type de compte manquant).',
+            'title' => 'Importer le plan comptable depuis un CSV',
+            'hint' => 'Les numéros de compte existants sont mis à jour, les nouveaux comptes sont créés ; rien n\'est supprimé. Les lignes erronées sont ignorées et comptées.',
+            'file' => 'Fichier CSV',
+            'columns' => 'Ligne d\'en-tête avec les colonnes number, name et type (:types) ; en option normal_balance (debit ou credit), is_open_item, datev_account, euer_category et deductible_percent.',
+            'submit' => 'Importer',
         ],
     ],
 
@@ -304,6 +310,7 @@ return [
             'no_amount' => 'La pièce ne comporte aucun montant.',
             'no_lines' => 'La proposition n\'a aucune ligne d\'écriture.',
             'sovereignty' => 'Sur cette période, l\'organisation ne tient pas de grand livre local.',
+            'changed_since_posting' => 'La source a changé après la comptabilisation (p. ex. un remboursement) — annulez l’écriture et comptabilisez-la à nouveau.',
             'foreign_currency' => 'L’opération est en :currency, la comptabilité en :base — les paiements, la caisse et les immobilisations en devise ne sont pas comptabilisés.',
             'unsupported_target' => 'Aucun chemin comptable n\'existe encore pour cette cible de paiement.',
             'year_closed' => 'L\'exercice :year est clôturé.',

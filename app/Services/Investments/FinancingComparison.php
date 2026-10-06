@@ -40,19 +40,19 @@ final class FinancingComparison {
             $schedule = [];
 
             if ($variant->kind === InvestmentFinancingKind::Loan) {
-                $schedule = NumberHelper::amortizationSchedule(bcsub($price, $down, 2), self::amount($variant->interest_rate, 3), $term, 12, $residual);
+                $schedule = NumberHelper::amortizationSchedule(NumberHelper::subtractPrecise($price, $down, 2), self::amount($variant->interest_rate, 3), $term, 12, $residual);
                 $monthly = $schedule[0]['payment'];
-                $interest = array_reduce($schedule, static fn (string $sum, array $row): string => bcadd($sum, $row['interest'], 2), '0.00');
-                $paid = bcadd($price, $interest, 2);
+                $interest = NumberHelper::sumPrecise(array_column($schedule, 'interest'), 2);
+                $paid = NumberHelper::addPrecise($price, $interest, 2);
             } elseif ($variant->kind === InvestmentFinancingKind::Lease) {
                 $monthly = self::amount($variant->rate_amount);
-                $paid = bcadd(bcadd($down, bcmul($monthly, (string) $term, 2), 2), $residual, 2);
+                $paid = NumberHelper::addPrecise(NumberHelper::addPrecise($down, NumberHelper::multiplyPrecise($monthly, (string) $term, 2), 2), $residual, 2);
             } else {
                 $paid = $price;
             }
-            $total = bcadd($paid, self::amount($variant->fee_amount), 2);
+            $total = NumberHelper::addPrecise($paid, self::amount($variant->fee_amount), 2);
 
-            $rows[] = ['variant' => $variant, 'monthly' => $monthly, 'total' => $total, 'interest' => $interest, 'extra' => bcsub($total, $price, 2), 'schedule' => $schedule];
+            $rows[] = ['variant' => $variant, 'monthly' => $monthly, 'total' => $total, 'interest' => $interest, 'extra' => NumberHelper::subtractPrecise($total, $price, 2), 'schedule' => $schedule];
         }
 
         return $rows;
@@ -60,6 +60,6 @@ final class FinancingComparison {
 
     /** @return numeric-string */
     private static function amount(mixed $value, int $scale = 2): string {
-        return bcadd(is_numeric($value) ? (string) $value : '0', '0', $scale);
+        return NumberHelper::roundPrecise(is_numeric($value) ? (string) $value : '0', $scale);
     }
 }

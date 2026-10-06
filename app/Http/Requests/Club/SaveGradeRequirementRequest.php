@@ -15,17 +15,18 @@ namespace App\Http\Requests\Club;
 use App\Enums\Club\{ClubCountingBasis, ClubEventKind};
 use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
-use App\Models\Club\ClubGrade;
+use App\Models\Club\{ClubGrade, ClubGroup};
 use App\Rules\ExistsInCurrentOrganization;
 use Illuminate\Validation\Rule;
 
-/** Voraussetzungen je Zielgrad (MVP-846); Gruppen-Sqids werden im Controller dekodiert. */
+/** Voraussetzungen je Zielgrad (MVP-846). */
 class SaveGradeRequirementRequest extends BaseFormRequest {
     use DecodesSqidInputs;
 
     /** @var array<string, class-string> */
     protected array $sqidFields = [
         'previous_grade_id' => ClubGrade::class,
+        'counted_group_ids' => ClubGroup::class,
     ];
 
     /** @return array<string, mixed> */
@@ -41,8 +42,8 @@ class SaveGradeRequirementRequest extends BaseFormRequest {
             'min_age' => ['nullable', 'integer', 'min:0', 'max:120'],
             'counted_event_kinds' => ['nullable', 'array'],
             'counted_event_kinds.*' => ['string', Rule::enum(ClubEventKind::class)],
-            'counted_group_ids' => ['nullable', 'array'],
-            'counted_group_ids.*' => ['string', 'max:64'],
+            'counted_group_ids' => ['nullable', 'array', 'max:50'],
+            'counted_group_ids.*' => ['integer', new ExistsInCurrentOrganization('club_groups')],
             'required_proof_label' => ['nullable', 'string', 'max:120'],
             'requires_approval' => ['sometimes', 'boolean'],
             'allows_exception' => ['sometimes', 'boolean'],

@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Crisis;
 
+use App\Enums\Crisis\{CrisisCaseStatus, CrisisCommunicationStatus};
 use App\Enums\User\UserRole;
 use App\Models\Crisis\{CrisisCase, CrisisDeadlineTemplate, CrisisRole};
 use App\Models\Platform\{Organization, User};
@@ -141,7 +142,7 @@ final class CrisisLifecycleTest extends TestCase {
         $this->actingAs($second)->post(route('crisis.communications.approve', [$case, $communication]))->assertSessionHas('status');
         $this->actingAs($this->admin)->post(route('crisis.communications.sent', [$case, $communication]), ['channel' => 'Mail'])->assertSessionHas('status');
         $fresh = $communication->fresh();
-        $this->assertSame('sent', $fresh->status);
+        $this->assertSame(CrisisCommunicationStatus::Sent, $fresh->status);
         $this->assertNotNull($fresh->approved_at);
         $this->assertNotSame((int) $fresh->created_by, (int) $fresh->approved_by);
     }
@@ -167,9 +168,9 @@ final class CrisisLifecycleTest extends TestCase {
         $this->actingAs($this->admin)->post(route('crisis.close', $case))->assertSessionHas('error');
         $this->actingAs($this->admin)->post(route('crisis.all-clear', $case))->assertSessionHas('status');
         $this->actingAs($this->admin)->post(route('crisis.review.store', $case), ['summary' => 'Verlauf + Lessons'])->assertSessionHas('status');
-        $this->assertSame('post_review', $case->fresh()->status);
+        $this->assertSame(CrisisCaseStatus::PostReview, $case->fresh()->status);
         $this->actingAs($this->admin)->post(route('crisis.close', $case))->assertSessionHas('status');
-        $this->assertSame('closed', $case->fresh()->status);
+        $this->assertSame(CrisisCaseStatus::Closed, $case->fresh()->status);
 
         // Fremde Organisation: 404.
         $otherOrg = Organization::factory()->create();

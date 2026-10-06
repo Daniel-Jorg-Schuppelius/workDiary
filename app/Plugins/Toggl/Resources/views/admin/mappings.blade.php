@@ -15,24 +15,14 @@
     $customerLabel = collect($customers)->keyBy('id')->map(fn($c) => $c['label']);
     // Benutzer-Zuordnungen ($userMappings, vereint aus Referenzen + Aliassen)
     // kommen aus dem Controller; Kunden und Projekte je als eigene Tabelle.
-    $clientMappings = $mappings->where('external_type', \App\Plugins\Toggl\TogglImportService::EXT_TYPE_CLIENT)->values();
-    $projectMappings = $mappings->where('external_type', \App\Plugins\Toggl\TogglImportService::EXT_TYPE_PROJECT)->values();
+    $clientMappings = $mappings->where('external_type', \App\Plugins\Toggl\Services\TogglImportService::EXT_TYPE_CLIENT)->values();
+    $projectMappings = $mappings->where('external_type', \App\Plugins\Toggl\Services\TogglImportService::EXT_TYPE_PROJECT)->values();
 @endphp
 
 @section('content')
-<x-page-shell>
-    <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
-        <div class="mb-1 flex flex-wrap items-center justify-between gap-2">
-            <h1 class="font-['Space_Grotesk'] text-lg font-semibold">{{ __('Gemerkte Zuordnungen') }}</h1>
-            <a href="{{ route('admin.toggl.index') }}" class="btn btn-ghost btn-sm">{{ __('Zurück zum Import') }}</a>
-        </div>
-        <p class="mb-4 text-sm text-muted">
-            {{ __('Diese Zuordnungen entscheiden, welchem Kunden bzw. Projekt ein Toggl-Client/-Projekt bei künftigen Importen automatisch zugewiesen wird. Hier können Sie sie umbiegen oder entfernen.') }}
-        </p>
-
-        @if ($errors->any())
-            <div class="alert alert-error mb-3 text-sm">{{ $errors->first() }}</div>
-        @endif
+<x-index-page :title="__('Gemerkte Zuordnungen')" :subtitle="__('Diese Zuordnungen entscheiden, welchem Kunden bzw. Projekt ein Toggl-Client/-Projekt bei künftigen Importen automatisch zugewiesen wird. Hier können Sie sie umbiegen oder entfernen.')" back-route="admin.toggl.index" :back-label="__('Zurück zum Import')">
+    <x-card>
+        <x-validation-errors first class="mb-3" />
 
         {{-- Benutzer-Zuordnung anlegen: Toggl-E-Mail → Benutzer. Für Mitarbeiter,
              deren Toggl-Adresse von der workDiary-Adresse abweicht — greift in
@@ -72,7 +62,7 @@
                         @endforeach
                     </select>
                 </label>
-                <button type="submit" class="btn btn-sm btn-primary">{{ __('Zuordnen') }}</button>
+                <x-button type="submit">{{ __('Zuordnen') }}</x-button>
             </div>
         </form>
 
@@ -120,13 +110,13 @@
                                                         <option value="{{ $u['sqid'] }}" @selected($u['sqid'] === $target?->sqid)>{{ $u['label'] }}</option>
                                                     @endforeach
                                                 </select>
-                                                <button type="submit" class="btn btn-sm">{{ __('Umbiegen') }}</button>
+                                                <x-button type="submit" tone="plain">{{ __('Umbiegen') }}</x-button>
                                             </form>
                                             <form method="POST" action="{{ $deleteRoute }}"
                                                   data-confirm-dialog
                                                   data-confirm-message="{{ __('Diese Zuordnung entfernen? Künftige Importe matchen dann nicht mehr automatisch.') }}">
                                                 @csrf
-                                                <button type="submit" class="btn btn-ghost btn-sm text-error">{{ __('Entfernen') }}</button>
+                                                <x-button type="submit" tone="ghost" class="text-error">{{ __('Entfernen') }}</x-button>
                                             </form>
                                         </div>
                                     </td>
@@ -191,13 +181,13 @@
                                                         </optgroup>
                                                     @endif
                                                 </select>
-                                                <button type="submit" class="btn btn-sm">{{ __('Umbiegen') }}</button>
+                                                <x-button type="submit" tone="plain">{{ __('Umbiegen') }}</x-button>
                                             </form>
                                             <form method="POST" action="{{ route('admin.toggl.mappings.delete', $mapping->sqid) }}"
                                                   data-confirm-dialog
                                                   data-confirm-message="{{ __('Diese Zuordnung entfernen? Künftige Importe matchen dann nicht mehr automatisch.') }}">
                                                 @csrf
-                                                <button type="submit" class="btn btn-ghost btn-sm text-error">{{ __('Entfernen') }}</button>
+                                                <x-button type="submit" tone="ghost" class="text-error">{{ __('Entfernen') }}</x-button>
                                             </form>
                                         </div>
                                     </td>
@@ -249,13 +239,13 @@
                                                         </option>
                                                     @endforeach
                                                 </select>
-                                                <button type="submit" class="btn btn-sm">{{ __('Umbiegen') }}</button>
+                                                <x-button type="submit" tone="plain">{{ __('Umbiegen') }}</x-button>
                                             </form>
                                             <form method="POST" action="{{ route('admin.toggl.mappings.delete', $mapping->sqid) }}"
                                                   data-confirm-dialog
                                                   data-confirm-message="{{ __('Diese Zuordnung entfernen? Künftige Importe matchen dann nicht mehr automatisch.') }}">
                                                 @csrf
-                                                <button type="submit" class="btn btn-ghost btn-sm text-error">{{ __('Entfernen') }}</button>
+                                                <x-button type="submit" tone="ghost" class="text-error">{{ __('Entfernen') }}</x-button>
                                             </form>
                                         </div>
                                     </td>
@@ -271,6 +261,6 @@
                            :title="__('Noch keine Zuordnungen gemerkt.')"
                            :message="__('Zuordnungen entstehen beim Buchen in der Zuordnungs-Inbox, beim Workspace-Import oder oben über die Benutzer-Zuordnung.')" />
         @endif
-    </div>
-</x-page-shell>
+    </x-card>
+</x-index-page>
 @endsection

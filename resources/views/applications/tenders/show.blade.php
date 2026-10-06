@@ -14,7 +14,7 @@
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar :badge="__('values.' . $opportunity->status)" badge-tone="outline">
+        <x-page-toolbar :badge="$opportunity->status->label()" badge-tone="outline">
             <div class="text-sm text-base-content/70">
                 {{ __("values.{$opportunity->kind}") }}
                 @if ($opportunity->customer) · {{ $opportunity->customer->name }} @endif
@@ -42,7 +42,7 @@
                         <x-icon-btn placement="bar" icon="outbox" tone="primary" size="sm" :href="route('tenders.submit-wizard', $opportunity)" show-label
                                     :title="__('Prüfen, ausgeben und Einreichung dokumentieren')">{{ __('Abgabe vorbereiten') }}</x-icon-btn>
                     @endif
-                    @if ($opportunity->status === 'won')
+                    @if ($opportunity->status === \App\Enums\Applications\ApplicationOpportunityStatus::Won)
                         <x-action-form :action="route('tenders.transfer', $opportunity)"
                               :confirm="__('Gewonnene Ausschreibung in ein Projekt überführen?')"
                               confirm-icon="folder_special" confirm-tone="primary" :confirm-label="__('Überführen')">
@@ -83,8 +83,7 @@
                     <x-detail-grid.row :label="__('Bindefrist')">{{ optional($opportunity->binding_until)->fdate() ?? '—' }}</x-detail-grid.row>
                 </x-detail-grid>
                 @if ($opportunity->notice_url)
-                    <a href="{{ $opportunity->notice_url }}" rel="noopener noreferrer" target="_blank"
-                       class="mt-3 inline-flex items-center gap-1 text-sm link">{{ __('Bekanntmachung öffnen') }}</a>
+                    <x-external-link :url="$opportunity->notice_url" :label="__('Bekanntmachung öffnen')" class="mt-3 inline-flex items-center gap-1 text-sm" />
                 @endif
             </x-card>
         @endif
@@ -107,6 +106,22 @@
             @if ($opportunity->risk_note)
                 <p class="mt-2 whitespace-pre-line text-sm text-base-content/70">{{ $opportunity->risk_note }}</p>
             @endif
+            @can('update', $opportunity)
+                @if ($opportunity->isOpen())
+                    {{-- Bearbeitungsstände wie in TenderController::updateStatus; „eingereicht“ setzt nur die Abgabe. --}}
+                    <x-action-form :action="route('tenders.status', $opportunity)" class="mt-3 flex flex-wrap items-end gap-2">
+                        <x-select-field name="status" id="tender-status" :label="__('Status')" required class="select-sm">
+                            @if ($opportunity->status === \App\Enums\Applications\ApplicationOpportunityStatus::Submitted)
+                                <option value="" disabled selected>{{ $opportunity->status->label() }}</option>
+                            @endif
+                            @foreach (\App\Enums\Applications\ApplicationOpportunityStatus::working() as $workStatus)
+                                <option value="{{ $workStatus->value }}" @selected($opportunity->status === $workStatus)>{{ $workStatus->label() }}</option>
+                            @endforeach
+                        </x-select-field>
+                        <x-icon-btn icon="flag" size="sm" type="submit" show-label>{{ __('Status setzen') }}</x-icon-btn>
+                    </x-action-form>
+                @endif
+            @endcan
             @can('decide', $opportunity)
                 @if ($opportunity->isOpen())
                     <form method="POST" action="{{ route('tenders.decide', $opportunity) }}" class="mt-3 flex flex-wrap items-end gap-2">
@@ -143,9 +158,9 @@
                 <ul class="space-y-2">
                     @foreach ($opportunity->requirements as $requirement)
                         <li class="flex flex-wrap items-center gap-2 text-sm">
-                            <x-status-badge size="xs" outline>{{ __("values.{$requirement->status}") }}</x-status-badge>
-                            <span @class(['font-medium', 'line-through opacity-60' => $requirement->status === 'not_applicable'])>{{ $requirement->label }}</span>
-                            @unless ($requirement->required)<span class="badge badge-ghost badge-xs">{{ __('optional') }}</span>@endunless
+                            <x-status-badge size="xs" outline>{{ $requirement->status->label() }}</x-status-badge>
+                            <span @class(['font-medium', 'line-through opacity-60' => $requirement->status === \App\Enums\Applications\ApplicationRequirementStatus::NotApplicable])>{{ $requirement->label }}</span>
+                            @unless ($requirement->required)<x-status-badge size="xs">{{ __('optional') }}</x-status-badge>@endunless
                             @if ($requirement->due_on)<span class="text-xs text-muted">{{ __('bis :date', ['date' => $requirement->due_on->fdate()]) }}</span>@endif
                             @if ($requirement->document)
                                 <a class="link text-xs" href="{{ route('documents.show', $requirement->document) }}">{{ __('Dokument') }}</a>
@@ -154,8 +169,8 @@
                                 <form method="POST" action="{{ route('tenders.requirements.update', [$opportunity, $requirement]) }}" class="ml-auto flex items-center gap-1">
                                     @csrf @method('PUT')
                                     <select name="status" class="select select-xs select-bordered" data-autosubmit>
-                                        @foreach (\App\Models\Applications\ApplicationRequirement::STATUSES as $status)
-                                            <option value="{{ $status }}" @selected($requirement->status === $status)>{{ __("values.$status") }}</option>
+                                        @foreach (\App\Enums\Applications\ApplicationRequirementStatus::cases() as $status)
+                                            <option value="{{ $status->value }}" @selected($requirement->status === $status)>{{ $status->label() }}</option>
                                         @endforeach
                                     </select>
                                 </form>
@@ -292,7 +307,7 @@
     @include('applications._negotiations', [
         'negotiations' => $opportunity->negotiations,
         'storeRoute' => route('tenders.negotiations.store', $opportunity),
-        'canOpen' => $opportunity->status === 'won' && auth()->user()?->can('decide', $opportunity),
+        'canOpen' => $opportunity->status === \App\Enums\Applications\ApplicationOpportunityStatus::Won && auth()->user()?->can('decide', $opportunity),
     ])
 </x-page-shell>
 @endsection

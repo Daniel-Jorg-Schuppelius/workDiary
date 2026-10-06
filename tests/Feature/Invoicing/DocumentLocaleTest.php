@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Invoicing;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Mail\{DunningMail, InvoiceMail};
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
@@ -54,7 +55,7 @@ class DocumentLocaleTest extends TestCase {
             'organization_id' => $this->org->id,
             'customer_id' => $customer->id,
             'number' => 'R2030-0007',
-            'status' => Invoice::STATUS_ISSUED,
+            'status' => InvoiceStatus::Issued,
             'currency' => 'EUR',
             'tax_rate' => '19.00',
             'issued_on' => '2030-03-01',

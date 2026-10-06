@@ -10,11 +10,11 @@
 
 namespace Tests\Feature\Inventory;
 
-use App\Enums\Inventory\{ReservationStatus, StockState};
+use App\Enums\Inventory\{ReservationStatus, StockMovementType, StockState};
 use App\Models\Article\{Article, ArticleVariant};
-use App\Models\Inventory\{StockReservation, Warehouse};
+use App\Models\Inventory\{StockLot, StockMovement, StockReservation, Warehouse};
 use App\Models\Platform\Organization;
-use App\Services\Inventory\{InventoryLedger, ReservationService, StockLevelService};
+use App\Services\Inventory\{InventoryLedger, LotStockReader, ReservationService, StockLevelService, StockPosting};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use RuntimeException;
 use Tests\Concerns\WithOrganization;
@@ -87,6 +87,23 @@ final class ReservationTest extends TestCase {
         $this->assertSame('4.0000', $this->ledger->balance($this->variant, $this->warehouse, StockState::Physical));
     }
 
+    /** Die Reservierung bleibt chargenlos; ihre Erfüllung teilt nach FEFO Chargen zu. */
+    public function test_fulfill_issues_per_lot_fefo(): void {
+        $late = $this->lotWithStock('R-LATE', '2027-02-01', '6');
+        $early = $this->lotWithStock('R-EARLY', '2026-11-01', '2');
+        $reservation = $this->reservations->reserve($this->variant, $this->warehouse, '5');
+
+        $this->reservations->fulfill($reservation, '5');
+
+        $issued = StockMovement::query()->where('movement_type', StockMovementType::Issue->value)->orderBy('id')->get();
+        $this->assertSame([[$early->id, '-2.0000'], [$late->id, '-3.0000']], $issued->map(fn (StockMovement $m): array => [$m->stock_lot_id, $m->qty_base])->all());
+        $this->assertSame(['0.0000', '3.0000'], [app(LotStockReader::class)->balanceOf($early), app(LotStockReader::class)->balanceOf($late)]);
+        $this->assertSame(['0.0000', '3.0000'], [
+            $this->ledger->balance($this->variant, $this->warehouse, StockState::Reserved),
+            $this->ledger->balance($this->variant, $this->warehouse, StockState::Physical),
+        ]);
+    }
+
     public function test_release_restores_availability(): void {
         $this->ledger->receipt($this->variant, $this->warehouse, '10');
         $reservation = $this->reservations->reserve($this->variant, $this->warehouse, '6');
@@ -117,6 +134,13 @@ final class ReservationTest extends TestCase {
         $orgB = Organization::factory()->create();
         app()->instance('currentOrganization', $orgB);
         $this->assertSame(0, StockReservation::query()->count());
+    }
+
+    private function lotWithStock(string $lotNo, string $bestBefore, string $qty): StockLot {
+        $lot = StockLot::factory()->create(['organization_id' => $this->organization->id, 'article_variant_id' => $this->variant->id, 'lot_no' => $lotNo, 'best_before' => $bestBefore]);
+        $this->ledger->post(new StockPosting($this->variant, $this->warehouse, StockState::Physical, $qty, StockMovementType::Receipt, stockLotId: $lot->id));
+
+        return $lot;
     }
 
     private function makeVariant(): ArticleVariant {

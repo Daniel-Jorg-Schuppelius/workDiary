@@ -34,17 +34,7 @@
     <x-slot:toolbar>
         <x-page-toolbar :subtitle="__('Ausgaben, Beschaffungsvolumen und Klumpenrisiko je Lieferant.')">
             <x-slot:actions>
-                <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
-                            :href="route('reports.suppliers', array_merge($linkParams, ['export' => 'pdf']))"
-                            show-label>PDF</x-icon-btn>
-                <x-action-menu icon="download" tone="outline" :label="__('Export')">
-                    <x-icon-btn icon="download" tone="outline" size="sm"
-                                :href="route('reports.suppliers', array_merge($linkParams, ['export' => 'csv']))"
-                                show-label>CSV</x-icon-btn>
-                    <x-icon-btn icon="table_view" tone="outline" size="sm"
-                                :href="route('reports.suppliers', array_merge($linkParams, ['export' => 'xlsx']))"
-                                show-label>Excel</x-icon-btn>
-                </x-action-menu>
+                <x-report-export :url="fn (string $format) => route('reports.suppliers', array_merge($linkParams, ['export' => $format]))" />
                 <x-help-button topic="reports.supplier-analysis" />
             </x-slot:actions>
         </x-page-toolbar>
@@ -61,7 +51,7 @@
     </x-filter-bar>
 
     @unless ($withProcurement)
-        <div class="alert alert-info text-xs">
+        <div role="status" class="alert alert-info text-xs">
             <x-icon name="info" />
             <span>{{ __('Bestell- und Termindaten erscheinen zusätzlich, sobald das Lager-Modul aktiv ist. Ausgaben stammen aus dem Belegspiegel der Buchhaltung.') }}</span>
         </div>

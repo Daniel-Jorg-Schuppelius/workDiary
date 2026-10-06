@@ -17,6 +17,7 @@ use App\Models\Diary\OpenIssue;
 use App\Models\Integration\ExternalReference;
 use App\Models\Notification\NotificationRule;
 use App\Models\Platform\{Organization, User};
+use App\Plugins\Msgraph\Enums\MsgraphConnectionStatus;
 use App\Plugins\Msgraph\Models\MsgraphConnection;
 use App\Plugins\Msgraph\MsgraphPlugin;
 use App\Plugins\Support\Calendar\RemoteCalendarPublishService;
@@ -61,7 +62,7 @@ class CalendarChannelTest extends TestCase {
         return MsgraphConnection::query()->create([
             'organization_id' => $organizationId,
             'access_token' => 'secret-token-123',
-            'status' => MsgraphConnection::STATUS_ACTIVE,
+            'status' => MsgraphConnectionStatus::Active,
         ]);
     }
 

@@ -16,7 +16,9 @@ use App\Http\Controllers\Controller;
 use App\Plugins\Etsy\EtsyConfig;
 use App\Plugins\Etsy\Jobs\EtsyWebhookIngestJob;
 use App\Plugins\Etsy\Models\{EtsyConnection, EtsyWebhookDelivery};
-use App\Plugins\Support\{RecordsWebhookDeliveries, SvixWebhookSignature};
+use App\Plugins\Support\OAuthConnectionStatus;
+use App\Plugins\Support\{RecordsWebhookDeliveries, SvixWebhookSignature, WebhookSignature};
+use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Http\{JsonResponse, Request};
 
 /**
@@ -36,13 +38,11 @@ use Illuminate\Http\{JsonResponse, Request};
 class EtsyWebhookController extends Controller {
     use RecordsWebhookDeliveries;
 
-    private const MAX_SKEW_SECONDS = 300;
-
     public function __invoke(Request $request, string $token): JsonResponse {
         $connection = EtsyConnection::query()
             ->withoutGlobalScopes()
             ->where('webhook_token', $token)
-            ->where('status', EtsyConnection::STATUS_ACTIVE)
+            ->where('status', OAuthConnectionStatus::Active)
             ->first();
 
         if (! $connection instanceof EtsyConnection) {
@@ -54,14 +54,17 @@ class EtsyWebhookController extends Controller {
         $timestamp = (string) $request->header('webhook-timestamp', '');
         $signature = (string) $request->header('webhook-signature', '');
 
-        if ($timestamp === '' || ! ctype_digit($timestamp)
-            || abs(now()->getTimestamp() - (int) $timestamp) > self::MAX_SKEW_SECONDS) {
+        if (! WebhookSignature::timestampFresh($timestamp)) {
             return response()->json(['message' => 'stale'], 401);
         }
 
         $secret = EtsyConfig::resolve((int) $connection->organization_id)['webhook_secret'] ?? null;
         if (! SvixWebhookSignature::valid($webhookId, $timestamp, $raw, $secret, $signature)) {
             return response()->json(['message' => 'invalid signature'], 401);
+        }
+        // Gesperrter Mandant: nichts verarbeiten (Entscheidung 2026-10-05) — erst nach der Signaturprüfung, kein Rückschluss von außen.
+        if (\App\Plugins\Support\PluginTenantGate::blocks((int) $connection->organization_id)) {
+            return \App\Plugins\Support\PluginTenantGate::refusal();
         }
 
         /** @var array<string, mixed> $payload */
@@ -76,7 +79,7 @@ class EtsyWebhookController extends Controller {
         }
 
         $delivery = $this->recordDelivery(fn(): EtsyWebhookDelivery => EtsyWebhookDelivery::query()->create([
-            'delivery_hash' => $this->deliveryHash($raw),
+            'delivery_hash' => CryptoHelper::hash($raw),
             'webhook_id' => $webhookId !== '' ? mb_substr($webhookId, 0, 64) : null,
             'event_type' => $eventType !== null ? mb_substr($eventType, 0, 32) : null,
             'receipt_id' => $receiptId,

@@ -15,7 +15,7 @@
 @section('content')
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar :subtitle="$run->period_start->format('d.m.Y') . ' – ' . $run->period_end->format('d.m.Y') . ' · ' . $run->currency->value"
+        <x-page-toolbar :subtitle="$run->period_start->fdate() . ' – ' . $run->period_end->fdate() . ' · ' . $run->currency->value"
                         :badge="$run->status->label()"
                         :badgeTone="$run->status->tone()"
                         back-route="commission-runs.index" :back-label="__('commission.action.back')">
@@ -88,7 +88,7 @@
             </x-slot:head>
             @forelse ($rows as $row)
                 <tr class="hover">
-                    <td class="text-sm">{{ $row->earned_on?->format('d.m.Y') ?? '–' }}</td>
+                    <td class="text-sm">{{ $row->earned_on?->fdate() ?? '–' }}</td>
                     <td class="text-sm">{{ $row->recipientName() }}</td>
                     <td class="font-mono text-sm">
                         {{ $row->invoice?->number ?? '–' }}

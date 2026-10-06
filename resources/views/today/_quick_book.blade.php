@@ -10,10 +10,11 @@
   Quick-Buchung offener Zeitblöcke (MVP-015, Rang 37).
 
   Je offenem Block ein eigenständiges Formular → funktioniert OHNE JS
-  (Projekt wählen, „Buchen" → Server-Redirect). Mit JS zusätzlich: Block per
-  Drag auf ein Projekt-Ziel ziehen bzw. Ctrl/Cmd+Enter = buchen + weiter
-  (resources/js/quick-book.js). Erwartet: $openBlocks, $quickBookProjects,
-  $quickBookTargets (Top 10 als Drag-Ziele), $quickBookRecent, $fmt.
+  (Projekt wählen, „Buchen" → Server-Redirect). Mit JS zusätzlich: Block auf
+  ein Projekt-Ziel ziehen (Maus an der ganzen Zeile, Finger und Stift am Griff)
+  bzw. Ctrl/Cmd+Enter = buchen + weiter (resources/js/quick-book.js).
+  Erwartet: $openBlocks, $quickBookProjects, $quickBookTargets (Top 10 als
+  Zug-Ziele), $quickBookRecent, $fmt.
 --}}
 @if (! empty($openBlocks) && $quickBookProjects->isNotEmpty())
     <x-card as="section" data-qb-panel data-qb-url="{{ route('today.quick-book') }}">
@@ -44,21 +45,22 @@
 
         <ul class="space-y-2">
             @foreach ($openBlocks as $block)
-                <li data-qb-block draggable="true"
+                <li data-qb-block
                     data-started-at="{{ $block['started_at']->toIso8601String() }}"
                     data-ended-at="{{ $block['ended_at']->toIso8601String() }}"
                     data-minutes="{{ $block['minutes'] }}"
                     class="flex flex-wrap items-center gap-2 rounded-box bg-base-200/70 px-3 py-2">
-                    <x-icon name="drag_indicator" class="cursor-grab text-muted" />
+                    {{-- Polster ohne Platzbedarf: größere Trefferfläche für den Finger. --}}
+                    <x-icon name="drag_indicator" data-qb-handle class="-m-1 cursor-grab touch-none p-1 text-muted" />
                     <span class="tabular-nums text-sm font-medium">
                         {{ $block['started_at']->format('H:i') }}–{{ $block['ended_at']->format('H:i') }}
                         <span class="text-muted">({{ $fmt($block['minutes']) }})</span>
                     </span>
                     {{-- Vorschlag (MVP-923): nur vorbelegt, gebucht wird erst per Klick. --}}
                     @if (($block['project'] ?? null) !== null)
-                        <span class="badge badge-info badge-outline badge-sm" title="{{ $block['hint'] ?? '' }}">
+                        <x-status-badge tone="info" outline title="{{ $block['hint'] ?? '' }}">
                             {{ __('time_entry.suggestion.source.' . $block['source'], ['title' => \Illuminate\Support\Str::limit((string) ($block['hint'] ?? ''), 40)]) }}
-                        </span>
+                        </x-status-badge>
                     @endif
                     <form method="POST" action="{{ route('today.quick-book') }}" class="qb-form ml-auto flex items-center gap-2">
                         @csrf
@@ -76,7 +78,7 @@
                             <option value="">{{ __('— Projekt —') }}</option>
                             <x-project-options :projects="$quickBookProjects" :recent="$quickBookRecent" :selected="($block['project'] ?? null)?->sqid ?? ''" />
                         </select>
-                        <button type="submit" class="btn btn-sm btn-primary">{{ __('Buchen') }}</button>
+                        <x-button type="submit">{{ __('Buchen') }}</x-button>
                     </form>
                 </li>
             @endforeach

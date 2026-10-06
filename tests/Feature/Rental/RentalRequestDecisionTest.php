@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Rental;
 
 use App\Enums\Notification\NotificationEvent;
-use App\Enums\Rental\{RentalCaseStatus, RentalRequestStatus, RentalReservationKind};
+use App\Enums\Rental\{RentalCaseStatus, RentalRequestStatus, RentalReservationKind, RentalReservationStatus};
 use App\Exceptions\RentalConflictException;
 use App\Mail\RentalRequestDecisionMail;
 use App\Models\Asset\Asset;
@@ -117,7 +117,7 @@ final class RentalRequestDecisionTest extends TestCase {
         $reservation = RentalReservation::query()->findOrFail($accepted->rental_reservation_id);
         $this->assertSame(RentalReservationKind::Soft, $reservation->kind);
         $this->assertSame((int) $case->id, (int) $reservation->rental_case_id);
-        $this->assertSame('active', $reservation->status);
+        $this->assertSame(RentalReservationStatus::Active, $reservation->status);
 
         Mail::assertSent(RentalRequestDecisionMail::class, fn (RentalRequestDecisionMail $m): bool => $m->hasTo('kunde@example.test'));
         $this->assertDatabaseHas('audit_logs', ['auditable_id' => $request->id, 'event' => 'rental.requestAccepted']);

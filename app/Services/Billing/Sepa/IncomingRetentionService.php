@@ -20,7 +20,6 @@ use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use RoundingMode;
 use RuntimeException;
 
 /**
@@ -39,12 +38,12 @@ class IncomingRetentionService {
         }
         $gross = (string) ($invoice->amount_gross?->getAmount() ?? '0');
         if ($percent !== null) {
-            $amount = bcround(bcdiv(bcmul($gross, $percent, 6), '100', 6), 2, RoundingMode::HalfAwayFromZero);
+            $amount = NumberHelper::percentOfPrecise($gross, $percent, 2);
         }
-        if ($amount === null || bccomp($amount, '0', 2) <= 0) {
+        if ($amount === null || ! NumberHelper::isPositivePrecise($amount, 2)) {
             throw new RuntimeException((string) __('sepa.retention.error.amount'));
         }
-        if (bccomp(bcadd($this->retainedAmount($invoice), $amount, 2), $gross, 2) > 0) {
+        if (NumberHelper::comparePrecise(NumberHelper::addPrecise($this->retainedAmount($invoice), $amount, 2), $gross, 2) > 0) {
             throw new RuntimeException((string) __('sepa.retention.error.exceeds'));
         }
 
@@ -97,7 +96,7 @@ class IncomingRetentionService {
     public function retainedAmount(IncomingEInvoice $invoice): string {
         $sum = '0.00';
         foreach ($invoice->retentions()->whereIn('status', [RetentionStatus::Open->value, RetentionStatus::Released->value])->pluck('amount') as $amount) {
-            $sum = bcadd($sum, NumberHelper::normalizeDecimalString((string) $amount), 2);
+            $sum = NumberHelper::addPrecise($sum, NumberHelper::normalizeDecimalString((string) $amount), 2);
         }
 
         return $sum;

@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Billing\Feed\Sources;
 
 use App\Enums\Billing\{DocumentDirection, DocumentKind, DocumentOrigin};
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Invoicing\Invoice;
 use App\Services\Billing\DocumentFeedFilters;
 use App\Services\Billing\Feed\{DocumentFeedSource, DocumentFeedSourceRegistry, FeedProjection};
@@ -46,15 +47,15 @@ class InvoiceSource implements DocumentFeedSource {
         ], DocumentKind::Invoice->value);
 
         $state = FeedProjection::caseMap('invoices.status', [
-            Invoice::STATUS_DRAFT => 'draft',
-            Invoice::STATUS_PAID => 'paid',
-            Invoice::STATUS_CANCELLED => 'cancelled',
+            InvoiceStatus::Draft->value => 'draft',
+            InvoiceStatus::Paid->value => 'paid',
+            InvoiceStatus::Cancelled->value => 'cancelled',
         ], 'open');
 
         // Retainer-Pauschalen sind bewusst nicht erlöswirksam (Feature 098):
         // die Buchhaltung finalisiert sie, die lokale Zeile ist nur Nachweis.
         $sign = "CASE
-            WHEN invoices.status IN ('" . Invoice::STATUS_DRAFT . "', '" . Invoice::STATUS_CANCELLED . "') THEN 0
+            WHEN invoices.status IN ('" . InvoiceStatus::Draft->value . "', '" . InvoiceStatus::Cancelled->value . "') THEN 0
             WHEN invoices.type = '" . Invoice::TYPE_RETAINER . "' THEN 0
             WHEN invoices.type IN ('" . Invoice::TYPE_CREDIT_NOTE . "', '" . Invoice::TYPE_CANCELLATION . "') THEN -1
             ELSE 1 END";

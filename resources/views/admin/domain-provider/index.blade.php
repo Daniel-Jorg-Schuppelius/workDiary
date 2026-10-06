@@ -9,9 +9,10 @@
 @extends('layouts.app')
 @section('title', __('domain.title.connections') . ' — ' . config('app.name', 'WorkDiary'))
 @section('nav-title', __('domain.title.connections'))
+@include('partials.page-fill')
 
 @section('content')
-<x-index-page :subtitle="__('domain.title.connections_subtitle')">
+<x-index-page overflow="clip" :subtitle="__('domain.title.connections_subtitle')">
     <x-slot:actions>
         @if ($canManage ?? false)
             <x-icon-btn icon="add" tone="primary" size="sm"
@@ -23,7 +24,7 @@
 
     @include('domain._tabs')
 
-    <x-table :caption="__('domain.title.connections')">
+    <x-table scroll="flex" :pinRows="true" :caption="__('domain.title.connections')">
         <x-slot:head>
             <tr>
                 <x-table.th>{{ __('domain.field.name') }}</x-table.th>
@@ -76,5 +77,7 @@
             <x-table.empty :colspan="6" :title="__('domain.empty.connections')" compact />
         @endforelse
     </x-table>
+
+    <x-pagination :paginator="$connections" standing />
 </x-index-page>
 @endsection

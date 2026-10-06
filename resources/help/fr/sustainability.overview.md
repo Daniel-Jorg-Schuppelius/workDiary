@@ -1,7 +1,7 @@
 ---
 title: "Durabilité & ESG"
 topic: sustainability.overview
-version: 1
+version: 2
 audience: []
 modules:
     - module.sustainability
@@ -33,6 +33,13 @@ l'effort, les coûts, l'échéance, le justificatif et le contrôle
 d'efficacité après la mise en œuvre. Les trajectoires d'objectifs (p. ex.
 CO₂e d'ici 2030) interpolent des valeurs cibles par année et les
 confrontent aux valeurs réelles.
+
+**Listes :** La vue d'ensemble affiche les dix évaluations et mesures
+les plus récentes et compte à chaque fois l'ensemble. « Tout afficher »
+ouvre pour chacune une liste complète et triable. La liste des mesures
+peut être filtrée par statut ; c'est aussi là que vous tenez à jour le
+statut des mesures plus anciennes qui n'apparaissent plus dans la vue
+d'ensemble.
 
 **Rapport :** Indicateurs avec exploration détaillée (drilldown),
 avertissements sur la qualité des données, export CSV avec mention de la

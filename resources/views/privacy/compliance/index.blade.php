@@ -9,27 +9,6 @@
 @extends('layouts.app')
 @section('title', __('Lückenanalyse'))
 @section('nav-title', __('Compliance- & Vertragslücken'))
-@php
-    $statusMeta = [
-        'missing' => ['Fehlt', 'badge-error'],
-        'expiring' => ['Läuft ab', 'badge-warning'],
-        'required' => ['Erforderlich', 'badge-warning'],
-        'in_review' => ['In Prüfung', 'badge-info'],
-        'deviation_accepted' => ['Abweichung akzeptiert', 'badge-ghost'],
-        'present' => ['Vorhanden', 'badge-success'],
-        'not_applicable' => ['Nicht anwendbar', 'badge-ghost'],
-    ];
-    $statusTone = [
-        'missing' => 'error',
-        'expiring' => 'warning',
-        'required' => 'warning',
-        'in_review' => 'info',
-        'deviation_accepted' => 'ghost',
-        'present' => 'success',
-        'not_applicable' => 'ghost',
-    ];
-    $statusOptions = ['present' => __('Vorhanden'), 'in_review' => __('In Prüfung'), 'not_applicable' => __('Nicht anwendbar'), 'deviation_accepted' => __('Abweichung akzeptiert'), 'missing' => __('Wieder offen')];
-@endphp
 @section('content')
     <x-index-page :subtitle="__('Lücken in Verträgen und Compliance-Anforderungen aufdecken und bewerten.')">
         <x-slot:actions>
@@ -45,12 +24,12 @@
         {{-- Ampel --}}
         <x-card>
             <div class="flex flex-wrap items-center gap-2">
-                @foreach ($statusMeta as $s => [$label, $cls])
-                    @if (($counts[$s] ?? 0) > 0)
-                        <x-status-badge :tone="$statusTone[$s] ?? 'ghost'" size="lg" class="gap-2">{{ __($label) }} <span class="font-bold">{{ $counts[$s] }}</span></x-status-badge>
+                @foreach (\App\Enums\Privacy\ComplianceFindingStatus::cases() as $status)
+                    @if (($counts[$status->value] ?? 0) > 0)
+                        <x-status-badge :tone="$status->tone()" size="lg" class="gap-2">{{ $status->label() }} <span class="font-bold">{{ $counts[$status->value] }}</span></x-status-badge>
                     @endif
                 @endforeach
-                @if ($findings->isEmpty())
+                @if ($findings->total() === 0)
                     <span class="text-sm text-muted">{{ __('Noch keine Analyse ausgeführt.') }}</span>
                 @endif
             </div>
@@ -71,7 +50,7 @@
             @forelse ($findings as $f)
                 <tr class="hover">
                     <td>{{ $f->label }}</td>
-                    <td><x-status-badge :tone="$statusTone[$f->status] ?? 'ghost'" size="sm">{{ __($statusMeta[$f->status][0] ?? $f->status) }}</x-status-badge></td>
+                    <td><x-status-badge :tone="$f->status->tone()" size="sm">{{ $f->status->label() }}</x-status-badge></td>
                     <td class="text-sm">{{ $f->trigger ?? '—' }}</td>
                     <td class="text-sm">
                         @if ($f->activity)<a class="link" href="{{ route('dataprotection.activities.show', $f->activity) }}">{{ $f->activity->name }}</a>
@@ -83,8 +62,15 @@
                         <td>
                             <form method="post" action="{{ route('dataprotection.compliance.update', $f) }}" class="flex flex-wrap items-center gap-1">
                                 @csrf @method('PUT')
-                                <select name="status" class="select select-xs select-bordered">
-                                    @foreach ($statusOptions as $v => $l)<option value="{{ $v }}" @selected($f->status === $v)>{{ $l }}</option>@endforeach
+                                <select name="status" class="select select-xs select-bordered" @required(! $f->status->isManual())>
+                                    {{-- „Läuft ab“ und „Erforderlich“ sind keine Entscheidung: ohne leere Vorauswahl stünde „Vorhanden“ da. --}}
+                                    @unless ($f->status->isManual())
+                                        <option value="" selected disabled>{{ __('Bitte wählen') }}</option>
+                                    @endunless
+                                    {{-- „Fehlt“ heißt als Entscheidung „Wieder offen“. --}}
+                                    @foreach (\App\Enums\Privacy\ComplianceFindingStatus::manual() as $option)
+                                        <option value="{{ $option->value }}" @selected($f->status === $option)>{{ $option === \App\Enums\Privacy\ComplianceFindingStatus::Missing ? __('Wieder offen') : $option->label() }}</option>
+                                    @endforeach
                                 </select>
                                 <input aria-label="{{ __('Begründung') }}" name="justification" class="input input-xs input-bordered" placeholder="{{ __('Begründung') }}" value="{{ $f->justification }}">
                                 <x-icon-btn icon="check" tone="primary" size="sm" type="submit" show-label>{{ __('OK') }}</x-icon-btn>
@@ -96,6 +82,8 @@
                 <x-table.empty :colspan="5" :title="__('Keine Befunde – Analyse ausführen.')" />
             @endforelse
         </x-table>
+
+        <x-pagination :paginator="$findings" standing />
 
         {{-- Konfigurierbarer Anforderungskatalog (Nachtrag 043c). --}}
         @can('manage', \App\Models\Privacy\ComplianceFinding::class)

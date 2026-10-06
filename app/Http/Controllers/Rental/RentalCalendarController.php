@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Rental;
 
-use App\Enums\Rental\RentalReservationKind;
+use App\Enums\Rental\{RentalReservationKind, RentalReservationStatus};
 use App\Http\Controllers\Controller;
 use App\Models\Asset\Asset;
 use App\Models\Rental\{RentalCase, RentalProfile, RentalReservation};
@@ -64,6 +64,7 @@ class RentalCalendarController extends Controller {
 
         // Belegungsfenster (inkl. Puffer) auf Kalendertage verteilen.
         $itemsByDay = [];
+        $shown = [];
         foreach ($reservations as $reservation) {
             // Kalendertage sind Ortszeit, die Belegung UTC (MVP-823).
             $cursor = $reservation->blockedFrom()->copy()->setTimezone(Tz::current())->startOfDay();
@@ -72,6 +73,7 @@ class RentalCalendarController extends Controller {
             while ($cursor <= $last) {
                 if ($cursor->isSameMonth($month)) {
                     $itemsByDay[$cursor->toDateString()][] = $reservation;
+                    $shown[$reservation->id] = true;
                 }
                 $cursor->addDay();
             }
@@ -80,6 +82,10 @@ class RentalCalendarController extends Controller {
         return view('rental.calendar', [
             'month' => $month,
             'itemsByDay' => $itemsByDay,
+            // Fenster ohne Akte enden nur hier (Storno); Aktenfenster steuert die Akte.
+            'freeWindows' => $reservations
+                ->filter(fn (RentalReservation $reservation): bool => $reservation->rental_case_id === null && isset($shown[$reservation->id]))
+                ->values(),
             'assets' => Asset::query()
                 ->whereHas('rentalProfile', fn($q) => $q->where('is_rentable', true))
                 ->orderBy('name')
@@ -142,7 +148,11 @@ class RentalCalendarController extends Controller {
             return back()->withErrors(['reservation' => __('Aktenreservierungen werden über die Verleihakte gesteuert.')]);
         }
 
-        $reservation->forceFill(['status' => 'cancelled', 'cancelled_at' => now()])->save();
+        if ($reservation->status !== RentalReservationStatus::Active) {
+            return back()->withErrors(['reservation' => __('Das Belegungsfenster ist nicht mehr aktiv.')]);
+        }
+
+        $reservation->forceFill(['status' => RentalReservationStatus::Cancelled, 'cancelled_at' => now()])->save();
 
         return back()->with('status', __('Belegungsfenster storniert.'));
     }

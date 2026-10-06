@@ -84,19 +84,15 @@
                     <tr>
                         <td class="text-sm">{{ config('retention.areas.' . $proposal->area . '.label', $proposal->area) }}</td>
                         <td class="text-xs">{{ \App\Support\EntityType::label($proposal->subject_type) }} <span class="font-mono text-muted">#{{ $proposal->subject_id }}</span></td>
-                        <td class="tabular-nums text-sm">{{ $proposal->retention_until->format('d.m.Y') }}</td>
+                        <td class="tabular-nums text-sm">{{ $proposal->retention_until->fdate() }}</td>
                         <td class="max-w-md truncate text-sm text-base-content/70">{{ $proposal->reason }}</td>
                         <td>
-                            @if ($proposal->status === \App\Models\Privacy\RetentionProposal::STATUS_PENDING)
-                                <x-status-badge tone="warning" size="xs">{{ __('offen') }}</x-status-badge>
-                            @else
-                                <x-status-badge tone="info" size="xs">{{ __('bestätigt') }}</x-status-badge>
-                            @endif
+                            <x-status-badge :tone="$proposal->status->tone()" size="xs">{{ $proposal->status->label() }}</x-status-badge>
                         </td>
                         <td class="text-right">
                             @if ($canManage)
                                 <div class="flex justify-end gap-1">
-                                    @if ($proposal->status === \App\Models\Privacy\RetentionProposal::STATUS_PENDING)
+                                    @if ($proposal->status === \App\Enums\Privacy\RetentionProposalStatus::Pending)
                                         <form method="POST" action="{{ route('dataprotection.retention.decide', $proposal) }}">
                                             @csrf
                                             <input type="hidden" name="action" value="approve">
@@ -124,7 +120,7 @@
             @if ($canManage)
                 @php
                     $approvedAreas = $proposals->getCollection()
-                        ->where('status', \App\Models\Privacy\RetentionProposal::STATUS_APPROVED)
+                        ->where('status', \App\Enums\Privacy\RetentionProposalStatus::Approved)
                         ->pluck('area')->unique();
                 @endphp
                 @if ($approvedAreas->isNotEmpty())

@@ -12,8 +12,7 @@
 @extends('layouts.app')
 @section('title', __('1-%-Vergleich'))
 @section('nav-title', __('1-%-Vergleich'))
-@section('wrapper-height-class', 'wd-page-fill')
-@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
+@include('partials.page-fill')
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('Geldwerter Vorteil je Fahrzeug: Fahrtenbuchmethode gegen 1-%-Regel. Vereinfachte Rechnung, keine Steuerberatung.')"
               back-route="reports.logbook" :back-label="__('Fahrtenbuch-Nachweis')">

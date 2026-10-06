@@ -557,7 +557,7 @@ class AppServiceProvider extends ServiceProvider {
         Protocol::observe(ProtocolObserver::class);
         // Tätigkeitsrecherche (Feature 153): Quellen und Kind-Modelle indizieren
         // nach Commit; Stammdaten-Umbenennungen ziehen per Job nach.
-        foreach ([TimeEntry::class, DiaryEntry::class, Timesheet::class, ServiceTicket::class, \App\Models\ServiceTicket\ServiceTicketMessage::class, Protocol::class, OpenIssue::class, CommunicationNote::class, \App\Models\Knowledge\KnowledgeArticle::class, \App\Models\Auth\RemotePendingSession::class, Comment::class, \App\Models\Learning\LearningCourse::class, \App\Models\Document\Document::class] as $searchable) {
+        foreach ([TimeEntry::class, DiaryEntry::class, Timesheet::class, ServiceTicket::class, \App\Models\ServiceTicket\ServiceTicketMessage::class, Protocol::class, OpenIssue::class, CommunicationNote::class, \App\Models\Knowledge\KnowledgeArticle::class, Comment::class, \App\Models\Learning\LearningCourse::class, \App\Models\Document\Document::class] as $searchable) {
             $searchable::observe(\App\Observers\SearchIndexObserver::class);
         }
         foreach ([Project::class, \App\Models\Customer\ForeignCustomer::class, Customer::class] as $searchContext) {
@@ -797,6 +797,7 @@ class AppServiceProvider extends ServiceProvider {
         $this->registerReminderViewComposer();
         $this->registerJsTranslationsViewComposer();
         $this->registerBookmarksViewComposer();
+        $this->registerInventoryTabsViewComposer();
         $this->registerDashboardWidgets();
 
         Password::defaults(function () {
@@ -1098,6 +1099,31 @@ class AppServiceProvider extends ServiceProvider {
     }
 
     /** Stellt dem App-Layout die Lesezeichen des Users als `$userBookmarks` bereit (Phase H). */
+    /**
+     * Lager-Reiterleiste (Entscheidung 2026-10-06): Sichtbarkeit je Recht und
+     * Zahl der offenen Konflikte mit Fremdsystemen — eine Abfrage für alle
+     * Lager-Seiten statt je Controller. Gezählt werden die Arten, die der
+     * Nutzer in der Liste auch sieht.
+     */
+    private function registerInventoryTabsViewComposer(): void {
+        View::composer('inventory._tabs', static function ($view): void {
+            $user = Auth::user();
+            $types = $user instanceof User ? \App\Models\Integration\PendingExternalConflict::typesVisibleTo($user) : [];
+            $open = $types !== [] && $user->organization_id !== null
+                ? \App\Models\Integration\PendingExternalConflict::query()
+                    ->where('organization_id', $user->organization_id)
+                    ->whereIn('conflict_type', $types)
+                    ->where('status', \App\Enums\Integration\ExternalConflictStatus::Open)
+                    ->count()
+                : 0;
+            $view->with('inventoryTabs', [
+                'canViewInventory' => $user instanceof User && ($user->can(\App\Enums\User\Permission::InventoryViewAny->value) || $user->can(\App\Enums\User\Permission::InventoryConfigure->value)),
+                'canViewConflicts' => $types !== [],
+                'openConflicts' => $open,
+            ]);
+        });
+    }
+
     private function registerBookmarksViewComposer(): void {
         View::composer('layouts.app', function ($view): void {
             $user = Auth::user();

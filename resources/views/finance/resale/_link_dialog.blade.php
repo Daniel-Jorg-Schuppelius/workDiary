@@ -26,9 +26,9 @@
         {{ __('resale.link.needed', ['amount' => \App\Services\Reselling\Register\LicenseMonths::label($needed, (float) $period->termMonths())]) }}
     </div>
     @if (! $hasSource)
-        <div class="alert alert-warning text-sm"><span>{{ __('resale.mirror.no_source') }}</span></div>
+        <div role="alert" class="alert alert-warning text-sm"><span>{{ __('resale.mirror.no_source') }}</span></div>
     @elseif ($rows === [])
-        <div class="alert alert-info text-sm"><span>{{ __('resale.link.no_lines') }}</span></div>
+        <div role="status" class="alert alert-info text-sm"><span>{{ __('resale.link.no_lines') }}</span></div>
     @endif
     {{-- Nur Abo-Positionen: Support-Stunden und Hardware gehören nicht in diese Liste (Einstufung über „Produkte"). --}}
     <x-select-field name="line_id" :label="__('resale.link.line')" required :hint="__('resale.link.line_hint')">

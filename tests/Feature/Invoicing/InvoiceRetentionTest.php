@@ -10,6 +10,7 @@
 
 namespace Tests\Feature\Invoicing;
 
+use App\Enums\Invoicing\InvoiceStatus;
 use App\Enums\Invoicing\{RetentionKind, RetentionStatus};
 use App\Enums\Notification\{NotificationChannel, NotificationEvent};
 use App\Models\Customer\Customer;
@@ -52,7 +53,7 @@ class InvoiceRetentionTest extends TestCase {
             'organization_id' => $this->org->id,
             'customer_id' => $this->customer->id,
             'number' => 'R-' . uniqid(),
-            'status' => Invoice::STATUS_DRAFT,
+            'status' => InvoiceStatus::Draft,
             'currency' => 'EUR',
             'tax_rate' => '19.00',
             'created_by' => $this->admin->id,
@@ -72,7 +73,7 @@ class InvoiceRetentionTest extends TestCase {
         return $invoice->refresh();
     }
 
-    private function invoice(string $status = Invoice::STATUS_DRAFT): Invoice {
+    private function invoice(InvoiceStatus $status = InvoiceStatus::Draft): Invoice {
         $invoice = Invoice::create([
             'organization_id' => $this->org->id,
             'customer_id' => $this->customer->id,
@@ -169,7 +170,7 @@ class InvoiceRetentionTest extends TestCase {
 
     /** Nach dem Ausstellen ist der Einbehalt Beleginhalt und eingefroren. */
     public function test_retention_cannot_be_added_after_issuing(): void {
-        $invoice = $this->invoice(Invoice::STATUS_ISSUED);
+        $invoice = $this->invoice(InvoiceStatus::Issued);
 
         $this->expectException(\RuntimeException::class);
         app(RetentionService::class)->add($invoice, RetentionKind::Warranty, 5.0, null, null, $this->admin);
@@ -216,7 +217,7 @@ class InvoiceRetentionTest extends TestCase {
     public function test_dunning_letter_excludes_the_retention(): void {
         $invoice = $this->invoice();
         app(RetentionService::class)->add($invoice, RetentionKind::Warranty, 5.0, null, now()->addYears(5)->toDateString(), $this->admin);
-        $invoice->forceFill(['status' => Invoice::STATUS_ISSUED, 'due_on' => now()->subDays(20)->toDateString()])->save();
+        $invoice->forceFill(['status' => InvoiceStatus::Issued, 'due_on' => now()->subDays(20)->toDateString()])->save();
 
         $html = view('invoices.dunning-pdf', app(\App\Services\Invoicing\DunningPdfRenderer::class)
             ->viewData($invoice->refresh()->load(['customer', 'retentions']), 1))->render();

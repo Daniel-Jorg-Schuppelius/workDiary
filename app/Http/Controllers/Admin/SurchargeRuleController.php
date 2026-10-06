@@ -31,7 +31,9 @@ class SurchargeRuleController extends Controller {
             ->orderBy('kind')
             ->orderByDesc('percentage')
             ->orderBy('code')
-            ->get();
+            ->orderBy('id')
+            ->paginate(25)
+            ->withQueryString();
 
         return view('admin.surcharge-rules.index', [
             'rules' => $rules,
@@ -53,7 +55,7 @@ class SurchargeRuleController extends Controller {
 
         SurchargeRule::query()->create($this->validated($request));
 
-        return redirect()->route('admin.surcharge-rules.index')
+        return redirect()->toList('admin.surcharge-rules.index')
             ->with('success', __('surcharge.flash.created'));
     }
 
@@ -84,7 +86,7 @@ class SurchargeRuleController extends Controller {
 
         $surchargeRule->update($this->validated($request, $surchargeRule));
 
-        return redirect()->route('admin.surcharge-rules.index')
+        return redirect()->toList('admin.surcharge-rules.index')
             ->with('success', __('surcharge.flash.updated'));
     }
 
@@ -93,7 +95,7 @@ class SurchargeRuleController extends Controller {
 
         $surchargeRule->delete();
 
-        return redirect()->route('admin.surcharge-rules.index')
+        return redirect()->toList('admin.surcharge-rules.index')
             ->with('success', __('surcharge.flash.deleted'));
     }
 

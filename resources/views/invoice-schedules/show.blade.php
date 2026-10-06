@@ -29,18 +29,18 @@
                                 data-entry-modal-trigger
                                 :href="route('invoice-schedules.edit', $schedule) . '?dialog=1'"
                                 show-label>{{ __('Bearbeiten') }}</x-icon-btn>
-                    @if ($schedule->status === \App\Models\Invoicing\InvoiceSchedule::STATUS_ACTIVE)
+                    @if ($schedule->status === \App\Enums\Invoicing\InvoiceScheduleStatus::Active)
                         <x-action-form :action="route('invoice-schedules.status', $schedule)" method="PATCH">
                             <input type="hidden" name="status" value="paused">
                             <x-icon-btn icon="pause" tone="warning" size="sm" type="submit" show-label>{{ __('Aussetzen') }}</x-icon-btn>
                         </x-action-form>
-                    @elseif ($schedule->status === \App\Models\Invoicing\InvoiceSchedule::STATUS_PAUSED)
+                    @elseif ($schedule->status === \App\Enums\Invoicing\InvoiceScheduleStatus::Paused)
                         <x-action-form :action="route('invoice-schedules.status', $schedule)" method="PATCH">
                             <input type="hidden" name="status" value="active">
                             <x-icon-btn icon="play_arrow" tone="success" size="sm" type="submit" show-label>{{ __('Fortsetzen') }}</x-icon-btn>
                         </x-action-form>
                     @endif
-                    @if ($schedule->status !== \App\Models\Invoicing\InvoiceSchedule::STATUS_ENDED)
+                    @if ($schedule->status !== \App\Enums\Invoicing\InvoiceScheduleStatus::Ended)
                         <x-action-form :action="route('invoice-schedules.status', $schedule)" method="PATCH"
                               :confirm="__('Plan endgültig beenden? Ein beendeter Plan kann nicht reaktiviert werden.')"
                               :confirm-label="__('Beenden')">
@@ -54,7 +54,7 @@
     </x-slot:toolbar>
 
     @if ($isBlocked)
-        <div class="alert alert-error text-sm">
+        <div role="alert" class="alert alert-error text-sm">
             <span>{{ __('Externes Fakturasystem führt die Rechnungen dieses Kunden — der Plan erzeugt keine Entwürfe.') }}</span>
         </div>
     @endif
@@ -63,7 +63,7 @@
         <div class="grid grid-cols-2 gap-3 text-sm md:grid-cols-4">
             <div>
                 <div class="text-xs text-muted">{{ __('Status') }}</div>
-                <x-status-badge size="sm" :tone="$schedule->statusTone()">{{ $schedule->statusLabel() }}</x-status-badge>
+                <x-status-badge size="sm" :tone="$schedule->status->tone()">{{ $schedule->status->label() }}</x-status-badge>
             </div>
             <div>
                 <div class="text-xs text-muted">{{ __('Intervall') }}</div>
@@ -73,7 +73,7 @@
             <div>
                 <div class="text-xs text-muted">{{ __('Nächste Läufe') }}</div>
                 @forelse ($schedule->upcomingRuns() as $run)
-                    <span class="badge badge-ghost badge-sm">{{ $run->fdate() }}</span>
+                    <x-status-badge>{{ $run->fdate() }}</x-status-badge>
                 @empty
                     —
                 @endforelse
@@ -199,7 +199,7 @@
                         @endif
                     </td>
                     <td class="text-right tabular-nums">{{ $run->invoice !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($run->invoice->total?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) . ' ' . $run->invoice->currency->value : '—' }}</td>
-                    <td>{{ $run->invoice !== null ? __('values.' . $run->invoice->status) : '—' }}</td>
+                    <td>{{ $run->invoice !== null ? $run->invoice->status->label() : '—' }}</td>
                     @if ($showHandover)
                         <td>{!! $handoverCells[$run->id] !== '' ? $handoverCells[$run->id] : '—' !!}</td>
                     @endif

@@ -14,6 +14,7 @@ namespace App\Services\Isms;
 
 use App\Enums\Isms\NormConformityStatus;
 use App\Models\Isms\{IsmsApplicabilityStatement, IsmsNormStatus, IsmsScope};
+use App\Support\MorphMap;
 use Carbon\CarbonInterface;
 use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Database\Eloquent\Model;
@@ -92,7 +93,7 @@ class AssessmentSnapshotService {
         foreach ($latest as $row) {
             /** @var array<string, mixed> $payload */
             $payload = (array) json_decode((string) $row->payload, true);
-            if (str_contains($row->subject_type, 'ApplicabilityStatement') || isset($payload['implementation_status'])) {
+            if (MorphMap::is($row->subject_type, IsmsApplicabilityStatement::class) || isset($payload['implementation_status'])) {
                 $statements['total']++;
                 if (($payload['applicable'] ?? false) === true) {
                     $statements['applicable']++;
