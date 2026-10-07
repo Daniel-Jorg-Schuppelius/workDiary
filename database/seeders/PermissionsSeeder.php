@@ -277,6 +277,9 @@ class PermissionsSeeder extends Seeder {
                     // gesperrte Assets entscheidet die Leitung.
                     PermissionEnum::AssetComplianceRelease->value,
                     PermissionEnum::AssetBlockOverride->value,
+                    // MVP-1075: Kundeneingänge bearbeiten und beauftragte übernehmen.
+                    PermissionEnum::CustomerPortalIntakeManage->value,
+                    PermissionEnum::CustomerPortalIntakeHandover->value,
                 ], true);
             }
         ));
@@ -557,6 +560,10 @@ class PermissionsSeeder extends Seeder {
             // Kunden-Rückfragen aus dem Portal (Feature 012): Teamleitung
             // sieht und beantwortet die Rückfragen der Kunden.
             PermissionEnum::ProtocolCustomerQueryManage,
+            // Kundeneingänge aus dem Portal (MVP-1074/1075).
+            PermissionEnum::CustomerPortalIntakeView,
+            PermissionEnum::CustomerPortalIntakeManage,
+            PermissionEnum::CustomerPortalIntakeHandover,
             PermissionEnum::ProtocolPdfDownload,
             PermissionEnum::ProtocolItemPhotoAdd,
             PermissionEnum::ProtocolItemPhotoRemove,
@@ -1052,12 +1059,16 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::ClassificationOrgView,
             PermissionEnum::ClassificationRequirementView,
             PermissionEnum::AssetView,
+            // Kundeneingänge annehmen und Rückfragen führen (MVP-1074/1075).
+            PermissionEnum::CustomerPortalIntakeView,
+            PermissionEnum::CustomerPortalIntakeManage,
         ];
 
         // Support (Anbieter-Support): strikt read-only über fast alle Bereiche
         // plus Auditzugriff. KEINE Create/Update/Delete-Permissions.
         $support = [
             PermissionEnum::OrganizationView,
+            PermissionEnum::CustomerPortalIntakeView,
             // Feature 072: Reklamationsannahme aus Helpdesk/Telefon.
             PermissionEnum::ClaimViewAny,
             PermissionEnum::ClaimView,

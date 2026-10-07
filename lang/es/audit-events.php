@@ -724,6 +724,11 @@ return [
         ],
     ],
     'print' => [
+        'intake_file_bound' => 'Archivo de impresión definido desde la entrada de cliente',
+        'opened_from_intake' => 'Orden de impresión abierta desde la entrada de cliente',
+        'customer_approval_requested' => 'Aprobación de impresión del cliente solicitada',
+        'customer_approved' => 'Datos de impresión aprobados por el cliente',
+        'customer_declined' => 'Datos de impresión rechazados por el cliente',
         'claim_opened' => 'Impresión: reclamación abierta',
         'file_bound' => 'Archivo de impresión vinculado de forma definitiva',
         'files_purged' => 'Archivos de impresión purgados',
@@ -772,6 +777,8 @@ return [
         'mailed' => 'Albarán enviado por correo electrónico',
     ],
     'quote' => [
+        'intake_linked' => 'Vinculado a la entrada de cliente',
+        'portal_decision' => 'Decisión en el portal de clientes',
         'markup_applied' => 'Recargo repartido en los precios unitarios',
         'mailed' => 'Presupuesto enviado por correo electrónico',
         'followed_up' => 'Seguimiento del presupuesto realizado',
@@ -884,6 +891,7 @@ return [
         'submitted' => 'Solicitud de servicio presentada',
     ],
     'service_ticket' => [
+        'opened_from_intake' => 'Ticket creado desde la entrada de cliente',
         'accepted_by_customer' => 'Ticket aceptado por el cliente',
         'assigned' => 'Ticket asignado',
         'closed' => 'Ticket cerrado',

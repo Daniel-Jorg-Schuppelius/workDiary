@@ -724,6 +724,11 @@ return [
         ],
     ],
     'print' => [
+        'intake_file_bound' => 'Fichier d\'impression défini depuis la demande client',
+        'opened_from_intake' => 'Ordre d\'impression ouvert depuis la demande client',
+        'customer_approval_requested' => 'Bon à tirer client demandé',
+        'customer_approved' => 'Données d\'impression validées par le client',
+        'customer_declined' => 'Données d\'impression refusées par le client',
         'claim_opened' => 'Impression : réclamation ouverte',
         'file_bound' => 'Fichier d\'impression lié définitivement',
         'files_purged' => 'Fichiers d\'impression purgés',
@@ -772,6 +777,8 @@ return [
         'mailed' => 'Bon de livraison envoyé par e-mail',
     ],
     'quote' => [
+        'intake_linked' => 'Lié à la demande client',
+        'portal_decision' => 'Décision dans le portail client',
         'markup_applied' => 'Majoration répartie sur les prix unitaires',
         'mailed' => 'Devis envoyé par e-mail',
         'followed_up' => 'Devis relancé',
@@ -884,6 +891,7 @@ return [
         'submitted' => 'Demande de service soumise',
     ],
     'service_ticket' => [
+        'opened_from_intake' => 'Ticket créé depuis la demande client',
         'accepted_by_customer' => 'Ticket accepté par le client',
         'assigned' => 'Ticket attribué',
         'closed' => 'Ticket clôturé',

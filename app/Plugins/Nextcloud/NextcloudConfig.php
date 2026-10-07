@@ -10,6 +10,8 @@
 
 namespace App\Plugins\Nextcloud;
 
+use App\Plugins\Support\PluginSettingsResolver;
+
 /**
  * Aufgelöste Installations-Konfiguration des Nextcloud-Plugins (Muster
  * {@see \App\Plugins\Dropbox\DropboxConfig}). Im Plugin-Kontext ist config()
@@ -33,5 +35,24 @@ class NextcloudConfig {
 
     public static function allowPrivateTargets(): bool {
         return (bool) self::resolve()['allow_private_targets'];
+    }
+
+    /**
+     * Upload-Kanal des Kundeneingangs (MVP-1078) je Organisation — eigene
+     * Zugangsdaten, getrennt von Dokumenteingang und Backupziel.
+     *
+     * @return array{enabled: bool, server_url: ?string, username: ?string, app_password: ?string, base_folder: string, link_days: int}
+     */
+    public static function intakeUpload(int $organizationId): array {
+        $r = PluginSettingsResolver::for(NextcloudPlugin::ID, $organizationId);
+
+        return [
+            'enabled' => $r->enabled(),
+            'server_url' => $r->string('intake_server_url', trim: true),
+            'username' => $r->string('intake_username', trim: true),
+            'app_password' => $r->string('intake_app_password'),
+            'base_folder' => $r->string('intake_base_folder', 'WorkDiary/Kundeneingaenge', true) ?? 'WorkDiary/Kundeneingaenge',
+            'link_days' => max(1, min(90, $r->int('intake_link_days', 14))),
+        ];
     }
 }

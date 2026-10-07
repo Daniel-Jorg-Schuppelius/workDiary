@@ -12875,71 +12875,6 @@ CREATE INDEX "pride_org_status_idx" on "passenger_rides"(
   "organization_id",
   "status"
 );
-CREATE TABLE IF NOT EXISTS "print_orders"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "manufacturing_order_id" integer not null,
-  "status" varchar not null default 'data_check',
-  "output_kind" varchar not null default 'pickup',
-  "document_id" integer,
-  "document_version_id" integer,
-  "file_hash" varchar,
-  "file_bound_at" datetime,
-  "preflight_status" varchar not null default 'pending',
-  "preflight_provider" varchar,
-  "preflight_findings" text,
-  "preflight_at" datetime,
-  "preflight_by" integer,
-  "preflight_override_reason" text,
-  "preflight_overridden_by" integer,
-  "preflight_overridden_at" datetime,
-  "production_snapshot" text,
-  "approved_at" datetime,
-  "approved_by" integer,
-  "approved_file_hash" varchar,
-  "asset_id" integer,
-  "production_started_at" datetime,
-  "production_started_by" integer,
-  "qc_status" varchar,
-  "qc_at" datetime,
-  "qc_by" integer,
-  "qc_note" text,
-  "issued_at" datetime,
-  "issued_by" integer,
-  "handover_name" text,
-  "handover_note" text,
-  "shipment_id" integer,
-  "files_retain_until" date,
-  "files_purged_at" datetime,
-  "cancel_reason" text,
-  "created_by" integer,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("manufacturing_order_id") references "manufacturing_orders"("id") on delete cascade,
-  foreign key("document_id") references "documents"("id") on delete set null,
-  foreign key("document_version_id") references "document_versions"("id") on delete set null,
-  foreign key("preflight_by") references "users"("id") on delete set null,
-  foreign key("preflight_overridden_by") references "users"("id") on delete set null,
-  foreign key("approved_by") references "users"("id") on delete set null,
-  foreign key("asset_id") references "assets"("id") on delete set null,
-  foreign key("production_started_by") references "users"("id") on delete set null,
-  foreign key("qc_by") references "users"("id") on delete set null,
-  foreign key("issued_by") references "users"("id") on delete set null,
-  foreign key("shipment_id") references "shipments"("id") on delete set null,
-  foreign key("created_by") references "users"("id") on delete set null
-);
-CREATE UNIQUE INDEX "prord_mo_unique" on "print_orders"(
-  "manufacturing_order_id"
-);
-CREATE INDEX "prord_org_status_idx" on "print_orders"(
-  "organization_id",
-  "status"
-);
-CREATE INDEX "prord_org_retain_idx" on "print_orders"(
-  "organization_id",
-  "files_retain_until"
-);
 CREATE TABLE IF NOT EXISTS "passenger_shift_settlements"(
   "id" integer primary key autoincrement not null,
   "organization_id" integer not null,
@@ -23298,6 +23233,195 @@ CREATE UNIQUE INDEX "fdc_org_hash_unique" on "fritzbox_dismissed_calls"(
   "organization_id",
   "call_hash"
 );
+CREATE TABLE IF NOT EXISTS "customer_intakes"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "customer_id" integer not null,
+  "submitted_by_user_id" integer,
+  "number" varchar not null,
+  "kind" varchar not null,
+  "status" varchar not null default 'submitted',
+  "subject" varchar not null,
+  "description" text,
+  "desired_date" date,
+  "form" text,
+  "catalog_form" text,
+  "request_item_id" integer,
+  "asset_id" integer,
+  "assigned_user_id" integer,
+  "quote_id" integer,
+  "target_type" varchar,
+  "target_id" integer,
+  "handed_over_at" datetime,
+  "handover_user_id" integer,
+  "rejection_reason" text,
+  "closed_at" datetime,
+  "is_upload_open" tinyint(1) not null default '0',
+  "submission_key" varchar not null,
+  "mail_failed_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("customer_id") references "customers"("id") on delete cascade,
+  foreign key("submitted_by_user_id") references "users"("id") on delete set null,
+  foreign key("request_item_id") references "request_items"("id") on delete set null,
+  foreign key("asset_id") references "assets"("id") on delete set null,
+  foreign key("assigned_user_id") references "users"("id") on delete set null,
+  foreign key("quote_id") references "quotes"("id") on delete set null,
+  foreign key("handover_user_id") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "cin_number_unique" on "customer_intakes"(
+  "organization_id",
+  "number"
+);
+CREATE UNIQUE INDEX "cin_submission_unique" on "customer_intakes"(
+  "organization_id",
+  "submission_key"
+);
+CREATE UNIQUE INDEX "cin_target_unique" on "customer_intakes"(
+  "target_type",
+  "target_id"
+);
+CREATE INDEX "cin_status_idx" on "customer_intakes"(
+  "organization_id",
+  "status"
+);
+CREATE INDEX "cin_customer_idx" on "customer_intakes"(
+  "organization_id",
+  "customer_id"
+);
+CREATE UNIQUE INDEX "cin_quote_unique" on "customer_intakes"("quote_id");
+CREATE TABLE IF NOT EXISTS "customer_intake_messages"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "customer_intake_id" integer not null,
+  "author_user_id" integer,
+  "kind" varchar not null,
+  "body" text not null,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("customer_intake_id") references "customer_intakes"("id") on delete cascade,
+  foreign key("author_user_id") references "users"("id") on delete set null
+);
+CREATE INDEX "cim_chrono_idx" on "customer_intake_messages"(
+  "customer_intake_id",
+  "created_at"
+);
+CREATE TABLE IF NOT EXISTS "customer_intake_events"(
+  "id" integer primary key autoincrement not null,
+  "customer_intake_id" integer not null,
+  "event" varchar not null,
+  "actor_user_id" integer,
+  "payload" text,
+  "occurred_at" datetime not null default CURRENT_TIMESTAMP,
+  foreign key("customer_intake_id") references "customer_intakes"("id") on delete cascade,
+  foreign key("actor_user_id") references "users"("id") on delete set null
+);
+CREATE INDEX "cie_chrono_idx" on "customer_intake_events"(
+  "customer_intake_id",
+  "occurred_at"
+);
+CREATE TABLE IF NOT EXISTS "print_orders"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "manufacturing_order_id" integer not null,
+  "status" varchar not null default('data_check'),
+  "output_kind" varchar not null default('pickup'),
+  "document_id" integer,
+  "document_version_id" integer,
+  "file_hash" varchar,
+  "file_bound_at" datetime,
+  "preflight_status" varchar not null default('pending'),
+  "preflight_provider" varchar,
+  "preflight_findings" text,
+  "preflight_at" datetime,
+  "preflight_by" integer,
+  "preflight_override_reason" text,
+  "preflight_overridden_by" integer,
+  "preflight_overridden_at" datetime,
+  "production_snapshot" text,
+  "approved_at" datetime,
+  "approved_by" integer,
+  "approved_file_hash" varchar,
+  "asset_id" integer,
+  "production_started_at" datetime,
+  "production_started_by" integer,
+  "qc_status" varchar,
+  "qc_at" datetime,
+  "qc_by" integer,
+  "qc_note" text,
+  "issued_at" datetime,
+  "issued_by" integer,
+  "handover_name" text,
+  "handover_note" text,
+  "shipment_id" integer,
+  "files_retain_until" date,
+  "files_purged_at" datetime,
+  "cancel_reason" text,
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "is_customer_approval_required" tinyint(1) not null default '0',
+  "customer_approval_requested_at" datetime,
+  "customer_approval_request" text,
+  "customer_approved_at" datetime,
+  "customer_approval_user_id" integer,
+  "customer_approved_file_hash" varchar,
+  "customer_declined_at" datetime,
+  "customer_decline_reason" text,
+  foreign key("created_by") references users("id") on delete set null on update no action,
+  foreign key("shipment_id") references shipments("id") on delete set null on update no action,
+  foreign key("issued_by") references users("id") on delete set null on update no action,
+  foreign key("qc_by") references users("id") on delete set null on update no action,
+  foreign key("production_started_by") references users("id") on delete set null on update no action,
+  foreign key("asset_id") references assets("id") on delete set null on update no action,
+  foreign key("approved_by") references users("id") on delete set null on update no action,
+  foreign key("preflight_overridden_by") references users("id") on delete set null on update no action,
+  foreign key("preflight_by") references users("id") on delete set null on update no action,
+  foreign key("document_version_id") references document_versions("id") on delete set null on update no action,
+  foreign key("document_id") references documents("id") on delete set null on update no action,
+  foreign key("manufacturing_order_id") references manufacturing_orders("id") on delete cascade on update no action,
+  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("customer_approval_user_id") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "prord_mo_unique" on "print_orders"(
+  "manufacturing_order_id"
+);
+CREATE INDEX "prord_org_retain_idx" on "print_orders"(
+  "organization_id",
+  "files_retain_until"
+);
+CREATE INDEX "prord_org_status_idx" on "print_orders"(
+  "organization_id",
+  "status"
+);
+CREATE TABLE IF NOT EXISTS "customer_intake_upload_links"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "customer_intake_id" integer not null,
+  "channel" varchar not null,
+  "external_id" varchar,
+  "folder" varchar not null,
+  "url" text not null,
+  "password" text,
+  "expires_at" datetime,
+  "revoked_at" datetime,
+  "last_synced_at" datetime,
+  "last_error" varchar,
+  "last_error_at" datetime,
+  "processed_keys" text,
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("customer_intake_id") references "customer_intakes"("id") on delete cascade,
+  foreign key("created_by") references "users"("id") on delete set null
+);
+CREATE INDEX "ciul_active_idx" on "customer_intake_upload_links"(
+  "organization_id",
+  "revoked_at"
+);
 
 INSERT INTO migrations VALUES(1,'0001_01_01_000000_create_users_table',1);
 INSERT INTO migrations VALUES(2,'0001_01_01_000001_create_cache_table',1);
@@ -24253,3 +24377,6 @@ INSERT INTO migrations VALUES(961,'2027_03_10_100600_backfill_fritzbox_dismissed
 INSERT INTO migrations VALUES(962,'2027_03_10_100700_add_deferred_from_status_to_investment_cases',64);
 INSERT INTO migrations VALUES(963,'2027_03_10_100800_normalize_orgamax_invoice_status',65);
 INSERT INTO migrations VALUES(964,'2027_03_10_100900_post_lot_block_balances',66);
+INSERT INTO migrations VALUES(965,'2027_03_11_100000_create_customer_intakes_tables',67);
+INSERT INTO migrations VALUES(966,'2027_03_11_100100_add_customer_approval_to_print_orders',67);
+INSERT INTO migrations VALUES(967,'2027_03_11_100200_create_customer_intake_upload_links_table',68);

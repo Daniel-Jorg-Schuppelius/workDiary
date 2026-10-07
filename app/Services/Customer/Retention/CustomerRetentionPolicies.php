@@ -69,6 +69,18 @@ final class CustomerRetentionPolicies implements RetentionPolicyProvider {
                     $subject->delete();
                 },
             ),
+            // Kundeneingänge (Feature 162): nur abgelehnte oder zurückgenommene,
+            // Anker ist der Abschluss. Löschen über Eloquent räumt die Dateien
+            // (HasAttachments) ab, Nachrichten und Journal folgen per Fremdschlüssel.
+            new RetentionPolicy(
+                area: 'customer_intakes',
+                modelClass: \App\Models\Customer\CustomerIntake::class,
+                overdueQuery: fn($organization, $cutoff) => \App\Models\Customer\CustomerIntake::query()
+                    ->withoutGlobalScopes()
+                    ->where('organization_id', $organization->id)
+                    ->whereIn('status', [\App\Enums\Customer\IntakeStatus::Rejected->value, \App\Enums\Customer\IntakeStatus::Withdrawn->value])
+                    ->where('closed_at', '<', $cutoff),
+            ),
         ];
     }
 }

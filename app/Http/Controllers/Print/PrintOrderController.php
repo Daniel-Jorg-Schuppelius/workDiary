@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Print;
 
+use App\Enums\Attachments\UploadPurpose;
 use App\Enums\Print\{PrintOrderStatus, PrintOutputKind};
 use App\Enums\Print\PrintQcStatus;
 use App\Http\Controllers\Concerns\{ResolvesCurrentOrganization, ResolvesGlobalDateRange};
@@ -22,13 +23,15 @@ use App\Models\Customer\Customer;
 use App\Models\Platform\Organization;
 use App\Models\Print\PrintOrder;
 use App\Models\Shipping\Shipment;
+use App\Services\Attachments\FileAttacher;
 use App\Services\Document\DocumentService;
 use App\Services\Print\Contracts\ProductionOrderFactory;
 use App\Services\Print\PrintOrderService;
 use App\Support\Sqid;
+use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Validation\Rule;
+use Illuminate\Validation\{Rule, ValidationException};
 use Illuminate\View\View;
 
 /**
@@ -38,13 +41,6 @@ use Illuminate\View\View;
  * Rechte laufen über die Fertigungs-Policy (1:1-Spezialisierung).
  */
 class PrintOrderController extends Controller {
-    /**
-     * @var list<string> Formate der Druckvorstufe. SVG bleibt bewusst dabei
-     *                   (Vektorvorlagen), wird aber nur abgelegt und
-     *                   heruntergeladen, nie im Browser gerendert.
-     */
-    private const ALLOWED_PRINT_EXTENSIONS = ['pdf', 'tif', 'tiff', 'eps', 'ai', 'jpg', 'jpeg', 'png', 'svg', 'zip'];
-
     use ResolvesCurrentOrganization;
     use ResolvesGlobalDateRange;
 
@@ -84,6 +80,12 @@ class PrintOrderController extends Controller {
         $order->load(['manufacturingOrder.article', 'document', 'documentVersion', 'asset', 'shipment', 'approver', 'qcChecker']);
 
         $claimsEnabled = app(\App\Services\Licensing\FeatureFlagResolver::class)->isEnabled('module.claims');
+        // Herkunft aus dem Kundeneingang (MVP-1076): Dateien, Angebot, Kundenfreigabe.
+        $intake = \App\Models\Customer\CustomerIntake::query()
+            ->where('target_type', $order->getMorphClass())
+            ->where('target_id', $order->id)
+            ->with('quote:id,number,version')
+            ->first();
 
         return view('print.orders.show', [
             'order' => $order,
@@ -98,6 +100,8 @@ class PrintOrderController extends Controller {
                     ->get()
                 : collect(),
             'canOpenClaim' => $claimsEnabled && Gate::allows('create', \App\Models\Claims\ClaimCase::class),
+            'intake' => $intake,
+            'intakeFiles' => $intake?->attachments()->orderBy('created_at')->get() ?? collect(),
         ]);
     }
 
@@ -149,17 +153,14 @@ class PrintOrderController extends Controller {
         Gate::authorize('update', $order);
         $this->assertInOrganization($order->organization_id);
 
+        // Druckvorstufe braucht EPS, AI, TIFF — eigene Positivliste und Grenze
+        // des Zwecks, nicht die allgemeine Anhangliste (Sicherheitsaudit 2026-09-13).
         $validated = $request->validate([
-            'file' => [
-                'required',
-                'file',
-                'max:262144', // 256 MB — Großformatdaten
-                // Formatliste (Sicherheitsaudit 2026-09-13): Der Upload umging
-                // jede Prüfung und nahm alles bis 256 MB. Die Dokument-Liste
-                // passt hier nicht — Druckvorstufe braucht EPS, AI, TIFF.
-                'mimes:' . implode(',', self::ALLOWED_PRINT_EXTENSIONS),
-            ],
+            'file' => ['required', 'file', 'max:' . FileAttacher::effectiveMaxKb(UploadPurpose::PrintData)],
         ]);
+        if (! FileAttacher::accepts($validated['file'], UploadPurpose::PrintData)) {
+            throw ValidationException::withMessages(['file' => (string) __('uploads.error.type', ['name' => '„' . File::sanitizeDisplayName($validated['file']->getClientOriginalName()) . '“'])]);
+        }
         $actor = $request->user() ?? abort(401);
 
         $document = $order->document;

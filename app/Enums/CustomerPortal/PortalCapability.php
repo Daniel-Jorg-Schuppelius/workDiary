@@ -69,6 +69,9 @@ enum PortalCapability: string implements HasLabel {
     /** Kundenvereinbarungen (Feature 157): eigene AVV/NDA-Fassungen und freigegebene Abschlussnachweise. */
     case Agreements = 'agreements';
 
+    /** Anfragen und Aufträge (Feature 162): Leistung anfragen, Dateien nachreichen, Angebot entscheiden. */
+    case Intakes = 'intakes';
+
     public function label(): string {
         return (string) match ($this) {
             self::Diary => __('Aufträge & Fallakte'),
@@ -86,6 +89,7 @@ enum PortalCapability: string implements HasLabel {
             self::RentalRequests => __('Verleih-Anfrage'),
             self::Subscriptions => __('Abos & Lizenzen'),
             self::Agreements => __('Vereinbarungen (AVV/NDA)'),
+            self::Intakes => __('customer_intake.portal.capability'),
         };
     }
 

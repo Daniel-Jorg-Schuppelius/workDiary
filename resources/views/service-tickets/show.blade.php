@@ -27,6 +27,8 @@
         </x-page-toolbar>
     </x-slot:toolbar>
 
+    @include('customer-intakes._origin', ['subject' => $ticket])
+
     <x-card>
         <div class="flex flex-wrap items-center gap-3">
             <span class="font-mono text-sm">{{ $ticket->ticket_no }}</span>

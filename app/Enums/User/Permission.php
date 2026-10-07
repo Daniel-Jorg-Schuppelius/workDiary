@@ -633,6 +633,10 @@ enum Permission: string implements HasLabel {
     case CustomerPortalAccessManage = 'customerPortal.access.manage';
         // Sichtbare Portalbereiche/Zeitdetails je Kunde konfigurieren + Zeiten veröffentlichen (MVP-511).
     case CustomerPortalVisibilityManage = 'customerPortal.visibility.manage';
+        // Kundeneingänge aus dem Portal (MVP-1074/1075): lesen, bearbeiten, in die Fachakte übernehmen.
+    case CustomerPortalIntakeView = 'customerPortal.intake.view';
+    case CustomerPortalIntakeManage = 'customerPortal.intake.manage';
+    case CustomerPortalIntakeHandover = 'customerPortal.intake.handover';
         // ── Kunden-Rückfragen (Feature 012, intern) ─────────────
     case ProtocolCustomerQueryManage = 'protocol.customerQuery.manage';
         // ── Webhooks / Integrationen (Feature 008) ──────────────

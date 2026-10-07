@@ -52,6 +52,7 @@ class NavGate {
         'recruiting.applications.*' => \App\Models\Applications\JobApplication::class,
         'customers.*' => \App\Models\Customer\Customer::class,
         'customer-queries.*' => \App\Models\Customer\CustomerQuery::class,
+        'customer-intakes.*' => \App\Models\Customer\CustomerIntake::class,
         'suppliers.*' => \App\Models\Supplier\Supplier::class,
         'projects.*' => \App\Models\Project\Project::class,
         'invoices.*' => \App\Models\Invoicing\Invoice::class,

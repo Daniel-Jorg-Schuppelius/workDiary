@@ -16,6 +16,8 @@
     use App\Enums\Print\{PreflightStatus, PrintOrderStatus, PrintOutputKind};
     $status = $order->status;
     $mo = $order->manufacturingOrder;
+    // Kundenfreigabe (MVP-1076): die interne Freigabe übernimmt deren Parameter.
+    $approved = (array) data_get($order->customer_approval_request, 'parameters', []);
 @endphp
 <x-page-shell>
     <x-slot:toolbar>
@@ -38,6 +40,10 @@
     </x-slot:toolbar>
 
     <x-validation-errors />
+
+    @if ($intake !== null)
+        @include('print.orders._intake_origin', ['order' => $order, 'intake' => $intake, 'intakeFiles' => $intakeFiles])
+    @endif
 
     <div class="grid gap-4 lg:grid-cols-2">
         <x-card :title="__('print.section.order')">
@@ -152,16 +158,16 @@
                 @if ($status === PrintOrderStatus::DataCheck)
                     <form method="POST" action="{{ route('print-orders.approve', $order) }}" class="mt-3 grid grid-cols-2 gap-2 text-sm">
                         @csrf
-                        <input type="text" name="final_format" value="{{ old('final_format') }}" placeholder="{{ __('print.snapshot.final_format') }} *" class="input input-sm input-bordered" required aria-label="{{ __('print.snapshot.final_format') }}">
-                        <input type="number" name="pages" value="{{ old('pages') }}" min="1" placeholder="{{ __('print.snapshot.pages') }}" class="input input-sm input-bordered" aria-label="{{ __('print.snapshot.pages') }}">
-                        <input type="text" name="color_mode" value="{{ old('color_mode', '4/4 CMYK') }}" placeholder="{{ __('print.snapshot.color_mode') }} *" class="input input-sm input-bordered" required aria-label="{{ __('print.snapshot.color_mode') }}">
+                        <input type="text" name="final_format" value="{{ old('final_format', $approved['final_format'] ?? null) }}" placeholder="{{ __('print.snapshot.final_format') }} *" class="input input-sm input-bordered" required aria-label="{{ __('print.snapshot.final_format') }}">
+                        <input type="number" name="pages" value="{{ old('pages', $approved['pages'] ?? null) }}" min="1" placeholder="{{ __('print.snapshot.pages') }}" class="input input-sm input-bordered" aria-label="{{ __('print.snapshot.pages') }}">
+                        <input type="text" name="color_mode" value="{{ old('color_mode', $approved['color_mode'] ?? '4/4 CMYK') }}" placeholder="{{ __('print.snapshot.color_mode') }} *" class="input input-sm input-bordered" required aria-label="{{ __('print.snapshot.color_mode') }}">
                         <input type="text" name="color_profile" value="{{ old('color_profile') }}" placeholder="{{ __('print.snapshot.color_profile') }}" class="input input-sm input-bordered" aria-label="{{ __('print.snapshot.color_profile') }}">
-                        <input type="text" name="material" value="{{ old('material') }}" placeholder="{{ __('print.snapshot.material') }} *" class="input input-sm input-bordered" required aria-label="{{ __('print.snapshot.material') }}">
+                        <input type="text" name="material" value="{{ old('material', $approved['material'] ?? null) }}" placeholder="{{ __('print.snapshot.material') }} *" class="input input-sm input-bordered" required aria-label="{{ __('print.snapshot.material') }}">
                         <input type="text" name="grammage" value="{{ old('grammage') }}" placeholder="{{ __('print.snapshot.grammage') }}" class="input input-sm input-bordered" aria-label="{{ __('print.snapshot.grammage') }}">
-                        <input type="number" name="quantity" value="{{ old('quantity', (string) $mo?->target_qty?->getNumericValue()) }}" min="1" placeholder="{{ __('print.snapshot.quantity') }} *" class="input input-sm input-bordered" required aria-label="{{ __('print.snapshot.quantity') }}">
+                        <input type="number" name="quantity" value="{{ old('quantity', $approved['quantity'] ?? (string) $mo?->target_qty?->getNumericValue()) }}" min="1" placeholder="{{ __('print.snapshot.quantity') }} *" class="input input-sm input-bordered" required aria-label="{{ __('print.snapshot.quantity') }}">
                         <input type="date" name="due_date" value="{{ old('due_date', optional($mo?->due_at)->toDateString()) }}" class="input input-sm input-bordered" required aria-label="{{ __('print.snapshot.due_date') }}">
                         <input type="number" name="bleed_mm" value="{{ old('bleed_mm') }}" step="0.1" min="0" placeholder="{{ __('print.snapshot.bleed_mm') }}" class="input input-sm input-bordered" aria-label="{{ __('print.snapshot.bleed_mm') }}">
-                        <input type="text" name="finishing" value="{{ old('finishing') }}" placeholder="{{ __('print.snapshot.finishing') }}" class="input input-sm input-bordered" aria-label="{{ __('print.snapshot.finishing') }}">
+                        <input type="text" name="finishing" value="{{ old('finishing', implode(', ', (array) ($approved['finishing'] ?? []))) }}" placeholder="{{ __('print.snapshot.finishing') }}" class="input input-sm input-bordered" aria-label="{{ __('print.snapshot.finishing') }}">
                         <button type="submit" class="btn btn-sm btn-primary col-span-2">{{ __('print.orders.action.approve') }}</button>
                     </form>
                 @endif

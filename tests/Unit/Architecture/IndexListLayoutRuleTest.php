@@ -147,6 +147,7 @@ class IndexListLayoutRuleTest extends TestCase {
         'resources/views/customer/claims/index.blade.php' => self::PORTAL_LAYOUT,
         'resources/views/customer/diary/index.blade.php' => self::PORTAL_LAYOUT,
         'resources/views/customer/documents/index.blade.php' => self::PORTAL_LAYOUT,
+        'resources/views/customer/intakes/index.blade.php' => self::PORTAL_LAYOUT,
         'resources/views/customer/invoices/index.blade.php' => self::PORTAL_LAYOUT,
         'resources/views/customer/rental/index.blade.php' => self::PORTAL_LAYOUT,
         'resources/views/customer/subscriptions/index.blade.php' => self::PORTAL_LAYOUT,

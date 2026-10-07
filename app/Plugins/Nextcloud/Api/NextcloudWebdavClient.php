@@ -30,7 +30,8 @@ use Throwable;
  * `oc:fileid`/ETag, Quota, resumable Chunked-Upload v2 und rekursives MKCOL.
  *
  * Läuft über den {@see PluginApiClient} (api-toolkit ≥ v2.9.2: WebDAV-Verben
- * mit methodenbewusstem Retry); der injizierbare Client macht den Transport
+ * mit methodenbewusstem Retry); dazu die OCS-Freigaben für den Upload-Kanal
+ * des Kundeneingangs (MVP-1078). Der injizierbare Client macht den Transport
  * ohne echten HTTP-Verkehr testbar (MockHandler-Transport). PROPFIND-Bodies
  * und Multistatus kommen aus dem api-toolkit ({@see Propfind},
  * {@see MultiStatus}); hier bleibt nur die Nextcloud-eigene href-Zuordnung.
@@ -39,6 +40,8 @@ class NextcloudWebdavClient {
     private const DAV_NS = 'DAV:';
 
     private const OC_NS = 'http://owncloud.org/ns';
+
+    private const OCS_SHARES = '/ocs/v2.php/apps/files_sharing/api/v1/shares';
 
     private readonly string $server;
 
@@ -226,6 +229,45 @@ class NextcloudWebdavClient {
         }
 
         return $response->successful();
+    }
+
+    // ── OCS-Freigaben (MVP-1078: Upload-Kanal des Kundeneingangs) ────────
+
+    /**
+     * Öffentliche Linkfreigabe „nur hochladen" (File Drop): `shareType=3`,
+     * `permissions=4`, Passwort und Ablaufdatum (`YYYY-MM-DD`).
+     *
+     * @return array{id: string, url: string}
+     */
+    public function createUploadShare(string $serverPath, #[SensitiveParameter] string $password, string $expireDate, string $label): array {
+        $response = $this->send('POST', $this->server . self::OCS_SHARES, [
+            'headers' => ['OCS-APIRequest' => 'true', 'Accept' => 'application/json'],
+            'form_params' => [
+                'path' => '/' . trim($serverPath, '/'),
+                'shareType' => 3,
+                'permissions' => 4,
+                'password' => $password,
+                'expireDate' => $expireDate,
+                'label' => $label,
+            ],
+        ]);
+        $data = (array) ($response->json('ocs.data') ?? []);
+        $id = (string) ($data['id'] ?? '');
+        $url = (string) ($data['url'] ?? '');
+        if (! $response->successful() || $id === '' || ! str_starts_with(strtolower($url), 'https://')) {
+            throw new RuntimeException('Nextcloud share creation failed (HTTP ' . $response->status() . ').');
+        }
+
+        return ['id' => $id, 'url' => $url];
+    }
+
+    /** Freigabe löschen; 404 gilt als bereits gelöscht. */
+    public function deleteShare(string $shareId): bool {
+        $response = $this->send('DELETE', $this->server . self::OCS_SHARES . '/' . rawurlencode($shareId), [
+            'headers' => ['OCS-APIRequest' => 'true', 'Accept' => 'application/json'],
+        ]);
+
+        return $response->status() === 404 || $response->successful();
     }
 
     // ── URL-/Pfad-Bausteine ─────────────────────────────────────────────

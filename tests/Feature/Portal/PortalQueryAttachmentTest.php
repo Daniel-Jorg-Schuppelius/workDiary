@@ -103,8 +103,9 @@ final class PortalQueryAttachmentTest extends TestCase {
     }
 
     public function test_store_rejects_disallowed_file_type(): void {
+        // Fehler an der betroffenen Datei, mit Namen (MVP-1074).
         $this->raise([UploadedFile::fake()->create('script.exe', 5, 'application/x-msdownload')])
-            ->assertSessionHasErrors('files');
+            ->assertSessionHasErrors('files.0');
         $this->assertSame(0, CustomerQuery::query()->withoutGlobalScopes()->count());
     }
 

@@ -56,7 +56,8 @@
                     @endif
                 </td>
                 <td>{{ $request->catalog_snapshot['name'] ?? $request->requestItem?->name ?? '—' }}</td>
-                <td>{{ $request->status->label() }}</td>
+                {{-- „Erfüllt" heißt beim Request nur „Zielvorgang angelegt" (MVP-1077) — maßgeblich ist das Ticket. --}}
+                <td>{{ in_array($request->status, [\App\Enums\ServiceTicket\ServiceRequestStatus::PendingApproval, \App\Enums\ServiceTicket\ServiceRequestStatus::Rejected], true) || $request->ticket === null ? $request->status->label() : $request->ticket->status->label() }}</td>
                 <td class="whitespace-nowrap">{{ $request->created_at?->isoFormat('L') }}</td>
             </tr>
         @empty

@@ -129,6 +129,7 @@ return [
         ],
         'claims' => ['escalate' => 'Escalado de plazos de reclamaciones'],
         'cloud-intake' => ['sync' => 'Recuperar la recepción de documentos en la nube', 'wake' => 'Recuperar las conexiones en la nube despertadas'],
+        'customer-intakes' => ['sync-uploads' => 'Recoger los enlaces de subida de las entradas de clientes'],
         'peppol' => ['receive' => 'Recuperar la entrada Peppol'],
         'compliance' => ['scan_findings' => 'Analizar hallazgos de cumplimiento'],
         'shifts' => ['roll_forward' => 'Prolongar planes rotativos'],

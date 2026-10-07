@@ -12,28 +12,55 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Concerns;
 
+use App\Enums\Attachments\UploadPurpose;
 use App\Services\Attachments\FileAttacher;
+use CommonToolkit\Helper\FileSystem\File;
+use CommonToolkit\ValueObjects\ByteSize;
 use Illuminate\Http\{Request, UploadedFile};
 use Illuminate\Validation\ValidationException;
 
 /**
- * Anhänge eines Formulars (`files[]`): Anzahl, Größe und Positivliste des
- * {@see FileAttacher} — in Helpdesk, Kundenportal-Ticket und Rückfrage
- * dreimal wortgleich (Konsolidierungs-Audit 2026-10, k3-7).
+ * Anhänge eines Formulars (`files[]`): Anzahl, Größe je Datei, Gesamtgröße
+ * und Positivliste des Upload-Zwecks ({@see FileAttacher}) — in Helpdesk,
+ * Kundenportal-Ticket, Rückfrage und Kundeneingang gleich. Fehler nennen die
+ * betroffene Datei (`files.<n>`), damit keine Teileinreichung unbemerkt bleibt.
  */
 trait ValidatesUploadedFiles {
     /** @return list<UploadedFile> */
-    private function validatedUploads(Request $request, int $maxFiles = 5): array {
-        $request->validate([
-            'files' => ['nullable', 'array', 'max:' . $maxFiles],
-            'files.*' => ['file', 'max:' . FileAttacher::maxKb()],
-        ]);
-
-        $files = array_values(array_filter((array) $request->file('files', []), static fn ($file): bool => $file instanceof UploadedFile));
-        foreach ($files as $file) {
-            if (! FileAttacher::accepts($file)) {
-                throw ValidationException::withMessages(['files' => (string) __('Dateityp nicht erlaubt.')]);
+    private function validatedUploads(Request $request, int $maxFiles = 5, UploadPurpose $purpose = UploadPurpose::General, string $field = 'files'): array {
+        $raw = (array) $request->file($field, []);
+        $names = [];
+        foreach ($raw as $index => $file) {
+            if ($file instanceof UploadedFile) {
+                $names[$field . '.' . $index] = '„' . File::sanitizeDisplayName($file->getClientOriginalName()) . '“';
             }
+        }
+
+        $request->validate([
+            $field => ['nullable', 'array', 'max:' . $maxFiles],
+            $field . '.*' => ['file', 'max:' . FileAttacher::effectiveMaxKb($purpose)],
+        ], [], $names);
+
+        $files = [];
+        $errors = [];
+        $total = 0;
+        foreach ($raw as $index => $file) {
+            if (! $file instanceof UploadedFile) {
+                continue;
+            }
+            if (! FileAttacher::accepts($file, $purpose)) {
+                $errors[$field . '.' . $index] = (string) __('uploads.error.type', ['name' => $names[$field . '.' . $index] ?? '']);
+            }
+            $total += (int) $file->getSize();
+            $files[] = $file;
+        }
+
+        $totalKb = FileAttacher::effectiveTotalKb($purpose);
+        if ($total > $totalKb * 1024) {
+            $errors[$field] = (string) __('uploads.error.total', ['size' => ByteSize::ofBytes($totalKb * 1024)->format(0)]);
+        }
+        if ($errors !== []) {
+            throw ValidationException::withMessages($errors);
         }
 
         return $files;

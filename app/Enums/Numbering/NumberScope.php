@@ -44,6 +44,8 @@ enum NumberScope: string implements HasLabel {
     // Schadensfälle und Rückrufaktionen (MVP-919/921).
     case Damage = 'damage';
     case Recall = 'recall';
+    // Kundeneingang aus dem Portal (MVP-1074): Vorgangsnummer der Eingangsbestätigung.
+    case CustomerIntake = 'customer_intake';
 
     public function label(): string {
         return match ($this) {
@@ -72,6 +74,7 @@ enum NumberScope: string implements HasLabel {
             self::Certificate => __('Zertifikat'),
             self::Damage => __('Schadensfall'),
             self::Recall => __('Rückrufaktion'),
+            self::CustomerIntake => __('customer_intake.title_single'),
         };
     }
 
@@ -91,6 +94,7 @@ enum NumberScope: string implements HasLabel {
             self::Disposal => false, // Entsorgungs-Fallakte, keine Belegwirkung
             self::Certificate => false, // Lernnachweis, keine Belegwirkung
             self::Damage, self::Recall => false, // Fallakten, keine Belegwirkung
+            self::CustomerIntake => false, // Eingangsakte, keine Belegwirkung
         };
     }
 }

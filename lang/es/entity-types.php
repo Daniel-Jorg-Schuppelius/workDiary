@@ -191,6 +191,8 @@ return [
     'CustomerGeofence' => 'Geovalla de cliente',
     'CustomerProjectReportController' => 'Exportación de informe: proyectos de clientes',
     'CustomerQuery' => 'Consulta del portal',
+    'CustomerIntake' => 'Entrada de cliente',
+    'CustomerIntakeMessage' => 'Mensaje de la entrada de cliente',
     'CustomerRetentionReportController' => 'Exportación de informe: fidelización de clientes',
     'CustomerValueReportController' => 'Exportación de informe: valor de cliente',
     'ProductRevenueReportController' => 'Exportación de informe: ingresos por producto',

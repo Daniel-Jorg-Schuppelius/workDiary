@@ -129,6 +129,7 @@ return [
         ],
         'claims' => ['escalate' => 'Claims deadline escalation'],
         'cloud-intake' => ['sync' => 'Fetch cloud document intake', 'wake' => 'Fetch woken cloud connections'],
+        'customer-intakes' => ['sync-uploads' => 'Fetch upload links of customer intakes'],
         'peppol' => ['receive' => 'Fetch Peppol inbox'],
         'compliance' => ['scan_findings' => 'Scan compliance findings'],
         'shifts' => ['roll_forward' => 'Roll forward rotation plans'],

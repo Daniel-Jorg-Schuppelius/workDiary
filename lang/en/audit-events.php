@@ -724,6 +724,11 @@ return [
         ],
     ],
     'print' => [
+        'intake_file_bound' => 'Print file set from customer intake',
+        'opened_from_intake' => 'Print order opened from customer intake',
+        'customer_approval_requested' => 'Customer print approval requested',
+        'customer_approved' => 'Print data approved by customer',
+        'customer_declined' => 'Print data rejected by customer',
         'claim_opened' => 'Print: claim opened',
         'file_bound' => 'Print file bound',
         'files_purged' => 'Print files purged',
@@ -772,6 +777,8 @@ return [
         'mailed' => 'Delivery note sent by email',
     ],
     'quote' => [
+        'intake_linked' => 'Linked to customer intake',
+        'portal_decision' => 'Decision in the customer portal',
         'markup_applied' => 'Markup distributed to unit prices',
         'mailed' => 'Quote sent by email',
         'followed_up' => 'Quote followed up',
@@ -884,6 +891,7 @@ return [
         'submitted' => 'Service request submitted',
     ],
     'service_ticket' => [
+        'opened_from_intake' => 'Ticket created from customer intake',
         'accepted_by_customer' => 'Ticket accepted by customer',
         'assigned' => 'Ticket assigned',
         'closed' => 'Ticket closed',

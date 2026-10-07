@@ -215,6 +215,15 @@ return [
             'reset_per_year' => true,
             'starts_at' => 0,
         ],
+        'customer_intake' => [
+            'prefix' => 'KE',
+            'prefix_separator' => '-',
+            'include_year' => true,
+            'year_separator' => '-',
+            'padding' => 4,
+            'reset_per_year' => true,
+            'starts_at' => 0,
+        ],
         'quote' => [
             'prefix' => 'AN',
             'prefix_separator' => '-',

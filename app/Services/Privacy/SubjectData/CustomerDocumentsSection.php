@@ -62,6 +62,14 @@ class CustomerDocumentsSection extends AbstractSubjectSection {
                 'sold_on',
                 columns: ['sold_on' => __('resale.license.field.sold_on'), 'invoice_reference' => __('resale.license.field.invoice_reference'), 'ended_at' => __('resale.license.field.ended')],
             ),
+            // Kundeneingänge aus dem Portal (Feature 162): Nummer, Betreff, Stand.
+            $this->family(
+                'customer_intakes',
+                __('customer_intake.title'),
+                \App\Models\Customer\CustomerIntake::query()->withoutGlobalScopes()->where('organization_id', $orgId)->where('customer_id', $c->id),
+                'created_at',
+                columns: ['created_at' => __('Datum'), 'number' => __('Nummer'), 'subject' => __('customer_intake.field.subject'), 'status' => __('Status')],
+            ),
             $this->family(
                 'portal_users',
                 __('Portal-Konten'),

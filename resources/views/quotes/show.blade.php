@@ -103,6 +103,8 @@
         </x-page-toolbar>
     </x-slot:toolbar>
 
+    @include('customer-intakes._origin', ['subject' => $quote])
+
     @if ($previousVersion !== null || $newerVersions->isNotEmpty() || $invoices->isNotEmpty())
         <div class="flex flex-wrap gap-4 text-sm text-base-content/70">
             @if ($previousVersion !== null)

@@ -78,6 +78,7 @@ return [
     ],
 
     'error' => [
+        'source_missing' => "Le fichier source n'est pas disponible dans le stockage.",
         'unknown_type' => 'Type de document inconnu.',
         'valid_until_before_from' => 'La fin de validité doit être postérieure à son début.',
     ],

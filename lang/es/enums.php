@@ -530,6 +530,8 @@ return [
             ],
             'customer' => [
                 'queryRaised' => 'El cliente ha planteado una consulta',
+                'intakeSubmitted' => 'El cliente ha enviado una solicitud',
+                'intakeActivity' => 'Nueva actividad en una entrada de cliente',
             ],
             'ideaMap' => [
                 'shared' => 'Mapa de ideas compartido con usted',

@@ -167,6 +167,7 @@ return [
         'csv_import_kb' => 'Import CSV',
         'customer_attachment_kb' => 'Pièce jointe client',
         'attachment_kb' => 'Pièces jointes (général)',
+        'print_data_kb' => "Données d'impression",
     ],
     'validation' => [
         'heading' => 'Limites de saisie',

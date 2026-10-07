@@ -728,6 +728,17 @@ return [
             'criticality' => 'integration',
             'expected_runtime_minutes' => 10,
         ],
+        // --- Upload-Kanal der Kundeneingänge (Feature 162, MVP-1078) ---
+        // Übernimmt Dateien aus Nextcloud-Upload-Links und widerruft Links
+        // abgeschlossener Eingänge; „Jetzt übernehmen" deckt die Eile ab.
+        'customer-intakes.sync-uploads' => [
+            'command' => 'customer-intakes:sync-uploads',
+            'plugin' => 'nextcloud',
+            'cadence' => ['type' => 'everyFifteenMinutes'],
+            'allowed' => ['everyFiveMinutes', 'everyFifteenMinutes', 'everyThirtyMinutes', 'hourly'],
+            'criticality' => 'integration',
+            'expected_runtime_minutes' => 10,
+        ],
         // --- Peppol-Eingang (Feature 066, MVP-734) ---
         // Der Provider haelt Eingaenge vor, bis sie quittiert sind; stuendlich
         // abholen reicht, ein verpasster Lauf verliert nichts.

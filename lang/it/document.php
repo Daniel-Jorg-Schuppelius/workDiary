@@ -78,6 +78,7 @@ return [
     ],
 
     'error' => [
+        'source_missing' => "Il file di origine non è disponibile nell'archivio.",
         'unknown_type' => 'Tipo di documento sconosciuto.',
         'valid_until_before_from' => 'La fine della validità deve essere successiva al suo inizio.',
     ],

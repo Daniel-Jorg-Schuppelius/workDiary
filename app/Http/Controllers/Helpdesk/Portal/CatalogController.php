@@ -12,14 +12,25 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Helpdesk\Portal;
 
+use App\Enums\Customer\IntakeKind;
+use App\Enums\CustomerPortal\PortalCapability;
+use App\Http\Controllers\Concerns\{ValidatesIntakeSubmission, ValidatesUploadedFiles};
 use App\Http\Controllers\Controller;
+use App\Models\Asset\Asset;
 use App\Models\Platform\User;
 use App\Models\Procurement\RequestItem;
 use App\Models\ServiceTicket\ServiceRequest;
-use App\Services\Fields\{FieldSchema, FieldValidator, FieldValues};
+use App\Services\Attachments\FileAttacher;
+use App\Services\Customer\Intake\{CustomerIntakeService, IntakeTemplates};
+use App\Services\CustomerPortal\PortalVisibility;
+use App\Services\Fields\{FieldDefinition, FieldDocument, FieldSchema, FieldValidator, FieldValues};
 use App\Services\ServiceTicket\ServiceRequestService;
-use Illuminate\Http\{RedirectResponse, Request};
+use App\Support\Sqid;
+use CommonToolkit\Helper\FileSystem\File;
+use Illuminate\Http\{JsonResponse, RedirectResponse, Request, UploadedFile};
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 /**
@@ -28,12 +39,18 @@ use Illuminate\View\View;
  * 032-Vorlage des Katalogeintrags, Bestellung friert Formular + Katalog-
  * stand ein (ServiceRequestService::submit im Portal-Kontext). Sichtbarkeit
  * wird serverseitig geprüft — nicht sichtbare Einträge enden 404.
- * Datei-/Foto-/Signatur-Felder werden im Portal bewusst nicht gerendert
- * (kein Upload-Kanal in der Bestellstrecke).
+ * Datei-/Foto-/Signatur-Felder werden in der Direktbestellung bewusst nicht
+ * gerendert (kein Upload-Kanal). Der Anfragepfad (MVP-1077) legt stattdessen
+ * einen Kundeneingang an: Datei-/Foto-Felder mit Prüfung und geschütztem
+ * Download, Ticket und Fulfillment erst nach angenommenem Angebot.
  */
 class CatalogController extends Controller {
+    use ValidatesIntakeSubmission;
+    use ValidatesUploadedFiles;
+
     public function __construct(
         private readonly ServiceRequestService $service,
+        private readonly PortalVisibility $visibility,
     ) {}
 
     public function index(): View {
@@ -57,6 +74,8 @@ class CatalogController extends Controller {
         return view('customer.catalog.show', [
             'item' => $item->loadMissing('formTemplate'),
             'fields' => $this->renderableFields($item),
+            // Anfragepfad (MVP-1077) nur mit Freigabe „Anfragen und Aufträge".
+            'canRequest' => $user->customer !== null && $this->visibility->allows($user->customer, PortalCapability::Intakes),
         ]);
     }
 
@@ -70,6 +89,48 @@ class CatalogController extends Controller {
 
         return redirect()->route('customer.tickets.show', $serviceRequest->ticket()->firstOrFail())
             ->with('success', __('Bestellung übermittelt.'));
+    }
+
+    /** Anfrage statt Bestellung (MVP-1077): Formular des Kundeneingangs mit der Katalogvorlage. */
+    public function requestForm(RequestItem $item): View {
+        $user = $this->portalUser();
+        abort_unless($this->service->isPortalVisible($item, $user), 404);
+
+        return view('customer.intakes.create', [
+            'kind' => IntakeKind::It,
+            'schema' => app(IntakeTemplates::class)->schema(IntakeKind::It),
+            'assets' => $user->customer !== null ? $this->visibility->assetsFor($user->customer) : collect(),
+            'submissionKey' => (string) Str::uuid(),
+            'action' => route('customer.catalog.request.store', $item),
+            'catalogItem' => $item,
+            'catalogSchema' => $this->requestFields($item),
+        ]);
+    }
+
+    public function request(Request $request, RequestItem $item, CustomerIntakeService $intakes): RedirectResponse|JsonResponse {
+        $user = $this->portalUser();
+        abort_unless($this->service->isPortalVisible($item, $user), 404);
+
+        [$data, $form] = $this->validatedIntake($request, IntakeKind::It);
+        $catalogSchema = $this->requestFields($item);
+        $values = $this->validatedCatalogValues($request, $catalogSchema);
+        $fieldFiles = $this->validatedFieldFiles($request, $catalogSchema->visibleFor($values->toArray()));
+        $markers = [];
+        foreach ($fieldFiles as $key => $file) {
+            $markers[$key] = File::sanitizeDisplayName($file->getClientOriginalName());
+        }
+        $files = $this->validatedUploads($request, IntakeKind::It->uploadPurpose()->maxFiles(), IntakeKind::It->uploadPurpose(), 'uploads');
+
+        $asset = null;
+        $assetSqid = (string) $request->input('asset', '');
+        if ($assetSqid !== '' && $user->customer !== null) {
+            $assetId = Sqid::decode(Asset::class, $assetSqid);
+            $asset = $this->visibility->assetsFor($user->customer)->first(fn (Asset $candidate): bool => (int) $candidate->id === $assetId) ?? abort(422);
+        }
+
+        $intake = $intakes->submit($user, $data, $form, $files, $item, new FieldDocument($catalogSchema, $values->with($markers)), $fieldFiles, $asset);
+
+        return $this->intakeResponse($request, route('customer.intakes.show', $intake), (string) __('customer_intake.flash.submitted', ['number' => $intake->number]));
     }
 
     /**
@@ -91,6 +152,42 @@ class CatalogController extends Controller {
     /** Im Portal renderbare Felder: Upload-/Signatur-Typen werden ausgelassen (kein Dateikanal). */
     private function renderableFields(RequestItem $item): FieldSchema {
         return FieldSchema::fromArray($item->formTemplate->fields ?? [])->withoutAttachments();
+    }
+
+    /** Felder des Anfragepfads: Datei- und Fotofelder ja, Unterschriften nicht (kein Signaturkanal im Portal). */
+    private function requestFields(RequestItem $item): FieldSchema {
+        $fields = FieldSchema::fromArray($item->formTemplate->fields ?? [])->all();
+
+        return new FieldSchema(array_values(array_filter($fields, static fn (FieldDefinition $field): bool => ! $field->type->isSignature())));
+    }
+
+    /**
+     * Datei-/Fotofelder (`files[<key>]`): allgemeine Positivliste und Grenze,
+     * Pflichtfelder über den Feldschema-Baustein.
+     *
+     * @return array<string, UploadedFile>
+     */
+    private function validatedFieldFiles(Request $request, FieldSchema $schema): array {
+        $files = [];
+        $errors = [];
+        foreach ($schema as $field) {
+            $file = $field->type->isUpload() ? $request->file('files.' . $field->key) : null;
+            if (! $file instanceof UploadedFile) {
+                continue;
+            }
+            if (! $file->isValid() || $file->getSize() > FileAttacher::effectiveMaxKb() * 1024 || ! FileAttacher::accepts($file)) {
+                $errors['files.' . $field->key] = (string) __('uploads.error.type', ['name' => '„' . File::sanitizeDisplayName($file->getClientOriginalName()) . '“']);
+
+                continue;
+            }
+            $files[$field->key] = $file;
+        }
+        $errors += app(FieldValidator::class)->missingAttachments($schema, $files, [], [], 'catalog');
+        if ($errors !== []) {
+            throw ValidationException::withMessages($errors);
+        }
+
+        return $files;
     }
 
     private function portalUser(): User {

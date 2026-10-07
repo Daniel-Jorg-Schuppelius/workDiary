@@ -191,6 +191,8 @@ return [
     'CustomerGeofence' => 'Geofence cliente',
     'CustomerProjectReportController' => 'Esportazione report: progetti clienti',
     'CustomerQuery' => 'Richiesta dal portale',
+    'CustomerIntake' => 'Richiesta del cliente',
+    'CustomerIntakeMessage' => 'Messaggio della richiesta del cliente',
     'CustomerRetentionReportController' => 'Esportazione report: fidelizzazione clienti',
     'CustomerValueReportController' => 'Esportazione report: valore cliente',
     'ProductRevenueReportController' => 'Esportazione report: fatturato per prodotto',

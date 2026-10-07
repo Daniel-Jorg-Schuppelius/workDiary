@@ -174,6 +174,14 @@ return [
     ],
 
     'attributes' => [
+        'desired_date' => 'fecha deseada',
+        'intake' => 'expediente',
+        'open' => 'envío de archivos',
+        'production_file' => 'archivo de producción',
+        'quote_id' => 'presupuesto',
+        'scope_note' => 'ajuste del alcance',
+        'submission_key' => 'identificador del formulario',
+        'uploads' => 'archivos',
 
         'invoice_reference' => 'Referencia de factura',
 

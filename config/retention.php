@@ -172,6 +172,15 @@ return [
             'basis' => ['DE' => 'Art. 5 Abs. 1 lit. e DSGVO / §195 BGB (ab letztem Kontakt)', 'AT' => 'Art. 5 DSGVO / §1489 ABGB', 'CH' => 'DSG (Zweckbindung) / OR Art. 128'],
         ],
 
+        // Kundeneingänge (Feature 162, MVP-1074): abgelehnte und zurückgenommene
+        // Eingänge ab Abschluss. Übernommene sind Herkunftsnachweis der Fachakte
+        // und folgen deren Fristen.
+        'customer_intakes' => [
+            'label' => 'Kundeneingänge (abgelehnt oder zurückgenommen)',
+            'years' => ['DE' => 3, 'AT' => 3, 'CH' => 5],
+            'basis' => ['DE' => 'Art. 5 Abs. 1 lit. e DSGVO / §195 BGB (ab Abschluss)', 'AT' => 'Art. 5 DSGVO / §1489 ABGB', 'CH' => 'DSG (Zweckbindung) / OR Art. 128'],
+        ],
+
         // Arbeitszeit-Rohdaten (attendances): ArbZG-Frist. NUR Ausweis, keine
         // Scan-Policy — lohn-/steuerrelevante Zeiten bleiben über exports/
         // gobd_financial (10 J.) gedeckt; das Fristende ist das MAX der

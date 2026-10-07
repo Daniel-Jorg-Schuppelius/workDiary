@@ -174,6 +174,14 @@ return [
     ],
 
     'attributes' => [
+        'desired_date' => 'Wunschtermin',
+        'intake' => 'Vorgang',
+        'open' => 'Nachreichung',
+        'production_file' => 'Produktionsdatei',
+        'quote_id' => 'Angebot',
+        'scope_note' => 'Abgleich des Leistungsumfangs',
+        'submission_key' => 'Formularkennung',
+        'uploads' => 'Dateien',
 
         'invoice_reference' => 'Rechnungsreferenz',
 

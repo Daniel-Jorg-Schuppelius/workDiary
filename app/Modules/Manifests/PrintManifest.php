@@ -57,6 +57,9 @@ final class PrintManifest extends Manifest {
             \App\Services\Navigation\Contracts\NavigationCondition::class => [
                 \App\Services\Print\Navigation\PrintProfileCondition::class,
             ],
+            \App\Services\Customer\Contracts\IntakeHandoverTarget::class => [
+                \App\Services\Print\Intake\PrintIntakeTarget::class,
+            ],
         ];
     }
 }

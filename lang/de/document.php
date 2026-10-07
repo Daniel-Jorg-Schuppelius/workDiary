@@ -78,6 +78,7 @@ return [
     ],
 
     'error' => [
+        'source_missing' => 'Die Quelldatei ist im Speicher nicht vorhanden.',
         'unknown_type' => 'Unbekannter Dokumenttyp.',
         'valid_until_before_from' => 'Das Ende der Gültigkeit muss nach deren Beginn liegen.',
     ],

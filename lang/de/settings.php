@@ -170,6 +170,7 @@ return [
         'csv_import_kb' => 'CSV-Import',
         'customer_attachment_kb' => 'Kundenanhang',
         'attachment_kb' => 'Anhänge (allgemein)',
+        'print_data_kb' => 'Druckdaten',
     ],
     'validation' => [
         'heading' => 'Eingabelängen',

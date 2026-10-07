@@ -1699,6 +1699,7 @@ class NavigationRegistry {
                 ['route' => 'timesheets.index', 'label' => __('Stundenzettel'), 'icon' => 'description', 'modal' => false, 'matches' => ['timesheets.*', 'projects.timesheets.*']],
                 ['route' => 'customers.index', 'label' => __('Kunden'), 'icon' => 'badge', 'modal' => false, 'matches' => ['customers.*']],
                 ['route' => 'customer-queries.index', 'label' => __('customer-query.title'), 'icon' => 'contact_support', 'modal' => false, 'matches' => ['customer-queries.*']],
+                ['route' => 'customer-intakes.index', 'label' => __('customer_intake.title'), 'icon' => 'move_to_inbox', 'modal' => false, 'matches' => ['customer-intakes.*']],
                 // Feature 119: Rundschreiben sitzen beim Kundenstamm, nicht im Marketing.
                 ['route' => 'circulars.index', 'label' => __('circular.title'), 'icon' => 'campaign', 'modal' => false, 'matches' => ['circulars.*']],
                 ['route' => 'suppliers.index', 'label' => __('Lieferanten'), 'icon' => 'local_shipping', 'modal' => false, 'matches' => ['suppliers.*']],

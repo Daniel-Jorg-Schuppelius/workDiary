@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\CustomerPortal;
 
 use App\Enums\CustomerPortal\{PortalCapability, PortalTimeDetail};
+use App\Models\Asset\Asset;
 use App\Models\Customer\Customer;
 use App\Models\Platform\User;
 use App\Services\Licensing\FeatureFlagResolver;
@@ -64,6 +65,24 @@ class PortalVisibility {
             PortalCapability::cases(),
             fn (PortalCapability $c): bool => $this->capabilityAvailable($c),
         ));
+    }
+
+    /**
+     * Eigene Objekte des Kunden, sofern „Objekte" freigegeben ist — Auswahl im
+     * IT-Eingang (MVP-1077), sonst leer.
+     *
+     * @return \Illuminate\Support\Collection<int, Asset>
+     */
+    public function assetsFor(Customer $customer): \Illuminate\Support\Collection {
+        if (! $this->allows($customer, PortalCapability::Assets)) {
+            return collect();
+        }
+
+        return Asset::query()->withoutGlobalScopes()
+            ->where('organization_id', (int) $customer->organization_id)
+            ->where('customer_id', (int) $customer->id)
+            ->orderBy('name')
+            ->get(['id', 'name']);
     }
 
     public function timeDetail(Customer $customer): PortalTimeDetail {

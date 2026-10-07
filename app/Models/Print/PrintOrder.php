@@ -62,6 +62,14 @@ use Illuminate\Support\Carbon;
  * @property int|null $shipment_id
  * @property Carbon|null $files_retain_until
  * @property Carbon|null $files_purged_at
+ * @property bool $is_customer_approval_required
+ * @property Carbon|null $customer_approval_requested_at
+ * @property array{file?: array<string, mixed>, parameters?: array<string, mixed>}|null $customer_approval_request
+ * @property Carbon|null $customer_approved_at
+ * @property int|null $customer_approval_user_id
+ * @property string|null $customer_approved_file_hash
+ * @property Carbon|null $customer_declined_at
+ * @property string|null $customer_decline_reason
  */
 class PrintOrder extends Model {
     use Auditable;
@@ -108,6 +116,14 @@ class PrintOrder extends Model {
         'files_purged_at',
         'cancel_reason',
         'created_by',
+        'is_customer_approval_required',
+        'customer_approval_requested_at',
+        'customer_approval_request',
+        'customer_approved_at',
+        'customer_approval_user_id',
+        'customer_approved_file_hash',
+        'customer_declined_at',
+        'customer_decline_reason',
     ];
 
     protected $casts = [
@@ -128,6 +144,11 @@ class PrintOrder extends Model {
         'issued_at' => 'datetime',
         'files_retain_until' => 'date',
         'files_purged_at' => 'datetime',
+        'is_customer_approval_required' => 'boolean',
+        'customer_approval_requested_at' => 'datetime',
+        'customer_approval_request' => 'array',
+        'customer_approved_at' => 'datetime',
+        'customer_declined_at' => 'datetime',
     ];
 
     /** @return BelongsTo<ManufacturingOrder, $this> */
@@ -178,6 +199,20 @@ class PrintOrder extends Model {
         return $this->approved_file_hash !== null
             && $this->file_hash !== null
             && hash_equals($this->approved_file_hash, $this->file_hash);
+    }
+
+    /** Kundenfreigabe angefordert und noch nicht entschieden (MVP-1076)? */
+    public function customerApprovalPending(): bool {
+        return $this->customer_approval_requested_at !== null
+            && $this->customer_approved_at === null
+            && $this->customer_declined_at === null;
+    }
+
+    /** Kundenfreigabe gilt nur für genau die gebundene Datei (Hash). */
+    public function customerApprovalMatchesFile(): bool {
+        return $this->customer_approved_file_hash !== null
+            && $this->file_hash !== null
+            && hash_equals($this->customer_approved_file_hash, $this->file_hash);
     }
 
     /** Produktionsdatei noch vorhanden (nicht durch Löschfrist entfernt)? */

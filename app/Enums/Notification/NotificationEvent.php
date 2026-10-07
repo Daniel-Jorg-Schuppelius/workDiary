@@ -136,6 +136,10 @@ enum NotificationEvent: string implements HasLabel {
     case ShiftExchangeDecided = 'shiftExchange.decided';
     /** Synchron: Kunde stellt über Portal/Token eine Rückfrage (Feature 012) — an Verantwortlichen/Teamleitung */
     case CustomerQueryRaised = 'customer.queryRaised';
+    // Kundeneingang aus dem Portal (MVP-1074/1075): neu eingereicht bzw. Antwort,
+    // Nachreichung, Angebotsentscheidung oder Druckfreigabe des Kunden.
+    case CustomerIntakeSubmitted = 'customer.intakeSubmitted';
+    case CustomerIntakeActivity = 'customer.intakeActivity';
 
     case IdeaMapShared = 'ideaMap.shared';
 
@@ -354,7 +358,7 @@ enum NotificationEvent: string implements HasLabel {
             return false;
         }
 
-        return ! in_array($this, [self::TimeCorrectionRequested, self::OvertimeRequested, self::VacationRequested, self::MonthClosureSubmitted, self::IsmsCertificateExpiring, self::IsmsIncidentCritical, self::SafetyCriticalEvent, self::ProcedureDeviationEscalated, self::ClaimPattern, self::ReportWarning, self::SafetyAssessmentReviewDue, self::ShiftExchangeRequested, self::CustomerQueryRaised, self::RentalRequested, self::ShipmentDeliveryProblem, self::SlaQuotaWarning,
+        return ! in_array($this, [self::TimeCorrectionRequested, self::OvertimeRequested, self::VacationRequested, self::MonthClosureSubmitted, self::IsmsCertificateExpiring, self::IsmsIncidentCritical, self::SafetyCriticalEvent, self::ProcedureDeviationEscalated, self::ClaimPattern, self::ReportWarning, self::SafetyAssessmentReviewDue, self::ShiftExchangeRequested, self::CustomerQueryRaised, self::CustomerIntakeSubmitted, self::RentalRequested, self::ShipmentDeliveryProblem, self::SlaQuotaWarning,
             // Domain-/Finanz-/Fristereignisse betreffen keine Einzelperson (Vollaudit 2026-07, W3.2).
             self::DomainExpiring, self::DomainTransferChanged, self::DomainSyncFailed, self::DomainHighRiskAction,
             self::FinanceTransferFailed, self::FinanceBankImportFailed, self::FinanceReconciliationReview, self::RetentionReleaseDue,
@@ -445,6 +449,9 @@ enum NotificationEvent: string implements HasLabel {
             // Kunden-Rückfrage (Feature 012): betrifft keinen einzelnen
             // Mitarbeiter — Default an die Leitung zur Bearbeitung.
             self::CustomerQueryRaised => [UserRole::Teamleitung->value],
+            self::CustomerIntakeSubmitted => [UserRole::Teamleitung->value],
+            // Aktivität geht an die zuständige Person (affected); ohne Zuständigkeit an die Leitung.
+            self::CustomerIntakeActivity => [UserRole::Teamleitung->value],
             // Zustellproblem (Feature 059): betrifft keine Einzelperson —
             // Default an die Leitung, die die Sendung/Auslieferung verantwortet.
             self::ShipmentDeliveryProblem => [UserRole::Teamleitung->value],
@@ -601,6 +608,8 @@ enum NotificationEvent: string implements HasLabel {
             self::ShiftExchangeRequested,
             self::ShiftExchangeDecided => 'swap_horiz',
             self::CustomerQueryRaised => 'contact_support',
+            self::CustomerIntakeSubmitted => 'move_to_inbox',
+            self::CustomerIntakeActivity => 'mark_chat_unread',
             // Karten-Freigabe (Feature 054): Payload bewusst nur Titel + Link —
             // die IdeaMapPolicy greift beim Klick.
             self::IdeaMapShared => 'emoji_objects',

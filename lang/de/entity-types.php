@@ -191,6 +191,8 @@ return [
     'CustomerGeofence' => 'Kunden-Geofence',
     'CustomerProjectReportController' => 'Report-Export: Kundenprojekte',
     'CustomerQuery' => 'Portal-Rückfrage',
+    'CustomerIntake' => 'Kundeneingang',
+    'CustomerIntakeMessage' => 'Nachricht am Kundeneingang',
     'CustomerRetentionReportController' => 'Report-Export: Kundenbindung',
     'CustomerValueReportController' => 'Report-Export: Kundenwert',
     'ProductRevenueReportController' => 'Report-Export: Umsatz je Produkt',

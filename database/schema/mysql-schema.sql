@@ -8536,6 +8536,128 @@ CREATE TABLE `customer_geofences` (
   CONSTRAINT `customer_geofences_updated_by_foreign` FOREIGN KEY (`updated_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `customer_intake_events`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `customer_intake_events` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `customer_intake_id` bigint(20) unsigned NOT NULL,
+  `event` varchar(40) NOT NULL,
+  `actor_user_id` bigint(20) unsigned DEFAULT NULL,
+  `payload` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`payload`)),
+  `occurred_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `cie_actor_fk` (`actor_user_id`),
+  KEY `cie_chrono_idx` (`customer_intake_id`,`occurred_at`),
+  CONSTRAINT `cie_actor_fk` FOREIGN KEY (`actor_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `cie_intake_fk` FOREIGN KEY (`customer_intake_id`) REFERENCES `customer_intakes` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `customer_intake_messages`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `customer_intake_messages` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `customer_intake_id` bigint(20) unsigned NOT NULL,
+  `author_user_id` bigint(20) unsigned DEFAULT NULL,
+  `kind` varchar(20) NOT NULL,
+  `body` text NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `cim_org_fk` (`organization_id`),
+  KEY `cim_author_fk` (`author_user_id`),
+  KEY `cim_chrono_idx` (`customer_intake_id`,`created_at`),
+  CONSTRAINT `cim_author_fk` FOREIGN KEY (`author_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `cim_intake_fk` FOREIGN KEY (`customer_intake_id`) REFERENCES `customer_intakes` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `cim_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `customer_intake_upload_links`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `customer_intake_upload_links` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `customer_intake_id` bigint(20) unsigned NOT NULL,
+  `channel` varchar(40) NOT NULL,
+  `external_id` varchar(100) DEFAULT NULL,
+  `folder` varchar(500) NOT NULL,
+  `url` text NOT NULL,
+  `password` text DEFAULT NULL,
+  `expires_at` timestamp NULL DEFAULT NULL,
+  `revoked_at` timestamp NULL DEFAULT NULL,
+  `last_synced_at` timestamp NULL DEFAULT NULL,
+  `last_error` varchar(300) DEFAULT NULL,
+  `last_error_at` timestamp NULL DEFAULT NULL,
+  `processed_keys` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`processed_keys`)),
+  `created_by` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `ciul_intake_fk` (`customer_intake_id`),
+  KEY `ciul_created_by_fk` (`created_by`),
+  KEY `ciul_active_idx` (`organization_id`,`revoked_at`),
+  CONSTRAINT `ciul_created_by_fk` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `ciul_intake_fk` FOREIGN KEY (`customer_intake_id`) REFERENCES `customer_intakes` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `ciul_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `customer_intakes`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `customer_intakes` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `customer_id` bigint(20) unsigned NOT NULL,
+  `submitted_by_user_id` bigint(20) unsigned DEFAULT NULL,
+  `number` varchar(40) NOT NULL,
+  `kind` varchar(20) NOT NULL,
+  `status` varchar(30) NOT NULL DEFAULT 'submitted',
+  `subject` varchar(200) NOT NULL,
+  `description` text DEFAULT NULL,
+  `desired_date` date DEFAULT NULL,
+  `form` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`form`)),
+  `catalog_form` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`catalog_form`)),
+  `request_item_id` bigint(20) unsigned DEFAULT NULL,
+  `asset_id` bigint(20) unsigned DEFAULT NULL,
+  `assigned_user_id` bigint(20) unsigned DEFAULT NULL,
+  `quote_id` bigint(20) unsigned DEFAULT NULL,
+  `target_type` varchar(100) DEFAULT NULL,
+  `target_id` bigint(20) unsigned DEFAULT NULL,
+  `handed_over_at` timestamp NULL DEFAULT NULL,
+  `handover_user_id` bigint(20) unsigned DEFAULT NULL,
+  `rejection_reason` text DEFAULT NULL,
+  `closed_at` timestamp NULL DEFAULT NULL,
+  `is_upload_open` tinyint(1) NOT NULL DEFAULT 0,
+  `submission_key` varchar(64) NOT NULL,
+  `mail_failed_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `cin_number_unique` (`organization_id`,`number`),
+  UNIQUE KEY `cin_submission_unique` (`organization_id`,`submission_key`),
+  UNIQUE KEY `cin_target_unique` (`target_type`,`target_id`),
+  UNIQUE KEY `cin_quote_unique` (`quote_id`),
+  KEY `cin_customer_fk` (`customer_id`),
+  KEY `cin_submitter_fk` (`submitted_by_user_id`),
+  KEY `cin_request_item_fk` (`request_item_id`),
+  KEY `cin_asset_fk` (`asset_id`),
+  KEY `cin_assignee_fk` (`assigned_user_id`),
+  KEY `cin_handover_fk` (`handover_user_id`),
+  KEY `cin_status_idx` (`organization_id`,`status`),
+  KEY `cin_customer_idx` (`organization_id`,`customer_id`),
+  CONSTRAINT `cin_asset_fk` FOREIGN KEY (`asset_id`) REFERENCES `assets` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `cin_assignee_fk` FOREIGN KEY (`assigned_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `cin_customer_fk` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `cin_handover_fk` FOREIGN KEY (`handover_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `cin_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `cin_quote_fk` FOREIGN KEY (`quote_id`) REFERENCES `quotes` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `cin_request_item_fk` FOREIGN KEY (`request_item_id`) REFERENCES `request_items` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `cin_submitter_fk` FOREIGN KEY (`submitted_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `customer_merge_dismissals`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -17608,6 +17730,14 @@ CREATE TABLE `print_orders` (
   `created_by` bigint(20) unsigned DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
+  `is_customer_approval_required` tinyint(1) NOT NULL DEFAULT 0,
+  `customer_approval_requested_at` timestamp NULL DEFAULT NULL,
+  `customer_approval_request` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`customer_approval_request`)),
+  `customer_approved_at` timestamp NULL DEFAULT NULL,
+  `customer_approval_user_id` bigint(20) unsigned DEFAULT NULL,
+  `customer_approved_file_hash` varchar(64) DEFAULT NULL,
+  `customer_declined_at` timestamp NULL DEFAULT NULL,
+  `customer_decline_reason` text DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `prord_mo_unique` (`manufacturing_order_id`),
   KEY `prord_doc_fk` (`document_id`),
@@ -17623,6 +17753,8 @@ CREATE TABLE `print_orders` (
   KEY `prord_creator_fk` (`created_by`),
   KEY `prord_org_status_idx` (`organization_id`,`status`),
   KEY `prord_org_retain_idx` (`organization_id`,`files_retain_until`),
+  KEY `po_customer_approval_user_fk` (`customer_approval_user_id`),
+  CONSTRAINT `po_customer_approval_user_fk` FOREIGN KEY (`customer_approval_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `prord_approver_fk` FOREIGN KEY (`approved_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `prord_asset_fk` FOREIGN KEY (`asset_id`) REFERENCES `assets` (`id`) ON DELETE SET NULL,
   CONSTRAINT `prord_creator_fk` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
@@ -26329,3 +26461,6 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (965,'2027_03_10_10
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (966,'2027_03_10_100700_add_deferred_from_status_to_investment_cases',61);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (967,'2027_03_10_100800_normalize_orgamax_invoice_status',62);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (968,'2027_03_10_100900_post_lot_block_balances',63);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (969,'2027_03_11_100000_create_customer_intakes_tables',64);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (970,'2027_03_11_100100_add_customer_approval_to_print_orders',64);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (971,'2027_03_11_100200_create_customer_intake_upload_links_table',65);

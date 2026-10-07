@@ -1704,23 +1704,26 @@ export function registerAlpineComponents(Alpine) {
     // FormFieldDefinition::isVisible clientseitig. Config via data-Attribute
     // (JSON): data-conditions {key: {field,op,value}}, data-initial {key: string}
     // — Objekt-Argumente via @js() wären im CSP-Build nicht auswertbar
-    // (JSON.parse-Wrapper). Der Wrapper trackt Quelle-Werte generisch über name.
+    // (JSON.parse-Wrapper). Der Wrapper trackt Quelle-Werte generisch über name;
+    // data-prefix wählt das Eingabe-Array (Standard `values`, Katalogvorlage `catalog`).
     Alpine.data("formFill", () => ({
         vals: {},
         conditions: {},
+        prefix: "values",
         init() {
             this.conditions = JSON.parse(this.$el.dataset.conditions || "{}");
             this.vals = Object.assign(
                 {},
                 JSON.parse(this.$el.dataset.initial || "{}"),
             );
+            this.prefix = this.$el.dataset.prefix || "values";
         },
         track(e) {
             const t = e.target;
             if (!t || !t.name) return;
-            const m = String(t.name).match(/^values\[([^\]]+)\]$/);
-            if (!m) return;
-            this.vals[m[1]] =
+            const m = String(t.name).match(/^([A-Za-z_]+)\[([^\]]+)\]$/);
+            if (!m || m[1] !== this.prefix) return;
+            this.vals[m[2]] =
                 t.type === "checkbox" ? (t.checked ? "1" : "0") : t.value;
         },
         visible(key) {

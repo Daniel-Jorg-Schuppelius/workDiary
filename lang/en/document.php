@@ -78,6 +78,7 @@ return [
     ],
 
     'error' => [
+        'source_missing' => 'The source file is not available in storage.',
         'unknown_type' => 'Unknown document type.',
         'valid_until_before_from' => 'The end of validity must be after its start.',
     ],

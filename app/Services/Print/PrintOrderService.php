@@ -16,6 +16,7 @@ use App\Enums\AssetCompliance\AssetComplianceStatus;
 use App\Enums\Print\{PreflightStatus, PrintOrderStatus, PrintOutputKind};
 use App\Enums\Print\PrintQcStatus;
 use App\Models\Asset\Asset;
+use App\Models\Attachments\Attachment;
 use App\Models\Document\{Document, DocumentVersion};
 use App\Models\Manufacturing\ManufacturingOrder;
 use App\Models\Platform\{Organization, User};
@@ -24,6 +25,7 @@ use App\Models\Shipping\Shipment;
 use App\Services\Asset\AssetUsageGuard;
 use App\Services\Asset\Contracts\AssetComplianceStatusProvider;
 use App\Services\Concerns\AssertsValidatedTransition;
+use App\Services\Document\DocumentService;
 use App\Services\Print\Preflight\{BasicPreflightProvider, PreflightProvider, PreflightReport};
 use Illuminate\Support\Facades\{DB, Storage};
 use Illuminate\Validation\ValidationException;
@@ -53,9 +55,13 @@ class PrintOrderService {
     /** Guard-Kontext für die Maschinen-Einsatzprüfung. */
     public const ASSET_CONTEXT = 'print_production';
 
+    /** Parameter, die der Kunde freigibt und die interne Freigabe übernehmen muss (MVP-1076). */
+    public const CUSTOMER_PARAMETERS = ['final_format', 'quantity', 'color_mode', 'material'];
+
     public function __construct(
         private readonly AssetUsageGuard $assetGuard,
         private readonly AssetComplianceStatusProvider $compliance,
+        private readonly DocumentService $documents,
     ) {}
 
     /**
@@ -114,6 +120,18 @@ class PrintOrderService {
                 'preflight_overridden_at' => null,
             ]);
 
+            // Andere Datei: Kundenfreigabe und deren Anforderung verfallen (MVP-1076).
+            if ($changed) {
+                $order->forceFill([
+                    'customer_approval_requested_at' => null,
+                    'customer_approval_request' => null,
+                    'customer_approved_at' => null,
+                    'customer_approval_user_id' => null,
+                    'customer_approved_file_hash' => null,
+                    'customer_declined_at' => null,
+                    'customer_decline_reason' => null,
+                ]);
+            }
             if ($changed && in_array($order->status, [PrintOrderStatus::Approved, PrintOrderStatus::Rework], true)) {
                 $order->forceFill([
                     'status' => PrintOrderStatus::DataCheck,
@@ -134,6 +152,117 @@ class PrintOrderService {
 
             return $order;
         });
+    }
+
+    /**
+     * Produktionsdatei aus einem Kundeneingang festlegen (MVP-1076): die
+     * gewählte Datei wird als neue Dokumentversion des Auftrags kopiert und
+     * mit Hash gebunden; der Kundennachweis am Eingang bleibt unverändert.
+     */
+    public function bindIntakeFile(PrintOrder $order, Attachment $attachment, User $actor): PrintOrder {
+        if ($order->status->isFinal()) {
+            throw ValidationException::withMessages(['status' => (string) __('print.error.order_closed')]);
+        }
+
+        $document = $order->document;
+        if ($document === null) {
+            $document = $this->documents->createFromStoredFile(null, $actor, [
+                'title' => (string) __('print.document_title', ['number' => (string) $order->manufacturingOrder?->number]),
+                'document_type' => 'other',
+            ], $attachment->disk, $attachment->path, $attachment->original_name, $attachment->mime);
+            $version = $document->versions()->orderByDesc('version_no')->firstOrFail();
+        } else {
+            $version = $this->documents->addVersionFromStoredFile($document, $actor, $attachment->disk, $attachment->path, $attachment->original_name, $attachment->mime, (string) __('print.intake.version_note'));
+        }
+
+        $order = $this->bindFile($order, $document, $version, $actor);
+        $order->audit('print.intake_file_bound', ['attachment_id' => $attachment->id, 'original_name' => $attachment->original_name, 'by' => $actor->id]);
+
+        return $order;
+    }
+
+    /**
+     * Kundenfreigabe anfordern (MVP-1076): friert Dateiversion, Prüfsumme und
+     * Parameter ein; eine frühere Entscheidung verfällt.
+     *
+     * @param  array<string, mixed>  $parameters
+     */
+    public function requestCustomerApproval(PrintOrder $order, array $parameters, User $actor): PrintOrder {
+        if ($order->status !== PrintOrderStatus::DataCheck) {
+            throw ValidationException::withMessages(['status' => (string) __('print.error.customer_approval_status')]);
+        }
+        if (! $order->hasProductionFile() || $order->file_hash === null) {
+            throw ValidationException::withMessages(['document' => (string) __('print.error.file_required')]);
+        }
+        if (! $order->preflight_status->allowsApproval()) {
+            throw ValidationException::withMessages(['preflight' => (string) __('print.error.preflight_blocks_approval')]);
+        }
+        foreach (self::CUSTOMER_PARAMETERS as $required) {
+            if (trim((string) ($parameters[$required] ?? '')) === '') {
+                throw ValidationException::withMessages([$required => (string) __('print.error.parameter_required', ['parameter' => (string) __('print.snapshot.' . $required)])]);
+            }
+        }
+
+        $version = $order->documentVersion;
+        $request = [
+            'file' => [
+                'document_version_id' => $order->document_version_id,
+                'version_no' => $version?->version_no,
+                'sha256' => $order->file_hash,
+                'original_name' => $version?->original_name,
+            ],
+            'parameters' => [
+                'final_format' => trim((string) $parameters['final_format']),
+                'quantity' => trim((string) $parameters['quantity']),
+                'color_mode' => trim((string) $parameters['color_mode']),
+                'material' => trim((string) $parameters['material']),
+                'pages' => isset($parameters['pages']) && $parameters['pages'] !== '' ? (int) $parameters['pages'] : null,
+                'finishing' => array_values((array) ($parameters['finishing'] ?? [])),
+            ],
+        ];
+
+        $order->forceFill([
+            'customer_approval_requested_at' => now(),
+            'customer_approval_request' => $request,
+            'customer_approved_at' => null,
+            'customer_approval_user_id' => null,
+            'customer_approved_file_hash' => null,
+            'customer_declined_at' => null,
+            'customer_decline_reason' => null,
+        ])->save();
+        $order->audit('print.customer_approval_requested', ['file_hash' => $order->file_hash, 'by' => $actor->id]);
+
+        return $order;
+    }
+
+    /**
+     * Entscheidung des Kunden zur angeforderten Freigabe: gilt nur, solange
+     * die gebundene Datei die angeforderte ist. Person, Zeitpunkt und Hash
+     * werden festgehalten; die interne Produktionsfreigabe bleibt getrennt.
+     */
+    public function recordCustomerDecision(PrintOrder $order, User $portalUser, bool $approved, ?string $reason = null): PrintOrder {
+        if (! $order->customerApprovalPending()) {
+            throw ValidationException::withMessages(['decision' => (string) __('print.error.customer_approval_not_pending')]);
+        }
+        $requested = (string) data_get($order->customer_approval_request, 'file.sha256', '');
+        if ($order->file_hash === null || ! hash_equals($requested, $order->file_hash)) {
+            throw ValidationException::withMessages(['decision' => (string) __('print.error.customer_approval_stale')]);
+        }
+        $reason = trim((string) $reason);
+        if (! $approved && $reason === '') {
+            throw ValidationException::withMessages(['reason' => (string) __('print.error.customer_decline_reason_required')]);
+        }
+
+        $order->forceFill($approved
+            ? ['customer_approved_at' => now(), 'customer_approval_user_id' => $portalUser->id, 'customer_approved_file_hash' => $order->file_hash]
+            : ['customer_declined_at' => now(), 'customer_approval_user_id' => $portalUser->id, 'customer_decline_reason' => $reason])->save();
+        $order->audit($approved ? 'print.customer_approved' : 'print.customer_declined', [
+            'file_hash' => $order->file_hash,
+            'portal_user_id' => $portalUser->id,
+            'reason' => $approved ? null : $reason,
+        ]);
+
+        return $order;
     }
 
     /** Preflight über den (austauschbaren) Provider ausführen. */
@@ -205,6 +334,9 @@ class PrintOrderService {
             if (trim((string) ($parameters[$required] ?? '')) === '') {
                 throw ValidationException::withMessages([$required => (string) __('print.error.parameter_required', ['parameter' => (string) __('print.snapshot.' . $required)])]);
             }
+        }
+        if ($order->is_customer_approval_required) {
+            $this->assertCustomerApprovalCovers($order, $parameters);
         }
 
         $manufacturing = $order->manufacturingOrder;
@@ -411,6 +543,29 @@ class PrintOrderService {
         }
 
         return $purged;
+    }
+
+    /**
+     * Interne Freigabe eines Auftrags mit Kundenpflicht: gültige Kundenfreigabe
+     * für die gebundene Datei und dieselben freigegebenen Parameter.
+     *
+     * @param  array<string, mixed>  $parameters
+     */
+    private function assertCustomerApprovalCovers(PrintOrder $order, array $parameters): void {
+        if (! $order->customerApprovalMatchesFile()) {
+            throw ValidationException::withMessages(['approval' => (string) __('print.error.customer_approval_missing')]);
+        }
+        $approved = (array) data_get($order->customer_approval_request, 'parameters', []);
+        foreach (self::CUSTOMER_PARAMETERS as $key) {
+            $given = trim((string) ($parameters[$key] ?? ''));
+            $expected = trim((string) ($approved[$key] ?? ''));
+            $same = $key === 'quantity' && is_numeric($given) && is_numeric($expected)
+                ? (float) $given === (float) $expected
+                : mb_strtolower($given) === mb_strtolower($expected);
+            if (! $same) {
+                throw ValidationException::withMessages([$key => (string) __('print.error.customer_parameter_mismatch', ['parameter' => (string) __('print.snapshot.' . $key), 'approved' => $expected])]);
+            }
+        }
     }
 
     private function storePreflight(PrintOrder $order, PreflightReport $report, User $actor): PrintOrder {

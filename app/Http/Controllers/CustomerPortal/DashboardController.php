@@ -10,8 +10,10 @@
 
 namespace App\Http\Controllers\CustomerPortal;
 
+use App\Enums\Customer\IntakeStatus;
 use App\Enums\CustomerPortal\PortalCapability;
 use App\Http\Controllers\Controller;
+use App\Models\Customer\CustomerIntake;
 use App\Models\Diary\{DiaryEntry, OpenIssue};
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
@@ -19,6 +21,7 @@ use App\Models\Project\Project;
 use App\Models\Reselling\ResaleSubscription;
 use App\Models\Time\TimeEntry;
 use App\Modules\ModuleRegistry;
+use App\Services\Customer\Intake\CustomerIntakeStages;
 use App\Services\CustomerPortal\Contracts\PortalNoticeSource;
 use App\Services\CustomerPortal\PortalVisibility;
 use App\Support\MorphMap;
@@ -28,7 +31,7 @@ use Illuminate\View\View;
 use Throwable;
 
 class DashboardController extends Controller {
-    public function __invoke(PortalVisibility $visibility, ModuleRegistry $modules): View {
+    public function __invoke(PortalVisibility $visibility, ModuleRegistry $modules, CustomerIntakeStages $stages): View {
         /** @var User $user */
         $user = Auth::guard('customer')->user();
         $customerId = (int) $user->customer_id;
@@ -82,6 +85,18 @@ class DashboardController extends Controller {
                 ->forCustomer($customer)
                 ->visibleInPortal()
                 ->count();
+        }
+
+        if ($customer !== null && $visibility->allows($customer, PortalCapability::Intakes)) {
+            // Laufende Vorgänge und die, bei denen der Kunde am Zug ist (MVP-1075).
+            $intakes = CustomerIntake::query()->ofPortalUser($user)
+                ->whereIn('status', [...array_map(static fn (IntakeStatus $s): string => $s->value, IntakeStatus::open()), IntakeStatus::HandedOver->value])
+                ->with('quote')
+                ->latest('id')
+                ->limit(200)
+                ->get();
+            $stats['intakes'] = $intakes->filter(fn (CustomerIntake $intake): bool => $intake->status->isOpen())->count();
+            $stats['intakes_action'] = $intakes->filter(fn (CustomerIntake $intake): bool => $stages->for($intake)->actionRequired)->count();
         }
 
         // Hinweise der Module (MVP-915, z. B. Krisenmitteilungen); eine fehlerhafte Quelle fällt einzeln aus.

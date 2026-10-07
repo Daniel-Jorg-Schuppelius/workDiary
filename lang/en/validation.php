@@ -208,6 +208,14 @@ return [
     */
 
     'attributes' => [
+        'desired_date' => 'requested date',
+        'intake' => 'record',
+        'open' => 'additional files',
+        'production_file' => 'production file',
+        'quote_id' => 'quote',
+        'scope_note' => 'scope reconciliation',
+        'submission_key' => 'form identifier',
+        'uploads' => 'files',
 
         'invoice_reference' => 'Invoice reference',
 

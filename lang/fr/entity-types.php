@@ -191,6 +191,8 @@ return [
     'CustomerGeofence' => 'Géorepérage client',
     'CustomerProjectReportController' => 'Export de rapport : projets clients',
     'CustomerQuery' => 'Question du portail',
+    'CustomerIntake' => 'Demande client',
+    'CustomerIntakeMessage' => 'Message de la demande client',
     'CustomerRetentionReportController' => 'Export de rapport : fidélisation des clients',
     'CustomerValueReportController' => 'Export de rapport : valeur client',
     'ProductRevenueReportController' => 'Export de rapport : chiffre d’affaires par produit',

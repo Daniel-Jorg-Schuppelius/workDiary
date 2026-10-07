@@ -724,6 +724,11 @@ return [
         ],
     ],
     'print' => [
+        'intake_file_bound' => 'Druckdatei aus Kundeneingang festgelegt',
+        'opened_from_intake' => 'Druckauftrag aus Kundeneingang eröffnet',
+        'customer_approval_requested' => 'Kunden-Druckfreigabe angefordert',
+        'customer_approved' => 'Druckdaten vom Kunden freigegeben',
+        'customer_declined' => 'Druckdaten vom Kunden zurückgewiesen',
         'claim_opened' => 'Druck: Reklamation eröffnet',
         'file_bound' => 'Druckdatei verbindlich zugeordnet',
         'files_purged' => 'Druckdateien bereinigt',
@@ -772,6 +777,8 @@ return [
         'mailed' => 'Lieferschein per E-Mail versendet',
     ],
     'quote' => [
+        'intake_linked' => 'Mit Kundeneingang verknüpft',
+        'portal_decision' => 'Entscheidung im Kundenportal',
         'markup_applied' => 'Zuschlag auf Einzelpreise verteilt',
         'mailed' => 'Angebot per E-Mail versendet',
         'followed_up' => 'Angebot nachgefasst',
@@ -884,6 +891,7 @@ return [
         'submitted' => 'Service-Request eingereicht',
     ],
     'service_ticket' => [
+        'opened_from_intake' => 'Ticket aus Kundeneingang angelegt',
         'accepted_by_customer' => 'Ticket vom Kunden abgenommen',
         'assigned' => 'Ticket zugewiesen',
         'closed' => 'Ticket geschlossen',

@@ -191,6 +191,8 @@ return [
     'CustomerGeofence' => 'Customer geofence',
     'CustomerProjectReportController' => 'Report export: customer projects',
     'CustomerQuery' => 'Portal query',
+    'CustomerIntake' => 'Customer intake',
+    'CustomerIntakeMessage' => 'Customer intake message',
     'CustomerRetentionReportController' => 'Report export: customer retention',
     'CustomerValueReportController' => 'Report export: customer value',
     'ProductRevenueReportController' => 'Report export: revenue per product',

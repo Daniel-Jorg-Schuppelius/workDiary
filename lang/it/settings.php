@@ -167,6 +167,7 @@ return [
         'csv_import_kb' => 'Importazione CSV',
         'customer_attachment_kb' => 'Allegato cliente',
         'attachment_kb' => 'Allegati (generale)',
+        'print_data_kb' => 'Dati di stampa',
     ],
     'validation' => [
         'heading' => 'Limiti di immissione',

@@ -31,4 +31,11 @@
 
         <x-button type="submit" size="md">{{ __('Bestellung absenden') }}</x-button>
     </x-card>
+
+    @if ($canRequest ?? false)
+        <x-card class="mt-4">
+            <p class="text-sm">{{ __('customer_intake.portal.catalog_request_hint') }}</p>
+            <x-button class="mt-2" :href="route('customer.catalog.request', $item)" tone="outline" icon="request_quote">{{ __('customer_intake.portal.catalog_request') }}</x-button>
+        </x-card>
+    @endif
 @endsection

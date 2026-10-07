@@ -111,6 +111,9 @@ final class HelpdeskManifest extends Manifest {
                 \App\Services\ServiceTicket\Approvals\ServiceRequestInboxSubject::class,
                 \App\Services\ServiceTicket\Approvals\ChangeInboxSubject::class,
             ],
+            \App\Services\Customer\Contracts\IntakeHandoverTarget::class => [
+                \App\Services\ServiceTicket\Intake\ServiceTicketIntakeTarget::class,
+            ],
         ];
     }
 

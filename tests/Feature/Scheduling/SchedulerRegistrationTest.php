@@ -105,6 +105,8 @@ class SchedulerRegistrationTest extends TestCase {
         // Neu mit Feature 080 (MVP-359): Cloud-Dokumenteingang-Delta-Lauf.
         'cloud-intake:wake' => ['*/5 * * * *', true, true],
         'cloud-intake:sync' => ['*/15 * * * *', true, true],
+        // MVP-1078: Upload-Links der Kundeneingänge.
+        'customer-intakes:sync-uploads' => ['*/15 * * * *', true, true],
         // Neu mit Feature 066 (MVP-734): Peppol-Eingang beim Access-Point-Provider.
         'peppol:receive' => ['0 * * * *', true, true],
         // Neu mit Feature 017 Phase 32 (MVP-364/365): Cloud-Backup + Verify.

@@ -421,6 +421,8 @@ class TenantTraitCoverageTest extends TestCase {
         \App\Models\Mcp\McpOAuthRefreshToken::class,
         // MVP-124: Journal des EBICS-Zugangs — Mandant über `ebics_connections`.
         \App\Models\Finance\EbicsConnectionEvent::class,
+        // MVP-1074: Journal des Kundeneingangs — Mandant über `customer_intakes`.
+        \App\Models\Customer\CustomerIntakeEvent::class,
     ];
 
     public function test_every_model_uses_tenant_trait_or_is_allow_listed(): void {

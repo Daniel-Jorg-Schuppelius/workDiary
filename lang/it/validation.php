@@ -174,6 +174,14 @@ return [
     ],
 
     'attributes' => [
+        'desired_date' => 'data desiderata',
+        'intake' => 'pratica',
+        'open' => 'caricamento di file',
+        'production_file' => 'file di produzione',
+        'quote_id' => 'preventivo',
+        'scope_note' => "allineamento dell'ambito",
+        'submission_key' => 'identificativo del modulo',
+        'uploads' => 'file',
 
         'invoice_reference' => 'Riferimento fattura',
 

@@ -78,6 +78,7 @@ return [
     ],
 
     'error' => [
+        'source_missing' => 'El archivo de origen no está disponible en el almacenamiento.',
         'unknown_type' => 'Tipo de documento desconocido.',
         'valid_until_before_from' => 'El fin de la validez debe ser posterior a su inicio.',
     ],

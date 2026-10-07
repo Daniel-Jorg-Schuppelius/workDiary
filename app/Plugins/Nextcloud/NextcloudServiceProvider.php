@@ -27,4 +27,9 @@ class NextcloudServiceProvider extends PluginServiceProviderBase {
     protected function registerPlugin(): void {
         $this->app->singleton(NextcloudTransportFactory::class, GuzzleNextcloudTransportFactory::class);
     }
+
+    protected function bootPlugin(): void {
+        // Upload-Kanal der Kundeneingänge (MVP-1078) — Plugins haben kein Manifest.
+        $this->app->make(\App\Modules\ModuleRegistry::class)->contribute(\App\Services\Customer\Contracts\IntakeUploadChannel::class, \App\Plugins\Nextcloud\Services\NextcloudIntakeUploadChannel::class);
+    }
 }

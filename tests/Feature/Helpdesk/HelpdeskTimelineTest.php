@@ -259,10 +259,10 @@ final class HelpdeskTimelineTest extends TestCase {
         $this->assertTrue((bool) $messageAttachment->customer_visible);
         $this->assertSame('detail.png', $messageAttachment->original_name);
 
-        // Datei-Policy greift auch im Portal: nicht gelistete Typen → 422.
+        // Datei-Policy greift auch im Portal: nicht gelistete Typen → Fehler an der Datei (MVP-1074).
         $this->post(route('customer.tickets.reply', $ticket), [
             'body' => 'Böse Datei',
             'files' => [UploadedFile::fake()->create('malware.exe', 5, 'application/x-msdownload')],
-        ])->assertSessionHasErrors('files');
+        ])->assertSessionHasErrors('files.0');
     }
 }

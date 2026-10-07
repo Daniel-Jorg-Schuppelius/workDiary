@@ -185,6 +185,87 @@ class DocumentService implements \App\Plugins\Support\Mirror\Contracts\DocumentV
     }
 
     /**
+     * Legt ein Dokument aus einer bereits gespeicherten Datei an (MVP-1076:
+     * Produktionsdatei aus einem Kundeneingang). Metadaten wie {@see create()},
+     * die Datei wird kopiert — die Quelle bleibt unverändert.
+     *
+     * @param  array<string, mixed>  $attributes
+     */
+    public function createFromStoredFile(?Model $documentable, User $creator, array $attributes, string $disk, string $path, string $originalName, ?string $mime = null): Document {
+        $type = $this->parseType((string) ($attributes['document_type'] ?? ''));
+
+        $document = DB::transaction(function () use ($documentable, $creator, $attributes, $type, $disk, $path, $originalName, $mime): Document {
+            $document = Document::query()->create([
+                'organization_id' => $documentable?->getAttribute('organization_id') ?: $creator->organization_id,
+                'documentable_type' => $documentable?->getMorphClass(),
+                'documentable_id' => $documentable?->getKey(),
+                'title' => $attributes['title'],
+                'document_type' => $type->value,
+                'status' => DocumentStatus::Active->value,
+                'description' => $attributes['description'] ?? null,
+                'created_by_user_id' => $creator->id,
+                'confidential' => (bool) ($attributes['confidential'] ?? false),
+            ]);
+
+            $this->addVersionFromStoredFile($document, $creator, $disk, $path, $originalName, $mime, $attributes['version_note'] ?? null);
+
+            return $document->fresh(['currentVersion']) ?? $document;
+        });
+
+        app(\App\Services\Metrics\OperationsMetricsService::class)->increment('documents.created', (int) $document->organization_id);
+
+        return $document;
+    }
+
+    /**
+     * Hängt eine bereits gespeicherte Datei als neue Version an — Kopie auf
+     * der Disk (Stream), ohne den Inhalt in den Speicher zu laden.
+     */
+    public function addVersionFromStoredFile(Document $document, User $actor, string $disk, string $path, string $originalName, ?string $mime = null, ?string $note = null): DocumentVersion {
+        return DB::transaction(function () use ($document, $actor, $disk, $path, $originalName, $mime, $note): DocumentVersion {
+            $nextNo = (int) $document->versions()->max('version_no') + 1;
+
+            $ext = strtolower(File::extension($originalName));
+            $target = 'documents/' . now()->format('Y/m') . '/' . Str::uuid()->toString() . (preg_match('/^[a-z0-9]{1,8}$/', $ext) === 1 ? '.' . $ext : '');
+            if ($disk === 'local') {
+                Storage::disk('local')->copy($path, $target);
+            } else {
+                $stream = Storage::disk($disk)->readStream($path)
+                    ?? throw ValidationException::withMessages(['file' => (string) __('document.error.source_missing')]);
+                Storage::disk('local')->writeStream($target, $stream);
+                if (is_resource($stream)) {
+                    fclose($stream);
+                }
+            }
+
+            /** @var DocumentVersion $version */
+            $version = $document->versions()->create([
+                'version_no' => $nextNo,
+                'disk' => 'local',
+                'path' => $target,
+                'original_name' => File::sanitizeDisplayName($originalName),
+                'mime' => $mime !== null && $mime !== '' ? $mime : 'application/octet-stream',
+                'size' => (int) Storage::disk('local')->size($target),
+                'uploaded_by_user_id' => $actor->id,
+                'note' => $note !== null && trim($note) !== '' ? trim($note) : null,
+            ]);
+
+            $document->forceFill(['current_version_id' => $version->id])->save();
+
+            $document->audit('document.version.added', [
+                'actor_user_id' => $actor->id,
+                'version_no' => $nextNo,
+                'original_name' => $version->original_name,
+                'source' => 'stored-file',
+            ]);
+
+            $this->queueTextExtraction($version);
+
+            return $version;
+        });
+    }
+
+    /**
      * Aktualisiert die Metadaten (Titel, Typ, Gültigkeit, Beschreibung,
      * Status draft/active). `updated`-Diff kommt automatisch über den
      * Auditable-Trait.

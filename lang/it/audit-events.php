@@ -724,6 +724,11 @@ return [
         ],
     ],
     'print' => [
+        'intake_file_bound' => 'File di stampa definito dalla richiesta del cliente',
+        'opened_from_intake' => 'Ordine di stampa aperto dalla richiesta del cliente',
+        'customer_approval_requested' => 'Approvazione di stampa del cliente richiesta',
+        'customer_approved' => 'Dati di stampa approvati dal cliente',
+        'customer_declined' => 'Dati di stampa respinti dal cliente',
         'claim_opened' => 'Stampa: reclamo aperto',
         'file_bound' => 'File di stampa associato in modo vincolante',
         'files_purged' => 'File di stampa eliminati',
@@ -772,6 +777,8 @@ return [
         'mailed' => 'Bolla di consegna inviata via e-mail',
     ],
     'quote' => [
+        'intake_linked' => 'Collegato alla richiesta del cliente',
+        'portal_decision' => 'Decisione nel portale clienti',
         'markup_applied' => 'Maggiorazione distribuita sui prezzi unitari',
         'mailed' => 'Preventivo inviato via e-mail',
         'followed_up' => 'Preventivo sollecitato',
@@ -884,6 +891,7 @@ return [
         'submitted' => 'Richiesta di servizio presentata',
     ],
     'service_ticket' => [
+        'opened_from_intake' => 'Ticket creato dalla richiesta del cliente',
         'accepted_by_customer' => 'Ticket accettato dal cliente',
         'assigned' => 'Ticket assegnato',
         'closed' => 'Ticket chiuso',

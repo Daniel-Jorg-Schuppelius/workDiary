@@ -530,6 +530,8 @@ return [
             ],
             'customer' => [
                 'queryRaised' => 'Kunde hat eine Rückfrage gestellt',
+                'intakeSubmitted' => 'Kunde hat eine Anfrage eingereicht',
+                'intakeActivity' => 'Neue Aktivität an einem Kundeneingang',
             ],
             'ideaMap' => [
                 'shared' => 'Ideenlandkarte für Sie freigegeben',

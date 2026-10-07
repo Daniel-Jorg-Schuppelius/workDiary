@@ -712,6 +712,7 @@ class AppServiceProvider extends ServiceProvider {
         Gate::policy(Room::class, RoomPolicy::class);
         Gate::policy(OpenIssue::class, OpenIssuePolicy::class);
         Gate::policy(\App\Models\Customer\CustomerQuery::class, \App\Policies\Customer\CustomerQueryPolicy::class);
+        Gate::policy(\App\Models\Customer\CustomerIntake::class, \App\Policies\Customer\CustomerIntakePolicy::class);
         Gate::policy(\App\Models\Safety\SafetyEvent::class, \App\Policies\Safety\SafetyEventPolicy::class);
         Gate::policy(\App\Models\Notification\NotificationRule::class, \App\Policies\Notification\NotificationRulePolicy::class);
         Gate::policy(\App\Models\Surcharge\SurchargeRule::class, \App\Policies\Surcharge\SurchargeRulePolicy::class);

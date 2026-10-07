@@ -530,6 +530,8 @@ return [
             ],
             'customer' => [
                 'queryRaised' => 'Customer raised a query',
+                'intakeSubmitted' => 'Customer submitted a request',
+                'intakeActivity' => 'New activity on a customer intake',
             ],
             'ideaMap' => [
                 'shared' => 'Idea map shared with you',

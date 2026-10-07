@@ -4396,6 +4396,9 @@ Route::middleware('auth')->group(function () {
         Route::post('print-orders/{order}/issue', [\App\Http\Controllers\Print\PrintOrderController::class, 'issue'])->name('print-orders.issue');
         Route::post('print-orders/{order}/cancel', [\App\Http\Controllers\Print\PrintOrderController::class, 'cancel'])->name('print-orders.cancel');
         Route::post('print-orders/{order}/claim', [\App\Http\Controllers\Print\PrintOrderController::class, 'openClaim'])->name('print-orders.claim');
+        // Kundeneingang (MVP-1076): Produktionsdatei aus dem Eingang festlegen, Kundenfreigabe anfordern.
+        Route::post('print-orders/{order}/intake-file/{attachment}', [\App\Http\Controllers\Print\PrintIntakeController::class, 'bindIntakeFile'])->name('print-orders.intake-file');
+        Route::post('print-orders/{order}/customer-approval', [\App\Http\Controllers\Print\PrintIntakeController::class, 'requestCustomerApproval'])->name('print-orders.customer-approval');
         Route::get('procedure-runs/{run}/print', [\App\Http\Controllers\Procedure\ProcedureRunController::class, 'print'])->name('procedure-runs.print');
         Route::post('diary/{diary}/procedures/{template}/start', [\App\Http\Controllers\Procedure\ProcedureRunController::class, 'start'])->name('procedure-runs.start');
         // Mobile Ausführung eines Prozedurlaufs (MVP-063): Schritt-für-Schritt,
@@ -4456,6 +4459,30 @@ Route::middleware('auth')->group(function () {
         Route::get('customer-queries', [CustomerQueryController::class, 'index'])->name('customer-queries.index');
         Route::post('customer-queries/{customerQuery}/answer', [CustomerQueryController::class, 'answer'])->name('customer-queries.answer');
         Route::post('customer-queries/{customerQuery}/close', [CustomerQueryController::class, 'close'])->name('customer-queries.close');
+
+        // ── Kundeneingänge aus dem Portal (Feature 162, MVP-1074–1077) ─────
+        // Dialoge (GET …/form) laden per data-entry-modal-trigger.
+        Route::controller(\App\Http\Controllers\Customer\CustomerIntakeController::class)->prefix('customer-intakes')->name('customer-intakes.')->group(function (): void {
+            Route::get('/', 'index')->name('index');
+            Route::get('{intake}', 'show')->name('show');
+            Route::get('{intake}/files/{attachment}', 'download')->name('files.download');
+            Route::get('{intake}/assign', 'assignForm')->name('assign.form');
+            Route::post('{intake}/assign', 'assign')->name('assign');
+            Route::get('{intake}/message', 'messageForm')->name('message.form');
+            Route::post('{intake}/message', 'message')->name('message');
+            Route::get('{intake}/reject', 'rejectForm')->name('reject.form');
+            Route::post('{intake}/reject', 'reject')->name('reject');
+            Route::get('{intake}/quote', 'quoteForm')->name('quote.form');
+            Route::post('{intake}/quote', 'linkQuote')->name('quote.link');
+            Route::post('{intake}/quote/create', 'createQuote')->name('quote.create');
+            Route::post('{intake}/quote/announce', 'announceQuote')->name('quote.announce');
+            Route::delete('{intake}/quote', 'unlinkQuote')->name('quote.unlink');
+            Route::get('{intake}/handover', 'handoverForm')->name('handover.form');
+            Route::post('{intake}/handover', 'handover')->name('handover');
+            Route::post('{intake}/upload-channel', 'uploadChannel')->name('upload-channel');
+            Route::post('{intake}/upload-link/sync', 'syncUploadLink')->name('upload-link.sync');
+            Route::delete('{intake}/upload-link', 'revokeUploadLink')->name('upload-link.revoke');
+        });
 
         // ── Verpflegungsmehraufwand (Per-Diem) ─────────────────────────────
         Route::get('per-diem-trips', [PerDiemTripController::class, 'index'])->name('per-diem-trips.index');

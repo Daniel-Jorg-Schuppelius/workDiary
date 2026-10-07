@@ -62,6 +62,18 @@
                     <div class="mt-2 text-sm">{{ __('open-issue.title.index') }}</div>
                 </a>
             @endisset
+            @isset($stats['intakes'])
+                <a href="{{ route('customer.intakes.index') }}" class="bg-base-100 border rounded p-4 hover:border-primary {{ $stats['intakes_action'] > 0 ? 'border-warning' : 'border-base-300' }}">
+                    <div class="flex items-center justify-between">
+                        <x-icon name="move_to_inbox" />
+                        <span class="text-2xl font-semibold">{{ $stats['intakes'] }}</span>
+                    </div>
+                    <div class="mt-2 text-sm">{{ __('customer_intake.portal.dashboard_tile') }}</div>
+                    @if ($stats['intakes_action'] > 0)
+                        <div class="mt-1 text-xs text-warning">{{ __('customer_intake.portal.dashboard_action', ['count' => $stats['intakes_action']]) }}</div>
+                    @endif
+                </a>
+            @endisset
             @isset($stats['subscriptions'])
                 <a href="{{ route('customer.subscriptions.index') }}" class="bg-base-100 border border-base-300 rounded p-4 hover:border-primary">
                     <div class="flex items-center justify-between">

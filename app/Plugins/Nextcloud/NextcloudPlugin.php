@@ -33,6 +33,9 @@ use Throwable;
  *  - **Backupziel** (Feature 017 Phase 32, MVP-383): systemweites,
  *    verschlüsseltes Ziel ({@see BackupTarget}) — eigene Verbindung, strikt
  *    getrennt vom Dokumenteingang.
+ *  - **Upload-Kanal der Kundeneingänge** (MVP-1078): Upload-Link ohne Konto
+ *    je Eingang ({@see Services\NextcloudIntakeUploadChannel}), eigene
+ *    Zugangsdaten in den Plugin-Einstellungen.
  *
  * Kein installationsweiter App-Key: angebunden wird je Verbindung mit
  * Server-URL, Nutzer und verschlüsseltem App-Passwort.
@@ -118,9 +121,18 @@ class NextcloudPlugin extends AbstractPlugin implements \App\Plugins\Contracts\B
         return null;
     }
 
-    /** Zugangsdaten liegen je Verbindung (Server-URL/Nutzer/App-Passwort), nicht in plugin_settings. */
+    /**
+     * Dokumenteingang und Backup führen ihre Zugangsdaten je Verbindung; hier
+     * nur der Upload-Kanal der Kundeneingänge (MVP-1078) — eigene Zugangsdaten.
+     */
     public function settingsSchema(): array {
-        return [];
+        return [
+            ['key' => 'intake_server_url', 'label' => __('nextcloud::intake_upload.settings.server_url'), 'type' => 'text', 'help' => __('nextcloud::intake_upload.settings.server_url_help')],
+            ['key' => 'intake_username', 'label' => __('nextcloud::intake_upload.settings.username'), 'type' => 'text'],
+            ['key' => 'intake_app_password', 'label' => __('nextcloud::intake_upload.settings.app_password'), 'type' => 'password', 'help' => __('nextcloud::intake_upload.settings.app_password_help')],
+            ['key' => 'intake_base_folder', 'label' => __('nextcloud::intake_upload.settings.base_folder'), 'type' => 'text', 'default' => 'WorkDiary/Kundeneingaenge'],
+            ['key' => 'intake_link_days', 'label' => __('nextcloud::intake_upload.settings.link_days'), 'type' => 'text', 'default' => '14', 'help' => __('nextcloud::intake_upload.settings.link_days_help')],
+        ];
     }
 
     /** Health je Organisation: Zustand der Dokumenteingang-Verbindungen. */
@@ -142,6 +154,17 @@ class NextcloudPlugin extends AbstractPlugin implements \App\Plugins\Contracts\B
 
             if ($failing) {
                 return PluginHealth::degraded(__('nextcloud::cloud_intake.nextcloud.health.attention'));
+            }
+            // Upload-Kanal der Kundeneingänge (MVP-1078): offene Links mit Fehler.
+            $uploadFailing = \App\Models\Customer\CustomerIntakeUploadLink::query()
+                ->withoutGlobalScopes()
+                ->where('organization_id', $org->id)
+                ->where('channel', \App\Plugins\Nextcloud\Services\NextcloudIntakeUploadChannel::KEY)
+                ->whereNull('revoked_at')
+                ->whereNotNull('last_error')
+                ->exists();
+            if ($uploadFailing) {
+                return PluginHealth::degraded(__('nextcloud::intake_upload.health.attention'), 'intake_upload');
             }
 
             // Backupziele sind PLATTFORMWEIT (bewusst ohne organization_id) —

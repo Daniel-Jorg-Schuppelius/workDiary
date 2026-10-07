@@ -114,6 +114,12 @@ Route::prefix('customer-portal')->name('customer.')->group(function (): void {
             Route::get('/catalog', [\App\Http\Controllers\Helpdesk\Portal\CatalogController::class, 'index'])->name('catalog.index');
             Route::get('/catalog/{item}', [\App\Http\Controllers\Helpdesk\Portal\CatalogController::class, 'show'])->name('catalog.show');
             Route::post('/catalog/{item}/order', [\App\Http\Controllers\Helpdesk\Portal\CatalogController::class, 'order'])->name('catalog.order');
+            // Anfrage statt Bestellung (MVP-1077): Kundeneingang mit Upload-Feldern,
+            // Ticket und Fulfillment erst nach angenommenem Angebot.
+            Route::get('/catalog/{item}/anfrage', [\App\Http\Controllers\Helpdesk\Portal\CatalogController::class, 'requestForm'])
+                ->middleware('portal.capability:intakes')->name('catalog.request');
+            Route::post('/catalog/{item}/anfrage', [\App\Http\Controllers\Helpdesk\Portal\CatalogController::class, 'request'])
+                ->middleware(['portal.capability:intakes', 'throttle:12,1'])->name('catalog.request.store');
         });
 
         Route::middleware('portal.capability:claims')->group(function (): void {
@@ -164,6 +170,30 @@ Route::prefix('customer-portal')->name('customer.')->group(function (): void {
             // Anhang-Download (MVP-712): gleiche Scope-Grenze wie die Liste,
             // Pfade nur aus der DB — Sicherheitsmuster wie customer.tickets.attachments.download.
             Route::get('/queries/{query}/attachments/{attachment}/download', [\App\Http\Controllers\CustomerPortal\QueryController::class, 'downloadAttachment'])->name('queries.attachments.download');
+        });
+
+        // Anfragen und Aufträge (Feature 162, MVP-1074–1077): eigene Capability
+        // (Default-Deny). Feste Pfade vor /anfragen/{intake}.
+        Route::middleware('portal.capability:intakes')->controller(\App\Http\Controllers\CustomerPortal\IntakeController::class)->group(function (): void {
+            Route::get('/anfragen', 'index')->name('intakes.index');
+            Route::get('/anfragen/neu', 'create')->name('intakes.create');
+            Route::post('/anfragen', 'store')->middleware('throttle:12,1')->name('intakes.store');
+            Route::get('/anfragen/nachreichen', 'uploadForm')->name('intakes.upload');
+            Route::post('/anfragen/nachreichen', 'uploadStore')->middleware('throttle:30,1')->name('intakes.upload.store');
+            Route::get('/anfragen/{intake}', 'show')->name('intakes.show');
+            Route::post('/anfragen/{intake}/dateien', 'filesStore')->middleware('throttle:30,1')->name('intakes.files.store');
+            Route::get('/anfragen/{intake}/dateien/{attachment}', 'download')->name('intakes.files.download');
+            Route::post('/anfragen/{intake}/antwort', 'reply')->middleware('throttle:30,1')->name('intakes.reply');
+            Route::post('/anfragen/{intake}/zuruecknehmen', 'withdraw')->name('intakes.withdraw');
+            Route::post('/anfragen/{intake}/angebot', 'decideQuote')->middleware('throttle:12,1')->name('intakes.quote.decide');
+            // Upload-Kanal (MVP-1078): Link öffnen, Hochgeladenes übernehmen.
+            Route::post('/anfragen/{intake}/upload-link', 'openUploadLink')->middleware('throttle:12,1')->name('intakes.upload-link');
+            Route::post('/anfragen/{intake}/upload-link/abholen', 'syncUploadLink')->middleware('throttle:6,1')->name('intakes.upload-link.sync');
+        });
+        // Druckfreigabe des Kunden (MVP-1076): Datei samt Prüfsumme und Parametern.
+        Route::middleware('portal.capability:intakes')->controller(\App\Http\Controllers\Print\Portal\PrintApprovalController::class)->group(function (): void {
+            Route::get('/anfragen/{intake}/druckdaten', 'file')->name('intakes.print-file');
+            Route::post('/anfragen/{intake}/druckfreigabe', 'decide')->middleware('throttle:12,1')->name('intakes.print-approval');
         });
 
         // „Meine Abos" (Feature 152, Prozesse 6): Bestand der Abos des Kunden und

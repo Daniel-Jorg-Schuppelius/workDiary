@@ -416,6 +416,7 @@ return [
 
         // Kundenportal & Freigaben (Feature 012): interne Rückfragen-Liste.
         'customer-queries.*' => 'customer.queries',
+        'customer-intakes.*' => 'customer.intakes',
 
         // Prozedurvorlagen-Designer (Feature 026): Listenseite + Editor.
         'procedures.*' => 'procedures.designer',
@@ -727,12 +728,15 @@ return [
         'customer.time-entries.*' => 'customer-portal.time',
         'customer.documents.*' => 'customer-portal.documents',
         'customer.tickets.*' => 'customer-portal.tickets',
+        // Anfragepfad des Katalogs gehört zu „Anfragen und Aufträge" (MVP-1077).
+        'customer.catalog.request*' => 'customer-portal.intakes',
         'customer.catalog.*' => 'customer-portal.tickets',
         'customer.known-errors.*' => 'customer-portal.tickets',
         'customer.claims.*' => 'customer-portal.claims',
         'customer.returns.*' => 'customer-portal.claims',
         'customer.rentals.*' => 'customer-portal.rentals',
         'customer.queries.*' => 'customer-portal.queries',
+        'customer.intakes.*' => 'customer-portal.intakes',
         'customer.assets.*' => 'customer-portal.assets',
         'customer.profile.*' => 'customer-portal.access',
         'customer.invitation.*' => 'customer-portal.access',
