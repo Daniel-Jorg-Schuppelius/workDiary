@@ -23,7 +23,7 @@ import { initVideoQuality } from "./video-quality.js";
 import { initNfc } from "./nfc.js";
 import { initDialogForms } from "./dialog-forms.js";
 import { __ } from "./i18n.js";
-import { html, setHtml, safeUrl, sameOriginPath, trustedServerHtml } from "./lib/html.js";
+import { clearHtml, html, setHtml, safeUrl, sameOriginPath, trustedServerHtml } from "./lib/html.js";
 import { postJson, request } from "./lib/http.js";
 import { toMinutes } from "./lib/time.js";
 import {
@@ -549,12 +549,25 @@ document.addEventListener("DOMContentLoaded", () => {
 // Ergänzt den entry-modal-spezifischen Handler weiter unten und greift für alle
 // Standalone-<x-modal :embedded="false">-Dialoge (action-confirm, shift-dialog, …).
 document.addEventListener("click", (event) => {
+    // Der Entry-Dialog hat schon entschieden (Rückkehr in die Ursprungsmaske).
+    if (event.defaultPrevented) return;
     const close = /** @type {HTMLElement} */ (event.target).closest(
         "[data-entry-modal-close]",
     );
     if (!close) return;
     const dialog = /** @type {HTMLDialogElement} */ (close.closest("dialog"));
-    if (!dialog) return;
+    if (!dialog) {
+        // Fragment als Seite (layouts.dialog-page): zurück, woher man kam.
+        const page = /** @type {HTMLElement|null} */ (close.closest("[data-dialog-page]"));
+        if (!page) return;
+        event.preventDefault();
+        if (window.history.length > 1) {
+            window.history.back();
+        } else {
+            window.location.assign(sameOriginPath(page.dataset.dialogPageFallback) ?? "/");
+        }
+        return;
+    }
     event.preventDefault();
     if (typeof dialog.close === "function") {
         dialog.close();
@@ -678,6 +691,34 @@ document.addEventListener("click", (event) => {
     let dialog = null;
     let dialogBody = null;
 
+    // Folgedialoge (Trigger mit data-entry-modal-stack): die Ursprungsmaske
+    // wird samt Eingaben abgehängt und bei Abbruch oder Speichern wieder
+    // eingesetzt. mutateDom hält Alpine davon ab, sie dabei abzubauen.
+    /** @type {{url: string|null, nodes: ChildNode[]}[]} */
+    const dialogStack = [];
+    let currentUrl = null;
+    let stackSaved = false;
+
+    const withoutAlpine = (fn) =>
+        typeof window.Alpine?.mutateDom === "function"
+            ? window.Alpine.mutateDom(fn)
+            : fn();
+
+    const pushCurrentDialog = () => {
+        const nodes = [...dialogBody.childNodes];
+        withoutAlpine(() => nodes.forEach((node) => node.remove()));
+        dialogStack.push({ url: currentUrl, nodes });
+    };
+
+    const popToParentDialog = () => {
+        const parent = dialogStack.pop();
+        if (!parent) return false;
+        clearHtml(dialogBody);
+        withoutAlpine(() => dialogBody.append(...parent.nodes));
+        currentUrl = parent.url;
+        return true;
+    };
+
     const ensureDialog = () => {
         if (dialog && dialogBody) return { dialog, dialogBody };
 
@@ -691,7 +732,7 @@ document.addEventListener("click", (event) => {
                     <div id="entry-modal-body"></div>
                 </div>
                 <form method="dialog" class="modal-backdrop">
-                    <button aria-label="Close">close</button>
+                    <button aria-label="Close" data-entry-modal-close>close</button>
                 </form>
             `,
         );
@@ -704,7 +745,27 @@ document.addEventListener("click", (event) => {
             );
             if (close) {
                 event.preventDefault();
-                dialog.close();
+                if (!popToParentDialog()) dialog.close();
+            }
+        });
+        dialog.addEventListener("cancel", (event) => {
+            if (dialogStack.length === 0) return;
+            event.preventDefault();
+            popToParentDialog();
+        });
+        dialog.addEventListener("close", () => {
+            dialogStack
+                .splice(0)
+                .forEach(({ nodes }) =>
+                    nodes.forEach((node) => {
+                        if (node instanceof Element) window.Alpine?.destroyTree?.(node);
+                    }),
+                );
+            currentUrl = null;
+            // Ein gespeicherter Folgedialog hat Daten der Seite darunter geändert.
+            if (stackSaved) {
+                stackSaved = false;
+                window.location.reload();
             }
         });
 
@@ -1040,6 +1101,49 @@ document.addEventListener("click", (event) => {
         });
     };
 
+    const notifyMessages = (payload) => {
+        if (typeof window.notifyAction !== "function") return;
+        (Array.isArray(payload.messages) ? payload.messages : []).forEach(
+            ({ tone, message }) => {
+                if (message) window.notifyAction({ tone: tone || "success", message });
+            },
+        );
+    };
+
+    // Bereiche der Ursprungsmaske, die ein Folgedialog verändert
+    // (data-entry-refresh), frisch vom Server holen; Eingaben bleiben.
+    const refreshParentRegions = async () => {
+        const regions = [...dialogBody.querySelectorAll("[data-entry-refresh]")];
+        if (regions.length === 0 || !currentUrl) return;
+        const response = await request(withDialogParam(currentUrl), {
+            headers: { Accept: "*/*" },
+        }).catch(() => null);
+        if (!response?.ok) return;
+        const template = document.createElement("template");
+        setHtml(template, trustedServerHtml(await response.text()));
+        regions.forEach((region) => {
+            const fresh = template.content.querySelector(
+                `[data-entry-refresh="${CSS.escape(region.dataset.entryRefresh || "")}"]`,
+            );
+            if (!fresh) return;
+            region.replaceWith(fresh);
+            initDynamicFields(fresh);
+        });
+    };
+
+    // Antwort mit stay (DialogRedirectAsJson): Folgedialog → zurück in die
+    // Ursprungsmaske, sonst denselben Dialog neu laden statt auf das nackte
+    // Fragment zu navigieren.
+    const stayInDialog = async (payload) => {
+        notifyMessages(payload);
+        if (popToParentDialog()) {
+            stackSaved = true;
+            await refreshParentRegions();
+            return;
+        }
+        if (currentUrl) await openEntryDialog(currentUrl);
+    };
+
     const bindDialogForms = (root) => {
         if (!root) return;
 
@@ -1080,23 +1184,37 @@ document.addEventListener("click", (event) => {
                 );
                 if (submitButton) submitButton.disabled = true;
 
+                const inEntryDialog = form.closest("#entry-modal-body") !== null;
+                const stacked = inEntryDialog && dialogStack.length > 0;
+                /** @type {Record<string, string>} */
+                const headers = { "X-Entry-Dialog": "1" };
+                if (inEntryDialog && currentUrl) {
+                    headers["X-Entry-Dialog-Url"] = currentUrl;
+                }
+                if (stacked) headers["X-Entry-Dialog-Stacked"] = "1";
+
                 try {
                     const response = await request(action, {
                         method,
                         body: formData,
-                        headers: { "X-Entry-Dialog": "1" },
+                        headers,
                     });
 
                     if (response.ok) {
                         const contentType =
                             response.headers.get("content-type") || "";
-                        if (contentType.includes("application/json")) {
-                            const payload = await response.json();
-                            const redirect = sameOriginPath(payload.redirect);
-                            if (redirect !== null) {
-                                window.location.href = redirect;
-                                return;
-                            }
+                        const payload =
+                            (contentType.includes("application/json")
+                                ? await response.json().catch(() => null)
+                                : null) ?? {};
+                        if (payload.stay === true || stacked) {
+                            await stayInDialog(payload);
+                            return;
+                        }
+                        const redirect = sameOriginPath(payload.redirect);
+                        if (redirect !== null) {
+                            window.location.href = redirect;
+                            return;
                         }
                         window.location.reload();
                         return;
@@ -1158,8 +1276,10 @@ document.addEventListener("click", (event) => {
         });
     };
 
-    const openEntryDialog = async (rawUrl) => {
+    const openEntryDialog = async (rawUrl, { stack = false } = {}) => {
         const { dialog: modal, dialogBody: body } = ensureDialog();
+        if (stack && modal.open) pushCurrentDialog();
+        currentUrl = rawUrl;
         const url = withDialogParam(rawUrl);
 
         const loadingMsg = __("js.dialog.loading");
@@ -1178,7 +1298,7 @@ document.addEventListener("click", (event) => {
                 </div>
             `,
         );
-        if (typeof modal.showModal === "function") {
+        if (!modal.open && typeof modal.showModal === "function") {
             modal.showModal();
         }
 
@@ -1327,7 +1447,11 @@ document.addEventListener("click", (event) => {
             if (!href) return;
 
             event.preventDefault();
-            openEntryDialog(href);
+            openEntryDialog(href, {
+                stack:
+                    trigger.hasAttribute("data-entry-modal-stack") &&
+                    Boolean(dialogBody?.contains(trigger)),
+            });
         },
         true,
     );

@@ -267,6 +267,7 @@ class OrganizationController extends Controller {
         }
 
         // Org-Admins dürfen die Mandantenliste nicht sehen (viewAny) — sie landeten nach dem Speichern auf 403.
+        // Ihr Ziel ist der eigene Dialog: der Dialog-Host lädt ihn neu (stay).
         $redirect = Gate::allows('viewAny', Organization::class)
             ? redirect()->toList('admin.organizations.index')
             : redirect()->route('admin.organizations.edit', $organization);

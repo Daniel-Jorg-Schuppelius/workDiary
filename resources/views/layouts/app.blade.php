@@ -1332,6 +1332,11 @@
                     {{ session('info') }}
                 </div>
             @endif
+            {{-- Folgedialog nach einer Weiterleitung (with('open_dialog', route(…))):
+                 als Flash statt Query, sonst merkte RememberListUrl ihn sich. --}}
+            @if (is_string(session('open_dialog')))
+                <a href="{{ session('open_dialog') }}" data-entry-modal-autoopen hidden></a>
+            @endif
             {{-- Validierungsfehler, die die Seite nicht selbst zeigt: ein
                  abgelehnter Vollseiten-POST endete sonst auf einer Seite ohne
                  jede Meldung (Konsolidierungs-Audit 2026-10, k4-08). Der Inhalt

@@ -33,6 +33,8 @@ class DialogRedirectAsJsonTest extends TestCase {
 
         Route::middleware('web')->post('/__dialog-test/errors', fn () => back()->withErrors(['name' => 'Name fehlt.']));
         Route::middleware('web')->post('/__dialog-test/away', fn () => redirect()->away('https://auth.example.com/authorize'));
+        Route::middleware('web')->post('/__dialog-test/rotate', fn () => redirect('/__dialog-test/dialog')
+            ->with('dialog_token', 'abc')->with('success', 'Erneuert.'));
     }
 
     public function test_dialog_redirect_becomes_json_and_keeps_the_flash_for_the_target_page(): void {
@@ -62,6 +64,36 @@ class DialogRedirectAsJsonTest extends TestCase {
             ->assertStatus(422)
             ->assertJsonPath('message', 'Name fehlt.')
             ->assertJsonPath('errors.name.0', 'Name fehlt.');
+    }
+
+    /** Issue #106: ein Folgedialog kehrt in die Ursprungsmaske zurück — die Meldung gehört in den Toast. */
+    public function test_stacked_dialog_stays_and_takes_the_message_out_of_the_session(): void {
+        $this->withHeaders(self::DIALOG + ['X-Entry-Dialog-Stacked' => '1'])
+            ->post('/__dialog-test/rotate')
+            ->assertOk()
+            ->assertJsonPath('stay', true)
+            ->assertJsonPath('messages.0.tone', 'success')
+            ->assertJsonPath('messages.0.message', 'Erneuert.');
+
+        $this->assertFalse(session()->has('success'), 'sonst erschiene die Meldung ein zweites Mal auf der nächsten Seite');
+        $this->assertSame('abc', session('dialog_token'));
+    }
+
+    public function test_redirect_onto_the_own_dialog_reloads_it_instead_of_navigating(): void {
+        $this->withHeaders(self::DIALOG + ['X-Entry-Dialog-Url' => url('/__dialog-test/dialog?ki=1')])
+            ->post('/__dialog-test/rotate')
+            ->assertOk()
+            ->assertJsonPath('stay', true)
+            ->assertJsonPath('redirect', url('/__dialog-test/dialog'));
+    }
+
+    public function test_redirect_to_another_page_keeps_the_flash_for_it(): void {
+        $this->withHeaders(self::DIALOG + ['X-Entry-Dialog-Url' => '/__dialog-test/other'])
+            ->post('/__dialog-test/rotate')
+            ->assertOk()
+            ->assertJsonMissingPath('stay');
+
+        $this->assertSame('Erneuert.', session('success'));
     }
 
     public function test_external_redirect_and_plain_forms_stay_untouched(): void {

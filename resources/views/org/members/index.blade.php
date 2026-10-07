@@ -63,7 +63,7 @@
                         <td class="text-sm text-base-content/70">{{ $member->email }}</td>
                         <td>
                             @foreach ($member->roles as $role)
-                                <x-status-badge size="sm" outline>{{ $role->name }}</x-status-badge>
+                                <x-status-badge size="sm" outline>{{ \App\Support\Trans::or("user.role.{$role->name}", $role->name) }}</x-status-badge>
                             @endforeach
                             @if (in_array($member->id, $heldUserIds ?? [], true))
                                 <x-status-badge size="sm" tone="error">{{ __('Legal Hold') }}</x-status-badge>

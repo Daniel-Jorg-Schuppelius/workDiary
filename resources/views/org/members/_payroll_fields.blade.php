@@ -14,17 +14,18 @@
     $wageVal = old('payroll_hourly_wage', $member?->payroll_hourly_wage?->getAmount());
     $belowMin = $minWage !== null && $wageVal !== null && $wageVal !== '' && (float) $wageVal < $minWage;
     $employmentHint = $member ? app(\App\Services\Payroll\PayrollClassifier::class)->mismatchHint($member) : null;
+    // Ohne Angabe gilt intern (User::isExternal()), daher vorbelegt statt eigener Leer-Option.
+    $compensationModel = (string) old('compensation_model', $member?->compensation_model?->value ?? \App\Enums\User\CompensationModel::Payroll->value);
 @endphp
 <x-form-group :legend="__('Vergütung & Lohn')" icon="payments" tone="warning" cols="2"
-              x-data="reveal({{ \Illuminate\Support\Js::from(old('compensation_model', $member?->compensation_model?->value ?? '')) }})">
+              x-data="reveal({{ \Illuminate\Support\Js::from($compensationModel) }})">
     {{-- Vergütungsmodell steuert, welche Felder gelten: intern (dt. Lohn),
          pauschal (Festbetrag) oder extern nach Zeitaufwand (Stundensatz). --}}
     <x-select-field name="compensation_model" :label="__('Vergütungsmodell')" span="2"
                     x-model="value" :disabled="! $canManagePayroll"
                     :hint="__('Extern (pauschal / nach Zeitaufwand) blendet die deutschen Lohnfelder aus.')">
-        <option value="">{{ __('Intern (Lohnabrechnung)') }}</option>
         @foreach (\App\Enums\User\CompensationModel::options() as $value => $label)
-            <option value="{{ $value }}" @selected(old('compensation_model', $member?->compensation_model?->value) === $value)>{{ $label }}</option>
+            <option value="{{ $value }}" @selected($compensationModel === $value)>{{ $label }}</option>
         @endforeach
     </x-select-field>
 
@@ -106,15 +107,17 @@
                        :value="old('child_allowances', $member?->child_allowances)" />
     </div>
 
-    {{-- Wochenstunden: read-only aus dem Arbeitszeit-Modell (Single Source of Truth). --}}
-    <div class="fieldset">
+    {{-- Wochenstunden: read-only aus dem Arbeitszeit-Modell (Single Source of Truth).
+         Das Modell wird als Folgedialog bearbeitet; nach dem Speichern frischt
+         der Dialog-Host diesen Block auf (data-entry-refresh). --}}
+    <div class="fieldset" data-entry-refresh="weekly-hours">
         <label class="fieldset-label" for="weekly-hours-display">{{ __('Wochenstunden') }}</label>
         @php $ws = $member?->workSchedule(); @endphp
         <input type="text" id="weekly-hours-display" class="input input-bordered w-full" disabled
                value="{{ $ws ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($ws->weekly_minutes / 60, 2, withThousandsSeparator: true) . ' h' : __('— kein Arbeitszeit-Modell —') }}">
         @can('create', \App\Models\Time\WorkSchedule::class)
             @if ($member)
-                <a href="{{ route('users.work-schedule.edit', $member) }}" data-entry-modal-trigger
+                <a href="{{ route('users.work-schedule.edit', $member) }}" data-entry-modal-trigger data-entry-modal-stack
                    class="link link-primary mt-1 inline-flex items-center gap-1 text-xs">
                     <x-icon name="schedule" class="text-[1rem]" />
                     {{ __('Arbeitszeit-Modell bearbeiten') }}

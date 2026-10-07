@@ -31,7 +31,7 @@
                     <span class="opacity-70">{{ __('Bis: :at', ['at' => $until->translatedFormat('d.m.Y H:i')]) }}</span>
                 @endif
                 @can('update', $organization)
-                    <a href="{{ route('admin.organizations.edit', $organization) }}" class="link font-medium">
+                    <a href="{{ route('admin.organizations.edit', $organization) }}" class="link font-medium" data-entry-modal-trigger>
                         {{ __('Einstellungen') }}
                     </a>
                 @endcan

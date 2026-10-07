@@ -103,6 +103,7 @@
                    type="text"
                    value="{{ old('bank.iban', $bank?->iban) }}"
                    class="font-mono"
+                   data-iban-check
                    maxlength="64" />
 
     <x-input-field name="bank[bic]"

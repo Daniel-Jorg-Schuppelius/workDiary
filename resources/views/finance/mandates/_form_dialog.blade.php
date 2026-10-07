@@ -43,7 +43,7 @@
     </div>
 
     <div class="grid gap-3 sm:grid-cols-2">
-        <x-input-field name="iban" type="text" maxlength="40" required
+        <x-input-field name="iban" type="text" maxlength="40" required data-iban-check
                        :label="__('sepa.mandate.column.iban')"
                        :value="old('iban', '')" />
         <x-input-field name="bic" type="text" maxlength="20"

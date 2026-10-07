@@ -134,6 +134,62 @@ class OrgMemberTest extends TestCase {
         $this->assertTrue($new->must_change_password);
     }
 
+    // ── Anlegen-Dialog (Issue #105) ──────────────────────────────────────────
+
+    public function test_create_dialog_starts_with_employee_role_and_offers_each_compensation_model_once(): void {
+        $html = $this->actingAs($this->orgAdmin())
+            ->get(route('org.members.create'))
+            ->assertOk()
+            ->assertSee(__('user.role.user'))
+            ->assertSee(__('user.role.admin'))
+            ->content();
+
+        $this->assertMatchesRegularExpression('/<option value="user"\s+selected>/', $html);
+        $this->assertDoesNotMatchRegularExpression('/<option value="admin"\s+selected>/', $html);
+        $this->assertSame(1, substr_count($html, __('user.compensation_model.payroll')));
+        $this->assertMatchesRegularExpression('/<option value="payroll"\s+selected>/', $html);
+    }
+
+    public function test_create_dialog_offers_a_password_suggestion_matching_the_password_rules(): void {
+        $this->actingAs($this->orgAdmin())
+            ->get(route('org.members.create'))
+            ->assertOk()
+            ->assertSee('data-password-suggest="password password_confirmation"', false)
+            ->assertSee('minlength="12"', false)
+            ->assertDontSee('minlength="8"', false);
+    }
+
+    public function test_store_rejects_an_iban_with_transposed_digits(): void {
+        $payload = [
+            'name' => 'Neue Person',
+            'email' => 'iban@test.de',
+            'role' => UserRole::User->value,
+            'password' => 'Password123!Strong',
+            'password_confirmation' => 'Password123!Strong',
+            'bank' => ['account_holder' => 'Neue Person', 'iban' => 'DE89370400440532031000'],
+        ];
+
+        $this->actingAs($this->orgAdmin())
+            ->post(route('org.members.store'), $payload)
+            ->assertSessionHasErrors('bank.iban');
+        $this->assertNull(User::where('email', 'iban@test.de')->first());
+
+        $payload['bank']['iban'] = 'de89 3704 0044 0532 0130 00';
+        $this->actingAs($this->orgAdmin())
+            ->post(route('org.members.store'), $payload)
+            ->assertSessionHasNoErrors();
+        $this->assertSame('DE89370400440532013000', User::where('email', 'iban@test.de')->firstOrFail()->primaryBankAccount()?->iban);
+    }
+
+    public function test_member_list_shows_translated_role_names(): void {
+        $this->orgUser();
+
+        $this->actingAs($this->orgAdmin())
+            ->get(route('org.members.index'))
+            ->assertOk()
+            ->assertSee(__('user.role.user'));
+    }
+
     public function test_store_validates_unique_email(): void {
         User::factory()->create(['email' => 'used@test.de']);
 

@@ -188,6 +188,7 @@ return [
 
     'push_endpoint_scheme' => 'The push endpoint must start with https://.',
     'push_endpoint_unreachable' => 'The push endpoint is not a publicly reachable address.',
+    'iban' => 'The :attribute field is not a valid IBAN – the length or check digits do not match. Please check for transposed digits.',
 
     'custom' => [
         'attribute-name' => [

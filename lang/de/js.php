@@ -23,6 +23,9 @@ return [
         'switch_to_new' => 'In den neuen Modus wechseln',
         'switch_to_legacy' => 'In den Legacy-Modus wechseln',
     ],
+    'iban' => [
+        'invalid' => 'Keine gültige IBAN – bitte auf Zahlendreher prüfen.',
+    ],
     'schedule' => [
         'move_failed' => 'Fehler beim Verschieben.',
         'suggest_failed' => 'Vorschläge konnten nicht geladen werden.',

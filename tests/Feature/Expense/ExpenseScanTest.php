@@ -95,7 +95,8 @@ final class ExpenseScanTest extends TestCase {
         $this->assertSame('0.00', (string) $result['expense']->amount_gross?->getAmount());
     }
 
-    public function test_scan_endpoint_redirects_to_the_edit_form(): void {
+    /** Die Liste öffnet den Bearbeiten-Dialog selbst — ein Redirect aufs Fragment zeigte nacktes HTML (#106). */
+    public function test_scan_endpoint_opens_the_edit_dialog_on_the_list(): void {
         $this->fakeExtraction(['gross' => '10.00', 'currency' => 'EUR']);
 
         $response = $this->actingAs($this->admin)->post(route('expenses.scan'), [
@@ -103,7 +104,12 @@ final class ExpenseScanTest extends TestCase {
         ]);
 
         $expense = Expense::query()->firstOrFail();
-        $response->assertRedirect(route('expenses.edit', $expense));
+        $response->assertRedirect(route('expenses.index'))
+            ->assertSessionHas('open_dialog', route('expenses.edit', $expense));
+
+        $this->get(route('expenses.index'))
+            ->assertOk()
+            ->assertSee('href="' . route('expenses.edit', $expense) . '" data-entry-modal-autoopen', false);
     }
 
     /** PDF und Fotos ja — beliebige Dateitypen nein. */

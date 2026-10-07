@@ -23,6 +23,9 @@ return [
         'switch_to_new' => 'Switch to the new mode',
         'switch_to_legacy' => 'Switch to the legacy mode',
     ],
+    'iban' => [
+        'invalid' => 'Not a valid IBAN – please check for transposed digits.',
+    ],
     'schedule' => [
         'move_failed' => 'Move failed.',
         'suggest_failed' => 'Could not load suggestions.',

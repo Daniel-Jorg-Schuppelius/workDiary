@@ -44,6 +44,20 @@ class WorkScheduleAccessTest extends TestCase {
         ];
     }
 
+    /** Zweites Speichern mit gleichem Gültig-ab traf auf SQLite die Zeile nicht und brach mit UNIQUE ab (#106). */
+    public function test_saving_twice_with_the_same_valid_from_updates_the_schedule(): void {
+        $hr = User::factory()->personalverwaltung()->create(['organization_id' => $this->organization->id]);
+        $member = $this->member();
+
+        $this->actingAs($hr)->put(route('users.work-schedule.update', $member), $this->payload())->assertRedirect();
+        $this->actingAs($hr)->put(route('users.work-schedule.update', $member), ['weekly_minutes' => 2100] + $this->payload())
+            ->assertRedirect()
+            ->assertSessionHasNoErrors();
+
+        $this->assertSame(1, \App\Models\Time\WorkSchedule::query()->where('user_id', $member->id)->count());
+        $this->assertDatabaseHas('work_schedules', ['user_id' => $member->id, 'weekly_minutes' => 2100]);
+    }
+
     public function test_personnel_admin_can_update_work_schedule(): void {
         $hr = User::factory()->personalverwaltung()->create(['organization_id' => $this->organization->id]);
         $member = $this->member();

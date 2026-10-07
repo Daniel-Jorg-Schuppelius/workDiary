@@ -43,7 +43,7 @@
                 <td>
                     <div class="flex flex-wrap gap-1">
                         @foreach ($member->roles as $role)
-                            <x-status-badge size="sm" outline>{{ \Illuminate\Support\Facades\Lang::has("user.role.{$role->name}") ? __("user.role.{$role->name}") : $role->name }}</x-status-badge>
+                            <x-status-badge size="sm" outline>{{ \App\Support\Trans::or("user.role.{$role->name}", $role->name) }}</x-status-badge>
                         @endforeach
                     </div>
                 </td>

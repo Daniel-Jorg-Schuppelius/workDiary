@@ -165,6 +165,7 @@ return [
 
     'push_endpoint_scheme' => 'L\'endpoint push deve iniziare con https://.',
     'push_endpoint_unreachable' => 'L\'endpoint push non è un indirizzo raggiungibile pubblicamente.',
+    'iban' => 'Il campo :attribute non è un IBAN valido: la lunghezza o le cifre di controllo non corrispondono. Verifichi la presenza di cifre invertite.',
 
     'custom' => [
         'attribute-name' => [

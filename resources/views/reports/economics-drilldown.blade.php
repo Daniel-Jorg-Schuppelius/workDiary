@@ -216,7 +216,7 @@
                             <td>{{ $expense->billable ? __('Ja') : __('Nein') }}</td>
                             <td class="text-right tabular-nums">{{ $eur($expense->amount_net) }}</td>
                             <td class="text-right">
-                                <a class="link link-hover text-sm" href="{{ route('expenses.edit', $expense) }}">{{ __('Beleg öffnen') }}</a>
+                                <a class="link link-hover text-sm" href="{{ route('expenses.edit', $expense) }}" data-entry-modal-trigger>{{ __('Beleg öffnen') }}</a>
                             </td>
                         </tr>
                     @endforeach

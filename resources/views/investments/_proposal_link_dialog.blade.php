@@ -32,19 +32,19 @@
 
     <x-slot:actions>
         @if ($status['issued'])
-            <form method="POST" action="{{ route('investments.proposals.toggle') }}" class="contents">
+            <form method="POST" action="{{ route('investments.proposals.toggle') }}" data-entry-form class="contents">
                 @csrf
                 @method('PATCH')
                 <input type="hidden" name="enabled" value="{{ $status['enabled'] ? 0 : 1 }}">
                 <x-button type="submit" tone="plain">{{ $status['enabled'] ? __('investment.proposal.pause') : __('investment.proposal.resume') }}</x-button>
             </form>
-            <form method="POST" action="{{ route('investments.proposals.revoke') }}" class="contents">
+            <form method="POST" action="{{ route('investments.proposals.revoke') }}" data-entry-form class="contents">
                 @csrf
                 @method('DELETE')
                 <x-button type="submit" tone="error" class="btn-outline">{{ __('investment.proposal.revoke') }}</x-button>
             </form>
         @endif
-        <form method="POST" action="{{ route('investments.proposals.rotate') }}" class="contents">
+        <form method="POST" action="{{ route('investments.proposals.rotate') }}" data-entry-form class="contents">
             @csrf
             <x-button type="submit">{{ $status['issued'] ? __('investment.proposal.rotate') : __('investment.proposal.issue') }}</x-button>
         </form>

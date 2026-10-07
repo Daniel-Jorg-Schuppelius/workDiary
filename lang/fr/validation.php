@@ -165,6 +165,7 @@ return [
 
     'push_endpoint_scheme' => 'Le point de terminaison push doit commencer par https://.',
     'push_endpoint_unreachable' => 'Le point de terminaison push n\'est pas une adresse accessible publiquement.',
+    'iban' => 'Le champ :attribute n\'est pas un IBAN valide – la longueur ou la clé de contrôle ne correspond pas. Veuillez vérifier l\'absence de chiffres inversés.',
 
     'custom' => [
         'attribute-name' => [

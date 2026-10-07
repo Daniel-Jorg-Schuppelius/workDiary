@@ -13,19 +13,19 @@ declare(strict_types=1);
 namespace App\Rules;
 
 use Closure;
+use CommonToolkit\Helper\Data\BankHelper;
 use Illuminate\Contracts\Validation\ValidationRule;
 
 /**
- * Gemeinsame IBAN-Formatregel (Vollaudit 2026-07, M39): eine Wahrheit statt
- * vier heterogener Stellen. Bewusst die LOSE Formatprüfung (Länderkürzel +
- * 10–40 Stellen, Leerzeichen erlaubt) — die strengere Prüfsummen-Validierung
- * (CommonToolkit Validator::isIBAN) wäre eine Verschärfung gegen
- * Bestandsdaten und braucht eine eigene Entscheidung (Beleg M39).
+ * Gemeinsame IBAN-Regel: Länderlänge und Prüfziffer (mod 97), Leerzeichen und
+ * Kleinschreibung erlaubt. Strikt, damit ein Zahlendreher bei der Eingabe
+ * auffällt und nicht erst bei Lohnzahlung oder Lastschrift. Ungültige
+ * Bestandsdaten meldet der IdentifierIssueDetector.
  */
 final class Iban implements ValidationRule {
     public function validate(string $attribute, mixed $value, Closure $fail): void {
-        if (! is_string($value) || preg_match('/^[A-Z]{2}[0-9A-Z\s]{10,40}$/i', $value) !== 1) {
-            $fail((string) __('validation.regex'));
+        if (! is_string($value) || ! BankHelper::checkIBAN(BankHelper::normalizeIBAN($value) ?? '')) {
+            $fail('validation.iban')->translate();
         }
     }
 }

@@ -84,7 +84,7 @@
                     type="password"
                     autocomplete="new-password"
                     class="w-full rounded-2xl border border-base-content/20 bg-base-200/80 px-4 py-3 text-base-content placeholder-base-content/40 transition focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/25 @error('password') ring-2 ring-error/40 @enderror"
-                    placeholder="{{ __('Mindestens 8 Zeichen') }}"
+                    placeholder="{{ __('Mindestens 12 Zeichen') }}"
                 >
                 @error('password')
                     <p class="mt-2 text-sm text-error">{{ $message }}</p>

@@ -26,8 +26,15 @@ use Symfony\Component\HttpFoundation\Response;
  * Validierungsfehler aus back()->withErrors() werden zu 422 (Toast im Dialog),
  * eigene Weiterleitungen zu {redirect}: der Dialog navigiert selbst dorthin,
  * und der Flash erscheint auf der Zielseite. Externe Ziele bleiben unverändert.
+ *
+ * Bleibt der Dialog offen — Folgedialog (Rückkehr in die Ursprungsmaske) oder
+ * Weiterleitung auf das eigene Fragment —, gäbe es keine Zielseite: dann
+ * {redirect, stay, messages}, und die Meldungen verlassen die Sitzung.
  */
 class DialogRedirectAsJson {
+    /** Flash-Schlüssel des Layouts → Ton des Toasts. */
+    private const FLASH_TONES = ['success' => 'success', 'status' => 'success', 'error' => 'error', 'warning' => 'warning', 'info' => 'info'];
+
     public function handle(Request $request, Closure $next): Response {
         $response = $next($request);
 
@@ -49,6 +56,27 @@ class DialogRedirectAsJson {
             return $response;
         }
 
-        return new JsonResponse(['redirect' => $target]);
+        if (! $this->staysInDialog($request, $target)) {
+            return new JsonResponse(['redirect' => $target]);
+        }
+
+        $messages = [];
+        foreach (self::FLASH_TONES as $key => $tone) {
+            if ($session?->has($key)) {
+                $messages[] = ['tone' => $tone, 'message' => (string) $session->pull($key)];
+            }
+        }
+
+        return new JsonResponse(['redirect' => $target, 'stay' => true, 'messages' => $messages]);
+    }
+
+    private function staysInDialog(Request $request, string $target): bool {
+        if ($request->headers->get('X-Entry-Dialog-Stacked') === '1') {
+            return true;
+        }
+
+        $dialog = (string) $request->headers->get('X-Entry-Dialog-Url', '');
+
+        return $dialog !== '' && parse_url($dialog, PHP_URL_PATH) === parse_url($target, PHP_URL_PATH);
     }
 }

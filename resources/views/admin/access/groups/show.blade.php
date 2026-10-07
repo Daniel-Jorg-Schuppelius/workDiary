@@ -42,7 +42,7 @@
         <x-card class="flex flex-col gap-2 space-y-3">
             <h3 class="card-title">{{ __('access.title.assigned_roles') }}</h3>
             @forelse ($group->roles as $role)
-                <x-status-badge size="md" outline>{{ \Illuminate\Support\Facades\Lang::has("user.role.{$role->name}") ? __("user.role.{$role->name}") : $role->name }}</x-status-badge>
+                <x-status-badge size="md" outline>{{ \App\Support\Trans::or("user.role.{$role->name}", $role->name) }}</x-status-badge>
             @empty
                 <p class="text-sm text-muted">{{ __('access.empty.assigned_roles') }}</p>
             @endforelse

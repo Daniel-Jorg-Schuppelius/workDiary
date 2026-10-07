@@ -10,7 +10,7 @@
 <x-modal :title="__('sustainability.excerpt.title')" :eyebrow="__('sustainability.site.back')" icon="eco" tone="primary" :close-label="__('Schließen')">
     <p class="text-sm opacity-70">{{ __('sustainability.excerpt.intro') }}</p>
 
-    <form method="POST" action="{{ route('sustainability.excerpt.publish') }}" class="mt-4 flex flex-col gap-2">
+    <form method="POST" action="{{ route('sustainability.excerpt.publish') }}" data-entry-form class="mt-4 flex flex-col gap-2">
         @csrf
         @method('PUT')
         <x-select-field name="snapshot_id" :label="__('sustainability.excerpt.snapshot')">
@@ -48,19 +48,19 @@
     @if ($canManageLink)
         <x-slot:actions>
             @if ($status['issued'])
-                <form method="POST" action="{{ route('sustainability.excerpt.toggle') }}" class="contents">
+                <form method="POST" action="{{ route('sustainability.excerpt.toggle') }}" data-entry-form class="contents">
                     @csrf
                     @method('PATCH')
                     <input type="hidden" name="enabled" value="{{ $status['enabled'] ? 0 : 1 }}">
                     <x-button type="submit" tone="plain">{{ $status['enabled'] ? __('sustainability.excerpt.pause') : __('sustainability.excerpt.resume') }}</x-button>
                 </form>
-                <form method="POST" action="{{ route('sustainability.excerpt.revoke') }}" class="contents">
+                <form method="POST" action="{{ route('sustainability.excerpt.revoke') }}" data-entry-form class="contents">
                     @csrf
                     @method('DELETE')
                     <x-button type="submit" tone="error" class="btn-outline">{{ __('sustainability.excerpt.revoke') }}</x-button>
                 </form>
             @endif
-            <form method="POST" action="{{ route('sustainability.excerpt.rotate') }}" class="contents">
+            <form method="POST" action="{{ route('sustainability.excerpt.rotate') }}" data-entry-form class="contents">
                 @csrf
                 <x-button type="submit">{{ $status['issued'] ? __('sustainability.excerpt.rotate') : __('sustainability.excerpt.issue') }}</x-button>
             </form>

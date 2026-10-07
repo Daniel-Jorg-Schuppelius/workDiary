@@ -1763,7 +1763,7 @@ class NavigationRegistry {
                     $adminNavItems[] = ['route' => 'admin.organizations.index', 'label' => __('Organisationen'), 'icon' => 'corporate_fare', 'modal' => false];
                 } elseif ($user->organization !== null) {
                     // Org-lokaler Admin: direkter Einstieg in die EIGENE Org (Route bindet per Sqid, nicht per ID).
-                    $adminNavItems[] = ['route' => 'admin.organizations.edit', 'route_params' => [$user->organization->sqid], 'label' => __('Organisation'), 'icon' => 'corporate_fare', 'modal' => false];
+                    $adminNavItems[] = ['route' => 'admin.organizations.edit', 'route_params' => [$user->organization->sqid], 'label' => __('Organisation'), 'icon' => 'corporate_fare', 'modal' => true];
                 }
                 $adminNavItems[] = ['route' => 'admin.branding.edit', 'label' => __('Branding'), 'icon' => 'palette', 'modal' => false];
                 // Eigene Felder je Träger (MVP-868).

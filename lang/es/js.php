@@ -18,6 +18,9 @@ return [
         'switch_to_new' => 'Cambiar al nuevo modo',
         'switch_to_legacy' => 'Cambiar al modo heredado',
     ],
+    'iban' => [
+        'invalid' => 'IBAN no válido: compruebe si hay dígitos intercambiados.',
+    ],
     'schedule' => [
         'move_failed' => 'Error al mover.',
         'suggest_failed' => 'No se pudieron cargar las sugerencias.',

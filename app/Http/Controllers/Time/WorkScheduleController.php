@@ -16,6 +16,7 @@ use App\Http\Requests\Time\SaveWorkScheduleRequest;
 use App\Models\Platform\User;
 use App\Models\Time\WorkSchedule;
 use App\Services\Flextime\WorkScheduleResolver;
+use App\Support\Query\DateRange;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -40,9 +41,11 @@ class WorkScheduleController extends Controller {
         $this->ensureSameOrg($user);
 
         $data = $request->validated();
+        // Tagesgleichheit als Bereich: SQLite speichert den date-Cast als
+        // „Y-m-d 00:00:00", ein roher Vergleich mit „Y-m-d" fand die Zeile nie.
         $existing = WorkSchedule::query()
             ->where('user_id', $user->id)
-            ->where('valid_from', $data['valid_from'])
+            ->whereBetween('valid_from', DateRange::days($data['valid_from'], $data['valid_from']))
             ->first();
 
         if ($existing) {
@@ -53,7 +56,9 @@ class WorkScheduleController extends Controller {
             WorkSchedule::create($data);
         }
 
-        return redirect()->route('users.work-schedule.edit', $user)
+        // Aus dem Mitarbeiter-Dialog geöffnet, kehrt der Dialog selbst in die
+        // Ursprungsmaske zurück; ein Ziel braucht nur der Vollseitenweg.
+        return redirect()->toList('org.members.index')
             ->with('success', __('Arbeitszeit-Modell gespeichert.'));
     }
 

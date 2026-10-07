@@ -149,7 +149,7 @@
 
         <x-form-group :legend="__('Bankverbindung')" icon="account_balance" tone="ghost" cols="2">
             <x-input-field name="bank_account_holder" span="2" :label="__('Kontoinhaber')" maxlength="200" :value="old('bank_account_holder', $customer?->bank_account_holder)" />
-            <x-input-field name="bank_iban" :label="__('IBAN')" maxlength="64" class="uppercase" placeholder="DE00 0000 0000 0000 0000 00" :value="old('bank_iban', $customer?->bank_iban)" />
+            <x-input-field name="bank_iban" :label="__('IBAN')" maxlength="64" class="uppercase" data-iban-check placeholder="DE00 0000 0000 0000 0000 00" :value="old('bank_iban', $customer?->bank_iban)" />
             <x-input-field name="bank_bic" :label="__('BIC')" maxlength="32" class="uppercase" :value="old('bank_bic', $customer?->bank_bic)" />
             <x-input-field name="bank_name" span="2" :label="__('Bank')" maxlength="200" :value="old('bank_name', $customer?->bank_name)" />
         </x-form-group>

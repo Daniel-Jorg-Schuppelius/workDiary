@@ -121,7 +121,7 @@
                 <x-status-badge :tone="$quality['rating']->tone()" size="lg">{{ $quality['rating']->label() }}</x-status-badge>
                 <p class="mt-1 text-xs text-muted">{{ __('scorecard.quality_detail') }}</p>
                 @if ($quality['assessment'])
-                    <a class="mt-2 inline-block text-xs link link-hover" href="{{ route('isms.suppliers.edit', $quality['assessment']) }}">{{ $quality['assessment']->displayNo() }} →</a>
+                    <a class="mt-2 inline-block text-xs link link-hover" href="{{ route('isms.suppliers.edit', $quality['assessment']) }}" data-entry-modal-trigger>{{ $quality['assessment']->displayNo() }} →</a>
                 @endif
             @endif
         </x-card>

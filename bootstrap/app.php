@@ -146,6 +146,8 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\RememberPageHelp::class,
             // Dialog-fetch: Redirect → {redirect}/422, damit der Flash nicht verpufft.
             \App\Http\Middleware\DialogRedirectAsJson::class,
+            // Direkt aufgerufenes Dialog-Fragment (neuer Tab) als Seite statt nacktem HTML.
+            \App\Http\Middleware\RenderDialogFragmentAsPage::class,
         ]);
 
         // Auch der API-Stack (Sanctum-Tokens) MUSS die Organisation an den

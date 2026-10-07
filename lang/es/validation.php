@@ -165,6 +165,7 @@ return [
 
     'push_endpoint_scheme' => 'El punto de conexión push debe empezar por https://.',
     'push_endpoint_unreachable' => 'El punto de conexión push no es una dirección accesible públicamente.',
+    'iban' => 'El campo :attribute no es un IBAN válido: la longitud o los dígitos de control no coinciden. Compruebe si hay dígitos intercambiados.',
 
     'custom' => [
         'attribute-name' => [

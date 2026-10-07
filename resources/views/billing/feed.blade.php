@@ -120,7 +120,7 @@
             </x-icon-btn>
         @endif
         @if ($sources['quote'] ?? false)
-            <x-icon-btn icon="request_quote" size="sm" :href="route('quotes.create')" show-label>
+            <x-icon-btn icon="request_quote" size="sm" data-entry-modal-trigger :href="route('quotes.create')" show-label>
                 {{ __('Neues Angebot') }}
             </x-icon-btn>
         @endif

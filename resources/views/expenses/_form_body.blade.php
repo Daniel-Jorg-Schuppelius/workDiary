@@ -29,7 +29,7 @@
             <div class="flex-1 text-sm">
                 {{ __('Für Verpflegung gilt im Regelfall die gesetzliche Pauschale (Verpflegungsmehraufwand). Tatsächliche Kosten sind hier nur abzurechnen, wenn ausdrücklich erlaubt.') }}
             </div>
-            <x-button :href="route('per-diem-trips.create')" tone="primary">
+            <x-button :href="route('per-diem-trips.create')" tone="primary" data-entry-modal-trigger>
                 {{ __('Pauschale erfassen') }}
             </x-button>
         </div>

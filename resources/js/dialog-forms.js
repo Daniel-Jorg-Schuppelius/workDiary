@@ -11,6 +11,10 @@
 // Ein <script> im Fragment führt der Browser nicht aus (innerHTML), deshalb
 // bindet initDynamicFields() in app.js diese Bausteine nach jedem Laden.
 
+import { __ } from "./i18n.js";
+import { isValidIban } from "./lib/iban.js";
+import { suggestPassword } from "./lib/password.js";
+
 /** Auslagen: Kategorie setzt Steuersatz und Abrechenbar-Vorgabe, zeigt den Verpflegungshinweis. */
 function initExpenseCategory(root) {
     root.querySelectorAll("[data-expense-category]").forEach((select) => {
@@ -203,8 +207,51 @@ function initRequirementPresets(root) {
     }
 }
 
+/**
+ * Passwort vorschlagen: füllt die genannten Felder sichtbar, damit das
+ * Initialpasswort weitergegeben werden kann.
+ */
+function initPasswordSuggest(root) {
+    root.querySelectorAll("[data-password-suggest]").forEach((button) => {
+        if (button.dataset.passwordSuggestBound === "1") return;
+        button.dataset.passwordSuggestBound = "1";
+
+        button.addEventListener("click", () => {
+            const scope = button.closest("form") || root;
+            const password = suggestPassword();
+            button.dataset.passwordSuggest.split(" ").forEach((name) => {
+                const input = scope.querySelector(`input[name="${name}"]`);
+                if (!input) return;
+                input.type = "text";
+                input.value = password;
+                input.dispatchEvent(new Event("input", { bubbles: true }));
+            });
+        });
+    });
+}
+
+/** IBAN-Felder: Zahlendreher am Feld melden, bevor der Dialog absendet. */
+function initIbanCheck(root) {
+    root.querySelectorAll("input[data-iban-check]").forEach((input) => {
+        if (input.dataset.ibanCheckBound === "1") return;
+        input.dataset.ibanCheckBound = "1";
+
+        const check = (report) => {
+            const valid = isValidIban(input.value);
+            input.setCustomValidity(valid ? "" : __("js.iban.invalid"));
+            input.classList.toggle("input-error", !valid);
+            if (!valid && report) input.reportValidity();
+        };
+        input.addEventListener("input", () => check(false));
+        input.addEventListener("change", () => check(true));
+        check(false);
+    });
+}
+
 export function initDialogForms(root) {
     if (!root) return;
     initExpenseCategory(root);
     initRequirementPresets(root);
+    initPasswordSuggest(root);
+    initIbanCheck(root);
 }

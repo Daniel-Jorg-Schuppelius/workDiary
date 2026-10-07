@@ -12,7 +12,7 @@ namespace Tests\Feature\Expense;
 
 use App\Enums\Expense\{ExpenseStatus, PerDiemTripStatus};
 use App\Models\Platform\User;
-use App\Models\Travel\{ExpenseCategory, PerDiemTrip};
+use App\Models\Travel\{ExpenseCategory, PerDiemTrip, TravelLog};
 use Database\Seeders\PerDiemRateSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\TestResponse;
@@ -119,6 +119,22 @@ class PerDiemTripControllerTest extends TestCase {
         $this->assertSame(PerDiemTripStatus::Converted, $trip->status);
         $this->assertNotNull($trip->expense_id);
         $this->assertSame(ExpenseStatus::Pending->value, $trip->expense->status->value);
+    }
+
+    /** Der Rücksprung zeigte das nackte Bearbeiten-Fragment (#106) — jetzt die Liste mit offenem Dialog. */
+    public function test_trip_from_travel_log_opens_the_edit_dialog_on_the_list(): void {
+        $log = TravelLog::factory()->create([
+            'organization_id' => $this->organization->id,
+            'user_id' => $this->user->id,
+            'date' => '2025-03-10',
+            'started_at' => '2025-03-10 07:00:00',
+            'ended_at' => '2025-03-10 19:00:00',
+            'to_address' => 'Frankfurt',
+        ]);
+
+        $this->postAsUser('travel-logs.per-diem.generate', [], $log)
+            ->assertRedirect(route('per-diem-trips.index'))
+            ->assertSessionHas('open_dialog', route('per-diem-trips.edit', PerDiemTrip::query()->where('travel_log_id', $log->id)->firstOrFail()));
     }
 
     public function test_destroy_only_for_draft(): void {

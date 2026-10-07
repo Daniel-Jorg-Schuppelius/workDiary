@@ -53,14 +53,7 @@ class SaveSepaMandateRequest extends FormRequest {
             ],
             'kind' => ['required', Rule::in(array_column(MandateKind::cases(), 'value'))],
             'signed_on' => ['required', 'date', 'before_or_equal:today'],
-            // Strikt (mod 97 + Länderlänge): ein neues Mandat geht in die
-            // pain.008-Datei, eine formal gültige, aber falsche IBAN würde erst
-            // bei der Bank scheitern — hier gibt es keinen Bestand zu schonen.
-            'iban' => ['required', 'string', 'max:40', new \App\Rules\Iban(), function (string $attribute, mixed $value, \Closure $fail): void {
-                if (! is_string($value) || ! \CommonToolkit\Helper\Data\BankHelper::validateIBAN($value, true)) {
-                    $fail((string) __('validation.regex'));
-                }
-            }],
+            'iban' => ['required', 'string', 'max:40', new \App\Rules\Iban()],
             'bic' => ['nullable', 'string', 'max:20', new \App\Rules\Bic()],
             'account_holder' => ['nullable', 'string', 'max:191'],
             'note' => ['nullable', 'string', 'max:191'],

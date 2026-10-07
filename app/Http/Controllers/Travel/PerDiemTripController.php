@@ -216,8 +216,9 @@ class PerDiemTripController extends Controller {
 
         $trip = $this->service->createFromTravelLog($travelLog);
 
-        return redirect()->route('per-diem-trips.edit', $trip)
-            ->with('success', __('Verpflegungspauschale aus Fahrt erzeugt – bitte Mahlzeiten prüfen.'));
+        return redirect()->toList('per-diem-trips.index')
+            ->with('success', __('Verpflegungspauschale aus Fahrt erzeugt – bitte Mahlzeiten prüfen.'))
+            ->with('open_dialog', route('per-diem-trips.edit', $trip));
     }
 
     /** @return array<string, mixed> */

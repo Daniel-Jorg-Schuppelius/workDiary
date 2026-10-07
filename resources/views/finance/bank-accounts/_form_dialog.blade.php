@@ -19,7 +19,7 @@
 >
     <x-form-group :legend="__('bank.title.account')" icon="account_balance" tone="primary" cols="2">
         <x-input-field name="label" :label="__('bank.field.label')" required maxlength="120" span="2" :value="old('label', $account->label)" />
-        <x-input-field name="iban" :label="__('bank.field.iban')" required maxlength="64" span="2" class="font-mono uppercase" :value="old('iban', $account->iban)" />
+        <x-input-field name="iban" :label="__('bank.field.iban')" required maxlength="64" span="2" class="font-mono uppercase" data-iban-check :value="old('iban', $account->iban)" />
         <x-input-field name="bic" :label="__('bank.field.bic')" maxlength="32" class="uppercase" :value="old('bic', $account->bic)" />
         <x-input-field name="account_holder" :label="__('bank.field.account_holder')" maxlength="200" :value="old('account_holder', $account->account_holder)" />
         <x-input-field name="datev_account_no" :label="__('bank.field.datev_account_no')" maxlength="20" :value="old('datev_account_no', $account->datev_account_no)" />

@@ -18,6 +18,9 @@ return [
         'switch_to_new' => 'Passa alla nuova modalità',
         'switch_to_legacy' => 'Passa alla modalità legacy',
     ],
+    'iban' => [
+        'invalid' => 'IBAN non valido: verifichi la presenza di cifre invertite.',
+    ],
     'schedule' => [
         'move_failed' => 'Spostamento non riuscito.',
         'suggest_failed' => 'Impossibile caricare i suggerimenti.',

@@ -124,8 +124,9 @@ class ExpenseController extends Controller {
 
         $result = $scanner->createDraftFromScan($file, $actor, $organization);
 
-        return redirect()->route('expenses.edit', $result['expense'])
-            ->with('success', __('Beleg gelesen — bitte Werte prüfen und speichern. Kategorie und Händler ergänzt der Mensch, nicht die Maschine.'));
+        return redirect()->toList('expenses.index')
+            ->with('success', __('Beleg gelesen — bitte Werte prüfen und speichern. Kategorie und Händler ergänzt der Mensch, nicht die Maschine.'))
+            ->with('open_dialog', route('expenses.edit', $result['expense']));
     }
 
     public function create(Request $request): View {

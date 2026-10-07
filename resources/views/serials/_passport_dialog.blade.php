@@ -49,7 +49,7 @@
 
     <x-slot:actions>
         @if ($status['issued'])
-            <form method="POST" action="{{ route('serials.passport.toggle') }}" class="contents">
+            <form method="POST" action="{{ route('serials.passport.toggle') }}" data-entry-form class="contents">
                 @csrf
                 @method('PATCH')
                 <input type="hidden" name="enabled" value="{{ $status['enabled'] ? 0 : 1 }}">
@@ -58,7 +58,7 @@
                 </x-button>
             </form>
 
-            <form method="POST" action="{{ route('serials.passport.revoke') }}" class="contents">
+            <form method="POST" action="{{ route('serials.passport.revoke') }}" data-entry-form class="contents">
                 @csrf
                 @method('DELETE')
                 <x-button type="submit" tone="error" class="btn-outline" data-confirm-dialog
@@ -67,7 +67,7 @@
             </form>
         @endif
 
-        <form method="POST" action="{{ route('serials.passport.rotate') }}" class="contents">
+        <form method="POST" action="{{ route('serials.passport.rotate') }}" data-entry-form class="contents">
             @csrf
             @if ($status['issued'])
                 <x-button type="submit" data-confirm-dialog
