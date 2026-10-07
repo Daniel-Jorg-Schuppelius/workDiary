@@ -1,7 +1,7 @@
 ---
 title: "Temi"
 topic: admin.themes
-version: 1
+version: 2
 audience:
     - admin
 modules:
@@ -18,6 +18,8 @@ forniti può crearne di propri. Per ogni tema imposta chiave e nome,
 mancanti vengono derivati automaticamente) e **geometria** (raggi e
 bordi); un contrasto minimo viene imposto per la leggibilità. Può
 definire un tema predefinito per la modalità chiara e per quella
-scura, valido per i membri senza scelta propria. I temi personalizzati
+scura, valido per i membri senza scelta propria; la voce
+**Predefinito** annulla la scelta e ripristina i temi forniti Corporate
+(chiaro) e Dim (scuro). I temi personalizzati
 appartengono al modulo **Theming** dei piani superiori; eliminando un
 tema in uso gli utenti interessati tornano a un tema di ripiego.

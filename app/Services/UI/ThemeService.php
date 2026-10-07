@@ -139,21 +139,25 @@ class ThemeService {
      * gesetzt oder kein gültiges Hell-Theme.
      */
     public function organizationDefaultLight(): string {
-        return $this->resolveOrgDefault('default_light', 'light', (string) config('theme.auto.light', 'corporate'));
+        return $this->organizationDefaultSetting('light') ?? (string) config('theme.auto.light', 'corporate');
     }
 
     /** Org-Default-Theme für dunklen System-Modus (settings['theme']['default_dark']). */
     public function organizationDefaultDark(): string {
-        return $this->resolveOrgDefault('default_dark', 'dark', (string) config('theme.auto.dark', 'dim'));
+        return $this->organizationDefaultSetting('dark') ?? (string) config('theme.auto.dark', 'dim');
     }
 
-    private function resolveOrgDefault(string $key, string $scheme, string $fallback): string {
+    /**
+     * Von der Organisation hinterlegtes Theme für 'light'|'dark'; null, wenn keines
+     * (oder kein gültiges des Schemas) gesetzt ist und config('theme.auto') gilt.
+     */
+    public function organizationDefaultSetting(string $scheme): ?string {
         $settings = $this->currentOrganization()?->settings;
         $settings = is_array($settings) ? $settings : [];
         $theme = is_array($settings['theme'] ?? null) ? $settings['theme'] : [];
-        $token = is_string($theme[$key] ?? null) ? $theme[$key] : null;
+        $token = is_string($theme['default_' . $scheme] ?? null) ? $theme['default_' . $scheme] : null;
 
-        return $token !== null && $this->schemeOf($token) === $scheme ? $token : $fallback;
+        return $token !== null && $this->schemeOf($token) === $scheme ? $token : null;
     }
 
     /**

@@ -87,6 +87,29 @@ class ThemeTest extends TestCase {
             ->assertSessionHasErrors('default_light');
     }
 
+    public function test_default_pair_can_be_reset_to_standard(): void {
+        $org = Organization::factory()->enterprise()->create([
+            'settings' => ['theme' => ['custom' => [], 'default_light' => 'emerald', 'default_dark' => 'business']],
+        ]);
+        $admin = User::factory()->admin()->create(['organization_id' => $org->id]);
+
+        $this->actingAs($admin)->get(route('admin.themes.index'))
+            ->assertOk()
+            ->assertSee('<option value="business" selected>Business</option>', false)
+            ->assertSee('<option value="" >Standard (Dim)</option>', false);
+
+        $this->actingAs($admin)
+            ->put(route('admin.themes.default'), ['default_light' => 'emerald', 'default_dark' => ''])
+            ->assertRedirect(route('admin.themes.index'));
+        $org->refresh();
+        $this->assertSame('emerald', data_get($org->settings, 'theme.default_light'));
+        $this->assertNull(data_get($org->settings, 'theme.default_dark'));
+
+        $this->assertSame('dim', $this->actingResolver($org, $admin)->seed()['autoDark']);
+        $this->get(route('admin.themes.index'))
+            ->assertSee('<option value="" selected>Standard (Dim)</option>', false);
+    }
+
     public function test_custom_theme_css_is_injected_into_layout(): void {
         $org = Organization::factory()->enterprise()->create([
             'settings' => ['theme' => ['custom' => [$this->customTheme()]]],

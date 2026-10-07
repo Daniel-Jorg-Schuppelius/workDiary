@@ -1,7 +1,7 @@
 ---
 title: "Thèmes"
 topic: admin.themes
-version: 1
+version: 2
 audience:
     - admin
 modules:
@@ -18,6 +18,7 @@ thème, vous définissez une clé unique (immuable après création) et un
 nom d'affichage ; les couleurs de contraste manquantes sont dérivées
 automatiquement et un contraste minimal est imposé. Vous pouvez
 définir un thème standard par mode (clair/sombre) pour tous les
-membres sans choix propre. Les thèmes personnalisés relèvent du module
+membres sans choix propre ; l'entrée **Par défaut** annule ce choix et
+rétablit les thèmes fournis Corporate (clair) et Dim (sombre). Les thèmes personnalisés relèvent du module
 **Theming** des plans supérieurs ; la suppression d'un thème utilisé
 renvoie les utilisateurs concernés vers un thème de repli.

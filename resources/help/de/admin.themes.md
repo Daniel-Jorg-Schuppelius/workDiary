@@ -1,7 +1,7 @@
 ---
 title: "Themes"
 topic: admin.themes
-version: 1
+version: 2
 audience:
     - admin
 modules:
@@ -33,6 +33,8 @@ Standard festlegen:
 
 - Sie können je Modus einen Standard setzen (Standard hell / Standard
   dunkel). Er gilt für alle Mitglieder ohne eigene Theme-Auswahl.
+- Der Eintrag **Standard** hebt Ihre Auswahl wieder auf; dann gelten
+  die mitgelieferten Themes Corporate (hell) und Dim (dunkel).
 
 Lizenz/Module: Eigene Themes gehören zum Modul **Theming** und sind
 in höheren Plänen verfügbar. Bei einem Downgrade bleibt ein aktives

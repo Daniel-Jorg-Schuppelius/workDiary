@@ -25,6 +25,12 @@
     $custom = $theme->customDefinitions();
     $defaultLight = $theme->organizationDefaultLight();
     $defaultDark = $theme->organizationDefaultDark();
+    // null = nichts hinterlegt, es gilt config('theme.auto') (Eintrag „Standard“).
+    $storedLight = $theme->organizationDefaultSetting('light');
+    $storedDark = $theme->organizationDefaultSetting('dark');
+    $builtinLabels = array_column($builtin, 'label', 'key');
+    $fallbackLight = (string) config('theme.auto.light', 'corporate');
+    $fallbackDark = (string) config('theme.auto.dark', 'dim');
     $maxCustom = (int) config('theme.max_custom', 12);
 @endphp
 
@@ -46,13 +52,14 @@
                 <div class="fieldset grow max-w-xs">
                     <label class="fieldset-label" for="default-light"><x-icon name="light_mode" class="text-base" /> {{ __('Hell-Modus') }}</label>
                     <select id="default-light" name="default_light" class="select select-bordered select-sm w-full">
+                        <option value="" @selected($storedLight === null)>{{ __('Standard (:theme)', ['theme' => $builtinLabels[$fallbackLight] ?? $fallbackLight]) }}</option>
                         @foreach ($lightThemes as $t)
-                            <option value="{{ $t['key'] }}" @selected($defaultLight === $t['key'])>{{ $t['label'] }}</option>
+                            <option value="{{ $t['key'] }}" @selected($storedLight === $t['key'])>{{ $t['label'] }}</option>
                         @endforeach
                         @if ($customLight !== [])
                             <optgroup label="{{ __('Eigene Themes') }}">
                                 @foreach ($customLight as $d)
-                                    <option value="{{ $d->token() }}" @selected($defaultLight === $d->token())>{{ $d->label }}</option>
+                                    <option value="{{ $d->token() }}" @selected($storedLight === $d->token())>{{ $d->label }}</option>
                                 @endforeach
                             </optgroup>
                         @endif
@@ -61,13 +68,14 @@
                 <div class="fieldset grow max-w-xs">
                     <label class="fieldset-label" for="default-dark"><x-icon name="dark_mode" class="text-base" /> {{ __('Dunkel-Modus') }}</label>
                     <select id="default-dark" name="default_dark" class="select select-bordered select-sm w-full">
+                        <option value="" @selected($storedDark === null)>{{ __('Standard (:theme)', ['theme' => $builtinLabels[$fallbackDark] ?? $fallbackDark]) }}</option>
                         @foreach ($darkThemes as $t)
-                            <option value="{{ $t['key'] }}" @selected($defaultDark === $t['key'])>{{ $t['label'] }}</option>
+                            <option value="{{ $t['key'] }}" @selected($storedDark === $t['key'])>{{ $t['label'] }}</option>
                         @endforeach
                         @if ($customDark !== [])
                             <optgroup label="{{ __('Eigene Themes') }}">
                                 @foreach ($customDark as $d)
-                                    <option value="{{ $d->token() }}" @selected($defaultDark === $d->token())>{{ $d->label }}</option>
+                                    <option value="{{ $d->token() }}" @selected($storedDark === $d->token())>{{ $d->label }}</option>
                                 @endforeach
                             </optgroup>
                         @endif

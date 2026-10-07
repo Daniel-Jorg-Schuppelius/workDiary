@@ -1,7 +1,7 @@
 ---
 title: "Temas"
 topic: admin.themes
-version: 1
+version: 2
 audience:
     - admin
 modules:
@@ -18,7 +18,9 @@ nombre, esquema, colores (base, acento y estado — los contrastes
 faltantes se derivan automáticamente) y geometría (radios y grosor de
 borde); se exige un contraste mínimo para mantener legibles los
 paneles. Puede fijar un tema estándar por modo (claro/oscuro) para
-todos los miembros sin selección propia. Los temas propios pertenecen
+todos los miembros sin selección propia; la entrada **Predeterminado**
+anula esa selección y vuelven a aplicarse los temas incluidos Corporate
+(claro) y Dim (oscuro). Los temas propios pertenecen
 al módulo **Theming** de planes superiores y su gestión está reservada
 a administradores de la organización; eliminar un tema en uso devuelve
 a los usuarios afectados a un tema de reserva.
