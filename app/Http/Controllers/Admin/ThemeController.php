@@ -137,7 +137,7 @@ class ThemeController extends Controller {
 
         $theme = is_array($organization->settings['theme'] ?? null) ? $organization->settings['theme'] : [];
         // War das gelöschte Theme als Hell-/Dunkel-Standard gesetzt, fällt der
-        // jeweilige Standard weg (greift dann auf corporate/dim zurück).
+        // jeweilige Standard weg (greift dann auf config('theme.auto') zurück).
         $meta = [];
         if (($theme['default_light'] ?? null) === $token) {
             $meta['default_light'] = null;

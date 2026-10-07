@@ -28,7 +28,7 @@
     $brandSlogan = isset($branding) && $branding ? $branding->slogan() : null;
 @endphp
 <!DOCTYPE html>
-<html lang="{{ app()->getLocale() }}" data-theme="dim">
+<html lang="{{ app()->getLocale() }}" data-theme="{{ config('theme.auto.dark') }}">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -52,7 +52,7 @@
             </style>
         @endif
     </head>
-    <body class="min-h-screen bg-primary-content text-base-content">
+    <body class="min-h-screen bg-base-100 text-base-content">
         <x-guest-header>
             @hasSection('header-action')
                 <x-slot:actions>@yield('header-action')</x-slot:actions>

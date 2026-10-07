@@ -17,7 +17,7 @@
       content  Seiteninhalt (Pflicht)
 --}}
 <!DOCTYPE html>
-<html lang="{{ app()->getLocale() }}" data-theme="dim" class="motion-safe:scroll-smooth">
+<html lang="{{ app()->getLocale() }}" data-theme="{{ config('theme.auto.dark') }}" class="motion-safe:scroll-smooth">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">

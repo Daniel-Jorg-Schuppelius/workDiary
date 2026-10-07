@@ -1,7 +1,7 @@
 ---
 title: "Thèmes"
 topic: admin.themes
-version: 2
+version: 3
 audience:
     - admin
 modules:
@@ -19,6 +19,7 @@ nom d'affichage ; les couleurs de contraste manquantes sont dérivées
 automatiquement et un contraste minimal est imposé. Vous pouvez
 définir un thème standard par mode (clair/sombre) pour tous les
 membres sans choix propre ; l'entrée **Par défaut** annule ce choix et
-rétablit les thèmes fournis Corporate (clair) et Dim (sombre). Les thèmes personnalisés relèvent du module
+rétablit les thèmes fournis Corporate (clair) et Corporate Dark (sombre,
+mêmes couleurs sur fond sombre). Les thèmes personnalisés relèvent du module
 **Theming** des plans supérieurs ; la suppression d'un thème utilisé
 renvoie les utilisateurs concernés vers un thème de repli.

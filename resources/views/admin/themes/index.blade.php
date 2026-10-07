@@ -30,7 +30,7 @@
     $storedDark = $theme->organizationDefaultSetting('dark');
     $builtinLabels = array_column($builtin, 'label', 'key');
     $fallbackLight = (string) config('theme.auto.light', 'corporate');
-    $fallbackDark = (string) config('theme.auto.dark', 'dim');
+    $fallbackDark = (string) config('theme.auto.dark', 'corporate-dark');
     $maxCustom = (int) config('theme.max_custom', 12);
 @endphp
 

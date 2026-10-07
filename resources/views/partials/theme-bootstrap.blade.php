@@ -13,13 +13,21 @@
     initiale Theme — den Umschalter macht zentral resources/js/layout.js
     (ein zweiter Click-Handler würde doppelt schalten).
 --}}
+@php
+    $__themeSchemes = array_column(app(\App\Services\UI\ThemeService::class)->builtinThemes(), 'scheme', 'key');
+@endphp
 <script @cspNonce>
     (function () {
-        var savedTheme = localStorage.getItem('workDiaryTheme');
+        // Nur mitgelieferte Themes: eigene Org-Themes haben auf Gast-Seiten kein CSS.
+        var schemes = @json($__themeSchemes);
+        var savedTheme = null;
+        try { savedTheme = localStorage.getItem('workDiaryTheme'); } catch (e) {}
         var prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
-        var theme = savedTheme || (prefersLight ? 'corporate' : 'dim');
+        var theme = savedTheme && schemes[savedTheme]
+            ? savedTheme
+            : (prefersLight ? @json(config('theme.auto.light')) : @json(config('theme.auto.dark')));
         var root = document.documentElement;
         root.setAttribute('data-theme', theme);
-        root.style.colorScheme = theme === 'corporate' ? 'light' : 'dark';
+        root.style.colorScheme = schemes[theme] || 'light';
     })();
 </script>

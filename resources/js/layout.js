@@ -13,16 +13,19 @@ import { putJson } from "./lib/http.js";
     var I = cfg.i18n || {};
     var root = document.documentElement;
     var seed = window.__theme || {};
-    // Hell-/Dunkel-Theme dieses Kontextes (Org-Paar, sonst corporate/dim).
+    // Hell-/Dunkel-Theme dieses Kontextes (Org-Paar, sonst corporate/corporate-dark).
     var lightTheme = seed.autoLight || "corporate";
-    var darkTheme = seed.autoDark || "dim";
+    var darkTheme = seed.autoDark || "corporate-dark";
     var toggles = document.querySelectorAll("[data-theme-toggle]");
     var labels = document.querySelectorAll("[data-theme-label]");
 
     function schemeOf(theme) {
         return (
             (seed.schemes && seed.schemes[theme]) ||
-            (theme === "dim" || theme === "dark" || theme === "business"
+            (theme === "corporate-dark" ||
+            theme === "dim" ||
+            theme === "dark" ||
+            theme === "business"
                 ? "dark"
                 : "light")
         );

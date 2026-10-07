@@ -1,7 +1,7 @@
 ---
 title: "Temi"
 topic: admin.themes
-version: 2
+version: 3
 audience:
     - admin
 modules:
@@ -20,6 +20,6 @@ bordi); un contrasto minimo viene imposto per la leggibilità. Può
 definire un tema predefinito per la modalità chiara e per quella
 scura, valido per i membri senza scelta propria; la voce
 **Predefinito** annulla la scelta e ripristina i temi forniti Corporate
-(chiaro) e Dim (scuro). I temi personalizzati
+(chiaro) e Corporate Dark (scuro, stessi colori su sfondo scuro). I temi personalizzati
 appartengono al modulo **Theming** dei piani superiori; eliminando un
 tema in uso gli utenti interessati tornano a un tema di ripiego.

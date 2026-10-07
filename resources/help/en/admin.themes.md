@@ -1,7 +1,7 @@
 ---
 title: "Themes"
 topic: admin.themes
-version: 2
+version: 3
 audience:
     - admin
 modules:
@@ -33,7 +33,8 @@ Set default:
 - You can set a default per mode (default light / default dark). It
   applies to all members who have not chosen their own theme.
 - The **Default** entry removes your selection again; the built-in
-  themes Corporate (light) and Dim (dark) then apply.
+  themes Corporate (light) and Corporate Dark (dark, same colors on a
+  dark background) then apply.
 
 License/modules: custom themes belong to the **theming** module and
 are available on higher plans. On a downgrade an active theme

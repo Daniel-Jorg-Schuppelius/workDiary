@@ -15,8 +15,9 @@
  *                  key = data-theme-Wert, scheme = light|dark (für color-scheme
  *                  + die auto-Verzweigung), label = Anzeigename im Picker.
  *                  WICHTIG: Diese Liste MUSS mit der @plugin-themes-Liste in
- *                  resources/css/app.css synchron bleiben — sonst validiert ein
- *                  Theme grün, existiert aber nicht im CSS-Build.
+ *                  resources/css/app.css (plus den eigenen @plugin-Theme-Blöcken
+ *                  dort, z. B. corporate-dark) synchron bleiben — sonst validiert
+ *                  ein Theme grün, existiert aber nicht im CSS-Build.
  *   - `auto`     : welches Built-in 'auto' bei hellem/dunklem System wählt.
  *   - `geometry` : Default-Geometrie für Custom-Themes (Custom-Themes ohne
  *                  eigene Geometrie erben diese Werte).
@@ -31,6 +32,7 @@
 return [
     'builtin' => [
         'corporate' => ['label' => 'Corporate', 'scheme' => 'light'],
+        'corporate-dark' => ['label' => 'Corporate Dark', 'scheme' => 'dark'],
         'dim' => ['label' => 'Dim', 'scheme' => 'dark'],
         'business' => ['label' => 'Business', 'scheme' => 'dark'],
         'emerald' => ['label' => 'Emerald', 'scheme' => 'light'],
@@ -43,7 +45,7 @@ return [
     // 'auto' folgt prefers-color-scheme und wählt eines dieser Built-ins.
     'auto' => [
         'light' => 'corporate',
-        'dark' => 'dim',
+        'dark' => 'corporate-dark',
     ],
 
     // Default-Geometrie für Custom-Themes (DaisyUI-v5-Defaults).

@@ -67,7 +67,7 @@ class ThemeTest extends TestCase {
 
         $seed = $this->actingResolver($org, $user)->seed();
         $this->assertSame('corporate', $seed['autoLight']);
-        $this->assertSame('dim', $seed['autoDark']);
+        $this->assertSame('corporate-dark', $seed['autoDark']);
     }
 
     public function test_set_default_pair_persists_and_rejects_wrong_scheme(): void {
@@ -96,7 +96,7 @@ class ThemeTest extends TestCase {
         $this->actingAs($admin)->get(route('admin.themes.index'))
             ->assertOk()
             ->assertSee('<option value="business" selected>Business</option>', false)
-            ->assertSee('<option value="" >Standard (Dim)</option>', false);
+            ->assertSee('<option value="" >Standard (Corporate Dark)</option>', false);
 
         $this->actingAs($admin)
             ->put(route('admin.themes.default'), ['default_light' => 'emerald', 'default_dark' => ''])
@@ -105,9 +105,9 @@ class ThemeTest extends TestCase {
         $this->assertSame('emerald', data_get($org->settings, 'theme.default_light'));
         $this->assertNull(data_get($org->settings, 'theme.default_dark'));
 
-        $this->assertSame('dim', $this->actingResolver($org, $admin)->seed()['autoDark']);
+        $this->assertSame('corporate-dark', $this->actingResolver($org, $admin)->seed()['autoDark']);
         $this->get(route('admin.themes.index'))
-            ->assertSee('<option value="" selected>Standard (Dim)</option>', false);
+            ->assertSee('<option value="" selected>Standard (Corporate Dark)</option>', false);
     }
 
     public function test_custom_theme_css_is_injected_into_layout(): void {

@@ -144,7 +144,7 @@ class ThemeService {
 
     /** Org-Default-Theme für dunklen System-Modus (settings['theme']['default_dark']). */
     public function organizationDefaultDark(): string {
-        return $this->organizationDefaultSetting('dark') ?? (string) config('theme.auto.dark', 'dim');
+        return $this->organizationDefaultSetting('dark') ?? (string) config('theme.auto.dark', 'corporate-dark');
     }
 
     /**
@@ -217,7 +217,7 @@ class ThemeService {
         return [
             'authenticated' => Auth::check(),
             'active' => $this->resolveActiveKey(),
-            // 'auto' nutzt das org-eigene Hell/Dunkel-Paar (Fallback corporate/dim).
+            // 'auto' nutzt das org-eigene Hell/Dunkel-Paar (Fallback corporate/corporate-dark).
             'autoLight' => $this->organizationDefaultLight(),
             'autoDark' => $this->organizationDefaultDark(),
             'schemes' => $schemes,

@@ -7,7 +7,7 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
 <!DOCTYPE html>
-<html lang="{{ app()->getLocale() }}" data-theme="dim">
+<html lang="{{ app()->getLocale() }}" data-theme="{{ config('theme.auto.dark') }}">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -25,7 +25,7 @@
             </style>
         @endif
     </head>
-    <body class="min-h-screen bg-primary-content text-base-content">
+    <body class="min-h-screen bg-base-100 text-base-content">
         {{-- Ohne gültige Lizenz führt keine Anmeldung weiter: Header ohne Aktion. --}}
         <x-guest-header>
             <x-slot:actions></x-slot:actions>
