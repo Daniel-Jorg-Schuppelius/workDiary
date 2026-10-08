@@ -2,6 +2,14 @@
 title: "Correzioni orarie"
 topic: corrections.requests
 version: 1
+keywords:
+    - richiesta di correzione
+    - timbratura dimenticata
+    - timbratura mancante
+    - inserire ore mancanti
+    - correggere una registrazione
+    - correggere l'orario di lavoro
+    - rettifica presenze
 audience: []
 related:
     - attendance.manage

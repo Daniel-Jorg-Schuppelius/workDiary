@@ -2,6 +2,19 @@
 title: "Closing and reports"
 topic: accounting.closing
 version: 1
+keywords:
+    - month-end close
+    - year-end closing
+    - lock period
+    - reopen period
+    - management accounts
+    - profit and loss
+    - cash flow forecast
+    - budget vs actual
+    - VAT report
+    - tax audit export
+    - cost allocation
+    - DATEV export
 audience:
     - admin
     - geschaeftsfuehrung

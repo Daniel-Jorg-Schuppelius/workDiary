@@ -2,6 +2,16 @@
 title: "Plazos fiscales y obligaciones de declaración"
 topic: accounting.filings
 version: 1
+keywords:
+    - declaración de IVA
+    - IVA mensual
+    - IVA trimestral
+    - plazo de presentación
+    - prórroga permanente
+    - pago anticipado especial
+    - declaración recapitulativa
+    - calendario fiscal
+    - vencimientos fiscales
 audience:
     - admin
     - geschaeftsfuehrung

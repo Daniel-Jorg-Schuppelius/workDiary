@@ -2,6 +2,17 @@
 title: "Cloud document intake"
 topic: cloud-intake.overview
 version: 1
+keywords:
+    - Dropbox
+    - OneDrive
+    - SharePoint
+    - Google Drive
+    - watched folder
+    - document import
+    - cloud folder
+    - folder rule
+    - automatic import
+    - connect cloud storage
 audience: []
 related:
     - documents.manage

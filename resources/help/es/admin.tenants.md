@@ -2,6 +2,19 @@
 title: "Organizaciones e inquilinos"
 topic: admin.tenants
 version: 2
+keywords:
+    - gestión de inquilinos
+    - multi-tenant
+    - multiempresa
+    - mandante
+    - crear organización
+    - añadir empresa
+    - eliminar organización
+    - desactivar organización
+    - cambiar de organización
+    - exportación de datos
+    - purga
+    - cambiar plan
 audience:
     - admin
 related:

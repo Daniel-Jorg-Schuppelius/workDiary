@@ -2,6 +2,16 @@
 title: "Lecturas de contadores"
 topic: meter-readings
 version: 1
+keywords:
+    - lectura del contador
+    - registrar lectura
+    - leer el contador
+    - contador de luz
+    - contador de agua
+    - contador de gas
+    - consumo
+    - seguimiento del consumo
+    - historial de consumo
 audience: []
 related:
     - key-handovers

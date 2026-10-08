@@ -2,6 +2,17 @@
 title: "Materiali"
 topic: materials.manage
 version: 1
+keywords:
+    - materie prime
+    - anagrafica materiali
+    - materiali di consumo
+    - elenco materiali
+    - aggiungere materiale
+    - prezzo materiale
+    - disattivare materiale
+    - codice SKU
+    - consumo materiali
+    - forniture
 audience: []
 modules:
     - module.vertrieb

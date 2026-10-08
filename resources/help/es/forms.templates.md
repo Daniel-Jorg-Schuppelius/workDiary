@@ -2,6 +2,18 @@
 title: "Gestionar plantillas de formularios"
 topic: forms.templates
 version: 1
+keywords:
+    - crear formulario
+    - editor de formularios
+    - diseñador de formularios
+    - crear checklist
+    - campos del formulario
+    - tipos de campo
+    - lista desplegable
+    - campo obligatorio
+    - activar formulario
+    - archivar formulario
+    - formularios personalizados
 audience:
     - admin
     - geschaeftsfuehrung

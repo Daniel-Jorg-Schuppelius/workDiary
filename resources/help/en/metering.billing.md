@@ -2,6 +2,18 @@
 title: "Meter-based billing"
 topic: metering.billing
 version: 1
+keywords:
+    - usage-based billing
+    - metered billing
+    - pay per use
+    - click charge
+    - cost per copy
+    - copier billing
+    - free allowance
+    - tiered pricing
+    - base fee
+    - operating hours billing
+    - consumption billing
 audience: []
 related:
     - invoices.manage

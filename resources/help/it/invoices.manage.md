@@ -2,6 +2,22 @@
 title: "Fatture & documenti"
 topic: invoices.manage
 version: 7
+keywords:
+    - creare fattura
+    - emettere fattura
+    - fattura attiva
+    - fatturazione
+    - stornare fattura
+    - nota di credito
+    - fattura elettronica
+    - XRechnung
+    - Peppol
+    - link di pagamento
+    - pagamento online
+    - supplemento rame
+    - Stripe
+    - Mollie
+    - SumUp
 audience: []
 modules:
     - module.vertrieb

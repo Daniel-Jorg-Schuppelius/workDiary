@@ -2,6 +2,19 @@
 title: "Your day in WorkDiary: Accounting"
 topic: roles.buchhaltung
 version: 1
+keywords:
+    - accountant
+    - bookkeeping
+    - invoicing
+    - billing run
+    - payroll export
+    - lock timesheets
+    - mark invoice as paid
+    - DATEV handover
+    - Lexoffice
+    - hourly rates
+    - surcharge rules
+    - customer master data
 audience:
     - buchhaltung
 related:

@@ -2,6 +2,15 @@
 title: "Portale clienti – panoramica"
 topic: customer-portal.overview
 version: 1
+keywords:
+    - home del portale
+    - area clienti
+    - area riservata
+    - dashboard cliente
+    - riquadri
+    - indicatori
+    - ricerca nel portale
+    - cercare una fattura
 audience: []
 related:
     - customer-portal.diary

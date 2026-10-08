@@ -2,6 +2,19 @@
 title: "Gestire le integrazioni"
 topic: admin.integrations
 version: 3
+keywords:
+    - interfacce
+    - connettori
+    - plugin
+    - terminale marcatempo
+    - rilevatore presenze
+    - modalità kiosk
+    - badge NFC
+    - check-in QR code
+    - PIN terminale
+    - SSO
+    - Nextcloud
+    - Stripe
 audience:
     - admin
     - buchhaltung

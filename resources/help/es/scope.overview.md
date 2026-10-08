@@ -2,6 +2,16 @@
 title: "Alcance funcional"
 topic: scope.overview
 version: 1
+keywords:
+    - activar módulos
+    - desactivar módulos
+    - ocultar funciones
+    - simplificar el menú
+    - selección de módulos
+    - ajuste predefinido
+    - página de inicio por rol
+    - página de entrada
+    - desactivar funcionalidades
 audience:
     - admin
 related:

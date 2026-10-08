@@ -2,6 +2,18 @@
 title: "Conflicts with external systems (stock and articles)"
 topic: inventory.conflicts
 version: 3
+keywords:
+    - stock discrepancy
+    - sync error
+    - synchronization conflict
+    - failed sync
+    - ERP sync
+    - compensating entry
+    - article conflict
+    - reconcile stock
+    - data mismatch
+    - Lexware Office
+    - Lexoffice
 audience:
     - admin
     - geschaeftsfuehrung

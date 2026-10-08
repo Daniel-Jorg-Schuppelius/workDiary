@@ -2,6 +2,19 @@
 title: "Systemeinstellungen"
 topic: admin.settings
 version: 1
+keywords:
+    - Konfiguration
+    - Einstellungen ändern
+    - Optionen
+    - Standardwerte
+    - Organisationseinstellungen
+    - Systemkonfiguration
+    - Upload-Limit
+    - Seitengröße
+    - Override
+    - Einstellung zurücksetzen
+    - Grundeinstellungen
+    - Parameter
 audience:
     - admin
 related:

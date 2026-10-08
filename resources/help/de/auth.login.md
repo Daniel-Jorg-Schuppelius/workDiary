@@ -2,6 +2,18 @@
 title: "Anmeldung"
 topic: auth.login
 version: 1
+keywords:
+    - Login
+    - einloggen
+    - anmelden
+    - Benutzername
+    - Passwort
+    - Zugang
+    - angemeldet bleiben
+    - Konto gesperrt
+    - Anmeldung gesperrt
+    - Login funktioniert nicht
+    - Sign-in
 related:
     - auth.password-reset
     - auth.two-factor

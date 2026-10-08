@@ -2,6 +2,17 @@
 title: "Agreements"
 topic: customer-portal.agreements
 version: 1
+keywords:
+    - DPA
+    - NDA
+    - data processing agreement
+    - confidentiality agreement
+    - sign contract
+    - signature status
+    - signed contracts
+    - download contract
+    - signature link
+    - completion certificate
 audience: []
 modules:
     - module.contracts

@@ -2,6 +2,18 @@
 title: "Crear un acta"
 topic: protocols.create
 version: 3
+keywords:
+    - acta de recepción
+    - informe de mantenimiento
+    - parte de trabajo
+    - informe de inspección
+    - informe de servicio
+    - acta de entrega
+    - registrar defectos
+    - fotos antes y después
+    - plantilla de acta
+    - mediciones
+    - checklist
 audience: []
 schema: process
 related:

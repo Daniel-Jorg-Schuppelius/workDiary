@@ -2,6 +2,17 @@
 title: "Software management"
 topic: software.inventory
 version: 1
+keywords:
+    - software inventory
+    - license management
+    - software licenses
+    - installed programs
+    - applications
+    - subscriptions
+    - operating systems
+    - SAM
+    - volume license
+    - open source
 audience: []
 related:
     - assets.fleet

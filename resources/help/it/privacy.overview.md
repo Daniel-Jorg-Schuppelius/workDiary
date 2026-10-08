@@ -2,6 +2,19 @@
 title: "Panoramica della gestione della protezione dei dati"
 topic: privacy.overview
 version: 1
+keywords:
+    - GDPR
+    - registro dei trattamenti
+    - responsabile del trattamento
+    - DPA
+    - misure tecniche e organizzative
+    - diritti degli interessati
+    - richiesta di accesso
+    - violazione dei dati
+    - data breach
+    - notifica entro 72 ore
+    - conservazione dei dati
+    - legal hold
 audience: []
 modules:
     - module.datenschutz

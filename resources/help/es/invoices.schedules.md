@@ -2,6 +2,17 @@
 title: "Planes de facturación"
 topic: invoices.schedules
 version: 1
+keywords:
+    - factura recurrente
+    - facturación recurrente
+    - factura periódica
+    - factura mensual
+    - ciclo de facturación
+    - intervalo de facturación
+    - pago por adelantado
+    - borradores automáticos
+    - contrato de mantenimiento
+    - cuota fija
 audience:
     - admin
     - geschaeftsfuehrung

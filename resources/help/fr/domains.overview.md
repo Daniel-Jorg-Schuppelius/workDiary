@@ -2,6 +2,19 @@
 title: "Gestion des domaines"
 topic: domains.overview
 version: 1
+keywords:
+    - enregistrer un domaine
+    - renouveler un domaine
+    - enregistrements DNS
+    - zone DNS
+    - serveurs de noms
+    - enregistrement MX
+    - transfert de domaine
+    - verrou de transfert
+    - changement de titulaire
+    - expiration de domaine
+    - revendeur de domaines
+    - nom de domaine
 audience: []
 modules:
     - module.domain

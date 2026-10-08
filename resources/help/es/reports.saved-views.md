@@ -2,6 +2,16 @@
 title: "Evaluaciones guardadas"
 topic: reports.saved-views
 version: 1
+keywords:
+    - guardar filtros
+    - vista guardada
+    - compartir vista
+    - compartir informe
+    - favoritos
+    - marcadores
+    - acceso rápido
+    - informes guardados
+    - filtros guardados
 audience: []
 related:
     - reports.overview

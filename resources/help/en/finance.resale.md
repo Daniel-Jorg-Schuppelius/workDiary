@@ -2,6 +2,21 @@
 title: "Subscriptions & Licences"
 topic: finance.resale
 version: 2
+keywords:
+    - subscription billing
+    - recurring services
+    - license resale
+    - reselling register
+    - billing periods
+    - renewals
+    - notice period
+    - margin report
+    - recurring invoice
+    - import subscriptions
+    - hosting billing
+    - Lexoffice
+    - Telekom
+    - Quality Hosting
 audience: []
 modules:
     - module.reselling

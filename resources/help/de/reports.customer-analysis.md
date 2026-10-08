@@ -2,6 +2,17 @@
 title: "Kundenanalyse"
 topic: reports.customer-analysis
 version: 1
+keywords:
+    - Kundenauswertung
+    - Kundenstatistik
+    - Kundenreport
+    - Aufträge je Kunde
+    - Zeit je Kunde
+    - Nacharbeitsquote
+    - nicht abrechenbare Zeit
+    - Margenrisiko
+    - Kunden-KPI
+    - Kundenbericht
 audience: []
 modules:
     - module.auswertungen_team

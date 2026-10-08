@@ -2,6 +2,16 @@
 title: "Portal de solicitudes de personas interesadas"
 topic: privacy.portal
 version: 1
+keywords:
+    - solicitud RGPD
+    - derecho de acceso
+    - solicitud de supresión
+    - derecho al olvido
+    - portabilidad de datos
+    - verificación de identidad
+    - rectificación
+    - oposición
+    - acceso a mis datos
 audience: []
 related:
     - privacy.overview

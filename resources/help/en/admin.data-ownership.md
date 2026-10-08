@@ -2,6 +2,19 @@
 title: "Data ownership"
 topic: admin.data-ownership
 version: 1
+keywords:
+    - leading system
+    - master system
+    - system of record
+    - single source of truth
+    - data sovereignty
+    - invoicing authority
+    - billing system
+    - Lexoffice
+    - DATEV
+    - handover record
+    - avoid duplicate invoices
+    - sync conflict
 audience:
     - admin
 related:

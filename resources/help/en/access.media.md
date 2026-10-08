@@ -2,6 +2,17 @@
 title: "Access media"
 topic: access.media
 version: 1
+keywords:
+    - transponder
+    - key card
+    - access card
+    - key fob
+    - key management
+    - key handover
+    - lost key card
+    - block access card
+    - issue badge
+    - access control
 audience: []
 modules:
     - module.fuhrpark

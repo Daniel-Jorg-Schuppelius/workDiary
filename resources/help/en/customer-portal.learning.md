@@ -2,6 +2,16 @@
 title: "Training in the customer portal"
 topic: customer-portal.learning
 version: 1
+keywords:
+    - e-learning
+    - online course
+    - courses
+    - book training
+    - start course
+    - learning progress
+    - course completion
+    - lessons
+    - learning platform
 audience: []
 related:
     - customer-portal.overview

@@ -2,6 +2,19 @@
 title: "Computi metrici GAEB"
 topic: boq.overview
 version: 1
+keywords:
+    - computo metrico
+    - importare computo
+    - esportare computo
+    - GAEB DA XML
+    - X83
+    - X86
+    - gara
+    - capitolato
+    - misurazioni
+    - contabilità lavori
+    - varianti
+    - prezzo unitario
 audience: []
 modules:
     - module.bau

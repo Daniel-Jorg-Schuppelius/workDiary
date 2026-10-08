@@ -2,6 +2,20 @@
 title: "Lohn & SV"
 topic: payroll.overview
 version: 1
+keywords:
+    - Lohnabrechnung
+    - Gehaltsabrechnung
+    - Mindestlohn
+    - Mindestlohn anheben
+    - Minijob
+    - Minijob-Grenze
+    - Betriebsnummer
+    - Finanzamt
+    - Steuernummer
+    - Stundenlohn
+    - Lohndaten
+    - Lohnexport
+    - Sozialversicherung
 audience: []
 modules:
     - module.lohn

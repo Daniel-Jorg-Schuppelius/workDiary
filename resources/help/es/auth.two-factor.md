@@ -2,6 +2,18 @@
 title: "Inicio de sesión en dos pasos"
 topic: auth.two-factor
 version: 1
+keywords:
+    - 2FA
+    - MFA
+    - autenticación de dos factores
+    - doble factor
+    - aplicación autenticadora
+    - código de un solo uso
+    - TOTP
+    - passkey
+    - llave de seguridad
+    - códigos de recuperación
+    - código de verificación
 related:
     - auth.login
     - account.two-factor

@@ -2,6 +2,18 @@
 title: "Abrechnungspläne"
 topic: invoices.schedules
 version: 1
+keywords:
+    - wiederkehrende Rechnung
+    - Serienrechnung
+    - Dauerrechnung
+    - Abo-Rechnung
+    - monatliche Rechnung
+    - Rechnungsintervall
+    - Abrechnungsrhythmus
+    - Vorauszahlung
+    - automatische Rechnungsentwürfe
+    - Wartungsvertrag abrechnen
+    - Pauschale abrechnen
 audience:
     - admin
     - geschaeftsfuehrung

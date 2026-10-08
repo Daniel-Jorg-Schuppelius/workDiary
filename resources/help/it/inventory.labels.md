@@ -2,6 +2,17 @@
 title: "Etichette e modelli"
 topic: inventory.labels
 version: 1
+keywords:
+    - stampare etichette
+    - stampa etichette
+    - codice a barre
+    - codice QR
+    - etichetta magazzino
+    - etichetta articolo
+    - etichetta numero di serie
+    - etichetta lotto
+    - adesivo
+    - SKU
 audience: []
 modules:
     - module.lager

@@ -2,6 +2,17 @@
 title: "Justificantes de asistencia"
 topic: club.attendance
 version: 1
+keywords:
+    - lista de asistencia
+    - hoja de asistencia
+    - pasar lista
+    - registrar asistencia
+    - confirmar asistencia
+    - tiempo de entrenamiento
+    - certificado de participación
+    - ausencia justificada
+    - faltas
+    - exportar asistencia
 audience: []
 modules:
     - module.club

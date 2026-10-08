@@ -2,6 +2,16 @@
 title: "Cost center rules"
 topic: admin.cost-center-rules
 version: 1
+keywords:
+    - cost centre
+    - cost center assignment
+    - cost centre per team
+    - automatic cost centre
+    - payroll export
+    - payroll office
+    - payroll
+    - time export
+    - cost accounting
 audience:
     - admin
     - geschaeftsfuehrung

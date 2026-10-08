@@ -2,6 +2,17 @@
 title: "Notas de comunicación"
 topic: communication.notes
 version: 3
+keywords:
+    - nota telefónica
+    - registro de llamadas
+    - acta de conversación
+    - memorando
+    - seguimiento
+    - añadir nota
+    - lista de notas
+    - etiqueta
+    - nota confidencial
+    - historial de contactos
 audience: []
 related:
     - diary-entries.edit

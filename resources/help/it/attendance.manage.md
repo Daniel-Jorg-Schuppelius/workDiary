@@ -2,6 +2,19 @@
 title: "Timbratura e presenze"
 topic: attendance.manage
 version: 1
+keywords:
+    - timbrare
+    - timbratura entrata
+    - rilevazione presenze
+    - marcatempo
+    - entrata e uscita
+    - orologio marcatempo
+    - QR code
+    - NFC
+    - modalità kiosk
+    - terminale presenze
+    - badge
+    - orario di lavoro
 audience: []
 related:
     - time-entries.start

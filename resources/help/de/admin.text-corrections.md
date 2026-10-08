@@ -2,6 +2,17 @@
 title: "Wörterbuch"
 topic: admin.text-corrections
 version: 1
+keywords:
+    - Autokorrektur
+    - Rechtschreibkorrektur
+    - Tippfehler
+    - Schreibfehler korrigieren
+    - Textersetzung
+    - Ersetzungsliste
+    - Wortersetzung
+    - Korrekturliste
+    - Positionstexte korrigieren
+    - Rechnungstexte
 audience:
     - admin
 ---

@@ -57,6 +57,9 @@ final class HelpSiteExportTest extends TestCase {
         $index = JsonHelper::decode(substr(trim($script), strlen('window.HELP_SITE_INDEX = '), -1));
         $this->assertContains('help.errors.html', array_column($index, 'u'));
         $this->assertNotContains('admin.license.html', array_column($index, 'u'));
+        // Suchbegriffe stehen im Index (MVP-1079).
+        $interface = collect($index)->firstWhere('u', 'navigation.interface.html');
+        $this->assertStringContainsString('Darkmode', (string) ($interface['k'] ?? ''));
     }
 
     public function test_help_site_keeps_the_fixed_anchors_of_the_error_help(): void {

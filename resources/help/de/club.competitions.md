@@ -2,6 +2,20 @@
 title: "Wettkämpfe, Leistungen und Nachweisliste"
 topic: club.competitions
 version: 1
+keywords:
+    - Wettkampf
+    - Turnier
+    - Wettkampfmeldung
+    - Meldegebühr
+    - Startpass
+    - Startrecht
+    - Bestleistung
+    - Bestzeit
+    - Rekord
+    - Ergebnisse erfassen
+    - Disziplin
+    - Altersklasse
+    - Schießbuch
 audience: []
 modules:
     - module.club

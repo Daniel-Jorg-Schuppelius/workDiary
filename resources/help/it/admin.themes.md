@@ -2,6 +2,18 @@
 title: "Temi"
 topic: admin.themes
 version: 3
+keywords:
+    - modalità scura
+    - dark mode
+    - tema scuro
+    - modalità chiara
+    - schema colori
+    - colori personalizzati
+    - aspetto
+    - colori aziendali
+    - identità visiva
+    - contrasto
+    - skin
 audience:
     - admin
 modules:
@@ -9,6 +21,7 @@ modules:
 related:
     - admin.handbook
     - admin.license
+    - navigation.interface
 ---
 
 I temi sono preset di design dell'organizzazione: definiscono palette

@@ -2,6 +2,17 @@
 title: "Profils de branche"
 topic: admin.branch-profiles
 version: 3
+keywords:
+    - modèle sectoriel
+    - corps de métier
+    - pack de modèles
+    - électricité
+    - plomberie chauffage
+    - nettoyage
+    - types de commande
+    - modèles de checklist
+    - configuration initiale
+    - variante de profil
 audience:
     - admin
 related:

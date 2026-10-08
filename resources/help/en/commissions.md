@@ -2,6 +2,18 @@
 title: "Commissions"
 topic: commissions
 version: 1
+keywords:
+    - sales commission
+    - commission statement
+    - commission run
+    - commission rules
+    - tiered commission
+    - agent commission
+    - referral fee
+    - commission clawback
+    - commission payout
+    - commission cap
+    - broker commission
 audience:
     - admin
     - geschaeftsfuehrung

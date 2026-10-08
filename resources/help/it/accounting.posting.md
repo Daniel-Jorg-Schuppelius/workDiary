@@ -2,6 +2,18 @@
 title: "Registrare e posta contabile"
 topic: accounting.posting
 version: 1
+keywords:
+    - registrazione contabile
+    - registrare documenti
+    - prima nota
+    - imputazione conti
+    - proposta di registrazione
+    - regole contabili
+    - storno
+    - stornare registrazione
+    - principio dei quattro occhi
+    - valuta estera
+    - tasso di cambio
 audience:
     - admin
     - geschaeftsfuehrung

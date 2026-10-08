@@ -2,6 +2,18 @@
 title: "Equipos de medición y calibración"
 topic: asset-compliance.overview
 version: 1
+keywords:
+    - metrología
+    - gestión de equipos de medida
+    - certificado de calibración
+    - verificación periódica
+    - inspección reglamentaria
+    - vencimiento de inspecciones
+    - informe de inspección
+    - prueba eléctrica
+    - ITV
+    - bloqueo de equipo
+    - ISO 17025
 audience: []
 modules:
     - module.asset_compliance

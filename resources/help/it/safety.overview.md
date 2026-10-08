@@ -2,6 +2,18 @@
 title: "Sicurezza sul lavoro ed eventi di sicurezza"
 topic: safety.overview
 version: 1
+keywords:
+    - segnalare un infortunio
+    - infortunio sul lavoro
+    - quasi incidente
+    - near miss
+    - valutazione dei rischi
+    - DVR
+    - formazione sicurezza
+    - sorveglianza sanitaria
+    - salute e sicurezza
+    - HSE
+    - catalogo dei pericoli
 audience: []
 related:
     - reports.overview

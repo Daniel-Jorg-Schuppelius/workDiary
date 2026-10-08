@@ -2,6 +2,19 @@
 title: "Druckaufträge (Druck & Kopiershop)"
 topic: print.orders
 version: 1
+keywords:
+    - Druckerei
+    - Copyshop
+    - Kopierauftrag
+    - Druckdaten prüfen
+    - Preflight
+    - Datencheck
+    - Gut zum Druck
+    - Druckfreigabe
+    - Makulatur
+    - Druckdatei
+    - Qualitätskontrolle Druck
+    - Druckdaten löschen
 audience: []
 modules:
     - module.lager

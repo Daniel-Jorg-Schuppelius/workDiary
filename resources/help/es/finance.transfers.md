@@ -2,6 +2,16 @@
 title: "Transferencia a facturación"
 topic: finance.transfers
 version: 1
+keywords:
+    - traspaso a Lexoffice
+    - traspaso a DATEV
+    - borrador de factura
+    - transferir servicios
+    - facturar material
+    - facturar horas
+    - exportación de facturación
+    - software de facturación
+    - líneas de factura
 audience: []
 modules:
     - module.finance

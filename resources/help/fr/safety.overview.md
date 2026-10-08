@@ -2,6 +2,19 @@
 title: "Sécurité au travail & événements de sécurité"
 topic: safety.overview
 version: 1
+keywords:
+    - déclarer un accident
+    - accident du travail
+    - presque-accident
+    - incident de sécurité
+    - évaluation des risques
+    - document unique
+    - formation sécurité
+    - suivi médical
+    - santé et sécurité au travail
+    - SST
+    - HSE
+    - catalogue des dangers
 audience: []
 related:
     - reports.overview

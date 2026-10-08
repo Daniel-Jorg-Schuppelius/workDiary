@@ -2,6 +2,19 @@
 title: "GAEB bills of quantities"
 topic: boq.overview
 version: 1
+keywords:
+    - BoQ
+    - import BoQ
+    - export BoQ
+    - GAEB DA XML
+    - X83
+    - X86
+    - tender
+    - measurement
+    - post-calculation
+    - change orders
+    - unit price
+    - bid submission
 audience: []
 modules:
     - module.bau

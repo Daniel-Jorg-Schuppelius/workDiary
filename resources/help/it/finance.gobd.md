@@ -2,6 +2,18 @@
 title: "Esportazione GoBD (consegna dei supporti dati)"
 topic: finance.gobd
 version: 1
+keywords:
+    - verifica fiscale
+    - controllo fiscale
+    - ispezione tributaria
+    - amministrazione finanziaria
+    - export per il revisore
+    - accesso ai dati
+    - GDPdU
+    - pacchetto di verifica
+    - documentazione delle procedure
+    - conservazione a norma
+    - audit fiscale
 audience:
     - admin
     - buchhaltung

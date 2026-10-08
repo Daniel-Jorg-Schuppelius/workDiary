@@ -2,6 +2,16 @@
 title: "My start"
 topic: onboarding.personal
 version: 1
+keywords:
+    - getting started
+    - onboarding
+    - first steps
+    - introduction
+    - welcome checklist
+    - personal checklist
+    - new user guide
+    - quick start
+    - hide getting started
 audience: []
 related:
     - dashboard.overview

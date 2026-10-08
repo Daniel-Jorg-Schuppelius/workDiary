@@ -2,6 +2,19 @@
 title: "Zählerstands-Faktura"
 topic: metering.billing
 version: 1
+keywords:
+    - Verbrauchsabrechnung
+    - nutzungsbasierte Abrechnung
+    - Pay per Use
+    - Kopienabrechnung
+    - Klickpreis
+    - Kopierer abrechnen
+    - Freikontingent
+    - Staffelpreise
+    - Grundgebühr
+    - Betriebsstunden abrechnen
+    - Zählerstand abrechnen
+    - kWh abrechnen
 audience: []
 related:
     - invoices.manage

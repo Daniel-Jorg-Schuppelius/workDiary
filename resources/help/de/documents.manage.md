@@ -2,6 +2,19 @@
 title: "Dokumente verwalten"
 topic: documents.manage
 version: 1
+keywords:
+    - DMS
+    - Dokumentenmanagement
+    - Dokument hochladen
+    - Dateiablage
+    - Versionierung
+    - neue Version
+    - Ablaufdatum
+    - Gültigkeit
+    - Zertifikate
+    - Dokument archivieren
+    - Versandhistorie
+    - Beleg versenden
 audience: []
 modules:
     - module.documents

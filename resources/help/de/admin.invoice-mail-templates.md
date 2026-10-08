@@ -2,6 +2,17 @@
 title: "Rechnungs-Mail-Vorlagen"
 topic: admin.invoice-mail-templates
 version: 1
+keywords:
+    - E-Mail-Vorlage
+    - Mailvorlage
+    - Mailtext Rechnung
+    - Rechnung per E-Mail
+    - Rechnungsversand
+    - Anschreiben Rechnung
+    - Textbaustein
+    - Platzhalter
+    - Betreff
+    - Standardvorlage
 audience:
     - admin
     - buchhaltung

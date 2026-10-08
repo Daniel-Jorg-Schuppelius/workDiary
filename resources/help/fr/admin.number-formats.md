@@ -2,6 +2,16 @@
 title: "Formats de numérotation"
 topic: admin.number-formats
 version: 1
+keywords:
+    - plage de numéros
+    - numéro de facture
+    - numéro client
+    - numéro article
+    - numérotation séquentielle
+    - préfixe
+    - numéro de départ
+    - compteur annuel
+    - réinitialiser compteur
 audience:
     - admin
     - teamleitung

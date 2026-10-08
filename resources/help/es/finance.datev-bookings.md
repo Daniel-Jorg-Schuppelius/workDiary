@@ -2,6 +2,19 @@
 title: "Lote de asientos DATEV"
 topic: finance.datev-bookings
 version: 2
+keywords:
+    - exportación DATEV
+    - asesor fiscal
+    - gestoría
+    - exportar asientos
+    - EXTF
+    - plan de cuentas
+    - SKR03
+    - SKR04
+    - número de deudor
+    - clave de contabilización
+    - cuenta de ingresos
+    - exportación contable
 audience: []
 modules:
     - module.finance

@@ -2,6 +2,18 @@
 title: "Time accounts"
 topic: time-accounts.overview
 version: 1
+keywords:
+    - additional account
+    - time-off account
+    - time off in lieu
+    - TOIL
+    - night shift counter
+    - allowance hours
+    - account balance
+    - traffic light
+    - booking journal
+    - reversal entry
+    - export time accounts
 audience: []
 related:
     - time-accounts.flex

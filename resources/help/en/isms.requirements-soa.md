@@ -2,6 +2,18 @@
 title: "Requirements & SoA"
 topic: isms.requirements-soa
 version: 1
+keywords:
+    - Statement of Applicability
+    - applicability
+    - requirements catalog
+    - standards catalog
+    - Annex A
+    - ISO 27001
+    - ISO 9001
+    - ISO 27701
+    - import catalog
+    - not applicable justification
+    - control objectives
 audience: []
 modules:
     - module.isms

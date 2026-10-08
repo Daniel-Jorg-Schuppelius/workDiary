@@ -2,6 +2,17 @@
 title: "Strumenti privacy"
 topic: admin.privacy-tools
 version: 1
+keywords:
+    - GDPR
+    - privacy
+    - sessioni attive
+    - revocare sessione
+    - disconnessione forzata
+    - revocare token API
+    - portabilità dei dati
+    - richiesta di accesso
+    - tempi di conservazione
+    - esportazione dati
 audience:
     - admin
     - geschaeftsfuehrung

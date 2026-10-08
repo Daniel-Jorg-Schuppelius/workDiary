@@ -2,6 +2,17 @@
 title: "Materials"
 topic: materials.manage
 version: 1
+keywords:
+    - raw materials
+    - material master
+    - consumables
+    - material list
+    - add material
+    - material price
+    - deactivate material
+    - SKU
+    - material usage
+    - supplies
 audience: []
 modules:
     - module.vertrieb

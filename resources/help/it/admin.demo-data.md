@@ -2,6 +2,15 @@
 title: "Dati dimostrativi"
 topic: admin.demo-data
 version: 2
+keywords:
+    - dati di esempio
+    - dati di prova
+    - dati di test
+    - organizzazione demo
+    - reimpostare demo
+    - formazione
+    - presentazione
+    - ambiente di prova
 audience:
     - admin
 related:

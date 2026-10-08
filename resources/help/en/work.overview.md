@@ -2,6 +2,17 @@
 title: "Today & Kanban"
 topic: work.overview
 version: 1
+keywords:
+    - today view
+    - daily overview
+    - to-do list
+    - my tasks
+    - task board
+    - Kanban board
+    - move status
+    - work queue
+    - agenda
+    - due today
 audience: []
 related:
     - diary-entries.create

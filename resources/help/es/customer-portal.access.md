@@ -2,6 +2,19 @@
 title: "Acceso y seguridad"
 topic: customer-portal.access
 version: 2
+keywords:
+    - inicio de sesión
+    - iniciar sesión
+    - contraseña
+    - 2FA
+    - autenticación en dos pasos
+    - app de autenticación
+    - passkey
+    - llave de seguridad
+    - códigos de recuperación
+    - cambiar correo electrónico
+    - mantener sesión iniciada
+    - perfil
 audience: []
 related:
     - customer-portal.overview

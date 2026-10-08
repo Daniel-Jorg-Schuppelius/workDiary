@@ -2,6 +2,19 @@
 title: "Time clock & attendance"
 topic: attendance.manage
 version: 1
+keywords:
+    - clock in
+    - clock out
+    - punch clock
+    - attendance tracking
+    - time tracking
+    - check-in
+    - QR code check-in
+    - NFC
+    - kiosk mode
+    - time terminal
+    - badge
+    - working hours
 audience: []
 related:
     - time-entries.start

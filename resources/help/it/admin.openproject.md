@@ -2,6 +2,16 @@
 title: "Integrazione OpenProject"
 topic: admin.openproject
 version: 1
+keywords:
+    - gestione progetti
+    - pacchetti di lavoro
+    - work package
+    - registrazioni ore
+    - importare ore
+    - esportare ore
+    - sincronizzazione tempi
+    - sincronizzazione progetti
+    - mappature
 audience:
     - admin
 related:

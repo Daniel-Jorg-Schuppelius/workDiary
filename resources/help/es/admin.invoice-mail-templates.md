@@ -2,6 +2,15 @@
 title: "Plantillas de correo de facturas"
 topic: admin.invoice-mail-templates
 version: 1
+keywords:
+    - plantilla de email
+    - texto del correo de factura
+    - enviar factura por correo
+    - correo de acompañamiento
+    - marcadores de posición
+    - variables
+    - asunto del correo
+    - plantilla predeterminada
 audience:
     - admin
     - buchhaltung

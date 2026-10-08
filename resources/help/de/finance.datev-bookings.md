@@ -2,6 +2,19 @@
 title: "DATEV-Buchungsstapel"
 topic: finance.datev-bookings
 version: 2
+keywords:
+    - DATEV-Export
+    - Steuerberater
+    - Buchungsdaten exportieren
+    - EXTF
+    - Kontenrahmen
+    - SKR03
+    - SKR04
+    - Debitorennummer
+    - Buchungsschlüssel
+    - Erlöskonto
+    - Übergabe an Kanzlei
+    - Buchhaltungsexport
 audience: []
 modules:
     - module.finance

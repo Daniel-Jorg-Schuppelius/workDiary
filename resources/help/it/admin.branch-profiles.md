@@ -2,6 +2,17 @@
 title: "Profili di settore"
 topic: admin.branch-profiles
 version: 3
+keywords:
+    - modello di settore
+    - mestiere
+    - pacchetto modelli
+    - impianti elettrici
+    - idraulica e riscaldamento
+    - pulizie
+    - tipi di ordine
+    - modelli di checklist
+    - configurazione iniziale
+    - variante profilo
 audience:
     - admin
 related:

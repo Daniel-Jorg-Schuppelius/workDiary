@@ -2,6 +2,18 @@
 title: "Prozedur-Designer"
 topic: procedures.designer
 version: 1
+keywords:
+    - Arbeitsanweisung
+    - Checkliste erstellen
+    - SOP
+    - Standardarbeitsanweisung
+    - Ablaufvorlage
+    - Prozessvorlage
+    - Workflow
+    - Pflichtschritte
+    - Vier-Augen-Prinzip
+    - Bedingung wenn dann
+    - Version veröffentlichen
 audience: []
 related:
     - procedures.run

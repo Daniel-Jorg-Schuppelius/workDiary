@@ -2,6 +2,19 @@
 title: "Dispatch and conflict warnings"
 topic: dispatch.overview
 version: 1
+keywords:
+    - scheduling
+    - assign job
+    - schedule technician
+    - double booking
+    - overlap
+    - rest period
+    - maximum working hours
+    - reserve vehicle
+    - vehicle reservation
+    - confirm appointment
+    - dispatch status
+    - override conflict
 audience: []
 related:
     - diary-entries.edit

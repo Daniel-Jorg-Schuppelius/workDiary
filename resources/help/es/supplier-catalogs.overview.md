@@ -2,6 +2,19 @@
 title: "Catálogos de proveedores"
 topic: supplier-catalogs.overview
 version: 3
+keywords:
+    - DATANORM
+    - BMEcat
+    - importar tarifa
+    - mayorista
+    - importación de catálogo
+    - precios de compra
+    - actualizar precios
+    - grupos de descuento
+    - OCI
+    - IDS Connect
+    - Open Masterdata
+    - tienda online del proveedor
 audience: []
 modules:
     - module.lager

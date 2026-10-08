@@ -2141,6 +2141,9 @@ CREATE TABLE IF NOT EXISTS "help_topics"(
   "updated_at" datetime,
   "modules" text,
   "headings" text
+  ,
+  "keywords" text,
+  "search_text" text
 );
 CREATE UNIQUE INDEX "uniq_help_topic_locale" on "help_topics"(
   "topic",
@@ -24380,3 +24383,4 @@ INSERT INTO migrations VALUES(964,'2027_03_10_100900_post_lot_block_balances',66
 INSERT INTO migrations VALUES(965,'2027_03_11_100000_create_customer_intakes_tables',67);
 INSERT INTO migrations VALUES(966,'2027_03_11_100100_add_customer_approval_to_print_orders',67);
 INSERT INTO migrations VALUES(967,'2027_03_11_100200_create_customer_intake_upload_links_table',68);
+INSERT INTO migrations VALUES(968,'2027_03_12_100000_add_search_columns_to_help_topics',69);

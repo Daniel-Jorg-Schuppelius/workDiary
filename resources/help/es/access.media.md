@@ -2,6 +2,17 @@
 title: "Medios de acceso"
 topic: access.media
 version: 1
+keywords:
+    - tarjeta de acceso
+    - transpondedor
+    - llavero electrónico
+    - gestión de llaves
+    - entrega de llaves
+    - tarjeta perdida
+    - bloquear tarjeta
+    - control de acceso
+    - credencial
+    - chip de acceso
 audience: []
 modules:
     - module.fuhrpark

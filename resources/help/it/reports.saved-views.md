@@ -2,6 +2,16 @@
 title: "Valutazioni salvate"
 topic: reports.saved-views
 version: 1
+keywords:
+    - salvare i filtri
+    - vista salvata
+    - condividere una vista
+    - condividere un report
+    - preferiti
+    - segnalibri
+    - accesso rapido
+    - report salvati
+    - filtri salvati
 audience: []
 related:
     - reports.overview

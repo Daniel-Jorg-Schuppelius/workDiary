@@ -2,6 +2,19 @@
 title: "Prüfmittel & Kalibrierung"
 topic: asset-compliance.overview
 version: 1
+keywords:
+    - Prüfmittelverwaltung
+    - Eichung
+    - Messmittel
+    - DGUV V3
+    - UVV-Prüfung
+    - E-Check
+    - Hauptuntersuchung
+    - TÜV
+    - Prüffristen
+    - Prüfprotokoll
+    - Kalibrierzertifikat
+    - Gerät sperren
 audience: []
 modules:
     - module.asset_compliance

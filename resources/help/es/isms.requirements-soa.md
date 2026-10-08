@@ -2,6 +2,17 @@
 title: "Requisitos y SoA"
 topic: isms.requirements-soa
 version: 1
+keywords:
+    - declaración de aplicabilidad
+    - aplicabilidad
+    - catálogo de requisitos
+    - requisitos normativos
+    - Anexo A
+    - ISO 27001
+    - ISO 9001
+    - ISO 27701
+    - importar catálogo
+    - justificación de exclusión
 audience: []
 modules:
     - module.isms

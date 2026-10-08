@@ -2,6 +2,17 @@
 title: "Fertigungskapazitäten (Arbeitsplätze)"
 topic: manufacturing.work-centers
 version: 1
+keywords:
+    - Arbeitsplatz anlegen
+    - Maschine
+    - Fertigungsstation
+    - Kapazitätsplanung
+    - Maschinenbelegung
+    - Auslastung
+    - Rüstzeit
+    - Belegungsplanung
+    - Tageskapazität
+    - Engpass
 audience: []
 modules:
     - module.lager

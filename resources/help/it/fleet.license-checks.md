@@ -2,6 +2,16 @@
 title: "Controllo della patente"
 topic: fleet.license-checks
 version: 1
+keywords:
+    - verifica patente
+    - patente di guida
+    - responsabilità del proprietario
+    - autisti
+    - controllo a vista
+    - intervallo di controllo
+    - bloccare conducente
+    - auto aziendale
+    - parco veicoli
 audience:
     - admin
     - geschaeftsfuehrung

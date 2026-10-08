@@ -2,6 +2,18 @@
 title: "Créer un procès-verbal"
 topic: protocols.create
 version: 3
+keywords:
+    - procès-verbal de réception
+    - PV
+    - rapport de maintenance
+    - rapport d'intervention
+    - rapport d'inspection
+    - compte rendu
+    - relever des défauts
+    - photos avant après
+    - modèle de procès-verbal
+    - relevé de mesures
+    - check-list
 audience: []
 schema: process
 related:

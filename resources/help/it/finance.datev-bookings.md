@@ -2,6 +2,19 @@
 title: "Lotto di scritture DATEV"
 topic: finance.datev-bookings
 version: 2
+keywords:
+    - export DATEV
+    - commercialista
+    - esportare registrazioni
+    - EXTF
+    - piano dei conti
+    - SKR03
+    - SKR04
+    - numero debitore
+    - chiave di registrazione
+    - conto ricavi
+    - export contabile
+    - scritture contabili
 audience: []
 modules:
     - module.finance

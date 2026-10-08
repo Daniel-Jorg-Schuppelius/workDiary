@@ -2,6 +2,15 @@
 title: "Auto-évaluation des fournisseurs"
 topic: supplier-questionnaires.overview
 version: 1
+keywords:
+    - questionnaire fournisseur
+    - envoyer un questionnaire
+    - demande d'auto-déclaration
+    - demande de certificats
+    - questionnaire RSE
+    - questionnaire de protection des données
+    - qualification des fournisseurs
+    - déclaration fournisseur
 audience: []
 related:
     - supplier-scorecards.overview

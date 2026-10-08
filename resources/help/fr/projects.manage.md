@@ -2,6 +2,18 @@
 title: "Gérer les projets"
 topic: projects.manage
 version: 3
+keywords:
+    - créer un projet
+    - gestion de projet
+    - liste des projets
+    - jalons
+    - temps du projet
+    - facturation du projet
+    - clôturer un projet
+    - réaffecter des temps
+    - feuilles de temps
+    - tâches du projet
+    - taux horaire
 audience: []
 modules:
     - module.vertrieb

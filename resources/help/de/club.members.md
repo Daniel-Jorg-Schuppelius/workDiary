@@ -2,6 +2,20 @@
 title: "Vereinsmitglieder"
 topic: club.members
 version: 1
+keywords:
+    - Mitgliederverwaltung
+    - Mitgliederliste
+    - Mitglied anlegen
+    - Mitgliedsnummer
+    - Austritt
+    - Kündigung Mitgliedschaft
+    - Eintritt
+    - passives Mitglied
+    - Fördermitglied
+    - Sorgeberechtigte
+    - Erziehungsberechtigte
+    - Mitglieder importieren
+    - Mitgliedschaft pausieren
 audience: []
 modules:
     - module.club

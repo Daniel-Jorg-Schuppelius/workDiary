@@ -2,6 +2,18 @@
 title: "Démarrer la saisie des temps"
 topic: time-entries.start
 version: 2
+keywords:
+    - chronomètre
+    - lancer le chrono
+    - arrêter le chrono
+    - saisir ses heures
+    - enregistrer le temps de travail
+    - pointeuse
+    - pointer
+    - badger
+    - nouvelle saisie de temps
+    - suivi du temps
+    - obligation d'enregistrement
 audience: []
 schema: process
 related:

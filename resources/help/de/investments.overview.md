@@ -2,6 +2,19 @@
 title: "Investitionsplanung"
 topic: investments.overview
 version: 2
+keywords:
+    - Investitionsantrag
+    - Budgetantrag
+    - Investition beantragen
+    - Investitionsfreigabe
+    - CapEx
+    - Anschaffung planen
+    - Angebotsvergleich
+    - Variantenvergleich
+    - Budgetüberschreitung
+    - Soll-Ist-Vergleich
+    - Wirtschaftlichkeitsbetrachtung
+    - Lessons Learned
 audience: []
 modules:
     - module.investments

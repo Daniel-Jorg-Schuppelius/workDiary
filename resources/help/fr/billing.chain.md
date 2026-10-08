@@ -2,6 +2,18 @@
 title: "À facturer et à relancer (chaîne de documents)"
 topic: billing.chain
 version: 1
+keywords:
+    - temps non facturés
+    - devis acceptés non facturés
+    - relance des devis
+    - suivi des devis
+    - factures en retard
+    - heures facturables
+    - situation de travaux
+    - métrés à facturer
+    - clôture mensuelle
+    - encours
+    - reste à facturer
 audience: []
 related:
     - billing.feed

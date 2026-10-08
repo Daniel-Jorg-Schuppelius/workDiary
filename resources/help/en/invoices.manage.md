@@ -2,6 +2,22 @@
 title: "Invoices & documents"
 topic: invoices.manage
 version: 7
+keywords:
+    - create invoice
+    - write invoice
+    - sales invoice
+    - billing
+    - cancel invoice
+    - credit note
+    - e-invoice
+    - XRechnung
+    - Peppol
+    - payment link
+    - pay online
+    - copper surcharge
+    - Stripe
+    - Mollie
+    - SumUp
 audience: []
 modules:
     - module.vertrieb

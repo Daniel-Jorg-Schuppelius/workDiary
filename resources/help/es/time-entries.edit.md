@@ -2,6 +2,17 @@
 title: "Editar un registro de tiempo"
 topic: time-entries.edit
 version: 1
+keywords:
+    - corregir horas
+    - cambiar registro
+    - hora incorrecta
+    - modificar inicio y fin
+    - modificar pausa
+    - cambiar de proyecto
+    - solicitud de corrección
+    - registro bloqueado
+    - historial de cambios
+    - ajustar horas
 audience: []
 related:
     - time-entries.start

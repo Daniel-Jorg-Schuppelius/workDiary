@@ -2,6 +2,15 @@
 title: "Shift exchange with approval"
 topic: planning.exchange
 version: 1
+keywords:
+    - swap shift
+    - shift swap
+    - give away shift
+    - trade shifts
+    - shift marketplace
+    - cover a shift
+    - take over shift
+    - swap request
 audience: []
 modules:
     - module.planung

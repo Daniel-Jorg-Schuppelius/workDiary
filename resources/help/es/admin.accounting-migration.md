@@ -2,6 +2,17 @@
 title: "Cambio de software contable"
 topic: admin.accounting-migration
 version: 1
+keywords:
+    - migración contable
+    - migrar contabilidad
+    - cambio de proveedor
+    - Lexoffice
+    - orgaMAX
+    - migración de datos
+    - simulación
+    - prueba en seco
+    - fecha de corte
+    - funcionamiento en paralelo
 audience:
     - admin
 related:

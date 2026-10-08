@@ -2,6 +2,19 @@
 title: "Security incidents"
 topic: isms.incidents
 version: 1
+keywords:
+    - report security incident
+    - IT security incident
+    - incident management
+    - phishing
+    - malware
+    - cyber attack
+    - hacker attack
+    - data breach
+    - incident register
+    - root cause analysis
+    - lessons learned
+    - service outage
 audience: []
 modules:
     - module.isms

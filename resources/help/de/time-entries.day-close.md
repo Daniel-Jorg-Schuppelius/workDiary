@@ -2,6 +2,18 @@
 title: "Tagesabschluss"
 topic: time-entries.day-close
 version: 1
+keywords:
+    - Tag abschließen
+    - Feierabend
+    - Arbeitstag beenden
+    - Pause nachtragen
+    - Tagesbilanz
+    - Tagessaldo
+    - Zeitlücken
+    - Pflichtpause
+    - Stempeluhr offen
+    - Korrektur anfordern
+    - Zeit nachbuchen
 audience: []
 related:
     - time-entries.start

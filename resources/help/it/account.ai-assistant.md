@@ -2,6 +2,16 @@
 title: "Collegare l’assistente IA"
 topic: account.ai-assistant
 version: 1
+keywords:
+    - ChatGPT
+    - Claude
+    - MCP
+    - intelligenza artificiale
+    - chatbot
+    - assistente virtuale
+    - autorizzare assistente
+    - accesso IA
+    - revocare accesso IA
 audience: []
 related:
     - account.api-tokens

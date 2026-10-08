@@ -119,7 +119,30 @@ return [
     ],
 
     'palette' => [
-        'placeholder' => 'Suche nach Tätigkeiten, Kunden, Projekten, Objekten …',
+        'placeholder' => 'Suche nach Funktionen, Hilfe, Tätigkeiten, Kunden, Projekten …',
+        'group' => [
+            'actions' => 'Aktionen',
+            'pages' => 'Seiten',
+            'help' => 'Hilfe',
+        ],
+        // Bedienaktionen (MVP-1082); `keywords` durch Komma getrennt.
+        'actions' => [
+            'theme' => [
+                'label' => 'Farbschema wechseln',
+                'hint' => 'Zwischen hellem und dunklem Design umschalten',
+                'keywords' => 'Darkmode, Dark Mode, Dunkelmodus, Nachtmodus, dunkles Design, helles Design, Light Mode, Hellmodus, Farbschema, Theme, Farben',
+            ],
+            'shortcuts' => [
+                'label' => 'Tastenkürzel anzeigen',
+                'hint' => 'Alle Tastaturbefehle im Überblick',
+                'keywords' => 'Tastenkürzel, Shortcuts, Tastenkombination, Tastatur, Hotkeys, Kurzbefehle',
+            ],
+            'help' => [
+                'label' => 'Hilfe zu dieser Seite',
+                'hint' => 'Kontexthilfe öffnen (F1)',
+                'keywords' => 'Hilfe, Anleitung, Erklärung, Handbuch, F1, Support',
+            ],
+        ],
     ],
 
     'ai' => [

@@ -2,6 +2,19 @@
 title: "DATEV posting batch"
 topic: finance.datev-bookings
 version: 2
+keywords:
+    - DATEV export
+    - tax advisor
+    - export bookings
+    - EXTF
+    - chart of accounts
+    - SKR03
+    - SKR04
+    - debtor number
+    - posting key
+    - revenue account
+    - accounting export
+    - journal entries
 audience: []
 modules:
     - module.finance

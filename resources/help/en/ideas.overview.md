@@ -2,6 +2,18 @@
 title: "Idea maps"
 topic: ideas.overview
 version: 1
+keywords:
+    - mind map
+    - mind mapping
+    - brainstorming
+    - collect ideas
+    - idea board
+    - outline
+    - import mind map
+    - FreeMind
+    - OPML
+    - turn idea into task
+    - share map
 audience: []
 modules:
     - module.ideas

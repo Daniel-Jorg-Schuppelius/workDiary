@@ -2,6 +2,15 @@
 title: "Equipos"
 topic: org.teams
 version: 1
+keywords:
+    - departamento
+    - grupo
+    - jefe de equipo
+    - crear equipo
+    - miembros del equipo
+    - carga de trabajo
+    - cuadrilla
+    - grupo de trabajo
 audience: []
 related:
     - org.members

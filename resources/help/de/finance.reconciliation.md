@@ -2,6 +2,19 @@
 title: "Zahlungsabgleich"
 topic: finance.reconciliation
 version: 2
+keywords:
+    - Bankabgleich
+    - Kontoabgleich
+    - Kontoauszug importieren
+    - Zahlungseingang zuordnen
+    - Zahlungen zuordnen
+    - Rechnung als bezahlt
+    - Bankumsätze
+    - CAMT
+    - MT940
+    - Skonto
+    - Teilzahlung
+    - RF-Referenz
 audience: []
 modules:
     - module.finance

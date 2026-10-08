@@ -2,6 +2,19 @@
 title: "Ihr Tag in WorkDiary: Buchhaltung"
 topic: roles.buchhaltung
 version: 1
+keywords:
+    - Buchhalter
+    - Fakturierung
+    - Abrechnungslauf
+    - Lohnexport
+    - Lohnabrechnung vorbereiten
+    - Stundenzettel sperren
+    - Rechnung als bezahlt markieren
+    - DATEV-Übergabe
+    - Lexoffice
+    - Stundensätze pflegen
+    - Zuschlagsregeln
+    - Kundenstammdaten
 audience:
     - buchhaltung
 related:

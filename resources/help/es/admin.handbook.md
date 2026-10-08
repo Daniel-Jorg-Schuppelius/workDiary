@@ -2,6 +2,15 @@
 title: "Manual de administración: visión general"
 topic: admin.handbook
 version: 1
+keywords:
+    - guía de administración
+    - administración
+    - configuración inicial
+    - primeros pasos
+    - gestión de organizaciones
+    - roles y permisos
+    - exportación RGPD
+    - administración del sistema
 audience:
     - admin
 related:

@@ -2,6 +2,16 @@
 title: "Contabilidad local"
 topic: accounting.overview
 version: 2
+keywords:
+    - libro mayor
+    - contabilidad general
+    - teneduría de libros
+    - configurar contabilidad
+    - partida doble
+    - contabilidad de caja
+    - fecha de inicio contable
+    - sustituir software contable
+    - contabilidad integrada
 audience:
     - admin
     - geschaeftsfuehrung

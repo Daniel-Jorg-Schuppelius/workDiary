@@ -2,6 +2,18 @@
 title: "Gestire gli eventi"
 topic: events.manage
 version: 1
+keywords:
+    - pianificare un evento
+    - creare evento
+    - elenco partecipanti
+    - inviti
+    - promemoria
+    - evento ricorrente
+    - annullare evento
+    - fiera
+    - seminario
+    - convegno
+    - sede dell'evento
 audience: []
 modules:
     - module.vertrieb

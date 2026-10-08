@@ -2,6 +2,16 @@
 title: "Intégrité du code source"
 topic: admin.integrity
 version: 1
+keywords:
+    - détection de manipulation
+    - intégrité des fichiers
+    - vérification intégrité
+    - somme de contrôle
+    - SHA-256
+    - empreinte hash
+    - baseline
+    - fichiers modifiés
+    - surveillance sécurité
 audience:
     - admin
 related:

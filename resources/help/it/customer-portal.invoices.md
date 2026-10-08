@@ -2,6 +2,15 @@
 title: "Le mie fatture"
 topic: customer-portal.invoices
 version: 2
+keywords:
+    - visualizzare le fatture
+    - elenco fatture
+    - pagare online
+    - pagare la fattura
+    - fatture aperte
+    - fatture non pagate
+    - stato del pagamento
+    - pagamento online
 audience: []
 related:
     - customer-portal.overview

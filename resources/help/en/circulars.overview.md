@@ -2,6 +2,17 @@
 title: "Customer circulars"
 topic: circulars.overview
 version: 1
+keywords:
+    - mass email
+    - bulk email
+    - newsletter
+    - customer notification
+    - announcement
+    - mail merge
+    - email all customers
+    - price change notice
+    - opt-out
+    - mandatory notice
 audience: []
 related:
     - contacts.manage

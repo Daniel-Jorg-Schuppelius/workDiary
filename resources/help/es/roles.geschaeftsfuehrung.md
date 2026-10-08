@@ -2,6 +2,18 @@
 title: "Su día en WorkDiary: Dirección"
 topic: roles.geschaeftsfuehrung
 version: 1
+keywords:
+    - gerente
+    - director general
+    - propietario
+    - gerencia
+    - vista de dirección
+    - indicadores clave
+    - acceso de solo lectura
+    - registro de auditoría
+    - segregación de funciones
+    - exportar informes
+    - panel de control
 audience:
     - geschaeftsfuehrung
 related:

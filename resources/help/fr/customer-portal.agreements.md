@@ -2,6 +2,17 @@
 title: "Accords"
 topic: customer-portal.agreements
 version: 1
+keywords:
+    - contrat de sous-traitance
+    - NDA
+    - accord de confidentialité
+    - signer un contrat
+    - statut de signature
+    - contrats signés
+    - télécharger le contrat
+    - lien de signature
+    - attestation de signature
+    - RGPD
 audience: []
 modules:
     - module.contracts

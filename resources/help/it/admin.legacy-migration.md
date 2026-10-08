@@ -2,6 +2,14 @@
 title: "Migrazione legacy"
 topic: admin.legacy-migration
 version: 1
+keywords:
+    - vecchio sistema
+    - sistema precedente
+    - dati storici
+    - recupero dati
+    - importare dati storici
+    - migrazione dati
+    - passaggio di sistema
 audience:
     - admin
 related:

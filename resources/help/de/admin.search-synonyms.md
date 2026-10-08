@@ -2,6 +2,17 @@
 title: "Such-Synonyme"
 topic: admin.search-synonyms
 version: 1
+keywords:
+    - Synonymgruppen
+    - Synonyme pflegen
+    - Suchbegriffe
+    - gleichbedeutende Begriffe
+    - Suche verbessern
+    - Thesaurus
+    - Alias
+    - Fachbegriffe
+    - IT-Vorlage
+    - Suchtreffer erweitern
 audience: []
 related: []
 ---

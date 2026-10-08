@@ -2,6 +2,19 @@
 title: "Presupuestos de obra GAEB"
 topic: boq.overview
 version: 1
+keywords:
+    - mediciones
+    - importar mediciones
+    - exportar presupuesto
+    - GAEB DA XML
+    - X83
+    - X86
+    - licitación
+    - pliego
+    - medición
+    - modificados de obra
+    - precio unitario
+    - presentación de oferta
 audience: []
 modules:
     - module.bau

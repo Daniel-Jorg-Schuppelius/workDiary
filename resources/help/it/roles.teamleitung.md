@@ -2,6 +2,18 @@
 title: "La sua giornata in WorkDiary: capo team"
 topic: roles.teamleitung
 version: 1
+keywords:
+    - caposquadra
+    - responsabile di reparto
+    - supervisore
+    - turni di lavoro
+    - approvare le ore
+    - approvare le ferie
+    - richieste di correzione
+    - chiusura mensile
+    - reperibilità
+    - pianificazione del personale
+    - assegnare incarichi
 audience:
     - teamleitung
 related:

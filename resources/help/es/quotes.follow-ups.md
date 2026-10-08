@@ -2,6 +2,16 @@
 title: "Seguimiento de presupuestos"
 topic: quotes.follow-ups
 version: 1
+keywords:
+    - hacer seguimiento
+    - recordatorio de presupuesto
+    - presupuestos abiertos
+    - presupuestos pendientes
+    - tasa de éxito
+    - tasa de conversión
+    - fecha de seguimiento
+    - presupuestos ganados
+    - reclamar respuesta
 audience: []
 modules:
     - module.vertrieb

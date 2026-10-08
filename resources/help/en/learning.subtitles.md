@@ -2,6 +2,18 @@
 title: "Video and subtitles"
 topic: learning.subtitles
 version: 1
+keywords:
+    - upload subtitles
+    - WebVTT
+    - VTT file
+    - captions
+    - auto-generated subtitles
+    - transcription
+    - video quality
+    - change resolution
+    - training video
+    - upload video
+    - accessible video
 audience: []
 related:
     - learning.overview

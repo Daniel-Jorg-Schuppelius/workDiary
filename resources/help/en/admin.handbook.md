@@ -2,6 +2,16 @@
 title: "Admin handbook: overview"
 topic: admin.handbook
 version: 1
+keywords:
+    - administration guide
+    - admin manual
+    - initial setup
+    - getting started
+    - tenant management
+    - roles and permissions
+    - GDPR export
+    - system administration
+    - setup checklist
 audience:
     - admin
 related:

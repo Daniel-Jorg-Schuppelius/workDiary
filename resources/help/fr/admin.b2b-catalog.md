@@ -2,6 +2,17 @@
 title: "Gérer les accès au catalogue B2B"
 topic: admin.b2b-catalog
 version: 1
+keywords:
+    - punchout
+    - OCI
+    - DATANORM
+    - catalogue client
+    - prix clients
+    - accès revendeur
+    - e-procurement
+    - transfert de panier
+    - export de catalogue
+    - fichier de prix
 audience:
     - admin
 related:

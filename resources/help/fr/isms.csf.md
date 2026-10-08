@@ -2,6 +2,17 @@
 title: "NIST CSF 2.0"
 topic: isms.csf
 version: 1
+keywords:
+    - NIST
+    - cadre de cybersécurité
+    - cybersécurité
+    - couverture CSF
+    - taux de couverture
+    - table de correspondance
+    - correspondance ISO
+    - catalogue NIST
+    - référentiel de sécurité
+    - auto-évaluation
 audience: []
 modules:
     - module.isms

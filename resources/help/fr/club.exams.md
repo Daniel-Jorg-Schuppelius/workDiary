@@ -2,6 +2,16 @@
 title: "Examens"
 topic: club.exams
 version: 1
+keywords:
+    - passage de grade
+    - examen de ceinture
+    - admission à l'examen
+    - inscription à l'examen
+    - résultat d'examen
+    - examinateur
+    - diplôme
+    - attestation de grade
+    - conditions d'admission
 audience: []
 modules:
     - module.club

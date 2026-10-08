@@ -2,6 +2,19 @@
 title: "Risikoregister"
 topic: isms.risks
 version: 1
+keywords:
+    - Risikoanalyse
+    - Risikobewertung
+    - Risikomatrix
+    - Risiko erfassen
+    - Risikoinventar
+    - Risikobehandlung
+    - Restrisiko
+    - Risikoakzeptanz
+    - Eintrittswahrscheinlichkeit
+    - Bruttorisiko
+    - Nettorisiko
+    - Heatmap
 audience: []
 modules:
     - module.isms

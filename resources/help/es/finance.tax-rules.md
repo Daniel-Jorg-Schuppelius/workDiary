@@ -2,6 +2,18 @@
 title: "Matriz de reglas fiscales"
 topic: finance.tax-rules
 version: 1
+keywords:
+    - tipos de IVA
+    - IVA
+    - impuesto sobre el valor añadido
+    - tipo reducido
+    - inversión del sujeto pasivo
+    - régimen de franquicia
+    - exento de IVA
+    - importar reglas fiscales
+    - cambio de tipo impositivo
+    - tipo cero
+    - exportación fuera de la UE
 audience:
     - admin
 modules:

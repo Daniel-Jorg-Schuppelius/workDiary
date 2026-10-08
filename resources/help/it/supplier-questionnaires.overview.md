@@ -2,6 +2,15 @@
 title: "Autovalutazione dei fornitori"
 topic: supplier-questionnaires.overview
 version: 1
+keywords:
+    - questionario fornitori
+    - inviare questionario
+    - richiesta di autodichiarazione
+    - richiesta certificati
+    - questionario di sostenibilità
+    - questionario privacy
+    - qualifica fornitori
+    - dichiarazione del fornitore
 audience: []
 related:
     - supplier-scorecards.overview

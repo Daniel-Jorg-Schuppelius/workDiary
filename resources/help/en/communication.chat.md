@@ -2,6 +2,18 @@
 title: "Using chat"
 topic: communication.chat
 version: 1
+keywords:
+    - chat message
+    - send message
+    - channel
+    - direct message
+    - DM
+    - messenger
+    - team chat
+    - group chat
+    - internal messaging
+    - mention
+    - pin message
 audience: []
 modules:
     - module.chat

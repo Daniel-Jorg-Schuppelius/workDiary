@@ -2,6 +2,16 @@
 title: "Piani di rotazione"
 topic: admin.shift-rotations
 version: 1
+keywords:
+    - turnazione
+    - turni a rotazione
+    - piano turni
+    - schema turni
+    - turni ricorrenti
+    - turno mattina e pomeriggio
+    - ciclo dei turni
+    - turni avvicendati
+    - ordine di servizio
 audience: [admin]
 related:
     - planning.shifts

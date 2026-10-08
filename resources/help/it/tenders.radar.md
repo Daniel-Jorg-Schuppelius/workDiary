@@ -2,6 +2,17 @@
 title: "Radar dei bandi di gara"
 topic: tenders.radar
 version: 1
+keywords:
+    - trovare bandi
+    - gare d'appalto
+    - appalti pubblici
+    - ricerca bandi
+    - avvisi di gara
+    - alert gare
+    - profilo di ricerca
+    - codice CPV
+    - regione NUTS
+    - monitoraggio gare
 audience: []
 modules:
     - module.applications

@@ -2,6 +2,19 @@
 title: "License management"
 topic: admin.license
 version: 2
+keywords:
+    - license key
+    - plan
+    - subscription
+    - change plan
+    - upgrade
+    - add-on modules
+    - user limit
+    - trial
+    - license expired
+    - account locked
+    - feature flags
+    - billing details
 audience:
     - admin
     - geschaeftsfuehrung

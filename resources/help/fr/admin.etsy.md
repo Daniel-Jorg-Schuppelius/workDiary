@@ -2,6 +2,17 @@
 title: "Connecter Etsy"
 topic: admin.etsy
 version: 1
+keywords:
+    - boutique Etsy
+    - commandes Etsy
+    - marketplace
+    - boutique en ligne
+    - import de commandes
+    - notification expédition
+    - numéro de suivi
+    - frais Etsy
+    - versements
+    - webhook
 audience:
     - admin
 modules:

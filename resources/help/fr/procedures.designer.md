@@ -2,6 +2,17 @@
 title: "Concepteur de procédures"
 topic: procedures.designer
 version: 1
+keywords:
+    - instruction de travail
+    - créer une check-list
+    - mode opératoire
+    - procédure standard
+    - modèle de processus
+    - workflow
+    - étapes obligatoires
+    - principe des quatre yeux
+    - étape conditionnelle
+    - publier une version
 audience: []
 related:
     - procedures.run

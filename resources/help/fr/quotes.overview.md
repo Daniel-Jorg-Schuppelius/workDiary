@@ -2,6 +2,19 @@
 title: "Devis"
 topic: quotes.overview
 version: 1
+keywords:
+    - créer un devis
+    - estimation
+    - proposition commerciale
+    - offre de prix
+    - envoyer un devis
+    - accepter un devis en ligne
+    - acceptation partielle
+    - durée de validité
+    - confirmation de commande
+    - transformer un devis en facture
+    - options
+    - nouvelle version du devis
 audience: []
 modules:
     - module.vertrieb

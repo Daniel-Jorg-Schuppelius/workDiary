@@ -2,6 +2,15 @@
 title: "Imagen corporativa"
 topic: admin.branding
 version: 1
+keywords:
+    - marca blanca
+    - white label
+    - identidad corporativa
+    - diseño corporativo
+    - logotipo
+    - colores de marca
+    - datos de la empresa
+    - pie de página
 audience:
     - admin
 related:

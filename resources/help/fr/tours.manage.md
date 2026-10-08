@@ -2,6 +2,17 @@
 title: "Planifier des tournées"
 topic: tours.manage
 version: 1
+keywords:
+    - planification d'itinéraires
+    - optimiser l'itinéraire
+    - itinéraire
+    - arrêts
+    - ordre des passages
+    - dispatching
+    - vue carte
+    - tournée de livraison
+    - planning des interventions
+    - visites clients
 audience: []
 modules:
     - module.planung

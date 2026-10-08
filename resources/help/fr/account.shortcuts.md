@@ -1,11 +1,22 @@
 ---
 title: "Raccourcis clavier"
 topic: account.shortcuts
-version: 1
+version: 2
+keywords:
+    - touches de raccourci
+    - raccourcis
+    - hotkeys
+    - combinaison de touches
+    - navigation au clavier
+    - recherche rapide
+    - Ctrl K
+    - aide contextuelle
+    - sans souris
 audience: []
 related:
     - account.bookmarks
     - account.profile
+    - navigation.interface
 ---
 
 De nombreuses parties de WorkDiary s'utilisent sans souris. Appuyez à tout
@@ -18,8 +29,9 @@ pas avec votre saisie.
 
 Raccourcis globaux :
 
-- `Ctrl`/`⌘` + `K` ouvre la recherche globale (clients, projets, frais,
-  déplacements, collaborateurs …). Dans la recherche, choisissez un résultat
+- `Ctrl`/`⌘` + `K` ouvre la recherche globale : pages, rubriques d'aide et
+  actions comme « Changer le thème de couleurs », ainsi que clients, projets,
+  frais, déplacements, collaborateurs … Dans la recherche, choisissez un résultat
   avec `↑`/`↓` et ouvrez-le avec `↵`.
 - `Échap` ferme la recherche ou le dialogue ouvert.
 - `?` affiche l'aperçu de tous les raccourcis.

@@ -2,6 +2,17 @@
 title: "Radar des avis de marché"
 topic: tenders.radar
 version: 1
+keywords:
+    - trouver des appels d'offres
+    - marchés publics
+    - appels d'offres publics
+    - veille des marchés
+    - alerte appel d'offres
+    - profil de recherche
+    - code CPV
+    - région NUTS
+    - mots exclus
+    - commande publique
 audience: []
 modules:
     - module.applications

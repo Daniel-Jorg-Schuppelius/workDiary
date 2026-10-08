@@ -2,6 +2,19 @@
 title: "Kundenbindung"
 topic: reports.customer-retention
 version: 2
+keywords:
+    - Kundenabwanderung
+    - Churn
+    - Churn-Rate
+    - Kundenverlust
+    - Wiederkehrquote
+    - Kohortenanalyse
+    - Neukunden
+    - verlorene Kunden
+    - Rückgewinnung
+    - Bestandskunden
+    - Kundentreue
+    - Retention
 audience: []
 related:
     - reports.customer-value

@@ -2,6 +2,17 @@
 title: "Pacchetti di audit e link per auditor"
 topic: isms.packages
 version: 1
+keywords:
+    - accesso auditor
+    - link auditor
+    - evidenze di audit
+    - dossier di evidenze
+    - snapshot dei dati
+    - congelare i dati
+    - verifica di integrità
+    - verificare l'hash
+    - accesso in sola lettura
+    - export di audit
 audience: []
 modules:
     - module.isms

@@ -2,6 +2,17 @@
 title: "Cambio di software contabile"
 topic: admin.accounting-migration
 version: 1
+keywords:
+    - migrazione contabilità
+    - migrare dati contabili
+    - cambio fornitore
+    - Lexoffice
+    - orgaMAX
+    - migrazione dati
+    - simulazione
+    - dry run
+    - data di passaggio
+    - funzionamento parallelo
 audience:
     - admin
 related:

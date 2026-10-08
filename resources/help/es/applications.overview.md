@@ -2,6 +2,18 @@
 title: "Candidaturas y licitaciones"
 topic: applications.overview
 version: 2
+keywords:
+    - reclutamiento
+    - selección de personal
+    - gestión de candidatos
+    - oferta de empleo
+    - entrevista de trabajo
+    - bolsa de talento
+    - rechazar candidato
+    - contratación
+    - concurso público
+    - presentación de ofertas
+    - negociación de contrato
 audience: []
 modules:
     - module.applications

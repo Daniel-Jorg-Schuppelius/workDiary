@@ -2,6 +2,17 @@
 title: "Configurer le portail de signalement"
 topic: whistleblowing.portal
 version: 1
+keywords:
+    - portail lanceur d'alerte
+    - activer le portail
+    - autoriser les signalements anonymes
+    - signalements confidentiels
+    - lien du portail
+    - régénérer le lien
+    - durée de conservation
+    - texte d'introduction
+    - mettre en place un dispositif d'alerte
+    - langue par défaut
 audience:
     - admin
 modules:

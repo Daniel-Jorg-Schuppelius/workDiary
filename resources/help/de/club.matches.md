@@ -2,6 +2,20 @@
 title: "Mannschaften, Spieltage und Aufstellungen"
 topic: club.matches
 version: 1
+keywords:
+    - Spielplan
+    - Spielplan importieren
+    - Kader
+    - Mannschaftsaufstellung
+    - Nominierung
+    - Spielergebnis
+    - Heimspiel
+    - Auswärtsspiel
+    - Saison
+    - Trikotnummer
+    - Schiedsrichter
+    - Gastspieler
+    - Sportart anlegen
 audience: []
 modules:
     - module.club

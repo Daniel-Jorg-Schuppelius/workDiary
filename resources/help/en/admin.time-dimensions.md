@@ -2,6 +2,17 @@
 title: "Free time dimensions"
 topic: admin.time-dimensions
 version: 1
+keywords:
+    - time allocation
+    - split time
+    - cost object
+    - cost unit
+    - custom dimensions
+    - booking dimension
+    - ERP order
+    - asset number
+    - allocation target
+    - dimension type
 audience: []
 related:
     - reports.overview

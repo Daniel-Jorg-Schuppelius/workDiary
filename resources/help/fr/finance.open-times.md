@@ -2,6 +2,15 @@
 title: "Temps ouverts"
 topic: finance.open-times
 version: 2
+keywords:
+    - temps non facturés
+    - heures non facturées
+    - heures facturables
+    - contrôle de facturation
+    - travaux en cours
+    - préparer la facturation
+    - heures par client
+    - marquer comme facturé
 audience: []
 modules:
     - module.finance

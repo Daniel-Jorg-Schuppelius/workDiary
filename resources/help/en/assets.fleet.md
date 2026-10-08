@@ -2,6 +2,19 @@
 title: "Assets & fleet"
 topic: assets.fleet
 version: 1
+keywords:
+    - fleet management
+    - vehicle management
+    - inventory
+    - equipment
+    - check out equipment
+    - tool loan
+    - equipment return
+    - fuel log
+    - charging log
+    - maintenance schedule
+    - report defect
+    - asset lifecycle
 audience: []
 modules:
     - module.fuhrpark

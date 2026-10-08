@@ -2,6 +2,18 @@
 title: "Training management"
 topic: training.overview
 version: 1
+keywords:
+    - trainings
+    - mandatory training
+    - training plan
+    - further education
+    - courses
+    - course catalog
+    - training matrix
+    - annual safety briefing
+    - training records
+    - overdue training
+    - compliance training
 audience: []
 related:
     - safety.overview

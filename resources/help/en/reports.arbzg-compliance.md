@@ -2,6 +2,19 @@
 title: "Working-time compliance"
 topic: reports.arbzg-compliance
 version: 1
+keywords:
+    - Working Hours Act
+    - working time violations
+    - maximum working hours
+    - rest period
+    - 11-hour rest
+    - mandatory break
+    - break rules
+    - young workers
+    - night work
+    - minimum wage act
+    - record-keeping obligation
+    - labor law check
 audience: []
 modules:
     - module.auswertungen_team

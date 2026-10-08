@@ -2,6 +2,18 @@
 title: "Rentabilidad"
 topic: reports.economics
 version: 1
+keywords:
+    - cálculo a posteriori
+    - margen de contribución
+    - margen
+    - rentabilidad de proyectos
+    - comparación previsto real
+    - comparación con presupuesto
+    - coste interno por hora
+    - proyectos deficitarios
+    - control de gestión
+    - top y flop
+    - beneficio por cliente
 audience: []
 modules:
     - module.auswertungen_team

@@ -2,6 +2,18 @@
 title: "AI services"
 topic: ai.services
 version: 1
+keywords:
+    - AI assistant
+    - artificial intelligence
+    - LLM
+    - language model
+    - Ollama
+    - text suggestions
+    - translate line items
+    - rewrite text
+    - glossary
+    - enable AI
+    - AI provider
 audience: []
 modules:
     - module.ai

@@ -2,6 +2,17 @@
 title: "Meter readings"
 topic: meter-readings
 version: 1
+keywords:
+    - meter reading
+    - record meter reading
+    - read meter
+    - electricity meter
+    - water meter
+    - gas meter
+    - consumption
+    - usage tracking
+    - consumption history
+    - utility meters
 audience: []
 related:
     - key-handovers

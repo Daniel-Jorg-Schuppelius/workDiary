@@ -2,6 +2,17 @@
 title: "Encuestas"
 topic: sales.surveys
 version: 1
+keywords:
+    - satisfacción del cliente
+    - encuesta de satisfacción
+    - cuestionario
+    - sondeo
+    - NPS
+    - Net Promoter Score
+    - recoger opiniones
+    - feedback de clientes
+    - encuesta anónima
+    - recomendación
 audience: []
 modules:
     - module.vertrieb

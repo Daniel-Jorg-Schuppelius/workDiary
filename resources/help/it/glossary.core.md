@@ -2,6 +2,17 @@
 title: "Glossario: termini fondamentali"
 topic: glossary.core
 version: 1
+keywords:
+    - terminologia
+    - definizioni
+    - dizionario
+    - vocabolario
+    - abbreviazioni
+    - cosa significa
+    - SLA
+    - SoA
+    - conto ore
+    - banca ore
 audience: []
 related:
     - isms.overview

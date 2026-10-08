@@ -2,6 +2,19 @@
 title: "Cibles de sauvegarde cloud"
 topic: backup-targets.overview
 version: 1
+keywords:
+    - sauvegarde externalisée
+    - sauvegarde des données
+    - Dropbox
+    - OneDrive
+    - Google Drive
+    - sauvegarde chiffrée
+    - règle 3-2-1
+    - restauration
+    - test de restauration
+    - clé maître
+    - rétention des sauvegardes
+    - reprise après sinistre
 audience: []
 related:
     - admin.integrations

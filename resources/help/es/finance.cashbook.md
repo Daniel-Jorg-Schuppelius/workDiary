@@ -2,6 +2,17 @@
 title: "Libro de caja"
 topic: finance.cashbook
 version: 1
+keywords:
+    - caja chica
+    - arqueo de caja
+    - cobros en efectivo
+    - pagos en efectivo
+    - cierre diario
+    - cierre de caja
+    - pago en efectivo
+    - descuadre de caja
+    - diferencia de caja
+    - anular asiento
 audience:
     - admin
     - geschaeftsfuehrung

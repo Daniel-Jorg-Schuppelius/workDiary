@@ -2,6 +2,17 @@
 title: "Utiliser la liste de travail"
 topic: duties.overview
 version: 1
+keywords:
+    - liste des tâches
+    - commandes ouvertes
+    - carnet de commandes
+    - astreinte
+    - permanence
+    - intervention d'urgence
+    - demande de congé
+    - arrêt maladie
+    - absences
+    - tableau de service
 audience: []
 related:
     - diary-entries.create

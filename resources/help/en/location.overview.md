@@ -2,6 +2,18 @@
 title: "Location-based time tracking"
 topic: location.overview
 version: 1
+keywords:
+    - GPS time tracking
+    - geofencing
+    - geofence
+    - automatic time tracking
+    - location tracking
+    - OwnTracks
+    - Traccar
+    - Google location history
+    - time suggestions
+    - customer visits
+    - site check-in
 audience: []
 modules:
     - module.standorterfassung

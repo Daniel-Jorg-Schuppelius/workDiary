@@ -2,6 +2,17 @@
 title: "Réclamations & garantie"
 topic: claims.overview
 version: 1
+keywords:
+    - plainte client
+    - réclamation client
+    - garantie légale
+    - geste commercial
+    - retour produit
+    - RMA
+    - SAV
+    - défaut produit
+    - recours fournisseur
+    - taux de réclamation
 audience: []
 modules:
     - module.claims

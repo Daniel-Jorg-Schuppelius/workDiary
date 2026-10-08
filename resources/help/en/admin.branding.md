@@ -2,6 +2,16 @@
 title: "Branding"
 topic: admin.branding
 version: 1
+keywords:
+    - white label
+    - corporate design
+    - corporate identity
+    - company logo
+    - brand colours
+    - company details
+    - footer text
+    - invoice footer
+    - look and feel
 audience:
     - admin
 related:

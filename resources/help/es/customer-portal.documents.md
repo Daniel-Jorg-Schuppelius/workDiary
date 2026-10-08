@@ -2,6 +2,15 @@
 title: "Portal del cliente – Documentos"
 topic: customer-portal.documents
 version: 1
+keywords:
+    - archivos
+    - descargar documentos
+    - certificados
+    - actas
+    - planos
+    - documentos compartidos
+    - descarga
+    - documentación
 audience: []
 related:
     - customer-portal.overview

@@ -2,6 +2,16 @@
 title: "Informe de soporte y diagnóstico de errores"
 topic: admin.support
 version: 1
+keywords:
+    - informe técnico
+    - información del sistema
+    - número de versión
+    - estado del sistema
+    - paquete de soporte
+    - resolución de problemas
+    - reportar un problema
+    - datos de depuración
+    - estado de la instalación
 audience:
     - admin
     - geschaeftsfuehrung

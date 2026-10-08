@@ -2,6 +2,16 @@
 title: "Firmare un verbale"
 topic: protocols.sign
 version: 1
+keywords:
+    - firma
+    - far firmare
+    - firma digitale
+    - firma del cliente
+    - firma elettronica
+    - firma su tablet
+    - link di firma
+    - approvazione collaudo
+    - revisione
 audience: []
 related:
     - protocols.create

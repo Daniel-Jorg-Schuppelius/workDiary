@@ -8,12 +8,17 @@
  */
 
 // Suche der statischen Doku-Website (MVP-971): filtert den mitgelieferten
-// Index (search-index.js) im Browser; alle Wörter müssen in Titel oder Text
-// vorkommen, Titeltreffer zuerst. Ausgabe nur über textContent.
+// Index (search-index.js) im Browser; alle Wörter müssen in Titel,
+// Suchbegriffen (MVP-1079) oder Text vorkommen, Titel- und
+// Suchbegriff-Treffer zuerst. Akzente zählen nicht. Ausgabe nur über textContent.
 (function () {
     "use strict";
 
     var MAX_RESULTS = 25;
+
+    function fold(text) {
+        return String(text || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ß/g, "ss");
+    }
 
     function init() {
         var input = document.querySelector("[data-site-search-input]");
@@ -30,7 +35,7 @@
         }
 
         input.addEventListener("input", function () {
-            var words = input.value.toLowerCase().split(/\s+/).filter(function (word) { return word.length > 1; });
+            var words = fold(input.value).split(/\s+/).filter(function (word) { return word.length > 1; });
             list.textContent = "";
             if (words.length === 0) {
                 results.hidden = true;
@@ -40,8 +45,8 @@
 
             var hits = [];
             index.forEach(function (entry) {
-                var title = String(entry.t || "").toLowerCase();
-                var haystack = title + " " + String(entry.x || "").toLowerCase();
+                var title = fold(entry.t) + " " + fold(entry.k);
+                var haystack = title + " " + fold(entry.x);
                 if (words.every(function (word) { return haystack.indexOf(word) !== -1; })) {
                     hits.push({ entry: entry, inTitle: words.every(function (word) { return title.indexOf(word) !== -1; }) });
                 }

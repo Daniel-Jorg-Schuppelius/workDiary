@@ -2,6 +2,19 @@
 title: "Gestion des licences"
 topic: admin.license
 version: 2
+keywords:
+    - clé de licence
+    - forfait
+    - abonnement
+    - changer de forfait
+    - mise à niveau
+    - modules complémentaires
+    - limite utilisateurs
+    - période test
+    - licence expirée
+    - compte bloqué
+    - feature flags
+    - données de facturation
 audience:
     - admin
     - geschaeftsfuehrung

@@ -2,6 +2,20 @@
 title: "Existencias y escaneo"
 topic: inventory.stock
 version: 2
+keywords:
+    - stock
+    - almacén
+    - entrada de mercancía
+    - salida de stock
+    - traslado de stock
+    - reserva
+    - punto de pedido
+    - stock mínimo
+    - bloquear lote
+    - gestión de lotes
+    - FEFO
+    - escanear código de barras
+    - valor del stock
 audience: []
 modules:
     - module.lager

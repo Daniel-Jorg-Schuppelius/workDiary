@@ -2,6 +2,19 @@
 title: "Backups & Betriebsüberwachung"
 topic: admin.backups
 version: 3
+keywords:
+    - Datensicherung
+    - Sicherungskopie
+    - Restore
+    - Wiederherstellung
+    - Backup überwachen
+    - Heartbeat
+    - Backup überfällig
+    - Restore-Test
+    - Systemzustand
+    - Health Check
+    - Monitoring
+    - Notfallwiederherstellung
 audience:
     - admin
 schema: process

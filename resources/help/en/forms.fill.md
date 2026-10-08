@@ -2,6 +2,16 @@
 title: "Filling in forms"
 topic: forms.fill
 version: 1
+keywords:
+    - fill out checklist
+    - complete form
+    - data entry form
+    - questionnaire
+    - digital form
+    - required fields
+    - print form
+    - submitted forms
+    - inspection checklist
 audience: []
 modules:
     - module.forms

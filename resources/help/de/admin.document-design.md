@@ -2,6 +2,19 @@
 title: "Dokumentdesign"
 topic: admin.document-design
 version: 1
+keywords:
+    - Briefpapier
+    - Firmenbogen
+    - Briefkopf
+    - Rechnungslayout
+    - Rechnungsvorlage gestalten
+    - PDF-Layout
+    - Corporate Design
+    - Schriftart
+    - Seitenränder
+    - Adressfenster
+    - Kopfzeile Fußzeile
+    - Kunden-Sonderdesign
 audience:
     - admin
 modules:

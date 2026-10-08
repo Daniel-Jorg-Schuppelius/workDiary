@@ -2,6 +2,18 @@
 title: "Gérer les modèles de formulaires"
 topic: forms.templates
 version: 1
+keywords:
+    - créer un formulaire
+    - éditeur de formulaires
+    - concepteur de formulaires
+    - créer une check-list
+    - champs du formulaire
+    - types de champs
+    - liste déroulante
+    - champ obligatoire
+    - activer un formulaire
+    - archiver un formulaire
+    - formulaires personnalisés
 audience:
     - admin
     - geschaeftsfuehrung

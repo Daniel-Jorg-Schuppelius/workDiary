@@ -2,6 +2,18 @@
 title: "Pianificazione menù & buffet (catering)"
 topic: recipes.menus
 version: 1
+keywords:
+    - menu per eventi
+    - piano pasti
+    - organizzare un buffet
+    - numero di ospiti
+    - calcolo porzioni
+    - scalare ricette
+    - allergeni
+    - etichettatura allergeni
+    - fabbisogno ingredienti
+    - food cost
+    - banqueting
 audience: []
 modules:
     - module.lager

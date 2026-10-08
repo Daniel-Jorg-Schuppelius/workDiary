@@ -2,6 +2,18 @@
 title: "Audits, findings & corrective actions"
 topic: isms.audits
 version: 1
+keywords:
+    - internal audit
+    - audit plan
+    - audit report
+    - nonconformity
+    - major nonconformity
+    - audit observation
+    - CAPA
+    - effectiveness review
+    - management review
+    - supplier audit
+    - root cause analysis
 audience: []
 modules:
     - module.isms

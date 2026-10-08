@@ -2,6 +2,19 @@
 title: "B2B-Katalogzugang verwalten"
 topic: admin.b2b-catalog
 version: 1
+keywords:
+    - Punchout
+    - OCI
+    - DATANORM
+    - Kundenkatalog
+    - Kundenpreise
+    - Sonderpreise
+    - Händlerzugang
+    - E-Procurement
+    - Warenkorb-Übergabe
+    - Einkaufssystem anbinden
+    - Katalogexport
+    - Preisdatei
 audience:
     - admin
 related:

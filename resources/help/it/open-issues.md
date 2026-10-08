@@ -2,6 +2,16 @@
 title: "Pratiche aperte"
 topic: open-issues
 version: 1
+keywords:
+    - lista difetti
+    - difetti
+    - punti aperti
+    - to-do
+    - problema
+    - ticket
+    - ordine successivo
+    - segnalare un problema
+    - pendenze
 audience: []
 related:
     - foreign-customers

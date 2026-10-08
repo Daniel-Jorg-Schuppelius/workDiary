@@ -2,6 +2,16 @@
 title: "Contabilità locale"
 topic: accounting.overview
 version: 2
+keywords:
+    - libro mastro
+    - contabilità generale
+    - tenuta contabile
+    - configurare contabilità
+    - partita doppia
+    - contabilità di cassa
+    - data inizio contabilità
+    - sostituire software contabile
+    - contabilità integrata
 audience:
     - admin
     - geschaeftsfuehrung

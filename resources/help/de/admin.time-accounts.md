@@ -2,6 +2,18 @@
 title: "Zeitkonten (Verwaltung)"
 topic: admin.time-accounts
 version: 1
+keywords:
+    - Zusatzkonto
+    - Zeitkonto anlegen
+    - Ansparkonto
+    - Freizeitkonto
+    - Nachtdienstzähler
+    - Zulagenkonto
+    - Kontostand
+    - Übertrag
+    - Kappung
+    - Sonderbuchung
+    - Monatsabschluss
 audience: [admin]
 related:
     - time-accounts.overview

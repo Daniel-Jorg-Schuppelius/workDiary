@@ -2,6 +2,18 @@
 title: "Meldeportal konfigurieren"
 topic: whistleblowing.portal
 version: 1
+keywords:
+    - Hinweisgeberportal
+    - Whistleblower-Portal
+    - Portal aktivieren
+    - anonyme Meldungen erlauben
+    - vertrauliche Meldungen
+    - Portal-Link
+    - Link erneuern
+    - Aufbewahrungsfrist
+    - Einleitungstext
+    - HinSchG
+    - Hinweisgebersystem einrichten
 audience:
     - admin
 modules:

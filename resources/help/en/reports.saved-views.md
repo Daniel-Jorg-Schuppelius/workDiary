@@ -2,6 +2,16 @@
 title: "Saved reports"
 topic: reports.saved-views
 version: 1
+keywords:
+    - save filters
+    - saved view
+    - share view
+    - share report
+    - favorites
+    - bookmarks
+    - quick access
+    - report preset
+    - saved filter
 audience: []
 related:
     - reports.overview

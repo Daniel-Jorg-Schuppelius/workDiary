@@ -2,6 +2,18 @@
 title: "Automatisierungen"
 topic: admin.automations
 version: 1
+keywords:
+    - Workflow
+    - Regeln
+    - Wenn-Dann-Regel
+    - Trigger
+    - Auslöser
+    - Automatisierungsregel
+    - automatische Aktion
+    - Workflow-Automatisierung
+    - Regel anlegen
+    - Prozessautomatisierung
+    - Ablauf automatisieren
 audience:
     - admin
 related:

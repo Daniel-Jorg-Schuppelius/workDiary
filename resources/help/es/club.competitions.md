@@ -2,6 +2,19 @@
 title: "Competiciones, marcas y lista de acreditación"
 topic: club.competitions
 version: 1
+keywords:
+    - competición deportiva
+    - torneo
+    - inscripción
+    - cuota de inscripción
+    - licencia federativa
+    - licencia de competición
+    - mejor marca
+    - marca personal
+    - récord
+    - resultados
+    - disciplina
+    - categoría de edad
 audience: []
 modules:
     - module.club

@@ -2,6 +2,16 @@
 title: "Customer Portal – Tickets"
 topic: customer-portal.tickets
 version: 1
+keywords:
+    - support request
+    - report a fault
+    - report a problem
+    - service request
+    - service catalogue
+    - known errors
+    - create ticket
+    - helpdesk
+    - ticket status
 audience: []
 related:
     - customer-portal.overview

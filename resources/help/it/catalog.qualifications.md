@@ -2,6 +2,14 @@
 title: "Qualifiche"
 topic: catalog.qualifications
 version: 1
+keywords:
+    - competenze
+    - abilità
+    - certificati
+    - certificazioni
+    - formazione
+    - abilitazioni
+    - skill
 audience: []
 related:
     - planning.shifts

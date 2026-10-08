@@ -2,6 +2,18 @@
 title: "Équitation : chevaux, reprises et attribution"
 topic: club.horses
 version: 1
+keywords:
+    - école d'équitation
+    - cours d'équitation
+    - cheval de club
+    - cheval de propriétaire
+    - attribuer un cheval
+    - moniteur d'équitation
+    - boiterie
+    - temps de repos
+    - galops
+    - manège
+    - utilisation des chevaux
 audience: []
 modules:
     - module.club

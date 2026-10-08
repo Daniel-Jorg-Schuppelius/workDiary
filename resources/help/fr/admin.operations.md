@@ -2,6 +2,17 @@
 title: "Tâches d'exploitation & fenêtres de maintenance"
 topic: admin.operations
 version: 1
+keywords:
+    - mode maintenance
+    - interruption de service
+    - maintenance programmée
+    - annonce de maintenance
+    - mode lecture seule
+    - centre de tâches
+    - expiration de certificat
+    - sauvegarde manquante
+    - reporter une tâche
+    - arrêt planifié
 audience:
     - admin
     - geschaeftsfuehrung

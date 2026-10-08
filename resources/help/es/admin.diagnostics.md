@@ -2,6 +2,16 @@
 title: "Diagnóstico"
 topic: admin.diagnostics
 version: 1
+keywords:
+    - estado del sistema
+    - health check
+    - comprobación del sistema
+    - resolución de problemas
+    - correo de prueba
+    - comprobar envío de correo
+    - cola
+    - programador de tareas
+    - cron
 audience:
     - admin
 related:

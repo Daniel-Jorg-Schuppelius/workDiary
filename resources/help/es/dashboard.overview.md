@@ -2,6 +2,19 @@
 title: "Panel de control"
 topic: dashboard.overview
 version: 3
+keywords:
+    - página de inicio
+    - inicio
+    - personalizar mosaicos
+    - widgets
+    - indicadores clave
+    - KPI
+    - ocultar mosaicos
+    - ordenar mosaicos
+    - diseño predeterminado
+    - resumen
+    - dashboard
+    - cuadro de mando
 audience: []
 schema: process
 related:

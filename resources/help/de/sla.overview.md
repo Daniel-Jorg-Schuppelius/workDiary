@@ -2,6 +2,18 @@
 title: "SLA, Verträge & Service-Level"
 topic: sla.overview
 version: 1
+keywords:
+    - Service Level Agreement
+    - Reaktionszeit
+    - Lösungszeit
+    - Servicevertrag
+    - SLA-Verletzung
+    - Fristüberschreitung
+    - Eskalation
+    - Ticket überfällig
+    - Einhaltungsquote
+    - SLA-Bericht
+    - Antwortzeit
 audience: []
 related:
     - glossary.core

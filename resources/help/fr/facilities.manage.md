@@ -2,6 +2,17 @@
 title: "Sites et locaux"
 topic: facilities.manage
 version: 1
+keywords:
+    - bâtiments
+    - étages
+    - gestion des locaux
+    - registre des pièces
+    - patrimoine immobilier
+    - facility management
+    - niveau d'hygiène
+    - nettoyage spécial
+    - restriction d'accès
+    - salles
 audience: []
 modules:
     - module.liegenschaften

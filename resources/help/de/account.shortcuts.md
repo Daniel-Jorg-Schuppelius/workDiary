@@ -1,11 +1,23 @@
 ---
 title: "Tastenkürzel"
 topic: account.shortcuts
-version: 1
+version: 2
+keywords:
+    - Hotkeys
+    - Shortcuts
+    - Tastenkombination
+    - Tastaturbefehle
+    - Tastatursteuerung
+    - ohne Maus bedienen
+    - Schnellsuche
+    - Strg K
+    - Kontexthilfe
+    - F1
 audience: []
 related:
     - account.bookmarks
     - account.profile
+    - navigation.interface
 ---
 
 WorkDiary lässt sich an vielen Stellen ohne Maus bedienen. Die Übersicht
@@ -17,8 +29,9 @@ einer Auswahlliste tippen; so kollidieren sie nicht mit Ihrer Eingabe.
 
 Globale Kürzel:
 
-- `Strg`/`⌘` + `K` öffnet die globale Suche (Kunden, Projekte, Spesen,
-  Reisen, Mitarbeitende …). In der Suche wählen Sie mit `↑`/`↓` einen Treffer
+- `Strg`/`⌘` + `K` öffnet die globale Suche: Seiten, Hilfethemen und Aktionen
+  wie „Farbschema wechseln“, dazu Kunden, Projekte, Spesen, Reisen,
+  Mitarbeitende … In der Suche wählen Sie mit `↑`/`↓` einen Treffer
   und öffnen ihn mit `↵`.
 - `Esc` schließt die Suche oder den gerade offenen Dialog.
 - `?` zeigt die Übersicht aller Kürzel.

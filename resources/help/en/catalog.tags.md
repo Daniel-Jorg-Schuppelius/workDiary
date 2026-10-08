@@ -2,6 +2,13 @@
 title: "Tags"
 topic: catalog.tags
 version: 1
+keywords:
+    - labels
+    - keywords
+    - tagging
+    - markers
+    - color labels
+    - categorize
 audience: []
 related:
     - catalog.activity-categories

@@ -2,6 +2,16 @@
 title: "Sollecito delle offerte"
 topic: quotes.follow-ups
 version: 1
+keywords:
+    - sollecitare un'offerta
+    - follow-up offerte
+    - promemoria offerta
+    - offerte aperte
+    - offerte in sospeso
+    - tasso di successo
+    - tasso di conversione
+    - data di sollecito
+    - offerte vinte
 audience: []
 modules:
     - module.vertrieb

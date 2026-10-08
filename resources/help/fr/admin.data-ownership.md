@@ -2,6 +2,16 @@
 title: "Souveraineté des données"
 topic: admin.data-ownership
 version: 1
+keywords:
+    - système maître
+    - système de référence
+    - source unique de vérité
+    - maîtrise des données
+    - autorité de facturation
+    - Lexoffice
+    - DATEV
+    - éviter double facturation
+    - conflit de synchronisation
 audience:
     - admin
 related:

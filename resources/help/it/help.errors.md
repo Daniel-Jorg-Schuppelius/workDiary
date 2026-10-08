@@ -2,6 +2,19 @@
 title: "Comprendere i messaggi di errore"
 topic: help.errors
 version: 1
+keywords:
+    - pagina di errore
+    - accesso negato
+    - permesso negato
+    - errore 403
+    - pagina non trovata
+    - errore 404
+    - sessione scaduta
+    - errore 419
+    - errore del server
+    - errore 500
+    - ID richiesta
+    - area in manutenzione
 audience: []
 related:
     - help.center

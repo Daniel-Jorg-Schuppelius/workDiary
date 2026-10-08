@@ -2,6 +2,14 @@
 title: "Rapporto delle prestazioni / diario"
 topic: customer-portal.diary
 version: 1
+keywords:
+    - registro degli incarichi
+    - interventi eseguiti
+    - lavori svolti
+    - rapportino di lavoro
+    - rapporti di intervento
+    - stato dell'incarico
+    - storico interventi
 audience: []
 related:
     - customer-portal.overview

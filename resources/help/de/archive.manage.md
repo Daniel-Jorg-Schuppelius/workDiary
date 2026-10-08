@@ -2,6 +2,16 @@
 title: "Archiv verwenden"
 topic: archive.manage
 version: 1
+keywords:
+    - archivieren
+    - Archivierung
+    - alte Einträge
+    - abgeschlossene Vorgänge
+    - wiederherstellen
+    - Vorgang reaktivieren
+    - Historie
+    - erledigte Aufträge finden
+    - Altdaten
 audience: []
 related:
     - diary-entries.edit

@@ -2,6 +2,16 @@
 title: "Kundenportal – Dokumente"
 topic: customer-portal.documents
 version: 1
+keywords:
+    - Unterlagen
+    - Dokument herunterladen
+    - Dateien herunterladen
+    - Zertifikate
+    - Protokolle
+    - Pläne
+    - freigegebene Dokumente
+    - Download
+    - Nachweise
 audience: []
 related:
     - customer-portal.overview

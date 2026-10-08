@@ -2,6 +2,16 @@
 title: "Connect appointment booking (Calendly)"
 topic: admin.calendly
 version: 1
+keywords:
+    - online booking
+    - booking page
+    - appointment scheduling
+    - scheduling tool
+    - customer appointments
+    - booked meetings
+    - appointment inbox
+    - cancelled appointments
+    - rescheduling
 audience:
     - admin
 related:

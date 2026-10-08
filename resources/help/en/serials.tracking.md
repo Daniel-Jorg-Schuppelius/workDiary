@@ -2,6 +2,19 @@
 title: "Serial numbers"
 topic: serials.tracking
 version: 1
+keywords:
+    - SN
+    - serial number tracking
+    - device ID
+    - traceability
+    - device passport
+    - verify authenticity
+    - block device
+    - stolen device
+    - product recall
+    - scrap device
+    - warranty check
+    - lifecycle
 audience: []
 modules:
     - module.lager

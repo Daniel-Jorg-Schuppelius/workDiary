@@ -14,7 +14,7 @@ namespace App\Http\Controllers\Help;
 
 use App\Http\Controllers\Controller;
 use App\Models\Platform\{HelpView, User};
-use App\Services\Help\{HelpCenterCatalog, HelpContextResolver, HelpTopicResolver};
+use App\Services\Help\{FunctionFinder, HelpCenterCatalog, HelpContextResolver, HelpSearch, HelpTopicResolver};
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\Request;
@@ -30,7 +30,10 @@ use Illuminate\Support\Facades\Cache;
 class HelpCenterController extends Controller {
     private const PER_PAGE = 20;
 
-    public function index(Request $request, HelpTopicResolver $resolver, HelpCenterCatalog $catalog): View {
+    /** Passende Seiten über den Suchtreffern (MVP-1082). */
+    private const PAGE_LIMIT = 5;
+
+    public function index(Request $request, HelpTopicResolver $resolver, HelpCenterCatalog $catalog, HelpSearch $search, FunctionFinder $finder): View {
         /** @var User|null $user */
         $user = $request->user();
 
@@ -38,15 +41,21 @@ class HelpCenterController extends Controller {
         $sectionKey = trim((string) $request->query('bereich', ''));
         $page = max(1, (int) $request->query('page', 1));
 
-        // Suchmodus: paginierte Treffer mit Bereichslabel je Zeile.
+        // Suchmodus: Seiten als Sprungziele, darunter paginierte Artikel mit Bereichslabel.
         if ($query !== '') {
-            $results = $resolver->searchPaginated($query, $user, null, self::PER_PAGE, $page);
+            $prepared = $search->prepare($query);
+            $found = $search->search($prepared, $user);
+            $results = $search->paginate($found, self::PER_PAGE, $page);
             $results->withPath($request->url())->appends($request->except('page'));
 
             return view('help.center.index', [
                 'mode' => 'search',
                 'query' => $query,
+                'corrected' => $prepared->correctedText(),
+                'partial' => $found->partial,
                 'results' => $results,
+                'pages' => $page === 1 ? $finder->pages($prepared, self::PAGE_LIMIT) : [],
+                'topicPages' => $finder->pagesByTopic(),
                 'sectionTitles' => $this->sectionTitles($catalog),
                 'catalog' => $catalog,
             ]);

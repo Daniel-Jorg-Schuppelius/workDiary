@@ -2,6 +2,16 @@
 title: "Facturación por contador"
 topic: metering.billing
 version: 1
+keywords:
+    - facturación por consumo
+    - pago por uso
+    - coste por copia
+    - precio por clic
+    - facturación de copias
+    - franquicia incluida
+    - precios escalonados
+    - cuota base
+    - horas de funcionamiento
 audience: []
 related:
     - invoices.manage

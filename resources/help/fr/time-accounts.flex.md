@@ -2,6 +2,17 @@
 title: "Compte de temps de travail & validation mensuelle"
 topic: time-accounts.flex
 version: 1
+keywords:
+    - compte d'heures
+    - heures supplémentaires
+    - solde d'heures
+    - heures en plus
+    - heures en moins
+    - horaire variable
+    - clôture mensuelle
+    - soumettre le mois
+    - valider le mois
+    - demande de correction
 audience: []
 related:
     - attendance.manage

@@ -2,6 +2,18 @@
 title: "Richieste di appuntamento"
 topic: appointments.inbox
 version: 1
+keywords:
+    - prenotazione online
+    - prenotazione appuntamenti
+    - richiesta di prenotazione
+    - portale clienti
+    - confermare appuntamento
+    - rifiutare appuntamento
+    - fasce orarie
+    - slot
+    - tipi di servizio
+    - termine di disdetta
+    - pianificazione
 audience: []
 modules:
     - module.planung

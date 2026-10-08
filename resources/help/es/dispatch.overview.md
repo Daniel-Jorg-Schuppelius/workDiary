@@ -2,6 +2,17 @@
 title: "Disposición y avisos de conflicto"
 topic: dispatch.overview
 version: 1
+keywords:
+    - planificación de trabajos
+    - asignar trabajo
+    - planificar técnico
+    - doble reserva
+    - solapamiento
+    - descanso
+    - jornada máxima
+    - reservar vehículo
+    - reserva de vehículo
+    - confirmar cita
 audience: []
 related:
     - diary-entries.edit

@@ -2,6 +2,19 @@
 title: "Équipements & parc de véhicules"
 topic: assets.fleet
 version: 1
+keywords:
+    - gestion de flotte
+    - gestion des véhicules
+    - inventaire
+    - matériel
+    - prêt de matériel
+    - sortie de matériel
+    - retour de matériel
+    - carnet de carburant
+    - journal de recharge
+    - entretien
+    - signaler un défaut
+    - cycle de vie
 audience: []
 modules:
     - module.fuhrpark

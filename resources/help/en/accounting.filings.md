@@ -2,6 +2,18 @@
 title: "Tax deadlines and filing obligations"
 topic: accounting.filings
 version: 1
+keywords:
+    - VAT return
+    - advance VAT return
+    - VAT deadline
+    - filing deadline
+    - permanent extension
+    - special prepayment
+    - EC sales list
+    - recapitulative statement
+    - tax calendar
+    - monthly VAT
+    - quarterly VAT
 audience:
     - admin
     - geschaeftsfuehrung

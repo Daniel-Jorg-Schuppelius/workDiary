@@ -2,6 +2,18 @@
 title: "Club events"
 topic: club.events
 version: 1
+keywords:
+    - training session
+    - practice
+    - rehearsal
+    - course
+    - general meeting
+    - sign-up
+    - registration
+    - waiting list
+    - club calendar
+    - recurring events
+    - cancel training
 audience: []
 modules:
     - module.club

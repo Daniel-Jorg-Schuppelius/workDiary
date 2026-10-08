@@ -2,6 +2,16 @@
 title: "Presenza attuale"
 topic: presence.board
 version: 1
+keywords:
+    - chi è presente
+    - tabellone presenze
+    - elenco presenze
+    - reception
+    - centralino
+    - in trasferta
+    - assenti oggi
+    - lista di evacuazione
+    - colleghi disponibili
 audience: []
 related:
     - attendance.manage

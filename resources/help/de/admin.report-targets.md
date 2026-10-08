@@ -2,6 +2,19 @@
 title: "Zielwerte (Reports)"
 topic: admin.report-targets
 version: 1
+keywords:
+    - Sollwerte
+    - Zielvorgabe
+    - Benchmark
+    - KPI
+    - Kennzahlen
+    - Ampel
+    - Soll-Ist-Vergleich
+    - Planwerte
+    - Auslastung
+    - Deckungsbeitrag
+    - Marge
+    - SLA-Quote
 audience:
     - admin
     - geschaeftsfuehrung

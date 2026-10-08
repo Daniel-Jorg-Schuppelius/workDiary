@@ -2,6 +2,15 @@
 title: "Recorded Times"
 topic: customer-portal.time
 version: 1
+keywords:
+    - time tracking
+    - timesheet
+    - hours worked
+    - working hours
+    - time records
+    - effort
+    - project hours
+    - time log
 audience: []
 related:
     - customer-portal.overview

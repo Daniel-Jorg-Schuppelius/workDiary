@@ -2,6 +2,15 @@
 title: "Correcciones de tiempo"
 topic: corrections.requests
 version: 1
+keywords:
+    - solicitud de corrección
+    - fichaje olvidado
+    - olvido de fichaje
+    - añadir tiempo faltante
+    - corregir registro
+    - corregir horario
+    - rectificar fichaje
+    - corrección de jornada
 audience: []
 related:
     - attendance.manage

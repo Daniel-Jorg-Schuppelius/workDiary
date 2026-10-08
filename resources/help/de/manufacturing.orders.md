@@ -2,6 +2,21 @@
 title: "Fertigungsaufträge"
 topic: manufacturing.orders
 version: 1
+keywords:
+    - Produktionsauftrag
+    - Stückliste
+    - Rezeptur
+    - Materialbedarf
+    - MRP
+    - Material reservieren
+    - Rückmeldung
+    - Ausschuss
+    - Fremdfertigung
+    - Lohnfertigung
+    - Zollpapiere
+    - Proformarechnung
+    - Handelsrechnung
+    - Lieferschein
 audience: []
 modules:
     - module.lager

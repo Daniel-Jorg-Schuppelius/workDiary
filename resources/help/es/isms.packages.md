@@ -2,6 +2,17 @@
 title: "Paquetes de auditoría y enlaces para auditores"
 topic: isms.packages
 version: 1
+keywords:
+    - acceso para auditores
+    - enlace de auditor
+    - evidencias de auditoría
+    - dossier de evidencias
+    - instantánea de datos
+    - congelar datos
+    - comprobación de integridad
+    - verificar hash
+    - acceso de solo lectura
+    - exportación de auditoría
 audience: []
 modules:
     - module.isms

@@ -2,6 +2,17 @@
 title: "Centre de dispatching : tableau et carte"
 topic: dispatch.board
 version: 1
+keywords:
+    - tableau de planification
+    - planning des interventions
+    - kanban
+    - vue carte
+    - carte des interventions
+    - vue par technicien
+    - risque SLA
+    - répartiteur
+    - dispatcheur
+    - poste de pilotage
 audience: []
 modules:
     - module.planung

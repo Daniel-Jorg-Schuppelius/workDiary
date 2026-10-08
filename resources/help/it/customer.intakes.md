@@ -2,6 +2,18 @@
 title: "Richieste dei clienti"
 topic: customer.intakes
 version: 1
+keywords:
+    - richiesta dal portale
+    - ordine di stampa
+    - richiesta IT
+    - gestire una richiesta
+    - presa in carico
+    - rifiutare una richiesta
+    - domanda al cliente
+    - collegare un preventivo
+    - link di caricamento
+    - Nextcloud
+    - file del cliente
 audience: []
 related:
     - customer.queries

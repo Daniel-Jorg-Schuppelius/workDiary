@@ -2,6 +2,19 @@
 title: "Your day in WorkDiary: Admin"
 topic: roles.admin
 version: 1
+keywords:
+    - administrator
+    - admin tasks
+    - create users
+    - user management
+    - assign roles
+    - grant permissions
+    - reset 2FA
+    - unlock account
+    - initial setup
+    - check backups
+    - system health
+    - admin daily routine
 audience:
     - admin
 related:

@@ -2,6 +2,18 @@
 title: "Sinistri"
 topic: damage-cases.overview
 version: 1
+keywords:
+    - denunciare un sinistro
+    - denuncia di sinistro
+    - danno assicurativo
+    - responsabilità civile
+    - danno materiale
+    - liquidazione del danno
+    - assicurazione
+    - franchigia
+    - numero di sinistro
+    - danno al veicolo
+    - rimborso
 audience: []
 related:
     - rental.overview

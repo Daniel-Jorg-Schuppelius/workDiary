@@ -2,6 +2,19 @@
 title: "Cost groups per DIN 276"
 topic: boq.cost-groups
 version: 1
+keywords:
+    - assign cost group
+    - cost planning
+    - cost estimate
+    - cost calculation
+    - final cost statement
+    - cost tracking
+    - HOAI
+    - StLB-Bau
+    - work section
+    - construction cost catalog
+    - GAEB X51
+    - GAEB X52
 audience: []
 modules:
     - module.bau

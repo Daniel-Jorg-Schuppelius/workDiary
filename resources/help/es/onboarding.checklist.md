@@ -2,6 +2,16 @@
 title: "Lista de puesta en marcha"
 topic: onboarding.checklist
 version: 1
+keywords:
+    - configuración inicial
+    - asistente de configuración
+    - primeros pasos
+    - configurar la organización
+    - arranque
+    - setup
+    - avance de la configuración
+    - omitir un paso
+    - onboarding
 audience:
     - admin
     - geschaeftsfuehrung

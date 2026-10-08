@@ -2,6 +2,17 @@
 title: "Accords clients : DPA et confidentialité"
 topic: contracts.agreements
 version: 1
+keywords:
+    - contrat de sous-traitance
+    - sous-traitance RGPD
+    - accord de traitement des données
+    - RGPD
+    - accord de non-divulgation
+    - engagement de confidentialité
+    - signature électronique
+    - lien de signature
+    - contre-signature
+    - signer en ligne
 audience: []
 modules:
     - module.contracts

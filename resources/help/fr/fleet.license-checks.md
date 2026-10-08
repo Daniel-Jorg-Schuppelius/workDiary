@@ -2,6 +2,17 @@
 title: "Contrôle du permis de conduire"
 topic: fleet.license-checks
 version: 1
+keywords:
+    - vérifier le permis
+    - contrôle des permis
+    - permis B
+    - responsabilité de l'employeur
+    - conducteurs
+    - intervalle de contrôle
+    - bloquer un conducteur
+    - véhicule de service
+    - voiture de fonction
+    - flotte automobile
 audience:
     - admin
     - geschaeftsfuehrung

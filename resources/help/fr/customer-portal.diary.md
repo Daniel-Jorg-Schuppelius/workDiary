@@ -2,6 +2,14 @@
 title: "Justificatif de prestations / journal"
 topic: customer-portal.diary
 version: 1
+keywords:
+    - journal des interventions
+    - historique des interventions
+    - travaux réalisés
+    - rapport d'intervention
+    - suivi des interventions
+    - statut de la commande
+    - preuve de prestation
 audience: []
 related:
     - customer-portal.overview

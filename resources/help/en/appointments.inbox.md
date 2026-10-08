@@ -2,6 +2,17 @@
 title: "Appointment requests"
 topic: appointments.inbox
 version: 1
+keywords:
+    - online booking
+    - appointment booking
+    - booking request
+    - customer portal
+    - confirm appointment
+    - decline appointment
+    - time slots
+    - service types
+    - cancellation period
+    - dispatch
 audience: []
 modules:
     - module.planung

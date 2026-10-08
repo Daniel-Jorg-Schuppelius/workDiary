@@ -2,6 +2,19 @@
 title: "Réception des factures électroniques"
 topic: finance.incoming-invoices
 version: 1
+keywords:
+    - facture fournisseur
+    - facture d'achat
+    - factures entrantes
+    - recevoir une XRechnung
+    - ZUGFeRD
+    - Factur-X
+    - valider une e-facture
+    - approbation de facture
+    - comptabilité fournisseurs
+    - bon à payer
+    - EN 16931
+    - facturation électronique
 audience: []
 modules:
     - module.vertrieb

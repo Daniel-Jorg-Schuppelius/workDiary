@@ -2,6 +2,18 @@
 title: "Entradas de clientes"
 topic: customer.intakes
 version: 1
+keywords:
+    - solicitud de cliente
+    - solicitud del portal
+    - pedido de impresión
+    - solicitud de TI
+    - tramitar solicitud
+    - rechazar solicitud
+    - pregunta al cliente
+    - vincular presupuesto
+    - enlace de subida
+    - Nextcloud
+    - archivos del cliente
 audience: []
 related:
     - customer.queries

@@ -2,6 +2,19 @@
 title: "Zahlungsverhalten"
 topic: reports.payment-behavior
 version: 2
+keywords:
+    - Zahlungsmoral
+    - DSO
+    - Forderungslaufzeit
+    - Zahlungsverzug
+    - Zahlungsdauer
+    - säumige Kunden
+    - Spätzahler
+    - überfällige Rechnungen
+    - offene Forderungen
+    - Kapitalbindung
+    - Zahlungsziel
+    - Debitorenanalyse
 audience: []
 related:
     - reports.economics

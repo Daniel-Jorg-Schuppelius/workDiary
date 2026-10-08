@@ -2,6 +2,16 @@
 title: "Garanzie"
 topic: guarantees.overview
 version: 1
+keywords:
+    - fideiussione
+    - fideiussione bancaria
+    - polizza fideiussoria
+    - garanzia di buona esecuzione
+    - ritenuta a garanzia
+    - svincolo ritenuta
+    - atto di fideiussione
+    - restituzione garanzia
+    - cauzione
 audience: []
 related:
     - invoices.manage

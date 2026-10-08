@@ -2,6 +2,16 @@
 title: "Périmètre fonctionnel"
 topic: scope.overview
 version: 1
+keywords:
+    - activer des modules
+    - désactiver des modules
+    - masquer des fonctions
+    - alléger le menu
+    - sélection des modules
+    - préréglage
+    - page d'accueil par rôle
+    - page de démarrage
+    - désactiver des fonctionnalités
 audience:
     - admin
 related:

@@ -2,6 +2,19 @@
 title: "Rappels de produits"
 topic: recalls.overview
 version: 1
+keywords:
+    - campagne de rappel
+    - lancer un rappel
+    - produit défectueux
+    - numéros de série
+    - clients concernés
+    - informer les clients
+    - taux de retour
+    - déclaration aux autorités
+    - sécurité des produits
+    - traçabilité
+    - bloquer le stock
+    - avis de sécurité
 audience: []
 modules:
     - module.lager

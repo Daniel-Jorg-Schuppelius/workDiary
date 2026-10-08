@@ -2,6 +2,19 @@
 title: "Auftrag anlegen"
 topic: diary-entries.create
 version: 2
+keywords:
+    - neuer Auftrag
+    - Auftrag erfassen
+    - Auftragseintrag
+    - neuer Eintrag
+    - Störungsmeldung
+    - Wartungsauftrag
+    - Serviceauftrag
+    - Montageauftrag
+    - Arbeitsauftrag
+    - Auftragsbuch
+    - Eintragstyp
+    - Einsatz anlegen
 audience: []
 schema: process
 related:

@@ -2,6 +2,19 @@
 title: "Genehmigungs-Register"
 topic: permits.overview
 version: 1
+keywords:
+    - Genehmigung
+    - Erlaubnis
+    - Sondernutzungserlaubnis
+    - Aufgrabungserlaubnis
+    - Aufbruchgenehmigung
+    - Veranstaltungsgenehmigung
+    - Bescheid
+    - Aktenzeichen
+    - Behörde
+    - Genehmigung abgelaufen
+    - Auflagen
+    - Fristüberwachung
 audience: []
 modules:
     - module.vertrieb

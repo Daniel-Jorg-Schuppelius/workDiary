@@ -2,6 +2,19 @@
 title: "Centro de ayuda"
 topic: help.center
 version: 2
+keywords:
+    - ayuda
+    - manual
+    - documentación
+    - guía de usuario
+    - preguntas frecuentes
+    - FAQ
+    - soporte
+    - buscar en la ayuda
+    - artículos de ayuda
+    - tutorial
+    - temas de ayuda
+    - vistos recientemente
 audience: []
 related:
     - account.shortcuts

@@ -2,6 +2,16 @@
 title: "Letture dei contatori"
 topic: meter-readings
 version: 1
+keywords:
+    - lettura contatore
+    - registrare lettura
+    - contatore elettrico
+    - contatore dell'acqua
+    - contatore del gas
+    - consumi
+    - andamento dei consumi
+    - autolettura
+    - valore del contatore
 audience: []
 related:
     - key-handovers

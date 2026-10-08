@@ -2,6 +2,18 @@
 title: "Usare i report"
 topic: reports.overview
 version: 2
+keywords:
+    - statistiche
+    - indicatori
+    - KPI
+    - analisi
+    - esportare report
+    - fatturato per prodotto
+    - controllo salario minimo
+    - tempi di guida e riposo
+    - previsione di liquidità
+    - reportistica
+    - valutazioni
 audience: []
 related:
     - reports.customer-analysis

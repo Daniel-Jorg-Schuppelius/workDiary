@@ -2,6 +2,14 @@
 title: "Champs personnalisés"
 topic: admin.custom-fields
 version: 1
+keywords:
+    - champs supplémentaires
+    - champs libres
+    - champs utilisateur
+    - ajouter un champ
+    - attributs personnalisés
+    - custom fields
+    - étendre un formulaire
 audience:
     - admin
 related:

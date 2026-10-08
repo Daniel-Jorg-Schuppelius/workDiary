@@ -2,6 +2,17 @@
 title: "Integrazioni Lexware: tariffa, matrice delle funzioni e consegna"
 topic: lexware.supplements
 version: 2
+keywords:
+    - Lexoffice
+    - Lexware Office
+    - piano Lexoffice
+    - confronto funzioni
+    - fatture ricorrenti
+    - fatturazione periodica
+    - trasferire documenti
+    - esportare fatture
+    - esportazione documenti
+    - confermare la consegna
 audience: []
 modules:
     - module.vertrieb

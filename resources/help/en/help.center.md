@@ -2,6 +2,19 @@
 title: "Help center"
 topic: help.center
 version: 2
+keywords:
+    - help
+    - manual
+    - documentation
+    - user guide
+    - how to
+    - FAQ
+    - support
+    - search help
+    - help articles
+    - tutorial
+    - help topics
+    - recently viewed
 audience: []
 related:
     - account.shortcuts

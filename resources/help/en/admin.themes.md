@@ -2,6 +2,18 @@
 title: "Themes"
 topic: admin.themes
 version: 3
+keywords:
+    - dark mode
+    - light mode
+    - color scheme
+    - custom colors
+    - appearance
+    - branding
+    - corporate colors
+    - design preset
+    - skin
+    - contrast
+    - look and feel
 audience:
     - admin
 modules:
@@ -9,6 +21,7 @@ modules:
 related:
     - admin.handbook
     - admin.license
+    - navigation.interface
 ---
 
 Themes are your organization's design presets for the interface.

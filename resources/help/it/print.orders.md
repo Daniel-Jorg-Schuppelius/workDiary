@@ -2,6 +2,16 @@
 title: "Ordini di stampa (stampa & copisteria)"
 topic: print.orders
 version: 1
+keywords:
+    - centro stampa
+    - preflight
+    - controllo file
+    - visto si stampi
+    - approvazione bozza
+    - scarti di avviamento
+    - file di stampa
+    - lavoro di stampa
+    - controllo qualità
 audience: []
 modules:
     - module.lager

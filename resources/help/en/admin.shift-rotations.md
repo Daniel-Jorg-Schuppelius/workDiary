@@ -2,6 +2,16 @@
 title: "Rotation plans"
 topic: admin.shift-rotations
 version: 1
+keywords:
+    - shift pattern
+    - rotating shifts
+    - shift schedule
+    - duty roster
+    - rota
+    - early and late shift
+    - recurring shifts
+    - shift cycle
+    - roster template
 audience: [admin]
 related:
     - planning.shifts

@@ -2,6 +2,15 @@
 title: "Portail client – vue d'ensemble"
 topic: customer-portal.overview
 version: 1
+keywords:
+    - accueil du portail
+    - espace client
+    - extranet client
+    - tableau de bord client
+    - tuiles
+    - indicateurs
+    - recherche dans le portail
+    - chercher une facture
 audience: []
 related:
     - customer-portal.diary

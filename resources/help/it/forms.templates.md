@@ -2,6 +2,18 @@
 title: "Gestire i modelli di modulo"
 topic: forms.templates
 version: 1
+keywords:
+    - creare modulo
+    - editor di moduli
+    - form builder
+    - creare checklist
+    - campi del modulo
+    - tipi di campo
+    - menu a tendina
+    - campo obbligatorio
+    - attivare modulo
+    - archiviare modulo
+    - moduli personalizzati
 audience:
     - admin
     - geschaeftsfuehrung

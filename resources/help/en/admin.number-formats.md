@@ -2,6 +2,17 @@
 title: "Number Formats"
 topic: admin.number-formats
 version: 1
+keywords:
+    - number range
+    - invoice number
+    - document number
+    - customer number
+    - article number
+    - sequential number
+    - numbering scheme
+    - prefix
+    - starting number
+    - reset counter
 audience:
     - admin
     - teamleitung

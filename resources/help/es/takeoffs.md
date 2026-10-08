@@ -2,6 +2,17 @@
 title: "Medición"
 topic: takeoffs
 version: 1
+keywords:
+    - medición de obra
+    - hoja de medición
+    - cálculo de cantidades
+    - mediciones en obra
+    - cálculo de superficies
+    - GAEB X31
+    - fórmulas REB
+    - presupuesto por mediciones
+    - certificación de obra
+    - levantamiento de cantidades
 audience: []
 related:
     - diary-entries.edit

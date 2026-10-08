@@ -41,10 +41,12 @@ class HelpContextResolver {
         }
 
         $name = $route->getName();
-        if ($name === null || $name === '') {
-            return null;
-        }
 
+        return $name === null || $name === '' ? null : $this->topicForRouteName($name);
+    }
+
+    /** Topic-Code eines Routennamens laut Registry, ohne Sichtbarkeits-Check. */
+    public function topicForRouteName(string $name): ?string {
         /** @var array<string, mixed> $map */
         $map = (array) config('help-topics.routes', []);
 

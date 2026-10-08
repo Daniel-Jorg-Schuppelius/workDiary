@@ -2,6 +2,19 @@
 title: "Etiketten & Vorlagen"
 topic: inventory.labels
 version: 1
+keywords:
+    - Etiketten drucken
+    - Etikettendruck
+    - Labeldruck
+    - Barcode
+    - QR-Code
+    - Lageretikett
+    - Artikeletikett
+    - Seriennummer-Etikett
+    - Chargenetikett
+    - Etikettenvorlage
+    - Aufkleber
+    - SKU
 audience: []
 modules:
     - module.lager

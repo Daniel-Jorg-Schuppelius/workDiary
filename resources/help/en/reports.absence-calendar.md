@@ -2,6 +2,18 @@
 title: "Absence calendar (year overview)"
 topic: reports.absence-calendar
 version: 1
+keywords:
+    - holiday planner
+    - vacation calendar
+    - leave calendar
+    - annual leave chart
+    - team absences
+    - absence record
+    - leave balance
+    - remaining leave
+    - overlapping leave
+    - export absences
+    - wall planner
 audience: []
 related:
     - absences.manage

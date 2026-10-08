@@ -2,6 +2,19 @@
 title: "Nachhaltigkeit & ESG"
 topic: sustainability.overview
 version: 2
+keywords:
+    - CO2-Bilanz
+    - CO2-Fußabdruck
+    - Klimabilanz
+    - Treibhausgasemissionen
+    - Emissionsfaktoren
+    - Energieverbrauch erfassen
+    - Nachhaltigkeitsbericht
+    - VSME
+    - Klimaziele
+    - Maßnahmenplan
+    - Umwelt Soziales Governance
+    - Scope-Emissionen
 audience: []
 modules:
     - module.sustainability

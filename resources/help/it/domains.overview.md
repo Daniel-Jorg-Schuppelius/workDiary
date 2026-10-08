@@ -2,6 +2,19 @@
 title: "Gestione dei domini"
 topic: domains.overview
 version: 1
+keywords:
+    - registrare un dominio
+    - rinnovo dominio
+    - record DNS
+    - zona DNS
+    - nameserver
+    - record MX
+    - trasferimento dominio
+    - blocco trasferimento
+    - cambio intestatario
+    - scadenza dominio
+    - rivenditore domini
+    - nome a dominio
 audience: []
 modules:
     - module.domain

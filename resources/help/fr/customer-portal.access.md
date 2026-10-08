@@ -2,6 +2,19 @@
 title: "Accès & sécurité"
 topic: customer-portal.access
 version: 2
+keywords:
+    - connexion
+    - se connecter
+    - mot de passe
+    - 2FA
+    - double authentification
+    - application d'authentification
+    - passkey
+    - clé de sécurité
+    - codes de récupération
+    - changer d'adresse e-mail
+    - rester connecté
+    - profil
 audience: []
 related:
     - customer-portal.overview

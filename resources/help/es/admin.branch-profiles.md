@@ -2,6 +2,18 @@
 title: "Perfiles sectoriales"
 topic: admin.branch-profiles
 version: 3
+keywords:
+    - plantilla sectorial
+    - oficio
+    - gremio
+    - paquete de plantillas
+    - electricidad
+    - fontanería y calefacción
+    - limpieza
+    - tipos de pedido
+    - plantillas de checklist
+    - configuración inicial
+    - variante de perfil
 audience:
     - admin
 related:

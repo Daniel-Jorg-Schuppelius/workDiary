@@ -2,6 +2,18 @@
 title: "Auftragstyp-Analyse"
 topic: reports.entry-type-analysis
 version: 1
+keywords:
+    - Soll-Ist-Vergleich
+    - Plan-Ist-Abweichung
+    - Bearbeitungsdauer
+    - Durchlaufzeit
+    - Nacharbeitsquote
+    - Mehraufwand
+    - Auftragsarten vergleichen
+    - Eintragstyp
+    - Ursachenanalyse
+    - Aufwandsschätzung
+    - Nachkalkulation
 audience: []
 modules:
     - module.auswertungen_team

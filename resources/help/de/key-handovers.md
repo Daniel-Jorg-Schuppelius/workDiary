@@ -2,6 +2,18 @@
 title: "Schlüsselübergaben"
 topic: key-handovers
 version: 1
+keywords:
+    - Schlüsselausgabe
+    - Schlüsselrückgabe
+    - Schlüsselbuch
+    - Schlüsselverwaltung
+    - Schlüsselprotokoll
+    - Schlüssel ausgeben
+    - Schlüssel zurückgeben
+    - wer hat den Schlüssel
+    - Schlüsselquittung
+    - Transponder
+    - Zugangskarte
 audience: []
 related:
     - meter-readings

@@ -2,6 +2,16 @@
 title: "Products"
 topic: products.overview
 version: 1
+keywords:
+    - manufacturer
+    - model
+    - device type
+    - device model
+    - make and model
+    - product catalog
+    - product group
+    - product types
+    - per-model report
 audience: []
 related:
     - articles.master

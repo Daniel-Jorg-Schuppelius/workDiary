@@ -2,6 +2,16 @@
 title: "Portale delle richieste degli interessati"
 topic: privacy.portal
 version: 1
+keywords:
+    - richiesta GDPR
+    - diritto di accesso
+    - richiesta di cancellazione
+    - diritto all'oblio
+    - portabilità dei dati
+    - verifica dell'identità
+    - rettifica
+    - opposizione
+    - accesso ai propri dati
 audience: []
 related:
     - privacy.overview

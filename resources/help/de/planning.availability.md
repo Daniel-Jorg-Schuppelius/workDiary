@@ -2,6 +2,16 @@
 title: "Verfügbarkeiten und Wunschdienste"
 topic: planning.availability
 version: 1
+keywords:
+    - Verfügbarkeit eintragen
+    - Wunschdienst
+    - Dienstwunsch
+    - Schichtwunsch
+    - nicht verfügbar
+    - Wunschfrei
+    - Abneigung
+    - Wunschplan
+    - Präferenzen
 audience: []
 modules:
     - module.planung

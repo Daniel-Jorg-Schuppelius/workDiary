@@ -2,6 +2,18 @@
 title: "Smaltimento e attestati"
 topic: disposal.overview
 version: 1
+keywords:
+    - RAEE
+    - rifiuti elettronici
+    - vecchi apparecchi
+    - certificato di distruzione
+    - distruzione dati
+    - triturazione dischi
+    - cancellazione dati
+    - DIN 66399
+    - codice CER
+    - formulario rifiuti
+    - smaltitore autorizzato
 audience: []
 modules:
     - module.entsorgung

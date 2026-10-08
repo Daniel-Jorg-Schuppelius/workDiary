@@ -2,6 +2,16 @@
 title: "Compilare moduli"
 topic: forms.fill
 version: 1
+keywords:
+    - compilare checklist
+    - riempire modulo
+    - scheda di rilevazione
+    - questionario
+    - modulo digitale
+    - campi obbligatori
+    - stampare modulo
+    - moduli compilati
+    - lista di controllo
 audience: []
 modules:
     - module.forms

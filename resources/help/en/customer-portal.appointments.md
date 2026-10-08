@@ -2,6 +2,15 @@
 title: "Request an appointment"
 topic: customer-portal.appointments
 version: 1
+keywords:
+    - book appointment
+    - online booking
+    - schedule appointment
+    - available slots
+    - cancel appointment
+    - cancellation deadline
+    - choose time slot
+    - preferred date
 audience: []
 related:
     - customer-portal.overview

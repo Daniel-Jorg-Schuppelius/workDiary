@@ -2,6 +2,17 @@
 title: "Provvigioni"
 topic: commissions
 version: 1
+keywords:
+    - provvigione vendite
+    - provvigioni agenti
+    - estratto provvigioni
+    - liquidazione provvigioni
+    - scaglioni provvigionali
+    - provvigione segnalatore
+    - storno provvigioni
+    - tetto provvigioni
+    - pagamento provvigioni
+    - procacciatore d'affari
 audience:
     - admin
     - geschaeftsfuehrung

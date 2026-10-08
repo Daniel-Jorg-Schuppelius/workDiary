@@ -2,6 +2,18 @@
 title: "Règles de majoration"
 topic: admin.surcharge-rules
 version: 1
+keywords:
+    - majoration de nuit
+    - prime de nuit
+    - majoration du dimanche
+    - majoration jours fériés
+    - prime de week-end
+    - prime de poste
+    - code de paie
+    - export vers la paie
+    - DATEV
+    - Lexware
+    - heures de nuit
 audience:
     - admin
     - geschaeftsfuehrung

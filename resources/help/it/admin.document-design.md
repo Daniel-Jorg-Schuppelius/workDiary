@@ -2,6 +2,19 @@
 title: "Design dei documenti"
 topic: admin.document-design
 version: 1
+keywords:
+    - carta intestata
+    - intestazione
+    - layout fattura
+    - modello fattura
+    - layout PDF
+    - personalizzare layout
+    - corporate design
+    - carattere
+    - margini
+    - finestra indirizzo
+    - piè di pagina
+    - modello documento
 audience:
     - admin
 modules:

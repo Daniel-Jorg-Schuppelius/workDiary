@@ -119,7 +119,30 @@ return [
     ],
 
     'palette' => [
-        'placeholder' => 'Cerca attività, clienti, progetti, oggetti …',
+        'placeholder' => 'Cerca funzioni, guida, attività, clienti, progetti …',
+        'group' => [
+            'actions' => 'Azioni',
+            'pages' => 'Pagine',
+            'help' => 'Aiuto',
+        ],
+        // Bedienaktionen (MVP-1082); `keywords` durch Komma getrennt.
+        'actions' => [
+            'theme' => [
+                'label' => 'Cambia schema colori',
+                'hint' => 'Passa dal tema chiaro al tema scuro',
+                'keywords' => 'modalità scura, dark mode, tema scuro, modalità notte, modalità chiara, tema chiaro, schema colori, tema, colori',
+            ],
+            'shortcuts' => [
+                'label' => 'Mostra scorciatoie da tastiera',
+                'hint' => 'Panoramica di tutti i comandi da tastiera',
+                'keywords' => 'scorciatoie da tastiera, scorciatoie, tasti rapidi, combinazione di tasti, tastiera, shortcut',
+            ],
+            'help' => [
+                'label' => 'Aiuto per questa pagina',
+                'hint' => 'Apri la guida contestuale (F1)',
+                'keywords' => 'guida, aiuto, istruzioni, manuale, F1, supporto',
+            ],
+        ],
     ],
 
     'ai' => [

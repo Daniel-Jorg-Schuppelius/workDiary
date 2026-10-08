@@ -2,6 +2,19 @@
 title: "Collections"
 topic: knowledge.collections
 version: 6
+keywords:
+    - folders
+    - group content
+    - organize notes
+    - subcollection
+    - knowledge hub
+    - import Obsidian
+    - import OneNote
+    - backlinks
+    - cross-references
+    - wikilinks
+    - convert note to article
+    - linked mentions
 audience: []
 related:
     - knowledge.articles

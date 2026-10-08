@@ -2,6 +2,20 @@
 title: "ArbZG-Compliance"
 topic: reports.arbzg-compliance
 version: 1
+keywords:
+    - Arbeitszeitgesetz
+    - Arbeitszeitverstoß
+    - Höchstarbeitszeit
+    - Ruhezeit
+    - Pausenregelung
+    - Pflichtpause
+    - 10-Stunden-Grenze
+    - Jugendarbeitsschutz
+    - JArbSchG
+    - Nachtarbeit
+    - MiLoG
+    - Aufzeichnungspflicht
+    - Arbeitszeitprüfung
 audience: []
 modules:
     - module.auswertungen_team

@@ -2,6 +2,18 @@
 title: "Creare una commessa"
 topic: diary-entries.create
 version: 2
+keywords:
+    - nuova commessa
+    - nuovo incarico
+    - nuovo intervento
+    - nuova voce
+    - ordine di lavoro
+    - chiamata di assistenza
+    - segnalazione guasto
+    - manutenzione
+    - montaggio
+    - registro commesse
+    - tipo di voce
 audience: []
 schema: process
 related:

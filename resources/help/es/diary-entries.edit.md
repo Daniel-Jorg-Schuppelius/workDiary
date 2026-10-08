@@ -2,6 +2,17 @@
 title: "Editar una orden"
 topic: diary-entries.edit
 version: 1
+keywords:
+    - cambiar orden
+    - detalles de la orden
+    - expediente
+    - cambiar estado
+    - cerrar orden
+    - completar trabajo
+    - añadir adjunto
+    - añadir comentario
+    - clasificación obligatoria
+    - tamaño máximo de adjuntos
 audience: []
 related:
     - diary-entries.create

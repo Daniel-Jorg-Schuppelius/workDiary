@@ -2,6 +2,19 @@
 title: "Bewerbungen & Ausschreibungen"
 topic: applications.overview
 version: 2
+keywords:
+    - Recruiting
+    - Bewerbermanagement
+    - Stellenanzeige
+    - Vorstellungsgespräch
+    - Talentpool
+    - Bewerber absagen
+    - Neueinstellung
+    - Vergabeverfahren
+    - Angebotsabgabe
+    - Tender
+    - Vertragsverhandlung
+    - Go-No-Go-Entscheidung
 audience: []
 modules:
     - module.applications

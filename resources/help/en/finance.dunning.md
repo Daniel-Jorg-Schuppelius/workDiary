@@ -2,6 +2,18 @@
 title: "Dunning"
 topic: finance.dunning
 version: 1
+keywords:
+    - payment reminder
+    - dunning run
+    - dunning level
+    - reminder fee
+    - late payment interest
+    - overdue invoices
+    - outstanding items
+    - collections
+    - chase payment
+    - grace period
+    - accounts receivable
 audience:
     - admin
     - buchhaltung

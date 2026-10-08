@@ -2,6 +2,14 @@
 title: "Clienti finali"
 topic: foreign-customers
 version: 1
+keywords:
+    - clienti dei clienti
+    - clienti dei partner
+    - sottoclienti
+    - clienti indiretti
+    - clienti terzi
+    - utente finale
+    - convertire in cliente
 audience: []
 related:
     - contacts.manage

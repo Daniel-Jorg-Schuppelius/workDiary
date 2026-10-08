@@ -2,6 +2,16 @@
 title: "Notifiche"
 topic: account.notifications
 version: 1
+keywords:
+    - avvisi
+    - messaggi
+    - campanella
+    - non letti
+    - segna come letto
+    - centro notifiche
+    - notifiche email
+    - SMS
+    - ore di silenzio
 audience: []
 related:
     - account.profile

@@ -2,6 +2,18 @@
 title: "Abzurechnen und nachzufassen (Belegkette)"
 topic: billing.chain
 version: 1
+keywords:
+    - Abrechnungsvorrat
+    - nicht abgerechnete Zeiten
+    - Angebot ohne Rechnung
+    - Angebote nachfassen
+    - Wiedervorlage
+    - überfällige Rechnungen
+    - abrechenbare Leistungen
+    - Aufmaß abrechnen
+    - Abschlagsrechnung
+    - Monatsabschluss
+    - offene Abrechnung
 audience: []
 related:
     - billing.feed

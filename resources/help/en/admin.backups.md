@@ -2,6 +2,18 @@
 title: "Backups & operations monitoring"
 topic: admin.backups
 version: 3
+keywords:
+    - data backup
+    - restore
+    - recovery
+    - backup monitoring
+    - heartbeat
+    - backup overdue
+    - restore test
+    - system health
+    - health check
+    - disaster recovery
+    - monitoring
 audience:
     - admin
 schema: process

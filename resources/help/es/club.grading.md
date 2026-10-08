@@ -2,6 +2,17 @@
 title: "Graduaciones"
 topic: club.grading
 version: 1
+keywords:
+    - cinturón
+    - color de cinturón
+    - grado
+    - kyu
+    - dan
+    - sistema de grados
+    - requisitos de grado
+    - tiempo de espera
+    - progreso
+    - reconocimiento de grado
 audience: []
 modules:
     - module.club

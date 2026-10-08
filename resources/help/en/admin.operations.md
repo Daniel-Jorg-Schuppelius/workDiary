@@ -2,6 +2,18 @@
 title: "Operations tasks & maintenance windows"
 topic: admin.operations
 version: 1
+keywords:
+    - maintenance mode
+    - downtime
+    - scheduled maintenance
+    - announce maintenance
+    - read-only mode
+    - task center
+    - operational checks
+    - certificate expiry
+    - missing backup
+    - snooze task
+    - outage notice
 audience:
     - admin
     - geschaeftsfuehrung

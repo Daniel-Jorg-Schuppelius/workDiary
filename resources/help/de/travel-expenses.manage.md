@@ -2,6 +2,19 @@
 title: "Fahrten, Spesen & Pauschalen"
 topic: travel-expenses.manage
 version: 1
+keywords:
+    - Reisekostenabrechnung
+    - Spesenabrechnung
+    - Reisekosten
+    - Fahrtenbuch
+    - Kilometergeld
+    - Verpflegungsmehraufwand
+    - Tagegeld
+    - Beleg scannen
+    - Quittung erfassen
+    - Auslagen erstatten
+    - Dienstwagen
+    - 1-%-Regel
 audience: []
 modules:
     - module.spesen

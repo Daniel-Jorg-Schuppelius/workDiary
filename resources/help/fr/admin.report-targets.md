@@ -2,6 +2,18 @@
 title: "Valeurs cibles (rapports)"
 topic: admin.report-targets
 version: 1
+keywords:
+    - objectifs
+    - indicateurs
+    - KPI
+    - benchmark
+    - feu tricolore
+    - comparaison réel prévu
+    - taux de marge
+    - taux facturable
+    - taux SLA
+    - taux de charge
+    - seuils
 audience:
     - admin
     - geschaeftsfuehrung

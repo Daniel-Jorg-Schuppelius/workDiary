@@ -2,6 +2,19 @@
 title: "Zutrittsmedien"
 topic: access.media
 version: 1
+keywords:
+    - Transponder
+    - Zutrittskarte
+    - Schlüsselkarte
+    - Zugangskarte
+    - Chipkarte
+    - Schlüsselchip
+    - Schlüsselverwaltung
+    - Schlüsselübergabe
+    - Transponder verloren
+    - Karte sperren
+    - Zutrittskontrolle
+    - Ausweis ausgeben
 audience: []
 modules:
     - module.fuhrpark

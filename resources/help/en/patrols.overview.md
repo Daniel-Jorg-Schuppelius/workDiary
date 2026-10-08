@@ -2,6 +2,18 @@
 title: "Guard patrols"
 topic: patrols.overview
 version: 1
+keywords:
+    - guard tour
+    - security patrol
+    - checkpoints
+    - scan checkpoint
+    - patrol log
+    - proof of patrol
+    - guard tour system
+    - security service
+    - QR checkpoint
+    - missed checkpoint
+    - abort patrol
 audience: []
 modules:
     - module.planung

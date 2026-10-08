@@ -2,6 +2,20 @@
 title: "Abonnements & licences"
 topic: finance.resale
 version: 2
+keywords:
+    - facturation des abonnements
+    - services récurrents
+    - revente de services
+    - périodes de facturation
+    - renouvellements
+    - délai de résiliation
+    - marge
+    - facture récurrente
+    - importer des abonnements
+    - revendeur
+    - Lexoffice
+    - Telekom
+    - Quality Hosting
 audience: []
 modules:
     - module.reselling

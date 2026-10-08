@@ -2,6 +2,17 @@
 title: "Feiertage"
 topic: catalog.holidays
 version: 1
+keywords:
+    - gesetzliche Feiertage
+    - Feiertagskalender
+    - Ruhetage
+    - Betriebsruhe
+    - freie Tage
+    - arbeitsfreie Tage
+    - Feiertag anlegen
+    - eigener Feiertag
+    - wiederkehrender Feiertag
+    - Brückentag
 audience: []
 related:
     - planning.shifts

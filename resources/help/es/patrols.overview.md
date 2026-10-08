@@ -2,6 +2,17 @@
 title: "Rondas de vigilancia"
 topic: patrols.overview
 version: 1
+keywords:
+    - ronda de seguridad
+    - control de rondas
+    - puntos de control
+    - escanear punto
+    - prueba de paso
+    - vigilante
+    - servicio de seguridad
+    - código QR
+    - punto omitido
+    - cancelar ronda
 audience: []
 modules:
     - module.planung

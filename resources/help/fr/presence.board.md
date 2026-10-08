@@ -2,6 +2,16 @@
 title: "Présence actuelle"
 topic: presence.board
 version: 1
+keywords:
+    - qui est là
+    - tableau de présence
+    - liste de présence
+    - accueil
+    - standard téléphonique
+    - en déplacement
+    - absent
+    - liste d'évacuation
+    - collègues disponibles
 audience: []
 related:
     - attendance.manage

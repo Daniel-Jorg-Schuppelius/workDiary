@@ -2,6 +2,19 @@
 title: "Fixed asset register and depreciation"
 topic: accounting.fixed-assets
 version: 1
+keywords:
+    - depreciation
+    - fixed assets
+    - asset accounting
+    - straight-line depreciation
+    - declining balance
+    - special depreciation
+    - low-value assets
+    - book value
+    - asset disposal
+    - depreciation schedule
+    - capitalize asset
+    - useful life
 audience:
     - admin
     - geschaeftsfuehrung

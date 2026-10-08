@@ -2,6 +2,19 @@
 title: "Zeitexport & Lohnübergabe"
 topic: exports.payroll
 version: 1
+keywords:
+    - Lohnabrechnung
+    - Lohnexport
+    - Gehaltsabrechnung
+    - Payroll
+    - Lohnarten
+    - Monatsfreigabe
+    - Monat abschließen
+    - Stunden exportieren
+    - Lohnbuchhaltung
+    - Zuschläge
+    - DATEV Lohn
+    - Arbeitszeiten exportieren
 audience: []
 related:
     - admin.surcharge-rules

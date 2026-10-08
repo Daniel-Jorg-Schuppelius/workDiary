@@ -2,6 +2,19 @@
 title: "Gestionar integraciones"
 topic: admin.integrations
 version: 3
+keywords:
+    - interfaces
+    - conectores
+    - plugins
+    - terminal de fichaje
+    - reloj de fichar
+    - modo quiosco
+    - tarjeta NFC
+    - fichaje con QR
+    - PIN de terminal
+    - SSO
+    - Nextcloud
+    - Stripe
 audience:
     - admin
     - buchhaltung

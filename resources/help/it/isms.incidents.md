@@ -2,6 +2,19 @@
 title: "Incidenti di sicurezza"
 topic: isms.incidents
 version: 1
+keywords:
+    - segnalare un incidente
+    - incidente informatico
+    - gestione degli incidenti
+    - phishing
+    - malware
+    - attacco informatico
+    - attacco hacker
+    - violazione dei dati
+    - data breach
+    - registro incidenti
+    - analisi delle cause
+    - lezioni apprese
 audience: []
 modules:
     - module.isms

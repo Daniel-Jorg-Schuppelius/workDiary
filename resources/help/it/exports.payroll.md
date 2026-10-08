@@ -2,6 +2,18 @@
 title: "Esportazione tempi e consegna paghe"
 topic: exports.payroll
 version: 1
+keywords:
+    - paghe
+    - export paghe
+    - voci retributive
+    - approvazione mensile
+    - chiusura mensile
+    - esportare ore
+    - ufficio paghe
+    - maggiorazioni
+    - DATEV paghe
+    - export CSV
+    - foglio ore
 audience: []
 related:
     - admin.surcharge-rules

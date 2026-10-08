@@ -2,6 +2,16 @@
 title: "Comptabilité locale"
 topic: accounting.overview
 version: 2
+keywords:
+    - grand livre
+    - tenue de comptabilité
+    - comptabilité générale
+    - configurer la comptabilité
+    - comptabilité en partie double
+    - comptabilité de trésorerie
+    - date de début comptable
+    - remplacer logiciel comptable
+    - comptabilité intégrée
 audience:
     - admin
     - geschaeftsfuehrung

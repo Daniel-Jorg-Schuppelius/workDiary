@@ -2,6 +2,19 @@
 title: "Retribuzioni e previdenza"
 topic: payroll.overview
 version: 1
+keywords:
+    - buste paga
+    - stipendi
+    - salario minimo
+    - minijob
+    - numero aziendale
+    - ufficio delle imposte
+    - partita IVA
+    - paga oraria
+    - dati retributivi
+    - esportazione paghe
+    - Eurostat
+    - contributi
 audience: []
 modules:
     - module.lohn

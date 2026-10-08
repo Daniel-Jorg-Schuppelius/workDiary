@@ -2,6 +2,18 @@
 title: "Anwesenheitsnachweise"
 topic: club.attendance
 version: 1
+keywords:
+    - Anwesenheitsliste
+    - Teilnehmerliste
+    - Präsenzliste
+    - Anwesenheit erfassen
+    - Anwesenheit bestätigen
+    - Trainingszeit
+    - Trainingsbeteiligung
+    - Teilnahmenachweis
+    - entschuldigt
+    - Fehlzeiten
+    - Anwesenheit exportieren
 audience: []
 modules:
     - module.club

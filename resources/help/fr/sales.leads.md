@@ -2,6 +2,18 @@
 title: "Leads"
 topic: sales.leads
 version: 2
+keywords:
+    - prospects
+    - prospection
+    - pipeline commercial
+    - entonnoir de vente
+    - CRM
+    - qualifier un prospect
+    - convertir en client
+    - clients potentiels
+    - relance
+    - Calendly
+    - doublons
 audience: []
 modules:
     - module.vertrieb

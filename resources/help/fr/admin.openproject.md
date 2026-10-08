@@ -2,6 +2,16 @@
 title: "Intégration OpenProject"
 topic: admin.openproject
 version: 1
+keywords:
+    - gestion de projet
+    - lots de travaux
+    - work packages
+    - saisies de temps
+    - importer les temps
+    - renvoyer les temps
+    - synchronisation des temps
+    - synchronisation des projets
+    - correspondances
 audience:
     - admin
 related:

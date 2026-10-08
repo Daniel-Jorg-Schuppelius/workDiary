@@ -2,6 +2,17 @@
 title: "Lexoffice products & services"
 topic: articles.lexoffice
 version: 2
+keywords:
+    - Lexware Office
+    - Lexoffice items
+    - sync articles
+    - product sync
+    - product catalog
+    - price list
+    - sync conflict
+    - import items
+    - service catalog
+    - tax rate
 audience: []
 modules:
     - module.vertrieb

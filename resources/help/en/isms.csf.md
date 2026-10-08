@@ -2,6 +2,17 @@
 title: "NIST CSF 2.0"
 topic: isms.csf
 version: 1
+keywords:
+    - NIST
+    - cybersecurity framework
+    - CSF coverage
+    - coverage rate
+    - crosswalk
+    - ISO mapping
+    - framework mapping
+    - NIST catalog
+    - security framework
+    - self-assessment
 audience: []
 modules:
     - module.isms

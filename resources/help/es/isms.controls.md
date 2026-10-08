@@ -2,6 +2,17 @@
 title: "Gestionar medidas"
 topic: isms.controls
 version: 1
+keywords:
+    - medidas de seguridad
+    - controles de seguridad
+    - catálogo de medidas
+    - medidas técnicas y organizativas
+    - estado de implantación
+    - evidencias
+    - Anexo A
+    - controles SGSI
+    - salvaguardas
+    - vincular medidas
 audience: []
 modules:
     - module.isms

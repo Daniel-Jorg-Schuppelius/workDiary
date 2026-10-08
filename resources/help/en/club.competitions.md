@@ -2,6 +2,18 @@
 title: "Competitions, performances and proof list"
 topic: club.competitions
 version: 1
+keywords:
+    - competition
+    - tournament
+    - meet entry
+    - entry fee
+    - starting licence
+    - personal best
+    - record
+    - results
+    - discipline
+    - age class
+    - shooting log
 audience: []
 modules:
     - module.club

@@ -2,6 +2,17 @@
 title: "Cash book"
 topic: finance.cashbook
 version: 1
+keywords:
+    - petty cash
+    - cash receipts
+    - cash expenses
+    - cash count
+    - daily closing
+    - end of day closing
+    - cash payment
+    - cash difference
+    - cash ledger
+    - reverse cash entry
 audience:
     - admin
     - geschaeftsfuehrung

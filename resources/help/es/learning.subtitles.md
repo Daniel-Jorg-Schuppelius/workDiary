@@ -2,6 +2,17 @@
 title: "Vídeo y subtítulos"
 topic: learning.subtitles
 version: 1
+keywords:
+    - subir subtítulos
+    - WebVTT
+    - archivo VTT
+    - subtítulos automáticos
+    - transcripción
+    - calidad de vídeo
+    - cambiar resolución
+    - vídeo formativo
+    - subir vídeo
+    - accesibilidad de vídeo
 audience: []
 related:
     - learning.overview

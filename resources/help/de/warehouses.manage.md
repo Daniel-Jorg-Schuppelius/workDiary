@@ -2,6 +2,16 @@
 title: "Lagerorte"
 topic: warehouses.manage
 version: 1
+keywords:
+    - Lager anlegen
+    - Lagerplatz
+    - Lagerstandort
+    - Standardlager
+    - Lagerverwaltung
+    - mehrere Lager
+    - Lagerort löschen
+    - Depot
+    - Magazin
 audience: []
 modules:
     - module.lager

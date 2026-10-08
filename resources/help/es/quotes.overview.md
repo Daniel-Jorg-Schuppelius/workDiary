@@ -2,6 +2,19 @@
 title: "Ofertas"
 topic: quotes.overview
 version: 1
+keywords:
+    - crear presupuesto
+    - presupuesto
+    - cotización
+    - propuesta comercial
+    - enviar oferta
+    - aceptación online
+    - aceptación parcial
+    - plazo de validez
+    - confirmación de pedido
+    - convertir en factura
+    - partidas opcionales
+    - nueva versión
 audience: []
 modules:
     - module.vertrieb

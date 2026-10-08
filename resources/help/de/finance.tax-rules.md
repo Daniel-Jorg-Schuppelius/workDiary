@@ -2,6 +2,19 @@
 title: "Steuerregelmatrix"
 topic: finance.tax-rules
 version: 1
+keywords:
+    - Steuersätze
+    - Mehrwertsteuer
+    - MwSt
+    - USt
+    - Umsatzsteuersatz
+    - ermäßigter Steuersatz
+    - Reverse Charge
+    - Kleinunternehmer
+    - steuerfrei
+    - Steuerregeln importieren
+    - Steuersatzänderung
+    - Ausfuhr Drittland
 audience:
     - admin
 modules:

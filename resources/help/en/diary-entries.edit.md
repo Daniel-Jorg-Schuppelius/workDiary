@@ -2,6 +2,17 @@
 title: "Edit a work order"
 topic: diary-entries.edit
 version: 1
+keywords:
+    - change order
+    - order details
+    - case file
+    - change status
+    - complete job
+    - close order
+    - add attachment
+    - add comment
+    - mandatory classification
+    - attachment size limit
 audience: []
 related:
     - diary-entries.create

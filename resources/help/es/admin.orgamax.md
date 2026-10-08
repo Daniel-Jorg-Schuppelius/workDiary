@@ -2,6 +2,16 @@
 title: "orgaMAX contabilidad"
 topic: admin.orgamax
 version: 1
+keywords:
+    - API de orgaMAX
+    - integración contable
+    - software de contabilidad
+    - facturación
+    - transferir facturas
+    - sincronizar clientes
+    - estado de pago
+    - datos maestros
+    - sincronización
 audience:
     - admin
 modules:

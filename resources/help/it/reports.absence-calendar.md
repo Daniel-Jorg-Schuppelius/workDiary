@@ -2,6 +2,16 @@
 title: "Piano ferie (vista annuale)"
 topic: reports.absence-calendar
 version: 1
+keywords:
+    - calendario ferie
+    - calendario assenze
+    - planner ferie
+    - assenze del team
+    - scheda assenze
+    - saldo ferie
+    - ferie residue
+    - sovrapposizione ferie
+    - esportare assenze
 audience: []
 related:
     - absences.manage

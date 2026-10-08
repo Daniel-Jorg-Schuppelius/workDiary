@@ -2,6 +2,20 @@
 title: "Reitbetrieb: Pferde, Reitstunden und Zuordnung"
 topic: club.horses
 version: 1
+keywords:
+    - Reitschule
+    - Reitunterricht
+    - Reitstunde
+    - Schulpferd
+    - Privatpferd
+    - Pferd zuteilen
+    - Pferdeeinteilung
+    - Reitlehrer
+    - Pferd sperren
+    - Lahmheit
+    - Reitabzeichen
+    - Pferdeeinsatz
+    - Reithalle
 audience: []
 modules:
     - module.club

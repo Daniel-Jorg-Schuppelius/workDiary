@@ -2,6 +2,19 @@
 title: "EBICS-Bankzugang"
 topic: finance.ebics
 version: 1
+keywords:
+    - Bankanbindung
+    - Kontoauszüge abrufen
+    - Tagesauszug
+    - Kontoumsätze importieren
+    - Zahllauf einreichen
+    - Überweisungen senden
+    - INI-Brief
+    - Bankschlüssel
+    - VEU
+    - elektronische Unterschrift
+    - EBICS einrichten
+    - CAMT
 audience: []
 modules:
     - module.finance

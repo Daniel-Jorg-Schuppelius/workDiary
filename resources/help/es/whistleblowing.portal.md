@@ -2,6 +2,17 @@
 title: "Configurar el portal de denuncias"
 topic: whistleblowing.portal
 version: 1
+keywords:
+    - portal del denunciante
+    - activar portal
+    - permitir denuncias anónimas
+    - denuncias confidenciales
+    - enlace del portal
+    - regenerar enlace
+    - plazo de conservación
+    - texto introductorio
+    - configurar canal ético
+    - idioma predeterminado
 audience:
     - admin
 modules:

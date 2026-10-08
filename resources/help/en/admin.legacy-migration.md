@@ -2,6 +2,16 @@
 title: "Legacy migration"
 topic: admin.legacy-migration
 version: 1
+keywords:
+    - old system
+    - previous system
+    - legacy data
+    - import legacy data
+    - data migration
+    - data takeover
+    - migration
+    - switchover
+    - import old entries
 audience:
     - admin
 related:

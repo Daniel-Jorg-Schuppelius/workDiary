@@ -2,6 +2,17 @@
 title: "SLA, contrats & niveaux de service"
 topic: sla.overview
 version: 1
+keywords:
+    - accord de niveau de service
+    - délai de réponse
+    - délai de résolution
+    - contrat de service
+    - violation de SLA
+    - dépassement de délai
+    - escalade
+    - ticket en retard
+    - taux de respect
+    - rapport SLA
 audience: []
 related:
     - glossary.core

@@ -2,6 +2,18 @@
 title: "Customer retention"
 topic: reports.customer-retention
 version: 2
+keywords:
+    - churn
+    - churn rate
+    - customer loss
+    - repeat customers
+    - returning customers
+    - cohort analysis
+    - new customers
+    - lost customers
+    - win-back
+    - customer loyalty
+    - retention rate
 audience: []
 related:
     - reports.customer-value

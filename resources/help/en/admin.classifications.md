@@ -2,6 +2,17 @@
 title: "Classifications & Requirement Rules"
 topic: admin.classifications
 version: 1
+keywords:
+    - value lists
+    - categories
+    - picklists
+    - dropdown values
+    - lookup lists
+    - order types
+    - fault types
+    - root causes
+    - mandatory fields
+    - required information
 audience:
     - admin
     - geschaeftsfuehrung

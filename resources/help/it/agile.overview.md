@@ -2,6 +2,18 @@
 title: "Gestione agile dei progetti"
 topic: agile.overview
 version: 1
+keywords:
+    - Kanban
+    - Scrum
+    - sprint
+    - pianificazione sprint
+    - backlog
+    - story point
+    - burndown
+    - velocity
+    - bacheca Kanban
+    - user story
+    - criteri di accettazione
 audience: []
 modules:
     - module.agile_projects

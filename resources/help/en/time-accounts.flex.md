@@ -2,6 +2,18 @@
 title: "Working-time account & month approval"
 topic: time-accounts.flex
 version: 1
+keywords:
+    - flextime account
+    - overtime balance
+    - overtime
+    - plus hours
+    - minus hours
+    - time balance
+    - month-end close
+    - submit month
+    - approve month
+    - correction request
+    - flex hours
 audience: []
 related:
     - attendance.manage

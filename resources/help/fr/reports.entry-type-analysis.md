@@ -2,6 +2,17 @@
 title: "Analyse par type d'intervention"
 topic: reports.entry-type-analysis
 version: 1
+keywords:
+    - prévu vs réalisé
+    - écart prévu réalisé
+    - durée de traitement
+    - durée moyenne
+    - taux de reprise
+    - dépassement de temps
+    - comparer les types de mission
+    - causes principales
+    - analyse des écarts
+    - estimation des durées
 audience: []
 modules:
     - module.auswertungen_team

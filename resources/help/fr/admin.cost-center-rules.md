@@ -2,6 +2,15 @@
 title: "Règles de centres de coûts"
 topic: admin.cost-center-rules
 version: 1
+keywords:
+    - centre de coûts
+    - affectation centre de coûts
+    - imputation analytique
+    - export paie
+    - cabinet de paie
+    - paie
+    - export des temps
+    - comptabilité analytique
 audience:
     - admin
     - geschaeftsfuehrung

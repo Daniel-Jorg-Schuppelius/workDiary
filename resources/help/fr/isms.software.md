@@ -2,6 +2,18 @@
 title: "Inventaire logiciel"
 topic: isms.software
 version: 1
+keywords:
+    - liste des logiciels
+    - registre des logiciels
+    - fin de vie
+    - EOL
+    - fin de support
+    - logiciels obsolètes
+    - programmes installés
+    - versions logicielles
+    - inventaire informatique
+    - parc applicatif
+    - systèmes d'exploitation
 audience: []
 modules:
     - module.isms

@@ -2,6 +2,17 @@
 title: "Evaluación de proveedores"
 topic: isms.suppliers
 version: 1
+keywords:
+    - homologación de proveedores
+    - riesgo de proveedores
+    - riesgo de terceros
+    - criticidad
+    - contrato de encargado del tratamiento
+    - NDA
+    - acuerdo de confidencialidad
+    - derecho de auditoría
+    - cadena de suministro
+    - gestión de proveedores
 audience: []
 modules:
     - module.isms

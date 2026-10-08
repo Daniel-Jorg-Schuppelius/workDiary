@@ -2,6 +2,16 @@
 title: "Sincronización sin conexión"
 topic: admin.offline-sync
 version: 1
+keywords:
+    - trabajar sin conexión
+    - sin internet
+    - sin cobertura
+    - registro de sincronización
+    - errores de sincronización
+    - conflicto de sincronización
+    - bandeja de salida
+    - datos no transmitidos
+    - modo offline
 audience: []
 related:
     - admin.metrics

@@ -2,6 +2,17 @@
 title: "Attendance records"
 topic: club.attendance
 version: 1
+keywords:
+    - attendance list
+    - attendance sheet
+    - roll call
+    - take attendance
+    - confirm attendance
+    - training time
+    - proof of participation
+    - excused absence
+    - absences
+    - export attendance
 audience: []
 modules:
     - module.club

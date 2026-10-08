@@ -2,6 +2,19 @@
 title: "Lexware-Ergänzungen: Tarif, Funktionsmatrix und Übergabe"
 topic: lexware.supplements
 version: 2
+keywords:
+    - Lexoffice
+    - Lexware Office
+    - Lexoffice-Tarif
+    - Tarifprofil
+    - Funktionsvergleich
+    - Serienrechnung
+    - wiederkehrende Rechnungen
+    - Abo-Rechnungen
+    - Belege übergeben
+    - Belegexport
+    - Rechnungen exportieren
+    - Übergabe bestätigen
 audience: []
 modules:
     - module.vertrieb

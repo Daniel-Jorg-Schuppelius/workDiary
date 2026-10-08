@@ -2,6 +2,17 @@
 title: "Entry type analysis"
 topic: reports.entry-type-analysis
 version: 1
+keywords:
+    - plan vs actual
+    - target vs actual
+    - processing time
+    - average duration
+    - rework rate
+    - effort overrun
+    - compare job types
+    - root causes
+    - variance analysis
+    - estimate accuracy
 audience: []
 modules:
     - module.auswertungen_team

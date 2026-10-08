@@ -2,6 +2,18 @@
 title: "Leave & sickness"
 topic: absences.manage
 version: 1
+keywords:
+    - absence
+    - leave request
+    - request time off
+    - approve leave
+    - sick leave
+    - sick note
+    - call in sick
+    - medical certificate
+    - time off
+    - absence management
+    - holiday request
 audience: []
 related:
     - planning.shifts

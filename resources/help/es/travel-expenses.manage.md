@@ -2,6 +2,19 @@
 title: "Viajes, gastos y dietas"
 topic: travel-expenses.manage
 version: 1
+keywords:
+    - nota de gastos
+    - gastos de viaje
+    - liquidación de gastos
+    - libro de ruta
+    - kilometraje
+    - manutención
+    - escanear ticket
+    - recibo
+    - reembolso de gastos
+    - coche de empresa
+    - retribución en especie
+    - tiempos de conducción
 audience: []
 modules:
     - module.spesen

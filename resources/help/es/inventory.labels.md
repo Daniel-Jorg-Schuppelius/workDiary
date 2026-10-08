@@ -2,6 +2,17 @@
 title: "Etiquetas y plantillas"
 topic: inventory.labels
 version: 1
+keywords:
+    - imprimir etiquetas
+    - impresión de etiquetas
+    - código de barras
+    - código QR
+    - etiqueta de almacén
+    - etiqueta de artículo
+    - etiqueta de número de serie
+    - etiqueta de lote
+    - pegatina
+    - SKU
 audience: []
 modules:
     - module.lager

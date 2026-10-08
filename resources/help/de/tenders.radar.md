@@ -2,6 +2,19 @@
 title: "Bekanntmachungs-Radar"
 topic: tenders.radar
 version: 1
+keywords:
+    - Ausschreibungen finden
+    - öffentliche Ausschreibungen
+    - Ausschreibungssuche
+    - öffentliche Aufträge
+    - Ausschreibungsalarm
+    - Suchprofil
+    - CPV-Code
+    - NUTS-Region
+    - Vergabebekanntmachung
+    - Bekanntmachungsservice
+    - Tender-Monitoring
+    - Ausschlusswörter
 audience: []
 modules:
     - module.applications

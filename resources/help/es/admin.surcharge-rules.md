@@ -2,6 +2,18 @@
 title: "Reglas de recargo"
 topic: admin.surcharge-rules
 version: 1
+keywords:
+    - plus de nocturnidad
+    - recargo nocturno
+    - recargo dominical
+    - recargo festivo
+    - plus de fin de semana
+    - plus de turno
+    - concepto salarial
+    - exportación de nóminas
+    - DATEV
+    - Lexware
+    - horas nocturnas
 audience:
     - admin
     - geschaeftsfuehrung

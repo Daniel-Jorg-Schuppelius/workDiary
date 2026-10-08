@@ -2,6 +2,15 @@
 title: "Mes factures"
 topic: customer-portal.invoices
 version: 2
+keywords:
+    - consulter les factures
+    - liste des factures
+    - payer en ligne
+    - régler une facture
+    - factures ouvertes
+    - factures impayées
+    - statut de paiement
+    - paiement en ligne
 audience: []
 related:
     - customer-portal.overview

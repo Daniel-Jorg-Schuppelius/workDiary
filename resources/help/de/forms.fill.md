@@ -2,6 +2,17 @@
 title: "Formulare ausfüllen"
 topic: forms.fill
 version: 1
+keywords:
+    - Checkliste ausfüllen
+    - Formular erfassen
+    - Erfassungsbogen
+    - Prüfliste
+    - Fragebogen
+    - digitales Formular
+    - Pflichtfelder
+    - Formular drucken
+    - ausgefüllte Formulare
+    - Formular speichern
 audience: []
 modules:
     - module.forms

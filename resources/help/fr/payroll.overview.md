@@ -2,6 +2,18 @@
 title: "Paie & sécurité sociale"
 topic: payroll.overview
 version: 1
+keywords:
+    - salaire minimum
+    - SMIC
+    - mini-job
+    - numéro d'établissement
+    - centre des impôts
+    - numéro fiscal
+    - salaire horaire
+    - données salariales
+    - export de paie
+    - Eurostat
+    - cotisations sociales
 audience: []
 modules:
     - module.lohn

@@ -2,6 +2,16 @@
 title: "Firmar un protocolo"
 topic: protocols.sign
 version: 1
+keywords:
+    - firma
+    - hacer firmar
+    - firma digital
+    - firma del cliente
+    - firma electrónica
+    - firma en tableta
+    - enlace de firma
+    - conformidad del cliente
+    - revisión
 audience: []
 related:
     - protocols.create

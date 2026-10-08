@@ -2,6 +2,16 @@
 title: "Remplir des formulaires"
 topic: forms.fill
 version: 1
+keywords:
+    - remplir une check-list
+    - compléter un formulaire
+    - fiche de saisie
+    - questionnaire
+    - formulaire numérique
+    - champs obligatoires
+    - imprimer un formulaire
+    - formulaires remplis
+    - liste de contrôle
 audience: []
 modules:
     - module.forms

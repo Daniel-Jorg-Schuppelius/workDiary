@@ -2,6 +2,13 @@
 title: "Portal del cliente – Consultas"
 topic: customer-portal.queries
 version: 1
+keywords:
+    - responder consulta
+    - preguntas abiertas
+    - solicitud de aclaración
+    - aclaración
+    - enviar respuesta
+    - mensaje del proveedor
 audience: []
 related:
     - customer-portal.overview

@@ -2,6 +2,18 @@
 title: "Benachrichtigungen"
 topic: account.notifications
 version: 1
+keywords:
+    - Mitteilungen
+    - Hinweise
+    - Meldungen
+    - Glocke
+    - ungelesen
+    - als gelesen markieren
+    - Benachrichtigungszentrum
+    - E-Mail-Benachrichtigung
+    - SMS
+    - Ruhezeiten
+    - Alarm
 audience: []
 related:
     - account.profile

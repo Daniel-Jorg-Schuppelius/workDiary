@@ -2,6 +2,18 @@
 title: "Audits, constats et actions correctives"
 topic: isms.audits
 version: 1
+keywords:
+    - audit interne
+    - plan d'audit
+    - rapport d'audit
+    - non-conformité
+    - écart majeur
+    - action corrective
+    - CAPA
+    - vérification de l'efficacité
+    - revue de direction
+    - audit fournisseur
+    - analyse des causes
 audience: []
 modules:
     - module.isms

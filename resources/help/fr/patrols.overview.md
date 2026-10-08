@@ -2,6 +2,17 @@
 title: "Rondes de surveillance"
 topic: patrols.overview
 version: 1
+keywords:
+    - ronde de sécurité
+    - contrôle de ronde
+    - points de contrôle
+    - scanner un point de contrôle
+    - preuve de passage
+    - gardiennage
+    - agent de sécurité
+    - rondier
+    - QR code
+    - point manqué
 audience: []
 modules:
     - module.planung

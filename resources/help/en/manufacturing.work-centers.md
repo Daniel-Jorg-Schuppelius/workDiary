@@ -2,6 +2,17 @@
 title: "Production capacity (work centers)"
 topic: manufacturing.work-centers
 version: 1
+keywords:
+    - work center
+    - machine
+    - workstation
+    - capacity planning
+    - machine scheduling
+    - utilization
+    - setup time
+    - load board
+    - daily capacity
+    - bottleneck
 audience: []
 modules:
     - module.lager

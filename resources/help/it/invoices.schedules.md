@@ -2,6 +2,17 @@
 title: "Piani di fatturazione"
 topic: invoices.schedules
 version: 1
+keywords:
+    - fattura ricorrente
+    - fatturazione ricorrente
+    - fattura periodica
+    - fattura mensile
+    - ciclo di fatturazione
+    - intervallo di fatturazione
+    - pagamento anticipato
+    - bozze automatiche
+    - contratto di manutenzione
+    - canone
 audience:
     - admin
     - geschaeftsfuehrung

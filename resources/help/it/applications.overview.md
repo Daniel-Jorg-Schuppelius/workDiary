@@ -2,6 +2,18 @@
 title: "Candidature e gare d'appalto"
 topic: applications.overview
 version: 2
+keywords:
+    - recruiting
+    - selezione del personale
+    - gestione candidati
+    - annuncio di lavoro
+    - colloquio di lavoro
+    - talent pool
+    - rifiutare candidato
+    - assunzione
+    - partecipazione a gare
+    - bando
+    - negoziazione contratto
 audience: []
 modules:
     - module.applications

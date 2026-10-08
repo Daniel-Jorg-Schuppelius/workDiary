@@ -2,6 +2,18 @@
 title: "GoBD export (data carrier handover)"
 topic: finance.gobd
 version: 1
+keywords:
+    - tax audit
+    - field audit
+    - tax office
+    - auditor export
+    - Z3 data access
+    - GDPdU
+    - audit package
+    - procedure documentation
+    - audit-proof
+    - data handover
+    - tax authority export
 audience:
     - admin
     - buchhaltung

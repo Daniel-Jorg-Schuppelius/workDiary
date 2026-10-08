@@ -2,6 +2,16 @@
 title: "Dossiers ouverts"
 topic: open-issues
 version: 1
+keywords:
+    - liste des réserves
+    - réserves
+    - défauts
+    - tâche à faire
+    - problème
+    - ticket
+    - commande de suivi
+    - points en suspens
+    - signaler un problème
 audience: []
 related:
     - foreign-customers

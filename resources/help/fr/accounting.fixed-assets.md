@@ -2,6 +2,18 @@
 title: "Registre des immobilisations et amortissement"
 topic: accounting.fixed-assets
 version: 1
+keywords:
+    - amortissement linéaire
+    - amortissement dégressif
+    - immobilisations
+    - actif immobilisé
+    - tableau des amortissements
+    - valeur nette comptable
+    - cession immobilisation
+    - mise au rebut
+    - biens de faible valeur
+    - amortissement exceptionnel
+    - durée de vie
 audience:
     - admin
     - geschaeftsfuehrung

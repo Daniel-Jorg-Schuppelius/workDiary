@@ -2,6 +2,19 @@
 title: "Sicurezza e hardening"
 topic: admin.security
 version: 2
+keywords:
+    - 2FA
+    - autenticazione a due fattori
+    - passkey
+    - crittografia
+    - blocco IP
+    - forza bruta
+    - SIEM
+    - account compromesso
+    - furto di account
+    - SBOM
+    - panoramica sicurezza
+    - rilevamento intrusioni
 audience:
     - admin
 related:

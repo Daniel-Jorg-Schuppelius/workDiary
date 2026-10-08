@@ -2,6 +2,19 @@
 title: "Betriebsaufgaben & Wartungsfenster"
 topic: admin.operations
 version: 1
+keywords:
+    - Wartungsmodus
+    - Downtime
+    - geplante Wartung
+    - Wartung ankündigen
+    - Nur-Lese-Modus
+    - Read-only-Modus
+    - Aufgabencenter
+    - Betriebsprüfung
+    - Zertifikat läuft ab
+    - Backup fehlt
+    - Aufgabe zurückstellen
+    - Ausfallzeit
 audience:
     - admin
     - geschaeftsfuehrung

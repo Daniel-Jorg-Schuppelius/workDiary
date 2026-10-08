@@ -2,6 +2,18 @@
 title: "Arbeitsbereiche"
 topic: workspaces.overview
 version: 1
+keywords:
+    - Fokus-Ansicht
+    - Ansicht umschalten
+    - Navigation vereinfachen
+    - Menüpunkte ausblenden
+    - Standardansicht
+    - Standard für neue Nutzer
+    - Anzeigename
+    - Rollenansicht
+    - aufgeräumtes Menü
+    - Seitenleiste anpassen
+    - Alle Funktionen
 audience:
     - admin
 related:

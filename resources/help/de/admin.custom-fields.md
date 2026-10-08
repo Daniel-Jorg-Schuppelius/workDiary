@@ -2,6 +2,17 @@
 title: "Eigene Felder"
 topic: admin.custom-fields
 version: 1
+keywords:
+    - Zusatzfelder
+    - benutzerdefinierte Felder
+    - individuelle Felder
+    - Freifelder
+    - Custom Fields
+    - zusätzliche Felder
+    - Feld hinzufügen
+    - weitere Felder
+    - Formular erweitern
+    - Merkmale
 audience:
     - admin
 related:

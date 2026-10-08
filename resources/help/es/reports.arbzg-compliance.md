@@ -2,6 +2,17 @@
 title: "Cumplimiento de la ley de jornada laboral (ArbZG)"
 topic: reports.arbzg-compliance
 version: 1
+keywords:
+    - infracciones de jornada
+    - jornada máxima
+    - descanso entre jornadas
+    - 11 horas de descanso
+    - pausa obligatoria
+    - trabajadores menores
+    - trabajo nocturno
+    - registro horario
+    - obligación de registro
+    - derecho laboral
 audience: []
 modules:
     - module.auswertungen_team

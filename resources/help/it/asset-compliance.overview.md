@@ -2,6 +2,17 @@
 title: "Strumenti di misura e taratura"
 topic: asset-compliance.overview
 version: 1
+keywords:
+    - metrologia
+    - gestione strumenti
+    - certificato di taratura
+    - verifica periodica
+    - scadenze verifiche
+    - rapporto di prova
+    - verifica elettrica
+    - revisione veicoli
+    - blocco attrezzatura
+    - ISO 17025
 audience: []
 modules:
     - module.asset_compliance

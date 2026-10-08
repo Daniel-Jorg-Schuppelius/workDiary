@@ -2,6 +2,16 @@
 title: "Reglas de notificación"
 topic: admin.notification-rules
 version: 1
+keywords:
+    - escalado
+    - configurar notificaciones
+    - notificación por correo
+    - notificación push
+    - destinatarios
+    - recordatorios
+    - alertas de vencimiento
+    - avisos de retraso
+    - canales de notificación
 audience:
     - admin
     - geschaeftsfuehrung

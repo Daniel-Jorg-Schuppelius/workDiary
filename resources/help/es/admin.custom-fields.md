@@ -2,6 +2,15 @@
 title: "Campos propios"
 topic: admin.custom-fields
 version: 1
+keywords:
+    - campos personalizados
+    - campos adicionales
+    - campos libres
+    - campos definidos por el usuario
+    - añadir campo
+    - atributos personalizados
+    - custom fields
+    - ampliar formulario
 audience:
     - admin
 related:

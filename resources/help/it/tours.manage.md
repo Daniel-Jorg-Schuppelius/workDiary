@@ -2,6 +2,17 @@
 title: "Pianificare i giri"
 topic: tours.manage
 version: 1
+keywords:
+    - pianificazione percorsi
+    - ottimizzare il percorso
+    - itinerario
+    - tappe
+    - ordine delle visite
+    - dispatching
+    - vista mappa
+    - giro di consegne
+    - pianificazione interventi
+    - visite clienti
 audience: []
 modules:
     - module.planung

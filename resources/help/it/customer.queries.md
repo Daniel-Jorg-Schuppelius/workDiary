@@ -2,6 +2,16 @@
 title: "Richieste dei clienti"
 topic: customer.queries
 version: 1
+keywords:
+    - domanda del cliente
+    - rispondere a una domanda
+    - rifiuto del cliente
+    - collaudo rifiutato
+    - link di firma
+    - difetti al collaudo
+    - approvazione cliente
+    - domande aperte
+    - chiudere una richiesta
 audience: []
 related:
     - protocols.sign

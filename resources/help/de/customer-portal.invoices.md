@@ -2,6 +2,17 @@
 title: "Meine Rechnungen"
 topic: customer-portal.invoices
 version: 2
+keywords:
+    - Rechnungen ansehen
+    - Rechnungsübersicht
+    - Online bezahlen
+    - Rechnung bezahlen
+    - offene Rechnungen
+    - Zahlungsstatus
+    - Rechnungsstatus
+    - Rechnungsbetrag
+    - Online-Zahlung
+    - Belege
 audience: []
 related:
     - customer-portal.overview

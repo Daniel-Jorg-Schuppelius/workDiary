@@ -2,6 +2,16 @@
 title: "My personnel file"
 topic: account.personnel-file
 version: 1
+keywords:
+    - employee file
+    - HR file
+    - HR documents
+    - personnel records
+    - employment contract
+    - read confirmation
+    - acknowledge document
+    - submit document
+    - upload certificate
 audience: []
 related:
     - account.profile

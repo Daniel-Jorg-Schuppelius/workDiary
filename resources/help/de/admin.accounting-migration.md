@@ -2,6 +2,19 @@
 title: "Buchhaltungswechsel"
 topic: admin.accounting-migration
 version: 1
+keywords:
+    - Softwarewechsel
+    - Systemwechsel Buchhaltung
+    - Anbieterwechsel
+    - Umstieg
+    - Lexoffice
+    - orgaMAX
+    - Lexoffice zu orgaMAX
+    - Datenmigration
+    - Probelauf
+    - Dry-Run
+    - Parallelbetrieb
+    - Umstellungsstichtag
 audience:
     - admin
 related:

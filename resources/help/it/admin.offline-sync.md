@@ -2,6 +2,16 @@
 title: "Sincronizzazione offline"
 topic: admin.offline-sync
 version: 1
+keywords:
+    - lavorare offline
+    - senza internet
+    - senza campo
+    - log sincronizzazione
+    - errori di sincronizzazione
+    - conflitto di sincronizzazione
+    - outbox dispositivo
+    - dati non trasmessi
+    - sincronizzazione mobile
 audience: []
 related:
     - admin.metrics

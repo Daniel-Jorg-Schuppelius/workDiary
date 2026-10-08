@@ -2,6 +2,19 @@
 title: "Alquiler de equipos"
 topic: rental.overview
 version: 2
+keywords:
+    - alquiler de maquinaria
+    - alquiler de herramientas
+    - renta de equipos
+    - parque de alquiler
+    - contrato de alquiler
+    - fianza
+    - reservar equipo
+    - devolución
+    - acta de entrega
+    - calendario de disponibilidad
+    - tarifa de alquiler
+    - telemática
 audience: []
 modules:
     - module.rental

@@ -2,6 +2,19 @@
 title: "Kundenportal – Reklamationen und Rücksendungen"
 topic: customer-portal.claims
 version: 1
+keywords:
+    - Reklamation melden
+    - Mangel melden
+    - Retoure
+    - Rücksendung anmelden
+    - Rücksendeetikett
+    - Retourenschein
+    - Ware zurückschicken
+    - Garantiefall
+    - Reklamationsstatus
+    - Fotos nachreichen
+    - Beschwerde
+    - RMA
 audience: []
 related:
     - customer-portal.overview

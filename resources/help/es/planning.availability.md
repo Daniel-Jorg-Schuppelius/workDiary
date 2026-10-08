@@ -2,6 +2,14 @@
 title: "Disponibilidades y turnos preferidos"
 topic: planning.availability
 version: 1
+keywords:
+    - preferencias de turno
+    - deseos de turno
+    - no disponible
+    - indisponibilidad
+    - franjas de disponibilidad
+    - evitar un turno
+    - preferencias de horario
 audience: []
 modules:
     - module.planung

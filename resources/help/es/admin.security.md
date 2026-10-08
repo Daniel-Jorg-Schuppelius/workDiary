@@ -2,6 +2,19 @@
 title: "Seguridad y endurecimiento"
 topic: admin.security
 version: 2
+keywords:
+    - 2FA
+    - doble factor
+    - passkey
+    - cifrado
+    - bloqueo de IP
+    - fuerza bruta
+    - SIEM
+    - cuenta hackeada
+    - robo de cuenta
+    - SBOM
+    - resumen de seguridad
+    - detección de intrusiones
 audience:
     - admin
 related:

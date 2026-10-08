@@ -2,6 +2,17 @@
 title: "My Invoices"
 topic: customer-portal.invoices
 version: 2
+keywords:
+    - view invoices
+    - invoice list
+    - pay online
+    - pay invoice
+    - open invoices
+    - unpaid invoices
+    - payment status
+    - invoice status
+    - bills
+    - online payment
 audience: []
 related:
     - customer-portal.overview

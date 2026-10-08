@@ -2,6 +2,19 @@
 title: "EBICS bank access"
 topic: finance.ebics
 version: 1
+keywords:
+    - bank connection
+    - fetch bank statements
+    - daily statements
+    - import transactions
+    - submit payment run
+    - send transfers
+    - INI letter
+    - bank keys
+    - electronic signature
+    - set up EBICS
+    - banking interface
+    - CAMT
 audience: []
 modules:
     - module.finance

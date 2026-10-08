@@ -2,6 +2,14 @@
 title: "Équipes"
 topic: org.teams
 version: 1
+keywords:
+    - département
+    - groupe
+    - chef d'équipe
+    - créer une équipe
+    - membres de l'équipe
+    - charge de l'équipe
+    - groupe de travail
 audience: []
 related:
     - org.members

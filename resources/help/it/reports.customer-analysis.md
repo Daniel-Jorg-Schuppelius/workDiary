@@ -2,6 +2,15 @@
 title: "Analisi clienti"
 topic: reports.customer-analysis
 version: 1
+keywords:
+    - statistiche clienti
+    - report clienti
+    - ordini per cliente
+    - tempo per cliente
+    - tasso di rilavorazione
+    - tempo non fatturabile
+    - rischio di margine
+    - KPI clienti
 audience: []
 modules:
     - module.auswertungen_team

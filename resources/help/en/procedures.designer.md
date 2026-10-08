@@ -2,6 +2,17 @@
 title: "Procedure designer"
 topic: procedures.designer
 version: 1
+keywords:
+    - work instruction
+    - create checklist
+    - SOP
+    - standard operating procedure
+    - workflow template
+    - process template
+    - mandatory steps
+    - four-eyes principle
+    - conditional step
+    - publish version
 audience: []
 related:
     - procedures.run

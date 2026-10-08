@@ -2,6 +2,17 @@
 title: "Scadenze fiscali e obblighi dichiarativi"
 topic: accounting.filings
 version: 1
+keywords:
+    - liquidazione IVA
+    - dichiarazione IVA periodica
+    - scadenza IVA
+    - termine di presentazione
+    - proroga permanente
+    - acconto speciale
+    - elenchi riepilogativi
+    - calendario fiscale
+    - IVA mensile
+    - IVA trimestrale
 audience:
     - admin
     - geschaeftsfuehrung

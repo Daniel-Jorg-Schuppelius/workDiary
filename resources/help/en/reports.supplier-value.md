@@ -2,6 +2,18 @@
 title: "Supplier value"
 topic: reports.supplier-value
 version: 1
+keywords:
+    - RFM analysis
+    - supplier segmentation
+    - vendor classification
+    - strategic suppliers
+    - key suppliers
+    - single source
+    - concentration risk
+    - inactive suppliers
+    - dormant suppliers
+    - supplier risk
+    - supplier portfolio
 audience: []
 related:
     - reports.supplier-analysis

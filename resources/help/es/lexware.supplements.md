@@ -2,6 +2,17 @@
 title: "Complementos Lexware: tarifa, matriz de funciones y entrega"
 topic: lexware.supplements
 version: 2
+keywords:
+    - Lexoffice
+    - Lexware Office
+    - plan Lexoffice
+    - comparativa de funciones
+    - facturas recurrentes
+    - facturación periódica
+    - traspasar documentos
+    - exportar facturas
+    - exportación de documentos
+    - confirmar la entrega
 audience: []
 modules:
     - module.vertrieb

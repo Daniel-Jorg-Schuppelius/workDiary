@@ -2,6 +2,17 @@
 title: "Comportement de paiement"
 topic: reports.payment-behavior
 version: 2
+keywords:
+    - DSO
+    - délai de paiement
+    - retard de paiement
+    - mauvais payeurs
+    - factures en retard
+    - créances clients
+    - encours clients
+    - délai moyen de recouvrement
+    - conditions de paiement
+    - analyse des débiteurs
 audience: []
 related:
     - reports.economics

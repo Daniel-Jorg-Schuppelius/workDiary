@@ -2,6 +2,18 @@
 title: "Offline-Änderungen"
 topic: offline.changes
 version: 1
+keywords:
+    - offline arbeiten
+    - ohne Internet
+    - Funkloch
+    - Warteschlange
+    - Synchronisation
+    - Sync
+    - nicht übertragen
+    - ausstehende Einträge
+    - abgelehnte Einträge
+    - Offlinemodus
+    - Stempeln ohne Netz
 audience: []
 related:
     - attendance.manage

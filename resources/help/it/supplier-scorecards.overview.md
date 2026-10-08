@@ -2,6 +2,16 @@
 title: "Scorecard fornitori"
 topic: supplier-scorecards.overview
 version: 1
+keywords:
+    - valutazione fornitori
+    - rating fornitori
+    - classifica fornitori
+    - puntualità delle consegne
+    - affidabilità di consegna
+    - tasso di reclami
+    - andamento prezzi
+    - performance fornitori
+    - KPI fornitori
 audience: []
 modules:
     - module.lager

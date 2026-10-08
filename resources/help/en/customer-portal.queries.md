@@ -2,6 +2,14 @@
 title: "Customer Portal – Questions"
 topic: customer-portal.queries
 version: 1
+keywords:
+    - answer question
+    - reply to query
+    - open questions
+    - follow-up question
+    - clarification
+    - send reply
+    - respond
 audience: []
 related:
     - customer-portal.overview

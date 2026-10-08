@@ -2,6 +2,17 @@
 title: "Compléments Lexware : tarif, matrice des fonctions et remise"
 topic: lexware.supplements
 version: 2
+keywords:
+    - Lexoffice
+    - Lexware Office
+    - formule Lexoffice
+    - comparatif des fonctions
+    - factures récurrentes
+    - facturation en série
+    - transmettre les pièces
+    - exporter les factures
+    - export des pièces
+    - confirmer la remise
 audience: []
 modules:
     - module.vertrieb

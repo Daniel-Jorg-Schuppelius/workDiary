@@ -2,6 +2,18 @@
 title: "Trabajos programados"
 topic: admin.scheduler
 version: 1
+keywords:
+    - tareas cron
+    - cron
+    - planificador
+    - tareas en segundo plano
+    - tareas recurrentes
+    - pausar trabajo
+    - ejecución de prueba
+    - watchdog
+    - ventana operativa
+    - reprogramar
+    - historial de ejecuciones
 audience:
     - admin
 related:

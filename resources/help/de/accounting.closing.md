@@ -2,6 +2,19 @@
 title: "Abschluss und Auswertungen"
 topic: accounting.closing
 version: 1
+keywords:
+    - Monatsabschluss
+    - Jahresabschluss
+    - Periode sperren
+    - Periode wiedereröffnen
+    - Festschreibung
+    - BWA
+    - EÜR
+    - USt-Vorschau
+    - Liquiditätsplanung
+    - Plan-Ist-Vergleich
+    - Z3-Export
+    - Betriebsprüfung
 audience:
     - admin
     - geschaeftsfuehrung

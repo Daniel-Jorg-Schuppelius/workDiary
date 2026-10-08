@@ -2,6 +2,18 @@
 title: "Viaggi, spese e diarie"
 topic: travel-expenses.manage
 version: 1
+keywords:
+    - nota spese
+    - rimborso spese
+    - trasferta
+    - libretto di viaggio
+    - rimborso chilometrico
+    - diaria
+    - scansione scontrino
+    - scontrino
+    - auto aziendale
+    - fringe benefit
+    - tempi di guida
 audience: []
 modules:
     - module.spesen

@@ -2,6 +2,18 @@
 title: "Dashboard"
 topic: dashboard.overview
 version: 3
+keywords:
+    - Startseite
+    - Übersicht
+    - Kacheln anpassen
+    - Widgets
+    - Cockpit
+    - Kennzahlen
+    - Startseite einrichten
+    - Kacheln ausblenden
+    - Kacheln sortieren
+    - Standardansicht
+    - Home
 audience: []
 schema: process
 related:

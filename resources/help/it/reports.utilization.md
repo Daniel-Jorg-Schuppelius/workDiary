@@ -2,6 +2,17 @@
 title: "Utilizzo & realizzazione"
 topic: reports.utilization
 version: 2
+keywords:
+    - tasso di utilizzo
+    - ore fatturabili
+    - ore fatturate
+    - tasso di realizzazione
+    - produttività
+    - previsto vs effettivo
+    - carico di lavoro
+    - saturazione
+    - capacità
+    - quota fatturabile
 audience: []
 related:
     - reports.economics

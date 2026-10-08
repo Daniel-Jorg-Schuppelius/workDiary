@@ -2,6 +2,14 @@
 title: "Richieste di straordinario"
 topic: overtime.requests
 version: 1
+keywords:
+    - ore extra
+    - ore in più
+    - lavoro straordinario
+    - chiedere lo straordinario
+    - approvare lo straordinario
+    - superamento orario
+    - flessibilità oraria
 audience: []
 related:
     - corrections.requests

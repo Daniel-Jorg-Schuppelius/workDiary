@@ -2,6 +2,19 @@
 title: "Protokoll erstellen"
 topic: protocols.create
 version: 3
+keywords:
+    - Abnahmeprotokoll
+    - Wartungsprotokoll
+    - Prüfprotokoll
+    - Servicebericht
+    - Arbeitsbericht
+    - Montagebericht
+    - Übergabeprotokoll
+    - Mängel erfassen
+    - Vorher-Nachher-Fotos
+    - Protokollvorlage
+    - Messwerte erfassen
+    - Checkliste
 audience: []
 schema: process
 related:

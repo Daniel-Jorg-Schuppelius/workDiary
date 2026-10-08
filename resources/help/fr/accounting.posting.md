@@ -2,6 +2,18 @@
 title: "Comptabiliser et boîte de saisie"
 topic: accounting.posting
 version: 1
+keywords:
+    - passer une écriture
+    - écriture comptable
+    - comptabiliser des pièces
+    - imputation comptable
+    - proposition de comptabilisation
+    - règles de comptabilisation
+    - extourne
+    - contre-passation
+    - principe des quatre yeux
+    - devise étrangère
+    - taux de change
 audience:
     - admin
     - geschaeftsfuehrung

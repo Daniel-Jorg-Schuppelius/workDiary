@@ -2,6 +2,20 @@
 title: "Abbonamenti e licenze"
 topic: finance.resale
 version: 2
+keywords:
+    - fatturazione abbonamenti
+    - servizi ricorrenti
+    - rivendita servizi
+    - periodi di fatturazione
+    - rinnovi
+    - termine di disdetta
+    - margine
+    - fattura ricorrente
+    - importare abbonamenti
+    - rivenditore
+    - Lexoffice
+    - Telekom
+    - Quality Hosting
 audience: []
 modules:
     - module.reselling

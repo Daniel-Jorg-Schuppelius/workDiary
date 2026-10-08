@@ -2,6 +2,19 @@
 title: "Ihr Tag in WorkDiary: Teamleitung"
 topic: roles.teamleitung
 version: 1
+keywords:
+    - Teamleiter
+    - Vorgesetzter
+    - Abteilungsleiter
+    - Schichtleitung
+    - Dienstplan erstellen
+    - Zeiten freigeben
+    - Urlaub genehmigen
+    - Korrekturantrag entscheiden
+    - Monatsabschluss
+    - Rufbereitschaft
+    - Personalplanung
+    - Aufträge zuweisen
 audience:
     - teamleitung
 related:

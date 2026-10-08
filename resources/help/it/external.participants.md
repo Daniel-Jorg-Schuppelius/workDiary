@@ -2,6 +2,17 @@
 title: "Invitare partecipanti esterni"
 topic: external.participants
 version: 1
+keywords:
+    - accesso ospite
+    - accesso esterno
+    - invitare subappaltatore
+    - ispettore
+    - perito
+    - link di accesso
+    - link di condivisione
+    - senza login
+    - revocare accesso
+    - accesso temporaneo
 audience: []
 related:
     - diary-entries.edit

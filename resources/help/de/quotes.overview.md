@@ -2,6 +2,20 @@
 title: "Angebote"
 topic: quotes.overview
 version: 1
+keywords:
+    - Angebot erstellen
+    - Kostenvoranschlag
+    - KVA
+    - Offerte
+    - Angebot versenden
+    - Online-Annahme
+    - Teilannahme
+    - Bindefrist
+    - Auftragsbestätigung
+    - Angebot in Rechnung umwandeln
+    - optionale Positionen
+    - Angebotsversion
+    - Angebot als PDF
 audience: []
 modules:
     - module.vertrieb

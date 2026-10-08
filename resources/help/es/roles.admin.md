@@ -2,6 +2,18 @@
 title: "Su día en WorkDiary: Administrador"
 topic: roles.admin
 version: 1
+keywords:
+    - administrador
+    - tareas de administración
+    - crear usuarios
+    - gestión de usuarios
+    - asignar roles
+    - permisos
+    - restablecer 2FA
+    - desbloquear cuenta
+    - configuración inicial
+    - comprobar copias de seguridad
+    - estado del sistema
 audience:
     - admin
 related:

@@ -2,6 +2,19 @@
 title: "Flujo de documentos"
 topic: billing.feed
 version: 1
+keywords:
+    - facturas
+    - presupuestos
+    - facturas emitidas
+    - facturas recibidas
+    - abonos
+    - gastos
+    - partidas abiertas
+    - reclamación de pago
+    - facturas vencidas
+    - factura electrónica
+    - listado de documentos
+    - ingresos
 audience: []
 modules:
     - module.vertrieb

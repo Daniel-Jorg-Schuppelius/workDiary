@@ -2,6 +2,18 @@
 title: "Valores objetivo (informes)"
 topic: admin.report-targets
 version: 1
+keywords:
+    - metas
+    - objetivos
+    - indicadores
+    - KPI
+    - benchmark
+    - semáforo
+    - real frente a previsto
+    - margen
+    - tasa facturable
+    - cumplimiento SLA
+    - utilización
 audience:
     - admin
     - geschaeftsfuehrung

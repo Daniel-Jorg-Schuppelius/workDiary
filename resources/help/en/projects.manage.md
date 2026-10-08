@@ -2,6 +2,18 @@
 title: "Managing projects"
 topic: projects.manage
 version: 3
+keywords:
+    - create project
+    - project management
+    - project list
+    - milestones
+    - project time
+    - project billing
+    - close project
+    - reassign time entries
+    - timesheets
+    - project tasks
+    - hourly rate
 audience: []
 modules:
     - module.vertrieb

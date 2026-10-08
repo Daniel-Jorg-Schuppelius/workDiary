@@ -2,6 +2,18 @@
 title: "Organizzazioni e tenant"
 topic: admin.tenants
 version: 2
+keywords:
+    - gestione tenant
+    - multi-tenant
+    - multiaziendale
+    - creare organizzazione
+    - aggiungere azienda
+    - eliminare organizzazione
+    - disattivare organizzazione
+    - cambiare organizzazione
+    - esportazione dati
+    - purge
+    - cambio piano
 audience:
     - admin
 related:

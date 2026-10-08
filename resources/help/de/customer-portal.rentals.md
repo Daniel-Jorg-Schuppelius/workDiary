@@ -2,6 +2,18 @@
 title: "Kundenportal – Verleih"
 topic: customer-portal.rentals
 version: 1
+keywords:
+    - Miete
+    - Gerätemiete
+    - Geräte mieten
+    - Mietanfrage
+    - Mietgeräte
+    - Gerät ausleihen
+    - Ausleihe
+    - Mietvorgang
+    - Mietpreis
+    - Direktbuchung
+    - Mietbedingungen
 audience: []
 related:
     - customer-portal.overview

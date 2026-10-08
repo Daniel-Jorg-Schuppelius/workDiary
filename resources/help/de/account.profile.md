@@ -1,12 +1,26 @@
 ---
 title: "Profil & Konto"
 topic: account.profile
-version: 1
+version: 2
+keywords:
+    - Benutzerkonto
+    - Einstellungen
+    - Passwort ändern
+    - Kennwort ändern
+    - Sprache ändern
+    - Zeitzone
+    - Darkmode
+    - Dunkelmodus
+    - Profilbild
+    - Startseite festlegen
+    - Kalender-Abo
+    - ICS-Feed
 audience: []
 related:
     - account.two-factor
     - account.notifications
     - account.calendar
+    - navigation.interface
 ---
 
 Im Profil pflegen Sie Ihre persönlichen Daten: Name, E-Mail-Adresse,
@@ -18,6 +32,10 @@ der Mailversand und Ruhezeiten werden hier verwaltet.
 
 Zur Auswahl stehen nur Seiten, die Sie öffnen dürfen. Ohne eigene Wahl gilt die
 Startseite, die Ihre Organisation für Ihre Rolle festgelegt hat.
+
+Den dunklen Modus (Darkmode) schalten Sie am schnellsten in der Kopfzeile
+unter **Einstellungen** um. Einzelheiten stehen im Thema **Bedienoberfläche
+und Darstellung**.
 
 Die Passwortänderung erfolgt in einem eigenen Dialog. Für eine
 reguläre Änderung müssen Sie Ihr aktuelles Passwort bestätigen; muss das

@@ -2,6 +2,19 @@
 title: "Aufmaß"
 topic: takeoffs
 version: 1
+keywords:
+    - Mengenermittlung
+    - Massenermittlung
+    - Aufmaßblatt
+    - Aufmaß erstellen
+    - Flächen berechnen
+    - REB-Formeln
+    - GAEB X31
+    - Abrechnung nach Aufmaß
+    - Baustellenaufmaß
+    - Leistungsstand
+    - Mengen übernehmen
+    - Raumaufmaß
 audience: []
 related:
     - diary-entries.edit

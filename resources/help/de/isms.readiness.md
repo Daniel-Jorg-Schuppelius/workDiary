@@ -2,6 +2,18 @@
 title: "Reifegrad & Readiness"
 topic: isms.readiness
 version: 1
+keywords:
+    - Reifegradmodell
+    - Auditbereitschaft
+    - Selbsteinschätzung
+    - Selbstbewertung
+    - Ampel
+    - Score
+    - Lückenanalyse
+    - Gap-Analyse
+    - Auditvorbereitung
+    - intern auditbereit
+    - Maturity
 audience: []
 modules:
     - module.isms

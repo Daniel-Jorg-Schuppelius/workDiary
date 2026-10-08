@@ -2,6 +2,16 @@
 title: "Avales"
 topic: guarantees.overview
 version: 1
+keywords:
+    - aval bancario
+    - garantía bancaria
+    - aval de cumplimiento
+    - fianza
+    - retención de garantía
+    - liberar retención
+    - documento de aval
+    - devolución del aval
+    - registro de avales
 audience: []
 related:
     - invoices.manage

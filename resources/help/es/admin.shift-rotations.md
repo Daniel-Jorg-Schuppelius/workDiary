@@ -2,6 +2,16 @@
 title: "Planes rotativos"
 topic: admin.shift-rotations
 version: 1
+keywords:
+    - turnos rotativos
+    - cuadrante
+    - rotación de turnos
+    - patrón de turnos
+    - horario de turnos
+    - turnos de mañana y tarde
+    - turnos recurrentes
+    - ciclo de turnos
+    - planificación de turnos
 audience: [admin]
 related:
     - planning.shifts

@@ -2,6 +2,17 @@
 title: "Types d'entrées"
 topic: catalog.entry-types
 version: 1
+keywords:
+    - types de mission
+    - types de commande
+    - catégories de mission
+    - dépannage
+    - maintenance
+    - installation
+    - types de journal
+    - durée par défaut
+    - champs obligatoires
+    - valeurs par défaut
 audience:
     - admin
 related:

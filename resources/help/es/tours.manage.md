@@ -2,6 +2,17 @@
 title: "Planificar rutas"
 topic: tours.manage
 version: 1
+keywords:
+    - planificación de rutas
+    - optimizar ruta
+    - itinerario
+    - paradas
+    - orden de visitas
+    - despacho
+    - vista de mapa
+    - ruta de reparto
+    - planificación de intervenciones
+    - visitas a clientes
 audience: []
 modules:
     - module.planung

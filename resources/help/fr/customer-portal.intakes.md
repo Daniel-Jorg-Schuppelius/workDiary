@@ -2,6 +2,19 @@
 title: "Portail client – Demandes et commandes"
 topic: customer-portal.intakes
 version: 1
+keywords:
+    - faire une demande
+    - commande d'impression
+    - demande d'impression
+    - demande informatique
+    - téléverser un fichier
+    - fichiers d'impression
+    - bon à tirer
+    - BAT
+    - accepter le devis
+    - refuser le devis
+    - envoyer de gros fichiers
+    - lien de dépôt
 audience: []
 related:
     - customer-portal.overview

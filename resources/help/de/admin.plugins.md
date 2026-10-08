@@ -2,6 +2,18 @@
 title: "Plugins"
 topic: admin.plugins
 version: 1
+keywords:
+    - Erweiterungen
+    - Add-ons
+    - Integrationen
+    - Schnittstellen verwalten
+    - Plugin aktivieren
+    - Plugin deaktivieren
+    - Health-Check
+    - Verbindung testen
+    - Plugin-Fehler
+    - automatisch deaktiviert
+    - Fehlerprotokoll
 audience:
     - admin
 related:

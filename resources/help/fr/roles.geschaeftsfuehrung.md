@@ -2,6 +2,17 @@
 title: "Votre journée dans WorkDiary : direction générale"
 topic: roles.geschaeftsfuehrung
 version: 1
+keywords:
+    - dirigeant
+    - gérant
+    - patron
+    - vue de direction
+    - indicateurs clés
+    - accès en lecture seule
+    - journal d'audit
+    - séparation des tâches
+    - exporter des rapports
+    - tableau de bord
 audience:
     - geschaeftsfuehrung
 related:

@@ -2,6 +2,18 @@
 title: "Élimination et justificatifs"
 topic: disposal.overview
 version: 1
+keywords:
+    - DEEE
+    - déchets électroniques
+    - anciens appareils
+    - certificat de destruction
+    - destruction des données
+    - broyage de disques durs
+    - effacement des données
+    - DIN 66399
+    - code déchet
+    - bordereau de suivi
+    - recyclage informatique
 audience: []
 modules:
     - module.entsorgung

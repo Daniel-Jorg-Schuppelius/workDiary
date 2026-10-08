@@ -2,6 +2,19 @@
 title: "Destinazioni di backup cloud"
 topic: backup-targets.overview
 version: 1
+keywords:
+    - backup offsite
+    - salvataggio dati
+    - Dropbox
+    - OneDrive
+    - Google Drive
+    - backup cifrato
+    - regola 3-2-1
+    - ripristino
+    - test di ripristino
+    - chiave master
+    - conservazione backup
+    - disaster recovery
 audience: []
 related:
     - admin.integrations

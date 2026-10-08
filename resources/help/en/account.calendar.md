@@ -2,6 +2,16 @@
 title: "Calendar"
 topic: account.calendar
 version: 1
+keywords:
+    - schedule
+    - appointments
+    - month view
+    - team calendar
+    - on-call
+    - on-call duty
+    - emergency service
+    - agenda
+    - my appointments
 audience: []
 related:
     - planning.shifts

@@ -2,6 +2,18 @@
 title: "Anagrafica articoli"
 topic: articles.master
 version: 1
+keywords:
+    - articoli
+    - creare articolo
+    - catalogo prodotti
+    - codice articolo
+    - SKU
+    - varianti
+    - EAN
+    - GTIN
+    - unità di misura
+    - codice doganale
+    - voce doganale
 audience: []
 modules:
     - module.lager

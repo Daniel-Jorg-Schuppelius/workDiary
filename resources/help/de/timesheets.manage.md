@@ -2,6 +2,18 @@
 title: "Stundenzettel verwalten"
 topic: timesheets.manage
 version: 1
+keywords:
+    - Stundennachweis
+    - Leistungsnachweis
+    - Arbeitsnachweis
+    - Regiebericht
+    - Stundenbericht
+    - Rapportzettel
+    - Stundenliste
+    - Unterschrift einholen
+    - Material erfassen
+    - Leistungen abrechnen
+    - Stundenzettel PDF
 audience: []
 related:
     - time-entries.start

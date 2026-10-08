@@ -2,6 +2,19 @@
 title: "Gestionar documentos"
 topic: documents.manage
 version: 1
+keywords:
+    - DMS
+    - gestión documental
+    - subir archivo
+    - archivo de documentos
+    - control de versiones
+    - nueva versión
+    - fecha de caducidad
+    - validez
+    - certificados
+    - archivar documento
+    - historial de envíos
+    - enviar documentos
 audience: []
 modules:
     - module.documents

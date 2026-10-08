@@ -2,6 +2,17 @@
 title: "Meine Abos"
 topic: customer-portal.subscriptions
 version: 1
+keywords:
+    - Abonnement
+    - Lizenzen
+    - Softwarelizenzen
+    - Domains
+    - Hosting
+    - Laufzeit
+    - Verlängerung
+    - Abrechnungszeitraum
+    - Abo-Übersicht
+    - gekündigte Abos
 audience: []
 modules:
     - module.reselling

@@ -2,6 +2,16 @@
 title: "Team"
 topic: org.teams
 version: 1
+keywords:
+    - reparto
+    - gruppo
+    - caposquadra
+    - responsabile del team
+    - creare un team
+    - membri del team
+    - carico di lavoro
+    - squadra
+    - gruppo di lavoro
 audience: []
 related:
     - org.members

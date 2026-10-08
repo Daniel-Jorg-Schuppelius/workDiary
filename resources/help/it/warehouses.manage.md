@@ -2,6 +2,16 @@
 title: "Ubicazioni di magazzino"
 topic: warehouses.manage
 version: 1
+keywords:
+    - creare magazzino
+    - magazzino
+    - deposito
+    - ubicazione predefinita
+    - magazzino principale
+    - gestione magazzino
+    - più magazzini
+    - eliminare ubicazione
+    - punto di stoccaggio
 audience: []
 modules:
     - module.lager

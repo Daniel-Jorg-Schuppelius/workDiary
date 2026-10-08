@@ -2,6 +2,19 @@
 title: "Leads"
 topic: sales.leads
 version: 2
+keywords:
+    - Interessenten
+    - Akquise
+    - Neukundengewinnung
+    - Vertriebspipeline
+    - Sales-Funnel
+    - CRM
+    - Lead qualifizieren
+    - Lead in Kunde umwandeln
+    - potenzielle Kunden
+    - Wiedervorlage
+    - Calendly
+    - Dublettenprüfung
 audience: []
 modules:
     - module.vertrieb

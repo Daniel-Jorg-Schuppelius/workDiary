@@ -2,6 +2,18 @@
 title: "Supplier analysis"
 topic: reports.supplier-analysis
 version: 1
+keywords:
+    - spend analysis
+    - purchasing analysis
+    - Pareto chart
+    - ABC analysis
+    - concentration risk
+    - supplier dependency
+    - accounts payable
+    - open payables
+    - HHI
+    - purchase volume
+    - vendor analysis
 audience: []
 related:
     - reports.customer-analysis

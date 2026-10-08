@@ -2,6 +2,18 @@
 title: "Führerscheinkontrolle"
 topic: fleet.license-checks
 version: 1
+keywords:
+    - Führerschein prüfen
+    - Führerscheinprüfung
+    - Fahrerlaubnis
+    - Halterhaftung
+    - Sichtprüfung Führerschein
+    - Kontrollintervall
+    - Fahrer sperren
+    - Fahrberechtigung
+    - Dienstwagen
+    - Firmenwagen
+    - Fuhrpark
 audience:
     - admin
     - geschaeftsfuehrung

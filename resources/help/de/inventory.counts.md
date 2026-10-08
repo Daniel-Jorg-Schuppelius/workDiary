@@ -2,6 +2,18 @@
 title: "Inventur"
 topic: inventory.counts
 version: 1
+keywords:
+    - Bestandsaufnahme
+    - Lagerinventur
+    - Stichtagsinventur
+    - zyklische Inventur
+    - permanente Inventur
+    - Jahresinventur
+    - Zählliste
+    - Bestand zählen
+    - Inventurdifferenz
+    - Differenzen buchen
+    - ABC-Klasse
 audience: []
 modules:
     - module.lager

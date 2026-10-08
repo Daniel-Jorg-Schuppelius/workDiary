@@ -2,6 +2,17 @@
 title: "Gérer les feuilles d'heures"
 topic: timesheets.manage
 version: 1
+keywords:
+    - relevé d'heures
+    - feuille de temps
+    - rapport d'intervention
+    - bon d'intervention
+    - justificatif de prestation
+    - bon de régie
+    - faire signer
+    - signature client
+    - saisir du matériel
+    - facturer les prestations
 audience: []
 related:
     - time-entries.start

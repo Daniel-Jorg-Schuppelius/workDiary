@@ -2,6 +2,15 @@
 title: "Manuale amministratore: panoramica"
 topic: admin.handbook
 version: 1
+keywords:
+    - guida amministratore
+    - amministrazione
+    - configurazione iniziale
+    - primi passi
+    - gestione tenant
+    - ruoli e permessi
+    - export GDPR
+    - amministrazione sistema
 audience:
     - admin
 related:

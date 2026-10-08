@@ -2,6 +2,18 @@
 title: "Paramètres système"
 topic: admin.settings
 version: 1
+keywords:
+    - configuration
+    - réglages
+    - préférences
+    - options
+    - valeurs par défaut
+    - paramètres par organisation
+    - limite de téléversement
+    - taille de page
+    - surcharge
+    - réinitialiser un paramètre
+    - historique des modifications
 audience:
     - admin
 related:

@@ -2,6 +2,19 @@
 title: "Installation"
 topic: install.wizard
 version: 1
+keywords:
+    - setup wizard
+    - initial setup
+    - first-time setup
+    - installer
+    - system requirements
+    - database setup
+    - create administrator
+    - SMTP settings
+    - mail server
+    - web push
+    - VAPID
+    - application key
 audience: [admin]
 related:
     - admin.tenants

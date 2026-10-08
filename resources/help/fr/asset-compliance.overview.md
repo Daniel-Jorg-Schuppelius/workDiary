@@ -2,6 +2,18 @@
 title: "Moyens de contrôle et étalonnage"
 topic: asset-compliance.overview
 version: 1
+keywords:
+    - métrologie
+    - gestion des instruments de mesure
+    - constat de vérification
+    - vérification périodique
+    - contrôle réglementaire
+    - échéances de contrôle
+    - rapport de contrôle
+    - contrôle électrique
+    - contrôle technique
+    - blocage du matériel
+    - ISO 17025
 audience: []
 modules:
     - module.asset_compliance

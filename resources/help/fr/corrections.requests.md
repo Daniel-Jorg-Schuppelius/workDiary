@@ -2,6 +2,15 @@
 title: "Corrections de temps"
 topic: corrections.requests
 version: 1
+keywords:
+    - demande de correction
+    - oubli de pointage
+    - pointage oublié
+    - ajouter un temps manquant
+    - corriger une saisie
+    - corriger le temps de travail
+    - correction de badgeage
+    - rectification des heures
 audience: []
 related:
     - attendance.manage

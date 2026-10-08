@@ -2,6 +2,16 @@
 title: "Relance des devis"
 topic: quotes.follow-ups
 version: 1
+keywords:
+    - relancer un devis
+    - suivi des devis
+    - rappel de devis
+    - devis en attente
+    - devis ouverts
+    - taux de transformation
+    - taux de réussite
+    - date de relance
+    - devis gagnés
 audience: []
 modules:
     - module.vertrieb

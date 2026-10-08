@@ -2,6 +2,18 @@
 title: "Seguridad laboral y sucesos de seguridad"
 topic: safety.overview
 version: 1
+keywords:
+    - notificar accidente
+    - accidente laboral
+    - cuasi accidente
+    - incidente de seguridad
+    - evaluación de riesgos
+    - formación en seguridad
+    - vigilancia de la salud
+    - prevención de riesgos laborales
+    - PRL
+    - HSE
+    - catálogo de peligros
 audience: []
 related:
     - reports.overview

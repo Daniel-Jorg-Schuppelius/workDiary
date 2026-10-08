@@ -2,6 +2,17 @@
 title: "Automations"
 topic: admin.automations
 version: 1
+keywords:
+    - workflow
+    - rules
+    - if-then rule
+    - trigger
+    - rule engine
+    - automated action
+    - workflow automation
+    - create rule
+    - process automation
+    - automate tasks
 audience:
     - admin
 related:

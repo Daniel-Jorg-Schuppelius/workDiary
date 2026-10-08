@@ -2,6 +2,17 @@
 title: "Rilevazione dei tempi basata sulla posizione"
 topic: location.overview
 version: 1
+keywords:
+    - rilevazione presenze GPS
+    - geofencing
+    - geolocalizzazione
+    - tracciamento posizione
+    - rilevazione automatica dei tempi
+    - OwnTracks
+    - Traccar
+    - cronologia delle posizioni Google
+    - proposte di tempo
+    - visite clienti
 audience: []
 modules:
     - module.standorterfassung

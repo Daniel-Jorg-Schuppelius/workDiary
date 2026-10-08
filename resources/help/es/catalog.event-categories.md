@@ -2,6 +2,16 @@
 title: "Categorías de eventos"
 topic: catalog.event-categories
 version: 1
+keywords:
+    - tipos de evento
+    - categorías de citas
+    - tipos de formación
+    - certificado obligatorio
+    - justificante
+    - periodo de validez
+    - certificados por caducar
+    - recordatorio
+    - color de categoría
 audience: []
 modules:
     - module.vertrieb

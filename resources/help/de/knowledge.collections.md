@@ -2,6 +2,19 @@
 title: "Sammlungen"
 topic: knowledge.collections
 version: 6
+keywords:
+    - Ordner
+    - Inhalte gruppieren
+    - Notizen ordnen
+    - Untersammlung
+    - Wissensordner
+    - Obsidian importieren
+    - OneNote importieren
+    - Backlinks
+    - Rückverweise
+    - Querverweise
+    - Wikilinks
+    - Notiz in Artikel umwandeln
 audience: []
 related:
     - knowledge.articles

@@ -2,6 +2,18 @@
 title: "Planificación de menús & bufés (catering)"
 topic: recipes.menus
 version: 1
+keywords:
+    - menú para eventos
+    - plan de comidas
+    - organizar un bufé
+    - número de invitados
+    - cálculo de raciones
+    - escalar recetas
+    - alérgenos
+    - etiquetado de alérgenos
+    - necesidad de ingredientes
+    - coste de materia prima
+    - banquetes
 audience: []
 modules:
     - module.lager

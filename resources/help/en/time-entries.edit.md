@@ -2,6 +2,17 @@
 title: "Edit a time entry"
 topic: time-entries.edit
 version: 1
+keywords:
+    - correct time
+    - change time entry
+    - fix hours
+    - wrong time
+    - change start and end
+    - change break
+    - rebook project
+    - correction request
+    - locked entry
+    - change log
 audience: []
 related:
     - time-entries.start

@@ -2,6 +2,19 @@
 title: "Managing integrations"
 topic: admin.integrations
 version: 3
+keywords:
+    - interfaces
+    - connectors
+    - plugins
+    - time clock terminal
+    - kiosk mode
+    - NFC badge
+    - QR code check-in
+    - terminal PIN
+    - health check
+    - SSO
+    - Nextcloud
+    - Stripe
 audience:
     - admin
     - buchhaltung

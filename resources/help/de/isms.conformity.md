@@ -2,6 +2,18 @@
 title: "Zertifizierungen & Normkonformität"
 topic: isms.conformity
 version: 1
+keywords:
+    - ISO 27001
+    - ISO-Zertifikat
+    - Zertifizierungsaudit
+    - Überwachungsaudit
+    - Rezertifizierung
+    - Lückenanalyse
+    - Gap-Analyse
+    - Zertifizierungsstelle
+    - Zertifikat abgelaufen
+    - Auditbereitschaft
+    - Compliance
 audience: []
 modules:
     - module.isms

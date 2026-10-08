@@ -2,6 +2,16 @@
 title: "Invoice mail templates"
 topic: admin.invoice-mail-templates
 version: 1
+keywords:
+    - email template
+    - invoice email text
+    - send invoice by email
+    - invoice dispatch
+    - cover email
+    - placeholders
+    - merge fields
+    - email subject
+    - default template
 audience:
     - admin
     - buchhaltung

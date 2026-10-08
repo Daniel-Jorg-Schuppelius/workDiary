@@ -2,6 +2,18 @@
 title: "Zeitkonten"
 topic: time-accounts.overview
 version: 1
+keywords:
+    - Zusatzkonto
+    - Freizeitkonto
+    - Freizeitausgleich
+    - Nachtdienste zählen
+    - Zulagenstunden
+    - Kontostand
+    - Ampel
+    - Buchungsjournal
+    - Stornobuchung
+    - Zeitkonto exportieren
+    - Mehrarbeit
 audience: []
 related:
     - time-accounts.flex

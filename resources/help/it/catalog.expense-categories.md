@@ -2,6 +2,17 @@
 title: "Categorie di spesa"
 topic: catalog.expense-categories
 version: 1
+keywords:
+    - tipi di spesa
+    - rimborsi spese
+    - nota spese
+    - spese di viaggio
+    - pernottamento
+    - vitto
+    - spese di trasporto
+    - aliquota IVA
+    - ricevuta obbligatoria
+    - spese fatturabili
 audience: []
 related:
     - travel-expenses.manage

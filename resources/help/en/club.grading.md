@@ -2,6 +2,18 @@
 title: "Gradings"
 topic: club.grading
 version: 1
+keywords:
+    - belt
+    - belt rank
+    - belt order
+    - kyu
+    - dan
+    - rank
+    - grading system
+    - grade requirements
+    - waiting period
+    - progress
+    - recognise grade
 audience: []
 modules:
     - module.club

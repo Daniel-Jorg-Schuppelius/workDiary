@@ -2,6 +2,19 @@
 title: "Groupes de coûts selon DIN 276"
 topic: boq.cost-groups
 version: 1
+keywords:
+    - affecter un groupe de coûts
+    - estimation des coûts
+    - calcul des coûts
+    - estimation détaillée
+    - décompte final des coûts
+    - suivi des coûts
+    - HOAI
+    - StLB-Bau
+    - lot de travaux
+    - catalogue des coûts de construction
+    - GAEB X51
+    - GAEB X52
 audience: []
 modules:
     - module.bau

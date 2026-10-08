@@ -2,6 +2,18 @@
 title: "Damage cases"
 topic: damage-cases.overview
 version: 1
+keywords:
+    - report damage
+    - damage report
+    - insurance claim
+    - liability claim
+    - property damage
+    - claim settlement
+    - insurer
+    - deductible
+    - excess
+    - claim number
+    - vehicle damage
 audience: []
 related:
     - rental.overview

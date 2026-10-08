@@ -2,6 +2,19 @@
 title: "Sicherheit & Härtung"
 topic: admin.security
 version: 2
+keywords:
+    - 2FA
+    - Passkey
+    - Verschlüsselung
+    - IP-Sperre
+    - Brute Force
+    - SIEM
+    - Konto gehackt
+    - Kontoübernahme
+    - Konto sichern
+    - SBOM
+    - Sicherheitsübersicht
+    - Angriffserkennung
 audience:
     - admin
 related:

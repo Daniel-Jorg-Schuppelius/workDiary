@@ -2,6 +2,17 @@
 title: "Planificación de inversiones"
 topic: investments.overview
 version: 2
+keywords:
+    - solicitud de inversión
+    - solicitud de presupuesto
+    - gastos de capital
+    - CapEx
+    - aprobación de inversión
+    - comparar ofertas
+    - desviación presupuestaria
+    - previsto frente a real
+    - análisis de rentabilidad
+    - lecciones aprendidas
 audience: []
 modules:
     - module.investments

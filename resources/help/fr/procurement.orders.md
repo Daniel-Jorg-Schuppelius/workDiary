@@ -2,6 +2,17 @@
 title: "Achats & commandes"
 topic: procurement.orders
 version: 1
+keywords:
+    - approvisionnement
+    - bon de commande
+    - commande fournisseur
+    - réception de marchandises
+    - livraison partielle
+    - avis d'expédition
+    - réapprovisionnement
+    - seuil de réapprovisionnement
+    - quantité minimale de commande
+    - livraisons attendues
 audience: []
 modules:
     - module.lager

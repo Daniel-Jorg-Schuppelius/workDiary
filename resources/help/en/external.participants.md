@@ -2,6 +2,18 @@
 title: "Invite external participants"
 topic: external.participants
 version: 1
+keywords:
+    - guest access
+    - external access
+    - invite subcontractor
+    - inspector
+    - surveyor
+    - assessor
+    - access link
+    - share link
+    - no login
+    - revoke access
+    - temporary access
 audience: []
 related:
     - diary-entries.edit

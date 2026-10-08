@@ -2,6 +2,18 @@
 title: "Crear una orden"
 topic: diary-entries.create
 version: 2
+keywords:
+    - nueva orden
+    - nuevo trabajo
+    - nueva entrada
+    - orden de trabajo
+    - aviso de avería
+    - parte de trabajo
+    - mantenimiento
+    - montaje
+    - libro de órdenes
+    - tipo de entrada
+    - registrar intervención
 audience: []
 schema: process
 related:

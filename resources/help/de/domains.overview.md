@@ -2,6 +2,19 @@
 title: "Domainverwaltung"
 topic: domains.overview
 version: 1
+keywords:
+    - Domain registrieren
+    - Domain verlängern
+    - DNS bearbeiten
+    - DNS-Zone
+    - Nameserver ändern
+    - MX-Eintrag
+    - Domaintransfer
+    - Transfersperre
+    - Inhaberwechsel
+    - Domain kündigen
+    - Domainablauf
+    - Domain-Reseller
 audience: []
 modules:
     - module.domain

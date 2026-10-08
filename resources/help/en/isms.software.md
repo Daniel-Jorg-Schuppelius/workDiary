@@ -2,6 +2,18 @@
 title: "Software inventory"
 topic: isms.software
 version: 1
+keywords:
+    - software list
+    - software register
+    - end of life
+    - EOL
+    - end of support
+    - outdated software
+    - installed programs
+    - software versions
+    - IT inventory
+    - application inventory
+    - operating systems
 audience: []
 modules:
     - module.isms

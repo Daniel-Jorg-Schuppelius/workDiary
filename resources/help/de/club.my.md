@@ -2,6 +2,19 @@
 title: "Mein Verein"
 topic: club.my
 version: 1
+keywords:
+    - Mitgliederbereich
+    - Mitgliederportal
+    - zum Training anmelden
+    - vom Training abmelden
+    - meine Termine
+    - meine Anwesenheit
+    - meine Beiträge
+    - Elternzugang
+    - Check-in
+    - QR-Code
+    - Selbst-Check-in
+    - Warteliste
 audience: []
 modules:
     - module.club

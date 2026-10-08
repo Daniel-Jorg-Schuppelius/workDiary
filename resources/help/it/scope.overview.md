@@ -2,6 +2,16 @@
 title: "Ambito funzionale"
 topic: scope.overview
 version: 1
+keywords:
+    - attivare moduli
+    - disattivare moduli
+    - nascondere funzioni
+    - semplificare il menu
+    - selezione moduli
+    - preset
+    - pagina iniziale per ruolo
+    - pagina di avvio
+    - disattivare funzionalità
 audience:
     - admin
 related:

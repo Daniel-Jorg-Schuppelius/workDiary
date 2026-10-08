@@ -2,6 +2,21 @@
 title: "Kunden & Lieferanten"
 topic: contacts.manage
 version: 2
+keywords:
+    - Kundenstamm
+    - Kundendaten
+    - Stammdaten
+    - Lieferantenstamm
+    - Kunde anlegen
+    - Lieferant anlegen
+    - Debitor
+    - Kreditor
+    - Debitorennummer
+    - Dubletten zusammenführen
+    - Kunden importieren
+    - Adressbuch
+    - Geschäftspartner
+    - CRM
 audience: []
 modules:
     - module.vertrieb

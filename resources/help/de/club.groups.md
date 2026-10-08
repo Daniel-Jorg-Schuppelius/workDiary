@@ -2,6 +2,18 @@
 title: "Vereinsgruppen und Wechselvorschläge"
 topic: club.groups
 version: 1
+keywords:
+    - Trainingsgruppe
+    - Kindergruppe
+    - Jugendgruppe
+    - Abteilung
+    - Gruppenleitung
+    - Übungsleiter
+    - Altersgrenze
+    - Höchstalter
+    - Gruppenwechsel
+    - Aufnahmeantrag
+    - Gruppe zuordnen
 audience: []
 modules:
     - module.club

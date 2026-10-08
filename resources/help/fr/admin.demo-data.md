@@ -2,6 +2,15 @@
 title: "Données de démonstration"
 topic: admin.demo-data
 version: 2
+keywords:
+    - données exemple
+    - données de test
+    - jeu de données
+    - organisation de démo
+    - réinitialiser la démo
+    - formation
+    - présentation
+    - environnement de test
 audience:
     - admin
 related:

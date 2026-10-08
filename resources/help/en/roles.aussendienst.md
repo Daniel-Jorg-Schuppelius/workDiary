@@ -2,6 +2,17 @@
 title: "Your day in WorkDiary: Field service"
 topic: roles.aussendienst
 version: 1
+keywords:
+    - field technician
+    - service technician
+    - field engineer
+    - mobile workforce
+    - on-site work
+    - customer signature
+    - log expenses
+    - mileage log
+    - request vacation
+    - field worker
 audience:
     - aussendienst
 related:

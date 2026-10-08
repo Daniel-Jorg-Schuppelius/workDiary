@@ -2,6 +2,15 @@
 title: "Portal de clientes – Resumen"
 topic: customer-portal.overview
 version: 1
+keywords:
+    - inicio del portal
+    - área de clientes
+    - área privada
+    - panel del cliente
+    - mosaicos
+    - indicadores
+    - buscar en el portal
+    - buscar factura
 audience: []
 related:
     - customer-portal.diary

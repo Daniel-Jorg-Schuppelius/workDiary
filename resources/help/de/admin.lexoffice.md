@@ -2,6 +2,17 @@
 title: "Lexoffice-Konflikte"
 topic: admin.lexoffice
 version: 2
+keywords:
+    - Lexware Office
+    - Synchronisationskonflikt
+    - Sync-Konflikt
+    - Datenkonflikt
+    - Datenabgleich
+    - abweichende Daten
+    - Konflikt lösen
+    - lokale Werte behalten
+    - Werte übernehmen
+    - Kontakte abgleichen
 audience:
     - admin
     - buchhaltung

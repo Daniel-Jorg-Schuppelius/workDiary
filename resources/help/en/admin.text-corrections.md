@@ -2,6 +2,17 @@
 title: "Dictionary"
 topic: admin.text-corrections
 version: 1
+keywords:
+    - autocorrect
+    - spelling correction
+    - typos
+    - fix typos
+    - text replacement
+    - replacement list
+    - word replacement
+    - correction list
+    - invoice line texts
+    - spell check
 audience:
     - admin
 ---

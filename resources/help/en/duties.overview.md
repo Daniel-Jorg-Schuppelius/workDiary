@@ -2,6 +2,17 @@
 title: "Using the work list"
 topic: duties.overview
 version: 1
+keywords:
+    - duty list
+    - worklist
+    - open orders
+    - order book
+    - on-call duty
+    - standby
+    - emergency call-out
+    - leave request
+    - sick note
+    - absences
 audience: []
 related:
     - diary-entries.create

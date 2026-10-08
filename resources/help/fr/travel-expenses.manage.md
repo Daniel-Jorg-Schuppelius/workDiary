@@ -2,6 +2,19 @@
 title: "Trajets, frais & indemnités forfaitaires"
 topic: travel-expenses.manage
 version: 1
+keywords:
+    - notes de frais
+    - frais de déplacement
+    - carnet de route
+    - indemnités kilométriques
+    - indemnité de repas
+    - per diem
+    - scanner un justificatif
+    - ticket de caisse
+    - rembourser des frais
+    - véhicule de fonction
+    - avantage en nature
+    - temps de conduite
 audience: []
 modules:
     - module.spesen

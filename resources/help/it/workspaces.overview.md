@@ -2,6 +2,17 @@
 title: "Aree di lavoro"
 topic: workspaces.overview
 version: 1
+keywords:
+    - vista focalizzata
+    - cambiare vista
+    - semplificare la navigazione
+    - nascondere voci di menu
+    - vista predefinita
+    - nome visualizzato
+    - vista per ruolo
+    - alleggerire la barra laterale
+    - modalità focus
+    - tutte le funzioni
 audience:
     - admin
 related:

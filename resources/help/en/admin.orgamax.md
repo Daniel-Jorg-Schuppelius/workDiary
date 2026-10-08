@@ -2,6 +2,17 @@
 title: "orgaMAX accounting"
 topic: admin.orgamax
 version: 1
+keywords:
+    - orgaMAX API
+    - accounting integration
+    - accounting software
+    - invoicing sync
+    - transfer invoices
+    - sync customers
+    - payment status
+    - master data sync
+    - connect bookkeeping
+    - synchronization
 audience:
     - admin
 modules:

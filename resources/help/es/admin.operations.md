@@ -2,6 +2,17 @@
 title: "Tareas operativas y ventanas de mantenimiento"
 topic: admin.operations
 version: 1
+keywords:
+    - modo mantenimiento
+    - tiempo de inactividad
+    - mantenimiento programado
+    - aviso de mantenimiento
+    - modo solo lectura
+    - centro de tareas
+    - caducidad de certificado
+    - copia de seguridad fallida
+    - posponer tarea
+    - interrupción del servicio
 audience:
     - admin
     - geschaeftsfuehrung

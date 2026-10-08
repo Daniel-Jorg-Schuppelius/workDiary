@@ -2,6 +2,17 @@
 title: "Registre des autorisations"
 topic: permits.overview
 version: 1
+keywords:
+    - permis
+    - permission de voirie
+    - autorisation d'occupation
+    - autorisation d'événement
+    - arrêté
+    - référence du dossier
+    - autorité
+    - autorisation expirée
+    - prescriptions
+    - échéance
 audience: []
 modules:
     - module.vertrieb

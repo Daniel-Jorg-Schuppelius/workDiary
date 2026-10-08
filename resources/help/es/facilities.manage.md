@@ -2,6 +2,18 @@
 title: "Ubicaciones y salas"
 topic: facilities.manage
 version: 1
+keywords:
+    - edificios
+    - plantas
+    - gestión de espacios
+    - inventario de salas
+    - inmuebles
+    - facility management
+    - nivel de higiene
+    - limpieza especial
+    - acceso restringido
+    - habitaciones
+    - sedes
 audience: []
 modules:
     - module.liegenschaften

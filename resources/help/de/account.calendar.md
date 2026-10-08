@@ -2,6 +2,17 @@
 title: "Kalender"
 topic: account.calendar
 version: 1
+keywords:
+    - Terminkalender
+    - Termine
+    - Terminübersicht
+    - Monatsansicht
+    - Teamkalender
+    - Bereitschaft
+    - Rufbereitschaft
+    - Notdienst
+    - Agenda
+    - meine Termine
 audience: []
 related:
     - planning.shifts

@@ -2,6 +2,19 @@
 title: "Helpdesk & Service Desk"
 topic: helpdesk.overview
 version: 2
+keywords:
+    - Ticketsystem
+    - Ticket erstellen
+    - Störungsmeldung
+    - Supportanfrage
+    - Serviceanfrage
+    - Incident
+    - Support-Warteschlange
+    - SLA
+    - Reaktionszeit
+    - interne Notiz
+    - Ticket-Routing
+    - Kundenzufriedenheit
 audience: []
 related:
     - open-issues

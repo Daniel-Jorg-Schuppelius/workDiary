@@ -2,6 +2,17 @@
 title: "Dispatching et alertes de conflit"
 topic: dispatch.overview
 version: 1
+keywords:
+    - planification des interventions
+    - affecter une intervention
+    - planifier un technicien
+    - double réservation
+    - chevauchement
+    - temps de repos
+    - durée maximale de travail
+    - réserver un véhicule
+    - réservation de véhicule
+    - confirmer le rendez-vous
 audience: []
 related:
     - diary-entries.edit

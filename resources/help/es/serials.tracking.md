@@ -2,6 +2,18 @@
 title: "Números de serie"
 topic: serials.tracking
 version: 1
+keywords:
+    - identificador de equipo
+    - trazabilidad
+    - seguimiento de equipos
+    - pasaporte del equipo
+    - verificar autenticidad
+    - bloquear equipo
+    - equipo robado
+    - retirada de producto
+    - desguace
+    - comprobación de garantía
+    - ciclo de vida
 audience: []
 modules:
     - module.lager

@@ -2,6 +2,15 @@
 title: "Categorie di attività"
 topic: catalog.activity-categories
 version: 1
+keywords:
+    - tipi di attività
+    - tipi di lavoro
+    - tipi di prestazione
+    - mansioni
+    - fatturabile
+    - tempo non fatturabile
+    - categorie di tempo
+    - classi di attività
 audience: []
 related:
     - catalog.event-categories

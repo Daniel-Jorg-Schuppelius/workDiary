@@ -2,6 +2,17 @@
 title: "Contabilizar y bandeja"
 topic: accounting.posting
 version: 1
+keywords:
+    - asiento contable
+    - contabilizar documentos
+    - imputación contable
+    - propuesta de asiento
+    - reglas contables
+    - anular asiento
+    - contraasiento
+    - principio de cuatro ojos
+    - moneda extranjera
+    - tipo de cambio
 audience:
     - admin
     - geschaeftsfuehrung

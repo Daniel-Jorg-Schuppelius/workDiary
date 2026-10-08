@@ -2,6 +2,16 @@
 title: "Kundenportal – Übersicht"
 topic: customer-portal.overview
 version: 1
+keywords:
+    - Startseite Kundenportal
+    - Kundenbereich
+    - Kundenlogin
+    - Kunden-Dashboard
+    - Kacheln
+    - Kennzahlen
+    - Portal-Suche
+    - Rechnung suchen
+    - Auftrag suchen
 audience: []
 related:
     - customer-portal.diary

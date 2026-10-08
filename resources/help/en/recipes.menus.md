@@ -2,6 +2,18 @@
 title: "Menu & buffet planning (party service)"
 topic: recipes.menus
 version: 1
+keywords:
+    - catering
+    - meal plan
+    - plan a buffet
+    - number of guests
+    - portion calculation
+    - scale recipes
+    - allergens
+    - allergen labeling
+    - ingredient requirements
+    - food cost
+    - event menu
 audience: []
 modules:
     - module.lager

@@ -2,6 +2,18 @@
 title: "GoBD-Export (Datenträgerüberlassung)"
 topic: finance.gobd
 version: 1
+keywords:
+    - Betriebsprüfung
+    - Steuerprüfung
+    - Außenprüfung
+    - Finanzamt
+    - Datenzugriff Z3
+    - GDPdU
+    - Prüfungspaket
+    - Daten für Betriebsprüfer
+    - Verfahrensdokumentation
+    - revisionssicher
+    - Prüferexport
 audience:
     - admin
     - buchhaltung

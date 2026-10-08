@@ -2,6 +2,18 @@
 title: "Accounting software migration"
 topic: admin.accounting-migration
 version: 1
+keywords:
+    - switch accounting software
+    - migrate accounting
+    - change provider
+    - Lexoffice
+    - orgaMAX
+    - Lexoffice to orgaMAX
+    - data migration
+    - dry run
+    - test run
+    - cutover date
+    - parallel operation
 audience:
     - admin
 related:

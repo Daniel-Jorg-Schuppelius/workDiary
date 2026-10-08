@@ -2,6 +2,18 @@
 title: "Communication notes"
 topic: communication.notes
 version: 3
+keywords:
+    - phone note
+    - call log
+    - call note
+    - meeting note
+    - memo
+    - follow-up
+    - add note
+    - notes list
+    - tag
+    - confidential note
+    - contact history
 audience: []
 related:
     - diary-entries.edit

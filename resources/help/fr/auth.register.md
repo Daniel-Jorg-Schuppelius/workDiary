@@ -2,6 +2,15 @@
 title: "Inscription"
 topic: auth.register
 version: 1
+keywords:
+    - créer un compte
+    - nouveau compte
+    - auto-inscription
+    - enregistrer une organisation
+    - ouvrir un compte
+    - offre gratuite
+    - sign up
+    - créer une société
 related:
     - auth.login
     - admin.tenants

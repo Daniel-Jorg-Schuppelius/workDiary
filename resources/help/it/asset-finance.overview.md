@@ -2,6 +2,19 @@
 title: "Leasing e contratti asset"
 topic: asset-finance.overview
 version: 1
+keywords:
+    - contratto di leasing
+    - canoni di leasing
+    - noleggio con riscatto
+    - noleggio a lungo termine
+    - finanziamento
+    - valore residuo
+    - opzione di acquisto
+    - preavviso di disdetta
+    - restituzione bene
+    - IFRS 16
+    - piano rate
+    - scadenze contrattuali
 audience: []
 modules:
     - module.asset_finance

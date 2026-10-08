@@ -2,6 +2,17 @@
 title: "Planification des investissements"
 topic: investments.overview
 version: 2
+keywords:
+    - demande d'investissement
+    - demande de budget
+    - dépenses d'investissement
+    - CapEx
+    - validation d'investissement
+    - comparaison des offres
+    - dépassement de budget
+    - prévu réalisé
+    - analyse de rentabilité
+    - retour d'expérience
 audience: []
 modules:
     - module.investments

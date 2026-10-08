@@ -2,6 +2,17 @@
 title: "Circulaires clients"
 topic: circulars.overview
 version: 1
+keywords:
+    - mailing
+    - envoi groupé
+    - e-mail groupé
+    - newsletter
+    - information clients
+    - annonce
+    - publipostage
+    - prévenir les clients
+    - désinscription
+    - communication obligatoire
 audience: []
 related:
     - contacts.manage

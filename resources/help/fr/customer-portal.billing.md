@@ -2,6 +2,15 @@
 title: "Facturation"
 topic: customer-portal.billing
 version: 1
+keywords:
+    - solde du compte
+    - relevé de compte
+    - relevé mensuel
+    - montant dû
+    - paiements
+    - justificatif de présence
+    - report
+    - télécharger le relevé
 audience: []
 related:
     - customer-portal.overview

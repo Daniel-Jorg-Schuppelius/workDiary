@@ -2,6 +2,18 @@
 title: "Transporte de pasajeros (taxi/VTC)"
 topic: passenger.overview
 version: 1
+keywords:
+    - empresa de taxi
+    - alquiler con conductor
+    - despacho de viajes
+    - carrera
+    - taxímetro
+    - licencia de taxi
+    - tarifa de taxi
+    - precio cerrado
+    - cierre de turno
+    - liquidación del conductor
+    - transporte a demanda
 audience: []
 modules:
     - module.fuhrpark

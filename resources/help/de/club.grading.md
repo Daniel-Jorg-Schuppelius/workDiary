@@ -2,6 +2,19 @@
 title: "Graduierungen"
 topic: club.grading
 version: 1
+keywords:
+    - Gürtel
+    - Gürtelfarbe
+    - Gürtelgrad
+    - Gürtelfolge
+    - Kyu
+    - Dan
+    - Graduierungsordnung
+    - Prüfungsvoraussetzungen
+    - Wartezeit
+    - Fortschritt
+    - Grad anerkennen
+    - Vorgrad
 audience: []
 modules:
     - module.club

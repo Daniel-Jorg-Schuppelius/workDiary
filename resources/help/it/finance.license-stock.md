@@ -2,6 +2,18 @@
 title: "Scorte di licenze"
 topic: finance.license-stock
 version: 1
+keywords:
+    - gestione licenze
+    - chiavi di licenza
+    - numero di serie
+    - chiave di attivazione
+    - licenze software
+    - product key
+    - vendere licenza
+    - pacchetto licenze
+    - rivendita licenze
+    - scorta minima
+    - importare chiavi
 audience: []
 modules:
     - module.reselling

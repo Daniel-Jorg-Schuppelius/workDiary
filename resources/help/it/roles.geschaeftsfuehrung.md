@@ -2,6 +2,18 @@
 title: "La sua giornata in WorkDiary: direzione aziendale"
 topic: roles.geschaeftsfuehrung
 version: 1
+keywords:
+    - titolare
+    - amministratore delegato
+    - dirigente
+    - management
+    - vista direzionale
+    - indicatori chiave
+    - accesso in sola lettura
+    - registro di audit
+    - separazione dei compiti
+    - esportare report
+    - cruscotto
 audience:
     - geschaeftsfuehrung
 related:

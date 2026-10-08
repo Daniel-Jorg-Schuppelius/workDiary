@@ -2,6 +2,17 @@
 title: "Taux d'occupation & réalisation"
 topic: reports.utilization
 version: 2
+keywords:
+    - taux de facturation
+    - heures facturables
+    - heures facturées
+    - taux de réalisation
+    - productivité
+    - prévu vs réalisé
+    - charge de travail
+    - capacité
+    - taux d'utilisation
+    - heures imputables
 audience: []
 related:
     - reports.economics

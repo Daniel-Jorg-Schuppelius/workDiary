@@ -2,6 +2,17 @@
 title: "Libro cassa"
 topic: finance.cashbook
 version: 1
+keywords:
+    - cassa contanti
+    - piccola cassa
+    - incassi in contanti
+    - spese in contanti
+    - conta cassa
+    - chiusura giornaliera
+    - pagamento in contanti
+    - differenza di cassa
+    - prima nota cassa
+    - storno
 audience:
     - admin
     - geschaeftsfuehrung

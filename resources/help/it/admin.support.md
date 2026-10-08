@@ -2,6 +2,16 @@
 title: "Report di supporto e diagnostica"
 topic: admin.support
 version: 1
+keywords:
+    - report diagnostico
+    - informazioni di sistema
+    - numero di versione
+    - stato di salute
+    - pacchetto di supporto
+    - risoluzione problemi
+    - segnalare un problema
+    - report tecnico
+    - info di debug
 audience:
     - admin
     - geschaeftsfuehrung

@@ -2,6 +2,18 @@
 title: "Squadre, giornate e formazioni"
 topic: club.matches
 version: 1
+keywords:
+    - calendario partite
+    - importare il calendario
+    - rosa
+    - convocazione
+    - risultato della partita
+    - partita in casa
+    - trasferta
+    - stagione
+    - numero di maglia
+    - arbitro
+    - giocatore ospite
 audience: []
 modules:
     - module.club

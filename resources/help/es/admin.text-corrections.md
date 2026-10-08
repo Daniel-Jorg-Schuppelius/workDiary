@@ -2,6 +2,15 @@
 title: "Diccionario"
 topic: admin.text-corrections
 version: 1
+keywords:
+    - autocorrección
+    - corrector ortográfico
+    - errores tipográficos
+    - erratas
+    - reemplazo de texto
+    - lista de reemplazos
+    - sustitución de palabras
+    - textos de factura
 audience:
     - admin
 ---

@@ -2,6 +2,18 @@
 title: "Meine Personalakte"
 topic: account.personnel-file
 version: 1
+keywords:
+    - Mitarbeiterakte
+    - digitale Personalakte
+    - Personaldokumente
+    - HR-Dokumente
+    - Arbeitsvertrag
+    - Vertragsunterlagen
+    - Lesebestätigung
+    - Dokument bestätigen
+    - Unterlage einreichen
+    - Bescheinigung hochladen
+    - Nachweis einreichen
 audience: []
 related:
     - account.profile

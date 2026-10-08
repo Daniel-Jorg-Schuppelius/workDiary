@@ -2,6 +2,17 @@
 title: "Segnala un problema"
 topic: support.report-problem
 version: 1
+keywords:
+    - segnalare un bug
+    - segnalazione errore
+    - contattare il supporto
+    - richiesta di assistenza
+    - problema tecnico
+    - pagina di errore
+    - ID richiesta
+    - allegare screenshot
+    - non funziona
+    - malfunzionamento
 audience: ['*']
 related:
     - admin.diagnostics

@@ -2,6 +2,17 @@
 title: "Attestazioni di presenza"
 topic: club.attendance
 version: 1
+keywords:
+    - registro presenze
+    - foglio presenze
+    - fare l'appello
+    - rilevare le presenze
+    - confermare la presenza
+    - tempo di allenamento
+    - attestato di partecipazione
+    - assenza giustificata
+    - assenze
+    - esportare presenze
 audience: []
 modules:
     - module.club

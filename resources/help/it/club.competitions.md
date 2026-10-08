@@ -2,6 +2,18 @@
 title: "Gare, prestazioni e lista attestazioni"
 topic: club.competitions
 version: 1
+keywords:
+    - gara sportiva
+    - torneo
+    - iscrizione alla gara
+    - tassa d'iscrizione
+    - cartellino
+    - licenza agonistica
+    - record personale
+    - miglior prestazione
+    - risultati
+    - disciplina
+    - categoria d'età
 audience: []
 modules:
     - module.club

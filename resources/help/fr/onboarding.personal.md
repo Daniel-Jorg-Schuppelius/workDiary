@@ -2,6 +2,16 @@
 title: "Mes premiers pas"
 topic: onboarding.personal
 version: 1
+keywords:
+    - prise en main
+    - intégration
+    - démarrage rapide
+    - guide de démarrage
+    - check-list personnelle
+    - bienvenue
+    - nouvel utilisateur
+    - onboarding
+    - masquer la tuile de démarrage
 audience: []
 related:
     - dashboard.overview

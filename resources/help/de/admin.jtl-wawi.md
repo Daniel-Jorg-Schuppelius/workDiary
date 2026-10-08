@@ -2,6 +2,19 @@
 title: "JTL-Wawi anbinden"
 topic: admin.jtl-wawi
 version: 1
+keywords:
+    - Warenwirtschaftssystem
+    - Warenwirtschaft
+    - ERP
+    - Lagerbestand synchronisieren
+    - Bestandsabgleich
+    - Artikelabgleich
+    - Vaterartikel
+    - Variantenartikel
+    - Lagerzuordnung
+    - EAN
+    - GTIN
+    - JTL Cloud
 audience:
     - admin
 modules:

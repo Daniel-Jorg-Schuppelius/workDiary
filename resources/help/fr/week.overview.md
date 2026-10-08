@@ -2,6 +2,17 @@
 title: "Missions dans la vue hebdomadaire"
 topic: week.overview
 version: 1
+keywords:
+    - calendrier hebdomadaire
+    - vue calendrier
+    - planning de la semaine
+    - calendrier d'équipe
+    - astreinte
+    - service d'urgence
+    - planifier un rendez-vous
+    - planification des interventions
+    - aperçu de la semaine
+    - tableau de planification
 audience: []
 related:
     - diary-entries.create

@@ -2,6 +2,18 @@
 title: "El SGSI en resumen"
 topic: isms.overview
 version: 2
+keywords:
+    - seguridad de la información
+    - gestión de la seguridad
+    - ISO 27001
+    - alcance
+    - seguridad informática
+    - gestión de riesgos
+    - preparar la certificación
+    - Anexo A
+    - preparación para auditoría
+    - ISMS
+    - cumplimiento
 audience: []
 modules:
     - module.isms

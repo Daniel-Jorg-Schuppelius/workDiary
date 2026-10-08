@@ -2,6 +2,17 @@
 title: "Diseñador de procedimientos"
 topic: procedures.designer
 version: 1
+keywords:
+    - instrucción de trabajo
+    - crear checklist
+    - PNT
+    - procedimiento operativo estándar
+    - plantilla de proceso
+    - flujo de trabajo
+    - pasos obligatorios
+    - principio de cuatro ojos
+    - paso condicional
+    - publicar versión
 audience: []
 related:
     - procedures.run

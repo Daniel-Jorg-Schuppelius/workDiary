@@ -2,6 +2,18 @@
 title: "Daily close"
 topic: time-entries.day-close
 version: 1
+keywords:
+    - close the day
+    - end of day
+    - end workday
+    - add break
+    - daily balance
+    - time gaps
+    - mandatory break
+    - open clock-in
+    - request correction
+    - book missing time
+    - day summary
 audience: []
 related:
     - time-entries.start

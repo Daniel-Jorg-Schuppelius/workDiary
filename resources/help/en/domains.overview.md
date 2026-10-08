@@ -2,6 +2,19 @@
 title: "Domain management"
 topic: domains.overview
 version: 1
+keywords:
+    - register domain
+    - renew domain
+    - DNS records
+    - DNS zone
+    - change nameservers
+    - MX record
+    - domain transfer
+    - transfer lock
+    - owner change
+    - domain expiry
+    - domain reseller
+    - domain portfolio
 audience: []
 modules:
     - module.domain

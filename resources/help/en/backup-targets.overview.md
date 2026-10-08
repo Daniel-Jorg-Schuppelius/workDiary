@@ -2,6 +2,19 @@
 title: "Cloud backup targets"
 topic: backup-targets.overview
 version: 1
+keywords:
+    - offsite backup
+    - data backup
+    - Dropbox
+    - OneDrive
+    - Google Drive
+    - encrypted backup
+    - 3-2-1 rule
+    - restore
+    - restore test
+    - master key
+    - backup retention
+    - disaster recovery
 audience: []
 related:
     - admin.integrations

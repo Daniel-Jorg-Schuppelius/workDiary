@@ -2,6 +2,16 @@
 title: "Mes abonnements"
 topic: customer-portal.subscriptions
 version: 1
+keywords:
+    - abonnement
+    - licences
+    - licences logicielles
+    - noms de domaine
+    - hébergement
+    - durée
+    - renouvellement
+    - période de facturation
+    - abonnements résiliés
 audience: []
 modules:
     - module.reselling

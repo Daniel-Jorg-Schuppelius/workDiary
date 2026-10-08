@@ -2,6 +2,19 @@
 title: "Zwei-Faktor-Anmeldung"
 topic: auth.two-factor
 version: 1
+keywords:
+    - 2FA
+    - MFA
+    - Zwei-Faktor-Authentifizierung
+    - Authenticator-App
+    - Einmalcode
+    - TOTP
+    - Passkey
+    - Sicherheitsschlüssel
+    - Recovery-Code
+    - Wiederherstellungscode
+    - Bestätigungscode
+    - Zwei-Schritt-Verifizierung
 related:
     - auth.login
     - account.two-factor

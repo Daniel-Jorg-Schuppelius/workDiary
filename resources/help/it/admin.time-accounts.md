@@ -2,6 +2,16 @@
 title: "Conti del tempo (amministrazione)"
 topic: admin.time-accounts
 version: 1
+keywords:
+    - banca ore
+    - conto ore
+    - contatore turni notturni
+    - contatore indennità
+    - saldo conto
+    - riporto saldo
+    - tetto massimo
+    - registrazione manuale
+    - chiusura mensile
 audience: [admin]
 related:
     - time-accounts.overview

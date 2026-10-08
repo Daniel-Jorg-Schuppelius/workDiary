@@ -2,6 +2,17 @@
 title: "Sign a protocol"
 topic: protocols.sign
 version: 1
+keywords:
+    - signature
+    - get signed
+    - digital signature
+    - customer signature
+    - e-signature
+    - sign off
+    - acceptance sign-off
+    - signing link
+    - sign on tablet
+    - revision
 audience: []
 related:
     - protocols.create

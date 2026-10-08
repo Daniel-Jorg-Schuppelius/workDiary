@@ -2,6 +2,16 @@
 title: "Cuentas de tiempo (administración)"
 topic: admin.time-accounts
 version: 1
+keywords:
+    - bolsa de horas
+    - banco de horas
+    - contador de turnos nocturnos
+    - contador de pluses
+    - saldo de la cuenta
+    - arrastre de saldo
+    - tope de saldo
+    - ajuste manual
+    - cierre mensual
 audience: [admin]
 related:
     - time-accounts.overview

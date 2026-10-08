@@ -2,6 +2,19 @@
 title: "Kostengruppen nach DIN 276"
 topic: boq.cost-groups
 version: 1
+keywords:
+    - Kostengruppe zuordnen
+    - Kostenermittlung
+    - Kostenschätzung
+    - Kostenberechnung
+    - Kostenanschlag
+    - Kostenfeststellung
+    - HOAI
+    - StLB-Bau
+    - Leistungsbereich
+    - Baukostenkatalog
+    - GAEB X51
+    - GAEB X52
 audience: []
 modules:
     - module.bau

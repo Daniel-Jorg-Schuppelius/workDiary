@@ -2,6 +2,16 @@
 title: "Formatos de numeración"
 topic: admin.number-formats
 version: 1
+keywords:
+    - serie de numeración
+    - número de factura
+    - número de cliente
+    - número de artículo
+    - numeración correlativa
+    - prefijo
+    - número inicial
+    - contador anual
+    - reiniciar contador
 audience:
     - admin
     - teamleitung

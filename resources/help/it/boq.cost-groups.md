@@ -2,6 +2,19 @@
 title: "Gruppi di costo secondo DIN 276"
 topic: boq.cost-groups
 version: 1
+keywords:
+    - assegnare gruppo di costo
+    - stima dei costi
+    - calcolo dei costi
+    - preventivo dei costi
+    - consuntivo dei costi
+    - monitoraggio costi
+    - HOAI
+    - StLB-Bau
+    - categoria di lavoro
+    - catalogo costi di costruzione
+    - GAEB X51
+    - GAEB X52
 audience: []
 modules:
     - module.bau

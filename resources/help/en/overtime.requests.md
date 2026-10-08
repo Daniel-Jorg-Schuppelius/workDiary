@@ -2,6 +2,14 @@
 title: "Overtime requests"
 topic: overtime.requests
 version: 1
+keywords:
+    - extra hours
+    - request overtime
+    - approve overtime
+    - additional work
+    - overtime approval
+    - flextime
+    - working beyond schedule
 audience: []
 related:
     - corrections.requests

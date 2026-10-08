@@ -2,6 +2,17 @@
 title: "Graduations"
 topic: club.grading
 version: 1
+keywords:
+    - ceinture
+    - couleur de ceinture
+    - grade
+    - kyu
+    - dan
+    - système de grades
+    - conditions de passage
+    - délai d'attente
+    - progression
+    - reconnaissance de grade
 audience: []
 modules:
     - module.club

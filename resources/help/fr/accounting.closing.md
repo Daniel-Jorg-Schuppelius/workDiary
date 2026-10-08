@@ -2,6 +2,19 @@
 title: "Clôture et analyses"
 topic: accounting.closing
 version: 1
+keywords:
+    - clôture mensuelle
+    - clôture annuelle
+    - verrouiller une période
+    - rouvrir une période
+    - compte de résultat
+    - tableau de bord financier
+    - prévision de trésorerie
+    - budget vs réalisé
+    - rapport TVA
+    - export contrôle fiscal
+    - répartition des coûts
+    - export DATEV
 audience:
     - admin
     - geschaeftsfuehrung

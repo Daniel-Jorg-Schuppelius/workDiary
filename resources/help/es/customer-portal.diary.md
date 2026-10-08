@@ -2,6 +2,14 @@
 title: "Justificante de servicios / Diario"
 topic: customer-portal.diary
 version: 1
+keywords:
+    - libro de órdenes
+    - trabajos realizados
+    - partes de trabajo
+    - historial de trabajos
+    - estado de la orden
+    - informes de servicio
+    - intervenciones
 audience: []
 related:
     - customer-portal.overview

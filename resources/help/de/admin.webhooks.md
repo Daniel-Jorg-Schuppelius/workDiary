@@ -2,6 +2,18 @@
 title: "Webhooks"
 topic: admin.webhooks
 version: 1
+keywords:
+    - Callback-URL
+    - Ereignisbenachrichtigung
+    - Ereignisse abonnieren
+    - HMAC-Signatur
+    - Signaturschlüssel
+    - Automatisierung
+    - Push an externes System
+    - ausgehende Schnittstelle
+    - Zustellprotokoll
+    - Replay-Schutz
+    - Web-Hook
 audience:
     - admin
     - geschaeftsfuehrung

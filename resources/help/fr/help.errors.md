@@ -2,6 +2,19 @@
 title: "Comprendre les messages d'erreur"
 topic: help.errors
 version: 1
+keywords:
+    - page d'erreur
+    - accès refusé
+    - pas d'autorisation
+    - erreur 403
+    - page introuvable
+    - erreur 404
+    - session expirée
+    - erreur 419
+    - erreur serveur
+    - erreur 500
+    - identifiant de requête
+    - zone en maintenance
 audience: []
 related:
     - help.center

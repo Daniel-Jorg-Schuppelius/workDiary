@@ -2,6 +2,19 @@
 title: "Diseño de documentos"
 topic: admin.document-design
 version: 1
+keywords:
+    - papel membrete
+    - membrete
+    - diseño de factura
+    - plantilla de factura
+    - diseño PDF
+    - personalizar diseño
+    - identidad corporativa
+    - fuente
+    - márgenes
+    - ventana de dirección
+    - encabezado y pie
+    - plantilla de documento
 audience:
     - admin
 modules:

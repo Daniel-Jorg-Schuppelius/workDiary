@@ -2,6 +2,16 @@
 title: "Synonymes de recherche"
 topic: admin.search-synonyms
 version: 1
+keywords:
+    - groupes de synonymes
+    - gérer les synonymes
+    - termes de recherche
+    - termes équivalents
+    - améliorer la recherche
+    - thésaurus
+    - alias
+    - mots-clés
+    - résultats de recherche
 audience: []
 related: []
 ---

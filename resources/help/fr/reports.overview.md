@@ -2,6 +2,18 @@
 title: "Utiliser les rapports"
 topic: reports.overview
 version: 2
+keywords:
+    - statistiques
+    - indicateurs
+    - KPI
+    - analyses
+    - exporter un rapport
+    - chiffre d'affaires par produit
+    - contrôle du salaire minimum
+    - temps de conduite et de repos
+    - prévision de trésorerie
+    - reporting
+    - évaluations
 audience: []
 related:
     - reports.customer-analysis

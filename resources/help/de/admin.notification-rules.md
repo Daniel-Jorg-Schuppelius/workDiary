@@ -2,6 +2,17 @@
 title: "Benachrichtigungsregeln"
 topic: admin.notification-rules
 version: 1
+keywords:
+    - Eskalation
+    - Benachrichtigung einstellen
+    - E-Mail-Benachrichtigung
+    - Push-Benachrichtigung
+    - Empfänger festlegen
+    - Erinnerung
+    - Fristenüberwachung
+    - überfällig
+    - Alarmierung
+    - Benachrichtigungskanäle
 audience:
     - admin
     - geschaeftsfuehrung

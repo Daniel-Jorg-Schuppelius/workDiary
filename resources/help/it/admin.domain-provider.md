@@ -2,6 +2,16 @@
 title: "Collegare DomainReselling"
 topic: admin.domain-provider
 version: 1
+keywords:
+    - gestione domini
+    - nomi a dominio
+    - rivenditore domini
+    - DNS
+    - record DNS
+    - registrazione dominio
+    - rinnovo dominio
+    - registrar
+    - portafoglio domini
 audience:
     - admin
     - geschaeftsfuehrung

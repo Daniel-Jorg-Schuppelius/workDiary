@@ -2,6 +2,18 @@
 title: "Learning standards: SCORM, cmi5 and LTI"
 topic: learning.standards
 version: 1
+keywords:
+    - SCORM package
+    - upload SCORM
+    - xAPI
+    - Tin Can
+    - import course zip
+    - LMS integration
+    - learning record store
+    - LRS
+    - external learning tool
+    - third-party courses
+    - e-learning standards
 audience: []
 related:
     - learning.overview

@@ -2,6 +2,18 @@
 title: "Takeoff"
 topic: takeoffs
 version: 1
+keywords:
+    - quantity takeoff
+    - quantity survey
+    - measurement sheet
+    - measure quantities
+    - calculate areas
+    - GAEB X31
+    - REB formulas
+    - bill of quantities
+    - on-site measurement
+    - progress quantities
+    - takeoff sheet
 audience: []
 related:
     - diary-entries.edit

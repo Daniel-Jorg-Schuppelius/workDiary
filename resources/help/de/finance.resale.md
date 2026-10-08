@@ -2,6 +2,21 @@
 title: "Abos & Lizenzen"
 topic: finance.resale
 version: 2
+keywords:
+    - Abonnement
+    - Subscription
+    - wiederkehrende Leistungen
+    - Lizenzweiterverkauf
+    - Abo abrechnen
+    - Abrechnungsperioden
+    - Verlängerungen
+    - Kündigungsfrist
+    - Marge berechnen
+    - Abos importieren
+    - Hosting abrechnen
+    - Lexoffice
+    - Telekom
+    - Quality Hosting
 audience: []
 modules:
     - module.reselling

@@ -2,6 +2,17 @@
 title: "Notification rules"
 topic: admin.notification-rules
 version: 1
+keywords:
+    - escalation
+    - configure notifications
+    - email notification
+    - push notification
+    - recipients
+    - reminders
+    - overdue alerts
+    - deadline monitoring
+    - alerting
+    - notification channels
 audience:
     - admin
     - geschaeftsfuehrung

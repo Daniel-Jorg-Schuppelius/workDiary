@@ -2,6 +2,16 @@
 title: "Lexoffice Conflicts"
 topic: admin.lexoffice
 version: 2
+keywords:
+    - Lexware Office
+    - sync conflict
+    - synchronisation conflict
+    - data mismatch
+    - resolve conflict
+    - keep local values
+    - accept remote values
+    - data reconciliation
+    - contact sync
 audience:
     - admin
     - buchhaltung

@@ -2,6 +2,19 @@
 title: "Integrationen verwalten"
 topic: admin.integrations
 version: 3
+keywords:
+    - Schnittstellen
+    - Anbindungen
+    - Plugins
+    - Stempelterminal
+    - Zeiterfassungsterminal
+    - Kiosk-Modus
+    - NFC-Ausweis
+    - QR-Code Check-in
+    - Terminal-PIN
+    - SSO
+    - Nextcloud
+    - Stripe
 audience:
     - admin
     - buchhaltung

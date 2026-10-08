@@ -2,6 +2,18 @@
 title: "Warranty periods"
 topic: warranties.overview
 version: 1
+keywords:
+    - warranty
+    - defects liability
+    - limitation period
+    - acceptance date
+    - defect claims
+    - subcontractor warranty
+    - warranty bond
+    - retention
+    - guarantee period
+    - report defect
+    - VOB/B
 audience: []
 related:
     - guarantees.overview

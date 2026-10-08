@@ -2,6 +2,22 @@
 title: "Factures & pièces"
 topic: invoices.manage
 version: 7
+keywords:
+    - créer une facture
+    - établir une facture
+    - facture client
+    - facturation
+    - annuler une facture
+    - avoir
+    - facture électronique
+    - XRechnung
+    - Peppol
+    - lien de paiement
+    - paiement en ligne
+    - surcharge cuivre
+    - Stripe
+    - Mollie
+    - SumUp
 audience: []
 modules:
     - module.vertrieb

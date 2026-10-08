@@ -2,6 +2,17 @@
 title: "Local accounting"
 topic: accounting.overview
 version: 2
+keywords:
+    - general ledger
+    - bookkeeping
+    - financial accounting
+    - set up accounting
+    - double-entry bookkeeping
+    - cash basis accounting
+    - income surplus calculation
+    - accounting start date
+    - replace accounting software
+    - built-in accounting
 audience:
     - admin
     - geschaeftsfuehrung

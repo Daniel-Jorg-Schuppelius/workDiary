@@ -2,6 +2,16 @@
 title: "Connecter DATEV Online"
 topic: admin.datev-online
 version: 1
+keywords:
+    - DATEV Unternehmen online
+    - DUO
+    - interface DATEV
+    - transfert de lots comptables
+    - images de justificatifs
+    - envoyer pièces à DATEV
+    - EXTF
+    - expert-comptable
+    - numéro de client DATEV
 audience:
     - admin
 related:

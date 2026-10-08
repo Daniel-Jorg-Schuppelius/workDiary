@@ -2,6 +2,18 @@
 title: "Angebote nachfassen"
 topic: quotes.follow-ups
 version: 1
+keywords:
+    - Wiedervorlage
+    - Nachfasstermin
+    - nachhaken
+    - Angebotsverfolgung
+    - Follow-up
+    - offene Angebote
+    - Erinnerung Angebot
+    - Trefferquote
+    - Abschlussquote
+    - Gewinnquote
+    - Angebot gewonnen
 audience: []
 modules:
     - module.vertrieb

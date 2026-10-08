@@ -2,6 +2,15 @@
 title: "Mon dossier personnel"
 topic: account.personnel-file
 version: 1
+keywords:
+    - dossier salarié
+    - documents RH
+    - contrat de travail
+    - confirmation de lecture
+    - accusé de lecture
+    - déposer un justificatif
+    - attestation
+    - pièces justificatives
 audience: []
 related:
     - account.profile

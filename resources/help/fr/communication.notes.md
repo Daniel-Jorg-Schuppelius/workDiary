@@ -2,6 +2,17 @@
 title: "Notes de communication"
 topic: communication.notes
 version: 3
+keywords:
+    - note téléphonique
+    - compte rendu d'appel
+    - note d'entretien
+    - mémo
+    - relance
+    - ajouter une note
+    - liste des notes
+    - étiquette
+    - note confidentielle
+    - historique des contacts
 audience: []
 related:
     - diary-entries.edit

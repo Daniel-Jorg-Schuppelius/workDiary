@@ -2,6 +2,19 @@
 title: "Kundenwert"
 topic: reports.customer-value
 version: 2
+keywords:
+    - ABC-Analyse
+    - A-Kunden
+    - Pareto-Analyse
+    - 80-20-Regel
+    - RFM-Analyse
+    - Kundensegmentierung
+    - Top-Kunden
+    - Umsatz je Kunde
+    - Klumpenrisiko
+    - Kundenabhängigkeit
+    - HHI
+    - gefährdete Kunden
 audience: []
 related:
     - reports.customer-analysis

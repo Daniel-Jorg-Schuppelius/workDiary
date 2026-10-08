@@ -2,6 +2,17 @@
 title: "Registro delle autorizzazioni"
 topic: permits.overview
 version: 1
+keywords:
+    - permesso
+    - licenza
+    - autorizzazione allo scavo
+    - occupazione suolo pubblico
+    - permesso per eventi
+    - provvedimento
+    - numero di protocollo
+    - autorità
+    - autorizzazioni in scadenza
+    - prescrizioni
 audience: []
 modules:
     - module.vertrieb

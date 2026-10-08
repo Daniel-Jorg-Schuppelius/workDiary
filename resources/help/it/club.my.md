@@ -2,6 +2,18 @@
 title: "La mia associazione"
 topic: club.my
 version: 1
+keywords:
+    - area soci
+    - portale soci
+    - iscriversi all'allenamento
+    - cancellare l'iscrizione
+    - i miei appuntamenti
+    - le mie presenze
+    - le mie quote
+    - accesso genitori
+    - check-in
+    - codice QR
+    - lista d'attesa
 audience: []
 modules:
     - module.club

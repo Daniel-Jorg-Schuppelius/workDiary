@@ -2,6 +2,17 @@
 title: "Open issues"
 topic: open-issues
 version: 1
+keywords:
+    - issue tracker
+    - defect list
+    - punch list
+    - to-do
+    - problem
+    - ticket
+    - follow-up order
+    - snag list
+    - outstanding items
+    - blocked issue
 audience: []
 related:
     - foreign-customers

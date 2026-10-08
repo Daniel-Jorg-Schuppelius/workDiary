@@ -2,6 +2,18 @@
 title: "Aktuelle Belegung"
 topic: presence.board
 version: 1
+keywords:
+    - Anwesenheitstafel
+    - Wer ist da
+    - wer ist im Haus
+    - Präsenzliste
+    - Anwesenheitsübersicht
+    - Stecktafel
+    - Empfang
+    - Telefonzentrale
+    - Außeneinsatz
+    - Kollegen erreichbar
+    - Evakuierungsliste
 audience: []
 related:
     - attendance.manage

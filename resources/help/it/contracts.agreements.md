@@ -2,6 +2,17 @@
 title: "Accordi con i clienti: DPA e riservatezza"
 topic: contracts.agreements
 version: 1
+keywords:
+    - nomina a responsabile del trattamento
+    - accordo sul trattamento dei dati
+    - GDPR
+    - NDA
+    - accordo di non divulgazione
+    - patto di riservatezza
+    - firma elettronica
+    - link di firma
+    - controfirma
+    - firmare online
 audience: []
 modules:
     - module.contracts

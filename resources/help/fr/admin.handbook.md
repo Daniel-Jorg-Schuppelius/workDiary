@@ -2,6 +2,15 @@
 title: "Manuel d'administration : vue d'ensemble"
 topic: admin.handbook
 version: 1
+keywords:
+    - guide administrateur
+    - administration
+    - configuration initiale
+    - premiers pas
+    - gestion des mandants
+    - rôles et droits
+    - export RGPD
+    - administration système
 audience:
     - admin
 related:

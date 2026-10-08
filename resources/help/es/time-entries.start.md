@@ -2,6 +2,18 @@
 title: "Iniciar el registro de tiempos"
 topic: time-entries.start
 version: 2
+keywords:
+    - cronómetro
+    - iniciar temporizador
+    - detener temporizador
+    - registrar horas
+    - fichar
+    - fichaje
+    - reloj de fichar
+    - control horario
+    - nueva entrada de tiempo
+    - registro de jornada
+    - imputar horas
 audience: []
 schema: process
 related:

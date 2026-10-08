@@ -2,6 +2,17 @@
 title: "Instalaciones deportivas y recursos"
 topic: club.resources
 version: 1
+keywords:
+    - reserva de pabellón
+    - cuadrante de pabellones
+    - reserva de pista
+    - polideportivo
+    - calle de piscina
+    - embarcaciones
+    - material deportivo
+    - cierre de pista
+    - reservar recursos
+    - habilitación
 audience: []
 modules:
     - module.club

@@ -2,6 +2,17 @@
 title: "Analisi per tipo di incarico"
 topic: reports.entry-type-analysis
 version: 1
+keywords:
+    - previsto vs effettivo
+    - scostamento dal pianificato
+    - tempo di lavorazione
+    - durata media
+    - tasso di rilavorazione
+    - sforamento ore
+    - confronto tipi di intervento
+    - cause principali
+    - analisi degli scostamenti
+    - stima dei tempi
 audience: []
 modules:
     - module.auswertungen_team

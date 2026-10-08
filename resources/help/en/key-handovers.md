@@ -2,6 +2,18 @@
 title: "Key handovers"
 topic: key-handovers
 version: 1
+keywords:
+    - key issue
+    - key return
+    - key log
+    - key register
+    - key management
+    - issue key
+    - return key
+    - who has the key
+    - key receipt
+    - transponder
+    - access card
 audience: []
 related:
     - meter-readings

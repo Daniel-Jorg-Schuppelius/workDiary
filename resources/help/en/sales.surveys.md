@@ -2,6 +2,17 @@
 title: "Surveys"
 topic: sales.surveys
 version: 1
+keywords:
+    - customer satisfaction
+    - customer survey
+    - satisfaction survey
+    - NPS
+    - Net Promoter Score
+    - collect feedback
+    - questionnaire
+    - poll
+    - anonymous survey
+    - opt-out
 audience: []
 modules:
     - module.vertrieb

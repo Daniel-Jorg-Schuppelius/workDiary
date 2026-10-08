@@ -2,6 +2,18 @@
 title: "ISMS at a glance"
 topic: isms.overview
 version: 2
+keywords:
+    - information security
+    - information security management
+    - ISO 27001
+    - scope
+    - IT security
+    - security management
+    - risk management
+    - prepare certification
+    - Annex A
+    - audit readiness
+    - compliance
 audience: []
 modules:
     - module.isms

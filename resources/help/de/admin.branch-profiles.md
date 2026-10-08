@@ -2,6 +2,19 @@
 title: "Branchenprofile"
 topic: admin.branch-profiles
 version: 3
+keywords:
+    - Branchenvorlage
+    - Branchenpaket
+    - Gewerk
+    - Vorlagenpaket
+    - Elektro
+    - SHK
+    - Gebäudereinigung
+    - Auftragsarten
+    - Checklistenvorlagen
+    - Ersteinrichtung
+    - Standardvorlagen installieren
+    - Profilvariante
 audience:
     - admin
 related:

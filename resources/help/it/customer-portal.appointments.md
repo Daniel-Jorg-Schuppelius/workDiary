@@ -2,6 +2,15 @@
 title: "Richiedere un appuntamento"
 topic: customer-portal.appointments
 version: 1
+keywords:
+    - prenotare appuntamento
+    - prenotazione online
+    - fissare un appuntamento
+    - orari disponibili
+    - disdire appuntamento
+    - termine di disdetta
+    - scegliere fascia oraria
+    - data preferita
 audience: []
 related:
     - customer-portal.overview

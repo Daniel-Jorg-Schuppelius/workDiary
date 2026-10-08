@@ -2,6 +2,18 @@
 title: "Creare un verbale"
 topic: protocols.create
 version: 3
+keywords:
+    - verbale di collaudo
+    - rapporto di manutenzione
+    - rapporto di intervento
+    - rapporto di ispezione
+    - rapportino
+    - verbale di consegna
+    - registrare difetti
+    - foto prima e dopo
+    - modello di verbale
+    - misurazioni
+    - checklist
 audience: []
 schema: process
 related:

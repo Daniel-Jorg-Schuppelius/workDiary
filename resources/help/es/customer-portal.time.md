@@ -2,6 +2,14 @@
 title: "Tiempos registrados"
 topic: customer-portal.time
 version: 1
+keywords:
+    - registro de horas
+    - hoja de horas
+    - horas trabajadas
+    - jornada
+    - parte de horas
+    - tiempo dedicado
+    - horas por proyecto
 audience: []
 related:
     - customer-portal.overview

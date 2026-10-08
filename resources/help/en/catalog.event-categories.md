@@ -2,6 +2,16 @@
 title: "Event Categories"
 topic: catalog.event-categories
 version: 1
+keywords:
+    - event types
+    - appointment categories
+    - training types
+    - certificate required
+    - proof of attendance
+    - validity period
+    - expiring certificates
+    - reminder lead time
+    - category color
 audience: []
 modules:
     - module.vertrieb

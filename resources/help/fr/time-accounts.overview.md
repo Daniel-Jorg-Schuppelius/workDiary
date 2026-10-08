@@ -2,6 +2,18 @@
 title: "Comptes de temps"
 topic: time-accounts.overview
 version: 1
+keywords:
+    - compte supplémentaire
+    - compte de repos
+    - repos compensateur
+    - compteur de nuits
+    - heures de primes
+    - solde du compte
+    - feu tricolore
+    - journal des écritures
+    - contre-passation
+    - exporter les comptes
+    - travail supplémentaire
 audience: []
 related:
     - time-accounts.flex

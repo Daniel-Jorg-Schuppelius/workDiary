@@ -2,6 +2,17 @@
 title: "Facturation au compteur"
 topic: metering.billing
 version: 1
+keywords:
+    - facturation à l'usage
+    - facturation de la consommation
+    - paiement à l'usage
+    - coût par copie
+    - prix à la page
+    - facturation des copies
+    - forfait inclus
+    - prix dégressifs
+    - abonnement de base
+    - heures de fonctionnement
 audience: []
 related:
     - invoices.manage

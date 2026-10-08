@@ -2,6 +2,17 @@
 title: "Materiales"
 topic: materials.manage
 version: 1
+keywords:
+    - materias primas
+    - maestro de materiales
+    - consumibles
+    - lista de materiales
+    - añadir material
+    - precio del material
+    - desactivar material
+    - código SKU
+    - consumo de material
+    - suministros
 audience: []
 modules:
     - module.vertrieb

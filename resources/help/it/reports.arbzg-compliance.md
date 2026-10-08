@@ -2,6 +2,17 @@
 title: "Conformità alla legge sull'orario di lavoro (ArbZG)"
 topic: reports.arbzg-compliance
 version: 1
+keywords:
+    - violazioni dell'orario
+    - orario massimo di lavoro
+    - riposo giornaliero
+    - 11 ore di riposo
+    - pausa obbligatoria
+    - lavoratori minorenni
+    - lavoro notturno
+    - obbligo di registrazione
+    - diritto del lavoro
+    - controllo orari
 audience: []
 modules:
     - module.auswertungen_team

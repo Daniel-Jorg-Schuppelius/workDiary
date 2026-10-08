@@ -2,6 +2,17 @@
 title: "Conectar Billbee"
 topic: admin.billbee
 version: 1
+keywords:
+    - multicanal
+    - pedidos de marketplace
+    - pedidos de Amazon
+    - pedidos de eBay
+    - Shopify
+    - tienda online
+    - comercio electrónico
+    - importación de pedidos
+    - sincronización de stock
+    - mapeo de SKU
 audience:
     - admin
 modules:

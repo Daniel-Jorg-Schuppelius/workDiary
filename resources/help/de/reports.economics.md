@@ -2,6 +2,19 @@
 title: "Wirtschaftlichkeit"
 topic: reports.economics
 version: 1
+keywords:
+    - Nachkalkulation
+    - Deckungsbeitrag
+    - Marge
+    - Rentabilität
+    - Profitabilität
+    - Projektrentabilität
+    - Soll-Ist-Vergleich
+    - Budgetvergleich
+    - interner Kostensatz
+    - Verlustprojekte
+    - Controlling
+    - Top und Flop
 audience: []
 modules:
     - module.auswertungen_team

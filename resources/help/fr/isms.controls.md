@@ -2,6 +2,16 @@
 title: "Gérer les mesures"
 topic: isms.controls
 version: 1
+keywords:
+    - mesures de sécurité
+    - contrôles de sécurité
+    - catalogue de mesures
+    - TOM
+    - statut de mise en œuvre
+    - preuves
+    - Annexe A
+    - mesures SMSI
+    - lier une mesure
 audience: []
 modules:
     - module.isms

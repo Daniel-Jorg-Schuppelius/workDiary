@@ -2,6 +2,16 @@
 title: "Drilldown from KPI to work order"
 topic: reports.drilldown
 version: 1
+keywords:
+    - drill down
+    - drill-through
+    - KPI details
+    - break down a metric
+    - underlying data
+    - show source records
+    - detail list
+    - export report
+    - trace figures
 audience: []
 related:
     - reports.customer-analysis

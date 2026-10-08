@@ -2,6 +2,17 @@
 title: "Gestionar hojas de horas"
 topic: timesheets.manage
 version: 1
+keywords:
+    - parte de horas
+    - parte de trabajo
+    - hoja de servicio
+    - informe de horas
+    - justificante de trabajo
+    - albarán de trabajo
+    - firma del cliente
+    - recoger firma
+    - registrar material
+    - facturar servicios
 audience: []
 related:
     - time-entries.start

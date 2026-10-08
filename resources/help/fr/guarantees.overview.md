@@ -2,6 +2,16 @@
 title: "Garanties bancaires"
 topic: guarantees.overview
 version: 1
+keywords:
+    - caution bancaire
+    - cautionnement
+    - garantie de bonne fin
+    - garantie de parfait achèvement
+    - retenue de garantie
+    - libérer la retenue
+    - acte de caution
+    - restitution de la garantie
+    - sûreté
 audience: []
 related:
     - invoices.manage

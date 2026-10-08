@@ -2,6 +2,18 @@
 title: "Impostazioni di sistema"
 topic: admin.settings
 version: 1
+keywords:
+    - configurazione
+    - preferenze
+    - opzioni
+    - valori predefiniti
+    - impostazioni organizzazione
+    - limite upload
+    - dimensione pagina
+    - override
+    - ripristinare impostazione
+    - cronologia modifiche
+    - parametri
 audience:
     - admin
 related:

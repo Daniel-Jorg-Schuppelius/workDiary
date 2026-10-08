@@ -2,6 +2,17 @@
 title: "Umfragen"
 topic: sales.surveys
 version: 1
+keywords:
+    - Kundenzufriedenheit
+    - Kundenbefragung
+    - Zufriedenheitsumfrage
+    - NPS
+    - Net Promoter Score
+    - Feedback einholen
+    - Fragebogen erstellen
+    - Befragung
+    - anonyme Umfrage
+    - Weiterempfehlung
 audience: []
 modules:
     - module.vertrieb

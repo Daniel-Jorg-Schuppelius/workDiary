@@ -2,6 +2,18 @@
 title: "Leitstelle: Board und Karte"
 topic: dispatch.board
 version: 1
+keywords:
+    - Einsatzplanung
+    - Plantafel
+    - Dispo-Board
+    - Kanban
+    - Kartenansicht
+    - Landkarte
+    - Einsatzkarte
+    - Techniker-Übersicht
+    - SLA-Risiko
+    - Disponent
+    - Leitstand
 audience: []
 modules:
     - module.planung

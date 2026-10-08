@@ -2,6 +2,17 @@
 title: "Portal del cliente – Reclamaciones y devoluciones"
 topic: customer-portal.claims
 version: 1
+keywords:
+    - notificar un defecto
+    - presentar una reclamación
+    - solicitud de devolución
+    - etiqueta de devolución
+    - devolver mercancía
+    - garantía
+    - estado de la reclamación
+    - enviar fotos
+    - RMA
+    - producto defectuoso
 audience: []
 related:
     - customer-portal.overview

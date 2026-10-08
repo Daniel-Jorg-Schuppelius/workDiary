@@ -2,6 +2,20 @@
 title: "Paiements sortants SEPA"
 topic: finance.sepa
 version: 1
+keywords:
+    - virement groupé
+    - lot de paiements
+    - fichier de virement
+    - SEPA XML
+    - payer les fournisseurs
+    - régler les factures
+    - escompte
+    - prélèvement
+    - mandat de prélèvement
+    - identifiant créancier
+    - ICS
+    - référence unique de mandat
+    - RUM
 audience: []
 modules:
     - module.finance

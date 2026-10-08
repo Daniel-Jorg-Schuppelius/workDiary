@@ -2,6 +2,17 @@
 title: "Sauvegardes & surveillance"
 topic: admin.backups
 version: 3
+keywords:
+    - sauvegarde des données
+    - backup
+    - restauration
+    - récupération
+    - heartbeat
+    - sauvegarde en retard
+    - test de restauration
+    - état du système
+    - reprise après sinistre
+    - monitoring
 audience:
     - admin
 schema: process

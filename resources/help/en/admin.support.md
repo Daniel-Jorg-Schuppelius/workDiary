@@ -2,6 +2,17 @@
 title: "Support report & diagnostics"
 topic: admin.support
 version: 1
+keywords:
+    - diagnostic report
+    - system information
+    - version info
+    - health status
+    - support bundle
+    - troubleshooting
+    - report a problem
+    - technical report
+    - debug info
+    - installation status
 audience:
     - admin
     - geschaeftsfuehrung

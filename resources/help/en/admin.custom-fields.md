@@ -2,6 +2,14 @@
 title: "Custom fields"
 topic: admin.custom-fields
 version: 1
+keywords:
+    - user-defined fields
+    - additional fields
+    - extra fields
+    - add field
+    - custom attributes
+    - more fields
+    - extend form
 audience:
     - admin
 related:

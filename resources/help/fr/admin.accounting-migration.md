@@ -2,6 +2,17 @@
 title: "Changement de logiciel comptable"
 topic: admin.accounting-migration
 version: 1
+keywords:
+    - migration comptable
+    - migrer la comptabilité
+    - changement de fournisseur
+    - Lexoffice
+    - orgaMAX
+    - migration de données
+    - simulation
+    - essai à blanc
+    - date de bascule
+    - fonctionnement en parallèle
 audience:
     - admin
 related:

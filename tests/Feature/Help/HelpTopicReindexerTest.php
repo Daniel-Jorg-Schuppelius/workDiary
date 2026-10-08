@@ -65,4 +65,16 @@ class HelpTopicReindexerTest extends TestCase {
         $this->assertNull(HelpTopic::query()->where('topic', 'drop')->first());
         $this->assertNotNull(HelpTopic::query()->where('topic', 'keep')->first());
     }
+
+    public function test_reindex_stores_keywords_and_folded_search_text(): void {
+        File::put($this->tmpRoot . '/de/sample.ui.md', "---\ntitle: Darstellung\nkeywords:\n    - Dark-Mode\n    - Nachtmodus\n---\n## Farbschema\n\nHell oder dunkel.");
+
+        (new HelpTopicReindexer(new HelpTopicLoader($this->tmpRoot)))->reindex();
+
+        $row = HelpTopic::query()->where('topic', 'sample.ui')->firstOrFail();
+        $this->assertSame(['Dark-Mode', 'Nachtmodus'], $row->keywords);
+        foreach (['wdarstellung', 'wdark', 'wmode', 'wdarkmode', 'wnachtmodus', 'wfarbschema', 'whell'] as $word) {
+            $this->assertStringContainsString(' ' . $word . ' ', (string) $row->search_text);
+        }
+    }
 }

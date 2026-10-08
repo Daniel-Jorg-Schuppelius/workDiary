@@ -2,6 +2,18 @@
 title: "Mapas de ideas"
 topic: ideas.overview
 version: 1
+keywords:
+    - mapa mental
+    - mapa conceptual
+    - mind map
+    - lluvia de ideas
+    - brainstorming
+    - recopilar ideas
+    - importar mapa mental
+    - FreeMind
+    - OPML
+    - convertir en tarea
+    - compartir mapa
 audience: []
 modules:
     - module.ideas

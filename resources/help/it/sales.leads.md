@@ -2,6 +2,18 @@
 title: "Lead"
 topic: sales.leads
 version: 2
+keywords:
+    - potenziali clienti
+    - prospect
+    - acquisizione clienti
+    - pipeline di vendita
+    - funnel di vendita
+    - CRM
+    - qualificare un lead
+    - convertire in cliente
+    - promemoria di ricontatto
+    - Calendly
+    - controllo duplicati
 audience: []
 modules:
     - module.vertrieb

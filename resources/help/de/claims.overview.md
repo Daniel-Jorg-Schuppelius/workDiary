@@ -2,6 +2,19 @@
 title: "Reklamation & Gewährleistung"
 topic: claims.overview
 version: 1
+keywords:
+    - Mängelrüge
+    - Kundenreklamation
+    - Kundenbeschwerde
+    - Garantiefall
+    - Kulanz
+    - Retoure
+    - Rücksendung
+    - RMA
+    - Gewährleistungsfall
+    - Lieferantenregress
+    - Reklamationsquote
+    - Mangel melden
 audience: []
 modules:
     - module.claims

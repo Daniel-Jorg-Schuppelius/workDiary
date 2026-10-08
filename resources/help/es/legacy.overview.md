@@ -2,6 +2,16 @@
 title: "Sistema heredado (Legacy)"
 topic: legacy.overview
 version: 1
+keywords:
+    - sistema antiguo
+    - datos antiguos
+    - migración de datos
+    - servicio de guardia
+    - servicio de urgencias
+    - acceso call center
+    - archivo histórico
+    - entradas antiguas
+    - usuarios del sistema antiguo
 related:
     - auth.login
     - admin.tenants

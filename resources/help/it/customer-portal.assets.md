@@ -2,6 +2,17 @@
 title: "Oggetti"
 topic: customer-portal.assets
 version: 1
+keywords:
+    - apparecchi
+    - impianti
+    - attrezzature
+    - i miei impianti
+    - numero di serie
+    - scadenze manutenzione
+    - date di verifica
+    - storico manutenzioni
+    - verbali di ispezione
+    - prossima manutenzione
 audience: []
 related:
     - customer-portal.overview

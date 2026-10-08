@@ -2,6 +2,15 @@
 title: "Solicitar una cita"
 topic: customer-portal.appointments
 version: 1
+keywords:
+    - reservar cita
+    - reserva online
+    - pedir cita
+    - citas disponibles
+    - cancelar cita
+    - plazo de cancelación
+    - elegir franja horaria
+    - fecha preferida
 audience: []
 related:
     - customer-portal.overview

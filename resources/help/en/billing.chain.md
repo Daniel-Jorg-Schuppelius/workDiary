@@ -2,6 +2,18 @@
 title: "To bill and to follow up (document chain)"
 topic: billing.chain
 version: 1
+keywords:
+    - unbilled time
+    - unbilled work
+    - accepted quotes without invoice
+    - follow up quotes
+    - follow-up date
+    - overdue invoices
+    - billable hours
+    - progress billing
+    - measurements to invoice
+    - month-end closing
+    - work in progress
 audience: []
 related:
     - billing.feed

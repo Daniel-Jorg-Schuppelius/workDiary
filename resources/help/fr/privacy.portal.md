@@ -2,6 +2,16 @@
 title: "Portail des demandes des personnes concernées"
 topic: privacy.portal
 version: 1
+keywords:
+    - demande RGPD
+    - droit d'accès
+    - demande d'effacement
+    - droit à l'oubli
+    - portabilité des données
+    - vérification d'identité
+    - demande de rectification
+    - droit d'opposition
+    - accès à mes données
 audience: []
 related:
     - privacy.overview

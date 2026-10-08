@@ -2,6 +2,16 @@
 title: "Ferie e malattia"
 topic: absences.manage
 version: 1
+keywords:
+    - assenza
+    - richiesta ferie
+    - chiedere ferie
+    - approvare ferie
+    - malattia
+    - certificato medico
+    - congedo per malattia
+    - gestione assenze
+    - sostituto
 audience: []
 related:
     - planning.shifts

@@ -2,6 +2,20 @@
 title: "Stock levels & scanning"
 topic: inventory.stock
 version: 2
+keywords:
+    - inventory
+    - stock on hand
+    - goods receipt
+    - stock withdrawal
+    - stock transfer
+    - reservation
+    - reorder point
+    - minimum stock
+    - block batch
+    - batch management
+    - FEFO
+    - scan barcode
+    - stock value
 audience: []
 modules:
     - module.lager

@@ -2,6 +2,16 @@
 title: "Erfasste Zeiten"
 topic: customer-portal.time
 version: 1
+keywords:
+    - Zeiterfassung
+    - Stundennachweis
+    - Arbeitszeiten
+    - geleistete Stunden
+    - Stundenzettel
+    - Zeitnachweis
+    - Aufwand
+    - Arbeitsstunden
+    - Projektzeiten
 audience: []
 related:
     - customer-portal.overview

@@ -2,6 +2,18 @@
 title: "Trasporto passeggeri (taxi/NCC)"
 topic: passenger.overview
 version: 1
+keywords:
+    - servizio taxi
+    - noleggio con conducente
+    - dispatching
+    - corsa
+    - tassametro
+    - licenza taxi
+    - tariffa taxi
+    - prezzo fisso
+    - chiusura turno
+    - rendiconto autista
+    - trasporto a chiamata
 audience: []
 modules:
     - module.fuhrpark

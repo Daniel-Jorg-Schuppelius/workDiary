@@ -2,6 +2,17 @@
 title: "Glossaire : notions clés"
 topic: glossary.core
 version: 1
+keywords:
+    - terminologie
+    - définitions
+    - lexique
+    - vocabulaire
+    - abréviations
+    - que signifie
+    - SLA
+    - SoA
+    - compte d'heures
+    - mandant
 audience: []
 related:
     - isms.overview

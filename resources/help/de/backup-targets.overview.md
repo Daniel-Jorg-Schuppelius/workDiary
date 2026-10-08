@@ -2,6 +2,19 @@
 title: "Cloud-Backupziele"
 topic: backup-targets.overview
 version: 1
+keywords:
+    - Datensicherung
+    - Offsite-Backup
+    - Sicherung in die Cloud
+    - Dropbox
+    - OneDrive
+    - Google Drive
+    - verschlüsseltes Backup
+    - 3-2-1-Regel
+    - Wiederherstellung
+    - Restore-Test
+    - Master-Key
+    - Backup-Aufbewahrung
 audience: []
 related:
     - admin.integrations

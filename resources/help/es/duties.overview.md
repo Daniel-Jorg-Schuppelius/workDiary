@@ -2,6 +2,17 @@
 title: "Usar la lista de trabajo"
 topic: duties.overview
 version: 1
+keywords:
+    - lista de tareas
+    - pedidos abiertos
+    - libro de pedidos
+    - guardia
+    - disponibilidad
+    - servicio de urgencias
+    - solicitud de vacaciones
+    - baja por enfermedad
+    - parte de baja
+    - ausencias
 audience: []
 related:
     - diary-entries.create

@@ -2,6 +2,17 @@
 title: "Freie Zeit-Dimensionen"
 topic: admin.time-dimensions
 version: 1
+keywords:
+    - Zeitaufteilung
+    - Zeit aufteilen
+    - Kostenträger
+    - Verrechnungsobjekt
+    - eigene Dimensionen
+    - Kontierung
+    - ERP-Auftrag
+    - Anlagennummer
+    - Dimensionstyp
+    - Zuordnungsziel
 audience: []
 related:
     - reports.overview

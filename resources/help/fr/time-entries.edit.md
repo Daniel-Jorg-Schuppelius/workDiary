@@ -2,6 +2,17 @@
 title: "Modifier une saisie de temps"
 topic: time-entries.edit
 version: 1
+keywords:
+    - corriger un temps
+    - changer une saisie
+    - ajuster les heures
+    - heure erronée
+    - modifier début et fin
+    - modifier la pause
+    - changer de projet
+    - demande de correction
+    - saisie verrouillée
+    - historique des modifications
 audience: []
 related:
     - time-entries.start

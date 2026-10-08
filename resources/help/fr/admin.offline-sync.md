@@ -2,6 +2,16 @@
 title: "Synchronisation hors ligne"
 topic: admin.offline-sync
 version: 1
+keywords:
+    - travailler hors ligne
+    - sans internet
+    - sans réseau
+    - journal de synchronisation
+    - erreurs de synchronisation
+    - conflit de synchronisation
+    - envois en attente
+    - données non transmises
+    - mobile hors connexion
 audience: []
 related:
     - admin.metrics

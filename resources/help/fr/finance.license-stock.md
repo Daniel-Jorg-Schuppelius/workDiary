@@ -2,6 +2,17 @@
 title: "Stock de licences"
 topic: finance.license-stock
 version: 1
+keywords:
+    - gestion des licences
+    - clés de licence
+    - numéro de série
+    - clé d'activation
+    - licences logicielles
+    - vendre une licence
+    - lot de licences
+    - revente de licences
+    - seuil de réapprovisionnement
+    - importer des clés
 audience: []
 modules:
     - module.reselling

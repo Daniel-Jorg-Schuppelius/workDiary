@@ -2,6 +2,18 @@
 title: "Votre journée dans WorkDiary : direction d'équipe"
 topic: roles.teamleitung
 version: 1
+keywords:
+    - chef d'équipe
+    - responsable d'équipe
+    - superviseur
+    - manager
+    - planning du personnel
+    - valider les temps
+    - approuver les congés
+    - demandes de correction
+    - clôture mensuelle
+    - astreinte
+    - affecter des missions
 audience:
     - teamleitung
 related:

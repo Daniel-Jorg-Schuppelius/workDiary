@@ -2,6 +2,18 @@
 title: "Gestionar proyectos"
 topic: projects.manage
 version: 3
+keywords:
+    - crear proyecto
+    - gestión de proyectos
+    - lista de proyectos
+    - hitos
+    - horas del proyecto
+    - facturación del proyecto
+    - cerrar proyecto
+    - reasignar horas
+    - partes de horas
+    - tareas del proyecto
+    - tarifa por hora
 audience: []
 modules:
     - module.vertrieb

@@ -2,6 +2,19 @@
 title: "Access & Security"
 topic: customer-portal.access
 version: 2
+keywords:
+    - login
+    - sign in
+    - password
+    - 2FA
+    - two-factor authentication
+    - authenticator app
+    - passkey
+    - security key
+    - recovery codes
+    - change email
+    - stay signed in
+    - profile
 audience: []
 related:
     - customer-portal.overview

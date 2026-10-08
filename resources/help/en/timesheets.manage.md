@@ -2,6 +2,18 @@
 title: "Managing timesheets"
 topic: timesheets.manage
 version: 1
+keywords:
+    - timesheet
+    - time report
+    - proof of work
+    - service report
+    - work report
+    - hours sheet
+    - get signature
+    - customer sign-off
+    - record materials
+    - bill services
+    - timesheet PDF
 audience: []
 related:
     - time-entries.start

@@ -2,6 +2,14 @@
 title: "Intercambio de turnos con aprobación"
 topic: planning.exchange
 version: 1
+keywords:
+    - cambiar turno
+    - cambio de turno
+    - ceder un turno
+    - bolsa de turnos
+    - sustitución
+    - cubrir un turno
+    - solicitud de cambio
 audience: []
 modules:
     - module.planung

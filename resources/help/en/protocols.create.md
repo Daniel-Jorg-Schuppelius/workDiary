@@ -2,6 +2,18 @@
 title: "Creating a protocol"
 topic: protocols.create
 version: 3
+keywords:
+    - acceptance report
+    - maintenance report
+    - inspection report
+    - service report
+    - work report
+    - handover report
+    - record defects
+    - before and after photos
+    - protocol template
+    - record measurements
+    - checklist
 audience: []
 schema: process
 related:

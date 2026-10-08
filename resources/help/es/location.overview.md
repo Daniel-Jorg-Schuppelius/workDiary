@@ -2,6 +2,18 @@
 title: "Registro de tiempo basado en ubicación"
 topic: location.overview
 version: 1
+keywords:
+    - fichaje GPS
+    - geovallas
+    - geofencing
+    - geolocalización
+    - seguimiento de ubicación
+    - registro automático de tiempo
+    - OwnTracks
+    - Traccar
+    - historial de ubicaciones de Google
+    - propuestas de tiempo
+    - visitas a clientes
 audience: []
 modules:
     - module.standorterfassung

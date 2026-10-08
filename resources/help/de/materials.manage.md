@@ -2,6 +2,17 @@
 title: "Materialien"
 topic: materials.manage
 version: 1
+keywords:
+    - Rohstoffe
+    - Materialstamm
+    - Materialstammdaten
+    - Verbrauchsmaterial
+    - Materialliste
+    - Material anlegen
+    - Materialpreis
+    - Material deaktivieren
+    - SKU
+    - Materialverbrauch
 audience: []
 modules:
     - module.vertrieb

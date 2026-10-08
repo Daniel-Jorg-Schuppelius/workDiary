@@ -2,6 +2,17 @@
 title: "Appuntamenti dell'associazione"
 topic: club.events
 version: 1
+keywords:
+    - allenamento
+    - sessione di allenamento
+    - prova
+    - corso
+    - assemblea dei soci
+    - iscrizione
+    - lista d'attesa
+    - calendario del club
+    - appuntamenti ricorrenti
+    - annullare l'allenamento
 audience: []
 modules:
     - module.club

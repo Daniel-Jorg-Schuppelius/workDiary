@@ -2,6 +2,16 @@
 title: "Ubicaciones de almacén"
 topic: warehouses.manage
 version: 1
+keywords:
+    - crear almacén
+    - almacén
+    - depósito
+    - ubicación predeterminada
+    - almacén principal
+    - gestión de almacenes
+    - varios almacenes
+    - eliminar ubicación
+    - punto de almacenamiento
 audience: []
 modules:
     - module.lager

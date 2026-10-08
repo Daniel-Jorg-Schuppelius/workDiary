@@ -2,6 +2,18 @@
 title: "Portal de clientes – Solicitudes y pedidos"
 topic: customer-portal.intakes
 version: 1
+keywords:
+    - enviar solicitud
+    - pedido de impresión
+    - solicitud de impresión
+    - solicitud de TI
+    - subir archivo
+    - archivos de impresión
+    - aprobación de prueba
+    - aceptar presupuesto
+    - rechazar presupuesto
+    - enviar archivos grandes
+    - enlace de subida
 audience: []
 related:
     - customer-portal.overview

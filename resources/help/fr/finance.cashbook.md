@@ -2,6 +2,17 @@
 title: "Livre de caisse"
 topic: finance.cashbook
 version: 1
+keywords:
+    - caisse
+    - petite caisse
+    - recettes en espèces
+    - dépenses en espèces
+    - comptage de caisse
+    - clôture journalière
+    - paiement en espèces
+    - écart de caisse
+    - brouillard de caisse
+    - contre-passation
 audience:
     - admin
     - geschaeftsfuehrung

@@ -2,6 +2,15 @@
 title: "Conectar la reserva de citas (Calendly)"
 topic: admin.calendly
 version: 1
+keywords:
+    - reserva online
+    - página de reservas
+    - agendar citas
+    - agenda online
+    - citas de clientes
+    - cita online
+    - cancelación de citas
+    - reprogramar cita
 audience:
     - admin
 related:

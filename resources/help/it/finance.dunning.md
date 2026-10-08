@@ -2,6 +2,18 @@
 title: "Solleciti"
 topic: finance.dunning
 version: 1
+keywords:
+    - sollecito di pagamento
+    - lettera di sollecito
+    - livello di sollecito
+    - spese di sollecito
+    - interessi di mora
+    - fatture scadute
+    - fatture insolute
+    - recupero crediti
+    - ritardo di pagamento
+    - periodo di tolleranza
+    - messa in mora
 audience:
     - admin
     - buchhaltung

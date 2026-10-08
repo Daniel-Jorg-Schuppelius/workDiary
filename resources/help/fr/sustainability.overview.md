@@ -2,6 +2,18 @@
 title: "Durabilité & ESG"
 topic: sustainability.overview
 version: 2
+keywords:
+    - bilan carbone
+    - empreinte carbone
+    - émissions de CO2
+    - gaz à effet de serre
+    - facteurs d'émission
+    - consommation d'énergie
+    - rapport de durabilité
+    - VSME
+    - objectifs climatiques
+    - RSE
+    - notation ESG
 audience: []
 modules:
     - module.sustainability

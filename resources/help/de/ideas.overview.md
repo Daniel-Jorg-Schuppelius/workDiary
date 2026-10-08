@@ -2,6 +2,19 @@
 title: "Ideenlandkarten"
 topic: ideas.overview
 version: 1
+keywords:
+    - Mindmap
+    - Mindmapping
+    - Brainstorming
+    - Ideensammlung
+    - Ideen sammeln
+    - Gedankenkarte
+    - Gliederung
+    - Mindmap importieren
+    - FreeMind
+    - OPML
+    - Idee in Aufgabe umwandeln
+    - Karte freigeben
 audience: []
 modules:
     - module.ideas

@@ -2,6 +2,18 @@
 title: "Certifications & conformity"
 topic: isms.conformity
 version: 1
+keywords:
+    - ISO 27001
+    - ISO certificate
+    - certification audit
+    - surveillance audit
+    - recertification
+    - gap analysis
+    - certification body
+    - certificate expiry
+    - audit readiness
+    - compliance
+    - standards compliance
 audience: []
 modules:
     - module.isms

@@ -2,6 +2,17 @@
 title: "Canal de denuncias – Gestión de casos"
 topic: whistleblowing.cases
 version: 1
+keywords:
+    - denunciante
+    - canal ético
+    - sistema interno de información
+    - protección del informante
+    - informante
+    - gestionar denuncia
+    - acuse de recibo
+    - caso de cumplimiento
+    - conflicto de intereses
+    - acceso de emergencia
 audience: []
 modules:
     - module.compliance

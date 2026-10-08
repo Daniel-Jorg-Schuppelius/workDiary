@@ -2,6 +2,17 @@
 title: "Kundenportal – Tickets"
 topic: customer-portal.tickets
 version: 1
+keywords:
+    - Support-Anfrage
+    - Störung melden
+    - Problem melden
+    - Supportfall
+    - Serviceanfrage
+    - Servicekatalog
+    - bekannte Fehler
+    - Ticket erstellen
+    - Helpdesk
+    - Ticketstatus
 audience: []
 related:
     - customer-portal.overview

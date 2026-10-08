@@ -2,6 +2,17 @@
 title: "Catégories de frais"
 topic: catalog.expense-categories
 version: 1
+keywords:
+    - types de dépenses
+    - notes de frais
+    - frais de déplacement
+    - hébergement
+    - repas
+    - frais de transport
+    - taux de TVA
+    - justificatif obligatoire
+    - frais refacturables
+    - débours
 audience: []
 related:
     - travel-expenses.manage

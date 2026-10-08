@@ -2,6 +2,18 @@
 title: "Payment behavior"
 topic: reports.payment-behavior
 version: 2
+keywords:
+    - DSO
+    - days sales outstanding
+    - late payers
+    - payment delay
+    - days to pay
+    - overdue invoices
+    - outstanding receivables
+    - payment terms
+    - payment discipline
+    - debtor analysis
+    - accounts receivable
 audience: []
 related:
     - reports.economics

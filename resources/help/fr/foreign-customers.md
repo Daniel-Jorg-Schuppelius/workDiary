@@ -2,6 +2,14 @@
 title: "Clients tiers"
 topic: foreign-customers
 version: 1
+keywords:
+    - clients finaux
+    - client final
+    - clients de nos clients
+    - clients des partenaires
+    - sous-clients
+    - clients indirects
+    - convertir en client
 audience: []
 related:
     - contacts.manage

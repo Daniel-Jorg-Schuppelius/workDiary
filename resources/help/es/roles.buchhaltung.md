@@ -2,6 +2,18 @@
 title: "Su día en WorkDiary: Contabilidad"
 topic: roles.buchhaltung
 version: 1
+keywords:
+    - contable
+    - facturación
+    - exportación de nóminas
+    - preparar nóminas
+    - bloquear hojas de horas
+    - marcar factura pagada
+    - traspaso a DATEV
+    - Lexoffice
+    - tarifas por hora
+    - recargos
+    - datos maestros de clientes
 audience:
     - buchhaltung
 related:

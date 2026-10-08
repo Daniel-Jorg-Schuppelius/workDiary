@@ -2,6 +2,17 @@
 title: "Gestione contratti"
 topic: contracts.overview
 version: 1
+keywords:
+    - contratti
+    - preavviso di disdetta
+    - durata del contratto
+    - rinnovo del contratto
+    - rinnovo tacito
+    - contratto di manutenzione
+    - contratto di locazione
+    - contratto quadro
+    - promemoria scadenze
+    - indicizzazione
 audience: []
 modules:
     - module.contracts

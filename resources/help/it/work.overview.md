@@ -2,6 +2,17 @@
 title: "Oggi e Kanban"
 topic: work.overview
 version: 1
+keywords:
+    - vista di oggi
+    - panoramica giornaliera
+    - lista attività
+    - le mie attività
+    - bacheca Kanban
+    - task board
+    - cambiare stato
+    - coda di lavoro
+    - agenda
+    - in scadenza oggi
 audience: []
 related:
     - diary-entries.create

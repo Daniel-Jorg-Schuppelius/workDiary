@@ -2,6 +2,19 @@
 title: "Plateforme d'apprentissage"
 topic: learning.overview
 version: 3
+keywords:
+    - e-learning
+    - LMS
+    - formation en ligne
+    - créer un cours
+    - quiz
+    - examen
+    - banque de questions
+    - certificat
+    - carnet de notes
+    - matrice des compétences
+    - import LearnDash
+    - temps d'apprentissage
 audience: []
 related:
     - training.overview

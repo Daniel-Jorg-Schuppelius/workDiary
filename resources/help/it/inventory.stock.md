@@ -2,6 +2,19 @@
 title: "Giacenze e scansione"
 topic: inventory.stock
 version: 2
+keywords:
+    - magazzino
+    - carico merce
+    - scarico magazzino
+    - trasferimento di magazzino
+    - prenotazione
+    - punto di riordino
+    - scorta minima
+    - bloccare lotto
+    - gestione lotti
+    - FEFO
+    - scansionare codice a barre
+    - valore di magazzino
 audience: []
 modules:
     - module.lager

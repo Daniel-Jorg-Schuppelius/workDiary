@@ -2,6 +2,16 @@
 title: "Notice of hindrance and notice of concern (VOB/B)"
 topic: construction-notices
 version: 1
+keywords:
+    - hindrance notice
+    - obstruction notice
+    - notice of concerns
+    - report a delay
+    - construction delay
+    - extension of time
+    - bad weather delay
+    - VOB
+    - limit liability
 audience: []
 modules:
     - module.bau

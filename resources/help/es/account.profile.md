@@ -1,12 +1,26 @@
 ---
 title: "Perfil y cuenta"
 topic: account.profile
-version: 1
+version: 2
+keywords:
+    - ajustes
+    - cambiar contraseña
+    - idioma
+    - zona horaria
+    - modo oscuro
+    - tema oscuro
+    - foto de perfil
+    - avatar
+    - página de inicio
+    - suscripción de calendario
+    - feed ICS
+    - formato de fecha
 audience: []
 related:
     - account.two-factor
     - account.notifications
     - account.calendar
+    - navigation.interface
 ---
 
 En el perfil gestiona sus datos personales (nombre, correo, avatar,
@@ -21,3 +35,6 @@ feed ICS cuyo enlace puede regenerar o revocar en cualquier momento.
 
 Solo se ofrecen páginas que puede abrir. Sin elección propia se aplica la
 página de inicio que su organización ha fijado para su rol.
+
+La forma más rápida de activar el modo oscuro es **Configuración** en la
+cabecera. Los detalles están en el tema **Interfaz y apariencia**.

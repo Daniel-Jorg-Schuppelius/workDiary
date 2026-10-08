@@ -12,7 +12,6 @@ namespace App\Services\Help;
 
 use App\Models\Platform\{HelpTopic, User};
 use App\Services\Licensing\FeatureFlagResolver;
-use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Support\Facades\App;
 
 class HelpTopicResolver {
@@ -58,35 +57,6 @@ class HelpTopicResolver {
     }
 
     /**
-     * Volltextsuche auf body_md + title, eingeschränkt auf zugelassene Audiences.
-     *
-     * @return \Illuminate\Support\Collection<int, HelpTopic>
-     */
-    public function search(string $query, ?User $user = null, ?string $preferredLocale = null, int $limit = 20): \Illuminate\Support\Collection {
-        $query = trim($query);
-        if ($query === '') {
-            return collect();
-        }
-
-        $locale = $this->localeFallbackChain($preferredLocale)[0];
-
-        $rows = HelpTopic::query()
-            ->where('locale', $locale)
-            ->where(function ($q) use ($query): void {
-                $q->whereLikeEscaped('title', $query)
-                    ->orWhereLikeEscaped('body_md', $query)
-                    ->orWhereLikeEscaped('topic', $query);
-            })
-            ->limit($limit * 3)
-            ->get();
-
-        return $rows
-            ->filter(fn(HelpTopic $row) => $this->isVisibleFor($row, $user))
-            ->values()
-            ->take($limit);
-    }
-
-    /**
      * Verwandte Themen eines Topics — nur existente UND sichtbare Ziele,
      * mit lokalisiertem Titel (kein toter Link, keine rohen Topic-Codes).
      * Gemeinsame Quelle für Drawer-JSON und Hilfecenter-Vollseite (MVP-752).
@@ -102,80 +72,6 @@ class HelpTopicResolver {
             })
             ->filter()
             ->all());
-    }
-
-    /**
-     * Volltextsuche für die Hilfecenter-Vollseite: Kandidaten OHNE
-     * longText-Spalten hydrieren (Hydration-Kosten), Sichtbarkeit in PHP
-     * filtern (JSON-Spalten), dann paginieren. Trefferzahl zählt nur
-     * sichtbare Topics — kein Berechtigungs-Orakel über total().
-     *
-     * @return \Illuminate\Pagination\LengthAwarePaginator<int, HelpTopic>
-     */
-    public function searchPaginated(string $query, ?User $user = null, ?string $preferredLocale = null, int $perPage = 20, int $page = 1): \Illuminate\Pagination\LengthAwarePaginator {
-        $query = trim($query);
-        $locale = $this->localeFallbackChain($preferredLocale)[0];
-
-        $visible = collect();
-        if ($query !== '') {
-            $visible = HelpTopic::query()
-                ->where('locale', $locale)
-                ->where(function ($q) use ($query): void {
-                    $q->whereLikeEscaped('title', $query)
-                        ->orWhereLikeEscaped('body_md', $query)
-                        ->orWhereLikeEscaped('topic', $query);
-                })
-                ->orderBy('title')
-                ->get(['id', 'topic', 'locale', 'title', 'audience', 'modules', 'version'])
-                ->filter(fn(HelpTopic $row) => $this->isVisibleFor($row, $user))
-                ->values();
-        }
-
-        // Snippets nur für die aktuelle Seite: body_md gezielt nachladen
-        // (longText bleibt aus der Kandidaten-Hydration draußen, MVP-753).
-        $pageItems = $visible->forPage($page, $perPage)->values();
-        if ($query !== '' && $pageItems->isNotEmpty()) {
-            $bodies = HelpTopic::query()
-                ->whereIn('id', $pageItems->pluck('id'))
-                ->pluck('body_md', 'id');
-            foreach ($pageItems as $row) {
-                $row->setAttribute('search_snippet', $this->snippetFor((string) $bodies->get($row->id, ''), $query));
-            }
-        }
-
-        return new \Illuminate\Pagination\LengthAwarePaginator(
-            $pageItems,
-            $visible->count(),
-            $perPage,
-            $page,
-        );
-    }
-
-    /**
-     * Treffer-Ausschnitt als [vor, Treffer, nach] — ROHE Segmente, die View
-     * escaped jedes einzeln und hebt nur den Treffer mit <mark> hervor
-     * (kein HTML aus body_md in der Seite). Ohne Body-Treffer (Titel-/
-     * Topic-Treffer) beginnt der Ausschnitt am Textanfang.
-     *
-     * @return array{0:string, 1:string, 2:string}
-     */
-    private function snippetFor(string $bodyMd, string $query): array {
-        $text = StringHelper::normalizeWhitespace($bodyMd, unicode: true);
-
-        $pos = mb_stripos($text, $query);
-        if ($pos === false) {
-            $lead = mb_substr($text, 0, 160);
-
-            return ['', '', $lead . (mb_strlen($text) > 160 ? '…' : '')];
-        }
-
-        $start = max(0, $pos - 60);
-        $pre = ($start > 0 ? '…' : '') . mb_substr($text, $start, $pos - $start);
-        $hit = mb_substr($text, $pos, mb_strlen($query));
-        $rest = mb_substr($text, $pos + mb_strlen($query), 120);
-        $post = $rest . (mb_strlen($text) > $pos + mb_strlen($query) + 120 ? '…' : '');
-
-        return [$pre, $hit, $post];
     }
 
     /**

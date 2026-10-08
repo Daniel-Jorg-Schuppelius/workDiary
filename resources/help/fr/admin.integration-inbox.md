@@ -2,6 +2,16 @@
 title: "Boîte de rapprochement"
 topic: admin.integration-inbox
 version: 1
+keywords:
+    - boîte des intégrations
+    - conflits import
+    - correspondance
+    - associer des enregistrements
+    - enregistrements non associés
+    - conflit de champ
+    - conflit de synchronisation
+    - numéro inconnu
+    - appareils inconnus
 audience: []
 related:
     - admin.integrations

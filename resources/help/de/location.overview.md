@@ -2,6 +2,19 @@
 title: "Standortbasierte Zeiterfassung"
 topic: location.overview
 version: 1
+keywords:
+    - GPS-Zeiterfassung
+    - Geofencing
+    - Geofence
+    - automatische Zeiterfassung
+    - Standortverfolgung
+    - Ortung
+    - OwnTracks
+    - Traccar
+    - Google Standortverlauf
+    - Zeitvorschläge
+    - Kundenbesuche erfassen
+    - Einwilligung Ortung
 audience: []
 modules:
     - module.standorterfassung

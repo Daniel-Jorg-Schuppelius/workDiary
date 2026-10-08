@@ -2,6 +2,14 @@
 title: "Cualificaciones"
 topic: catalog.qualifications
 version: 1
+keywords:
+    - competencias
+    - habilidades
+    - certificados
+    - certificaciones
+    - formaciones
+    - capacitación
+    - aptitudes
 audience: []
 related:
     - planning.shifts

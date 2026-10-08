@@ -2,6 +2,19 @@
 title: "Sécurité et durcissement"
 topic: admin.security
 version: 2
+keywords:
+    - 2FA
+    - double authentification
+    - passkey
+    - chiffrement
+    - blocage IP
+    - force brute
+    - SIEM
+    - compte piraté
+    - prise de contrôle de compte
+    - SBOM
+    - vue sécurité
+    - détection des intrusions
 audience:
     - admin
 related:

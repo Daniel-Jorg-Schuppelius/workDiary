@@ -2,6 +2,17 @@
 title: "Centrale operativa: board e mappa"
 topic: dispatch.board
 version: 1
+keywords:
+    - tabellone di pianificazione
+    - pianificazione interventi
+    - kanban
+    - vista mappa
+    - mappa degli interventi
+    - vista per tecnico
+    - rischio SLA
+    - dispatcher
+    - pianificatore
+    - sala operativa
 audience: []
 modules:
     - module.planung

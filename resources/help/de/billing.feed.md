@@ -2,6 +2,19 @@
 title: "Belegfluss"
 topic: billing.feed
 version: 1
+keywords:
+    - Belegliste
+    - Rechnungen
+    - Angebote
+    - Ausgangsrechnungen
+    - Eingangsrechnungen
+    - Gutschriften
+    - Auslagen
+    - offene Posten
+    - OP-Liste
+    - mahnen
+    - überfällige Rechnungen
+    - E-Rechnung umwandeln
 audience: []
 modules:
     - module.vertrieb

@@ -2,6 +2,17 @@
 title: "Planning tours"
 topic: tours.manage
 version: 1
+keywords:
+    - route planning
+    - optimize route
+    - route optimization
+    - stops
+    - dispatch
+    - map view
+    - visit order
+    - driving route
+    - customer visits
+    - delivery run
 audience: []
 modules:
     - module.planung

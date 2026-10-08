@@ -2,6 +2,17 @@
 title: "La sua giornata in WorkDiary: Servizio esterno"
 topic: roles.aussendienst
 version: 1
+keywords:
+    - tecnico esterno
+    - tecnico di assistenza
+    - manutentore
+    - installatore
+    - intervento in loco
+    - lavoro in mobilità
+    - firma del cliente
+    - registrare spese
+    - libro di bordo
+    - richiedere ferie
 audience:
     - aussendienst
 related:

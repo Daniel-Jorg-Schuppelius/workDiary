@@ -2,6 +2,18 @@
 title: "Branding"
 topic: admin.branding
 version: 1
+keywords:
+    - White Label
+    - Corporate Design
+    - Corporate Identity
+    - Firmenlogo
+    - Logo
+    - Firmenfarben
+    - Unternehmensfarben
+    - Firmendaten
+    - Fußzeile
+    - Bankverbindung auf Rechnung
+    - Erscheinungsbild
 audience:
     - admin
 related:

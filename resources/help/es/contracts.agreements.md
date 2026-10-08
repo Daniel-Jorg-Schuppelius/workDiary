@@ -2,6 +2,17 @@
 title: "Acuerdos con clientes: DPA y confidencialidad"
 topic: contracts.agreements
 version: 1
+keywords:
+    - contrato de encargado del tratamiento
+    - encargo de tratamiento
+    - RGPD
+    - NDA
+    - acuerdo de no divulgación
+    - acuerdo de confidencialidad
+    - firma electrónica
+    - enlace de firma
+    - contrafirma
+    - firmar en línea
 audience: []
 modules:
     - module.contracts

@@ -2,6 +2,18 @@
 title: "Public tender radar"
 topic: tenders.radar
 version: 1
+keywords:
+    - find tenders
+    - public tenders
+    - tender search
+    - public procurement
+    - tender alerts
+    - search profile
+    - CPV code
+    - NUTS region
+    - contract notice
+    - tender monitoring
+    - bid opportunities
 audience: []
 modules:
     - module.applications

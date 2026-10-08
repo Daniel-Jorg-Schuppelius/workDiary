@@ -2,6 +2,19 @@
 title: "Soci dell'associazione"
 topic: club.members
 version: 1
+keywords:
+    - gestione soci
+    - elenco soci
+    - iscritti
+    - aggiungere un socio
+    - numero di socio
+    - recesso
+    - dimissioni del socio
+    - socio passivo
+    - socio sostenitore
+    - tutore legale
+    - importare soci
+    - sospendere l'iscrizione
 audience: []
 modules:
     - module.club

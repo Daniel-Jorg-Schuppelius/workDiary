@@ -2,6 +2,19 @@
 title: "Etsy anbinden"
 topic: admin.etsy
 version: 1
+keywords:
+    - Etsy-Shop
+    - Etsy Bestellungen
+    - Marktplatz
+    - Onlineshop
+    - Bestellimport
+    - Versandmeldung
+    - Sendungsnummer
+    - Tracking
+    - Etsy Gebühren
+    - Auszahlungen
+    - Webhook
+    - Seller-App
 audience:
     - admin
 modules:

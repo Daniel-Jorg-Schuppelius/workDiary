@@ -2,6 +2,19 @@
 title: "Learning platform"
 topic: learning.overview
 version: 3
+keywords:
+    - e-learning
+    - LMS
+    - online course
+    - create a course
+    - quiz
+    - exam
+    - question bank
+    - certificate
+    - gradebook
+    - skills matrix
+    - online training
+    - LearnDash import
 audience: []
 related:
     - training.overview

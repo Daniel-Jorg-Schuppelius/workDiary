@@ -2,6 +2,18 @@
 title: "System settings"
 topic: admin.settings
 version: 1
+keywords:
+    - configuration
+    - preferences
+    - options
+    - default values
+    - organization settings
+    - upload limit
+    - page size
+    - override
+    - reset setting
+    - change history
+    - parameters
 audience:
     - admin
 related:

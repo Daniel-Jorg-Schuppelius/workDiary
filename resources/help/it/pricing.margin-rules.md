@@ -2,6 +2,18 @@
 title: "Regole di prezzo e di margine"
 topic: pricing.margin-rules
 version: 1
+keywords:
+    - ricarico
+    - maggiorazione
+    - calcolo del prezzo
+    - prezzo di vendita
+    - prezzo d'acquisto
+    - margine minimo
+    - margine obiettivo
+    - arrotondamento prezzi
+    - catalogo fornitore
+    - approvazione prezzi
+    - listino
 audience:
     - admin
     - geschaeftsfuehrung

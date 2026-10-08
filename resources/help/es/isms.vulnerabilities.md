@@ -2,6 +2,18 @@
 title: "Vulnerabilidades y avisos"
 topic: isms.vulnerabilities
 version: 1
+keywords:
+    - fallo de seguridad
+    - agujero de seguridad
+    - CVE
+    - CVSS
+    - aviso de seguridad
+    - CSAF
+    - VEX
+    - parche
+    - gestión de vulnerabilidades
+    - explotabilidad
+    - SBOM
 audience: []
 modules:
     - module.isms

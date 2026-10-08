@@ -2,6 +2,15 @@
 title: "Offene Anliegen"
 topic: customer-portal.issues
 version: 1
+keywords:
+    - offene Punkte
+    - Mängelliste
+    - Restarbeiten
+    - Pendenzen
+    - Klärungspunkte
+    - Bearbeitungsstand
+    - Zuständigkeit
+    - Fälligkeit
 audience: []
 related:
     - customer-portal.overview

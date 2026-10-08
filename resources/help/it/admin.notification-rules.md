@@ -2,6 +2,16 @@
 title: "Regole di notifica"
 topic: admin.notification-rules
 version: 1
+keywords:
+    - escalation
+    - configurare notifiche
+    - notifica email
+    - notifica push
+    - destinatari
+    - promemoria
+    - avvisi scadenza
+    - ritardi
+    - canali di notifica
 audience:
     - admin
     - geschaeftsfuehrung

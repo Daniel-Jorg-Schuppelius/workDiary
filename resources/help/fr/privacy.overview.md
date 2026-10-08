@@ -2,6 +2,18 @@
 title: "Aperçu de la gestion de la protection des données"
 topic: privacy.overview
 version: 1
+keywords:
+    - RGPD
+    - registre des traitements
+    - sous-traitant
+    - contrat de sous-traitance
+    - mesures techniques et organisationnelles
+    - droits des personnes
+    - demande d'accès
+    - violation de données
+    - notification sous 72 heures
+    - politique de conservation
+    - legal hold
 audience: []
 modules:
     - module.datenschutz

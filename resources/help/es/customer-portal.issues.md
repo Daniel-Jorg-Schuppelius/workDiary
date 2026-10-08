@@ -2,6 +2,14 @@
 title: "Asuntos abiertos"
 topic: customer-portal.issues
 version: 1
+keywords:
+    - puntos abiertos
+    - temas pendientes
+    - lista de pendientes
+    - lista de repasos
+    - estado de tramitación
+    - responsable
+    - fecha de vencimiento
 audience: []
 related:
     - customer-portal.overview

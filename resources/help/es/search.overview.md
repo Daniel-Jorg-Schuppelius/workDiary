@@ -2,6 +2,19 @@
 title: "Búsqueda e investigación de actividades"
 topic: search.overview
 version: 3
+keywords:
+    - búsqueda de texto completo
+    - búsqueda global
+    - encontrar un registro
+    - historial del cliente
+    - trabajos realizados
+    - operadores de búsqueda
+    - frase exacta
+    - excluir una palabra
+    - errores tipográficos
+    - sinónimos de búsqueda
+    - filtrar por etiquetas
+    - búsqueda aproximada
 audience: []
 related: []
 ---

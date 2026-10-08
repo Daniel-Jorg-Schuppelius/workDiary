@@ -2,6 +2,19 @@
 title: "Installation"
 topic: install.wizard
 version: 1
+keywords:
+    - Ersteinrichtung
+    - Erstinstallation
+    - Einrichtungsassistent
+    - Setup
+    - Systemvoraussetzungen
+    - Datenbank einrichten
+    - Administrator anlegen
+    - SMTP einrichten
+    - Mailserver
+    - Web-Push
+    - VAPID
+    - Anwendungsschlüssel
 audience: [admin]
 related:
     - admin.tenants

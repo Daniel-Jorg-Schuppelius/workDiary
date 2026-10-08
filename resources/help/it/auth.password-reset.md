@@ -2,6 +2,14 @@
 title: "Reimpostare la password"
 topic: auth.password-reset
 version: 1
+keywords:
+    - password dimenticata
+    - nuova password
+    - cambiare password
+    - link di reimpostazione
+    - recupero password
+    - credenziali dimenticate
+    - ripristino password
 related:
     - auth.login
     - account.two-factor

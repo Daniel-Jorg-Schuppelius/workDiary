@@ -2,6 +2,18 @@
 title: "License stock"
 topic: finance.license-stock
 version: 1
+keywords:
+    - license management
+    - license keys
+    - serial number
+    - activation key
+    - software licenses
+    - product key
+    - sell license
+    - license pack
+    - resell licenses
+    - reorder level
+    - import keys
 audience: []
 modules:
     - module.reselling

@@ -2,6 +2,19 @@
 title: "Kundenrundschreiben"
 topic: circulars.overview
 version: 1
+keywords:
+    - Rundmail
+    - Serienmail
+    - Massenmail
+    - Sammelmail
+    - Newsletter
+    - Kundeninformation
+    - Kundenmitteilung
+    - Preisanpassung mitteilen
+    - Kunden anschreiben
+    - Serienbrief
+    - Opt-out
+    - Pflichtmitteilung
 audience: []
 related:
     - contacts.manage

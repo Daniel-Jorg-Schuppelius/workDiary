@@ -2,6 +2,19 @@
 title: "Customer Portal – Requests and orders"
 topic: customer-portal.intakes
 version: 1
+keywords:
+    - submit request
+    - print job
+    - print request
+    - IT request
+    - upload file
+    - upload print files
+    - print approval
+    - accept quote
+    - decline quote
+    - send large files
+    - upload link
+    - reference number
 audience: []
 related:
     - customer-portal.overview

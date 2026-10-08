@@ -2,6 +2,17 @@
 title: "Lesezeichen & Filter"
 topic: account.bookmarks
 version: 1
+keywords:
+    - Favoriten
+    - Schnellzugriff
+    - Bookmark
+    - Lieblingsseiten
+    - gespeicherte Filter
+    - Filtervorlage
+    - Standardfilter
+    - Filter speichern
+    - Ansicht speichern
+    - Merkliste
 audience: []
 related:
     - account.notifications

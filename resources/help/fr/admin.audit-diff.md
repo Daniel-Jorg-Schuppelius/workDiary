@@ -2,6 +2,15 @@
 title: "Historique des modifications et comparaison de versions"
 topic: admin.audit-diff
 version: 1
+keywords:
+    - traçabilité
+    - journal des modifications
+    - historique des révisions
+    - qui a modifié
+    - diff
+    - avant après
+    - suivi des modifications
+    - audit
 audience: [admin]
 related:
     - audit.log

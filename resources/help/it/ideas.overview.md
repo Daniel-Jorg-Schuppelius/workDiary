@@ -2,6 +2,18 @@
 title: "Mappe delle idee"
 topic: ideas.overview
 version: 1
+keywords:
+    - mappa mentale
+    - mappa concettuale
+    - mind map
+    - brainstorming
+    - raccogliere idee
+    - schema
+    - importare mappa mentale
+    - FreeMind
+    - OPML
+    - trasformare in attività
+    - condividere mappa
 audience: []
 modules:
     - module.ideas

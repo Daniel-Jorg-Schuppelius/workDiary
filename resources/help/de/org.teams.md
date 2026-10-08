@@ -2,6 +2,16 @@
 title: "Teams"
 topic: org.teams
 version: 1
+keywords:
+    - Abteilung
+    - Gruppe
+    - Teamleitung
+    - Teamleiter
+    - Team anlegen
+    - Teammitglieder
+    - Teamauslastung
+    - Arbeitsgruppe
+    - Kolonne
 audience: []
 related:
     - org.members

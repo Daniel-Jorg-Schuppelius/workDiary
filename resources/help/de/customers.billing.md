@@ -2,6 +2,20 @@
 title: "Sonderkonditionen & Abrechnungskonto"
 topic: customers.billing
 version: 3
+keywords:
+    - Sonderpreise
+    - Kundenstundensatz
+    - Stundensatz Kunde
+    - Wochenendzuschlag
+    - Feiertagszuschlag
+    - Anfahrtspauschale
+    - Fahrtkostenpauschale
+    - Kundenkonto
+    - Saldo
+    - Monatspauschale
+    - Lexoffice
+    - Monatsabschluss
+    - Abschlag
 audience: []
 modules:
     - module.vertrieb

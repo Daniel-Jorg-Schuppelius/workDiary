@@ -2,6 +2,19 @@
 title: "Billbee anbinden"
 topic: admin.billbee
 version: 1
+keywords:
+    - Multichannel
+    - Marktplatz-Bestellungen
+    - Amazon Bestellungen
+    - eBay Bestellungen
+    - Shopify
+    - Onlineshop anbinden
+    - Onlinehandel
+    - E-Commerce
+    - Bestellimport
+    - Bestandsabgleich
+    - Lagerbestand synchronisieren
+    - SKU-Zuordnung
 audience:
     - admin
 modules:

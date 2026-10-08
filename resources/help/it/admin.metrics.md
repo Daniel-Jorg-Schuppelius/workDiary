@@ -2,6 +2,17 @@
 title: "Metriche"
 topic: admin.metrics
 version: 1
+keywords:
+    - indicatori
+    - statistiche
+    - monitoraggio
+    - utilizzo sistema
+    - spazio di archiviazione
+    - utenti attivi
+    - job falliti
+    - coda
+    - statistiche di utilizzo
+    - prestazioni
 audience:
     - admin
 related:

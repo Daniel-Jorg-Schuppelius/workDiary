@@ -2,6 +2,19 @@
 title: "Article master data"
 topic: articles.master
 version: 1
+keywords:
+    - item master
+    - products
+    - create item
+    - product catalog
+    - article number
+    - SKU
+    - variants
+    - EAN
+    - GTIN
+    - units of measure
+    - HS code
+    - customs tariff number
 audience: []
 modules:
     - module.lager

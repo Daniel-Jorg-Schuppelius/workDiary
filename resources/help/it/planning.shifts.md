@@ -2,6 +2,16 @@
 title: "Pianificazione dei servizi e dei turni"
 topic: planning.shifts
 version: 2
+keywords:
+    - turnistica
+    - piano turni
+    - orario di servizio
+    - tipi di turno
+    - turno di mattina
+    - turno di notte
+    - personale minimo
+    - copertura turni
+    - pubblicare il piano
 audience: []
 related:
     - attendance.manage

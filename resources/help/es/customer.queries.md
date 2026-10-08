@@ -2,6 +2,16 @@
 title: "Consultas de clientes"
 topic: customer.queries
 version: 1
+keywords:
+    - pregunta del cliente
+    - responder consulta
+    - rechazo del cliente
+    - recepción rechazada
+    - enlace de firma
+    - defectos en la recepción
+    - aprobación del cliente
+    - consultas abiertas
+    - cerrar consulta
 audience: []
 related:
     - protocols.sign

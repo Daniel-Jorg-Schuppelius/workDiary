@@ -2,6 +2,17 @@
 title: "Valeur fournisseur"
 topic: reports.supplier-value
 version: 1
+keywords:
+    - analyse RFM
+    - segmentation des fournisseurs
+    - classification fournisseurs
+    - fournisseurs stratégiques
+    - fournisseurs réguliers
+    - source unique
+    - risque de concentration
+    - fournisseurs inactifs
+    - risque fournisseur
+    - portefeuille fournisseurs
 audience: []
 related:
     - reports.supplier-analysis

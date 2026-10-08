@@ -2,6 +2,19 @@
 title: "Seriennummern"
 topic: serials.tracking
 version: 1
+keywords:
+    - Seriennummer suchen
+    - Gerätenummer
+    - Seriennummernverfolgung
+    - Rückverfolgbarkeit
+    - Gerätepass
+    - Echtheitsprüfung
+    - Gerät sperren
+    - gestohlenes Gerät
+    - Rückrufaktion
+    - Gerät verschrotten
+    - Garantieprüfung
+    - Lebenszyklus
 audience: []
 modules:
     - module.lager

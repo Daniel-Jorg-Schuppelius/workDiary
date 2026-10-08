@@ -2,6 +2,16 @@
 title: "Congés & maladie"
 topic: absences.manage
 version: 1
+keywords:
+    - absence
+    - demande de congé
+    - poser des congés
+    - valider un congé
+    - arrêt maladie
+    - congé maladie
+    - certificat médical
+    - gestion des absences
+    - remplaçant
 audience: []
 related:
     - planning.shifts

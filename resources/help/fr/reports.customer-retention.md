@@ -2,6 +2,18 @@
 title: "Fidélisation client"
 topic: reports.customer-retention
 version: 2
+keywords:
+    - attrition
+    - taux d'attrition
+    - churn
+    - perte de clients
+    - clients récurrents
+    - analyse de cohortes
+    - nouveaux clients
+    - clients perdus
+    - reconquête client
+    - fidélité client
+    - taux de rétention
 audience: []
 related:
     - reports.customer-value

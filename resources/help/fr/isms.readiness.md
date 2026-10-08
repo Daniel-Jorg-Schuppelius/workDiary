@@ -2,6 +2,16 @@
 title: "Maturité & readiness"
 topic: isms.readiness
 version: 1
+keywords:
+    - modèle de maturité
+    - niveau de maturité
+    - préparation à l'audit
+    - auto-évaluation
+    - feu tricolore
+    - score
+    - analyse des écarts
+    - prêt pour l'audit
+    - lacunes bloquantes
 audience: []
 modules:
     - module.isms

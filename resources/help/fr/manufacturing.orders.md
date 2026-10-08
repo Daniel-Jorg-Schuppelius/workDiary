@@ -2,6 +2,19 @@
 title: "Ordres de fabrication"
 topic: manufacturing.orders
 version: 1
+keywords:
+    - ordre de production
+    - nomenclature
+    - recette
+    - besoins en matières
+    - MRP
+    - déclaration de production
+    - rebut
+    - sous-traitance
+    - documents douaniers
+    - facture pro forma
+    - facture commerciale
+    - bon de livraison
 audience: []
 modules:
     - module.lager

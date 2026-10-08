@@ -2,6 +2,19 @@
 title: "Lieferantenkataloge"
 topic: supplier-catalogs.overview
 version: 3
+keywords:
+    - DATANORM
+    - BMEcat
+    - Preisliste importieren
+    - Großhändler
+    - Katalogimport
+    - Einkaufspreise aktualisieren
+    - Bezugsquelle
+    - Rabattgruppen
+    - OCI
+    - IDS-Connect
+    - Open Masterdata
+    - Großhandelsshop
 audience: []
 modules:
     - module.lager

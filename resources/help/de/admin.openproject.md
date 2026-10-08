@@ -2,6 +2,18 @@
 title: "OpenProject-Integration"
 topic: admin.openproject
 version: 1
+keywords:
+    - Projektmanagement
+    - Work Packages
+    - Arbeitspakete
+    - Zeitbuchungen
+    - Zeiten importieren
+    - Zeiten zurückbuchen
+    - Zeitsynchronisation
+    - Projekte synchronisieren
+    - Projektzuordnung
+    - Aufgaben importieren
+    - Mapping
 audience:
     - admin
 related:

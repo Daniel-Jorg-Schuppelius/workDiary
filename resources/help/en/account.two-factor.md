@@ -2,6 +2,19 @@
 title: "Set up two-factor authentication"
 topic: account.two-factor
 version: 1
+keywords:
+    - 2FA
+    - MFA
+    - multi-factor authentication
+    - two-step verification
+    - authenticator app
+    - one-time code
+    - OTP
+    - passkey
+    - security key
+    - recovery codes
+    - backup codes
+    - account compromised
 audience: []
 related:
     - admin.security

@@ -2,6 +2,17 @@
 title: "Supporti di accesso"
 topic: access.media
 version: 1
+keywords:
+    - badge
+    - transponder
+    - tessera magnetica
+    - chiave elettronica
+    - gestione chiavi
+    - consegna chiavi
+    - badge smarrito
+    - bloccare badge
+    - controllo accessi
+    - tessera di accesso
 audience: []
 modules:
     - module.fuhrpark

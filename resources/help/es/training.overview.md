@@ -2,6 +2,17 @@
 title: "Gestión de formación"
 topic: training.overview
 version: 1
+keywords:
+    - formación obligatoria
+    - plan de formación
+    - formación continua
+    - cursos
+    - catálogo de cursos
+    - matriz de formación
+    - formación anual
+    - certificado de formación
+    - formaciones vencidas
+    - vencimientos de formación
 audience: []
 related:
     - safety.overview

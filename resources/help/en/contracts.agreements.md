@@ -2,6 +2,17 @@
 title: "Customer agreements: DPA and NDA"
 topic: contracts.agreements
 version: 1
+keywords:
+    - data processing contract
+    - GDPR contract
+    - non-disclosure agreement
+    - confidentiality agreement
+    - e-signature
+    - signature link
+    - sign online
+    - countersignature
+    - request signature
+    - signed PDF
 audience: []
 modules:
     - module.contracts

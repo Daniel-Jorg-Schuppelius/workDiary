@@ -2,6 +2,18 @@
 title: "Ihr Tag in WorkDiary: Geschäftsführung"
 topic: roles.geschaeftsfuehrung
 version: 1
+keywords:
+    - Chef
+    - Inhaber
+    - Geschäftsleitung
+    - Management-Sicht
+    - Unternehmensüberblick
+    - Kennzahlen
+    - Lesezugriff
+    - Audit-Log einsehen
+    - Funktionstrennung
+    - Berichte exportieren
+    - Dashboard
 audience:
     - geschaeftsfuehrung
 related:

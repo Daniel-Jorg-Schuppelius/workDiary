@@ -2,6 +2,15 @@
 title: "Checklist di onboarding"
 topic: onboarding.checklist
 version: 1
+keywords:
+    - configurazione iniziale
+    - procedura guidata
+    - primi passi
+    - configurare l'organizzazione
+    - messa in funzione
+    - setup
+    - avanzamento configurazione
+    - saltare un passaggio
 audience:
     - admin
     - geschaeftsfuehrung

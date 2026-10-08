@@ -2,6 +2,19 @@
 title: "Terminanfragen"
 topic: appointments.inbox
 version: 1
+keywords:
+    - Terminbuchung
+    - Online-Terminbuchung
+    - Termin anfragen
+    - Kundenportal
+    - Buchungsanfrage
+    - Termin bestätigen
+    - Termin ablehnen
+    - Zeitfenster
+    - Slots
+    - Leistungsarten
+    - Stornofrist
+    - Disposition
 audience: []
 modules:
     - module.planung

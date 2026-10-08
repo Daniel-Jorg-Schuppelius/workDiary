@@ -2,6 +2,20 @@
 title: "Disposition und Konfliktwarnungen"
 topic: dispatch.overview
 version: 1
+keywords:
+    - Einsatzplanung
+    - disponieren
+    - Techniker einplanen
+    - Auftrag zuweisen
+    - Doppelbuchung
+    - Doppelverplanung
+    - Ruhezeit
+    - Höchstarbeitszeit
+    - Überschneidung
+    - Fahrzeug reservieren
+    - Fahrzeugreservierung
+    - Terminbestätigung
+    - Dispositionsstatus
 audience: []
 related:
     - diary-entries.edit

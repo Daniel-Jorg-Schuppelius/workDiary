@@ -2,6 +2,16 @@
 title: "Clasificaciones y reglas obligatorias"
 topic: admin.classifications
 version: 1
+keywords:
+    - listas de valores
+    - categorías
+    - listas desplegables
+    - catálogos
+    - tablas maestras
+    - tipos de pedido
+    - tipos de fallo
+    - causas
+    - campos obligatorios
 audience:
     - admin
     - geschaeftsfuehrung

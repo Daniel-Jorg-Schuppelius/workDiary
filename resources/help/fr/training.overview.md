@@ -2,6 +2,18 @@
 title: "Gestion des formations"
 topic: training.overview
 version: 1
+keywords:
+    - formations obligatoires
+    - plan de formation
+    - formation continue
+    - catalogue de formations
+    - cours
+    - matrice de formation
+    - instruction annuelle
+    - attestation de formation
+    - formations échues
+    - échéances de formation
+    - habilitations
 audience: []
 related:
     - safety.overview

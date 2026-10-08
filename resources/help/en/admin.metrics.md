@@ -2,6 +2,18 @@
 title: "Metrics"
 topic: admin.metrics
 version: 1
+keywords:
+    - KPIs
+    - statistics
+    - monitoring
+    - system usage
+    - storage usage
+    - disk space
+    - active users
+    - failed jobs
+    - queue
+    - usage statistics
+    - performance
 audience:
     - admin
 related:

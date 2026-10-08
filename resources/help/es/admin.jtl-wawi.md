@@ -2,6 +2,16 @@
 title: "Conectar JTL-Wawi"
 topic: admin.jtl-wawi
 version: 1
+keywords:
+    - sistema de gestión de inventario
+    - ERP
+    - sincronización de stock
+    - artículos padre
+    - variantes
+    - asignación de almacenes
+    - EAN
+    - GTIN
+    - gestión de existencias
 audience:
     - admin
 modules:

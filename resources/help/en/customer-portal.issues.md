@@ -2,6 +2,15 @@
 title: "Open Issues"
 topic: customer-portal.issues
 version: 1
+keywords:
+    - open items
+    - open points
+    - punch list
+    - outstanding items
+    - action items
+    - progress status
+    - responsible person
+    - due date
 audience: []
 related:
     - customer-portal.overview

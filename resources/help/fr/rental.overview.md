@@ -2,6 +2,19 @@
 title: "Location de matériel"
 topic: rental.overview
 version: 2
+keywords:
+    - louer du matériel
+    - location d'outils
+    - location d'engins
+    - parc locatif
+    - contrat de location
+    - caution
+    - réservation de matériel
+    - retour de matériel
+    - état des lieux
+    - calendrier de disponibilité
+    - tarif de location
+    - télématique
 audience: []
 modules:
     - module.rental

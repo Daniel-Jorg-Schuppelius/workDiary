@@ -2,6 +2,19 @@
 title: "Vertragsverwaltung"
 topic: contracts.overview
 version: 1
+keywords:
+    - Vertragsmanagement
+    - Verträge
+    - Kündigungsfrist
+    - Vertragslaufzeit
+    - Vertragsverlängerung
+    - automatische Verlängerung
+    - Wartungsvertrag
+    - Mietvertrag
+    - Rahmenvertrag
+    - Fristenerinnerung
+    - Indexierung
+    - Kündigungstermin
 audience: []
 modules:
     - module.contracts

@@ -2,6 +2,19 @@
 title: "Kundenvereinbarungen: AVV und Verschwiegenheit"
 topic: contracts.agreements
 version: 1
+keywords:
+    - AVV
+    - Auftragsverarbeitungsvertrag
+    - Auftragsverarbeitung
+    - DSGVO-Vertrag
+    - NDA
+    - Geheimhaltungsvereinbarung
+    - Vertraulichkeitsvereinbarung
+    - digital unterschreiben
+    - elektronische Unterschrift
+    - Signaturlink
+    - Gegenzeichnung
+    - Unterschrift einholen
 audience: []
 modules:
     - module.contracts

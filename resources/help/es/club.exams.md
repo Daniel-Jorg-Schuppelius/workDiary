@@ -2,6 +2,16 @@
 title: "Exámenes"
 topic: club.exams
 version: 1
+keywords:
+    - examen de cinturón
+    - examen de grado
+    - admisión al examen
+    - inscripción al examen
+    - resultado del examen
+    - examinador
+    - diploma
+    - certificado de grado
+    - requisitos de admisión
 audience: []
 modules:
     - module.club

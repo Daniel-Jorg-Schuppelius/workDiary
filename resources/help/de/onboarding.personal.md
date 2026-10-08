@@ -2,6 +2,17 @@
 title: "Mein Einstieg"
 topic: onboarding.personal
 version: 1
+keywords:
+    - erste Schritte
+    - Einarbeitung
+    - Einführung
+    - Starthilfe
+    - Getting Started
+    - persönliche Checkliste
+    - Willkommen
+    - Einstiegs-Checkliste
+    - Onboarding
+    - Einstieg ausblenden
 audience: []
 related:
     - dashboard.overview

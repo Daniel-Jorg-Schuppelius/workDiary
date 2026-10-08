@@ -2,6 +2,18 @@
 title: "Bürgschaften"
 topic: guarantees.overview
 version: 1
+keywords:
+    - Bürgschaftsregister
+    - Bankbürgschaft
+    - Aval
+    - Avalbürgschaft
+    - Gewährleistungsbürgschaft
+    - Vertragserfüllungsbürgschaft
+    - Sicherheitseinbehalt
+    - Einbehalt ablösen
+    - Bürgschaftsurkunde
+    - Bürgschaft zurückfordern
+    - Sicherheitsleistung
 audience: []
 related:
     - invoices.manage

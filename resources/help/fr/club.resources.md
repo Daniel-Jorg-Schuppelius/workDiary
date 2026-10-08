@@ -2,6 +2,17 @@
 title: "Installations sportives et ressources"
 topic: club.resources
 version: 1
+keywords:
+    - réservation de salle
+    - planning des salles
+    - réservation de terrain
+    - gymnase
+    - réservation de couloir
+    - bateaux
+    - matériel sportif
+    - fermeture du terrain
+    - réserver une ressource
+    - habilitation
 audience: []
 modules:
     - module.club

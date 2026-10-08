@@ -2,6 +2,16 @@
 title: "Base di conoscenza"
 topic: knowledge.articles
 version: 1
+keywords:
+    - wiki
+    - problemi noti
+    - database delle soluzioni
+    - risoluzione dei problemi
+    - troubleshooting
+    - articolo how-to
+    - scrivere istruzioni
+    - articolo di conoscenza
+    - knowledge base
 audience: []
 modules:
     - module.knowledge

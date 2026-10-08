@@ -2,6 +2,17 @@
 title: "Protokoll signieren"
 topic: protocols.sign
 version: 1
+keywords:
+    - Unterschrift
+    - unterschreiben lassen
+    - digitale Unterschrift
+    - Kundenunterschrift
+    - elektronische Signatur
+    - Abnahme bestätigen
+    - Abnahme unterschreiben
+    - Unterschrift per E-Mail
+    - Unterschrift auf Tablet
+    - Signaturlink
 audience: []
 related:
     - protocols.create

@@ -2,6 +2,19 @@
 title: "Schwachstellen & Advisories"
 topic: isms.vulnerabilities
 version: 1
+keywords:
+    - Sicherheitslücke
+    - CVE
+    - CVSS
+    - Sicherheitswarnung
+    - Security Advisory
+    - CSAF
+    - VEX
+    - Patch
+    - Schwachstellenmanagement
+    - Exploit
+    - Ausnutzbarkeit
+    - SBOM
 audience: []
 modules:
     - module.isms

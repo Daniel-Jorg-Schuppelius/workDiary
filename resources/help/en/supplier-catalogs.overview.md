@@ -2,6 +2,19 @@
 title: "Supplier catalogues"
 topic: supplier-catalogs.overview
 version: 3
+keywords:
+    - DATANORM
+    - BMEcat
+    - import price list
+    - wholesaler
+    - catalog import
+    - purchase prices
+    - update prices
+    - discount groups
+    - OCI punchout
+    - IDS Connect
+    - Open Masterdata
+    - supplier webshop
 audience: []
 modules:
     - module.lager

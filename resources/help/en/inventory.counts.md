@@ -2,6 +2,18 @@
 title: "Stocktake"
 topic: inventory.counts
 version: 1
+keywords:
+    - inventory count
+    - physical inventory
+    - stock count
+    - cycle count
+    - annual inventory
+    - count sheet
+    - count stock
+    - inventory differences
+    - post differences
+    - ABC class
+    - scan count
 audience: []
 modules:
     - module.lager

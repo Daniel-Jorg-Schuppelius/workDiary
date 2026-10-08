@@ -2,6 +2,18 @@
 title: "Supplier assessment"
 topic: isms.suppliers
 version: 1
+keywords:
+    - supplier review
+    - vendor assessment
+    - vendor risk
+    - third-party risk
+    - criticality
+    - DPA
+    - data processing agreement
+    - NDA
+    - right to audit
+    - supply chain security
+    - vendor management
 audience: []
 modules:
     - module.isms

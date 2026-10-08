@@ -2,6 +2,17 @@
 title: "Equitación: caballos, clases y asignación"
 topic: club.horses
 version: 1
+keywords:
+    - escuela de equitación
+    - clase de equitación
+    - caballo de escuela
+    - caballo particular
+    - asignar caballo
+    - instructor de equitación
+    - cojera
+    - descanso del caballo
+    - picadero
+    - uso de caballos
 audience: []
 modules:
     - module.club

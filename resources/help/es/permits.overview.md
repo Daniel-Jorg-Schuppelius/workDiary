@@ -2,6 +2,17 @@
 title: "Registro de autorizaciones"
 topic: permits.overview
 version: 1
+keywords:
+    - permiso
+    - licencia
+    - permiso de apertura de zanja
+    - ocupación de vía pública
+    - permiso de evento
+    - resolución
+    - número de expediente
+    - organismo
+    - autorizaciones caducadas
+    - condiciones
 audience: []
 modules:
     - module.vertrieb

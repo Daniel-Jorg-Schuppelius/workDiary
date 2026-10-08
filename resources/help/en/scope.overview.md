@@ -2,6 +2,17 @@
 title: "Feature scope"
 topic: scope.overview
 version: 1
+keywords:
+    - enable modules
+    - disable modules
+    - hide features
+    - declutter menu
+    - module selection
+    - preset
+    - set start page
+    - landing page per role
+    - home page
+    - turn off features
 audience:
     - admin
 related:

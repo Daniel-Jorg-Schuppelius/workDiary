@@ -2,6 +2,18 @@
 title: "Vue d'ensemble du SMSI"
 topic: isms.overview
 version: 2
+keywords:
+    - sécurité de l'information
+    - management de la sécurité
+    - ISO 27001
+    - périmètre
+    - sécurité informatique
+    - gestion des risques
+    - préparer la certification
+    - Annexe A
+    - préparation à l'audit
+    - ISMS
+    - conformité
 audience: []
 modules:
     - module.isms

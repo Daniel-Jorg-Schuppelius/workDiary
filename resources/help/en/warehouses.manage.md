@@ -2,6 +2,16 @@
 title: "Warehouses"
 topic: warehouses.manage
 version: 1
+keywords:
+    - create warehouse
+    - storage location
+    - stock location
+    - default warehouse
+    - inventory locations
+    - multiple warehouses
+    - delete location
+    - depot
+    - storeroom
 audience: []
 modules:
     - module.lager

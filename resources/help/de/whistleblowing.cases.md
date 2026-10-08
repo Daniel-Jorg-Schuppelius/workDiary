@@ -2,6 +2,19 @@
 title: "Meldestelle – Fallbearbeitung"
 topic: whistleblowing.cases
 version: 1
+keywords:
+    - Hinweisgebersystem
+    - HinSchG
+    - Whistleblower
+    - Hinweisgeberschutz
+    - interne Meldestelle
+    - Hinweis bearbeiten
+    - Eingang bestätigen
+    - Compliance-Fall
+    - Interessenkonflikt
+    - Notfallfreigabe
+    - Rückfrage an Hinweisgeber
+    - Fall löschen
 audience: []
 modules:
     - module.compliance

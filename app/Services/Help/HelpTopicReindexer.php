@@ -35,6 +35,7 @@ class HelpTopicReindexer {
                 ['topic' => $item['topic'], 'locale' => $item['locale']],
                 [
                     'title' => $item['title'],
+                    'keywords' => $item['keywords'],
                     'audience' => $item['audience'],
                     'modules' => $item['modules'],
                     'version' => $item['version'],

@@ -2,6 +2,15 @@
 title: "Tempi aperti"
 topic: finance.open-times
 version: 2
+keywords:
+    - tempi non fatturati
+    - ore non fatturate
+    - ore fatturabili
+    - controllo fatturazione
+    - lavori in corso
+    - preparare la fatturazione
+    - ore per cliente
+    - segnare come fatturato
 audience: []
 modules:
     - module.finance

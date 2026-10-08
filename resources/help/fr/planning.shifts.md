@@ -2,6 +2,16 @@
 title: "Planification des services et des postes"
 topic: planning.shifts
 version: 2
+keywords:
+    - planning
+    - tableau de service
+    - planning des équipes
+    - roulement
+    - types de poste
+    - poste du matin
+    - poste de nuit
+    - effectif minimum
+    - publier le planning
 audience: []
 related:
     - attendance.manage

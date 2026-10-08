@@ -2,6 +2,18 @@
 title: "Resumen de la gestión de protección de datos"
 topic: privacy.overview
 version: 1
+keywords:
+    - RGPD
+    - registro de actividades de tratamiento
+    - encargado del tratamiento
+    - contrato de encargo
+    - medidas técnicas y organizativas
+    - derechos ARCO
+    - solicitud de acceso
+    - brecha de seguridad
+    - notificación en 72 horas
+    - política de conservación
+    - retención legal
 audience: []
 modules:
     - module.datenschutz

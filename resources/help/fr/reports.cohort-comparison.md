@@ -2,6 +2,16 @@
 title: "Comparaison de cohortes (avant/après formation)"
 topic: reports.cohort-comparison
 version: 1
+keywords:
+    - efficacité des formations
+    - impact de la formation
+    - comparaison avant après
+    - évaluer une formation
+    - analyse des qualifications
+    - taux facturable
+    - taux de reprise
+    - analyse de cohortes
+    - ROI de la formation
 audience: []
 related:
     - reports.economics

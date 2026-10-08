@@ -2,6 +2,18 @@
 title: "Gestion des contrats"
 topic: contracts.overview
 version: 1
+keywords:
+    - suivi des contrats
+    - contrats
+    - préavis de résiliation
+    - durée du contrat
+    - renouvellement du contrat
+    - tacite reconduction
+    - contrat de maintenance
+    - contrat de location
+    - contrat-cadre
+    - rappel d'échéance
+    - indexation
 audience: []
 modules:
     - module.contracts

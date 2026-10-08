@@ -2,6 +2,20 @@
 title: "Fees"
 topic: club.fees
 version: 1
+keywords:
+    - membership fee
+    - club dues
+    - direct debit
+    - SEPA debit
+    - fee run
+    - treasurer
+    - family rate
+    - sibling discount
+    - dunning
+    - payment reminder
+    - returned debit
+    - donation receipt
+    - outstanding fees
 audience: []
 modules:
     - module.club

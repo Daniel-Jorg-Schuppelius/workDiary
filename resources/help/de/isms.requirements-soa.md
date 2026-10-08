@@ -2,6 +2,19 @@
 title: "Anforderungen & SoA"
 topic: isms.requirements-soa
 version: 1
+keywords:
+    - Statement of Applicability
+    - Erklärung zur Anwendbarkeit
+    - Anwendbarkeitserklärung
+    - Anforderungskatalog
+    - Normkatalog
+    - Normanforderungen
+    - Annex A
+    - ISO 27001
+    - ISO 9001
+    - ISO 27701
+    - Katalog importieren
+    - nicht anwendbar begründen
 audience: []
 modules:
     - module.isms

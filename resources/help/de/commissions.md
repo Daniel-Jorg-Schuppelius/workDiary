@@ -2,6 +2,19 @@
 title: "Provisionen"
 topic: commissions
 version: 1
+keywords:
+    - Provisionsabrechnung
+    - Vertriebsprovision
+    - Verkaufsprovision
+    - Provisionslauf
+    - Provisionsregel
+    - Provisionsstaffel
+    - Vermittlerprovision
+    - Tippgeberprovision
+    - Provisionsrückforderung
+    - Stornohaftung
+    - Provision auszahlen
+    - Jahresdeckel
 audience:
     - admin
     - geschaeftsfuehrung

@@ -2,6 +2,19 @@
 title: "Flux de documents"
 topic: billing.feed
 version: 1
+keywords:
+    - factures
+    - devis
+    - factures clients
+    - factures fournisseurs
+    - avoirs
+    - notes de frais
+    - postes ouverts
+    - relance
+    - factures en retard
+    - facture électronique
+    - liste des documents
+    - recettes
 audience: []
 modules:
     - module.vertrieb

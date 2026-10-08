@@ -2,6 +2,19 @@
 title: "Leads"
 topic: sales.leads
 version: 2
+keywords:
+    - prospects
+    - prospecting
+    - sales pipeline
+    - sales funnel
+    - CRM
+    - qualify lead
+    - convert lead to customer
+    - potential customers
+    - follow-up
+    - new business
+    - Calendly
+    - duplicate check
 audience: []
 modules:
     - module.vertrieb

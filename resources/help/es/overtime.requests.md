@@ -2,6 +2,14 @@
 title: "Solicitudes de horas extra"
 topic: overtime.requests
 version: 1
+keywords:
+    - horas adicionales
+    - trabajo extra
+    - pedir horas extra
+    - aprobar horas extra
+    - exceso de jornada
+    - horario flexible
+    - horas extraordinarias
 audience: []
 related:
     - corrections.requests

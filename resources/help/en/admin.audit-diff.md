@@ -2,6 +2,16 @@
 title: "Change history & version comparison"
 topic: admin.audit-diff
 version: 1
+keywords:
+    - audit trail
+    - audit log
+    - change log
+    - who changed what
+    - diff
+    - before and after
+    - revision history
+    - track changes
+    - field history
 audience: [admin]
 related:
     - audit.log

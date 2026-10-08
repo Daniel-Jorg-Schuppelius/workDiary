@@ -2,6 +2,17 @@
 title: "Aujourd'hui & Kanban"
 topic: work.overview
 version: 1
+keywords:
+    - vue du jour
+    - aperçu du jour
+    - liste de tâches
+    - mes tâches
+    - tableau Kanban
+    - tableau des tâches
+    - changer de statut
+    - file de travail
+    - agenda
+    - à faire aujourd'hui
 audience: []
 related:
     - diary-entries.create

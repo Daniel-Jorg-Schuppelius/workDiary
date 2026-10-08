@@ -2,6 +2,18 @@
 title: "Altsystem (Legacy)"
 topic: legacy.overview
 version: 1
+keywords:
+    - altes System
+    - Vorgängersystem
+    - Altdaten
+    - Datenübernahme
+    - Datenmigration
+    - Notdienstplan
+    - Bereitschaftsplan
+    - Callcenter-Login
+    - Altsystem-Archiv
+    - alte Tagebucheinträge
+    - Altsystem-Benutzer
 related:
     - auth.login
     - admin.tenants

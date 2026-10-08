@@ -2,6 +2,18 @@
 title: "Offene Zeiten"
 topic: finance.open-times
 version: 2
+keywords:
+    - nicht abgerechnete Zeiten
+    - unfakturierte Stunden
+    - offene Stunden
+    - abrechenbare Stunden
+    - Abrechnungskontrolle
+    - vergessene Zeiten
+    - Zeiten abrechnen
+    - unfertige Leistungen
+    - Rechnungslauf vorbereiten
+    - Altbestand abschließen
+    - Stunden je Kunde
 audience: []
 modules:
     - module.finance

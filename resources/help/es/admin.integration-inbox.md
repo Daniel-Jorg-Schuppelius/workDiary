@@ -2,6 +2,16 @@
 title: "Bandeja de conciliación"
 topic: admin.integration-inbox
 version: 1
+keywords:
+    - bandeja de integraciones
+    - conflictos de importación
+    - emparejar registros
+    - asignar registros
+    - registros sin asignar
+    - conflicto de campo
+    - conflicto de sincronización
+    - número desconocido
+    - dispositivos desconocidos
 audience: []
 related:
     - admin.integrations

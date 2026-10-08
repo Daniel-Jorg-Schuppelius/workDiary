@@ -2,6 +2,17 @@
 title: "Zeiteintrag bearbeiten"
 topic: time-entries.edit
 version: 1
+keywords:
+    - Zeit korrigieren
+    - Zeitbuchung ändern
+    - Stunden anpassen
+    - falsche Zeit
+    - Beginn und Ende ändern
+    - Pause ändern
+    - Projekt umbuchen
+    - Korrekturantrag
+    - gesperrter Eintrag
+    - Änderungsprotokoll
 audience: []
 related:
     - time-entries.start

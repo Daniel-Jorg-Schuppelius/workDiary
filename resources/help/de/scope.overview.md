@@ -2,6 +2,18 @@
 title: "Funktionsumfang"
 topic: scope.overview
 version: 1
+keywords:
+    - Module aktivieren
+    - Module deaktivieren
+    - Funktionen ausblenden
+    - Menü entschlacken
+    - Modulauswahl
+    - Preset
+    - Startseite festlegen
+    - Startseite je Rolle
+    - Landingpage
+    - Features abschalten
+    - Branchenempfehlung
 audience:
     - admin
 related:

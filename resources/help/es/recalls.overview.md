@@ -2,6 +2,20 @@
 title: "Retiradas de productos"
 topic: recalls.overview
 version: 1
+keywords:
+    - campaña de retirada
+    - iniciar una retirada
+    - producto defectuoso
+    - números de serie
+    - clientes afectados
+    - avisar a los clientes
+    - tasa de devolución
+    - notificación a la autoridad
+    - seguridad de productos
+    - trazabilidad
+    - bloquear stock
+    - aviso de seguridad
+    - recall
 audience: []
 modules:
     - module.lager

@@ -2,6 +2,18 @@
 title: "Conditions particulières & compte client"
 topic: customers.billing
 version: 3
+keywords:
+    - prix spéciaux
+    - taux horaire client
+    - tarif week-end
+    - tarif jours fériés
+    - forfait de déplacement
+    - frais de déplacement
+    - solde
+    - forfait mensuel
+    - acompte mensuel
+    - Lexoffice
+    - clôture mensuelle
 audience: []
 modules:
     - module.vertrieb

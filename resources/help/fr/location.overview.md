@@ -2,6 +2,18 @@
 title: "Saisie des temps basée sur la localisation"
 topic: location.overview
 version: 1
+keywords:
+    - pointage GPS
+    - géorepérage
+    - geofencing
+    - géolocalisation
+    - suivi de localisation
+    - saisie automatique des temps
+    - OwnTracks
+    - Traccar
+    - historique des positions Google
+    - propositions de temps
+    - visites clients
 audience: []
 modules:
     - module.standorterfassung

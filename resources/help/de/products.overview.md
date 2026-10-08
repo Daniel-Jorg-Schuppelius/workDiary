@@ -2,6 +2,16 @@
 title: "Produkte"
 topic: products.overview
 version: 1
+keywords:
+    - Hersteller
+    - Modell
+    - Gerätetyp
+    - Gerätemodell
+    - Hersteller und Modell
+    - Produktkatalog
+    - Produktgruppe
+    - Typstammdaten
+    - Auswertung pro Modell
 audience: []
 related:
     - articles.master

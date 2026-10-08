@@ -2,6 +2,16 @@
 title: "Connecter un assistant IA"
 topic: account.ai-assistant
 version: 1
+keywords:
+    - ChatGPT
+    - Claude
+    - MCP
+    - intelligence artificielle
+    - chatbot
+    - agent conversationnel
+    - autoriser un assistant
+    - accès IA
+    - révoquer accès IA
 audience: []
 related:
     - account.api-tokens

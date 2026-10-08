@@ -2,6 +2,20 @@
 title: "Personenbeförderung (Taxi/Mietwagen)"
 topic: passenger.overview
 version: 1
+keywords:
+    - Taxiunternehmen
+    - Mietwagenunternehmen
+    - Fahrdienst
+    - Fahrtdisposition
+    - Fahrauftrag
+    - Taxameter
+    - Konzession
+    - P-Schein
+    - Taxitarif
+    - Festpreis
+    - Schichtabrechnung
+    - Fahrerabrechnung
+    - Bedarfsverkehr
 audience: []
 modules:
     - module.fuhrpark

@@ -2,6 +2,18 @@
 title: "Plugins"
 topic: admin.plugins
 version: 1
+keywords:
+    - extensions
+    - add-ons
+    - integrations
+    - connectors
+    - enable plugin
+    - disable plugin
+    - health check
+    - test connection
+    - plugin errors
+    - auto-disabled
+    - error log
 audience:
     - admin
 related:

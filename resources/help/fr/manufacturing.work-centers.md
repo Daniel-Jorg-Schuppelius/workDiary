@@ -2,6 +2,17 @@
 title: "Capacités de fabrication (postes de travail)"
 topic: manufacturing.work-centers
 version: 1
+keywords:
+    - poste de charge
+    - machine
+    - planification des capacités
+    - charge machine
+    - taux d'occupation
+    - temps de réglage
+    - temps de préparation
+    - capacité journalière
+    - goulot d'étranglement
+    - ordonnancement
 audience: []
 modules:
     - module.lager

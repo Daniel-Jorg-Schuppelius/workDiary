@@ -2,6 +2,18 @@
 title: "Connexion à deux facteurs"
 topic: auth.two-factor
 version: 1
+keywords:
+    - 2FA
+    - MFA
+    - double authentification
+    - application authenticator
+    - code à usage unique
+    - TOTP
+    - passkey
+    - clé de sécurité
+    - codes de récupération
+    - code de vérification
+    - validation en deux étapes
 related:
     - auth.login
     - account.two-factor

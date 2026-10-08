@@ -2,6 +2,16 @@
 title: "Soberanía de datos"
 topic: admin.data-ownership
 version: 1
+keywords:
+    - sistema maestro
+    - sistema de referencia
+    - fuente única de verdad
+    - propiedad de los datos
+    - sistema de facturación
+    - Lexoffice
+    - DATEV
+    - evitar doble facturación
+    - conflicto de sincronización
 audience:
     - admin
 related:

@@ -2,6 +2,19 @@
 title: "Richiami di prodotti"
 topic: recalls.overview
 version: 1
+keywords:
+    - campagna di richiamo
+    - avviare un richiamo
+    - prodotto difettoso
+    - numeri di serie
+    - clienti interessati
+    - avvisare i clienti
+    - tasso di reso
+    - notifica all'autorità
+    - sicurezza dei prodotti
+    - tracciabilità
+    - bloccare le scorte
+    - avviso di sicurezza
 audience: []
 modules:
     - module.lager

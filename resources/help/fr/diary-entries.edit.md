@@ -2,6 +2,17 @@
 title: "Modifier une commande"
 topic: diary-entries.edit
 version: 1
+keywords:
+    - modifier une intervention
+    - détails de la commande
+    - dossier
+    - changer le statut
+    - clôturer la commande
+    - terminer l'intervention
+    - ajouter une pièce jointe
+    - ajouter un commentaire
+    - classification obligatoire
+    - taille des pièces jointes
 audience: []
 related:
     - diary-entries.create

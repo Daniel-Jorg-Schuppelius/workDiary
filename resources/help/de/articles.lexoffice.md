@@ -2,6 +2,17 @@
 title: "Lexoffice-Produkte & Leistungen"
 topic: articles.lexoffice
 version: 2
+keywords:
+    - Lexware Office
+    - Lexoffice Artikel
+    - Artikel synchronisieren
+    - Artikelabgleich
+    - Produktkatalog
+    - Preisliste
+    - Sync-Konflikt
+    - Artikelimport
+    - Dienstleistungen
+    - Steuersatz
 audience: []
 modules:
     - module.vertrieb

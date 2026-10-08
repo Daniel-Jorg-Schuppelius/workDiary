@@ -2,6 +2,18 @@
 title: "Cuentas de tiempo"
 topic: time-accounts.overview
 version: 1
+keywords:
+    - cuenta adicional
+    - cuenta de tiempo libre
+    - descanso compensatorio
+    - contador de turnos nocturnos
+    - horas de pluses
+    - saldo de la cuenta
+    - semáforo
+    - diario de movimientos
+    - contraasiento
+    - exportar cuentas
+    - trabajo adicional
 audience: []
 related:
     - time-accounts.flex

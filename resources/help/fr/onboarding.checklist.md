@@ -2,6 +2,15 @@
 title: "Check-list d'intégration"
 topic: onboarding.checklist
 version: 1
+keywords:
+    - configuration initiale
+    - assistant de configuration
+    - mise en route
+    - premiers pas
+    - configurer l'organisation
+    - mise en service
+    - progression de la configuration
+    - ignorer une étape
 audience:
     - admin
     - geschaeftsfuehrung

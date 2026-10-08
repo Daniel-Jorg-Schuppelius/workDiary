@@ -2,6 +2,17 @@
 title: "Utilization & realization"
 topic: reports.utilization
 version: 2
+keywords:
+    - utilization rate
+    - utilisation
+    - billable hours
+    - billable ratio
+    - invoiced hours
+    - realization rate
+    - productivity
+    - target vs actual
+    - capacity utilization
+    - chargeable hours
 audience: []
 related:
     - reports.economics

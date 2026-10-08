@@ -2,6 +2,17 @@
 title: "Citas de la asociación"
 topic: club.events
 version: 1
+keywords:
+    - entrenamiento
+    - sesión de entrenamiento
+    - ensayo
+    - cursillo
+    - asamblea general
+    - inscripción
+    - lista de espera
+    - calendario del club
+    - citas periódicas
+    - cancelar entrenamiento
 audience: []
 modules:
     - module.club

@@ -2,6 +2,17 @@
 title: "Maturity & readiness"
 topic: isms.readiness
 version: 1
+keywords:
+    - maturity model
+    - maturity level
+    - audit readiness
+    - self-assessment
+    - traffic light
+    - readiness score
+    - gap analysis
+    - audit preparation
+    - ready for audit
+    - blocking gaps
 audience: []
 modules:
     - module.isms

@@ -2,6 +2,17 @@
 title: "Centro de control: tablero y mapa"
 topic: dispatch.board
 version: 1
+keywords:
+    - tablero de planificación
+    - planificación de intervenciones
+    - kanban
+    - vista de mapa
+    - mapa de trabajos
+    - vista por técnico
+    - riesgo SLA
+    - despachador
+    - planificador
+    - sala de control
 audience: []
 modules:
     - module.planung

@@ -2,6 +2,17 @@
 title: "Notificaciones"
 topic: account.notifications
 version: 1
+keywords:
+    - avisos
+    - alertas
+    - mensajes
+    - campana
+    - no leídas
+    - marcar como leído
+    - centro de notificaciones
+    - notificaciones por correo
+    - SMS
+    - horas de silencio
 audience: []
 related:
     - account.profile

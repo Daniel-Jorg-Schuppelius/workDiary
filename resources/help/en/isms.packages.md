@@ -2,6 +2,18 @@
 title: "Audit packages & auditor links"
 topic: isms.packages
 version: 1
+keywords:
+    - auditor access
+    - auditor link
+    - access for certifier
+    - audit evidence
+    - evidence pack
+    - data snapshot
+    - freeze data
+    - integrity check
+    - verify hash
+    - read-only access
+    - audit export
 audience: []
 modules:
     - module.isms

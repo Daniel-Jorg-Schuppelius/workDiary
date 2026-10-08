@@ -2,6 +2,15 @@
 title: "Tags"
 topic: catalog.tags
 version: 1
+keywords:
+    - Schlagwörter
+    - Stichwörter
+    - Labels
+    - Etiketten
+    - Verschlagwortung
+    - Markierungen
+    - Kennzeichnung
+    - Farbmarkierung
 audience: []
 related:
     - catalog.activity-categories

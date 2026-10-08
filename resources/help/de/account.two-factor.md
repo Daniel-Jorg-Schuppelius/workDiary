@@ -2,6 +2,19 @@
 title: "Zwei-Faktor-Authentifizierung einrichten"
 topic: account.two-factor
 version: 1
+keywords:
+    - 2FA
+    - MFA
+    - Mehrfaktor-Authentifizierung
+    - Authenticator-App
+    - Einmalcode
+    - TOTP
+    - Passkey
+    - Sicherheitsschlüssel
+    - Recovery-Codes
+    - Wiederherstellungscodes
+    - Konto sichern
+    - Konto gehackt
 audience: []
 related:
     - admin.security

@@ -2,6 +2,15 @@
 title: "Portal del cliente – Alquiler"
 topic: customer-portal.rentals
 version: 1
+keywords:
+    - alquilar equipos
+    - alquiler de equipos
+    - solicitud de alquiler
+    - préstamo
+    - precio de alquiler
+    - reserva directa
+    - condiciones de alquiler
+    - equipos de alquiler
 audience: []
 related:
     - customer-portal.overview

@@ -2,6 +2,18 @@
 title: "Aufträge in der Wochenansicht"
 topic: week.overview
 version: 1
+keywords:
+    - Wochenkalender
+    - Kalenderansicht
+    - Wochenplanung
+    - Teamkalender
+    - Team-Woche
+    - Bereitschaftsdienst
+    - Notdienst eintragen
+    - Termin anlegen
+    - Einsatzplanung
+    - Wochenübersicht
+    - Plantafel
 audience: []
 related:
     - diary-entries.create

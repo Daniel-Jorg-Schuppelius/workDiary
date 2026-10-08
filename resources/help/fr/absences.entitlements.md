@@ -2,6 +2,16 @@
 title: "Compte de congés"
 topic: absences.entitlements
 version: 1
+keywords:
+    - droit à congés
+    - solde de congés
+    - congés restants
+    - congés annuels
+    - congés payés
+    - report de congés
+    - reliquat de congés
+    - compteur de congés
+    - jours de congé
 audience:
     - admin
 related:

@@ -2,6 +2,17 @@
 title: "Análisis de proveedores"
 topic: reports.supplier-analysis
 version: 1
+keywords:
+    - análisis de compras
+    - análisis del gasto
+    - Pareto
+    - análisis ABC
+    - riesgo de concentración
+    - dependencia de proveedores
+    - cuentas por pagar
+    - deudas con proveedores
+    - HHI
+    - volumen de compras
 audience: []
 related:
     - reports.customer-analysis

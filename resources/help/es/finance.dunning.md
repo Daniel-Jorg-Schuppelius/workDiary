@@ -2,6 +2,18 @@
 title: "Reclamación de pagos"
 topic: finance.dunning
 version: 1
+keywords:
+    - recordatorio de pago
+    - carta de reclamación
+    - nivel de reclamación
+    - gastos de reclamación
+    - intereses de demora
+    - facturas vencidas
+    - facturas impagadas
+    - gestión de cobros
+    - morosidad
+    - periodo de gracia
+    - aviso de pago
 audience:
     - admin
     - buchhaltung

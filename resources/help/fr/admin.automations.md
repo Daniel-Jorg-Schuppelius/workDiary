@@ -2,6 +2,16 @@
 title: "Automatisations"
 topic: admin.automations
 version: 1
+keywords:
+    - workflow
+    - règles
+    - règle si alors
+    - déclencheur
+    - moteur de règles
+    - action automatique
+    - automatiser un processus
+    - créer une règle
+    - flux de travail
 audience:
     - admin
 related:

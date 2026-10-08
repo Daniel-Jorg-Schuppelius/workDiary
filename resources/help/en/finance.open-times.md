@@ -2,6 +2,17 @@
 title: "Open times"
 topic: finance.open-times
 version: 2
+keywords:
+    - unbilled time
+    - unbilled hours
+    - billable hours
+    - billing check
+    - work in progress
+    - WIP
+    - time not invoiced
+    - prepare billing run
+    - hours per customer
+    - mark as billed
 audience: []
 modules:
     - module.finance

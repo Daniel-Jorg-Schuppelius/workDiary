@@ -2,6 +2,17 @@
 title: "Paquets d'audit et liens auditeur"
 topic: isms.packages
 version: 1
+keywords:
+    - accès auditeur
+    - lien pour l'auditeur
+    - preuves d'audit
+    - dossier de preuves
+    - instantané des données
+    - figer les données
+    - contrôle d'intégrité
+    - vérifier le hash
+    - accès en lecture seule
+    - export d'audit
 audience: []
 modules:
     - module.isms

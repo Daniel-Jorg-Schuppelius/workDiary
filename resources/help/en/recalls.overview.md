@@ -2,6 +2,19 @@
 title: "Product recalls"
 topic: recalls.overview
 version: 1
+keywords:
+    - recall campaign
+    - start recall
+    - defective product
+    - serial numbers
+    - affected customers
+    - notify customers
+    - return rate
+    - authority notification
+    - product safety
+    - traceability
+    - block stock
+    - safety notice
 audience: []
 modules:
     - module.lager

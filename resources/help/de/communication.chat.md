@@ -2,6 +2,18 @@
 title: "Chat verwenden"
 topic: communication.chat
 version: 1
+keywords:
+    - Chatnachricht
+    - Nachricht senden
+    - Kanal
+    - Direktnachricht
+    - Messenger
+    - Teamchat
+    - Gruppenchat
+    - interne Kommunikation
+    - Erwähnung
+    - Nachricht anheften
+    - Reaktion
 audience: []
 modules:
     - module.chat

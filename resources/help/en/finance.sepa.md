@@ -2,6 +2,19 @@
 title: "SEPA outgoing payments"
 topic: finance.sepa
 version: 1
+keywords:
+    - bulk transfer
+    - payment run
+    - credit transfer file
+    - SEPA XML
+    - pay suppliers
+    - pay invoices
+    - take cash discount
+    - direct debit
+    - direct debit mandate
+    - collect payment
+    - creditor ID
+    - mandate reference
 audience: []
 modules:
     - module.finance

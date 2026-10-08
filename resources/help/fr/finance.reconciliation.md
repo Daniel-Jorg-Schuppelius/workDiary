@@ -2,6 +2,18 @@
 title: "Rapprochement des paiements"
 topic: finance.reconciliation
 version: 2
+keywords:
+    - rapprochement bancaire
+    - importer un relevé
+    - lettrage
+    - encaissements
+    - facture payée
+    - opérations bancaires
+    - CAMT
+    - MT940
+    - escompte
+    - paiement partiel
+    - référence RF
 audience: []
 modules:
     - module.finance

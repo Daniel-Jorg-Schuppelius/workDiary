@@ -2,6 +2,19 @@
 title: "Submit a report (portal)"
 topic: whistleblowing.report
 version: 1
+keywords:
+    - report anonymously
+    - raise a concern
+    - report misconduct
+    - report a violation
+    - whistleblowing
+    - confidential report
+    - anonymous mailbox
+    - case number
+    - access secret
+    - answer follow-up questions
+    - report status
+    - speak up
 audience: []
 related:
     - whistleblowing.cases

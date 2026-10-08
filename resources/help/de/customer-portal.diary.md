@@ -2,6 +2,16 @@
 title: "Leistungsnachweis / Tagebuch"
 topic: customer-portal.diary
 version: 1
+keywords:
+    - Auftragsbuch
+    - Arbeitsnachweis
+    - Leistungsübersicht
+    - erledigte Arbeiten
+    - Arbeitsberichte
+    - Serviceberichte
+    - Einsatzberichte
+    - Auftragsstatus
+    - Auftragsliste
 audience: []
 related:
     - customer-portal.overview

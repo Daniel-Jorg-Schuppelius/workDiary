@@ -2,6 +2,18 @@
 title: "Offene Vorgänge"
 topic: open-issues
 version: 1
+keywords:
+    - offene Punkte
+    - Mängelliste
+    - Mängel
+    - To-do
+    - Problem melden
+    - Restpunkte
+    - Pendenzen
+    - Ticket
+    - Folgeauftrag
+    - Issue
+    - blockiert
 audience: []
 related:
     - foreign-customers

@@ -2,6 +2,17 @@
 title: "Kunden-Rückfragen"
 topic: customer.queries
 version: 1
+keywords:
+    - Kundenfrage
+    - Rückfrage beantworten
+    - Nachfrage Kunde
+    - Kundenablehnung
+    - Abnahme abgelehnt
+    - Signaturlink
+    - Mängel bei Abnahme
+    - Freigabe Kunde
+    - offene Rückfragen
+    - Rückfrage schließen
 audience: []
 related:
     - protocols.sign

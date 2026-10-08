@@ -2,6 +2,19 @@
 title: "Creating an order"
 topic: diary-entries.create
 version: 2
+keywords:
+    - new order
+    - new job
+    - create job
+    - new entry
+    - work order
+    - service call
+    - fault report
+    - maintenance job
+    - installation job
+    - order book
+    - entry type
+    - log a job
 audience: []
 schema: process
 related:

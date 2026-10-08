@@ -2,6 +2,18 @@
 title: "Print orders (print & copy shop)"
 topic: print.orders
 version: 1
+keywords:
+    - print shop
+    - copy shop
+    - print job
+    - preflight check
+    - file check
+    - print-ready file
+    - proof approval
+    - print approval
+    - spoilage
+    - makeready waste
+    - quality check
 audience: []
 modules:
     - module.lager

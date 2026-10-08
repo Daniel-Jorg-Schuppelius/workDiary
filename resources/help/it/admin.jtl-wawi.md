@@ -2,6 +2,16 @@
 title: "Collegare JTL-Wawi"
 topic: admin.jtl-wawi
 version: 1
+keywords:
+    - gestionale magazzino
+    - ERP
+    - sincronizzazione giacenze
+    - articoli padre
+    - varianti
+    - mappatura magazzini
+    - EAN
+    - GTIN
+    - gestione scorte
 audience:
     - admin
 modules:

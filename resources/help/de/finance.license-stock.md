@@ -2,6 +2,19 @@
 title: "Lizenzbestand"
 topic: finance.license-stock
 version: 1
+keywords:
+    - Lizenzverwaltung
+    - Lizenzschlüssel
+    - Seriennummer
+    - Aktivierungsschlüssel
+    - Softwarelizenzen
+    - Product Key
+    - Lizenz verkaufen
+    - Lizenzpaket
+    - Lizenzen weiterverkaufen
+    - Meldebestand
+    - Nachbestellen
+    - Schlüssel importieren
 audience: []
 modules:
     - module.reselling

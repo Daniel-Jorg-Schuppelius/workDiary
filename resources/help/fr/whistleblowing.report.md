@@ -2,6 +2,18 @@
 title: "Déposer un signalement (portail)"
 topic: whistleblowing.report
 version: 1
+keywords:
+    - signaler anonymement
+    - lancer une alerte
+    - signaler un manquement
+    - signaler une infraction
+    - signaler une irrégularité
+    - signalement confidentiel
+    - boîte aux lettres anonyme
+    - numéro de dossier
+    - code d'accès secret
+    - répondre aux questions
+    - statut du signalement
 audience: []
 related:
     - whistleblowing.cases

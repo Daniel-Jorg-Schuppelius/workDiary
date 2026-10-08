@@ -2,6 +2,17 @@
 title: "Pianificazione degli investimenti"
 topic: investments.overview
 version: 2
+keywords:
+    - richiesta di investimento
+    - richiesta di budget
+    - spese in conto capitale
+    - CapEx
+    - approvazione investimento
+    - confronto offerte
+    - sforamento del budget
+    - consuntivo
+    - analisi di redditività
+    - lezioni apprese
 audience: []
 modules:
     - module.investments

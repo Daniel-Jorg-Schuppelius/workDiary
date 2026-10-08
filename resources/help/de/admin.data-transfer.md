@@ -2,6 +2,17 @@
 title: "Datentransfer"
 topic: admin.data-transfer
 version: 1
+keywords:
+    - Datenexport
+    - Daten exportieren
+    - Daten importieren
+    - CSV-Export
+    - Excel-Export
+    - Export herunterladen
+    - Exportverlauf
+    - Kunden exportieren
+    - Datenübernahme
+    - Massenexport
 audience:
     - admin
     - buchhaltung

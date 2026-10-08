@@ -2,6 +2,17 @@
 title: "Equitazione: cavalli, lezioni e assegnazione"
 topic: club.horses
 version: 1
+keywords:
+    - scuola di equitazione
+    - lezione di equitazione
+    - cavallo di scuola
+    - cavallo privato
+    - assegnare un cavallo
+    - istruttore di equitazione
+    - zoppia
+    - riposo del cavallo
+    - brevetto di equitazione
+    - maneggio
 audience: []
 modules:
     - module.club

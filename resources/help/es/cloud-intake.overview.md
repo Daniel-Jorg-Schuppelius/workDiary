@@ -2,6 +2,17 @@
 title: "Entrada de documentos en la nube"
 topic: cloud-intake.overview
 version: 1
+keywords:
+    - Dropbox
+    - OneDrive
+    - SharePoint
+    - Google Drive
+    - carpeta supervisada
+    - importación de documentos
+    - carpeta en la nube
+    - regla de carpeta
+    - importación automática
+    - conectar almacenamiento en la nube
 audience: []
 related:
     - documents.manage

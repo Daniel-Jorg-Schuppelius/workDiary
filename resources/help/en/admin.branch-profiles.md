@@ -2,6 +2,19 @@
 title: "Industry profiles"
 topic: admin.branch-profiles
 version: 3
+keywords:
+    - industry template
+    - sector package
+    - trade
+    - template package
+    - electrical
+    - plumbing and heating
+    - cleaning
+    - order types
+    - checklist templates
+    - initial setup
+    - starter templates
+    - profile variant
 audience:
     - admin
 related:

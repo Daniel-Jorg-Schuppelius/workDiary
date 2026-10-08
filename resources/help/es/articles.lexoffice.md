@@ -2,6 +2,16 @@
 title: "Productos y servicios de Lexoffice"
 topic: articles.lexoffice
 version: 2
+keywords:
+    - Lexware Office
+    - artículos Lexoffice
+    - sincronizar artículos
+    - catálogo de productos
+    - lista de precios
+    - conflicto de sincronización
+    - importar artículos
+    - servicios
+    - tipo de IVA
 audience: []
 modules:
     - module.vertrieb

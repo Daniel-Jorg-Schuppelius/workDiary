@@ -2,6 +2,20 @@
 title: "Teams, match days and lineups"
 topic: club.matches
 version: 1
+keywords:
+    - fixture list
+    - match schedule
+    - import fixtures
+    - squad
+    - roster
+    - team selection
+    - match result
+    - home game
+    - away game
+    - season
+    - shirt number
+    - referee
+    - guest player
 audience: []
 modules:
     - module.club

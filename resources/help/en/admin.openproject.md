@@ -2,6 +2,16 @@
 title: "OpenProject Integration"
 topic: admin.openproject
 version: 1
+keywords:
+    - project management
+    - work packages
+    - time entries
+    - import time
+    - push time entries
+    - time sync
+    - project sync
+    - project mapping
+    - task import
 audience:
     - admin
 related:

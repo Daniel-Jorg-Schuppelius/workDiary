@@ -2,6 +2,17 @@
 title: "Eliminación y justificantes"
 topic: disposal.overview
 version: 1
+keywords:
+    - RAEE
+    - residuos electrónicos
+    - equipos usados
+    - certificado de destrucción
+    - destrucción de datos
+    - triturado de discos
+    - borrado de datos
+    - DIN 66399
+    - código LER
+    - gestor autorizado
 audience: []
 modules:
     - module.entsorgung

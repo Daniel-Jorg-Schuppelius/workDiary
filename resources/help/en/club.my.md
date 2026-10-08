@@ -2,6 +2,19 @@
 title: "My club"
 topic: club.my
 version: 1
+keywords:
+    - member area
+    - member portal
+    - sign up for training
+    - cancel registration
+    - my events
+    - my attendance
+    - my fees
+    - parent access
+    - check-in
+    - QR code
+    - self check-in
+    - waiting list
 audience: []
 modules:
     - module.club

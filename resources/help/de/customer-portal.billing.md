@@ -2,6 +2,17 @@
 title: "Abrechnung"
 topic: customer-portal.billing
 version: 1
+keywords:
+    - Kundenkonto
+    - Kontostand
+    - Saldo
+    - offener Betrag
+    - Monatsübersicht
+    - Monatsabrechnung
+    - Anwesenheitsnachweis
+    - Zahlungen
+    - Übertrag
+    - Abrechnung herunterladen
 audience: []
 related:
     - customer-portal.overview

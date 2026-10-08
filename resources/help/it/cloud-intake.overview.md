@@ -2,6 +2,17 @@
 title: "Ingresso documenti cloud"
 topic: cloud-intake.overview
 version: 1
+keywords:
+    - Dropbox
+    - OneDrive
+    - SharePoint
+    - Google Drive
+    - cartella monitorata
+    - importazione documenti
+    - cartella cloud
+    - regola cartella
+    - importazione automatica
+    - collegare archiviazione cloud
 audience: []
 related:
     - documents.manage

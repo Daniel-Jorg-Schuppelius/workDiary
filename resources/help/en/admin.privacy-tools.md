@@ -2,6 +2,18 @@
 title: "Privacy Tools"
 topic: admin.privacy-tools
 version: 1
+keywords:
+    - GDPR
+    - data protection
+    - active sessions
+    - revoke session
+    - force logout
+    - revoke API token
+    - data portability
+    - subject access request
+    - DSAR
+    - retention periods
+    - privacy export
 audience:
     - admin
     - geschaeftsfuehrung

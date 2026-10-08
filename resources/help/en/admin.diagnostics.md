@@ -2,6 +2,17 @@
 title: "Diagnostics"
 topic: admin.diagnostics
 version: 1
+keywords:
+    - system status
+    - health check
+    - system check
+    - troubleshooting
+    - test email
+    - check mail settings
+    - queue
+    - scheduler
+    - cron job
+    - status report
 audience:
     - admin
 related:

@@ -2,6 +2,19 @@
 title: "Buchen und Inbox"
 topic: accounting.posting
 version: 1
+keywords:
+    - Buchung erfassen
+    - Belege buchen
+    - Kontierung
+    - Buchungsvorschlag
+    - Buchungsregeln
+    - Buchung stornieren
+    - Storno
+    - Generalumkehr
+    - Festschreibung
+    - Vier-Augen-Prinzip
+    - Fremdwährung
+    - Wechselkurs
 audience:
     - admin
     - geschaeftsfuehrung

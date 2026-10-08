@@ -2,6 +2,19 @@
 title: "Posting and inbox"
 topic: accounting.posting
 version: 1
+keywords:
+    - post entry
+    - journal entry
+    - book receipts
+    - account assignment
+    - posting suggestion
+    - posting rules
+    - reverse posting
+    - cancel posting
+    - four-eyes principle
+    - foreign currency
+    - exchange rate
+    - finalize posting
 audience:
     - admin
     - geschaeftsfuehrung

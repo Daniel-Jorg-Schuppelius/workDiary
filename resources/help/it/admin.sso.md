@@ -2,6 +2,19 @@
 title: "SSO e servizi di directory"
 topic: admin.sso
 version: 1
+keywords:
+    - single sign-on
+    - accesso unico
+    - SAML
+    - OpenID Connect
+    - SCIM
+    - Entra ID
+    - Azure AD
+    - Keycloak
+    - Okta
+    - provider di identità
+    - provisioning utenti
+    - account di emergenza
 audience:
     - admin
 modules:

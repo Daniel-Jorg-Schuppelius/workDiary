@@ -2,6 +2,19 @@
 title: "Investment planning"
 topic: investments.overview
 version: 2
+keywords:
+    - capital expenditure
+    - CapEx
+    - investment request
+    - budget request
+    - investment approval
+    - compare quotes
+    - budget overrun
+    - budget variance
+    - plan vs actual
+    - business case
+    - post-investment review
+    - lessons learned
 audience: []
 modules:
     - module.investments

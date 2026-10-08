@@ -2,6 +2,16 @@
 title: "Giorni festivi"
 topic: catalog.holidays
 version: 1
+keywords:
+    - festività
+    - feste nazionali
+    - calendario festività
+    - giorni di riposo
+    - giorni non lavorativi
+    - chiusura aziendale
+    - aggiungere festività
+    - festività ricorrente
+    - ponte
 audience: []
 related:
     - planning.shifts

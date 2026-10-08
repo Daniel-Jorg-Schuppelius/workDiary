@@ -2,6 +2,19 @@
 title: "Prüfungen"
 topic: club.exams
 version: 1
+keywords:
+    - Gürtelprüfung
+    - Graduierungsprüfung
+    - Prüfungszulassung
+    - Prüfungsanmeldung
+    - Prüfungsergebnis
+    - Prüfer
+    - Urkunde
+    - Prüfungsbescheinigung
+    - Kyu-Prüfung
+    - Dan-Prüfung
+    - Zulassungsvoraussetzungen
+    - Prüfungstermin
 audience: []
 modules:
     - module.club

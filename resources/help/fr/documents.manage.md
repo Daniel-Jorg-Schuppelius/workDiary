@@ -2,6 +2,19 @@
 title: "Gérer les documents"
 topic: documents.manage
 version: 1
+keywords:
+    - GED
+    - gestion électronique des documents
+    - téléverser un fichier
+    - classement
+    - versionnage
+    - nouvelle version
+    - date d'expiration
+    - validité
+    - certificats
+    - archiver un document
+    - historique d'envoi
+    - envoyer un document
 audience: []
 modules:
     - module.documents

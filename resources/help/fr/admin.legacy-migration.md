@@ -2,6 +2,14 @@
 title: "Migration de l'ancien système"
 topic: admin.legacy-migration
 version: 1
+keywords:
+    - données historiques
+    - reprise de données
+    - migration des données
+    - importer anciennes données
+    - système précédent
+    - bascule
+    - migration
 audience:
     - admin
 related:

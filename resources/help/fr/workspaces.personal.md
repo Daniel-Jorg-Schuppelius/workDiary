@@ -2,6 +2,17 @@
 title: "Espaces de travail personnels"
 topic: workspaces.personal
 version: 1
+keywords:
+    - menu personnalisé
+    - personnaliser le menu
+    - composer son menu
+    - vue personnelle
+    - menu favoris
+    - accès rapide
+    - réorganiser les éléments
+    - trier les entrées
+    - créer un espace
+    - supprimer un espace
 audience: []
 related:
     - workspaces.overview

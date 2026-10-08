@@ -2,6 +2,15 @@
 title: "Datos de demostración"
 topic: admin.demo-data
 version: 2
+keywords:
+    - datos de ejemplo
+    - datos de prueba
+    - datos ficticios
+    - organización demo
+    - restablecer demo
+    - formación
+    - presentación
+    - entorno de pruebas
 audience:
     - admin
 related:

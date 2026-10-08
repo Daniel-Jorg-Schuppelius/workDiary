@@ -2,6 +2,18 @@
 title: "Admin-Handbuch: Übersicht"
 topic: admin.handbook
 version: 1
+keywords:
+    - Administration
+    - Administratorhandbuch
+    - Admin-Anleitung
+    - Ersteinrichtung
+    - Einrichtung
+    - erste Schritte
+    - Mandantenverwaltung
+    - Rollen und Rechte
+    - Berechtigungen
+    - DSGVO-Export
+    - Systemverwaltung
 audience:
     - admin
 related:

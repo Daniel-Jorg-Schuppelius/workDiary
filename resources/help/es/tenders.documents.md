@@ -2,6 +2,19 @@
 title: "Documentos de licitación y presentación de la oferta"
 topic: tenders.documents
 version: 1
+keywords:
+    - pliegos
+    - pliego de condiciones
+    - paquete de licitación
+    - importar ZIP
+    - importación GAEB
+    - importar presupuesto
+    - presentar oferta
+    - plazo de presentación
+    - validez de la oferta
+    - apertura de ofertas
+    - resultado de la licitación
+    - lotes
 audience: []
 related:
     - boq.overview

@@ -2,6 +2,14 @@
 title: "Disponibilités et services souhaités"
 topic: planning.availability
 version: 1
+keywords:
+    - préférences horaires
+    - souhaits de service
+    - indisponibilités
+    - non disponible
+    - créneaux de disponibilité
+    - vœux de planning
+    - éviter un poste
 audience: []
 modules:
     - module.planung

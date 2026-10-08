@@ -2,6 +2,17 @@
 title: "Legacy-Migration"
 topic: admin.legacy-migration
 version: 1
+keywords:
+    - Altsystem
+    - Altdaten
+    - Altdaten importieren
+    - Datenübernahme
+    - Datenmigration
+    - Migration
+    - Umstieg
+    - Tagebucheinträge übernehmen
+    - Bereitschaftsdienste übernehmen
+    - Notdienst-Einsätze
 audience:
     - admin
 related:

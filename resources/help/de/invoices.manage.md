@@ -2,6 +2,21 @@
 title: "Rechnungen & Belege"
 topic: invoices.manage
 version: 7
+keywords:
+    - Rechnung erstellen
+    - Rechnung schreiben
+    - Ausgangsrechnung
+    - Faktura
+    - Rechnung stornieren
+    - Gutschrift
+    - E-Rechnung
+    - XRechnung
+    - Peppol
+    - Zahlungslink
+    - Kupferzuschlag
+    - Stripe
+    - Mollie
+    - SumUp
 audience: []
 modules:
     - module.vertrieb

@@ -2,6 +2,18 @@
 title: "Leads"
 topic: sales.leads
 version: 2
+keywords:
+    - prospectos
+    - clientes potenciales
+    - captación de clientes
+    - embudo de ventas
+    - pipeline de ventas
+    - CRM
+    - cualificar lead
+    - convertir en cliente
+    - seguimiento comercial
+    - Calendly
+    - control de duplicados
 audience: []
 modules:
     - module.vertrieb

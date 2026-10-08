@@ -2,6 +2,17 @@
 title: "Compras y pedidos"
 topic: procurement.orders
 version: 1
+keywords:
+    - orden de compra
+    - pedido a proveedor
+    - recepción de mercancía
+    - entrega parcial
+    - aviso de envío
+    - propuestas de reposición
+    - punto de pedido
+    - cantidad mínima de pedido
+    - entregas previstas
+    - reponer stock
 audience: []
 modules:
     - module.lager

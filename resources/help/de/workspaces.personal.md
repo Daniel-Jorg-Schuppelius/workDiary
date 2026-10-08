@@ -2,6 +2,18 @@
 title: "Eigene Arbeitsbereiche"
 topic: workspaces.personal
 version: 1
+keywords:
+    - eigenes Menü
+    - Menü personalisieren
+    - Menü zusammenstellen
+    - persönliche Ansicht
+    - Favoritenmenü
+    - Schnellzugriff
+    - Lieblingsfunktionen
+    - Reihenfolge ändern
+    - Menüpunkte sortieren
+    - Arbeitsbereich anlegen
+    - Arbeitsbereich löschen
 audience: []
 related:
     - workspaces.overview

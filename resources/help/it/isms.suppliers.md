@@ -2,6 +2,18 @@
 title: "Valutazione dei fornitori"
 topic: isms.suppliers
 version: 1
+keywords:
+    - qualifica fornitori
+    - rischio fornitori
+    - rischio terze parti
+    - criticità
+    - DPA
+    - accordo sul trattamento dei dati
+    - NDA
+    - accordo di riservatezza
+    - diritto di audit
+    - catena di fornitura
+    - gestione fornitori
 audience: []
 modules:
     - module.isms

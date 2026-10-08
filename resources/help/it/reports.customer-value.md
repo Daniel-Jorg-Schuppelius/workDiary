@@ -2,6 +2,18 @@
 title: "Valore cliente"
 topic: reports.customer-value
 version: 2
+keywords:
+    - analisi ABC
+    - clienti A
+    - Pareto
+    - regola 80-20
+    - analisi RFM
+    - segmentazione clienti
+    - migliori clienti
+    - fatturato per cliente
+    - rischio di concentrazione
+    - dipendenza dai clienti
+    - clienti a rischio
 audience: []
 related:
     - reports.customer-analysis

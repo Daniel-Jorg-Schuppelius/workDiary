@@ -2,6 +2,15 @@
 title: "Prodotti"
 topic: products.overview
 version: 1
+keywords:
+    - produttore
+    - modello
+    - tipo di apparecchio
+    - modello di dispositivo
+    - marca e modello
+    - catalogo prodotti
+    - gruppo prodotti
+    - anagrafica prodotti
 audience: []
 related:
     - articles.master

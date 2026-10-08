@@ -2,6 +2,18 @@
 title: "Centre d'aide"
 topic: help.center
 version: 2
+keywords:
+    - aide
+    - manuel
+    - documentation
+    - mode d'emploi
+    - FAQ
+    - assistance
+    - rechercher dans l'aide
+    - articles d'aide
+    - tutoriel
+    - rubriques d'aide
+    - consultés récemment
 audience: []
 related:
     - account.shortcuts

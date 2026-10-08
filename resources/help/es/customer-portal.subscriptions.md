@@ -2,6 +2,16 @@
 title: "Mis suscripciones"
 topic: customer-portal.subscriptions
 version: 1
+keywords:
+    - suscripción
+    - licencias
+    - licencias de software
+    - dominios
+    - hosting
+    - duración
+    - renovación
+    - periodo de facturación
+    - suscripciones canceladas
 audience: []
 modules:
     - module.reselling

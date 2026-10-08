@@ -2,6 +2,15 @@
 title: "Drill-down de l'indicateur à l'intervention"
 topic: reports.drilldown
 version: 1
+keywords:
+    - détail des indicateurs
+    - explorer un KPI
+    - données sous-jacentes
+    - liste détaillée
+    - ventiler un indicateur
+    - exporter le rapport
+    - analyse détaillée
+    - remonter aux données
 audience: []
 related:
     - reports.customer-analysis

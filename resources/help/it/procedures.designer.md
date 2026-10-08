@@ -2,6 +2,17 @@
 title: "Designer di procedure"
 topic: procedures.designer
 version: 1
+keywords:
+    - istruzione operativa
+    - creare checklist
+    - SOP
+    - procedura operativa standard
+    - modello di processo
+    - workflow
+    - passaggi obbligatori
+    - principio dei quattro occhi
+    - passaggio condizionale
+    - pubblicare versione
 audience: []
 related:
     - procedures.run

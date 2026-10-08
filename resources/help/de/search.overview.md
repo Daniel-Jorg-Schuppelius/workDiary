@@ -2,6 +2,19 @@
 title: "Suche und Tätigkeitsrecherche"
 topic: search.overview
 version: 3
+keywords:
+    - Volltextsuche
+    - globale Suche
+    - Suchfunktion
+    - Eintrag finden
+    - Was wurde beim Kunden gemacht
+    - Tätigkeiten finden
+    - Suchoperatoren
+    - Phrasensuche
+    - Begriff ausschließen
+    - Tippfehler
+    - Such-Synonyme
+    - Schlagwörter filtern
 audience: []
 related: []
 ---

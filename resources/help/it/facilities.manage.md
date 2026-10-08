@@ -2,6 +2,18 @@
 title: "Sedi e locali"
 topic: facilities.manage
 version: 1
+keywords:
+    - edifici
+    - piani
+    - gestione locali
+    - registro locali
+    - patrimonio immobiliare
+    - facility management
+    - livello di igiene
+    - pulizia speciale
+    - accesso limitato
+    - stanze
+    - immobili
 audience: []
 modules:
     - module.liegenschaften

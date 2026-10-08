@@ -2,6 +2,19 @@
 title: "Acceso bancario EBICS"
 topic: finance.ebics
 version: 1
+keywords:
+    - conexión bancaria
+    - extractos bancarios
+    - extracto diario
+    - importar movimientos
+    - enviar remesa de pagos
+    - transferencias
+    - carta INI
+    - claves bancarias
+    - firma electrónica
+    - configurar EBICS
+    - interfaz bancaria
+    - CAMT
 audience: []
 modules:
     - module.finance

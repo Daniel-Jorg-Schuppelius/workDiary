@@ -2,6 +2,19 @@
 title: "SSO & Verzeichnisdienste"
 topic: admin.sso
 version: 1
+keywords:
+    - Single Sign-on
+    - Einmalanmeldung
+    - SAML
+    - OpenID Connect
+    - SCIM
+    - Entra ID
+    - Azure AD
+    - Keycloak
+    - Okta
+    - Identitätsanbieter
+    - Benutzer-Provisionierung
+    - Notfallkonto
 audience:
     - admin
 modules:

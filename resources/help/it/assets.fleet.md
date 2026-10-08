@@ -2,6 +2,19 @@
 title: "Asset e parco veicoli"
 topic: assets.fleet
 version: 1
+keywords:
+    - gestione flotta
+    - gestione veicoli
+    - inventario
+    - attrezzature
+    - consegna attrezzatura
+    - prestito attrezzi
+    - restituzione
+    - registro carburante
+    - registro ricariche
+    - manutenzione programmata
+    - segnalare guasto
+    - ciclo di vita
 audience: []
 modules:
     - module.fuhrpark

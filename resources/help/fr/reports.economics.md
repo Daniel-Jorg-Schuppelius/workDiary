@@ -2,6 +2,17 @@
 title: "Rentabilité"
 topic: reports.economics
 version: 1
+keywords:
+    - calcul a posteriori
+    - marge sur coûts variables
+    - marge
+    - rentabilité des projets
+    - comparaison prévu réalisé
+    - comparaison budgétaire
+    - taux de coût interne
+    - projets déficitaires
+    - contrôle de gestion
+    - top et flop
 audience: []
 modules:
     - module.auswertungen_team

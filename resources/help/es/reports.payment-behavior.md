@@ -2,6 +2,17 @@
 title: "Comportamiento de pago"
 topic: reports.payment-behavior
 version: 2
+keywords:
+    - DSO
+    - periodo medio de cobro
+    - retraso en pagos
+    - morosos
+    - facturas vencidas
+    - cuentas por cobrar
+    - cobros pendientes
+    - plazo de pago
+    - morosidad
+    - análisis de deudores
 audience: []
 related:
     - reports.economics

@@ -2,6 +2,18 @@
 title: "Quote"
 topic: club.fees
 version: 1
+keywords:
+    - quota associativa
+    - quota sociale
+    - addebito diretto
+    - addebito SEPA
+    - tesoriere
+    - quota famiglia
+    - sconto fratelli
+    - sollecito di pagamento
+    - insoluto
+    - ricevuta donazione
+    - quote non pagate
 audience: []
 modules:
     - module.club

@@ -2,6 +2,19 @@
 title: "Your day in WorkDiary: Team lead"
 topic: roles.teamleitung
 version: 1
+keywords:
+    - team leader
+    - supervisor
+    - manager
+    - shift lead
+    - create roster
+    - approve time entries
+    - approve vacation
+    - correction requests
+    - month-end close
+    - on-call duty
+    - staff planning
+    - assign orders
 audience:
     - teamleitung
 related:

@@ -2,6 +2,16 @@
 title: "Cambios sin conexión"
 topic: offline.changes
 version: 1
+keywords:
+    - trabajar sin conexión
+    - sin internet
+    - sin cobertura
+    - cola de sincronización
+    - sincronización
+    - cambios pendientes
+    - entradas rechazadas
+    - modo offline
+    - no sincronizado
 audience: []
 related:
     - attendance.manage

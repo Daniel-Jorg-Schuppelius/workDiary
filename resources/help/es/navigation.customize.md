@@ -2,10 +2,20 @@
 title: "Personalizar menú y Todas las funciones"
 topic: navigation.customize
 version: 1
+keywords:
+    - ocultar elementos del menú
+    - personalizar barra lateral
+    - ajustes de navegación
+    - mostrar menú oculto
+    - falta un elemento del menú
+    - resumen de funciones
+    - menú lateral
+    - simplificar el menú
 audience: []
 related:
     - account.profile
     - scope.overview
+    - navigation.interface
 ---
 
 En **Personalizar menú** oculta secciones, subgrupos y entradas

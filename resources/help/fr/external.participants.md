@@ -2,6 +2,17 @@
 title: "Inviter des intervenants externes"
 topic: external.participants
 version: 1
+keywords:
+    - accès invité
+    - accès externe
+    - inviter un sous-traitant
+    - contrôleur
+    - expert
+    - lien d'accès
+    - lien de partage
+    - sans connexion
+    - révoquer l'accès
+    - accès temporaire
 audience: []
 related:
     - diary-entries.edit

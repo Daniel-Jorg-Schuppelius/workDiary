@@ -2,6 +2,13 @@
 title: "Portail client – Questions"
 topic: customer-portal.queries
 version: 1
+keywords:
+    - répondre à une question
+    - questions ouvertes
+    - demande de précision
+    - clarification
+    - envoyer une réponse
+    - message du prestataire
 audience: []
 related:
     - customer-portal.overview

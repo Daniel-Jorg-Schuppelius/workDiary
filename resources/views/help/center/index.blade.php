@@ -51,6 +51,36 @@
     </div>
 
     @if ($mode === 'search')
+        @if ($corrected !== null)
+            <p class="text-sm text-muted" role="status">
+                {{ __('Ergebnisse für „:query“', ['query' => $corrected]) }}
+            </p>
+        @endif
+        @if ($pages !== [])
+            {{-- Sprungziele (MVP-1082): Seiten, die der Nutzer öffnen darf. --}}
+            <div class="rounded-(--panel-radius) border border-base-300 bg-base-100 shadow-xs">
+                <div class="border-b border-base-300 px-5 py-3">
+                    <h2 class="font-['Space_Grotesk'] text-sm font-semibold text-base-content">{{ __('Passende Seiten') }}</h2>
+                </div>
+                <ul class="divide-y divide-base-300">
+                    @foreach ($pages as $entry)
+                        <li>
+                            <a href="{{ $entry['url'] }}"
+                               class="flex items-center justify-between gap-3 px-5 py-3 transition-colors hover:bg-base-200">
+                                <span class="flex min-w-0 items-center gap-3">
+                                    <x-icon :name="$entry['icon']" class="shrink-0 text-primary" />
+                                    <span class="min-w-0">
+                                        <span class="block truncate font-medium text-base-content">{{ $entry['label'] }}</span>
+                                        <span class="block truncate text-xs text-muted">{{ $entry['area'] }}</span>
+                                    </span>
+                                </span>
+                                <x-icon name="arrow_forward" class="shrink-0 text-primary" />
+                            </a>
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
         {{-- Suchergebnisse: nur sichtbare Topics, Trefferzahl entsprechend. --}}
         @if ($results->total() === 0)
             <x-empty-state framed
@@ -60,6 +90,10 @@
                 <div class="mt-3 flex flex-wrap items-center justify-center gap-2">
                     <x-button tone="outline" size="sm" :href="route('help.center.index')">
                         {{ __('Suche zurücksetzen') }}
+                    </x-button>
+                    {{-- Wegweiser (MVP-1082): alle erreichbaren Bereiche auf einer Seite. --}}
+                    <x-button tone="outline" size="sm" icon="apps" :href="route('me.functions')">
+                        {{ __('scope.nav.functions') }}
                     </x-button>
                     {{-- Absprung zur kontextbezogenen Hilfe (Issue #93, Abschnitt 1):
                          öffnet den Drawer mit dem Seitenkontext (help.center). --}}
@@ -73,6 +107,7 @@
                         {{ __('errors.report_problem') }}
                     </x-button>
                 </div>
+                <p class="mt-3 text-xs text-muted">{{ __('Tipp: Strg+K sucht von jeder Seite aus auch Seiten und Aktionen.') }}</p>
             </x-empty-state>
         @else
             <div class="rounded-(--panel-radius) border border-base-300 bg-base-100 shadow-xs">
@@ -80,12 +115,16 @@
                     <h2 class="font-['Space_Grotesk'] text-sm font-semibold text-base-content">
                         {{ __(':count Treffer für „:query“', ['count' => $results->total(), 'query' => $query]) }}
                     </h2>
+                    @if ($partial)
+                        <p class="mt-1 text-xs text-muted">{{ __('Teiltreffer: Die Artikel enthalten nur einen Teil der Suchwörter.') }}</p>
+                    @endif
                 </div>
                 <ul class="divide-y divide-base-300">
                     @foreach ($results as $row)
-                        <li>
+                        @php($topicPage = $topicPages[$row->topic] ?? null)
+                        <li class="flex items-center gap-2 pr-3 transition-colors hover:bg-base-200">
                             <a href="{{ route('help.center.show', ['topic' => $row->topic]) }}"
-                               class="flex items-center justify-between gap-3 px-5 py-3 transition-colors hover:bg-base-200">
+                               class="flex min-w-0 grow items-center justify-between gap-3 py-3 pl-5">
                                 <span class="min-w-0">
                                     <span class="block truncate font-medium text-base-content">{{ $row->title }}</span>
                                     @php($snippet = $row->search_snippet ?? null)
@@ -93,10 +132,21 @@
                                         {{-- Segmente einzeln escaped; nur der Treffer bekommt <mark> (MVP-753). --}}
                                         <span class="block truncate text-xs text-muted">{{ $snippet[0] }}@if ($snippet[1] !== '')<mark class="rounded bg-warning/40 px-0.5 text-base-content">{{ $snippet[1] }}</mark>@endif{{ $snippet[2] }}</span>
                                     @endif
-                                    <span class="block text-xs text-muted">{{ $sectionTitles[$catalog->sectionKeyFor($row->topic)] ?? '' }}</span>
+                                    <span class="block truncate text-xs text-muted">
+                                        {{ $sectionTitles[$catalog->sectionKeyFor($row->topic)] ?? '' }}
+                                        @if (filled($row->search_keyword))
+                                            · {{ __('Gefunden über „:keyword“', ['keyword' => $row->search_keyword]) }}
+                                        @endif
+                                    </span>
                                 </span>
                                 <x-icon name="chevron_right" class="shrink-0 text-primary" />
                             </a>
+                            @if ($topicPage !== null)
+                                <x-button tone="ghost" size="xs" icon="arrow_forward" class="shrink-0" :href="$topicPage['url']"
+                                          :title="__('Zur Seite „:page“', ['page' => $topicPage['label']])">
+                                    {{ __('Zur Seite') }}
+                                </x-button>
+                            @endif
                         </li>
                     @endforeach
                 </ul>

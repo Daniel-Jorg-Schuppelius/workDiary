@@ -2,6 +2,18 @@
 title: "Club groups and change proposals"
 topic: club.groups
 version: 1
+keywords:
+    - training group
+    - youth group
+    - kids group
+    - department
+    - group leader
+    - coach
+    - age limit
+    - maximum age
+    - group change
+    - admission request
+    - assign to group
 audience: []
 modules:
     - module.club

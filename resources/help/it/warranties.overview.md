@@ -2,6 +2,17 @@
 title: "Termini di garanzia"
 topic: warranties.overview
 version: 1
+keywords:
+    - garanzia
+    - responsabilità per vizi
+    - prescrizione
+    - collaudo
+    - vizi e difetti
+    - subappaltatori
+    - fideiussione di garanzia
+    - ritenuta di garanzia
+    - scadenza garanzia
+    - segnalare un difetto
 audience: []
 related:
     - guarantees.overview

@@ -2,6 +2,18 @@
 title: "Auditorías, hallazgos y acciones correctivas"
 topic: isms.audits
 version: 1
+keywords:
+    - auditoría interna
+    - plan de auditoría
+    - informe de auditoría
+    - no conformidad
+    - no conformidad mayor
+    - observación
+    - CAPA
+    - verificación de eficacia
+    - revisión por la dirección
+    - auditoría de proveedores
+    - análisis de causa raíz
 audience: []
 modules:
     - module.isms

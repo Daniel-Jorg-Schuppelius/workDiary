@@ -2,6 +2,17 @@
 title: "Legacy system"
 topic: legacy.overview
 version: 1
+keywords:
+    - old system
+    - previous system
+    - legacy data
+    - data migration
+    - on-call schedule
+    - standby duty
+    - call center login
+    - archived entries
+    - legacy archive
+    - legacy users
 related:
     - auth.login
     - admin.tenants

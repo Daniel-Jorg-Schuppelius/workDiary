@@ -2,6 +2,16 @@
 title: "Onboarding checklist"
 topic: onboarding.checklist
 version: 1
+keywords:
+    - setup
+    - initial setup
+    - setup wizard
+    - getting started
+    - set up organization
+    - go-live checklist
+    - setup progress
+    - skip step
+    - first steps
 audience:
     - admin
     - geschaeftsfuehrung

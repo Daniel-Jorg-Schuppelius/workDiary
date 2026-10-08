@@ -2,6 +2,18 @@
 title: "Exigences & DdA (SoA)"
 topic: isms.requirements-soa
 version: 1
+keywords:
+    - déclaration d'applicabilité
+    - applicabilité
+    - catalogue d'exigences
+    - exigences normatives
+    - référentiel normatif
+    - Annexe A
+    - ISO 27001
+    - ISO 9001
+    - ISO 27701
+    - importer un catalogue
+    - justification de non-applicabilité
 audience: []
 modules:
     - module.isms

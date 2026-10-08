@@ -2,6 +2,15 @@
 title: "Portale clienti – Noleggio"
 topic: customer-portal.rentals
 version: 1
+keywords:
+    - noleggiare attrezzatura
+    - noleggio attrezzature
+    - richiesta di noleggio
+    - prestito
+    - prezzo di noleggio
+    - prenotazione diretta
+    - condizioni di noleggio
+    - attrezzatura a noleggio
 audience: []
 related:
     - customer-portal.overview

@@ -2,6 +2,15 @@
 title: "Demander un rendez-vous"
 topic: customer-portal.appointments
 version: 1
+keywords:
+    - prendre rendez-vous
+    - réservation en ligne
+    - réserver un créneau
+    - créneaux disponibles
+    - annuler un rendez-vous
+    - délai d'annulation
+    - choisir un créneau
+    - date souhaitée
 audience: []
 related:
     - customer-portal.overview

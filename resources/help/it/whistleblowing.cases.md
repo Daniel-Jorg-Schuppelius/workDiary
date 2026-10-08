@@ -2,6 +2,17 @@
 title: "Canale di segnalazione – gestione dei casi"
 topic: whistleblowing.cases
 version: 1
+keywords:
+    - whistleblowing
+    - segnalante
+    - tutela del segnalante
+    - canale interno
+    - gestire una segnalazione
+    - conferma di ricezione
+    - caso di compliance
+    - conflitto di interessi
+    - accesso di emergenza
+    - messaggi al segnalante
 audience: []
 modules:
     - module.compliance

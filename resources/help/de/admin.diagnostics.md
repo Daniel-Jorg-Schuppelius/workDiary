@@ -2,6 +2,19 @@
 title: "Diagnose"
 topic: admin.diagnostics
 version: 1
+keywords:
+    - Systemstatus
+    - Systemzustand
+    - Health Check
+    - Systemprüfung
+    - Fehlersuche
+    - Testmail
+    - Mailversand prüfen
+    - Warteschlange
+    - Queue
+    - Scheduler
+    - Cronjob
+    - Ampel
 audience:
     - admin
 related:

@@ -2,6 +2,16 @@
 title: "My subscriptions"
 topic: customer-portal.subscriptions
 version: 1
+keywords:
+    - subscription
+    - licences
+    - software licences
+    - domains
+    - hosting
+    - term
+    - renewal
+    - billing period
+    - cancelled subscriptions
 audience: []
 modules:
     - module.reselling

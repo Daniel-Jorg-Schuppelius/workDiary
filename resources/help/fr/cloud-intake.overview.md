@@ -2,6 +2,17 @@
 title: "Entrée de documents cloud"
 topic: cloud-intake.overview
 version: 1
+keywords:
+    - Dropbox
+    - OneDrive
+    - SharePoint
+    - Google Drive
+    - dossier surveillé
+    - import de documents
+    - dossier cloud
+    - règle de dossier
+    - import automatique
+    - connecter un stockage cloud
 audience: []
 related:
     - documents.manage

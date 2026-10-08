@@ -2,6 +2,17 @@
 title: "Supports d’accès"
 topic: access.media
 version: 1
+keywords:
+    - badge
+    - transpondeur
+    - carte magnétique
+    - carte sans contact
+    - gestion des clés
+    - remise des clés
+    - badge perdu
+    - bloquer un badge
+    - gestion des badges
+    - restitution de badge
 audience: []
 modules:
     - module.fuhrpark

@@ -2,6 +2,18 @@
 title: "Connect Etsy"
 topic: admin.etsy
 version: 1
+keywords:
+    - Etsy shop
+    - Etsy orders
+    - marketplace
+    - online shop
+    - order import
+    - shipping notification
+    - tracking number
+    - Etsy fees
+    - payouts
+    - webhook
+    - seller app
 audience:
     - admin
 modules:

@@ -2,6 +2,18 @@
 title: "Duty and shift planning"
 topic: planning.shifts
 version: 2
+keywords:
+    - roster
+    - rota
+    - shift schedule
+    - staff scheduling
+    - workforce planning
+    - shift types
+    - early shift
+    - night shift
+    - minimum staffing
+    - staffing levels
+    - publish roster
 audience: []
 related:
     - attendance.manage

@@ -2,6 +2,18 @@
 title: "Labels & templates"
 topic: inventory.labels
 version: 1
+keywords:
+    - print labels
+    - label printing
+    - barcode
+    - QR code
+    - stock label
+    - item label
+    - serial number label
+    - batch label
+    - label template
+    - sticker
+    - SKU
 audience: []
 modules:
     - module.lager

@@ -2,6 +2,16 @@
 title: "Esami"
 topic: club.exams
 version: 1
+keywords:
+    - esame di cintura
+    - esame di grado
+    - ammissione all'esame
+    - iscrizione all'esame
+    - esito dell'esame
+    - esaminatore
+    - diploma
+    - attestato di grado
+    - requisiti di ammissione
 audience: []
 modules:
     - module.club

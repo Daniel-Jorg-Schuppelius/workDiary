@@ -2,6 +2,16 @@
 title: "Questions des clients"
 topic: customer.queries
 version: 1
+keywords:
+    - question client
+    - répondre à une question
+    - refus du client
+    - réception refusée
+    - lien de signature
+    - réserves à la réception
+    - validation client
+    - questions ouvertes
+    - clôturer une question
 audience: []
 related:
     - protocols.sign

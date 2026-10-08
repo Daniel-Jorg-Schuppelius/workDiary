@@ -2,6 +2,18 @@
 title: "Matrice delle regole fiscali"
 topic: finance.tax-rules
 version: 1
+keywords:
+    - aliquote IVA
+    - IVA
+    - aliquota ridotta
+    - inversione contabile
+    - reverse charge
+    - regime forfettario
+    - esente IVA
+    - importare regole fiscali
+    - cambio aliquota
+    - aliquota zero
+    - esportazione extra UE
 audience:
     - admin
 modules:

@@ -2,6 +2,18 @@
 title: "Gestione delle emergenze e delle crisi"
 topic: crisis.overview
 version: 1
+keywords:
+    - unità di crisi
+    - piano di emergenza
+    - continuità operativa
+    - BCM
+    - allerta di crisi
+    - quadro della situazione
+    - obbligo di notifica
+    - NIS2
+    - violazione dei dati
+    - ripristino
+    - esercitazione di crisi
 audience: []
 modules:
     - module.crisis_management

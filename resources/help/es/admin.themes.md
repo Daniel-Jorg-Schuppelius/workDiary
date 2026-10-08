@@ -2,6 +2,17 @@
 title: "Temas"
 topic: admin.themes
 version: 3
+keywords:
+    - modo oscuro
+    - tema oscuro
+    - modo claro
+    - esquema de colores
+    - colores personalizados
+    - apariencia
+    - colores corporativos
+    - identidad visual
+    - contraste
+    - aspecto visual
 audience:
     - admin
 modules:
@@ -9,6 +20,7 @@ modules:
 related:
     - admin.handbook
     - admin.license
+    - navigation.interface
 ---
 
 Los temas son preajustes de diseño de su organización que definen la

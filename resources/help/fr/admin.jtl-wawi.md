@@ -2,6 +2,17 @@
 title: "Connecter JTL-Wawi"
 topic: admin.jtl-wawi
 version: 1
+keywords:
+    - gestion commerciale
+    - ERP
+    - logiciel de gestion des stocks
+    - synchronisation des stocks
+    - articles parents
+    - variantes
+    - correspondance des entrepôts
+    - EAN
+    - GTIN
+    - gestion des stocks
 audience:
     - admin
 modules:

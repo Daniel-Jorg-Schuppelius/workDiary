@@ -2,6 +2,17 @@
 title: "Exportación GoBD (entrega de soporte de datos)"
 topic: finance.gobd
 version: 1
+keywords:
+    - inspección fiscal
+    - auditoría fiscal
+    - Hacienda
+    - inspección de Hacienda
+    - exportación para el inspector
+    - acceso a los datos
+    - GDPdU
+    - paquete de auditoría
+    - documentación de procedimientos
+    - a prueba de auditoría
 audience:
     - admin
     - buchhaltung

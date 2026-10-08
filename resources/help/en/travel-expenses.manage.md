@@ -2,6 +2,19 @@
 title: "Travel logs, expenses & allowances"
 topic: travel-expenses.manage
 version: 1
+keywords:
+    - travel expenses
+    - expense report
+    - expense claim
+    - mileage log
+    - mileage allowance
+    - per diem
+    - meal allowance
+    - scan receipt
+    - reimburse expenses
+    - company car
+    - 1 percent rule
+    - driving times
 audience: []
 modules:
     - module.spesen

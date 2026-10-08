@@ -2,6 +2,16 @@
 title: "I miei abbonamenti"
 topic: customer-portal.subscriptions
 version: 1
+keywords:
+    - abbonamento
+    - licenze
+    - licenze software
+    - domini
+    - hosting
+    - durata
+    - rinnovo
+    - periodo di fatturazione
+    - abbonamenti disdetti
 audience: []
 modules:
     - module.reselling

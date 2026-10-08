@@ -2,6 +2,15 @@
 title: "Conto ferie"
 topic: absences.entitlements
 version: 1
+keywords:
+    - diritto alle ferie
+    - ferie residue
+    - saldo ferie
+    - giorni di ferie
+    - ferie annuali
+    - riporto ferie
+    - ferie non godute
+    - monte ferie
 audience:
     - admin
 related:

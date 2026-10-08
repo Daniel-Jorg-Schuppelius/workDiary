@@ -2,6 +2,21 @@
 title: "Beiträge"
 topic: club.fees
 version: 1
+keywords:
+    - Mitgliedsbeitrag
+    - Vereinsbeitrag
+    - Beitragseinzug
+    - Lastschrift
+    - SEPA-Lastschrift
+    - Beitragslauf
+    - Kassenwart
+    - Familienbeitrag
+    - Geschwisterrabatt
+    - Mahnung
+    - Rücklastschrift
+    - Spendenquittung
+    - Zuwendungsbestätigung
+    - offene Beiträge
 audience: []
 modules:
     - module.club

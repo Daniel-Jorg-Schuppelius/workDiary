@@ -1,11 +1,23 @@
 ---
 title: "Keyboard shortcuts"
 topic: account.shortcuts
-version: 1
+version: 2
+keywords:
+    - hotkeys
+    - shortcuts
+    - key bindings
+    - key combination
+    - keyboard navigation
+    - quick search
+    - Ctrl K
+    - context help
+    - F1
+    - without mouse
 audience: []
 related:
     - account.bookmarks
     - account.profile
+    - navigation.interface
 ---
 
 Many parts of WorkDiary can be used without a mouse. Press `?` at any time
@@ -17,8 +29,9 @@ a select list, so they do not interfere with what you type.
 
 Global shortcuts:
 
-- `Ctrl`/`⌘` + `K` opens the global search (customers, projects, expenses,
-  trips, employees …). Inside the search, pick a result with `↑`/`↓` and
+- `Ctrl`/`⌘` + `K` opens the global search: pages, help topics and actions
+  such as “Toggle color scheme”, plus customers, projects, expenses, trips,
+  employees … Inside the search, pick a result with `↑`/`↓` and
   open it with `↵`.
 - `Esc` closes the search or the dialog that is currently open.
 - `?` shows the overview of all shortcuts.

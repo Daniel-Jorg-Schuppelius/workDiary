@@ -2,6 +2,19 @@
 title: "Klassifikationen & Pflichtregeln"
 topic: admin.classifications
 version: 1
+keywords:
+    - Wertelisten
+    - Kategorien
+    - Auswahllisten
+    - Dropdown-Werte
+    - Stammdatenlisten
+    - Auftragstypen
+    - Fehlertypen
+    - Ursachen
+    - Tätigkeitsarten
+    - Pflichtangaben
+    - Pflichtfelder
+    - Kategorie anlegen
 audience:
     - admin
     - geschaeftsfuehrung

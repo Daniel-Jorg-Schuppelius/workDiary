@@ -2,6 +2,14 @@
 title: "Connecter la prise de rendez-vous (Calendly)"
 topic: admin.calendly
 version: 1
+keywords:
+    - réservation en ligne
+    - page de réservation
+    - prise de rendez-vous en ligne
+    - planificateur
+    - rendez-vous clients
+    - annulation de rendez-vous
+    - report de rendez-vous
 audience:
     - admin
 related:

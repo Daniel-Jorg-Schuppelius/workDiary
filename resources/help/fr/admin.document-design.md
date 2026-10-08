@@ -2,6 +2,19 @@
 title: "Design des documents"
 topic: admin.document-design
 version: 1
+keywords:
+    - papier à en-tête
+    - en-tête
+    - mise en page facture
+    - modèle de facture
+    - mise en page PDF
+    - personnaliser la mise en page
+    - charte graphique
+    - police
+    - marges
+    - fenêtre adresse
+    - pied de page
+    - modèle de document
 audience:
     - admin
 modules:

@@ -2,6 +2,18 @@
 title: "Offline-Synchronisierung"
 topic: admin.offline-sync
 version: 1
+keywords:
+    - offline arbeiten
+    - ohne Internet
+    - Funkloch
+    - Sync-Protokoll
+    - Synchronisationsfehler
+    - Sync-Konflikt
+    - Geräte-Outbox
+    - nicht übertragen
+    - Außendienst offline
+    - mobile Synchronisation
+    - Daten abgleichen
 audience: []
 related:
     - admin.metrics

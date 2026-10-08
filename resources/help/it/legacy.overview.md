@@ -2,6 +2,16 @@
 title: "Sistema precedente (Legacy)"
 topic: legacy.overview
 version: 1
+keywords:
+    - vecchio sistema
+    - dati storici
+    - migrazione dati
+    - reperibilità
+    - servizio di emergenza
+    - accesso call center
+    - archivio storico
+    - vecchie voci di diario
+    - utenti del vecchio sistema
 related:
     - auth.login
     - admin.tenants

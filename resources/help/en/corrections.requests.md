@@ -2,6 +2,16 @@
 title: "Time corrections"
 topic: corrections.requests
 version: 1
+keywords:
+    - correction request
+    - missed clock-in
+    - forgot to clock out
+    - add missing time
+    - fix time entry
+    - correct working time
+    - request correction
+    - timesheet correction
+    - punch correction
 audience: []
 related:
     - attendance.manage

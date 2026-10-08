@@ -2,6 +2,17 @@
 title: "Orders in the week view"
 topic: week.overview
 version: 1
+keywords:
+    - weekly calendar
+    - calendar view
+    - week planner
+    - team calendar
+    - on-call duty
+    - emergency service
+    - schedule appointment
+    - job scheduling
+    - weekly overview
+    - planning board
 audience: []
 related:
     - diary-entries.create

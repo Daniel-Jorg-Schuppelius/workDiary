@@ -2,6 +2,16 @@
 title: "Catégories d'événements"
 topic: catalog.event-categories
 version: 1
+keywords:
+    - types de manifestations
+    - catégories de rendez-vous
+    - types de formation
+    - certificat obligatoire
+    - justificatif
+    - durée de validité
+    - certificats expirant
+    - rappel
+    - couleur de catégorie
 audience: []
 modules:
     - module.vertrieb

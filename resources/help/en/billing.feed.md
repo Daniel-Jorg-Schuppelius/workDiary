@@ -2,6 +2,19 @@
 title: "Document flow"
 topic: billing.feed
 version: 1
+keywords:
+    - invoices
+    - quotes
+    - outgoing invoices
+    - incoming invoices
+    - credit notes
+    - expenses
+    - open items
+    - accounts receivable
+    - dunning
+    - overdue invoices
+    - e-invoice
+    - document list
 audience: []
 modules:
     - module.vertrieb

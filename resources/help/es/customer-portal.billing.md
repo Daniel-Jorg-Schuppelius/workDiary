@@ -2,6 +2,15 @@
 title: "Facturación"
 topic: customer-portal.billing
 version: 1
+keywords:
+    - saldo de la cuenta
+    - extracto de cuenta
+    - resumen mensual
+    - importe pendiente
+    - pagos
+    - justificante de asistencia
+    - saldo anterior
+    - descargar extracto
 audience: []
 related:
     - customer-portal.overview

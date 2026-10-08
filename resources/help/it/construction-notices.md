@@ -2,6 +2,15 @@
 title: "Denuncia di impedimento e riserve (VOB/B)"
 topic: construction-notices
 version: 1
+keywords:
+    - impedimento lavori
+    - ritardo del cantiere
+    - proroga dei termini
+    - notifica di riserve
+    - iscrizione di riserve
+    - maltempo
+    - VOB
+    - limitare la responsabilità
 audience: []
 modules:
     - module.bau

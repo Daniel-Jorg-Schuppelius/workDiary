@@ -1,0 +1,16 @@
+{
+    "$schema": "https://json.schemastore.org/tsconfig",
+    "extends": "./tsconfig.base.json",
+    "compilerOptions": {
+        // DOM für die Callbacks von page.evaluate(), die im Browser laufen.
+        "lib": ["ES2022", "DOM", "DOM.Iterable"],
+        "types": ["node"]
+    },
+    "include": [
+        "playwright.config.ts",
+        "tests/e2e/**/*.ts",
+        "tests/frontend/**/*.mjs",
+        "scripts/**/*.mjs",
+        "vite.config.js"
+    ]
+}

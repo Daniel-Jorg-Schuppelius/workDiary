@@ -2,6 +2,19 @@
 title: "Arbeitsschutz & Sicherheitsereignisse"
 topic: safety.overview
 version: 1
+keywords:
+    - Arbeitssicherheit
+    - Arbeitsunfall melden
+    - Unfallmeldung
+    - Beinaheunfall
+    - Gefährdungsbeurteilung
+    - Sicherheitsunterweisung
+    - arbeitsmedizinische Vorsorge
+    - Gefährdungskatalog
+    - Mängelmeldung
+    - Ursachenanalyse
+    - HSE
+    - Unfallstatistik
 audience: []
 related:
     - reports.overview

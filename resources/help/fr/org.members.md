@@ -2,6 +2,18 @@
 title: "Collaborateurs (organisation)"
 topic: org.members
 version: 1
+keywords:
+    - ajouter un collaborateur
+    - créer un utilisateur
+    - gestion des utilisateurs
+    - fiche salarié
+    - matricule
+    - attribuer un rôle
+    - départ d'un salarié
+    - offboarding
+    - dossier du personnel
+    - accusé de lecture
+    - modèle de temps de travail
 audience: []
 related:
     - admin.roles

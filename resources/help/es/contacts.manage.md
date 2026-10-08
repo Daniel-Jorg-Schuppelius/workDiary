@@ -2,6 +2,20 @@
 title: "Clientes & proveedores"
 topic: contacts.manage
 version: 2
+keywords:
+    - ficha de cliente
+    - maestro de clientes
+    - maestro de proveedores
+    - crear cliente
+    - crear proveedor
+    - deudor
+    - acreedor
+    - número de deudor
+    - fusionar duplicados
+    - importar clientes
+    - agenda de contactos
+    - socio comercial
+    - CRM
 audience: []
 modules:
     - module.vertrieb

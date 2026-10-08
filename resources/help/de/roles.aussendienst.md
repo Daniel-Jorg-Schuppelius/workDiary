@@ -2,6 +2,18 @@
 title: "Ihr Tag in WorkDiary: Außendienst"
 topic: roles.aussendienst
 version: 1
+keywords:
+    - Außendienstmitarbeiter
+    - Monteur
+    - Servicetechniker
+    - Techniker vor Ort
+    - Kundendienst
+    - mobil arbeiten
+    - unterwegs erfassen
+    - Kundenunterschrift
+    - Spesen erfassen
+    - Fahrtenbuch führen
+    - Urlaub beantragen
 audience:
     - aussendienst
 related:

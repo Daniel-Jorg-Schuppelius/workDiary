@@ -2,6 +2,18 @@
 title: "Planification de menus & buffets (traiteur)"
 topic: recipes.menus
 version: 1
+keywords:
+    - carte des menus
+    - plan de repas
+    - organiser un buffet
+    - nombre de convives
+    - calcul des portions
+    - adapter les recettes
+    - allergènes
+    - étiquetage des allergènes
+    - besoins en ingrédients
+    - coût matière
+    - menu d'événement
 audience: []
 modules:
     - module.lager

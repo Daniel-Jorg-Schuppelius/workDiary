@@ -2,6 +2,20 @@
 title: "Clients & fournisseurs"
 topic: contacts.manage
 version: 2
+keywords:
+    - fichier clients
+    - base clients
+    - données de base
+    - créer un client
+    - créer un fournisseur
+    - débiteur
+    - créancier
+    - numéro de débiteur
+    - fusionner les doublons
+    - importer des clients
+    - carnet d'adresses
+    - partenaire commercial
+    - CRM
 audience: []
 modules:
     - module.vertrieb

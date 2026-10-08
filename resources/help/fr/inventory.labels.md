@@ -2,6 +2,17 @@
 title: "Étiquettes et modèles"
 topic: inventory.labels
 version: 1
+keywords:
+    - imprimer des étiquettes
+    - impression d'étiquettes
+    - code-barres
+    - code QR
+    - étiquette de stock
+    - étiquette article
+    - étiquette numéro de série
+    - étiquette de lot
+    - autocollant
+    - SKU
 audience: []
 modules:
     - module.lager

@@ -2,6 +2,17 @@
 title: "Maintaining controls"
 topic: isms.controls
 version: 1
+keywords:
+    - security controls
+    - control catalog
+    - TOMs
+    - technical and organisational measures
+    - implementation status
+    - evidence
+    - safeguards
+    - link controls
+    - Annex A
+    - ISMS controls
 audience: []
 modules:
     - module.isms

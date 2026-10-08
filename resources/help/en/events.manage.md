@@ -2,6 +2,18 @@
 title: "Managing events"
 topic: events.manage
 version: 1
+keywords:
+    - event planning
+    - create event
+    - attendee list
+    - invitations
+    - send reminder
+    - recurring event
+    - cancel event
+    - conference
+    - trade fair
+    - seminar
+    - venue
 audience: []
 modules:
     - module.vertrieb

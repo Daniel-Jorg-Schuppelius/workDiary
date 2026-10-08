@@ -2,6 +2,13 @@
 title: "Demandes d'heures supplémentaires"
 topic: overtime.requests
 version: 1
+keywords:
+    - heures sup
+    - heures en plus
+    - travail supplémentaire
+    - valider les heures sup
+    - dépassement d'horaire
+    - horaires variables
 audience: []
 related:
     - corrections.requests

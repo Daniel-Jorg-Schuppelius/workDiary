@@ -2,6 +2,15 @@
 title: "Favoris & filtres"
 topic: account.bookmarks
 version: 1
+keywords:
+    - marque-pages
+    - signets
+    - accès rapide
+    - filtres enregistrés
+    - modèle de filtre
+    - filtre par défaut
+    - enregistrer un filtre
+    - enregistrer une vue
 audience: []
 related:
     - account.notifications

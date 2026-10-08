@@ -2,6 +2,16 @@
 title: "Überstunden-Anträge"
 topic: overtime.requests
 version: 1
+keywords:
+    - Mehrarbeit
+    - Überstunden beantragen
+    - Mehrarbeit genehmigen
+    - Überstundenantrag
+    - Überstundenfreigabe
+    - Rahmenzeit überschritten
+    - Mehrstunden
+    - Zusatzstunden
+    - Gleitzeit
 audience: []
 related:
     - corrections.requests

@@ -2,6 +2,16 @@
 title: "Capacità di produzione (centri di lavoro)"
 topic: manufacturing.work-centers
 version: 1
+keywords:
+    - postazione di lavoro
+    - macchina
+    - pianificazione della capacità
+    - carico macchine
+    - utilizzo
+    - tempo di attrezzaggio
+    - capacità giornaliera
+    - collo di bottiglia
+    - schedulazione
 audience: []
 modules:
     - module.lager

@@ -2,6 +2,16 @@
 title: "Commissions"
 topic: commissions
 version: 1
+keywords:
+    - commission sur ventes
+    - commission commerciale
+    - relevé de commissions
+    - barème de commissions
+    - commission d'apporteur
+    - apporteur d'affaires
+    - reprise de commission
+    - paiement des commissions
+    - plafond de commission
 audience:
     - admin
     - geschaeftsfuehrung

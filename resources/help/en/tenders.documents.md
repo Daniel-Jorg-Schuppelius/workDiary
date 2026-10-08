@@ -2,6 +2,19 @@
 title: "Tender documents and bid submission"
 topic: tenders.documents
 version: 1
+keywords:
+    - bid package
+    - procurement documents
+    - ZIP import
+    - GAEB import
+    - import bill of quantities
+    - submit a bid
+    - bid deadline
+    - binding period
+    - bid opening
+    - tender results
+    - bid check
+    - lots
 audience: []
 related:
     - boq.overview

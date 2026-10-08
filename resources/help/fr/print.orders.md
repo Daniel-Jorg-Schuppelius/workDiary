@@ -2,6 +2,17 @@
 title: "Ordres d'impression (imprimerie & copie)"
 topic: print.orders
 version: 1
+keywords:
+    - reprographie
+    - contrôle en amont
+    - preflight
+    - vérification des fichiers
+    - bon à tirer
+    - BAT
+    - gâche
+    - fichier d'impression
+    - travail d'impression
+    - contrôle qualité
 audience: []
 modules:
     - module.lager

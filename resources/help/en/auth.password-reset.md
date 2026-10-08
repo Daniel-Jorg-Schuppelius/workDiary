@@ -2,6 +2,15 @@
 title: "Reset password"
 topic: auth.password-reset
 version: 1
+keywords:
+    - forgot password
+    - lost password
+    - new password
+    - change password
+    - reset link
+    - password recovery
+    - forgotten credentials
+    - cannot sign in
 related:
     - auth.login
     - account.two-factor

@@ -2,10 +2,21 @@
 title: "Customize menu & All functions"
 topic: navigation.customize
 version: 1
+keywords:
+    - hide menu items
+    - customize sidebar
+    - sidebar settings
+    - navigation settings
+    - unhide menu
+    - show hidden menu
+    - missing menu item
+    - feature overview
+    - declutter menu
 audience: []
 related:
     - account.profile
     - scope.overview
+    - navigation.interface
 ---
 
 Under **Customize menu** you hide sections, subgroups and individual

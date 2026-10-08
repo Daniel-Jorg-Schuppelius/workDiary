@@ -2,6 +2,19 @@
 title: "Cotisations"
 topic: club.fees
 version: 1
+keywords:
+    - cotisation de membre
+    - adhésion
+    - prélèvement SEPA
+    - appel de cotisations
+    - trésorier
+    - tarif famille
+    - réduction fratrie
+    - relance
+    - rejet de prélèvement
+    - reçu de don
+    - reçu fiscal
+    - cotisations impayées
 audience: []
 modules:
     - module.club

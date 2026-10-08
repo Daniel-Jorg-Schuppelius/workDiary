@@ -2,6 +2,17 @@
 title: "Plans de facturation"
 topic: invoices.schedules
 version: 1
+keywords:
+    - facture récurrente
+    - facturation récurrente
+    - facture d'abonnement
+    - facture mensuelle
+    - cycle de facturation
+    - périodicité
+    - paiement d'avance
+    - brouillons automatiques
+    - contrat de maintenance
+    - forfait
 audience:
     - admin
     - geschaeftsfuehrung

@@ -2,6 +2,16 @@
 title: "Classificazioni e regole obbligatorie"
 topic: admin.classifications
 version: 1
+keywords:
+    - liste valori
+    - categorie
+    - menu a tendina
+    - tabelle di riferimento
+    - elenchi predefiniti
+    - tipi di ordine
+    - tipi di guasto
+    - cause
+    - campi obbligatori
 audience:
     - admin
     - geschaeftsfuehrung

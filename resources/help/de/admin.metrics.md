@@ -2,6 +2,19 @@
 title: "Metriken"
 topic: admin.metrics
 version: 1
+keywords:
+    - Kennzahlen
+    - Betriebskennzahlen
+    - Statistiken
+    - Monitoring
+    - Systemauslastung
+    - Speicherplatz
+    - Speichernutzung
+    - aktive Benutzer
+    - fehlgeschlagene Jobs
+    - Queue
+    - Nutzungsstatistik
+    - Performance
 audience:
     - admin
 related:

@@ -2,6 +2,16 @@
 title: "Integridad del código fuente"
 topic: admin.integrity
 version: 1
+keywords:
+    - detección de manipulación
+    - integridad de archivos
+    - verificación de integridad
+    - suma de comprobación
+    - SHA-256
+    - hash
+    - línea base
+    - archivos modificados
+    - monitorización de seguridad
 audience:
     - admin
 related:

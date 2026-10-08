@@ -2,6 +2,16 @@
 title: "Jours fériés"
 topic: catalog.holidays
 version: 1
+keywords:
+    - fêtes légales
+    - jours chômés
+    - jours de repos
+    - jours non travaillés
+    - fermeture annuelle
+    - calendrier des congés
+    - ajouter un jour férié
+    - jour férié récurrent
+    - pont
 audience: []
 related:
     - planning.shifts

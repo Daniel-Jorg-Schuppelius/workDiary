@@ -2,6 +2,17 @@
 title: "Qualifikationen"
 topic: catalog.qualifications
 version: 1
+keywords:
+    - Kompetenzen
+    - Fähigkeiten
+    - Skills
+    - Zertifikate
+    - Befähigungen
+    - Schulungen
+    - Fachkenntnisse
+    - Weiterbildung
+    - Nachweise
+    - Mitarbeiterkompetenzen
 audience: []
 related:
     - planning.shifts

@@ -2,6 +2,18 @@
 title: "Sports facilities and resources"
 topic: club.resources
 version: 1
+keywords:
+    - hall booking
+    - facility booking
+    - court booking
+    - pitch booking
+    - gym schedule
+    - lane booking
+    - boats
+    - equipment
+    - closure
+    - book resources
+    - induction
 audience: []
 modules:
     - module.club

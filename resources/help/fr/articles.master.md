@@ -2,6 +2,18 @@
 title: "Fichier articles"
 topic: articles.master
 version: 1
+keywords:
+    - articles
+    - créer un article
+    - catalogue produits
+    - référence article
+    - SKU
+    - variantes
+    - EAN
+    - GTIN
+    - unités de mesure
+    - code douanier
+    - nomenclature douanière
 audience: []
 modules:
     - module.lager

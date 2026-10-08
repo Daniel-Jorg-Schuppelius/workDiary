@@ -2,6 +2,18 @@
 title: "Surcharge rules"
 topic: admin.surcharge-rules
 version: 1
+keywords:
+    - night premium
+    - night shift allowance
+    - Sunday premium
+    - holiday premium
+    - weekend premium
+    - shift premium
+    - wage type
+    - payroll export
+    - DATEV payroll
+    - Lexware
+    - premium rates
 audience:
     - admin
     - geschaeftsfuehrung

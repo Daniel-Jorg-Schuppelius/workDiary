@@ -2,6 +2,19 @@
 title: "Club members"
 topic: club.members
 version: 1
+keywords:
+    - member management
+    - membership list
+    - add member
+    - membership number
+    - leave the club
+    - cancel membership
+    - joining date
+    - passive member
+    - supporting member
+    - legal guardian
+    - import members
+    - pause membership
 audience: []
 modules:
     - module.club

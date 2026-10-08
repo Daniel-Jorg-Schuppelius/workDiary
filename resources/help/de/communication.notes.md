@@ -2,6 +2,19 @@
 title: "Kommunikationsnotizen"
 topic: communication.notes
 version: 3
+keywords:
+    - Telefonnotiz
+    - Gesprächsnotiz
+    - Aktennotiz
+    - Gesprächsprotokoll
+    - Telefonat dokumentieren
+    - Anrufnotiz
+    - Wiedervorlage
+    - Notiz anlegen
+    - Notizen
+    - Schlagwort
+    - vertrauliche Notiz
+    - Kontaktverlauf
 audience: []
 related:
     - diary-entries.edit

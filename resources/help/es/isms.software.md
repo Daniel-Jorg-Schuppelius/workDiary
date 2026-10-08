@@ -2,6 +2,18 @@
 title: "Inventario de software"
 topic: isms.software
 version: 1
+keywords:
+    - lista de software
+    - registro de software
+    - fin de vida
+    - EOL
+    - fin de soporte
+    - software obsoleto
+    - programas instalados
+    - versiones de software
+    - inventario TI
+    - aplicaciones instaladas
+    - sistemas operativos
 audience: []
 modules:
     - module.isms

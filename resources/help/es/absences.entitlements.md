@@ -2,6 +2,15 @@
 title: "Cuenta de vacaciones"
 topic: absences.entitlements
 version: 1
+keywords:
+    - derecho a vacaciones
+    - vacaciones pendientes
+    - saldo de vacaciones
+    - días de vacaciones
+    - vacaciones anuales
+    - arrastre de vacaciones
+    - días restantes
+    - vacaciones no disfrutadas
 audience:
     - admin
 related:

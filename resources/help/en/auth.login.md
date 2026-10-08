@@ -2,6 +2,17 @@
 title: "Sign in"
 topic: auth.login
 version: 1
+keywords:
+    - login
+    - log in
+    - sign on
+    - username
+    - password
+    - remember me
+    - stay signed in
+    - account locked
+    - cannot log in
+    - access
 related:
     - auth.password-reset
     - auth.two-factor

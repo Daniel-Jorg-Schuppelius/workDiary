@@ -2,6 +2,20 @@
 title: "Sportstätten und Ressourcen"
 topic: club.resources
 version: 1
+keywords:
+    - Hallenbelegung
+    - Hallenplan
+    - Platzbelegung
+    - Belegungsplan
+    - Sporthalle
+    - Hallenteil
+    - Bahnbelegung
+    - Boote
+    - Geräte
+    - Platzsperre
+    - Hallensperrung
+    - Ressource buchen
+    - Einweisung
 audience: []
 modules:
     - module.club

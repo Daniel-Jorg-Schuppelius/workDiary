@@ -2,6 +2,16 @@
 title: "Billing"
 topic: customer-portal.billing
 version: 1
+keywords:
+    - account balance
+    - statement
+    - monthly statement
+    - balance due
+    - outstanding amount
+    - payments
+    - attendance record
+    - carry-over
+    - download statement
 audience: []
 related:
     - customer-portal.overview

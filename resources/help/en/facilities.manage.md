@@ -2,6 +2,18 @@
 title: "Sites & rooms"
 topic: facilities.manage
 version: 1
+keywords:
+    - facilities
+    - buildings
+    - floors
+    - room register
+    - room management
+    - facility management
+    - property structure
+    - hygiene level
+    - special cleaning
+    - access restriction
+    - locations
 audience: []
 modules:
     - module.liegenschaften

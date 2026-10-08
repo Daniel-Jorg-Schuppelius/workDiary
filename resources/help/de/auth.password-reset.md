@@ -2,6 +2,16 @@
 title: "Passwort zurücksetzen"
 topic: auth.password-reset
 version: 1
+keywords:
+    - Passwort vergessen
+    - Kennwort vergessen
+    - neues Passwort
+    - Passwort ändern
+    - Reset-Link
+    - Zugangsdaten vergessen
+    - Passwort neu setzen
+    - Kennwort zurücksetzen
+    - Passwort-Link per E-Mail
 related:
     - auth.login
     - account.two-factor

@@ -2,6 +2,19 @@
 title: "Audit-Log"
 topic: audit.log
 version: 1
+keywords:
+    - Änderungsprotokoll
+    - Prüfprotokoll
+    - Protokoll
+    - Änderungshistorie
+    - Revisionssicherheit
+    - GoBD
+    - wer hat was geändert
+    - Nachvollziehbarkeit
+    - Hash-Kette
+    - Logbuch
+    - Aktivitätsprotokoll
+    - Manipulationsschutz
 audience:
     - admin
 related:

@@ -2,6 +2,16 @@
 title: "Segnalibri e filtri"
 topic: account.bookmarks
 version: 1
+keywords:
+    - preferiti
+    - bookmark
+    - accesso rapido
+    - link rapidi
+    - filtri salvati
+    - modello di filtro
+    - filtro predefinito
+    - salvare filtro
+    - salvare vista
 audience: []
 related:
     - account.notifications

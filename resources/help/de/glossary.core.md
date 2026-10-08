@@ -2,6 +2,19 @@
 title: "Glossar: zentrale Begriffe"
 topic: glossary.core
 version: 1
+keywords:
+    - Begriffe
+    - Fachbegriffe
+    - Begriffserklärung
+    - Wörterbuch
+    - Definitionen
+    - Abkürzungen
+    - Lexikon
+    - was bedeutet
+    - SLA
+    - SoA
+    - Zeitkonto
+    - Mandant
 audience: []
 related:
     - isms.overview

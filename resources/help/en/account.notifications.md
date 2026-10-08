@@ -2,6 +2,17 @@
 title: "Notifications"
 topic: account.notifications
 version: 1
+keywords:
+    - alerts
+    - messages
+    - bell icon
+    - unread
+    - mark as read
+    - notification center
+    - email notifications
+    - SMS
+    - text message
+    - quiet hours
 audience: []
 related:
     - account.profile

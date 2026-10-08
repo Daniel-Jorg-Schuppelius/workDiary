@@ -2,6 +2,17 @@
 title: "Da fatturare e da sollecitare (catena dei documenti)"
 topic: billing.chain
 version: 1
+keywords:
+    - ore non fatturate
+    - preventivi accettati senza fattura
+    - sollecito preventivi
+    - follow-up preventivi
+    - fatture scadute
+    - ore fatturabili
+    - stato avanzamento lavori
+    - misurazioni da fatturare
+    - chiusura mensile
+    - lavori da fatturare
 audience: []
 related:
     - billing.feed

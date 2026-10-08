@@ -2,6 +2,19 @@
 title: "Passenger transport (taxi/private hire)"
 topic: passenger.overview
 version: 1
+keywords:
+    - taxi company
+    - private hire
+    - chauffeur service
+    - dispatch
+    - trip record
+    - taximeter
+    - operator license
+    - fare
+    - fixed price
+    - shift settlement
+    - driver settlement
+    - demand-responsive transport
 audience: []
 modules:
     - module.fuhrpark

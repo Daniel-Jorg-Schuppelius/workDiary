@@ -2,6 +2,17 @@
 title: "Guarantees"
 topic: guarantees.overview
 version: 1
+keywords:
+    - guarantee register
+    - bank guarantee
+    - surety bond
+    - performance bond
+    - warranty bond
+    - retention money
+    - release retention
+    - guarantee deed
+    - return guarantee
+    - security deposit
 audience: []
 related:
     - invoices.manage

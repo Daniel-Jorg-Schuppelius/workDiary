@@ -2,6 +2,19 @@
 title: "Entender los mensajes de error"
 topic: help.errors
 version: 1
+keywords:
+    - página de error
+    - acceso denegado
+    - sin permiso
+    - error 403
+    - página no encontrada
+    - error 404
+    - sesión caducada
+    - error 419
+    - error del servidor
+    - error 500
+    - ID de solicitud
+    - área en mantenimiento
 audience: []
 related:
     - help.center

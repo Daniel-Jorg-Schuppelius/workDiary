@@ -2,6 +2,19 @@
 title: "Rollen & Rechte"
 topic: admin.roles
 version: 2
+keywords:
+    - Berechtigungen
+    - Benutzerrechte
+    - Zugriffsrechte
+    - Rollenverwaltung
+    - Rechtevergabe
+    - Rolle zuweisen
+    - Rolle kopieren
+    - Admin-Rechte
+    - Rechtekonzept
+    - Benutzergruppen
+    - Least Privilege
+    - RBAC
 audience:
     - admin
 schema: process

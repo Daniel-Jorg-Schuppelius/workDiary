@@ -2,6 +2,16 @@
 title: "Control del permiso de conducir"
 topic: fleet.license-checks
 version: 1
+keywords:
+    - verificar carné de conducir
+    - carné de conducir
+    - licencia de conducir
+    - responsabilidad del titular
+    - conductores
+    - intervalo de control
+    - bloquear conductor
+    - coche de empresa
+    - flota de vehículos
 audience:
     - admin
     - geschaeftsfuehrung

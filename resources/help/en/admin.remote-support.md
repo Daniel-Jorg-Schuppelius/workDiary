@@ -2,6 +2,17 @@
 title: "Remote Support"
 topic: admin.remote-support
 version: 1
+keywords:
+    - AnyDesk
+    - TeamViewer
+    - remote access
+    - remote session
+    - remote maintenance
+    - session reports
+    - device ID
+    - remote desktop
+    - support session
+    - log remote sessions as time
 audience:
     - admin
 related:

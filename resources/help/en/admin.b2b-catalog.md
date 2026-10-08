@@ -2,6 +2,18 @@
 title: "Manage B2B catalogue access"
 topic: admin.b2b-catalog
 version: 1
+keywords:
+    - punchout
+    - OCI
+    - DATANORM
+    - customer catalogue
+    - customer-specific prices
+    - trade customer access
+    - dealer access
+    - e-procurement
+    - shopping cart transfer
+    - catalogue export
+    - price file
 audience:
     - admin
 related:

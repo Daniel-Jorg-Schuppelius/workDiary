@@ -2,6 +2,16 @@
 title: "Entregas de llaves"
 topic: key-handovers
 version: 1
+keywords:
+    - devolución de llaves
+    - registro de llaves
+    - gestión de llaves
+    - préstamo de llaves
+    - salida de llaves
+    - quién tiene la llave
+    - recibo de llaves
+    - tarjeta de acceso
+    - llavero
 audience: []
 related:
     - meter-readings

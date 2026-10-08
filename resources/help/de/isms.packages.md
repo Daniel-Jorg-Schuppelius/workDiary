@@ -2,6 +2,18 @@
 title: "Auditpakete & Prüfer-Links"
 topic: isms.packages
 version: 1
+keywords:
+    - Prüferzugang
+    - Auditor-Link
+    - Zugang für Zertifizierer
+    - Prüfungsunterlagen
+    - Nachweispaket
+    - Daten-Snapshot
+    - Stichtag einfrieren
+    - Integrität prüfen
+    - Hash prüfen
+    - Lesezugang
+    - Audit-Export
 audience: []
 modules:
     - module.isms

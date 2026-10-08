@@ -2,6 +2,17 @@
 title: "Usare la lista di lavoro"
 topic: duties.overview
 version: 1
+keywords:
+    - elenco attività
+    - ordini aperti
+    - registro ordini
+    - reperibilità
+    - pronto intervento
+    - servizio di emergenza
+    - richiesta ferie
+    - malattia
+    - certificato medico
+    - assenze
 audience: []
 related:
     - diary-entries.create

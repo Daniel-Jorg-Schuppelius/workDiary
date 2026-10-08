@@ -2,6 +2,16 @@
 title: "Registrierung"
 topic: auth.register
 version: 1
+keywords:
+    - Konto erstellen
+    - Account anlegen
+    - Selbstregistrierung
+    - Sign-up
+    - Organisation registrieren
+    - kostenlos starten
+    - neues Konto
+    - Firma registrieren
+    - Zugang einrichten
 related:
     - auth.login
     - admin.tenants

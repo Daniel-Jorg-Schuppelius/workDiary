@@ -6,6 +6,8 @@
  *  - Schließen via ESC oder Backdrop.
  *  - Live-Suche (debounced) gegen /api/internal/search.
  *  - Tastatur-Navigation mit ↑/↓ und ↵.
+ *  - Aktionen (MVP-1082): Einträge mit `action` statt `url` führen einen
+ *    Bedienschritt aus (Farbschema, Tastenkürzel, Kontexthilfe).
  *
  * Erwartet im DOM den Partial `partials/global-search.blade.php`.
  */
@@ -13,6 +15,8 @@
 import { __ } from "./i18n.js";
 import { safeUrl, sameOriginPath, html, setHtml, clearHtml } from "./lib/html.js";
 import { getJson } from "./lib/http.js";
+import { openShortcutsDialog } from "./shortcuts.js";
+import { openContextHelp } from "./help-drawer.js";
 
 const DIALOG_ID = "global-search-dialog";
 const DEBOUNCE_MS = 220;
@@ -95,6 +99,34 @@ const renderResults = (root, groups, allUrl = null) => {
         const items = group.items.map((item) => {
             const idx = flatItems.length;
             flatItems.push(item);
+            const content = html`<span
+                    class="material-symbols-outlined text-base text-muted"
+                    aria-hidden="true"
+                    >${item.icon || group.icon || "search"}</span
+                >
+                <span class="flex-1 min-w-0">
+                    <span class="block text-sm font-medium truncate"
+                        >${item.title}</span
+                    >
+                    ${item.subtitle
+                        ? html`<span class="block text-xs text-muted truncate"
+                              >${item.subtitle}</span
+                          >`
+                        : ""}
+                </span>`;
+            if (item.action) {
+                return html`<li>
+                    <button
+                        type="button"
+                        data-gs-item
+                        data-gs-index="${idx}"
+                        data-gs-action="${item.action}"
+                        class="flex w-full items-start gap-3 rounded-box px-3 py-2 text-left hover:bg-base-200 focus:bg-base-200 focus:outline-none"
+                    >
+                        ${content}
+                    </button>
+                </li>`;
+            }
             // safeUrl statt HTML-Escaping: gegen `javascript:` schützt nur eine
             // Protokoll-Allowlist, Entity-Escaping greift im href-Kontext nicht.
             return html`<li>
@@ -104,22 +136,7 @@ const renderResults = (root, groups, allUrl = null) => {
                     data-gs-index="${idx}"
                     class="flex items-start gap-3 rounded-box px-3 py-2 hover:bg-base-200 focus:bg-base-200 focus:outline-none"
                 >
-                    <span
-                        class="material-symbols-outlined text-base text-muted"
-                        aria-hidden="true"
-                        >${group.icon || "search"}</span
-                    >
-                    <span class="flex-1 min-w-0">
-                        <span class="block text-sm font-medium truncate"
-                            >${item.title}</span
-                        >
-                        ${item.subtitle
-                            ? html`<span
-                                  class="block text-xs text-muted truncate"
-                                  >${item.subtitle}</span
-                              >`
-                            : ""}
-                    </span>
+                    ${content}
                 </a>
             </li>`;
         });
@@ -224,10 +241,30 @@ const onKeydown = (root, e) => {
     } else if (e.key === "Enter") {
         if (activeIndex >= 0 && flatItems[activeIndex]) {
             e.preventDefault();
+            if (flatItems[activeIndex].action) {
+                runAction(flatItems[activeIndex].action);
+                return;
+            }
             // Wie der Link selbst: nur Ziele der eigenen Origin.
             const target = sameOriginPath(flatItems[activeIndex].url);
             if (target !== null) window.location.href = target;
         }
+    }
+};
+
+// Bedienaktionen der Palette (FunctionFinder::ACTIONS): erst schließen, dann
+// ausführen — sonst läge ein zweiter Dialog unter dem modalen Suchdialog.
+const runAction = (action) => {
+    closeDialog();
+    if (action === "theme") {
+        const toggle = /** @type {HTMLElement|null} */ (
+            document.querySelector("[data-theme-toggle]")
+        );
+        if (toggle) toggle.click();
+    } else if (action === "shortcuts") {
+        openShortcutsDialog();
+    } else if (action === "help") {
+        openContextHelp();
     }
 };
 
@@ -297,6 +334,13 @@ const init = () => {
         input.addEventListener("input", () => onInput(root));
         input.addEventListener("keydown", (e) => onKeydown(root, e));
     }
+
+    root.addEventListener("click", (e) => {
+        const button = /** @type {HTMLElement} */ (e.target).closest(
+            "[data-gs-action]",
+        );
+        if (button) runAction(button.getAttribute("data-gs-action"));
+    });
 
     // Globale Tastenkürzel: Cmd/Ctrl+K oder "/" (außerhalb von Eingabefeldern)
     document.addEventListener("keydown", (e) => {

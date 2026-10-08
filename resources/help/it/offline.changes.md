@@ -2,6 +2,16 @@
 title: "Modifiche offline"
 topic: offline.changes
 version: 1
+keywords:
+    - lavorare offline
+    - senza connessione
+    - senza rete
+    - coda di sincronizzazione
+    - sincronizzazione
+    - modifiche in sospeso
+    - voci rifiutate
+    - modalità offline
+    - non sincronizzato
 audience: []
 related:
     - attendance.manage

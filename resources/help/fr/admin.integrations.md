@@ -2,6 +2,19 @@
 title: "Gérer les intégrations"
 topic: admin.integrations
 version: 3
+keywords:
+    - interfaces
+    - connecteurs
+    - plugins
+    - pointeuse
+    - borne de pointage
+    - mode kiosque
+    - badge NFC
+    - pointage QR code
+    - code PIN terminal
+    - SSO
+    - Nextcloud
+    - Stripe
 audience:
     - admin
     - buchhaltung

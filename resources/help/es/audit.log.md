@@ -2,6 +2,17 @@
 title: "Registro de auditoría"
 topic: audit.log
 version: 1
+keywords:
+    - pista de auditoría
+    - historial de cambios
+    - registro de actividad
+    - quién cambió qué
+    - trazabilidad
+    - a prueba de manipulaciones
+    - cadena hash
+    - GoBD
+    - log de cambios
+    - cumplimiento normativo
 audience:
     - admin
 related:

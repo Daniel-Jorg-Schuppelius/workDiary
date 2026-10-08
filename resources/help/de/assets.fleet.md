@@ -2,6 +2,19 @@
 title: "Assets & Fuhrpark"
 topic: assets.fleet
 version: 1
+keywords:
+    - Fuhrparkverwaltung
+    - Fahrzeugverwaltung
+    - Inventar
+    - Betriebsmittel
+    - Geräteverwaltung
+    - Gerät ausgeben
+    - Werkzeugausgabe
+    - Ausleihe
+    - Tankbuch
+    - Wartungsintervall
+    - Defekt melden
+    - Objektakte
 audience: []
 modules:
     - module.fuhrpark

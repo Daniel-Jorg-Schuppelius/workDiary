@@ -2,6 +2,19 @@
 title: "KI-Dienste"
 topic: ai.services
 version: 1
+keywords:
+    - KI
+    - künstliche Intelligenz
+    - AI
+    - KI-Assistent
+    - Sprachmodell
+    - LLM
+    - Ollama
+    - Textvorschläge
+    - Positionen übersetzen
+    - Texte umformulieren
+    - Glossar
+    - KI aktivieren
 audience: []
 modules:
     - module.ai

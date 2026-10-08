@@ -2,6 +2,19 @@
 title: "Ricezione fatture elettroniche"
 topic: finance.incoming-invoices
 version: 1
+keywords:
+    - fattura fornitore
+    - fattura passiva
+    - fatture in entrata
+    - ricevere XRechnung
+    - ZUGFeRD
+    - Factur-X
+    - validare e-fattura
+    - approvazione fattura
+    - contabilità fornitori
+    - autorizzazione al pagamento
+    - EN 16931
+    - fatturazione elettronica
 audience: []
 modules:
     - module.vertrieb

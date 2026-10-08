@@ -2,6 +2,19 @@
 title: "Chiusura e analisi"
 topic: accounting.closing
 version: 1
+keywords:
+    - chiusura mensile
+    - chiusura annuale
+    - bloccare periodo
+    - riaprire periodo
+    - conto economico
+    - report finanziari
+    - previsione di liquidità
+    - budget vs consuntivo
+    - report IVA
+    - export verifica fiscale
+    - ripartizione costi
+    - export DATEV
 audience:
     - admin
     - geschaeftsfuehrung

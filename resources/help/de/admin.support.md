@@ -2,6 +2,17 @@
 title: "Supportbericht & Fehlerdiagnose"
 topic: admin.support
 version: 1
+keywords:
+    - Diagnosebericht
+    - Systeminformationen
+    - Versionsnummer
+    - Health-Status
+    - Support-Paket
+    - Support-Bundle
+    - Fehleranalyse
+    - Problem melden
+    - technischer Bericht
+    - Installationszustand
 audience:
     - admin
     - geschaeftsfuehrung

@@ -2,6 +2,18 @@
 title: "Toggl-Import"
 topic: admin.toggl
 version: 2
+keywords:
+    - Toggl Track
+    - Zeiten importieren
+    - Zeiteinträge übernehmen
+    - Toggl CSV
+    - Toggl API
+    - Workspace-Export
+    - Detailbericht hochladen
+    - Mapping
+    - Wechsel von Toggl
+    - Benutzerzuordnung
+    - Korrekturen zurückschreiben
 audience:
     - admin
 related:

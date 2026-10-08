@@ -2,6 +2,18 @@
 title: "Fernwartung"
 topic: admin.remote-support
 version: 1
+keywords:
+    - AnyDesk
+    - TeamViewer
+    - Fernzugriff
+    - Remote-Sitzung
+    - Fernwartungssitzung buchen
+    - Sitzungsbericht
+    - Geräte-ID zuordnen
+    - Support-Sitzung
+    - Remote Desktop
+    - Fernsupport
+    - Sitzungen als Zeit buchen
 audience:
     - admin
 related:

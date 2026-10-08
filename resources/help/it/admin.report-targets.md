@@ -2,6 +2,18 @@
 title: "Valori obiettivo (report)"
 topic: admin.report-targets
 version: 1
+keywords:
+    - obiettivi
+    - target
+    - indicatori
+    - KPI
+    - benchmark
+    - semaforo
+    - confronto previsto consuntivo
+    - margine
+    - quota fatturabile
+    - tasso SLA
+    - utilizzo
 audience:
     - admin
     - geschaeftsfuehrung

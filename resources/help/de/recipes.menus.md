@@ -2,6 +2,19 @@
 title: "Menü- & Buffetplanung (Partyservice)"
 topic: recipes.menus
 version: 1
+keywords:
+    - Catering
+    - Speiseplan
+    - Menüplan
+    - Buffet planen
+    - Gästezahl
+    - Portionen berechnen
+    - Rezepte skalieren
+    - Allergenkennzeichnung
+    - Allergene
+    - Zutatenbedarf
+    - Wareneinsatz
+    - Veranstaltungsmenü
 audience: []
 modules:
     - module.lager

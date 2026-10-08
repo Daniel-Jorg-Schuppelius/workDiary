@@ -2,6 +2,19 @@
 title: "Sustainability & ESG"
 topic: sustainability.overview
 version: 2
+keywords:
+    - carbon footprint
+    - CO2 emissions
+    - greenhouse gas
+    - GHG accounting
+    - emission factors
+    - energy consumption
+    - sustainability report
+    - VSME
+    - climate targets
+    - ESG rating
+    - environmental social governance
+    - scope emissions
 audience: []
 modules:
     - module.sustainability

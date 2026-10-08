@@ -2,6 +2,19 @@
 title: "Documenti di gara e presentazione dell’offerta"
 topic: tenders.documents
 version: 1
+keywords:
+    - capitolato
+    - pacchetto di gara
+    - importare ZIP
+    - importazione GAEB
+    - importare computo
+    - presentare un'offerta
+    - termine di presentazione
+    - validità dell'offerta
+    - apertura delle buste
+    - esito della gara
+    - lotti
+    - verifica dell'offerta
 audience: []
 related:
     - boq.overview

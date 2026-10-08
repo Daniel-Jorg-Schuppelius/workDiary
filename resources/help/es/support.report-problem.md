@@ -2,6 +2,17 @@
 title: "Informar de un problema"
 topic: support.report-problem
 version: 1
+keywords:
+    - informar de un error
+    - reportar un bug
+    - contactar con soporte
+    - solicitud de soporte
+    - problema técnico
+    - página de error
+    - ID de solicitud
+    - adjuntar captura de pantalla
+    - no funciona
+    - incidencia técnica
 audience: ['*']
 related:
     - admin.diagnostics

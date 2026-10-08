@@ -2,6 +2,18 @@
 title: "Zuordnungs-Inbox"
 topic: admin.integration-inbox
 version: 1
+keywords:
+    - Integrations-Inbox
+    - Importkonflikte
+    - Datenabgleich
+    - Abgleich
+    - Datensätze zuordnen
+    - Feldkonflikt
+    - Sync-Konflikt
+    - unbekannte Rufnummer
+    - unbekannte Geräte
+    - Klärungsfälle
+    - Mapping
 audience: []
 related:
     - admin.integrations

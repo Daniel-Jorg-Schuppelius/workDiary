@@ -2,6 +2,18 @@
 title: "Permit register"
 topic: permits.overview
 version: 1
+keywords:
+    - permit
+    - license
+    - road opening permit
+    - special use permit
+    - event permit
+    - official notice
+    - file reference
+    - authority
+    - permit expiry
+    - permit conditions
+    - expiring permits
 audience: []
 modules:
     - module.vertrieb

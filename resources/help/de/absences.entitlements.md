@@ -2,6 +2,17 @@
 title: "Urlaubskonto"
 topic: absences.entitlements
 version: 1
+keywords:
+    - Urlaubsanspruch
+    - Resturlaub
+    - Urlaubstage
+    - Jahresurlaub
+    - Urlaubsübertrag
+    - Urlaubssaldo
+    - Restanspruch
+    - Resturlaub Vorjahr
+    - Verfall Resturlaub
+    - Urlaubskontingent
 audience:
     - admin
 related:

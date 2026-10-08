@@ -2,6 +2,17 @@
 title: "Clôture de journée"
 topic: time-entries.day-close
 version: 1
+keywords:
+    - clôturer la journée
+    - fin de journée
+    - ajouter une pause
+    - bilan journalier
+    - solde du jour
+    - trous dans la saisie
+    - pause obligatoire
+    - pointage ouvert
+    - demander une correction
+    - compléter les heures
 audience: []
 related:
     - time-entries.start

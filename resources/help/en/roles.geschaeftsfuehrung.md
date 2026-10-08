@@ -2,6 +2,19 @@
 title: "Your day in WorkDiary: Management"
 topic: roles.geschaeftsfuehrung
 version: 1
+keywords:
+    - CEO
+    - owner
+    - executive
+    - managing director
+    - management view
+    - company overview
+    - KPIs
+    - read-only access
+    - view audit log
+    - segregation of duties
+    - export reports
+    - dashboard
 audience:
     - geschaeftsfuehrung
 related:

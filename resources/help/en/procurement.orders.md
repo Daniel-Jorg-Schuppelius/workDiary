@@ -2,6 +2,19 @@
 title: "Procurement & purchase orders"
 topic: procurement.orders
 version: 1
+keywords:
+    - purchasing
+    - create purchase order
+    - PO
+    - supplier order
+    - goods receipt
+    - partial delivery
+    - advance shipping notice
+    - ASN
+    - reorder suggestions
+    - reorder point
+    - minimum order quantity
+    - expected deliveries
 audience: []
 modules:
     - module.lager

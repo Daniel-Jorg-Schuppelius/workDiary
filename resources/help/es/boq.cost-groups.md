@@ -2,6 +2,19 @@
 title: "Grupos de costes según DIN 276"
 topic: boq.cost-groups
 version: 1
+keywords:
+    - asignar grupo de costes
+    - estimación de costes
+    - cálculo de costes
+    - presupuesto de costes
+    - liquidación final de costes
+    - seguimiento de costes
+    - HOAI
+    - StLB-Bau
+    - capítulo de obra
+    - catálogo de costes de construcción
+    - GAEB X51
+    - GAEB X52
 audience: []
 modules:
     - module.bau

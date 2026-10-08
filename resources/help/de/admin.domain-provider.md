@@ -2,6 +2,18 @@
 title: "DomainReselling anbinden"
 topic: admin.domain-provider
 version: 1
+keywords:
+    - Domains verwalten
+    - Domainverwaltung
+    - Domain-Reseller
+    - DNS
+    - DNS-Einträge
+    - Domainregistrierung
+    - Domain verlängern
+    - Domain-Laufzeit
+    - Registrar
+    - Domainportfolio
+    - Subuser
 audience:
     - admin
     - geschaeftsfuehrung

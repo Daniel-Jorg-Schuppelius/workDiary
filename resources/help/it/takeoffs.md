@@ -2,6 +2,17 @@
 title: "Misurazione"
 topic: takeoffs
 version: 1
+keywords:
+    - computo metrico
+    - foglio di misurazione
+    - misure in cantiere
+    - calcolo quantità
+    - calcolo superfici
+    - GAEB X31
+    - formule REB
+    - contabilità lavori
+    - rilievo misure
+    - stato di avanzamento
 audience: []
 related:
     - diary-entries.edit

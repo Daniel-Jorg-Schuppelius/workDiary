@@ -2,6 +2,17 @@
 title: "Workspaces"
 topic: workspaces.overview
 version: 1
+keywords:
+    - focus view
+    - switch view
+    - simplify navigation
+    - hide menu items
+    - default view
+    - default for new users
+    - display name
+    - role view
+    - declutter sidebar
+    - all features
 audience:
     - admin
 related:

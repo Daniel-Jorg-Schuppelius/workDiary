@@ -2,6 +2,14 @@
 title: "Temps enregistrés"
 topic: customer-portal.time
 version: 1
+keywords:
+    - suivi du temps
+    - feuille de temps
+    - heures travaillées
+    - heures effectuées
+    - relevé d'heures
+    - temps passé
+    - heures par projet
 audience: []
 related:
     - customer-portal.overview

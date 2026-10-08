@@ -2,6 +2,20 @@
 title: "Lernplattform"
 topic: learning.overview
 version: 3
+keywords:
+    - E-Learning
+    - LMS
+    - Onlinekurs
+    - Kurs erstellen
+    - Quiz
+    - Test erstellen
+    - Fragenkatalog
+    - Zertifikat
+    - Notenbuch
+    - Kompetenzmatrix
+    - Online-Unterweisung
+    - LearnDash Import
+    - Lernzeit
 audience: []
 related:
     - training.overview

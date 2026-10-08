@@ -2,6 +2,17 @@
 title: "Vacaciones y enfermedad"
 topic: absences.manage
 version: 1
+keywords:
+    - ausencia
+    - solicitud de vacaciones
+    - pedir vacaciones
+    - aprobar vacaciones
+    - baja por enfermedad
+    - baja médica
+    - parte médico
+    - gestión de ausencias
+    - días libres
+    - sustituto
 audience: []
 related:
     - planning.shifts

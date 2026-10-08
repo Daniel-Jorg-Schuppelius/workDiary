@@ -2,6 +2,16 @@
 title: "Connecter DomainReselling"
 topic: admin.domain-provider
 version: 1
+keywords:
+    - gestion des domaines
+    - noms de domaine
+    - revendeur de domaines
+    - DNS
+    - enregistrements DNS
+    - enregistrement de domaine
+    - renouvellement de domaine
+    - registraire
+    - portefeuille de domaines
 audience:
     - admin
     - geschaeftsfuehrung

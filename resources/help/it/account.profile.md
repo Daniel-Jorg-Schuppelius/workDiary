@@ -1,12 +1,26 @@
 ---
 title: "Profilo e account"
 topic: account.profile
-version: 1
+version: 2
+keywords:
+    - impostazioni
+    - cambiare password
+    - lingua
+    - fuso orario
+    - modalità scura
+    - tema scuro
+    - foto profilo
+    - avatar
+    - pagina iniziale
+    - abbonamento calendario
+    - feed ICS
+    - formato data
 audience: []
 related:
     - account.two-factor
     - account.notifications
     - account.calendar
+    - navigation.interface
 ---
 
 Nel profilo gestisce i suoi dati personali (nome, e-mail, avatar,
@@ -21,3 +35,7 @@ feed ICS, il cui link può rigenerare o revocare in qualsiasi momento.
 
 Sono proposte solo le pagine che può aprire. Senza una sua scelta vale la
 pagina iniziale impostata dalla sua organizzazione per il suo ruolo.
+
+Il modo più rapido per passare alla modalità scura è **Impostazioni**
+nell'intestazione. I dettagli sono nell'argomento **Interfaccia e
+visualizzazione**.

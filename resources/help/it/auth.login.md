@@ -2,6 +2,17 @@
 title: "Accesso"
 topic: auth.login
 version: 1
+keywords:
+    - login
+    - entrare
+    - effettuare accesso
+    - nome utente
+    - password
+    - ricordami
+    - rimanere connesso
+    - account bloccato
+    - impossibile accedere
+    - credenziali
 related:
     - auth.password-reset
     - auth.two-factor

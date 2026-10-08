@@ -2,6 +2,16 @@
 title: "Rellenar formularios"
 topic: forms.fill
 version: 1
+keywords:
+    - rellenar checklist
+    - completar formulario
+    - ficha de registro
+    - cuestionario
+    - formulario digital
+    - campos obligatorios
+    - imprimir formulario
+    - formularios completados
+    - lista de comprobación
 audience: []
 modules:
     - module.forms

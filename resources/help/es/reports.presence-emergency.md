@@ -2,6 +2,17 @@
 title: "Lista de presencia de emergencia"
 topic: reports.presence-emergency
 version: 1
+keywords:
+    - lista de evacuación
+    - evacuación
+    - alarma de incendio
+    - incendio
+    - quién está en el edificio
+    - pase de lista
+    - recuento de personas
+    - personas presentes
+    - lista de asistencia
+    - control de presencia
 audience: []
 related:
     - reports.overview

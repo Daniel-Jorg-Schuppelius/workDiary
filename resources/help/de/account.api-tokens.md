@@ -2,6 +2,18 @@
 title: "API-Token"
 topic: account.api-tokens
 version: 1
+keywords:
+    - API-Schlüssel
+    - API Key
+    - Zugriffstoken
+    - Personal Access Token
+    - Bearer Token
+    - Schnittstelle
+    - REST-API
+    - Token anlegen
+    - Token widerrufen
+    - Programmzugriff
+    - externe Programme anbinden
 audience: []
 related:
     - account.profile

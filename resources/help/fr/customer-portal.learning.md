@@ -2,6 +2,16 @@
 title: "Formations dans le portail client"
 topic: customer-portal.learning
 version: 1
+keywords:
+    - e-learning
+    - formation en ligne
+    - cours en ligne
+    - réserver une formation
+    - démarrer un cours
+    - progression
+    - achèvement du cours
+    - modules
+    - plateforme d'apprentissage
 audience: []
 related:
     - customer-portal.overview

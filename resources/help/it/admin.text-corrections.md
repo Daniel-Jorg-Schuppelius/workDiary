@@ -2,6 +2,15 @@
 title: "Dizionario"
 topic: admin.text-corrections
 version: 1
+keywords:
+    - correzione automatica
+    - correttore ortografico
+    - errori di battitura
+    - refusi
+    - sostituzione testo
+    - elenco sostituzioni
+    - sostituzione parole
+    - testi fattura
 audience:
     - admin
 ---

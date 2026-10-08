@@ -2,6 +2,17 @@
 title: "Usar el chat"
 topic: communication.chat
 version: 1
+keywords:
+    - mensaje
+    - enviar mensaje
+    - canal
+    - mensaje directo
+    - mensajería
+    - chat de equipo
+    - chat de grupo
+    - comunicación interna
+    - mención
+    - fijar mensaje
 audience: []
 modules:
     - module.chat

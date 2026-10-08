@@ -2,6 +2,16 @@
 title: "Gespeicherte Auswertungen"
 topic: reports.saved-views
 version: 1
+keywords:
+    - Filter speichern
+    - gespeicherte Ansicht
+    - Ansicht teilen
+    - Bericht teilen
+    - Favoriten
+    - Lesezeichen
+    - Schnellzugriff
+    - Berichtsvorlage
+    - Auswertung merken
 audience: []
 related:
     - reports.overview

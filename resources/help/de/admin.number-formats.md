@@ -2,6 +2,19 @@
 title: "Nummernformate"
 topic: admin.number-formats
 version: 1
+keywords:
+    - Nummernkreis
+    - Rechnungsnummer
+    - Belegnummer
+    - Kundennummer
+    - Artikelnummer
+    - fortlaufende Nummer
+    - Nummernvergabe
+    - Nummerierung
+    - Präfix
+    - Startnummer
+    - Jahreszähler
+    - Zähler zurücksetzen
 audience:
     - admin
     - teamleitung

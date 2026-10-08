@@ -2,6 +2,18 @@
 title: "Connect Billbee"
 topic: admin.billbee
 version: 1
+keywords:
+    - multichannel
+    - marketplace orders
+    - Amazon orders
+    - eBay orders
+    - Shopify
+    - connect online shop
+    - e-commerce
+    - order import
+    - stock sync
+    - inventory sync
+    - SKU mapping
 audience:
     - admin
 modules:

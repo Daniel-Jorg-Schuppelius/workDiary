@@ -2,6 +2,16 @@
 title: "Prozedur ausführen"
 topic: procedures.run
 version: 1
+keywords:
+    - Checkliste abarbeiten
+    - Arbeitsanweisung ausführen
+    - Ablauf starten
+    - Pflichtschritte
+    - Abweichung erfassen
+    - Gegenzeichnung
+    - Vier-Augen-Prüfung
+    - Backup-Nachweis
+    - Schritt bestätigen
 audience: []
 related:
     - protocols.create

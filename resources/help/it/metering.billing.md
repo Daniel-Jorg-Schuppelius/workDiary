@@ -2,6 +2,16 @@
 title: "Fatturazione a contatore"
 topic: metering.billing
 version: 1
+keywords:
+    - fatturazione a consumo
+    - pay per use
+    - costo copia
+    - fatturazione copie
+    - franchigia copie
+    - prezzi a scaglioni
+    - canone base
+    - ore di funzionamento
+    - addebito per consumo
 audience: []
 related:
     - invoices.manage

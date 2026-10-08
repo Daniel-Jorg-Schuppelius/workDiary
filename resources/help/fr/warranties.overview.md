@@ -2,6 +2,17 @@
 title: "Délais de garantie"
 topic: warranties.overview
 version: 1
+keywords:
+    - délai de prescription
+    - réception des travaux
+    - responsabilité pour vices
+    - vices et défauts
+    - sous-traitants
+    - caution de garantie
+    - retenue de garantie
+    - signaler un défaut
+    - fin de garantie
+    - VOB/B
 audience: []
 related:
     - guarantees.overview

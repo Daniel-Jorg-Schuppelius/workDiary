@@ -2,6 +2,16 @@
 title: "Règles de notification"
 topic: admin.notification-rules
 version: 1
+keywords:
+    - escalade
+    - configurer les notifications
+    - notification e-mail
+    - notification push
+    - destinataires
+    - rappels
+    - alertes de retard
+    - suivi des échéances
+    - canaux de notification
 audience:
     - admin
     - geschaeftsfuehrung

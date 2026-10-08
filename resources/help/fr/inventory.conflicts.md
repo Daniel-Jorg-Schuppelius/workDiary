@@ -2,6 +2,18 @@
 title: "Conflits avec les systèmes externes (stock et articles)"
 topic: inventory.conflicts
 version: 3
+keywords:
+    - écart de stock
+    - erreur de synchronisation
+    - échec de synchronisation
+    - gestion commerciale
+    - ERP
+    - écriture de compensation
+    - conflit d'article
+    - rapprocher les stocks
+    - données divergentes
+    - Lexware Office
+    - Lexoffice
 audience:
     - admin
     - geschaeftsfuehrung

@@ -2,6 +2,18 @@
 title: "Export des temps & transfert paie"
 topic: exports.payroll
 version: 1
+keywords:
+    - paie
+    - export de paie
+    - rubriques de paie
+    - validation mensuelle
+    - clôture mensuelle
+    - exporter les heures
+    - comptabilité de la paie
+    - majorations
+    - DATEV paie
+    - export CSV
+    - relevé d'heures
 audience: []
 related:
     - admin.surcharge-rules

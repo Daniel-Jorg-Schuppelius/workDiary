@@ -2,6 +2,18 @@
 title: "Contract management"
 topic: contracts.overview
 version: 1
+keywords:
+    - contract register
+    - contracts
+    - notice period
+    - contract term
+    - contract renewal
+    - auto renewal
+    - maintenance contract
+    - lease agreement
+    - framework agreement
+    - deadline reminder
+    - indexation
 audience: []
 modules:
     - module.contracts

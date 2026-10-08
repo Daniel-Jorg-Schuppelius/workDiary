@@ -2,6 +2,17 @@
 title: "Glosario: términos centrales"
 topic: glossary.core
 version: 1
+keywords:
+    - terminología
+    - definiciones
+    - diccionario
+    - vocabulario
+    - abreviaturas
+    - qué significa
+    - SLA
+    - SoA
+    - bolsa de horas
+    - cuenta de horas
 audience: []
 related:
     - isms.overview

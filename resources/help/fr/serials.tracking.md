@@ -2,6 +2,18 @@
 title: "Numéros de série"
 topic: serials.tracking
 version: 1
+keywords:
+    - numéro d'appareil
+    - traçabilité
+    - suivi des appareils
+    - passeport d'appareil
+    - vérifier l'authenticité
+    - bloquer un appareil
+    - appareil volé
+    - rappel produit
+    - mise au rebut
+    - contrôle de garantie
+    - cycle de vie
 audience: []
 modules:
     - module.lager

@@ -2,6 +2,17 @@
 title: "Justificatifs de présence"
 topic: club.attendance
 version: 1
+keywords:
+    - liste de présence
+    - feuille de présence
+    - faire l'appel
+    - pointage des présents
+    - confirmer la présence
+    - temps d'entraînement
+    - attestation de participation
+    - absence excusée
+    - absences
+    - export des présences
 audience: []
 modules:
     - module.club

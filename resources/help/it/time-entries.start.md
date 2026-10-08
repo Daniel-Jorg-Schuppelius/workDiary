@@ -2,6 +2,18 @@
 title: "Avviare la registrazione dei tempi"
 topic: time-entries.start
 version: 2
+keywords:
+    - cronometro
+    - avviare il timer
+    - fermare il timer
+    - registrare le ore
+    - rilevazione presenze
+    - timbratura
+    - timbrare
+    - nuova registrazione
+    - tracciare il tempo
+    - obbligo di registrazione
+    - marcatempo
 audience: []
 schema: process
 related:

@@ -2,6 +2,18 @@
 title: "Reporting office – case handling"
 topic: whistleblowing.cases
 version: 1
+keywords:
+    - whistleblowing
+    - whistleblower
+    - whistleblower protection
+    - internal reporting channel
+    - handle report
+    - acknowledge receipt
+    - compliance case
+    - conflict of interest
+    - emergency access
+    - message reporter
+    - crypto shredding
 audience: []
 modules:
     - module.compliance

@@ -2,6 +2,16 @@
 title: "API Tokens"
 topic: account.api-tokens
 version: 1
+keywords:
+    - API key
+    - access token
+    - personal access token
+    - bearer token
+    - REST API
+    - create token
+    - revoke token
+    - API access
+    - integration key
 audience: []
 related:
     - account.profile

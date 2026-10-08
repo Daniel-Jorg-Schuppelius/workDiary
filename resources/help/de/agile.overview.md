@@ -2,6 +2,19 @@
 title: "Agiles Projektmanagement"
 topic: agile.overview
 version: 1
+keywords:
+    - Kanban
+    - Scrum
+    - Sprint
+    - Sprintplanung
+    - Backlog
+    - Story Points
+    - Burndown
+    - Velocity
+    - Kanban-Board
+    - Taskboard
+    - User Story
+    - Akzeptanzkriterien
 audience: []
 modules:
     - module.agile_projects

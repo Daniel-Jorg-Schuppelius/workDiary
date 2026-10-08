@@ -2,6 +2,17 @@
 title: "Outils de protection des données"
 topic: admin.privacy-tools
 version: 1
+keywords:
+    - RGPD
+    - protection de la vie privée
+    - sessions actives
+    - révoquer une session
+    - déconnexion forcée
+    - révoquer un jeton API
+    - portabilité des données
+    - accès aux données personnelles
+    - durées de conservation
+    - export de données
 audience:
     - admin
     - geschaeftsfuehrung

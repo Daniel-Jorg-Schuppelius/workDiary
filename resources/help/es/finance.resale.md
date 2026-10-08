@@ -2,6 +2,20 @@
 title: "Suscripciones y licencias"
 topic: finance.resale
 version: 2
+keywords:
+    - facturación de suscripciones
+    - servicios recurrentes
+    - reventa de servicios
+    - periodos de facturación
+    - renovaciones
+    - plazo de preaviso
+    - margen
+    - factura recurrente
+    - importar suscripciones
+    - revendedor
+    - Lexoffice
+    - Telekom
+    - Quality Hosting
 audience: []
 modules:
     - module.reselling

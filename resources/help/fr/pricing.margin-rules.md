@@ -2,6 +2,17 @@
 title: "Règles de prix & de marge"
 topic: pricing.margin-rules
 version: 1
+keywords:
+    - coefficient
+    - majoration
+    - calcul du prix de vente
+    - prix d'achat
+    - marge minimale
+    - marge cible
+    - arrondi des prix
+    - catalogue fournisseur
+    - validation des prix
+    - taux de marque
 audience:
     - admin
     - geschaeftsfuehrung

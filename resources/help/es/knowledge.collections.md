@@ -2,6 +2,18 @@
 title: "Colecciones"
 topic: knowledge.collections
 version: 6
+keywords:
+    - carpetas
+    - agrupar contenidos
+    - organizar notas
+    - subcolección
+    - base de conocimiento
+    - importar Obsidian
+    - importar OneNote
+    - retroenlaces
+    - referencias cruzadas
+    - enlaces wiki
+    - convertir nota en artículo
 audience: []
 related:
     - knowledge.articles

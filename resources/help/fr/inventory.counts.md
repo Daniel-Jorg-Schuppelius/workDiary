@@ -2,6 +2,16 @@
 title: "Inventaire"
 topic: inventory.counts
 version: 1
+keywords:
+    - comptage des stocks
+    - inventaire physique
+    - inventaire tournant
+    - inventaire annuel
+    - feuille de comptage
+    - compter le stock
+    - écarts d'inventaire
+    - comptabiliser les écarts
+    - classe ABC
 audience: []
 modules:
     - module.lager

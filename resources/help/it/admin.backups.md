@@ -2,6 +2,17 @@
 title: "Backup & monitoraggio operativo"
 topic: admin.backups
 version: 3
+keywords:
+    - copia di sicurezza
+    - ripristino
+    - restore
+    - heartbeat
+    - backup scaduto
+    - test di ripristino
+    - stato del sistema
+    - health check
+    - disaster recovery
+    - monitoraggio backup
 audience:
     - admin
 schema: process

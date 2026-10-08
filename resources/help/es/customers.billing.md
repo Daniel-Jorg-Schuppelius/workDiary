@@ -2,6 +2,18 @@
 title: "Condiciones especiales & cuenta de cliente"
 topic: customers.billing
 version: 3
+keywords:
+    - precios especiales
+    - tarifa horaria del cliente
+    - tarifa de fin de semana
+    - tarifa festivos
+    - gastos de desplazamiento
+    - tarifa de desplazamiento
+    - saldo
+    - cuota mensual
+    - iguala mensual
+    - Lexoffice
+    - cierre mensual
 audience: []
 modules:
     - module.vertrieb

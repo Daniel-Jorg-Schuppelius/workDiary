@@ -2,6 +2,18 @@
 title: "Data subject request portal"
 topic: privacy.portal
 version: 1
+keywords:
+    - GDPR request
+    - subject access request
+    - SAR
+    - access request
+    - erasure request
+    - right to be forgotten
+    - data portability
+    - identity verification
+    - request my data
+    - objection
+    - rectification
 audience: []
 related:
     - privacy.overview

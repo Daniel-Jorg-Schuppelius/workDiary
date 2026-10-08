@@ -2,6 +2,15 @@
 title: "Signer un procès-verbal"
 topic: protocols.sign
 version: 1
+keywords:
+    - signature
+    - faire signer
+    - signature électronique
+    - signature du client
+    - signature sur tablette
+    - lien de signature
+    - valider la réception
+    - révision
 audience: []
 related:
     - protocols.create

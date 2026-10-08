@@ -2,6 +2,17 @@
 title: "Tätigkeitskategorien"
 topic: catalog.activity-categories
 version: 1
+keywords:
+    - Tätigkeiten
+    - Tätigkeitsarten
+    - Arbeitsarten
+    - Leistungsarten
+    - Tätigkeitstyp
+    - abrechenbar
+    - nicht abrechenbare Zeit
+    - zählt als Arbeit
+    - Zeitkategorien
+    - Kategorien verwalten
 audience: []
 related:
     - catalog.event-categories

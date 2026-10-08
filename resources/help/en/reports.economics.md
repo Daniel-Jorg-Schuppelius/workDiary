@@ -2,6 +2,19 @@
 title: "Profitability"
 topic: reports.economics
 version: 1
+keywords:
+    - post-calculation
+    - contribution margin
+    - margin
+    - project profitability
+    - profit per customer
+    - plan vs actual
+    - budget comparison
+    - internal cost rate
+    - loss-making projects
+    - controlling
+    - top and flop
+    - job costing
 audience: []
 modules:
     - module.auswertungen_team

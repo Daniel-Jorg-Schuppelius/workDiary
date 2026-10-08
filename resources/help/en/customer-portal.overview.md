@@ -2,6 +2,16 @@
 title: "Customer Portal – Overview"
 topic: customer-portal.overview
 version: 1
+keywords:
+    - portal home
+    - customer area
+    - client portal
+    - customer dashboard
+    - tiles
+    - key figures
+    - portal search
+    - search invoices
+    - search orders
 audience: []
 related:
     - customer-portal.diary

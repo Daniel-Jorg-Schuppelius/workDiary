@@ -2,6 +2,16 @@
 title: "Transferencia de datos"
 topic: admin.data-transfer
 version: 1
+keywords:
+    - exportación de datos
+    - exportar datos
+    - importar datos
+    - exportación CSV
+    - exportación Excel
+    - descargar exportación
+    - historial de exportaciones
+    - exportar clientes
+    - migración de datos
 audience:
     - admin
     - buchhaltung

@@ -2,6 +2,18 @@
 title: "Veranstaltungen verwalten"
 topic: events.manage
 version: 1
+keywords:
+    - Event planen
+    - Veranstaltung anlegen
+    - Teilnehmerliste
+    - Einladungen
+    - Erinnerung senden
+    - Serientermin
+    - wiederkehrender Termin
+    - Veranstaltung absagen
+    - Tagung
+    - Messe
+    - Seminar
 audience: []
 modules:
     - module.vertrieb

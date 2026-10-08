@@ -2,6 +2,15 @@
 title: "Indemnités de repas"
 topic: catalog.per-diem-rates
 version: 1
+keywords:
+    - per diem
+    - frais de mission
+    - indemnités de déplacement
+    - forfait repas
+    - barème de frais
+    - frais de séjour
+    - indemnité de nuitée
+    - frais de voyage
 audience: []
 related:
     - travel-expenses.manage

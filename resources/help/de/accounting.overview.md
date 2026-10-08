@@ -2,6 +2,19 @@
 title: "Lokale Buchhaltung"
 topic: accounting.overview
 version: 2
+keywords:
+    - Hauptbuch
+    - Finanzbuchhaltung
+    - FiBu
+    - Buchführung
+    - doppelte Buchführung
+    - EÜR
+    - Einnahmenüberschussrechnung
+    - Buchhaltung einrichten
+    - Buchungsbeginn
+    - Buchhaltungssoftware ersetzen
+    - Buchungshoheit
+    - integrierte Buchhaltung
 audience:
     - admin
     - geschaeftsfuehrung

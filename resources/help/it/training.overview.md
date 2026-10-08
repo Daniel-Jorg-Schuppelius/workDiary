@@ -2,6 +2,17 @@
 title: "Gestione della formazione"
 topic: training.overview
 version: 1
+keywords:
+    - corsi obbligatori
+    - formazione obbligatoria
+    - piano formativo
+    - aggiornamento professionale
+    - catalogo corsi
+    - matrice della formazione
+    - formazione annuale
+    - attestato di formazione
+    - corsi scaduti
+    - scadenze formative
 audience: []
 related:
     - safety.overview

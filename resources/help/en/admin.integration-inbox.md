@@ -2,6 +2,18 @@
 title: "Mapping inbox"
 topic: admin.integration-inbox
 version: 1
+keywords:
+    - integration inbox
+    - import conflicts
+    - reconciliation
+    - match records
+    - unmatched records
+    - field conflict
+    - sync conflict
+    - unknown phone number
+    - unknown devices
+    - mapping
+    - review imports
 audience: []
 related:
     - admin.integrations

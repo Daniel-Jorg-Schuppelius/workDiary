@@ -2,6 +2,19 @@
 title: "Steuertermine und Meldepflichten"
 topic: accounting.filings
 version: 1
+keywords:
+    - Umsatzsteuervoranmeldung
+    - UStVA
+    - USt-Voranmeldung
+    - Dauerfristverlängerung
+    - Sondervorauszahlung
+    - Zusammenfassende Meldung
+    - ZM
+    - Steuerkalender
+    - Abgabefristen
+    - Fristverlängerung
+    - monatliche Voranmeldung
+    - vierteljährliche Voranmeldung
 audience:
     - admin
     - geschaeftsfuehrung

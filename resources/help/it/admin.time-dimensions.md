@@ -2,6 +2,16 @@
 title: "Dimensioni temporali libere"
 topic: admin.time-dimensions
 version: 1
+keywords:
+    - ripartizione del tempo
+    - suddividere il tempo
+    - oggetto di costo
+    - dimensione analitica
+    - imputazione
+    - ordine ERP
+    - numero impianto
+    - dimensioni personalizzate
+    - tipo di dimensione
 audience: []
 related:
     - reports.overview

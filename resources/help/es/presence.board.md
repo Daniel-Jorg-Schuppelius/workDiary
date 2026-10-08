@@ -2,6 +2,16 @@
 title: "Ocupación actual"
 topic: presence.board
 version: 1
+keywords:
+    - quién está
+    - tablero de presencia
+    - lista de presencia
+    - recepción
+    - centralita
+    - fuera de la oficina
+    - trabajo de campo
+    - lista de evacuación
+    - compañeros disponibles
 audience: []
 related:
     - attendance.manage

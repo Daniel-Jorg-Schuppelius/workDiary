@@ -2,6 +2,16 @@
 title: "Jetons d'API"
 topic: account.api-tokens
 version: 1
+keywords:
+    - clé API
+    - token API
+    - jeton personnel
+    - API REST
+    - créer un jeton
+    - révoquer un jeton
+    - accès programmatique
+    - clé secrète
+    - bearer token
 audience: []
 related:
     - account.profile

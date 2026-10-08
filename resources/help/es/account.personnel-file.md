@@ -2,6 +2,15 @@
 title: "Mi expediente personal"
 topic: account.personnel-file
 version: 1
+keywords:
+    - expediente del empleado
+    - documentos de RRHH
+    - ficha de personal
+    - contrato laboral
+    - confirmación de lectura
+    - acuse de lectura
+    - enviar documento
+    - certificado
 audience: []
 related:
     - account.profile

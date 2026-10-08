@@ -2,6 +2,18 @@
 title: "Auftrag bearbeiten"
 topic: diary-entries.edit
 version: 1
+keywords:
+    - Auftrag ändern
+    - Auftragsdetails
+    - Fallakte
+    - Auftragsstatus ändern
+    - Auftrag abschließen
+    - Auftrag erledigen
+    - Anhang hochladen
+    - Kommentar hinzufügen
+    - Pflichtklassifikation
+    - Dateigröße Anhang
+    - Status erledigt
 audience: []
 related:
     - diary-entries.create

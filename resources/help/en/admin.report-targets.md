@@ -2,6 +2,18 @@
 title: "Report Targets"
 topic: admin.report-targets
 version: 1
+keywords:
+    - target values
+    - goals
+    - benchmark
+    - KPI
+    - key figures
+    - traffic light
+    - plan vs actual
+    - utilization target
+    - margin target
+    - billable ratio
+    - SLA rate
 audience:
     - admin
     - geschaeftsfuehrung

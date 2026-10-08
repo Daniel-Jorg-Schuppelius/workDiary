@@ -2,6 +2,17 @@
 title: "Gestire i fogli ore"
 topic: timesheets.manage
 version: 1
+keywords:
+    - rapportino
+    - rapportino di lavoro
+    - resoconto ore
+    - prova delle prestazioni
+    - bolla di lavoro
+    - far firmare
+    - firma del cliente
+    - registrare materiale
+    - fatturare prestazioni
+    - foglio ore PDF
 audience: []
 related:
     - time-entries.start

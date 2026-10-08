@@ -97,6 +97,7 @@ final class HelpSiteExporter {
                 'u' => $code . '.html',
                 's' => $sectionTitles[$sectionKey] ?? '',
                 'x' => mb_substr(StringHelper::normalizeWhitespace(StringHelper::htmlEntitiesToText(strip_tags($body))), 0, self::EXCERPT_LENGTH),
+                'k' => implode(' ', $topic['keywords']),
             ];
 
             $related = [];

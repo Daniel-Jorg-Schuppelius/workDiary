@@ -2,6 +2,18 @@
 title: "Existencias de licencias"
 topic: finance.license-stock
 version: 1
+keywords:
+    - gestión de licencias
+    - claves de licencia
+    - número de serie
+    - clave de activación
+    - licencias de software
+    - product key
+    - vender licencia
+    - paquete de licencias
+    - reventa de licencias
+    - punto de pedido
+    - importar claves
 audience: []
 modules:
     - module.reselling

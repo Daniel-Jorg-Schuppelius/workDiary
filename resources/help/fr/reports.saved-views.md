@@ -2,6 +2,16 @@
 title: "Évaluations enregistrées"
 topic: reports.saved-views
 version: 1
+keywords:
+    - enregistrer les filtres
+    - vue enregistrée
+    - partager une vue
+    - partager un rapport
+    - favoris
+    - signets
+    - accès rapide
+    - rapports enregistrés
+    - filtre enregistré
 audience: []
 related:
     - reports.overview

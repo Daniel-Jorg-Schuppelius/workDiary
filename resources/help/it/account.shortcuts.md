@@ -1,11 +1,22 @@
 ---
 title: "Scorciatoie da tastiera"
 topic: account.shortcuts
-version: 1
+version: 2
+keywords:
+    - tasti rapidi
+    - shortcut
+    - hotkey
+    - combinazione di tasti
+    - navigazione da tastiera
+    - ricerca rapida
+    - Ctrl K
+    - guida contestuale
+    - senza mouse
 audience: []
 related:
     - account.bookmarks
     - account.profile
+    - navigation.interface
 ---
 
 Molte parti di WorkDiary si usano senza mouse. Prema in qualsiasi momento
@@ -18,8 +29,9 @@ la digitazione.
 
 Scorciatoie globali:
 
-- `Ctrl`/`⌘` + `K` apre la ricerca globale (clienti, progetti, spese,
-  viaggi, collaboratori …). Nella ricerca scelga un risultato con `↑`/`↓` e
+- `Ctrl`/`⌘` + `K` apre la ricerca globale: pagine, argomenti della guida e
+  azioni come «Cambia schema colori», oltre a clienti, progetti, spese,
+  viaggi, collaboratori … Nella ricerca scelga un risultato con `↑`/`↓` e
   lo apra con `↵`.
 - `Esc` chiude la ricerca o la finestra attualmente aperta.
 - `?` mostra la panoramica di tutte le scorciatoie.

@@ -2,6 +2,17 @@
 title: "Billing schedules"
 topic: invoices.schedules
 version: 1
+keywords:
+    - recurring invoice
+    - recurring billing
+    - subscription invoice
+    - monthly invoice
+    - billing cycle
+    - billing interval
+    - advance payment
+    - automatic invoice drafts
+    - maintenance contract billing
+    - retainer
 audience:
     - admin
     - geschaeftsfuehrung

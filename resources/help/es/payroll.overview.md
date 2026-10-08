@@ -2,6 +2,18 @@
 title: "Nómina y seguridad social"
 topic: payroll.overview
 version: 1
+keywords:
+    - salario mínimo
+    - SMI
+    - minijob
+    - número de empresa
+    - Hacienda
+    - número fiscal
+    - salario por hora
+    - datos salariales
+    - exportar nóminas
+    - Eurostat
+    - cotizaciones
 audience: []
 modules:
     - module.lohn

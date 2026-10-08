@@ -2,6 +2,16 @@
 title: "Classifications & règles obligatoires"
 topic: admin.classifications
 version: 1
+keywords:
+    - listes de valeurs
+    - catégories
+    - listes déroulantes
+    - nomenclatures
+    - référentiels
+    - types de commande
+    - types de défaut
+    - causes
+    - champs obligatoires
 audience:
     - admin
     - geschaeftsfuehrung

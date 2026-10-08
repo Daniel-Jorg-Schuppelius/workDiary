@@ -2,6 +2,18 @@
 title: "Exams"
 topic: club.exams
 version: 1
+keywords:
+    - belt test
+    - grading exam
+    - exam admission
+    - exam registration
+    - exam result
+    - examiner
+    - certificate
+    - grading certificate
+    - admission requirements
+    - pass or fail
+    - exam date
 audience: []
 modules:
     - module.club

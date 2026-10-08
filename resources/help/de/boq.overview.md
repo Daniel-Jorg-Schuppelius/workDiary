@@ -2,6 +2,19 @@
 title: "GAEB-Leistungsverzeichnisse"
 topic: boq.overview
 version: 1
+keywords:
+    - LV
+    - LV importieren
+    - LV exportieren
+    - GAEB DA XML
+    - X83
+    - X86
+    - Ausschreibung
+    - Aufmaß
+    - Nachkalkulation
+    - Nachtrag
+    - Einheitspreis
+    - Angebotsabgabe
 audience: []
 modules:
     - module.bau

@@ -2,6 +2,19 @@
 title: "Konflikte mit Fremdsystemen (Bestand und Artikel)"
 topic: inventory.conflicts
 version: 3
+keywords:
+    - Bestandsabweichung
+    - Synchronisationsfehler
+    - Sync-Fehler
+    - Abgleich fehlgeschlagen
+    - Übertragungsfehler
+    - Warenwirtschaft
+    - Gegenbuchung
+    - Artikelkonflikt
+    - Bestand abgleichen
+    - Datenabgleich
+    - Lexware Office
+    - Lexoffice
 audience:
     - admin
     - geschaeftsfuehrung

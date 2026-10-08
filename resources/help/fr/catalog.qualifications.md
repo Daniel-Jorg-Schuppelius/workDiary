@@ -2,6 +2,14 @@
 title: "Qualifications"
 topic: catalog.qualifications
 version: 1
+keywords:
+    - compétences
+    - savoir-faire
+    - certificats
+    - certifications
+    - formations
+    - habilitations
+    - expertise
 audience: []
 related:
     - planning.shifts

@@ -2,10 +2,20 @@
 title: "Personalizza menu e Tutte le funzioni"
 topic: navigation.customize
 version: 1
+keywords:
+    - nascondere voci di menu
+    - personalizzare la barra laterale
+    - impostazioni di navigazione
+    - mostrare menu nascosti
+    - voce di menu mancante
+    - panoramica funzioni
+    - menu laterale
+    - alleggerire il menu
 audience: []
 related:
     - account.profile
     - scope.overview
+    - navigation.interface
 ---
 
 In **Personalizza menu** nasconde sezioni, sottogruppi e singole voci della

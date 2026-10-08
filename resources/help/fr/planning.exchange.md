@@ -2,6 +2,14 @@
 title: "Échange de poste avec validation"
 topic: planning.exchange
 version: 1
+keywords:
+    - échanger un service
+    - échange de service
+    - céder un poste
+    - bourse aux postes
+    - remplacement
+    - reprendre un poste
+    - demande d'échange
 audience: []
 modules:
     - module.planung

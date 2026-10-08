@@ -2,6 +2,18 @@
 title: "Änderungsverlauf & Versionsvergleich"
 topic: admin.audit-diff
 version: 1
+keywords:
+    - Änderungshistorie
+    - Änderungsprotokoll
+    - Audit-Trail
+    - Audit-Log
+    - Historie
+    - wer hat was geändert
+    - Diff
+    - Vorher-Nachher
+    - Stände vergleichen
+    - Nachvollziehbarkeit
+    - Revisionssicherheit
 audience: [admin]
 related:
     - audit.log

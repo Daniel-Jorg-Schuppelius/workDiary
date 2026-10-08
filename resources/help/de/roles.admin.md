@@ -2,6 +2,19 @@
 title: "Ihr Tag in WorkDiary: Admin"
 topic: roles.admin
 version: 1
+keywords:
+    - Administrator
+    - Admin-Aufgaben
+    - Benutzer anlegen
+    - Benutzerverwaltung
+    - Rechte vergeben
+    - Rollen zuweisen
+    - 2FA zurücksetzen
+    - Konto entsperren
+    - Ersteinrichtung
+    - Backup prüfen
+    - Systemzustand
+    - Tagesablauf Admin
 audience:
     - admin
 related:

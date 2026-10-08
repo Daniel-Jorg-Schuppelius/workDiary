@@ -2,6 +2,16 @@
 title: "Data transfer"
 topic: admin.data-transfer
 version: 1
+keywords:
+    - data export
+    - export data
+    - import data
+    - CSV export
+    - Excel export
+    - download export
+    - export history
+    - export customers
+    - bulk export
 audience:
     - admin
     - buchhaltung

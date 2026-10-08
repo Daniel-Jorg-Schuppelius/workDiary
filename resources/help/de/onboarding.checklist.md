@@ -2,6 +2,17 @@
 title: "Onboarding-Checkliste"
 topic: onboarding.checklist
 version: 1
+keywords:
+    - Einrichtung
+    - Ersteinrichtung
+    - Einrichtungsassistent
+    - Setup
+    - Organisation einrichten
+    - erste Schritte
+    - Inbetriebnahme
+    - Einrichtungsfortschritt
+    - Schritt überspringen
+    - Startcheckliste
 audience:
     - admin
     - geschaeftsfuehrung

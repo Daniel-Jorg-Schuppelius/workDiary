@@ -2,6 +2,19 @@
 title: "Occupational Safety & Safety Events"
 topic: safety.overview
 version: 1
+keywords:
+    - report accident
+    - workplace accident
+    - near miss
+    - incident report
+    - hazard report
+    - risk assessment
+    - safety briefing
+    - training records
+    - occupational health checkup
+    - health and safety
+    - HSE
+    - hazard catalog
 audience: []
 related:
     - reports.overview

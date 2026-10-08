@@ -2,6 +2,16 @@
 title: "Inbox di riconciliazione"
 topic: admin.integration-inbox
 version: 1
+keywords:
+    - inbox integrazioni
+    - conflitti di importazione
+    - abbinamento
+    - associare record
+    - record non abbinati
+    - conflitto di campo
+    - conflitto di sincronizzazione
+    - numero sconosciuto
+    - dispositivi sconosciuti
 audience: []
 related:
     - admin.integrations

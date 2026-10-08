@@ -2,6 +2,17 @@
 title: "Kostenstellenregeln"
 topic: admin.cost-center-rules
 version: 1
+keywords:
+    - Kostenstelle zuordnen
+    - Kostenstellenzuordnung
+    - KST
+    - Kostenstelle pro Team
+    - automatische Kostenstelle
+    - Lohnexport
+    - Lohnbüro
+    - Lohnabrechnung
+    - Zeitexport
+    - Kostenrechnung
 audience:
     - admin
     - geschaeftsfuehrung

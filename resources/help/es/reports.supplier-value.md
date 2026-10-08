@@ -2,6 +2,17 @@
 title: "Valor del proveedor"
 topic: reports.supplier-value
 version: 1
+keywords:
+    - análisis RFM
+    - segmentación de proveedores
+    - clasificación de proveedores
+    - proveedores estratégicos
+    - proveedores habituales
+    - proveedor único
+    - riesgo de concentración
+    - proveedores inactivos
+    - riesgo de proveedor
+    - cartera de proveedores
 audience: []
 related:
     - reports.supplier-analysis

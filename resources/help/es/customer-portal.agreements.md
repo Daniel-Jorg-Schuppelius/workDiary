@@ -2,6 +2,17 @@
 title: "Acuerdos"
 topic: customer-portal.agreements
 version: 1
+keywords:
+    - encargo de tratamiento
+    - NDA
+    - acuerdo de confidencialidad
+    - firmar contrato
+    - estado de la firma
+    - contratos firmados
+    - descargar contrato
+    - enlace de firma
+    - certificado de firma
+    - RGPD
 audience: []
 modules:
     - module.contracts

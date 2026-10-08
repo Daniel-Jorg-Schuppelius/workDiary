@@ -2,6 +2,19 @@
 title: "Disposal & proofs"
 topic: disposal.overview
 version: 1
+keywords:
+    - e-waste
+    - old devices
+    - WEEE
+    - disposal certificate
+    - data destruction
+    - hard drive shredding
+    - data wiping
+    - DIN 66399
+    - waste code
+    - certified disposal company
+    - consignment note
+    - IT asset disposal
 audience: []
 modules:
     - module.entsorgung

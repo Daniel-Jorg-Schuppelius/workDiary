@@ -2,6 +2,18 @@
 title: "Reclamaciones y garantía"
 topic: claims.overview
 version: 1
+keywords:
+    - queja de cliente
+    - reclamación de cliente
+    - garantía legal
+    - cortesía comercial
+    - devolución
+    - RMA
+    - gestión de devoluciones
+    - defecto de producto
+    - denuncia de defectos
+    - reclamación al proveedor
+    - posventa
 audience: []
 modules:
     - module.claims

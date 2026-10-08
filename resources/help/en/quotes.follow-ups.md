@@ -2,6 +2,18 @@
 title: "Quote follow-ups"
 topic: quotes.follow-ups
 version: 1
+keywords:
+    - chase quote
+    - follow up on quote
+    - quote reminder
+    - open quotes
+    - pending quotes
+    - win rate
+    - hit rate
+    - conversion rate
+    - quote tracking
+    - follow-up date
+    - won and lost quotes
 audience: []
 modules:
     - module.vertrieb

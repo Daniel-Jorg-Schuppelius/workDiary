@@ -119,7 +119,30 @@ return [
     ],
 
     'palette' => [
-        'placeholder' => 'Search activities, customers, projects, objects …',
+        'placeholder' => 'Search functions, help, activities, customers, projects …',
+        'group' => [
+            'actions' => 'Actions',
+            'pages' => 'Pages',
+            'help' => 'Help',
+        ],
+        // Bedienaktionen (MVP-1082); `keywords` durch Komma getrennt.
+        'actions' => [
+            'theme' => [
+                'label' => 'Toggle color scheme',
+                'hint' => 'Toggle between light and dark design',
+                'keywords' => 'dark mode, darkmode, night mode, dark theme, light mode, light theme, color scheme, colour scheme, theme, colors',
+            ],
+            'shortcuts' => [
+                'label' => 'Show keyboard shortcuts',
+                'hint' => 'Overview of all keyboard commands',
+                'keywords' => 'keyboard shortcuts, shortcuts, hotkeys, key combination, keyboard, key bindings',
+            ],
+            'help' => [
+                'label' => 'Help for this page',
+                'hint' => 'Open context help (F1)',
+                'keywords' => 'help, guide, instructions, manual, F1, support',
+            ],
+        ],
     ],
 
     'ai' => [

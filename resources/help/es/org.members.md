@@ -2,6 +2,18 @@
 title: "Empleados (organización)"
 topic: org.members
 version: 1
+keywords:
+    - añadir empleado
+    - crear usuario
+    - gestión de usuarios
+    - ficha del empleado
+    - número de personal
+    - asignar rol
+    - baja del empleado
+    - offboarding
+    - expediente personal
+    - confirmación de lectura
+    - modelo de jornada
 audience: []
 related:
     - admin.roles

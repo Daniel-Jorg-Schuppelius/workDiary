@@ -2,6 +2,19 @@
 title: "Su día en WorkDiary: Jefatura de equipo"
 topic: roles.teamleitung
 version: 1
+keywords:
+    - jefe de equipo
+    - supervisor
+    - responsable de equipo
+    - encargado
+    - cuadrante de turnos
+    - aprobar horas
+    - aprobar vacaciones
+    - solicitudes de corrección
+    - cierre mensual
+    - guardias
+    - planificación de personal
+    - asignar encargos
 audience:
     - teamleitung
 related:

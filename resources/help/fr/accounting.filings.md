@@ -2,6 +2,16 @@
 title: "Échéances fiscales et obligations déclaratives"
 topic: accounting.filings
 version: 1
+keywords:
+    - déclaration de TVA
+    - TVA mensuelle
+    - TVA trimestrielle
+    - date limite de dépôt
+    - prorogation permanente
+    - acompte spécial
+    - état récapitulatif
+    - déclaration récapitulative
+    - calendrier fiscal
 audience:
     - admin
     - geschaeftsfuehrung

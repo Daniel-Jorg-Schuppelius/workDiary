@@ -2,6 +2,17 @@
 title: "Objects"
 topic: customer-portal.assets
 version: 1
+keywords:
+    - devices
+    - equipment
+    - installations
+    - my equipment
+    - serial number
+    - maintenance dates
+    - inspection dates
+    - maintenance history
+    - inspection reports
+    - next service
 audience: []
 related:
     - customer-portal.overview

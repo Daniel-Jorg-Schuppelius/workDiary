@@ -2,6 +2,19 @@
 title: "Payroll & social security"
 topic: payroll.overview
 version: 1
+keywords:
+    - payroll
+    - salary
+    - minimum wage
+    - raise minimum wage
+    - mini-job threshold
+    - employer number
+    - tax office
+    - tax number
+    - hourly wage
+    - wage data
+    - payroll export
+    - Eurostat
 audience: []
 modules:
     - module.lohn

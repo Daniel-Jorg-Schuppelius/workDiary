@@ -2,6 +2,18 @@
 title: "Demodaten"
 topic: admin.demo-data
 version: 2
+keywords:
+    - Beispieldaten
+    - Testdaten
+    - Musterdaten
+    - Probedaten
+    - Demo-Mandant
+    - Demo-Organisation
+    - Demo zurücksetzen
+    - Schulung
+    - Vorführung
+    - Präsentation
+    - Testumgebung
 audience:
     - admin
 related:

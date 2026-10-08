@@ -2,6 +2,18 @@
 title: "Cloud-Dokumenteingang"
 topic: cloud-intake.overview
 version: 1
+keywords:
+    - Dropbox
+    - OneDrive
+    - SharePoint
+    - Google Drive
+    - Ordner überwachen
+    - Dokumentenimport
+    - Cloud-Ordner
+    - Ordnerregel
+    - automatischer Import
+    - Cloud-Speicher anbinden
+    - Belege aus der Cloud
 audience: []
 related:
     - documents.manage

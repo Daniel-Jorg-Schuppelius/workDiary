@@ -2,6 +2,17 @@
 title: "Customer Portal – Complaints and returns"
 topic: customer-portal.claims
 version: 1
+keywords:
+    - report a defect
+    - file a complaint
+    - return request
+    - return label
+    - send goods back
+    - warranty claim
+    - complaint status
+    - upload photos
+    - RMA
+    - faulty product
 audience: []
 related:
     - customer-portal.overview

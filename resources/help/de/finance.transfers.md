@@ -2,6 +2,19 @@
 title: "Faktura-Übergabe"
 topic: finance.transfers
 version: 1
+keywords:
+    - Lexoffice-Übergabe
+    - Zeiten an Lexoffice
+    - DATEV-Übergabe
+    - Rechnungsentwurf erstellen
+    - Leistungen übertragen
+    - Material abrechnen
+    - Stunden fakturieren
+    - Abrechnung übergeben
+    - Fakturierung
+    - Rechnungshoheit
+    - Positionen übergeben
+    - Faktura-Export
 audience: []
 modules:
     - module.finance

@@ -2,6 +2,17 @@
 title: "Analyse des fournisseurs"
 topic: reports.supplier-analysis
 version: 1
+keywords:
+    - analyse des achats
+    - analyse des dépenses
+    - Pareto
+    - analyse ABC
+    - risque de concentration
+    - dépendance fournisseurs
+    - dettes fournisseurs
+    - factures fournisseurs ouvertes
+    - HHI
+    - volume d'achats
 audience: []
 related:
     - reports.customer-analysis

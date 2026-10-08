@@ -2,6 +2,17 @@
 title: "Dispacciamento e avvisi di conflitto"
 topic: dispatch.overview
 version: 1
+keywords:
+    - pianificazione interventi
+    - assegnare un intervento
+    - pianificare un tecnico
+    - doppia prenotazione
+    - sovrapposizione
+    - riposo
+    - orario massimo di lavoro
+    - prenotare un veicolo
+    - prenotazione veicolo
+    - conferma appuntamento
 audience: []
 related:
     - diary-entries.edit

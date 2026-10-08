@@ -2,6 +2,19 @@
 title: "Presentar una denuncia (portal)"
 topic: whistleblowing.report
 version: 1
+keywords:
+    - denunciar de forma anónima
+    - comunicar una irregularidad
+    - denunciar un incumplimiento
+    - denunciar una infracción
+    - informante
+    - denuncia confidencial
+    - buzón anónimo
+    - número de caso
+    - clave de acceso
+    - responder preguntas
+    - estado de la denuncia
+    - canal ético
 audience: []
 related:
     - whistleblowing.cases

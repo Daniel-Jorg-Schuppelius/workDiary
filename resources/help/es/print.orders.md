@@ -2,6 +2,16 @@
 title: "Órdenes de impresión (imprenta & copistería)"
 topic: print.orders
 version: 1
+keywords:
+    - reprografía
+    - preflight
+    - revisión de archivos
+    - prueba de impresión
+    - aprobación de pruebas
+    - maculatura
+    - archivo de impresión
+    - trabajo de impresión
+    - control de calidad
 audience: []
 modules:
     - module.lager

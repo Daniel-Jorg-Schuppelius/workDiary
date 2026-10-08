@@ -2,6 +2,19 @@
 title: "Trainingsmanagement"
 topic: training.overview
 version: 1
+keywords:
+    - Schulungen
+    - Pflichtschulungen
+    - Schulungsplan
+    - Weiterbildung
+    - Fortbildung
+    - Kurse verwalten
+    - Schulungskatalog
+    - Pflichtmatrix
+    - Jahresunterweisung
+    - Schulungsnachweis
+    - fällige Schulungen
+    - Kompetenznachweis
 audience: []
 related:
     - safety.overview

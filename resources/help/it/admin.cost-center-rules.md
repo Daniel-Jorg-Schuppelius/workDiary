@@ -2,6 +2,14 @@
 title: "Regole dei centri di costo"
 topic: admin.cost-center-rules
 version: 1
+keywords:
+    - centro di costo
+    - assegnazione centro di costo
+    - export paghe
+    - studio paghe
+    - buste paga
+    - esportazione ore
+    - contabilità analitica
 audience:
     - admin
     - geschaeftsfuehrung

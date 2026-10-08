@@ -11318,6 +11318,7 @@ CREATE TABLE `help_topics` (
   `topic` varchar(128) NOT NULL,
   `locale` varchar(8) NOT NULL,
   `title` varchar(255) NOT NULL,
+  `keywords` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`keywords`)),
   `audience` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`audience`)),
   `modules` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`modules`)),
   `version` smallint(5) unsigned NOT NULL DEFAULT 1,
@@ -11325,6 +11326,7 @@ CREATE TABLE `help_topics` (
   `body_html` longtext NOT NULL,
   `related` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`related`)),
   `headings` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`headings`)),
+  `search_text` text DEFAULT NULL,
   `source_updated_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
@@ -26464,3 +26466,4 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (968,'2027_03_10_10
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (969,'2027_03_11_100000_create_customer_intakes_tables',64);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (970,'2027_03_11_100100_add_customer_approval_to_print_orders',64);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (971,'2027_03_11_100200_create_customer_intake_upload_links_table',65);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (972,'2027_03_12_100000_add_search_columns_to_help_topics',66);

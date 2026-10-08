@@ -2,6 +2,19 @@
 title: "Conciliación de pagos"
 topic: finance.reconciliation
 version: 2
+keywords:
+    - conciliación bancaria
+    - importar extracto bancario
+    - casar pagos
+    - cobros recibidos
+    - factura pagada
+    - movimientos bancarios
+    - CAMT
+    - MT940
+    - descuento por pronto pago
+    - pago parcial
+    - referencia RF
+    - punteo
 audience: []
 modules:
     - module.finance

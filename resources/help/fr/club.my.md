@@ -2,6 +2,18 @@
 title: "Mon association"
 topic: club.my
 version: 1
+keywords:
+    - espace membre
+    - portail adhérent
+    - s'inscrire à l'entraînement
+    - se désinscrire
+    - mes rendez-vous
+    - mes présences
+    - mes cotisations
+    - accès parents
+    - check-in
+    - code QR
+    - liste d'attente
 audience: []
 modules:
     - module.club

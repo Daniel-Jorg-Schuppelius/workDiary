@@ -2,6 +2,15 @@
 title: "Usar el archivo"
 topic: archive.manage
 version: 1
+keywords:
+    - archivar
+    - archivado
+    - restaurar
+    - desarchivar
+    - expedientes cerrados
+    - historial
+    - entradas antiguas
+    - elementos archivados
 audience: []
 related:
     - diary-entries.edit

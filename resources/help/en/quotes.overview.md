@@ -2,6 +2,20 @@
 title: "Quotes"
 topic: quotes.overview
 version: 1
+keywords:
+    - create quote
+    - estimate
+    - quotation
+    - proposal
+    - send quote
+    - accept quote online
+    - partial acceptance
+    - validity period
+    - order confirmation
+    - convert quote to invoice
+    - optional items
+    - quote revision
+    - quote PDF
 audience: []
 modules:
     - module.vertrieb

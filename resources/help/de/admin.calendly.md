@@ -2,6 +2,17 @@
 title: "Terminbuchung (Calendly) verbinden"
 topic: admin.calendly
 version: 1
+keywords:
+    - Online-Terminbuchung
+    - Terminbuchungsseite
+    - Buchungsseite
+    - Terminvereinbarung
+    - Terminplaner
+    - Kundentermine
+    - Online-Termine
+    - Termin-Eingang
+    - Termin abgesagt
+    - Termin verschoben
 audience:
     - admin
 related:

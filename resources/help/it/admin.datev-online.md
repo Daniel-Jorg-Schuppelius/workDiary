@@ -2,6 +2,16 @@
 title: "Collegare DATEV Online"
 topic: admin.datev-online
 version: 1
+keywords:
+    - DATEV Unternehmen online
+    - DUO
+    - interfaccia DATEV
+    - trasferire lotti contabili
+    - immagini documenti
+    - inviare documenti a DATEV
+    - EXTF
+    - commercialista
+    - numero cliente DATEV
 audience:
     - admin
 related:

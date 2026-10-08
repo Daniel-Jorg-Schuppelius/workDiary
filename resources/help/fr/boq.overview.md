@@ -2,6 +2,19 @@
 title: "Descriptifs de prestations GAEB"
 topic: boq.overview
 version: 1
+keywords:
+    - DPGF
+    - DQE
+    - bordereau des prix
+    - importer un descriptif
+    - GAEB DA XML
+    - X83
+    - X86
+    - consultation
+    - métré
+    - avenant
+    - prix unitaire
+    - remise des offres
 audience: []
 modules:
     - module.bau

@@ -2,6 +2,17 @@
 title: "Webhooks"
 topic: admin.webhooks
 version: 1
+keywords:
+    - URL de retorno
+    - callback
+    - notificaciones de eventos
+    - suscripción a eventos
+    - firma HMAC
+    - clave de firma
+    - automatización
+    - integración saliente
+    - registro de entregas
+    - payload
 audience:
     - admin
     - geschaeftsfuehrung

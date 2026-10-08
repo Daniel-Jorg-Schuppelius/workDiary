@@ -2,6 +2,20 @@
 title: "Geräte- & Maschinenverleih"
 topic: rental.overview
 version: 2
+keywords:
+    - Vermietung
+    - Mietgeräte
+    - Mietpark
+    - Werkzeugverleih
+    - Baumaschinenvermietung
+    - Mietvertrag
+    - Kaution
+    - Gerät reservieren
+    - Rückgabe
+    - Übergabeprotokoll
+    - Verfügbarkeitskalender
+    - Mietpreisliste
+    - Telematik
 audience: []
 modules:
     - module.rental

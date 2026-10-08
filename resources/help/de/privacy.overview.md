@@ -2,6 +2,20 @@
 title: "Datenschutzmanagement im Überblick"
 topic: privacy.overview
 version: 1
+keywords:
+    - DSGVO
+    - Verarbeitungsverzeichnis
+    - VVT
+    - Auftragsverarbeitungsvertrag
+    - AVV
+    - TOM
+    - Betroffenenrechte
+    - Auskunftsersuchen
+    - Datenpanne
+    - Meldepflicht 72 Stunden
+    - Löschkonzept
+    - Legal Hold
+    - Crypto-Shredding
 audience: []
 modules:
     - module.datenschutz

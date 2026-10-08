@@ -2,6 +2,17 @@
 title: "Tipi di voce"
 topic: catalog.entry-types
 version: 1
+keywords:
+    - tipi di ordine
+    - tipi di intervento
+    - tipi di servizio
+    - guasto
+    - manutenzione
+    - installazione
+    - tipi di diario
+    - durata predefinita
+    - campi obbligatori
+    - valori predefiniti
 audience:
     - admin
 related:

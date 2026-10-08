@@ -2,6 +2,18 @@
 title: "Raccolte"
 topic: knowledge.collections
 version: 6
+keywords:
+    - cartelle
+    - raggruppare contenuti
+    - organizzare le note
+    - sottoraccolta
+    - base di conoscenza
+    - importare Obsidian
+    - importare OneNote
+    - backlink
+    - rimandi
+    - collegamenti wiki
+    - convertire nota in articolo
 audience: []
 related:
     - knowledge.articles

@@ -2,6 +2,14 @@
 title: "Reglas de centros de coste"
 topic: admin.cost-center-rules
 version: 1
+keywords:
+    - centro de coste
+    - asignación de centro de coste
+    - exportación de nómina
+    - gestoría laboral
+    - nómina
+    - exportación de horas
+    - contabilidad analítica
 audience:
     - admin
     - geschaeftsfuehrung

@@ -2,6 +2,19 @@
 title: "Leasing et contrats d'actifs"
 topic: asset-finance.overview
 version: 1
+keywords:
+    - crédit-bail
+    - contrat de location
+    - LOA
+    - LLD
+    - loyers
+    - financement
+    - valeur résiduelle
+    - rachat en fin de contrat
+    - préavis de résiliation
+    - restitution du véhicule
+    - IFRS 16
+    - échéancier
 audience: []
 modules:
     - module.asset_finance

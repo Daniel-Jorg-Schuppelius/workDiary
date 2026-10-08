@@ -2,6 +2,19 @@
 title: "Stempeluhr & Anwesenheit"
 topic: attendance.manage
 version: 1
+keywords:
+    - einstempeln
+    - ausstempeln
+    - Stempeln
+    - Kommen und Gehen
+    - Arbeitszeiterfassung
+    - Präsenz
+    - Stempelterminal
+    - QR-Code Check-in
+    - NFC
+    - Kiosk-Modus
+    - Mit PIN stempeln
+    - Arbeitsbeginn
 audience: []
 related:
     - time-entries.start

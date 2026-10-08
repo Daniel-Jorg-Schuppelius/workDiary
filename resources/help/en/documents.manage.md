@@ -2,6 +2,19 @@
 title: "Managing documents"
 topic: documents.manage
 version: 1
+keywords:
+    - DMS
+    - document management
+    - upload file
+    - file storage
+    - versioning
+    - new version
+    - expiry date
+    - validity
+    - certificates
+    - archive document
+    - send history
+    - send documents
 audience: []
 modules:
     - module.documents

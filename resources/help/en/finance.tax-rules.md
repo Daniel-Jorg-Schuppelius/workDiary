@@ -2,6 +2,19 @@
 title: "Tax rule matrix"
 topic: finance.tax-rules
 version: 1
+keywords:
+    - tax rates
+    - VAT
+    - VAT rate
+    - sales tax
+    - reduced rate
+    - reverse charge
+    - small business exemption
+    - tax exempt
+    - import tax rules
+    - tax rate change
+    - zero rate
+    - export outside EU
 audience:
     - admin
 modules:

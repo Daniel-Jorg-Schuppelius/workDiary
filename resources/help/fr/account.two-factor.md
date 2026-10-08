@@ -2,6 +2,19 @@
 title: "Configurer l'authentification à deux facteurs"
 topic: account.two-factor
 version: 1
+keywords:
+    - 2FA
+    - MFA
+    - double authentification
+    - authentification multifacteur
+    - validation en deux étapes
+    - code à usage unique
+    - OTP
+    - passkey
+    - clé de sécurité
+    - codes de récupération
+    - codes de secours
+    - compte piraté
 audience: []
 related:
     - admin.security

@@ -2,6 +2,19 @@
 title: "Hilfecenter"
 topic: help.center
 version: 2
+keywords:
+    - Hilfe
+    - Handbuch
+    - Dokumentation
+    - Anleitung
+    - Bedienungsanleitung
+    - FAQ
+    - Support
+    - Hilfe durchsuchen
+    - Hilfeartikel
+    - Tutorial
+    - Hilfethemen
+    - zuletzt angesehen
 audience: []
 related:
     - account.shortcuts

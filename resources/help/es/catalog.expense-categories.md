@@ -2,6 +2,17 @@
 title: "Categorías de gastos"
 topic: catalog.expense-categories
 version: 1
+keywords:
+    - tipos de gasto
+    - gastos de viaje
+    - notas de gastos
+    - alojamiento
+    - comidas
+    - gastos de desplazamiento
+    - tipo de IVA
+    - justificante obligatorio
+    - gastos facturables
+    - liquidación de gastos
 audience: []
 related:
     - travel-expenses.manage

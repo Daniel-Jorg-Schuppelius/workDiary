@@ -2,6 +2,17 @@
 title: "Ronde di sorveglianza"
 topic: patrols.overview
 version: 1
+keywords:
+    - giro di ispezione
+    - controllo ronde
+    - punti di controllo
+    - scansionare un punto
+    - prova di passaggio
+    - vigilanza
+    - guardia giurata
+    - servizio di sicurezza
+    - codice QR
+    - punto mancato
 audience: []
 modules:
     - module.planung

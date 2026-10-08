@@ -2,6 +2,18 @@
 title: "Schadensfälle"
 topic: damage-cases.overview
 version: 1
+keywords:
+    - Schaden melden
+    - Schadensmeldung
+    - Versicherungsschaden
+    - Haftpflichtschaden
+    - Sachschaden
+    - Schadenregulierung
+    - Versicherung
+    - Selbstbehalt
+    - Schadennummer
+    - Fahrzeugschaden
+    - Erstattung
 audience: []
 related:
     - rental.overview

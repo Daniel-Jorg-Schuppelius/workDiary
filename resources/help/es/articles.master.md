@@ -2,6 +2,18 @@
 title: "Maestro de artículos"
 topic: articles.master
 version: 1
+keywords:
+    - artículos
+    - crear artículo
+    - catálogo de productos
+    - código de artículo
+    - referencia
+    - SKU
+    - variantes
+    - EAN
+    - GTIN
+    - unidades de medida
+    - código arancelario
 audience: []
 modules:
     - module.lager

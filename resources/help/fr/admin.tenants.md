@@ -2,6 +2,18 @@
 title: "Organisations et tenants"
 topic: admin.tenants
 version: 2
+keywords:
+    - gestion des tenants
+    - multi-tenant
+    - multi-sociétés
+    - créer une organisation
+    - ajouter une société
+    - supprimer une organisation
+    - désactiver une organisation
+    - basculer entre organisations
+    - export de données
+    - purge
+    - changement de plan
 audience:
     - admin
 related:

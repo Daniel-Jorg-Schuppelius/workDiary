@@ -2,6 +2,18 @@
 title: "Servicios de IA"
 topic: ai.services
 version: 1
+keywords:
+    - IA
+    - inteligencia artificial
+    - asistente IA
+    - modelo de lenguaje
+    - LLM
+    - Ollama
+    - sugerencias de texto
+    - traducir posiciones
+    - reformular textos
+    - glosario
+    - activar IA
 audience: []
 modules:
     - module.ai

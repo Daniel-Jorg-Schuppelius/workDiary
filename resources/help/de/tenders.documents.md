@@ -2,6 +2,19 @@
 title: "Vergabeunterlagen und Angebotsabgabe"
 topic: tenders.documents
 version: 1
+keywords:
+    - Ausschreibungsunterlagen
+    - Vergabepaket
+    - ZIP entpacken
+    - GAEB importieren
+    - Leistungsverzeichnis importieren
+    - Angebot einreichen
+    - Abgabefrist
+    - Bindefrist
+    - Submissionsergebnis
+    - Eröffnungstermin
+    - Angebotsprüfung
+    - Lose
 audience: []
 related:
     - boq.overview

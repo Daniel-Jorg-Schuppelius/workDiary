@@ -2,6 +2,19 @@
 title: "Connecting JTL-Wawi"
 topic: admin.jtl-wawi
 version: 1
+keywords:
+    - inventory management system
+    - ERP
+    - stock sync
+    - inventory sync
+    - article sync
+    - parent article
+    - variant products
+    - warehouse mapping
+    - EAN
+    - GTIN
+    - stock management
+    - JTL cloud
 audience:
     - admin
 modules:

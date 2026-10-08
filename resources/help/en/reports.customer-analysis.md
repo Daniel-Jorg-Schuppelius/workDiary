@@ -2,6 +2,16 @@
 title: "Customer analysis"
 topic: reports.customer-analysis
 version: 1
+keywords:
+    - customer report
+    - customer statistics
+    - orders per customer
+    - time per customer
+    - rework rate
+    - non-billable time
+    - margin risk
+    - customer KPIs
+    - client analysis
 audience: []
 modules:
     - module.auswertungen_team

@@ -2,6 +2,16 @@
 title: "Marcadores y filtros"
 topic: account.bookmarks
 version: 1
+keywords:
+    - favoritos
+    - bookmark
+    - acceso rápido
+    - enlaces rápidos
+    - filtros guardados
+    - plantilla de filtro
+    - filtro predeterminado
+    - guardar filtro
+    - guardar vista
 audience: []
 related:
     - account.notifications

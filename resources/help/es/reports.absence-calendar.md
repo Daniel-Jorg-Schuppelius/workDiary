@@ -2,6 +2,16 @@
 title: "Plan de vacaciones (vista anual)"
 topic: reports.absence-calendar
 version: 1
+keywords:
+    - calendario de vacaciones
+    - calendario de ausencias
+    - planificador de vacaciones
+    - ausencias del equipo
+    - ficha de ausencias
+    - saldo de vacaciones
+    - vacaciones pendientes
+    - solapamiento de vacaciones
+    - exportar ausencias
 audience: []
 related:
     - absences.manage

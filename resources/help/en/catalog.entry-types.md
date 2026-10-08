@@ -2,6 +2,18 @@
 title: "Entry Types"
 topic: catalog.entry-types
 version: 1
+keywords:
+    - entry kinds
+    - order types
+    - job types
+    - service call types
+    - malfunction
+    - maintenance
+    - installation
+    - diary types
+    - default duration
+    - required fields
+    - default values
 audience:
     - admin
 related:

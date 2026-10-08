@@ -2,6 +2,18 @@
 title: "Copias de seguridad & supervisión"
 topic: admin.backups
 version: 3
+keywords:
+    - backup
+    - respaldo
+    - restauración
+    - recuperación
+    - heartbeat
+    - copia atrasada
+    - prueba de restauración
+    - estado del sistema
+    - health check
+    - recuperación ante desastres
+    - monitorización
 audience:
     - admin
 schema: process

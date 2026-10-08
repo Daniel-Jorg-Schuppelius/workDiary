@@ -2,6 +2,18 @@
 title: "Collaboratori (organizzazione)"
 topic: org.members
 version: 1
+keywords:
+    - aggiungere dipendente
+    - creare utente
+    - gestione utenti
+    - anagrafica dipendenti
+    - matricola
+    - assegnare ruolo
+    - cessazione
+    - offboarding
+    - fascicolo personale
+    - conferma di lettura
+    - modello orario
 audience: []
 related:
     - admin.roles

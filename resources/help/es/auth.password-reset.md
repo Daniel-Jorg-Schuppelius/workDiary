@@ -2,6 +2,14 @@
 title: "Restablecer contraseña"
 topic: auth.password-reset
 version: 1
+keywords:
+    - contraseña olvidada
+    - olvidé mi contraseña
+    - nueva contraseña
+    - cambiar contraseña
+    - enlace de restablecimiento
+    - recuperar contraseña
+    - credenciales olvidadas
 related:
     - auth.login
     - account.two-factor

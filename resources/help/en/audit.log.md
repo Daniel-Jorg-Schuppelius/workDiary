@@ -2,6 +2,17 @@
 title: "Audit log"
 topic: audit.log
 version: 1
+keywords:
+    - audit trail
+    - change log
+    - activity log
+    - change history
+    - who changed what
+    - tamper-proof
+    - hash chain
+    - GoBD
+    - compliance log
+    - traceability
 audience:
     - admin
 related:

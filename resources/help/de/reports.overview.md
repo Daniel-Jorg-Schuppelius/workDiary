@@ -2,6 +2,19 @@
 title: "Auswertungen verwenden"
 topic: reports.overview
 version: 2
+keywords:
+    - Berichte
+    - Reports
+    - Statistik
+    - Kennzahlen
+    - KPI
+    - Drilldown
+    - Bericht exportieren
+    - Umsatz je Produkt
+    - Mindestlohn prüfen
+    - Lenk- und Ruhezeiten
+    - Liquiditätsvorschau
+    - Reporting
 audience: []
 related:
     - reports.customer-analysis

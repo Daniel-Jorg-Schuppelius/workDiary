@@ -2,6 +2,19 @@
 title: "Accesso a due fattori"
 topic: auth.two-factor
 version: 1
+keywords:
+    - 2FA
+    - MFA
+    - autenticazione a due fattori
+    - app authenticator
+    - codice monouso
+    - OTP
+    - TOTP
+    - passkey
+    - chiave di sicurezza
+    - codici di recupero
+    - codice di verifica
+    - verifica in due passaggi
 related:
     - auth.login
     - account.two-factor

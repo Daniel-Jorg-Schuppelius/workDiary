@@ -2,6 +2,17 @@
 title: "Impianti sportivi e risorse"
 topic: club.resources
 version: 1
+keywords:
+    - prenotazione palestra
+    - piano palestre
+    - prenotazione campo
+    - palestra
+    - corsia
+    - barche
+    - attrezzatura
+    - chiusura del campo
+    - prenotare risorse
+    - abilitazione
 audience: []
 modules:
     - module.club

@@ -2,6 +2,17 @@
 title: "Comportamento di pagamento"
 topic: reports.payment-behavior
 version: 2
+keywords:
+    - DSO
+    - tempi di pagamento
+    - ritardo nei pagamenti
+    - cattivi pagatori
+    - fatture scadute
+    - crediti aperti
+    - crediti verso clienti
+    - giorni medi di incasso
+    - termini di pagamento
+    - analisi debitori
 audience: []
 related:
     - reports.economics

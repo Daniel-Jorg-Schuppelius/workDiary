@@ -2,6 +2,19 @@
 title: "Wächterrundgänge"
 topic: patrols.overview
 version: 1
+keywords:
+    - Wächterkontrollsystem
+    - Kontrollgang
+    - Streifengang
+    - Kontrollpunkte scannen
+    - Rundgangsnachweis
+    - Wachdienst
+    - Sicherheitsdienst
+    - Revierdienst
+    - Objektschutz
+    - QR-Code scannen
+    - Rundgang abbrechen
+    - Token neu ausgeben
 audience: []
 modules:
     - module.planung

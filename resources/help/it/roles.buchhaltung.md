@@ -2,6 +2,18 @@
 title: "La sua giornata in WorkDiary: Contabilità"
 topic: roles.buchhaltung
 version: 1
+keywords:
+    - contabile
+    - fatturazione
+    - esportazione paghe
+    - elaborazione buste paga
+    - bloccare i fogli ore
+    - segnare fattura pagata
+    - trasferimento DATEV
+    - Lexoffice
+    - tariffe orarie
+    - maggiorazioni
+    - anagrafica clienti
 audience:
     - buchhaltung
 related:

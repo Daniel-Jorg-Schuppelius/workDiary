@@ -2,6 +2,18 @@
 title: "Socios de la asociación"
 topic: club.members
 version: 1
+keywords:
+    - gestión de socios
+    - lista de socios
+    - alta de socio
+    - número de socio
+    - baja de socio
+    - socio pasivo
+    - socio protector
+    - tutor legal
+    - importar socios
+    - suspender la membresía
+    - afiliados
 audience: []
 modules:
     - module.club

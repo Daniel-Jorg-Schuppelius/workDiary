@@ -2,6 +2,16 @@
 title: "Customer Portal – Rental"
 topic: customer-portal.rentals
 version: 1
+keywords:
+    - rental
+    - equipment hire
+    - rent equipment
+    - rental request
+    - hire request
+    - borrow equipment
+    - rental price
+    - direct booking
+    - rental terms
 audience: []
 related:
     - customer-portal.overview

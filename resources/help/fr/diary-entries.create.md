@@ -2,6 +2,18 @@
 title: "Créer une commande"
 topic: diary-entries.create
 version: 2
+keywords:
+    - nouvelle commande
+    - nouvelle intervention
+    - saisir une intervention
+    - nouvelle entrée
+    - bon d'intervention
+    - ordre de travail
+    - panne
+    - maintenance
+    - montage
+    - type d'entrée
+    - journal des interventions
 audience: []
 schema: process
 related:

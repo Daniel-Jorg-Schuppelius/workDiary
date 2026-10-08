@@ -2,6 +2,14 @@
 title: "Campi personalizzati"
 topic: admin.custom-fields
 version: 1
+keywords:
+    - campi aggiuntivi
+    - campi liberi
+    - campi utente
+    - aggiungere campo
+    - attributi personalizzati
+    - custom field
+    - estendere modulo
 audience:
     - admin
 related:

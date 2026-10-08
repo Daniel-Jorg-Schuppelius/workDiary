@@ -2,6 +2,16 @@
 title: "Confronto di coorte (prima/dopo la formazione)"
 topic: reports.cohort-comparison
 version: 1
+keywords:
+    - efficacia della formazione
+    - impatto della formazione
+    - confronto prima e dopo
+    - valutare la formazione
+    - analisi qualifiche
+    - quota fatturabile
+    - tasso di rilavorazione
+    - analisi di coorte
+    - ROI della formazione
 audience: []
 related:
     - reports.economics

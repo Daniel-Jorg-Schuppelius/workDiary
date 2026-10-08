@@ -2,6 +2,17 @@
 title: "Ocupación & realización"
 topic: reports.utilization
 version: 2
+keywords:
+    - tasa de ocupación
+    - horas facturables
+    - horas facturadas
+    - tasa de realización
+    - productividad
+    - previsto frente a real
+    - carga de trabajo
+    - capacidad
+    - utilización
+    - cuota facturable
 audience: []
 related:
     - reports.economics

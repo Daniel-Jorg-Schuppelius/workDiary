@@ -2,6 +2,19 @@
 title: "Clienti & fornitori"
 topic: contacts.manage
 version: 2
+keywords:
+    - anagrafica clienti
+    - anagrafica fornitori
+    - creare un cliente
+    - creare un fornitore
+    - debitore
+    - creditore
+    - numero debitore
+    - unire duplicati
+    - importare clienti
+    - rubrica
+    - partner commerciale
+    - CRM
 audience: []
 modules:
     - module.vertrieb

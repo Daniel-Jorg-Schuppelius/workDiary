@@ -2,6 +2,18 @@
 title: "Usar los informes"
 topic: reports.overview
 version: 2
+keywords:
+    - estadísticas
+    - indicadores
+    - KPI
+    - analítica
+    - exportar informe
+    - ventas por producto
+    - control del salario mínimo
+    - tiempos de conducción y descanso
+    - previsión de liquidez
+    - reporting
+    - evaluaciones
 audience: []
 related:
     - reports.customer-analysis

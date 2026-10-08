@@ -2,6 +2,19 @@
 title: "Lizenzverwaltung"
 topic: admin.license
 version: 2
+keywords:
+    - Lizenzschlüssel
+    - Tarif
+    - Abonnement
+    - Tarif wechseln
+    - Upgrade
+    - Zusatzmodule
+    - Add-ons
+    - Nutzerlimit
+    - Testphase
+    - Lizenz abgelaufen
+    - Mandant gesperrt
+    - Feature-Flags
 audience:
     - admin
     - geschaeftsfuehrung

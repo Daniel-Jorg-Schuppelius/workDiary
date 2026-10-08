@@ -2,6 +2,18 @@
 title: "Sinistres"
 topic: damage-cases.overview
 version: 1
+keywords:
+    - déclarer un sinistre
+    - déclaration de sinistre
+    - dommage matériel
+    - responsabilité civile
+    - règlement du sinistre
+    - assureur
+    - assurance
+    - franchise
+    - numéro de sinistre
+    - dégâts au véhicule
+    - remboursement
 audience: []
 related:
     - rental.overview

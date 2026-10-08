@@ -2,6 +2,16 @@
 title: "Lieferanten-Selbstauskunft"
 topic: supplier-questionnaires.overview
 version: 1
+keywords:
+    - Lieferantenfragebogen
+    - Fragebogen versenden
+    - Selbstauskunft anfordern
+    - Zertifikate abfragen
+    - Nachhaltigkeitsfragebogen
+    - Datenschutzfragebogen
+    - Lieferantenqualifizierung
+    - Lieferantenerklärung
+    - Auskunft prüfen
 audience: []
 related:
     - supplier-scorecards.overview

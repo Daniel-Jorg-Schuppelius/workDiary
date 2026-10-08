@@ -2,6 +2,17 @@
 title: "Offline synchronisation"
 topic: admin.offline-sync
 version: 1
+keywords:
+    - work offline
+    - no internet
+    - no signal
+    - sync log
+    - sync errors
+    - sync conflict
+    - device outbox
+    - failed transfers
+    - field service offline
+    - mobile sync
 audience: []
 related:
     - admin.metrics

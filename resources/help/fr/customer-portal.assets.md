@@ -2,6 +2,17 @@
 title: "Objets"
 topic: customer-portal.assets
 version: 1
+keywords:
+    - appareils
+    - équipements
+    - installations
+    - mes équipements
+    - numéro de série
+    - dates de maintenance
+    - dates d'inspection
+    - historique de maintenance
+    - procès-verbaux d'inspection
+    - prochaine maintenance
 audience: []
 related:
     - customer-portal.overview

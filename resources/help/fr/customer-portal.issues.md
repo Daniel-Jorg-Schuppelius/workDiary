@@ -2,6 +2,14 @@
 title: "Points en cours"
 topic: customer-portal.issues
 version: 1
+keywords:
+    - points ouverts
+    - liste des réserves
+    - points à traiter
+    - questions en suspens
+    - état d'avancement
+    - responsable
+    - échéance
 audience: []
 related:
     - customer-portal.overview

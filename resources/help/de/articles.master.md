@@ -2,6 +2,19 @@
 title: "Artikelstamm"
 topic: articles.master
 version: 1
+keywords:
+    - Artikelstammdaten
+    - Artikel anlegen
+    - Artikelverwaltung
+    - Produktkatalog
+    - Materialstamm
+    - Artikelnummer
+    - Varianten
+    - SKU
+    - EAN
+    - GTIN
+    - Mengeneinheiten
+    - Zolltarifnummer
 audience: []
 modules:
     - module.lager

@@ -2,6 +2,18 @@
 title: "orgaMAX Buchhaltung"
 topic: admin.orgamax
 version: 1
+keywords:
+    - orgaMAX Schnittstelle
+    - orgaMAX API
+    - Buchhaltung anbinden
+    - Buchhaltungssoftware
+    - Faktura
+    - Rechnungen übertragen
+    - Kunden synchronisieren
+    - Zahlungsstatus
+    - Stammdatenabgleich
+    - Auftrag übergeben
+    - Synchronisation
 audience:
     - admin
 modules:

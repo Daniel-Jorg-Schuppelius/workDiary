@@ -1,11 +1,22 @@
 ---
 title: "Atajos de teclado"
 topic: account.shortcuts
-version: 1
+version: 2
+keywords:
+    - teclas rápidas
+    - atajos
+    - hotkeys
+    - combinación de teclas
+    - navegación con teclado
+    - búsqueda rápida
+    - Ctrl K
+    - ayuda contextual
+    - sin ratón
 audience: []
 related:
     - account.bookmarks
     - account.profile
+    - navigation.interface
 ---
 
 Muchas partes de WorkDiary se pueden usar sin ratón. Pulse `?` en cualquier
@@ -18,8 +29,9 @@ teclea.
 
 Atajos globales:
 
-- `Ctrl`/`⌘` + `K` abre la búsqueda global (clientes, proyectos, gastos,
-  viajes, empleados …). Dentro de la búsqueda elija un resultado con `↑`/`↓`
+- `Ctrl`/`⌘` + `K` abre la búsqueda global: páginas, temas de ayuda y
+  acciones como «Cambiar esquema de color», además de clientes, proyectos,
+  gastos, viajes, empleados … Dentro de la búsqueda elija un resultado con `↑`/`↓`
   y ábralo con `↵`.
 - `Esc` cierra la búsqueda o el diálogo abierto.
 - `?` muestra el resumen de todos los atajos.

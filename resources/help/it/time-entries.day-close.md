@@ -2,6 +2,17 @@
 title: "Chiusura giornaliera"
 topic: time-entries.day-close
 version: 1
+keywords:
+    - chiudere la giornata
+    - fine giornata
+    - aggiungere pausa
+    - bilancio giornaliero
+    - saldo giornaliero
+    - lacune orarie
+    - pausa obbligatoria
+    - timbratura aperta
+    - richiedere correzione
+    - registrare ore mancanti
 audience: []
 related:
     - time-entries.start

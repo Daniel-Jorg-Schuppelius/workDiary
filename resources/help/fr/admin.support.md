@@ -2,6 +2,16 @@
 title: "Rapport de support et diagnostic"
 topic: admin.support
 version: 1
+keywords:
+    - rapport technique
+    - informations système
+    - numéro de version
+    - état de santé
+    - paquet de support
+    - dépannage
+    - signaler un problème
+    - infos de débogage
+    - état du système
 audience:
     - admin
     - geschaeftsfuehrung

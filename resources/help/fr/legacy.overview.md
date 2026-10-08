@@ -2,6 +2,16 @@
 title: "Ancien système (legacy)"
 topic: legacy.overview
 version: 1
+keywords:
+    - ancienne application
+    - anciennes données
+    - migration des données
+    - reprise des données
+    - service de garde
+    - astreinte
+    - connexion centre d'appels
+    - archives anciennes
+    - utilisateurs de l'ancien système
 related:
     - auth.login
     - admin.tenants

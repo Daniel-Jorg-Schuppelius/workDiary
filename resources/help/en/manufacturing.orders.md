@@ -2,6 +2,21 @@
 title: "Manufacturing orders"
 topic: manufacturing.orders
 version: 1
+keywords:
+    - production order
+    - work order
+    - bill of materials
+    - BOM
+    - recipe
+    - material requirements
+    - MRP
+    - production confirmation
+    - scrap
+    - subcontracting
+    - customs documents
+    - proforma invoice
+    - commercial invoice
+    - delivery note
 audience: []
 modules:
     - module.lager

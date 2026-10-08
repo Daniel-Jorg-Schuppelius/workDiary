@@ -2,6 +2,17 @@
 title: "Herramientas de protección de datos"
 topic: admin.privacy-tools
 version: 1
+keywords:
+    - RGPD
+    - privacidad
+    - sesiones activas
+    - revocar sesión
+    - cierre de sesión forzado
+    - revocar token API
+    - portabilidad de datos
+    - solicitud de acceso
+    - plazos de conservación
+    - exportación de datos
 audience:
     - admin
     - geschaeftsfuehrung

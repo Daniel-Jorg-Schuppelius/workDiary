@@ -2,6 +2,18 @@
 title: "Kassenbuch"
 topic: finance.cashbook
 version: 1
+keywords:
+    - Barkasse
+    - Handkasse
+    - Kassenbericht
+    - Bareinnahmen
+    - Barausgaben
+    - Kassensturz
+    - Tagesabschluss
+    - Kassenabschluss
+    - Barzahlung
+    - Kassendifferenz
+    - Kassenbuchung stornieren
 audience:
     - admin
     - geschaeftsfuehrung

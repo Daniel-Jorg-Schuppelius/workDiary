@@ -2,6 +2,17 @@
 title: "Driver licence checks"
 topic: fleet.license-checks
 version: 1
+keywords:
+    - check driving licence
+    - driving license check
+    - driver's license
+    - keeper liability
+    - vehicle owner liability
+    - visual inspection
+    - check interval
+    - block driver
+    - company car
+    - fleet compliance
 audience:
     - admin
     - geschaeftsfuehrung

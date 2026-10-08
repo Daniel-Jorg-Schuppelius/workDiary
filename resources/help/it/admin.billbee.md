@@ -2,6 +2,17 @@
 title: "Collegare Billbee"
 topic: admin.billbee
 version: 1
+keywords:
+    - multicanale
+    - ordini marketplace
+    - ordini Amazon
+    - ordini eBay
+    - Shopify
+    - negozio online
+    - e-commerce
+    - importazione ordini
+    - sincronizzazione magazzino
+    - mappatura SKU
 audience:
     - admin
 modules:

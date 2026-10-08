@@ -2,6 +2,16 @@
 title: "Drilldown von Kennzahl zu Auftrag"
 topic: reports.drilldown
 version: 1
+keywords:
+    - Drill-down
+    - Kennzahl aufschlüsseln
+    - KPI-Details
+    - Zahlen nachvollziehen
+    - Datenbasis anzeigen
+    - Detailliste
+    - Aufträge zur Kennzahl
+    - Bericht exportieren
+    - Auswertung vertiefen
 audience: []
 related:
     - reports.customer-analysis

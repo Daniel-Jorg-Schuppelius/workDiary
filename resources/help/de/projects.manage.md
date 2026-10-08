@@ -2,6 +2,19 @@
 title: "Projekte verwalten"
 topic: projects.manage
 version: 3
+keywords:
+    - Projekt anlegen
+    - Projektmanagement
+    - Projektübersicht
+    - Vorhaben
+    - Meilensteine
+    - Projektzeiten
+    - Projektlaufzeit
+    - Projekt abschließen
+    - Projektabrechnung
+    - Zeiten umbuchen
+    - Stundenzettel
+    - Projektaufgaben
 audience: []
 modules:
     - module.vertrieb

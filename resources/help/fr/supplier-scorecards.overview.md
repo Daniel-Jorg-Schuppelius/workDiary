@@ -2,6 +2,16 @@
 title: "Scorecards fournisseurs"
 topic: supplier-scorecards.overview
 version: 1
+keywords:
+    - évaluation fournisseurs
+    - notation des fournisseurs
+    - classement des fournisseurs
+    - respect des délais
+    - fiabilité des livraisons
+    - taux de réclamation
+    - évolution des prix
+    - performance fournisseur
+    - KPI fournisseurs
 audience: []
 modules:
     - module.lager

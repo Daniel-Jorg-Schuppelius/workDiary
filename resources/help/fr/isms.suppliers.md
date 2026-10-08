@@ -2,6 +2,17 @@
 title: "Évaluation des fournisseurs"
 topic: isms.suppliers
 version: 1
+keywords:
+    - évaluation des prestataires
+    - risque fournisseur
+    - risque tiers
+    - criticité
+    - contrat de sous-traitance
+    - NDA
+    - accord de confidentialité
+    - droit d'audit
+    - chaîne d'approvisionnement
+    - gestion des fournisseurs
 audience: []
 modules:
     - module.isms

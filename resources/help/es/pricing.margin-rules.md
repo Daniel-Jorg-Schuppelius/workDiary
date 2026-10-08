@@ -2,6 +2,17 @@
 title: "Reglas de precios y márgenes"
 topic: pricing.margin-rules
 version: 1
+keywords:
+    - recargo
+    - margen comercial
+    - cálculo de precios
+    - precio de venta
+    - precio de compra
+    - margen mínimo
+    - margen objetivo
+    - redondeo de precios
+    - catálogo de proveedor
+    - aprobación de precios
 audience:
     - admin
     - geschaeftsfuehrung

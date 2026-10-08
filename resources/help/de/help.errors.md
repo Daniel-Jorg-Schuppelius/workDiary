@@ -2,6 +2,20 @@
 title: "Fehlermeldungen verstehen"
 topic: help.errors
 version: 1
+keywords:
+    - Fehlerseite
+    - keine Berechtigung
+    - Zugriff verweigert
+    - Fehler 403
+    - Seite nicht gefunden
+    - Fehler 404
+    - Sitzung abgelaufen
+    - Page Expired
+    - Fehler 419
+    - Serverfehler
+    - Fehler 500
+    - Request-ID
+    - Bereich gesperrt
 audience: []
 related:
     - help.center

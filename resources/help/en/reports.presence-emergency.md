@@ -2,6 +2,17 @@
 title: "Emergency attendance list"
 topic: reports.presence-emergency
 version: 1
+keywords:
+    - evacuation list
+    - evacuation
+    - fire alarm
+    - who is in the building
+    - roll call
+    - headcount
+    - muster list
+    - people on site
+    - emergency roster
+    - attendance list
 audience: []
 related:
     - reports.overview

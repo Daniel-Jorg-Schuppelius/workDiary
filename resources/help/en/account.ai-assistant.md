@@ -2,6 +2,17 @@
 title: "Connect AI assistant"
 topic: account.ai-assistant
 version: 1
+keywords:
+    - ChatGPT
+    - Claude
+    - MCP
+    - Model Context Protocol
+    - artificial intelligence
+    - chatbot
+    - LLM
+    - authorize assistant
+    - grant AI access
+    - revoke AI access
 audience: []
 related:
     - account.api-tokens

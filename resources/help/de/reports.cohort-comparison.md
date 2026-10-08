@@ -2,6 +2,17 @@
 title: "Kohortenvergleich (vor/nach Fortbildung)"
 topic: reports.cohort-comparison
 version: 1
+keywords:
+    - Schulungserfolg
+    - Wirksamkeit von Schulungen
+    - Vorher-Nachher-Vergleich
+    - Weiterbildung auswerten
+    - Trainingseffekt
+    - Qualifikation auswerten
+    - abrechenbare Quote
+    - Nacharbeitsquote
+    - Kohortenanalyse
+    - Schulungs-ROI
 audience: []
 related:
     - reports.economics

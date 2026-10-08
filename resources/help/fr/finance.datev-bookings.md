@@ -2,6 +2,19 @@
 title: "Lot d'écritures DATEV"
 topic: finance.datev-bookings
 version: 2
+keywords:
+    - export DATEV
+    - expert-comptable
+    - exporter les écritures
+    - EXTF
+    - plan comptable
+    - SKR03
+    - SKR04
+    - numéro de débiteur
+    - clé de comptabilisation
+    - compte de produits
+    - export comptable
+    - écritures comptables
 audience: []
 modules:
     - module.finance

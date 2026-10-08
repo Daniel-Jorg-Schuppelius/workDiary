@@ -2,6 +2,13 @@
 title: "Tag"
 topic: catalog.tags
 version: 1
+keywords:
+    - etichette
+    - parole chiave
+    - label
+    - contrassegni
+    - etichettatura
+    - marcatori
 audience: []
 related:
     - catalog.activity-categories

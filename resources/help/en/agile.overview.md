@@ -2,6 +2,18 @@
 title: "Agile project management"
 topic: agile.overview
 version: 1
+keywords:
+    - Kanban
+    - Scrum
+    - sprint planning
+    - backlog
+    - story points
+    - burndown chart
+    - velocity
+    - task board
+    - Kanban board
+    - user stories
+    - acceptance criteria
 audience: []
 modules:
     - module.agile_projects

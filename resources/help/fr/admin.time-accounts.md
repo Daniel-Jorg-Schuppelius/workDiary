@@ -2,6 +2,16 @@
 title: "Comptes de temps (administration)"
 topic: admin.time-accounts
 version: 1
+keywords:
+    - compte épargne temps
+    - CET
+    - compteur heures de nuit
+    - compteur de primes
+    - solde du compte
+    - report de solde
+    - plafonnement
+    - écriture manuelle
+    - clôture mensuelle
 audience: [admin]
 related:
     - time-accounts.overview

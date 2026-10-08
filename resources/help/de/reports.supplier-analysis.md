@@ -2,6 +2,19 @@
 title: "Lieferantenanalyse"
 topic: reports.supplier-analysis
 version: 1
+keywords:
+    - Einkaufsanalyse
+    - Ausgabenanalyse
+    - Spend-Analyse
+    - Pareto
+    - ABC-Analyse
+    - Klumpenrisiko
+    - Lieferantenabhängigkeit
+    - offene Verbindlichkeiten
+    - Kreditoren
+    - HHI
+    - Einkaufsvolumen
+    - Lieferantenkonzentration
 audience: []
 related:
     - reports.customer-analysis

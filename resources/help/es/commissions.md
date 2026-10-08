@@ -2,6 +2,17 @@
 title: "Comisiones"
 topic: commissions
 version: 1
+keywords:
+    - comisión de ventas
+    - comisiones comerciales
+    - liquidación de comisiones
+    - escala de comisiones
+    - comisión de intermediario
+    - comisión por referido
+    - recuperación de comisiones
+    - tope de comisiones
+    - pago de comisiones
+    - agente comercial
 audience:
     - admin
     - geschaeftsfuehrung

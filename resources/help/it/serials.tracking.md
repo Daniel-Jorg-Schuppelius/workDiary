@@ -2,6 +2,19 @@
 title: "Numeri di serie"
 topic: serials.tracking
 version: 1
+keywords:
+    - matricola
+    - numero di matricola
+    - tracciabilità
+    - tracciamento dispositivi
+    - passaporto del dispositivo
+    - verifica autenticità
+    - bloccare un dispositivo
+    - dispositivo rubato
+    - richiamo prodotto
+    - rottamazione
+    - controllo garanzia
+    - ciclo di vita
 audience: []
 modules:
     - module.lager

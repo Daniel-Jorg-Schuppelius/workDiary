@@ -2,6 +2,17 @@
 title: "Connect DomainReselling"
 topic: admin.domain-provider
 version: 1
+keywords:
+    - domain management
+    - manage domains
+    - domain reseller
+    - DNS
+    - DNS records
+    - domain registration
+    - domain renewal
+    - registrar
+    - domain portfolio
+    - subuser
 audience:
     - admin
     - geschaeftsfuehrung

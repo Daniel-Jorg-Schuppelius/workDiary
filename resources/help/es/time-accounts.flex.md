@@ -2,6 +2,17 @@
 title: "Cuenta de tiempo de trabajo y aprobación mensual"
 topic: time-accounts.flex
 version: 1
+keywords:
+    - bolsa de horas
+    - horas extra
+    - saldo de horas
+    - horas a favor
+    - horas en contra
+    - horario flexible
+    - cierre mensual
+    - enviar el mes
+    - aprobar el mes
+    - solicitud de corrección
 audience: []
 related:
     - attendance.manage

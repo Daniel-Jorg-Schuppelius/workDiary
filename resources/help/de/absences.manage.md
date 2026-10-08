@@ -2,6 +2,19 @@
 title: "Urlaub & Krankheit"
 topic: absences.manage
 version: 1
+keywords:
+    - Abwesenheit
+    - Urlaubsantrag
+    - Urlaub beantragen
+    - Urlaub genehmigen
+    - Krankmeldung
+    - krankmelden
+    - Krankschreibung
+    - Arbeitsunfähigkeit
+    - AU-Bescheinigung
+    - Fehlzeiten
+    - Vertretung
+    - Abwesenheitsverwaltung
 audience: []
 related:
     - planning.shifts

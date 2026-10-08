@@ -2,6 +2,17 @@
 title: "Offline changes"
 topic: offline.changes
 version: 1
+keywords:
+    - work offline
+    - no internet
+    - no signal
+    - sync queue
+    - synchronization
+    - pending changes
+    - rejected entries
+    - offline mode
+    - not synced
+    - clock in offline
 audience: []
 related:
     - attendance.manage

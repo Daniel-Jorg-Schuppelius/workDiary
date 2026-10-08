@@ -2,6 +2,18 @@
 title: "Sostenibilidad y ESG"
 topic: sustainability.overview
 version: 2
+keywords:
+    - huella de carbono
+    - emisiones de CO2
+    - gases de efecto invernadero
+    - factores de emisión
+    - consumo energético
+    - informe de sostenibilidad
+    - VSME
+    - objetivos climáticos
+    - RSC
+    - calificación ESG
+    - impacto ambiental
 audience: []
 modules:
     - module.sustainability

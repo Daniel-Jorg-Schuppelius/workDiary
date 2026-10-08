@@ -2,6 +2,18 @@
 title: "Conflictos con sistemas externos (existencias y artículos)"
 topic: inventory.conflicts
 version: 3
+keywords:
+    - discrepancia de stock
+    - diferencia de inventario
+    - error de sincronización
+    - sincronización fallida
+    - ERP
+    - asiento de compensación
+    - conflicto de artículo
+    - conciliar existencias
+    - datos no coinciden
+    - Lexware Office
+    - Lexoffice
 audience:
     - admin
     - geschaeftsfuehrung

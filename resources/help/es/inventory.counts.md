@@ -2,6 +2,17 @@
 title: "Inventario físico"
 topic: inventory.counts
 version: 1
+keywords:
+    - recuento de existencias
+    - toma de inventario
+    - conteo de stock
+    - inventario cíclico
+    - inventario anual
+    - hoja de conteo
+    - contar existencias
+    - diferencias de inventario
+    - contabilizar diferencias
+    - clase ABC
 audience: []
 modules:
     - module.lager

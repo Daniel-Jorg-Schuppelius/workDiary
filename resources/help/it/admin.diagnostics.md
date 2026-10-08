@@ -2,6 +2,16 @@
 title: "Diagnostica"
 topic: admin.diagnostics
 version: 1
+keywords:
+    - stato del sistema
+    - health check
+    - controllo sistema
+    - risoluzione problemi
+    - email di prova
+    - verificare invio email
+    - coda
+    - scheduler
+    - cron job
 audience:
     - admin
 related:

@@ -2,6 +2,16 @@
 title: "Drilldown del indicador a la orden"
 topic: reports.drilldown
 version: 1
+keywords:
+    - detalle de KPI
+    - profundizar
+    - datos subyacentes
+    - lista detallada
+    - desglosar un indicador
+    - exportar informe
+    - análisis detallado
+    - ver datos de origen
+    - drill-down
 audience: []
 related:
     - reports.customer-analysis

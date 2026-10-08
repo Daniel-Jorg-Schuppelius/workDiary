@@ -2,6 +2,17 @@
 title: "Analisi dei fornitori"
 topic: reports.supplier-analysis
 version: 1
+keywords:
+    - analisi degli acquisti
+    - analisi della spesa
+    - Pareto
+    - analisi ABC
+    - rischio di concentrazione
+    - dipendenza dai fornitori
+    - debiti verso fornitori
+    - debiti aperti
+    - HHI
+    - volume acquisti
 audience: []
 related:
     - reports.customer-analysis

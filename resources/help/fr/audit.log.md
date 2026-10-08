@@ -2,6 +2,17 @@
 title: "Journal d'audit"
 topic: audit.log
 version: 1
+keywords:
+    - historique des modifications
+    - journal des activités
+    - journal des changements
+    - traçabilité
+    - qui a modifié quoi
+    - inviolable
+    - chaîne de hachage
+    - GoBD
+    - conformité
+    - journal de traçabilité
 audience:
     - admin
 related:

@@ -2,6 +2,16 @@
 title: "Remises de clés"
 topic: key-handovers
 version: 1
+keywords:
+    - prêt de clés
+    - restitution des clés
+    - registre des clés
+    - gestion des clés
+    - sortie de clé
+    - qui a la clé
+    - reçu de clé
+    - badge
+    - trousseau
 audience: []
 related:
     - meter-readings

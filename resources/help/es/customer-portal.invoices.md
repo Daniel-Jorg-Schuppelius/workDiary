@@ -2,6 +2,15 @@
 title: "Mis facturas"
 topic: customer-portal.invoices
 version: 2
+keywords:
+    - ver facturas
+    - listado de facturas
+    - pagar en línea
+    - pagar factura
+    - facturas pendientes
+    - facturas impagadas
+    - estado del pago
+    - pago online
 audience: []
 related:
     - customer-portal.overview

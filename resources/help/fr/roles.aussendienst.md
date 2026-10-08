@@ -2,6 +2,17 @@
 title: "Votre journée dans WorkDiary : Service extérieur"
 topic: roles.aussendienst
 version: 1
+keywords:
+    - technicien terrain
+    - technicien de maintenance
+    - intervention sur site
+    - travail itinérant
+    - travail mobile
+    - signature du client
+    - saisir des frais
+    - carnet de route
+    - demander des congés
+    - monteur
 audience:
     - aussendienst
 related:

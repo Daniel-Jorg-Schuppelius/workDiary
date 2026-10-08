@@ -2,6 +2,19 @@
 title: "Arbeitszeitkonto & Monatsfreigabe"
 topic: time-accounts.flex
 version: 1
+keywords:
+    - Gleitzeitkonto
+    - Stundenkonto
+    - Überstunden
+    - Plusstunden
+    - Minusstunden
+    - Zeitsaldo
+    - Monatsabschluss
+    - Monat einreichen
+    - Monat freigeben
+    - Korrekturantrag
+    - Flexzeit
+    - Gleitzeit
 audience: []
 related:
     - attendance.manage

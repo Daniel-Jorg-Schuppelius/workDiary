@@ -2,6 +2,17 @@
 title: "Arbeitsliste verwenden"
 topic: duties.overview
 version: 1
+keywords:
+    - Dienstliste
+    - Arbeitsvorrat
+    - offene Aufträge
+    - Auftragsbuch
+    - Rufbereitschaft
+    - Bereitschaftsdienst
+    - Notdiensteinsatz
+    - Urlaubsantrag
+    - Krankmeldung
+    - Abwesenheiten
 audience: []
 related:
     - diary-entries.create

@@ -2,6 +2,19 @@
 title: "Leasing & Asset-Verträge"
 topic: asset-finance.overview
 version: 1
+keywords:
+    - Leasingvertrag
+    - Leasingraten
+    - Mietkauf
+    - Finanzierung
+    - Restwert
+    - Kaufoption
+    - Kündigungsfrist
+    - Vertragsverlängerung
+    - Leasingrückgabe
+    - IFRS 16
+    - Ratenplan
+    - Fahrzeugleasing
 audience: []
 modules:
     - module.asset_finance

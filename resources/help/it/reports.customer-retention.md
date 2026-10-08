@@ -2,6 +2,18 @@
 title: "Fidelizzazione clienti"
 topic: reports.customer-retention
 version: 2
+keywords:
+    - abbandono clienti
+    - tasso di abbandono
+    - churn
+    - perdita di clienti
+    - clienti abituali
+    - analisi di coorte
+    - nuovi clienti
+    - clienti persi
+    - riconquista clienti
+    - fedeltà dei clienti
+    - tasso di fidelizzazione
 audience: []
 related:
     - reports.customer-value

@@ -2,6 +2,14 @@
 title: "Questioni aperte"
 topic: customer-portal.issues
 version: 1
+keywords:
+    - punti aperti
+    - lista delle pendenze
+    - pendenze
+    - questioni in sospeso
+    - stato di avanzamento
+    - responsabile
+    - scadenza
 audience: []
 related:
     - customer-portal.overview

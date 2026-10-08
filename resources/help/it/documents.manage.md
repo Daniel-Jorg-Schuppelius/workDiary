@@ -2,6 +2,19 @@
 title: "Gestire i documenti"
 topic: documents.manage
 version: 1
+keywords:
+    - DMS
+    - gestione documentale
+    - caricare un file
+    - archivio
+    - versionamento
+    - nuova versione
+    - data di scadenza
+    - validità
+    - certificati
+    - archiviare un documento
+    - cronologia invii
+    - inviare documenti
 audience: []
 modules:
     - module.documents

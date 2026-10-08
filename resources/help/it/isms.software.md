@@ -2,6 +2,18 @@
 title: "Inventario software"
 topic: isms.software
 version: 1
+keywords:
+    - elenco software
+    - registro software
+    - fine vita
+    - EOL
+    - fine supporto
+    - software obsoleto
+    - programmi installati
+    - versioni software
+    - inventario IT
+    - parco applicativo
+    - sistemi operativi
 audience: []
 modules:
     - module.isms

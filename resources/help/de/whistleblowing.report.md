@@ -2,6 +2,19 @@
 title: "Meldung abgeben (Portal)"
 topic: whistleblowing.report
 version: 1
+keywords:
+    - anonym melden
+    - Hinweis abgeben
+    - Missstand melden
+    - Verstoß melden
+    - Fehlverhalten melden
+    - Whistleblowing
+    - vertraulich melden
+    - anonymes Postfach
+    - Fallnummer
+    - Zugangsgeheimnis
+    - Rückfrage beantworten
+    - Status der Meldung
 audience: []
 related:
     - whistleblowing.cases

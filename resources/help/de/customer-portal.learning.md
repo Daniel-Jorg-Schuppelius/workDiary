@@ -2,6 +2,18 @@
 title: "Schulungen im Kundenportal"
 topic: customer-portal.learning
 version: 1
+keywords:
+    - E-Learning
+    - Online-Kurs
+    - Kurse
+    - Schulung buchen
+    - Kurs starten
+    - Lernfortschritt
+    - Weiterbildung
+    - Unterweisung
+    - Kursabschluss
+    - Lerneinheiten
+    - Lernplattform
 audience: []
 related:
     - customer-portal.overview

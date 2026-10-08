@@ -2,6 +2,19 @@
 title: "CSV-Import"
 topic: admin.import
 version: 3
+keywords:
+    - Datenimport
+    - Stammdaten importieren
+    - Kunden importieren
+    - Import-Assistent
+    - Spaltenzuordnung
+    - Massenimport
+    - Altdaten übernehmen
+    - Datenübernahme
+    - Fehlerbericht
+    - Zählerstände importieren
+    - iCal-Import
+    - Kalender importieren
 audience:
     - admin
     - geschaeftsfuehrung

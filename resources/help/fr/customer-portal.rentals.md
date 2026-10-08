@@ -2,6 +2,15 @@
 title: "Portail client – Location"
 topic: customer-portal.rentals
 version: 1
+keywords:
+    - louer du matériel
+    - location de matériel
+    - demande de location
+    - matériel loué
+    - emprunter un appareil
+    - prix de location
+    - réservation directe
+    - conditions de location
 audience: []
 related:
     - customer-portal.overview

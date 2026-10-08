@@ -2,6 +2,18 @@
 title: "Webhooks"
 topic: admin.webhooks
 version: 1
+keywords:
+    - callback URL
+    - event notifications
+    - subscribe to events
+    - HMAC signature
+    - signing key
+    - automation
+    - outgoing integration
+    - push events
+    - delivery log
+    - payload
+    - replay protection
 audience:
     - admin
     - geschaeftsfuehrung

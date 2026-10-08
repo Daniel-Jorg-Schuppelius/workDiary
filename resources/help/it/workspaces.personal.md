@@ -2,6 +2,17 @@
 title: "Aree di lavoro personali"
 topic: workspaces.personal
 version: 1
+keywords:
+    - menu personalizzato
+    - personalizzare il menu
+    - comporre il menu
+    - vista personale
+    - menu preferiti
+    - accesso rapido
+    - riordinare le voci
+    - ordinare le voci di menu
+    - creare un'area
+    - eliminare un'area
 audience: []
 related:
     - workspaces.overview

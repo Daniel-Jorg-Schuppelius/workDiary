@@ -2,6 +2,16 @@
 title: "Image de marque"
 topic: admin.branding
 version: 1
+keywords:
+    - marque blanche
+    - identité visuelle
+    - charte graphique
+    - logo
+    - couleurs de la marque
+    - coordonnées entreprise
+    - pied de page
+    - mentions légales
+    - white label
 audience:
     - admin
 related:

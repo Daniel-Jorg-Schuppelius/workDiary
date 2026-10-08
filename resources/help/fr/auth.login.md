@@ -2,6 +2,16 @@
 title: "Connexion"
 topic: auth.login
 version: 1
+keywords:
+    - se connecter
+    - login
+    - identifiant
+    - mot de passe
+    - rester connecté
+    - compte bloqué
+    - impossible de se connecter
+    - accès
+    - ouvrir une session
 related:
     - auth.password-reset
     - auth.two-factor

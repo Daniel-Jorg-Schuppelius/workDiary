@@ -2,6 +2,15 @@
 title: "Il mio fascicolo personale"
 topic: account.personnel-file
 version: 1
+keywords:
+    - fascicolo dipendente
+    - documenti HR
+    - documenti del personale
+    - contratto di lavoro
+    - conferma di lettura
+    - inviare documento
+    - certificato
+    - cartella personale
 audience: []
 related:
     - account.profile

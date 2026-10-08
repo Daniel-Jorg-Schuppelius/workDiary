@@ -1,12 +1,26 @@
 ---
 title: "Profile & Account"
 topic: account.profile
-version: 1
+version: 2
+keywords:
+    - user settings
+    - change password
+    - language
+    - time zone
+    - dark mode
+    - profile picture
+    - avatar
+    - start page
+    - calendar subscription
+    - ICS feed
+    - date format
+    - working time model
 audience: []
 related:
     - account.two-factor
     - account.notifications
     - account.calendar
+    - navigation.interface
 ---
 
 In your profile you maintain your personal data: name, email address,
@@ -18,6 +32,9 @@ quiet hours are managed here as well.
 
 Only pages you may open are offered. Without your own choice, the start page
 your organization set for your role applies.
+
+The quickest way to switch to dark mode is **Settings** in the header.
+Details are in the topic **User interface and appearance**.
 
 Changing your password happens in a separate dialog. For a regular
 change you must confirm your current password; if the password is being

@@ -2,6 +2,19 @@
 title: "Organisationen & Mandanten"
 topic: admin.tenants
 version: 2
+keywords:
+    - Mandantenverwaltung
+    - Mandant anlegen
+    - Firma anlegen
+    - Organisation löschen
+    - Organisation sperren
+    - Organisation wechseln
+    - Mandantenwechsel
+    - Datenexport
+    - Purge
+    - Tarif ändern
+    - Multi-Tenant
+    - Freigabestufen
 audience:
     - admin
 related:

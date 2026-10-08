@@ -2,6 +2,16 @@
 title: "Trasferimento fatturazione"
 topic: finance.transfers
 version: 1
+keywords:
+    - trasferimento a Lexoffice
+    - trasferimento DATEV
+    - bozza di fattura
+    - trasferire prestazioni
+    - fatturare materiale
+    - fatturare ore
+    - export fatturazione
+    - software di fatturazione
+    - righe di fattura
 audience: []
 modules:
     - module.finance

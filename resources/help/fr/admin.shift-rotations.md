@@ -2,6 +2,16 @@
 title: "Plans de rotation"
 topic: admin.shift-rotations
 version: 1
+keywords:
+    - roulement
+    - planning des équipes
+    - rotation des équipes
+    - cycle de travail
+    - tableau de service
+    - équipes alternées
+    - travail posté
+    - horaires tournants
+    - équipes du matin et du soir
 audience: [admin]
 related:
     - planning.shifts

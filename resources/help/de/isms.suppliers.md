@@ -2,6 +2,19 @@
 title: "Lieferantenbewertung"
 topic: isms.suppliers
 version: 1
+keywords:
+    - Lieferantenprüfung
+    - Dienstleisterbewertung
+    - Lieferantenrisiko
+    - Drittparteienrisiko
+    - Kritikalität
+    - AVV
+    - Auftragsverarbeitung
+    - NDA
+    - Geheimhaltungsvereinbarung
+    - Prüfungsrecht
+    - Lieferkette
+    - Dienstleistersteuerung
 audience: []
 modules:
     - module.isms

@@ -2,6 +2,19 @@
 title: "Membres de l'association"
 topic: club.members
 version: 1
+keywords:
+    - gestion des membres
+    - liste des adhérents
+    - adhérent
+    - ajouter un membre
+    - numéro de membre
+    - démission
+    - résiliation d'adhésion
+    - membre passif
+    - membre bienfaiteur
+    - représentant légal
+    - importer des membres
+    - suspendre l'adhésion
 audience: []
 modules:
     - module.club

@@ -2,6 +2,18 @@
 title: "Equipos, jornadas y alineaciones"
 topic: club.matches
 version: 1
+keywords:
+    - calendario de partidos
+    - importar calendario
+    - plantilla
+    - convocatoria
+    - resultado del partido
+    - partido en casa
+    - partido fuera
+    - temporada
+    - dorsal
+    - árbitro
+    - jugador invitado
 audience: []
 modules:
     - module.club

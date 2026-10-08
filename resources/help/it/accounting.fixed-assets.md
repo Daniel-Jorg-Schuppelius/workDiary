@@ -2,6 +2,18 @@
 title: "Registro dei cespiti e ammortamento"
 topic: accounting.fixed-assets
 version: 1
+keywords:
+    - ammortamento lineare
+    - ammortamento decrescente
+    - immobilizzazioni
+    - beni strumentali
+    - libro cespiti
+    - piano di ammortamento
+    - valore contabile
+    - dismissione cespite
+    - beni di modico valore
+    - ammortamento straordinario
+    - vita utile
 audience:
     - admin
     - geschaeftsfuehrung

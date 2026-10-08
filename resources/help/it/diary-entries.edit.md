@@ -2,6 +2,17 @@
 title: "Modificare un incarico"
 topic: diary-entries.edit
 version: 1
+keywords:
+    - modificare la commessa
+    - dettagli dell'incarico
+    - fascicolo
+    - cambiare stato
+    - chiudere l'incarico
+    - completare l'intervento
+    - aggiungere allegato
+    - aggiungere commento
+    - classificazione obbligatoria
+    - dimensione allegati
 audience: []
 related:
     - diary-entries.create

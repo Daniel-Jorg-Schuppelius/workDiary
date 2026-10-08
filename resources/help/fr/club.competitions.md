@@ -2,6 +2,18 @@
 title: "Compétitions, performances et liste de justificatifs"
 topic: club.competitions
 version: 1
+keywords:
+    - compétition sportive
+    - tournoi
+    - engagement
+    - inscription à une compétition
+    - droit d'engagement
+    - licence de compétition
+    - record personnel
+    - meilleure performance
+    - résultats
+    - discipline
+    - catégorie d'âge
 audience: []
 modules:
     - module.club

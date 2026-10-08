@@ -2,6 +2,15 @@
 title: "Autoevaluación de proveedores"
 topic: supplier-questionnaires.overview
 version: 1
+keywords:
+    - cuestionario de proveedores
+    - enviar cuestionario
+    - solicitar autodeclaración
+    - solicitud de certificados
+    - cuestionario de sostenibilidad
+    - cuestionario de protección de datos
+    - homologación de proveedores
+    - declaración del proveedor
 audience: []
 related:
     - supplier-scorecards.overview

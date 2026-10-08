@@ -2,6 +2,17 @@
 title: "Utiliser le chat"
 topic: communication.chat
 version: 1
+keywords:
+    - message instantané
+    - envoyer un message
+    - canal
+    - message direct
+    - messagerie
+    - chat d'équipe
+    - discussion de groupe
+    - communication interne
+    - mention
+    - épingler un message
 audience: []
 modules:
     - module.chat

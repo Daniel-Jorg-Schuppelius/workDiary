@@ -2,6 +2,19 @@
 title: "Anlagenregister und Abschreibung"
 topic: accounting.fixed-assets
 version: 1
+keywords:
+    - AfA
+    - Anlagevermögen
+    - Anlagenverzeichnis
+    - Anlagenbuchhaltung
+    - lineare Abschreibung
+    - degressive AfA
+    - Sonderabschreibung 7g
+    - GWG
+    - geringwertige Wirtschaftsgüter
+    - Buchwert
+    - Anlagenabgang
+    - Abschreibungsplan
 audience:
     - admin
     - geschaeftsfuehrung

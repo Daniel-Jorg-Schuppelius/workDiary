@@ -2,6 +2,17 @@
 title: "Demo data"
 topic: admin.demo-data
 version: 2
+keywords:
+    - sample data
+    - test data
+    - seed data
+    - demo tenant
+    - demo organisation
+    - reset demo
+    - training
+    - presentation
+    - showcase
+    - test environment
 audience:
     - admin
 related:

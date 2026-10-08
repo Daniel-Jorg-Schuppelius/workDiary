@@ -2,6 +2,17 @@
 title: "Importación CSV"
 topic: admin.import
 version: 3
+keywords:
+    - importación de datos
+    - importar datos maestros
+    - importar clientes
+    - asistente de importación
+    - asignación de columnas
+    - importación masiva
+    - migración de datos
+    - informe de errores
+    - importar iCal
+    - importar calendario
 audience:
     - admin
     - geschaeftsfuehrung

@@ -2,6 +2,18 @@
 title: "Vulnerabilities & advisories"
 topic: isms.vulnerabilities
 version: 1
+keywords:
+    - security vulnerability
+    - security flaw
+    - CVE
+    - CVSS
+    - security advisory
+    - CSAF
+    - VEX
+    - patch management
+    - vulnerability management
+    - exploitability
+    - SBOM
 audience: []
 modules:
     - module.isms

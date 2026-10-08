@@ -2,6 +2,17 @@
 title: "Rendez-vous de l'association"
 topic: club.events
 version: 1
+keywords:
+    - entraînement
+    - séance d'entraînement
+    - répétition
+    - stage
+    - assemblée générale
+    - inscription
+    - liste d'attente
+    - calendrier du club
+    - série de rendez-vous
+    - annuler l'entraînement
 audience: []
 modules:
     - module.club

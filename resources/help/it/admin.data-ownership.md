@@ -2,6 +2,16 @@
 title: "Titolarità dei dati"
 topic: admin.data-ownership
 version: 1
+keywords:
+    - sistema master
+    - sistema di riferimento
+    - fonte unica di verità
+    - sovranità dei dati
+    - titolarità fatturazione
+    - Lexoffice
+    - DATEV
+    - evitare doppia fatturazione
+    - conflitto di sincronizzazione
 audience:
     - admin
 related:

@@ -2,6 +2,16 @@
 title: "Relevés de compteurs"
 topic: meter-readings
 version: 1
+keywords:
+    - index de compteur
+    - relever un compteur
+    - compteur électrique
+    - compteur d'eau
+    - compteur de gaz
+    - consommation
+    - suivi de consommation
+    - historique de consommation
+    - relève
 audience: []
 related:
     - key-handovers

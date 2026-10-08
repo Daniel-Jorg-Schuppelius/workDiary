@@ -2,6 +2,16 @@
 title: "Foreign customers"
 topic: foreign-customers
 version: 1
+keywords:
+    - end customers
+    - end clients
+    - customers of customers
+    - partner customers
+    - sub-customers
+    - third-party customers
+    - indirect customers
+    - promote to customer
+    - convert to customer
 audience: []
 related:
     - contacts.manage

@@ -2,6 +2,19 @@
 title: "Flusso documenti"
 topic: billing.feed
 version: 1
+keywords:
+    - fatture
+    - preventivi
+    - fatture attive
+    - fatture passive
+    - note di credito
+    - note spese
+    - partite aperte
+    - solleciti
+    - fatture scadute
+    - fattura elettronica
+    - elenco documenti
+    - ricavi
 audience: []
 modules:
     - module.vertrieb

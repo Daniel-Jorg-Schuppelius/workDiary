@@ -2,6 +2,16 @@
 title: "Registro"
 topic: auth.register
 version: 1
+keywords:
+    - crear cuenta
+    - darse de alta
+    - registrarse
+    - nueva cuenta
+    - autorregistro
+    - registrar organización
+    - sign up
+    - plan gratuito
+    - abrir cuenta
 related:
     - auth.login
     - admin.tenants

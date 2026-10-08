@@ -2,6 +2,18 @@
 title: "Siniestros"
 topic: damage-cases.overview
 version: 1
+keywords:
+    - parte de siniestro
+    - comunicar un daño
+    - reclamación al seguro
+    - responsabilidad civil
+    - daños materiales
+    - liquidación del siniestro
+    - aseguradora
+    - franquicia
+    - número de siniestro
+    - daños del vehículo
+    - indemnización
 audience: []
 related:
     - rental.overview

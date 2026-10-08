@@ -2,6 +2,16 @@
 title: "Diagnostic"
 topic: admin.diagnostics
 version: 1
+keywords:
+    - état du système
+    - contrôle de santé
+    - vérification système
+    - dépannage
+    - e-mail de test
+    - vérifier envoi mail
+    - queue
+    - planificateur
+    - tâches planifiées
 audience:
     - admin
 related:

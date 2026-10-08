@@ -2,6 +2,18 @@
 title: "Votre journée dans WorkDiary : Comptabilité"
 topic: roles.buchhaltung
 version: 1
+keywords:
+    - comptable
+    - facturation
+    - export de paie
+    - préparation de la paie
+    - verrouiller les feuilles d'heures
+    - marquer une facture payée
+    - transfert DATEV
+    - Lexoffice
+    - taux horaires
+    - majorations
+    - données clients
 audience:
     - buchhaltung
 related:

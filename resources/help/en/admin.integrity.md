@@ -2,6 +2,17 @@
 title: "Source code integrity"
 topic: admin.integrity
 version: 1
+keywords:
+    - tamper detection
+    - file integrity monitoring
+    - integrity check
+    - checksum
+    - SHA-256
+    - hash verification
+    - baseline
+    - modified files
+    - security monitoring
+    - code tampering
 audience:
     - admin
 related:

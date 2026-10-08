@@ -2,6 +2,19 @@
 title: "Exportación de tiempos y traspaso a nómina"
 topic: exports.payroll
 version: 1
+keywords:
+    - nómina
+    - exportar nómina
+    - conceptos salariales
+    - aprobación mensual
+    - cierre mensual
+    - exportar horas
+    - departamento de nóminas
+    - recargos
+    - pluses
+    - DATEV nómina
+    - exportación CSV
+    - hoja de horas
 audience: []
 related:
     - admin.surcharge-rules

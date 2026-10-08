@@ -2,6 +2,19 @@
 title: "Members (organization)"
 topic: org.members
 version: 1
+keywords:
+    - add employee
+    - add user
+    - user management
+    - staff list
+    - employee master data
+    - assign role
+    - offboarding
+    - leaving employee
+    - personnel file
+    - read confirmation
+    - working time model
+    - user limit
 audience: []
 related:
     - admin.roles

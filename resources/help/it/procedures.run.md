@@ -2,6 +2,16 @@
 title: "Eseguire una procedura"
 topic: procedures.run
 version: 1
+keywords:
+    - compilare checklist
+    - seguire istruzioni operative
+    - avviare procedura
+    - passaggi obbligatori
+    - registrare deviazione
+    - controfirma
+    - doppio controllo
+    - prova di backup
+    - confermare passaggio
 audience: []
 related:
     - protocols.create

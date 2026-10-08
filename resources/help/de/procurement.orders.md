@@ -2,6 +2,19 @@
 title: "Beschaffung & Bestellungen"
 topic: procurement.orders
 version: 1
+keywords:
+    - Einkauf
+    - Bestellung anlegen
+    - Lieferantenbestellung
+    - Wareneingang buchen
+    - Teillieferung
+    - Lieferavis
+    - ASN
+    - Bestellvorschläge
+    - Meldebestand
+    - nachbestellen
+    - Mindestbestellmenge
+    - Bestellung stornieren
 audience: []
 modules:
     - module.lager

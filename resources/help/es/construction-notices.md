@@ -2,6 +2,15 @@
 title: "Aviso de impedimento y de reparos (VOB/B)"
 topic: construction-notices
 version: 1
+keywords:
+    - impedimento en obra
+    - retraso de obra
+    - prórroga del plazo
+    - comunicación de reparos
+    - aviso de retraso
+    - mal tiempo
+    - VOB
+    - limitar la responsabilidad
 audience: []
 modules:
     - module.bau

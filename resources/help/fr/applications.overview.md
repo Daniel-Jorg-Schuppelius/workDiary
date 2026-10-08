@@ -2,6 +2,18 @@
 title: "Candidatures & appels d'offres"
 topic: applications.overview
 version: 2
+keywords:
+    - recrutement
+    - gestion des candidats
+    - annonce de poste
+    - entretien de recrutement
+    - vivier de talents
+    - refuser un candidat
+    - embauche
+    - marchés publics
+    - soumission
+    - négociation de contrat
+    - dossier de candidature
 audience: []
 modules:
     - module.applications

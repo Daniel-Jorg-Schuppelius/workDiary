@@ -2,6 +2,17 @@
 title: "Soporte remoto"
 topic: admin.remote-support
 version: 1
+keywords:
+    - AnyDesk
+    - TeamViewer
+    - acceso remoto
+    - sesión remota
+    - asistencia remota
+    - mantenimiento remoto
+    - ID de dispositivo
+    - informe de sesión
+    - escritorio remoto
+    - control remoto
 audience:
     - admin
 related:

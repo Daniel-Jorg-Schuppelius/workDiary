@@ -2,6 +2,16 @@
 title: "Días festivos"
 topic: catalog.holidays
 version: 1
+keywords:
+    - festivos
+    - fiestas nacionales
+    - calendario laboral
+    - días de descanso
+    - días no laborables
+    - cierre de empresa
+    - añadir festivo
+    - festivo recurrente
+    - puente
 audience: []
 related:
     - planning.shifts

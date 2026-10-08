@@ -2,6 +2,19 @@
 title: "Payment reconciliation"
 topic: finance.reconciliation
 version: 2
+keywords:
+    - bank reconciliation
+    - import bank statement
+    - match payments
+    - payment matching
+    - incoming payments
+    - mark invoice paid
+    - bank transactions
+    - CAMT
+    - MT940
+    - cash discount
+    - partial payment
+    - RF reference
 audience: []
 modules:
     - module.finance

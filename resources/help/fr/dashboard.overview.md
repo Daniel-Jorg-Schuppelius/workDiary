@@ -2,6 +2,18 @@
 title: "Tableau de bord"
 topic: dashboard.overview
 version: 3
+keywords:
+    - page d'accueil
+    - accueil
+    - personnaliser les tuiles
+    - widgets
+    - indicateurs clés
+    - KPI
+    - masquer les tuiles
+    - réorganiser les tuiles
+    - disposition par défaut
+    - vue d'ensemble
+    - dashboard
 audience: []
 schema: process
 related:

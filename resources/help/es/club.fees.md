@@ -2,6 +2,19 @@
 title: "Cuotas"
 topic: club.fees
 version: 1
+keywords:
+    - cuota de socio
+    - cuota social
+    - domiciliación bancaria
+    - adeudo SEPA
+    - remesa de cuotas
+    - tesorero
+    - cuota familiar
+    - descuento hermanos
+    - recordatorio de pago
+    - recibo devuelto
+    - certificado de donación
+    - cuotas pendientes
 audience: []
 modules:
     - module.club

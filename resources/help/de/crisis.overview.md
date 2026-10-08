@@ -2,6 +2,21 @@
 title: "Notfall- & Krisenmanagement"
 topic: crisis.overview
 version: 1
+keywords:
+    - Krisenstab
+    - Notfallmanagement
+    - Notfallplan
+    - Alarmierung
+    - Krisenalarm
+    - Business Continuity
+    - BCM
+    - Lagebild
+    - Meldepflicht
+    - NIS2
+    - Datenschutzvorfall
+    - Wiederanlauf
+    - Notfallübung
+    - KRITIS
 audience: []
 modules:
     - module.crisis_management

@@ -2,6 +2,17 @@
 title: "Thèmes"
 topic: admin.themes
 version: 3
+keywords:
+    - mode sombre
+    - thème sombre
+    - mode clair
+    - palette de couleurs
+    - couleurs personnalisées
+    - apparence
+    - charte graphique
+    - identité visuelle
+    - contraste
+    - habillage
 audience:
     - admin
 modules:
@@ -9,6 +20,7 @@ modules:
 related:
     - admin.handbook
     - admin.license
+    - navigation.interface
 ---
 
 Les thèmes sont des préréglages de design de votre organisation :

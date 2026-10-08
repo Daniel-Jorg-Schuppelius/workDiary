@@ -2,6 +2,19 @@
 title: "Configurar la autenticación de dos factores"
 topic: account.two-factor
 version: 1
+keywords:
+    - 2FA
+    - MFA
+    - autenticación multifactor
+    - verificación en dos pasos
+    - app de autenticación
+    - código de un solo uso
+    - OTP
+    - passkey
+    - llave de seguridad
+    - códigos de recuperación
+    - códigos de respaldo
+    - cuenta hackeada
 audience: []
 related:
     - admin.security

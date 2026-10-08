@@ -2,6 +2,16 @@
 title: "Scorecards de proveedores"
 topic: supplier-scorecards.overview
 version: 1
+keywords:
+    - evaluación de proveedores
+    - calificación de proveedores
+    - ranking de proveedores
+    - puntualidad de entrega
+    - fiabilidad de entrega
+    - tasa de reclamaciones
+    - evolución de precios
+    - rendimiento de proveedores
+    - KPI de proveedores
 audience: []
 modules:
     - module.lager

@@ -2,6 +2,19 @@
 title: "Datenschutz-Werkzeuge"
 topic: admin.privacy-tools
 version: 1
+keywords:
+    - DSGVO
+    - GDPR
+    - Datenschutz
+    - aktive Sitzungen
+    - Sitzung widerrufen
+    - Zwangsabmeldung
+    - API-Token widerrufen
+    - Datenauskunft
+    - Datenübertragbarkeit
+    - Aufbewahrungsfristen
+    - Löschfristen
+    - Auskunftsersuchen
 audience:
     - admin
     - geschaeftsfuehrung

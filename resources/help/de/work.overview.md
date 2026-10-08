@@ -2,6 +2,18 @@
 title: "Heute & Kanban"
 topic: work.overview
 version: 1
+keywords:
+    - Tagesübersicht
+    - Heute-Ansicht
+    - To-do-Liste
+    - Aufgabenübersicht
+    - meine Aufgaben
+    - Kanban-Board
+    - Taskboard
+    - Status verschieben
+    - Arbeitsvorrat
+    - Agenda
+    - heute fällig
 audience: []
 related:
     - diary-entries.create

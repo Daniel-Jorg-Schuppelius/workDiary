@@ -2,6 +2,18 @@
 title: "Maintaining form templates"
 topic: forms.templates
 version: 1
+keywords:
+    - create form
+    - form builder
+    - form designer
+    - create checklist
+    - form fields
+    - field types
+    - dropdown field
+    - required field
+    - activate form
+    - archive form
+    - custom forms
 audience:
     - admin
     - geschaeftsfuehrung

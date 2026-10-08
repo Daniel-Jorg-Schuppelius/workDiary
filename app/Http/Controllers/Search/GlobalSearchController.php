@@ -12,6 +12,7 @@ namespace App\Http\Controllers\Search;
 
 use App\Http\Controllers\Controller;
 use App\Models\Platform\User;
+use App\Services\Help\{FunctionFinder, HelpCenterCatalog, HelpSearch};
 use App\Services\Search\GlobalSearchService;
 use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Facades\Auth;
@@ -24,12 +25,15 @@ use Illuminate\Support\Facades\Auth;
  * Benutzers. Datenschutz: Mitarbeiterliste ist Admins/Approver:innen vorbehalten.
  *
  * Die Gruppen-Queries teilen sich Command-Palette und Vollergebnisseite
- * (Vollaudit 2026-07, M8) im {@see GlobalSearchService}.
+ * (Vollaudit 2026-07, M8) im {@see GlobalSearchService}. Davor stehen die
+ * Wegweiser der Palette (MVP-1082): Aktionen, Seiten und Hilfethemen.
  */
 class GlobalSearchController extends Controller {
     private const PER_TYPE_LIMIT = 5;
 
-    public function __invoke(Request $request, GlobalSearchService $search): JsonResponse {
+    private const HELP_LIMIT = 3;
+
+    public function __invoke(Request $request, GlobalSearchService $search, HelpSearch $help, FunctionFinder $finder, HelpCenterCatalog $catalog): JsonResponse {
         $data = $request->validate([
             'q' => ['nullable', 'string', 'max:120'],
         ]);
@@ -42,8 +46,51 @@ class GlobalSearchController extends Controller {
         /** @var User $user */
         $user = Auth::user();
 
+        $query = $help->prepare($term);
+        $guide = [
+            [
+                'key' => 'actions',
+                'label' => (string) __('search.palette.group.actions'),
+                'icon' => 'bolt',
+                'items' => array_map(static fn(array $action): array => [
+                    'id' => $action['key'],
+                    'title' => $action['label'],
+                    'subtitle' => $action['hint'],
+                    'icon' => $action['icon'],
+                    'action' => $action['key'],
+                    'url' => null,
+                ], $finder->actions($query)),
+            ],
+            [
+                'key' => 'pages',
+                'label' => (string) __('search.palette.group.pages'),
+                'icon' => 'web',
+                'items' => array_map(static fn(array $page): array => [
+                    'id' => $page['route'],
+                    'title' => $page['label'],
+                    'subtitle' => $page['area'],
+                    'icon' => $page['icon'],
+                    'url' => $page['url'],
+                ], $finder->pages($query, self::PER_TYPE_LIMIT)),
+            ],
+            [
+                'key' => 'help',
+                'label' => (string) __('search.palette.group.help'),
+                'icon' => 'menu_book',
+                'items' => $help->search($query, $user)->topics->take(self::HELP_LIMIT)->map(static fn($row): array => [
+                    'id' => $row->topic,
+                    'title' => $row->title,
+                    'subtitle' => (string) __('help.sections.' . $catalog->sectionKeyFor($row->topic) . '.title'),
+                    'url' => route('help.center.show', ['topic' => $row->topic]),
+                ])->values()->all(),
+            ],
+        ];
+
         return response()->json([
-            'groups' => $search->groups($user, $term, [], self::PER_TYPE_LIMIT),
+            'groups' => [
+                ...array_values(array_filter($guide, static fn(array $group): bool => $group['items'] !== [])),
+                ...$search->groups($user, $term, [], self::PER_TYPE_LIMIT),
+            ],
             'q' => $term,
             // Vollaudit 2026-07 (M8): „alle Treffer →"-Link der Palette.
             'allUrl' => route('search.index', ['q' => $term]),

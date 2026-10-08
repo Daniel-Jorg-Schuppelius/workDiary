@@ -2,6 +2,19 @@
 title: "Destinos de copia de seguridad en la nube"
 topic: backup-targets.overview
 version: 1
+keywords:
+    - copia externa
+    - respaldo de datos
+    - Dropbox
+    - OneDrive
+    - Google Drive
+    - copia cifrada
+    - regla 3-2-1
+    - restauración
+    - prueba de restauración
+    - clave maestra
+    - retención de copias
+    - recuperación ante desastres
 audience: []
 related:
     - admin.integrations

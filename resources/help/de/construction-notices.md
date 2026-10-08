@@ -2,6 +2,18 @@
 title: "Behinderungs- und Bedenkenanzeige (VOB/B)"
 topic: construction-notices
 version: 1
+keywords:
+    - Behinderungsanzeige
+    - Bedenkenanmeldung
+    - Bedenkenhinweis
+    - Behinderung melden
+    - Bedenken anmelden
+    - Bauzeitverlängerung
+    - Fristverlängerung
+    - Bauablaufstörung
+    - VOB
+    - Schlechtwetter
+    - Haftung begrenzen
 audience: []
 modules:
     - module.bau

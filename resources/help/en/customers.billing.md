@@ -2,6 +2,19 @@
 title: "Special terms & billing account"
 topic: customers.billing
 version: 3
+keywords:
+    - special prices
+    - customer hourly rate
+    - weekend rate
+    - holiday rate
+    - travel flat rate
+    - call-out fee
+    - customer account
+    - balance
+    - monthly retainer
+    - flat fee
+    - Lexoffice
+    - month-end closing
 audience: []
 modules:
     - module.vertrieb

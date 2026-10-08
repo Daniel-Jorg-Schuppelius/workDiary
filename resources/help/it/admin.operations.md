@@ -2,6 +2,17 @@
 title: "Attività operative e finestre di manutenzione"
 topic: admin.operations
 version: 1
+keywords:
+    - modalità manutenzione
+    - downtime
+    - manutenzione programmata
+    - avviso di manutenzione
+    - sola lettura
+    - centro attività
+    - scadenza certificato
+    - backup mancante
+    - posticipare attività
+    - interruzione del servizio
 audience:
     - admin
     - geschaeftsfuehrung

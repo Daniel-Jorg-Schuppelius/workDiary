@@ -2,6 +2,19 @@
 title: "Panoramica dell'ISMS"
 topic: isms.overview
 version: 2
+keywords:
+    - sicurezza delle informazioni
+    - gestione della sicurezza
+    - ISO 27001
+    - perimetro
+    - ambito di applicazione
+    - sicurezza informatica
+    - gestione dei rischi
+    - preparare la certificazione
+    - Allegato A
+    - prontezza all'audit
+    - SGSI
+    - compliance
 audience: []
 modules:
     - module.isms

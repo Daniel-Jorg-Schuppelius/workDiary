@@ -2,6 +2,19 @@
 title: "Leasing & asset contracts"
 topic: asset-finance.overview
 version: 1
+keywords:
+    - lease agreement
+    - lease payments
+    - hire purchase
+    - financing
+    - residual value
+    - purchase option
+    - notice period
+    - lease return
+    - IFRS 16
+    - payment schedule
+    - vehicle leasing
+    - contract deadlines
 audience: []
 modules:
     - module.asset_finance

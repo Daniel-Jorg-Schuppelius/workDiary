@@ -2,6 +2,19 @@
 title: "Cierre e informes"
 topic: accounting.closing
 version: 1
+keywords:
+    - cierre mensual
+    - cierre anual
+    - bloquear periodo
+    - reabrir periodo
+    - cuenta de resultados
+    - informes financieros
+    - previsión de tesorería
+    - presupuesto vs real
+    - informe de IVA
+    - exportación auditoría fiscal
+    - reparto de costes
+    - exportación DATEV
 audience:
     - admin
     - geschaeftsfuehrung

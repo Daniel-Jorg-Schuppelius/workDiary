@@ -2,6 +2,18 @@
 title: "Condizioni speciali & conto cliente"
 topic: customers.billing
 version: 3
+keywords:
+    - prezzi speciali
+    - tariffa oraria cliente
+    - tariffa weekend
+    - tariffa festivi
+    - forfait di trasferta
+    - spese di trasferta
+    - saldo
+    - canone mensile
+    - forfait mensile
+    - Lexoffice
+    - chiusura mensile
 audience: []
 modules:
     - module.vertrieb

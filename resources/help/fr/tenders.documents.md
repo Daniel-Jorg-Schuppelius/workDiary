@@ -2,6 +2,19 @@
 title: "Dossier de consultation et remise de l’offre"
 topic: tenders.documents
 version: 1
+keywords:
+    - DCE
+    - dossier d'appel d'offres
+    - importer un ZIP
+    - import GAEB
+    - importer le bordereau
+    - déposer une offre
+    - date limite de remise
+    - validité des offres
+    - ouverture des plis
+    - résultat de l'appel d'offres
+    - lots
+    - vérification de l'offre
 audience: []
 related:
     - boq.overview

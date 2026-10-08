@@ -2,6 +2,18 @@
 title: "Demandes clients"
 topic: customer.intakes
 version: 1
+keywords:
+    - demande client
+    - demande du portail
+    - commande d'impression
+    - demande informatique
+    - traiter une demande
+    - rejeter une demande
+    - question au client
+    - lier un devis
+    - lien de dépôt
+    - Nextcloud
+    - fichiers du client
 audience: []
 related:
     - customer.queries

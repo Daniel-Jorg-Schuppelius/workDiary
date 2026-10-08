@@ -2,6 +2,17 @@
 title: "Accordi"
 topic: customer-portal.agreements
 version: 1
+keywords:
+    - accordo trattamento dati
+    - NDA
+    - accordo di riservatezza
+    - firmare il contratto
+    - stato della firma
+    - contratti firmati
+    - scaricare il contratto
+    - link di firma
+    - attestato di firma
+    - GDPR
 audience: []
 modules:
     - module.contracts

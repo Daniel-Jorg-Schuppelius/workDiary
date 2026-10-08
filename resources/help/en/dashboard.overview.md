@@ -2,6 +2,18 @@
 title: "Dashboard"
 topic: dashboard.overview
 version: 3
+keywords:
+    - home page
+    - start page
+    - customize tiles
+    - widgets
+    - KPIs
+    - key figures
+    - hide tiles
+    - arrange tiles
+    - default layout
+    - overview
+    - home screen
 audience: []
 schema: process
 related:

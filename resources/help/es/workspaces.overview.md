@@ -2,6 +2,17 @@
 title: "Áreas de trabajo"
 topic: workspaces.overview
 version: 1
+keywords:
+    - vista de enfoque
+    - cambiar de vista
+    - simplificar la navegación
+    - ocultar elementos del menú
+    - vista predeterminada
+    - nombre visible
+    - vista por rol
+    - despejar barra lateral
+    - modo enfoque
+    - todas las funciones
 audience:
     - admin
 related:

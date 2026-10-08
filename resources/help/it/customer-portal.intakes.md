@@ -2,6 +2,18 @@
 title: "Portale clienti – Richieste e ordini"
 topic: customer-portal.intakes
 version: 1
+keywords:
+    - inviare una richiesta
+    - ordine di stampa
+    - richiesta di stampa
+    - richiesta IT
+    - caricare file
+    - file di stampa
+    - visto si stampi
+    - accettare il preventivo
+    - rifiutare il preventivo
+    - inviare file grandi
+    - link di caricamento
 audience: []
 related:
     - customer-portal.overview

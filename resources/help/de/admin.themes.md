@@ -2,6 +2,19 @@
 title: "Themes"
 topic: admin.themes
 version: 3
+keywords:
+    - Darkmode
+    - Dunkelmodus
+    - dunkles Design
+    - heller Modus
+    - Farbschema
+    - Farben anpassen
+    - Erscheinungsbild
+    - Corporate Design
+    - Firmenfarben
+    - Designvorlage
+    - Kontrast
+    - Eckenradius
 audience:
     - admin
 modules:
@@ -9,6 +22,7 @@ modules:
 related:
     - admin.handbook
     - admin.license
+    - navigation.interface
 ---
 
 Themes sind Design-Presets Ihrer Organisation für die Oberfläche.

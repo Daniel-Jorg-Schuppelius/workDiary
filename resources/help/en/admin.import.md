@@ -2,6 +2,18 @@
 title: "CSV import"
 topic: admin.import
 version: 3
+keywords:
+    - data import
+    - import master data
+    - import customers
+    - import wizard
+    - column mapping
+    - bulk import
+    - legacy data
+    - error report
+    - import meter readings
+    - iCal import
+    - calendar import
 audience:
     - admin
     - geschaeftsfuehrung

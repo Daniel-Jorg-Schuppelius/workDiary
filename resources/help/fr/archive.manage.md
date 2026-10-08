@@ -2,6 +2,15 @@
 title: "Utiliser les archives"
 topic: archive.manage
 version: 1
+keywords:
+    - archiver
+    - archivage
+    - désarchiver
+    - restaurer
+    - dossiers clos
+    - historique
+    - anciennes entrées
+    - éléments archivés
 audience: []
 related:
     - diary-entries.edit

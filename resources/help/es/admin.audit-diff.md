@@ -2,6 +2,16 @@
 title: "Historial de cambios y comparación de versiones"
 topic: admin.audit-diff
 version: 1
+keywords:
+    - registro de auditoría
+    - rastro de auditoría
+    - quién cambió qué
+    - diff
+    - antes y después
+    - historial de revisiones
+    - trazabilidad
+    - registro de cambios
+    - seguimiento de cambios
 audience: [admin]
 related:
     - audit.log

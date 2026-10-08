@@ -2,6 +2,19 @@
 title: "Recherche et recherche d'activités"
 topic: search.overview
 version: 3
+keywords:
+    - recherche plein texte
+    - recherche globale
+    - trouver une saisie
+    - historique client
+    - travaux effectués
+    - opérateurs de recherche
+    - expression exacte
+    - exclure un mot
+    - fautes de frappe
+    - synonymes de recherche
+    - filtrer par mots-clés
+    - recherche approximative
 audience: []
 related: []
 ---

@@ -2,6 +2,19 @@
 title: "Órdenes de fabricación"
 topic: manufacturing.orders
 version: 1
+keywords:
+    - orden de producción
+    - lista de materiales
+    - receta
+    - necesidades de material
+    - MRP
+    - declaración de producción
+    - rechazos
+    - subcontratación
+    - documentos aduaneros
+    - factura proforma
+    - factura comercial
+    - albarán
 audience: []
 modules:
     - module.lager

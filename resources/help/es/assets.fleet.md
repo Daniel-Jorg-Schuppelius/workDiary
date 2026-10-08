@@ -2,6 +2,19 @@
 title: "Activos y flota"
 topic: assets.fleet
 version: 1
+keywords:
+    - gestión de flota
+    - gestión de vehículos
+    - inventario
+    - equipos
+    - préstamo de equipos
+    - entrega de herramientas
+    - devolución
+    - registro de combustible
+    - registro de carga
+    - mantenimiento
+    - reportar avería
+    - ciclo de vida
 audience: []
 modules:
     - module.fuhrpark

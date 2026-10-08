@@ -2,6 +2,18 @@
 title: "Maßnahmen pflegen"
 topic: isms.controls
 version: 1
+keywords:
+    - Sicherheitsmaßnahmen
+    - Controls
+    - TOM
+    - technisch-organisatorische Maßnahmen
+    - Maßnahmenkatalog
+    - Umsetzungsstatus
+    - Nachweis hinterlegen
+    - Schutzmaßnahmen
+    - Maßnahme verknüpfen
+    - Annex A
+    - ISMS-Maßnahmen
 audience: []
 modules:
     - module.isms

@@ -2,6 +2,19 @@
 title: "Problem melden"
 topic: support.report-problem
 version: 1
+keywords:
+    - Fehler melden
+    - Bug melden
+    - Bugreport
+    - Support kontaktieren
+    - Störung melden
+    - Supportanfrage
+    - technisches Problem
+    - Fehlerseite
+    - Vorgangs-ID
+    - Screenshot anhängen
+    - Meine Fehlermeldungen
+    - funktioniert nicht
 audience: ['*']
 related:
     - admin.diagnostics

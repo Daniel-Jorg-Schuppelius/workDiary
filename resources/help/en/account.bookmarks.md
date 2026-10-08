@@ -2,6 +2,15 @@
 title: "Bookmarks & Filters"
 topic: account.bookmarks
 version: 1
+keywords:
+    - favorites
+    - quick links
+    - saved filters
+    - filter preset
+    - default filter
+    - save filter
+    - save view
+    - starred pages
 audience: []
 related:
     - account.notifications

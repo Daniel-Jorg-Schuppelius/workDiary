@@ -2,6 +2,15 @@
 title: "Service Record / Job Book"
 topic: customer-portal.diary
 version: 1
+keywords:
+    - job list
+    - proof of work
+    - work log
+    - completed work
+    - service log
+    - service reports
+    - job status
+    - order history
 audience: []
 related:
     - customer-portal.overview

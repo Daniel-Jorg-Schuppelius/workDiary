@@ -2,6 +2,15 @@
 title: "Branding"
 topic: admin.branding
 version: 1
+keywords:
+    - white label
+    - corporate design
+    - identità visiva
+    - logo aziendale
+    - colori aziendali
+    - dati aziendali
+    - piè di pagina
+    - dati bancari fattura
 audience:
     - admin
 related:

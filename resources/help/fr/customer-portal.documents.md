@@ -2,6 +2,15 @@
 title: "Portail client – Documents"
 topic: customer-portal.documents
 version: 1
+keywords:
+    - fichiers
+    - télécharger un document
+    - certificats
+    - procès-verbaux
+    - plans
+    - documents partagés
+    - téléchargement
+    - pièces
 audience: []
 related:
     - customer-portal.overview

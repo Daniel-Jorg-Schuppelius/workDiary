@@ -2,6 +2,18 @@
 title: "Registro de riesgos"
 topic: isms.risks
 version: 1
+keywords:
+    - análisis de riesgos
+    - evaluación de riesgos
+    - matriz de riesgos
+    - añadir riesgo
+    - mapa de riesgos
+    - tratamiento de riesgos
+    - riesgo residual
+    - aceptación del riesgo
+    - probabilidad
+    - riesgo inherente
+    - riesgo neto
 audience: []
 modules:
     - module.isms

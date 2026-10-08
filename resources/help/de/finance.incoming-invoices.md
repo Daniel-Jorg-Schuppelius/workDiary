@@ -2,6 +2,19 @@
 title: "E-Rechnungs-Eingang"
 topic: finance.incoming-invoices
 version: 1
+keywords:
+    - Eingangsrechnung
+    - Lieferantenrechnung
+    - Kreditorenrechnung
+    - XRechnung empfangen
+    - ZUGFeRD
+    - Factur-X
+    - E-Rechnung prüfen
+    - Rechnungseingang
+    - Rechnungsprüfung
+    - Rechnung freigeben
+    - Zahlungsfreigabe
+    - EN 16931
 audience: []
 modules:
     - module.vertrieb

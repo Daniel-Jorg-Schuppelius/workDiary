@@ -2,6 +2,15 @@
 title: "Tokens de API"
 topic: account.api-tokens
 version: 1
+keywords:
+    - clave API
+    - token de acceso
+    - token personal
+    - API REST
+    - crear token
+    - revocar token
+    - acceso programático
+    - bearer token
 audience: []
 related:
     - account.profile

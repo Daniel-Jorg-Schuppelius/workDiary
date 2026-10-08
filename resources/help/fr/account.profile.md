@@ -1,12 +1,26 @@
 ---
 title: "Profil & compte"
 topic: account.profile
-version: 1
+version: 2
+keywords:
+    - paramètres
+    - changer le mot de passe
+    - langue
+    - fuseau horaire
+    - mode sombre
+    - thème sombre
+    - photo de profil
+    - avatar
+    - page de démarrage
+    - abonnement calendrier
+    - flux ICS
+    - format de date
 audience: []
 related:
     - account.two-factor
     - account.notifications
     - account.calendar
+    - navigation.interface
 ---
 
 Dans le profil, vous gérez vos données personnelles (nom, e-mail, avatar,
@@ -22,3 +36,6 @@ d'accès peut être régénéré ou révoqué à tout moment.
 
 Seules les pages que vous pouvez ouvrir sont proposées. Sans choix personnel,
 la page d'accueil définie par votre organisation pour votre rôle s'applique.
+
+Le plus rapide pour passer en mode sombre est **Paramètres** dans
+l'en-tête. Les détails figurent dans la rubrique **Interface et affichage**.

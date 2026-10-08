@@ -2,10 +2,22 @@
 title: "Menü anpassen & Alle Funktionen"
 topic: navigation.customize
 version: 1
+keywords:
+    - Menü ausblenden
+    - Menüeinträge verstecken
+    - Seitenleiste anpassen
+    - Sidebar anpassen
+    - Navigation anpassen
+    - Menü einblenden
+    - Menüpunkt fehlt
+    - verschwundener Menüpunkt
+    - Funktionsübersicht
+    - schlankes Menü
 audience: []
 related:
     - account.profile
     - scope.overview
+    - navigation.interface
 ---
 
 Unter **Menü anpassen** blenden Sie Bereiche, Untergruppen und einzelne

@@ -2,6 +2,19 @@
 title: "Zugang & Sicherheit"
 topic: customer-portal.access
 version: 2
+keywords:
+    - Anmeldung Kundenportal
+    - Login
+    - Passwort
+    - 2FA
+    - Zwei-Faktor
+    - Authenticator-App
+    - Passkey
+    - Sicherheitsschlüssel
+    - Wiederherstellungscodes
+    - Anmelde-E-Mail ändern
+    - angemeldet bleiben
+    - Profil
 audience: []
 related:
     - customer-portal.overview

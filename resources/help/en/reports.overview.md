@@ -2,6 +2,18 @@
 title: "Using reports"
 topic: reports.overview
 version: 2
+keywords:
+    - statistics
+    - KPIs
+    - analytics
+    - drilldown
+    - export report
+    - revenue by product
+    - minimum wage check
+    - driving and rest times
+    - liquidity forecast
+    - cash flow forecast
+    - reporting
 audience: []
 related:
     - reports.customer-analysis

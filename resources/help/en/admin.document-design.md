@@ -2,6 +2,19 @@
 title: "Document design"
 topic: admin.document-design
 version: 1
+keywords:
+    - letterhead
+    - stationery
+    - invoice layout
+    - invoice template
+    - PDF layout
+    - customize layout
+    - corporate design
+    - font
+    - margins
+    - address window
+    - header and footer
+    - document template
 audience:
     - admin
 modules:

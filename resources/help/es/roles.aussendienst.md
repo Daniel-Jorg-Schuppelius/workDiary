@@ -2,6 +2,17 @@
 title: "Su día en WorkDiary: Servicio de campo"
 topic: roles.aussendienst
 version: 1
+keywords:
+    - técnico de campo
+    - técnico de servicio
+    - técnico itinerante
+    - instalador
+    - intervención in situ
+    - trabajo móvil
+    - firma del cliente
+    - registrar gastos
+    - libro de ruta
+    - solicitar vacaciones
 audience:
     - aussendienst
 related:

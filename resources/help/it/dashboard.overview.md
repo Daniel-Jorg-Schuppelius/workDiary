@@ -2,6 +2,18 @@
 title: "Dashboard"
 topic: dashboard.overview
 version: 3
+keywords:
+    - pagina iniziale
+    - home
+    - personalizzare i riquadri
+    - widget
+    - indicatori chiave
+    - KPI
+    - nascondere riquadri
+    - riordinare riquadri
+    - layout predefinito
+    - panoramica
+    - cruscotto
 audience: []
 schema: process
 related:

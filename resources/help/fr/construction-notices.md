@@ -2,6 +2,15 @@
 title: "Avis d’entrave et réserves (VOB/B)"
 topic: construction-notices
 version: 1
+keywords:
+    - entrave au chantier
+    - retard de chantier
+    - prolongation de délai
+    - notification de réserves
+    - lettre de réserves
+    - intempéries
+    - VOB
+    - limiter sa responsabilité
 audience: []
 modules:
     - module.bau

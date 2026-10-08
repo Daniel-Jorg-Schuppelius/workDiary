@@ -2,6 +2,19 @@
 title: "Leasing y contratos de activos"
 topic: asset-finance.overview
 version: 1
+keywords:
+    - contrato de leasing
+    - cuotas de leasing
+    - alquiler con opción a compra
+    - renting
+    - financiación
+    - valor residual
+    - opción de compra
+    - plazo de preaviso
+    - devolución del bien
+    - IFRS 16
+    - calendario de pagos
+    - vencimientos de contrato
 audience: []
 modules:
     - module.asset_finance

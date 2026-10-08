@@ -2,6 +2,20 @@
 title: "Customers & suppliers"
 topic: contacts.manage
 version: 2
+keywords:
+    - customer master data
+    - supplier master data
+    - add customer
+    - add supplier
+    - vendor
+    - debtor
+    - creditor
+    - debtor number
+    - merge duplicates
+    - import customers
+    - address book
+    - business partner
+    - CRM
 audience: []
 modules:
     - module.vertrieb

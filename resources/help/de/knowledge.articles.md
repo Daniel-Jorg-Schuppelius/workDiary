@@ -2,6 +2,18 @@
 title: "Wissensbasis"
 topic: knowledge.articles
 version: 1
+keywords:
+    - Wissensdatenbank
+    - Wiki
+    - Lösungsdatenbank
+    - bekannte Probleme
+    - Known Errors
+    - Lösungsweg
+    - Wissensartikel
+    - Anleitung schreiben
+    - Troubleshooting
+    - Problemlösung
+    - How-to
 audience: []
 modules:
     - module.knowledge

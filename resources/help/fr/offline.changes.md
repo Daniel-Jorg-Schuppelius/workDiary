@@ -2,6 +2,16 @@
 title: "Modifications hors ligne"
 topic: offline.changes
 version: 1
+keywords:
+    - travailler hors ligne
+    - sans connexion
+    - pas de réseau
+    - file d'attente
+    - synchronisation
+    - modifications en attente
+    - entrées refusées
+    - mode hors ligne
+    - non synchronisé
 audience: []
 related:
     - attendance.manage

@@ -2,6 +2,18 @@
 title: "Video und Untertitel"
 topic: learning.subtitles
 version: 1
+keywords:
+    - Untertitel hochladen
+    - WebVTT
+    - VTT-Datei
+    - Captions
+    - automatische Untertitel
+    - Transkription
+    - Videoqualität
+    - Auflösung wechseln
+    - Lernvideo
+    - Video hochladen
+    - barrierefreies Video
 audience: []
 related:
     - learning.overview

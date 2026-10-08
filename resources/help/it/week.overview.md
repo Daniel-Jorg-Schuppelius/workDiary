@@ -2,6 +2,17 @@
 title: "Incarichi nella vista settimanale"
 topic: week.overview
 version: 1
+keywords:
+    - calendario settimanale
+    - vista calendario
+    - pianificazione settimanale
+    - calendario del team
+    - reperibilità
+    - servizio di emergenza
+    - fissare un appuntamento
+    - pianificazione interventi
+    - panoramica settimanale
+    - tabellone di pianificazione
 audience: []
 related:
     - diary-entries.create

@@ -2,6 +2,15 @@
 title: "Usare l'archivio"
 topic: archive.manage
 version: 1
+keywords:
+    - archiviare
+    - archiviazione
+    - ripristinare
+    - dearchiviare
+    - pratiche chiuse
+    - storico
+    - vecchie voci
+    - elementi archiviati
 audience: []
 related:
     - diary-entries.edit

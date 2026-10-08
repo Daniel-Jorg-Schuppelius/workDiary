@@ -2,6 +2,17 @@
 title: "Configurare il portale di segnalazione"
 topic: whistleblowing.portal
 version: 1
+keywords:
+    - portale whistleblowing
+    - attivare il portale
+    - consentire segnalazioni anonime
+    - segnalazioni riservate
+    - link del portale
+    - rigenerare il link
+    - periodo di conservazione
+    - testo introduttivo
+    - impostare canale di segnalazione
+    - lingua predefinita
 audience:
     - admin
 modules:

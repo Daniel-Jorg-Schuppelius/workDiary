@@ -2,6 +2,18 @@
 title: "Gestion des urgences & des crises"
 topic: crisis.overview
 version: 1
+keywords:
+    - cellule de crise
+    - plan d'urgence
+    - continuité d'activité
+    - PCA
+    - alerte de crise
+    - point de situation
+    - délai de notification
+    - NIS2
+    - violation de données
+    - reprise d'activité
+    - exercice de crise
 audience: []
 modules:
     - module.crisis_management

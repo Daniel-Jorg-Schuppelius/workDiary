@@ -2,6 +2,15 @@
 title: "Modelli e-mail per fatture"
 topic: admin.invoice-mail-templates
 version: 1
+keywords:
+    - modello email
+    - testo email fattura
+    - invio fattura via email
+    - email di accompagnamento
+    - segnaposto
+    - variabili
+    - oggetto email
+    - modello predefinito
 audience:
     - admin
     - buchhaltung

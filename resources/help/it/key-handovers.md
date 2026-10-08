@@ -2,6 +2,16 @@
 title: "Consegne delle chiavi"
 topic: key-handovers
 version: 1
+keywords:
+    - ritiro chiavi
+    - restituzione chiavi
+    - registro chiavi
+    - gestione chiavi
+    - prestito chiavi
+    - chi ha la chiave
+    - ricevuta consegna chiavi
+    - badge
+    - mazzo di chiavi
 audience: []
 related:
     - meter-readings

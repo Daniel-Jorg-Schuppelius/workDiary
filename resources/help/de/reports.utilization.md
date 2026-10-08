@@ -2,6 +2,18 @@
 title: "Auslastung & Realisierung"
 topic: reports.utilization
 version: 2
+keywords:
+    - Auslastungsquote
+    - Produktivität
+    - abrechenbare Stunden
+    - Billable-Quote
+    - fakturierte Stunden
+    - Realisierungsquote
+    - Soll-Ist-Vergleich
+    - Zielwerte
+    - Kapazitätsauslastung
+    - verrechenbare Zeit
+    - Leerlauf
 audience: []
 related:
     - reports.economics

@@ -2,6 +2,19 @@
 title: "Riconciliazione dei pagamenti"
 topic: finance.reconciliation
 version: 2
+keywords:
+    - riconciliazione bancaria
+    - importare estratto conto
+    - abbinamento pagamenti
+    - incassi
+    - fattura pagata
+    - movimenti bancari
+    - CAMT
+    - MT940
+    - sconto cassa
+    - pagamento parziale
+    - riferimento RF
+    - quadratura
 audience: []
 modules:
     - module.finance

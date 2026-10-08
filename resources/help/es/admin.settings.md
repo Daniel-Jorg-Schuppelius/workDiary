@@ -2,6 +2,18 @@
 title: "Configuración del sistema"
 topic: admin.settings
 version: 1
+keywords:
+    - ajustes
+    - preferencias
+    - opciones
+    - valores predeterminados
+    - configuración de la organización
+    - límite de subida
+    - tamaño de página
+    - anulación
+    - restablecer ajuste
+    - historial de cambios
+    - parámetros
 audience:
     - admin
 related:

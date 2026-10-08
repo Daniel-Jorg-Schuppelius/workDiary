@@ -2,6 +2,19 @@
 title: "Security & hardening"
 topic: admin.security
 version: 2
+keywords:
+    - 2FA
+    - passkey
+    - encryption at rest
+    - IP ban
+    - brute force
+    - SIEM
+    - hacked account
+    - account takeover
+    - secure account
+    - SBOM
+    - security overview
+    - intrusion detection
 audience:
     - admin
 related:

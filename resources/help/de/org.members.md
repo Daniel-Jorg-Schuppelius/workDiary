@@ -2,6 +2,19 @@
 title: "Mitarbeiter (Organisation)"
 topic: org.members
 version: 1
+keywords:
+    - Mitarbeiter anlegen
+    - Benutzer anlegen
+    - Benutzerverwaltung
+    - Personalstamm
+    - Personalnummer
+    - Rolle zuweisen
+    - Austritt
+    - Offboarding
+    - Personalakte
+    - Lesebestätigung
+    - Arbeitszeitmodell
+    - Nutzerlimit
 audience: []
 related:
     - admin.roles

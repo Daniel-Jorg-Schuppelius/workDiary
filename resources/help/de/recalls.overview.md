@@ -2,6 +2,19 @@
 title: "Rückrufaktionen"
 topic: recalls.overview
 version: 1
+keywords:
+    - Produktrückruf
+    - Rückruf starten
+    - fehlerhaftes Produkt
+    - Seriennummern
+    - betroffene Kunden
+    - Kunden anschreiben
+    - Rücklaufquote
+    - Behördenmeldung
+    - Produktsicherheit
+    - Rückverfolgung
+    - Bestand sperren
+    - Sicherheitswarnung
 audience: []
 modules:
     - module.lager

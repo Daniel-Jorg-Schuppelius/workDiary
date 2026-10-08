@@ -2,6 +2,18 @@
 title: "Conflitti con sistemi esterni (giacenze e articoli)"
 topic: inventory.conflicts
 version: 3
+keywords:
+    - differenza di giacenza
+    - errore di sincronizzazione
+    - sincronizzazione fallita
+    - gestionale
+    - ERP
+    - registrazione di compensazione
+    - conflitto articolo
+    - allineare giacenze
+    - dati non allineati
+    - Lexware Office
+    - Lexoffice
 audience:
     - admin
     - geschaeftsfuehrung

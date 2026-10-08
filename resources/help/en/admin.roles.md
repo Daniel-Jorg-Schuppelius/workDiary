@@ -2,6 +2,18 @@
 title: "Roles & permissions"
 topic: admin.roles
 version: 2
+keywords:
+    - permissions
+    - user rights
+    - access rights
+    - role management
+    - assign role
+    - copy role
+    - access control
+    - RBAC
+    - admin rights
+    - user groups
+    - least privilege
 audience:
     - admin
 schema: process

@@ -2,6 +2,18 @@
 title: "Two-factor sign-in"
 topic: auth.two-factor
 version: 1
+keywords:
+    - 2FA
+    - MFA
+    - two-factor authentication
+    - authenticator app
+    - one-time code
+    - TOTP
+    - passkey
+    - security key
+    - recovery codes
+    - verification code
+    - two-step verification
 related:
     - auth.login
     - account.two-factor

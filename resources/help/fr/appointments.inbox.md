@@ -2,6 +2,17 @@
 title: "Demandes de rendez-vous"
 topic: appointments.inbox
 version: 1
+keywords:
+    - prise de rendez-vous
+    - réservation en ligne
+    - demande de réservation
+    - portail client
+    - confirmer un rendez-vous
+    - refuser un rendez-vous
+    - créneaux
+    - types de prestation
+    - annulation par le client
+    - planification
 audience: []
 modules:
     - module.planung

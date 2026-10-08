@@ -2,6 +2,14 @@
 title: "Réinitialiser le mot de passe"
 topic: auth.password-reset
 version: 1
+keywords:
+    - mot de passe oublié
+    - nouveau mot de passe
+    - changer le mot de passe
+    - lien de réinitialisation
+    - récupération du mot de passe
+    - identifiants oubliés
+    - perte du mot de passe
 related:
     - auth.login
     - account.two-factor

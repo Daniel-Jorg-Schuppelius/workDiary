@@ -2,6 +2,19 @@
 title: "Vereinstermine"
 topic: club.events
 version: 1
+keywords:
+    - Training
+    - Trainingstermin
+    - Probe
+    - Lehrgang
+    - Versammlung
+    - Mitgliederversammlung
+    - Anmeldung
+    - Warteliste
+    - Vereinskalender
+    - Terminserie
+    - Training absagen
+    - Trainingsplan
 audience: []
 modules:
     - module.club

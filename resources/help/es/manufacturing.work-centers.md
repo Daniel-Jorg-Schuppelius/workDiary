@@ -2,6 +2,16 @@
 title: "Capacidades de fabricación (puestos de trabajo)"
 topic: manufacturing.work-centers
 version: 1
+keywords:
+    - centro de trabajo
+    - máquina
+    - planificación de capacidad
+    - carga de máquinas
+    - ocupación
+    - tiempo de preparación
+    - capacidad diaria
+    - cuello de botella
+    - programación de la producción
 audience: []
 modules:
     - module.lager

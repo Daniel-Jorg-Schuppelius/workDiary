@@ -2,6 +2,20 @@
 title: "Kundeneingänge"
 topic: customer.intakes
 version: 1
+keywords:
+    - Kundenanfrage
+    - Portalanfrage
+    - Druckauftrag
+    - Druckanfrage
+    - IT-Anfrage
+    - Anfrage bearbeiten
+    - Anfrage übernehmen
+    - Anfrage ablehnen
+    - Rückfrage an Kunden
+    - Angebot verknüpfen
+    - Upload-Link
+    - Nextcloud
+    - Dateien vom Kunden
 audience: []
 related:
     - customer.queries

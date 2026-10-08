@@ -2,6 +2,17 @@
 title: "Search synonyms"
 topic: admin.search-synonyms
 version: 1
+keywords:
+    - synonym groups
+    - manage synonyms
+    - search terms
+    - equivalent terms
+    - improve search
+    - thesaurus
+    - aliases
+    - alternative terms
+    - IT template
+    - more search results
 audience: []
 related: []
 ---

@@ -2,6 +2,17 @@
 title: "Sondaggi"
 topic: sales.surveys
 version: 1
+keywords:
+    - soddisfazione del cliente
+    - indagine di soddisfazione
+    - questionario
+    - NPS
+    - Net Promoter Score
+    - raccogliere feedback
+    - feedback clienti
+    - sondaggio anonimo
+    - indagine clienti
+    - passaparola
 audience: []
 modules:
     - module.vertrieb

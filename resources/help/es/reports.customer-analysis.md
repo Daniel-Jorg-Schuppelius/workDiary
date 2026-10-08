@@ -2,6 +2,15 @@
 title: "Análisis de clientes"
 topic: reports.customer-analysis
 version: 1
+keywords:
+    - estadísticas de clientes
+    - informe de clientes
+    - órdenes por cliente
+    - tiempo por cliente
+    - tasa de retrabajo
+    - tiempo no facturable
+    - riesgo de margen
+    - KPI de clientes
 audience: []
 modules:
     - module.auswertungen_team

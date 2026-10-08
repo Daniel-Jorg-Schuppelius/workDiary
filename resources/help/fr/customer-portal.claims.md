@@ -2,6 +2,17 @@
 title: "Portail client – Réclamations et retours"
 topic: customer-portal.claims
 version: 1
+keywords:
+    - signaler un défaut
+    - déposer une réclamation
+    - demande de retour
+    - étiquette de retour
+    - renvoyer la marchandise
+    - garantie
+    - suivi de réclamation
+    - envoyer des photos
+    - RMA
+    - produit défectueux
 audience: []
 related:
     - customer-portal.overview

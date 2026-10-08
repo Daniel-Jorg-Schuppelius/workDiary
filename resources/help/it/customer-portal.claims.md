@@ -2,6 +2,17 @@
 title: "Portale clienti – Reclami e resi"
 topic: customer-portal.claims
 version: 1
+keywords:
+    - segnalare un difetto
+    - aprire un reclamo
+    - richiesta di reso
+    - etichetta di reso
+    - rispedire la merce
+    - garanzia
+    - stato del reclamo
+    - inviare foto
+    - RMA
+    - prodotto difettoso
 audience: []
 related:
     - customer-portal.overview

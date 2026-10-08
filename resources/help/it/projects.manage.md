@@ -2,6 +2,18 @@
 title: "Gestire i progetti"
 topic: projects.manage
 version: 3
+keywords:
+    - creare progetto
+    - gestione progetti
+    - elenco progetti
+    - milestone
+    - ore di progetto
+    - fatturazione progetto
+    - chiudere progetto
+    - riassegnare ore
+    - timesheet
+    - attività di progetto
+    - tariffa oraria
 audience: []
 modules:
     - module.vertrieb

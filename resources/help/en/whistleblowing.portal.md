@@ -2,6 +2,17 @@
 title: "Configure the reporting portal"
 topic: whistleblowing.portal
 version: 1
+keywords:
+    - whistleblower portal
+    - enable portal
+    - allow anonymous reports
+    - confidential reports
+    - portal link
+    - regenerate link
+    - retention period
+    - intro text
+    - set up reporting channel
+    - default language
 audience:
     - admin
 modules:

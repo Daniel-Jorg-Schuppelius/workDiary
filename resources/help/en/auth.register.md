@@ -2,6 +2,15 @@
 title: "Registration"
 topic: auth.register
 version: 1
+keywords:
+    - sign up
+    - create account
+    - self-registration
+    - register organization
+    - new account
+    - get started
+    - free plan
+    - create company account
 related:
     - auth.login
     - admin.tenants

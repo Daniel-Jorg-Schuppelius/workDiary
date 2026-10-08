@@ -23,6 +23,7 @@ use League\CommonMark\GithubFlavoredMarkdownConverter;
  *
  * Front-Matter unterstützt aktuell:
  *  - title: "…"
+ *  - keywords: [list]  (Suchbegriffe der Sprache, MVP-1079)
  *  - version: int
  *  - audience: [list]
  *  - related: [list]
@@ -75,6 +76,7 @@ class HelpTopicLoader {
      *     topic:string,
      *     locale:string,
      *     title:string,
+     *     keywords:list<string>,
      *     audience:list<string>,
      *     modules:list<string>,
      *     version:int,
@@ -109,6 +111,7 @@ class HelpTopicLoader {
             'topic' => $topic,
             'locale' => $locale,
             'title' => (string) ($frontMatter['title'] ?? $topic),
+            'keywords' => $this->normalizeList($frontMatter['keywords'] ?? []),
             'audience' => $this->normalizeList($frontMatter['audience'] ?? []),
             'modules' => $this->normalizeList($frontMatter['modules'] ?? []),
             'version' => (int) ($frontMatter['version'] ?? 1),

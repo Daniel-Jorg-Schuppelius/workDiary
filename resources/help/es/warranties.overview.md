@@ -2,6 +2,17 @@
 title: "Plazos de garantía"
 topic: warranties.overview
 version: 1
+keywords:
+    - garantía
+    - responsabilidad por defectos
+    - plazo de prescripción
+    - recepción de obra
+    - defectos de obra
+    - subcontratistas
+    - aval de garantía
+    - retención de garantía
+    - fin de garantía
+    - notificar defecto
 audience: []
 related:
     - guarantees.overview

@@ -2,6 +2,15 @@
 title: "Teams"
 topic: org.teams
 version: 1
+keywords:
+    - department
+    - group
+    - team lead
+    - create team
+    - team members
+    - team workload
+    - crew
+    - workgroup
 audience: []
 related:
     - org.members

@@ -2,6 +2,15 @@
 title: "Per Diem Rates"
 topic: catalog.per-diem-rates
 version: 1
+keywords:
+    - daily allowance
+    - meal allowance
+    - travel allowance
+    - foreign per diem
+    - overnight allowance
+    - subsistence rates
+    - travel expenses
+    - allowance rates
 audience: []
 related:
     - travel-expenses.manage

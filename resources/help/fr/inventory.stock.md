@@ -2,6 +2,19 @@
 title: "Stocks et scan"
 topic: inventory.stock
 version: 2
+keywords:
+    - état des stocks
+    - entrée de marchandises
+    - sortie de stock
+    - transfert de stock
+    - réservation
+    - point de commande
+    - stock minimum
+    - bloquer un lot
+    - gestion des lots
+    - FEFO
+    - scanner un code-barres
+    - valeur du stock
 audience: []
 modules:
     - module.lager

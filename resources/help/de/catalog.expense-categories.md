@@ -2,6 +2,18 @@
 title: "Spesenkategorien"
 topic: catalog.expense-categories
 version: 1
+keywords:
+    - Spesenarten
+    - Ausgabenkategorien
+    - Auslagen
+    - Reisekosten
+    - Übernachtung
+    - Verpflegung
+    - Fahrtkosten
+    - Steuersatz
+    - Belegpflicht
+    - abrechenbare Spesen
+    - Spesenabrechnung
 audience: []
 related:
     - travel-expenses.manage

@@ -2,6 +2,17 @@
 title: "Hoy y Kanban"
 topic: work.overview
 version: 1
+keywords:
+    - vista de hoy
+    - resumen del día
+    - lista de tareas
+    - mis tareas
+    - tablero Kanban
+    - tablero de tareas
+    - cambiar estado
+    - cola de trabajo
+    - agenda
+    - pendientes de hoy
 audience: []
 related:
     - diary-entries.create

@@ -2,6 +2,17 @@
 title: "Verpflegungspauschalen"
 topic: catalog.per-diem-rates
 version: 1
+keywords:
+    - Verpflegungsmehraufwand
+    - VMA
+    - Tagegeld
+    - Spesenpauschale
+    - Reisekostenpauschale
+    - Auslandspauschale
+    - Übernachtungspauschale
+    - Pauschbeträge
+    - Reisekosten
+    - Tagessatz
 audience: []
 related:
     - travel-expenses.manage

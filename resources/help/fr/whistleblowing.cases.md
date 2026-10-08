@@ -2,6 +2,17 @@
 title: "Cellule de signalement – traitement des cas"
 topic: whistleblowing.cases
 version: 1
+keywords:
+    - lanceur d'alerte
+    - alerte éthique
+    - dispositif d'alerte
+    - canal interne
+    - traiter un signalement
+    - accusé de réception
+    - dossier de conformité
+    - conflit d'intérêts
+    - accès d'urgence
+    - protection des lanceurs d'alerte
 audience: []
 modules:
     - module.compliance

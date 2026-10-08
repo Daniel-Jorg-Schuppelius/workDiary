@@ -2,6 +2,17 @@
 title: "Inicio de sesión"
 topic: auth.login
 version: 1
+keywords:
+    - login
+    - entrar
+    - iniciar sesión
+    - usuario
+    - contraseña
+    - recordarme
+    - mantener sesión
+    - cuenta bloqueada
+    - no puedo entrar
+    - credenciales
 related:
     - auth.password-reset
     - auth.two-factor

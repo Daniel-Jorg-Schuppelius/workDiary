@@ -2,6 +2,18 @@
 title: "Export GoBD (Datenträgerüberlassung)"
 topic: finance.gobd
 version: 1
+keywords:
+    - contrôle fiscal
+    - vérification de comptabilité
+    - administration fiscale
+    - export pour le vérificateur
+    - accès aux données
+    - GDPdU
+    - paquet d'audit
+    - documentation des procédures
+    - piste d'audit
+    - archivage probant
+    - audit fiscal
 audience:
     - admin
     - buchhaltung

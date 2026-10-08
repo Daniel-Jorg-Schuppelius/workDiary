@@ -2,6 +2,17 @@
 title: "Dispatch centre: board and map"
 topic: dispatch.board
 version: 1
+keywords:
+    - dispatch board
+    - planning board
+    - kanban
+    - map view
+    - job map
+    - technician overview
+    - SLA risk
+    - dispatcher
+    - field service
+    - control room
 audience: []
 modules:
     - module.planung

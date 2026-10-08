@@ -2,6 +2,15 @@
 title: "Fatturazione"
 topic: customer-portal.billing
 version: 1
+keywords:
+    - saldo del conto
+    - estratto conto
+    - riepilogo mensile
+    - importo dovuto
+    - pagamenti
+    - attestato di presenza
+    - riporto
+    - scaricare il riepilogo
 audience: []
 related:
     - customer-portal.overview

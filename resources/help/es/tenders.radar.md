@@ -2,6 +2,17 @@
 title: "Radar de anuncios de licitación"
 topic: tenders.radar
 version: 1
+keywords:
+    - buscar licitaciones
+    - licitaciones públicas
+    - contratación pública
+    - alertas de licitaciones
+    - perfil de búsqueda
+    - código CPV
+    - región NUTS
+    - convocatorias públicas
+    - seguimiento de licitaciones
+    - concursos públicos
 audience: []
 modules:
     - module.applications

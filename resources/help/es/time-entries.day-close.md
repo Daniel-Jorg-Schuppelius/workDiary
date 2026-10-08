@@ -2,6 +2,17 @@
 title: "Cierre del día"
 topic: time-entries.day-close
 version: 1
+keywords:
+    - cerrar el día
+    - fin de jornada
+    - añadir pausa
+    - balance diario
+    - saldo del día
+    - huecos de tiempo
+    - pausa obligatoria
+    - fichaje abierto
+    - solicitar corrección
+    - completar horas
 audience: []
 related:
     - time-entries.start

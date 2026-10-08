@@ -2,6 +2,16 @@
 title: "Drilldown dall'indicatore all'incarico"
 topic: reports.drilldown
 version: 1
+keywords:
+    - dettaglio KPI
+    - approfondimento
+    - dati sottostanti
+    - elenco dettagliato
+    - scomporre un indicatore
+    - esportare il report
+    - analisi di dettaglio
+    - risalire ai dati
+    - drill-down
 audience: []
 related:
     - reports.customer-analysis

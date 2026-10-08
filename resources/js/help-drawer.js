@@ -367,6 +367,13 @@ async function runFallbackSearch(form) {
             link.textContent = item.title || item.topic;
             link.addEventListener("click", () => loadTopic(item.topic));
             li.appendChild(link);
+            // Suchbegriff, über den das Thema gefunden wurde (MVP-1079).
+            if (item.keyword) {
+                const hint = document.createElement("span");
+                hint.className = "block text-xs text-muted";
+                hint.textContent = item.keyword;
+                li.appendChild(hint);
+            }
             resultsEl.appendChild(li);
         });
     } catch (error) {

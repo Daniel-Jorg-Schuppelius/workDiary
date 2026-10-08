@@ -74,7 +74,7 @@ final class SearchVocabulary {
      */
     public function similar(int $organizationId, string $token, int $max): array {
         $length = strlen($token);
-        $tolerance = $length <= 5 ? 1 : 2;
+        $tolerance = self::tolerance($token);
 
         $candidates = SearchTerm::query()
             ->withoutGlobalScopes()
@@ -85,9 +85,30 @@ final class SearchVocabulary {
             ->limit(self::CANDIDATE_LIMIT)
             ->pluck('term');
 
+        return self::closest($token, $candidates, $max);
+    }
+
+    /**
+     * Ähnlich geschriebene Wörter einer beliebigen Kandidatenliste nach
+     * denselben Regeln wie {@see similar()} — auch für Wortlisten außerhalb
+     * des Index (Hilfesuche, MVP-1079).
+     *
+     * @param  iterable<mixed>  $candidates
+     * @return list<string>
+     */
+    public static function closest(string $token, iterable $candidates, int $max): array {
+        if ($token === '') {
+            return [];
+        }
+        $length = strlen($token);
+        $tolerance = self::tolerance($token);
+
         $scored = [];
         foreach ($candidates as $candidate) {
             $candidate = (string) $candidate;
+            if ($candidate === $token || $candidate === '' || $candidate[0] !== $token[0] || abs(strlen($candidate) - $length) > $tolerance) {
+                continue;
+            }
             $distance = self::distance($token, $candidate);
             if ($distance <= $tolerance) {
                 $scored[] = [$candidate, $distance, strspn($token ^ substr($candidate, 0, $length), "\0")];
@@ -115,6 +136,10 @@ final class SearchVocabulary {
             });
 
         return SearchTerm::query()->withoutGlobalScopes()->where('organization_id', $organizationId)->count();
+    }
+
+    private static function tolerance(string $token): int {
+        return strlen($token) <= 5 ? 1 : 2;
     }
 
     /** Levenshtein mit Vertauschung benachbarter Zeichen als einem Fehler. */

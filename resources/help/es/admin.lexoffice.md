@@ -2,6 +2,14 @@
 title: "Conflictos de Lexoffice"
 topic: admin.lexoffice
 version: 2
+keywords:
+    - Lexware Office
+    - conflicto de sincronización
+    - datos divergentes
+    - resolver conflicto
+    - conservar valores locales
+    - aceptar valores externos
+    - conciliación de datos
 audience:
     - admin
     - buchhaltung

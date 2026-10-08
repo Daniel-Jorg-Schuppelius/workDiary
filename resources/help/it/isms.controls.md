@@ -2,6 +2,16 @@
 title: "Gestire le misure"
 topic: isms.controls
 version: 1
+keywords:
+    - misure di sicurezza
+    - controlli di sicurezza
+    - catalogo delle misure
+    - misure tecniche e organizzative
+    - stato di attuazione
+    - evidenze
+    - Allegato A
+    - controlli ISMS
+    - collegare misure
 audience: []
 modules:
     - module.isms

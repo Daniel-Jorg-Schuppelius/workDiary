@@ -2,6 +2,18 @@
 title: "Regole di maggiorazione"
 topic: admin.surcharge-rules
 version: 1
+keywords:
+    - maggiorazione notturna
+    - indennità notturna
+    - maggiorazione domenicale
+    - maggiorazione festiva
+    - maggiorazione weekend
+    - indennità di turno
+    - voce retributiva
+    - esportazione paghe
+    - DATEV
+    - Lexware
+    - lavoro notturno
 audience:
     - admin
     - geschaeftsfuehrung

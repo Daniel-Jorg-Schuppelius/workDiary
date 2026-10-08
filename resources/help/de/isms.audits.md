@@ -2,6 +2,19 @@
 title: "Audits, Feststellungen & Korrekturmaßnahmen"
 topic: isms.audits
 version: 1
+keywords:
+    - internes Audit
+    - Auditplanung
+    - Auditbericht
+    - Befund
+    - Nichtkonformität
+    - Abweichung
+    - CAPA
+    - Wirksamkeitsprüfung
+    - Managementbewertung
+    - Management Review
+    - Lieferantenaudit
+    - Ursachenanalyse
 audience: []
 modules:
     - module.isms

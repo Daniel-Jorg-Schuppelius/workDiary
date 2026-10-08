@@ -2,6 +2,17 @@
 title: "Vereinbarungen"
 topic: customer-portal.agreements
 version: 1
+keywords:
+    - AVV
+    - NDA
+    - Auftragsverarbeitung
+    - Verschwiegenheitsvereinbarung
+    - Vertrag unterschreiben
+    - Unterschriftsstatus
+    - unterschriebene Verträge
+    - Vertrag herunterladen
+    - Signaturlink
+    - Abschlussnachweis
 audience: []
 modules:
     - module.contracts

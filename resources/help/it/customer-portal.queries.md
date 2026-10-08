@@ -2,6 +2,13 @@
 title: "Portale clienti – Domande"
 topic: customer-portal.queries
 version: 1
+keywords:
+    - rispondere a una domanda
+    - domande aperte
+    - richiesta di chiarimento
+    - chiarimenti
+    - inviare una risposta
+    - messaggio del fornitore
 audience: []
 related:
     - customer-portal.overview

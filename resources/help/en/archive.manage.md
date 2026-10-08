@@ -2,6 +2,16 @@
 title: "Using the archive"
 topic: archive.manage
 version: 1
+keywords:
+    - archiving
+    - archived items
+    - restore
+    - unarchive
+    - completed records
+    - history
+    - old entries
+    - find closed cases
+    - past records
 audience: []
 related:
     - diary-entries.edit

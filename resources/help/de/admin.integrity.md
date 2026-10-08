@@ -2,6 +2,18 @@
 title: "Quelltext-Integrität"
 topic: admin.integrity
 version: 1
+keywords:
+    - Manipulationserkennung
+    - Manipulationsschutz
+    - Dateiintegrität
+    - Integritätsprüfung
+    - Prüfsumme
+    - SHA-256
+    - Hash-Prüfung
+    - Baseline einfrieren
+    - manipulierte Dateien
+    - Drift-Erkennung
+    - Sicherheitsüberwachung
 audience:
     - admin
 related:

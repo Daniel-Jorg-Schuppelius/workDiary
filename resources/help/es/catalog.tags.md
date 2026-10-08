@@ -2,6 +2,13 @@
 title: "Etiquetas"
 topic: catalog.tags
 version: 1
+keywords:
+    - tags
+    - palabras clave
+    - rótulos
+    - marcadores
+    - etiquetado
+    - labels
 audience: []
 related:
     - catalog.activity-categories

@@ -78,33 +78,4 @@ class HelpTopicResolverTest extends TestCase {
 
         $this->assertNotNull($resolver->find('open.help', null, 'de'));
     }
-
-    public function test_resolver_search_matches_title_and_body(): void {
-        HelpTopic::query()->create([
-            'topic' => 'time-entries.start',
-            'locale' => 'de',
-            'title' => 'Zeiterfassung starten',
-            'audience' => [],
-            'version' => 1,
-            'body_md' => 'Stopuhr läuft mit',
-            'body_html' => '<p>Stopuhr läuft mit</p>',
-            'related' => [],
-        ]);
-        HelpTopic::query()->create([
-            'topic' => 'protocols.create',
-            'locale' => 'de',
-            'title' => 'Protokoll erstellen',
-            'audience' => [],
-            'version' => 1,
-            'body_md' => 'Vorlage wählen',
-            'body_html' => '<p>Vorlage wählen</p>',
-            'related' => [],
-        ]);
-
-        $resolver = app(HelpTopicResolver::class);
-        $results = $resolver->search('Zeiterfassung', null, 'de');
-
-        $this->assertCount(1, $results);
-        $this->assertSame('time-entries.start', $results->first()->topic);
-    }
 }

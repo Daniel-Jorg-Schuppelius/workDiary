@@ -2,6 +2,17 @@
 title: "Portale clienti – Ticket"
 topic: customer-portal.tickets
 version: 1
+keywords:
+    - richiesta di supporto
+    - segnalare un guasto
+    - segnalare un problema
+    - richiesta di servizio
+    - catalogo servizi
+    - errori noti
+    - aprire un ticket
+    - assistenza
+    - helpdesk
+    - stato del ticket
 audience: []
 related:
     - customer-portal.overview

@@ -2,6 +2,17 @@
 title: "Modificare una registrazione di tempo"
 topic: time-entries.edit
 version: 1
+keywords:
+    - correggere le ore
+    - cambiare registrazione
+    - ore sbagliate
+    - modificare inizio e fine
+    - modificare pausa
+    - cambiare progetto
+    - richiesta di correzione
+    - voce bloccata
+    - cronologia modifiche
+    - sistemare orario
 audience: []
 related:
     - time-entries.start

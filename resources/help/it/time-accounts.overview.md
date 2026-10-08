@@ -2,6 +2,18 @@
 title: "Conti del tempo"
 topic: time-accounts.overview
 version: 1
+keywords:
+    - conto aggiuntivo
+    - conto tempo libero
+    - riposo compensativo
+    - contatore turni notturni
+    - ore di indennità
+    - saldo del conto
+    - semaforo
+    - giornale delle registrazioni
+    - storno
+    - esportare i conti
+    - lavoro extra
 audience: []
 related:
     - time-accounts.flex

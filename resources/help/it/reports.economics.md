@@ -2,6 +2,18 @@
 title: "Redditività"
 topic: reports.economics
 version: 1
+keywords:
+    - consuntivo
+    - margine di contribuzione
+    - margine
+    - redditività dei progetti
+    - confronto preventivo consuntivo
+    - confronto con il budget
+    - costo orario interno
+    - progetti in perdita
+    - controllo di gestione
+    - top e flop
+    - profittabilità
 audience: []
 modules:
     - module.auswertungen_team

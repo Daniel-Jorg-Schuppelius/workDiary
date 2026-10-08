@@ -2,10 +2,20 @@
 title: "Personnaliser le menu & Toutes les fonctions"
 topic: navigation.customize
 version: 1
+keywords:
+    - masquer des menus
+    - personnaliser la barre latérale
+    - réglages de navigation
+    - afficher un menu masqué
+    - élément de menu manquant
+    - vue d'ensemble des fonctions
+    - alléger le menu
+    - menu latéral
 audience: []
 related:
     - account.profile
     - scope.overview
+    - navigation.interface
 ---
 
 Dans **Personnaliser le menu**, vous masquez les sections, sous-groupes et

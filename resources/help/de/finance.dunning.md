@@ -2,6 +2,19 @@
 title: "Mahnwesen"
 topic: finance.dunning
 version: 1
+keywords:
+    - Mahnung schreiben
+    - Zahlungserinnerung
+    - Mahnlauf
+    - Mahnstufe
+    - Mahngebühr
+    - Verzugszinsen
+    - überfällige Rechnungen
+    - offene Posten
+    - säumige Kunden
+    - Zahlungsverzug
+    - Forderungsmanagement
+    - Karenztage
 audience:
     - admin
     - buchhaltung

@@ -2,6 +2,19 @@
 title: "SSO & directory services"
 topic: admin.sso
 version: 1
+keywords:
+    - single sign-on
+    - SAML
+    - OpenID Connect
+    - OIDC
+    - SCIM provisioning
+    - Entra ID
+    - Azure AD
+    - Keycloak
+    - Okta
+    - identity provider
+    - user provisioning
+    - break-glass account
 audience:
     - admin
 modules:

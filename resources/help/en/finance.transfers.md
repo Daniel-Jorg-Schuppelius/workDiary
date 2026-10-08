@@ -2,6 +2,18 @@
 title: "Invoicing transfer"
 topic: finance.transfers
 version: 1
+keywords:
+    - Lexoffice transfer
+    - send times to Lexoffice
+    - DATEV handover
+    - create invoice draft
+    - transfer services
+    - bill materials
+    - bill hours
+    - billing handover
+    - invoicing export
+    - leading invoicing system
+    - transfer line items
 audience: []
 modules:
     - module.finance

@@ -2,6 +2,17 @@
 title: "Groupes de l'association et propositions de changement"
 topic: club.groups
 version: 1
+keywords:
+    - groupe d'entraînement
+    - groupe jeunes
+    - groupe enfants
+    - section
+    - responsable de groupe
+    - entraîneur
+    - limite d'âge
+    - âge maximum
+    - changement de groupe
+    - demande d'admission
 audience: []
 modules:
     - module.club

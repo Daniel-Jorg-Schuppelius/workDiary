@@ -2,6 +2,17 @@
 title: "Circolari ai clienti"
 topic: circulars.overview
 version: 1
+keywords:
+    - mailing
+    - invio massivo
+    - email di massa
+    - newsletter
+    - comunicazione ai clienti
+    - avviso clienti
+    - stampa unione
+    - informare i clienti
+    - opt-out
+    - comunicazione obbligatoria
 audience: []
 related:
     - contacts.manage

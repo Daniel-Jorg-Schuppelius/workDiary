@@ -2,6 +2,18 @@
 title: "Rollpläne"
 topic: admin.shift-rotations
 version: 1
+keywords:
+    - Schichtrhythmus
+    - Wechselschicht
+    - Schichtplan
+    - Dienstplan
+    - Früh- und Spätschicht
+    - Rotationsplan
+    - Turnus
+    - rollierender Dienstplan
+    - Schichtmuster
+    - wiederkehrende Schichten
+    - Dienste vorplanen
 audience: [admin]
 related:
     - planning.shifts

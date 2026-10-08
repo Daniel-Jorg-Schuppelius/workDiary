@@ -2,6 +2,16 @@
 title: "Analyse clients"
 topic: reports.customer-analysis
 version: 1
+keywords:
+    - statistiques clients
+    - rapport client
+    - interventions par client
+    - temps par client
+    - taux de reprise
+    - temps non facturable
+    - risque de marge
+    - KPI clients
+    - analyse de la clientèle
 audience: []
 modules:
     - module.auswertungen_team

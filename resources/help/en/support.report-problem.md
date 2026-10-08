@@ -2,6 +2,18 @@
 title: "Report a problem"
 topic: support.report-problem
 version: 1
+keywords:
+    - report a bug
+    - bug report
+    - contact support
+    - report an error
+    - support request
+    - technical issue
+    - error page
+    - request ID
+    - attach screenshot
+    - not working
+    - my error reports
 audience: ['*']
 related:
     - admin.diagnostics

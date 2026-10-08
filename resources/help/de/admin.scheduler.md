@@ -2,6 +2,19 @@
 title: "Geplante Jobs"
 topic: admin.scheduler
 version: 1
+keywords:
+    - Cronjobs
+    - Cron
+    - Scheduler
+    - Hintergrundjobs
+    - Zeitplan
+    - wiederkehrende Aufgaben
+    - Job pausieren
+    - Testlauf
+    - Watchdog
+    - Betriebsfenster
+    - Job umplanen
+    - Laufprotokoll
 audience:
     - admin
 related:

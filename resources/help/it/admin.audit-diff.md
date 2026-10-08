@@ -2,6 +2,16 @@
 title: "Cronologia modifiche e confronto versioni"
 topic: admin.audit-diff
 version: 1
+keywords:
+    - audit trail
+    - registro modifiche
+    - log di audit
+    - chi ha modificato
+    - diff
+    - prima e dopo
+    - cronologia revisioni
+    - tracciabilità
+    - storico modifiche
 audience: [admin]
 related:
     - audit.log

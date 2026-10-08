@@ -36,6 +36,9 @@ class HelpTopicLoaderTest extends TestCase {
 ---
 title: "Beispiel-Hilfe"
 version: 2
+keywords:
+    - Darkmode
+    - l'équipe
 audience:
     - admin
     - user
@@ -56,6 +59,7 @@ MD);
         $this->assertSame('de', $loaded['locale']);
         $this->assertSame('Beispiel-Hilfe', $loaded['title']);
         $this->assertSame(2, $loaded['version']);
+        $this->assertSame(['Darkmode', "l'équipe"], $loaded['keywords']);
         $this->assertSame(['admin', 'user'], $loaded['audience']);
         $this->assertSame(['sample.edit'], $loaded['related']);
         $this->assertStringContainsString('<strong>Markdown</strong>', $loaded['body_html']);

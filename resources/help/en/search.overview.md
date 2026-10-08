@@ -2,6 +2,19 @@
 title: "Search and activity research"
 topic: search.overview
 version: 3
+keywords:
+    - full-text search
+    - global search
+    - find entry
+    - what was done for a customer
+    - find past work
+    - search operators
+    - phrase search
+    - exclude term
+    - typo tolerance
+    - search synonyms
+    - filter by tags
+    - fuzzy search
 audience: []
 related: []
 ---

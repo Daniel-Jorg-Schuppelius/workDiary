@@ -2,6 +2,16 @@
 title: "Dimensions de temps libres"
 topic: admin.time-dimensions
 version: 1
+keywords:
+    - répartition du temps
+    - ventiler le temps
+    - objet de coût
+    - axes analytiques
+    - dimension analytique
+    - imputation
+    - commande ERP
+    - numéro de parc
+    - dimensions personnalisées
 audience: []
 related:
     - reports.overview

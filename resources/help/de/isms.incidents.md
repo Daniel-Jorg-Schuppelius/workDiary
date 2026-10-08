@@ -2,6 +2,19 @@
 title: "Sicherheitsvorfälle"
 topic: isms.incidents
 version: 1
+keywords:
+    - Sicherheitsvorfall melden
+    - IT-Sicherheitsvorfall
+    - Incident Management
+    - Phishing
+    - Schadsoftware
+    - Malware
+    - Cyberangriff
+    - Hackerangriff
+    - Datenpanne
+    - Vorfallregister
+    - Ursachenanalyse
+    - Dienstausfall
 audience: []
 modules:
     - module.isms

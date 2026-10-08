@@ -2,6 +2,17 @@
 title: "Por facturar y por hacer seguimiento (cadena de documentos)"
 topic: billing.chain
 version: 1
+keywords:
+    - horas sin facturar
+    - presupuestos aceptados sin factura
+    - seguimiento de presupuestos
+    - facturas vencidas
+    - horas facturables
+    - certificaciones de obra
+    - mediciones por facturar
+    - cierre mensual
+    - pendiente de facturar
+    - trabajos en curso
 audience: []
 related:
     - billing.feed

@@ -2,6 +2,14 @@
 title: "Scambio turni con approvazione"
 topic: planning.exchange
 version: 1
+keywords:
+    - scambiare turno
+    - cambio turno
+    - cedere un turno
+    - borsa turni
+    - sostituzione
+    - prendere un turno
+    - richiesta di scambio
 audience: []
 modules:
     - module.planung

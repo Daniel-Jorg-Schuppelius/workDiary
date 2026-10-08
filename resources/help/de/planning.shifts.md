@@ -2,6 +2,19 @@
 title: "Dienst- und Schichtplanung"
 topic: planning.shifts
 version: 2
+keywords:
+    - Dienstplan
+    - Schichtplan
+    - Dienstplanung
+    - Personaleinsatzplanung
+    - PEP
+    - Schicht besetzen
+    - Schichttypen
+    - Frühschicht
+    - Spätschicht
+    - Nachtschicht
+    - Mindestbesetzung
+    - Dienstplan veröffentlichen
 audience: []
 related:
     - attendance.manage

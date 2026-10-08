@@ -2,6 +2,17 @@
 title: "Certifications et conformité aux normes"
 topic: isms.conformity
 version: 1
+keywords:
+    - ISO 27001
+    - certificat ISO
+    - audit de certification
+    - audit de surveillance
+    - recertification
+    - analyse des écarts
+    - organisme certificateur
+    - certificat expiré
+    - compliance
+    - conformité réglementaire
 audience: []
 modules:
     - module.isms

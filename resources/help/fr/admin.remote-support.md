@@ -2,6 +2,17 @@
 title: "Télémaintenance"
 topic: admin.remote-support
 version: 1
+keywords:
+    - AnyDesk
+    - TeamViewer
+    - accès à distance
+    - session à distance
+    - assistance à distance
+    - prise en main à distance
+    - identifiant du poste
+    - rapport de session
+    - bureau à distance
+    - support distant
 audience:
     - admin
 related:

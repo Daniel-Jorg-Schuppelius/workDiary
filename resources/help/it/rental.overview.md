@@ -2,6 +2,18 @@
 title: "Noleggio attrezzature"
 topic: rental.overview
 version: 2
+keywords:
+    - noleggio macchine
+    - noleggio utensili
+    - parco noleggio
+    - contratto di noleggio
+    - cauzione
+    - prenotare attrezzatura
+    - restituzione
+    - verbale di consegna
+    - calendario disponibilità
+    - listino noleggio
+    - telematica
 audience: []
 modules:
     - module.rental

@@ -2,6 +2,18 @@
 title: "Video e sottotitoli"
 topic: learning.subtitles
 version: 1
+keywords:
+    - caricare sottotitoli
+    - WebVTT
+    - file VTT
+    - sottotitoli automatici
+    - trascrizione
+    - qualità video
+    - cambiare risoluzione
+    - video formativo
+    - caricare video
+    - accessibilità video
+    - didascalie
 audience: []
 related:
     - learning.overview

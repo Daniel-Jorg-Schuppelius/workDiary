@@ -2,6 +2,18 @@
 title: "Cartes d'idées"
 topic: ideas.overview
 version: 1
+keywords:
+    - carte mentale
+    - carte heuristique
+    - mind map
+    - brainstorming
+    - remue-méninges
+    - recueillir des idées
+    - importer une carte mentale
+    - FreeMind
+    - OPML
+    - transformer en tâche
+    - partager une carte
 audience: []
 modules:
     - module.ideas

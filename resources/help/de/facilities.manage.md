@@ -2,6 +2,19 @@
 title: "Standorte & Räume"
 topic: facilities.manage
 version: 1
+keywords:
+    - Liegenschaften
+    - Gebäude
+    - Geschoss
+    - Etage
+    - Stockwerk
+    - Raumbuch
+    - Raumverwaltung
+    - Gebäudestruktur
+    - Facility Management
+    - Hygienestufe
+    - Sonderreinigung
+    - Zugangsbeschränkung
 audience: []
 modules:
     - module.liegenschaften

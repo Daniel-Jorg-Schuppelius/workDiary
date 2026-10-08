@@ -2,6 +2,19 @@
 title: "Gestión de licencias"
 topic: admin.license
 version: 2
+keywords:
+    - clave de licencia
+    - plan
+    - suscripción
+    - cambiar de plan
+    - actualizar plan
+    - módulos adicionales
+    - límite de usuarios
+    - periodo de prueba
+    - licencia caducada
+    - cuenta bloqueada
+    - feature flags
+    - datos de facturación
 audience:
     - admin
     - geschaeftsfuehrung

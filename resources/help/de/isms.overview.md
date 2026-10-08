@@ -2,6 +2,19 @@
 title: "ISMS im Überblick"
 topic: isms.overview
 version: 2
+keywords:
+    - Informationssicherheit
+    - Informationssicherheitsmanagement
+    - ISO 27001
+    - Geltungsbereich
+    - Scope
+    - IT-Sicherheit
+    - Sicherheitsmanagement
+    - Risikomanagement
+    - Zertifizierung vorbereiten
+    - Annex A
+    - Auditbereitschaft
+    - Compliance
 audience: []
 modules:
     - module.isms

@@ -2,6 +2,17 @@
 title: "Métricas"
 topic: admin.metrics
 version: 1
+keywords:
+    - indicadores
+    - estadísticas
+    - monitorización
+    - uso del sistema
+    - espacio de almacenamiento
+    - usuarios activos
+    - trabajos fallidos
+    - cola
+    - estadísticas de uso
+    - rendimiento
 audience:
     - admin
 related:

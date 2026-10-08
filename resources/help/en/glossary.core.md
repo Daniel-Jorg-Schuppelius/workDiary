@@ -2,6 +2,18 @@
 title: "Glossary: core terms"
 topic: glossary.core
 version: 1
+keywords:
+    - terms
+    - terminology
+    - definitions
+    - dictionary
+    - abbreviations
+    - what does it mean
+    - jargon
+    - SLA
+    - SoA
+    - time account
+    - tenant
 audience: []
 related:
     - isms.overview

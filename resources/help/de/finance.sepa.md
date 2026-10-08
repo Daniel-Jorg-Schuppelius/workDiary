@@ -2,6 +2,19 @@
 title: "SEPA-Zahlungsausgang"
 topic: finance.sepa
 version: 1
+keywords:
+    - Sammelüberweisung
+    - Zahllauf
+    - Überweisungsdatei
+    - SEPA-XML
+    - Lieferanten bezahlen
+    - Rechnungen bezahlen
+    - Skonto ziehen
+    - Lastschrift
+    - Lastschriftmandat
+    - Lastschrifteinzug
+    - Gläubiger-ID
+    - Mandatsreferenz
 audience: []
 modules:
     - module.finance

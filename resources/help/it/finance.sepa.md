@@ -2,6 +2,19 @@
 title: "Pagamenti in uscita SEPA"
 topic: finance.sepa
 version: 1
+keywords:
+    - bonifico cumulativo
+    - distinta di pagamento
+    - file bonifici
+    - SEPA XML
+    - pagare fornitori
+    - pagare fatture
+    - sconto cassa
+    - addebito diretto
+    - mandato SDD
+    - RID
+    - identificativo creditore
+    - riferimento mandato
 audience: []
 modules:
     - module.finance

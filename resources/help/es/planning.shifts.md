@@ -2,6 +2,16 @@
 title: "Planificación de servicios y turnos"
 topic: planning.shifts
 version: 2
+keywords:
+    - cuadrante
+    - horario de turnos
+    - planificación de personal
+    - tipos de turno
+    - turno de mañana
+    - turno de noche
+    - dotación mínima
+    - cobertura de turnos
+    - publicar el cuadrante
 audience: []
 related:
     - attendance.manage

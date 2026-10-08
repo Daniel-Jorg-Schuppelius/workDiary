@@ -2,6 +2,16 @@
 title: "I miei primi passi"
 topic: onboarding.personal
 version: 1
+keywords:
+    - introduzione
+    - guida introduttiva
+    - avvio rapido
+    - onboarding
+    - checklist personale
+    - benvenuto
+    - nuovo utente
+    - primi giorni
+    - nascondere la guida
 audience: []
 related:
     - dashboard.overview

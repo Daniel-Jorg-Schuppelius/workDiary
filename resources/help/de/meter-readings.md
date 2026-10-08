@@ -2,6 +2,17 @@
 title: "Zählerablesungen"
 topic: meter-readings
 version: 1
+keywords:
+    - Zählerstand
+    - Zählerstand erfassen
+    - Zähler ablesen
+    - Stromzähler
+    - Wasserzähler
+    - Gaszähler
+    - Verbrauch
+    - Verbrauchserfassung
+    - Verbrauchsverlauf
+    - Ablesewert
 audience: []
 related:
     - key-handovers

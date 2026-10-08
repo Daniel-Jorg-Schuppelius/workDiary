@@ -2,6 +2,15 @@
 title: "Modèles d'e-mails de facturation"
 topic: admin.invoice-mail-templates
 version: 1
+keywords:
+    - modèle de mail
+    - texte e-mail facture
+    - envoi de facture par e-mail
+    - courriel de facturation
+    - variables
+    - champs de fusion
+    - objet du mail
+    - modèle par défaut
 audience:
     - admin
     - buchhaltung

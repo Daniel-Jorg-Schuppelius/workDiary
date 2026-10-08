@@ -2,6 +2,18 @@
 title: "Zeitkorrekturen"
 topic: corrections.requests
 version: 1
+keywords:
+    - Korrekturantrag
+    - Stempelung nachtragen
+    - vergessene Stempelung
+    - Ausstempeln vergessen
+    - Zeit nachtragen
+    - Buchung korrigieren
+    - Arbeitszeit korrigieren
+    - Zeitkorrektur beantragen
+    - Nachbuchung
+    - falsch gestempelt
+    - Selbstkorrektur
 audience: []
 related:
     - attendance.manage

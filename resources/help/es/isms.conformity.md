@@ -2,6 +2,17 @@
 title: "Certificaciones y conformidad normativa"
 topic: isms.conformity
 version: 1
+keywords:
+    - ISO 27001
+    - certificado ISO
+    - auditoría de certificación
+    - auditoría de seguimiento
+    - recertificación
+    - análisis de brechas
+    - entidad certificadora
+    - certificado caducado
+    - compliance
+    - cumplimiento normativo
 audience: []
 modules:
     - module.isms

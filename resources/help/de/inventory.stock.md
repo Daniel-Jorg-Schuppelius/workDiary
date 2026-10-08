@@ -2,6 +2,20 @@
 title: "Lagerbestände & Scannen"
 topic: inventory.stock
 version: 2
+keywords:
+    - Warenbestand
+    - Bestand buchen
+    - Wareneingang
+    - Entnahme buchen
+    - Umlagerung
+    - Reservierung
+    - Meldebestand
+    - Mindestbestand
+    - Charge sperren
+    - Chargenverwaltung
+    - FEFO
+    - Barcode scannen
+    - Bestandswert
 audience: []
 modules:
     - module.lager

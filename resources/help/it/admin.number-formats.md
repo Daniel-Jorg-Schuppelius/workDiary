@@ -2,6 +2,16 @@
 title: "Formati di numerazione"
 topic: admin.number-formats
 version: 1
+keywords:
+    - serie numerica
+    - numero fattura
+    - numero cliente
+    - codice articolo
+    - numerazione progressiva
+    - prefisso
+    - numero iniziale
+    - contatore annuale
+    - azzerare contatore
 audience:
     - admin
     - teamleitung

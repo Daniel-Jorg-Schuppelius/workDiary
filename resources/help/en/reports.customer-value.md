@@ -2,6 +2,19 @@
 title: "Customer value"
 topic: reports.customer-value
 version: 2
+keywords:
+    - ABC analysis
+    - key accounts
+    - Pareto
+    - 80-20 rule
+    - RFM analysis
+    - customer segmentation
+    - top customers
+    - revenue per customer
+    - concentration risk
+    - customer dependency
+    - HHI
+    - at-risk customers
 audience: []
 related:
     - reports.customer-analysis

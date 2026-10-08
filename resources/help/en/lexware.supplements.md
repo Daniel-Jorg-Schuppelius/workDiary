@@ -2,6 +2,18 @@
 title: "Lexware supplements: plan, feature matrix and handover"
 topic: lexware.supplements
 version: 2
+keywords:
+    - Lexoffice
+    - Lexware Office
+    - Lexoffice plan
+    - plan comparison
+    - feature comparison
+    - recurring invoices
+    - subscription invoices
+    - hand over documents
+    - export invoices
+    - document export
+    - confirm handover
 audience: []
 modules:
     - module.vertrieb

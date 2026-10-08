@@ -2,6 +2,18 @@
 title: "Jobs planifiés"
 topic: admin.scheduler
 version: 1
+keywords:
+    - tâches cron
+    - cron
+    - planificateur
+    - tâches en arrière-plan
+    - tâches récurrentes
+    - suspendre un job
+    - exécution de test
+    - watchdog
+    - fenêtre de fonctionnement
+    - replanifier
+    - historique des exécutions
 audience:
     - admin
 related:

@@ -2,6 +2,16 @@
 title: "Vacation account"
 topic: absences.entitlements
 version: 1
+keywords:
+    - leave entitlement
+    - holiday allowance
+    - remaining leave
+    - annual leave
+    - leave balance
+    - vacation days
+    - carry over leave
+    - leave expiry
+    - PTO balance
 audience:
     - admin
 related:

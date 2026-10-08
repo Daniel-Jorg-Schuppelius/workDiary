@@ -2,6 +2,19 @@
 title: "Scheduled jobs"
 topic: admin.scheduler
 version: 1
+keywords:
+    - cron jobs
+    - cron
+    - scheduler
+    - background jobs
+    - recurring tasks
+    - task schedule
+    - pause job
+    - test run
+    - watchdog
+    - operating window
+    - reschedule job
+    - run history
 audience:
     - admin
 related:

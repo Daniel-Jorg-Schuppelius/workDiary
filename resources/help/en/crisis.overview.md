@@ -2,6 +2,19 @@
 title: "Emergency & crisis management"
 topic: crisis.overview
 version: 1
+keywords:
+    - crisis team
+    - emergency management
+    - business continuity
+    - BCM
+    - alerting
+    - crisis alert
+    - situation report
+    - reporting deadline
+    - NIS2
+    - data breach notification
+    - disaster recovery
+    - crisis exercise
 audience: []
 modules:
     - module.crisis_management

@@ -2,6 +2,19 @@
 title: "Zeiterfassung starten"
 topic: time-entries.start
 version: 2
+keywords:
+    - Stoppuhr
+    - Timer starten
+    - Zeit stoppen
+    - Arbeitszeit erfassen
+    - Stunden buchen
+    - Zeit buchen
+    - Stempeluhr
+    - einstempeln
+    - Arbeitszeiterfassung
+    - Zeiterfassungspflicht
+    - Stundenerfassung
+    - neuer Zeiteintrag
 audience: []
 schema: process
 related:

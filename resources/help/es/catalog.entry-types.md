@@ -2,6 +2,17 @@
 title: "Tipos de entrada"
 topic: catalog.entry-types
 version: 1
+keywords:
+    - tipos de orden
+    - tipos de intervención
+    - tipos de servicio
+    - avería
+    - mantenimiento
+    - instalación
+    - tipos de diario
+    - duración predeterminada
+    - campos obligatorios
+    - valores predeterminados
 audience:
     - admin
 related:

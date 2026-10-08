@@ -2,6 +2,15 @@
 title: "Dietas de manutención"
 topic: catalog.per-diem-rates
 version: 1
+keywords:
+    - dieta diaria
+    - per diem
+    - gastos de viaje
+    - dietas en el extranjero
+    - gastos de alojamiento
+    - importes exentos
+    - manutención
+    - asignación diaria
 audience: []
 related:
     - travel-expenses.manage

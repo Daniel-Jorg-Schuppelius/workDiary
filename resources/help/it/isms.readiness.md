@@ -2,6 +2,16 @@
 title: "Maturità e readiness"
 topic: isms.readiness
 version: 1
+keywords:
+    - modello di maturità
+    - livello di maturità
+    - prontezza all'audit
+    - autovalutazione
+    - semaforo
+    - punteggio
+    - gap analysis
+    - preparazione all'audit
+    - lacune bloccanti
 audience: []
 modules:
     - module.isms

@@ -2,6 +2,15 @@
 title: "Availability and shift wishes"
 topic: planning.availability
 version: 1
+keywords:
+    - shift preferences
+    - preferred shifts
+    - unavailability
+    - not available
+    - availability windows
+    - shift requests
+    - avoid shift
+    - roster preferences
 audience: []
 modules:
     - module.planung

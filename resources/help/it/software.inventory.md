@@ -2,6 +2,17 @@
 title: "Gestione software"
 topic: software.inventory
 version: 1
+keywords:
+    - inventario software
+    - gestione licenze
+    - licenze software
+    - programmi installati
+    - applicazioni
+    - abbonamenti
+    - sistemi operativi
+    - licenza volume
+    - open source
+    - parco software
 audience: []
 related:
     - assets.fleet

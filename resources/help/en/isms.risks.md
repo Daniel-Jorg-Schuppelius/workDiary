@@ -2,6 +2,19 @@
 title: "Risk register"
 topic: isms.risks
 version: 1
+keywords:
+    - risk analysis
+    - risk assessment
+    - risk matrix
+    - add risk
+    - risk inventory
+    - risk treatment
+    - residual risk
+    - risk acceptance
+    - likelihood
+    - inherent risk
+    - risk heat map
+    - risk owner
 audience: []
 modules:
     - module.isms

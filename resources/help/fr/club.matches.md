@@ -2,6 +2,20 @@
 title: "Équipes, journées et compositions"
 topic: club.matches
 version: 1
+keywords:
+    - calendrier des matchs
+    - importer le calendrier
+    - effectif
+    - feuille de match
+    - sélection
+    - convocation
+    - résultat du match
+    - match à domicile
+    - match à l'extérieur
+    - saison
+    - numéro de maillot
+    - arbitre
+    - joueur invité
 audience: []
 modules:
     - module.club

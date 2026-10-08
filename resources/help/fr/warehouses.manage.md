@@ -2,6 +2,16 @@
 title: "Emplacements de stockage"
 topic: warehouses.manage
 version: 1
+keywords:
+    - créer un entrepôt
+    - entrepôt
+    - magasin
+    - dépôt
+    - emplacement par défaut
+    - gestion des stocks
+    - plusieurs entrepôts
+    - supprimer un emplacement
+    - lieu de stockage
 audience: []
 modules:
     - module.lager

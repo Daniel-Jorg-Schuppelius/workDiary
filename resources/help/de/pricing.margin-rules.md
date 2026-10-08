@@ -2,6 +2,19 @@
 title: "Preis- & Margenregeln"
 topic: pricing.margin-rules
 version: 1
+keywords:
+    - Kalkulation
+    - Preiskalkulation
+    - Aufschlag
+    - Handelsspanne
+    - Verkaufspreis berechnen
+    - VK-Preis
+    - EK-Preis
+    - Mindestmarge
+    - Zielmarge
+    - Preisrundung
+    - Lieferantenkatalog
+    - Preisfreigabe
 audience:
     - admin
     - geschaeftsfuehrung

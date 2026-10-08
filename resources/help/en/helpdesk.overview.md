@@ -2,6 +2,20 @@
 title: "Helpdesk & service desk"
 topic: helpdesk.overview
 version: 2
+keywords:
+    - ticket system
+    - create ticket
+    - incident
+    - support request
+    - service request
+    - support queue
+    - SLA
+    - response time
+    - internal note
+    - ticket routing
+    - customer satisfaction
+    - change approval
+    - ITSM
 audience: []
 related:
     - open-issues

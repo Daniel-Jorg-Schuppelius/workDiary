@@ -2,6 +2,18 @@
 title: "Eintragstypen"
 topic: catalog.entry-types
 version: 1
+keywords:
+    - Eintragsarten
+    - Auftragsarten
+    - Einsatzarten
+    - Servicearten
+    - Störung
+    - Wartung
+    - Installation
+    - Tagebuchtypen
+    - Standarddauer
+    - Pflichtfelder
+    - Vorgabewerte
 audience:
     - admin
 related:

@@ -2,6 +2,18 @@
 title: "Test equipment & calibration"
 topic: asset-compliance.overview
 version: 1
+keywords:
+    - test equipment management
+    - gauge management
+    - calibration certificate
+    - measuring instruments
+    - inspection due dates
+    - inspection records
+    - DGUV V3
+    - electrical safety test
+    - vehicle inspection
+    - equipment lockout
+    - ISO 17025
 audience: []
 modules:
     - module.asset_compliance

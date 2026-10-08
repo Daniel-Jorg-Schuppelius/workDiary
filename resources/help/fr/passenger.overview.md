@@ -2,6 +2,19 @@
 title: "Transport de personnes (taxi/VTC)"
 topic: passenger.overview
 version: 1
+keywords:
+    - société de taxi
+    - entreprise de VTC
+    - chauffeur
+    - dispatching
+    - réservation de course
+    - taximètre
+    - licence de taxi
+    - carte professionnelle
+    - tarif taxi
+    - prix forfaitaire
+    - décompte de service
+    - transport à la demande
 audience: []
 modules:
     - module.fuhrpark

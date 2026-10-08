@@ -2,6 +2,17 @@
 title: "KI-Assistent verbinden"
 topic: account.ai-assistant
 version: 1
+keywords:
+    - ChatGPT
+    - Claude
+    - MCP
+    - Model Context Protocol
+    - künstliche Intelligenz
+    - AI-Assistent
+    - Chatbot anbinden
+    - Sprachmodell
+    - KI-Zugriff erlauben
+    - KI-Zugang widerrufen
 audience: []
 related:
     - account.api-tokens

@@ -2,6 +2,18 @@
 title: "Plugins"
 topic: admin.plugins
 version: 1
+keywords:
+    - extensions
+    - modules complémentaires
+    - intégrations
+    - add-ons
+    - activer un plugin
+    - désactiver un plugin
+    - test de connexion
+    - contrôle de santé
+    - erreurs de plugin
+    - désactivation automatique
+    - journal des erreurs
 audience:
     - admin
 related:

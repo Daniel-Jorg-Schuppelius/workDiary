@@ -2,6 +2,17 @@
 title: "Approvvigionamento e ordini"
 topic: procurement.orders
 version: 1
+keywords:
+    - acquisti
+    - ordine d'acquisto
+    - ordine fornitore
+    - entrata merci
+    - consegna parziale
+    - avviso di spedizione
+    - proposte di riordino
+    - punto di riordino
+    - quantità minima d'ordine
+    - consegne attese
 audience: []
 modules:
     - module.lager

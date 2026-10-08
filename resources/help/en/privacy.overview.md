@@ -2,6 +2,20 @@
 title: "Data protection management at a glance"
 topic: privacy.overview
 version: 1
+keywords:
+    - GDPR
+    - ROPA
+    - record of processing activities
+    - DPA
+    - data processing agreement
+    - TOMs
+    - data subject requests
+    - DSAR
+    - data breach
+    - 72-hour notification
+    - deletion concept
+    - retention policy
+    - legal hold
 audience: []
 modules:
     - module.datenschutz

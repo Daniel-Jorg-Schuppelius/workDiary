@@ -2,6 +2,16 @@
 title: "Holidays"
 topic: catalog.holidays
 version: 1
+keywords:
+    - public holidays
+    - bank holidays
+    - holiday calendar
+    - days off
+    - non-working days
+    - company closure
+    - add holiday
+    - recurring holiday
+    - custom holiday
 audience: []
 related:
     - planning.shifts

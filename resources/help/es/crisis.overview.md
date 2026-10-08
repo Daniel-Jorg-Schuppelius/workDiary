@@ -2,6 +2,18 @@
 title: "Gestión de emergencias y crisis"
 topic: crisis.overview
 version: 1
+keywords:
+    - comité de crisis
+    - plan de emergencia
+    - continuidad de negocio
+    - BCM
+    - alerta de crisis
+    - informe de situación
+    - plazo de notificación
+    - NIS2
+    - brecha de datos
+    - recuperación
+    - simulacro de crisis
 audience: []
 modules:
     - module.crisis_management

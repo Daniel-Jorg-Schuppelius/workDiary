@@ -2,6 +2,18 @@
 title: "Formularvorlagen pflegen"
 topic: forms.templates
 version: 1
+keywords:
+    - Formular erstellen
+    - Formulardesigner
+    - Formulareditor
+    - Formularbaukasten
+    - Checkliste erstellen
+    - Formularfelder
+    - Feldtypen
+    - Auswahlfeld
+    - Pflichtfeld
+    - Formular aktivieren
+    - Formular archivieren
 audience:
     - admin
     - geschaeftsfuehrung

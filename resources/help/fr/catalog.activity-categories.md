@@ -2,6 +2,15 @@
 title: "Catégories d'activités"
 topic: catalog.activity-categories
 version: 1
+keywords:
+    - types de tâches
+    - natures de travail
+    - types de prestations
+    - facturable
+    - temps non facturable
+    - temps de travail
+    - catégories de temps
+    - classement des activités
 audience: []
 related:
     - catalog.event-categories

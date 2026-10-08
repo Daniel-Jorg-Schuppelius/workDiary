@@ -2,6 +2,22 @@
 title: "Facturas & documentos"
 topic: invoices.manage
 version: 7
+keywords:
+    - crear factura
+    - emitir factura
+    - factura de venta
+    - facturación
+    - anular factura
+    - factura rectificativa
+    - abono
+    - factura electrónica
+    - XRechnung
+    - Peppol
+    - enlace de pago
+    - pago en línea
+    - Stripe
+    - Mollie
+    - SumUp
 audience: []
 modules:
     - module.vertrieb

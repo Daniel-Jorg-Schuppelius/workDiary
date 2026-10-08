@@ -2,6 +2,19 @@
 title: "Pagos salientes SEPA"
 topic: finance.sepa
 version: 1
+keywords:
+    - transferencia masiva
+    - remesa de pagos
+    - fichero de transferencias
+    - SEPA XML
+    - pagar proveedores
+    - pagar facturas
+    - descuento por pronto pago
+    - domiciliación
+    - recibo domiciliado
+    - mandato de adeudo
+    - identificador de acreedor
+    - referencia del mandato
 audience: []
 modules:
     - module.finance

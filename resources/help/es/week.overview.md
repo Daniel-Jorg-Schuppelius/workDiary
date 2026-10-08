@@ -2,6 +2,17 @@
 title: "Encargos en la vista semanal"
 topic: week.overview
 version: 1
+keywords:
+    - calendario semanal
+    - vista de calendario
+    - planificación semanal
+    - calendario del equipo
+    - guardia
+    - servicio de urgencias
+    - programar cita
+    - planificación de trabajos
+    - resumen semanal
+    - tablero de planificación
 audience: []
 related:
     - diary-entries.create

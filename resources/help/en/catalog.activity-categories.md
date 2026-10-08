@@ -2,6 +2,16 @@
 title: "Activity Categories"
 topic: catalog.activity-categories
 version: 1
+keywords:
+    - activity types
+    - task types
+    - work types
+    - service types
+    - billable
+    - non-billable time
+    - counts as work
+    - time categories
+    - activity classes
 audience: []
 related:
     - catalog.event-categories

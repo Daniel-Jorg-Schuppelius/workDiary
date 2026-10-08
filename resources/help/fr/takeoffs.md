@@ -2,6 +2,17 @@
 title: "Métré"
 topic: takeoffs
 version: 1
+keywords:
+    - avant-métré
+    - feuille de métré
+    - calcul des quantités
+    - quantitatif
+    - calcul de surfaces
+    - GAEB X31
+    - formules REB
+    - relevé de quantités
+    - facturation au métré
+    - mesures sur chantier
 audience: []
 related:
     - diary-entries.edit

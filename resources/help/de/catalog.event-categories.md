@@ -2,6 +2,17 @@
 title: "Veranstaltungskategorien"
 topic: catalog.event-categories
 version: 1
+keywords:
+    - Veranstaltungsarten
+    - Terminkategorien
+    - Eventtypen
+    - Schulungsarten
+    - Zertifikatspflicht
+    - Nachweis
+    - Gültigkeitsdauer
+    - ablaufende Zertifikate
+    - Erinnerung
+    - Kategoriefarbe
 audience: []
 modules:
     - module.vertrieb

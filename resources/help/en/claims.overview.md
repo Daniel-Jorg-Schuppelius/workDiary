@@ -2,6 +2,18 @@
 title: "Claims & warranty"
 topic: claims.overview
 version: 1
+keywords:
+    - complaint
+    - customer complaint
+    - warranty claim
+    - goodwill gesture
+    - product return
+    - RMA
+    - returns handling
+    - defect notice
+    - supplier recourse
+    - return authorization
+    - complaint rate
 audience: []
 modules:
     - module.claims

@@ -2,6 +2,19 @@
 title: "Reloj de fichaje y presencia"
 topic: attendance.manage
 version: 1
+keywords:
+    - fichar
+    - fichaje
+    - control horario
+    - registro de jornada
+    - entrada y salida
+    - control de presencia
+    - código QR
+    - NFC
+    - modo quiosco
+    - terminal de fichaje
+    - tarjeta
+    - horario laboral
 audience: []
 related:
     - time-entries.start

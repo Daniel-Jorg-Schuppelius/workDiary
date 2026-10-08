@@ -2,6 +2,19 @@
 title: "DATEV-Online verbinden"
 topic: admin.datev-online
 version: 1
+keywords:
+    - DATEV Unternehmen online
+    - DUO
+    - DATEV-Schnittstelle
+    - Buchungsstapel übertragen
+    - Belegbilder
+    - Belege an DATEV
+    - EXTF
+    - Steuerberater
+    - Rechnungsausgang
+    - Rechnungseingang
+    - Beraternummer
+    - Mandantennummer
 audience:
     - admin
 related:

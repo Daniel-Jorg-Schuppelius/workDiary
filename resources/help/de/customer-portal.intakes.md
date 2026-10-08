@@ -2,6 +2,20 @@
 title: "Kundenportal – Anfragen und Aufträge"
 topic: customer-portal.intakes
 version: 1
+keywords:
+    - Anfrage stellen
+    - Druckauftrag
+    - Druckanfrage
+    - IT-Anfrage
+    - Datei hochladen
+    - Druckdaten hochladen
+    - Druckfreigabe
+    - Angebot annehmen
+    - Angebot ablehnen
+    - Dateien nachreichen
+    - große Dateien senden
+    - Upload-Link
+    - Vorgangsnummer
 audience: []
 related:
     - customer-portal.overview

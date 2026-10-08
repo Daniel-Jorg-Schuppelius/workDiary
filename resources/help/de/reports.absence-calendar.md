@@ -2,6 +2,18 @@
 title: "Urlaubsplan (Jahresübersicht)"
 topic: reports.absence-calendar
 version: 1
+keywords:
+    - Urlaubskalender
+    - Abwesenheitskalender
+    - Urlaubsplaner
+    - Jahresplaner
+    - Fehlzeitenkarte
+    - Fehlzeitenübersicht
+    - Urlaubskonto
+    - Resturlaub
+    - Teamabwesenheiten
+    - Urlaubsüberschneidung
+    - Urlaubsliste exportieren
 audience: []
 related:
     - absences.manage

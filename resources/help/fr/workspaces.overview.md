@@ -2,6 +2,17 @@
 title: "Espaces de travail"
 topic: workspaces.overview
 version: 1
+keywords:
+    - vue ciblée
+    - changer de vue
+    - simplifier la navigation
+    - masquer des menus
+    - vue par défaut
+    - nom d'affichage
+    - vue par rôle
+    - alléger la barre latérale
+    - mode focus
+    - toutes les fonctions
 audience:
     - admin
 related:

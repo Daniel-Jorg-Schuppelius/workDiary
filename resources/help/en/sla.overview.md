@@ -2,6 +2,17 @@
 title: "SLA, contracts & service levels"
 topic: sla.overview
 version: 1
+keywords:
+    - service level agreement
+    - response time
+    - resolution time
+    - service contract
+    - SLA breach
+    - deadline overrun
+    - escalation
+    - overdue ticket
+    - compliance rate
+    - SLA report
 audience: []
 related:
     - glossary.core

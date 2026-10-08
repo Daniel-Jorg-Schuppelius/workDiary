@@ -2,6 +2,17 @@
 title: "Customer queries"
 topic: customer.queries
 version: 1
+keywords:
+    - customer question
+    - answer query
+    - client query
+    - customer rejection
+    - rejected acceptance
+    - signature link
+    - defects at acceptance
+    - customer approval
+    - open queries
+    - close query
 audience: []
 related:
     - protocols.sign

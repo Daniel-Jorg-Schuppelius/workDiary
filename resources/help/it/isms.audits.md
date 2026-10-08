@@ -2,6 +2,18 @@
 title: "Audit, rilievi e azioni correttive"
 topic: isms.audits
 version: 1
+keywords:
+    - audit interno
+    - piano di audit
+    - rapporto di audit
+    - non conformità
+    - non conformità maggiore
+    - osservazione
+    - CAPA
+    - verifica di efficacia
+    - riesame della direzione
+    - audit fornitori
+    - analisi delle cause
 audience: []
 modules:
     - module.isms

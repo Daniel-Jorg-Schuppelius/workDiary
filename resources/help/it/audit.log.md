@@ -2,6 +2,17 @@
 title: "Registro di audit"
 topic: audit.log
 version: 1
+keywords:
+    - traccia di audit
+    - registro modifiche
+    - log attività
+    - cronologia modifiche
+    - chi ha modificato cosa
+    - tracciabilità
+    - a prova di manomissione
+    - catena hash
+    - GoBD
+    - conformità
 audience:
     - admin
 related:

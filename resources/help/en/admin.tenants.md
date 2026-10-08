@@ -2,6 +2,19 @@
 title: "Organizations & tenants"
 topic: admin.tenants
 version: 2
+keywords:
+    - tenant management
+    - create organization
+    - add company
+    - delete organization
+    - suspend organization
+    - switch organization
+    - org switcher
+    - data export
+    - purge
+    - change plan
+    - multi-tenant
+    - approval levels
 audience:
     - admin
 related:

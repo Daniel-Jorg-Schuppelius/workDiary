@@ -2,6 +2,17 @@
 title: "Expense Categories"
 topic: catalog.expense-categories
 version: 1
+keywords:
+    - expense types
+    - out-of-pocket expenses
+    - travel expenses
+    - accommodation
+    - meals
+    - travel costs
+    - tax rate
+    - receipt required
+    - billable expenses
+    - expense report
 audience: []
 related:
     - travel-expenses.manage

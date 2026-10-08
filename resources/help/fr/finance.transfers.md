@@ -2,6 +2,16 @@
 title: "Transfert de facturation"
 topic: finance.transfers
 version: 1
+keywords:
+    - transfert vers Lexoffice
+    - transfert DATEV
+    - brouillon de facture
+    - transférer les prestations
+    - facturer le matériel
+    - facturer les heures
+    - export de facturation
+    - logiciel de facturation
+    - lignes de facture
 audience: []
 modules:
     - module.finance

@@ -2,6 +2,19 @@
 title: "Datenführerschaft"
 topic: admin.data-ownership
 version: 1
+keywords:
+    - führendes System
+    - Master-System
+    - Single Source of Truth
+    - Datenhoheit
+    - Rechnungshoheit
+    - Fakturahoheit
+    - Fakturierungsweg
+    - Lexoffice
+    - DATEV
+    - Übergabenachweis
+    - doppelte Rechnungen vermeiden
+    - Synchronisationskonflikt
 audience:
     - admin
 related:

@@ -2,6 +2,18 @@
 title: "Relances"
 topic: finance.dunning
 version: 1
+keywords:
+    - lettre de relance
+    - rappel de paiement
+    - relance client
+    - niveau de relance
+    - frais de relance
+    - intérêts de retard
+    - factures échues
+    - factures impayées
+    - recouvrement
+    - retard de paiement
+    - délai de grâce
 audience:
     - admin
     - buchhaltung

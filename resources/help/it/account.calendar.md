@@ -2,6 +2,15 @@
 title: "Calendario"
 topic: account.calendar
 version: 1
+keywords:
+    - agenda
+    - appuntamenti
+    - vista mensile
+    - calendario del team
+    - reperibilità
+    - servizio di emergenza
+    - planning
+    - i miei appuntamenti
 audience: []
 related:
     - planning.shifts

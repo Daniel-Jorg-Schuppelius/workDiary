@@ -2,6 +2,15 @@
 title: "Customer Portal – Documents"
 topic: customer-portal.documents
 version: 1
+keywords:
+    - files
+    - download documents
+    - certificates
+    - reports
+    - plans
+    - shared documents
+    - download
+    - paperwork
 audience: []
 related:
     - customer-portal.overview

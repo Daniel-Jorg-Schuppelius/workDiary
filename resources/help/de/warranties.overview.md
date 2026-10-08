@@ -2,6 +2,19 @@
 title: "Gewährleistungsfristen"
 topic: warranties.overview
 version: 1
+keywords:
+    - Gewährleistung
+    - Mängelhaftung
+    - Verjährungsfrist
+    - Mängelansprüche
+    - Abnahme
+    - VOB/B
+    - Nachunternehmer
+    - Subunternehmer
+    - Gewährleistungsbürgschaft
+    - Sicherheitseinbehalt
+    - Garantiefrist
+    - Mangel melden
 audience: []
 related:
     - guarantees.overview

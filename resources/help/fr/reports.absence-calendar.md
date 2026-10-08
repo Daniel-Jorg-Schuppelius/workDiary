@@ -2,6 +2,16 @@
 title: "Plan de congés (vue annuelle)"
 topic: reports.absence-calendar
 version: 1
+keywords:
+    - calendrier des congés
+    - planning des absences
+    - planificateur de congés
+    - absences de l'équipe
+    - fiche d'absences
+    - solde de congés
+    - congés restants
+    - chevauchement des congés
+    - exporter les absences
 audience: []
 related:
     - absences.manage

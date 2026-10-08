@@ -2,6 +2,17 @@
 title: "Knowledge base"
 topic: knowledge.articles
 version: 1
+keywords:
+    - wiki
+    - known issues
+    - known errors
+    - solution database
+    - troubleshooting
+    - how-to article
+    - write instructions
+    - knowledge article
+    - problem solving
+    - KB article
 audience: []
 modules:
     - module.knowledge

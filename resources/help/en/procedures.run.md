@@ -2,6 +2,16 @@
 title: "Run a procedure"
 topic: procedures.run
 version: 1
+keywords:
+    - complete checklist
+    - follow work instruction
+    - start procedure
+    - mandatory steps
+    - record deviation
+    - countersign
+    - four-eyes check
+    - backup proof
+    - confirm step
 audience: []
 related:
     - protocols.create

@@ -2,6 +2,18 @@
 title: "Zuschlagsregeln"
 topic: admin.surcharge-rules
 version: 1
+keywords:
+    - Nachtzuschlag
+    - Sonntagszuschlag
+    - Feiertagszuschlag
+    - Wochenendzuschlag
+    - SFN-Zuschläge
+    - Zeitzuschläge
+    - Lohnart
+    - Lohnexport
+    - DATEV Lohn
+    - Lexware
+    - Schichtzuschlag
 audience:
     - admin
     - geschaeftsfuehrung

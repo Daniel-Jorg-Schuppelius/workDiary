@@ -2,6 +2,19 @@
 title: "Starting time tracking"
 topic: time-entries.start
 version: 2
+keywords:
+    - stopwatch
+    - start timer
+    - stop timer
+    - track hours
+    - log time
+    - record working time
+    - time clock
+    - clock in
+    - timekeeping
+    - new time entry
+    - time tracking obligation
+    - punch in
 audience: []
 schema: process
 related:

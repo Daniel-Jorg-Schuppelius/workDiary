@@ -2,6 +2,18 @@
 title: "Reclami e garanzia"
 topic: claims.overview
 version: 1
+keywords:
+    - reclamo cliente
+    - contestazione
+    - garanzia legale
+    - cortesia commerciale
+    - reso
+    - RMA
+    - gestione resi
+    - difetto prodotto
+    - denuncia dei vizi
+    - rivalsa sul fornitore
+    - assistenza post-vendita
 audience: []
 modules:
     - module.claims

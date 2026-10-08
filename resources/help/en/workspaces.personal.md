@@ -2,6 +2,17 @@
 title: "Personal workspaces"
 topic: workspaces.personal
 version: 1
+keywords:
+    - custom menu
+    - personalize menu
+    - build own menu
+    - personal view
+    - favorites menu
+    - quick access
+    - reorder items
+    - sort menu items
+    - create workspace
+    - delete workspace
 audience: []
 related:
     - workspaces.overview

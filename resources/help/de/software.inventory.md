@@ -2,6 +2,18 @@
 title: "Software-Verwaltung"
 topic: software.inventory
 version: 1
+keywords:
+    - Softwareinventar
+    - Lizenzverwaltung
+    - Lizenzmanagement
+    - Softwarelizenzen
+    - installierte Programme
+    - Programme verwalten
+    - Anwendungen
+    - Abonnements
+    - Betriebssysteme
+    - Open Source
+    - Volumenlizenz
 audience: []
 related:
     - assets.fleet

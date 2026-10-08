@@ -2,6 +2,15 @@
 title: "Indennità di trasferta"
 topic: catalog.per-diem-rates
 version: 1
+keywords:
+    - diaria
+    - rimborso forfettario
+    - indennità giornaliera
+    - trasferta estero
+    - rimborso pernottamento
+    - spese di viaggio
+    - tariffe forfettarie
+    - rimborso pasti
 audience: []
 related:
     - travel-expenses.manage

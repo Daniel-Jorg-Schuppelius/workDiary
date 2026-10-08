@@ -2,6 +2,18 @@
 title: "Lernstandards: SCORM, cmi5 und LTI"
 topic: learning.standards
 version: 1
+keywords:
+    - SCORM-Paket
+    - SCORM hochladen
+    - xAPI
+    - Tin Can
+    - Kurs-ZIP importieren
+    - zugekaufte Kurse
+    - LMS-Anbindung
+    - Lernmanagementsystem
+    - externes Lernwerkzeug
+    - LRS
+    - E-Learning-Standard
 audience: []
 related:
     - learning.overview

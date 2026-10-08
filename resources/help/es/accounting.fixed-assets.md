@@ -2,6 +2,17 @@
 title: "Registro de inmovilizado y amortización"
 topic: accounting.fixed-assets
 version: 1
+keywords:
+    - amortización lineal
+    - amortización degresiva
+    - activo fijo
+    - inmovilizado material
+    - cuadro de amortización
+    - valor contable
+    - baja de activo
+    - bienes de escaso valor
+    - amortización especial
+    - vida útil
 audience:
     - admin
     - geschaeftsfuehrung

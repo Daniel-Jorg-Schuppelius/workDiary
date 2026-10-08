@@ -2,6 +2,16 @@
 title: "Fremdkunden"
 topic: foreign-customers
 version: 1
+keywords:
+    - Endkunden
+    - Kunden des Kunden
+    - Partnerkunden
+    - Unterkunden
+    - Subkunden
+    - Drittkunden
+    - Endkunde anlegen
+    - zum Kunden machen
+    - Endkunde übernehmen
 audience: []
 related:
     - contacts.manage

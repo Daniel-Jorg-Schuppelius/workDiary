@@ -2,6 +2,18 @@
 title: "Matrice des règles fiscales"
 topic: finance.tax-rules
 version: 1
+keywords:
+    - taux de TVA
+    - TVA
+    - taxe sur la valeur ajoutée
+    - taux réduit
+    - autoliquidation
+    - franchise en base de TVA
+    - exonéré de TVA
+    - importer des règles fiscales
+    - changement de taux
+    - taux zéro
+    - exportation hors UE
 audience:
     - admin
 modules:

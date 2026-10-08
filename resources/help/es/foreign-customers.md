@@ -2,6 +2,15 @@
 title: "Clientes externos"
 topic: foreign-customers
 version: 1
+keywords:
+    - clientes finales
+    - cliente final
+    - clientes de clientes
+    - clientes de socios
+    - subclientes
+    - clientes indirectos
+    - clientes de terceros
+    - convertir en cliente
 audience: []
 related:
     - contacts.manage

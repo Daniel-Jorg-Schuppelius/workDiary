@@ -2,6 +2,19 @@
 title: "Accès bancaire EBICS"
 topic: finance.ebics
 version: 1
+keywords:
+    - connexion bancaire
+    - relevés de compte
+    - relevés quotidiens
+    - importer les opérations
+    - remise de virements
+    - lettre INI
+    - clés bancaires
+    - signature électronique
+    - configurer EBICS
+    - interface bancaire
+    - télétransmission bancaire
+    - CAMT
 audience: []
 modules:
     - module.finance

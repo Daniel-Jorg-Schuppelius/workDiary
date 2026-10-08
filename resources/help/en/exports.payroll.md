@@ -2,6 +2,18 @@
 title: "Time export & payroll handover"
 topic: exports.payroll
 version: 1
+keywords:
+    - payroll export
+    - salary processing
+    - wage types
+    - monthly approval
+    - month-end close
+    - export hours
+    - timesheet export
+    - payroll accounting
+    - surcharges
+    - DATEV payroll
+    - CSV export
 audience: []
 related:
     - admin.surcharge-rules

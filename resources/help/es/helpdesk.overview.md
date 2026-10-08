@@ -2,6 +2,19 @@
 title: "Helpdesk y Service Desk"
 topic: helpdesk.overview
 version: 2
+keywords:
+    - sistema de tickets
+    - crear ticket
+    - incidencia
+    - solicitud de soporte
+    - solicitud de servicio
+    - cola de soporte
+    - SLA
+    - tiempo de respuesta
+    - nota interna
+    - enrutamiento de tickets
+    - satisfacción del cliente
+    - ITSM
 audience: []
 related:
     - open-issues

@@ -2,6 +2,19 @@
 title: "Incoming e-invoices"
 topic: finance.incoming-invoices
 version: 1
+keywords:
+    - supplier invoice
+    - purchase invoice
+    - inbound invoices
+    - receive XRechnung
+    - ZUGFeRD
+    - Factur-X
+    - validate e-invoice
+    - invoice approval
+    - accounts payable
+    - payment approval
+    - EN 16931
+    - e-invoicing mandate
 audience: []
 modules:
     - module.vertrieb

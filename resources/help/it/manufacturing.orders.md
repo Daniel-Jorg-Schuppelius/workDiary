@@ -2,6 +2,20 @@
 title: "Ordini di produzione"
 topic: manufacturing.orders
 version: 1
+keywords:
+    - ordine di lavorazione
+    - distinta base
+    - ricetta
+    - fabbisogno materiali
+    - MRP
+    - dichiarazione di produzione
+    - scarti
+    - conto lavoro
+    - documenti doganali
+    - fattura proforma
+    - fattura commerciale
+    - documento di trasporto
+    - DDT
 audience: []
 modules:
     - module.lager

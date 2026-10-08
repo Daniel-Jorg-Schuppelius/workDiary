@@ -2,6 +2,20 @@
 title: "Understanding error messages"
 topic: help.errors
 version: 1
+keywords:
+    - error page
+    - access denied
+    - no permission
+    - 403 forbidden
+    - page not found
+    - 404 error
+    - session expired
+    - page expired
+    - 419 error
+    - server error
+    - 500 error
+    - request ID
+    - area under maintenance
 audience: []
 related:
     - help.center

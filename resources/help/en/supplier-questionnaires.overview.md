@@ -2,6 +2,16 @@
 title: "Supplier self-assessment"
 topic: supplier-questionnaires.overview
 version: 1
+keywords:
+    - supplier questionnaire
+    - vendor questionnaire
+    - send questionnaire
+    - request self-disclosure
+    - certificate request
+    - sustainability questionnaire
+    - data protection questionnaire
+    - supplier qualification
+    - supplier declaration
 audience: []
 related:
     - supplier-scorecards.overview

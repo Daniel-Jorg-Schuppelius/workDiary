@@ -2,6 +2,14 @@
 title: "Migración desde el sistema anterior"
 topic: admin.legacy-migration
 version: 1
+keywords:
+    - sistema antiguo
+    - datos heredados
+    - datos históricos
+    - traspaso de datos
+    - migración de datos
+    - importar datos antiguos
+    - cambio de sistema
 audience:
     - admin
 related:

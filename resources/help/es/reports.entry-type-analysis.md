@@ -2,6 +2,17 @@
 title: "Análisis por tipo de orden"
 topic: reports.entry-type-analysis
 version: 1
+keywords:
+    - previsto frente a real
+    - desviación plan real
+    - tiempo de ejecución
+    - duración media
+    - tasa de retrabajo
+    - exceso de horas
+    - comparar tipos de trabajo
+    - causas principales
+    - análisis de desviaciones
+    - estimación de tiempos
 audience: []
 modules:
     - module.auswertungen_team

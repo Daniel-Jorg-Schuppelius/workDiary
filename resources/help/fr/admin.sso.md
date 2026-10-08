@@ -2,6 +2,19 @@
 title: "SSO et services d'annuaire"
 topic: admin.sso
 version: 1
+keywords:
+    - authentification unique
+    - connexion unique
+    - SAML
+    - OpenID Connect
+    - SCIM
+    - Entra ID
+    - Azure AD
+    - Keycloak
+    - Okta
+    - IdP
+    - provisionnement des utilisateurs
+    - compte de secours
 audience:
     - admin
 modules:

@@ -2,6 +2,16 @@
 title: "Integrità del codice sorgente"
 topic: admin.integrity
 version: 1
+keywords:
+    - rilevamento manomissioni
+    - integrità dei file
+    - verifica integrità
+    - checksum
+    - SHA-256
+    - hash
+    - baseline
+    - file modificati
+    - monitoraggio sicurezza
 audience:
     - admin
 related:

@@ -2,6 +2,20 @@
 title: "Equipment rental"
 topic: rental.overview
 version: 2
+keywords:
+    - hire
+    - tool hire
+    - plant hire
+    - machine rental
+    - rental fleet
+    - rental agreement
+    - deposit
+    - reserve equipment
+    - equipment return
+    - handover report
+    - availability calendar
+    - rental price list
+    - telematics
 audience: []
 modules:
     - module.rental

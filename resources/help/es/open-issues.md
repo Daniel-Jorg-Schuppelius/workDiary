@@ -2,6 +2,16 @@
 title: "Incidencias abiertas"
 topic: open-issues
 version: 1
+keywords:
+    - lista de defectos
+    - defectos
+    - puntos pendientes
+    - tareas pendientes
+    - problema
+    - ticket
+    - orden de seguimiento
+    - informar de un problema
+    - lista de repasos
 audience: []
 related:
     - foreign-customers

@@ -2,6 +2,19 @@
 title: "Applications & tenders"
 topic: applications.overview
 version: 2
+keywords:
+    - recruiting
+    - applicant tracking
+    - ATS
+    - job posting
+    - job interview
+    - talent pool
+    - reject candidate
+    - new hire
+    - bid management
+    - tender submission
+    - contract negotiation
+    - go no-go decision
 audience: []
 modules:
     - module.applications

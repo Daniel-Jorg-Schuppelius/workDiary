@@ -2,6 +2,17 @@
 title: "Liste de présence d'urgence"
 topic: reports.presence-emergency
 version: 1
+keywords:
+    - liste d'évacuation
+    - évacuation
+    - alarme incendie
+    - incendie
+    - qui est dans le bâtiment
+    - appel nominal
+    - comptage des personnes
+    - personnes présentes
+    - registre de présence
+    - plan d'urgence
 audience: []
 related:
     - reports.overview

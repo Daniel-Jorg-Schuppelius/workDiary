@@ -2,6 +2,17 @@
 title: "Notfall-Anwesenheitsliste"
 topic: reports.presence-emergency
 version: 1
+keywords:
+    - Evakuierungsliste
+    - Evakuierung
+    - Brandfall
+    - Feueralarm
+    - Gebäuderäumung
+    - wer ist im Haus
+    - Personen im Gebäude
+    - Anwesenheitsübersicht
+    - Notfallliste
+    - Alarmfall
 audience: []
 related:
     - reports.overview

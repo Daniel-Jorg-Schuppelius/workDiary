@@ -2,6 +2,15 @@
 title: "Calendrier"
 topic: account.calendar
 version: 1
+keywords:
+    - agenda
+    - rendez-vous
+    - vue mensuelle
+    - calendrier équipe
+    - astreinte
+    - service de garde
+    - planning
+    - mes rendez-vous
 audience: []
 related:
     - planning.shifts

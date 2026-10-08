@@ -2,6 +2,16 @@
 title: "Termin anfragen"
 topic: customer-portal.appointments
 version: 1
+keywords:
+    - Termin buchen
+    - Online-Terminbuchung
+    - Terminvereinbarung
+    - Wunschtermin
+    - freie Termine
+    - Termin absagen
+    - Termin stornieren
+    - Stornofrist
+    - Zeitfenster wählen
 audience: []
 related:
     - customer-portal.overview

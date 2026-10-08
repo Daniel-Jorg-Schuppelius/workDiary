@@ -2,6 +2,17 @@
 title: "Collegare Etsy"
 topic: admin.etsy
 version: 1
+keywords:
+    - negozio Etsy
+    - ordini Etsy
+    - marketplace
+    - negozio online
+    - importazione ordini
+    - notifica spedizione
+    - numero di tracking
+    - commissioni Etsy
+    - pagamenti ricevuti
+    - webhook
 audience:
     - admin
 modules:

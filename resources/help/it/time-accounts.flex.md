@@ -2,6 +2,18 @@
 title: "Conto ore e approvazione mensile"
 topic: time-accounts.flex
 version: 1
+keywords:
+    - banca ore
+    - straordinari
+    - saldo ore
+    - ore in più
+    - ore in meno
+    - orario flessibile
+    - chiusura mensile
+    - inviare il mese
+    - approvare il mese
+    - richiesta di correzione
+    - flessibilità oraria
 audience: []
 related:
     - attendance.manage

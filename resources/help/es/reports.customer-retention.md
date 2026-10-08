@@ -2,6 +2,18 @@
 title: "Retención de clientes"
 topic: reports.customer-retention
 version: 2
+keywords:
+    - abandono de clientes
+    - tasa de abandono
+    - churn
+    - pérdida de clientes
+    - clientes recurrentes
+    - análisis de cohortes
+    - nuevos clientes
+    - clientes perdidos
+    - recuperación de clientes
+    - fidelidad del cliente
+    - tasa de retención
 audience: []
 related:
     - reports.customer-value

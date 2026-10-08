@@ -2,6 +2,19 @@
 title: "Riding operations: horses, lessons and assignment"
 topic: club.horses
 version: 1
+keywords:
+    - riding school
+    - riding lesson
+    - school horse
+    - private horse
+    - assign horse
+    - horse allocation
+    - riding instructor
+    - lameness
+    - rest period
+    - riding badge
+    - horse usage
+    - riding arena
 audience: []
 modules:
     - module.club

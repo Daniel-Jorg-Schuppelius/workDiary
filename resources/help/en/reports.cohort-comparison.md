@@ -2,6 +2,17 @@
 title: "Cohort comparison (before/after training)"
 topic: reports.cohort-comparison
 version: 1
+keywords:
+    - training effectiveness
+    - training impact
+    - before and after comparison
+    - evaluate training
+    - qualification analysis
+    - billable ratio
+    - rework rate
+    - cohort analysis
+    - training ROI
+    - upskilling results
 audience: []
 related:
     - reports.economics

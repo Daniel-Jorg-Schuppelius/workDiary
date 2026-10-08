@@ -2,6 +2,18 @@
 title: "Touren planen"
 topic: tours.manage
 version: 1
+keywords:
+    - Routenplanung
+    - Tourenplanung
+    - Route optimieren
+    - Fahrtroute
+    - Stopps planen
+    - Einsatzreihenfolge
+    - Disposition
+    - Kartenansicht
+    - Anfahrtsplanung
+    - Kundenbesuche planen
+    - Liefertour
 audience: []
 modules:
     - module.planung

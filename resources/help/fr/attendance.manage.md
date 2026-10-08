@@ -2,6 +2,19 @@
 title: "Pointeuse & présence"
 topic: attendance.manage
 version: 1
+keywords:
+    - pointer
+    - pointage
+    - badgeuse
+    - arrivée et départ
+    - suivi du temps de travail
+    - enregistrement des présences
+    - QR code
+    - NFC
+    - mode kiosque
+    - terminal de pointage
+    - badge
+    - horaires de travail
 audience: []
 related:
     - time-entries.start

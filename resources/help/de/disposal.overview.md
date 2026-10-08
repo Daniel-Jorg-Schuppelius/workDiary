@@ -2,6 +2,20 @@
 title: "Entsorgung & Nachweise"
 topic: disposal.overview
 version: 1
+keywords:
+    - Altgeräte
+    - Elektroschrott
+    - Elektroaltgeräte
+    - Entsorgungsnachweis
+    - Datenträgervernichtung
+    - Festplatte vernichten
+    - Datenlöschung
+    - DIN 66399
+    - Abfallschlüssel
+    - Entsorgungsfachbetrieb
+    - Begleitschein
+    - Übernahmeschein
+    - Vernichtungsnachweis
 audience: []
 modules:
     - module.entsorgung

@@ -2,6 +2,17 @@
 title: "Current presence"
 topic: presence.board
 version: 1
+keywords:
+    - who is in
+    - in out board
+    - presence board
+    - attendance board
+    - staff status
+    - reception
+    - switchboard
+    - out of office
+    - field work
+    - evacuation list
 audience: []
 related:
     - attendance.manage

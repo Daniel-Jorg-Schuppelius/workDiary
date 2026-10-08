@@ -2,6 +2,16 @@
 title: "Lieferanten-Scorecards"
 topic: supplier-scorecards.overview
 version: 1
+keywords:
+    - Lieferantenbewertung
+    - Lieferantenranking
+    - Liefertreue
+    - Termintreue
+    - Reklamationsquote
+    - Preisentwicklung
+    - Lieferantenperformance
+    - Lieferanten-KPI
+    - Lieferantenbeurteilung
 audience: []
 modules:
     - module.lager

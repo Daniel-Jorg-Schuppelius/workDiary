@@ -2,6 +2,17 @@
 title: "Gestion des logiciels"
 topic: software.inventory
 version: 1
+keywords:
+    - inventaire logiciel
+    - gestion des licences
+    - licences logicielles
+    - programmes installés
+    - applications
+    - abonnements
+    - systèmes d'exploitation
+    - licence en volume
+    - open source
+    - parc logiciel
 audience: []
 related:
     - assets.fleet

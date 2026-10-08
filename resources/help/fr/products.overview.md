@@ -2,6 +2,15 @@
 title: "Produits"
 topic: products.overview
 version: 1
+keywords:
+    - fabricant
+    - modèle
+    - type d'appareil
+    - modèle d'appareil
+    - marque et modèle
+    - catalogue produits
+    - groupe de produits
+    - référentiel produits
 audience: []
 related:
     - articles.master

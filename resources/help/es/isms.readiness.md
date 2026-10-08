@@ -2,6 +2,17 @@
 title: "Madurez y preparación"
 topic: isms.readiness
 version: 1
+keywords:
+    - modelo de madurez
+    - nivel de madurez
+    - preparación para auditoría
+    - autoevaluación
+    - semáforo
+    - puntuación
+    - análisis de brechas
+    - listo para auditoría
+    - brechas bloqueantes
+    - readiness
 audience: []
 modules:
     - module.isms

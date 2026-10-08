@@ -2,6 +2,18 @@
 title: "Objekte"
 topic: customer-portal.assets
 version: 1
+keywords:
+    - Geräte
+    - Anlagen
+    - meine Geräte
+    - Seriennummer
+    - Wartungstermine
+    - Prüftermine
+    - Wartungshistorie
+    - Prüfprotokolle
+    - Objektakte
+    - nächste Wartung
+    - Anlagenübersicht
 audience: []
 related:
     - customer-portal.overview

@@ -2,6 +2,17 @@
 title: "Supplier scorecards"
 topic: supplier-scorecards.overview
 version: 1
+keywords:
+    - supplier rating
+    - vendor rating
+    - supplier ranking
+    - on-time delivery
+    - delivery reliability
+    - complaint rate
+    - price trend
+    - supplier performance
+    - supplier KPIs
+    - vendor evaluation
 audience: []
 modules:
     - module.lager

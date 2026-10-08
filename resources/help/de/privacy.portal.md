@@ -2,6 +2,18 @@
 title: "Auskunftsportal für Betroffene"
 topic: privacy.portal
 version: 1
+keywords:
+    - Auskunftsantrag
+    - DSGVO-Auskunft
+    - Selbstauskunft
+    - Datenauskunft
+    - Löschantrag
+    - Daten löschen lassen
+    - Betroffenenrechte
+    - Identitätsprüfung
+    - Datenübertragbarkeit
+    - Widerspruch
+    - Berichtigung
 audience: []
 related:
     - privacy.overview

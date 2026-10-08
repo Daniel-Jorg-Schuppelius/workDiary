@@ -2,6 +2,18 @@
 title: "Rôles & droits"
 topic: admin.roles
 version: 2
+keywords:
+    - permissions
+    - autorisations
+    - droits utilisateur
+    - gestion des rôles
+    - attribuer un rôle
+    - copier un rôle
+    - contrôle des accès
+    - RBAC
+    - droits administrateur
+    - groupes
+    - moindre privilège
 audience:
     - admin
 schema: process

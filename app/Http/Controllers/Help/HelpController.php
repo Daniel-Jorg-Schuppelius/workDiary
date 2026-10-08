@@ -12,12 +12,14 @@ namespace App\Http\Controllers\Help;
 
 use App\Http\Controllers\Controller;
 use App\Models\Platform\{HelpView, User};
-use App\Services\Help\{HelpContextResolver, HelpTopicResolver};
+use App\Services\Help\{HelpContextResolver, HelpSearch, HelpTopicResolver};
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{JsonResponse, Request};
 use Symfony\Component\HttpFoundation\Response;
 
 class HelpController extends Controller {
+    private const SEARCH_LIMIT = 20;
+
     public function show(Request $request, HelpTopicResolver $resolver, HelpContextResolver $context, string $topic): JsonResponse {
         /** @var User|null $user */
         $user = $request->user();
@@ -54,21 +56,24 @@ class HelpController extends Controller {
         ]);
     }
 
-    public function search(Request $request, HelpTopicResolver $resolver): JsonResponse {
+    public function search(Request $request, HelpSearch $search): JsonResponse {
         /** @var User|null $user */
         $user = $request->user();
 
         $query = (string) $request->query('q', '');
-        $results = $resolver->search($query, $user);
+        $prepared = $search->prepare($query);
+        $results = $search->search($prepared, $user)->topics->take(self::SEARCH_LIMIT);
 
         return response()->json([
             'query' => $query,
+            'corrected' => $prepared->correctedText(),
             'count' => $results->count(),
             'items' => $results->map(static fn($row): array => [
                 'topic' => $row->topic,
                 'locale' => $row->locale,
                 'title' => $row->title,
-            ])->all(),
+                'keyword' => $row->getAttribute('search_keyword'),
+            ])->values()->all(),
         ]);
     }
 

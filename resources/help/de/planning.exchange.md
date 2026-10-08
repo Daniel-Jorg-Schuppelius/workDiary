@@ -2,6 +2,17 @@
 title: "Schichttausch mit Freigabe"
 topic: planning.exchange
 version: 1
+keywords:
+    - Schicht tauschen
+    - Dienst tauschen
+    - Diensttausch
+    - Schicht abgeben
+    - Dienst abgeben
+    - Schichtbörse
+    - Tauschbörse
+    - Tauschanfrage
+    - Schicht übernehmen
+    - Vertretung
 audience: []
 modules:
     - module.planung

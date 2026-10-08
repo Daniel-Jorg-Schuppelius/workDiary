@@ -2,6 +2,17 @@
 title: "Certificazioni e conformità normativa"
 topic: isms.conformity
 version: 1
+keywords:
+    - ISO 27001
+    - certificato ISO
+    - audit di certificazione
+    - audit di sorveglianza
+    - ricertificazione
+    - gap analysis
+    - analisi dei gap
+    - ente di certificazione
+    - certificato scaduto
+    - compliance
 audience: []
 modules:
     - module.isms

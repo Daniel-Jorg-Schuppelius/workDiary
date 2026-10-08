@@ -2,6 +2,18 @@
 title: "Softwareinventar"
 topic: isms.software
 version: 1
+keywords:
+    - Softwareverzeichnis
+    - Softwareliste
+    - End-of-Life
+    - EOL
+    - Support-Ende
+    - veraltete Software
+    - installierte Programme
+    - Programmversionen
+    - IT-Inventar
+    - Anwendungsverzeichnis
+    - Betriebssysteme
 audience: []
 modules:
     - module.isms

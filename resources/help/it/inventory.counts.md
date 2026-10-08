@@ -2,6 +2,17 @@
 title: "Inventario"
 topic: inventory.counts
 version: 1
+keywords:
+    - conta fisica
+    - inventario fisico
+    - inventario a rotazione
+    - inventario annuale
+    - conteggio magazzino
+    - foglio di conteggio
+    - contare la merce
+    - differenze inventariali
+    - registrare differenze
+    - classe ABC
 audience: []
 modules:
     - module.lager

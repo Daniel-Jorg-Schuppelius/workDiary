@@ -2,6 +2,18 @@
 title: "Solicitudes de cita"
 topic: appointments.inbox
 version: 1
+keywords:
+    - reserva online
+    - reserva de citas
+    - petición de reserva
+    - portal de clientes
+    - confirmar cita
+    - rechazar cita
+    - franjas horarias
+    - huecos
+    - tipos de servicio
+    - plazo de cancelación
+    - planificación
 audience: []
 modules:
     - module.planung

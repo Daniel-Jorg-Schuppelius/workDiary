@@ -2,6 +2,17 @@
 title: "Matériaux"
 topic: materials.manage
 version: 1
+keywords:
+    - matières premières
+    - fiche matériau
+    - consommables
+    - liste des matériaux
+    - ajouter un matériau
+    - prix du matériau
+    - désactiver un matériau
+    - référence SKU
+    - consommation de matériaux
+    - fournitures
 audience: []
 modules:
     - module.vertrieb

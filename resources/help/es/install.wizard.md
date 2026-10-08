@@ -2,6 +2,18 @@
 title: "Instalación"
 topic: install.wizard
 version: 1
+keywords:
+    - asistente de instalación
+    - configuración inicial
+    - primera instalación
+    - setup
+    - requisitos del sistema
+    - configurar base de datos
+    - crear administrador
+    - configuración SMTP
+    - servidor de correo
+    - notificaciones push
+    - VAPID
 audience: [admin]
 related:
     - admin.tenants

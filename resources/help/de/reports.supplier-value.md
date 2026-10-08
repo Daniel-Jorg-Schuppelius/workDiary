@@ -2,6 +2,18 @@
 title: "Lieferantenwert"
 topic: reports.supplier-value
 version: 1
+keywords:
+    - RFM-Analyse
+    - Lieferantensegmentierung
+    - Lieferantenklassifizierung
+    - strategische Lieferanten
+    - Stammlieferanten
+    - Single Source
+    - Klumpenrisiko
+    - inaktive Lieferanten
+    - Risikolieferanten
+    - Lieferantenportfolio
+    - Einkaufsvolumen
 audience: []
 related:
     - reports.supplier-analysis

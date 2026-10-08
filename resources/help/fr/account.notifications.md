@@ -2,6 +2,16 @@
 title: "Notifications"
 topic: account.notifications
 version: 1
+keywords:
+    - alertes
+    - messages
+    - cloche
+    - non lu
+    - marquer comme lu
+    - centre de notifications
+    - notifications par e-mail
+    - SMS
+    - heures de silence
 audience: []
 related:
     - account.profile

@@ -2,6 +2,17 @@
 title: "Lista presenze di emergenza"
 topic: reports.presence-emergency
 version: 1
+keywords:
+    - lista di evacuazione
+    - evacuazione
+    - allarme antincendio
+    - incendio
+    - chi è in sede
+    - appello
+    - conteggio persone
+    - persone presenti
+    - elenco presenti
+    - foglio presenze
 audience: []
 related:
     - reports.overview

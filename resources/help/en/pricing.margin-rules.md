@@ -2,6 +2,18 @@
 title: "Pricing & margin rules"
 topic: pricing.margin-rules
 version: 1
+keywords:
+    - markup
+    - price calculation
+    - selling price
+    - purchase price
+    - minimum margin
+    - target margin
+    - price rounding
+    - supplier catalog
+    - price approval
+    - gross margin
+    - cost-plus pricing
 audience:
     - admin
     - geschaeftsfuehrung

@@ -26,7 +26,8 @@ use Tests\TestCase;
  *    Topic-Dateien,
  *  - audience-Werte sind gültige Rollen-Slugs (UserRole = Quelle der
  *    Wahrheit für den PermissionsSeeder) oder das Wildcard-Zeichen `*`,
- *  - Anwender-Topics zeigen keine internen Berechtigungsschlüssel.
+ *  - Anwender-Topics zeigen keine internen Berechtigungsschlüssel,
+ *  - jedes Thema hat je Sprache Suchbegriffe (MVP-1080).
  */
 class HelpContentTest extends TestCase {
     private HelpTopicLoader $loader;
@@ -184,6 +185,35 @@ class HelpContentTest extends TestCase {
      * identisch (sonst sähe ein fr-Nutzer ein Topic, das de verbirgt) und
      * nennt nur echte Modul-Codes aus config/plans.php.
      */
+    /**
+     * Suchbegriffe (MVP-1080): Jedes Thema nennt je Sprache die Wörter, mit
+     * denen Nutzer die Funktion suchen — sonst findet „Darkmode" nichts.
+     */
+    public function test_every_topic_has_search_keywords_in_every_locale(): void {
+        $problems = [];
+
+        foreach ($this->loader->locales() as $locale) {
+            foreach ($this->loader->topicsForLocale($locale) as $topic) {
+                $keywords = $this->loader->load($topic, $locale)['keywords'] ?? [];
+                $count = count($keywords);
+                if ($count < 3 || $count > 25) {
+                    $problems[] = "{$locale}/{$topic}.md hat {$count} Suchbegriffe (3–25 erwartet).";
+                }
+                $folded = array_map('mb_strtolower', $keywords);
+                if (count(array_unique($folded)) !== $count) {
+                    $problems[] = "{$locale}/{$topic}.md hat doppelte Suchbegriffe.";
+                }
+                foreach ($keywords as $keyword) {
+                    if (mb_strlen($keyword) < 2 || mb_strlen($keyword) > 40 || preg_match('/[,"„“”«»#`\[\]]/u', $keyword) === 1) {
+                        $problems[] = "{$locale}/{$topic}.md: ungültiger Suchbegriff „{$keyword}“.";
+                    }
+                }
+            }
+        }
+
+        $this->assertSame([], $problems, implode("\n", $problems));
+    }
+
     public function test_modules_front_matter_is_locale_consistent_and_valid(): void {
         /** @var list<string> $validModules */
         $validModules = array_values(array_unique(array_map(

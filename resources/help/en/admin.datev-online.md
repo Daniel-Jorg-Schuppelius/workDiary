@@ -2,6 +2,17 @@
 title: "Connecting DATEV Online"
 topic: admin.datev-online
 version: 1
+keywords:
+    - DATEV Unternehmen online
+    - DUO
+    - DATEV interface
+    - transfer posting batches
+    - receipt images
+    - send documents to DATEV
+    - EXTF
+    - tax advisor
+    - client number
+    - consultant number
 audience:
     - admin
 related:

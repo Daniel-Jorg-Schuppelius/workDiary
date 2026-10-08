@@ -2,6 +2,17 @@
 title: "Gestión de contratos"
 topic: contracts.overview
 version: 1
+keywords:
+    - contratos
+    - plazo de preaviso
+    - duración del contrato
+    - renovación del contrato
+    - renovación automática
+    - contrato de mantenimiento
+    - contrato de alquiler
+    - contrato marco
+    - recordatorio de vencimiento
+    - indexación
 audience: []
 modules:
     - module.contracts

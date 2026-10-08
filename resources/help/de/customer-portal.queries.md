@@ -2,6 +2,14 @@
 title: "Kundenportal – Rückfragen"
 topic: customer-portal.queries
 version: 1
+keywords:
+    - Rückfrage beantworten
+    - Frage beantworten
+    - offene Fragen
+    - Nachfrage
+    - Klärungsbedarf
+    - Antwort senden
+    - Rückmeldung geben
 audience: []
 related:
     - customer-portal.overview

@@ -2,6 +2,15 @@
 title: "Dictionnaire"
 topic: admin.text-corrections
 version: 1
+keywords:
+    - correction automatique
+    - correcteur orthographique
+    - fautes de frappe
+    - corriger les fautes
+    - remplacement de texte
+    - liste de remplacement
+    - remplacement de mots
+    - textes de facture
 audience:
     - admin
 ---

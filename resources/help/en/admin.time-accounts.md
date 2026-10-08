@@ -2,6 +2,16 @@
 title: "Time accounts (administration)"
 topic: admin.time-accounts
 version: 1
+keywords:
+    - time bank
+    - comp time account
+    - night shift counter
+    - allowance tracker
+    - account balance
+    - balance carryover
+    - balance cap
+    - manual adjustment
+    - month-end closing
 audience: [admin]
 related:
     - time-accounts.overview

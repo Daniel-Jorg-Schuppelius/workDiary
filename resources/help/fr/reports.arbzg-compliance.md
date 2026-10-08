@@ -2,6 +2,18 @@
 title: "Conformité au temps de travail (ArbZG)"
 topic: reports.arbzg-compliance
 version: 1
+keywords:
+    - loi sur le temps de travail
+    - infractions au temps de travail
+    - durée maximale de travail
+    - repos quotidien
+    - pause obligatoire
+    - temps de pause
+    - jeunes travailleurs
+    - travail de nuit
+    - obligation d'enregistrement
+    - droit du travail
+    - contrôle des horaires
 audience: []
 modules:
     - module.auswertungen_team

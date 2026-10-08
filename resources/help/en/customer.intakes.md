@@ -2,6 +2,20 @@
 title: "Customer intakes"
 topic: customer.intakes
 version: 1
+keywords:
+    - customer request
+    - portal request
+    - print job
+    - print request
+    - IT request
+    - process request
+    - convert to order
+    - reject request
+    - ask customer
+    - link quote
+    - upload link
+    - Nextcloud
+    - customer files
 audience: []
 related:
     - customer.queries

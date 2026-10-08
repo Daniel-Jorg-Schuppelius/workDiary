@@ -2,6 +2,15 @@
 title: "Productos"
 topic: products.overview
 version: 1
+keywords:
+    - fabricante
+    - modelo
+    - tipo de equipo
+    - modelo de equipo
+    - marca y modelo
+    - catálogo de productos
+    - grupo de productos
+    - maestro de productos
 audience: []
 related:
     - articles.master

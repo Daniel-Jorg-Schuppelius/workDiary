@@ -2,6 +2,14 @@
 title: "Collegare la prenotazione appuntamenti (Calendly)"
 topic: admin.calendly
 version: 1
+keywords:
+    - prenotazione online
+    - pagina di prenotazione
+    - fissare appuntamenti
+    - agenda online
+    - appuntamenti clienti
+    - disdetta appuntamento
+    - spostamento appuntamento
 audience:
     - admin
 related:

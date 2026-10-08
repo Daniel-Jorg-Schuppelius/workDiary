@@ -2,6 +2,14 @@
 title: "Tempi registrati"
 topic: customer-portal.time
 version: 1
+keywords:
+    - rilevazione tempi
+    - foglio ore
+    - ore lavorate
+    - orari di lavoro
+    - rapporto ore
+    - tempo impiegato
+    - ore di progetto
 audience: []
 related:
     - customer-portal.overview
