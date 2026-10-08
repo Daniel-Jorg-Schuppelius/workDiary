@@ -33,7 +33,7 @@
                das CSS injiziert hat (FOUC im Dev-Modus). */
             html { color-scheme: light dark; background: Canvas; color: CanvasText; }
             html[data-theme="dim"] { color-scheme: dark; background: #1d232a; color: #e7e9ea; }
-            html[data-theme="corporate-dark"] { color-scheme: dark; background: #11151c; color: #d4d6e5; }
+            html[data-theme="corporate-dark"] { color-scheme: dark; background: #1d232a; color: #e7e9ea; }
             html[data-theme="corporate"] { color-scheme: light; background: #ffffff; color: #1f2937; }
             body { font-family: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
         </style>
@@ -92,7 +92,7 @@
 
         {{-- PWA: Manifest + Theme-Color + iOS-Hinweise. --}}
         <link rel="manifest" href="{{ asset('manifest.webmanifest') }}?v={{ @filemtime(public_path('manifest.webmanifest')) ?: '1' }}">
-        <meta name="theme-color" content="#11151c" media="(prefers-color-scheme: dark)">
+        <meta name="theme-color" content="#1d232a" media="(prefers-color-scheme: dark)">
         <meta name="theme-color" content="#f8fafc" media="(prefers-color-scheme: light)">
         <meta name="mobile-web-app-capable" content="yes">
         <meta name="apple-mobile-web-app-capable" content="yes">
