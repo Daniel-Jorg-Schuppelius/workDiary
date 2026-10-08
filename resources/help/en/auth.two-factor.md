@@ -1,7 +1,7 @@
 ---
 title: "Two-factor sign-in"
 topic: auth.two-factor
-version: 1
+version: 2
 keywords:
     - 2FA
     - MFA

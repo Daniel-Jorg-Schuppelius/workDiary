@@ -14,6 +14,8 @@
 <x-index-page :subtitle="__('ai.usage.subtitle')">
     <x-slot:actions>
         <x-action-menu icon="download" :label="__('Export')">
+            <x-icon-btn icon="download" size="sm" show-label :href="route('admin.ai.usage', ['export' => 'csv'])">{{ __('CSV') }}</x-icon-btn>
+            <x-icon-btn icon="table_view" size="sm" show-label :href="route('admin.ai.usage', ['export' => 'xlsx'])">Excel</x-icon-btn>
         </x-action-menu>
     </x-slot:actions>
 

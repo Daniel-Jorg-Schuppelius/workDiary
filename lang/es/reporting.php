@@ -169,6 +169,15 @@ return [
         'others' => 'Otros',
         'note' => 'Periodo anterior = periodo de igual duración inmediatamente antes; los cinco mayores cambios por separado, el resto como «Otros». Un clic abre los justificantes del proveedor.',
     ],
+    // Warnungen der Plan/Ist-Anwesenheit (PlanIstReportBuilder liefert die Schlüssel).
+    'plan_ist' => [
+        'warning' => [
+            'presence' => [
+                'lateStart' => 'Inicio más de 15 minutos después de lo previsto',
+                'hoursDiff' => 'Horas con desviación superior al 10 %',
+            ],
+        ],
+    ],
     'warning' => [
         'capacity' => [
             'title' => 'Falta de capacidad en el equipo :name',

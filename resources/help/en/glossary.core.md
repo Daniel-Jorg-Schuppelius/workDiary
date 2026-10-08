@@ -1,7 +1,7 @@
 ---
 title: "Glossary: core terms"
 topic: glossary.core
-version: 1
+version: 3
 keywords:
     - terms
     - terminology
@@ -40,15 +40,15 @@ The most important terms in WorkDiary – briefly explained.
 - **Tenant/organization**: isolated unit in WorkDiary – every piece
   of information belongs to exactly one organization.
 - **Scope**: the part of the organization the ISMS applies to
-  (default: "Entire organization"); SoA, risks and audits are kept
+  (default: “Entire organisation”); SoA, risks and audits are kept
   separate per scope.
 - **Requirement vs. control**: the requirement describes WHAT a
-  standard demands (e.g. "A.5.1"); the control describes, in a
+  standard demands (e.g. “A.5.1”); the control describes, in a
   standard-neutral way, HOW you implement it. Both can be linked
   many-to-many.
 - **SoA**: Statement of Applicability – per scope, the statement for
   each requirement: applicable yes/no, justification, implementation
-  status, evidence.
+  status, evidence note.
 - **Audit package**: finalized, immutable data snapshot for a
   reporting date (with SHA-256 hash) for auditors – accessible via
   time-limited auditor links.

@@ -1,7 +1,7 @@
 ---
 title: "Security incidents"
 topic: isms.incidents
-version: 1
+version: 2
 keywords:
     - report security incident
     - IT security incident

@@ -16,6 +16,10 @@
     <x-slot:actions>
         {{-- CSV-Export (MVP-292; Vollaudit 2026-07, M33). --}}
         <x-action-menu icon="download" :label="__('Export')">
+            <x-icon-btn icon="download" size="sm" show-label
+                        :href="route('asset-compliance.reports.index', ['export' => 'csv', 'from' => $from->toDateString(), 'to' => $to->toDateString()])">{{ __('CSV') }}</x-icon-btn>
+            <x-icon-btn icon="table_view" size="sm" show-label
+                        :href="route('asset-compliance.reports.index', ['export' => 'xlsx', 'from' => $from->toDateString(), 'to' => $to->toDateString()])">Excel</x-icon-btn>
         </x-action-menu>
         <form method="POST" action="{{ route('asset-compliance.reports.snapshot', ['from' => $from->toDateString(), 'to' => $to->toDateString()]) }}">
             @csrf

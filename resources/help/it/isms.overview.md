@@ -1,7 +1,7 @@
 ---
 title: "Panoramica dell'ISMS"
 topic: isms.overview
-version: 2
+version: 3
 keywords:
     - sicurezza delle informazioni
     - gestione della sicurezza
@@ -27,15 +27,43 @@ related:
     - glossary.core
 ---
 
-Il modulo ISMS riunisce tutto ciò che serve per un sistema di gestione della
-sicurezza delle informazioni vissuto, senza copiare i testi delle norme; la
-certificazione avviene sempre tramite enti indipendenti. Percorso tipico:
-definire l'**ambito di applicazione** (quello predefinito
-**"Organizzazione complessiva"** non è eliminabile), caricare requisiti e
-SoA, gestire misure neutre rispetto alle norme, valutare i rischi nella
-matrice 5×5, condurre audit con rilievi e azioni correttive e mantenere lo
-stato di conformità — **"Certificato"** richiede un certificato valido e
-completo. Il modulo fa parte del piano Enterprise; la lettura richiede
-diritti di lettura ISMS, le modifiche diritti di gestione. La **prontezza
-all'audit** fornisce indicatori per ambito con collegamenti diretti ai
-registri, che offrono anche export JSON/CSV.
+Il modulo SGSI raccoglie tutto ciò che Le serve per un sistema di
+gestione della sicurezza delle informazioni effettivamente applicato –
+senza copiare testi normativi. La certificazione stessa avviene sempre
+tramite organismi indipendenti.
+
+Il percorso tipico:
+
+1. Definire l'**ambito di applicazione**: ogni organizzazione parte con
+   l'ambito predefinito **«Intera organizzazione»** (non eliminabile).
+   Ulteriori ambiti di applicazione separano DdA, rischi e audit per sede
+   o processo.
+2. **Requisiti & DdA**: caricare il catalogo normativo (ad es. ISO/IEC
+   27001:2022, Annex A con 93 controlli) o registrare requisiti propri,
+   quindi dichiarare l'applicabilità per ambito di applicazione.
+3. **Misure**: gestire misure neutrali rispetto alle norme e collegarle a
+   requisiti e rischi.
+4. **Rischi**: registrarli nel registro dei rischi, valutarli nella
+   matrice 5×5 e trattarli.
+5. **Audit**: svolgere audit interni/esterni con rilievi e azioni
+   correttive; approvare i riesami di direzione.
+6. **Certificazione**: gestire lo stato di conformità per norma – lo
+   stato **«Certificato»** presuppone un certificato valido oggi e
+   registrato in modo completo.
+
+Prerequisiti: il modulo **ISMS** fa parte del piano Enterprise. Le
+persone con diritti di lettura SGSI possono consultare i contenuti; le
+modifiche e la gestione degli ambiti di applicazione richiedono diritti
+di gestione SGSI.
+
+La panoramica è fornita dalla **Preparazione all'audit** (prima voce
+dell'area SGSI): indicatori per ambito di applicazione su rischi elevati,
+riesami delle valutazioni in ritardo, lacune di evidenze, azioni
+correttive in ritardo, non conformità aperte e scadenze dei certificati –
+ogni riquadro rimanda direttamente al registro corrispondente. Nelle
+pagine dei registri (Rischi, Requisiti & DdA, Misure) sono inoltre
+disponibili esportazioni JSON/CSV con indicazione dello stato dei dati.
+
+Passi successivi: per gli auditor crea in **Pacchetti di audit** uno
+snapshot dei dati finalizzato; l'**Inventario software** documenta i
+prodotti in uso, incluso il fine vita.

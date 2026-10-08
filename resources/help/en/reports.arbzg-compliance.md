@@ -21,6 +21,8 @@ modules:
 related:
     - reports.overview
     - reports.drilldown
+    - reports.compliance
+    - reports.fleet
 ---
 
 The working-time compliance report checks the **actually recorded working time**

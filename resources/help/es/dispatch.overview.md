@@ -1,7 +1,7 @@
 ---
 title: "Disposición y avisos de conflicto"
 topic: dispatch.overview
-version: 1
+version: 2
 keywords:
     - planificación de trabajos
     - asignar trabajo
@@ -20,14 +20,31 @@ related:
     - assets.fleet
 ---
 
-La disposición controla **quién realiza qué orden y cuándo**; cada orden
-tiene un **estado de disposición** (sin planificar, planificada,
-confirmada, en camino, resuelta). Antes de confirmar una cita, WorkDiary
-comprueba la asignación contra las reglas de jornada y disponibilidad
-(solapamientos, descansos, jornada máxima, vacaciones y ausencias). Los
-**conflictos duros** impiden la confirmación y solo pueden anularse con
-una **justificación documentada** que queda registrada a prueba de
-auditoría; las **advertencias** son solo avisos y no bloquean. Además,
-puede reservarse un vehículo para una franja horaria en la orden; el
-sistema impide la doble reserva y las reservas por vehículo pueden
-consultarse y cancelarse en la lista de reservas.
+La planificación determina **quién realiza qué orden y cuándo**, como
+complemento de la máquina de estados funcional de las órdenes. Cada orden
+tiene un **Estado de planificación**:
+
+- **Sin planificar**: ni programada ni asignada.
+- **Planificado**: programada o asignada a un empleado.
+- **Confirmado**: la asignación se ha confirmado de forma vinculante.
+- **En ruta**: la intervención está en curso.
+- **Completado**: la orden está cerrada.
+
+## Avisos de conflicto antes de la confirmación
+
+Antes de confirmar la cita, WorkDiary comprueba la asignación prevista
+frente a las reglas existentes de jornada laboral y disponibilidad
+(solapamiento con otros turnos u órdenes, descanso, jornada máxima diaria
+o semanal, vacaciones y ausencias). Hay dos niveles de gravedad:
+
+- Los **conflictos críticos** impiden la confirmación. Solo pueden
+  anularse de forma consciente con una **justificación documentada**; la
+  anulación se registra a prueba de auditoría.
+- Las **advertencias** son indicaciones y no bloquean.
+
+## Reserva de vehículo
+
+En la orden puede reservarse un vehículo para una franja horaria. Si el
+vehículo ya está reservado en el periodo deseado, el sistema impide la
+doble reserva. Las reservas de cada vehículo pueden consultarse en la
+lista de reservas y anularse.

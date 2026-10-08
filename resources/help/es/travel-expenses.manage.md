@@ -1,7 +1,7 @@
 ---
 title: "Viajes, gastos y dietas"
 topic: travel-expenses.manage
-version: 1
+version: 2
 keywords:
     - nota de gastos
     - gastos de viaje
@@ -15,6 +15,8 @@ keywords:
     - coche de empresa
     - retribución en especie
     - tiempos de conducción
+    - libro de viajes
+    - registrar un viaje
 audience: []
 modules:
     - module.spesen
@@ -33,6 +35,35 @@ calcular la dieta a partir de horarios y destino; revisar y enviar a
 aprobación o liquidación. Justificantes, kilometrajes y horarios deben
 ser plausibles; los registros aprobados o liquidados no se modifican en
 silencio.
+
+## Registrar un viaje
+
+Un viaje nuevo se crea con **Nuevo …** en la barra lateral: en el grupo
+**Planificación**, **Libro de viajes** abre el diálogo **Registrar nuevo
+viaje**. Todos los viajes registrados están en **Viajes y gastos** → **Libro de
+viajes**.
+
+- **Viaje:** **Fecha**, **Vehículo** (tipo de vehículo con su tarifa por
+  kilómetro), **Vehículo de flota (opcional)**, **Tipo de trayecto** y además
+  **Desde (dirección)** y **Hacia (dirección)**.
+- **Distancia y tarifa:** **Distancia (km, solo ida)** es obligatoria. Si
+  **Tarifa €/km (opcional)** queda vacía, se aplica la tarifa del vehículo de
+  flota y, si no, la del tipo de vehículo. Se añaden **Cuentakilómetros inicio
+  (km)**, **Cuentakilómetros final (km)**, **Inicio (hora)** y **Fin (hora)**;
+  si el viaje termina después de medianoche, introduzca simplemente la hora
+  menor.
+- **Asignación:** **Proyecto (opcional)**, **Cliente (opcional)** y
+  **Finalidad**.
+- **Opciones y notas:** **Ida y vuelta (duplica km)**, **Reembolsable**
+  (preseleccionado) y **Notas**.
+
+**Registrar** guarda el viaje a su nombre y vuelve a la lista. Si están
+indicados el inicio y el fin, WorkDiary crea por defecto un registro de tiempo
+no facturable para el tiempo de viaje. Un cuentakilómetros final más alto se
+traslada al vehículo de flota. Si el vehículo de flota está en **Modo libro de
+ruta**, los kilometrajes son obligatorios y el viaje se fija tras el fin del
+día. Cualquier persona con sesión iniciada puede registrar viajes si su
+organización usa el módulo; un viaje pertenece siempre a quien lo registró.
 
 ## Transferir un gasto a la contabilidad como comprobante
 

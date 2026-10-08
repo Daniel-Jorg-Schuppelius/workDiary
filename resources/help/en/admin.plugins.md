@@ -1,7 +1,7 @@
 ---
 title: "Plugins"
 topic: admin.plugins
-version: 1
+version: 2
 keywords:
     - extensions
     - add-ons

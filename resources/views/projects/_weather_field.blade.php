@@ -24,7 +24,7 @@
                     :label="__('Automatischer Wetter-Abruf')"
                     :hint="__('Überschreibt die Org-Einstellung für dieses Projekt und Sub-Projekte; Erben nutzt den Org-Standard.')">
         <option value="" @selected($weatherInherit)>{{ __('Erben (Org-Einstellung)') }}</option>
-        <option value="1" @selected($weatherValue === '1')>{{ __('An') }}</option>
+        <option value="1" @selected($weatherValue === '1')>{{ __('Ein') }}</option>
         <option value="0" @selected($weatherValue === '0')>{{ __('Aus') }}</option>
     </x-select-field>
 </x-form-group>

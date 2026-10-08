@@ -21,7 +21,7 @@ return [
         'col_label' => 'Règle',
         'col_total' => 'Total',
         'empty' => 'Aucun service planifié avec effet de majoration sur la période.',
-        'note' => 'Aperçu basé uniquement sur les services planifiés — sans contexte de site. Le décompte se fait exclusivement via l export des temps.',
+        'note' => 'Aperçu basé uniquement sur les services planifiés — sans contexte de site. Le décompte se fait exclusivement via l’export des temps.',
     ],
     'target' => [
         'nav' => 'Valeurs cibles',
@@ -168,6 +168,15 @@ return [
         'end' => 'Période',
         'others' => 'Autres',
         'note' => 'Période précédente = période de même durée juste avant ; les cinq plus fortes variations séparément, le reste sous « Autres ». Un clic ouvre les pièces du fournisseur.',
+    ],
+    // Warnungen der Plan/Ist-Anwesenheit (PlanIstReportBuilder liefert die Schlüssel).
+    'plan_ist' => [
+        'warning' => [
+            'presence' => [
+                'lateStart' => 'Début plus de 15 minutes après le prévu',
+                'hoursDiff' => 'Écart d’heures supérieur à 10 %',
+            ],
+        ],
     ],
     'warning' => [
         'capacity' => [

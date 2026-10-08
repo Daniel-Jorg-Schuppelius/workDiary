@@ -1,7 +1,7 @@
 ---
 title: "Lokale Buchhaltung"
 topic: accounting.overview
-version: 2
+version: 3
 keywords:
     - Hauptbuch
     - Finanzbuchhaltung
@@ -15,6 +15,9 @@ keywords:
     - Buchhaltungssoftware ersetzen
     - Buchungshoheit
     - integrierte Buchhaltung
+    - Kontenplan
+    - SKR03
+    - SKR04
 audience:
     - admin
     - geschaeftsfuehrung
@@ -48,7 +51,8 @@ Zeitraum führt entweder WorkDiary oder genau ein externes System.
 
 ## Empfohlener Ablauf
 
-1. **Finanzen → Buchhaltung einrichten** öffnen und das Profil wählen.
+1. **Vertrieb & Abrechnung** → **Buchhaltung** → **Einrichtung** öffnen und
+   das Profil wählen.
 2. Basiswährung, Geschäftsjahr und Buchungsbeginn festlegen.
 3. Den **Preflight** durcharbeiten: Er prüft, ob die Organisation ab
    dem Stichtag lückenlos selbst buchen kann.
@@ -84,3 +88,40 @@ Mit der Aktivierung wird WorkDiary zum führenden Hauptbuch ab dem
 Stichtag: Journal, offene Posten und Abschluss bauen darauf auf. Als
 Nächstes: Buchungslogik und Belegeingang kennenlernen („Buchen") und
 den ersten Monatsabschluss planen.
+
+## Kontenplan
+
+Die Konten der lokalen Buchhaltung pflegen Sie unter **Vertrieb & Abrechnung**
+→ **Buchhaltung** → **Kontenplan**. Der Menüpunkt erscheint, sobald Ihre
+Organisation die lokale Buchhaltung führt oder geführt hat.
+
+- **Kontenplan aus Vorlage:** Wählen Sie unter **Vorlage** einen Auszug aus
+  SKR03 oder SKR04 und klicken Sie auf **Vorlage anwenden**. Angelegt werden
+  Konten, Steuerkennzeichen und passende Buchungsregeln, damit die
+  Buchungs-Inbox sofort arbeiten kann; vorhandene Konten und Regeln bleiben
+  unverändert. Die Vorlage ist ein Einstieg für Deutschland – Kontenwahl und
+  Steuerzuordnung gehören vor dem ersten Buchen fachlich geprüft.
+- **Konto anlegen** und **Konto bearbeiten:** **Konto** (die Kontonummer, je
+  Organisation eindeutig), **Bezeichnung**, **Kontoart**, **Saldenrichtung**
+  (aus der Kontoart vorbelegt), **DATEV-Konto** (nur für den Export), die
+  Merkmale **Offene Posten**, **Bank**, **Kasse**, **Klärung** und
+  **Kostenstelle Pflicht**, für die Einnahmenüberschussrechnung **EÜR-Zeile**
+  und **Abziehbarer Anteil (%)** sowie eine **Beschreibung**. Buchungen auf
+  Konten mit dem Merkmal **Offene Posten** erscheinen in der Liste der offenen
+  Posten.
+- **Stilllegen** statt löschen: Ein stillgelegtes Konto behält seine
+  Buchungen, steht aber für neue Buchungen nicht mehr zur Wahl. Die Liste zeigt
+  standardmäßig **nur aktive** Konten; die Suche (Nummer, Bezeichnung) und der
+  Filter nach Kontoart grenzen weiter ein.
+- **Kontenplan importieren:** eine CSV-Datei mit Kopfzeile und den Spalten
+  `number`, `name` und `type`, optional `normal_balance`, `is_open_item`,
+  `datev_account`, `euer_category` und `deductible_percent`. Bestehende
+  Kontonummern werden aktualisiert, neue Konten angelegt, gelöscht wird nichts;
+  fehlerhafte Zeilen werden übersprungen und gezählt.
+- **Steuerkennzeichen:** Sind Steuerkennzeichen angelegt, listet die Seite sie
+  mit ihren Kennziffern der Umsatzsteuer-Voranmeldung. Über **Bearbeiten**
+  ordnen Sie **Bemessungsgrundlage** und **Steuerbetrag** je eine Kennziffer zu
+  – eine Abgleichhilfe, kein Vordruck.
+
+**Berechtigung:** Ansehen mit **Buchhaltung einsehen**; Vorlage, Import und
+alle Änderungen an Konten und Steuerkennzeichen mit **Buchhaltung einrichten**.

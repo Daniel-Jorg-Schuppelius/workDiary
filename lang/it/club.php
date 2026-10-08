@@ -486,7 +486,7 @@ return [
             'promoted' => 'Posto assegnato',
         ],
         'action' => [
-            'register' => 'Iscriviti',
+            'register' => 'Iscriversi',
             'cancel' => 'Disdici',
             'attendance' => 'Le mie presenze',
             'back' => 'Torna a La mia associazione',
@@ -722,7 +722,7 @@ return [
             'result' => 'Registra risultato',
             'recheck' => 'Riverifica ammissibilità',
             'clear_review' => 'Chiudi verifica',
-            'request' => 'Iscriviti all\'esame',
+            'request' => 'Iscriversi all\'esame',
             'certificate' => 'Attestato (PDF)',
             'open_event' => 'All\'appuntamento',
         ],

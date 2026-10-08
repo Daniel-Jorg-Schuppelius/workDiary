@@ -1,7 +1,7 @@
 ---
 title: "Arbeitsschutz & Sicherheitsereignisse"
 topic: safety.overview
-version: 1
+version: 2
 keywords:
     - Arbeitssicherheit
     - Arbeitsunfall melden

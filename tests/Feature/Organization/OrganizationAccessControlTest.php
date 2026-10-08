@@ -77,6 +77,53 @@ class OrganizationAccessControlTest extends TestCase {
         $this->assertSame('Eigen umbenannt', $own->refresh()->name);
     }
 
+    /**
+     * Plan und Aktiv-Status setzt nur der Plattformbetrieb: Ein herabgesetzter
+     * Plan startet Karenz und Purge der Moduldaten, „inaktiv" sperrt die
+     * Organisation samt Admin aus (Hilfe-Lückenschluss 2026-10-08).
+     */
+    public function test_org_local_admin_cannot_change_plan_or_active_status(): void {
+        $admin = User::factory()->admin()->create();
+        $own = Organization::query()->findOrFail($admin->organization_id);
+        $own->forceFill(['plan' => 'enterprise'])->save();
+
+        $this->actingAs($admin)->get(route('admin.organizations.edit', $own))
+            ->assertOk()
+            ->assertDontSee('name="plan"', false)
+            ->assertDontSee('name="is_active"', false)
+            ->assertDontSee(__('Organisation wirklich löschen?'));
+
+        $this->actingAs($admin)->put(route('admin.organizations.update', $own), [
+            'name' => $own->name,
+            'plan' => 'free',
+            'locale' => $own->locale ?? 'de',
+            'timezone' => $own->timezone ?? 'Europe/Berlin',
+            'is_active' => 0,
+        ])->assertRedirect();
+
+        $own->refresh();
+        $this->assertSame('enterprise', $own->plan);
+        $this->assertTrue((bool) $own->is_active);
+        $this->assertDatabaseMissing('plan_module_grace', ['organization_id' => $own->id]);
+    }
+
+    public function test_platform_admin_can_change_plan_and_active_status(): void {
+        $admin = User::factory()->platformAdmin()->create();
+        $org = Organization::factory()->create(['plan' => 'enterprise']);
+
+        $this->actingAs($admin)->put(route('admin.organizations.update', $org), [
+            'name' => $org->name,
+            'plan' => 'pro',
+            'locale' => 'de',
+            'timezone' => 'Europe/Berlin',
+            'is_active' => 0,
+        ])->assertRedirect();
+
+        $org->refresh();
+        $this->assertSame('pro', $org->plan);
+        $this->assertFalse((bool) $org->is_active);
+    }
+
     public function test_platform_admin_can_export_foreign_org(): void {
         $admin = User::factory()->platformAdmin()->create();
         $foreign = Organization::factory()->create();

@@ -1,7 +1,7 @@
 ---
 title: "Zertifizierungen & Normkonformität"
 topic: isms.conformity
-version: 1
+version: 2
 keywords:
     - ISO 27001
     - ISO-Zertifikat

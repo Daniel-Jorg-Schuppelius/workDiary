@@ -1,7 +1,7 @@
 ---
 title: "Trasferimento dati"
 topic: admin.data-transfer
-version: 1
+version: 2
 keywords:
     - esportazione dati
     - esportare dati
@@ -12,6 +12,7 @@ keywords:
     - cronologia esportazioni
     - esportare clienti
     - migrazione dati
+    - export dati
 audience:
     - admin
     - buchhaltung
@@ -21,12 +22,28 @@ related:
     - admin.handbook
 ---
 
-Il trasferimento dati riunisce importazione ed esportazione sotto le
-schede **Importazione**, **Esportazione** e **Cronologia**; tutte le
-esecuzioni sono limitate all'organizzazione corrente. L'importazione
-avviene tramite il wizard CSV; per l'esportazione sceglie un'entità e
-un formato, opzionalmente con filtri, e il file resta poi disponibile
-per il download. La cronologia mostra tutte le esecuzioni con stato e
-indicatori; le esportazioni possono essere scaricate o eliminate (con
-rimozione del file). Ogni esportazione viene registrata nel log di
-audit; per i backup completi del sistema si veda **Backup**.
+Il trasferimento dati raggruppa l'importazione e l'esportazione di
+archivi di dati sotto una navigazione a schede comune: **Importazione**,
+**Esportazione** e **Cronologia**. Tutte le esecuzioni sono limitate
+all'organizzazione corrente.
+
+Sezioni:
+
+- **Importazione**: importazione CSV tramite la procedura guidata di
+  importazione. Dettagli nel capitolo **Importazione**.
+- **Esportazione**: selezione di un'entità (ad es. clienti) e di un
+  formato; facoltativamente limitabile tramite filtri (stato, testo di
+  ricerca, periodo, utente). L'esportazione viene generata come
+  esecuzione ed è poi disponibile per il download.
+- **Cronologia**: esecuzioni di importazione ed esportazione insieme,
+  con stato e indicatori (ad es. numero di righe).
+
+Le esportazioni possono essere scaricate o eliminate in un secondo
+momento; con l'eliminazione viene rimosso anche il file salvato.
+
+Vi ha accesso chi è amministratore o possiede almeno un diritto di
+esportazione per un'entità. Ogni esportazione viene registrata nel log
+di audit.
+
+Nota: questa sezione serve alla migrazione/al trasferimento dei dati.
+Per backup completi del sistema consulti **Backup**.

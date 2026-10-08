@@ -1,7 +1,7 @@
 ---
 title: "Learning platform"
 topic: learning.overview
-version: 3
+version: 5
 keywords:
     - e-learning
     - LMS
@@ -15,6 +15,7 @@ keywords:
     - skills matrix
     - online training
     - LearnDash import
+    - course catalogue
 audience: []
 related:
     - training.overview
@@ -28,6 +29,11 @@ someone owes by when stays in training management — the two interlock without
 duplicating each other.
 
 ## Building courses
+
+All courses are in the **Learning** → **Course catalogue** menu, as a list or
+as tiles and with the filters **Type**, **Category**, **Tags** and **Status**.
+With the **Create and edit learning courses** permission you add a new course
+there via **Create course**.
 
 A course consists of sections and learning units. A unit is either content, a
 quiz, an assignment, a classroom event or external material. Content is built
@@ -58,7 +64,7 @@ With **Fixed order**, a course releases each unit only once the previous one is
 completed; locked units show “After the previous unit”. A release date on the
 unit applies in addition.
 
-Coming from LearnDash, take over the **export ZIP** (course catalog → "LearnDash import"): courses, lessons, topics and quizzes are created as drafts, questions land in the catalog with their category. Images and media are not copied (placeholders to fill in), lesson videos only from allowed hosts. Completed courses are recorded as "imported" enrollments for people with a matching e-mail — without certificate and without instruction record, because an imported completion is no proof of its own. The dry run shows beforehand what would be created.
+Coming from LearnDash, take over the **export ZIP** (**Course catalogue** → "LearnDash import"): courses, lessons, topics and quizzes are created as drafts, questions land in the catalog with their category. Images and media are not copied (placeholders to fill in), lesson videos only from allowed hosts. Completed courses are recorded as "imported" enrollments for people with a matching e-mail — without certificate and without instruction record, because an imported completion is no proof of its own. The dry run shows beforehand what would be created.
 
 ## Releasing freezes the content
 
@@ -77,8 +83,9 @@ not only in the display. A **minimum dwell time** counts from first opening the
 unit or via learning time. **Preview units** are readable in the portal without
 enrollment (text only). **Categories** from the settings order the catalog, **tags** add a cross axis and stay
 editable after release;
-**availability window** and **enrollment limit** apply to self-enrollment —
-management may still assign, and mandatory enrollments bypass the limit.
+**availability window** applies only to self-enrollment — management may
+still assign. The **enrollment limit** also applies to assignments by
+management; only mandatory enrollments bypass it.
 Assignments carry **file rules** (extensions, count, size — never looser than
 the system) and optionally an **auto-approve** with full points, which excludes
 the four-eyes principle.
@@ -179,10 +186,10 @@ due date and access with a reason, cancel (never mandatory enrolments) and
 create the access link for externals — a new link invalidates the old one. A
 confirmed booking sends the link automatically.
 
-The **learning platform settings** (course catalogue, management right) hold
+The **learning platform settings** (**Course catalogue**, management right) hold
 the switch for points and leaderboard, the allowed embed hosts and the
 **trainer view**: when enabled, people with authoring or grading rights see only
-courses they own or are assigned to as trainers — catalogue, grading cockpit,
+courses they own or are assigned to as trainers — course catalogue, grading cockpit,
 quiz statistics and course analytics follow the same rule. Management still
 sees everything.
 
@@ -194,7 +201,47 @@ helpdesk module, otherwise by e-mail — both are notified as well. Two dashboar
 tiles (hidden by default) show your own open courses and the grading backlog;
 the activity search finds released courses — learners their own, authors all.
 
-The **course catalog** can be shown as a list or as tiles (the choice is stored per person) and carries a **star rating** from course feedback — only from five answers, so nothing can be traced back to individuals. The portal additionally shows the **price** from the linked article. In the player, **focus mode** hides the sidebar; "Duplicate" creates a new draft from a course — learning material yes, enrollments and records no.
+The **Course catalogue** can be shown as a list or as tiles (the choice is stored per person) and carries a **star rating** from course feedback — only from five answers, so nothing can be traced back to individuals. The portal additionally shows the **price** from the linked article. In the player, **focus mode** hides the sidebar; "Duplicate" creates a new draft from a course — learning material yes, enrollments and records no.
+
+## Learning paths
+
+A learning path sets a sequence of courses with deadlines – intended for
+onboarding. It is not a second catalogue of mandatory training: mandatory
+training and its targets remain in training management. You find learning
+paths under **Learning** → **Learning paths**.
+
+**Create path** (at the top of the page): **Course code** (the path's short
+code) and **Title** are required, **Target role** and **Duration (days)** are
+optional. The list below shows **Course code**, **Title**, **Target role** and
+the number of **Stations**; clicking the title opens the path.
+
+In the path:
+
+- **Add station**: choose a **Course** and optionally enter **Due in (days)**.
+  New stations are appended at the end; **Remove station** deletes a station
+  from the path.
+- **Assign path**: choose an active person in your organisation. For every
+  station a regular enrolment in the course is created, all at the same time;
+  an existing enrolment is left untouched. The usual assignment notifications
+  apply to new enrolments.
+
+**Deadlines:** a station's deadline counts from the day of assignment, not
+from the end of the previous station – if someone gets stuck at one station,
+the rest of the path does not shift. If a station has no deadline of its own,
+the path's **Duration (days)** applies; if that is missing too, the enrolment
+has no due date.
+
+**Assign by target role** (button in the list) assigns every path with a
+target role to all active people with that role. As target role you enter the
+role identifier as it also appears in the requirement matrix. The run can be
+repeated as often as you like: anyone already enrolled is not enrolled twice.
+The message states the paths checked and the enrolments newly created.
+
+**Limits:** courses that have not been released yet are skipped when
+assigning. If a course in the path has reached its enrolment limit, the
+assignment stops with a message.
+
+**Permission:** **Manage learning (assignments, groups, catalogue)**.
 
 ## Analytics and codetermination
 

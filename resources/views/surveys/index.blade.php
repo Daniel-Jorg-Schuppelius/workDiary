@@ -33,7 +33,7 @@
                     <th>{{ __('Fragebogen') }}</th>
                     <th>{{ __('Fragen') }}</th>
                     <th>{{ __('Einladungen') }}</th>
-                    <th>{{ __('Antworten') }}</th>
+                    <th>{{ __('Eingegangene Antworten') }}</th>
                     <th>{{ __('Eigenschaften') }}</th>
                 </tr>
             </x-slot:head>

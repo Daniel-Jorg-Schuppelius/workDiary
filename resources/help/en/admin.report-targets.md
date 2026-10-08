@@ -1,7 +1,7 @@
 ---
 title: "Report Targets"
 topic: admin.report-targets
-version: 1
+version: 3
 keywords:
     - target values
     - goals
@@ -22,31 +22,35 @@ related:
     - admin.handbook
 ---
 
-Report targets are benchmark values against which reports compare
-the actual figures. The comparison yields a traffic light
-(green/amber/red).
+Targets are benchmark values against which reports compare the actual
+figures. The comparison yields a traffic light (green/amber/red). You
+maintain them on the **Targets & benchmarks** page; **Add target**
+opens the dialog.
 
 For each target you define:
 
-- **Metric**: contribution margin, billable rate, rework share, SLA
-  compliance rate or utilization.
-- **Scope**: organization-wide or specifically for a customer, a
-  project or a user.
-- **Target value**: the numeric goal (e.g. a percentage).
-- **Period** (optional): month, quarter or year – purely
-  documentary.
-- **Valid from/until** (optional): the period in which the target
-  applies.
+- **Metric**: **Contribution margin (%)**, **Billable rate (%)**,
+  **Rework share (%)**, **SLA compliance rate (%)** or **Utilization
+  (%)**.
+- **Target value**: the numeric goal as a percentage.
+- **Scope**: **Organization (global)** or specifically **Customer**,
+  **Project** or **Employee**; you select the matching **Scope object**
+  next to it.
+- **Reference period** (optional): **Month**, **Quarter** or **Year** –
+  purely documentary.
+- **Valid from**/**Valid until** (optional): the period in which the
+  target applies.
 - **Note** (optional): a short explanation.
 
 Mind the direction of each metric: for margin, billable rate, SLA
-rate and utilization "higher is better"; for rework share "lower is
-better".
+compliance rate and utilization “higher is better”; for rework share
+“lower is better”.
 
-Usage: the targets feed into reports – such as the economics and SLA
-reports – where actual values are set against the targets and color-
-coded.
+Usage: the targets feed into reports – such as the economics,
+utilization and SLA reports – where **Target**, **Actual** and the
+deviation are shown side by side and color-coded.
 
 Note: several targets may overlap (e.g. organization-wide and
-project-specific). Keep scopes and validity periods unambiguous so
-the traffic light evaluates the intended target.
+project-specific). In that case the more specific scope applies; on a
+tie, the most recently created target wins. Keep scopes and validity
+periods unambiguous so the traffic light evaluates the intended target.

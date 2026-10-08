@@ -1,7 +1,7 @@
 ---
 title: "Lexoffice Conflicts"
 topic: admin.lexoffice
-version: 2
+version: 4
 keywords:
     - Lexware Office
     - sync conflict
@@ -19,36 +19,46 @@ related:
     - admin.plugins
     - articles.lexoffice
     - invoices.manage
+    - admin.integration-inbox
+    - inventory.conflicts
 ---
 
-Here you resolve synchronization conflicts with Lexoffice. A
-conflict arises when a local record (WorkDiary) and the
-corresponding record in Lexoffice diverge in one or more fields and
-synchronization requires a manual review.
+Here you resolve synchronization conflicts with Lexoffice. A conflict
+arises when a local record (WorkDiary) and the corresponding Lexoffice
+contact diverge in one or more fields and the **Conflict strategy** in
+the Lexoffice settings is set to **Manual review** (the default). The
+conflicts are handled in the **Mapping Inbox**: opening this page takes
+you there, filtered to the source **Lexoffice** and the case **Field
+conflict**.
 
-Inbox:
+In the Mapping Inbox:
 
-- List of open conflicts with the differing fields plus snapshots of
-  the local and the remote (Lexoffice) data.
-- Contacts/customers, articles, vouchers and invoices can be
-  affected.
+- For each conflict the differing fields are shown side by side as
+  **Local** and **Remote**.
+- Customers and suppliers are affected, i.e. the contacts from
+  Lexoffice.
+- The status filter also brings back conflicts that have already been
+  resolved.
 
 Resolution paths per conflict:
 
+- **Adopt remote**: updates the local record with the Lexoffice values
+  of the differing fields.
 - **Keep local**: retains the local values; the differing Lexoffice
-  values are discarded.
-- **Take remote**: updates the local record with the Lexoffice
-  values of the differing fields.
-- **Dismiss**: ignores the conflict (e.g. for intentionally
-  different data); it is marked as done.
+  values are not applied.
+- **Dismiss**: closes the conflict without any change (e.g. for
+  intentionally different data); it receives the status **Discarded**.
 
-Risks: "keep local" and "take remote" overwrite values. Review the
-compared data carefully before deciding. Note that for invoices the
-billing authority rests with the external program – WorkDiary
-supplies data to it.
+Risks: **Adopt remote** overwrites local values. Review the compared
+data carefully before deciding. Note that for invoices the billing
+authority rests with the external program – WorkDiary supplies data to
+it.
 
-The conflict strategy of the Lexoffice settings applies to contacts and
-articles. Article conflicts do not appear in this inbox but in the inventory
-conflict list (Inventory → Conflicts): there you keep the local state, take
-the Lexoffice state or dismiss the conflict — with the article management
-permission.
+The conflict strategy applies to contacts and articles. Article
+conflicts do not appear in the Mapping Inbox but in the **Conflicts**
+tab of the inventory (**Inventory** → **Conflicts**): there you choose
+**Keep local**, **Take Lexoffice state** or **Dismiss** — with the
+**Manage articles** permission.
+
+Permission: the Mapping Inbox is open to administrators and the
+**Accounting** role.

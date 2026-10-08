@@ -19,6 +19,8 @@ modules:
 related:
     - reports.overview
     - reports.drilldown
+    - reports.compliance
+    - reports.fleet
 ---
 
 Este informe compara el **tiempo de trabajo realmente registrado**

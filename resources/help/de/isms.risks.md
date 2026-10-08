@@ -1,7 +1,7 @@
 ---
 title: "Risikoregister"
 topic: isms.risks
-version: 1
+version: 3
 keywords:
     - Risikoanalyse
     - Risikobewertung
@@ -26,36 +26,49 @@ related:
 ---
 
 Im **Risikoregister** erfassen, bewerten (5×5) und behandeln Sie
-Informationssicherheitsrisiken je Geltungsbereich.
+Informationssicherheitsrisiken je Geltungsbereich. Sie finden es unter
+**ISMS** → **Steuerung** → **Risikoregister**.
 
 Typischer Ablauf:
 
-1. **Risiko erfassen**: Titel, Kategorie („Organisatorisch",
-   „Technisch", „Physisch", „Personal", „Lieferant"), betroffenes
-   Asset, Bedrohung/Schwachstelle, Verantwortlicher.
-2. **Bewerten**: Eintrittswahrscheinlichkeit (1–5) × Auswirkung (1–5)
-   ergibt den Score (1–25). Ampel: bis 6 grün (niedrig), 7–12 gelb
-   (mittel), über 12 rot (hoch).
-3. **Behandlung** wählen: „Vermeiden", „Vermindern", „Übertragen" oder
-   „Akzeptieren" – und Maßnahmen verknüpfen.
-4. **Status** entlang der Kette pflegen: „Identifiziert" →
-   „Analysiert" → „Behandelt"/„Akzeptiert" → „Geschlossen".
+1. **Risiko erfassen**: **Titel**, **Kategorie** („Organisatorisch“,
+   „Technisch“, „Physisch“, „Personell“, „Lieferant“), **Bezug
+   (System/Prozess/Standort)**, **Bedrohung** (die zugrunde liegende
+   Bedrohung oder Schwachstelle), **Verantwortlich** und **Review
+   fällig**.
+2. **Bewerten**: **Eintrittswahrscheinlichkeit** (1–5) × Auswirkung
+   (1–5) ergibt den **Score** (1–25). Ampel der Risikomatrix: Niedrig
+   (Score ≤ 6), Mittel (Score 7–12), Hoch (Score > 12).
+3. **Behandlung** wählen: „Vermeiden“, „Vermindern“, „Übertragen“ oder
+   „Akzeptieren“ – und unter **Verknüpfte Maßnahmen** Maßnahmen
+   zuordnen.
+4. **Status** über **Status ändern** entlang der Kette pflegen:
+   „Identifiziert“ → „Analysiert“ → „Behandelt“/„Akzeptiert“ →
+   „Geschlossen“. Ein geschlossenes Risiko lässt sich wieder auf
+   „Analysiert“ setzen.
 
 Bewertungshistorie:
 
-- Jede Bewertung ist als **Brutto-**, **Netto-** oder **Zielrisiko**
-  historisiert und durchläuft „Entwurf" → „Freigegeben".
+- Mit **Bewertung erfassen** legen Sie eine Bewertung an; die **Art der
+  Bewertung** ist „Brutto“, „Netto“ oder „Ziel“. Jede Bewertung hat eine
+  **Begründung**, optional ein **Gültig bis** (Ablauf- bzw.
+  Reviewdatum) und durchläuft „Entwurf“ → „Freigegeben“ (**Freigeben**).
 - **Freigegebene Bewertungen sind unveränderlich.**
 - Die jüngste freigegebene **Netto**-Bewertung bestimmt die im Risiko
-  angezeigten Werte. Ändern Sie Wahrscheinlichkeit/Auswirkung direkt am
-  Risiko, entsteht automatisch eine freigegebene Direktbewertung –
+  angezeigten Werte. Ändern Sie Wahrscheinlichkeit oder Auswirkung direkt
+  am Risiko, entsteht automatisch eine freigegebene Direktbewertung –
   die Historie bleibt lückenlos.
 
-Wichtige Regel: Der Wechsel auf **„Akzeptiert"** (Restrisiko-Akzeptanz)
-verlangt eine freigegebene Netto-Bewertung **mit Ablauf-/Reviewdatum**.
+Wichtige Regel: Der Wechsel auf **„Akzeptiert“** (Restrisiko-Akzeptanz)
+verlangt eine freigegebene Netto-Bewertung **mit Datum „Gültig bis“**.
 
-Berechtigungen: Einsicht erfordert ISMS-Leserechte; Änderungen
-erfordern ISMS-Pflegerechte.
+Berechtigungen: Die Einsicht erfordert das Recht **ISMS-Register sehen
+(Risiken, Maßnahmen, SoA)**; Änderungen erfordern **ISMS pflegen
+(Risiken, Maßnahmen, Katalog-Import)**.
 
-Nächste Schritte: Überfällige Risiko-Reviews können über
-Benachrichtigungsregeln gemeldet und eskaliert werden.
+Nächste Schritte: Rückt das **Gültig bis** der jüngsten freigegebenen
+Netto-Bewertung eines offenen Risikos heran oder ist es überschritten,
+wird die verantwortliche Person benachrichtigt; über
+**Benachrichtigungsregeln** lässt sich das zusätzlich eskalieren. Das
+Feld **Review fällig** am Risiko dient der Planung und Sortierung, löst
+selbst aber keine Benachrichtigung aus.

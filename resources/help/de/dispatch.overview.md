@@ -1,7 +1,7 @@
 ---
 title: "Disposition und Konfliktwarnungen"
 topic: dispatch.overview
-version: 1
+version: 2
 keywords:
     - Einsatzplanung
     - disponieren

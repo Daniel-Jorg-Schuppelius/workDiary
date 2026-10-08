@@ -1,7 +1,7 @@
 ---
 title: "SLA, contracts & service levels"
 topic: sla.overview
-version: 1
+version: 3
 keywords:
     - service level agreement
     - response time
@@ -18,44 +18,58 @@ related:
     - glossary.core
 ---
 
-SLA contracts (Service Level Agreements) define the agreed response and
-resolution deadlines per priority, either per customer or as a default. From
-these targets WorkDiary derives a service ticket's SLA status and records
-breaches in an audit-proof register.
+SLA contracts (service level agreements) store the agreed response and
+resolution deadlines per priority (**Deadlines per priority**) per
+customer or as a **Default contract** for all customers, optionally with
+**Business hours** – without them, deadlines run in calendar time. You
+find the contracts under **Service desk** → **SLA contracts**. From these
+targets WorkDiary derives the SLA status of a service ticket and records
+breaches in an audit-proof way.
 
 ## SLA status on the ticket
 
-Every service ticket with an SLA deadline shows its resolution status as a
-badge:
+Every service ticket with an SLA deadline shows its resolution status as
+a badge:
 
-- **SLA on track**: enough time left until the resolution deadline.
-- **SLA at risk**: remaining time is below 20 % of the total deadline.
-- **SLA breached**: the deadline has passed (or the ticket was acknowledged
-  or resolved too late).
+- **SLA on track**: enough time remains until the resolution deadline.
+- **SLA at risk**: the remaining time is at most 20 % of the total
+  deadline.
+- **SLA breached**: the deadline has passed (or the ticket was
+  acknowledged or resolved too late).
+- **SLA met**: the ticket was resolved in time.
 
-The response deadline is evaluated the same way and checked on the first
-acknowledgement.
+Tickets without a deadline show “No SLA”. The response deadline is
+evaluated in the same way and checked at the first acknowledgement.
 
 ## Violation register & detection
 
 Missed deadlines are recorded in a violation register – exactly once per
-ticket and type (response or resolution). They are detected:
+ticket and type (“Response time” or “Resolution time”). They are
+detected:
 
-1. by the nightly scan of open tickets (`tickets:scan-sla-breaches`),
-2. on status transitions when the first response or the resolution happens
-   too late.
+1. by the automatic check of open tickets, which runs every five minutes
+   by default,
+2. on status transitions, when the first response or the resolution
+   happens too late.
 
-Each violation can be acknowledged and annotated with a cause.
+Each violation can be given a **Cause** in the SLA report's **Violation
+list** and marked with **Acknowledge**; this requires the **Acknowledge
+SLA violations** permission.
 
 ## Escalation
 
-The deadline scanner notifies the ticket owner about at-risk and breached
-tickets and – as an escalation – the team lead. Thresholds and recipients
-follow the organisation's notification rules.
+The automatic check notifies the assigned person about at-risk and
+breached tickets. If the event remains unresolved, WorkDiary escalates
+according to the organisation's **Notification rules** to the escalation
+role set there (team leads by default). In addition, WorkDiary works
+through the stages stored under **Escalation** in the SLA contract.
 
 ## SLA report
 
-The SLA report (Reports → SLA) shows, for the selected period, the
-compliance rate, violations by type, priority and customer, a cause grouping
-and a violation list with drill-down to the ticket. The report is
-exportable as CSV and PDF.
+The **SLA report** (**Reports** → **Projects & customers** → **SLA**)
+shows, for the selected period, the **Tickets with SLA**, the
+**Compliance rate** and the **Violations** – broken down **By type**,
+**By priority**, **By customer** and **By cause** – plus a **Violation
+list** with a jump to the ticket and the **Included-time quotas**. The
+report can be exported as PDF, CSV and Excel. Anyone with the **View SLA
+status & report** permission may view it.

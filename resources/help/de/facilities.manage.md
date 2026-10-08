@@ -1,7 +1,7 @@
 ---
 title: "Standorte & Räume"
 topic: facilities.manage
-version: 1
+version: 2
 keywords:
     - Liegenschaften
     - Gebäude

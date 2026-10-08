@@ -1,7 +1,7 @@
 ---
 title: "OpenProject-Integration"
 topic: admin.openproject
-version: 1
+version: 3
 keywords:
     - Projektmanagement
     - Work Packages
@@ -20,44 +20,54 @@ related:
     - admin.plugins
     - admin.toggl
     - admin.import
+    - admin.integration-inbox
 ---
 
 Die OpenProject-Integration koppelt WorkDiary **bidirektional** mit
 OpenProject: Zeiten werden importiert **und** erfasste Zeiten lassen
-sich nach OpenProject zurückbuchen.
+sich nach OpenProject zurückbuchen. Zugangsdaten und Optionen
+hinterlegen Sie in den Plugin-Einstellungen (u. a. **Instanz-URL**,
+**API-Token** und **Sync-Zeitfenster (Tage)**).
 
-Struktur-Sync:
+Synchronisieren (Seite **OpenProject synchronisieren**):
 
-- Importiert Projekte, Work Packages und Nutzer aus OpenProject und
-  verknüpft sie mit WorkDiary-Projekten und -Aufgaben.
-- Voraussetzung für den Zeit-Import.
+- **Struktur + Zeiten synchronisieren** mit **Jetzt synchronisieren**:
+  gleicht Projekte und Work Packages ab und importiert anschließend die
+  Zeiteinträge im eingestellten Zeitfenster.
+- **Nur Struktur abgleichen** mit **Struktur abgleichen**: ordnet
+  Projekte, Work Packages und Benutzer aus OpenProject den
+  WorkDiary-Projekten, -Aufgaben und -Benutzern zu. Ist **Fehlende
+  Projekte/Aufgaben anlegen** eingeschaltet, legt der Abgleich fehlende
+  Einträge automatisch an.
 
-Zeit-Import (Sync):
+Unzugeordnete Zeiteinträge:
 
-- Übernimmt Zeiteinträge aus OpenProject.
+- Was sich nicht automatisch zuordnen lässt, landet in der zentralen
+  **Zuordnungs-Inbox**; **Zur Zuordnungs-Inbox** führt dorthin und
+  zeigt die Zahl der offenen Einträge.
+- Dort ordnen Sie eine Gruppe einem Kunden und Projekt zu (oder
+  benennen ein neues) und buchen sie, oder Sie verwerfen sie. Künftige
+  Importe ordnen anhand der gespeicherten Zuordnungen automatisch zu.
 
-Posteingang (unzugeordnete Einträge):
+Rückbuchung (**Zeiten zurückbuchen**):
 
-- OpenProject-Projekte ohne automatische Zuordnung sammeln sich hier
-  (mit Anzahl, Dauer und Zeitraum).
-- Sie ordnen sie einem bestehenden Projekt zu, legen ein neues an
-  oder verwerfen sie. Künftige Importe ordnen anhand der gespeicher­
-  ten Zuordnungen automatisch zu.
+- Schreibt nicht exportierte Zeiten von Projekten, die einem
+  OpenProject-Projekt zugeordnet sind, nach OpenProject zurück;
+  Aufgaben werden – sofern zugeordnet – als Work Package gebucht.
+  **Zeitraum (optional)** grenzt den Lauf ein (leer = alle offenen
+  Einträge), **Jetzt zurückbuchen** startet ihn, **Letzte Rückbuchung**
+  zeigt das Ergebnis. Bereits gebuchte Einträge werden übersprungen.
+- Voraussetzung: In den Plugin-Einstellungen muss die
+  **OpenProject-Activity-ID (Rückbuchung)** hinterlegt sein – sonst ist
+  keine Rückbuchung möglich.
 
-Rückbuchung (Push):
+Zuordnungen (**Zuordnungen verwalten**):
 
-- Schreibt in WorkDiary erfasste Zeiten nach OpenProject zurück.
-  Bereits exportierte Einträge werden übersprungen und neu
-  exportierte als exportiert markiert.
-- Voraussetzung: Im Plugin muss eine **Standard-Aktivität**
-  (default_activity_id) hinterlegt sein – sonst schlägt die
-  Rückbuchung fehl.
-
-Zuordnungen (Mappings):
-
-- Verknüpfungen für Projekte, Work Packages und Nutzer. Lassen sich
-  ändern oder löschen.
+- Die Seite **OpenProject – Zuordnungen** listet die gemerkten
+  Verknüpfungen für Projekte, Work Packages und Benutzer. Mit
+  **Umlegen** ändern Sie das Ziel, mit **Entfernen** löschen Sie eine
+  Zuordnung.
 
 Risiken: Die Rückbuchung verändert Daten im verbundenen OpenProject-
-System. Prüfen Sie vor dem ersten Push die Mappings und die
-Standard-Aktivität, um Fehlbuchungen zu vermeiden.
+System. Prüfen Sie vor dem ersten Lauf die Zuordnungen und die
+Activity-ID, um Fehlbuchungen zu vermeiden.

@@ -1,7 +1,7 @@
 ---
 title: "Shift exchange with approval"
 topic: planning.exchange
-version: 1
+version: 2
 keywords:
     - swap shift
     - shift swap

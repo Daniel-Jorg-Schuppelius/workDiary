@@ -1,7 +1,7 @@
 ---
 title: "Schwachstellen & Advisories"
 topic: isms.vulnerabilities
-version: 1
+version: 2
 keywords:
     - Sicherheitslücke
     - CVE

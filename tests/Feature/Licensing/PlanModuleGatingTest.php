@@ -135,7 +135,8 @@ class PlanModuleGatingTest extends TestCase {
     public function test_enterprise_shows_kanban_item_and_team_reports_in_menu(): void {
         $org = Organization::factory()->enterprise()->create();
 
-        $response = $this->actingAs($this->userFor($org))->get(route('dashboard'));
+        // Coverage öffnet nur ein Admin — das Menü zeigt den Eintrag deshalb nur ihm.
+        $response = $this->actingAs(User::factory()->admin()->create(['organization_id' => $org->id]))->get(route('dashboard'));
 
         $response->assertOk();
         $response->assertSee(route('kanban.index'), false);

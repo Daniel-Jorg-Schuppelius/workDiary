@@ -54,7 +54,7 @@
                     <x-table.th>{{ __('Ende') }}</x-table.th>
                     <x-table.th sort="location">{{ __('Ort') }}</x-table.th>
                     <x-table.th>{{ __('Zweck') }}</x-table.th>
-                    <x-table.th align="right">{{ __('Pauschale') }}</x-table.th>
+                    <x-table.th align="right">{{ __('Verpflegungspauschale') }}</x-table.th>
                     <x-table.th sort="status">{{ __('Status') }}</x-table.th>
                     <th></th>
                 </tr>

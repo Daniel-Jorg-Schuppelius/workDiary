@@ -1,7 +1,7 @@
 ---
 title: "Plataforma de aprendizaje"
 topic: learning.overview
-version: 3
+version: 5
 keywords:
     - e-learning
     - LMS
@@ -15,6 +15,7 @@ keywords:
     - matriz de competencias
     - importar LearnDash
     - formación en línea
+    - catálogo de cursos
 audience: []
 related:
     - training.overview
@@ -28,6 +29,11 @@ cursar cada persona y hasta cuándo permanece en la gestión de formación:
 ambos encajan sin duplicarse.
 
 ## Construir cursos
+
+Todos los cursos están en el menú **Aprendizaje** → **Catálogo de cursos**,
+como lista o mosaicos y con los filtros **Tipo**, **Categoría**, **Etiquetas**
+y **Estado**. Con el permiso **Crear y editar cursos**, usted crea allí un
+curso nuevo mediante **Crear curso**.
 
 Un curso se compone de secciones y unidades. Una unidad es contenido, un
 examen, una tarea, una sesión presencial o material externo. El contenido se
@@ -59,7 +65,7 @@ Con **Orden fijo**, un curso libera cada unidad solo cuando la anterior está
 completada; las unidades bloqueadas muestran «Tras la unidad anterior». La fecha
 de publicación de la unidad se aplica además.
 
-Quien viene de LearnDash adopta el **ZIP de exportación** (catálogo → «Importación de LearnDash»): cursos, lecciones, temas y exámenes se crean como borradores, las preguntas van al catálogo con su categoría. Imágenes y medios no se copian (marcadores para completar), los vídeos de lección solo de hosts permitidos. Los cursos finalizados se anotan como inscripciones «importadas» para personas con correo coincidente — sin certificado ni registro de instrucción, porque una finalización importada no es prueba propia. La prueba muestra de antemano lo que se crearía.
+Quien viene de LearnDash adopta el **ZIP de exportación** (**Catálogo de cursos** → «Importación de LearnDash»): cursos, lecciones, temas y exámenes se crean como borradores, las preguntas van al catálogo con su categoría. Imágenes y medios no se copian (marcadores para completar), los vídeos de lección solo de hosts permitidos. Los cursos finalizados se anotan como inscripciones «importadas» para personas con correo coincidente — sin certificado ni registro de instrucción, porque una finalización importada no es prueba propia. La prueba muestra de antemano lo que se crearía.
 
 ## Publicar congela el contenido
 
@@ -80,9 +86,10 @@ acceso externo y sincronización sin conexión —, no solo en la vista. Una
 tiempo de aprendizaje. Las **unidades de vista previa** se leen en el portal
 sin inscripción (solo texto). Las **categorías** de los ajustes ordenan el
 catálogo, las **etiquetas** añaden un eje transversal y se pueden cambiar tras
-la publicación; la **ventana de disponibilidad** y el **límite de participantes**
-rigen la autoinscripción — la administración puede seguir asignando y las
-inscripciones obligatorias omiten el límite. Las tareas llevan **reglas de
+la publicación; la **ventana de disponibilidad** solo rige la
+autoinscripción — la administración puede seguir asignando. El **límite de
+participantes** rige también para las asignaciones de la administración; solo
+las inscripciones obligatorias lo omiten. Las tareas llevan **reglas de
 archivos** (extensiones, número, tamaño — nunca más laxas que el sistema) y,
 opcionalmente, una **aprobación automática** con puntos completos, incompatible
 con el principio de cuatro ojos.
@@ -183,10 +190,10 @@ vencimiento y acceso con un motivo, cancelar (nunca las inscripciones
 obligatorias) y crear el enlace de acceso para externos — un enlace nuevo
 invalida el anterior. Una reserva confirmada envía el enlace automáticamente.
 
-La **configuración de la plataforma** (catálogo, derecho de gestión) contiene
+La **configuración de la plataforma** (**Catálogo de cursos**, derecho de gestión) contiene
 el interruptor de puntos y clasificación, los hosts de inserción permitidos y la
 **vista de formador**: si está activa, las personas con derecho de autoría o
-evaluación solo ven los cursos propios o a los que están asignadas — catálogo,
+evaluación solo ven los cursos propios o a los que están asignadas — catálogo de cursos,
 panel de evaluación, estadísticas y analítica siguen la misma regla. La gestión
 sigue viéndolo todo.
 
@@ -199,7 +206,50 @@ notificación. Dos mosaicos del panel (ocultos por defecto) muestran los cursos
 abiertos propios y las evaluaciones pendientes; la búsqueda de actividad
 encuentra los cursos publicados — el alumnado los suyos, la autoría todos.
 
-El **catálogo** puede verse como lista o mosaicos (la elección se guarda por persona) y lleva una **valoración con estrellas** de la encuesta del curso — solo a partir de cinco respuestas, para que nada sea atribuible a personas. El portal muestra además el **precio** del artículo vinculado. En el reproductor, el **modo concentración** oculta la barra lateral; «Duplicar» crea un nuevo borrador a partir de un curso — material sí, inscripciones y registros no.
+El **Catálogo de cursos** puede verse como lista o mosaicos (la elección se guarda por persona) y lleva una **valoración con estrellas** de la encuesta del curso — solo a partir de cinco respuestas, para que nada sea atribuible a personas. El portal muestra además el **precio** del artículo vinculado. En el reproductor, el **modo concentración** oculta la barra lateral; «Duplicar» crea un nuevo borrador a partir de un curso — material sí, inscripciones y registros no.
+
+## Itinerarios de aprendizaje
+
+Un itinerario de aprendizaje fija una secuencia de cursos con plazos,
+pensada para la incorporación. No es un segundo catálogo de formaciones
+obligatorias: las formaciones obligatorias y sus objetivos siguen en la
+gestión de formación. Encontrará los itinerarios en **Aprendizaje** →
+**Itinerarios**.
+
+**Crear itinerario** (arriba en la página): **Código del curso** (el código
+corto del itinerario) y **Título** son obligatorios; **Rol destinatario** y
+**Duración (días)** son opcionales. La lista inferior muestra **Código del
+curso**, **Título**, **Rol destinatario** y el número de **Etapas**; un clic
+en el título abre el itinerario.
+
+En el itinerario:
+
+- **Añadir etapa**: elija un **Curso** e indique opcionalmente un **Plazo
+  (días)**. Las etapas nuevas se añaden al final; **Quitar etapa** elimina una
+  etapa del itinerario.
+- **Asignar itinerario**: elija una persona activa de su organización. Por
+  cada etapa se crea una inscripción habitual en el curso, todas a la vez; una
+  inscripción ya existente no se toca. Para las inscripciones nuevas rigen las
+  notificaciones habituales de asignación.
+
+**Plazos:** el plazo de una etapa cuenta desde el día de la asignación, no
+desde el final de la etapa anterior; si alguien se queda atascado en una
+etapa, el resto del itinerario no se desplaza. Si una etapa no tiene plazo
+propio, se aplica la **Duración (días)** del itinerario; si también falta, la
+inscripción queda sin vencimiento.
+
+**Asignar por rol** (botón en la lista) asigna cada itinerario con rol
+destinatario a todas las personas activas de ese rol. Como rol destinatario
+introduzca el identificador del rol tal como figura también en la matriz de
+obligaciones. La operación puede repetirse cuantas veces quiera: quien ya
+está inscrito no se inscribe dos veces. El mensaje indica los itinerarios
+revisados y las inscripciones creadas.
+
+**Límites:** los cursos que aún no están publicados se omiten al asignar. Si
+un curso del itinerario ha alcanzado su límite de participantes, la
+asignación se interrumpe con un mensaje.
+
+**Permiso:** **Gestionar el aprendizaje (asignaciones, grupos, catálogo)**.
 
 ## Analítica y cogestión
 

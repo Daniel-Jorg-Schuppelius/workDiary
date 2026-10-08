@@ -1,7 +1,7 @@
 ---
 title: "OpenProject Integration"
 topic: admin.openproject
-version: 1
+version: 3
 keywords:
     - project management
     - work packages
@@ -18,43 +18,50 @@ related:
     - admin.plugins
     - admin.toggl
     - admin.import
+    - admin.integration-inbox
 ---
 
-The OpenProject integration couples WorkDiary with OpenProject
-**bidirectionally**: times are imported **and** recorded times can
-be pushed back to OpenProject.
+The OpenProject integration couples WorkDiary **bidirectionally** with
+OpenProject: times are imported **and** recorded times can be posted
+back to OpenProject. You store credentials and options in the plugin
+settings (including **Instance URL**, **API token** and **Sync window
+(days)**).
 
-Structure sync:
+Synchronizing (**Sync OpenProject** page):
 
-- Imports projects, work packages and users from OpenProject and
-  links them to WorkDiary projects and tasks.
-- Prerequisite for the time import.
+- **Sync structure + times** with **Synchronize now**: reconciles
+  projects and work packages and then imports the time entries within
+  the configured window.
+- **Sync structure only** with **Reconcile structure**: maps projects,
+  work packages and users from OpenProject to WorkDiary projects, tasks
+  and users. If **Create missing projects/tasks** is switched on, the
+  reconciliation creates missing entries automatically.
 
-Time import (sync):
+Unassigned time entries:
 
-- Brings time entries in from OpenProject.
+- Anything that cannot be assigned automatically ends up in the central
+  **Mapping Inbox**; **To mapping inbox** takes you there and shows the
+  number of open entries.
+- There you assign a group to a customer and project (or name a new
+  one) and book it, or you dismiss it. Future imports map
+  automatically based on the stored mappings.
 
-Inbox (unmatched entries):
+Posting back (**Post times back**):
 
-- OpenProject projects without an automatic match collect here (with
-  count, duration and date range).
-- You assign them to an existing project, create a new one, or
-  dismiss them. Future imports match automatically using the stored
-  mappings.
+- Writes non-exported times of projects mapped to an OpenProject
+  project back to OpenProject; tasks are booked as work packages if
+  they are mapped. **Period (optional)** limits the run (empty = all
+  open entries), **Post back now** starts it and **Last post-back** shows
+  the result. Entries already posted are skipped.
+- Prerequisite: the **OpenProject activity ID (post-back)** must be set
+  in the plugin settings – otherwise no posting back is possible.
 
-Push back:
+Mappings (**Manage mappings**):
 
-- Writes times recorded in WorkDiary back to OpenProject. Already
-  exported entries are skipped and newly exported ones are marked as
-  exported.
-- Prerequisite: a **default activity** (default_activity_id) must be
-  configured in the plugin – otherwise the push fails.
+- The **OpenProject – mappings** page lists the stored links for
+  projects, work packages and users. **Reallocate** changes the target,
+  **Remove** deletes a mapping.
 
-Mappings:
-
-- Links for projects, work packages and users. They can be changed
-  or deleted.
-
-Risks: the push back changes data in the connected OpenProject
-system. Before the first push, check the mappings and the default
-activity to avoid mis-postings.
+Risks: posting back changes data in the connected OpenProject system.
+Before the first run, check the mappings and the activity ID to avoid
+misbookings.

@@ -1,7 +1,7 @@
 ---
 title: "Fernwartung"
 topic: admin.remote-support
-version: 1
+version: 3
 keywords:
     - AnyDesk
     - TeamViewer
@@ -22,41 +22,51 @@ related:
     - assets.fleet
 ---
 
-Die Fernwartung übernimmt Sitzungsberichte aus AnyDesk und
-TeamViewer und überführt sie in Zeiteinträge. Sitzungen werden über
-die Geräte-ID (AnyDesk-/TeamViewer-ID) einem Asset (Arbeitsplatz,
-Server, Notebook) zugeordnet.
+Die Fernwartung übernimmt Sitzungsberichte aus AnyDesk und TeamViewer
+und überführt sie in Zeiteinträge. Sitzungen werden über die Geräte-ID
+(AnyDesk-/TeamViewer-ID) einem Gerät (Asset, z. B. Arbeitsplatz,
+Server, Notebook) zugeordnet. Über **Sitzungen importieren** lesen Sie
+AnyDesk-Sitzungen zusätzlich über den zentralen Import ein.
 
-Posteingang (offene Anfragen):
+Die Seite **Fernwartung – unzugeordnete Verbindungen** hat zwei Reiter;
+das Suchfeld findet Geräte-ID, Alias, Gerät oder Notiz.
 
-- Hier sammeln sich Sitzungen, deren Geräte-ID noch keinem Asset der
-  Organisation zugeordnet ist. Sie warten auf eine Entscheidung.
-- Einträge sind nach Anbieter und Geräte-ID gruppiert (mit Anzahl,
-  Dauer und Zeitraum).
+Reiter **Unzugeordnete Geräte**:
 
-Aktionen:
-
-- **Bestehendem Gerät zuordnen**: verknüpft die Geräte-ID mit einem
-  vorhandenen Asset; offene Sitzungen werden sofort als Zeiteinträge
+- Hier sammeln sich IDs, die in den Reports auftauchen, aber noch
+  keinem Gerät der Organisation zugeordnet sind – mit Anzahl der
+  Sitzungen, Dauer und Zeitraum.
+- Gibt es einen **Vorschlag** (passender Kunde oder passendes Gerät),
+  übernehmen Sie ihn mit **Übernehmen**.
+- **Bestehendes Gerät**: unter **Gerät auswählen** ein vorhandenes Gerät
+  wählen und **Zuordnen**; die gespeicherten Sitzungen werden sofort
+  als Zeiteinträge gebucht.
+- **Neues Gerät**: **Name**, **Kategorie**, **Kunde** und optional
+  **Fremdkunde (Endkunde)** angeben und **Anlegen & zuordnen**.
+- **Mehrkundengerät**: Dieses Kästchen in beiden Reitern kennzeichnet
+  ein Gerät, das für mehrere Kunden genutzt wird. Seine Sitzungen
+  werden dann nicht automatisch gebucht, sondern im zweiten Reiter je
+  Kunde.
+- **Verwerfen**: lehnt alle Verbindungen einer ID ab; sie werden nicht
   gebucht.
-- **Neues Gerät anlegen**: legt ein neues Asset (Kategorie, Kunde)
-  an und ordnet die Geräte-ID in einem Schritt zu.
-- **Sitzungen zuweisen (geteiltes Gerät)**: bei Geräten mehrerer
-  Kunden lassen sich einzelne Sitzungen gezielt einem bestimmten
-  Kunden/Projekt zuordnen – verhindert Fehlbuchungen.
-- **Verwerfen**: lehnt eine ganze Geräte-ID-Gruppe ab; die Sitzungen
-  werden nicht gebucht.
-- **Einzelsitzung verwerfen**: verwirft ausgewählte Sitzungen eines
-  geteilten Geräts.
+
+Reiter **Sitzungen zuordnen** (Mehrkundengeräte):
+
+- Sitzungen markieren, **Kunde**, optional **Fremdkunde (Endkunde)** und
+  **Projekt** wählen und **Markierte buchen** – so landen die Zeiten
+  beim richtigen Kunden.
+- **Markierte intern buchen** bucht Sitzungen ohne Kunden auf das
+  interne Wartungsprojekt.
+- **Markierte verwerfen** verwirft einzelne Sitzungen.
 
 Sicherheit und Risiken:
 
 - API-Zugangsdaten der Anbieter liegen in den Plugin-Einstellungen
   der Organisation. Das System liest Sitzungsberichte – es vergibt
   keinen direkten Fernzugriff.
-- Geteilte Geräte erfordern sorgfältige Zuordnung je Sitzung, um
+- Mehrkundengeräte erfordern sorgfältige Zuordnung je Sitzung, um
   kundenübergreifende Fehlbuchungen zu vermeiden.
-- **Verworfene Sitzungen sind endgültig entfernt** und werden nicht
-  in Zeiteinträge überführt – nicht rückholbar.
+- **Verworfene Verbindungen und Sitzungen werden nicht gebucht**; die
+  Seite bietet keinen Weg, sie zurückzuholen.
 
-Berechtigung: Der Posteingang ist Administratoren vorbehalten.
+Berechtigung: Die Seite ist Administratoren vorbehalten.

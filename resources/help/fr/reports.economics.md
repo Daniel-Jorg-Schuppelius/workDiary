@@ -1,7 +1,7 @@
 ---
 title: "Rentabilité"
 topic: reports.economics
-version: 1
+version: 3
 keywords:
     - calcul a posteriori
     - marge sur coûts variables
@@ -21,17 +21,44 @@ related:
     - reports.drilldown
 ---
 
-La vue rentabilité (post-calcul) montre par client et par projet la
-marge sur coûts variables : **produit** (temps facturables × taux +
-matériel facturé + frais facturables, en projection — la facture
-officielle reste dans le système de facturation externe), **coûts**
-(taux de coût interne × temps + matériel et dépenses directes) et
-**marge contributive** en valeur et en pourcentage. S'y ajoutent un
-**classement** Top/Flop 5 par projet et client, le **temps non
-facturable** comme proxy des reprises et gestes commerciaux, et la
-comparaison **prévu/réel** contre les budgets temps et euros du projet.
-Attention à la qualité des données : les temps sans taux de coût interne
-entrent avec 0 € (marqués `*`, marge trop optimiste) et les projets sans
-budget affichent « – ». Export CSV ou PDF ; données financières à
-l'échelle de l'organisation, réservées aux titulaires du droit de
-lecture des rapports.
+La page **Rentabilité** (post-calcul) sous **Rapports** → **Finances et
+audit** → **Rentabilité** affiche la marge par client (**Rentabilité par
+client**) et par projet (**Rentabilité & prévu-vs-réel par projet**) sur
+la **Période** choisie :
+
+- **Revenu** = temps facturables × taux + matériel facturé + frais
+  facturables. La facture qui fait foi est tenue par le système de
+  facturation externe ; ici, les montants saisis servent de projection.
+- **Coûts** = taux de coût interne du temps × temps + charges directes de
+  matériel et de justificatifs.
+- **Marge sur coûts variables** = revenu − coûts, également exprimée en
+  **Marge** en pourcentage.
+
+Autres analyses :
+
+- **Classement** : « Top 5 clients (marge sur coûts variables) »,
+  « Flop 5 clients (marge de contribution) » ainsi que la même chose pour
+  les projets – les clients et projets déficitaires deviennent visibles.
+- **Temps non facturable** : par client, **Facturable (min.)**, **Non
+  facturable (min.)** et **Part %** montrent combien de temps a été saisi
+  sans facturation – un indice de reprises et de gestes commerciaux. Par
+  projet, **Retouche (min.)**, **Geste commercial (min.)** et **Retouche %**
+  indiquent le temps saisi avec un motif de reprise ou de geste
+  commercial.
+- **Prévu vs réel** par projet : **Réel (min.)** face à **Plan (min.)**
+  issu du budget temps du projet (**Δ Min.**) et coûts réels face au
+  **Budget du plan** en euros (**Δ Budget**).
+
+Remarques sur la qualité des données :
+
+- Si **aucun taux de coût interne** n’est renseigné pour une partie des
+  temps, ceux-ci sont comptés avec 0 € de coûts – la marge est alors trop
+  optimiste. Les coûts portent alors un astérisque avec la mention « Taux
+  de coût non entièrement renseignés ».
+- Les projets **sans budget temps/budget** affichent « – » dans les
+  colonnes du plan.
+
+Export en **PDF**, **CSV** ou **Excel** pour la direction et le contrôle
+de gestion. La page présente des données financières de toute
+l’organisation et n’est accessible qu’aux personnes disposant du droit
+**Voir les rapports**.

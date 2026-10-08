@@ -1,7 +1,7 @@
 ---
 title: "Informar de un problema"
 topic: support.report-problem
-version: 1
+version: 2
 keywords:
     - informar de un error
     - reportar un bug
@@ -18,14 +18,26 @@ related:
     - admin.diagnostics
 ---
 
-**Informar de un problema** envía las incidencias técnicas al soporte
+Con **Informar de un problema** envía incidencias técnicas al soporte
 directamente desde la página afectada, sin buscar archivos de registro
-ni enviar capturas por correo.
+ni reunir capturas de pantalla por correo electrónico.
 
-Abra la barra lateral de ayuda, haga clic en *Informar de un problema*
-y describa lo que esperaba y lo que ocurrió. La sección
-*Datos transmitidos* muestra exactamente qué información técnica se
-envía — nunca datos de clientes ni de pedidos. Puede adjuntar un
-extracto de diagnóstico anonimizado (con vista previa). Tras el envío
-recibirá un número de referencia y podrá seguir el estado en
-*Mis informes de problemas*.
+**Así funciona:**
+
+1. Abra la barra lateral de ayuda y haga clic en *Informar de un
+   problema* (también disponible en las páginas de error).
+2. Describa brevemente lo que esperaba y lo que ocurrió en su lugar.
+   Opcionalmente, puede adjuntar capturas de pantalla.
+3. Revise la sección *Datos transmitidos*: allí ve exactamente qué
+   información técnica (página, versión de la aplicación, ID de la
+   solicitud) se envía, **sin datos de encargos ni de clientes**.
+4. Opcionalmente, envíe también un *extracto de diagnóstico
+   anonimizado*. La vista previa muestra el contenido antes del envío;
+   los valores sensibles se eliminan automáticamente.
+
+Tras el envío recibe un **número de referencia** (p. ej.,
+`PR-2026-0001`). En *Mis informes de problemas* puede seguir el estado.
+
+El **ID de la solicitud** de las páginas de error ayuda al soporte a
+encontrar las entradas de registro correspondientes a su informe;
+indíquelo si le hacen preguntas.

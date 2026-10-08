@@ -1,7 +1,7 @@
 ---
 title: "Piattaforma di apprendimento"
 topic: learning.overview
-version: 3
+version: 5
 keywords:
     - e-learning
     - LMS
@@ -15,6 +15,7 @@ keywords:
     - matrice delle competenze
     - importazione LearnDash
     - formazione online
+    - catalogo dei corsi
 audience: []
 related:
     - training.overview
@@ -28,6 +29,11 @@ La piattaforma risponde a **come si impara e come si viene verificati**.
 formazione — i due moduli si incastrano senza duplicarsi.
 
 ## Costruire un corso
+
+Tutti i corsi si trovano nel menu **Apprendimento** → **Catalogo dei corsi**,
+come elenco o riquadri e con i filtri **Tipo**, **Categoria**, **Tag** e
+**Stato**. Con il diritto **Creare e modificare corsi** Lei vi crea un nuovo
+corso tramite **Crea corso**.
 
 Un corso si compone di sezioni e unità didattiche. Un'unità è contenuto, una
 verifica, un compito, un incontro in presenza o materiale esterno. Il
@@ -59,7 +65,7 @@ Con **Ordine fisso**, un corso sblocca ogni unità solo quando la precedente è
 completata; le unità bloccate mostrano «Dopo l'unità precedente». La data di
 rilascio dell'unità vale in aggiunta.
 
-Chi arriva da LearnDash importa lo **ZIP di esportazione** (catalogo → «Importazione LearnDash»): corsi, lezioni, argomenti e verifiche nascono come bozze, le domande finiscono nel catalogo con la loro categoria. Immagini e media non vengono copiati (segnaposto da completare), i video delle lezioni solo da host consentiti. I corsi completati vengono annotati come iscrizioni «importate» per le persone con e-mail corrispondente — senza certificato né attestato, perché un completamento importato non è una prova propria. La prova mostra in anticipo cosa verrebbe creato.
+Chi arriva da LearnDash importa lo **ZIP di esportazione** (**Catalogo dei corsi** → «Importazione LearnDash»): corsi, lezioni, argomenti e verifiche nascono come bozze, le domande finiscono nel catalogo con la loro categoria. Immagini e media non vengono copiati (segnaposto da completare), i video delle lezioni solo da host consentiti. I corsi completati vengono annotati come iscrizioni «importate» per le persone con e-mail corrispondente — senza certificato né attestato, perché un completamento importato non è una prova propria. La prova mostra in anticipo cosa verrebbe creato.
 
 ## La pubblicazione congela il contenuto
 
@@ -79,9 +85,10 @@ minima** conta dalla prima apertura dell'unità o tramite il tempo di
 apprendimento. Le **unità di anteprima** si leggono nel portale senza
 iscrizione (solo testo). Le **categorie** delle impostazioni ordinano il
 catalogo, i **tag** aggiungono un asse trasversale e restano modificabili
-dopo la pubblicazione; **finestra di disponibilità** e **limite di partecipanti** valgono
-per l'auto-iscrizione — l'amministrazione può sempre assegnare, le iscrizioni
-obbligatorie ignorano il limite. I compiti hanno **regole sui file**
+dopo la pubblicazione; la **finestra di disponibilità** vale solo per
+l'auto-iscrizione — l'amministrazione può sempre assegnare. Il **limite di
+partecipanti** vale anche per le assegnazioni dell'amministrazione; solo le
+iscrizioni obbligatorie lo ignorano. I compiti hanno **regole sui file**
 (estensioni, numero, dimensione — mai più permissive del sistema) e, a scelta,
 un'**approvazione automatica** a punteggio pieno, incompatibile con il
 principio dei quattro occhi.
@@ -181,10 +188,10 @@ scadenza e accesso con un motivo, annullare (mai le iscrizioni obbligatorie) e
 creare il link di accesso per gli esterni — un nuovo link invalida il
 precedente. Una prenotazione confermata invia il link automaticamente.
 
-Le **impostazioni della piattaforma** (catalogo, diritto di gestione)
+Le **impostazioni della piattaforma** (**Catalogo dei corsi**, diritto di gestione)
 contengono l’interruttore per punti e classifica, gli host di incorporamento
 consentiti e la **vista formatore**: se attiva, chi ha diritti di autore o di
-valutazione vede solo i corsi propri o a cui è assegnato — catalogo, cockpit di
+valutazione vede solo i corsi propri o a cui è assegnato — catalogo dei corsi, cockpit di
 valutazione, statistiche e analisi seguono la stessa regola. La gestione
 continua a vedere tutto.
 
@@ -197,7 +204,52 @@ riquadri della dashboard (nascosti di default) mostrano i propri corsi aperti
 e le valutazioni arretrate; la ricerca attività trova i corsi pubblicati —
 chi apprende i propri, gli autori tutti.
 
-Il **catalogo** si mostra come elenco o riquadri (la scelta resta salvata per persona) e riporta una **valutazione a stelle** dal feedback del corso — solo da cinque risposte, perché nulla sia riconducibile a singoli. Il portale mostra inoltre il **prezzo** dell'articolo collegato. Nel player la **modalità concentrazione** nasconde la barra laterale; «Duplica» crea una nuova bozza da un corso — materiale sì, iscrizioni e attestati no.
+Il **Catalogo dei corsi** si mostra come elenco o riquadri (la scelta resta salvata per persona) e riporta una **valutazione a stelle** dal feedback del corso — solo da cinque risposte, perché nulla sia riconducibile a singoli. Il portale mostra inoltre il **prezzo** dell'articolo collegato. Nel player la **modalità concentrazione** nasconde la barra laterale; «Duplica» crea una nuova bozza da un corso — materiale sì, iscrizioni e attestati no.
+
+## Percorsi di apprendimento
+
+Un percorso di apprendimento stabilisce una sequenza di corsi con scadenze –
+pensata per l'inserimento. Non è un secondo catalogo di formazioni
+obbligatorie: le formazioni obbligatorie e i relativi obiettivi restano nella
+gestione della formazione. Trova i percorsi in **Apprendimento** →
+**Percorsi**.
+
+**Creare un percorso** (in alto nella pagina): **Codice corso** (la sigla del
+percorso) e **Titolo** sono obbligatori, **Ruolo di destinazione** e **Durata
+(giorni)** sono facoltativi. L'elenco sottostante mostra **Codice corso**,
+**Titolo**, **Ruolo di destinazione** e il numero di **Tappe**; un clic sul
+titolo apre il percorso.
+
+Nel percorso:
+
+- **Aggiungere una tappa**: scelga un **Corso** e indichi facoltativamente una
+  **Scadenza (giorni)**. Le nuove tappe vengono aggiunte in fondo;
+  **Rimuovere la tappa** elimina una tappa dal percorso.
+- **Assegnare il percorso**: scelga una persona attiva della Sua
+  organizzazione. Per ogni tappa viene creata un'iscrizione ordinaria al
+  corso, tutte contemporaneamente; un'iscrizione già esistente resta
+  invariata. Per le nuove iscrizioni valgono le consuete notifiche di
+  assegnazione.
+
+**Scadenze:** la scadenza di una tappa decorre dal giorno dell'assegnazione,
+non dalla fine della tappa precedente – se qualcuno si ferma a una tappa, il
+resto del percorso non si sposta. Se una tappa non ha una scadenza propria,
+vale la **Durata (giorni)** del percorso; se manca anche questa, l'iscrizione
+resta senza scadenza.
+
+**Assegnare per ruolo** (pulsante nell'elenco) assegna ogni percorso con
+ruolo di destinazione a tutte le persone attive di quel ruolo. Come ruolo di
+destinazione inserisca la sigla del ruolo così come compare anche nella
+matrice degli obblighi. L'operazione si può ripetere a piacere: chi è già
+iscritto non viene iscritto due volte. Il messaggio indica i percorsi
+verificati e le iscrizioni create.
+
+**Limiti:** i corsi non ancora pubblicati vengono saltati durante
+l'assegnazione. Se un corso del percorso ha raggiunto il limite di
+partecipanti, l'assegnazione si interrompe con un messaggio.
+
+**Autorizzazione:** **Gestire l’apprendimento (assegnazioni, gruppi,
+catalogo)**.
 
 ## Analisi e cogestione
 

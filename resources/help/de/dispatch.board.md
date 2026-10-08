@@ -1,7 +1,7 @@
 ---
 title: "Leitstelle: Board und Karte"
 topic: dispatch.board
-version: 1
+version: 3
 keywords:
     - Einsatzplanung
     - Plantafel

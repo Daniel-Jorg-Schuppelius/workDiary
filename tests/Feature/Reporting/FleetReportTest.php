@@ -50,6 +50,30 @@ class FleetReportTest extends TestCase {
         $this->get(route('reports.fleet'))->assertRedirect(route('login'));
     }
 
+    /** Eine korrigierte Fahrt zählt nur mit ihrer Korrektur, nicht zusätzlich als Original. */
+    public function test_corrected_trips_are_counted_once(): void {
+        $vehicle = \App\Models\Fleet\Vehicle::factory()->create(['organization_id' => $this->organization->id]);
+        $original = \App\Models\Travel\TravelLog::factory()->create([
+            'organization_id' => $this->organization->id,
+            'user_id' => $this->user->id,
+            'vehicle_id' => $vehicle->id,
+            'date' => now()->subDays(3)->startOfDay(),
+            'distance_km' => 100,
+        ]);
+        \App\Models\Travel\TravelLog::factory()->create([
+            'organization_id' => $this->organization->id,
+            'user_id' => $this->user->id,
+            'vehicle_id' => $vehicle->id,
+            'date' => now()->subDays(3)->startOfDay(),
+            'distance_km' => 80,
+            'corrects_travel_log_id' => $original->id,
+        ]);
+
+        $this->getWithRange()
+            ->assertOk()
+            ->assertViewHas('totals', static fn(array $totals): bool => abs($totals['km'] - 80.0) < 0.001 && $totals['trip_count'] === 1);
+    }
+
     public function test_csv_export_returns_csv_with_metadata(): void {
         $response = $this->getWithRange(['export' => 'csv']);
         $response->assertOk();

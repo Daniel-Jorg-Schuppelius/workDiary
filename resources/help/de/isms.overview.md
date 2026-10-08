@@ -1,7 +1,7 @@
 ---
 title: "ISMS im Überblick"
 topic: isms.overview
-version: 2
+version: 3
 keywords:
     - Informationssicherheit
     - Informationssicherheitsmanagement

@@ -1,7 +1,7 @@
 ---
 title: "Formulare ausfüllen"
 topic: forms.fill
-version: 1
+version: 3
 keywords:
     - Checkliste ausfüllen
     - Formular erfassen
@@ -23,29 +23,38 @@ related:
 ---
 
 Mit Formularen füllen Sie konfigurierbare Checklisten und Erfassungen
-aus, die Ihre Organisation als Vorlagen definiert hat.
+aus, die Ihre Organisation als Vorlagen definiert hat. Die Übersicht
+finden Sie unter **Tagesgeschäft** → **Wissen & Doku** → **Formulare**.
 
 Typischer Ablauf:
 
-1. **Aktive Vorlage wählen** – nur Vorlagen im Status „Aktiv" stehen
-   zur Auswahl.
-2. **Felder ausfüllen**: je nach Vorlage Text, mehrzeiliger Text,
-   Zahl, Datum, Auswahl oder Checkbox; Pflichtfelder sind markiert,
-   teils mit Hilfetext und Einheit.
-3. Optional ein **Bezugsobjekt** wählen (Auftrag, Kunde, Asset,
-   Projekt).
-4. **Speichern** – die Ausfüllung wird mit Zeitstempel und Ihrem
+1. **Formular ausfüllen** klicken und eine Vorlage wählen – angeboten
+   werden nur Vorlagen im Status „Aktiv“, deren Zeitraum
+   (**Gültig ab**/**Gültig bis**) den heutigen Tag einschließt.
+2. **Felder ausfüllen**: je nach Vorlage zum Beispiel Text, Mehrzeiliger
+   Text, Zahl, Datum, Auswahl, Checkbox, Foto oder Unterschrift;
+   Pflichtfelder sind markiert, teils mit Hilfetext und Einheit. Manche
+   Felder erscheinen erst, wenn ein anderes Feld einen bestimmten Wert hat.
+3. Der **Bezug** ergibt sich aus der Stelle, an der Sie starten: Über die
+   Karte **Formulare** auf der Detailseite eines Auftrags wird das Formular
+   diesem Auftrag zugeordnet; dort erscheinen nur Vorlagen, deren Zuordnung
+   (Auftragstyp, Kunde) zum Auftrag passt. Aus der Übersicht **Formulare**
+   gestartet, hat das Formular keinen Bezug. Einen Bezug wählen Sie nicht
+   selbst aus.
+4. **Absenden** – das ausgefüllte Formular wird mit Zeitstempel und Ihrem
    Namen abgelegt.
 
-Versionssicherheit: Beim Speichern wird die Felddefinition der Vorlage
+Versionssicherheit: Beim Absenden wird die Felddefinition der Vorlage
 als **Snapshot eingefroren**. Anzeige und Druck nutzen immer diesen
 Snapshot – spätere Änderungen an der Vorlage (oder sogar deren
-Löschung) verändern Ihre Ausfüllung nie nachträglich.
+Löschung) verändern Ihr ausgefülltes Formular nie nachträglich. In der
+Ansicht eines Formulars stehen **Drucken** und **PDF herunterladen**
+bereit.
 
-Berechtigungen: Formulare dürfen von entsprechend berechtigten
-Mitarbeitenden ausgefüllt werden. In der Übersicht sehen Teamleitungen
-alle Ausfüllungen ihres Zuständigkeitsbereichs, andere Personen nur die
-eigenen.
+Berechtigungen: Ausfüllen darf, wer das Recht **Formulare ausfüllen**
+hat. In der Übersicht sehen Personen mit dem Recht **Formularvorlagen
+sehen** (etwa die Teamleitung) alle ausgefüllten Formulare, alle anderen
+nur die eigenen.
 
 Nächste Schritte: Fehlt ein Feld oder eine Vorlage? Wenden Sie sich an die
 Teamleitung – sie pflegt die **Formularvorlagen**.

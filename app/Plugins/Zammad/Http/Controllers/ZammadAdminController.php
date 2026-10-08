@@ -109,7 +109,9 @@ class ZammadAdminController extends Controller {
         }
 
         $secret = trim((string) ($data['webhook_secret'] ?? ''));
-        $attributes['webhook_secret'] = $secret !== '' ? $secret : null;
+        if ($secret !== '') {
+            $attributes['webhook_secret'] = $secret;
+        }
 
         $connection->forceFill($attributes)->save();
         $connection->audit('zammad.connection_saved', ['by_user_id' => (int) $admin->id, 'active' => $connection->active]);

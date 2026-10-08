@@ -51,7 +51,7 @@ final class PortalEmailChangeTest extends TestCase {
     }
 
     private function requestChange(string $email): \Illuminate\Testing\TestResponse {
-        return $this->actingAs($this->portalUser, 'customer')
+        return $this->withRecentAuthentication()->actingAs($this->portalUser, 'customer')
             ->post(route('customer.profile.email.request'), ['email' => $email]);
     }
 
@@ -169,7 +169,7 @@ final class PortalEmailChangeTest extends TestCase {
         $this->assertSame('alt@example.test', $this->portalUser->fresh()->email);
 
         // … und eine neue Anfrage ist gesperrt.
-        $this->actingAs($this->portalUser->fresh(), 'customer')
+        $this->withRecentAuthentication()->actingAs($this->portalUser->fresh(), 'customer')
             ->post(route('customer.profile.email.request'), ['email' => 'nochmal@example.test'])
             ->assertForbidden();
         Mail::assertNotSent(PortalEmailChangeConfirmMail::class, fn (PortalEmailChangeConfirmMail $m): bool => $m->hasTo('nochmal@example.test'));
@@ -184,5 +184,14 @@ final class PortalEmailChangeTest extends TestCase {
 
         $this->get($url)->assertNotFound();
         $this->assertNotSame('x@example.test', $internal->fresh()->email);
+    }
+
+    /** Ohne frische Anmeldung führt der Adresswechsel zur Passwortbestätigung (wie intern). */
+    public function test_request_requires_recent_authentication(): void {
+        $this->actingAs($this->portalUser, 'customer')
+            ->post(route('customer.profile.email.request'), ['email' => 'neu@example.test'])
+            ->assertRedirect(route('customer.password.confirm'));
+
+        $this->assertNull($this->portalUser->fresh()->portal_pending_email);
     }
 }

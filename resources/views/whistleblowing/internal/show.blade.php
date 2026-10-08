@@ -120,7 +120,7 @@
                             <x-input-field name="role" :label="__('Rolle')">
                                 <select id="role" name="role" class="select select-bordered w-full">
                                     @foreach (\App\Enums\Whistleblowing\CaseRole::cases() as $r)
-                                        <option value="{{ $r->value }}">{{ $r->value }}</option>
+                                        <option value="{{ $r->value }}">{{ __('whistleblowing.role.' . $r->value) }}</option>
                                     @endforeach
                                 </select>
                             </x-input-field>

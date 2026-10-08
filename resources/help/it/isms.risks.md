@@ -1,7 +1,7 @@
 ---
 title: "Registro dei rischi"
 topic: isms.risks
-version: 1
+version: 3
 keywords:
     - analisi dei rischi
     - valutazione dei rischi
@@ -24,14 +24,49 @@ related:
     - glossary.core
 ---
 
-Nel **registro dei rischi** registra, valuta (matrice 5×5) e tratta i
-rischi di sicurezza delle informazioni per ogni ambito. Registri il
-rischio con categoria, asset, minaccia e responsabile, poi valuti
-probabilità (1–5) × impatto (1–5) per ottenere il punteggio (1–25) con
-semaforo. Scelga il **trattamento** ("Evitare", "Ridurre", "Trasferire",
-"Accettare") e curi lo stato da "Identificato" fino a "Chiuso". Ogni
-valutazione è storicizzata come rischio lordo, netto o obiettivo; le
-valutazioni approvate sono immutabili e la più recente valutazione netta
-approvata determina i valori mostrati. Il passaggio ad **"Accettato"**
-richiede una valutazione netta approvata con data di scadenza/riesame;
-le modifiche richiedono diritti di manutenzione ISMS.
+Nel **Registro dei rischi** Lei registra, valuta (5×5) e tratta i rischi
+per la sicurezza delle informazioni per ambito di applicazione. Lo trova
+in **SGSI** → **Governance** → **Registro dei rischi**.
+
+Procedura tipica:
+
+1. **Aggiungi rischio**: **Titolo**, **Categoria** («Organizzativo»,
+   «Tecnico», «Fisico», «Personale», «Fornitore»), **Riferimento
+   (sistema/processo/sede)**, **Minaccia** (la minaccia o vulnerabilità
+   di fondo), **Responsabile** e **Riesame previsto**.
+2. **Valutare**: **Probabilità** (1–5) × impatto (1–5) dà il
+   **Punteggio** (1–25). Semaforo della matrice dei rischi: Basso
+   (punteggio ≤ 6), Medio (punteggio 7–12), Alto (punteggio > 12).
+3. Scegliere il **Trattamento**: «Evitare», «Ridurre», «Trasferire» o
+   «Accettare» – e assegnare misure in **Misure collegate**.
+4. Aggiornare lo **Stato** con **Cambia stato** lungo la catena:
+   «Identificato» → «Analizzato» → «Trattato»/«Accettato» → «Chiuso». Un
+   rischio chiuso può essere riportato ad «Analizzato».
+
+Storico delle valutazioni:
+
+- Con **Registra valutazione** crea una valutazione; il **Tipo di
+  valutazione** è «Lordo», «Netto» oppure «Obiettivo». Ogni valutazione
+  ha una **Motivazione**, facoltativamente una data **Valido fino al**
+  (data di scadenza o di riesame) e passa da «Bozza» ad «Approvata»
+  (**Approva**).
+- **Le valutazioni approvate sono immutabili.**
+- La valutazione **netta** approvata più recente determina i valori
+  mostrati sul rischio. Se modifica probabilità o impatto direttamente
+  sul rischio, viene creata automaticamente una valutazione diretta
+  approvata – lo storico resta completo.
+
+Regola importante: il passaggio ad **«Accettato»** (accettazione del
+rischio residuo) richiede una valutazione netta approvata **con data
+«Valido fino al»**.
+
+Autorizzazioni: la consultazione richiede il permesso **Vedere i registri
+SGSI (rischi, misure, DdA)**; le modifiche richiedono **Gestire il SGSI
+(rischi, misure, importazione catalogo)**.
+
+Passi successivi: quando la data **Valido fino al** della valutazione
+netta approvata più recente di un rischio aperto si avvicina o è
+superata, la persona responsabile riceve una notifica; con le **Regole
+di notifica** è possibile anche un’escalation. Il campo **Riesame
+previsto** del rischio serve alla pianificazione e all’ordinamento, ma
+non attiva di per sé alcuna notifica.

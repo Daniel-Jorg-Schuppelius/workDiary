@@ -1,7 +1,7 @@
 ---
 title: "Problem melden"
 topic: support.report-problem
-version: 1
+version: 2
 keywords:
     - Fehler melden
     - Bug melden

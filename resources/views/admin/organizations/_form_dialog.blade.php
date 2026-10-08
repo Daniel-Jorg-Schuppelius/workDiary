@@ -20,14 +20,16 @@
     :form-data="['data-entry-form' => '']"
     :submit-label="$isEdit ? __('Speichern') : __('Anlegen')"
 >
-    <x-slot:headerActions>
-        <x-dialog-status-controls
-            :active="$organization?->is_active ?? true" />
-    </x-slot:headerActions>
+    @if (auth()->user()?->isGlobalAdmin())
+        <x-slot:headerActions>
+            <x-dialog-status-controls
+                :active="$organization?->is_active ?? true" />
+        </x-slot:headerActions>
+    @endif
 
     @include('admin.organizations._form_body', ['skipStatusControls' => true])
 
-    @if ($isEdit)
+    @if ($isEdit && auth()->user()?->can('delete', $organization))
         <x-slot:footerExtra>
             <x-action-form :action="route('admin.organizations.destroy', $organization)" method="DELETE"
                   :confirm="__('Organisation wirklich löschen?')"

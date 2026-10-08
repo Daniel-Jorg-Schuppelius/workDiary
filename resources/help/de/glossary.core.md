@@ -1,7 +1,7 @@
 ---
 title: "Glossar: zentrale Begriffe"
 topic: glossary.core
-version: 1
+version: 3
 keywords:
     - Begriffe
     - Fachbegriffe
@@ -41,14 +41,14 @@ Die wichtigsten Begriffe in WorkDiary – kurz erklärt.
 - **Mandant/Organisation**: abgeschottete Einheit in WorkDiary – jede
   Information gehört genau einer Organisation.
 - **Geltungsbereich**: der Teil der Organisation, für den das ISMS
-  gilt (Standard: „Gesamtorganisation"); SoA, Risiken und Audits sind
+  gilt (Standard: „Gesamtorganisation“); SoA, Risiken und Audits sind
   je Geltungsbereich getrennt.
 - **Anforderung vs. Maßnahme**: Die Anforderung beschreibt, WAS eine
-  Norm verlangt (z. B. „A.5.1"); die Maßnahme beschreibt normneutral,
-  WIE ihr es umsetzt. Beide sind mehrfach miteinander verknüpfbar.
+  Norm verlangt (z. B. „A.5.1“); die Maßnahme beschreibt normneutral,
+  WIE Sie sie umsetzen. Beide sind mehrfach miteinander verknüpfbar.
 - **SoA**: Statement of Applicability – je Geltungsbereich die Aussage
   pro Anforderung: anwendbar ja/nein, Begründung, Umsetzungsstatus,
-  Nachweis.
+  Evidenz-Notiz.
 - **Auditpaket**: finalisierter, unveränderlicher Daten-Snapshot zum
   Stichtag (mit SHA-256-Hash) für Prüfer – abrufbar über zeitlich
   begrenzte Prüfer-Links.

@@ -49,7 +49,7 @@ final class ReportsOverviewService {
 
         $totalMinutes = (int) $entries->sum('minutes');
         $bookedDays = $entries->pluck('date')->map(fn($d): string => CarbonImmutable::parse((string) $d)->toDateString())->unique()->count();
-        $activeProjects = $entries->pluck('project_id')->unique()->count();
+        $activeProjects = $entries->pluck('project_id')->filter()->unique()->count();
 
         [$series, $seriesLabel] = $this->bucketedHours($entries, $from, $to);
 

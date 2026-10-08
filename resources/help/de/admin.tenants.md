@@ -1,7 +1,7 @@
 ---
 title: "Organisationen & Mandanten"
 topic: admin.tenants
-version: 2
+version: 3
 keywords:
     - Mandantenverwaltung
     - Mandant anlegen
@@ -15,12 +15,14 @@ keywords:
     - Tarif ändern
     - Multi-Tenant
     - Freigabestufen
+    - Organisationsliste
 audience:
     - admin
 related:
     - admin.handbook
     - admin.license
     - admin.roles
+    - admin.organization-settings
 ---
 
 Hier verwalten Sie Organisationen (Mandanten). Jede Organisation ist
@@ -56,3 +58,22 @@ welche Rolle die Freigabestufen einer Vertragsverhandlung je Stufenart
 unter „Genehmigungen“ sieht (kaufmännisch, fachlich, HR). Leer bleibt die
 Vorgabe: Buchhaltung, Teamleitung, Personalverwaltung. Die Freigabe an der
 Akte bleibt davon unberührt.
+
+## Organisationsliste und eigene Organisation
+
+Die Liste **Organisationen** mit allen Mandanten gibt es nur für den
+Plattformbetrieb: im Systemmenü (Zahnrad-Symbol **System** in der Kopfzeile)
+unter **Organisation** → **Organisationen**. Plattformbetreiber ohne eigene
+Organisation finden außerdem im Verwaltungsmenü (Symbol **Verwaltung** in der
+Kopfzeile) unter **Personal** den Punkt **Mitarbeiter**; er führt ebenfalls auf
+die Organisationsliste. Öffnet ein solcher Administrator die Liste, ordnet
+WorkDiary sein Konto der zuerst angelegten Organisation zu – danach führt
+**Mitarbeiter** zur Mitgliederverwaltung dieser Organisation.
+
+Administratoren einer Organisation bearbeiten ihre eigene Organisation im
+Systemmenü unter **Organisation** → **Organisation** (Dialog **Organisation
+bearbeiten**; Einzelheiten im Thema „Organisation und Einstellungen“). **Plan**
+und Aktiv-Status setzt nur der Plattformbetrieb: Org-Admins sehen den Plan im
+Abschnitt **Plan & Status** nur zur Information („Der Plan folgt der Lizenz und
+wird vom Betreiber gepflegt.“), einen Schalter für den Aktiv-Status haben sie
+nicht.

@@ -1,7 +1,7 @@
 ---
 title: "Échange de poste avec validation"
 topic: planning.exchange
-version: 1
+version: 2
 keywords:
     - échanger un service
     - échange de service

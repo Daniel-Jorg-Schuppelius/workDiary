@@ -1,7 +1,7 @@
 ---
 title: "Sicherheitsvorfälle"
 topic: isms.incidents
-version: 1
+version: 2
 keywords:
     - Sicherheitsvorfall melden
     - IT-Sicherheitsvorfall

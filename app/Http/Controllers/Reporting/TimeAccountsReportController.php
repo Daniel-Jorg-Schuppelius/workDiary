@@ -117,9 +117,9 @@ class TimeAccountsReportController extends Controller {
     private function exportCsv(TimeAccount $account, array $rows, string $from, string $to, Request $request): Response {
         $out = [[
             (string) __('Mitarbeiter'),
-            (string) __('Anfangsstand'),
-            (string) __('Umsatz'),
-            (string) __('Endstand'),
+            (string) __('time_account.column.opening'),
+            (string) __('time_account.column.movement'),
+            (string) __('time_account.column.closing'),
         ]];
         foreach ($rows as $row) {
             $out[] = [

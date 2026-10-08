@@ -1,7 +1,7 @@
 ---
 title: "Travel logs, expenses & allowances"
 topic: travel-expenses.manage
-version: 1
+version: 2
 keywords:
     - travel expenses
     - expense report
@@ -15,6 +15,8 @@ keywords:
     - company car
     - 1 percent rule
     - driving times
+    - trip log
+    - record a trip
 audience: []
 modules:
     - module.spesen
@@ -38,6 +40,33 @@ Typical flow:
 Receipts, odometer values and travel times must be plausible. Approved
 or settled records must not be changed silently; corrections need a
 traceable workflow.
+
+## Recording a trip
+
+You add a new trip via **New …** in the sidebar: in the **Planning** group,
+**Trip log** opens the **Record new trip** dialog. All recorded trips are
+listed under **Trips & expenses** → **Logbook**.
+
+- **Trip:** **Date**, **Vehicle** (vehicle type with its rate per kilometre),
+  **Fleet vehicle (optional)**, **Trip type** as well as **From (address)** and
+  **To (address)**.
+- **Distance & rate:** **Distance (km, one-way)** is required. If **Rate €/km
+  (optional)** stays empty, the rate of the fleet vehicle applies, otherwise
+  that of the vehicle type. Add **Odometer at start (km)**, **Odometer at end
+  (km)**, **Start (time)** and **End (time)**; if the trip ends after midnight,
+  simply enter the smaller time.
+- **Assignment:** **Project (optional)**, **Customer (optional)** and
+  **Purpose**.
+- **Options & notes:** **Round trip (doubles km)**, **Reimbursable**
+  (preselected) and **Notes**.
+
+**Capture** saves the trip in your name and returns to the list. If start and
+end are filled in, WorkDiary by default creates a non-billable time entry for
+the travel time. A higher odometer reading at the end is copied to the fleet
+vehicle. If the fleet vehicle is in **Logbook mode**, odometer readings are
+required and the trip is locked after the end of the day. Anyone signed in can
+record trips as long as your organization uses the module; a trip always
+belongs to the person who recorded it.
 
 ## Pushing an expense to accounting as a voucher
 

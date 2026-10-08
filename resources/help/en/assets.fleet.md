@@ -1,7 +1,7 @@
 ---
 title: "Assets & fleet"
 topic: assets.fleet
-version: 1
+version: 2
 keywords:
     - fleet management
     - vehicle management

@@ -139,6 +139,7 @@ class ChartOfAccountsController extends Controller {
             'is_clearing' => (bool) ($data['is_clearing'] ?? false),
             'is_cost_center_required' => (bool) ($data['is_cost_center_required'] ?? false),
             'euer_category' => $this->euerCategory($data),
+            'bwa_group' => is_string($data['bwa_group'] ?? null) && $data['bwa_group'] !== '' ? BwaGroup::from($data['bwa_group']) : null,
             'deductible_percent' => Decimal::of((string) ($data['deductible_percent'] ?? 100), 2)->getValue(),
             'datev_account' => $data['datev_account'] ?? null,
             'description' => $data['description'] ?? null,

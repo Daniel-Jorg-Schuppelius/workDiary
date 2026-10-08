@@ -75,7 +75,7 @@
                     </td>
                     <td>
                         @foreach ($r['warnings'] as $w)
-                            <x-status-badge tone="warning" size="xs">{{ $w }}</x-status-badge>
+                            <x-status-badge tone="warning" size="xs">{{ __('reporting.plan_ist.warning.' . $w) }}</x-status-badge>
                         @endforeach
                     </td>
                 </tr>

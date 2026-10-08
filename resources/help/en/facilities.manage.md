@@ -1,7 +1,7 @@
 ---
 title: "Sites & rooms"
 topic: facilities.manage
-version: 1
+version: 2
 keywords:
     - facilities
     - buildings

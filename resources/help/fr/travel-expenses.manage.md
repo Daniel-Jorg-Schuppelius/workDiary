@@ -1,7 +1,7 @@
 ---
 title: "Trajets, frais & indemnités forfaitaires"
 topic: travel-expenses.manage
-version: 1
+version: 2
 keywords:
     - notes de frais
     - frais de déplacement
@@ -15,6 +15,8 @@ keywords:
     - véhicule de fonction
     - avantage en nature
     - temps de conduite
+    - carnet de trajets
+    - saisir un trajet
 audience: []
 modules:
     - module.spesen
@@ -34,6 +36,36 @@ avant de le transmettre pour approbation ou décompte. Justificatifs,
 kilométrages et horaires doivent être plausibles ; les enregistrements
 approuvés ou décomptés ne sont pas modifiés en silence — les
 corrections suivent un chemin traçable.
+
+## Saisir un trajet
+
+Vous créez un nouveau trajet via **Nouveau …** dans la barre latérale : dans le
+groupe **Planification**, **Carnet de trajets** ouvre la boîte de dialogue
+**Enregistrer un nouveau trajet**. Tous les trajets saisis figurent sous
+**Déplacements et frais** → **Carnet de bord**.
+
+- **Trajet :** **Date**, **Véhicule** (type de véhicule avec son tarif
+  kilométrique), **Véhicule de flotte (optionnel)**, **Type de trajet** ainsi
+  que **De (adresse)** et **Vers (adresse)**.
+- **Distance et tarif :** **Distance (km, aller simple)** est obligatoire. Si
+  **Tarif €/km (facultatif)** reste vide, le tarif du véhicule de flotte
+  s'applique, sinon celui du type de véhicule. S'y ajoutent **Kilométrage au
+  départ (km)**, **Kilométrage à l’arrivée (km)**, **Début (heure)** et **Fin
+  (heure)** ; si le trajet se termine après minuit, saisissez simplement l'heure
+  la plus petite.
+- **Attribution :** **Projet (facultatif)**, **Client (facultatif)** et
+  **Objet**.
+- **Options et notes :** **Aller-retour (double les km)**, **Remboursable**
+  (présélectionné) et **Notes**.
+
+**Saisir** enregistre le trajet à votre nom et revient à la liste. Si le début
+et la fin sont renseignés, WorkDiary crée par défaut une saisie de temps non
+facturable pour le temps de trajet. Un kilométrage d'arrivée plus élevé est
+repris dans le véhicule de flotte. Si le véhicule de flotte est en **Mode
+carnet de bord**, les relevés kilométriques sont obligatoires et le trajet est
+figé après la fin de la journée. Toute personne connectée peut saisir des
+trajets si votre organisation utilise le module ; un trajet appartient toujours
+à la personne qui l'a saisi.
 
 ## Transmettre un frais à la comptabilité comme justificatif
 

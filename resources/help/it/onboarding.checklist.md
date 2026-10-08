@@ -1,7 +1,7 @@
 ---
 title: "Checklist di onboarding"
 topic: onboarding.checklist
-version: 1
+version: 3
 keywords:
     - configurazione iniziale
     - procedura guidata
@@ -19,12 +19,33 @@ related:
     - time-entries.start
 ---
 
-La checklist di onboarding accompagna una nuova organizzazione verso
-l'operatività con **passi definiti in modo fisso**; i passi completati
-vengono riconosciuti automaticamente dai dati, senza spunte manuali. I
-passi obbligatori non saltabili sono: **dati dell'organizzazione** (nome,
-fuso orario, locale), **verifica dei ruoli** (almeno 1 admin e 1
-operatore), **primo cliente** e **primo progetto o commessa**. I passi
-consigliati possono essere saltati con una **motivazione**, registrata
-nel log di audit; il widget sul dashboard può essere nascosto una volta
-completati i passi principali.
+La **Lista di controllo onboarding** guida una nuova organizzazione
+verso l’esercizio produttivo in **passaggi definiti**. La apre con **Apri
+onboarding** nel widget **Configura l'onboarding** della dashboard. I
+passaggi completati vengono riconosciuti automaticamente dai dati
+esistenti – non deve spuntare nulla manualmente. La barra
+**Avanzamento** mostra quanti passaggi obbligatori sono completati.
+
+Passaggi obbligatori (non saltabili):
+
+- **Completa i dati dell'organizzazione** (nome, fuso orario e lingua
+  dell’organizzazione)
+- **Scegli il profilo di settore**
+- **Verifica i ruoli** (almeno una persona con il ruolo Amministratore e
+  una con un ruolo operativo come Dipendente, Capo team, Servizio esterno
+  o Contabilità)
+- **Crea il primo cliente**
+- **Primo progetto o commessa**
+
+Passaggi consigliati: **Scegliere l'ambito funzionale**, **Configura le
+aree di lavoro**, **Invita i primi utenti**, **Verifica le
+classificazioni**, **Prima registrazione di tempo**, **Firma il primo
+protocollo** e **Heartbeat di backup** (un backup riuscito nelle ultime
+26 ore).
+
+I passaggi consigliati possono essere tralasciati con un **Motivo
+dell'omissione** e **Salta**; il motivo viene archiviato nel **Registro
+di audit** e mostrato accanto al passaggio. Con **Nascondi widget**
+nasconde il widget sulla dashboard per l’intera organizzazione; in
+seguito non compare più e la lista di controllo non ha una propria voce
+di menu.

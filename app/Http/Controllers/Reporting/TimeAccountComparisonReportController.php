@@ -210,9 +210,9 @@ class TimeAccountComparisonReportController extends Controller {
      */
     private function headerRow(array $periods): array {
         return array_merge(
-            [(string) __('Mitarbeiter'), (string) __('Anfangsstand')],
+            [(string) __('Mitarbeiter'), (string) __('time_account.column.opening')],
             array_map(static fn (array $p): string => $p['label'], $periods),
-            [(string) __('Umsatz'), (string) __('Endstand')],
+            [(string) __('time_account.column.movement'), (string) __('time_account.column.closing')],
         );
     }
 

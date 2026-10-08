@@ -1,7 +1,7 @@
 ---
 title: "Formularvorlagen pflegen"
 topic: forms.templates
-version: 1
+version: 3
 keywords:
     - Formular erstellen
     - Formulardesigner
@@ -26,28 +26,45 @@ related:
 ---
 
 Formularvorlagen definieren Checklisten und Erfassungen ohne Code –
-per Felddefinition.
+per Felddefinition. Sie finden sie unter **System** → **Regeln &
+Prozesse** → **Formularvorlagen** oder über die Schaltfläche
+**Formularvorlagen** in der Übersicht **Formulare**.
 
 Typischer Ablauf:
 
-1. **Vorlage anlegen**: Name, Beschreibung und Felder. Je Feld:
-   Schlüssel, Bezeichnung, Typ („Text", „Mehrzeiliger Text", „Zahl",
-   „Datum", „Auswahl", „Checkbox"), Pflicht ja/nein, bei Auswahl die
-   Optionen, optional Hilfetext und Einheit.
-2. **Aktivieren**: erst im Status „Aktiv" ist die Vorlage ausfüllbar.
+1. **Vorlage anlegen**: **Name**, **Beschreibung**, optional **Gültig ab**
+   und **Gültig bis** sowie **Zuordnung: Auftragstyp** und **Zuordnung:
+   Kunde** (bei „alle“ gilt die Vorlage überall). Darunter folgen die
+   **Felder**; mit **Feld hinzufügen** kommt ein weiteres dazu. Je Feld:
+   **Feldbezeichnung**, **Feldtyp** und **Pflicht**, je nach Typ die
+   **Optionen** (kommagetrennt), **Einheit** oder **Wertebereich** (Min,
+   Max), optional ein **Hilfetext** und eine Bedingung **Sichtbar wenn**,
+   mit der ein Feld nur erscheint, wenn ein anderes Feld einen bestimmten
+   Wert hat.
+2. **Aktivieren**: Neue Vorlagen beginnen im Status „Entwurf“; erst im
+   Status „Aktiv“ ist die Vorlage ausfüllbar.
 3. **Archivieren**: nimmt die Vorlage aus der Ausfüll-Auswahl –
-   bestehende Ausfüllungen bleiben lesbar.
+   ausgefüllte Formulare bleiben lesbar. Eine archivierte Vorlage lässt
+   sich wieder aktivieren.
 
-Wichtige Status: „Entwurf" → „Aktiv" → „Archiviert".
+Feldtypen: „Text“, „Mehrzeiliger Text“, „Zahl“, „Checkbox“, „Auswahl“,
+„Mehrfachauswahl“, „Datum“, „Datum und Uhrzeit“, „Skala“, „Foto“,
+„Datei“, „Unterschrift“, „Abschnitt“ und „Messwert“. Einen eigenen
+Feld-Schlüssel geben Sie nicht ein; jede Feldbezeichnung darf in einer
+Vorlage nur einmal vorkommen.
 
-Snapshot-Prinzip: Jede Ausfüllung friert die Felddefinition zum
-Ausfüllzeitpunkt ein. Feldänderungen wirken daher **nur auf neue
-Ausfüllungen** – alte bleiben unverändert und auswertbar. Auch das
-Löschen einer Vorlage macht bestehende Ausfüllungen nicht unlesbar.
+Wichtige Status: „Entwurf“ → „Aktiv“ → „Archiviert“.
 
-Berechtigungen: Formularvorlagen werden von Teamleitungen oder anderen
-ausdrücklich berechtigten Personen angelegt, bearbeitet, aktiviert,
-archiviert und gelöscht.
+Snapshot-Prinzip: Jedes ausgefüllte Formular friert die Felddefinition
+zum Ausfüllzeitpunkt ein. Feldänderungen wirken daher **nur auf neu
+ausgefüllte Formulare** – alte bleiben unverändert und auswertbar. Auch
+das **Löschen** einer Vorlage macht ausgefüllte Formulare nicht unlesbar.
 
-Tipp: Stabile Feld-Schlüssel beibehalten, wenn Sie Auswertungen über
-mehrere Vorlagen-Generationen hinweg vergleichen wollen.
+Berechtigungen: Formularvorlagen anlegen, bearbeiten, aktivieren,
+archivieren und löschen darf, wer das Recht **Formularvorlagen pflegen**
+hat (standardmäßig die Teamleitung).
+
+Tipp: Das System leitet die interne Zuordnung eines Felds aus seiner
+Feldbezeichnung ab. Behalten Sie Feldbezeichnungen daher bei, wenn Sie
+ausgefüllte Formulare über mehrere Vorlagenstände hinweg vergleichen
+wollen.

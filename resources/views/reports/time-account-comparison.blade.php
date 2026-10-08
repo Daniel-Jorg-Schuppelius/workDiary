@@ -57,12 +57,12 @@
                         <x-slot:head>
                             <tr>
                                 <x-table.th>{{ __('Mitarbeiter') }}</x-table.th>
-                                <x-table.th align="right">{{ __('Anfangsstand') }}</x-table.th>
+                                <x-table.th align="right">{{ __('time_account.column.opening') }}</x-table.th>
                                 @foreach ($periods as $period)
                                     <x-table.th align="right">{{ $period['label'] }}</x-table.th>
                                 @endforeach
-                                <x-table.th align="right">{{ __('Umsatz') }}</x-table.th>
-                                <x-table.th align="right">{{ __('Endstand') }}</x-table.th>
+                                <x-table.th align="right">{{ __('time_account.column.movement') }}</x-table.th>
+                                <x-table.th align="right">{{ __('time_account.column.closing') }}</x-table.th>
                             </tr>
                         </x-slot:head>
                         @foreach ($rows as $row)

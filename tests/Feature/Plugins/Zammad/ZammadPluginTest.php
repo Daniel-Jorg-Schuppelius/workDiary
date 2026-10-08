@@ -86,6 +86,21 @@ final class ZammadPluginTest extends TestCase {
         ]);
     }
 
+    /** Ein leeres Secret-Feld heißt „unverändert lassen“ (Platzhalter) — es löscht das gespeicherte nicht. */
+    public function test_saving_without_webhook_secret_keeps_the_stored_one(): void {
+        $connection = $this->connection();
+        $connection->forceFill(['webhook_secret' => 'geheim'])->save();
+        $admin = $this->orgAdmin();
+
+        $this->actingAs($admin)->post(route('admin.zammad.connection.store'), [
+            'name' => 'Support',
+            'base_url' => 'https://support.example.com',
+            'active' => 1,
+        ])->assertRedirect();
+
+        $this->assertSame('geheim', $connection->refresh()->webhook_secret);
+    }
+
     public function test_is_discovered_and_announces_task_sync(): void {
         $this->assertContains(ZammadPlugin::class, PluginDiscovery::classes());
 

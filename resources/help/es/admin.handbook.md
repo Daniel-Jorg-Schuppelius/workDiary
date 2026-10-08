@@ -1,7 +1,7 @@
 ---
 title: "Manual de administración: visión general"
 topic: admin.handbook
-version: 1
+version: 2
 keywords:
     - guía de administración
     - administración

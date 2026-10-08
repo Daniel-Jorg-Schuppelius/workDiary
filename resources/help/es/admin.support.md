@@ -1,7 +1,7 @@
 ---
 title: "Informe de soporte y diagnóstico de errores"
 topic: admin.support
-version: 1
+version: 2
 keywords:
     - informe técnico
     - información del sistema

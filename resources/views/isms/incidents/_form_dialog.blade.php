@@ -57,7 +57,7 @@
     </x-form-group>
 
     <x-form-group :legend="__('isms.group.incident_analysis')" icon="troubleshoot" tone="warning" cols="1">
-        <x-textarea-field name="impact" :label="__('isms.field.impact')" rows="2" maxlength="10000"
+        <x-textarea-field name="impact" :label="__('isms.field.incident_impact')" rows="2" maxlength="10000"
                           placeholder="{{ __('isms.hint.incident_impact') }}"
                           :value="old('impact', $incident?->impact)" />
         <x-textarea-field name="root_cause" :label="__('isms.field.root_cause')" rows="2" maxlength="10000"

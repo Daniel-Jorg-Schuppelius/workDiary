@@ -21,7 +21,7 @@ return [
         'col_label' => 'Regola',
         'col_total' => 'Totale',
         'empty' => 'Nessun turno pianificato con effetto maggiorazione nel periodo.',
-        'note' => 'Solo anteprima in base ai turni pianificati — senza contesto di sede. Il conteggio avviene esclusivamente tramite l esportazione dei tempi.',
+        'note' => 'Solo anteprima in base ai turni pianificati — senza contesto di sede. Il conteggio avviene esclusivamente tramite l’esportazione dei tempi.',
     ],
     'target' => [
         'nav' => 'Valori obiettivo',
@@ -168,6 +168,15 @@ return [
         'end' => 'Periodo',
         'others' => 'Altri',
         'note' => 'Periodo precedente = periodo di pari durata immediatamente prima; le cinque variazioni maggiori singolarmente, il resto come «Altri». Un clic apre i documenti del fornitore.',
+    ],
+    // Warnungen der Plan/Ist-Anwesenheit (PlanIstReportBuilder liefert die Schlüssel).
+    'plan_ist' => [
+        'warning' => [
+            'presence' => [
+                'lateStart' => 'Inizio oltre 15 minuti dopo il previsto',
+                'hoursDiff' => 'Ore con scostamento superiore al 10 %',
+            ],
+        ],
     ],
     'warning' => [
         'capacity' => [

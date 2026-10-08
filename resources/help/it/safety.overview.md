@@ -1,7 +1,7 @@
 ---
 title: "Sicurezza sul lavoro ed eventi di sicurezza"
 topic: safety.overview
-version: 1
+version: 2
 keywords:
     - segnalare un infortunio
     - infortunio sul lavoro
@@ -21,35 +21,68 @@ related:
 ---
 
 Il registro degli eventi di sicurezza documenta in modo tracciabile
-infortuni, quasi incidenti, pericoli e difetti, come base per audit,
-responsabilità e miglioramento continuo. Con **"Segnala evento"** registra
-tipo, gravità, momento, luogo, persona coinvolta, descrizione e misura
-immediata; gli eventi critici notificano subito la direzione. Lo stato segue
-il ciclo *Segnalato → In indagine → Misure definite → Chiuso*; la chiusura
-richiede un'analisi delle cause e può generare azioni di follow-up. Le
-qualifiche in scadenza vengono segnalate dallo scanner delle scadenze e le
-checklist di sicurezza obbligatorie si mappano tramite i modelli di
-procedura; l'analisi si trova in **Report → Sicurezza sul lavoro**.
+infortuni, quasi infortuni, pericoli e difetti – come base per audit,
+responsabilità e miglioramento continuo (Feature 013).
 
-## Attestati, formazioni personali e motivi di sorveglianza
+## Segnala evento
 
-L'attestato di formazione sulla sicurezza e la valutazione dei rischi si
-scaricano **in PDF**: l'attestato con partecipanti, data, forma di prova, valore
-di controllo e firma autografa. Solo chi tiene il registro vede l'attestato,
-perché contiene tutte le firme.
+Tramite «Segnala evento» si registra un accadimento con tipo (infortunio,
+quasi infortunio, pericolo, difetto), gravità, momento, luogo, persona
+coinvolta, descrizione e azione immediata. Il servizio esterno può
+segnalare; la gestione del registro (modifica, stato, chiusura) resta ai
+capi team e all'amministrazione.
 
-In **«Le mie formazioni sulla sicurezza»** nel menu utente ognuno vede le proprie
-formazioni in sospeso e confermate e può confermarle direttamente; lì compaiono
-anche i propri appuntamenti di sorveglianza sanitaria (senza dati sanitari).
+## Eventi critici
 
-Nel registro della sorveglianza Lei gestisce i **motivi** con tipo e intervallo.
-Se si sceglie un motivo, questo fissa il tipo e calcola la prossima scadenza,
-salvo che Lei ne indichi una propria.
+Un infortunio o un evento classificato come critico attiva subito una
+notifica alla direzione.
+Così gli accadimenti gravi non passano inosservati.
 
-**Catalogo dei pericoli, documenti e motivi:** Il catalogo dei pericoli
-raccoglie pericoli tipici con misura e rischio; un profilo di settore può
-precompilarlo e lei aggiunge le proprie voci. In una valutazione in bozza,
-«Riprendi dal catalogo» aggiunge più pericoli insieme. Valutazioni e
-formazioni accettano documenti allegati. Se un evento di sicurezza rimanda a
-una valutazione approvata, questa mostra «Riesame avviato» finché non viene
-approvata una nuova versione.
+## Stato e chiusura
+
+Lo stato passa per *Segnalato → In indagine → Misure definite →
+Chiuso*. La chiusura richiede un'analisi delle cause. Al momento della
+chiusura o dopo, è possibile creare un punto aperto come misura di
+follow-up (rilavorazione).
+
+## Qualifiche e controlli obbligatori
+
+Le qualifiche e le formazioni in scadenza vengono segnalate dallo scanner
+delle scadenze. Le checklist di sicurezza obbligatorie per tipo di
+incarico sono rappresentate tramite i modelli di procedura:
+nell'applicabilità di un modello si può indicare il tipo di incarico,
+così che le attività critiche impongano sequenze di passi vincolanti,
+prove e controlli a quattro occhi.
+
+## Analisi
+
+L'analisi della sicurezza (Report → Sicurezza sul lavoro) mostra gli
+eventi per tipo e gravità nel periodo, nonché gli eventi aperti rispetto
+a quelli chiusi.
+
+## Prove, formazioni personali e motivi di sorveglianza sanitaria
+
+L'attestato di formazione sulla sicurezza e la valutazione dei rischi
+possono essere scaricati **in PDF** – l'attestato con partecipanti,
+momento, forma di prova, valore di controllo e firma disegnata. Solo chi
+gestisce il registro vede l'attestato di formazione, perché contiene
+tutte le firme.
+
+In **«Le mie formazioni sulla sicurezza»** nel menu utente ogni persona
+vede le proprie formazioni aperte e confermate e può confermarle
+direttamente; lì si trovano anche i propri appuntamenti di sorveglianza
+sanitaria (senza dati sanitari).
+
+Nel registro delle visite mediche Lei gestisce i **motivi di
+sorveglianza sanitaria** con tipo e intervallo. Se si sceglie un motivo,
+questo fissa il tipo e calcola la scadenza successiva, a meno che Lei non
+ne inserisca una propria.
+
+**Catalogo dei pericoli, prove e motivi:** il catalogo dei pericoli
+contiene pericoli tipici con misura e rischio; un profilo di settore può
+precompilarlo, le voci proprie le aggiunge Lei stesso. In una valutazione
+in bozza, con «Riprendi dal catalogo» riprende più pericoli in una sola
+volta. Alle valutazioni e alle formazioni si possono allegare prove. Se
+un evento di sicurezza fa riferimento a una valutazione approvata, la
+valutazione mostra «Riesame avviato» finché non viene approvata una nuova
+versione.

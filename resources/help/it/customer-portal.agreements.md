@@ -1,7 +1,7 @@
 ---
 title: "Accordi"
 topic: customer-portal.agreements
-version: 1
+version: 2
 keywords:
     - accordo trattamento dati
     - NDA
@@ -13,6 +13,8 @@ keywords:
     - link di firma
     - attestato di firma
     - GDPR
+    - condizioni di noleggio
+    - pacchetto di download
 audience: []
 modules:
     - module.contracts
@@ -20,8 +22,48 @@ related:
     - customer-portal.overview
 ---
 
-Sotto **Accordi** vede le nomine a responsabile del trattamento e gli accordi di riservatezza che esistono tra Lei e noi o che sono attualmente in attesa di firma — per ciascun accordo con **versione**, **stato** (pronta per la firma, parzialmente o completamente firmata, sostituita) e la data della firma completa.
+In **Accordi** vede gli accordi che il Suo fornitore conclude con Lei e Le fa firmare: **Contratto di nomina a responsabile (DPA)**, **Accordo di riservatezza (NDA)** e **Condizioni di noleggio (noleggio attrezzature)**. Vede quale versione è in attesa di firma e a che punto è la firma, e dopo la conclusione scarica i documenti.
 
-La firma vera e propria avviene tramite il link di firma che riceve da noi — non nel portale. Tramite il link vede la versione con gli allegati, può scaricare tutti i file e firmare nel browser oppure caricare un PDF firmato.
+## L'elenco
 
-Non appena una versione è completamente firmata e **pubblicata** da noi, qui sono disponibili l'**attestato di chiusura** (PDF) e il **pacchetto di download** con contratto, allegati, PDF firmati ricevuti e attestato. Fino alla pubblicazione la riga mostra «non ancora pubblicato».
+L'elenco mostra per ogni versione di un accordo:
+
+- **Tipo di contratto** – DPA, NDA o condizioni di noleggio,
+- **Titolo** – con sotto il numero del contratto,
+- **Versione** – ad esempio «Versione 2», eventualmente con «efficace dal» e una data,
+- **Stato** – l'avanzamento della firma, dopo la firma completa con la relativa data,
+- **Documenti** – i download, non appena la versione è pubblicata.
+
+La versione più recente è in alto. Bozze e versioni ritirate non compaiono. Se non ci sono versioni, compare **Al momento non sono presenti accordi.**
+
+### Gli stati
+
+- **Pronta per la firma** – la versione è in attesa di firma.
+- **Parzialmente firmata** – è presente almeno una firma, altre mancano ancora.
+- **Completamente firmata** – tutte le firme sono presenti.
+- **Sostituita** – una versione più recente ha sostituito questa.
+
+## Firmare
+
+Nel portale stesso non si firma. Per questo il Suo fornitore Le invia un link di firma personale. Tramite questo link Lei
+
+- esamina la versione con contratto e allegati e può scaricare ogni file,
+- firma in **Firma nel browser**: confermare nome e funzione, dichiarare il potere di rappresentanza e il consenso, firmare e inviare,
+- oppure carica in **Carica PDF firmato** il contratto stampato e firmato come PDF. La firma vale allora solo dopo la verifica da parte del Suo fornitore.
+
+La firma nel browser è una firma elettronica semplice senza verifica dell'identità; non sostituisce una firma elettronica qualificata. Se il link non è valido, chieda al Suo referente un nuovo link.
+
+## Scaricare i documenti
+
+Non appena una versione è completamente firmata e il Suo fornitore l'ha pubblicata nel portale clienti, la colonna **Documenti** offre:
+
+- **Attestato di chiusura (PDF)** – l'attestato della firma conclusa,
+- **Pacchetto di download (ZIP)** – contratto, allegati, i PDF firmati ricevuti e l'attestato di chiusura in un unico file,
+- i singoli file della versione, ciascuno con l'etichetta **Contratto** o **Allegato**.
+
+Fino alla pubblicazione la colonna indica **non ancora pubblicato**. Le versioni sostituite restano scaricabili se erano state pubblicate. Il download dell'attestato di chiusura e del pacchetto viene registrato nel contratto. Indipendentemente dal portale, dopo la conclusione il Suo fornitore può inviarLe anche un link di consultazione separato per i documenti.
+
+## Limiti
+
+- Solo il Suo fornitore può creare, modificare, ritirare o pubblicare accordi.
+- Gli altri contratti con il Suo fornitore non compaiono qui.

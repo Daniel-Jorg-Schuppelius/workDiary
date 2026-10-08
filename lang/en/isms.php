@@ -177,7 +177,7 @@ return [
         'severity' => 'Severity',
         'detected_at' => 'Detected on',
         'occurred_at' => 'Occurred on',
-        'impact' => 'Impact / communication',
+        'incident_impact' => 'Impact / communication',
         'lessons_learned' => 'Lessons learned',
         'personal_data_affected' => 'Personal data affected',
         'privacy_incident_ref' => 'Privacy incident reference',

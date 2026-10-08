@@ -186,6 +186,74 @@ class HelpContentTest extends TestCase {
      * nennt nur echte Modul-Codes aus config/plans.php.
      */
     /**
+     * Übersetzungen sind vollständig (MVP-1088): gleiche Abschnitte wie die
+     * deutsche Fassung und mindestens 70 % ihrer Wortzahl — darunter lagen
+     * nachweislich Zusammenfassungen mit fehlenden Fakten.
+     */
+    public function test_translations_keep_the_scope_of_the_german_text(): void {
+        $problems = [];
+
+        foreach ($this->loader->topicsForLocale('de') as $topic) {
+            $de = $this->loader->load($topic, 'de');
+            $this->assertNotNull($de);
+            $deWords = (int) preg_match_all('/\w+/u', $de['body_md']);
+            foreach ($this->loader->locales() as $locale) {
+                if ($locale === 'de' || ($loaded = $this->loader->load($topic, $locale)) === null) {
+                    continue;
+                }
+                if (count($loaded['headings']) !== count($de['headings'])) {
+                    $problems[] = "{$locale}/{$topic}.md hat " . count($loaded['headings']) . ' Überschriften, de ' . count($de['headings']) . '.';
+                }
+                $words = (int) preg_match_all('/\w+/u', $loaded['body_md']);
+                if ($words < 0.7 * $deWords) {
+                    $problems[] = sprintf('%s/%s.md hat %d Wörter, de %d (%d %%).', $locale, $topic, $words, $deWords, (int) round(100 * $words / max(1, $deWords)));
+                }
+            }
+        }
+
+        $this->assertSame([], $problems, implode("\n", $problems));
+    }
+
+    /**
+     * Ein Hilfethema erklärt die Menüseiten, die auf es zeigen (MVP-1089):
+     * Ein Wort der Menübezeichnung steht im deutschen Thema. Die Zuordnung
+     * allein (help:coverage) beweist das nicht — `reports.*` deckte so 23
+     * Berichte ab, die das Thema nicht kannte.
+     */
+    public function test_menu_pages_are_explained_by_their_help_topic(): void {
+        app()->setLocale('de');
+        $context = $this->app->make(\App\Services\Help\HelpContextResolver::class);
+        $normalizer = $this->app->make(\App\Services\Search\SearchTextNormalizer::class);
+        $source = (string) file_get_contents(app_path('Services/Navigation/NavigationRegistry.php'));
+        preg_match_all("/'route'\\s*=>\\s*'([^']+)'\\s*,\\s*'label'\\s*=>\\s*__\\('([^']+)'\\)/", $source, $items, PREG_SET_ORDER);
+        $this->assertNotEmpty($items);
+
+        $problems = [];
+        $texts = [];
+        foreach ($items as [, $route, $labelKey]) {
+            $topic = $context->topicForRouteName($route);
+            if ($topic === null) {
+                continue;
+            }
+            if (! isset($texts[$topic])) {
+                $loaded = $this->loader->load($topic, 'de');
+                $texts[$topic] = $loaded === null ? '' : ' ' . implode(' ', $normalizer->tokens($loaded['title'] . ' ' . implode(' ', $loaded['keywords']) . ' ' . $loaded['body_md']));
+            }
+            $label = (string) __($labelKey);
+            $words = array_filter(explode(' ', $normalizer->key($label)), static fn(string $word): bool => strlen($word) >= 4);
+            $mentioned = $words === [] || array_filter(
+                $words,
+                static fn(string $word): bool => str_contains($texts[$topic], ' ' . substr($word, 0, max(4, min(6, strlen($word) - 1)))),
+            ) !== [];
+            if (! $mentioned) {
+                $problems[] = "{$route} „{$label}“ → {$topic} erwähnt die Seite nicht.";
+            }
+        }
+
+        $this->assertSame([], array_values(array_unique($problems)), implode("\n", array_unique($problems)));
+    }
+
+    /**
      * Suchbegriffe (MVP-1080): Jedes Thema nennt je Sprache die Wörter, mit
      * denen Nutzer die Funktion suchen — sonst findet „Darkmode" nichts.
      */

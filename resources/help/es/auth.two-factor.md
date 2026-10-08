@@ -1,7 +1,7 @@
 ---
 title: "Inicio de sesión en dos pasos"
 topic: auth.two-factor
-version: 1
+version: 2
 keywords:
     - 2FA
     - MFA

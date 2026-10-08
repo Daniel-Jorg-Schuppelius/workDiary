@@ -1,7 +1,7 @@
 ---
 title: "Audit log"
 topic: audit.log
-version: 1
+version: 2
 keywords:
     - audit trail
     - change log

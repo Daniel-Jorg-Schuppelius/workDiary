@@ -1,7 +1,7 @@
 ---
 title: "Rentabilidad"
 topic: reports.economics
-version: 1
+version: 3
 keywords:
     - cálculo a posteriori
     - margen de contribución
@@ -22,15 +22,45 @@ related:
     - reports.drilldown
 ---
 
-La vista de rentabilidad (cálculo posterior) muestra por cliente y
-proyecto el margen de contribución en el período elegido: **ingresos**
-(tiempos facturables × tarifa + material + gastos facturables, como
-proyección — la factura vinculante la lleva el sistema externo) menos
-**costes** (tarifa interna × tiempo + coste directo de material y
-comprobantes), también como **margen** en porcentaje. Incluye un
-ranking top/flop por margen, el tiempo no facturable como indicador de
-retrabajo y la comparación plan/real contra los presupuestos del
-proyecto. Si falta la tarifa interna de coste, esos tiempos entran con
-0 € (marcados con `*`) y el margen resulta demasiado optimista.
-Exportable como CSV o PDF; datos financieros solo para usuarios con
-permiso de lectura de informes.
+La página **Rentabilidad** (poscálculo) en **Análisis** → **Finanzas y
+auditoría** → **Rentabilidad** muestra el margen de contribución por
+cliente (**Rentabilidad por cliente**) y por proyecto (**Rentabilidad &
+previsto-vs-real por proyecto**) en el **Período** elegido:
+
+- **Ingresos** = tiempos facturables × tarifa + material facturado +
+  gastos facturables. La factura determinante la gestiona el sistema de
+  facturación externo; aquí los importes registrados sirven como
+  proyección.
+- **Costes** = tarifa de coste interna del tiempo × tiempo + gastos
+  directos de material y justificantes.
+- **Margen de contribución** = ingresos − costes, también como **Margen**
+  en porcentaje.
+
+Otros análisis:
+
+- **Clasificación**: «Top 5 clientes (margen de contribución)», «Peores 5
+  clientes (margen de contribución)» y lo mismo para proyectos; así se
+  ven los clientes y proyectos deficitarios.
+- **Tiempo no facturable**: por cliente, **Facturable (min.)**, **No
+  facturable (min.)** y **Proporción %** muestran cuánto tiempo se
+  registró sin facturar, un indicio de retrabajo y cortesía comercial.
+  Por proyecto, **Retrabajo (min.)**, **Cortesía comercial (min.)** y
+  **Retrabajo %** indican el tiempo registrado con un motivo de retrabajo
+  o de cortesía.
+- **Previsto frente a real** por proyecto: **Real (min.)** frente a
+  **Plan (min.)** del presupuesto de tiempo del proyecto (**Δ Min.**) y
+  costes reales frente al **Presupuesto del plan** en euros
+  (**Δ Presupuesto**).
+
+Notas sobre la calidad de los datos:
+
+- Si para una parte de los tiempos **no hay una tarifa de coste interna**,
+  estos se incluyen con 0 € de costes; el margen de contribución resulta
+  entonces demasiado optimista. Los costes llevan entonces un asterisco
+  con el aviso «Tarifas de coste no completamente cumplimentadas».
+- Los proyectos **sin presupuesto de tiempo/presupuesto** muestran «–»
+  en las columnas del plan.
+
+Exportación en **PDF**, **CSV** o **Excel** para dirección y control de
+gestión. La página muestra datos financieros de toda la organización y
+solo está disponible para personas con el permiso **Ver los informes**.

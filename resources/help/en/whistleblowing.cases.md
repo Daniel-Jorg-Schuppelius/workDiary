@@ -1,7 +1,7 @@
 ---
 title: "Reporting office – case handling"
 topic: whistleblowing.cases
-version: 1
+version: 3
 keywords:
     - whistleblowing
     - whistleblower
@@ -24,40 +24,57 @@ related:
     - privacy.overview
 ---
 
-This is where you handle incoming reports from internal and external
-reporters (`/compliance/meldungen`). The reporting office permissions
-are deliberately **separated** from administration: a global admin
-without their own case assignment has no access. Every single access
-is checked by the case policy (permission **and** a concrete
-assignment to the case); there is no admin bypass.
+Here you process incoming reports from internal and external
+reporters. You find the **Whistleblower reports** list in the menu
+**Compliance** → **Reporting Office**. The reporting office's
+permission (role **Reporting Office**) is deliberately **separate**
+from administration: even administrators have no insight without their
+own assignment to the case. Every single access requires the matching
+permission **and** the assignment to the specific case; there is no
+exception for administrators.
 
-A separate two-factor authentication for the reporting office is
-required before access.
+Access requires your own two-factor authentication; without it,
+WorkDiary redirects you to set it up.
 
-**Case list**: The overview shows only master data (case number,
-category, status, priority, deadlines) – deliberately **no content
-preview**. Contents are encrypted per case with their own key (DEK).
+**Case list**: the overview shows only master data (**Case number**,
+**Category**, **Status**, **Priority**, **Receipt by**, **Response
+by**) – deliberately **no content preview**. Category and priority only
+appear once you are assigned to the case (“Visible after assignment”).
+The contents of each case are encrypted with a key of its own.
 
-**Case detail**: Depending on your permissions you can
+**Case detail**: the case file shows **Case information**, **Report
+content**, **Assignee** and **Communication & notes**. Depending on your
+permissions you can
 
-- **acknowledge receipt** (7-day deadline),
-- change the **status** along the lifecycle (Received → Acknowledged
-  → Triage → Investigating → … → Closed); closing requires a reason,
-- **assign handlers** (with a role),
-- record **internal notes** (never visible to the reporter),
-- send **messages to the reporting person** (via the anonymous
-  mailbox),
-- download encrypted **attachments**.
+- **Confirm receipt** (deadline **Receipt by**: 7 days after receipt),
+- under **Change status**, choose the next permitted status and apply
+  it with **Set status** – for example “Submitted” → “Acknowledged” →
+  “Triage” → “Investigating” (in between “Awaiting reporter” or
+  “Referred”) → “Closed – …”; closing requires a **Justification**,
+  which is stored as an internal note,
+- under **Assign assignee**, add a person by their **User ID** with a
+  **Role** (**Assign**),
+- record an **Internal note** (**Save note**; never visible to the
+  reporting person),
+- send a **Message to the reporting person** (**Send**); it appears in
+  their protected mailbox.
+
+Attachments uploaded by the reporting person are stored encrypted; the
+case file currently does not offer a download.
 
 **Confidentiality and conflicts**:
 
-- **Declaring a conflict of interest** locks you out of the case.
-- **Marking an affected person** permanently locks that person out of
-  the case.
-- An **emergency grant** (with a mandatory reason) gives another
-  person access – each of these steps is recorded in the dedicated
-  event hash chain.
+- **Declare conflict of interest** (justification optional) locks you
+  out of the case: your assignment ends immediately, and you cannot lift
+  the lock yourself.
+- The case file currently does not offer marking affected persons or an
+  emergency release for further persons.
+- Every step on the case is recorded tamper-proof in the case log.
 
-**Deletion**: Controlled deletion at the end of the retention period
-uses **crypto-shredding** (the case key is destroyed, rendering the
-contents unreadable). This is irreversible.
+**Deletion**: when a case is in status “Retention review”, the
+**Controlled deletion** card appears. **Delete case** and the
+confirmation **Delete permanently** destroy the case key: report
+content, messages, attachments and assignments are then irretrievably
+lost; only a content-free deletion record remains. This is
+irreversible. If proceedings or a retention obligation stand in the
+way, set the status “Legal hold” instead.

@@ -52,6 +52,20 @@ final class CostCenterRequirementTest extends TestCase {
         $this->bank = $chart->create($this->org, ['number' => '1200', 'name' => 'Bank', 'type' => AccountType::Asset, 'is_bank' => true]);
     }
 
+    /** Die BWA-Zeile aus dem Kontodialog wird gespeichert — beim Anlegen wie beim Bearbeiten. */
+    public function test_account_dialog_saves_the_bwa_group(): void {
+        $this->actingAs($this->admin)->put(route('finance.accounting.accounts.update', $this->expense), [
+            'number' => '4930', 'name' => 'Bürobedarf', 'type' => 'expense', 'normal_balance' => 'debit', 'bwa_group' => 'material',
+        ])->assertSessionHasNoErrors();
+        $this->assertSame(\App\Enums\Finance\BwaGroup::Material, $this->expense->refresh()->bwa_group);
+
+        $this->actingAs($this->admin)->post(route('finance.accounting.accounts.store'), [
+            'number' => '8400', 'name' => 'Erlöse', 'type' => 'income', 'normal_balance' => 'credit', 'bwa_group' => 'revenue',
+        ])->assertSessionHasNoErrors();
+        $created = AccountingAccount::query()->where('organization_id', $this->org->id)->where('number', '8400')->sole();
+        $this->assertSame(\App\Enums\Finance\BwaGroup::Revenue, $created->bwa_group);
+    }
+
     public function test_posting_to_a_required_account_needs_a_cost_center(): void {
         $this->actingAs($this->admin)->put(route('finance.accounting.accounts.update', $this->expense), [
             'number' => '4930', 'name' => 'Bürobedarf', 'type' => 'expense', 'normal_balance' => 'debit', 'is_cost_center_required' => '1',

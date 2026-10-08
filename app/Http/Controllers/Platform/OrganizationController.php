@@ -116,10 +116,14 @@ class OrganizationController extends Controller {
 
     public function update(Request $request, Organization $organization): RedirectResponse {
         Gate::authorize('update', $organization);
+        // Plan und Aktiv-Status setzt der Plattformbetrieb: Den Plan führt im
+        // Betrieb die Lizenz, ein Herabsetzen startet Karenz und Purge der
+        // Moduldaten; „inaktiv" sperrt die ganze Organisation aus.
+        $platform = $request->user()?->isGlobalAdmin() ?? false;
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'plan' => ['required', 'in:' . implode(',', Organization::$plans)],
+            'plan' => [$platform ? 'required' : 'sometimes', 'in:' . implode(',', Organization::$plans)],
             'locale' => ['required', \Illuminate\Validation\Rule::in(\App\Support\Locales::enabledCodes())],
             'timezone' => ['required', 'timezone'],
             'is_active' => ['boolean'],
@@ -172,7 +176,11 @@ class OrganizationController extends Controller {
             ...app(\App\Settings\SettingsRegistry::class)->formRulesForScope(\App\Settings\SettingScope::Organization),
         ]);
 
-        $data['is_active'] = $request->boolean('is_active', true);
+        if ($platform) {
+            $data['is_active'] = $request->boolean('is_active', true);
+        } else {
+            unset($data['plan'], $data['is_active']);
+        }
 
         // Standardleistung (MVP-1026): das Formular trägt den Formularschlüssel
         // des Artikelkatalogs, gespeichert wird der Katalogschlüssel.

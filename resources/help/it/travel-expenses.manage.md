@@ -1,7 +1,7 @@
 ---
 title: "Viaggi, spese e diarie"
 topic: travel-expenses.manage
-version: 1
+version: 2
 keywords:
     - nota spese
     - rimborso spese
@@ -14,6 +14,8 @@ keywords:
     - auto aziendale
     - fringe benefit
     - tempi di guida
+    - registro viaggi
+    - registrare un viaggio
 audience: []
 modules:
     - module.spesen
@@ -32,6 +34,36 @@ giorni e inoltri il tutto per approvazione o conteggio. Giustificativi,
 chilometraggi e orari di viaggio devono essere plausibili; i record
 approvati o già conteggiati non vengono modificati in silenzio, le
 correzioni richiedono un percorso tracciabile.
+
+## Registrare un viaggio
+
+Un nuovo viaggio si crea da **Nuovo …** nella barra laterale: nel gruppo
+**Pianificazione**, **Registro viaggi** apre la finestra **Registra nuovo
+viaggio**. Tutti i viaggi registrati si trovano in **Trasferte e spese** →
+**Registro viaggi**.
+
+- **Viaggio:** **Data**, **Veicolo** (tipo di veicolo con la sua tariffa al
+  chilometro), **Veicolo della flotta (opzionale)**, **Tipo di viaggio** e
+  inoltre **Da (indirizzo)** e **A (indirizzo)**.
+- **Distanza e tariffa:** **Distanza (km, solo andata)** è obbligatoria. Se
+  **Tariffa €/km (facoltativo)** resta vuoto, vale la tariffa del veicolo della
+  flotta, altrimenti quella del tipo di veicolo. Si aggiungono
+  **Contachilometri inizio (km)**, **Contachilometri fine (km)**, **Inizio
+  (ora)** e **Fine (ora)**; se il viaggio termina dopo mezzanotte, inserisca
+  semplicemente l'ora minore.
+- **Assegnazione:** **Progetto (facoltativo)**, **Cliente (facoltativo)** e
+  **Scopo**.
+- **Opzioni e note:** **Andata e ritorno (raddoppia i km)**, **Rimborsabile**
+  (preselezionato) e **Note**.
+
+**Registra** salva il viaggio a Suo nome e torna all'elenco. Se inizio e fine
+sono compilati, WorkDiary crea di norma una registrazione del tempo non
+fatturabile per il tempo di viaggio. Un contachilometri finale più alto viene
+riportato nel veicolo della flotta. Se il veicolo della flotta è in **Modalità
+libretto**, i chilometraggi sono obbligatori e il viaggio viene bloccato dopo
+la fine della giornata. Chiunque abbia effettuato l'accesso può registrare
+viaggi, se la Sua organizzazione usa il modulo; un viaggio appartiene sempre
+alla persona che lo ha registrato.
 
 ## Trasmettere una spesa alla contabilità come documento
 

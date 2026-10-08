@@ -1,7 +1,7 @@
 ---
 title: "Sedi e locali"
 topic: facilities.manage
-version: 1
+version: 2
 keywords:
     - edifici
     - piani
@@ -22,12 +22,24 @@ related:
     - documents.manage
 ---
 
-La struttura immobiliare organizza gerarchicamente sedi, edifici, piani e
-locali e serve da riferimento per asset, interventi e altri dati operativi.
-Crei i livelli dall'esterno verso l'interno con nomi o numeri univoci; prima
-di eliminare un livello sposti i record subordinati o collegati — spesso è
-preferibile archiviare invece di eliminare. Ogni locale può portare più
-requisiti specialistici (livello di igiene, pulizia speciale, restrizione di
-accesso, inventario IT, verifica tecnica, obbligo del gestore), gestiti nella
-finestra di modifica del locale e visibili nell'elenco locali e nel dossier
-degli asset collocati nel locale.
+La struttura immobiliare ordina in modo gerarchico ubicazioni, edifici, piani e
+sale. Serve come riferimento per asset, interventi e altri dati aziendali.
+
+Crei i livelli dall'esterno verso l'interno: ubicazione, edificio, piano,
+sala. Utilizzi nomi o numeri univoci e inserisca indirizzi e indicazioni
+d'uso dove sono necessari dal punto di vista operativo.
+
+Prima di eliminare un livello, i record subordinati o collegati devono
+essere riassegnati. In caso di modifiche organizzative, archiviare è spesso
+preferibile alla rimozione di riferimenti utilizzati in passato.
+
+## Requisiti relativi alle sale
+
+Ogni sala può avere più requisiti specifici di diversi settori di
+competenza senza essere creata due volte: livello di igiene, pulizia
+speciale, restrizione di accesso, inventario IT, verifica tecnica o obbligo
+del gestore. Integrano il profilo di pulizia e vengono gestiti nella
+finestra di modifica della sala (scegliere il requisito, facoltativamente
+un livello o un valore e una nota). Nell'elenco delle sale e nel fascicolo
+oggetto di un asset collocato nella sala vengono mostrati i requisiti
+attivi.

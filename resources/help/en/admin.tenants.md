@@ -1,7 +1,7 @@
 ---
 title: "Organizations & tenants"
 topic: admin.tenants
-version: 2
+version: 3
 keywords:
     - tenant management
     - create organization
@@ -15,12 +15,14 @@ keywords:
     - change plan
     - multi-tenant
     - approval levels
+    - organization list
 audience:
     - admin
 related:
     - admin.handbook
     - admin.license
     - admin.roles
+    - admin.organization-settings
 ---
 
 This is where you manage organizations (tenants). Every organization
@@ -54,3 +56,22 @@ the approval steps of a contract negotiation under “Approvals”, per step
 kind (commercial, technical, HR). Left empty, the default applies:
 Accounting, Team Lead, Personnel Administration. Approval on the record is
 not affected.
+
+## Organization list and your own organization
+
+The **Organisations** list with all tenants is available to platform operations
+only: in the system menu (the **System** gear icon in the header) under
+**Organization** → **Organisations**. Platform operators without an
+organization of their own also find the **Employee** item in the
+administration menu (the **Administration** icon in the header) under
+**Personnel**; it leads to the organization list as well. When such an
+administrator opens the list, WorkDiary assigns their account to the
+organization created first – after that, **Employee** leads to the member
+management of that organization.
+
+Administrators of an organization edit their own organization in the system
+menu under **Organization** → **Organization** (dialog **Edit organisation**;
+details in the “Organization and settings” topic). **Plan** and active status
+are set by platform operations only: organization admins see the plan in the
+**Plan & status** section for information only (“The plan follows the license
+and is maintained by the operator.”) and have no switch for the active status.

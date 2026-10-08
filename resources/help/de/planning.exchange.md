@@ -1,7 +1,7 @@
 ---
 title: "Schichttausch mit Freigabe"
 topic: planning.exchange
-version: 1
+version: 2
 keywords:
     - Schicht tauschen
     - Dienst tauschen

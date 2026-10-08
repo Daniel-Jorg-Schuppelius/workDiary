@@ -1,7 +1,7 @@
 ---
 title: "Audits, Feststellungen & Korrekturmaßnahmen"
 topic: isms.audits
-version: 1
+version: 3
 keywords:
     - internes Audit
     - Auditplanung
@@ -26,37 +26,46 @@ related:
 ---
 
 Hier planen und dokumentieren Sie interne, externe und Lieferantenaudits
-inklusive Feststellungen, Korrekturmaßnahmen und Managementbewertung.
+inklusive Feststellungen, Korrekturmaßnahmen und Managementbewertung. Sie
+finden die Seiten unter **ISMS** → **Lieferanten & Audit** → **Audits**
+bzw. **Managementbewertung**.
 
-Audit-Lebenszyklus: **„Geplant" → „Vorbereitung" → „In Durchführung" →
-„Bericht erstellt" → „Abgeschlossen"**. Aus „Bericht erstellt" ist der
-Rücksprung in „In Durchführung" für Berichtskorrekturen erlaubt.
-„Bericht erstellt" setzt voraus: Durchführungszeitraum und
-Ergebnis-Zusammenfassung sind gepflegt.
+Audit-Lebenszyklus: **„Geplant“ → „In Vorbereitung“ → „In Durchführung“ →
+„Bericht erstellt“ → „Abgeschlossen“**; den nächsten Status setzen Sie
+über **Status ändern**. Aus „Bericht erstellt“ ist der Rücksprung in „In
+Durchführung“ für Berichtskorrekturen erlaubt. „Bericht erstellt“ setzt
+voraus, dass **Durchführung von**, **Durchführung bis** und die
+**Ergebnis-Zusammenfassung** gepflegt sind.
 
-Feststellungen je Audit:
+Feststellungen je Audit (**Feststellung erfassen**, erst wenn das Audit
+„In Durchführung“ ist):
 
-- Art: **„Hauptabweichung"**, **„Nebenabweichung"**, „Beobachtung",
-  „Verbesserung".
-- Status: „Offen" → „Korrektur läuft" → „Wirksamkeitsprüfung" →
-  „Geschlossen".
-- Schließen geht nur, wenn alle Korrekturmaßnahmen „Umgesetzt" oder
-  „Wirksam" sind – bei Haupt-/Nebenabweichungen muss mindestens eine
-  Maßnahme **„Wirksam"** sein.
+- **Art der Feststellung**: **„Hauptabweichung“**, **„Nebenabweichung“**,
+  „Beobachtung“, „Verbesserungspotenzial“.
+- Status: „Offen“ → „In Korrektur“ → „Wirksamkeitsprüfung“ →
+  „Geschlossen“; aus der Wirksamkeitsprüfung ist der Rücksprung in „In
+  Korrektur“ möglich.
+- Schließen geht nur, wenn alle Korrekturmaßnahmen „Umgesetzt“ oder
+  „Wirksam“ sind – bei Haupt- und Nebenabweichungen muss mindestens eine
+  Maßnahme **„Wirksam“** sein.
 
-Korrekturmaßnahmen: „Offen" → „In Arbeit" → „Umgesetzt" →
-„Wirksam"/„Unwirksam". Für die Wirksamkeitsentscheidung ist eine
-**Wirksamkeitsnotiz Pflicht**; bei „Unwirksam" springt die Feststellung
-automatisch zurück auf „Korrektur läuft". Felder: Ursachenanalyse,
-Maßnahmenplan, Verantwortlicher, Fälligkeit.
+Korrekturmaßnahmen (**Korrekturmaßnahme anlegen**): „Offen“ → „In
+Bearbeitung“ → „Umgesetzt“ → „Wirksam“ oder „Nicht wirksam“. Für die
+Wirksamkeitsentscheidung ist eine **Wirksamkeits-Notiz** Pflicht; bei
+„Nicht wirksam“ springt die Feststellung automatisch zurück auf „In
+Korrektur“. Felder: **Titel**, **Ursachenanalyse**, **Maßnahmenplan**,
+**Verantwortlich**, **Fällig am**.
 
-Managementbewertung: erfasst Teilnehmer, Inputs (Auditergebnisse,
-Kennzahlen, Risikolage), Beschlüsse und Folgemaßnahmen. Status
-„Entwurf" → „Freigegeben" – **freigegebene Bewertungen sind
-unveränderlich** und können nicht mehr gelöscht werden.
+**Managementbewertung** (**Bewertung anlegen**): erfasst **Datum**,
+**Teilnehmer**, **Eingaben** (Auditergebnisse, Kennzahlen, Risikolage,
+Status der Maßnahmen), **Entscheidungen** und **Folgemaßnahmen**. Status
+„Entwurf“ → „Freigegeben“ über **Freigeben** – die Freigabe dokumentiert
+Person und Zeitpunkt; **freigegebene Bewertungen sind unveränderlich** und
+können nicht mehr gelöscht werden.
 
-Berechtigungen: Einsicht erfordert ISMS-Leserechte; Änderungen
-erfordern ISMS-Pflegerechte.
+Berechtigungen: Die Einsicht erfordert das Recht **ISMS-Register sehen
+(Risiken, Maßnahmen, SoA)**; Änderungen erfordern **ISMS pflegen
+(Risiken, Maßnahmen, Katalog-Import)**.
 
 Nächste Schritte: Auditergebnisse fließen in den Konformitätsstatus und
 in finalisierte **Auditpakete** ein.

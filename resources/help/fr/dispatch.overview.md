@@ -1,7 +1,7 @@
 ---
 title: "Dispatching et alertes de conflit"
 topic: dispatch.overview
-version: 1
+version: 2
 keywords:
     - planification des interventions
     - affecter une intervention
@@ -20,15 +20,32 @@ related:
     - assets.fleet
 ---
 
-Le dispatching détermine **qui exécute quelle commande et quand**, en
-complément de la machine à états métier ; chaque commande porte un
-**statut de dispatching** (Non planifié, Planifié, Confirmé, En route,
-Terminé). Avant la confirmation, WorkDiary vérifie l'affectation prévue
-contre les règles de temps de travail et de disponibilité
-(chevauchements, repos, durées maximales, congés et absences). Les
-**conflits durs** bloquent la confirmation et ne peuvent être outrepassés
-qu'avec une **justification documentée**, consignée de manière
-infalsifiable ; les **avertissements** sont de simples indications. Un
-véhicule peut être réservé pour un créneau sur la commande : le système
-empêche la double réservation, et les réservations par véhicule se
-consultent et s'annulent dans la liste dédiée.
+La planification détermine **qui traite quelle commande et quand** — en
+complément de la machine d'états métier des commandes. Chaque commande porte
+un **Statut de planification** :
+
+- **Non planifié** : ni programmée ni affectée.
+- **Planifié** : programmée ou affectée à un salarié.
+- **Confirmé** : l'affectation a été confirmée de manière ferme.
+- **En route** : l'intervention est en cours.
+- **Terminé** : la commande est clôturée.
+
+## Alertes de conflit avant la confirmation
+
+Avant la confirmation du rendez-vous, WorkDiary contrôle l'affectation
+prévue au regard des règles existantes de temps de travail et de
+disponibilité (chevauchement avec d'autres postes ou commandes, temps de
+repos, durée maximale de travail journalière/hebdomadaire, congés et
+absences). Il existe deux niveaux de gravité :
+
+- Les **conflits bloquants** empêchent la confirmation. Ils ne peuvent être
+  outrepassés délibérément qu'avec une **justification documentée** ; ce
+  forçage est consigné de manière probante.
+- Les **avertissements** sont de simples indications et ne bloquent pas.
+
+## Réservation de véhicule
+
+Un véhicule peut être réservé pour une plage horaire depuis la commande. Si
+le véhicule est déjà réservé pendant la période souhaitée, le système
+empêche la double réservation. Les réservations de chaque véhicule peuvent
+être consultées dans la liste des réservations et annulées.

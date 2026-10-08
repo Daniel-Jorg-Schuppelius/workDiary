@@ -1,7 +1,7 @@
 ---
 title: "Webhooks"
 topic: admin.webhooks
-version: 1
+version: 2
 keywords:
     - Callback-URL
     - Ereignisbenachrichtigung

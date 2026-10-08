@@ -1,7 +1,7 @@
 ---
 title: "Datentransfer"
 topic: admin.data-transfer
-version: 1
+version: 2
 keywords:
     - Datenexport
     - Daten exportieren

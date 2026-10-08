@@ -1,7 +1,7 @@
 ---
 title: "Ubicaciones y salas"
 topic: facilities.manage
-version: 1
+version: 2
 keywords:
     - edificios
     - plantas
@@ -22,12 +22,24 @@ related:
     - documents.manage
 ---
 
-La estructura inmobiliaria organiza jerárquicamente ubicaciones,
-edificios, plantas y salas, y sirve de referencia para activos e
-intervenciones. Cree los niveles de fuera hacia dentro con nombres o
-números únicos. Antes de eliminar un nivel, reubique los registros
-subordinados o vinculados; para referencias históricas suele ser mejor
-archivar. Cada sala puede tener varios requisitos técnicos (nivel de
-higiene, restricción de acceso, inventario TI, etc.), que se mantienen
-en el diálogo de edición de la sala y se muestran en la lista de salas
-y en el expediente del activo.
+La estructura de inmuebles organiza de forma jerárquica las ubicaciones,
+los edificios, las plantas y las salas. Sirve de referencia para los
+activos, las intervenciones y otros datos operativos.
+
+Cree los niveles de fuera hacia dentro: ubicación, edificio, planta, sala.
+Utilice nombres o números únicos y mantenga las direcciones y los datos de
+uso allí donde sean necesarios desde el punto de vista funcional.
+
+Antes de eliminar un nivel, deben reasignarse los registros subordinados o
+vinculados. En caso de cambios organizativos, archivar suele ser mejor que
+eliminar referencias utilizadas históricamente.
+
+## Requisitos relativos a las salas
+
+Cada sala puede tener varios requisitos técnicos de distintos oficios sin
+necesidad de crearla dos veces: nivel de higiene, limpieza especial,
+restricción de acceso, inventario de TI, inspección técnica u obligación
+del operador. Complementan el perfil de limpieza y se gestionan en el
+diálogo de edición de la sala (elegir el requisito, opcionalmente un nivel
+o un valor y una nota). En la lista de salas y en el expediente del objeto
+de un activo ubicado en la sala se muestran los requisitos activos.

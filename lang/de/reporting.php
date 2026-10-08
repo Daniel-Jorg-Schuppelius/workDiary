@@ -169,6 +169,15 @@ return [
         'others' => 'Übrige',
         'note' => 'Vorperiode = gleich langer Zeitraum unmittelbar davor; die fünf größten Veränderungen einzeln, der Rest als „Übrige“. Klick öffnet die Belege des Lieferanten.',
     ],
+    // Warnungen der Plan/Ist-Anwesenheit (PlanIstReportBuilder liefert die Schlüssel).
+    'plan_ist' => [
+        'warning' => [
+            'presence' => [
+                'lateStart' => 'Beginn mehr als 15 Minuten nach Plan',
+                'hoursDiff' => 'Stunden weichen mehr als 10 % ab',
+            ],
+        ],
+    ],
     'warning' => [
         'capacity' => [
             'title' => 'Engpass im Team :name',

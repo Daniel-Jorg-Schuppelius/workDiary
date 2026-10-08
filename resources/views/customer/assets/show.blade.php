@@ -16,7 +16,7 @@
 @section('content')
     <h1 class="text-2xl font-semibold">{{ $asset->name }}</h1>
     <p class="mb-4 text-sm opacity-70">
-        @if ($asset->serial_number){{ __('Seriennummer') }}: {{ $asset->serial_number }}@endif
+        @if ($asset->serial_no){{ __('Seriennummer') }}: {{ $asset->serial_no }}@endif
     </p>
 
     <div class="space-y-6">

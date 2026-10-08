@@ -1,7 +1,7 @@
 ---
 title: "Privacy Tools"
 topic: admin.privacy-tools
-version: 1
+version: 2
 keywords:
     - GDPR
     - data protection

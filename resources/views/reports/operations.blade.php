@@ -19,6 +19,7 @@
         'planned'      => __('Geplant'),
         'assigned'     => __('Zugewiesen'),
         'in_progress'  => __('In Arbeit'),
+        'problem'      => __('Problem'),
         'done'         => __('Erledigt'),
         'cancelled'    => __('Storniert'),
         'open'         => __('Offen'),

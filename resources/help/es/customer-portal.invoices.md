@@ -1,7 +1,7 @@
 ---
 title: "Mis facturas"
 topic: customer-portal.invoices
-version: 2
+version: 3
 keywords:
     - ver facturas
     - listado de facturas
@@ -11,21 +11,58 @@ keywords:
     - facturas impagadas
     - estado del pago
     - pago online
+    - número de factura
+    - pago parcial
 audience: []
 related:
     - customer-portal.overview
     - customer-portal.diary
     - customer-portal.time
+    - customer-portal.billing
 ---
 
-En **Facturas** encuentra las facturas emitidas para su empresa. La
-lista está ordenada por fecha de factura, con la más reciente arriba, y
-muestra por entrada el **número**, la **fecha**, el **estado** y el
-**importe** con su moneda; el estado indica en qué fase de tramitación
-se encuentra cada factura. Con varias páginas puede navegar mediante la
-paginación al pie. La vista sirve para su consulta y trazabilidad; la
-facturación la realiza la empresa contratada.
+En **Facturas** ve las facturas que su proveedor ha emitido para su empresa, con su estado de pago actual. Si su proveedor lo ofrece, aquí paga directamente en línea las facturas pendientes.
 
-Si el emisor lo ofrece, puede saldar las facturas pendientes directamente
-con el proveedor de pagos mediante **Pagar en línea**; una vez que el
-proveedor confirma el pago, se refleja en el estado de la factura.
+## La lista de facturas
+
+La lista muestra para cada factura:
+
+- **Número** – el número de factura,
+- **Fecha** – la fecha de la factura,
+- **Estado** – el estado de pago,
+- **Importe** – el importe de la factura con la moneda,
+- a la derecha, si procede, el botón **Pagar en línea**.
+
+La factura más reciente aparece arriba. Con más de 25 facturas, usted pasa de página con la paginación en la parte inferior. Los borradores en los que su proveedor aún trabaja no aparecen – solo ve facturas emitidas. Los documentos de las facturas no se pueden abrir ni descargar en esta página.
+
+### Los estados
+
+- **Emitida** – la factura está emitida, todavía no hay ningún pago registrado.
+- **Pagada parcialmente** – se ha recibido una parte del importe.
+- **Pagada** – la factura está saldada por completo.
+- **Cancelada** – la factura se ha cancelado y ya no hay que pagarla.
+
+## Pagar en línea
+
+El botón **Pagar en línea** solo aparece si su proveedor ha conectado un proveedor de pagos y la factura todavía tiene un importe pendiente, es decir, tiene el estado **Emitida** o **Pagada parcialmente**. Los abonos, las facturas canceladas y las facturas proforma no se pueden pagar en línea.
+
+1. Haga clic en **Pagar en línea** junto a la factura.
+2. Se le redirige a la página de pago del proveedor de pagos. El importe a pagar es el que sigue pendiente – en una factura pagada parcialmente, solo el resto.
+3. Complete el pago con el proveedor. Después vuelve a una página de confirmación.
+
+La página de confirmación muestra uno de estos avisos:
+
+- **Esta factura está pagada. ¡Gracias!** – el pago está registrado.
+- **¡Gracias! El pago se está procesando; …** – el proveedor de pagos aún no ha confirmado el pago.
+- **Esta factura no se puede pagar en línea. …** – diríjase a su proveedor.
+- **El pago en línea no es posible en este momento. …** – inténtelo más tarde o pague el importe por transferencia.
+
+## Qué ocurre después
+
+En cuanto el proveedor de pagos confirma el pago, este se registra en la factura: el estado cambia a **Pagada**, o a **Pagada parcialmente** si queda un importe, y el botón **Pagar en línea** desaparece. Por tanto, su proveedor también ve el pago; no necesita informarle por separado. Las transferencias solo aparecen cuando su proveedor las ha registrado.
+
+## Límites
+
+- La página sirve para consultar. Solo su proveedor emite, modifica o cancela facturas.
+- Aclare las preguntas sobre una factura directamente con su proveedor.
+- Si su proveedor le factura mediante una cuenta de facturación, encontrará el resumen mensual en **Facturación**.

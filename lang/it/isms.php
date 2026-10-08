@@ -177,7 +177,7 @@ return [
         'severity' => 'Criticità',
         'detected_at' => 'Rilevato il',
         'occurred_at' => 'Avvenuto il',
-        'impact' => 'Impatto / comunicazione',
+        'incident_impact' => 'Impatto / comunicazione',
         'lessons_learned' => 'Lezioni apprese',
         'personal_data_affected' => 'Dati personali coinvolti',
         'privacy_incident_ref' => 'Riferimento incidente privacy',

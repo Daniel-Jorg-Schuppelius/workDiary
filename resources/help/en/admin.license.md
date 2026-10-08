@@ -1,7 +1,7 @@
 ---
 title: "License management"
 topic: admin.license
-version: 2
+version: 3
 keywords:
     - license key
     - plan

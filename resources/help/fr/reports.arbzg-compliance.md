@@ -20,6 +20,8 @@ modules:
 related:
     - reports.overview
     - reports.drilldown
+    - reports.compliance
+    - reports.fleet
 ---
 
 Ce rapport contrôle le **temps de travail réellement saisi** (pointages,

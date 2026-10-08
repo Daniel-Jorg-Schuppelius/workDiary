@@ -1,7 +1,7 @@
 ---
 title: "Payment reconciliation"
 topic: finance.reconciliation
-version: 2
+version: 3
 keywords:
     - bank reconciliation
     - import bank statement

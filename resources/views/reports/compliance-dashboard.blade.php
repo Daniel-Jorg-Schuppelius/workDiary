@@ -39,7 +39,7 @@
 
     <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         @foreach ($kinds as $kind)
-            <x-kpi-tile :label="$thresholds[$kind] ?? $kind"
+            <x-kpi-tile :label="__('compliance.report.kind.' . $kind)" :hint="$thresholds[$kind] ?? null"
                         :value="$summary['by_kind'][$kind] ?? 0"
                         :tone="($summary['by_kind'][$kind] ?? 0) > 0 ? 'warning' : 'neutral'"
                         format="int"
@@ -60,7 +60,7 @@
                 <tr>
                     <th>{{ __('Monat') }}</th>
                     @foreach ($kinds as $kind)
-                        <th class="text-right">{{ $thresholds[$kind] ?? $kind }}</th>
+                        <th class="text-right" title="{{ $thresholds[$kind] ?? '' }}">{{ __('compliance.report.kind.' . $kind) }}</th>
                     @endforeach
                     <th class="text-right">{{ __('Summe') }}</th>
                 </tr>

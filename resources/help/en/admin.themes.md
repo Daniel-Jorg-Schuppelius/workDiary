@@ -1,7 +1,7 @@
 ---
 title: "Themes"
 topic: admin.themes
-version: 3
+version: 5
 keywords:
     - dark mode
     - light mode
@@ -24,38 +24,47 @@ related:
     - navigation.interface
 ---
 
-Themes are your organization's design presets for the interface.
-They define the color and geometry palette (light or dark scheme).
-Besides the built-in themes you can create your own.
+Themes are your organization's design presets for the interface. They
+define the color and geometry palette (light or dark base mode). In
+addition to the **Predefined themes**, you can create your own themes
+under **Custom themes** (twelve at most).
 
-For each theme you define:
+With **New theme** or **Edit** you define for each theme:
 
-- **Key and label**: a unique key (immutable after creation) and a
-  display name.
-- **Scheme**: light or dark.
+- **Master data**: **Key** (lowercase letters, digits, hyphen;
+  immutable after creation), **Name** and **Base mode** (**Light** or
+  **Dark**).
 - **Colors**: base, accent and status colors (e.g. background,
-  primary, secondary, accent, neutral, plus info/success/warning/
-  error). Missing contrast colors are derived automatically.
-- **Geometry**: corner radii and border width.
+  primary, secondary, accent, neutral as well as
+  info/success/warning/error). Text colors are derived automatically
+  from the contrast.
+- **Geometry**: corner radii and **Border width**.
 
-A minimum contrast (neutral to neutral text) is enforced so that the
-sidebar and panels stay readable.
+The **Preview** in the dialog shows the effect immediately. A minimum
+contrast (neutral vs. neutral text) is enforced so that the sidebar
+and panels stay readable.
 
-Set default:
+Setting the default:
 
-- You can set a default per mode (default light / default dark). It
-  applies to all members who have not chosen their own theme.
-- The **Default** entry removes your selection again; the built-in
-  themes Corporate (light) and Corporate Dark (dark, same colors on a
-  dark background) then apply.
+- In the **Organization default theme** area you choose one theme each
+  for **Light mode** and **Dark mode** and save with **Apply**. The
+  choice applies to all members without their own theme selection in
+  their profile; custom themes then show the badge **Default light** or
+  **Default dark**.
+- The entry **Default (Corporate)** or **Default (Corporate Dark)**
+  removes your selection again; the bundled themes Corporate (light)
+  and Corporate Dark (dark, same colors on a dark background) then
+  apply.
 
-License/modules: custom themes belong to the **theming** module and
-are available on higher plans. On a downgrade an active theme
-remains in place (purely cosmetic); only the editor for creating/
-editing is locked. See the **License** chapter for details.
+License/modules: custom themes belong to the **Custom themes** module
+and are available in higher plans. After a downgrade an active theme
+remains in place (purely cosmetic); the **Themes** page with editor
+and default selection is then locked. Details in the **License**
+chapter.
 
-Permissions: themes may be managed by organization administrators.
+Permission: organization administrators may manage themes.
 
-Risks: deleting a theme that is in use resets affected users to a
-fallback theme. Check color changes for readability before setting a
-theme as the default.
+Risks: deleting a theme in use resets affected users to a fallback
+theme; if it was set as default, the bundled default applies again.
+Check color changes for readability before setting a theme as the
+default.

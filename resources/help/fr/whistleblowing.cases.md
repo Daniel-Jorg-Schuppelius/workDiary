@@ -1,7 +1,7 @@
 ---
 title: "Cellule de signalement – traitement des cas"
 topic: whistleblowing.cases
-version: 1
+version: 3
 keywords:
     - lanceur d'alerte
     - alerte éthique
@@ -23,21 +23,62 @@ related:
     - privacy.overview
 ---
 
-Vous traitez ici les signalements reçus (`/compliance/meldungen`). Le
-droit de la cellule de signalement est volontairement **séparé** de
-l'administration : sans affectation au cas, même un admin global n'a
-aucun accès, chaque consultation étant contrôlée par la politique du
-cas — sans contournement admin — et une double authentification propre
-à la cellule est exigée. La liste n'affiche que des métadonnées (numéro,
-catégorie, statut, priorité, délais), jamais d'aperçu du contenu ; les
-contenus sont chiffrés par cas avec une clé dédiée. Dans le détail vous
-pouvez **accuser réception** (délai de 7 jours), faire évoluer le
-**statut** jusqu'à la clôture (avec justification), **affecter des
-gestionnaires**, saisir des **notes internes**, **écrire à la personne
-signalante** via la boîte anonyme et télécharger les pièces jointes
-chiffrées. Un **conflit d'intérêts déclaré** ou le marquage d'une
-**personne concernée** verrouille l'accès au cas ; une **libération
-d'urgence** justifiée accorde l'accès à une personne supplémentaire,
-chaque étape étant consignée dans la chaîne de hachage d'événements. La
-suppression contrôlée en fin de conservation se fait par
-crypto-shredding et est irréversible.
+Ici, vous traitez les signalements reçus de lanceurs d’alerte internes
+et externes. La liste **Signalements lanceurs d'alerte** se trouve dans
+le menu **Conformité** → **Point de signalement**. L’autorisation du
+service de signalement (rôle **Point de signalement**) est volontairement
+**séparée** de l’administration : même les administrateurs n’ont aucun
+accès sans attribution personnelle au dossier. Chaque accès exige le
+droit correspondant **et** l’attribution au dossier concerné ; il
+n’existe aucune exception pour les administrateurs.
+
+L’accès requiert votre propre authentification à deux facteurs ; sans
+elle, WorkDiary vous redirige vers sa configuration.
+
+**Liste des dossiers** : la vue d’ensemble n’affiche que les données de
+base (**Numéro de dossier**, **Catégorie**, **Statut**, **Priorité**,
+**Réception jusqu'au**, **Réponse avant le**) – volontairement **sans
+aperçu du contenu**. Catégorie et priorité n’apparaissent que lorsque le
+dossier vous est attribué (« Visible après l'attribution »). Le contenu de
+chaque dossier est chiffré avec une clé propre.
+
+**Détail du dossier** : le dossier affiche **Informations sur le
+dossier**, **Contenu du signalement**, **Responsable** et
+**Communication et notes**. Selon vos autorisations, vous pouvez
+
+- **Confirmer la réception** (délai **Réception jusqu'au** : 7 jours
+  après réception),
+- sous **Changer le statut**, choisir le statut suivant autorisé et
+  l’appliquer avec **Définir le statut** – par exemple « Déposé » →
+  « Réception confirmée » → « Examen préliminaire » → « En cours de
+  traitement » (entre-temps « En attente du lanceur d'alerte » ou
+  « Transmis ») → « Clôturé – … » ; une clôture exige une
+  **Justification**, enregistrée comme note interne,
+- sous **Attribuer un responsable**, ajouter une personne via son **ID
+  utilisateur** avec un **Rôle** (**Attribuer**),
+- saisir une **Note interne** (**Enregistrer la note** ; jamais visible
+  pour la personne signalante),
+- envoyer un **Message à la personne signalante** (**Envoyer**) ; il
+  apparaît dans sa boîte de réception protégée.
+
+Les pièces jointes téléversées par la personne signalante sont stockées
+chiffrées ; le dossier ne propose actuellement pas de téléchargement.
+
+**Confidentialité et conflits** :
+
+- **Déclarer un conflit d'intérêts** (justification facultative) vous
+  exclut vous-même du dossier : votre attribution prend fin
+  immédiatement et vous ne pouvez pas lever le blocage vous-même.
+- Le dossier ne propose actuellement ni le marquage des personnes
+  concernées ni un accès d’urgence pour d’autres personnes.
+- Chaque étape du dossier est consignée de manière infalsifiable dans le
+  journal du dossier.
+
+**Suppression** : lorsqu’un dossier est au statut « Examen de
+conservation », la carte **Suppression contrôlée** apparaît. **Supprimer
+le dossier** et la confirmation **Supprimer définitivement** détruisent
+la clé du dossier : contenu du signalement, messages, pièces jointes et
+attributions sont alors irrémédiablement perdus ; seule subsiste une
+preuve de suppression sans contenu. C’est irréversible. Si une procédure
+ou une obligation de conservation s’y oppose, choisissez plutôt le
+statut « Suspension de suppression (legal hold) ».

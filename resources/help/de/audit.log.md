@@ -1,7 +1,7 @@
 ---
 title: "Audit-Log"
 topic: audit.log
-version: 1
+version: 2
 keywords:
     - Änderungsprotokoll
     - Prüfprotokoll

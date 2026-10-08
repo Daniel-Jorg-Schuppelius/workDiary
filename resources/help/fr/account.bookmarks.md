@@ -1,7 +1,7 @@
 ---
 title: "Favoris & filtres"
 topic: account.bookmarks
-version: 1
+version: 2
 keywords:
     - marque-pages
     - signets

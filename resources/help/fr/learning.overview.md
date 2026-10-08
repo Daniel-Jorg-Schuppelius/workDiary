@@ -1,7 +1,7 @@
 ---
 title: "Plateforme d'apprentissage"
 topic: learning.overview
-version: 3
+version: 5
 keywords:
     - e-learning
     - LMS
@@ -15,6 +15,7 @@ keywords:
     - matrice des compétences
     - import LearnDash
     - temps d'apprentissage
+    - catalogue de cours
 audience: []
 related:
     - training.overview
@@ -28,6 +29,11 @@ comment on est évalué**. *Ce que* chacun doit suivre et jusqu'à quand reste
 dans la gestion des formations — les deux s'articulent sans se dupliquer.
 
 ## Construire un cours
+
+Tous les cours se trouvent dans le menu **Apprentissage** → **Catalogue de
+cours**, en liste ou en vignettes, avec les filtres **Type**, **Catégorie**,
+**Mots-clés** et **Statut**. Avec le droit **Créer et modifier des cours**,
+vous y créez un nouveau cours via **Créer un cours**.
 
 Un cours se compose de sections et d'unités. Une unité est un contenu, une
 évaluation, un devoir, une session en présentiel ou un contenu externe. Le
@@ -59,7 +65,7 @@ Avec **Ordre imposé**, un cours ne libère chaque unité qu'une fois la précé
 terminée ; les unités verrouillées affichent « Après l'unité précédente ». Une
 date de publication de l'unité s'applique en plus.
 
-Depuis LearnDash, reprenez le **ZIP d'export** (catalogue → « Import LearnDash ») : cours, leçons, sujets et évaluations sont créés en brouillon, les questions vont au catalogue avec leur catégorie. Images et médias ne sont pas copiés (espaces réservés à compléter), les vidéos de leçon seulement depuis des hôtes autorisés. Les cours achevés sont notés comme inscriptions « importées » pour les personnes avec e-mail correspondant — sans certificat ni preuve d'instruction, car un achèvement importé n'est pas une preuve en soi. L'essai montre au préalable ce qui serait créé.
+Depuis LearnDash, reprenez le **ZIP d'export** (**Catalogue de cours** → « Import LearnDash ») : cours, leçons, sujets et évaluations sont créés en brouillon, les questions vont au catalogue avec leur catégorie. Images et médias ne sont pas copiés (espaces réservés à compléter), les vidéos de leçon seulement depuis des hôtes autorisés. Les cours achevés sont notés comme inscriptions « importées » pour les personnes avec e-mail correspondant — sans certificat ni preuve d'instruction, car un achèvement importé n'est pas une preuve en soi. L'essai montre au préalable ce qui serait créé.
 
 ## La publication fige le contenu
 
@@ -79,9 +85,10 @@ l'affichage. Une **durée minimale** compte dès la première ouverture de
 l'unité ou via le temps d'apprentissage. Les **unités d'aperçu** se lisent
 dans le portail sans inscription (texte seul). Les **catégories** des
 paramètres classent le catalogue, les **mots-clés** ajoutent un axe transversal
-et restent modifiables après la publication ; **fenêtre de disponibilité** et **limite de
-participants** s'appliquent à l'auto-inscription — l'administration peut
-toujours affecter, les inscriptions obligatoires contournent la limite. Les
+et restent modifiables après la publication ; la **fenêtre de disponibilité**
+ne s'applique qu'à l'auto-inscription — l'administration peut toujours
+affecter. La **limite de participants** vaut aussi pour les affectations par
+l'administration ; seules les inscriptions obligatoires la contournent. Les
 devoirs portent des **règles de fichiers** (extensions, nombre, taille — jamais
 plus permissives que le système) et, au choix, une **validation automatique**
 avec points complets, incompatible avec le principe des quatre yeux.
@@ -185,11 +192,11 @@ modifier l'échéance et l'accès avec un motif, annuler (jamais les inscription
 obligatoires) et créer le lien d'accès pour les externes — un nouveau lien
 invalide l'ancien. Une réservation confirmée envoie le lien automatiquement.
 
-Les **paramètres de la plateforme** (catalogue, droit de gestion) contiennent
+Les **paramètres de la plateforme** (**Catalogue de cours**, droit de gestion) contiennent
 le réglage des points et du classement, les hôtes d’intégration autorisés et la
 **vue formateur** : activée, les personnes ayant un droit d’auteur ou
 d’évaluation ne voient que les cours qui leur appartiennent ou auxquels elles
-sont rattachées — catalogue, cockpit d’évaluation, statistiques et analyse
+sont rattachées — catalogue de cours, cockpit d’évaluation, statistiques et analyse
 suivent la même règle. La gestion voit toujours tout.
 
 Dans le lecteur, chaque personne conserve des **notes privées** sur une unité ou
@@ -201,7 +208,52 @@ notifiés. Deux tuiles du tableau de bord (masquées par défaut) montrent vos
 formations ouvertes et le retard d'évaluation ; la recherche d'activité trouve
 les cours publiés — les apprenants les leurs, les auteurs tous.
 
-Le **catalogue** s'affiche en liste ou en vignettes (le choix est mémorisé par personne) et porte une **note en étoiles** issue du retour de cours — seulement à partir de cinq réponses, pour que rien ne se rapporte à une personne. Le portail affiche en plus le **prix** de l'article lié. Dans le lecteur, le **mode concentration** masque la barre latérale ; « Dupliquer » crée un nouveau brouillon à partir d'un cours — le matériel oui, les inscriptions et preuves non.
+Le **Catalogue de cours** s'affiche en liste ou en vignettes (le choix est mémorisé par personne) et porte une **note en étoiles** issue du retour de cours — seulement à partir de cinq réponses, pour que rien ne se rapporte à une personne. Le portail affiche en plus le **prix** de l'article lié. Dans le lecteur, le **mode concentration** masque la barre latérale ; « Dupliquer » crée un nouveau brouillon à partir d'un cours — le matériel oui, les inscriptions et preuves non.
+
+## Parcours d’apprentissage
+
+Un parcours d'apprentissage définit une suite de cours avec des échéances –
+pensée pour l'intégration. Ce n'est pas un second catalogue de formations
+obligatoires : les formations obligatoires et leurs objectifs restent dans la
+gestion des formations. Vous trouvez les parcours sous **Apprentissage** →
+**Parcours**.
+
+**Créer un parcours** (en haut de la page) : **Code du cours** (le code court
+du parcours) et **Titre** sont obligatoires, **Rôle cible** et **Durée
+(jours)** sont facultatifs. La liste en dessous affiche **Code du cours**,
+**Titre**, **Rôle cible** et le nombre d'**Étapes** ; un clic sur le titre
+ouvre le parcours.
+
+Dans le parcours :
+
+- **Ajouter une étape** : choisissez un **Cours** et indiquez éventuellement
+  un **Délai (jours)**. Les nouvelles étapes sont ajoutées à la fin ;
+  **Retirer l’étape** supprime une étape du parcours.
+- **Attribuer le parcours** : choisissez une personne active de votre
+  organisation. Pour chaque étape, une inscription habituelle au cours est
+  créée, toutes en même temps ; une inscription existante reste inchangée. Les
+  notifications habituelles d'attribution s'appliquent aux nouvelles
+  inscriptions.
+
+**Échéances :** l'échéance d'une étape court à partir du jour de
+l'attribution, et non de la fin de l'étape précédente – si quelqu'un reste
+bloqué à une étape, le reste du parcours ne se décale pas. Si une étape n'a pas
+d'échéance propre, la **Durée (jours)** du parcours s'applique ; si elle
+manque aussi, l'inscription n'a pas d'échéance.
+
+**Attribuer par rôle cible** (bouton dans la liste) attribue chaque parcours
+doté d'un rôle cible à toutes les personnes actives de ce rôle. Comme rôle
+cible, vous saisissez l'identifiant du rôle tel qu'il figure aussi dans la
+matrice des obligations. L'opération peut être répétée à volonté : une
+personne déjà inscrite n'est pas inscrite deux fois. Le message indique les
+parcours vérifiés et les inscriptions nouvellement créées.
+
+**Limites :** les cours qui ne sont pas encore publiés sont ignorés lors de
+l'attribution. Si un cours du parcours a atteint sa limite de participants,
+l'attribution s'interrompt avec un message.
+
+**Autorisation :** **Gérer l’apprentissage (attributions, groupes,
+catalogue)**.
 
 ## Analyse et cogestion
 

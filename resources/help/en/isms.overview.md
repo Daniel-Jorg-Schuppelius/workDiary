@@ -1,7 +1,7 @@
 ---
 title: "ISMS at a glance"
 topic: isms.overview
-version: 2
+version: 3
 keywords:
     - information security
     - information security management

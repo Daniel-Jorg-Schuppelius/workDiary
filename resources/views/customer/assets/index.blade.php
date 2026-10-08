@@ -23,7 +23,7 @@
         @forelse ($assets as $asset)
             <tr>
                 <td><a class="link link-hover" href="{{ route('customer.assets.show', $asset) }}">{{ $asset->name }}</a></td>
-                <td class="font-mono text-sm">{{ $asset->serial_number ?? '—' }}</td>
+                <td class="font-mono text-sm">{{ $asset->serial_no ?? '—' }}</td>
             </tr>
         @empty
             <x-table.empty :colspan="2" :title="__('Keine Objekte vorhanden.')" />

@@ -1,7 +1,7 @@
 ---
 title: "Acceso y seguridad"
 topic: customer-portal.access
-version: 2
+version: 3
 keywords:
     - inicio de sesión
     - iniciar sesión
@@ -20,23 +20,87 @@ related:
     - customer-portal.overview
 ---
 
-Inicie sesión en el portal de clientes con su **dirección de correo
-electrónico** y su **contraseña**; con la opción **Mantener sesión
-iniciada** no tendrá que autenticarse en cada visita desde su propio
-dispositivo. Para proteger su acceso puede configurar la
-**autenticación de dos factores**: una **app de autenticación**, un
-**código por correo electrónico** o una **llave de seguridad o passkey**,
-y puede activar varios métodos en paralelo. Al activarla recibirá una
-única vez **códigos de recuperación**; guárdelos en un lugar seguro,
-pues permiten acceder si su segundo factor no está disponible. Usted
-mismo gestiona y puede eliminar los métodos configurados; si su
-organización exige el segundo factor, el último método restante no puede
-borrarse.
+Su acceso al portal de clientes es una cuenta personal que su proveedor crea para usted. Este tema explica cómo activar el acceso, iniciar sesión, cambiar su correo de inicio de sesión y proteger el acceso con un segundo factor.
 
-**Perfil y correo de inicio de sesión:** en **Perfil** ve su nombre, su
-correo de inicio de sesión y la empresa a la que pertenece su acceso. Allí
-cambia también la dirección de correo: se envía un enlace de confirmación a
-la nueva dirección. Solo tras hacer clic pasa a ser el correo de inicio de
-sesión; la dirección anterior recibe un aviso. Hasta entonces inicia sesión
-con la dirección anterior. El enlace solo es válido durante un tiempo
-limitado; una nueva solicitud sustituye a la que siga pendiente.
+## Activar el acceso
+
+Su proveedor le invita por correo electrónico; el asunto es «Su acceso al portal de clientes de …». El correo contiene el botón **Establecer contraseña**. El enlace solo puede usarse una vez y es válido durante siete días; la fecha de caducidad figura en el correo.
+
+1. Haga clic en **Establecer contraseña** en el correo.
+2. Introduzca una contraseña en **Nueva contraseña** y repítala en **Repetir contraseña**.
+3. Haga clic en **Guardar contraseña**.
+
+La contraseña debe tener al menos 12 caracteres y contener mayúsculas y minúsculas, cifras y caracteres especiales. Las contraseñas procedentes de filtraciones de datos conocidas se rechazan. A continuación se abre la página de inicio de sesión con el aviso **Su contraseña se ha establecido. Ya puede iniciar sesión.**
+
+Si el enlace ha caducado, la página ya no se abre. En ese caso, pida a su proveedor que le envíe de nuevo la invitación.
+
+## Iniciar sesión
+
+En la página **Iniciar sesión** introduzca su **Correo electrónico** y su **Contraseña** y haga clic en **Iniciar sesión**. Con **Mantener sesión iniciada** no tiene que volver a iniciar sesión en cada visita desde este dispositivo – utilice esta opción solo en su propio dispositivo.
+
+- Si el correo o la contraseña no son correctos, aparece **Estas credenciales no coinciden con nuestros registros.** Por motivos de seguridad, el portal no indica qué dato era incorrecto.
+- El número de intentos de inicio de sesión está limitado; tras demasiados intentos fallidos debe esperar un rato.
+- Si su proveedor ha desactivado su acceso, ya no es posible iniciar sesión.
+- En el portal no existe ninguna función para cambiar o restablecer la contraseña. Si ha olvidado su contraseña, diríjase a su proveedor.
+
+### Segundo factor al iniciar sesión
+
+Si ha configurado un segundo factor, tras la contraseña aparece la página **Confirmación de dos factores**. Según el método configurado:
+
+- introduzca en **Código** el código de 6 cifras de su aplicación de autenticación y haga clic en **Confirmar**,
+- haga clic en **Enviar código por correo electrónico** e introduzca el código recibido; después **Confirmar con código de correo**,
+- inicie sesión con **Con passkey / llave de seguridad**,
+- o introduzca uno de sus códigos de recuperación mediante **Usar un código de recuperación en su lugar**.
+
+Tras varios códigos incorrectos, la introducción se bloquea brevemente; tras demasiados intentos fallidos, el inicio de sesión vuelve a empezar. **Cancelar** le devuelve a la página de inicio de sesión.
+
+## Perfil y correo de inicio de sesión
+
+En **Perfil**, en la sección **Su acceso**, ve los datos **Nombre**, **Correo de inicio de sesión** y **Cliente** – la empresa a la que está asignado su acceso. El nombre y la empresa solo los puede cambiar su proveedor.
+
+El correo de inicio de sesión lo cambia usted mismo:
+
+1. En **Cambiar dirección de correo** introduzca la **Nueva dirección de correo**.
+2. Haga clic en **Enviar enlace de confirmación**. Si no ha iniciado sesión
+   recientemente, el portal le pide primero su contraseña en **Confirmar
+   contraseña**.
+3. En un plazo de 24 horas, abra el enlace del correo enviado a la nueva dirección.
+
+Solo después de hacer clic en el enlace la nueva dirección pasa a ser su correo de inicio de sesión; la dirección anterior recibe una información sobre el cambio. Hasta entonces inicia sesión con la dirección anterior, y el perfil muestra para qué dirección hay una confirmación pendiente y hasta cuándo. Una nueva solicitud sustituye a la pendiente. Si la nueva dirección ya está en uso, no llega ningún correo; el mensaje del portal es siempre el mismo para que nadie pueda sacar conclusiones sobre otras cuentas.
+
+## Configurar la autenticación de dos factores
+
+**Seguridad** abre la página **Autenticación de dos factores**. Arriba a la derecha figura el estado: **Activo**, **Configuración pendiente** o **Inactivo**. La sección **Añadir método** ofrece tres métodos; puede usar varios a la vez.
+
+### Aplicación de autenticación
+
+1. Haga clic en **Mostrar código QR**.
+2. Escanee el código QR con su aplicación (por ejemplo Google Authenticator, Aegis o 1Password) o escriba la **Clave** mostrada.
+3. Introduzca el código de 6 cifras de la aplicación y haga clic en **Confirmar**.
+
+### Código por correo
+
+1. Haga clic en **Activar código por correo**. El portal envía un código a su correo de inicio de sesión.
+2. Introduzca el código y haga clic en **Confirmar**. Si no ha llegado ningún correo, solicite un código nuevo con **Reenviar código**.
+
+### Clave de seguridad / passkey (FIDO2)
+
+Haga clic en **Añadir passkey** y siga las instrucciones de su navegador o dispositivo – con una passkey, su smartphone o una llave de hardware. Si su inicio de sesión fue hace tiempo, el portal le pide antes su contraseña en la página **Confirmar contraseña**.
+
+### Códigos de recuperación
+
+Al configurar el primer método, el portal muestra una sola vez sus **Códigos de recuperación**. Cada código funciona exactamente una vez y sustituye al segundo factor al iniciar sesión. Guarde los códigos en un lugar seguro; el portal no vuelve a mostrarlos. Si la aplicación de autenticación está configurada, puede generar un juego nuevo: en **Regenerar códigos de recuperación** introduzca en el campo **Código de aplicación actual** el código de la aplicación y haga clic en **Generar nuevo**. Los códigos anteriores dejan de ser válidos.
+
+## Eliminar factores o desactivarlo todo
+
+La sección **Factores activos** muestra los métodos configurados. El código por correo y las passkeys se eliminan uno a uno con **Eliminar** (icono de papelera). La aplicación de autenticación solo puede desactivarse junto con todo lo demás.
+
+En **Desactivar todo** usted desactiva por completo la autenticación de dos factores: introduzca un **Código de aplicación o de recuperación** y haga clic en **Desactivar**. Se eliminan todos los factores y códigos de recuperación.
+
+## Cuando la autenticación de dos factores es obligatoria
+
+Su proveedor puede exigir un segundo factor para todos los accesos. En ese caso:
+
+- Si todavía no tiene un segundo factor, tras iniciar sesión el portal le lleva a la página **Autenticación de dos factores** con el aviso **Su organización exige la autenticación de dos factores. Configúrela ahora.** Las demás páginas solo se abren cuando hay un método configurado.
+- El último factor restante no se puede eliminar.
+- **Desactivar todo** no aparece; en su lugar, un aviso indica que no es posible desactivarla.

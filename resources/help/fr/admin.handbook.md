@@ -1,7 +1,7 @@
 ---
 title: "Manuel d'administration : vue d'ensemble"
 topic: admin.handbook
-version: 1
+version: 2
 keywords:
     - guide administrateur
     - administration

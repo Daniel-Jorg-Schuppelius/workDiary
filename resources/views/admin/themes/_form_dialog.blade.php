@@ -28,7 +28,7 @@
     }
 
     $requiredLabels = [
-        'base-100' => __('Hintergrund'), 'base-200' => __('Fläche'), 'base-300' => __('Rahmen'),
+        'base-100' => __('Hintergrund'), 'base-200' => __('Fläche'), 'base-300' => __('Rahmenfarbe'),
         'primary' => __('Primär'), 'secondary' => __('Sekundär'), 'accent' => __('Akzent'),
         'neutral' => __('Neutral (Seitenleiste)'),
     ];

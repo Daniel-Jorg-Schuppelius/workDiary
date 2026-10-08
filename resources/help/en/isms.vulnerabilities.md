@@ -1,7 +1,7 @@
 ---
 title: "Vulnerabilities & advisories"
 topic: isms.vulnerabilities
-version: 1
+version: 2
 keywords:
     - security vulnerability
     - security flaw

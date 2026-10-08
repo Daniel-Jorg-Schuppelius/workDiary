@@ -177,6 +177,7 @@ class CustomerPortalAssetsAndPhotosTest extends TestCase {
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
             'name' => 'Heizungsanlage Nord',
+            'serial_no' => 'SN-4711',
         ]);
         Protocol::factory()->create([
             'organization_id' => $this->organization->id,
@@ -205,6 +206,7 @@ class CustomerPortalAssetsAndPhotosTest extends TestCase {
         $index = $this->actingAs($this->portalUser, 'customer')->get(route('customer.assets.index'));
         $index->assertOk();
         $index->assertSee('Heizungsanlage Nord');
+        $index->assertSee('SN-4711');
         $index->assertDontSee('Fremdanlage');
 
         $show = $this->actingAs($this->portalUser, 'customer')->get(route('customer.assets.show', $own));

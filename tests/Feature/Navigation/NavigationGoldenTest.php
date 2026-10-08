@@ -65,6 +65,9 @@ use Tests\TestCase;
  * Angepasst 2026-10-05 (Konsolidierungs-Audit `k3-20`): einziges Delta ist
  * `/finanzen/steuerregeln` im Header-Systemmenü (`enterprise_admin`, Recht
  * Finanzkonfiguration) — die Seite gab es, aber keinen Link dorthin.
+ * Angepasst 2026-10-08 (Phase 135): `enterprise_user/sidebar` verliert
+ * `/reports/audit-activity` und `/reports/billing` — beide Seiten antworteten
+ * ihr mit 403; das Menü prüft jetzt wie die Controller.
  */
 class NavigationGoldenTest extends TestCase {
     use RefreshDatabase;

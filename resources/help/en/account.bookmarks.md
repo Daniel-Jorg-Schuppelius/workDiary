@@ -1,7 +1,7 @@
 ---
 title: "Bookmarks & Filters"
 topic: account.bookmarks
-version: 1
+version: 2
 keywords:
     - favorites
     - quick links

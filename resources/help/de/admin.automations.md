@@ -1,7 +1,7 @@
 ---
 title: "Automatisierungen"
 topic: admin.automations
-version: 1
+version: 3
 keywords:
     - Workflow
     - Regeln
@@ -24,27 +24,34 @@ related:
 
 Automatisierungen sind regelbasierte Abläufe nach dem Muster
 **Ereignis → Bedingung → Aktion**. Tritt ein definiertes
-Auslöse-Ereignis (Trigger) ein und passen die hinterlegten
-Bedingungen, werden die zugeordneten Aktionen ausgeführt. Die Regeln
-gelten je Organisation und sind streng auf den eigenen Mandanten
-beschränkt.
+Auslöse-Ereignis ein und passen die hinterlegten Bedingungen, wird die
+zugeordnete Aktion ausgeführt. Die Regeln gelten je Organisation und
+sind streng auf den eigenen Mandanten beschränkt. Jede Auswertung wird
+im Audit-Log protokolliert.
 
-In der Übersicht sehen Sie alle Regeln, sortiert nach Priorität und
-Name. Pro Regel stehen folgende Aktionen bereit:
+Die Übersicht zeigt alle Regeln mit **Prio**, **Name**, **Trigger**,
+**Aktion(en)** und **Aktiv**, standardmäßig nach Priorität sortiert.
+Folgende Aktionen stehen bereit:
 
-- **Anlegen**: Name, Auslöse-Ereignis, Bedingungen und Aktionen.
-  Bedingungen und Aktionen werden im aktuellen MVP-Stand als
-  JSON erfasst; ein visueller Regel-Editor ist als spätere
-  Erweiterung vorgesehen.
-- **Aktiv/Inaktiv schalten (Toggle)**: deaktivierte Regeln bleiben
+- **Neue Regel anlegen (JSON)**: öffnet den Dialog **Neue
+  Automationsregel** mit **Name**, **Auslöser** (z. B. „Spesenabrechnung
+  eingereicht“), **Aktion** (z. B. „Spesen freigeben“), **Priorität**
+  und **Bedingungen (JSON)**. Die Aktion muss zum Auslöser passen; eine
+  leere Bedingung gilt immer. **Regel anlegen** speichert die Regel.
+- **Deaktivieren**/**Aktivieren**: deaktivierte Regeln bleiben
   erhalten, lösen aber keine Aktionen mehr aus.
-- **Detailansicht**: zeigt die jüngsten Ausführungen (Runs) einer
-  Regel zur Nachvollziehbarkeit.
+- Detailansicht (Klick auf den Namen): zeigt Auslöser, Bedingungen und
+  Aktionen sowie das **Audit-Log (letzte 50)** mit **Zeitpunkt**,
+  **Subjekt**, **Entscheidung** und **Log**.
 - **Löschen**: entfernt die Regel dauerhaft.
 
-Die **Priorität** steuert die Reihenfolge bei mehreren passenden
-Regeln (niedrigerer Wert zuerst). Ungültiges JSON in Bedingungen oder
-Aktionen wird abgewiesen.
+Die **Priorität** steuert die Reihenfolge, wenn mehrere Regeln am
+selben Auslöser hängen (niedrigerer Wert zuerst, Vorgabe 100). Nur die
+erste passende Regel wird ausgeführt; eine Regel greift je Datensatz
+höchstens einmal. Ungültiges JSON in den Bedingungen wird abgewiesen.
+
+Berechtigung: Automatisierungen verwalten die Administratoren der
+Organisation.
 
 Hinweis: Für reine Benachrichtigungen sind die
 **Benachrichtigungsregeln** oft die einfachere Wahl; für externe

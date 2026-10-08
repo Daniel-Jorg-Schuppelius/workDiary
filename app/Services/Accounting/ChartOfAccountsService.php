@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Accounting;
 
-use App\Enums\Finance\{AccountType, BalanceSide, EuerCategory};
+use App\Enums\Finance\{AccountType, BalanceSide, BwaGroup, EuerCategory};
 use App\Models\Accounting\{AccountingAccount, AccountingEntryLine};
 use App\Models\Platform\Organization;
 use App\Support\Toolkit\CsvFacade;
@@ -48,6 +48,7 @@ class ChartOfAccountsService {
             'is_clearing' => (bool) ($data['is_clearing'] ?? false),
             'is_cost_center_required' => (bool) ($data['is_cost_center_required'] ?? false),
             'euer_category' => $this->euerCategory($data['euer_category'] ?? null),
+            'bwa_group' => $this->bwaGroup($data['bwa_group'] ?? null),
             'deductible_percent' => NumberHelper::roundPrecise(NumberHelper::normalizeDecimalString((string) ($data['deductible_percent'] ?? 100)), 2),
             'default_tax_code_id' => $data['default_tax_code_id'] ?? null,
             'datev_account' => $data['datev_account'] ?? null,
@@ -57,6 +58,14 @@ class ChartOfAccountsService {
     }
 
     /** Leere Kategorie bleibt leer: Sie ist ein Klärungsfall, kein Standardwert. */
+    private function bwaGroup(mixed $value): ?BwaGroup {
+        if ($value instanceof BwaGroup) {
+            return $value;
+        }
+
+        return is_string($value) && $value !== '' ? BwaGroup::from($value) : null;
+    }
+
     private function euerCategory(mixed $value): ?EuerCategory {
         if ($value instanceof EuerCategory) {
             return $value;

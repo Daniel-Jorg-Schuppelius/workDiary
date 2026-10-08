@@ -1,7 +1,7 @@
 ---
 title: "Redditività"
 topic: reports.economics
-version: 1
+version: 3
 keywords:
     - consuntivo
     - margine di contribuzione
@@ -22,16 +22,44 @@ related:
     - reports.drilldown
 ---
 
-La vista di redditività (consuntivo) mostra per cliente e progetto nel
-periodo scelto il margine di contribuzione: **ricavi** (tempi
-fatturabili × tariffa + materiale + spese fatturabili, come proiezione —
-la fattura vincolante resta nel sistema esterno), **costi** (tariffa di
-costo interna × tempo + costi diretti di materiale e documenti) e
-**margine di contribuzione** anche in percentuale. Include un
-**ranking** top/flop 5 per progetto e cliente, il **tempo non
-fatturabile** come proxy di rilavorazione e il confronto
-**piano-consuntivo** rispetto ai budget di tempo e denaro del progetto.
-Se per una parte dei tempi manca la tariffa di costo interna, entrano
-con 0 € e il margine è troppo ottimistico (marcato con `*`).
-Esportazione in CSV o PDF; dati finanziari a livello di organizzazione,
-solo per utenti con diritto di lettura dei report.
+La pagina **Redditività** (consuntivo) in **Report** → **Finanze e
+audit** → **Redditività** mostra il margine di contribuzione per cliente
+(**Redditività per cliente**) e per progetto (**Redditività &
+previsto-vs-effettivo per progetto**) nel **Periodo** scelto:
+
+- **Ricavo** = tempi fatturabili × tariffa + materiale fatturato + spese
+  fatturabili. La fattura determinante è gestita dal sistema di
+  fatturazione esterno; qui gli importi registrati servono da proiezione.
+- **Costi** = tariffa di costo interna del tempo × tempo + spese dirette
+  per materiale e giustificativi.
+- **Margine di contribuzione** = ricavo − costi, indicato anche come
+  **Margine** in percentuale.
+
+Ulteriori analisi:
+
+- **Classifica**: «Top 5 clienti (margine di contribuzione)», «Flop 5
+  clienti (margine di contribuzione)» e lo stesso per i progetti – così
+  diventano visibili clienti e progetti in perdita.
+- **Tempo non fatturabile**: per cliente, **Fatturabile (min.)**, **Non
+  fatturabile (min.)** e **Quota %** mostrano quanto tempo è stato
+  registrato senza fatturazione – un indizio di rilavorazioni e
+  concessioni. Per progetto, **Rilavorazione (min.)**, **Gesto commerciale (min.)** e **Rilavorazione %** riportano i tempi registrati con un
+  motivo di rilavorazione o di concessione.
+- **Previsto vs effettivo** per progetto: **Effettivo (min.)** rispetto a
+  **Piano (min.)** dal budget di tempo del progetto (**Δ Min.**) e costi
+  effettivi rispetto al **Budget del piano** in euro (**Δ Budget**).
+
+Note sulla qualità dei dati:
+
+- Se per una parte dei tempi **non è impostata una tariffa di costo
+  interna**, questi confluiscono con 0 € di costi – il margine di
+  contribuzione risulta quindi troppo ottimistico. I costi riportano
+  allora un asterisco con l’avviso «Tariffe di costo non completamente
+  compilate».
+- I progetti **senza budget di tempo/budget** mostrano «–» nelle colonne
+  del piano.
+
+Esportazione in **PDF**, **CSV** o **Excel** per direzione e controllo di
+gestione. La pagina mostra dati finanziari dell’intera organizzazione ed
+è disponibile solo per le persone con il permesso **Visualizza i
+report**.

@@ -94,7 +94,7 @@
                                     <p>{{ $incident->description }}</p>
                                 @endif
                                 @if ($incident->impact)
-                                    <p><span class="font-semibold">{{ __('isms.field.impact') }}:</span> {{ $incident->impact }}</p>
+                                    <p><span class="font-semibold">{{ __('isms.field.incident_impact') }}:</span> {{ $incident->impact }}</p>
                                 @endif
                                 @if ($incident->root_cause)
                                     <p><span class="font-semibold">{{ __('isms.field.root_cause') }}:</span> {{ $incident->root_cause }}</p>

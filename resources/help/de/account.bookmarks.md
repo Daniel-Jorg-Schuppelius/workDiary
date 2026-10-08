@@ -1,7 +1,7 @@
 ---
 title: "Lesezeichen & Filter"
 topic: account.bookmarks
-version: 1
+version: 2
 keywords:
     - Favoriten
     - Schnellzugriff

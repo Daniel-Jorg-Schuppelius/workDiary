@@ -1074,10 +1074,15 @@ class NavigationRegistry {
                     'icon' => 'groups',
                     'items' => $this->compactItems([
                         ['route' => 'reports.week-by-user', 'label' => __('Woche pro Mitarbeiter'), 'icon' => 'date_range', 'modal' => false, 'matches' => ['reports.week-by-user']],
-                        ['route' => 'reports.month-by-user-team', 'label' => __('Monat pro Mitarbeiter'), 'icon' => 'calendar_view_month', 'modal' => false, 'matches' => ['reports.month-by-user-team']],
+                        // Menü zeigt nur, was die Seite öffnet (Prüfungen wie im jeweiligen Controller).
+                        ($user?->isAdmin() || Gate::allows('viewAny', User::class))
+                            ? ['route' => 'reports.month-by-user-team', 'label' => __('Monat pro Mitarbeiter'), 'icon' => 'calendar_view_month', 'modal' => false, 'matches' => ['reports.month-by-user-team']]
+                            : null,
                         // Auslastung & Realisierung (MVP-467): Seite prüft viewAny(User)/Admin.
                         ['route' => 'reports.utilization', 'label' => __('Auslastung'), 'icon' => 'speed', 'modal' => false, 'matches' => ['reports.utilization']],
-                        ['route' => 'reports.coverage', 'label' => __('Coverage'), 'icon' => 'group_work', 'modal' => false, 'matches' => ['reports.coverage']],
+                        $user?->isAdmin()
+                            ? ['route' => 'reports.coverage', 'label' => __('Coverage'), 'icon' => 'group_work', 'modal' => false, 'matches' => ['reports.coverage']]
+                            : null,
                         // MVP-518: Notfall-Anwesenheitsliste — eigene Berechtigung, kein Modul-Gate.
                         $user?->can(Permission::ReportPresenceEmergency->value)
                             ? ['route' => 'reports.presence-emergency', 'label' => __('reporting.presence_emergency.nav'), 'icon' => 'emergency_home', 'modal' => false, 'matches' => ['reports.presence-emergency']]
@@ -1192,7 +1197,9 @@ class NavigationRegistry {
                         ($user?->isAdmin() || $user?->can(Permission::ReportView->value))
                             ? ['route' => 'reports.economics', 'label' => __('Wirtschaftlichkeit'), 'icon' => 'trending_up', 'modal' => false, 'matches' => ['reports.economics']]
                             : null,
-                        ['route' => 'reports.billing', 'label' => __('Abrechnung'), 'icon' => 'request_quote', 'modal' => false, 'matches' => ['reports.billing']],
+                        ($user?->isAdmin() || Gate::allows('timeEntry.viewAny'))
+                            ? ['route' => 'reports.billing', 'label' => __('Abrechnung'), 'icon' => 'request_quote', 'modal' => false, 'matches' => ['reports.billing']]
+                            : null,
                         // Umsatz je Produkt (MVP-705, Feature 140): Rechnungsdaten → Recht wie der Abrechnungsbericht.
                         ($user?->isAdmin() || Gate::allows('timeEntry.viewAny'))
                             ? ['route' => 'reports.product-revenue', 'label' => __('Umsatz je Produkt'), 'icon' => 'inventory', 'modal' => false, 'matches' => ['reports.product-revenue']]
@@ -1227,7 +1234,9 @@ class NavigationRegistry {
                         $user?->can(Permission::ComplianceViewAny->value)
                             ? ['route' => 'reports.arbzg-compliance', 'label' => __('compliance.report.nav'), 'icon' => 'gavel', 'modal' => false, 'matches' => ['reports.arbzg-compliance']]
                             : null,
-                        ['route' => 'reports.audit-activity', 'label' => __('Audit-Aktivität'), 'icon' => 'security', 'modal' => false, 'matches' => ['reports.audit-activity']],
+                        $user?->isAdmin()
+                            ? ['route' => 'reports.audit-activity', 'label' => __('Audit-Aktivität'), 'icon' => 'security', 'modal' => false, 'matches' => ['reports.audit-activity']]
+                            : null,
                     ]),
                 ],
             ],

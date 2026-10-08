@@ -225,8 +225,9 @@ Route::prefix('customer-portal')->name('customer.')->group(function (): void {
 
         // Profil + E-Mail-Selbständerung (MVP-712).
         Route::get('/profile', [\App\Http\Controllers\CustomerPortal\ProfileController::class, 'show'])->name('profile.show');
+        // Wie intern (ProfileController::update): Adresswechsel nur mit frischer Anmeldung.
         Route::post('/profile/email', [\App\Http\Controllers\CustomerPortal\ProfileController::class, 'requestEmailChange'])
-            ->middleware('throttle:6,1')->name('profile.email.request');
+            ->middleware(['throttle:6,1', 'reauth:customer'])->name('profile.email.request');
 
         // Passwortbestätigung vor Anmeldemittel-Änderungen — Ziel von `reauth:customer`.
         Route::get('/passwort-bestaetigen', [\App\Http\Controllers\Auth\ConfirmPasswordController::class, 'show'])->name('password.confirm');

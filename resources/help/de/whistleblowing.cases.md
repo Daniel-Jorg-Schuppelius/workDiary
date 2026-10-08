@@ -1,7 +1,7 @@
 ---
 title: "Meldestelle – Fallbearbeitung"
 topic: whistleblowing.cases
-version: 1
+version: 3
 keywords:
     - Hinweisgebersystem
     - HinSchG
@@ -26,41 +26,58 @@ related:
 ---
 
 Hier bearbeiten Sie eingegangene Hinweise interner und externer
-Melder (`/compliance/meldungen`). Die Berechtigung der Meldestelle
-ist bewusst von der Administration **getrennt**: Ein globaler Admin
-hat ohne eigene Fall-Zuweisung keinen Einblick. Jeder einzelne
-Zugriff wird über die Fall-Policy geprüft (Permission **und**
-konkrete Zuweisung zum Fall); es gibt keinen Admin-Bypass.
+Melder. Sie finden die Liste **Hinweisgeber-Meldungen** im Menü
+**Compliance** → **Meldestelle**. Die Berechtigung der Meldestelle (Rolle
+**Meldestelle**) ist bewusst von der Administration **getrennt**: Auch
+Administratoren haben ohne eigene Zuweisung zum Fall keinen Einblick.
+Jeder einzelne Zugriff setzt das passende Recht **und** die Zuweisung zum
+konkreten Fall voraus; eine Ausnahme für Administratoren gibt es nicht.
 
-Vor dem Zugriff ist eine eigene Zwei-Faktor-Authentifizierung der
-Meldestelle erforderlich.
+Vor dem Zugriff ist eine eigene Zwei-Faktor-Authentifizierung
+erforderlich; ohne sie leitet WorkDiary Sie zur Einrichtung weiter.
 
-**Fallliste**: Die Übersicht zeigt nur Stammdaten (Fallnummer,
-Kategorie, Status, Priorität, Fristen) – bewusst **keine
-Inhaltsvorschau**. Inhalte sind pro Fall mit einem eigenen Schlüssel
-verschlüsselt (DEK).
+**Fallliste**: Die Übersicht zeigt nur Stammdaten (**Fallnummer**,
+**Kategorie**, **Status**, **Priorität**, **Eingang bis**, **Rückmeldung
+bis**) – bewusst **keine Inhaltsvorschau**. Kategorie und Priorität
+erscheinen erst, wenn Sie dem Fall zugewiesen sind („Sichtbar nach
+Zuweisung“). Die Inhalte jedes Falls sind mit einem eigenen Schlüssel
+verschlüsselt.
 
-**Falldetail**: Im Detail können Sie je nach Berechtigung
+**Falldetail**: Die Fallakte zeigt **Fallinformationen**,
+**Meldeinhalt**, **Bearbeiter** sowie **Kommunikation & Notizen**. Je nach
+Berechtigung können Sie
 
-- den **Eingang bestätigen** (7-Tage-Frist),
-- den **Status** entlang des Lebenszyklus ändern (Eingegangen →
-  Bestätigt → Triage → In Bearbeitung → … → Abgeschlossen);
-  Abschluss verlangt eine Begründung,
-- **Bearbeiter zuweisen** (mit Rolle),
-- **interne Notizen** erfassen (nie für den Melder sichtbar),
-- **Nachrichten an die meldende Person** senden (über das anonyme
-  Postfach),
-- verschlüsselte **Anhänge** herunterladen.
+- den **Eingang bestätigen** (Frist **Eingang bis**: 7 Tage nach
+  Eingang),
+- unter **Status ändern** den nächsten zulässigen Status wählen und mit
+  **Status setzen** übernehmen – etwa „Eingegangen“ → „Eingang
+  bestätigt“ → „Prüfung“ → „In Bearbeitung“ (zwischendurch „Wartet auf
+  Rückmeldung“ oder „Abgegeben“) → „Abgeschlossen – …“; ein Abschluss
+  verlangt eine **Begründung**, die als interne Notiz abgelegt wird,
+- unter **Bearbeiter zuweisen** eine Person über ihre **Benutzer-ID** mit
+  einer **Rolle** hinzufügen (**Zuweisen**),
+- eine **Interne Notiz** erfassen (**Notiz speichern**; nie für die
+  meldende Person sichtbar),
+- eine **Nachricht an die meldende Person** senden (**Senden**); sie
+  erscheint in deren geschütztem Postfach.
+
+Anhänge, die die meldende Person hochlädt, werden verschlüsselt
+gespeichert; einen Download bietet die Fallakte derzeit nicht an.
 
 **Vertraulichkeit und Konflikte**:
 
-- **Interessenkonflikt erklären** sperrt Sie selbst für den Fall.
-- Eine **betroffene Person markieren** sperrt diese dauerhaft für den
-  Fall.
-- Eine **Notfallfreigabe** (mit Pflicht-Begründung) erteilt einer
-  weiteren Person Zugriff – jeder dieser Schritte wird in der eigenen
-  Ereignis-Hash-Kette protokolliert.
+- **Interessenkonflikt melden** (Begründung optional) sperrt Sie selbst
+  für den Fall: Ihre Zuweisung endet sofort, und Sie können die Sperre
+  nicht selbst aufheben.
+- Eine Markierung betroffener Personen oder eine Notfallfreigabe für
+  weitere Personen bietet die Fallakte derzeit nicht an.
+- Jeder Schritt am Fall wird manipulationssicher im Fallprotokoll
+  festgehalten.
 
-**Löschen**: Das kontrollierte Löschen am Ende der Aufbewahrung
-erfolgt per **Crypto-Shredding** (der Fallschlüssel wird vernichtet,
-die Inhalte werden damit unlesbar). Das ist unumkehrbar.
+**Löschen**: Steht ein Fall im Status „Aufbewahrungsprüfung“, erscheint
+die Karte **Kontrollierte Löschung**. **Fall löschen** und die Bestätigung
+**Endgültig löschen** vernichten den Schlüssel des Falls: Meldeinhalt,
+Nachrichten, Anhänge und Zuweisungen sind danach unwiederbringlich
+verloren, es bleibt nur ein inhaltsfreier Löschnachweis. Das ist
+unumkehrbar. Steht ein Verfahren oder eine Aufbewahrungspflicht
+entgegen, setzen Sie stattdessen den Status „Löschsperre (Legal Hold)“.

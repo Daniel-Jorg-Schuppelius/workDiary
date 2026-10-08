@@ -1,7 +1,7 @@
 ---
 title: "Datenschutz-Werkzeuge"
 topic: admin.privacy-tools
-version: 1
+version: 2
 keywords:
     - DSGVO
     - GDPR

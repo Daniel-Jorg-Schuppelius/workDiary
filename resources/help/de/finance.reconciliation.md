@@ -1,7 +1,7 @@
 ---
 title: "Zahlungsabgleich"
 topic: finance.reconciliation
-version: 2
+version: 3
 keywords:
     - Bankabgleich
     - Kontoabgleich

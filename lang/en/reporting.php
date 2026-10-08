@@ -169,6 +169,15 @@ return [
         'others' => 'Others',
         'note' => 'Previous period = equally long period immediately before; the five largest changes individually, the rest as “Others”. Click opens the supplier’s vouchers.',
     ],
+    // Warnungen der Plan/Ist-Anwesenheit (PlanIstReportBuilder liefert die Schlüssel).
+    'plan_ist' => [
+        'warning' => [
+            'presence' => [
+                'lateStart' => 'Start more than 15 minutes after plan',
+                'hoursDiff' => 'Hours deviate by more than 10 %',
+            ],
+        ],
+    ],
     'warning' => [
         'capacity' => [
             'title' => 'Capacity shortage in team :name',

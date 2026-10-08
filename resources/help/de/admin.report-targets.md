@@ -1,7 +1,7 @@
 ---
 title: "Zielwerte (Reports)"
 topic: admin.report-targets
-version: 1
+version: 3
 keywords:
     - Sollwerte
     - Zielvorgabe
@@ -25,29 +25,35 @@ related:
 
 Zielwerte sind Soll-/Benchmark-Größen, gegen die Auswertungen die
 tatsächlichen Werte vergleichen. Aus dem Vergleich leitet sich eine
-Ampel ab (grün/gelb/rot).
+Ampel ab (grün/gelb/rot). Sie pflegen sie auf der Seite **Zielwerte &
+Benchmarks**; **Zielwert anlegen** öffnet den Dialog.
 
 Je Zielwert legen Sie fest:
 
-- **Kennzahl**: Deckungsbeitrags-Marge, Abrechenbare Quote,
-  Nacharbeits-Anteil, SLA-Einhaltungsquote oder Auslastung.
-- **Geltungsbereich**: organisationsweit oder gezielt für einen
-  Kunden, ein Projekt bzw. einen Nutzer.
-- **Zielwert**: die numerische Vorgabe (z. B. Prozentsatz).
-- **Periode** (optional): Monat, Quartal oder Jahr – rein
-  dokumentarisch.
-- **Gültig von/bis** (optional): Zeitraum, in dem der Zielwert greift.
+- **Kennzahl**: **Deckungsbeitrags-Marge (%)**, **Abrechenbare Quote
+  (%)**, **Nacharbeitsanteil (%)**, **SLA-Einhaltungsquote (%)** oder
+  **Auslastung (%)**.
+- **Zielwert**: die numerische Vorgabe in Prozent.
+- **Bezug**: **Organisation (global)** oder gezielt **Kunde**,
+  **Projekt** bzw. **Mitarbeitende(r)**; das passende **Bezugsobjekt**
+  wählen Sie daneben aus.
+- **Bezugszeitraum** (optional): **Monat**, **Quartal** oder **Jahr** –
+  rein dokumentarisch.
+- **Gültig ab**/**Gültig bis** (optional): Zeitraum, in dem der
+  Zielwert greift.
 - **Notiz** (optional): kurze Erläuterung.
 
 Beachten Sie die Richtung der Kennzahl: Bei Marge, Abrechenbarer Quote,
-SLA-Quote und Auslastung ist „höher besser", beim Nacharbeits-Anteil
-„niedriger besser".
+SLA-Einhaltungsquote und Auslastung ist „höher besser“, beim
+Nacharbeitsanteil „niedriger besser“.
 
 Verwendung: Die Zielwerte fließen in die Auswertungen ein – etwa in
-die Wirtschaftlichkeits- und SLA-Reports –, wo Ist- gegen
-Soll-Werte gestellt und farblich bewertet werden.
+die Wirtschaftlichkeits-, Auslastungs- und SLA-Reports –, wo **Soll**,
+**Ist** und die Abweichung nebeneinander stehen und farblich bewertet
+werden.
 
 Hinweis: Mehrere Zielwerte können sich überschneiden (z. B.
-organisations- und projektspezifisch). Halten Sie die Geltungsbereiche
-und Gültigkeitszeiträume eindeutig, damit die Ampel die gewünschte
-Vorgabe bewertet.
+organisationsweit und projektspezifisch). Dann gilt der spezifischere
+Bezug, bei Gleichstand der zuletzt angelegte Zielwert. Halten Sie
+Bezüge und Gültigkeitszeiträume eindeutig, damit die Ampel die
+gewünschte Vorgabe bewertet.

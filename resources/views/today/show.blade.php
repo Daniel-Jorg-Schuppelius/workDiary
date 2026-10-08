@@ -197,6 +197,7 @@
                         <x-table.th sort type="string">{{ __('Tätigkeit') }}</x-table.th>
                         <x-table.th sort type="string">{{ __('Projekt / Beschreibung') }}</x-table.th>
                         <x-table.th sort type="number" align="right">{{ __('Min.') }}</x-table.th>
+                        <th class="w-16 text-right">{{ __('Aktion') }}</th>
                     </tr>
                 </x-slot:head>
                 @forelse ($entries as $e)
@@ -229,9 +230,20 @@
                             @endif
                         </td>
                         <td class="text-right tabular-nums">{{ $e->minutes }}</td>
+                        <td class="text-right whitespace-nowrap">
+                            {{-- Verwaltungszeit (ohne Projekt) bearbeitet der eigene Dialog; Projektzeiten hängen am Auftrag. --}}
+                            @if ($e->project_id === null)
+                                @can('update', $e)
+                                    <x-icon-btn icon="edit"
+                                                data-entry-modal-trigger
+                                                :href="route('admin-time-entries.edit', $e)"
+                                                :label="__('Bearbeiten')" />
+                                @endcan
+                            @endif
+                        </td>
                     </tr>
                 @empty
-                    <x-table.empty :colspan="4"
+                    <x-table.empty :colspan="5"
                                    icon="edit_note"
                                    :title="__('Noch keine Einträge')"
                                    :message="__('Für diesen Tag wurden noch keine Zeiteinträge erfasst.')" />

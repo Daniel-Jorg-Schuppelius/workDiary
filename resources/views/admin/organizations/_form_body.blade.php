@@ -60,13 +60,22 @@
 </x-form-group>
 
 <x-form-group :legend="__('Plan & Status')" icon="workspace_premium" tone="info" cols="2">
-    <x-select-field name="plan" :label="__('Plan')" required>
-        @foreach (\App\Models\Platform\Organization::$plans as $plan)
-            <option value="{{ $plan }}" @selected(old('plan', $organization?->plan ?? 'free') === $plan)>
-                {{ \App\Models\Platform\Organization::planLabel($plan) }}
-            </option>
-        @endforeach
-    </x-select-field>
+    {{-- Plan und Aktiv-Status setzt nur der Plattformbetrieb (Controller ignoriert sie sonst). --}}
+    @if (auth()->user()?->isGlobalAdmin())
+        <x-select-field name="plan" :label="__('Plan')" required>
+            @foreach (\App\Models\Platform\Organization::$plans as $plan)
+                <option value="{{ $plan }}" @selected(old('plan', $organization?->plan ?? 'free') === $plan)>
+                    {{ \App\Models\Platform\Organization::planLabel($plan) }}
+                </option>
+            @endforeach
+        </x-select-field>
+    @else
+        <div class="fieldset">
+            <span class="fieldset-label">{{ __('Plan') }}</span>
+            <p class="py-2 text-sm font-medium">{{ \App\Models\Platform\Organization::planLabel((string) ($organization?->plan ?? 'free')) }}</p>
+            <p class="text-xs opacity-70">{{ __('Der Plan folgt der Lizenz und wird vom Betreiber gepflegt.') }}</p>
+        </div>
+    @endif
 
     @if (! ($organization?->exists ?? false))
         {{-- Funktionsumfang-Preset (Feature 081, MVP-373): optionaler schlanker
@@ -81,7 +90,7 @@
         </x-select-field>
     @endif
 
-    @unless ($skipStatusControls)
+    @if (! $skipStatusControls && auth()->user()?->isGlobalAdmin())
     <div class="fieldset">
         <span class="fieldset-label">{{ __('Aktiv') }}</span>
         <label class="label cursor-pointer justify-start gap-3">
@@ -91,7 +100,7 @@
             <span class="label-text">{{ __('Organisation ist aktiv') }}</span>
         </label>
     </div>
-    @endunless
+    @endif
 
     <div class="fieldset">
         <span class="fieldset-label">{{ __('Sicherheit') }}</span>
@@ -104,7 +113,8 @@
     </div>
 </x-form-group>
 
-@if ($organization)
+{{-- Beim Anlegen verwirft store() diese Felder; sie gehören zur bestehenden Organisation. --}}
+@if ($organization?->exists)
     @include('admin.organizations._compliance', ['organization' => $organization])
     @include('admin.organizations._settings', ['organization' => $organization])
 @endif

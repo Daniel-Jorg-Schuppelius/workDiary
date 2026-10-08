@@ -1,7 +1,7 @@
 ---
 title: "Base de connaissances"
 topic: knowledge.articles
-version: 1
+version: 3
 keywords:
     - wiki
     - problèmes connus
@@ -21,14 +21,45 @@ related:
     - glossary.core
 ---
 
-La base de connaissances rassemble les problèmes connus et les solutions
-éprouvées du quotidien, reliables aux ordres, actifs, clients et
-protocoles. Créez un article en brouillon (titre, description du problème,
-étapes de résolution, catégorie, tags, captures d'écran en pièce jointe),
-puis **publiez-le** (droit de rédaction) pour qu'il apparaisse dans la
-recherche et les suggestions ; liez-le ensuite à un ordre, un actif, un
-client ou un protocole. Chacun peut voter une fois « utile » ou « pas
-utile », et l'archivage retire l'article de la recherche tout en le laissant
-lisible. Statuts : « brouillon » → « publié » → « archivé » ; visibilité
-« interne » ou « limitée à l'équipe » ; **la suppression est réservée aux
-administrateurs**.
+La base de connaissances rassemble les problèmes connus et les étapes de
+résolution éprouvées du quotidien – reliables aux missions et aux
+équipements. Vous la trouvez sous **Activité quotidienne** → **Savoir et
+documents** → **Connaissances**, onglet **Base de connaissances**.
+
+Déroulement type :
+
+1. **Créer un article** (statut « Brouillon ») : **Titre**,
+   **Description du problème**, **Étapes de résolution**,
+   facultativement une **Collection** (d’autres ensuite via « Ajouter à
+   une collection »), **Tags** et **Pièces jointes** comme des captures
+   d’écran.
+2. **Publier** : ce n’est qu’ensuite que l’article apparaît pour tous
+   dans la recherche et les suggestions.
+3. **Lier** : sur la page de détail d’une mission ou d’un équipement, la
+   carte **Base de connaissances** affiche les **Articles liés** et les
+   **Suggestions** pertinentes ; **Lier** rattache un article, **Créer un
+   article à partir de ceci** en crée directement un nouveau. Dans
+   l’article, les cas liés apparaissent sous **Historique des
+   problèmes**.
+4. Recueillir des **avis** : sous « Cet article vous a-t-il aidé ? »,
+   chaque personne peut choisir une fois **Cela a aidé** ou **Cela n’a pas
+   aidé** ; un nouveau choix modifie son propre vote. La liste peut être
+   triée par « Les plus utiles d’abord ».
+5. **Archiver** : retire l’article de la recherche, il reste lisible.
+
+Statuts importants : « Brouillon » → « Publié » → « Archivé ». Le
+formulaire ne comporte pas de champ de visibilité : les articles publiés
+sont visibles par toutes les personnes ayant accès à la base de
+connaissances, les brouillons et articles archivés uniquement par leur
+auteur et par la rédaction.
+
+Autorisations : peut créer et lier des articles toute personne disposant
+du droit **Créer un article de connaissances**. L’auteur modifie ses
+propres brouillons (droit **Modifier un article de connaissances**) ; la
+publication, l’archivage et la modification de tous les articles
+relèvent de la rédaction disposant du droit **Publier/archiver un
+article de connaissances**. **Supprimer** (droit **Supprimer un article
+de connaissances**) est réservé par défaut aux administrateurs.
+
+Étapes suivantes : liez les articles directement dans la mission – vos
+collègues trouveront ainsi la solution lors du prochain cas similaire.

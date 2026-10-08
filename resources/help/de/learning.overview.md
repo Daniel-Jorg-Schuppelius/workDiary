@@ -1,7 +1,7 @@
 ---
 title: "Lernplattform"
 topic: learning.overview
-version: 3
+version: 5
 keywords:
     - E-Learning
     - LMS
@@ -16,6 +16,7 @@ keywords:
     - Online-Unterweisung
     - LearnDash Import
     - Lernzeit
+    - Lernkatalog
 audience: []
 related:
     - training.overview
@@ -29,6 +30,11 @@ bis wann schuldet, bleibt im Trainingsmanagement — beide greifen ineinander,
 ohne sich zu doppeln.
 
 ## Kurse aufbauen
+
+Alle Kurse finden Sie im Menü **Lernen** → **Lernkatalog**, als Liste oder als
+Kacheln und mit den Filtern **Art**, **Kategorie**, **Schlagwörter** und
+**Status**. Mit dem Recht **Lernkurse erstellen und bearbeiten** legen Sie
+dort über **Kurs anlegen** einen neuen Kurs an.
 
 Ein Kurs besteht aus Abschnitten und Lerneinheiten. Eine Einheit ist
 entweder Inhalt, eine Prüfung, eine Aufgabe, ein Präsenztermin oder ein
@@ -59,7 +65,7 @@ Mit **Feste Reihenfolge** gibt ein Kurs jede Einheit erst frei, wenn die vorheri
 abgeschlossen ist; gesperrte Einheiten tragen den Hinweis „Nach der vorherigen
 Einheit“. Ein Freigabedatum der Einheit gilt zusätzlich.
 
-Wer von LearnDash kommt, übernimmt das **Export-ZIP** (Kurskatalog → „LearnDash-Import“): Kurse, Lektionen, Themen und Prüfungen entstehen als Entwürfe, Fragen landen im Katalog mit ihrer Kategorie. Bilder und Medien werden nicht kopiert (Platzhalter zum Nachpflegen), Lektionsvideos nur von freigegebenen Hosts. Abgeschlossene Kurse werden für Personen mit passender E-Mail als Einschreibung „importiert“ vermerkt — ohne Zertifikat und ohne Unterweisungsnachweis, denn ein importierter Abschluss ist kein eigener Nachweis. Der Probelauf zeigt vorher, was entstünde.
+Wer von LearnDash kommt, übernimmt das **Export-ZIP** (**Lernkatalog** → „LearnDash-Import“): Kurse, Lektionen, Themen und Prüfungen entstehen als Entwürfe, Fragen landen im Katalog mit ihrer Kategorie. Bilder und Medien werden nicht kopiert (Platzhalter zum Nachpflegen), Lektionsvideos nur von freigegebenen Hosts. Abgeschlossene Kurse werden für Personen mit passender E-Mail als Einschreibung „importiert“ vermerkt — ohne Zertifikat und ohne Unterweisungsnachweis, denn ein importierter Abschluss ist kein eigener Nachweis. Der Probelauf zeigt vorher, was entstünde.
 
 ## Freigabe friert den Inhalt ein
 
@@ -79,9 +85,10 @@ Offline-Sync —, nicht nur in der Anzeige. Eine **Mindestverweildauer** zählt 
 dem ersten Öffnen der Einheit oder über die Lernzeit. **Vorschau-Einheiten**
 sind im Portal ohne Einschreibung lesbar (nur Text). **Kategorien** aus den
 Einstellungen ordnen den Katalog, **Schlagwörter** bilden die Querachse und
-bleiben auch nach der Freigabe pflegbar; **Verfügbarkeitsfenster** und
-**Teilnehmergrenze** gelten für die Selbsteinschreibung — die Verwaltung darf
-weiterhin zuweisen, Pflicht-Einschreibungen umgehen die Grenze. Aufgaben
+bleiben auch nach der Freigabe pflegbar; das **Verfügbarkeitsfenster** gilt
+nur für die Selbsteinschreibung — die Verwaltung darf weiterhin zuweisen. Die
+**Teilnehmergrenze** gilt auch für Zuweisungen durch die Verwaltung; nur
+Pflicht-Einschreibungen umgehen sie. Aufgaben
 tragen **Dateiregeln** (Endungen, Anzahl, Größe — nie lockerer als das System)
 und auf Wunsch eine **Auto-Freigabe** mit vollen Punkten, die sich mit dem
 Vier-Augen-Prinzip ausschließt.
@@ -183,11 +190,11 @@ Zugang mit Begründung ändern, stornieren (Pflicht-Einschreibungen nie) und den
 Einstiegslink für Externe erzeugen — ein neuer Link entwertet den alten. Bei
 einer Buchungszusage geht der Link von selbst hinaus.
 
-In den **Einstellungen der Lernplattform** (Kurskatalog, Verwaltungsrecht)
+In den **Einstellungen der Lernplattform** (**Lernkatalog**, Verwaltungsrecht)
 liegen der Schalter für Punkte und Bestenliste, die erlaubten Einbettungs-Hosts
 und die **Trainer-Sicht**: eingeschaltet sehen Personen mit Autoren- oder
 Bewertungsrecht nur Kurse, die ihnen gehören oder an denen sie als Trainer
-stehen — Kurskatalog, Bewertungscockpit, Prüfungsstatistik und Kursanalyse
+stehen — Lernkatalog, Bewertungscockpit, Prüfungsstatistik und Kursanalyse
 folgen derselben Regel. Die Verwaltung sieht weiterhin alles.
 
 Im Player hält jede lernende Person **private Notizen** zur Einheit oder zum
@@ -200,7 +207,48 @@ zeigen die eigenen offenen Schulungen und den Bewertungs-Rückstand; die
 Tätigkeitsrecherche findet freigegebene Kurse — Lernende ihre eigenen,
 Autoren alle.
 
-Der **Kurskatalog** lässt sich als Liste oder als Kacheln zeigen (die Wahl bleibt je Person gespeichert) und trägt einen **Sternewert** aus dem Kursfeedback — erst ab fünf Antworten, damit sich nichts auf Einzelne zurückrechnen lässt. Das Portal zeigt zusätzlich den **Preis** aus dem verknüpften Artikel. Im Player blendet der **Fokusmodus** die Seitenleiste aus; „Duplizieren“ legt aus einem Kurs einen neuen Entwurf an — Lehrmaterial ja, Einschreibungen und Nachweise nein.
+Der **Lernkatalog** lässt sich als Liste oder als Kacheln zeigen (die Wahl bleibt je Person gespeichert) und trägt einen **Sternewert** aus dem Kursfeedback — erst ab fünf Antworten, damit sich nichts auf Einzelne zurückrechnen lässt. Das Portal zeigt zusätzlich den **Preis** aus dem verknüpften Artikel. Im Player blendet der **Fokusmodus** die Seitenleiste aus; „Duplizieren“ legt aus einem Kurs einen neuen Entwurf an — Lehrmaterial ja, Einschreibungen und Nachweise nein.
+
+## Lernpfade
+
+Ein Lernpfad legt eine Reihenfolge von Kursen mit Fristen fest – gedacht für
+die Einarbeitung. Er ist kein zweiter Pflichtkatalog: Pflichtschulungen und
+ihr Soll bleiben im Trainingsmanagement. Sie finden die Lernpfade unter
+**Lernen** → **Lernpfade**.
+
+**Lernpfad anlegen** (oben auf der Seite): **Kurscode** (das Kürzel des Pfads)
+und **Titel** sind Pflicht, **Zielrolle** und **Dauer (Tage)** sind
+freiwillig. Die Liste darunter zeigt **Kurscode**, **Titel**, **Zielrolle**
+und die Zahl der **Stationen**; ein Klick auf den Titel öffnet den Pfad.
+
+Im Pfad:
+
+- **Station hinzufügen**: einen **Kurs** wählen und optional eine **Frist
+  (Tage)** angeben. Neue Stationen werden hinten angehängt; **Station
+  entfernen** löscht eine Station aus dem Pfad.
+- **Pfad zuweisen**: eine aktive Person Ihrer Organisation wählen. Für jede
+  Station entsteht eine reguläre Einschreibung in den Kurs, alle zugleich;
+  eine bereits bestehende Einschreibung bleibt unberührt. Für neue
+  Einschreibungen gelten die üblichen Benachrichtigungen zur Zuweisung.
+
+**Fristen:** Die Frist einer Station zählt ab dem Tag der Zuweisung, nicht ab
+dem Ende der vorherigen Station – bleibt jemand an einer Station hängen,
+verschiebt sich der Rest des Pfads nicht. Hat eine Station keine eigene Frist,
+gilt die **Dauer (Tage)** des Pfads; fehlt auch diese, bleibt die
+Einschreibung ohne Fälligkeit.
+
+**Nach Zielrolle zuweisen** (Schaltfläche in der Liste) weist jeden Pfad mit
+Zielrolle allen aktiven Personen dieser Rolle zu. Als Zielrolle tragen Sie die
+Rollenkennung ein, wie sie auch in der Pflichtmatrix steht. Der Lauf lässt
+sich beliebig wiederholen: Wer schon eingeschrieben ist, wird nicht doppelt
+eingeschrieben. Die Meldung nennt die geprüften Pfade und die neu angelegten
+Einschreibungen.
+
+**Grenzen:** Kurse, die noch nicht freigegeben sind, werden beim Zuweisen
+übersprungen. Ist bei einem Kurs des Pfads die Teilnehmergrenze erreicht,
+bricht die Zuweisung mit einer Meldung ab.
+
+**Berechtigung:** **Lernen verwalten (Zuweisungen, Gruppen, Katalog)**.
 
 ## Auswertung und Mitbestimmung
 

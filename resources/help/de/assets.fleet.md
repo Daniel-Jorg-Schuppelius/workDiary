@@ -1,7 +1,7 @@
 ---
 title: "Assets & Fuhrpark"
 topic: assets.fleet
-version: 1
+version: 2
 keywords:
     - Fuhrparkverwaltung
     - Fahrzeugverwaltung

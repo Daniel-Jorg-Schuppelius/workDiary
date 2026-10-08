@@ -1,7 +1,7 @@
 ---
 title: "Occupational Safety & Safety Events"
 topic: safety.overview
-version: 1
+version: 2
 keywords:
     - report accident
     - workplace accident

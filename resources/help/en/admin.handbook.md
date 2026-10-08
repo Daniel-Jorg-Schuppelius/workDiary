@@ -1,7 +1,7 @@
 ---
 title: "Admin handbook: overview"
 topic: admin.handbook
-version: 1
+version: 2
 keywords:
     - administration guide
     - admin manual

@@ -95,7 +95,7 @@
                 <x-detail-grid layout="split">
                     {{-- null heißt „nichts zu rechnen", nicht 0. --}}
                     <x-detail-grid.row :label="__('NPS-Score')" class="font-medium tabular-nums">{{ $nps ?? '—' }}</x-detail-grid.row>
-                    <x-detail-grid.row :label="__('Antworten')" class="tabular-nums">{{ $responseCount }}</x-detail-grid.row>
+                    <x-detail-grid.row :label="__('Eingegangene Antworten')" class="tabular-nums">{{ $responseCount }}</x-detail-grid.row>
                     <x-detail-grid.row :label="__('Einladungen')" class="tabular-nums">{{ $invitations->count() }}</x-detail-grid.row>
                 </x-detail-grid>
             </x-card>

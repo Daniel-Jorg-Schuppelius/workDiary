@@ -92,6 +92,7 @@ class FleetReportController extends Controller {
      */
     private function aggregate(CarbonImmutable $from, CarbonImmutable $to, string $scope, int $userId, ReportFilters $filters): array {
         $travelQuery = TravelLog::query()
+            ->effective()
             ->whereNotNull('vehicle_id')
             ->whereBetween('date', DateRange::days($from, $to))
             ->select('vehicle_id', 'distance_km', 'reimbursement_total', 'user_id');
@@ -237,6 +238,7 @@ class FleetReportController extends Controller {
     private function monthlyKmSeries(CarbonImmutable $from, CarbonImmutable $to, string $scope, int $userId, ReportFilters $filters): array {
         $granularity = $this->bucketGranularity($from, $to);
         $q = TravelLog::query()
+            ->effective()
             ->whereNotNull('vehicle_id')
             ->whereBetween('date', DateRange::days($from, $to))
             ->select('date', 'distance_km');

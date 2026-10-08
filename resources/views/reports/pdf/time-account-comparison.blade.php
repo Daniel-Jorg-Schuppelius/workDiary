@@ -22,12 +22,12 @@
         <thead>
             <tr>
                 <th>{{ __('Mitarbeiter') }}</th>
-                <th class="right">{{ __('Anfangsstand') }}</th>
+                <th class="right">{{ __('time_account.column.opening') }}</th>
                 @foreach ($periods as $period)
                     <th class="right">{{ $period['label'] }}</th>
                 @endforeach
-                <th class="right">{{ __('Umsatz') }}</th>
-                <th class="right">{{ __('Endstand') }}</th>
+                <th class="right">{{ __('time_account.column.movement') }}</th>
+                <th class="right">{{ __('time_account.column.closing') }}</th>
             </tr>
         </thead>
         <tbody>

@@ -1,7 +1,7 @@
 ---
 title: "Fahrten, Spesen & Pauschalen"
 topic: travel-expenses.manage
-version: 1
+version: 2
 keywords:
     - Reisekostenabrechnung
     - Spesenabrechnung
@@ -15,6 +15,8 @@ keywords:
     - Auslagen erstatten
     - Dienstwagen
     - 1-%-Regel
+    - Fahrtbuch
+    - Fahrt erfassen
 audience: []
 modules:
     - module.spesen
@@ -40,6 +42,33 @@ Typischer Ablauf:
 Belege, Kilometerstände und Reisezeiten müssen plausibel sein.
 Genehmigte oder abgerechnete Datensätze werden nicht still geändert;
 Korrekturen brauchen einen nachvollziehbaren Weg.
+
+## Fahrt erfassen
+
+Eine neue Fahrt legen Sie über **Neu …** in der Seitenleiste an: In der Gruppe
+**Planung** öffnet **Fahrtbuch** den Dialog **Neue Fahrt erfassen**. Alle
+erfassten Fahrten finden Sie unter **Reisen & Spesen** → **Fahrtenbuch**.
+
+- **Fahrt:** **Datum**, **Fahrzeug** (Fahrzeugtyp mit seinem Kilometersatz),
+  **Fuhrpark-Fahrzeug (optional)**, **Fahrtart** sowie **Von (Adresse)** und
+  **Nach (Adresse)**.
+- **Distanz & Satz:** **Distanz (km, einfach)** ist Pflicht. Bleibt **Satz €/km
+  (optional)** leer, gilt der Satz des Fuhrpark-Fahrzeugs, sonst der des
+  Fahrzeugtyps. Dazu kommen **Tachostand Beginn (km)**, **Tachostand Ende
+  (km)**, **Start (Uhrzeit)** und **Ende (Uhrzeit)**; endet die Fahrt nach
+  Mitternacht, tragen Sie einfach die kleinere Uhrzeit ein.
+- **Zuordnung:** **Projekt (optional)**, **Kunde (optional)** und **Zweck**.
+- **Optionen & Notizen:** **Hin- und Rückfahrt (verdoppelt km)**,
+  **Erstattungsfähig** (vorbelegt) und **Notizen**.
+
+**Erfassen** speichert die Fahrt auf Ihren Namen und führt zurück zur Liste.
+Sind Start und Ende eingetragen, legt WorkDiary standardmäßig einen nicht
+abrechenbaren Zeiteintrag für die Reisezeit an. Ein höherer Tachostand Ende
+wird ins Fuhrpark-Fahrzeug übernommen. Steht das Fuhrpark-Fahrzeug im
+**Fahrtenbuch-Modus**, sind die km-Stände Pflicht, und die Fahrt wird nach
+Tagesende festgeschrieben. Fahrten erfassen kann jede angemeldete Person,
+sofern Ihre Organisation das Modul nutzt; eine Fahrt gehört immer der Person,
+die sie erfasst hat.
 
 ## Auslage als Beleg in die Buchhaltung
 

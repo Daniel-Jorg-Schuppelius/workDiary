@@ -1,7 +1,7 @@
 ---
 title: "Objets"
 topic: customer-portal.assets
-version: 1
+version: 2
 keywords:
     - appareils
     - équipements
@@ -13,26 +13,65 @@ keywords:
     - historique de maintenance
     - procès-verbaux d'inspection
     - prochaine maintenance
+    - plan de maintenance
 audience: []
 related:
     - customer-portal.overview
     - customer-portal.appointments
     - customer-portal.tickets
+    - customer-portal.claims
+    - customer-portal.documents
 ---
 
-Sous **Objets**, vous voyez les appareils et installations gérés pour votre
-entreprise – avec leur nom et leur numéro de série. Un clic sur le nom ouvre
-le dossier de l'objet.
+Sous **Objets**, vous voyez les appareils et installations que votre
+prestataire gère pour votre entreprise : avec leurs dates de contrôle et de
+maintenance, les maintenances effectuées et les protocoles publiés pour vous.
+La vue est en lecture seule.
 
-Le dossier de l'objet présente :
+## La liste des objets
 
-- **Rendez-vous de contrôle & maintenance** – les plans enregistrés avec la
-  prochaine échéance.
-- **Maintenances terminées** – ce qui a été fait et quand.
-- **Protocoles** – les protocoles de l'objet qui vous ont été communiqués.
+La liste affiche les objets de votre entreprise par ordre alphabétique avec
+**Nom** et **Numéro de série**, 25 par page. Un clic sur le nom ouvre la
+fiche de l'objet. Si elle affiche **Aucun objet disponible.**, votre
+prestataire ne gère encore aucun objet pour votre entreprise.
 
-La vue est en lecture seule. Les notes internes – détails de panne ou
-affectations, par exemple – n'y figurent pas. Si un objet manque ou qu'une
-indication est erronée, adressez-vous à votre interlocuteur.
+## La fiche de l'objet
 
-Le domaine n'est visible que s'il a été activé pour votre entreprise.
+En haut figurent le nom et le numéro de série de l'objet, suivis de trois
+sections :
+
+- **Rendez-vous de contrôle & maintenance** – les plans de contrôle et de
+  maintenance enregistrés avec **Désignation** et **Prochaine échéance**, la
+  prochaine échéance en premier. Sans plan, la section affiche **Aucun
+  rendez-vous enregistré.**
+- **Maintenances terminées** – les maintenances effectuées avec leur
+  désignation et leur date.
+- **Protocoles** – les protocoles de l'objet que votre prestataire a publiés
+  pour vous, avec titre, statut (par exemple **Signé**) et date, le plus
+  récent en premier. La liste nomme les protocoles ; ils ne peuvent pas être
+  ouverts ni téléchargés ici.
+
+## Ce que vous ne voyez pas ici
+
+- Les informations internes comme le détail des pannes, les défauts ou les
+  affectations au personnel n'apparaissent pas.
+- Vous ne voyez que les objets rattachés à votre entreprise.
+
+## Vos objets ailleurs dans le portail
+
+Vos objets peuvent aussi être sélectionnés à d'autres endroits du portail, à
+condition que ces espaces soient ouverts :
+
+- dans **Déclarer un retour**, dans le champ **Objet**, pour renvoyer un
+  appareil,
+- dans une demande informatique sous **Demandes et commandes**, dans le champ
+  **Objet concerné (facultatif)** ; cela suppose aussi que **Objets** soit
+  ouvert.
+
+## Limites
+
+- Vous ne pouvez ni créer ni modifier d'objets, ni déplacer des rendez-vous.
+  Si un objet manque ou qu'une information est erronée, adressez-vous à votre
+  interlocuteur.
+- Signalez une panne sur un objet sous **Tickets**, si cet espace est ouvert.
+- L'espace **Objets** n'apparaît que s'il est ouvert pour votre entreprise.

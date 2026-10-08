@@ -1,7 +1,7 @@
 ---
 title: "Segnala un problema"
 topic: support.report-problem
-version: 1
+version: 2
 keywords:
     - segnalare un bug
     - segnalazione errore
@@ -18,13 +18,26 @@ related:
     - admin.diagnostics
 ---
 
-**Segnala un problema** invia i guasti tecnici al supporto direttamente
-dalla pagina interessata — senza cercare file di log né inviare
-screenshot via e-mail.
+Con **Segnala un problema** Lei invia guasti tecnici al supporto
+direttamente dalla pagina interessata — senza cercare file di log né
+raccogliere screenshot via e-mail.
 
-Apra la barra laterale della guida, faccia clic su *Segnala un problema*
-e descriva cosa si aspettava e cosa è successo. La sezione
-*Dati trasmessi* mostra esattamente quali informazioni tecniche vengono
-inviate — mai dati di clienti o commesse. Può allegare un estratto
-diagnostico anonimizzato (con anteprima). Dopo l'invio riceve un
-numero di riferimento e segue lo stato in *Le mie segnalazioni*.
+**Come funziona:**
+
+1. Apra la barra laterale della guida e faccia clic su *Segnala un
+   problema* (disponibile anche nelle pagine di errore).
+2. Descriva brevemente cosa si aspettava e cosa è successo invece.
+   Facoltativamente può allegare screenshot.
+3. Controlli la sezione *Dati trasmessi*: lì vede esattamente quali
+   informazioni tecniche (pagina, versione app, ID richiesta) vengono
+   inviate — **nessun dato di incarichi o clienti**.
+4. Facoltativamente può inviare un *estratto diagnostico anonimizzato*.
+   L'anteprima mostra il contenuto prima dell'invio; i valori sensibili
+   vengono rimossi automaticamente.
+
+Dopo l'invio riceve un **numero di riferimento** (ad es.
+`PR-2026-0001`). In *Le mie segnalazioni* può seguirne lo stato.
+
+L'**ID richiesta** nelle pagine di errore aiuta il supporto a trovare le
+voci di log relative alla Sua segnalazione — lo indichi in caso di
+domande.

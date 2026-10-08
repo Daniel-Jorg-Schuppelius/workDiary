@@ -1,7 +1,7 @@
 ---
 title: "Support report & diagnostics"
 topic: admin.support
-version: 1
+version: 2
 keywords:
     - diagnostic report
     - system information

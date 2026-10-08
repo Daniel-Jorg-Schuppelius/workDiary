@@ -19,6 +19,8 @@ modules:
 related:
     - reports.overview
     - reports.drilldown
+    - reports.compliance
+    - reports.fleet
 ---
 
 Il report di conformità ArbZG confronta il **tempo di lavoro

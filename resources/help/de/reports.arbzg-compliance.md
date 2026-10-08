@@ -22,6 +22,8 @@ modules:
 related:
     - reports.overview
     - reports.drilldown
+    - reports.compliance
+    - reports.fleet
 ---
 
 Die ArbZG-Compliance-Auswertung prüft die **tatsächlich erfasste Arbeitszeit**

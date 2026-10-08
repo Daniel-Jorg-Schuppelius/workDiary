@@ -1,7 +1,7 @@
 ---
 title: "My subscriptions"
 topic: customer-portal.subscriptions
-version: 1
+version: 2
 keywords:
     - subscription
     - licences
@@ -12,6 +12,8 @@ keywords:
     - renewal
     - billing period
     - cancelled subscriptions
+    - licence overview
+    - end customers
 audience: []
 modules:
     - module.reselling
@@ -20,17 +22,44 @@ related:
     - customer-portal.invoices
 ---
 
-Under **Subscriptions** you see the subscriptions and licences we manage
-for you — for example Microsoft 365 licences, domains or hosting. If you
-hold subscriptions for your own end customers, those appear as well; the
-end customer is shown as the **holder** of the row.
+Under **Subscriptions** (page **My subscriptions**) you see the subscriptions and licences your contractor manages for you – for example software licences, domains, hosting, mailboxes or backups. Prices and amounts are deliberately not shown here; you find them on your invoices.
 
-For each subscription you see the **quantity**, the **term** (start and end,
-or "running"), the **interval** (monthly/yearly), the type of **renewal** and
-the **next period** — the day the next billing period begins. Cancelled
-subscriptions show their end date; ended subscriptions drop off the list
-twelve months after their end.
+## The list
 
-The detail view lists the **billing periods**: period, quantity and whether
-the period is **open**, **invoiced** or **not invoiced**. Amounts and prices
-are deliberately not shown here — you will find them on your invoices.
+The list shows for each subscription:
+
+- **Name / product** – the name of the subscription, below it the type (**Licence**, **Domain**, **Hosting**, **Mailbox**, **Backup** or **Other**) and, if different, the product name. A click opens the detail page.
+- **Holder** – for whom the subscription runs: your company or one of your end customers. Subscriptions of end customers additionally carry the label **End customer**.
+- **Quantity** – for example the number of licences.
+- **Term** – start and end, or “since …” with the addition **running** if no end has been set.
+- **Interval** – **monthly** or **yearly**.
+- **Renewal** – **automatic** or **cancelled**.
+- **Next period** – the day on which the next billing period starts, or **none further**, for example for a cancelled subscription with a fixed end.
+- **Status** – **Active**, **Cancelled**, **Superseded** or **Ended**.
+
+The list is sorted by name, 25 subscriptions per page. If there are no subscriptions, **No subscriptions on record.** appears.
+
+### Which subscriptions appear
+
+- Active, cancelled and superseded subscriptions always appear.
+- Ended subscriptions remain visible for twelve months after their end and then disappear from the list.
+- If your contractor has recorded end customers of your company, their subscriptions appear as well.
+
+## The detail page
+
+At the top you see name, type and product. Below follow **Holder**, **Quantity**, **Status**, **Term**, **Interval** with **Renewal** and **Next period**. **Back to overview** takes you back to the list.
+
+The section **Billing periods** lists the individual periods of the subscription with **Period**, **Quantity** and **Status**:
+
+- **open** – no invoice exists yet for this period,
+- **invoiced** – you have received an invoice for it,
+- **partially invoiced** – part of the period has been invoiced,
+- **not invoiced** – the period is not being charged,
+- **under review** – the period is still being clarified.
+
+The periods are derived from the start, term and interval of the subscription.
+
+## Limits
+
+- The page is for viewing. You cannot order, change, adjust quantities of or cancel subscriptions here; please contact your contractor for that.
+- The page does not show prices and amounts. Which invoice belongs to a period you see under **Invoices**.

@@ -1,7 +1,7 @@
 ---
-title: "Dispatch centre: board and map"
+title: "Control center: board and map"
 topic: dispatch.board
-version: 1
+version: 3
 keywords:
     - dispatch board
     - planning board
@@ -22,7 +22,7 @@ related:
     - sla.overview
 ---
 
-The **dispatch centre** shows the open and planned orders of a period at a
+The **Control center** shows the open and planned orders of a period at a
 glance — as a **board** (columns) or as a **map**. It is a pure overview: all
 changes are still made on the individual order.
 
@@ -53,6 +53,6 @@ are **SLA at-risk or breached** are highlighted in **red**. Filters let you show
 
 ## Deliberately out of scope
 
-The dispatch centre is pure visualisation. **Route optimisation**,
+The control center is pure visualisation. **Route optimisation**,
 **real-time tracking** and **continuous location surveillance** are not part of
 this view for data-protection reasons.

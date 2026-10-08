@@ -1,7 +1,7 @@
 ---
 title: "Supportbericht & Fehlerdiagnose"
 topic: admin.support
-version: 1
+version: 2
 keywords:
     - Diagnosebericht
     - Systeminformationen
