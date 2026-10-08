@@ -20,7 +20,7 @@ export const PASSWORD_CLASSES = [
  * (Verwerfen statt Modulo, sonst wären vordere Zeichen häufiger).
  *
  * @param {number} max
- * @param {(buffer: Uint32Array) => Uint32Array} fill
+ * @param {(buffer: Uint32Array<ArrayBuffer>) => Uint32Array<ArrayBuffer>} fill
  */
 function randomIndex(max, fill) {
     const limit = Math.floor(0x100000000 / max) * max;
@@ -36,7 +36,7 @@ function randomIndex(max, fill) {
  * einmal, Rest aus allen Klassen, danach gemischt.
  *
  * @param {number} [length]
- * @param {(buffer: Uint32Array) => Uint32Array} [fill]
+ * @param {(buffer: Uint32Array<ArrayBuffer>) => Uint32Array<ArrayBuffer>} [fill]
  * @returns {string}
  */
 export function suggestPassword(

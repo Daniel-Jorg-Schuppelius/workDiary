@@ -44,6 +44,8 @@ class ClubResourceTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
+        // Die Termine liegen fest im Oktober 2026; Freigaben gelten ab „heute".
+        $this->travelTo(CarbonImmutable::parse('2026-10-01 08:00', 'Europe/Berlin'));
         $this->setUpOrganization();
         $this->admin = $this->orgAdmin();
         $this->group = ClubGroup::factory()->create(['name' => 'Tischtennis Herren']);
