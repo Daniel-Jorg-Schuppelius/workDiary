@@ -61,7 +61,7 @@
 
 import { sameOriginPath } from "./lib/html.js";
 
-/** @type {Promise<any>|null} */
+/** @type {Promise<typeof import("chart.js").Chart>|null} */
 let chartLibPromise = null;
 
 /** Lädt Chart.js + Zoom-/Boxplot-Plugin einmalig und registriert die Bausteine. */
@@ -153,11 +153,12 @@ function ellipsize(text, max) {
  * Slot-Anteil. Ungekürzt beanspruchen 20 Firmennamen rund 60 % der Höhe — die
  * Balken werden dann zu Strichen.
  * @param {'side'|'rotated'|'flat'} mode
- * @returns {(this: any, value: any) => string}
+ * @returns {(this: import("chart.js").Scale, value: number | string) => string}
  */
 function categoryTicks(mode) {
     return function (value) {
-        const text = String(this.getLabelForValue(value) ?? "");
+        // Kategorienachsen reichen den Index als Zahl.
+        const text = String(this.getLabelForValue(/** @type {number} */ (value)) ?? "");
         const chart = this.chart;
         const count = Math.max(
             1,
@@ -179,7 +180,7 @@ function categoryTicks(mode) {
  * Tooltip-Überschrift mit dem ungekürzten Kategorienamen (die Achse zeigt nur
  * die gekürzte Fassung).
  * @param {string[]} labels
- * @returns {(items: any[]) => string}
+ * @returns {(items: import("chart.js").TooltipItem<import("chart.js").ChartType>[]) => string}
  */
 function fullLabelTitle(labels) {
     return (items) => {
@@ -470,14 +471,14 @@ function buildScatterConfig(spec, theme, reduceMotion) {
                     display: percentiles.length > 0,
                     labels: {
                         color: theme.text,
-                        filter: (/** @type {any} */ item) =>
+                        filter: (/** @type {import("chart.js").LegendItem} */ item) =>
                             item.datasetIndex !== 0,
                     },
                 },
                 tooltip: {
                     callbacks: {
-                        label: (/** @type {any} */ ctx) => {
-                            const raw = ctx.raw ?? {};
+                        label: (/** @type {import("chart.js").TooltipItem<"scatter">} */ ctx) => {
+                            const raw = /** @type {{ label?: unknown }} */ (ctx.raw ?? {});
                             const name =
                                 typeof raw.label === "string" ? raw.label : "";
                             return `${name}: ${ctx.parsed.y} ${spec.unit ?? ""}`.trim();
@@ -718,7 +719,7 @@ function buildBulletConfig(spec, theme, reduceMotion) {
  * erst zur Zeichenzeit bekannt ist. Richtung folgt der Balkenausrichtung.
  * @param {string} color
  * @param {boolean} [horizontal]
- * @returns {(context: any) => CanvasGradient|string}
+ * @returns {(context: import("chart.js").ScriptableContext<"bar">) => CanvasGradient|string}
  */
 function gradientFor(color, horizontal) {
     return (context) => {
@@ -816,8 +817,8 @@ async function enhance(figure) {
 
         const urls = Array.isArray(spec.urls) ? spec.urls : [];
         config.options.onClick = (
-            /** @type {any} */ _event,
-            /** @type {any[]} */ elements,
+            /** @type {import("chart.js").ChartEvent} */ _event,
+            /** @type {import("chart.js").ActiveElement[]} */ elements,
         ) => {
             if (elements.length === 0 || elements[0].datasetIndex !== 0) {
                 return;
@@ -829,7 +830,8 @@ async function enhance(figure) {
             }
         };
 
-        new Chart(canvas, config);
+        // Die Builder arbeiten bewusst ohne Chart.js-Typen (gemischte Diagrammtypen, Boxplot-Plugin).
+        new Chart(canvas, /** @type {import("chart.js").ChartConfiguration} */ (config));
 
         const svg = figure.querySelector(".wd-chart-svg");
         if (svg instanceof SVGElement) {

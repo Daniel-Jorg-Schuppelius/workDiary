@@ -21,11 +21,11 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 
 const root = new URL("../../", import.meta.url);
-const read = (path) => readFileSync(new URL(path, root));
-const manifest = JSON.parse(read("resources/fonts/material-symbols-outlined.json"));
+const read = (/** @type {string} */ path) => readFileSync(new URL(path, root));
+const manifest = JSON.parse(read("resources/fonts/material-symbols-outlined.json").toString());
 
 test("Icon-Schrift ist aus der installierten Paketdatei erzeugt", () => {
-    const installed = JSON.parse(read("node_modules/material-symbols/package.json")).version;
+    const installed = JSON.parse(read("node_modules/material-symbols/package.json").toString()).version;
     const sha = createHash("sha256").update(read("node_modules/material-symbols/material-symbols-outlined.woff2")).digest("hex");
     assert.equal(manifest.version, installed, "python3 scripts/build-icon-font.py ausführen");
     assert.equal(manifest.source_sha256, sha, "python3 scripts/build-icon-font.py ausführen");

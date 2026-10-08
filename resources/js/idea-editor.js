@@ -14,25 +14,105 @@
 // Serverbaum nach — sofort, wenn sie sichtbar ist, sonst beim Tab-Wechsel.
 import { request } from "./lib/http.js";
 
+/**
+ * Verweis eines Knotens (IdeaNodeController::serializeReference).
+ * @typedef {Object} IdeaReference
+ * @property {string} kind
+ * @property {string} type
+ * @property {string} label
+ * @property {string | null} url
+ */
+
+/**
+ * Knoten aus der Blade-Config (ideas/show) bzw. IdeaNodeController::serialize();
+ * `references` liefert nur der Controller.
+ * @typedef {Object} IdeaNode
+ * @property {string} sqid
+ * @property {string | null} parent
+ * @property {boolean} is_root
+ * @property {string} title
+ * @property {string | null} note
+ * @property {string} color
+ * @property {string | null} node_status
+ * @property {number | null} pos_x
+ * @property {number | null} pos_y
+ * @property {number} sort_order
+ * @property {number} lock_version
+ * @property {number} comment_count
+ * @property {number} attachment_count
+ * @property {IdeaReference[]} [references]
+ */
+
+/** @typedef {{from: string, to: string, label: string | null, color: string | null}} IdeaLink */
+/** @typedef {{parent: string, start: number, end: number, label: string | null}} IdeaSummary */
+/** @typedef {{sqid: string, title: string, lock_version: number, archived?: boolean}} IdeaMapHead */
+
+/**
+ * Editor-Config aus ideas/show (`#idea-editor-config`); idea-canvas.js liest
+ * dieselbe Config.
+ * @typedef {Object} IdeaMapConfig
+ * @property {boolean} can_update
+ * @property {IdeaNode[]} nodes
+ * @property {IdeaMapHead} map
+ * @property {IdeaLink[]} links
+ * @property {IdeaSummary[]} summaries
+ * @property {Record<string, string>} urls Routen, Knoten-Platzhalter `__NODE__`
+ * @property {string[]} convert_targets
+ * @property {Record<string, string>} labels
+ * @property {Array<{value: string, label: string}>} colors
+ * @property {Array<{value: string, label: string}>} statuses
+ */
+
+/** @typedef {{at: string | null, user: string | null, event: string, subject: string | null}} IdeaHistoryEntry */
+
+/** @typedef {{title?: string, note?: string | null, color?: string, node_status?: string | null}} IdeaNodePatch */
+
+/**
+ * Antwort der Knoten-/Karten-Endpunkte; je Endpunkt ist nur ein Teil gesetzt.
+ * `conflict` setzt api() aus dem `current` einer 409-Antwort.
+ * @typedef {Object} IdeaApiResponse
+ * @property {IdeaNode} [node]
+ * @property {IdeaNode[]} [nodes]
+ * @property {boolean} [ok]
+ * @property {IdeaNode} [conflict]
+ * @property {IdeaReference} [reference]
+ * @property {boolean} [existing]
+ * @property {string[]} [editing]
+ * @property {IdeaHistoryEntry[]} [entries]
+ */
+
+/** @param {import("alpinejs").Alpine} Alpine */
 export function registerIdeaEditor(Alpine) {
-    Alpine.data("ideaEditor", (configElId) => ({
-        cfg: {},
+    Alpine.data("ideaEditor", (/** @type {string} */ configElId) => ({
+        cfg: /** @type {IdeaMapConfig} */ ({}),
+        /** @type {Record<string, IdeaNode>} */
         nodes: {}, // sqid -> node
+        /** @type {string[]} */
         order: [], // flache Anzeige-Reihenfolge der Gliederung (sqids)
+        /** @type {string | null} */
         rootSqid: null,
+        /** @type {string | null} */
         selected: null,
+        /** @type {string | null} */
         editingTitle: null,
         detailOpen: false,
         view: "outline",
+        /** @type {Record<string, boolean>} */
         collapsed: {},
         busy: false,
+        /** @type {string | null} */
         error: null,
+        /** @type {{node: string, mine: IdeaNodePatch, current: IdeaNode} | null} */
         conflict: null, // Konflikt: Knoten-Sqid, eigener Stand, Server-Stand
+        /** @type {string | null} */
         lastDeleted: null,
         canvasDirty: false, // Canvas hat gespeichert, während die Gliederung verborgen war
+        /** @type {string[]} */
         editing: [], // Präsenz (MVP-108): Namen anderer aktiver Bearbeiter
         historyOpen: false,
+        /** @type {IdeaHistoryEntry[]} */
         history: [],
+        /** @type {IdeaApiResponse | null} */
         convertResult: null, // MVP-109: {reference, existing} nach Überführung
 
         init() {
@@ -87,6 +167,7 @@ export function registerIdeaEditor(Alpine) {
 
         // Überführung (MVP-109): idempotent — ein zweiter Versuch liefert den
         // Hinweis aufs bestehende Ziel statt eines Duplikats.
+        /** @param {string} target */
         async convertNode(target) {
             if (!this.selected) return;
             this.convertResult = null;
@@ -96,7 +177,8 @@ export function registerIdeaEditor(Alpine) {
                 { target },
             );
             if (json?.reference) {
-                const n = this.node(this.selected);
+                // Detailansicht zeigt nur einen vorhandenen Knoten.
+                const n = /** @type {IdeaNode} */ (this.node(this.selected));
                 if (!json.existing) {
                     n.references = [...(n.references || []), json.reference];
                 }
@@ -112,24 +194,33 @@ export function registerIdeaEditor(Alpine) {
             }
         },
 
+        /** @param {string} key */
         t(key) {
             return (this.cfg.labels || {})[key] || key;
         },
+        /**
+         * @param {string | null} sqid null trifft wie ein unbekannter Schlüssel nichts
+         * @returns {IdeaNode | null}
+         */
         node(sqid) {
-            return this.nodes[sqid] || null;
+            return this.nodes[/** @type {string} */ (sqid)] || null;
         },
         // Null-sichere Feld-Helfer für Direktiven: der @alpinejs/csp-Parser
         // kennt kein Optional Chaining (node(sqid)?.title) und keine
         // Mehrfach-Statements — die Logik lebt deshalb hier.
+        /** @param {string | null} sqid */
         nodeTitle(sqid) {
             return this.node(sqid)?.title ?? "";
         },
+        /** @param {string} sqid */
         nodeColor(sqid) {
             return this.node(sqid)?.color ?? "";
         },
+        /** @param {string} sqid */
         nodeStatus(sqid) {
             return this.node(sqid)?.node_status ?? "";
         },
+        /** @param {string | null} sqid */
         isRoot(sqid) {
             return !!this.node(sqid)?.is_root;
         },
@@ -145,21 +236,26 @@ export function registerIdeaEditor(Alpine) {
         selectedReferences() {
             return this.node(this.selected)?.references || [];
         },
+        /** @param {string | null} sqid */
         commentCount(sqid) {
             return this.node(sqid)?.comment_count ?? 0;
         },
+        /** @param {string | null} sqid */
         attachmentCount(sqid) {
             return this.node(sqid)?.attachment_count ?? 0;
         },
+        /** @param {string} sqid */
         openDetails(sqid) {
             this.selected = sqid;
             this.detailOpen = true;
         },
+        /** @param {string} sqid */
         childrenOf(sqid) {
             return Object.values(this.nodes)
                 .filter((n) => n.parent === sqid)
                 .sort((a, b) => a.sort_order - b.sort_order);
         },
+        /** @param {string} sqid */
         depthOf(sqid) {
             let d = 0;
             let n = this.node(sqid);
@@ -170,8 +266,9 @@ export function registerIdeaEditor(Alpine) {
             return d;
         },
         rebuildOrder() {
+            /** @type {string[]} */
             const out = [];
-            const walk = (sqid) => {
+            const walk = (/** @type {string} */ sqid) => {
                 out.push(sqid);
                 if (!this.collapsed[sqid]) {
                     this.childrenOf(sqid).forEach((c) => walk(c.sqid));
@@ -181,6 +278,12 @@ export function registerIdeaEditor(Alpine) {
             this.order = out;
         },
 
+        /**
+         * @param {string} method
+         * @param {string} url
+         * @param {object} [body]
+         * @returns {Promise<IdeaApiResponse | null>}
+         */
         async api(method, url, body) {
             this.busy = true;
             this.error = null;
@@ -189,6 +292,7 @@ export function registerIdeaEditor(Alpine) {
                     method,
                     json: body ? body : undefined,
                 });
+                /** @type {IdeaApiResponse & {current?: IdeaNode, message?: string, errors?: Record<string, string[]>}} */
                 const json = await res.json().catch(() => ({}));
                 if (res.status === 409) {
                     return { conflict: json.current };
@@ -208,6 +312,10 @@ export function registerIdeaEditor(Alpine) {
                 this.busy = false;
             }
         },
+        /**
+         * @param {string} action
+         * @param {string | null} sqid
+         */
         urlFor(action, sqid) {
             return (this.cfg.urls[action] || "").replace(
                 "__NODE__",
@@ -221,12 +329,14 @@ export function registerIdeaEditor(Alpine) {
             window.dispatchEvent(new CustomEvent("idea-outline-changed"));
         },
 
+        /** @param {IdeaNode} node */
         applyNode(node) {
             this.nodes[node.sqid] = node;
             this.rebuildOrder();
             this.notifyCanvas();
         },
 
+        /** @param {string} parentSqid */
         async addChild(parentSqid) {
             const json = await this.api("POST", this.cfg.urls.store, {
                 parent: parentSqid,
@@ -237,29 +347,39 @@ export function registerIdeaEditor(Alpine) {
                 this.applyNode(json.node);
                 this.selected = json.node.sqid;
                 this.editingTitle = json.node.sqid;
-                this.$nextTick(() => this.focusTitleInput(json.node.sqid));
+                this.$nextTick(() => this.focusTitleInput(/** @type {IdeaNode} */ (json.node).sqid));
             }
         },
+        /** @param {string} sqid */
         async addSibling(sqid) {
             const n = this.node(sqid);
             if (!n) return;
-            await this.addChild(n.parent || this.rootSqid);
+            // Ohne Elternteil ist n die Wurzel, rootSqid ist dann gesetzt.
+            await this.addChild(/** @type {string} */ (n.parent || this.rootSqid));
         },
 
+        /** @param {string} sqid */
         startRename(sqid) {
             if (!this.cfg.can_update) return;
             this.editingTitle = sqid;
             this.$nextTick(() => this.focusTitleInput(sqid));
         },
+        /** @param {string} sqid */
         focusTitleInput(sqid) {
-            const input = this.$root?.querySelector(
-                `[data-title-input="${sqid}"]`,
+            const input = /** @type {HTMLInputElement | null} */ (
+                this.$root?.querySelector(
+                    `[data-title-input="${sqid}"]`,
+                )
             );
             if (input) {
                 input.focus();
                 input.select();
             }
         },
+        /**
+         * @param {string} sqid
+         * @param {string} title
+         */
         async saveTitle(sqid, title) {
             this.editingTitle = null;
             const n = this.node(sqid);
@@ -267,6 +387,10 @@ export function registerIdeaEditor(Alpine) {
             await this.patchNode(sqid, { title: title.trim() });
         },
 
+        /**
+         * @param {string} sqid
+         * @param {IdeaNodePatch} payload
+         */
         async patchNode(sqid, payload) {
             const n = this.node(sqid);
             if (!n) return;
@@ -288,10 +412,15 @@ export function registerIdeaEditor(Alpine) {
         // Detail-Ansicht speichern (MVP-135): Notiz + Status werden explizit
         // gesichert (nicht mehr per change-Event, das beim Schließen verloren
         // ging). Nur bei tatsächlicher Änderung patchen.
+        /**
+         * @param {string | undefined} note
+         * @param {string | undefined} status
+         */
         async saveDetails(note, status) {
             if (!this.selected || !this.cfg.can_update) return;
             const n = this.node(this.selected);
             if (!n) return;
+            /** @type {IdeaNodePatch} */
             const payload = {};
             if ((note ?? "") !== (n.note ?? "")) payload.note = note || null;
             const st = status || null;
@@ -299,6 +428,10 @@ export function registerIdeaEditor(Alpine) {
             if (Object.keys(payload).length > 0)
                 await this.patchNode(this.selected, payload);
         },
+        /**
+         * @param {string | undefined} note
+         * @param {string | undefined} status
+         */
         async closeDetails(note, status) {
             await this.saveDetails(note, status);
             this.detailOpen = false;
@@ -307,28 +440,29 @@ export function registerIdeaEditor(Alpine) {
         // `$refs.detailNote?.value` wäre im CSP-Build nicht auswertbar.
         saveDetailsFromRefs() {
             return this.saveDetails(
-                this.$refs.detailNote?.value,
-                this.$refs.detailStatus?.value,
+                /** @type {HTMLTextAreaElement | undefined} */ (this.$refs.detailNote)?.value,
+                /** @type {HTMLSelectElement | undefined} */ (this.$refs.detailStatus)?.value,
             );
         },
         closeDetailsFromRefs() {
             return this.closeDetails(
-                this.$refs.detailNote?.value,
-                this.$refs.detailStatus?.value,
+                /** @type {HTMLTextAreaElement | undefined} */ (this.$refs.detailNote)?.value,
+                /** @type {HTMLSelectElement | undefined} */ (this.$refs.detailStatus)?.value,
             );
         },
 
         // Farb-Swatches der Detail-Ansicht (MVP-135): Farbwert → DaisyUI-bg-Klasse.
+        /** @param {string} color */
         swatchClass(color) {
             return (
-                {
+                /** @type {Record<string, string>} */ ({
                     default: "bg-base-300",
                     primary: "bg-primary",
                     success: "bg-success",
                     warning: "bg-warning",
                     error: "bg-error",
                     info: "bg-info",
-                }[color] || "bg-base-300"
+                })[color] || "bg-base-300"
             );
         },
 
@@ -347,6 +481,7 @@ export function registerIdeaEditor(Alpine) {
             await this.patchNode(node, mine); // … und eigene Änderung erneut anwenden
         },
 
+        /** @param {string} sqid */
         async indent(sqid) {
             const n = this.node(sqid);
             if (!n || !n.parent) return;
@@ -355,24 +490,35 @@ export function registerIdeaEditor(Alpine) {
             if (idx <= 0) return; // kein vorheriges Geschwister → nicht einrückbar
             await this.moveNode(sqid, siblings[idx - 1].sqid);
         },
+        /** @param {string} sqid */
         async outdent(sqid) {
             const n = this.node(sqid);
             const parent = n ? this.node(n.parent) : null;
             if (!n || !parent || !parent.parent) return; // direkt unter Wurzel bleibt
             await this.moveNode(sqid, parent.parent);
         },
+        /**
+         * @param {string} sqid
+         * @param {string} newParentSqid
+         */
         async moveNode(sqid, newParentSqid) {
             const json = await this.api("POST", this.urlFor("move", sqid), {
                 parent: newParentSqid,
             });
             if (json?.node) this.applyNode(json.node);
         },
+        /** @param {string} sqid */
         async moveUp(sqid) {
             await this.shift(sqid, -1);
         },
+        /** @param {string} sqid */
         async moveDown(sqid) {
             await this.shift(sqid, 1);
         },
+        /**
+         * @param {string} sqid
+         * @param {number} delta
+         */
         async shift(sqid, delta) {
             const n = this.node(sqid);
             if (!n || !n.parent) return;
@@ -396,6 +542,7 @@ export function registerIdeaEditor(Alpine) {
             }
         },
 
+        /** @param {string} sqid */
         async removeNode(sqid) {
             const n = this.node(sqid);
             if (!n || n.is_root) return;
@@ -409,7 +556,7 @@ export function registerIdeaEditor(Alpine) {
             if (!ok) return;
             const json = await this.api("DELETE", this.urlFor("destroy", sqid));
             if (json?.ok) {
-                const removeTree = (s) => {
+                const removeTree = (/** @type {string} */ s) => {
                     this.childrenOf(s).forEach((c) => removeTree(c.sqid));
                     delete this.nodes[s];
                 };
@@ -446,11 +593,16 @@ export function registerIdeaEditor(Alpine) {
             }
         },
 
+        /** @param {string} sqid */
         toggleCollapse(sqid) {
             this.collapsed[sqid] = !this.collapsed[sqid];
             this.rebuildOrder();
         },
 
+        /**
+         * @param {KeyboardEvent} event
+         * @param {string} sqid
+         */
         onKeydown(event, sqid) {
             if (!this.cfg.can_update || this.editingTitle) return;
             if (event.key === "Enter") {
@@ -479,9 +631,9 @@ export function registerIdeaEditor(Alpine) {
                 if (next) {
                     this.selected = next;
                     this.$nextTick(() =>
-                        this.$root
-                            .querySelector(`[data-node-row="${next}"]`)
-                            ?.focus(),
+                        /** @type {HTMLElement | null} */ (
+                            this.$root.querySelector(`[data-node-row="${next}"]`)
+                        )?.focus(),
                     );
                 }
             }

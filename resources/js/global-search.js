@@ -27,11 +27,38 @@ const searchUrl = () => {
     return "/api/internal/search";
 };
 
+/**
+ * Treffer von GlobalSearchController (Palette und GlobalSearchService);
+ * der „alle Treffer"-Eintrag trägt nur die URL.
+ * @typedef {object} SearchItem
+ * @property {number | string} [id]
+ * @property {string} [title]
+ * @property {string | null} [subtitle]
+ * @property {string} [icon]
+ * @property {string} [action]
+ * @property {string | null} [url]
+ */
+
+/**
+ * @typedef {object} SearchGroup
+ * @property {string} key
+ * @property {string} label
+ * @property {string} icon
+ * @property {SearchItem[]} items
+ */
+
 let activeIndex = -1;
+/** @type {SearchItem[]} */
 let flatItems = [];
+/** @type {ReturnType<typeof setTimeout> | null} */
 let debounceTimer = null;
 let lastQuery = "";
 
+/**
+ * @param {Element} root
+ * @param {string} text
+ * @param {{loading?: boolean}} [options]
+ */
 const setStatus = (root, text, { loading = false } = {}) => {
     const el = root.querySelector("[data-global-search-status]");
     if (!el) return;
@@ -59,6 +86,10 @@ const setStatus = (root, text, { loading = false } = {}) => {
     el.classList.remove("hidden");
 };
 
+/**
+ * @param {Element} root
+ * @param {string} message
+ */
 const renderHint = (root, message) => {
     const results = root.querySelector("[data-global-search-results]");
     if (!results) return;
@@ -72,6 +103,11 @@ const renderHint = (root, message) => {
     activeIndex = -1;
 };
 
+/**
+ * @param {Element} root
+ * @param {SearchGroup[]} groups
+ * @param {string | null} [allUrl]
+ */
 const renderResults = (root, groups, allUrl = null) => {
     const results = root.querySelector("[data-global-search-results]");
     if (!results) return;
@@ -173,6 +209,7 @@ const renderResults = (root, groups, allUrl = null) => {
     updateActive(root);
 };
 
+/** @param {Element} root */
 const updateActive = (root) => {
     const nodes = root.querySelectorAll("[data-gs-item]");
     nodes.forEach((n, i) => {
@@ -185,11 +222,15 @@ const updateActive = (root) => {
     });
 };
 
+/**
+ * @param {Element} root
+ * @param {string} term
+ */
 const fetchResults = async (root, term) => {
     setStatus(root, __("Suche …"), { loading: true });
     try {
-        const { ok, data: json } = await getJson(
-            `${searchUrl()}?q=${encodeURIComponent(term)}`,
+        const { ok, data: json } = /** @type {import("./lib/http.js").JsonResult<{ groups?: SearchGroup[], allUrl?: string | null }>} */ (
+            await getJson(`${searchUrl()}?q=${encodeURIComponent(term)}`)
         );
         // Veraltete Antwort (neuere, gekürzte oder geleerte Eingabe) nicht rendern.
         if (term !== lastQuery) return;
@@ -205,8 +246,9 @@ const fetchResults = async (root, term) => {
     }
 };
 
+/** @param {Element} root */
 const onInput = (root) => {
-    const input = root.querySelector("[data-global-search-input]");
+    const input = /** @type {HTMLInputElement | null} */ (root.querySelector("[data-global-search-input]"));
     if (!input) return;
     const term = (input.value || "").trim();
     lastQuery = term;
@@ -227,6 +269,10 @@ const onInput = (root) => {
     }, DEBOUNCE_MS);
 };
 
+/**
+ * @param {Element} root
+ * @param {KeyboardEvent} e
+ */
 const onKeydown = (root, e) => {
     if (e.key === "ArrowDown") {
         if (flatItems.length === 0) return;
@@ -254,6 +300,7 @@ const onKeydown = (root, e) => {
 
 // Bedienaktionen der Palette (FunctionFinder::ACTIONS): erst schließen, dann
 // ausführen — sonst läge ein zweiter Dialog unter dem modalen Suchdialog.
+/** @param {string | null | undefined} action */
 const runAction = (action) => {
     closeDialog();
     if (action === "theme") {
@@ -329,7 +376,7 @@ const init = () => {
         });
     });
 
-    const input = root.querySelector("[data-global-search-input]");
+    const input = /** @type {HTMLInputElement | null} */ (root.querySelector("[data-global-search-input]"));
     if (input) {
         input.addEventListener("input", () => onInput(root));
         input.addEventListener("keydown", (e) => onKeydown(root, e));

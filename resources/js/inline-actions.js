@@ -114,7 +114,7 @@ document.addEventListener("click", (event) => {
     const opener = target.closest("[data-open-dialog]");
     if (opener) {
         const dlg = /** @type {HTMLDialogElement | null} */ (
-            document.getElementById(opener.getAttribute("data-open-dialog"))
+            document.getElementById(opener.getAttribute("data-open-dialog") ?? "")
         );
         if (dlg && typeof dlg.showModal === "function") {
             event.preventDefault();
@@ -142,7 +142,7 @@ document.addEventListener("click", (event) => {
     const toggler = target.closest("[data-toggle-hidden]");
     if (toggler) {
         document
-            .getElementById(toggler.getAttribute("data-toggle-hidden"))
+            .getElementById(toggler.getAttribute("data-toggle-hidden") ?? "")
             ?.classList.toggle("hidden");
         return;
     }
@@ -163,7 +163,7 @@ document.addEventListener("click", (event) => {
         const open = allToggler.getAttribute("aria-expanded") !== "true";
         allToggler.setAttribute("aria-expanded", open ? "true" : "false");
         document
-            .getElementById(allToggler.getAttribute("data-toggle-rows-all"))
+            .getElementById(allToggler.getAttribute("data-toggle-rows-all") ?? "")
             ?.querySelectorAll("[data-toggle-rows]")
             .forEach((toggler) => setRowGroup(toggler, open));
         return;
@@ -174,7 +174,7 @@ document.addEventListener("click", (event) => {
     if (submitter) {
         event.preventDefault();
         const form = document.getElementById(
-            submitter.getAttribute("data-submit-form"),
+            submitter.getAttribute("data-submit-form") ?? "",
         );
         if (form instanceof HTMLFormElement) form.submit();
         return;
@@ -187,12 +187,12 @@ document.addEventListener("click", (event) => {
         let text = copier.getAttribute("data-copy-text");
         if (text === null) {
             const src = /** @type {HTMLElement | null} */ (
-                document.getElementById(copier.getAttribute("data-copy-target"))
+                document.getElementById(copier.getAttribute("data-copy-target") ?? "")
             );
             if (!src) return;
             text =
                 "value" in src
-                    ? /** @type {any} */ (src).value
+                    ? /** @type {HTMLInputElement} */ (src).value
                     : (src.textContent ?? "");
         }
         navigator.clipboard?.writeText(text).then(() => {

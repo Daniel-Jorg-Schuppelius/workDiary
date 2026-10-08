@@ -12,7 +12,7 @@ namespace Tests\Feature\Schedule;
 
 use App\Enums\Shift\ScheduledShiftStatus;
 use App\Models\Platform\User;
-use App\Models\Schedule\ScheduledShift;
+use App\Models\Schedule\{ScheduledShift, ShiftType};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -74,7 +74,7 @@ class ScheduleTest extends TestCase {
 
         $this->assertTrue($names->contains('Eigene Person'));
         $this->assertFalse($names->contains('Fremde Person'), 'Der Schichtplan darf keine fremden Mandanten listen.');
-        $this->assertNotNull($foreign->id);
+        $this->assertNotSame($own->organization_id, $foreign->organization_id, 'Die Gegenprobe braucht einen fremden Mandanten.');
     }
 
     public function test_schedule_index_accepts_numeric_user_filter_fallback(): void {
@@ -224,6 +224,38 @@ class ScheduleTest extends TestCase {
             ->assertJsonPath('name', 'Frühschicht');
 
         $this->assertDatabaseHas('shift_types', ['abbreviation' => 'F']);
+    }
+
+    public function test_shift_type_json_carries_sqid_like_the_page_config(): void {
+        // Der Typ-Manager hängt neue Typen mit dieser id in Tabelle, Auswahl und Lösch-URL.
+        $admin = User::factory()->admin()->create();
+
+        $created = $this->actingAs($admin)
+            ->postJson(route('schedule.types.store'), [
+                'name' => 'Spätschicht',
+                'abbreviation' => 'S',
+                'color' => '#f97316',
+            ])
+            ->assertCreated()
+            ->json();
+
+        $type = ShiftType::query()->where('abbreviation', 'S')->firstOrFail();
+        $this->assertSame($type->sqid, $created['id']);
+        $this->assertSame(['id', 'name', 'abbreviation', 'color', 'default_start_time', 'default_end_time', 'is_active'], array_keys($created));
+
+        $this->actingAs($admin)
+            ->putJson(route('schedule.types.update', $type), [
+                'name' => 'Spätdienst',
+                'abbreviation' => 'S',
+                'color' => '#f97316',
+            ])
+            ->assertOk()
+            ->assertJsonPath('id', $type->sqid)
+            ->assertJsonPath('name', 'Spätdienst');
+
+        $this->actingAs($admin)
+            ->deleteJson(route('schedule.types.destroy', $created['id']))
+            ->assertOk();
     }
 
     public function test_regular_user_cannot_create_shift_type(): void {

@@ -11,7 +11,9 @@
  *
  * Lauf: npm run test:frontend
  */
-globalThis.window = { location: { origin: "https://app.example.test" } };
+/** @type {{ origin: string, href?: string }} */
+const location = { origin: "https://app.example.test" };
+globalThis.window = /** @type {Window & typeof globalThis} */ (/** @type {unknown} */ ({ location }));
 
 const {
     escHtml, escCssValue, safeUrl, html, setHtml, clearHtml,
@@ -21,12 +23,14 @@ const {
 );
 
 let pass = 0, fail = 0;
+/** @type {(label: string, actual: unknown, expected: string) => void} */
 const eq = (label, actual, expected) => {
     const a = String(actual);
     if (a === expected) { pass++; return; }
     fail++;
     console.log(`FAIL ${label}\n  erwartet: ${JSON.stringify(expected)}\n  bekommen: ${JSON.stringify(a)}`);
 };
+/** @type {(label: string, cond: unknown) => void} */
 const ok = (label, cond) => { if (cond) pass++; else { fail++; console.log(`FAIL ${label}`); } };
 
 // --- sameOriginPath: Navigationsziele aus DOM-Text (Code-Scanning #1/#2) ---
@@ -38,9 +42,9 @@ ok("sameOriginPath fremde Origin", sameOriginPath("https://evil.example/phish") 
 ok("sameOriginPath protokollrelativ fremd", sameOriginPath("//evil.example/x") === null);
 ok("sameOriginPath data:", sameOriginPath("data:text/html,<script>alert(1)</script>") === null);
 ok("sameOriginPath leer", sameOriginPath("") === null);
-globalThis.window.location.href = "https://app.example.test/reports/sales?period=q1";
+location.href = "https://app.example.test/reports/sales?period=q1";
 eq("sameOriginPath relative Query zur aktuellen Seite", sameOriginPath("?period=q2"), "/reports/sales?period=q2");
-delete globalThis.window.location.href;
+delete location.href;
 eq("sameOriginPath doppelter Slash wird kein Host", sameOriginPath("https://app.example.test//evil.example/x"), "/evil.example/x");
 
 // --- escHtml: alle fünf Zeichen (die alten Escaper ließen ' bzw. & durch) ---

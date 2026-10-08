@@ -11,6 +11,36 @@ import {
 import { request } from "./lib/http.js";
 import { __ } from "./i18n.js";
 
+/**
+ * Server-JSON aus Chat\MessageController und Echo-Nutzdaten der Chat-Events.
+ *
+ * @typedef {object} ChatRenderedMessage
+ * @property {number} id
+ * @property {string} html
+ *
+ * @typedef {ChatRenderedMessage & { sqid: string, pinned: boolean }} ChatMessageRow
+ *
+ * @typedef {object} ChatMessagesPage
+ * @property {ChatMessageRow[]} messages
+ * @property {number | null} oldest_id
+ * @property {boolean} has_more
+ * @property {string | null} first_unread_id
+ * @property {number} others_read_ts
+ *
+ * @typedef {object} ChatSearchResult
+ * @property {string | null} channel_id
+ * @property {string} channel
+ * @property {string | null} user
+ * @property {string} snippet
+ * @property {string} message_id
+ *
+ * @typedef {{ id: string }} ChatMessageIdEvent message.updated / message.deleted
+ * @typedef {{ message_id: string }} ChatMessageRefEvent reaction.toggled / poll.voted
+ * @typedef {{ read_ts: number }} ChatReadEvent channel.read
+ * @typedef {{ name?: string }} ChatTypingWhisper
+ * @typedef {{ id: number, name: string }} ChatPresenceMember routes/channels.php
+ */
+
 const root = document.getElementById("chat-root");
 if (root) {
     initSearch();
@@ -19,6 +49,7 @@ if (root) {
 }
 
 // Sidebar-Kanalliste live halten – auch OHNE offenen Kanal (Mobil/Listenansicht).
+/** @param {HTMLElement} root */
 function initSidebar(root) {
     const listEl = document.getElementById("chat-channel-list");
     if (!listEl?.dataset.listUrl) return;
@@ -68,6 +99,7 @@ function initSearch() {
     const hide = () => {
         results.classList.add("hidden");
     };
+    /** @type {ReturnType<typeof setTimeout> | undefined} */
     let timer;
     input.addEventListener("input", () => {
         clearTimeout(timer);
@@ -82,7 +114,9 @@ function initSearch() {
                 `/chat/search?q=${encodeURIComponent(q)}`,
             );
             if (!r.ok) return;
-            const d = await r.json();
+            const d = /** @type {{ results: ChatSearchResult[] }} */ (
+                await r.json()
+            );
             results.classList.remove("hidden");
             setHtml(
                 results,
@@ -119,10 +153,15 @@ function initSearch() {
     });
 }
 
+/** @param {HTMLElement} root */
 function initChat(root) {
     const channelId = root.dataset.channelId; // Sqid: API-URLs + Echtzeit-Channelname
     if (!channelId) return;
-    const list = document.getElementById("chat-messages");
+    // Die View rendert #chat-messages immer, wenn ein Kanal offen ist.
+    const list = /** @type {HTMLElement} */ (
+        document.getElementById("chat-messages")
+    );
+    /** @type {number | null} */
     let oldest = null;
     let newest = 0;
     let loadingOlder = false;
@@ -130,10 +169,13 @@ function initChat(root) {
     let socketId = "";
 
     // Nur die Chat-Sonderheit (Echo-Socket-Id) — Rest kommt aus lib/http.js.
+    /** @returns {Record<string, string>} */
     function headers() {
         return socketId ? { "X-Socket-ID": socketId } : {};
     }
+    /** @param {string} html */
     const append = (html) => list.insertAdjacentHTML("beforeend", html);
+    /** @param {string} html */
     const prepend = (html) => list.insertAdjacentHTML("afterbegin", html);
     const bottom = () => {
         // Zuverlässig ganz nach unten – auch wenn Inhalte (Bilder) noch nachladen.
@@ -169,7 +211,9 @@ function initChat(root) {
     const meName = root.dataset.meName || "";
     const typingEl = document.getElementById("chat-typing");
     const typingTpl = root.dataset.txtTyping || ":name schreibt …";
-    let typingTimer = null;
+    /** @type {ReturnType<typeof setTimeout> | undefined} */
+    let typingTimer;
+    /** @param {string | undefined} name */
     const showTyping = (name) => {
         if (!typingEl || !name || name === meName) return;
         typingEl.textContent = typingTpl.replace(":name", name);
@@ -194,6 +238,7 @@ function initChat(root) {
             }
         });
     };
+    /** @param {number | null | undefined} ts */
     const bumpRead = (ts) => {
         ts = Number(ts || 0);
         if (ts > othersReadTs) othersReadTs = ts;
@@ -201,7 +246,9 @@ function initChat(root) {
     };
 
     // Datums-Trenner zwischen Tagen (Heute/Gestern/Datum).
+    /** @param {Date} d */
     const keyOf = (d) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+    /** @param {number} ts */
     const dayLabel = (ts) => {
         const d = new Date(ts * 1000);
         const k = keyOf(d);
@@ -217,6 +264,7 @@ function initChat(root) {
     };
     const insertDateDividers = () => {
         list.querySelectorAll(".chat-date-divider").forEach((e) => e.remove());
+        /** @type {string | null} */
         let lastDay = null;
         /** @type {NodeListOf<HTMLElement>} */ (
             list.querySelectorAll(".chat-msg")
@@ -237,6 +285,7 @@ function initChat(root) {
     // Aufeinanderfolgende Nachrichten desselben Benutzers (innerhalb 5 min)
     // gruppieren: spätere bekommen 'is-grouped' (Avatar/Name aus, enger).
     const groupMessages = () => {
+        /** @type {HTMLElement | null} */
         let prev = null;
         /** @type {NodeListOf<HTMLElement>} */ (
             list.querySelectorAll(".chat-msg")
@@ -257,13 +306,15 @@ function initChat(root) {
     });
 
     async function loadInitial() {
-        const d = await getJson(`/chat/${channelId}/messages`);
+        const d = /** @type {ChatMessagesPage | null} */ (
+            await getJson(`/chat/${channelId}/messages`)
+        );
         if (!d) return;
         clearHtml(list);
         d.messages.forEach((m) => append(m.html));
         if (d.messages.length) {
             oldest = d.messages[0].id;
-            newest = d.messages.at(-1).id;
+            newest = /** @type {ChatMessageRow} */ (d.messages.at(-1)).id;
         }
         insertDateDividers();
         // "Neue Nachrichten"-Trenner vor der ersten ungelesenen Nachricht.
@@ -286,7 +337,9 @@ function initChat(root) {
         markRead();
     }
     async function loadNew() {
-        const d = await getJson(`/chat/${channelId}/messages?after=${newest}`);
+        const d = /** @type {ChatMessagesPage | null} */ (
+            await getJson(`/chat/${channelId}/messages?after=${newest}`)
+        );
         if (!d) return;
         let added = false;
         const wasNear = nearBottom();
@@ -311,7 +364,9 @@ function initChat(root) {
         if (loadingOlder || noMoreOlder || !oldest) return;
         loadingOlder = true;
         const prevH = list.scrollHeight;
-        const d = await getJson(`/chat/${channelId}/messages?before=${oldest}`);
+        const d = /** @type {ChatMessagesPage | null} */ (
+            await getJson(`/chat/${channelId}/messages?before=${oldest}`)
+        );
         // Nur bei tatsächlich geladenen älteren Nachrichten die Scrollposition
         // anpassen. Sonst (keine älteren mehr) NICHT scrollen – sonst springt
         // die Liste an den Anfang. Und künftige Versuche unterbinden.
@@ -325,6 +380,7 @@ function initChat(root) {
         }
         loadingOlder = false;
     }
+    /** @param {string | null | undefined} id Nachrichten-Sqid */
     async function refreshMessage(id) {
         if (!id) return;
         const r = await request(`/chat/messages/${id}`, {
@@ -343,6 +399,7 @@ function initChat(root) {
             bottom();
         }
     }
+    /** @param {string | undefined} id */
     const removeMessage = (id) =>
         document.getElementById(`chat-msg-${id}`)?.remove();
 
@@ -368,6 +425,10 @@ function initChat(root) {
     composerBody?.addEventListener("input", autoGrow);
 
     // Format-Helfer
+    /**
+     * @param {string} pre
+     * @param {string} suf
+     */
     const wrapSel = (pre, suf) => {
         if (!composerBody) return;
         const s = composerBody.selectionStart,
@@ -379,6 +440,7 @@ function initChat(root) {
         const caret = s + pre.length + sel.length;
         composerBody.setSelectionRange(caret, caret);
     };
+    /** @param {string} t */
     const insertText = (t) => {
         if (!composerBody) return;
         const s = composerBody.selectionStart,
@@ -403,6 +465,7 @@ function initChat(root) {
     // Emoji-Panel (in den Text einfügen)
     const emojiInsertBtn = document.getElementById("chat-emoji-insert");
     const emojiPanel = document.getElementById("chat-emoji-panel");
+    /** @param {boolean} [show] */
     const toggleEmojiPanel = (show) => {
         if (!emojiPanel) return;
         const open = show ?? emojiPanel.classList.contains("hidden");
@@ -418,7 +481,7 @@ function initChat(root) {
             /** @type {HTMLElement} */ (e.target).closest("[data-insert]")
         );
         if (!b) return;
-        insertText(b.dataset.insert);
+        insertText(/** @type {string} */ (b.dataset.insert));
         toggleEmojiPanel(false);
     });
     document.addEventListener("click", (e) => {
@@ -458,6 +521,7 @@ function initChat(root) {
             })}`,
         );
     };
+    /** @param {FileList | File[] | undefined} fileList */
     const addFiles = (fileList) => {
         if (!fileInput || !fileList?.length) return;
         const dt = new DataTransfer();
@@ -476,7 +540,7 @@ function initChat(root) {
                 .filter(Boolean);
             if (files.length) {
                 e.preventDefault();
-                addFiles(files);
+                addFiles(/** @type {File[]} */ (files));
             }
         },
     );
@@ -490,6 +554,11 @@ function initChat(root) {
     const quotedIdInput = /** @type {HTMLInputElement | null} */ (
         document.getElementById("chat-quoted-id")
     );
+    /**
+     * @param {string | undefined} id
+     * @param {string} name
+     * @param {string} snippet
+     */
     const setReply = (id, name, snippet) => {
         if (!replyBar || !quotedIdInput) return;
         quotedIdInput.value = id || "";
@@ -513,7 +582,9 @@ function initChat(root) {
     const forwardChannel = /** @type {HTMLSelectElement | null} */ (
         document.getElementById("chat-forward-channel")
     );
+    /** @type {string | null | undefined} */
     let forwardId = null;
+    /** @param {string | undefined} id */
     const openForward = (id) => {
         forwardId = id;
         forwardDialog?.showModal();
@@ -534,8 +605,13 @@ function initChat(root) {
             }
         });
 
+    /** @param {number} n */
     const pad2 = (n) => String(n).padStart(2, "0");
     // Datum (lokal) als YYYY-MM-DD; Zeit als HH:MM; kombiniert zu "YYYY-MM-DDTHH:MM".
+    /**
+     * @param {string | undefined} dateVal
+     * @param {string | undefined} timeVal
+     */
     const combineDateTime = (dateVal, timeVal) =>
         dateVal && timeVal ? `${dateVal}T${timeVal}` : "";
 
@@ -549,15 +625,19 @@ function initChat(root) {
     const remindTime = /** @type {HTMLInputElement | null} */ (
         document.getElementById("chat-remind-time")
     );
+    /** @type {string | null | undefined} */
     let remindId = null;
+    /** @param {Date} d */
     const fmtLocal = (d) =>
         `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}T${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+    /** @param {string | undefined} id */
     const openRemind = (id) => {
         remindId = id;
         if (remindDate) remindDate.value = "";
         if (remindTime) remindTime.value = "";
         remindDialog?.showModal();
     };
+    /** @param {string} whenStr */
     const submitRemind = async (whenStr) => {
         remindDialog?.close();
         if (remindId && whenStr) {
@@ -635,6 +715,7 @@ function initChat(root) {
         });
 
     // Zu einer (zitierten) Nachricht springen + kurz hervorheben
+    /** @param {string | undefined} id */
     const jumpTo = (id) => {
         const el = document.getElementById(`chat-msg-${id}`);
         if (!el) return;
@@ -679,8 +760,14 @@ function initChat(root) {
     const emojiDialog = /** @type {HTMLDialogElement | null} */ (
         document.getElementById("chat-emoji-dialog")
     );
+    /** @type {string | null | undefined} */
     let editId = null;
+    /** @type {string | null | undefined} */
     let emojiId = null;
+    /**
+     * @param {string | undefined} id
+     * @param {string} body
+     */
     const openEditDialog = (id, body) => {
         editId = id;
         if (editInput) editInput.value = body || "";
@@ -697,6 +784,7 @@ function initChat(root) {
                 refreshMessage(editId);
             }
         });
+    /** @param {string | undefined} id */
     const openEmojiPicker = (id) => {
         emojiId = id;
         emojiDialog?.showModal();
@@ -825,15 +913,23 @@ function initChat(root) {
         updateScrollBtn();
     });
 
-    // Thread-Drawer
+    // Thread-Drawer (Elemente rendert die View immer)
+    /** @param {string | undefined} id */
     async function openThread(id) {
-        const drawer = document.getElementById("chat-thread");
-        const body = document.getElementById("chat-thread-body");
+        const drawer = /** @type {HTMLElement} */ (
+            document.getElementById("chat-thread")
+        );
+        const body = /** @type {HTMLElement} */ (
+            document.getElementById("chat-thread-body")
+        );
         const r = await request(`/chat/messages/${id}/replies`, {
             headers: headers(),
         });
         if (!r.ok) return;
-        const d = await r.json();
+        const d =
+            /** @type {{ parent: ChatRenderedMessage, replies: ChatRenderedMessage[] }} */ (
+                await r.json()
+            );
         // Nachrichten-HTML kommt serverseitig gerendert (siehe Dateikopf).
         setHtml(
             body,
@@ -843,13 +939,13 @@ function initChat(root) {
         );
         drawer.classList.remove("hidden");
         drawer.classList.add("flex");
-        const tf = /** @type {HTMLFormElement | null} */ (
+        const tf = /** @type {HTMLFormElement} */ (
             document.getElementById("chat-thread-form")
         );
         tf.onsubmit = async (e) => {
             e.preventDefault();
             const fd = new FormData(tf);
-            fd.append("parent_id", id);
+            fd.append("parent_id", /** @type {string} */ (id));
             const rr = await request(`/chat/${channelId}/messages`, {
                 method: "POST",
                 headers: headers(),
@@ -866,7 +962,9 @@ function initChat(root) {
     document
         .getElementById("chat-thread-close")
         ?.addEventListener("click", () => {
-            const d = document.getElementById("chat-thread");
+            const d = /** @type {HTMLElement} */ (
+                document.getElementById("chat-thread")
+            );
             d.classList.add("hidden");
             d.classList.remove("flex");
         });
@@ -892,12 +990,28 @@ function initChat(root) {
                 loadNew();
                 hideTyping();
             })
-            .listen(".message.updated", (e) => refreshMessage(e.id))
-            .listen(".message.deleted", (e) => removeMessage(e.id))
-            .listen(".reaction.toggled", (e) => refreshMessage(e.message_id))
-            .listen(".poll.voted", (e) => refreshMessage(e.message_id))
-            .listen(".channel.read", (e) => bumpRead(e.read_ts))
-            .listenForWhisper("typing", (e) => showTyping(e?.name));
+            .listen(".message.updated", (/** @type {ChatMessageIdEvent} */ e) =>
+                refreshMessage(e.id)
+            )
+            .listen(".message.deleted", (/** @type {ChatMessageIdEvent} */ e) =>
+                removeMessage(e.id)
+            )
+            .listen(
+                ".reaction.toggled",
+                (/** @type {ChatMessageRefEvent} */ e) =>
+                    refreshMessage(e.message_id)
+            )
+            .listen(".poll.voted", (/** @type {ChatMessageRefEvent} */ e) =>
+                refreshMessage(e.message_id)
+            )
+            .listen(".channel.read", (/** @type {ChatReadEvent} */ e) =>
+                bumpRead(e.read_ts)
+            )
+            .listenForWhisper(
+                "typing",
+                (/** @type {ChatTypingWhisper | undefined} */ e) =>
+                    showTyping(e?.name)
+            );
 
         // Präsenz (wer ist online) über Presence-Channel.
         const presenceEl = document.getElementById("chat-presence");
@@ -911,19 +1025,19 @@ function initChat(root) {
             if (countEl)
                 countEl.textContent = (
                     presenceEl.dataset.tpl || ":count online"
-                ).replace(":count", /** @type {any} */ (n));
+                ).replace(":count", String(n));
         };
         echo.join(`presence-chat.channel.${channelId}`)
-            .here((users) => {
+            .here((/** @type {ChatPresenceMember[] | null} */ users) => {
                 presence.clear();
                 (users || []).forEach((u) => presence.set(u.id, u));
                 renderPresence();
             })
-            .joining((u) => {
+            .joining((/** @type {ChatPresenceMember} */ u) => {
                 presence.set(u.id, u);
                 renderPresence();
             })
-            .leaving((u) => {
+            .leaving((/** @type {ChatPresenceMember} */ u) => {
                 presence.delete(u.id);
                 renderPresence();
             })
@@ -978,7 +1092,9 @@ function initChat(root) {
         if (!target) return;
 
         clearHtml(target);
-        const d = await getJson(`/chat/${channelId}/messages/pinned`);
+        const d = /** @type {{ messages: ChatRenderedMessage[] } | null} */ (
+            await getJson(`/chat/${channelId}/messages/pinned`)
+        );
         const items = d?.messages ?? null;
         if (items === null) {
             setHtml(target, html`<p class="text-sm text-error">
@@ -996,10 +1112,19 @@ function initChat(root) {
     });
 
     // ── helpers ──
+    /**
+     * @param {string} url
+     * @returns {Promise<unknown>} Server-JSON, Form je Endpunkt; null bei Fehlerstatus
+     */
     async function getJson(url) {
         const r = await request(url, { headers: headers() });
         return r.ok ? r.json() : null;
     }
+    /**
+     * @param {string} url
+     * @param {string} method
+     * @param {Record<string, unknown>} [data]
+     */
     function send(url, method, data) {
         return request(url, {
             method,

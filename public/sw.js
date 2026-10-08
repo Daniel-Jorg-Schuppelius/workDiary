@@ -14,27 +14,30 @@ const OFFLINE_CACHE = "workdiary-offline-v3";
 const OFFLINE_READER = "/offline-reader.js";
 const OFFLINE_URL = "/offline.html";
 
-self.addEventListener("install", (event) => {
+// lib.webworker kennt nur WorkerGlobalScope; der Cast macht die SW-Ereignisse typisiert.
+const sw = /** @type {ServiceWorkerGlobalScope} */ (/** @type {unknown} */ (self));
+
+sw.addEventListener("install", (event) => {
     event.waitUntil(
         caches
             .open(OFFLINE_CACHE)
             .then((cache) => cache.addAll([OFFLINE_URL, OFFLINE_READER]))
-            .then(() => self.skipWaiting()),
+            .then(() => sw.skipWaiting()),
     );
 });
 
-self.addEventListener("activate", (event) => {
+sw.addEventListener("activate", (event) => {
     // Caches früherer Iterationen aufräumen (nur der aktuelle Offline-Cache
     // bleibt) und sofort die Kontrolle über alle offenen Tabs übernehmen.
     event.waitUntil(
         caches
             .keys()
             .then((keys) => Promise.all(keys.filter((k) => k !== OFFLINE_CACHE).map((k) => caches.delete(k))))
-            .then(() => self.clients.claim()),
+            .then(() => sw.clients.claim()),
     );
 });
 
-self.addEventListener("fetch", (event) => {
+sw.addEventListener("fetch", (event) => {
     // Das Leseskript der Offline-Seite kommt ohne Netz aus dem Cache.
     if (new URL(event.request.url).pathname === OFFLINE_READER) {
         event.respondWith(fetch(event.request).catch(() => caches.match(OFFLINE_READER).then((cached) => cached || Response.error())));
@@ -59,11 +62,12 @@ self.addEventListener("fetch", (event) => {
     );
 });
 
-self.addEventListener("message", (event) => {
-    if (event.data === "SKIP_WAITING") self.skipWaiting();
+sw.addEventListener("message", (event) => {
+    if (event.data === "SKIP_WAITING") sw.skipWaiting();
 });
 
-self.addEventListener("push", (event) => {
+sw.addEventListener("push", (event) => {
+    /** @type {{ title?: string, body?: string, icon?: string, tag?: string, url?: string }} */
     let data = {};
     try {
         data = event.data ? event.data.json() : {};
@@ -80,14 +84,14 @@ self.addEventListener("push", (event) => {
         tag: data.tag || undefined,
         data: { url: data.url || "/" },
     };
-    event.waitUntil(self.registration.showNotification(title, options));
+    event.waitUntil(sw.registration.showNotification(title, options));
 });
 
-self.addEventListener("notificationclick", (event) => {
+sw.addEventListener("notificationclick", (event) => {
     event.notification.close();
     const url = (event.notification.data && event.notification.data.url) || "/";
     event.waitUntil(
-        clients
+        sw.clients
             .matchAll({ type: "window", includeUncontrolled: true })
             .then((list) => {
                 for (const c of list) {
@@ -96,7 +100,7 @@ self.addEventListener("notificationclick", (event) => {
                         return c.focus();
                     }
                 }
-                if (clients.openWindow) return clients.openWindow(url);
+                if (sw.clients.openWindow) return sw.clients.openWindow(url);
             }),
     );
 });

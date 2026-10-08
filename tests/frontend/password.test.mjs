@@ -45,6 +45,7 @@ test("nutzt keine verwechselbaren Zeichen", () => {
 test("verwirft Zufallswerte oberhalb der gleichverteilten Grenze", () => {
     const values = [0xffffffff, 0];
     let calls = 0;
+    /** @param {Uint32Array<ArrayBuffer>} buffer */
     const fill = (buffer) => {
         buffer[0] = values[Math.min(calls++, values.length - 1)];
         return buffer;

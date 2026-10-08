@@ -26,21 +26,23 @@
 
 import { __ } from "./i18n.js";
 
+/** @param {HTMLElement | null} root */
 const init = (root) => {
     if (!root || root.dataset.bulkInitialised === "1") return;
     root.dataset.bulkInitialised = "1";
 
     const toolbar = root.querySelector("[data-bulk-toolbar]");
     const counter = root.querySelector("[data-bulk-counter]");
-    const selectAll = root.querySelector("[data-bulk-select-all]");
+    const selectAll = /** @type {HTMLInputElement | null} */ (root.querySelector("[data-bulk-select-all]"));
     const clearBtn = root.querySelector("[data-bulk-clear]");
 
     const checkboxes = () =>
-        Array.from(root.querySelectorAll("[data-bulk-checkbox]"));
+        Array.from(/** @type {NodeListOf<HTMLInputElement>} */ (root.querySelectorAll("[data-bulk-checkbox]")));
 
+    /** @param {string | undefined} key */
     const groupBoxes = (key) =>
         checkboxes().filter(
-            (b) => b.closest("[data-row-group]")?.dataset.rowGroup === key,
+            (b) => /** @type {HTMLElement | null} */ (b.closest("[data-row-group]"))?.dataset.rowGroup === key,
         );
 
     const refresh = () => {
@@ -57,7 +59,7 @@ const init = (root) => {
             selectAll.indeterminate = count > 0 && count < boxes.length;
             selectAll.checked = boxes.length > 0 && count === boxes.length;
         }
-        root.querySelectorAll("[data-bulk-select-group]").forEach((group) => {
+        /** @type {NodeListOf<HTMLInputElement>} */ (root.querySelectorAll("[data-bulk-select-group]")).forEach((group) => {
             const members = groupBoxes(group.dataset.bulkSelectGroup).filter(
                 (b) => !b.disabled,
             );
@@ -67,7 +69,7 @@ const init = (root) => {
             group.checked = members.length > 0 && picked === members.length;
         });
 
-        root.querySelectorAll("[data-bulk-dialog-link]").forEach((link) => {
+        /** @type {NodeListOf<HTMLElement>} */ (root.querySelectorAll("[data-bulk-dialog-link]")).forEach((link) => {
             if (!link.dataset.bulkDialogBase) {
                 link.dataset.bulkDialogBase = link.getAttribute("href") ?? "";
             }
@@ -77,7 +79,7 @@ const init = (root) => {
                 "href",
                 count > 0
                     ? `${link.dataset.bulkDialogBase}?${params.toString()}`
-                    : link.dataset.bulkDialogBase,
+                    : link.dataset.bulkDialogBase ?? "",
             );
         });
 
@@ -119,14 +121,15 @@ const init = (root) => {
     }
 
     root.addEventListener("change", (e) => {
-        if (e.target && e.target.matches("[data-bulk-select-group]")) {
-            groupBoxes(e.target.dataset.bulkSelectGroup).forEach((b) => {
-                if (!b.disabled) b.checked = e.target.checked;
+        const target = /** @type {HTMLInputElement | null} */ (e.target);
+        if (target && target.matches("[data-bulk-select-group]")) {
+            groupBoxes(target.dataset.bulkSelectGroup).forEach((b) => {
+                if (!b.disabled) b.checked = target.checked;
             });
             refresh();
             return;
         }
-        if (e.target && e.target.matches("[data-bulk-checkbox]")) {
+        if (target && target.matches("[data-bulk-checkbox]")) {
             refresh();
         }
     });
@@ -152,7 +155,7 @@ const init = (root) => {
 };
 
 const initAll = (scope = document) => {
-    scope.querySelectorAll("[data-bulk-form]").forEach(init);
+    /** @type {NodeListOf<HTMLElement>} */ (scope.querySelectorAll("[data-bulk-form]")).forEach((root) => init(root));
 };
 
 document.addEventListener("DOMContentLoaded", () => initAll());

@@ -56,11 +56,16 @@ test("Schwelle längs einer Achse ignoriert die Querbewegung", () => {
     assert.equal(exceedsThreshold(start, { x: 57, y: 50 }, 6, "x"), true);
 });
 
-/** Element-Fake: `closest` liefert je Selektor das hinterlegte Element. */
+/**
+ * Element-Fake: `closest` liefert je Selektor das hinterlegte Element.
+ *
+ * @param {Record<string, unknown>} map
+ * @returns {{ closest(selector: string): unknown }}
+ */
 const hitOn = (map) => ({ closest: (selector) => map[selector] ?? null });
 const inside = { inItem: true };
 const outside = { inItem: false };
-const item = { contains: (node) => node?.inItem === true };
+const item = { contains: (/** @type {{ inItem?: boolean } | null} */ node) => node?.inItem === true };
 
 test("Ohne Griff zieht das ganze Element, nur nicht aus Bedienelementen", () => {
     assert.equal(mayStartDrag(hitOn({}), item), true);
@@ -106,7 +111,7 @@ test("Ziel ist das nächste passende Element in der Wurzel, nie das gezogene", (
     const dragged = { name: "dragged" };
     const other = { name: "other", inRoot: true };
     const foreign = { name: "foreign", inRoot: false };
-    const root = { contains: (node) => node?.inRoot === true };
+    const root = { contains: (/** @type {{ inRoot?: boolean } | null} */ node) => node?.inRoot === true };
 
     assert.equal(pickTarget(hitOn({ "[row]": other }), "[row]", root, dragged), other);
     assert.equal(pickTarget(hitOn({ "[row]": dragged }), "[row]", root, dragged), null);
@@ -159,6 +164,10 @@ test("Vorgänger an der neuen Stelle, als Index der alten Liste", () => {
 });
 
 test("Zugrichtung wie im Backlog: nach oben vor das Ziel, nach unten dahinter", () => {
+    /**
+     * @param {number} from
+     * @param {number} over
+     */
     const predecessorOf = (from, over) =>
         predecessorIndex(from, indexAfterMove(from, over, over < from));
     assert.equal(predecessorOf(3, 1), 0);
@@ -203,13 +212,47 @@ test("Sichtbarer Abschnitt: der Scrollbereich aufs Fenster beschnitten, die Seit
 
 // ── Ablauf gegen ein Minimal-DOM ────────────────────────────────────────
 
+/**
+ * @typedef {import("../../resources/js/lib/pointer-sort.js").PointerSortOptions} PointerSortOptions
+ * @typedef {import("../../resources/js/lib/pointer-sort.js").SortDrop} SortDrop
+ *
+ * @typedef {{ left: number, top: number, width: number, height: number, bottom?: number }} SizeBox
+ * @typedef {{ left: number, top: number, right: number, bottom: number }} EdgeBox
+ * @typedef {{ node: FakeElement, pointerId: number }} Capture
+ *
+ * @typedef {object} FakeEvent
+ * @property {string} type
+ * @property {EventNode} target
+ * @property {boolean} defaultPrevented
+ * @property {boolean} stopped
+ * @property {() => void} preventDefault
+ * @property {() => void} stopPropagation
+ *
+ * @typedef {(event: FakeEvent) => void} Handler
+ * @typedef {{ type: string, handler: Handler, capture: boolean }} Listener
+ * @typedef {{ listeners: Listener[], parentNode: EventNode | null }} EventNode Element, Dokument oder Fenster
+ */
+
 /** Gerade genug DOM für pointerSort(): Baum, Klassen, Selektoren `tag` und `[attr]`. */
 class FakeElement {
+    /** @type {(() => SizeBox | EdgeBox) | undefined} Ohne eigenes Rechteck misst das Elternelement. */
+    box;
+    /** @type {string | undefined} */
+    overflowX;
+    /** @type {string | undefined} */
+    overflowY;
+    /**
+     * @param {string} tagName
+     * @param {string[]} [attrs]
+     */
     constructor(tagName, attrs = []) {
         this.tagName = tagName;
         this.attrs = new Set(attrs);
+        /** @type {FakeElement[]} */
         this.children = [];
+        /** @type {FakeElement | FakeDocument | null} */
         this.parentNode = null;
+        /** @type {Listener[]} */
         this.listeners = [];
         this.scrollTop = 0;
         this.scrollHeight = 0;
@@ -217,23 +260,33 @@ class FakeElement {
         this.scrollLeft = 0;
         this.scrollWidth = 0;
         this.clientWidth = 0;
+        /** @type {Set<string>} */
         const classes = new Set();
         this.classes = classes;
         this.classList = {
+            /** @param {...string} names */
             add: (...names) => names.forEach((name) => classes.add(name)),
+            /** @param {...string} names */
             remove: (...names) => names.forEach((name) => classes.delete(name)),
         };
     }
+    /** @returns {FakeDocument | null} */
     get ownerDocument() {
         let node = this.parentNode;
         while (node instanceof FakeElement) node = node.parentNode;
         return node;
     }
+    /** @returns {FakeElement | null} */
     get parentElement() {
         return this.parentNode instanceof FakeElement ? this.parentNode : null;
     }
+    // Geschwister, Umhängen und Messen fragen die Tests nur unterhalb von <html> ab.
+    /**
+     * @param {number} offset
+     * @returns {FakeElement | null}
+     */
     sibling(offset) {
-        const siblings = this.parentNode.children;
+        const siblings = /** @type {FakeElement} */ (this.parentNode).children;
         return siblings[siblings.indexOf(this) + offset] ?? null;
     }
     get nextSibling() {
@@ -245,24 +298,40 @@ class FakeElement {
     get previousElementSibling() {
         return this.sibling(-1);
     }
+    /**
+     * @param {string} selector
+     * @returns {boolean}
+     */
     matches(selector) {
         return selector.split(",").some((part) => {
             const simple = part.trim();
             return simple.startsWith("[") ? this.attrs.has(simple.slice(1, -1)) : this.tagName === simple;
         });
     }
+    /**
+     * @param {string} selector
+     * @returns {FakeElement | null}
+     */
     closest(selector) {
-        for (let node = this; node instanceof FakeElement; node = node.parentNode) {
+        for (let node = /** @type {FakeElement | FakeDocument | null} */ (this); node instanceof FakeElement; node = node.parentNode) {
             if (node.matches(selector)) return node;
         }
         return null;
     }
+    /**
+     * @param {EventNode | null} other
+     * @returns {boolean}
+     */
     contains(other) {
         for (let node = other; node; node = node.parentNode) {
             if (node === this) return true;
         }
         return false;
     }
+    /**
+     * @param {string} selector
+     * @returns {FakeElement[]}
+     */
     querySelectorAll(selector) {
         return this.children.flatMap((child) => [
             ...(child.matches(selector) ? [child] : []),
@@ -270,13 +339,17 @@ class FakeElement {
         ]);
     }
     remove() {
-        const siblings = this.parentNode?.children;
+        const siblings = /** @type {FakeElement | null} */ (this.parentNode)?.children;
         if (siblings) siblings.splice(siblings.indexOf(this), 1);
         // Wie im Browser: Umhängen nimmt dem Element den Fokus.
         const doc = this.ownerDocument;
         if (doc && this.contains(doc.activeElement)) doc.activeElement = null;
         this.parentNode = null;
     }
+    /**
+     * @param {FakeElement} node
+     * @param {FakeElement | null} ref
+     */
     insertBefore(node, ref) {
         const next = ref === node ? node.nextSibling : ref;
         node.remove();
@@ -284,34 +357,51 @@ class FakeElement {
         this.children.splice(index, 0, node);
         node.parentNode = this;
     }
+    /** @param {...FakeElement} nodes */
     append(...nodes) {
         nodes.forEach((node) => this.insertBefore(node, null));
     }
+    /** @param {FakeElement} node */
     before(node) {
-        this.parentNode.insertBefore(node, this);
+        /** @type {FakeElement} */ (this.parentNode).insertBefore(node, this);
     }
+    /** @param {FakeElement} node */
     after(node) {
-        this.parentNode.insertBefore(node, this.nextSibling);
+        /** @type {FakeElement} */ (this.parentNode).insertBefore(node, this.nextSibling);
     }
+    /** @returns {SizeBox | EdgeBox} */
     getBoundingClientRect() {
-        return this.box ? this.box() : this.parentNode.getBoundingClientRect();
+        return this.box ? this.box() : /** @type {FakeElement} */ (this.parentNode).getBoundingClientRect();
     }
+    /** @param {{ top?: number, left?: number }} delta */
     scrollBy({ top = 0, left = 0 }) {
         this.scrollTop += top;
         this.scrollLeft += left;
     }
+    // Fokus und Capture gibt es nur an Elementen im Dokument.
     focus() {
-        this.ownerDocument.activeElement = this;
+        /** @type {FakeDocument} */ (this.ownerDocument).activeElement = this;
     }
+    /** @param {number} pointerId */
     setPointerCapture(pointerId) {
-        this.ownerDocument.captured = { node: this, pointerId };
+        /** @type {FakeDocument} */ (this.ownerDocument).captured = { node: this, pointerId };
     }
     releasePointerCapture() {
-        this.ownerDocument.captured = null;
+        /** @type {FakeDocument} */ (this.ownerDocument).captured = null;
     }
+    /**
+     * @param {string} type
+     * @param {Handler} handler
+     * @param {boolean} [capture]
+     */
     addEventListener(type, handler, capture = false) {
         this.listeners.push({ type, handler, capture });
     }
+    /**
+     * @param {string} type
+     * @param {Handler} handler
+     * @param {boolean} [capture]
+     */
     removeEventListener(type, handler, capture = false) {
         this.listeners = this.listeners.filter(
             (l) => !(l.type === type && l.handler === handler && l.capture === capture),
@@ -321,29 +411,43 @@ class FakeElement {
 
 class FakeDocument {
     constructor() {
+        /** @type {Listener[]} */
         this.listeners = [];
+        /** @type {FakeDocument | null} Wie bei Node — ein bloßes `{null}` wird in JS zu `any`. */
         this.ownerDocument = null;
+        /** @type {FakeElement | null} */
         this.activeElement = null;
+        /** @type {Capture | null} */
         this.captured = null;
         this.documentElement = new FakeElement("html");
         this.documentElement.parentNode = this;
         this.scrollingElement = this.documentElement;
-        /** Treffer-Kandidaten für elementFromPoint, der erste passende gewinnt. */
+        /**
+         * Treffer-Kandidaten für elementFromPoint, der erste passende gewinnt.
+         * @type {() => FakeElement[]}
+         */
         this.hittable = () => [];
+        /** @type {Array<() => void>} */
         const frames = [];
+        /** @type {Array<() => void>} */
         const timers = [];
         this.defaultView = {
-            listeners: [],
+            listeners: /** @type {Listener[]} */ ([]),
             parentNode: null,
+            /**
+             * @param {string} type
+             * @param {Handler} handler
+             * @param {boolean} [capture]
+             */
             addEventListener(type, handler, capture = false) {
                 this.listeners.push({ type, handler, capture });
             },
             innerHeight: 600,
             innerWidth: 800,
-            requestAnimationFrame: (callback) => frames.push(callback),
+            requestAnimationFrame: (/** @type {() => void} */ callback) => frames.push(callback),
             cancelAnimationFrame: () => frames.splice(0),
-            setTimeout: (callback) => timers.push(callback),
-            getComputedStyle: (el) => ({
+            setTimeout: (/** @type {() => void} */ callback) => timers.push(callback),
+            getComputedStyle: (/** @type {FakeElement} */ el) => ({
                 overflowY: el.overflowY ?? "visible",
                 overflowX: el.overflowX ?? "visible",
             }),
@@ -354,30 +458,66 @@ class FakeDocument {
         // Ereignisse laufen wie im Browser bis zum Fenster.
         this.parentNode = this.defaultView;
     }
+    /**
+     * @param {EventNode | null} other
+     * @returns {boolean}
+     */
     contains(other) {
         return FakeElement.prototype.contains.call(this, other);
     }
+    /**
+     * @param {number} x
+     * @param {number} y
+     * @returns {FakeElement | null}
+     */
     elementFromPoint(x, y) {
         return (
             this.hittable().find((el) => {
-                const box = el.getBoundingClientRect();
+                // Treffbare Elemente messen sich mit Breite und Höhe.
+                const box = /** @type {SizeBox} */ (el.getBoundingClientRect());
                 return x >= box.left && x < box.left + box.width && y >= box.top && y < box.top + box.height;
             }) ?? null
         );
     }
+    /**
+     * @param {string} type
+     * @param {Handler} handler
+     * @param {boolean} [capture]
+     */
     addEventListener(type, handler, capture = false) {
         FakeElement.prototype.addEventListener.call(this, type, handler, capture);
     }
+    /**
+     * @param {string} type
+     * @param {Handler} handler
+     * @param {boolean} [capture]
+     */
     removeEventListener(type, handler, capture = false) {
         FakeElement.prototype.removeEventListener.call(this, type, handler, capture);
     }
 }
 
 // pointerSort() prüft Ereignisziele mit `instanceof Element`.
-globalThis.Element = FakeElement;
+globalThis.Element = /** @type {typeof Element} */ (/** @type {unknown} */ (FakeElement));
 
-/** Ereignis durch Capture- und Bubble-Phase schicken. */
+/**
+ * Das Minimal-DOM bildet nur den Teil der DOM-Schnittstelle nach, den pointerSort() nutzt.
+ *
+ * @param {FakeElement | FakeDocument} fake
+ * @returns {HTMLElement | Document}
+ */
+const asDom = (fake) => /** @type {HTMLElement | Document} */ (/** @type {unknown} */ (fake));
+
+/**
+ * Ereignis durch Capture- und Bubble-Phase schicken.
+ *
+ * @param {EventNode} target
+ * @param {string} type
+ * @param {Record<string, unknown>} [props]
+ * @returns {FakeEvent}
+ */
 function fire(target, type, props = {}) {
+    /** @type {FakeEvent} */
     const event = {
         type,
         target,
@@ -391,8 +531,10 @@ function fire(target, type, props = {}) {
         },
         ...props,
     };
+    /** @type {EventNode[]} */
     const path = [];
-    for (let node = target; node; node = node.parentNode) path.push(node);
+    for (let node = /** @type {EventNode | null} */ (target); node; node = node.parentNode) path.push(node);
+    /** @type {Array<[EventNode[], boolean]>} */
     const phases = [
         [[...path].reverse(), true],
         [path, false],
@@ -408,8 +550,16 @@ function fire(target, type, props = {}) {
     return event;
 }
 
+/**
+ * @param {EventNode} target
+ * @param {string} type
+ * @param {number} y
+ * @param {Record<string, unknown>} [props]
+ */
 const pointer = (target, type, y, props = {}) =>
     fire(target, type, { pointerId: 1, pointerType: "mouse", button: 0, clientX: 20, clientY: y, ...props });
+
+/** @typedef {FakeElement & { name: string, handle: FakeElement, text: FakeElement, button: FakeElement }} Row */
 
 /**
  * Liste mit vier Zeilen à 40 px ab y = 100; jede Zeile trägt Griff, Text und
@@ -422,7 +572,7 @@ function makeList() {
     doc.documentElement.append(list);
 
     const items = ["a", "b", "c", "d"].map((name) => {
-        const row = new FakeElement("li", ["data-row"]);
+        const row = /** @type {Row} */ (new FakeElement("li", ["data-row"]));
         row.name = name;
         row.handle = new FakeElement("span", ["data-handle"]);
         row.text = new FakeElement("span");
@@ -437,21 +587,24 @@ function makeList() {
     });
     doc.hittable = () => list.children;
 
+    /** @type {SortDrop[]} */
     const drops = [];
-    const order = () => list.children.map((row) => row.name).join("");
+    const order = () => list.children.map((row) => /** @type {Row} */ (row).name).join("");
     return { doc, view: doc.defaultView, list, items, drops, order, html: doc.documentElement };
 }
 
+/** @type {PointerSortOptions} */
 const MARK = {
     item: "[data-row]",
     draggingClass: ["dragging"],
     targetClass: ["over"],
 };
+/** @type {PointerSortOptions} */
 const LIVE = { item: "[data-row]", handle: "[data-handle]", mode: "live", draggingClass: ["dragging"] };
 
 test("Klick bleibt Klick, solange die Schwelle nicht überschritten ist", () => {
     const { doc, list, items, drops } = makeList();
-    pointerSort(list, { ...MARK, onDrop: (drop) => drops.push(drop) });
+    pointerSort(asDom(list), { ...MARK, onDrop: (drop) => drops.push(drop) });
 
     pointer(items[1].text, "pointerdown", 160);
     pointer(items[1].text, "pointermove", 163);
@@ -467,14 +620,14 @@ test("Klick bleibt Klick, solange die Schwelle nicht überschritten ist", () => 
 test("mark: Ziel wird markiert, Loslassen meldet Ziel, Seite und Indizes", () => {
     const { doc, list, items, drops, html, order } = makeList();
     const [a, , c, d] = items;
-    pointerSort(list, { ...MARK, onDrop: (drop) => drops.push(drop) });
+    pointerSort(asDom(list), { ...MARK, onDrop: (drop) => drops.push(drop) });
 
     pointer(a.text, "pointerdown", 120);
     const move = pointer(a.text, "pointermove", 230);
     assert.equal(move.defaultPrevented, true);
     assert.equal(a.classes.has("dragging"), true);
     assert.equal(html.classes.has(SORTING_CLASS), true);
-    assert.equal(doc.captured.node, a);
+    assert.equal(/** @type {Capture} */ (doc.captured).node, a);
     assert.equal(d.classes.has("over"), true);
 
     pointer(a.text, "pointermove", 190);
@@ -498,7 +651,7 @@ test("mark: Ziel wird markiert, Loslassen meldet Ziel, Seite und Indizes", () =>
 
 test("mark: das gezogene Element ist kein Ziel, Loslassen daneben meldet nichts", () => {
     const { list, items, drops } = makeList();
-    pointerSort(list, { ...MARK, onDrop: (drop) => drops.push(drop) });
+    pointerSort(asDom(list), { ...MARK, onDrop: (drop) => drops.push(drop) });
 
     pointer(items[1].text, "pointerdown", 150);
     pointer(items[1].text, "pointermove", 170);
@@ -516,7 +669,7 @@ test("mark: das gezogene Element ist kein Ziel, Loslassen daneben meldet nichts"
 
 test("mark mit side=direction: nach oben vor das Ziel, nach unten dahinter", () => {
     const { list, items, drops } = makeList();
-    pointerSort(list, { ...MARK, side: "direction", onDrop: (drop) => drops.push(drop) });
+    pointerSort(asDom(list), { ...MARK, side: "direction", onDrop: (drop) => drops.push(drop) });
 
     // d auf die UNTERE Hälfte von b — trotzdem davor
     pointer(items[3].text, "pointerdown", 240);
@@ -541,7 +694,7 @@ test("mark mit eigenem Ziel: Ziel ist kein Listenplatz, auch der eigene Behälte
     list.attrs.add("data-column");
     doc.hittable = () => [...list.children, list, other];
 
-    pointerSort(board, {
+    pointerSort(asDom(board), {
         ...MARK,
         target: "[data-column]",
         axis: "both",
@@ -566,7 +719,7 @@ test("Nach dem Zug wird genau ein Klick verschluckt — auch vor Dokument-Listen
     let opened = 0;
     // Der Eintrags-Dialog der App hört am Dokument in der Capture-Phase.
     doc.addEventListener("click", () => opened++, true);
-    pointerSort(list, MARK);
+    pointerSort(asDom(list), MARK);
 
     pointer(items[0].text, "pointerdown", 120);
     pointer(items[0].text, "pointermove", 190);
@@ -586,7 +739,7 @@ test("Nach dem Zug wird genau ein Klick verschluckt — auch vor Dokument-Listen
 
 test("live: die Zeile wandert während des Zugs, Loslassen meldet alt und neu", () => {
     const { list, items, drops, order } = makeList();
-    pointerSort(list, { ...LIVE, onDrop: (drop) => drops.push(drop) });
+    pointerSort(asDom(list), { ...LIVE, onDrop: (drop) => drops.push(drop) });
 
     pointer(items[0].handle, "pointerdown", 120);
     pointer(items[0].handle, "pointermove", 165);
@@ -605,7 +758,7 @@ test("live: die Zeile wandert während des Zugs, Loslassen meldet alt und neu", 
 
 test("live: Escape stellt die Reihenfolge wieder her und meldet nichts", () => {
     const { doc, list, items, drops, html, order } = makeList();
-    pointerSort(list, { ...LIVE, onDrop: (drop) => drops.push(drop) });
+    pointerSort(asDom(list), { ...LIVE, onDrop: (drop) => drops.push(drop) });
 
     pointer(items[0].handle, "pointerdown", 120);
     pointer(items[0].handle, "pointermove", 205);
@@ -629,7 +782,7 @@ test("live: Escape stellt die Reihenfolge wieder her und meldet nichts", () => {
 
 test("Escape ohne laufenden Zug bleibt unberührt", () => {
     const { doc, list, items } = makeList();
-    pointerSort(list, LIVE);
+    pointerSort(asDom(list), LIVE);
 
     pointer(items[0].handle, "pointerdown", 120);
     assert.equal(fire(doc.documentElement, "keydown", { key: "Escape" }).defaultPrevented, false);
@@ -638,7 +791,7 @@ test("Escape ohne laufenden Zug bleibt unberührt", () => {
 
 test("live: pointercancel stellt die Reihenfolge wieder her", () => {
     const { doc, list, items, drops, order } = makeList();
-    pointerSort(list, { ...LIVE, onDrop: (drop) => drops.push(drop) });
+    pointerSort(asDom(list), { ...LIVE, onDrop: (drop) => drops.push(drop) });
 
     pointer(items[3].handle, "pointerdown", 240);
     pointer(items[3].handle, "pointermove", 110);
@@ -653,7 +806,7 @@ test("live: pointercancel stellt die Reihenfolge wieder her", () => {
 
 test("live: der Fokus am Griff übersteht das Umhängen", () => {
     const { doc, list, items } = makeList();
-    pointerSort(list, LIVE);
+    pointerSort(asDom(list), LIVE);
     items[0].handle.focus();
 
     pointer(items[0].handle, "pointerdown", 120);
@@ -665,14 +818,14 @@ test("live: der Fokus am Griff übersteht das Umhängen", () => {
 
 test("Zug nur am Griff; mit mouseAnywhere zieht die Maus überall, der Finger nicht", () => {
     const strict = makeList();
-    pointerSort(strict.list, LIVE);
+    pointerSort(asDom(strict.list), LIVE);
     pointer(strict.items[0].text, "pointerdown", 120);
     pointer(strict.items[0].text, "pointermove", 205);
     pointer(strict.items[0].text, "pointerup", 205);
     assert.equal(strict.order(), "abcd");
 
     const loose = makeList();
-    pointerSort(loose.list, { ...LIVE, mouseAnywhere: true });
+    pointerSort(asDom(loose.list), { ...LIVE, mouseAnywhere: true });
     const touch = { pointerType: "touch", pointerId: 7 };
     pointer(loose.items[0].text, "pointerdown", 120, touch);
     pointer(loose.items[0].text, "pointermove", 205, touch);
@@ -693,10 +846,10 @@ test("Zug nur am Griff; mit mouseAnywhere zieht die Maus überall, der Finger ni
 
 test("Kein Zug aus Knöpfen, mit der rechten Maustaste oder bei canDrag = false", () => {
     const { list, items, order } = makeList();
-    pointerSort(list, {
+    pointerSort(asDom(list), {
         ...LIVE,
         mouseAnywhere: true,
-        canDrag: (row) => row.name !== "d",
+        canDrag: (row) => /** @type {Row} */ (/** @type {unknown} */ (row)).name !== "d",
     });
 
     pointer(items[0].button, "pointerdown", 120);
@@ -716,7 +869,7 @@ test("Kein Zug aus Knöpfen, mit der rechten Maustaste oder bei canDrag = false"
 
 test("Ein zweiter Finger stört den laufenden Zug nicht", () => {
     const { list, items, order } = makeList();
-    pointerSort(list, LIVE);
+    pointerSort(asDom(list), LIVE);
     const first = { pointerType: "touch", pointerId: 3 };
     const second = { pointerType: "touch", pointerId: 4 };
 
@@ -732,7 +885,7 @@ test("Ein zweiter Finger stört den laufenden Zug nicht", () => {
 
 test("Delegation über document: Liste je Element über den list-Selektor", () => {
     const { doc, items, drops, order } = makeList();
-    pointerSort(doc, { ...LIVE, list: "[data-list]", onDrop: (drop) => drops.push(drop) });
+    pointerSort(asDom(doc), { ...LIVE, list: "[data-list]", onDrop: (drop) => drops.push(drop) });
 
     pointer(items[1].handle, "pointerdown", 160);
     pointer(items[1].handle, "pointermove", 110);
@@ -747,7 +900,7 @@ test("Am Rand des Scrollbereichs scrollt die Liste mit und sortiert weiter", () 
     list.overflowY = "auto";
     list.scrollHeight = 400;
     list.clientHeight = 160;
-    pointerSort(list, LIVE);
+    pointerSort(asDom(list), LIVE);
 
     // Sichtbar 100…260; bei y = 255 steht der Zeiger 43 px tief in der Randzone.
     pointer(items[0].handle, "pointerdown", 120);
@@ -770,7 +923,7 @@ test("Am Rand des Scrollbereichs scrollt die Liste mit und sortiert weiter", () 
 
 test("Ohne eigenen Scrollbereich scrollt die Seite", () => {
     const { view, list, items, html } = makeList();
-    pointerSort(list, LIVE);
+    pointerSort(asDom(list), LIVE);
 
     pointer(items[0].handle, "pointerdown", 120);
     pointer(items[0].handle, "pointermove", 590);
@@ -803,7 +956,7 @@ function makeMatrix() {
         return cell;
     });
 
-    const badge = new FakeElement("div", ["data-badge"]);
+    const badge = /** @type {FakeElement & { grip: FakeElement, text: FakeElement }} */ (new FakeElement("div", ["data-badge"]));
     badge.grip = new FakeElement("span", ["data-grip"]);
     badge.text = new FakeElement("span");
     badge.append(badge.grip, badge.text);
@@ -815,7 +968,9 @@ function makeMatrix() {
     const hitTest = doc.elementFromPoint.bind(doc);
     doc.elementFromPoint = (x, y) => (x >= 100 && x < 400 ? hitTest(x, y) : null);
 
+    /** @type {SortDrop[]} */
     const drops = [];
+    /** @type {PointerSortOptions} */
     const options = {
         item: "[data-badge]",
         list: "[data-cell]",
@@ -832,7 +987,7 @@ function makeMatrix() {
 
 test("scrollAxis both: am Rand scrollt die Matrix waagerecht mit, die Zielmarke folgt", () => {
     const { doc, view, frame, cells, badge, drops, options, html } = makeMatrix();
-    pointerSort(doc, { ...options, scrollAxis: "both" });
+    pointerSort(asDom(doc), { ...options, scrollAxis: "both" });
 
     pointer(badge.text, "pointerdown", 115, { clientX: 150 });
     // Sichtbar x = 100…400; bei 390 steht der Zeiger 38 px tief in der Randzone.
@@ -874,7 +1029,7 @@ test("scrollAxis both: am Rand scrollt die Matrix waagerecht mit, die Zielmarke 
 
 test("Ohne scrollAxis bleibt es beim senkrechten Randscrollen", () => {
     const { doc, view, frame, badge, options, html } = makeMatrix();
-    pointerSort(doc, options);
+    pointerSort(asDom(doc), options);
 
     pointer(badge.text, "pointerdown", 115, { clientX: 150 });
     pointer(badge.text, "pointermove", 590, { clientX: 390 });
@@ -885,7 +1040,7 @@ test("Ohne scrollAxis bleibt es beim senkrechten Randscrollen", () => {
 
 test("Griff mit eigenem Ziel: Finger und Stift ziehen nur am Griff, die Maus überall", () => {
     const { doc, cells, badge, drops, options } = makeMatrix();
-    pointerSort(doc, options);
+    pointerSort(asDom(doc), options);
     const touch = { pointerType: "touch", pointerId: 5 };
     const pen = { pointerType: "pen", pointerId: 6 };
 
@@ -919,7 +1074,7 @@ test("Griff mit eigenem Ziel: Finger und Stift ziehen nur am Griff, die Maus üb
 
 test("Ablegen in der eigenen Zelle meldet sie als Ziel — der Aufrufer entscheidet", () => {
     const { doc, cells, badge, drops, options } = makeMatrix();
-    pointerSort(doc, options);
+    pointerSort(asDom(doc), options);
 
     pointer(badge.text, "pointerdown", 115, { clientX: 150 });
     pointer(badge.text, "pointermove", 140, { clientX: 150 });

@@ -97,9 +97,11 @@ const locale = isGerman ? German : "default";
 // Bevorzugt das organisations-/benutzerseitig konfigurierte Format
 // (window.__formats, im Layout gesetzt); fällt sonst auf die Sprach-Ableitung
 // zurück. So zeigt der Datepicker dasselbe Format wie die serverseitige Anzeige.
+/** @type {Record<string, string>} */
 const dateFormatByLang = { de: "d.m.Y", en: "m/d/Y", fr: "d/m/Y", it: "d/m/Y" };
 const cfgFormats = (typeof window !== "undefined" && window.__formats) || {};
 // PHP-Token → flatpickr-Token: identisch bis auf AM/PM (PHP "A" → flatpickr "K").
+/** @param {string | null | undefined} fmt */
 const toFlatpickrFormat = (fmt) => String(fmt || "").replace(/A/g, "K");
 const dateAltFormat =
     cfgFormats.date || dateFormatByLang[htmlLang.slice(0, 2)] || "Y-m-d";
@@ -108,6 +110,8 @@ const timeAltFormat = toFlatpickrFormat(cfgFormats.time || "H:i");
 const timeIs24h = !/[hK]/.test(timeAltFormat);
 const datetimeAltFormat = dateAltFormat + " " + timeAltFormat;
 
+
+/** @param {string} rawValue */
 const normalizeCompactTimeValue = (rawValue) => {
     const raw = String(rawValue || "").trim();
     if (!raw) return null;
@@ -144,6 +148,7 @@ const normalizeCompactTimeValue = (rawValue) => {
     return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
 };
 
+/** @param {Element} el */
 const applyNormalizedTimeInput = (el) => {
     if (!(el instanceof HTMLInputElement)) return;
     const isTimeField =
@@ -160,9 +165,9 @@ const applyNormalizedTimeInput = (el) => {
         return;
     }
 
-    if (/** @type {any} */ (el)._flatpickr) {
+    if (el._flatpickr) {
         // Kein triggerChange hier, sonst kann ein change->normalize->setDate-Loop entstehen.
-        /** @type {any} */ (el)._flatpickr.setDate(normalized, false, "H:i");
+        el._flatpickr.setDate(normalized, false, "H:i");
         el.dispatchEvent(new Event("input", { bubbles: true }));
         el.dispatchEvent(new Event("change", { bubbles: true }));
     } else {
@@ -174,6 +179,7 @@ const applyNormalizedTimeInput = (el) => {
     el.dataset.wdRawTimeValue = "";
 };
 
+/** @param {Element} el */
 const bindCompactTimeSupport = (el) => {
     if (!(el instanceof HTMLInputElement)) return;
     const isTimeField =
@@ -219,6 +225,7 @@ flatpickr('input[type="datetime-local"]', {
     disableMobile: true,
 });
 
+/** @param {Element} el */
 const prepareTimeInputForFlatpickr = (el) => {
     if (!(el instanceof HTMLInputElement)) return;
     if (el.dataset.wdOriginalType === "time") return;
@@ -248,6 +255,7 @@ document.querySelectorAll('input[type="time"]').forEach((el) => {
 });
 
 // Für dynamisch nachgeladene Felder (z. B. im Entry-Dialog)
+/** @param {HTMLInputElement} el */
 window.__initFlatpickr = (el) => {
     if (!el || el._flatpickr) return;
     const originalType = el.dataset?.wdOriginalType || "";
@@ -328,9 +336,10 @@ window.__initFlatpickr = (el) => {
 
     flatpickr(el, {
         locale,
-        plugins: [new /** @type {any} */ (weekSelect)()],
+        // Plugin<PlusWeeks> erweitert die Instanz; flatpickrs plugins-Liste kennt nur Plugin<{}>.
+        plugins: [/** @type {import("flatpickr/dist/types/options").Plugin} */ (weekSelect())],
         dateFormat: "Y-\\WW",
-        defaultDate: initialDate,
+        defaultDate: /** @type {import("flatpickr/dist/types/options").DateOption} */ (initialDate),
         weekNumbers: true,
         allowInput: true,
         disableMobile: true,
@@ -360,6 +369,7 @@ window.__initFlatpickr = (el) => {
 // "An Bildschirm anpassen"-Toggle für die Wochenansicht (persistiert in localStorage)
 (() => {
     const STORAGE_KEY = "weekTableFit";
+    /** @param {boolean} on */
     const apply = (on) => {
         document.documentElement.dataset.weekFit = on ? "1" : "0";
     };
@@ -406,7 +416,7 @@ document.addEventListener("change", (e) => {
     /** @type {NodeListOf<HTMLElement>} */ (
         form.querySelectorAll("[data-recurrence-show]")
     ).forEach((el) => {
-        const modes = el.getAttribute("data-recurrence-show").split(" ");
+        const modes = /** @type {string} */ (el.getAttribute("data-recurrence-show")).split(" ");
         el.hidden = !modes.includes(val);
     });
 });
@@ -437,11 +447,12 @@ document.addEventListener("focusin", (e) => {
 // (form[data-customer-filter]): der gewählte Kunde bzw. Kunden-Modus blendet
 // fremde Optgroups in Projekt-/Fremdkunden-Selects aus — verhindert die
 // 422-Ablehnung „Projekt gehört nicht zum gewählten Kunden".
+/** @param {Element} form */
 const applyInboxCustomerFilter = (form) => {
-    const mode = form.querySelector(
+    const mode = /** @type {HTMLInputElement | null} */ (form.querySelector(
         'input[name="customer_mode"]:checked',
-    )?.value;
-    const customer = form.querySelector('select[name="customer"]')?.value || "";
+    ))?.value;
+    const customer = /** @type {HTMLSelectElement | null} */ (form.querySelector('select[name="customer"]'))?.value || "";
     // internal → nur kundenlose Gruppen; new → keine Bestandsauswahl;
     // existing mit Kunde → nur dieser; sonst alles zeigen.
     const wanted =
@@ -456,11 +467,11 @@ const applyInboxCustomerFilter = (form) => {
     // Gewählter Fremdkunde (Endkunde) schränkt die Projektauswahl zusätzlich
     // ein: „neu" → keine Bestandsprojekte (gehören nie dem neuen Endkunden),
     // „bestehend" mit Auswahl → nur dessen Projekte, sonst keine Einschränkung.
-    const foreignMode = form.querySelector(
+    const foreignMode = /** @type {HTMLInputElement | null} */ (form.querySelector(
         'input[name="foreign_mode"]:checked',
-    )?.value;
+    ))?.value;
     const foreignSel =
-        form.querySelector('select[name="foreign_customer"]')?.value || "";
+        /** @type {HTMLSelectElement | null} */ (form.querySelector('select[name="foreign_customer"]'))?.value || "";
     const wantedForeign =
         wanted === null || wanted === "" || wanted === "__none__"
             ? null
@@ -473,10 +484,10 @@ const applyInboxCustomerFilter = (form) => {
                   : null;
 
     ["project", "foreign_customer"].forEach((name) => {
-        const sel = form.querySelector(`select[name="${name}"]`);
+        const sel = /** @type {HTMLSelectElement | null} */ (form.querySelector(`select[name="${name}"]`));
         if (!sel) return;
         let cleared = false;
-        sel.querySelectorAll("optgroup[data-customer]").forEach((group) => {
+        /** @type {NodeListOf<HTMLOptGroupElement>} */ (sel.querySelectorAll("optgroup[data-customer]")).forEach((group) => {
             const groupShow =
                 wanted === null || group.dataset.customer === wanted;
             let anyVisible = false;
@@ -504,10 +515,10 @@ const applyInboxCustomerFilter = (form) => {
                 "optgroup[data-customer]:not([hidden]) option:not([hidden])",
             ).length;
             const fieldset = sel.closest("fieldset");
-            const hint = fieldset?.querySelector("[data-foreign-hint]");
-            const existingRadio = fieldset?.querySelector(
+            const hint = /** @type {HTMLElement | null | undefined} */ (fieldset?.querySelector("[data-foreign-hint]"));
+            const existingRadio = /** @type {HTMLInputElement | null | undefined} */ (fieldset?.querySelector(
                 'input[name="foreign_mode"][value="existing"]',
-            );
+            ));
             if (hint) {
                 const showHint =
                     wanted !== null &&
@@ -523,9 +534,9 @@ const applyInboxCustomerFilter = (form) => {
             if (existingRadio) {
                 existingRadio.disabled = visible === 0;
                 if (visible === 0 && existingRadio.checked) {
-                    const none = fieldset.querySelector(
+                    const none = /** @type {HTMLInputElement | null} */ (/** @type {HTMLFieldSetElement} */ (fieldset).querySelector(
                         'input[name="foreign_mode"][value="none"]',
-                    );
+                    ));
                     if (none) none.checked = true;
                 }
             }
@@ -628,7 +639,7 @@ document.addEventListener("click", (event) => {
         // Flatpickr hängt am <dialog> und berechnet seine Lage nur beim Öffnen —
         // nach dem Verschieben stünde er neben dem Feld.
         dialog.querySelectorAll("input").forEach((input) => {
-            /** @type {any} */ (input)._flatpickr?.close();
+            input._flatpickr?.close();
         });
         event.preventDefault();
     });
@@ -689,7 +700,9 @@ document.addEventListener("click", (event) => {
 (() => {
     if (typeof document === "undefined") return;
 
+    /** @type {HTMLDialogElement | null} */
     let dialog = null;
+    /** @type {HTMLElement | null} */
     let dialogBody = null;
 
     // Folgedialoge (Trigger mit data-entry-modal-stack): die Ursprungsmaske
@@ -697,16 +710,18 @@ document.addEventListener("click", (event) => {
     // eingesetzt. mutateDom hält Alpine davon ab, sie dabei abzubauen.
     /** @type {{url: string|null, nodes: ChildNode[]}[]} */
     const dialogStack = [];
+    /** @type {string | null} */
     let currentUrl = null;
     let stackSaved = false;
 
+    /** @param {() => void} fn */
     const withoutAlpine = (fn) =>
         typeof window.Alpine?.mutateDom === "function"
             ? window.Alpine.mutateDom(fn)
             : fn();
 
     const pushCurrentDialog = () => {
-        const nodes = [...dialogBody.childNodes];
+        const nodes = [.../** @type {HTMLElement} */ (dialogBody).childNodes];
         withoutAlpine(() => nodes.forEach((node) => node.remove()));
         dialogStack.push({ url: currentUrl, nodes });
     };
@@ -715,7 +730,7 @@ document.addEventListener("click", (event) => {
         const parent = dialogStack.pop();
         if (!parent) return false;
         clearHtml(dialogBody);
-        withoutAlpine(() => dialogBody.append(...parent.nodes));
+        withoutAlpine(() => /** @type {HTMLElement} */ (dialogBody).append(...parent.nodes));
         currentUrl = parent.url;
         return true;
     };
@@ -738,7 +753,7 @@ document.addEventListener("click", (event) => {
             `,
         );
         document.body.appendChild(dialog);
-        dialogBody = dialog.querySelector("#entry-modal-body");
+        dialogBody = /** @type {HTMLElement} */ (dialog.querySelector("#entry-modal-body"));
 
         dialog.addEventListener("click", (event) => {
             const close = /** @type {HTMLElement} */ (event.target).closest(
@@ -746,7 +761,7 @@ document.addEventListener("click", (event) => {
             );
             if (close) {
                 event.preventDefault();
-                if (!popToParentDialog()) dialog.close();
+                if (!popToParentDialog()) /** @type {HTMLDialogElement} */ (dialog).close();
             }
         });
         dialog.addEventListener("cancel", (event) => {
@@ -759,7 +774,7 @@ document.addEventListener("click", (event) => {
                 .splice(0)
                 .forEach(({ nodes }) =>
                     nodes.forEach((node) => {
-                        if (node instanceof Element) window.Alpine?.destroyTree?.(node);
+                        if (node instanceof Element) window.Alpine?.destroyTree?.(/** @type {HTMLElement} */ (node));
                     }),
                 );
             currentUrl = null;
@@ -773,18 +788,20 @@ document.addEventListener("click", (event) => {
         return { dialog, dialogBody };
     };
 
+    /** @param {string} url */
     const withDialogParam = (url) => {
         const target = new URL(url, window.location.origin);
         target.searchParams.set("dialog", "1");
         return target.toString();
     };
 
+    /** @param {HTMLSelectElement} sel */
     const applyRecurrenceToggle = (sel) => {
         const form = sel.closest("[data-recurrence-form]");
         if (!form) return;
         const val = sel.value;
-        form.querySelectorAll("[data-recurrence-show]").forEach((el) => {
-            const modes = el.getAttribute("data-recurrence-show").split(" ");
+        /** @type {NodeListOf<HTMLElement>} */ (form.querySelectorAll("[data-recurrence-show]")).forEach((el) => {
+            const modes = /** @type {string} */ (el.getAttribute("data-recurrence-show")).split(" ");
             el.hidden = !modes.includes(val);
         });
     };
@@ -793,13 +810,14 @@ document.addEventListener("click", (event) => {
     // auf native Inputs (min/max-Constraint) als auch auf Flatpickr-
     // Instanzen (minDate/maxDate). Beim Setzen von "Von" wird "Bis" auch
     // korrigiert, falls es jetzt davor liegen würde.
+    /** @param {ParentNode} root */
     const bindRangeLinks = (root) => {
         if (!root) return;
-        root.querySelectorAll("[data-range-link]").forEach((wrap) => {
+        /** @type {NodeListOf<HTMLElement>} */ (root.querySelectorAll("[data-range-link]")).forEach((wrap) => {
             if (wrap.dataset.rangeLinkBound === "1") return;
             wrap.dataset.rangeLinkBound = "1";
-            const fromInput = wrap.querySelector("[data-range-from]");
-            const toInput = wrap.querySelector("[data-range-to]");
+            const fromInput = /** @type {HTMLInputElement | null} */ (wrap.querySelector("[data-range-from]"));
+            const toInput = /** @type {HTMLInputElement | null} */ (wrap.querySelector("[data-range-to]"));
             if (!fromInput || !toInput) return;
 
             const syncFromChanged = () => {
@@ -887,19 +905,22 @@ document.addEventListener("click", (event) => {
     // Leeres data-parent = "passt zu jedem Elternwert" (z. B. Org-Projekt).
     // `data-depends-autoselect="off"`: die leere Option bleibt gewählt, auch wenn
     // nur eine passt (Charge der Entnahme: leer = FEFO).
+    /** @param {ParentNode} root */
     const bindDependentSelects = (root) => {
         if (!root) return;
-        root.querySelectorAll("select[data-depends-on]").forEach((child) => {
+        /** @type {NodeListOf<HTMLSelectElement>} */ (root.querySelectorAll("select[data-depends-on]")).forEach((child) => {
             if (child.dataset.dependentBound === "1") return;
             const scope = child.closest("form") || root;
-            const parent = scope.querySelector(
+            const parent = /** @type {HTMLSelectElement | null} */ (scope.querySelector(
                 `select[name="${child.dataset.dependsOn}"]`,
-            );
+            ));
             if (!parent) return;
             child.dataset.dependentBound = "1";
 
+            /** @param {boolean} autoSelectSingle */
             const apply = (autoSelectSingle) => {
                 const pv = parent.value;
+                /** @type {HTMLOptionElement[]} */
                 const visible = [];
                 child.querySelectorAll("option").forEach((opt) => {
                     if (opt.value === "") {
@@ -960,16 +981,17 @@ document.addEventListener("click", (event) => {
         initDialogForms(document);
     }
 
+    /** @param {ParentNode} root */
     const initDynamicFields = (root) => {
         if (!root) return;
         if (typeof window.__initFlatpickr === "function") {
-            root.querySelectorAll(
+            /** @type {NodeListOf<HTMLInputElement>} */ (root.querySelectorAll(
                 'input[type="date"], input[type="datetime-local"], input[type="time"]',
-            ).forEach((el) => {
-                window.__initFlatpickr(el);
+            )).forEach((el) => {
+                /** @type {(el: HTMLInputElement) => void} */ (window.__initFlatpickr)(el);
             });
         }
-        root.querySelectorAll("select[data-recurrence-select]").forEach(
+        /** @type {NodeListOf<HTMLSelectElement>} */ (root.querySelectorAll("select[data-recurrence-select]")).forEach(
             applyRecurrenceToggle,
         );
         bindDependentSelects(root);
@@ -983,11 +1005,12 @@ document.addEventListener("click", (event) => {
             if (!form || form.dataset.timeModeBound === "1") return;
             form.dataset.timeModeBound = "1";
 
-            const radios = toggle.querySelectorAll("[data-time-mode-radio]");
-            const panes = form.querySelectorAll("[data-time-mode-pane]");
-            const hhmm = form.querySelector("[data-time-hhmm]");
-            const hidden = form.querySelector("[data-time-minutes]");
+            const radios = /** @type {NodeListOf<HTMLInputElement>} */ (toggle.querySelectorAll("[data-time-mode-radio]"));
+            const panes = /** @type {NodeListOf<HTMLElement>} */ (form.querySelectorAll("[data-time-mode-pane]"));
+            const hhmm = /** @type {HTMLInputElement | null} */ (form.querySelector("[data-time-hhmm]"));
+            const hidden = /** @type {HTMLInputElement | null} */ (form.querySelector("[data-time-minutes]"));
 
+            /** @param {string | undefined} mode */
             const applyMode = (mode) => {
                 panes.forEach((p) => {
                     const active = p.dataset.timeModePane === mode;
@@ -995,7 +1018,7 @@ document.addEventListener("click", (event) => {
                     // Inaktive Inputs nicht mitschicken: disabled = ignoriert
                     // beim Form-Submit, aber bleibt im DOM editierbar, falls
                     // der User wieder umschaltet.
-                    p.querySelectorAll("input, select").forEach((inp) => {
+                    /** @type {NodeListOf<HTMLInputElement | HTMLSelectElement>} */ (p.querySelectorAll("input, select")).forEach((inp) => {
                         inp.disabled = !active;
                     });
                 });
@@ -1024,14 +1047,14 @@ document.addEventListener("click", (event) => {
 
         root.querySelectorAll("[data-filter-list]").forEach((list) => {
             const scope = list.closest("[data-filter-scope]") || root;
-            const search = scope.querySelector("[data-filter-search]");
-            const select = scope.querySelector("[data-filter-customer]");
+            const search = /** @type {HTMLInputElement | null} */ (scope.querySelector("[data-filter-search]"));
+            const select = /** @type {HTMLSelectElement | null} */ (scope.querySelector("[data-filter-customer]"));
             const empty = scope.querySelector("[data-filter-empty]");
             const apply = () => {
                 const q = (search?.value || "").trim().toLowerCase();
                 const cust = select?.value || "";
                 let visibleCards = 0;
-                const cards = list.querySelectorAll("[data-card]");
+                const cards = /** @type {NodeListOf<HTMLElement>} */ (list.querySelectorAll("[data-card]"));
                 if (cards.length > 0) {
                     // Karten-Modus: Parent-Header und Subprojekte separat
                     // prüfen. Wenn ein Subprojekt matched, bleibt der Header
@@ -1039,20 +1062,21 @@ document.addEventListener("click", (event) => {
                     // weder Such- noch Kundenfilter matched. Damit verliert
                     // man bei gefilterten Subprojekten nicht die Kunden-/
                     // Eltern-Zuordnung.
+                    /** @param {HTMLElement} item */
                     const matches = (item) => {
                         const matchText =
-                            q === "" || item.dataset.haystack.includes(q);
+                            q === "" || /** @type {string} */ (item.dataset.haystack).includes(q);
                         const matchCust =
                             cust === "" || item.dataset.customer === cust;
                         return matchText && matchCust;
                     };
                     cards.forEach((card) => {
-                        const parentLink = card.querySelector(
+                        const parentLink = /** @type {HTMLElement | null} */ (card.querySelector(
                             ":scope > [data-haystack]",
-                        );
-                        const childItems = card.querySelectorAll(
+                        ));
+                        const childItems = /** @type {NodeListOf<HTMLElement>} */ (card.querySelectorAll(
                             ":scope > ul > li[data-haystack]",
-                        );
+                        ));
 
                         let visibleChildren = 0;
                         childItems.forEach((item) => {
@@ -1085,9 +1109,9 @@ document.addEventListener("click", (event) => {
                         if (visibleInCard > 0) visibleCards++;
                     });
                 } else {
-                    list.querySelectorAll("[data-haystack]").forEach((item) => {
+                    /** @type {NodeListOf<HTMLElement>} */ (list.querySelectorAll("[data-haystack]")).forEach((item) => {
                         const matchText =
-                            q === "" || item.dataset.haystack.includes(q);
+                            q === "" || /** @type {string} */ (item.dataset.haystack).includes(q);
                         const matchCust =
                             cust === "" || item.dataset.customer === cust;
                         const show = matchText && matchCust;
@@ -1102,11 +1126,20 @@ document.addEventListener("click", (event) => {
         });
     };
 
+    /**
+     * JSON-Antwort eines Dialog-Formulars (DialogRedirectAsJson).
+     * @typedef {Object} DialogPayload
+     * @property {boolean} [stay]
+     * @property {string} [redirect]
+     * @property {{tone?: string, message?: string}[]} [messages]
+     */
+
+    /** @param {DialogPayload} payload */
     const notifyMessages = (payload) => {
         if (typeof window.notifyAction !== "function") return;
         (Array.isArray(payload.messages) ? payload.messages : []).forEach(
             ({ tone, message }) => {
-                if (message) window.notifyAction({ tone: tone || "success", message });
+                if (message) /** @type {NonNullable<Window["notifyAction"]>} */ (window.notifyAction)({ tone: tone || "success", message });
             },
         );
     };
@@ -1114,7 +1147,7 @@ document.addEventListener("click", (event) => {
     // Bereiche der Ursprungsmaske, die ein Folgedialog verändert
     // (data-entry-refresh), frisch vom Server holen; Eingaben bleiben.
     const refreshParentRegions = async () => {
-        const regions = [...dialogBody.querySelectorAll("[data-entry-refresh]")];
+        const regions = [.../** @type {NodeListOf<HTMLElement>} */ (/** @type {HTMLElement} */ (dialogBody).querySelectorAll("[data-entry-refresh]"))];
         if (regions.length === 0 || !currentUrl) return;
         const response = await request(withDialogParam(currentUrl), {
             headers: { Accept: "*/*" },
@@ -1135,6 +1168,7 @@ document.addEventListener("click", (event) => {
     // Antwort mit stay (DialogRedirectAsJson): Folgedialog → zurück in die
     // Ursprungsmaske, sonst denselben Dialog neu laden statt auf das nackte
     // Fragment zu navigieren.
+    /** @param {DialogPayload} payload */
     const stayInDialog = async (payload) => {
         notifyMessages(payload);
         if (popToParentDialog()) {
@@ -1145,17 +1179,18 @@ document.addEventListener("click", (event) => {
         if (currentUrl) await openEntryDialog(currentUrl);
     };
 
+    /** @param {ParentNode} root */
     const bindDialogForms = (root) => {
         if (!root) return;
 
-        root.querySelectorAll("form[data-entry-form]").forEach((form) => {
+        /** @type {NodeListOf<HTMLFormElement>} */ (root.querySelectorAll("form[data-entry-form]")).forEach((form) => {
             if (form.dataset.entryFormBound === "1") return;
             form.dataset.entryFormBound = "1";
 
             // "Aktiv"-Toggle im Header sperrt/entsperrt den Dialog-Body.
-            const activeToggle = form.querySelector(
+            const activeToggle = /** @type {HTMLInputElement | null} */ (form.querySelector(
                 'input[type="checkbox"][data-dialog-active-toggle]',
-            );
+            ));
             const dialogBody = form.querySelector(".wd-dialog__body");
             if (activeToggle && dialogBody) {
                 const applyLock = () => {
@@ -1180,9 +1215,9 @@ document.addEventListener("click", (event) => {
                 ).toUpperCase();
                 const method = methodRaw === "GET" ? "GET" : "POST";
                 const formData = new FormData(form);
-                const submitButton = form.querySelector(
+                const submitButton = /** @type {HTMLButtonElement | null} */ (form.querySelector(
                     'button[type="submit"]',
-                );
+                ));
                 if (submitButton) submitButton.disabled = true;
 
                 const inEntryDialog = form.closest("#entry-modal-body") !== null;
@@ -1204,6 +1239,7 @@ document.addEventListener("click", (event) => {
                     if (response.ok) {
                         const contentType =
                             response.headers.get("content-type") || "";
+                        /** @type {DialogPayload} */
                         const payload =
                             (contentType.includes("application/json")
                                 ? await response.json().catch(() => null)
@@ -1277,6 +1313,10 @@ document.addEventListener("click", (event) => {
         });
     };
 
+    /**
+     * @param {string} rawUrl
+     * @param {{stack?: boolean}} [options]
+     */
     const openEntryDialog = async (rawUrl, { stack = false } = {}) => {
         const { dialog: modal, dialogBody: body } = ensureDialog();
         if (stack && modal.open) pushCurrentDialog();
@@ -1328,6 +1368,10 @@ document.addEventListener("click", (event) => {
         // den jeweils benötigten Modus anbieten. `targetMode` kommt aus der
         // 409-Antwort ('new' = Dialog gehört zum neuen System, 'legacy' = zum
         // Legacy-Bereich).
+        /**
+         * @param {string} message
+         * @param {string} targetMode
+         */
         const renderModeConflict = (message, targetMode) => {
             const mode = targetMode === "legacy" ? "legacy" : "new";
             const label =
@@ -1351,7 +1395,7 @@ document.addEventListener("click", (event) => {
                     </div>
                 `,
             );
-            const retryBtn = body.querySelector("[data-mode-switch-retry]");
+            const retryBtn = /** @type {HTMLButtonElement | null} */ (body.querySelector("[data-mode-switch-retry]"));
             if (!retryBtn) return;
             retryBtn.addEventListener("click", async () => {
                 retryBtn.disabled = true;
@@ -1408,6 +1452,7 @@ document.addEventListener("click", (event) => {
         }
     };
 
+    /** @param {MouseEvent} event */
     const findModalTrigger = (event) => {
         if (event.target instanceof Element) {
             return event.target.closest("a[data-entry-modal-trigger]");
@@ -1477,7 +1522,7 @@ document.addEventListener("click", (event) => {
             }
         }
 
-        openEntryDialog(trigger.getAttribute("href"));
+        openEntryDialog(/** @type {string} */ (trigger.getAttribute("href")));
     };
     if (document.readyState === "loading") {
         document.addEventListener("DOMContentLoaded", autoOpenEntryDialog);
@@ -1487,6 +1532,7 @@ document.addEventListener("click", (event) => {
 
     // Delegated geocoding handler for travel-log inputs.
     // Works both in static pages and within AJAX-injected dialog content.
+    /** @param {HTMLInputElement} input */
     const geocodeAddressInput = async (input) => {
         const url = document
             .querySelector('meta[name="geocode-url"]')
@@ -1496,15 +1542,18 @@ document.addEventListener("click", (event) => {
         if (q.length < 3) return;
         input.classList.add("opacity-70");
         try {
-            const res = await postJson(url, { query: q });
+            // GeocodeController: GeocodeResult::toArray() ohne from_cache.
+            const res = /** @type {import("./lib/http.js").JsonResult<{ lat: number, lng: number, display_name?: string | null }>} */ (
+                await postJson(url, { query: q })
+            );
             if (!res.ok || !res.data) {
                 input.dataset.geocode = "miss";
                 return;
             }
             const data = res.data;
             input.dataset.geocode = "hit";
-            input.dataset.lat = data.lat;
-            input.dataset.lng = data.lng;
+            input.dataset.lat = String(data.lat);
+            input.dataset.lng = String(data.lng);
             input.title = data.display_name || `${data.lat}, ${data.lng}`;
         } catch (_error) {
             input.dataset.geocode = "error";

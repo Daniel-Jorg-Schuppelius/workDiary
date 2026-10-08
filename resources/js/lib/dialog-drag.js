@@ -36,8 +36,8 @@ export const DRAG_MEDIA_QUERY = "(min-width: 640px)";
  * Prüft, ob ein Pointerdown auf `target` einen Drag starten darf: nur auf
  * freier Header-Fläche, nicht auf Bedienelementen innerhalb des Headers.
  *
- * @param {{ closest(selector: string): any }} target Element unter dem Zeiger
- * @param {{ contains(node: any): boolean }} header Der Dialog-Header
+ * @param {{ closest(selector: string): unknown }} target Element unter dem Zeiger
+ * @param {{ contains(node: unknown): boolean }} header Der Dialog-Header
  * @returns {boolean}
  */
 export function isDragBlocked(target, header) {

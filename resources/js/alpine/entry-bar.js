@@ -21,11 +21,41 @@ import { toMinutes } from "../lib/time.js";
  * dem Entry-Bar-Store (Manuell); ohne JS gilt das statische action-Attribut
  * (Manuell-Modus).
  */
+/**
+ * data-config aus today/_entry_bar.blade.php; old()-Werte können null sein.
+ * @typedef {object} EntryBarConfig
+ * @property {Array<{id: string, name: string, customer: string | null, recent: boolean}>} [projects]
+ * @property {Array<{description: string, projectId: string}>} [recentEntries]
+ * @property {string | null} [description]
+ * @property {string} [optionsUrl]
+ * @property {string} [startUrl]
+ * @property {string} [storeUrl]
+ * @property {boolean} [isToday]
+ * @property {string | null} [selectedId]
+ * @property {string | null} [taskId]
+ * @property {string | null} [diaryEntryId]
+ * @property {string | null} [minutes]
+ */
+
+/** @typedef {{id: string, name: string, customer: string, recent: boolean}} EntryBarProject */
+/** @typedef {{description: string, projectId: string}} EntryBarRecentEntry */
+/** @typedef {{description: string, projectId: string, projectLabel: string}} EntryBarSuggestion */
+
+/**
+ * Antwort von TimeEntryBarController::options().
+ * @typedef {object} EntryBarOptions
+ * @property {Array<{id: string, title: string}>} tasks
+ * @property {Array<{id: string, label: string}>} diaryEntries
+ */
+
+/** @param {import("alpinejs").Alpine} Alpine */
 export function registerEntryBar(Alpine) {
     Alpine.data("entryBar", () => {
+        /** @type {Map<string, EntryBarOptions>} */
         const optionsCache = new Map();
 
         return {
+            /** @type {EntryBarProject[]} */
             projects: [],
             optionsUrl: "",
             startUrl: "",
@@ -38,6 +68,7 @@ export function registerEntryBar(Alpine) {
             open: false,
             highlight: 0,
             description: "",
+            /** @type {EntryBarRecentEntry[]} */
             recentEntries: [],
             descOpen: false,
             descHighlight: -1,
@@ -47,12 +78,15 @@ export function registerEntryBar(Alpine) {
             diaryEntryId: "",
             pendingTaskId: "",
             pendingDiaryEntryId: "",
+            /** @type {EntryBarOptions["tasks"]} */
             tasks: [],
+            /** @type {EntryBarOptions["diaryEntries"]} */
             diaryEntries: [],
             hhmm: "",
             minutes: "",
 
             init() {
+                /** @type {EntryBarConfig} */
                 const cfg = JSON.parse(this.$el.dataset.config || "{}");
                 this.projects = (cfg.projects ?? []).map((p) => ({
                     id: String(p.id ?? ""),
@@ -88,7 +122,7 @@ export function registerEntryBar(Alpine) {
                 const oldMinutes = parseInt(cfg.minutes ?? "", 10);
                 if (!isNaN(oldMinutes) && oldMinutes > 0) {
                     this.minutes = String(oldMinutes);
-                    const p = (n) => String(n).padStart(2, "0");
+                    const p = (/** @type {number} */ n) => String(n).padStart(2, "0");
                     this.hhmm = Math.floor(oldMinutes / 60) + ":" + p(oldMinutes % 60);
                 }
                 this.pendingTaskId = cfg.taskId ? String(cfg.taskId) : "";
@@ -202,9 +236,11 @@ export function registerEntryBar(Alpine) {
             get showOtherLabel() {
                 return !this.queryActive && this.primaryFiltered.length > 0 && this.otherFiltered.length > 0;
             },
+            /** @param {number} idx */
             optionClassOther(idx) {
                 return this.optionClass(idx + this.primaryFiltered.length);
             },
+            /** @param {number} idx */
             setHighlightOther(idx) {
                 this.highlight = idx + this.primaryFiltered.length;
             },
@@ -229,10 +265,12 @@ export function registerEntryBar(Alpine) {
             get noSecondary() {
                 return this.hasProject && !this.hasTasks && !this.hasDiary;
             },
+            /** @param {number} idx */
             optionClass(idx) {
                 // daisyUI 5: Markierung heißt menu-active („active" ist wirkungslos).
                 return idx === this.highlight ? "menu-active" : "";
             },
+            /** @param {number} idx */
             setHighlight(idx) {
                 this.highlight = idx;
             },
@@ -252,6 +290,7 @@ export function registerEntryBar(Alpine) {
                     this.clearOptions();
                 }
             },
+            /** @param {number} dir */
             move(dir) {
                 const len = this.filtered.length;
                 if (!len) {
@@ -267,6 +306,7 @@ export function registerEntryBar(Alpine) {
                     this.choose(list[this.highlight]);
                 }
             },
+            /** @param {EntryBarProject | null | undefined} project */
             choose(project) {
                 if (!project) return;
                 this.selectedId = project.id;
@@ -313,12 +353,15 @@ export function registerEntryBar(Alpine) {
                 this.descOpen = false;
                 this.descHighlight = -1;
             },
+            /** @param {number} idx */
             descOptionClass(idx) {
                 return idx === this.descHighlight ? "menu-active" : "";
             },
+            /** @param {number} idx */
             setDescHighlight(idx) {
                 this.descHighlight = idx;
             },
+            /** @param {number} dir */
             descMove(dir) {
                 const len = this.descSuggestions.length;
                 if (!len) return;
@@ -334,8 +377,9 @@ export function registerEntryBar(Alpine) {
                 // Enter ist am Input generell preventDefault (CSP-Build ohne
                 // $event) — ohne offene Auswahl den normalen Submit nachholen.
                 this.closeDescMenu();
-                this.$root.requestSubmit();
+                /** @type {HTMLFormElement} */ (this.$root).requestSubmit();
             },
+            /** @param {EntryBarSuggestion | null | undefined} s */
             pickSuggestion(s) {
                 if (!s) return;
                 this.description = s.description;
@@ -350,6 +394,7 @@ export function registerEntryBar(Alpine) {
                 this.taskId = "";
                 this.diaryEntryId = "";
             },
+            /** @param {EntryBarOptions} data */
             applyOptions(data) {
                 this.tasks = Array.isArray(data.tasks) ? data.tasks : [];
                 this.diaryEntries = Array.isArray(data.diaryEntries) ? data.diaryEntries : [];
@@ -366,17 +411,21 @@ export function registerEntryBar(Alpine) {
                     this.pendingDiaryEntryId = "";
                 });
             },
+            /** @param {string} projectId */
             fetchOptions(projectId) {
                 this.taskId = "";
                 this.diaryEntryId = "";
                 if (optionsCache.has(projectId)) {
-                    this.applyOptions(optionsCache.get(projectId));
+                    this.applyOptions(/** @type {EntryBarOptions} */ (optionsCache.get(projectId)));
                     return;
                 }
                 // Zentrale HTTP-Naht (lib/http.js): CSRF/credentials/419 einheitlich.
-                getJson(this.optionsUrl.replace("__ID__", encodeURIComponent(projectId)))
+                /** @type {Promise<import("../lib/http.js").JsonResult<EntryBarOptions>>} */ (
+                    getJson(this.optionsUrl.replace("__ID__", encodeURIComponent(projectId)))
+                )
                     .then((res) => {
-                        if (!res.ok) throw new Error(String(res.status));
+                        // Ohne Daten nichts cachen, sonst wirft der nächste Projektwechsel.
+                        if (!res.ok || !res.data) throw new Error(String(res.status));
                         return res.data;
                     })
                     .then((data) => {
@@ -388,9 +437,7 @@ export function registerEntryBar(Alpine) {
                     })
                     .catch(() => {
                         this.clearOptions();
-                        const notify = /** @type {{ notifyAction?: (opts: { tone?: string, message: string }) => void }} */ (
-                            /** @type {unknown} */ (window)
-                        ).notifyAction;
+                        const notify = window.notifyAction;
                         if (typeof notify === "function") {
                             notify({ tone: "warning", message: __("js.entry_bar.options_failed") });
                         }

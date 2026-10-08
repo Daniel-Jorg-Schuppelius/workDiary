@@ -129,15 +129,7 @@
 @endif
 
 @php
-    $scheduleShiftTypes = $shiftTypes->values()->map(fn ($type) => [
-        'id' => $type->sqid,
-        'name' => $type->name,
-        'abbreviation' => $type->abbreviation,
-        'color' => $type->color,
-        'default_start_time' => $type->default_start_time,
-        'default_end_time' => $type->default_end_time,
-        'is_active' => (bool) $type->is_active,
-    ]);
+    $scheduleShiftTypes = \App\Http\Resources\ShiftTypeResource::collection($shiftTypes->values())->resolve();
 
     $scheduleUsers = $users->values()->map(fn ($user) => [
         'id' => $user->sqid,

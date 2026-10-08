@@ -263,6 +263,7 @@ function initSorting(list) {
         draggingClass: ["opacity-50"],
         targetClass: ["outline", "outline-primary"],
         onDrop: ({ item, target, before }) => {
+            if (!target) return;
             if (before) target.before(item);
             else target.after(item);
             reindexWidgets(list);

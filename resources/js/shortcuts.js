@@ -55,20 +55,30 @@ export const SHORTCUTS = [
 
 const SCOPE_ORDER = ["global", "navigation", "search"];
 
+/** @type {string | null} */
 let pendingPrefix = null;
+/** @type {number | null} */
 let pendingTimer = null;
 
 function isMac() {
     return /Mac|iPhone|iPad|iPod/.test(navigator.platform || "");
 }
 
-/** Tastenbeschriftung für die Übersicht: "Mod" wird plattformabhängig. */
+/**
+ * Tastenbeschriftung für die Übersicht: "Mod" wird plattformabhängig.
+ *
+ * @param {string} key
+ */
 function keyLabel(key) {
     if (key === "Mod") return isMac() ? "⌘" : "Ctrl";
     return key;
 }
 
-/** Ziel-URL eines Navigations-Kürzels; null = kein Recht / nicht gesetzt. */
+/**
+ * Ziel-URL eines Navigations-Kürzels; null = kein Recht / nicht gesetzt.
+ *
+ * @param {string | undefined} target
+ */
 function targetUrl(target) {
     if (!target) return null;
     // Ziele stehen als data-Attribut am body: nur Pfade der eigenen Origin.
@@ -80,6 +90,7 @@ export function availableShortcuts() {
     return SHORTCUTS.filter((s) => !s.target || targetUrl(s.target) !== null);
 }
 
+/** @param {EventTarget | null} target */
 function isEditableTarget(target) {
     if (!(target instanceof Element)) return false;
     if (target.closest("input, textarea, select, [contenteditable=''], [contenteditable='true']")) {
@@ -158,6 +169,7 @@ function clearPending() {
     }
 }
 
+/** @param {string | undefined} target */
 function navigateTo(target) {
     const url = targetUrl(target);
     if (!url) return false;

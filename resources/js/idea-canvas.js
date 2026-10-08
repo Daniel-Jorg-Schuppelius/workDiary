@@ -20,16 +20,54 @@ import { escHtml } from "./lib/html.js";
 
 const DEBOUNCE_MS = 1200;
 
+/** @typedef {import("./idea-editor.js").IdeaMapConfig} IdeaMapConfig */
+/** @typedef {import("./idea-editor.js").IdeaNode} IdeaNode */
+/** @typedef {import("mind-elixir").MindElixirInstance} MindElixirInstance */
+/** @typedef {typeof import("mind-elixir").default} MindElixirClass */
+/** @typedef {import("mind-elixir").NodeObj} NodeObj */
+
+/** @typedef {{color: string, status: string | null}} IdeaNodeMeta Knoten-`metadata`, die hydrate() setzt */
+
+/**
+ * Sync-Baum für IdeaMapSyncService: bekannte Knoten mit `sqid`, neue mit `client_id`.
+ * @typedef {Object} CanonicalNode
+ * @property {string} [sqid]
+ * @property {string} [client_id]
+ * @property {string} title
+ * @property {string | null} note
+ * @property {string} color
+ * @property {string | null} node_status
+ * @property {CanonicalNode[]} children
+ */
+
+/**
+ * Antwort von IdeaNodeController::sync (200: lock_version + created, sonst message/errors).
+ * @typedef {Object} IdeaSyncResponse
+ * @property {number} lock_version
+ * @property {Record<string, string>} [created] client_id → Sqid
+ * @property {string} [message]
+ * @property {Record<string, string[]>} [errors]
+ */
+
+/** @param {import("alpinejs").Alpine} Alpine */
 export function registerIdeaCanvas(Alpine) {
-    Alpine.data("ideaCanvas", (configElId) => ({
-        cfg: {},
+    Alpine.data("ideaCanvas", (/** @type {string} */ configElId) => ({
+        cfg: /** @type {IdeaMapConfig} */ ({}),
+        // Alpine bildet `this.me` strukturell nach (InferInterceptors); Methoden
+        // mit `this: MindElixir` brauchen daher am Aufruf den Cast auf die Instanz.
+        /** @type {MindElixirInstance | null} */
         me: null, // Mind-Elixir-Instanz
+        /** @type {MindElixirClass | null} */
         ME: null, // Mind-Elixir-Konstruktor (dynamisch geladen)
         lockVersion: 1,
+        /** @type {Set<string>} */
         knownSqids: new Set(), // ids, die bereits echte Sqids sind (bestehende Knoten)
+        /** @type {Record<string, string>} */
         idMap: {}, // Mind-Elixir-id (neu) → vom Server vergebene Sqid
-        saveTimer: null,
+        /** @type {number | undefined} */
+        saveTimer: undefined,
         busy: false,
+        /** @type {string | null} */
         error: null,
         conflict: false,
         mounted: false,
@@ -54,7 +92,7 @@ export function registerIdeaCanvas(Alpine) {
             window.addEventListener("resize", () => {
                 if (!this.mounted) return;
                 this.fitHeight();
-                this.me?.toCenter?.();
+                /** @type {MindElixirInstance | null} */ (this.me)?.toCenter?.();
             });
         },
 
@@ -74,7 +112,7 @@ export function registerIdeaCanvas(Alpine) {
             await this.mount();
             this.$nextTick(() => {
                 this.fitHeight();
-                this.me?.toCenter?.();
+                /** @type {MindElixirInstance | null} */ (this.me)?.toCenter?.();
             });
         },
 
@@ -126,7 +164,8 @@ export function registerIdeaCanvas(Alpine) {
             const lang = (document.documentElement.lang || "en")
                 .slice(0, 2)
                 .toLowerCase();
-            const locale = i18n[lang] || i18n.en;
+            const locale =
+                /** @type {Record<string, import("mind-elixir/i18n").LangPack | undefined>} */ (i18n)[lang] || i18n.en;
 
             const host = this.$refs.meHost;
             this.fitHeight(); // Container-Höhe VOR init setzen, damit ME korrekt layoutet
@@ -148,7 +187,7 @@ export function registerIdeaCanvas(Alpine) {
             });
 
             const data = this.hydrate();
-            this.me.init(data);
+            /** @type {MindElixirInstance} */ (this.me).init(data);
             this.applyTheme();
 
             if (this.cfg.can_update) {
@@ -164,9 +203,12 @@ export function registerIdeaCanvas(Alpine) {
         },
 
         // ── Hydrate: Server-Baum → Mind-Elixir-Daten ────────────────────
+        /** @returns {import("mind-elixir").MindElixirData} */
         hydrate() {
             const nodes = this.cfg.nodes || [];
+            /** @type {Record<string, IdeaNode[]>} */
             const byParent = {};
+            /** @type {IdeaNode | null} */
             let root = null;
             nodes.forEach((n) => {
                 this.knownSqids.add(n.sqid);
@@ -174,6 +216,10 @@ export function registerIdeaCanvas(Alpine) {
                 (byParent[n.parent || "__root__"] ||= []).push(n);
             });
 
+            /**
+             * @param {IdeaNode} n
+             * @returns {import("mind-elixir").NodeObj<IdeaNodeMeta>}
+             */
             const build = (n) => ({
                 topic: n.title || "—",
                 id: n.sqid,
@@ -195,7 +241,8 @@ export function registerIdeaCanvas(Alpine) {
                 nodeData: rootObj,
                 arrows: this.hydrateArrows(),
                 summaries: this.hydrateSummaries(),
-                direction: this.ME.SIDE,
+                // hydrate() läuft erst nach dem Laden in mount().
+                direction: /** @type {MindElixirClass} */ (this.ME).SIDE,
             };
         },
 
@@ -225,11 +272,13 @@ export function registerIdeaCanvas(Alpine) {
         // Server-Identifikator für einen Mind-Elixir-Knoten: Sqid (bestehend)
         // oder die Mind-Elixir-id (neu, = client_id). Der Sync-Endpunkt löst
         // beides über dieselbe refToId-Tabelle auf.
+        /** @param {string} meId */
         nodeRef(meId) {
             const realId = this.idMap[meId] || meId;
             return this.knownSqids.has(realId) ? realId : meId;
         },
 
+        /** @param {string} color */
         colorStyle(color) {
             if (!color || color === "default") return undefined;
             const bg = this.cssColor(`bg-${color}`);
@@ -244,6 +293,10 @@ export function registerIdeaCanvas(Alpine) {
 
         // Liest die konkrete Farbe einer DaisyUI-Utility-Klasse über eine
         // unsichtbare Sonde (robust über DaisyUI-Versionen/Theme hinweg).
+        /**
+         * @param {string} utility
+         * @returns {string | null}
+         */
         cssColor(utility) {
             const probe = document.createElement("span");
             probe.className = utility;
@@ -274,7 +327,8 @@ export function registerIdeaCanvas(Alpine) {
                     ?.includes("dark") ||
                 window.matchMedia?.("(prefers-color-scheme: dark)")?.matches;
 
-            const theme = {
+            // cssColor() kann null liefern; das geht wie bisher unverändert an Mind Elixir.
+            const theme = /** @type {import("mind-elixir").Theme} */ ({
                 name: "workdiary",
                 type: dark ? "dark" : "light",
                 palette: [
@@ -296,10 +350,10 @@ export function registerIdeaCanvas(Alpine) {
                     "--root-bgcolor": primary,
                     "--root-border-color": primary,
                 },
-            };
+            });
             // Mind Elixir übernimmt das Theme über die Daten bzw. changeTheme.
             if (typeof this.me.changeTheme === "function") {
-                this.me.changeTheme(theme, false);
+                /** @type {MindElixirInstance} */ (this.me).changeTheme(theme, false);
             }
         },
 
@@ -313,7 +367,7 @@ export function registerIdeaCanvas(Alpine) {
             if (!this.me || this.busy) return;
             this.busy = true;
             this.error = null;
-            const data = this.me.getData();
+            const data = /** @type {MindElixirInstance} */ (this.me).getData();
             const tree = this.toCanonical(data.nodeData);
             // Querverbindungen mitschicken (leeres Array = alle löschen). Endpunkte
             // über nodeRef, damit auch im selben Sync neu angelegte Knoten passen.
@@ -335,7 +389,7 @@ export function registerIdeaCanvas(Alpine) {
                     links,
                     summaries,
                 });
-                const json = res.data ?? {};
+                const json = /** @type {IdeaSyncResponse} */ (res.data ?? {});
                 if (res.status === 409) {
                     this.conflict = true;
                     return;
@@ -366,10 +420,15 @@ export function registerIdeaCanvas(Alpine) {
         },
 
         // Baut den kanonischen Sync-Baum. Bekannte Knoten → {sqid}, neue → {client_id}.
+        /**
+         * @param {NodeObj} node
+         * @returns {CanonicalNode}
+         */
         toCanonical(node) {
             const realId = this.idMap[node.id] || node.id;
             const isExisting = this.knownSqids.has(realId);
-            const meta = node.metadata || {};
+            // Im Canvas neu angelegte Knoten tragen keine metadata.
+            const meta = /** @type {Partial<IdeaNodeMeta>} */ (node.metadata || {});
             return {
                 ...(isExisting ? { sqid: realId } : { client_id: node.id }),
                 title: node.topic || "—",
@@ -383,13 +442,14 @@ export function registerIdeaCanvas(Alpine) {
         // ── Export (MVP-138): Mind Elixir rendert SVG/PNG clientseitig ──
         exportSvg() {
             if (!this.me) return;
-            this.download(this.me.exportSvg(), this.exportName("svg"));
+            this.download(/** @type {MindElixirInstance} */ (this.me).exportSvg(), this.exportName("svg"));
         },
         async exportPng() {
             if (!this.me) return;
-            const blob = await this.me.exportPng();
+            const blob = await /** @type {MindElixirInstance} */ (this.me).exportPng();
             if (blob) this.download(blob, this.exportName("png"));
         },
+        /** @param {string} ext */
         exportName(ext) {
             const base =
                 (this.cfg.map?.title || "idea-map")
@@ -398,6 +458,10 @@ export function registerIdeaCanvas(Alpine) {
                     .slice(0, 60) || "idea-map";
             return `${base}.${ext}`;
         },
+        /**
+         * @param {Blob} blob
+         * @param {string} name
+         */
         download(blob, name) {
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
@@ -413,7 +477,9 @@ export function registerIdeaCanvas(Alpine) {
         // lock_version) und setzt die Identitäts-Tabellen zurück — hydrate()
         // befüllt sie beim nächsten Aufbau neu.
         async refetchTree() {
-            const res = await getJson(this.cfg.urls.tree).catch(() => null);
+            const res = /** @type {import("./lib/http.js").JsonResult<Pick<IdeaMapConfig, "nodes" | "links" | "summaries" | "map">> | null} */ (
+                await getJson(this.cfg.urls.tree).catch(() => null)
+            );
             const json = res?.ok ? res.data : null;
             if (!json) return false;
             this.cfg.nodes = json.nodes;
@@ -430,8 +496,9 @@ export function registerIdeaCanvas(Alpine) {
         // clearHistory verhindert, dass Undo in den alten Stand zurückführt.
         async refresh() {
             if (!(await this.refetchTree())) return;
-            this.me.refresh(this.hydrate());
-            this.me.clearHistory?.();
+            // refresh() läuft nur nach mount(), dort ist me gesetzt.
+            /** @type {MindElixirInstance} */ (this.me).refresh(this.hydrate());
+            /** @type {MindElixirInstance} */ (this.me).clearHistory?.();
             this.applyTheme();
         },
 

@@ -85,7 +85,9 @@ if (root instanceof HTMLElement) {
         busy = true;
         try {
             // Sessionloser Ingest: ein 419 kann nicht auftreten, ein Reload wäre am Terminal falsch.
-            const { data } = await postJson(ingestUrl, payload, { on419: "ignore" });
+            const { data } = /** @type {import("./lib/http.js").JsonResult<Record<string, unknown>>} */ (
+                await postJson(ingestUrl, payload, { on419: "ignore" })
+            );
             const answer = data !== null && typeof data === "object" ? data : {};
             show(typeof answer.status === "string" ? answer.status : "error", answer);
         } catch {
@@ -159,13 +161,13 @@ if (root instanceof HTMLElement) {
         nfcButton.classList.remove("hidden");
         nfcButton.addEventListener("click", async () => {
             try {
-                // NDEFReader fehlt in den DOM-Typen der TypeScript-Prüfung.
-                const NdefReader = /** @type {any} */ (window).NDEFReader;
+                // Vorhanden laut `in`-Prüfung oben.
+                const NdefReader = /** @type {new () => NdefReaderLike} */ (window.NDEFReader);
                 const reader = new NdefReader();
                 await reader.scan();
                 nfcButton.disabled = true;
                 nfcButton.textContent = messages.nfc_active ?? nfcButton.textContent;
-                reader.addEventListener("reading", (/** @type {any} */ event) => {
+                reader.addEventListener("reading", (event) => {
                     void stamp(normalizeNfcSerial(event.serialNumber));
                 });
             } catch {

@@ -38,6 +38,14 @@ import { pointerSort } from "./lib/pointer-sort.js";
 // from-Status → to-Status → Aktion (Status-Codes aus App\Enums\Diary\Status).
 // dialog: Dialog-ID für Pflichtangaben; fields: feste Zusatzfelder;
 // blockedMessage: Zug existiert fachlich, ist aber bewusst nicht per Geste.
+/**
+ * @typedef {object} TransitionSpec
+ * @property {string} [action]
+ * @property {string} [dialog]
+ * @property {Record<string, string>} [fields]
+ * @property {string} [blockedMessage]
+ */
+/** @type {Record<string, Record<string, TransitionSpec>>} */
 const TRANSITIONS = {
     2: {
         4: { action: "accept" },
@@ -61,6 +69,10 @@ const TRANSITIONS = {
 
 const MOVE_DIALOG_ID = "kanban-move-dialog";
 
+/**
+ * @param {string} tone
+ * @param {string} message
+ */
 function notify(tone, message) {
     if (typeof window.notifyAction === "function") {
         window.notifyAction({ tone, message });
@@ -72,10 +84,18 @@ function notify(tone, message) {
 
 // Klassischer Form-POST statt fetch: die Lifecycle-Antwort ist ein Redirect
 // mit Flash-Meldung, die Seite lädt danach ohnehin neu.
+/**
+ * @param {string} url
+ * @param {Record<string, string>} [fields]
+ */
 function submitLifecycle(url, fields) {
     submitForm(url, fields || {});
 }
 
+/**
+ * @param {string} dialogId
+ * @param {string} url
+ */
 function openActionDialog(dialogId, url) {
     const dlg = /** @type {HTMLDialogElement | null} */ (
         document.getElementById(dialogId)
@@ -89,7 +109,10 @@ function openActionDialog(dialogId, url) {
     return true;
 }
 
-/** @returns {Record<string, string>} Aktion → Lifecycle-URL (Gate-gefiltert vom Server). */
+/**
+ * @param {HTMLElement} card
+ * @returns {Record<string, string>} Aktion → Lifecycle-URL (Gate-gefiltert vom Server).
+ */
 function cardActions(card) {
     try {
         const parsed = JSON.parse(card.dataset.actions || "{}");
@@ -102,7 +125,9 @@ function cardActions(card) {
 /**
  * Prüft einen Zug rein fachlich (ohne ihn auszuführen).
  *
- * @returns {{spec: any, url: string} | {error: string, tone: string} | null}
+ * @param {HTMLElement} card
+ * @param {string} toStatus
+ * @returns {{spec: TransitionSpec, url: string} | {error: string, tone: string} | null}
  *          null = kein Zug (gleiche Spalte / unvollständige Daten)
  */
 function planMove(card, toStatus) {
@@ -113,13 +138,17 @@ function planMove(card, toStatus) {
     if (!spec) return { error: "js.kanban.invalid_move", tone: "warning" };
     if (spec.blockedMessage) return { error: spec.blockedMessage, tone: "info" };
 
-    const url = cardActions(card)[spec.action];
+    const url = cardActions(card)[/** @type {string} */ (spec.action)];
     if (!url) return { error: "js.kanban.not_allowed", tone: "warning" };
 
     return { spec, url };
 }
 
-/** Führt den Zug aus bzw. meldet, warum er nicht geht. */
+/**
+ * Führt den Zug aus bzw. meldet, warum er nicht geht.
+ * @param {HTMLElement} card
+ * @param {string} toStatus
+ */
 function applyMove(card, toStatus) {
     const plan = planMove(card, toStatus);
     if (!plan) return;
@@ -138,6 +167,8 @@ function applyMove(card, toStatus) {
  * Zielspalten, in die diese Karte fachlich UND berechtigungsseitig darf —
  * Grundlage des „Verschieben nach"-Menüs.
  *
+ * @param {HTMLElement} board
+ * @param {HTMLElement} card
  * @returns {Array<{status: string, label: string}>}
  */
 function availableTargets(board, card) {
@@ -153,6 +184,10 @@ function availableTargets(board, card) {
     return targets;
 }
 
+/**
+ * @param {HTMLElement} board
+ * @param {HTMLElement} card
+ */
 function openMoveMenu(board, card) {
     const dlg = /** @type {HTMLDialogElement | null} */ (
         document.getElementById(MOVE_DIALOG_ID)
@@ -204,7 +239,7 @@ function init() {
         axis: "both",
         draggingClass: ["opacity-50"],
         targetClass: ["ring-2", "ring-primary"],
-        onDrop: ({ item, target }) => applyMove(item, target.dataset.status ?? ""),
+        onDrop: ({ item, target }) => applyMove(item, /** @type {HTMLElement} */ (target).dataset.status ?? ""),
     });
 
     // Touch-/Maus-Weg ins Menü (Karten-Button) …

@@ -23,23 +23,29 @@ import { recordText } from "./lib/nfc.js";
 
 const supported = typeof window !== "undefined" && "NDEFReader" in window;
 
+/**
+ * @param {Element} button
+ * @param {string} text
+ */
 function status(button, text) {
     const target = button.closest("form, [data-nfc-scope]")?.querySelector("[data-nfc-status]");
     if (target) target.textContent = text;
 }
 
+/** @param {HTMLElement} button */
 async function read(button) {
-    const input = document.querySelector(button.dataset.nfcRead);
+    const input = document.querySelector(button.dataset.nfcRead ?? "");
     if (!(input instanceof HTMLInputElement)) return;
 
     const controller = new AbortController();
     status(button, __("js.nfc.hold"));
     try {
-        const reader = new window.NDEFReader();
+        // Nur bei `supported` erreichbar.
+        const reader = new (/** @type {new () => NdefReaderLike} */ (window.NDEFReader))();
         await reader.scan({ signal: controller.signal });
         reader.addEventListener(
             "reading",
-            (event) => {
+            (/** @type {{ message: Parameters<typeof recordText>[0] }} */ event) => {
                 controller.abort();
                 const value = recordText(event.message);
                 if (value === null) {
@@ -60,10 +66,11 @@ async function read(button) {
     }
 }
 
+/** @param {HTMLElement} button */
 async function write(button) {
     status(button, __("js.nfc.hold"));
     try {
-        await new window.NDEFReader().write({ records: [{ recordType: "url", data: button.dataset.nfcWrite }] });
+        await new (/** @type {new () => NdefReaderLike} */ (window.NDEFReader))().write({ records: [{ recordType: "url", data: button.dataset.nfcWrite }] });
         status(button, __("js.nfc.written"));
     } catch (_) {
         status(button, __("js.nfc.failed"));
@@ -76,7 +83,9 @@ export function initNfc() {
         button.classList.remove("hidden");
     }
     document.addEventListener("click", (event) => {
-        const button = event.target instanceof Element ? event.target.closest("[data-nfc-read], [data-nfc-write]") : null;
+        const button = event.target instanceof Element
+            ? /** @type {HTMLElement | null} */ (event.target.closest("[data-nfc-read], [data-nfc-write]"))
+            : null;
         if (!button) return;
         event.preventDefault();
         if (button.hasAttribute("data-nfc-read")) {

@@ -11,6 +11,8 @@
         "tests/e2e/**/*.ts",
         "tests/frontend/**/*.mjs",
         "scripts/**/*.mjs",
-        "vite.config.js"
+        "vite.config.js",
+        // Tests ziehen Module aus resources/js nach, samt deren Fenster-Globalen.
+        "resources/js/types/**/*.d.ts"
     ]
 }

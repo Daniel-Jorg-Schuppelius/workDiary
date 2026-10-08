@@ -33,6 +33,7 @@ function initHeaderAutoHide() {
     const media = window.matchMedia(MEDIA);
     let lastTop = 0;
 
+    /** @param {boolean} hidden */
     const setHidden = (hidden) => {
         if (root.classList.contains("wd-header-hidden") === hidden) {
             return;
@@ -46,6 +47,7 @@ function initHeaderAutoHide() {
         window.dispatchEvent(new Event("resize"));
     };
 
+    /** @param {() => number} getTop */
     const onScroll = (getTop) => () => {
         if (!media.matches) {
             setHidden(false);

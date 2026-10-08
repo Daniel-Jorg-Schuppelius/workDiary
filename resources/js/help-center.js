@@ -47,29 +47,31 @@ function bindHelpCenterLightbox() {
     const article = document.querySelector(".help-article");
     if (!article) return;
 
-    let dialog = null;
-    let dialogImg = null;
+    /** @type {{ dialog: HTMLDialogElement, preview: HTMLImageElement } | null} */
+    let lightbox = null;
 
     const ensureDialog = () => {
-        if (dialog) return;
-        dialog = document.createElement("dialog");
+        if (lightbox) return lightbox;
+        const dialog = document.createElement("dialog");
         dialog.className = "help-lightbox";
-        dialogImg = document.createElement("img");
-        dialogImg.alt = "";
-        dialog.appendChild(dialogImg);
+        const preview = document.createElement("img");
+        preview.alt = "";
+        dialog.appendChild(preview);
         dialog.addEventListener("click", (event) => {
             // Klick auf den Backdrop (= das dialog-Element selbst) schließt.
             if (event.target === dialog) dialog.close();
         });
         document.body.appendChild(dialog);
+        lightbox = { dialog, preview };
+        return lightbox;
     };
 
     article.addEventListener("click", (event) => {
         const img = event.target;
         if (!(img instanceof HTMLImageElement)) return;
-        ensureDialog();
-        dialogImg.src = img.currentSrc || img.src;
-        dialogImg.alt = img.alt || "";
+        const { dialog, preview } = ensureDialog();
+        preview.src = img.currentSrc || img.src;
+        preview.alt = img.alt || "";
         dialog.showModal();
     });
 }

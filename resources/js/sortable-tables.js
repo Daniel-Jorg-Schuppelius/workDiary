@@ -30,8 +30,12 @@ const collator = new Intl.Collator("de", {
     sensitivity: "base",
 });
 
+/**
+ * @param {HTMLTableRowElement} row
+ * @param {number} columnIndex
+ */
 function getCellValue(row, columnIndex) {
-    const cell = row.children[columnIndex];
+    const cell = /** @type {HTMLElement | undefined} */ (row.children[columnIndex]);
     if (!cell) return "";
     if (cell.dataset.sortValue !== undefined) return cell.dataset.sortValue;
     return (cell.textContent || "").trim();
@@ -43,6 +47,7 @@ function getCellValue(row, columnIndex) {
 //   - ISO date / datetime (Date.parse handles these)
 //   - German DD.MM.YYYY[ HH:MM[:SS]]
 //   - German DD.MM. (no year — used for recurring entries; treated as current year)
+/** @param {string} input */
 function parseAnyDate(input) {
     const raw = String(input || "").trim();
     if (raw === "") return NaN;
@@ -81,6 +86,7 @@ function parseAnyDate(input) {
 }
 
 // Parse "H:MM[:SS]" or "Hh MMm" or "12,5 h" → minutes (float)
+/** @param {string} input */
 function parseDuration(input) {
     const raw = String(input || "").trim();
     if (raw === "") return NaN;
@@ -96,6 +102,10 @@ function parseDuration(input) {
     return Number.isFinite(num) ? num * 60 : NaN;
 }
 
+/**
+ * @param {string} type
+ * @returns {(a: string, b: string) => number}
+ */
 function compareFactory(type) {
     if (type === "number") {
         return (a, b) => {
@@ -135,10 +145,15 @@ function compareFactory(type) {
     return (a, b) => collator.compare(String(a), String(b));
 }
 
+/**
+ * @param {HTMLTableElement} table
+ * @param {number} columnIndex
+ * @param {string} dir
+ */
 function applySort(table, columnIndex, dir) {
     const tbody = table.tBodies[0];
     if (!tbody) return;
-    const rows = Array.from(tbody.querySelectorAll(":scope > tr")).filter(
+    const rows = Array.from(/** @type {NodeListOf<HTMLTableRowElement>} */ (tbody.querySelectorAll(":scope > tr"))).filter(
         (row) => !row.dataset.sortIgnore,
     );
     if (rows.length < 2) return;
@@ -160,6 +175,11 @@ function applySort(table, columnIndex, dir) {
     tbody.appendChild(frag);
 }
 
+/**
+ * @param {HTMLTableElement} table
+ * @param {number} activeIndex
+ * @param {string} dir
+ */
 function setIcons(table, activeIndex, dir) {
     const ths = table.tHead?.rows[0]?.cells;
     if (!ths) return;
@@ -193,6 +213,7 @@ function setIcons(table, activeIndex, dir) {
     });
 }
 
+/** @param {HTMLTableElement} table */
 function initTable(table) {
     if (table.dataset.sortableInit === "1") return;
     table.dataset.sortableInit = "1";
@@ -236,7 +257,7 @@ function initTable(table) {
 
 /** @param {Document|Element} [root] */
 function initAll(root = document) {
-    root.querySelectorAll("table[data-sortable]").forEach(initTable);
+    /** @type {NodeListOf<HTMLTableElement>} */ (root.querySelectorAll("table[data-sortable]")).forEach(initTable);
 }
 
 if (document.readyState === "loading") {

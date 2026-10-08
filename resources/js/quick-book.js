@@ -11,12 +11,18 @@
 import { postJson } from "./lib/http.js";
 import { pointerSort } from "./lib/pointer-sort.js";
 
+/**
+ * @param {string} url
+ * @param {Record<string, unknown>} payload
+ */
 async function postBooking(url, payload) {
     return (await postJson(url, payload)).ok;
 }
 
+/** @param {HTMLFormElement} form */
 function payloadFromForm(form) {
     const data = new FormData(form);
+    /** @type {Record<string, FormDataEntryValue>} */
     const payload = {};
     for (const [key, value] of data.entries()) {
         if (key !== "_token" && value !== "") payload[key] = value;
@@ -73,6 +79,7 @@ export function bindQuickBook() {
         draggingClass: ["opacity-50"],
         targetClass: ["qb-target-over"],
         onDrop: async ({ item, target }) => {
+            if (!target) return;
             const startedAt = item.getAttribute("data-started-at");
             const endedAt = item.getAttribute("data-ended-at");
             if (!startedAt || !endedAt) return;

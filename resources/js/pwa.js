@@ -38,11 +38,12 @@ export function bindInstallPrompt() {
         return;
     }
 
+    /** @type {BeforeInstallPromptEventLike | null} */
     let deferredPrompt = null;
 
     window.addEventListener("beforeinstallprompt", (e) => {
         e.preventDefault();
-        deferredPrompt = e;
+        deferredPrompt = /** @type {BeforeInstallPromptEventLike} */ (e);
         btn.hidden = false;
     });
 

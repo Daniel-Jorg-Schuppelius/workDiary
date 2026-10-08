@@ -16,18 +16,26 @@
 
     var MAX_RESULTS = 25;
 
+    /**
+     * Eintrag aus search-index.js (HelpSiteExporter): t Titel, u Seite,
+     * s Bereich, x Textauszug, k Suchbegriffe.
+     * @typedef {{t: string, u: string, s: string, x: string, k: string}} HelpSiteEntry
+     */
+    /** @typedef {Window & {HELP_SITE_INDEX?: unknown}} HelpSiteWindow */
+
+    /** @param {string} text */
     function fold(text) {
         return String(text || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ß/g, "ss");
     }
 
     function init() {
-        var input = document.querySelector("[data-site-search-input]");
+        var input = /** @type {HTMLInputElement | null} */ (document.querySelector("[data-site-search-input]"));
         var form = document.querySelector("[data-site-search]");
-        var results = document.querySelector("[data-site-results]");
+        var results = /** @type {HTMLElement | null} */ (document.querySelector("[data-site-results]"));
         var list = document.querySelector("[data-site-results-list]");
-        var empty = document.querySelector("[data-site-results-empty]");
-        var sections = document.querySelector("[data-site-sections]");
-        var index = Array.isArray(window.HELP_SITE_INDEX) ? window.HELP_SITE_INDEX : [];
+        var empty = /** @type {HTMLElement | null} */ (document.querySelector("[data-site-results-empty]"));
+        var sections = /** @type {HTMLElement | null} */ (document.querySelector("[data-site-sections]"));
+        var index = /** @type {HelpSiteEntry[]} */ (Array.isArray(/** @type {HelpSiteWindow} */ (window).HELP_SITE_INDEX) ? /** @type {HelpSiteWindow} */ (window).HELP_SITE_INDEX : []);
         if (!input || !results || !list) return;
 
         if (form) {
@@ -35,14 +43,15 @@
         }
 
         input.addEventListener("input", function () {
-            var words = fold(input.value).split(/\s+/).filter(function (word) { return word.length > 1; });
-            list.textContent = "";
+            var words = fold(/** @type {HTMLInputElement} */ (input).value).split(/\s+/).filter(function (word) { return word.length > 1; });
+            /** @type {Element} */ (list).textContent = "";
             if (words.length === 0) {
-                results.hidden = true;
+                /** @type {HTMLElement} */ (results).hidden = true;
                 if (sections) sections.hidden = false;
                 return;
             }
 
+            /** @type {Array<{entry: HelpSiteEntry, inTitle: boolean}>} */
             var hits = [];
             index.forEach(function (entry) {
                 var title = fold(entry.t) + " " + fold(entry.k);
@@ -65,10 +74,10 @@
                     section.textContent = " · " + String(hit.entry.s);
                     item.appendChild(section);
                 }
-                list.appendChild(item);
+                /** @type {Element} */ (list).appendChild(item);
             });
             if (empty) empty.hidden = hits.length > 0;
-            results.hidden = false;
+            /** @type {HTMLElement} */ (results).hidden = false;
             if (sections) sections.hidden = true;
         });
     }

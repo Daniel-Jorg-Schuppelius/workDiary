@@ -24,14 +24,27 @@ import assert from "node:assert/strict";
 /* Fakes: IndexedDB (nur die genutzte Oberfläche)                      */
 /* ------------------------------------------------------------------ */
 
+/**
+ * @typedef {import("../../resources/js/offline-sync.js").SyncEntry} SyncEntry
+ *
+ * @typedef {Record<string, unknown>} StoreValue
+ * @typedef {Map<unknown, StoreValue>} Table
+ * @typedef {{ keyPath: string, autoIncrement?: boolean, seq: number }} StoreDef
+ */
+
 class FakeRequest {
     constructor() {
+        /** @type {(() => void) | null} */
         this.onsuccess = null;
         this.onerror = null;
         this.result = undefined;
     }
 
-    /** Ergebnis synchron setzen, Callback asynchron feuern (wie IDB). */
+    /**
+     * Ergebnis synchron setzen, Callback asynchron feuern (wie IDB).
+     *
+     * @param {unknown} result
+     */
     _resolve(result) {
         this.result = result;
         queueMicrotask(() => this.onsuccess && this.onsuccess());
@@ -40,11 +53,16 @@ class FakeRequest {
 }
 
 class FakeObjectStore {
+    /**
+     * @param {Table} table
+     * @param {StoreDef} def
+     */
     constructor(table, def) {
         this.table = table; // Map key → value
         this.def = def; // { keyPath, autoIncrement, seq }
     }
 
+    /** @param {StoreValue} value */
     put(value) {
         let key = value[this.def.keyPath];
         if (key === undefined && this.def.autoIncrement) {
@@ -55,10 +73,12 @@ class FakeObjectStore {
         return new FakeRequest()._resolve(key);
     }
 
+    /** @param {unknown} key */
     get(key) {
         return new FakeRequest()._resolve(this.table.get(key));
     }
 
+    /** @param {unknown} key */
     delete(key) {
         this.table.delete(key);
         return new FakeRequest()._resolve(undefined);
@@ -79,9 +99,10 @@ class FakeObjectStore {
 
     createIndex() {}
 
+    /** @param {string} name */
     index(name) {
         return {
-            getAll: (value) =>
+            getAll: (/** @type {unknown} */ value) =>
                 new FakeRequest()._resolve(
                     [...this.table.values()].filter((v) => v[name] === value),
                 ),
@@ -90,15 +111,21 @@ class FakeObjectStore {
 }
 
 class FakeTransaction {
+    /**
+     * @param {FakeDB} db
+     * @param {string} name
+     */
     constructor(db, name) {
         this._db = db;
         this._name = name;
+        /** @type {(() => void) | null} */
         this.oncomplete = null;
         this.onerror = null;
         this.error = null;
         queueMicrotask(() => this.oncomplete && this.oncomplete());
     }
 
+    /** @param {string} name */
     objectStore(name) {
         return this._db._store(name);
     }
@@ -106,38 +133,58 @@ class FakeTransaction {
 
 class FakeDB {
     constructor() {
+        /** @type {Map<string, Table>} */
         this.tables = new Map();
+        /** @type {Map<string, StoreDef>} */
         this.defs = new Map();
-        this.objectStoreNames = { contains: (n) => this.tables.has(n) };
+        this.objectStoreNames = { contains: (/** @type {string} */ n) => this.tables.has(n) };
     }
 
+    /**
+     * Das Modul legt jeden Store mit einem keyPath an.
+     *
+     * @param {string} name
+     * @param {{ keyPath?: string, autoIncrement?: boolean }} [opts]
+     */
     createObjectStore(name, opts = {}) {
         this.tables.set(name, new Map());
-        this.defs.set(name, { ...opts, seq: 0 });
+        this.defs.set(name, /** @type {StoreDef} */ ({ ...opts, seq: 0 }));
         return this._store(name);
     }
 
+    /**
+     * Das Modul öffnet nur Stores, die es im Upgrade angelegt hat.
+     *
+     * @param {string} name
+     */
     _store(name) {
-        return new FakeObjectStore(this.tables.get(name), this.defs.get(name));
+        return new FakeObjectStore(/** @type {Table} */ (this.tables.get(name)), /** @type {StoreDef} */ (this.defs.get(name)));
     }
 
+    /** @param {string} name */
     transaction(name) {
         return new FakeTransaction(this, name);
     }
 
-    /** Testhelfer: Inhalt eines Stores als Array. */
+    /**
+     * Testhelfer: Inhalt eines Stores als Array.
+     *
+     * @param {string} name
+     */
     rows(name) {
         return [...(this.tables.get(name)?.values() ?? [])];
     }
 }
 
+/** @param {FakeDB} db */
 function installIndexedDB(db) {
     Object.defineProperty(globalThis, "indexedDB", {
         configurable: true,
         writable: true,
         value: {
             open() {
-                const request = new FakeRequest();
+                // Den Upgrade-Rückruf hängt das Modul an.
+                const request = /** @type {FakeRequest & { onupgradeneeded?: () => void }} */ (new FakeRequest());
                 request.result = db;
                 queueMicrotask(() => {
                     if (db.tables.size === 0 && request.onupgradeneeded) {
@@ -159,13 +206,16 @@ function makeBadge() {
     const countEl = { textContent: "" };
     return {
         hidden: true,
-        dataset: {},
+        dataset: /** @type {DOMStringMap} */ ({}),
         countEl,
-        querySelector: (sel) =>
+        querySelector: (/** @type {string} */ sel) =>
             sel === "[data-sync-pending-count]" ? countEl : null,
     };
 }
 
+/**
+ * @param {{ syncEndpoint?: string | null, attachmentEndpoint?: string, badge?: ReturnType<typeof makeBadge> | null, owner?: string }} [options]
+ */
 function installDocument({
     syncEndpoint = "https://app.test/sync",
     attachmentEndpoint = "https://app.test/sync-att",
@@ -176,6 +226,7 @@ function installDocument({
         configurable: true,
         writable: true,
         value: {
+            /** @param {string} sel */
             querySelector(sel) {
                 if (sel === 'meta[name="sync-endpoint"]') {
                     return syncEndpoint
@@ -205,14 +256,20 @@ Object.defineProperty(globalThis, "navigator", {
     value: fakeNavigator,
 });
 
-globalThis.window = { addEventListener() {}, location: { reload() {} } };
+globalThis.window = /** @type {Window & typeof globalThis} */ (/** @type {unknown} */ ({ addEventListener() {}, location: { reload() {} } }));
 
 /** FormData-Ersatz: liest Einträge aus dem Fake-Formular (_entries). */
 class FakeFormData {
+    /** @param {{ _entries?: Array<[string, unknown]> }} [form] */
     constructor(form) {
+        /** @type {Array<[string, unknown]>} */
         this._entries = form && form._entries ? [...form._entries] : [];
     }
 
+    /**
+     * @param {string} name
+     * @param {unknown} value
+     */
     append(name, value) {
         this._entries.push([name, value]);
     }
@@ -221,10 +278,17 @@ class FakeFormData {
         return this._entries[Symbol.iterator]();
     }
 }
-globalThis.FormData = FakeFormData;
+globalThis.FormData = /** @type {typeof FormData} */ (/** @type {unknown} */ (FakeFormData));
 
-/** fetch-Stub: Antworten aus einer Warteschlange, Aufrufe protokolliert. */
+/** @typedef {RequestInit & { body: string }} JsonInit Sync-Aufruf: der Rumpf ist JSON. */
+
+/**
+ * fetch-Stub: Antworten aus einer Warteschlange, Aufrufe protokolliert.
+ *
+ * @param {Array<Response | Error>} responses
+ */
 function installFetch(responses) {
+    /** @type {Array<{ url: Parameters<typeof fetch>[0], init: Parameters<typeof fetch>[1] }>} */
     const calls = [];
     globalThis.fetch = async (url, init) => {
         calls.push({ url, init });
@@ -235,6 +299,10 @@ function installFetch(responses) {
     return calls;
 }
 
+/**
+ * @param {number} status
+ * @param {unknown} body
+ */
 function jsonResponse(status, body) {
     return new Response(JSON.stringify(body), {
         status,
@@ -255,7 +323,11 @@ const {
     courseStore, courseGet, courseDelete, currentOwner, enforceOwner,
 } = __testables;
 
-/** Frische Umgebung: leere DB, Standard-Dokument, online. */
+/**
+ * Frische Umgebung: leere DB, Standard-Dokument, online.
+ *
+ * @type {FakeDB}
+ */
 let db;
 beforeEach(() => {
     db = new FakeDB();
@@ -265,6 +337,10 @@ beforeEach(() => {
     globalThis.fetch = async () => jsonResponse(200, {});
 });
 
+/**
+ * @param {string} uuid
+ * @param {Partial<SyncEntry>} [extra]
+ */
 const command = (uuid, extra = {}) => ({
     client_uuid: uuid,
     type: "attendance.clock-in",
@@ -277,6 +353,16 @@ const command = (uuid, extra = {}) => ({
 /* buildPayload                                                        */
 /* ------------------------------------------------------------------ */
 
+/**
+ * Formular-Attrappe: nur, was buildPayload() und FakeFormData lesen.
+ *
+ * @typedef {object} FakeForm
+ * @property {DOMStringMap} [dataset]
+ * @property {(sel: string) => unknown} querySelector
+ * @property {(sel: string) => unknown[]} [querySelectorAll]
+ * @property {Array<[string, unknown]>} [_entries]
+ */
+
 test("buildPayload: attendance.clock-in liefert started_at (ISO)", () => {
     const payload = buildPayload("attendance.clock-in", {});
     assert.ok(payload);
@@ -285,6 +371,7 @@ test("buildPayload: attendance.clock-in liefert started_at (ISO)", () => {
 });
 
 test("buildPayload: attendance.clock-out übernimmt break_minutes als Zahl", () => {
+    /** @type {FakeForm} */
     const form = {
         querySelector: (sel) =>
             sel === '[name="break_minutes"]' ? { value: "15" } : null,
@@ -295,6 +382,7 @@ test("buildPayload: attendance.clock-out übernimmt break_minutes als Zahl", () 
 });
 
 test("buildPayload: attendance.clock-out ohne Pausenwert lässt break_minutes weg", () => {
+    /** @type {FakeForm} */
     const form = {
         querySelector: (sel) =>
             sel === '[name="break_minutes"]' ? { value: "" } : null,
@@ -304,6 +392,7 @@ test("buildPayload: attendance.clock-out ohne Pausenwert lässt break_minutes we
 });
 
 test("buildPayload: learning.unit-complete nimmt Einschreibung + Einheit mit", () => {
+    /** @type {FakeForm} */
     const form = {
         dataset: { syncPayloadEnrollment: "enr1", syncPayloadUnit: "unit1" },
         querySelector: () => null,
@@ -313,6 +402,7 @@ test("buildPayload: learning.unit-complete nimmt Einschreibung + Einheit mit", (
 });
 
 test("buildPayload: comment.diary nimmt Diary-Sqid + Body mit", () => {
+    /** @type {FakeForm} */
     const form = {
         dataset: { syncPayloadDiary: "sq1d" },
         querySelector: (sel) =>
@@ -325,7 +415,9 @@ test("buildPayload: comment.diary nimmt Diary-Sqid + Body mit", () => {
 });
 
 test("buildPayload: inventory.count nimmt Inventur-Sqid, Code und Menge mit (MVP-898)", () => {
+    /** @type {Record<string, { value: string }>} */
     const values = { '[name="code"]': { value: "DUE-8" }, '[name="qty"]': { value: "2" } };
+    /** @type {FakeForm} */
     const form = {
         dataset: { syncPayloadCount: "sqc1" },
         querySelector: (sel) => values[sel] || null,
@@ -342,11 +434,13 @@ test("buildPayload: unbekannter Typ liefert null (kein Abfangen)", () => {
 });
 
 test("buildPayload: form.submission serialisiert values[…] inkl. Mehrfachwerten", () => {
+    /** @type {Record<string, string>} */
     const fields = {
         form_template_id: "tpl-1",
         subject_kind: "customer",
         subject_id: "42",
     };
+    /** @type {FakeForm} */
     const form = {
         dataset: {},
         querySelector(sel) {
@@ -376,7 +470,9 @@ test("buildPayload: form.submission serialisiert values[…] inkl. Mehrfachwerte
 });
 
 test("buildPayload: form.submission ohne vollständiges Subjekt lässt es weg", () => {
+    /** @type {Record<string, string>} */
     const fields = { form_template_id: "tpl-1", subject_kind: "customer" };
+    /** @type {FakeForm} */
     const form = {
         dataset: {},
         querySelector(sel) {
@@ -394,6 +490,7 @@ test("buildPayload: form.submission ohne vollständiges Subjekt lässt es weg", 
 });
 
 test("buildPayload: form.submission kündigt gefüllte Dateifelder als pending_files an", () => {
+    /** @type {FakeForm} */
     const form = {
         dataset: {},
         querySelector: () => null,
@@ -409,8 +506,10 @@ test("buildPayload: form.submission kündigt gefüllte Dateifelder als pending_f
 });
 
 test("buildPayload: takeoff.line nimmt Blatt, Formel, Werte und angekündigtes Foto mit (MVP-1059)", () => {
+    /** @type {Record<string, string>} */
     const fields = { formula: "04", factor: "-1", label: "Tür" };
     const photo = { files: [{}] };
+    /** @type {FakeForm} */
     const form = {
         dataset: { syncPayloadTakeoff: "sqt1" },
         querySelector(sel) {
@@ -439,13 +538,13 @@ test("Outbox: put/getAll/delete-Roundtrip über die IndexedDB-Naht", async () =>
     await outboxPut(command("a"));
     await outboxPut(command("b"));
     assert.deepEqual(
-        (await outboxAll()).map((c) => c.client_uuid),
+        (await outboxAll()).map((/** @type {SyncEntry} */ c) => c.client_uuid),
         ["a", "b"],
     );
 
     await outboxDelete("a");
     assert.deepEqual(
-        (await outboxAll()).map((c) => c.client_uuid),
+        (await outboxAll()).map((/** @type {SyncEntry} */ c) => c.client_uuid),
         ["b"],
     );
 });
@@ -492,7 +591,8 @@ test("flush: applied/duplicate räumen die Outbox", async () => {
 
     assert.equal(calls.length, 1);
     assert.equal(calls[0].url, "https://app.test/sync");
-    const body = JSON.parse(calls[0].init.body);
+    /** @type {{ commands: SyncEntry[] }} */
+    const body = JSON.parse(/** @type {JsonInit} */ (calls[0].init).body);
     assert.deepEqual(
         body.commands.map((c) => c.client_uuid),
         ["a", "b"],
@@ -603,6 +703,10 @@ test("flush: sendet Batches von 50, sequentiell", async () => {
     for (let i = 0; i < 60; i++) {
         await outboxPut(command(`cmd-${String(i).padStart(2, "0")}`));
     }
+    /**
+     * @param {number} from
+     * @param {number} to
+     */
     const results = (from, to) =>
         Array.from({ length: to - from }, (_, i) => ({
             client_uuid: `cmd-${String(from + i).padStart(2, "0")}`,
@@ -616,8 +720,8 @@ test("flush: sendet Batches von 50, sequentiell", async () => {
     await flush();
 
     assert.equal(calls.length, 2);
-    assert.equal(JSON.parse(calls[0].init.body).commands.length, 50);
-    assert.equal(JSON.parse(calls[1].init.body).commands.length, 10);
+    assert.equal(JSON.parse(/** @type {JsonInit} */ (calls[0].init).body).commands.length, 50);
+    assert.equal(JSON.parse(/** @type {JsonInit} */ (calls[1].init).body).commands.length, 10);
     assert.equal((await outboxAll()).length, 0);
 });
 
@@ -766,7 +870,8 @@ test("flush: Befehle eines anderen Kontos werden nicht gesendet", async () => {
     await flush();
 
     assert.equal(calls.length, 1);
-    const gesendet = JSON.parse(calls[0].init.body).commands;
+    /** @type {SyncEntry[]} */
+    const gesendet = JSON.parse(/** @type {JsonInit} */ (calls[0].init).body).commands;
     assert.deepEqual(
         gesendet.map((c) => c.client_uuid),
         ["eigen"],
@@ -777,10 +882,10 @@ test("flush: Befehle eines anderen Kontos werden nicht gesendet", async () => {
 
 test("Kontowechsel auf dem Gerät leert die lokale Ablage", async () => {
     const store = new Map();
-    globalThis.window.localStorage = {
+    globalThis.window.localStorage = /** @type {Storage} */ (/** @type {Pick<Storage, "getItem" | "setItem">} */ ({
         getItem: (k) => (store.has(k) ? store.get(k) : null),
         setItem: (k, v) => store.set(k, String(v)),
-    };
+    }));
 
     installDocument({ owner: "person-a" });
     await outboxPut(command("a", { owner: "person-a" }));

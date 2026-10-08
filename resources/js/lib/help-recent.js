@@ -31,6 +31,10 @@ export function recentHelpTopics() {
     }
 }
 
+/**
+ * @param {unknown} topic
+ * @param {unknown} title
+ */
 export function rememberHelpTopic(topic, title) {
     if (typeof topic !== "string" || !TOPIC_PATTERN.test(topic)) return;
     const entry = { topic, title: String(title || topic).slice(0, 200) };

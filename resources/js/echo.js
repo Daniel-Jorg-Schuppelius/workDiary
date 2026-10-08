@@ -4,6 +4,7 @@
 import Echo from "laravel-echo";
 import Pusher from "pusher-js";
 
+/** @type {Echo<"reverb"> | null} */
 let echoInstance = null;
 
 export function initEcho() {
@@ -12,16 +13,16 @@ export function initEcho() {
     window.Pusher = Pusher;
     echoInstance = new Echo({
         broadcaster: "reverb",
-        key: /** @type {any} */ (import.meta).env.VITE_REVERB_APP_KEY,
-        wsHost: /** @type {any} */ (import.meta).env.VITE_REVERB_HOST,
+        key: import.meta.env.VITE_REVERB_APP_KEY,
+        wsHost: import.meta.env.VITE_REVERB_HOST,
         wsPort: Number(
-            /** @type {any} */ (import.meta).env.VITE_REVERB_PORT ?? 80,
+            import.meta.env.VITE_REVERB_PORT ?? 80,
         ),
         wssPort: Number(
-            /** @type {any} */ (import.meta).env.VITE_REVERB_PORT ?? 443,
+            import.meta.env.VITE_REVERB_PORT ?? 443,
         ),
         forceTLS:
-            (/** @type {any} */ (import.meta).env.VITE_REVERB_SCHEME ??
+            (import.meta.env.VITE_REVERB_SCHEME ??
                 "https") === "https",
         enabledTransports: ["ws", "wss"],
     });

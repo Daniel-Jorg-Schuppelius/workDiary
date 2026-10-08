@@ -13,6 +13,7 @@
  */
 const KEY_PREFIX = "wd.video.";
 
+/** @param {string} key */
 function read(key) {
     try {
         const raw = window.localStorage.getItem(KEY_PREFIX + key);
@@ -23,6 +24,10 @@ function read(key) {
     }
 }
 
+/**
+ * @param {string} key
+ * @param {number} seconds
+ */
 function write(key, seconds) {
     try {
         window.localStorage.setItem(KEY_PREFIX + key, String(Math.floor(seconds)));
@@ -31,6 +36,7 @@ function write(key, seconds) {
     }
 }
 
+/** @param {string} key */
 function clear(key) {
     try {
         window.localStorage.removeItem(KEY_PREFIX + key);
@@ -39,6 +45,7 @@ function clear(key) {
     }
 }
 
+/** @param {HTMLVideoElement} video */
 function bind(video) {
     const key = video.dataset.rememberPosition;
     if (!key) return;

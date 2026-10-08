@@ -7,7 +7,12 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-/** Ersten URL- oder Textdatensatz einer NDEF-Nachricht als Text (MVP-903). */
+/**
+ * Ersten URL- oder Textdatensatz einer NDEF-Nachricht als Text (MVP-903).
+ *
+ * @param {{ records?: { recordType: string, encoding?: string, data: BufferSource }[] } | null | undefined} message
+ * @returns {string | null}
+ */
 export function recordText(message) {
     for (const record of message?.records ?? []) {
         if (record.recordType === "url" || record.recordType === "text") {

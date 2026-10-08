@@ -13,14 +13,16 @@
  *   [data-contact-remove]   Button: Zeile entfernen; letzte Zeile wird geleert
  */
 
+/** @param {ParentNode} rows */
 function renumber(rows) {
     rows.querySelectorAll('[data-contact-row]').forEach((row, idx) => {
-        row.querySelectorAll('input[name]').forEach(inp => {
+        /** @type {NodeListOf<HTMLInputElement>} */ (row.querySelectorAll('input[name]')).forEach(inp => {
             inp.name = inp.name.replace(/contact_persons\[\d+\]/, 'contact_persons[' + idx + ']');
         });
     });
 }
 
+/** @param {ParentNode} row */
 function clearInputs(row) {
     row.querySelectorAll('input').forEach(inp => {
         if (inp.type === 'checkbox') { inp.checked = false; }
@@ -37,7 +39,7 @@ document.addEventListener('click', (e) => {
         const rows = addBtn.closest('[data-contact-persons]')?.querySelector('[data-contact-rows]');
         const first = rows?.querySelector('[data-contact-row]');
         if (!rows || !first) return;
-        const clone = first.cloneNode(true);
+        const clone = /** @type {Element} */ (first.cloneNode(true));
         clearInputs(clone);
         rows.appendChild(clone);
         renumber(rows);

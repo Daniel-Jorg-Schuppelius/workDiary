@@ -24,21 +24,50 @@ const NEWS_PAUSED_STORAGE_KEY = "help.news.paused";
 const DESKTOP_QUERY = "(min-width: 1024px)";
 const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
 
+/**
+ * Antwort von HelpController::show() mit found = true.
+ * @typedef {object} HelpTopicPayload
+ * @property {boolean} found
+ * @property {string} topic
+ * @property {string} locale
+ * @property {string} title
+ * @property {string} body_html
+ * @property {Array<string | {topic: string, title?: string}>} related
+ */
+
+/**
+ * Treffer von HelpController::search().
+ * @typedef {object} HelpSearchItem
+ * @property {string} topic
+ * @property {string} locale
+ * @property {string} title
+ * @property {string | null} keyword
+ */
+
+/** @type {string | null} */
 let currentTopic = null;
+/** @type {string | null} */
 let currentLocale = null;
 let feedbackSent = false;
+/** @type {HTMLElement | null} */
 let lastTrigger = null;
+/** @type {number | null} */
 let newsRotationTimer = null;
 
 function isDesktop() {
     return window.matchMedia(DESKTOP_QUERY).matches;
 }
 
+/**
+ * @param {string} key
+ * @param {string} fallback
+ */
 function getDrawerText(key, fallback) {
     const drawer = document.querySelector(DRAWER_SELECTOR);
     return (drawer && drawer.getAttribute(key)) || fallback;
 }
 
+/** @param {boolean} open */
 function rememberOpenState(open) {
     // Nur der Offen/Zu-Zustand — keine Topics, keine Inhalte (Datenschutz).
     try {
@@ -55,6 +84,7 @@ function rememberOpenState(open) {
 // Footer (Feedback/Aktionen) einklappen, um auf niedrigen Bildschirmen mehr
 // Platz für den Hilfetext zu schaffen. Zustand wird gemerkt — nur "collapsed",
 // keine fachlichen Daten (Datenschutz, analog zum Offen/Zu-Zustand).
+/** @param {boolean} collapsed */
 function rememberFooterCollapsed(collapsed) {
     try {
         if (collapsed) {
@@ -67,6 +97,7 @@ function rememberFooterCollapsed(collapsed) {
     }
 }
 
+/** @param {boolean} collapsed */
 function applyFooterCollapsed(collapsed) {
     const content = document.querySelector("[data-help-footer-content]");
     const toggle = document.querySelector("[data-help-footer-toggle]");
@@ -97,6 +128,7 @@ function storedNewsPausedPreference() {
     return null;
 }
 
+/** @param {boolean} paused */
 function rememberNewsPaused(paused) {
     try {
         window.localStorage.setItem(
@@ -147,6 +179,7 @@ function bindNewsRail() {
             toggleIcon.textContent = paused ? "play_arrow" : "pause";
     };
 
+    /** @param {number} index */
     const showItem = (index) => {
         items.forEach((item, itemIndex) => {
             const active = itemIndex === index;
@@ -220,11 +253,19 @@ function bindNewsRail() {
 // werden nur Klassen — die Animation macht CSS (layout.css): mobil Slide via
 // .translate-x-full, ab lg Breiten-Transition Rail↔Sidebar via
 // body.help-sidebar-open (dort ist .translate-x-full nur Zustandsmarker).
+/**
+ * @param {Element | null} el
+ * @param {boolean} hidden
+ */
 function setDrawerHidden(el, hidden) {
     if (!el) return;
     el.classList.toggle("translate-x-full", hidden);
 }
 
+/**
+ * @param {Element | null} el
+ * @param {boolean} hidden
+ */
 function setBackdropHidden(el, hidden) {
     if (!el) return;
     el.classList.toggle("help-backdrop-hidden", hidden);
@@ -235,6 +276,7 @@ function isOpen() {
     return !!drawer && !drawer.classList.contains("translate-x-full");
 }
 
+/** @param {{focus?: boolean}} [options] */
 function openDrawer(options = {}) {
     const { focus = true } = options;
     const drawer = /** @type {HTMLElement} */ (
@@ -256,6 +298,7 @@ function openDrawer(options = {}) {
     }
 }
 
+/** @param {{restoreFocus?: boolean}} [options] */
 function closeDrawer(options = {}) {
     const { restoreFocus = true } = options;
     const drawer = document.querySelector(DRAWER_SELECTOR);
@@ -281,16 +324,19 @@ function closeDrawer(options = {}) {
 
 // Hilfecenter-Suchfeld im Drawer-Kopf: im Fallback-Panel ausblenden, dort
 // steht bereits die Drawer-eigene Suche.
+/** @param {boolean} hidden */
 function setCenterSearchHidden(hidden) {
     const form = document.querySelector("[data-help-center-search]");
     if (form) form.classList.toggle("hidden", hidden);
 }
 
+/** @param {string} text */
 function setTitle(text) {
     const titleEl = document.querySelector("[data-help-title]");
     if (titleEl) titleEl.textContent = text;
 }
 
+/** @param {string} message */
 function renderTopicError(message) {
     // Definierter Fallback (kein Endlos-Spinner): Hinweis + Hilfe-Suche.
     renderFallback(message);
@@ -298,6 +344,7 @@ function renderTopicError(message) {
 
 // Fallback-Panel: "Für diese Seite gibt es noch keine Hilfe" + Suchfeld.
 // Inhalt kommt aus dem serverseitig übersetzten <template data-help-fallback>.
+/** @param {string | null} [message] */
 function renderFallback(message = null) {
     const bodyEl = document.querySelector("[data-help-body]");
     const footerEl = document.querySelector("[data-help-footer]");
@@ -334,8 +381,9 @@ function renderFallback(message = null) {
     }
 }
 
+/** @param {Element} form */
 async function runFallbackSearch(form) {
-    const input = form.querySelector('input[name="q"]');
+    const input = /** @type {HTMLInputElement | null} */ (form.querySelector('input[name="q"]'));
     const resultsEl = document.querySelector("[data-help-search-results]");
     const template = document.querySelector(FALLBACK_TEMPLATE_SELECTOR);
     const query = input ? input.value.trim() : "";
@@ -343,9 +391,10 @@ async function runFallbackSearch(form) {
 
     clearHtml(resultsEl);
     try {
-        const { ok, data: payload } = await getJson(
-            `/help/search?q=${encodeURIComponent(query)}`,
+        const { ok, data: payload } = /** @type {import("./lib/http.js").JsonResult<{ items?: HelpSearchItem[] }>} */ (
+            await getJson(`/help/search?q=${encodeURIComponent(query)}`)
         );
+        /** @type {HelpSearchItem[]} */
         const items =
             ok && payload && Array.isArray(payload.items) ? payload.items : [];
 
@@ -384,6 +433,7 @@ async function runFallbackSearch(form) {
     }
 }
 
+/** @param {HelpTopicPayload} payload */
 function renderTopic(payload) {
     const bodyEl = document.querySelector("[data-help-body]");
     const footerEl = document.querySelector("[data-help-footer]");
@@ -455,6 +505,10 @@ function renderTopic(payload) {
     currentLocale = payload.locale;
 }
 
+/**
+ * @param {string} topic
+ * @param {{focus?: boolean}} [options]
+ */
 async function loadTopic(topic, options = {}) {
     if (!topic) return;
     const titleEl = document.querySelector("[data-help-title]");
@@ -465,8 +519,8 @@ async function loadTopic(topic, options = {}) {
     openDrawer(options);
 
     try {
-        const { ok, data: payload } = await getJson(
-            `/help/topics/${encodeURIComponent(topic)}`,
+        const { ok, data: payload } = /** @type {import("./lib/http.js").JsonResult<HelpTopicPayload & { message?: string }>} */ (
+            await getJson(`/help/topics/${encodeURIComponent(topic)}`)
         );
         if (ok && payload && payload.found) {
             renderTopic(payload);
@@ -492,6 +546,7 @@ function getContextTopic() {
 }
 
 // Öffnet die Hilfe zum aktuellen Seitenkontext; ohne Kontext → Fallback-Panel.
+/** @param {{focus?: boolean}} [options] */
 function openContextHelp(options = {}) {
     const topic = getContextTopic();
     if (topic) {
@@ -502,6 +557,7 @@ function openContextHelp(options = {}) {
     }
 }
 
+/** @param {boolean} helpful */
 async function submitFeedback(helpful) {
     if (!currentTopic || feedbackSent) return;
     feedbackSent = true;
@@ -532,7 +588,7 @@ function bindHelpDrawer() {
                 closeDrawer();
                 return;
             }
-            lastTrigger = trigger;
+            lastTrigger = /** @type {HTMLElement} */ (trigger);
             if (topic) {
                 loadTopic(topic);
             } else {

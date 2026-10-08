@@ -13,6 +13,7 @@ namespace App\Http\Controllers\Schedule;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Schedule\{StoreShiftTypeRequest, UpdateShiftTypeRequest};
+use App\Http\Resources\ShiftTypeResource;
 use App\Models\Platform\User;
 use App\Models\Schedule\ShiftType;
 use App\Support\SortableQuery;
@@ -112,13 +113,13 @@ class ShiftTypeController extends Controller {
 
         $shiftType = ShiftType::create($data);
 
-        return response()->json($shiftType, 201);
+        return response()->json((new ShiftTypeResource($shiftType))->resolve(), 201);
     }
 
     public function update(UpdateShiftTypeRequest $request, ShiftType $shiftType): JsonResponse {
         $shiftType->update($request->validated());
 
-        return response()->json($shiftType);
+        return response()->json((new ShiftTypeResource($shiftType))->resolve());
     }
 
     public function destroy(ShiftType $shiftType): JsonResponse {

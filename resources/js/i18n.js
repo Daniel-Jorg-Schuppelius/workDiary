@@ -15,6 +15,9 @@
  *
  * Placeholders use Laravel's `:name` syntax and are replaced from the
  * optional `replace` object.
+ *
+ * @param {string} key
+ * @param {Record<string, unknown>} [replace]
  */
 function translate(key, replace) {
     const dict = (typeof window !== "undefined" && window.__translations) || {};

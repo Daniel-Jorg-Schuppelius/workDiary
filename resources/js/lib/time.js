@@ -10,6 +10,9 @@
 /**
  * Dauer "h:mm" in Minuten; null bei anderer Form oder Minuten außerhalb 0–59.
  * Genutzt vom Zeitformular (app.js) und der Erfassungsleiste (entry-bar.js).
+ *
+ * @param {unknown} val
+ * @returns {number | null}
  */
 export function toMinutes(val) {
     const parts = String(val || "").split(":");

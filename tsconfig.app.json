@@ -2,7 +2,9 @@
     "$schema": "https://json.schemastore.org/tsconfig",
     "extends": "./tsconfig.base.json",
     "compilerOptions": {
-        "lib": ["ES2022", "DOM", "DOM.Iterable"]
+        "lib": ["ES2022", "DOM", "DOM.Iterable"],
+        // import.meta.env und Asset-Importe, wie Vite sie bereitstellt.
+        "types": ["vite/client"]
     },
     "include": [
         "resources/js/**/*.js",

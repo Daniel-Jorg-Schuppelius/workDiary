@@ -44,10 +44,14 @@ export function csrfToken() {
  */
 
 /**
+ * Die Form von `data` legt der Aufrufer per Cast auf das Ergebnis fest,
+ * z. B. `JsonResult<{ items?: Row[] }>`.
+ *
+ * @template [T=unknown]
  * @typedef {Object} JsonResult
  * @property {boolean} ok
  * @property {number} status
- * @property {any} data geparster JSON-Body (null, wenn keiner)
+ * @property {T | null} data geparster JSON-Body (null, wenn keiner)
  * @property {Record<string, string[]>|null} errors 422er-Feldfehler (sonst null)
  */
 
@@ -110,16 +114,17 @@ export async function request(url, options = {}) {
  * @returns {Promise<JsonResult>}
  */
 async function toJsonResult(response) {
-    /** @type {any} */
+    /** @type {unknown} */
     let data = null;
     try {
         data = await response.json();
     } catch {
         data = null;
     }
+    const body = /** @type {{ errors?: unknown } | null} */ (data);
     const errors =
-        response.status === 422 && data && typeof data.errors === "object"
-            ? /** @type {Record<string, string[]>} */ (data.errors)
+        response.status === 422 && body && typeof body.errors === "object"
+            ? /** @type {Record<string, string[]>} */ (body.errors)
             : null;
     return { ok: response.ok, status: response.status, data, errors };
 }

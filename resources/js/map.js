@@ -27,6 +27,43 @@ import "leaflet-defaulticon-compatibility";
 const ROOT_SELECTOR = "[data-map]";
 const DEFAULT_ROUTE_COLOR = "#2563eb";
 
+/** @typedef {import("leaflet").Map} LeafletMap */
+/** @typedef {import("leaflet").Marker | import("leaflet").CircleMarker} LeafletMarker */
+/** @typedef {import("leaflet").GeoJSON} LeafletGeoJson */
+/** @typedef {import("leaflet").LayerGroup} LeafletLayerGroup */
+/** @typedef {import("geojson").GeoJsonObject} GeoJsonObject */
+
+/** @typedef {{lat: number, lng: number, label?: string, layer?: string, color?: string, popup?: string}} MapMarkerDef */
+/** @typedef {{geometry: GeoJsonObject | null, color?: string, label?: string, layer?: string}} MapRouteDef */
+/** @typedef {{key: string, label?: string, color?: string}} MapLayerDef */
+
+/**
+ * data-config der <x-map>-Komponente (siehe Kopf).
+ * @typedef {object} MapConfig
+ * @property {{url?: string | null, attribution?: string | null, maxZoom?: number}} [tiles]
+ * @property {[number, number] | {lat: number, lng: number} | null} [center]
+ * @property {number} [zoom]
+ * @property {MapMarkerDef[]} [markers]
+ * @property {GeoJsonObject | null} [route] GeoJSON LineString
+ * @property {MapRouteDef[]} [routes]
+ * @property {MapLayerDef[]} [layers]
+ */
+
+/**
+ * @typedef {object} MapLayers
+ * @property {LeafletMarker[]} markers
+ * @property {LeafletGeoJson | null} route
+ * @property {LeafletGeoJson[]} routes
+ * @property {Record<string, LeafletLayerGroup>} groups
+ * @property {ResizeObserver} [_resizeObserver]
+ */
+
+/** @typedef {{map: LeafletMap, layers: MapLayers}} MapHandle */
+
+/**
+ * @param {Element} el
+ * @returns {MapConfig}
+ */
 function readConfig(el) {
     const raw = el.getAttribute("data-config");
     if (!raw) {
@@ -40,6 +77,10 @@ function readConfig(el) {
     }
 }
 
+/**
+ * @param {MapConfig["center"]} center
+ * @returns {[number, number] | null}
+ */
 function normalizeCenter(center) {
     if (Array.isArray(center)) {
         return center;
@@ -55,7 +96,12 @@ function normalizeCenter(center) {
     return null;
 }
 
+/**
+ * @param {MapMarkerDef} m
+ * @returns {LeafletMarker}
+ */
 function makeMarker(m) {
+    /** @type {import("leaflet").LatLngTuple} */
     const latlng = [m.lat, m.lng];
     let marker;
     if (typeof m.color === "string" && m.color !== "") {
@@ -88,6 +134,8 @@ function makeMarker(m) {
  * HTMLElement nimmt Leaflet unverändert entgegen; `textContent` kann per
  * Definition kein Markup erzeugen. Die Popups waren serverseitig escaped,
  * die Tooltips nicht.
+ *
+ * @param {string} value
  */
 function textNode(value) {
     const span = document.createElement("span");
@@ -96,6 +144,10 @@ function textNode(value) {
     return span;
 }
 
+/**
+ * @param {HTMLElement & {__wdMap?: MapHandle}} el
+ * @param {MapConfig} [overrides]
+ */
 export function initMap(el, overrides = {}) {
     if (!el || el.__wdMap) {
         return el && el.__wdMap;
@@ -116,6 +168,7 @@ export function initMap(el, overrides = {}) {
     }).addTo(map);
 
     // Overlay groups keyed by layer name; items without a layer go to `_default`.
+    /** @type {Record<string, LeafletLayerGroup>} */
     const groups = {};
     const layerDefs = Array.isArray(cfg.layers) ? cfg.layers : [];
     layerDefs.forEach((def) => {
@@ -123,6 +176,7 @@ export function initMap(el, overrides = {}) {
             groups[def.key] = L.layerGroup().addTo(map);
         }
     });
+    /** @param {string | undefined} key */
     const ensureGroup = (key) => {
         const k = key || "_default";
         if (!groups[k]) {
@@ -131,6 +185,7 @@ export function initMap(el, overrides = {}) {
         return groups[k];
     };
 
+    /** @type {MapLayers} */
     const layers = { markers: [], route: null, routes: [], groups };
 
     if (Array.isArray(cfg.markers)) {
@@ -173,6 +228,7 @@ export function initMap(el, overrides = {}) {
 
     // Layer toggle control + legend when overlay definitions are provided.
     if (layerDefs.length > 0) {
+        /** @type {Record<string, LeafletLayerGroup>} */
         const overlays = {};
         layerDefs.forEach((def) => {
             if (!def || !def.key || !groups[def.key]) {
@@ -184,7 +240,7 @@ export function initMap(el, overrides = {}) {
             overlays[`${swatch}${def.label || def.key}`] = groups[def.key];
         });
         L.control
-            .layers(null, overlays, { collapsed: false, position: "topright" })
+            .layers(undefined, overlays, { collapsed: false, position: "topright" })
             .addTo(map);
     }
 
@@ -208,6 +264,12 @@ export function initMap(el, overrides = {}) {
     return el.__wdMap;
 }
 
+/**
+ * @param {MapHandle | null | undefined} handle
+ * @param {number} lat
+ * @param {number} lng
+ * @param {string} [label]
+ */
 export function addMarker(handle, lat, lng, label) {
     if (!handle || !handle.map) return null;
     const marker = L.marker([lat, lng]).addTo(handle.map);
@@ -217,6 +279,10 @@ export function addMarker(handle, lat, lng, label) {
     return marker;
 }
 
+/**
+ * @param {MapHandle | null | undefined} handle
+ * @param {GeoJsonObject | null | undefined} geometry
+ */
 export function drawRoute(handle, geometry) {
     if (!handle || !handle.map) return null;
     if (handle.layers.route) {
@@ -231,6 +297,10 @@ export function drawRoute(handle, geometry) {
     return handle.layers.route;
 }
 
+/**
+ * @param {LeafletMap} map
+ * @param {MapLayers} layers
+ */
 function fitToContent(map, layers) {
     const bounds = L.latLngBounds([]);
     layers.markers.forEach((m) => bounds.extend(m.getLatLng()));
@@ -250,7 +320,7 @@ function fitToContent(map, layers) {
 }
 
 function autoInit() {
-    document.querySelectorAll(ROOT_SELECTOR).forEach((el) => initMap(el));
+    document.querySelectorAll(ROOT_SELECTOR).forEach((el) => initMap(/** @type {HTMLElement} */ (el)));
 }
 
 if (document.readyState === "loading") {

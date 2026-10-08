@@ -19,9 +19,10 @@ import { putJson } from "./lib/http.js";
     var toggles = document.querySelectorAll("[data-theme-toggle]");
     var labels = document.querySelectorAll("[data-theme-label]");
 
+    /** @param {string | null} theme */
     function schemeOf(theme) {
         return (
-            (seed.schemes && seed.schemes[theme]) ||
+            (seed.schemes && seed.schemes[/** @type {string} */ (theme)]) ||
             (theme === "corporate-dark" ||
             theme === "dim" ||
             theme === "dark" ||
@@ -46,12 +47,13 @@ import { putJson } from "./lib/http.js";
     // an den aktuellen Zustand angleichen.
     syncLabel();
 
+    /** @param {string} scheme */
     function persistScheme(scheme) {
         // Eingeloggt zählt allein die DB-Wahl → der Farbmodus muss
         // serverseitig persistiert werden, damit er den Reload übersteht.
         // Es wird NUR der Modus gespeichert; welches Theme das ist,
         // bestimmt das Org-Hell/Dunkel-Paar (ThemeService).
-        if (!seed.authenticated) return;
+        if (!seed.authenticated || !cfg.themeUpdateUrl) return;
         putJson(cfg.themeUpdateUrl, { scheme: scheme }).catch(function () {});
     }
 
@@ -77,24 +79,40 @@ import { putJson } from "./lib/http.js";
     );
     var confirmTitle = document.getElementById("action-confirm-title");
     var confirmMessage = document.getElementById("action-confirm-message");
-    var confirmSubmit = document.getElementById("action-confirm-submit");
-    var confirmHeader = document.getElementById("action-confirm-header");
-    var confirmIconWrap = document.getElementById("action-confirm-icon-wrap");
+    // Kopf, Icon-Rahmen und Knopf rendert das Dialog-Markup mit; genutzt nur bei vorhandenem Dialog.
+    var confirmSubmit = /** @type {HTMLElement} */ (
+        document.getElementById("action-confirm-submit")
+    );
+    var confirmHeader = /** @type {HTMLElement} */ (
+        document.getElementById("action-confirm-header")
+    );
+    var confirmIconWrap = /** @type {HTMLElement} */ (
+        document.getElementById("action-confirm-icon-wrap")
+    );
     var confirmIcon = document.getElementById("action-confirm-icon");
     var notifyDialog = /** @type {HTMLDialogElement} */ (
         document.getElementById("action-notify-dialog")
     );
     var notifyTitle = document.getElementById("action-notify-title");
     var notifyMessage = document.getElementById("action-notify-message");
-    var notifyHeader = document.getElementById("action-notify-header");
-    var notifyIconWrap = document.getElementById("action-notify-icon-wrap");
+    var notifyHeader = /** @type {HTMLElement} */ (
+        document.getElementById("action-notify-header")
+    );
+    var notifyIconWrap = /** @type {HTMLElement} */ (
+        document.getElementById("action-notify-icon-wrap")
+    );
     var notifyIcon = document.getElementById("action-notify-icon");
     var notifyOk = document.getElementById("action-notify-ok");
+    /** @type {HTMLFormElement | null} */
     var pendingForm = null;
+    /** @type {HTMLElement | null} */
     var pendingSubmitter = null;
+    /** @type {((ok: boolean) => void) | null} */
     var pendingResolve = null;
+    /** @type {(() => void) | null} */
     var pendingNotifyResolve = null;
 
+    /** @type {Record<string, {header: string, icon: string}>} */
     var toneAccents = {
         primary: {
             header: "from-primary/15 via-primary/5 to-transparent",
@@ -121,6 +139,7 @@ import { putJson } from "./lib/http.js";
             icon: "bg-base-300 text-base-content/70",
         },
     };
+    /** @type {string[]} */
     var toneClasses = [];
     Object.keys(toneAccents).forEach(function (k) {
         toneAccents[k].header.split(" ").forEach(function (c) {
@@ -131,6 +150,11 @@ import { putJson } from "./lib/http.js";
         });
     });
 
+    /**
+     * @param {HTMLElement} headerEl
+     * @param {HTMLElement} iconWrapEl
+     * @param {string} tone
+     */
     function applyTone(headerEl, iconWrapEl, tone) {
         var accent = toneAccents[tone] || toneAccents.warning;
         toneClasses.forEach(function (c) {
@@ -148,6 +172,10 @@ import { putJson } from "./lib/http.js";
     // Rendert einen Icon-Bezeichner in das Icon-Element.
     // Akzeptiert Material-Symbol-Namen (a-z0-9_) ODER beliebige
     // Emojis/Roh-HTML als Backwards-Compat.
+    /**
+     * @param {HTMLElement | null} el
+     * @param {string | null | undefined} value
+     */
     function renderIcon(el, value) {
         if (!el) return;
         var v = value == null ? "" : String(value);
@@ -163,6 +191,7 @@ import { putJson } from "./lib/http.js";
         }
     }
 
+    /** @param {ConfirmActionOptions & {dangerous?: boolean}} [opts] */
     function openConfirm(opts) {
         opts = opts || {};
         var tone =
@@ -204,9 +233,11 @@ import { putJson } from "./lib/http.js";
         }
     }
 
+    /** @param {NotifyActionOptions} [opts] */
     function openNotify(opts) {
         opts = opts || {};
         var tone = opts.tone || "info";
+        /** @type {Record<string, string>} */
         var defaultIcons = {
             info: "info",
             success: "check_circle",
@@ -215,6 +246,7 @@ import { putJson } from "./lib/http.js";
             primary: "info",
             ghost: "info",
         };
+        /** @type {Record<string, string | undefined>} */
         var defaultTitles = {
             info: I.notifyInfo,
             success: I.notifySuccess,
@@ -323,8 +355,9 @@ import { putJson } from "./lib/http.js";
 
         // Allow data-confirm-dialog on buttons / anchors directly.
         document.addEventListener("click", function (event) {
-            var trigger = /** @type {any} */ (event.target).closest(
-                "[data-confirm-dialog]",
+            // Knopf, Link oder sonstiges Element; gelesen werden nur form/type/href.
+            var trigger = /** @type {(HTMLElement & { form?: HTMLFormElement | null, type?: string, href?: string }) | null} */ (
+                /** @type {Element} */ (event.target).closest("[data-confirm-dialog]")
             );
             if (!trigger || trigger.tagName === "FORM") {
                 return;
@@ -351,13 +384,13 @@ import { putJson } from "./lib/http.js";
             } else if (trigger.tagName === "A" && trigger.href) {
                 pendingForm = null;
                 pendingResolve = function (ok) {
-                    if (ok) window.location.href = trigger.href;
+                    if (ok) window.location.href = /** @type {HTMLAnchorElement} */ (trigger).href;
                 };
             } else {
                 pendingForm = null;
                 pendingResolve = function (ok) {
                     if (ok)
-                        trigger.dispatchEvent(
+                        /** @type {HTMLElement} */ (trigger).dispatchEvent(
                             new CustomEvent("confirmed-action", {
                                 bubbles: true,
                             }),
@@ -436,6 +469,7 @@ import { putJson } from "./lib/http.js";
     // gemerkten Zustand übernimmt das Inline-Skript hinter der Sidebar.
     (function () {
         var STORAGE_KEY = "workDiarySidebarSections";
+        /** @type {Record<string, number>} */
         var store = {};
         try {
             var raw = localStorage.getItem(STORAGE_KEY);
@@ -451,7 +485,9 @@ import { putJson } from "./lib/http.js";
             )
         );
         sections.forEach(function (details) {
-            var key = details.getAttribute("data-sidebar-section-key");
+            var key = /** @type {string} */ (
+                details.getAttribute("data-sidebar-section-key")
+            );
             details.addEventListener("toggle", function () {
                 store[key] = details.open ? 1 : 0;
                 try {
@@ -467,6 +503,7 @@ import { putJson } from "./lib/http.js";
     // analog zu den Sektionen, eigener Storage-Schlüssel.
     (function () {
         var STORAGE_KEY = "workDiarySidebarSubgroups";
+        /** @type {Record<string, number>} */
         var store = {};
         try {
             var raw = localStorage.getItem(STORAGE_KEY);
@@ -482,7 +519,9 @@ import { putJson } from "./lib/http.js";
             )
         );
         groups.forEach(function (details) {
-            var key = details.getAttribute("data-sidebar-subgroup-key");
+            var key = /** @type {string} */ (
+                details.getAttribute("data-sidebar-subgroup-key")
+            );
             details.addEventListener("toggle", function () {
                 store[key] = details.open ? 1 : 0;
                 try {
@@ -516,7 +555,10 @@ import { putJson } from "./lib/http.js";
 
     if (sidebarToggle) {
         sidebarToggle.addEventListener("click", function () {
-            var open = sidebarToggle.getAttribute("aria-expanded") === "true";
+            var open =
+                /** @type {HTMLElement} */ (sidebarToggle).getAttribute(
+                    "aria-expanded",
+                ) === "true";
             if (open) closeSidebar();
             else openSidebar();
         });

@@ -15,15 +15,27 @@ import { __ } from "./i18n.js";
 import { isValidIban } from "./lib/iban.js";
 import { suggestPassword } from "./lib/password.js";
 
-/** Auslagen: Kategorie setzt Steuersatz und Abrechenbar-Vorgabe, zeigt den Verpflegungshinweis. */
+/**
+ * @typedef {object} RequirementPreset
+ * @property {string} enforce_phase
+ * @property {string} severity
+ * @property {number} min_count
+ * @property {number | null} max_count
+ * @property {boolean} allow_multi
+ */
+
+/**
+ * Auslagen: Kategorie setzt Steuersatz und Abrechenbar-Vorgabe, zeigt den Verpflegungshinweis.
+ * @param {ParentNode} root
+ */
 function initExpenseCategory(root) {
-    root.querySelectorAll("[data-expense-category]").forEach((select) => {
+    /** @type {NodeListOf<HTMLSelectElement>} */ (root.querySelectorAll("[data-expense-category]")).forEach((select) => {
         if (select.dataset.expenseBound === "1") return;
         select.dataset.expenseBound = "1";
 
         const scope = select.closest("form") || root;
-        const taxInput = scope.querySelector("[data-expense-tax-rate]");
-        const billable = scope.querySelector("[data-expense-billable]");
+        const taxInput = /** @type {HTMLInputElement | null} */ (scope.querySelector("[data-expense-tax-rate]"));
+        const billable = /** @type {HTMLInputElement | null} */ (scope.querySelector("[data-expense-billable]"));
         const mealsHint = scope.querySelector("[data-meals-hint]");
 
         const refreshMealsHint = () => {
@@ -64,6 +76,11 @@ function initExpenseCategory(root) {
     });
 }
 
+/**
+ * @template T
+ * @param {string | undefined} raw
+ * @returns {Record<string, T>}
+ */
 function parseJson(raw) {
     try {
         const value = JSON.parse(raw || "{}");
@@ -73,6 +90,10 @@ function parseJson(raw) {
     }
 }
 
+/**
+ * @param {HTMLSelectElement | null | undefined} select
+ * @param {string} value
+ */
 function optionLabel(select, value) {
     if (!select) return "";
     const option = Array.prototype.find.call(
@@ -82,24 +103,40 @@ function optionLabel(select, value) {
     return option ? option.textContent.trim() : value;
 }
 
-/** Pflichtklassifikation: Auftragstyp und Pflicht-Domain belegen Phase, Schweregrad und Anzahl vor. */
+/**
+ * Pflichtklassifikation: Auftragstyp und Pflicht-Domain belegen Phase, Schweregrad und Anzahl vor.
+ * @param {ParentNode} root
+ */
 function initRequirementPresets(root) {
-    const entryType = root.querySelector("#req-entry-type");
-    const domain = root.querySelector("#req-domain");
+    const entryType = /** @type {HTMLSelectElement | null} */ (root.querySelector("#req-entry-type"));
+    const domain = /** @type {HTMLSelectElement | null} */ (root.querySelector("#req-domain"));
     if (!entryType || !domain || entryType.dataset.presetBound === "1") return;
     entryType.dataset.presetBound = "1";
 
     const scope = entryType.closest("form") || root;
+    /** @type {Record<string, RequirementPreset>} */
     const entryTypePresets = parseJson(entryType.dataset.entryTypePresets);
+    /** @type {Record<string, RequirementPreset>} */
     const domainPresets = parseJson(domain.dataset.requiredDomainPresets);
-    const summary = scope.querySelector("#req-preset-summary");
+    const summary = /** @type {HTMLElement | null} */ (scope.querySelector("#req-preset-summary"));
     const details = scope.querySelector("#req-preset-details");
+    /** @type {Record<string, string>} */
     const labels = parseJson(summary ? summary.dataset.presetLabels : "{}");
+    /** @param {string} key */
     const text = (key) => labels[key] || "";
+    /**
+     * @type {{
+     *     enforce_phase?: HTMLSelectElement | null,
+     *     severity?: HTMLSelectElement | null,
+     *     min_count?: HTMLInputElement | null,
+     *     max_count?: HTMLInputElement | null,
+     *     allow_multi?: HTMLInputElement | null,
+     * }}
+     */
     const fields = {};
     ["enforce_phase", "severity", "min_count", "max_count", "allow_multi"].forEach(
         (name) => {
-            fields[name] = scope.querySelector(`[data-preset-target="${name}"]`);
+            /** @type {Record<string, Element | null>} */ (fields)[name] = scope.querySelector(`[data-preset-target="${name}"]`);
         },
     );
 
@@ -136,6 +173,7 @@ function initRequirementPresets(root) {
             ` · ${text("allow_multi")} ${preset.allow_multi ? text("yes") : text("no")}`;
 
         if (!details) return;
+        /** @type {Array<keyof RequirementPreset>} */
         const fieldNames = [
             "enforce_phase",
             "severity",
@@ -143,6 +181,10 @@ function initRequirementPresets(root) {
             "max_count",
             "allow_multi",
         ];
+        /**
+         * @param {RequirementPreset | undefined} object
+         * @param {keyof RequirementPreset} field
+         */
         const has = (object, field) =>
             Boolean(object) && Object.prototype.hasOwnProperty.call(object, field);
         const fromDomain = fieldNames.filter((field) => has(domainPreset, field));
@@ -152,6 +194,7 @@ function initRequirementPresets(root) {
                 has(entryTypePreset, field) &&
                 domainPreset[field] !== entryTypePreset[field],
         );
+        /** @param {string[]} list */
         const names = (list) => list.map((field) => text(field)).join(", ");
 
         if (fromDomain.length === 0 && entryTypePreset) {
@@ -165,6 +208,7 @@ function initRequirementPresets(root) {
         }
     };
 
+    /** @param {boolean} force */
     const applyPreset = (force) => {
         const preset = combinedPreset();
         if (Object.keys(preset).length === 0) {
@@ -210,17 +254,18 @@ function initRequirementPresets(root) {
 /**
  * Passwort vorschlagen: füllt die genannten Felder sichtbar, damit das
  * Initialpasswort weitergegeben werden kann.
+ * @param {ParentNode} root
  */
 function initPasswordSuggest(root) {
-    root.querySelectorAll("[data-password-suggest]").forEach((button) => {
+    /** @type {NodeListOf<HTMLElement>} */ (root.querySelectorAll("[data-password-suggest]")).forEach((button) => {
         if (button.dataset.passwordSuggestBound === "1") return;
         button.dataset.passwordSuggestBound = "1";
 
         button.addEventListener("click", () => {
             const scope = button.closest("form") || root;
             const password = suggestPassword();
-            button.dataset.passwordSuggest.split(" ").forEach((name) => {
-                const input = scope.querySelector(`input[name="${name}"]`);
+            /** @type {string} */ (button.dataset.passwordSuggest).split(" ").forEach((name) => {
+                const input = /** @type {HTMLInputElement | null} */ (scope.querySelector(`input[name="${name}"]`));
                 if (!input) return;
                 input.type = "text";
                 input.value = password;
@@ -230,12 +275,16 @@ function initPasswordSuggest(root) {
     });
 }
 
-/** IBAN-Felder: Zahlendreher am Feld melden, bevor der Dialog absendet. */
+/**
+ * IBAN-Felder: Zahlendreher am Feld melden, bevor der Dialog absendet.
+ * @param {ParentNode} root
+ */
 function initIbanCheck(root) {
-    root.querySelectorAll("input[data-iban-check]").forEach((input) => {
+    /** @type {NodeListOf<HTMLInputElement>} */ (root.querySelectorAll("input[data-iban-check]")).forEach((input) => {
         if (input.dataset.ibanCheckBound === "1") return;
         input.dataset.ibanCheckBound = "1";
 
+        /** @param {boolean} report */
         const check = (report) => {
             const valid = isValidIban(input.value);
             input.setCustomValidity(valid ? "" : __("js.iban.invalid"));
@@ -248,6 +297,7 @@ function initIbanCheck(root) {
     });
 }
 
+/** @param {ParentNode} root */
 export function initDialogForms(root) {
     if (!root) return;
     initExpenseCategory(root);

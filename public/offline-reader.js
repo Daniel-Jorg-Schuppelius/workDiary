@@ -24,9 +24,32 @@
         es: { title: "Está sin conexión", text: "workDiary no puede cargar el contenido solicitado en este momento. En cuanto vuelva la conexión, la aplicación estará disponible como siempre.", retry: "Reintentar", crisis: "Carpeta de crisis", stand: "Estado", situation: "Situación", risks: "Riesgos", actions: "Medidas abiertas", team: "Comité de crisis", deputy: "Suplente", messages: "Mensajes enviados", none: "No hay ninguna crisis activa guardada.", courses: "Cursos guardados", storedAt: "guardado el", onlineOnly: "solo disponible en línea", solution: "Mostrar solución" },
         it: { title: "È offline", text: "workDiary non riesce a caricare il contenuto richiesto in questo momento. Appena la connessione torna disponibile, l'app è di nuovo utilizzabile.", retry: "Riprova", crisis: "Cartella di crisi", stand: "Aggiornato al", situation: "Situazione", risks: "Rischi", actions: "Misure aperte", team: "Unità di crisi", deputy: "Sostituto", messages: "Messaggi inviati", none: "Nessuna crisi attiva salvata.", courses: "Corsi salvati", storedAt: "salvato il", onlineOnly: "disponibile solo online", solution: "Mostra soluzione" }
     };
-    var lang = (navigator.language || "de").slice(0, 2).toLowerCase();
+    /**
+     * Gespeicherte Bündel (IndexedDB) — Freitext, jedes Feld kann fehlen.
+     *
+     * @typedef {{ name?: string, phone?: string }} Person
+     * @typedef {{ title?: string, severity?: string, situation?: { at?: string, content?: string, risks?: string },
+     *     actions?: { title?: string, assignee?: string, due_at?: string }[],
+     *     team?: { role?: string, person?: Person, deputy?: Person, note?: string }[],
+     *     communications?: { subject?: string, sent_at?: string, body?: string }[] }} CrisisCase
+     * @typedef {{ generated_at?: string, organization?: string, cases?: CrisisCase[] }} CrisisBundle
+     * @typedef {{ type?: string, text?: string, caption?: string, alt?: string, items?: unknown[],
+     *     sections?: { title?: string, body?: string }[], rows?: unknown[][],
+     *     options?: { text?: string, correct?: boolean }[], explanation?: string }} CourseBlock
+     * @typedef {{ course?: { title?: string, subtitle?: string }, stored_at?: string,
+     *     units?: { section?: string, title?: string, blocks?: CourseBlock[] }[] }} CourseBundle
+     */
+
+    var lang = /** @type {keyof typeof T} */ ((navigator.language || "de").slice(0, 2).toLowerCase());
     var t = T[lang] || T.de;
 
+    /**
+     * @template {keyof HTMLElementTagNameMap} K
+     * @param {K} tag
+     * @param {string | null} [text]
+     * @param {string} [cls]
+     * @returns {HTMLElementTagNameMap[K]}
+     */
     function el(tag, text, cls) {
         var node = document.createElement(tag);
         if (text) node.textContent = text;
@@ -34,11 +57,13 @@
         return node;
     }
 
+    /** @param {string | undefined} iso */
     function date(iso) {
         if (!iso) return "";
         try { return new Date(iso).toLocaleString(lang); } catch (e) { return iso; }
     }
 
+    /** @param {Person} person */
     function contact(person) {
         var span = el("span", person.name);
         if (person.phone) {
@@ -49,9 +74,11 @@
         return span;
     }
 
+    /** @param {CrisisBundle} bundle */
     function render(bundle) {
-        var box = document.getElementById("crisis");
-        if (!box) return;
+        var found = document.getElementById("crisis");
+        if (!found) return;
+        var box = found;
         box.hidden = false;
         box.appendChild(el("h2", t.crisis));
         box.appendChild(el("p", t.stand + " " + date(bundle.generated_at) + (bundle.organization ? " · " + bundle.organization : ""), "meta"));
@@ -96,6 +123,7 @@
         });
     }
 
+    /** @param {CourseBlock} b */
     function block(b) {
         var type = b && b.type;
         var caption = b.caption || b.alt || "";
@@ -144,9 +172,11 @@
         }
     }
 
+    /** @param {CourseBundle[]} list */
     function renderCourses(list) {
-        var box = document.getElementById("courses");
-        if (!box || !list.length) return;
+        var found = document.getElementById("courses");
+        if (!found || !list.length) return;
+        var box = found;
         box.hidden = false;
         box.appendChild(el("h2", t.courses));
         list.forEach(function (bundle) {
@@ -163,9 +193,10 @@
     }
 
     document.addEventListener("DOMContentLoaded", function () {
-        document.getElementById("title").textContent = t.title;
-        document.getElementById("text").textContent = t.text;
-        var retry = document.getElementById("retry");
+        // Feste Elemente von offline.html.
+        /** @type {HTMLElement} */ (document.getElementById("title")).textContent = t.title;
+        /** @type {HTMLElement} */ (document.getElementById("text")).textContent = t.text;
+        var retry = /** @type {HTMLElement} */ (document.getElementById("retry"));
         retry.textContent = t.retry;
         retry.addEventListener("click", function () { location.reload(); });
         document.documentElement.lang = T[lang] ? lang : "de";
@@ -173,7 +204,7 @@
         if (typeof indexedDB === "undefined") return;
         var request = indexedDB.open("workdiary-sync");
         // Nichts gespeichert: keine leere Datenbank anlegen, die spätere Versionswechsel der App blockiert.
-        request.onupgradeneeded = function () { request.transaction.abort(); };
+        request.onupgradeneeded = function () { if (request.transaction) request.transaction.abort(); };
         request.onsuccess = function () {
             var db = request.result;
             db.onversionchange = function () { db.close(); };

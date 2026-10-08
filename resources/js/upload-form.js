@@ -89,7 +89,7 @@ function bindUploadForm(form) {
         let total = 0;
         for (const file of files) {
             total += file.size;
-            const ext = file.name.includes(".") ? file.name.split(".").pop().toLowerCase() : "";
+            const ext = file.name.includes(".") ? (file.name.split(".").pop() ?? "").toLowerCase() : "";
             if (extensions.length > 0 && !extensions.includes(ext)) {
                 messages.push(fill(d.msgType, { name: file.name }));
             } else if (maxBytes > 0 && file.size > maxBytes) {
@@ -156,7 +156,7 @@ function bindUploadForm(form) {
         };
 
         xhr.addEventListener("load", () => {
-            /** @type {any} */
+            /** @type {{ redirect?: string, errors?: Record<string, unknown[]> } | null} */
             let body = null;
             try {
                 body = JSON.parse(xhr.responseText || "null");

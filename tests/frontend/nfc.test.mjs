@@ -11,7 +11,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { recordText } from "../../resources/js/lib/nfc.js";
 
-const encode = (text) => new TextEncoder().encode(text).buffer;
+const encode = (/** @type {string} */ text) => new TextEncoder().encode(text).buffer;
 
 test("NFC: URL-Datensatz wird als Objekt-Link gelesen (MVP-903)", () => {
     const message = { records: [{ recordType: "mime", data: encode("x") }, { recordType: "url", data: encode(" https://wd.test/assets/abc ") }] };

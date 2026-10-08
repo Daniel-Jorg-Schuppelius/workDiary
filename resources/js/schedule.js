@@ -14,12 +14,75 @@ import { escHtml, escCssValue, html, setHtml, clearHtml } from "./lib/html.js";
 import { request } from "./lib/http.js";
 import { pointerSort } from "./lib/pointer-sort.js";
 
+/**
+ * Formen aus schedule/index.blade.php (window.__scheduleConfig), den
+ * data-*-payload-Attributen der Partials und den Schedule-Controllern.
+ *
+ * @typedef {object} ShiftTypeData
+ * @property {string} id Sqid (ShiftTypeResource)
+ * @property {string} name
+ * @property {string} abbreviation
+ * @property {string | null} color
+ * @property {string | null} default_start_time
+ * @property {string | null} default_end_time
+ * @property {boolean} is_active
+ *
+ * @typedef {object} ScheduleRoutes
+ * @property {string} shiftsStore
+ * @property {string} shiftsUpdate
+ * @property {string} shiftsDestroy
+ * @property {string} shiftsPublish
+ * @property {string} shiftsConfirm
+ * @property {string} typesStore
+ * @property {string} typesUpdate
+ * @property {string} typesDestroy
+ * @property {string} staffingSuggest
+ *
+ * @typedef {object} ScheduleConfig
+ * @property {boolean} isAdmin
+ * @property {string | null} currentUserId
+ * @property {string} csrf
+ * @property {ScheduleRoutes} routes
+ * @property {boolean} canSuggest
+ * @property {ShiftTypeData[]} shiftTypes
+ * @property {{ id: string, name: string }[]} users
+ *
+ * @typedef {object} ShiftPayload data-shift-payload
+ * @property {string} id
+ * @property {string | null} user_id
+ * @property {string | null} date
+ * @property {string | null} shift_type_id
+ * @property {string | null} start_time
+ * @property {string | null} end_time
+ * @property {string | null} note
+ * @property {string} status
+ *
+ * @typedef {object} ShiftDialogOptions
+ * @property {string | null} [date]
+ * @property {string | null} [userId]
+ * @property {string | null} [shiftId]
+ * @property {ShiftPayload | null} [shift]
+ * @property {string | null} [shiftTypeId]
+ *
+ * @typedef {object} StaffingSuggestion StaffingSuggester::suggest()
+ * @property {string} user_sqid
+ * @property {string} name
+ * @property {number} score
+ * @property {string[]} reasons
+ * @property {string[]} warnings
+ *
+ * @typedef {string | { message?: string }} ComplianceItem Meldung (422) oder ComplianceViolation::toArray()
+ * @typedef {Error & { complianceViolations?: ComplianceItem[] }} ApiError
+ */
+
 /* ──────────────────────────── State ──────────────────────────── */
 
+/** @type {ScheduleConfig | null} */
 let _cfg = null; // window.__scheduleConfig
 
 /* ──────────────────── Notify helper ──────────────────────────── */
 
+/** @param {string} message */
 function notifyError(message) {
     if (typeof window.notifyAction === "function") {
         window.notifyAction({ tone: "error", message: String(message) });
@@ -29,7 +92,8 @@ function notifyError(message) {
 /* ──────────────────────── Bootstrap ──────────────────────────── */
 
 document.addEventListener("DOMContentLoaded", function () {
-    _cfg = window.__scheduleConfig ?? {};
+    // schedule/index setzt die Konfiguration immer; `{}` bleibt der alte Rückfall.
+    _cfg = /** @type {ScheduleConfig} */ (window.__scheduleConfig ?? {});
 
     // Open type-manager dialog button (handled in partial inline script, but
     // also guard here in case partial script runs before this file)
@@ -83,9 +147,10 @@ document.addEventListener("click", (event) => {
     );
     if (suggest) {
         event.stopPropagation();
+        // Der Vorschlags-Button trägt data-date und data-slot-type-sqid immer.
         scheduleSuggestStaffing(
-            suggest.dataset.date,
-            suggest.dataset.slotTypeSqid,
+            /** @type {string} */ (suggest.dataset.date),
+            /** @type {string} */ (suggest.dataset.slotTypeSqid),
             suggest.dataset.slotName ?? "",
         );
         return;
@@ -144,14 +209,18 @@ document.addEventListener("click", (event) => {
         } catch (_e) {
             payload = null;
         }
-        if (payload) shiftTypeOpenEdit(typeEdit.dataset.typeEdit, payload);
+        if (payload)
+            shiftTypeOpenEdit(
+                /** @type {string} */ (typeEdit.dataset.typeEdit),
+                payload
+            );
         return;
     }
     const typeDelete = /** @type {HTMLElement | null} */ (
         target.closest("[data-type-delete]")
     );
     if (typeDelete) {
-        shiftTypeDelete(typeDelete.dataset.typeDelete);
+        shiftTypeDelete(/** @type {string} */ (typeDelete.dataset.typeDelete));
         return;
     }
 
@@ -183,16 +252,22 @@ pointerSort(document, {
     // Wichtig-Marke: sonst gewinnt hover:opacity-80 des Abzeichens.
     draggingClass: ["opacity-50!"],
     targetClass: ["drag-over"],
-    onDrop: ({ item, target }) => moveShift(item, target),
+    // Modus "mark" meldet onDrop nur mit Ziel.
+    onDrop: ({ item, target }) =>
+        moveShift(item, /** @type {HTMLElement} */ (target)),
 });
 
 /**
  * When a shift type is selected, prefill start/end with its defaults.
  * Always overwrites empty fields; overwrites existing values only if they
  * still match the previously selected type's defaults (so manual edits stay).
+ *
+ * @param {Event} event
  */
 function applyShiftTypeDefaults(event) {
-    const sel = event.currentTarget ?? event.target;
+    const sel = /** @type {HTMLSelectElement} */ (
+        event.currentTarget ?? event.target
+    );
     const id = sel.value;
     const types = Array.isArray(_cfg?.shiftTypes) ? _cfg.shiftTypes : [];
     const t = types.find((x) => String(x.id) === String(id));
@@ -231,7 +306,11 @@ function moveShift(badge, cell) {
 
     // PUT wie der Schicht-Dialog: die Route kennt kein PATCH, die Regeln
     // des Requests nehmen das Teil-Update.
-    apiFetch("PUT", `${_cfg.routes.shiftsUpdate}/${id}`, body)
+    apiFetch(
+        "PUT",
+        `${/** @type {ScheduleConfig} */ (_cfg).routes.shiftsUpdate}/${id}`,
+        body
+    )
         .then(() => window.location.reload())
         .catch((err) =>
             notifyError(err.message ?? __("js.schedule.move_failed")),
@@ -244,6 +323,10 @@ function moveShift(badge, cell) {
  * Feature 007: fetch ranked staffing suggestions for an open slot and let the
  * planner pick a candidate. The pick prefills the shift dialog (the regular
  * store() path then re-checks compliance before the assignment is saved).
+ *
+ * @param {string} date
+ * @param {string} shiftTypeSqid
+ * @param {string} typeName
  */
 async function scheduleSuggestStaffing(date, shiftTypeSqid, typeName) {
     const base = _cfg?.routes?.staffingSuggest;
@@ -251,9 +334,13 @@ async function scheduleSuggestStaffing(date, shiftTypeSqid, typeName) {
     const url = `${base}?date=${encodeURIComponent(date)}&shift_type_id=${encodeURIComponent(shiftTypeSqid)}`;
     let data;
     try {
-        data = await apiFetch("GET", url);
+        data = /** @type {{ suggestions?: StaffingSuggestion[] } | null} */ (
+            await apiFetch("GET", url)
+        );
     } catch (e) {
-        notifyError(e.message ?? __("js.schedule.suggest_failed"));
+        notifyError(
+            /** @type {Error} */ (e).message ?? __("js.schedule.suggest_failed")
+        );
         return;
     }
     const suggestions = Array.isArray(data?.suggestions)
@@ -262,6 +349,12 @@ async function scheduleSuggestStaffing(date, shiftTypeSqid, typeName) {
     renderStaffingSuggestions(date, shiftTypeSqid, typeName, suggestions);
 }
 
+/**
+ * @param {string} date
+ * @param {string} shiftTypeSqid
+ * @param {string} typeName
+ * @param {StaffingSuggestion[]} suggestions
+ */
 function renderStaffingSuggestions(date, shiftTypeSqid, typeName, suggestions) {
     let dlg = /** @type {HTMLDialogElement | null} */ (
         document.getElementById("staffing-suggest-dialog")
@@ -339,6 +432,11 @@ function renderStaffingSuggestions(date, shiftTypeSqid, typeName, suggestions) {
     dlg.showModal();
 }
 
+/**
+ * @param {string | undefined} date
+ * @param {string | undefined} shiftTypeSqid
+ * @param {string | undefined} userSqid
+ */
 function scheduleAssignSuggested(date, shiftTypeSqid, userSqid) {
     const dlg = /** @type {HTMLDialogElement | null} */ (
         document.getElementById("staffing-suggest-dialog")
@@ -347,6 +445,7 @@ function scheduleAssignSuggested(date, shiftTypeSqid, userSqid) {
     openShiftDialog({ date, shiftTypeId: shiftTypeSqid, userId: userSqid });
 }
 
+/** @param {ShiftDialogOptions} [options] */
 function openShiftDialog({
     date = null,
     userId = null,
@@ -368,7 +467,10 @@ function openShiftDialog({
     /** @type {HTMLInputElement} */ (
         document.getElementById("shift-dialog-id")
     ).value = isEdit ? shiftId : "";
-    document.getElementById("shift-dialog-error").classList.add("hidden");
+    // Das Dialog-Partial rendert Fehlerfeld, Löschen, Statuszeile und Titel immer.
+    /** @type {HTMLElement} */ (
+        document.getElementById("shift-dialog-error")
+    ).classList.add("hidden");
     document.getElementById("shift-dialog-compliance")?.classList.add("hidden");
     document
         .getElementById("shift-dialog-override-row")
@@ -377,12 +479,12 @@ function openShiftDialog({
         document.getElementById("shift-dialog-override")
     );
     if (_ovr) _ovr.checked = false;
-    document
-        .getElementById("shift-dialog-delete")
-        .classList.toggle("hidden", !isEdit);
-    document
-        .getElementById("shift-dialog-status-row")
-        .classList.toggle("hidden", !isEdit);
+    /** @type {HTMLElement} */ (
+        document.getElementById("shift-dialog-delete")
+    ).classList.toggle("hidden", !isEdit);
+    /** @type {HTMLElement} */ (
+        document.getElementById("shift-dialog-status-row")
+    ).classList.toggle("hidden", !isEdit);
 
     // Publish / Confirm buttons (state-driven, edit only)
     const status = isEdit ? (shift?.status ?? "") : "";
@@ -398,7 +500,9 @@ function openShiftDialog({
     document
         .getElementById("shift-dialog-confirm")
         ?.classList.toggle("hidden", !showConfirm);
-    document.getElementById("shift-dialog-title").textContent = isEdit
+    /** @type {HTMLElement} */ (
+        document.getElementById("shift-dialog-title")
+    ).textContent = isEdit
         ? __("js.schedule_ui.shift_edit")
         : __("js.schedule_ui.shift_create");
 
@@ -406,19 +510,19 @@ function openShiftDialog({
     const userEl = /** @type {HTMLSelectElement | null} */ (
         document.getElementById("shift-dialog-user")
     );
-    const dateEl = /** @type {HTMLInputElement | null} */ (
+    const dateEl = /** @type {HTMLInputElement} */ (
         document.getElementById("shift-dialog-date")
     );
     const typeEl = /** @type {HTMLSelectElement | null} */ (
         document.getElementById("shift-dialog-type")
     );
-    const startEl = /** @type {HTMLInputElement | null} */ (
+    const startEl = /** @type {HTMLInputElement} */ (
         document.getElementById("shift-dialog-start")
     );
-    const endEl = /** @type {HTMLInputElement | null} */ (
+    const endEl = /** @type {HTMLInputElement} */ (
         document.getElementById("shift-dialog-end")
     );
-    const noteEl = /** @type {HTMLInputElement | null} */ (
+    const noteEl = /** @type {HTMLInputElement} */ (
         document.getElementById("shift-dialog-note")
     );
     const statEl = /** @type {HTMLSelectElement | null} */ (
@@ -428,7 +532,8 @@ function openShiftDialog({
     if (isEdit && shift) {
         if (userEl?.tagName === "SELECT") userEl.value = shift.user_id ?? "";
         dateEl.value = shift.date ?? "";
-        typeEl.value = shift.shift_type_id ?? "";
+        // Ohne Schichttypen rendert der Dialog kein Select.
+        if (typeEl) typeEl.value = shift.shift_type_id ?? "";
         startEl.value = (shift.start_time ?? "").slice(0, 5);
         endEl.value = (shift.end_time ?? "").slice(0, 5);
         noteEl.value = shift.note ?? "";
@@ -442,6 +547,7 @@ function openShiftDialog({
     dlg.showModal();
 }
 
+/** @param {SubmitEvent} event */
 async function onShiftDialogSave(event) {
     event.preventDefault();
 
@@ -449,8 +555,10 @@ async function onShiftDialogSave(event) {
         document.getElementById("shift-dialog-id")
     ).value;
     const isEdit = !!id;
-    const errEl = document.getElementById("shift-dialog-error");
-    const saveBtn = /** @type {HTMLButtonElement | null} */ (
+    const errEl = /** @type {HTMLElement} */ (
+        document.getElementById("shift-dialog-error")
+    );
+    const saveBtn = /** @type {HTMLButtonElement} */ (
         document.getElementById("shift-dialog-save")
     );
     const overrideEl = /** @type {HTMLInputElement | null} */ (
@@ -461,6 +569,11 @@ async function onShiftDialogSave(event) {
     saveBtn.disabled = true;
     saveBtn.textContent = "…";
 
+    /**
+     * @type {{ user_id: string | null, date: string, shift_type_id: string | null,
+     *   start_time: string | null, end_time: string | null, note: string | null,
+     *   status?: string, override_compliance?: number }}
+     */
     const body = {
         user_id:
             /** @type {HTMLInputElement | null} */ (
@@ -469,10 +582,11 @@ async function onShiftDialogSave(event) {
         date: /** @type {HTMLInputElement} */ (
             document.getElementById("shift-dialog-date")
         ).value,
+        // Ohne Schichttypen fehlt das Select; die Schicht bleibt dann ohne Typ.
         shift_type_id:
-            /** @type {HTMLInputElement} */ (
+            /** @type {HTMLSelectElement | null} */ (
                 document.getElementById("shift-dialog-type")
-            ).value || null,
+            )?.value || null,
         start_time:
             /** @type {HTMLInputElement} */ (
                 document.getElementById("shift-dialog-start")
@@ -497,9 +611,20 @@ async function onShiftDialogSave(event) {
     }
 
     try {
-        const data = isEdit
-            ? await apiFetch("PUT", `${_cfg.routes.shiftsUpdate}/${id}`, body)
-            : await apiFetch("POST", _cfg.routes.shiftsStore, body);
+        const data =
+            /** @type {{ compliance_warnings?: ComplianceItem[] } | null} */ (
+                isEdit
+                    ? await apiFetch(
+                          "PUT",
+                          `${/** @type {ScheduleConfig} */ (_cfg).routes.shiftsUpdate}/${id}`,
+                          body
+                      )
+                    : await apiFetch(
+                          "POST",
+                          /** @type {ScheduleConfig} */ (_cfg).routes.shiftsStore,
+                          body
+                      )
+            );
 
         if (
             data &&
@@ -522,11 +647,13 @@ async function onShiftDialogSave(event) {
         window.location.reload();
     } catch (err) {
         // Compliance-Block (mode=block)?
-        const violations = err.complianceViolations;
+        const violations = /** @type {ApiError} */ (err).complianceViolations;
         if (Array.isArray(violations) && violations.length > 0) {
             showComplianceWarnings(violations, true);
         } else {
-            errEl.textContent = err.message ?? __("js.schedule_ui.save_failed");
+            errEl.textContent =
+                /** @type {Error} */ (err).message ??
+                __("js.schedule_ui.save_failed");
             errEl.classList.remove("hidden");
         }
     } finally {
@@ -535,6 +662,10 @@ async function onShiftDialogSave(event) {
     }
 }
 
+/**
+ * @param {ComplianceItem[]} violations
+ * @param {boolean} allowOverride
+ */
 function showComplianceWarnings(violations, allowOverride) {
     const compEl = document.getElementById("shift-dialog-compliance");
     const compList = document.getElementById("shift-dialog-compliance-list");
@@ -567,13 +698,19 @@ async function onShiftDialogDelete() {
     if (!ok) return;
 
     try {
-        await apiFetch("DELETE", `${_cfg.routes.shiftsDestroy}/${id}`);
+        await apiFetch(
+            "DELETE",
+            `${/** @type {ScheduleConfig} */ (_cfg).routes.shiftsDestroy}/${id}`
+        );
         /** @type {HTMLDialogElement} */ (
             document.getElementById("shift-dialog")
         ).close();
         window.location.reload();
     } catch (err) {
-        notifyError(err.message ?? __("js.schedule_ui.delete_failed"));
+        notifyError(
+            /** @type {Error} */ (err).message ??
+                __("js.schedule_ui.delete_failed")
+        );
     }
 }
 
@@ -583,13 +720,19 @@ async function onShiftDialogPublish() {
     ).value;
     if (!id) return;
     try {
-        await apiFetch("PATCH", `${_cfg.routes.shiftsPublish}/${id}/publish`);
+        await apiFetch(
+            "PATCH",
+            `${/** @type {ScheduleConfig} */ (_cfg).routes.shiftsPublish}/${id}/publish`
+        );
         /** @type {HTMLDialogElement} */ (
             document.getElementById("shift-dialog")
         ).close();
         window.location.reload();
     } catch (err) {
-        notifyError(err.message ?? __("js.schedule_ui.publish_failed"));
+        notifyError(
+            /** @type {Error} */ (err).message ??
+                __("js.schedule_ui.publish_failed")
+        );
     }
 }
 
@@ -599,18 +742,28 @@ async function onShiftDialogConfirm() {
     ).value;
     if (!id) return;
     try {
-        await apiFetch("PATCH", `${_cfg.routes.shiftsConfirm}/${id}/confirm`);
+        await apiFetch(
+            "PATCH",
+            `${/** @type {ScheduleConfig} */ (_cfg).routes.shiftsConfirm}/${id}/confirm`
+        );
         /** @type {HTMLDialogElement} */ (
             document.getElementById("shift-dialog")
         ).close();
         window.location.reload();
     } catch (err) {
-        notifyError(err.message ?? __("js.schedule_ui.confirm_failed"));
+        notifyError(
+            /** @type {Error} */ (err).message ??
+                __("js.schedule_ui.confirm_failed")
+        );
     }
 }
 
 /* ─────────────────── Shift-type manager ──────────────────────── */
 
+/**
+ * @param {string} typeId
+ * @param {ShiftTypeData} type
+ */
 function shiftTypeOpenEdit(typeId, type) {
     /** @type {HTMLFormElement | null} */ (
         document.getElementById("shift-type-form")
@@ -638,7 +791,9 @@ function shiftTypeOpenEdit(typeId, type) {
     );
     if (active) active.checked = type.is_active ?? true;
 
-    document.getElementById("shift-type-form-title").textContent = __("js.schedule_ui.shift_type_edit");
+    /** @type {HTMLElement} */ (
+        document.getElementById("shift-type-form-title")
+    ).textContent = __("js.schedule_ui.shift_type_edit");
     document.getElementById("shift-type-error")?.classList.add("hidden");
 }
 
@@ -649,7 +804,9 @@ function shiftTypeResetForm() {
     /** @type {HTMLInputElement} */ (
         document.getElementById("shift-type-id")
     ).value = "";
-    document.getElementById("shift-type-form-title").textContent = __("js.schedule_ui.shift_type_create");
+    /** @type {HTMLElement} */ (
+        document.getElementById("shift-type-form-title")
+    ).textContent = __("js.schedule_ui.shift_type_create");
     /** @type {HTMLInputElement} */ (
         document.getElementById("shift-type-color")
     ).value = "#3b82f6";
@@ -659,6 +816,7 @@ function shiftTypeResetForm() {
     document.getElementById("shift-type-error")?.classList.add("hidden");
 }
 
+/** @param {SubmitEvent} event */
 async function onShiftTypeSave(event) {
     event.preventDefault();
 
@@ -667,7 +825,7 @@ async function onShiftTypeSave(event) {
     ).value;
     const isEdit = !!id;
     const errEl = document.getElementById("shift-type-error");
-    const saveBtn = /** @type {HTMLButtonElement | null} */ (
+    const saveBtn = /** @type {HTMLButtonElement} */ (
         document.getElementById("shift-type-save")
     );
 
@@ -700,9 +858,11 @@ async function onShiftTypeSave(event) {
 
     try {
         const url = isEdit
-            ? `${_cfg.routes.typesUpdate}/${id}`
-            : _cfg.routes.typesStore;
-        const data = await apiFetch(isEdit ? "PUT" : "POST", url, body);
+            ? `${/** @type {ScheduleConfig} */ (_cfg).routes.typesUpdate}/${id}`
+            : /** @type {ScheduleConfig} */ (_cfg).routes.typesStore;
+        const data = /** @type {ShiftTypeData} */ (
+            await apiFetch(isEdit ? "PUT" : "POST", url, body)
+        );
         // Update row in table or add new row
         if (isEdit) {
             updateTypeRow(id, data);
@@ -714,7 +874,9 @@ async function onShiftTypeSave(event) {
         shiftTypeResetForm();
     } catch (err) {
         if (errEl) {
-            errEl.textContent = err.message ?? __("js.schedule_ui.save_failed");
+            errEl.textContent =
+                /** @type {Error} */ (err).message ??
+                __("js.schedule_ui.save_failed");
             errEl.classList.remove("hidden");
         }
     } finally {
@@ -722,6 +884,7 @@ async function onShiftTypeSave(event) {
     }
 }
 
+/** @param {string} typeId */
 async function shiftTypeDelete(typeId) {
     const ok = await (window.confirmAction
         ? window.confirmAction({
@@ -731,14 +894,21 @@ async function shiftTypeDelete(typeId) {
         : Promise.resolve(true));
     if (!ok) return;
     try {
-        await apiFetch("DELETE", `${_cfg.routes.typesDestroy}/${typeId}`);
+        await apiFetch(
+            "DELETE",
+            `${/** @type {ScheduleConfig} */ (_cfg).routes.typesDestroy}/${typeId}`
+        );
         document.querySelector(`[data-type-row="${typeId}"]`)?.remove();
         removeTypeOption(typeId);
     } catch (err) {
-        notifyError(err.message ?? __("js.schedule_ui.delete_failed"));
+        notifyError(
+            /** @type {Error} */ (err).message ??
+                __("js.schedule_ui.delete_failed")
+        );
     }
 }
 
+/** @param {ShiftTypeData} type */
 function addTypeOption(type) {
     const sel = document.getElementById("shift-dialog-type");
     if (!sel) return;
@@ -752,6 +922,10 @@ function addTypeOption(type) {
     if (Array.isArray(_cfg?.shiftTypes)) _cfg.shiftTypes.push(type);
 }
 
+/**
+ * @param {string} id
+ * @param {ShiftTypeData} type
+ */
 function updateTypeOption(id, type) {
     const sel = document.getElementById("shift-dialog-type");
     if (!sel) return;
@@ -770,6 +944,7 @@ function updateTypeOption(id, type) {
     }
 }
 
+/** @param {string} id */
 function removeTypeOption(id) {
     const sel = document.getElementById("shift-dialog-type");
     sel?.querySelector(`option[value="${id}"]`)?.remove();
@@ -780,6 +955,10 @@ function removeTypeOption(id) {
     }
 }
 
+/**
+ * @param {string} id
+ * @param {ShiftTypeData} type
+ */
 function updateTypeRow(id, type) {
     const row = document.querySelector(`[data-type-row="${id}"]`);
     if (!row) return;
@@ -814,10 +993,12 @@ function updateTypeRow(id, type) {
     );
 }
 
+/** @param {ShiftTypeData} type */
 function addTypeRow(type) {
     const tbody = document.getElementById("shift-type-table-body");
     if (!tbody) return;
     const tr = document.createElement("tr");
+    // setAttribute wandelt eine numerische id selbst in Text um.
     tr.setAttribute("data-type-row", type.id);
     // escCssValue statt escHtml: `color` landet im style-Attribut, also im
     // CSS-Kontext — dort schützt Entity-Escaping nicht vor eingeschleusten
@@ -873,6 +1054,11 @@ function addTypeRow(type) {
 
 /**
  * Generic fetch helper — sends JSON, returns parsed JSON, throws on errors.
+ *
+ * @param {string} method
+ * @param {string} url
+ * @param {Record<string, unknown> | null} [body]
+ * @returns {Promise<unknown>} Server-JSON, Form je Endpunkt; null bei 204
  */
 async function apiFetch(method, url, body = null) {
     const resp = await request(url, {
@@ -891,7 +1077,7 @@ async function apiFetch(method, url, body = null) {
             const msgs = Object.values(json.errors).flat().join(" ");
             const e = new Error(msgs);
             if (Array.isArray(compliance)) {
-                /** @type {any} */ (e).complianceViolations = compliance;
+                /** @type {ApiError} */ (e).complianceViolations = compliance;
             }
             throw e;
         }

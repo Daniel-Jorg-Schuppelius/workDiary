@@ -26,11 +26,17 @@ import {
     translateValue,
 } from "../../resources/js/lib/dialog-drag.js";
 
-/** Minimaler Element-Fake: `closest` liefert das Element, dessen Selektor passt. */
+/**
+ * Minimaler Element-Fake: `closest` liefert das Element, dessen Selektor passt.
+ *
+ * @param {boolean} matches
+ * @param {boolean} [inHeader]
+ */
 const el = (matches, inHeader = true) => ({
+    /** @param {string} selector */
     closest: (selector) => (selector === DRAG_IGNORE_SELECTOR && matches ? { inHeader } : null),
 });
-const header = { contains: (node) => node?.inHeader === true };
+const header = { contains: (/** @type {{ inHeader?: boolean } | null} */ node) => node?.inHeader === true };
 
 const viewport = { width: 1280, height: 800 };
 // Zentrierte Standard-Box (640 × 480) im 1280 × 800-Viewport.

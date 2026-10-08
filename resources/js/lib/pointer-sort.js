@@ -49,8 +49,8 @@ export const SORTING_CLASS = "wd-sorting";
  * @typedef {{ left: number, top: number, width: number, height: number }} Rect
  * @typedef {{ left: number, top: number, right: number, bottom: number }} Box
  * @typedef {"x" | "y" | "both"} Axis
- * @typedef {{ closest(selector: string): any }} Closable
- * @typedef {{ contains(node: any): boolean }} Container
+ * @typedef {{ closest(selector: string): unknown }} Closable
+ * @typedef {{ contains(node: unknown): boolean }} Container
  */
 
 /**
@@ -228,8 +228,8 @@ export function visibleSpan(box, viewport, axis = "y") {
  *
  * @typedef {object} PointerSortOptions
  * @property {string} item Selektor der ziehbaren Elemente
- * @property {string} [list] Selektor des Behälters je Element — nötig bei Delegation über `document`
- * @property {string} [handle] Selektor des Griffs; ohne Griff zieht das ganze Element
+ * @property {string | null} [list] Selektor des Behälters je Element — nötig bei Delegation über `document`
+ * @property {string | null} [handle] Selektor des Griffs; ohne Griff zieht das ganze Element
  * @property {boolean} [mouseAnywhere] Die Maus darf trotz Griff überall am Element ansetzen
  * @property {string | null} [ignore] Kein Zug aus diesen Elementen heraus
  * @property {"live" | "mark"} [mode]
@@ -240,8 +240,8 @@ export function visibleSpan(box, viewport, axis = "y") {
  * @property {number} [threshold]
  * @property {string[]} [draggingClass] Klassen am gezogenen Element
  * @property {string[]} [targetClass] "mark": Klassen am Ziel unter dem Zeiger
- * @property {(item: HTMLElement) => boolean} [canDrag]
- * @property {(drop: SortDrop) => void} [onDrop] "mark": nur mit Ziel; nie nach einem Abbruch
+ * @property {((item: HTMLElement) => boolean) | null} [canDrag]
+ * @property {((drop: SortDrop) => void) | null} [onDrop] "mark": nur mit Ziel; nie nach einem Abbruch
  *
  * @typedef {object} Press
  * @property {HTMLElement} item
@@ -275,7 +275,7 @@ const SCROLL_SIDES = /** @type {const} */ ({
  */
 function scrollerOf(node, view, axis) {
     const { size, room, overflow } = SCROLL_SIDES[axis];
-    for (let el = node; el instanceof Element; el = el.parentElement) {
+    for (let el = /** @type {Node | null} */ (node); el instanceof Element; el = el.parentElement) {
         if (el[size] > el[room] && /auto|scroll/.test(view.getComputedStyle(el)[overflow])) {
             return el;
         }
@@ -328,6 +328,7 @@ export function pointerSort(
 
     // Bewegungen über Elementgrenzen hinweg kommen weiter beim gezogenen Element an.
     const capture = () => {
+        if (!press) return;
         try {
             press.item.setPointerCapture(press.pointerId);
         } catch (_e) {
@@ -344,11 +345,12 @@ export function pointerSort(
     const place = (move) => {
         move();
         capture();
-        press.focus?.focus({ preventScroll: true });
+        press?.focus?.focus({ preventScroll: true });
     };
 
     /** Reihenfolge ("live") bzw. Zielmarke ("mark") an die Zeigerlage anpassen. */
     const update = () => {
+        if (!press) return;
         const { item, list, last } = press;
 
         if (live) {
@@ -411,10 +413,12 @@ export function pointerSort(
     };
 
     const begin = () => {
+        if (!press) return;
         const { item, list } = press;
         press.dragging = true;
         press.from = itemsOf(list).indexOf(item);
-        press.origin = { parent: item.parentNode, next: item.nextSibling };
+        // Während des Zugs hängt das Element im DOM.
+        press.origin = { parent: /** @type {Node} */ (item.parentNode), next: item.nextSibling };
         press.focus = item.contains(doc.activeElement)
             ? /** @type {HTMLElement} */ (doc.activeElement)
             : null;
@@ -431,6 +435,7 @@ export function pointerSort(
 
     /** Sichtbaren Zustand eines Zugs abräumen. */
     const release = () => {
+        if (!press) return;
         const { item, target, pointerId, frame } = press;
         item.classList.remove(...draggingClass);
         target?.classList.remove(...targetClass);
@@ -446,7 +451,8 @@ export function pointerSort(
 
     /** Zug verwerfen: nichts melden, "live" die alte Reihenfolge wiederherstellen. */
     const abort = () => {
-        if (live) {
+        if (!press) return;
+        if (live && press.origin) {
             const { item, origin } = press;
             place(() => origin.parent.insertBefore(item, origin.next));
         }
@@ -524,7 +530,8 @@ export function pointerSort(
         forget();
     }
 
-    root.addEventListener("pointerdown", (/** @type {PointerEvent} */ event) => {
+    // root ist HTMLElement | Document; die Vereinigung kennt nur den allgemeinen Listener-Typ.
+    root.addEventListener("pointerdown", /** @type {EventListener} */ ((/** @type {PointerEvent} */ event) => {
         if (event.pointerType === "mouse" && event.button !== 0) return;
         if (press) {
             // Zweiter Finger während des Zugs; alles andere ist ein verwaister
@@ -536,7 +543,7 @@ export function pointerSort(
 
         const hit = event.target instanceof Element ? event.target : null;
         const item = /** @type {HTMLElement | null} */ (hit?.closest(itemSelector));
-        if (!item || !root.contains(item)) return;
+        if (!hit || !item || !root.contains(item)) return;
         const list = /** @type {HTMLElement | null} */ (
             listSelector ? item.closest(listSelector) : root
         );
@@ -566,7 +573,7 @@ export function pointerSort(
         doc.addEventListener("pointermove", onMove);
         doc.addEventListener("pointerup", onUp);
         doc.addEventListener("pointercancel", onCancel);
-    });
+    }));
 
     // Ohne das markiert die Maus Text, bevor die Schwelle erreicht ist.
     root.addEventListener("selectstart", (event) => {

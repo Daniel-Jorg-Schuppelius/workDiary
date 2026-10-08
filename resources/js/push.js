@@ -1,5 +1,6 @@
 import { del, getJson, postJson } from "./lib/http.js";
 
+/** @param {string} base64String */
 function urlBase64ToUint8Array(base64String) {
     const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
     const base64 = (base64String + padding)
@@ -39,7 +40,7 @@ export async function pushSubscribe() {
     if (perm !== "granted") return false;
     const reg = await ensureRegistration();
     if (!reg) return false;
-    const { data } = await getJson("/push/vapid");
+    const { data } = /** @type {import("./lib/http.js").JsonResult<{ publicKey?: string }>} */ (await getJson("/push/vapid"));
     const publicKey = data?.publicKey;
     if (!publicKey) return false;
     let sub = await reg.pushManager.getSubscription();
@@ -97,6 +98,10 @@ export function bindPushToggle(selector = "[data-push-toggle]") {
     });
 }
 
+/**
+ * @param {Element} el
+ * @param {string | undefined} state
+ */
 function updateLabel(el, state) {
     const label = el.querySelector("[data-push-label]");
     if (!label) return;

@@ -47,7 +47,9 @@ test("Nutzlast für den Ingest trägt Ereignis-ID und nur bekannte Ereignistypen
         event_type: "break",
         event_id: "id-1",
     });
-    assert.equal(buildPayload("AB12", /** @type {any} */ ("errand"), "id-2").event_type, "work");
+    // Absichtlich ungültige Art: geprüft wird der Rückfall auf "work".
+    const invalid = /** @type {"work" | "break"} */ (/** @type {unknown} */ ("errand"));
+    assert.equal(buildPayload("AB12", invalid, "id-2").event_type, "work");
 });
 
 test("PIN-Nutzlast trägt Personalnummer und PIN statt Ausweis", () => {

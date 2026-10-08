@@ -14,6 +14,8 @@
     "devDependencies": {
         "@playwright/test": "^1.63.0",
         "@tailwindcss/vite": "^4.3.3",
+        "@types/alpinejs": "^3.17.0",
+        "@types/leaflet": "^1.9.22",
         "@types/node": "^22.20.5",
         "concurrently": "^10.0.5",
         "daisyui": "^5.7.37",

@@ -26,6 +26,48 @@ import { getJson, postForm, postJson } from "./lib/http.js";
  * und der nächste Flush versucht es erneut.
  */
 
+/** @typedef {HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement} FormField */
+
+/**
+ * Nutzlast eines Befehls, wie buildPayload() sie aus dem Formular ableitet.
+ * @typedef {{pending_files?: string[]} & Record<string, unknown>} SyncPayload
+ */
+
+/**
+ * Eintrag der Stores outbox, rejected und conflicts (IndexedDB). Alt- und
+ * Fehlereinträge können Felder auslassen.
+ * @typedef {Object} SyncEntry
+ * @property {string} client_uuid
+ * @property {string} [type]
+ * @property {SyncPayload | null} [payload]
+ * @property {string} [owner]
+ * @property {string | null} [captured_at]
+ * @property {Record<string, string[]> | null} [errors]
+ * @property {Record<string, unknown> | null} [server]
+ * @property {string | null} [current_version]
+ * @property {string} [detected_at]
+ * @property {string} [rejected_at]
+ */
+
+/**
+ * Ergebnis je Befehl vom Batch-Endpunkt (SyncCommandService::handle).
+ * @typedef {Object} SyncResult
+ * @property {string} client_uuid
+ * @property {string} status applied | duplicate | conflict | rejected
+ * @property {Record<string, string[]> | null} [errors]
+ * @property {{server?: Record<string, unknown>, current_version?: string}} [conflict]
+ */
+
+/**
+ * Foto der Warteschlange (Store photos, `id` vergibt IndexedDB).
+ * @typedef {Object} SyncPhoto
+ * @property {number} id
+ * @property {string} client_uuid
+ * @property {string} field
+ * @property {string} name
+ * @property {Blob} blob
+ */
+
 const DB_NAME = "workdiary-sync";
 // v2 (Audit 2026-08, W4.1): eigener Konflikt-Store + Foto-Warteschlange.
 const DB_VERSION = 4;
@@ -40,6 +82,7 @@ const COURSES = "courses";
 /* Krisenmappe fuer den Offline-Leser (MVP-914): ein Eintrag je Geraet. */
 const CRISIS = "crisis";
 
+/** @returns {Promise<IDBDatabase>} */
 function openDb() {
     return new Promise((resolve, reject) => {
         const request = indexedDB.open(DB_NAME, DB_VERSION);
@@ -78,6 +121,13 @@ function openDb() {
     });
 }
 
+/**
+ * @param {IDBDatabase} db
+ * @param {string} store
+ * @param {IDBTransactionMode} mode
+ * @param {(store: IDBObjectStore) => IDBRequest} fn
+ * @returns {Promise<unknown>}
+ */
 function tx(db, store, mode, fn) {
     return new Promise((resolve, reject) => {
         const transaction = db.transaction(store, mode);
@@ -87,6 +137,7 @@ function tx(db, store, mode, fn) {
     });
 }
 
+/** @returns {Promise<SyncEntry[]>} */
 async function outboxAll() {
     const db = await openDb();
     return new Promise((resolve, reject) => {
@@ -99,21 +150,31 @@ async function outboxAll() {
     });
 }
 
+/** @param {SyncEntry} command */
 async function outboxPut(command) {
     const db = await openDb();
     await tx(db, OUTBOX, "readwrite", (store) => store.put(command));
 }
 
+/** @param {string} clientUuid */
 async function outboxDelete(clientUuid) {
     const db = await openDb();
     await tx(db, OUTBOX, "readwrite", (store) => store.delete(clientUuid));
 }
 
+/**
+ * @param {string} name
+ * @param {object} entry
+ */
 async function storePut(name, entry) {
     const db = await openDb();
     await tx(db, name, "readwrite", (store) => store.put(entry));
 }
 
+/**
+ * @param {string} name
+ * @returns {Promise<unknown[]>} Inhalt beliebiger Stores, Form je Store.
+ */
 async function storeAll(name) {
     const db = await openDb();
     return new Promise((resolve, reject) => {
@@ -126,6 +187,10 @@ async function storeAll(name) {
     });
 }
 
+/**
+ * @param {string} name
+ * @returns {Promise<number>}
+ */
 async function storeCount(name) {
     const db = await openDb();
     return new Promise((resolve, reject) => {
@@ -138,18 +203,29 @@ async function storeCount(name) {
     });
 }
 
+/**
+ * @param {string} name
+ * @param {IDBValidKey} key
+ */
 async function storeDelete(name, key) {
     const db = await openDb();
     await tx(db, name, "readwrite", (store) => store.delete(key));
 }
 
+/** @param {SyncEntry} entry */
 const rejectedPut = (entry) => storePut(REJECTED, entry);
 const rejectedCount = () => storeCount(REJECTED);
+/** @param {SyncEntry} entry */
 const conflictPut = (entry) => storePut(CONFLICTS, entry);
 const conflictCount = () => storeCount(CONFLICTS);
+/** @param {string} clientUuid */
 const conflictDelete = (clientUuid) => storeDelete(CONFLICTS, clientUuid);
 
-/** Fotos der Warteschlange eines Befehls (Foto-Queue, W4.1). */
+/**
+ * Fotos der Warteschlange eines Befehls (Foto-Queue, W4.1).
+ * @param {string} clientUuid
+ * @returns {Promise<SyncPhoto[]>}
+ */
 async function photosFor(clientUuid) {
     const db = await openDb();
     return new Promise((resolve, reject) => {
@@ -204,6 +280,8 @@ async function updateBadge() {
  * Bei HTTP 409 („noch nicht angewendet") bleibt das Foto in der Queue: der
  * naechste Flush versucht es erneut. Bei 410 („Abgabe weg") wird es verworfen,
  * sonst laege es fuer immer im Speicher des Geraets.
+ *
+ * @param {string} clientUuid
  */
 async function uploadPhotos(clientUuid) {
     let photos;
@@ -266,6 +344,7 @@ function storedOwner() {
     }
 }
 
+/** @param {string} owner */
 function rememberOwner(owner) {
     try {
         window.localStorage.setItem(OWNER_KEY, owner);
@@ -330,6 +409,7 @@ async function flush() {
             // Session abgelaufen o. ä.: Outbox behalten, später erneut.
             if (!response.ok) return;
 
+            /** @type {{results?: SyncResult[]}} */
             const data = response.data ?? {};
             for (const result of data.results || []) {
                 const original = batch.find(
@@ -382,7 +462,11 @@ async function flush() {
     }
 }
 
-/** Payload je Befehlstyp aus dem abgefangenen Formular ableiten. */
+/**
+ * Payload je Befehlstyp aus dem abgefangenen Formular ableiten.
+ * @param {string} type
+ * @param {HTMLFormElement} form
+ */
 function buildPayload(type, form) {
     const now = new Date().toISOString();
 
@@ -391,8 +475,9 @@ function buildPayload(type, form) {
     }
 
     if (type === "attendance.clock-out") {
+        /** @type {{ended_at: string, break_minutes?: number}} */
         const payload = { ended_at: now };
-        const breakMinutes = form.querySelector('[name="break_minutes"]');
+        const breakMinutes = /** @type {FormField | null} */ (form.querySelector('[name="break_minutes"]'));
         if (breakMinutes && breakMinutes.value !== "") {
             payload.break_minutes = Number(breakMinutes.value);
         }
@@ -412,30 +497,32 @@ function buildPayload(type, form) {
     if (type === "inventory.count") {
         return {
             count: form.dataset.syncPayloadCount || "",
-            code: form.querySelector('[name="code"]')?.value || "",
-            qty: form.querySelector('[name="qty"]')?.value || "1",
+            code: /** @type {FormField | null} */ (form.querySelector('[name="code"]'))?.value || "",
+            qty: /** @type {FormField | null} */ (form.querySelector('[name="qty"]'))?.value || "1",
         };
     }
 
     if (type === "comment.diary") {
         return {
             diary: form.dataset.syncPayloadDiary || "",
-            body: form.querySelector('[name="body"]')?.value || "",
+            body: /** @type {FormField | null} */ (form.querySelector('[name="body"]'))?.value || "",
         };
     }
 
     if (type === "takeoff.line") {
         // Aufmaßzeile (MVP-1059): gerechnet wird beim Abgleich auf dem Server,
         // das Foto wandert als angekündigte Datei in die Warteschlange.
-        const field = (name) => form.querySelector(`[name="${name}"]`)?.value || "";
+        /** @param {string} name */
+        const field = (name) => /** @type {FormField | null} */ (form.querySelector(`[name="${name}"]`))?.value || "";
+        /** @type {{takeoff: string, formula: string, values: string[], factor: string, label: string, pending_files?: string[]}} */
         const payload = {
             takeoff: form.dataset.syncPayloadTakeoff || "",
             formula: field("formula"),
-            values: [...form.querySelectorAll('[name^="values["]')].map((input) => input.value),
+            values: [.../** @type {NodeListOf<FormField>} */ (form.querySelectorAll('[name^="values["]'))].map((input) => input.value),
             factor: field("factor"),
             label: field("label"),
         };
-        const photo = form.querySelector('input[type="file"][name="files[photo]"]');
+        const photo = /** @type {HTMLInputElement | null} */ (form.querySelector('input[type="file"][name="files[photo]"]'));
         if (photo?.files?.length) payload.pending_files = ["photo"];
         return payload;
     }
@@ -444,21 +531,23 @@ function buildPayload(type, form) {
         // Werte exakt wie der normale Submit serialisieren (FormData respektiert
         // checked-Zustände); Dateien/Unterschriften bleiben dem Online-Weg
         // vorbehalten (Konzept §5) und werden übersprungen.
+        /** @type {{template: string, values: Record<string, string | string[]>, subject_kind?: string, subject_id?: string, pending_files?: string[]}} */
         const payload = {
             template:
-                form.querySelector('[name="form_template_id"]')?.value || "",
+                /** @type {FormField | null} */ (form.querySelector('[name="form_template_id"]'))?.value || "",
             values: {},
         };
-        const kind = form.querySelector('[name="subject_kind"]')?.value;
-        const subjectId = form.querySelector('[name="subject_id"]')?.value;
+        const kind = /** @type {FormField | null} */ (form.querySelector('[name="subject_kind"]'))?.value;
+        const subjectId = /** @type {FormField | null} */ (form.querySelector('[name="subject_id"]'))?.value;
         if (kind && subjectId) {
             payload.subject_kind = kind;
             payload.subject_id = subjectId;
         }
         // Foto-/Dateifelder ankuendigen: die Abgabe entsteht sofort mit
         // Nachreich-Marker, der Inhalt folgt nach dem Reconnect (W4.1).
+        /** @type {string[]} */
         const pending = [];
-        for (const input of form.querySelectorAll('input[type="file"]')) {
+        for (const input of /** @type {NodeListOf<HTMLInputElement>} */ (form.querySelectorAll('input[type="file"]'))) {
             const match = (input.name || "").match(/^files\[([^\]]+)\]$/);
             if (match && input.files && input.files.length > 0) {
                 pending.push(match[1]);
@@ -471,7 +560,7 @@ function buildPayload(type, form) {
             const match = name.match(/^values\[([^\]]+)\](\[\])?$/);
             if (!match) continue;
             if (match[2]) {
-                (payload.values[match[1]] ||= []).push(value);
+                /** @type {string[]} */ (payload.values[match[1]] ||= []).push(value);
             } else {
                 payload.values[match[1]] = value;
             }
@@ -487,15 +576,19 @@ function buildPayload(type, form) {
  * (Foto-Queue, W4.1). Ein `File` IST ein Blob — der strukturierte Klon der
  * IndexedDB speichert ihn direkt, ohne Base64-Umweg (das Dreifache an
  * Speicher und ein spuerbarer Kodierschritt auf dem Telefon).
+ *
+ * @param {string} clientUuid
+ * @param {HTMLFormElement} form
+ * @param {SyncPayload} payload
  */
 async function queuePhotos(clientUuid, form, payload) {
     const keys = payload?.pending_files;
     if (!Array.isArray(keys) || keys.length === 0) return;
 
     for (const key of keys) {
-        const input = form.querySelector(
+        const input = /** @type {HTMLInputElement | null} */ (form.querySelector(
             `input[type="file"][name="files[${key}]"]`,
-        );
+        ));
         const file = input?.files?.[0];
         if (!file) continue;
         await storePut(PHOTOS, {
@@ -557,6 +650,7 @@ function bindForms() {
 
 // getAttribute statt form.action: ein Feld name="action" überdeckt die
 // Property (Inventar-Scan, Datenschutz-Fristen, …) und ließ das werfen.
+/** @param {HTMLFormElement} form */
 function isLogoutForm(form) {
     return (form.getAttribute("action") || "").includes("/logout");
 }
@@ -567,16 +661,19 @@ function isLogoutForm(form) {
  * (übersetzt, CSP-konform). Aktionen: „Erneut anwenden" (neue client_uuid →
  * Outbox) und „Verwerfen".
  */
-const rejectedAll = () => storeAll(REJECTED);
+const rejectedAll = () => /** @type {Promise<SyncEntry[]>} */ (storeAll(REJECTED));
+/** @param {string} clientUuid */
 const rejectedDelete = (clientUuid) => storeDelete(REJECTED, clientUuid);
-const conflictAll = () => storeAll(CONFLICTS);
+const conflictAll = () => /** @type {Promise<SyncEntry[]>} */ (storeAll(CONFLICTS));
 
+/** @param {HTMLElement} root */
 async function renderChangesPage(root) {
     const template = /** @type {HTMLTemplateElement} */ (
         document.querySelector("[data-sync-item-template]")
     );
     if (!template) return;
 
+    /** @param {string | undefined} type */
     const typeLabel = (type) =>
         root.dataset[
             "labelType" +
@@ -585,6 +682,7 @@ async function renderChangesPage(root) {
                     .replace(/^(\w)/, (_, c) => c.toUpperCase())
         ] || type;
 
+    /** @type {Record<string, {items: SyncEntry[], label: string | undefined, retry: boolean, conflict?: boolean}>} */
     const sections = {
         outbox: {
             items: await outboxAll(),
@@ -608,23 +706,23 @@ async function renderChangesPage(root) {
 
     let total = 0;
     for (const [name, section] of Object.entries(sections)) {
-        const el = root.querySelector(`[data-offline-section="${name}"]`);
+        const el = /** @type {HTMLElement | null} */ (root.querySelector(`[data-offline-section="${name}"]`));
         if (!el) continue;
-        el.querySelector("[data-section-heading]").textContent =
+        /** @type {Element} */ (el.querySelector("[data-section-heading]")).textContent =
             section.label || name;
-        const list = el.querySelector("[data-section-list]");
+        const list = /** @type {Element} */ (el.querySelector("[data-section-list]"));
         list.textContent = "";
         el.hidden = section.items.length === 0;
         total += section.items.length;
 
         for (const item of section.items) {
             const node = /** @type {HTMLElement} */ (
-                template.content.firstElementChild.cloneNode(true)
+                /** @type {Element} */ (template.content.firstElementChild).cloneNode(true)
             );
-            node.querySelector("[data-item-type]").textContent = typeLabel(
+            /** @type {Element} */ (node.querySelector("[data-item-type]")).textContent = /** @type {string} */ (typeLabel(
                 item.type,
-            );
-            node.querySelector("[data-item-time]").textContent =
+            ));
+            /** @type {Element} */ (node.querySelector("[data-item-time]")).textContent =
                 item.captured_at || item.rejected_at || "";
 
             const errorsEl = /** @type {HTMLElement} */ (
@@ -720,7 +818,7 @@ async function renderChangesPage(root) {
         }
     }
 
-    const empty = root.querySelector("[data-offline-empty]");
+    const empty = /** @type {HTMLElement | null} */ (root.querySelector("[data-offline-empty]"));
     if (empty) empty.hidden = total > 0;
 }
 
@@ -733,12 +831,15 @@ async function renderChangesPage(root) {
  * und das soll niemand unbemerkt tun. Geloescht wird er beim Abmelden
  * (clearAll) — deshalb liegt er in einem eigenen Store und nicht im
  * Seiten-Cache.
+ *
+ * @param {string} enrollment
+ * @param {string} url
  */
 async function courseStore(enrollment, url) {
     // Ueber die HTTP-Naht, nicht ueber rohes fetch: dort haengen CSRF-Token,
     // credentials und die 419-Behandlung. Ein abgelaufenes Login endete sonst
     // als stiller Fehler, und der Kurs waere „gespeichert" ohne Inhalt.
-    const result = await getJson(url);
+    const result = /** @type {import("./lib/http.js").JsonResult<Record<string, unknown>>} */ (await getJson(url));
 
     if (!result.ok || !result.data) throw new Error("offline-bundle");
 
@@ -752,6 +853,10 @@ async function courseStore(enrollment, url) {
     return bundle;
 }
 
+/**
+ * @param {string} enrollment
+ * @returns {Promise<unknown>} Gespeichertes Kursbündel oder undefined.
+ */
 async function courseGet(enrollment) {
     const db = await openDb();
 
@@ -768,6 +873,7 @@ async function courseGet(enrollment) {
     });
 }
 
+/** @param {string} enrollment */
 async function courseDelete(enrollment) {
     const db = await openDb();
     await tx(db, COURSES, "readwrite", (store) => store.delete(enrollment));
@@ -812,8 +918,9 @@ function bindOfflineCourses() {
 
 /* ── Offline-Krisenmappe (Feature 070, MVP-914) ───────────────────────── */
 
+/** @param {string} url */
 async function crisisStore(url) {
-    const result = await getJson(url);
+    const result = /** @type {import("./lib/http.js").JsonResult<Record<string, unknown>>} */ (await getJson(url));
     if (!result.ok || !result.data) throw new Error("crisis-bundle");
     const db = await openDb();
     await tx(db, CRISIS, "readwrite", (store) =>
@@ -821,6 +928,7 @@ async function crisisStore(url) {
     );
 }
 
+/** @returns {Promise<boolean>} */
 async function crisisStored() {
     const db = await openDb();
     return new Promise((resolve, reject) => {
@@ -875,7 +983,7 @@ export function initOfflineSync() {
         .catch(() => {})
         .then(flush);
 
-    const changesRoot = document.querySelector("[data-offline-changes]");
+    const changesRoot = /** @type {HTMLElement | null} */ (document.querySelector("[data-offline-changes]"));
     if (changesRoot) renderChangesPage(changesRoot);
 }
 

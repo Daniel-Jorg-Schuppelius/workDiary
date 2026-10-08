@@ -22,6 +22,11 @@ import {
     planOverflow,
 } from "../../resources/js/lib/toolbar-overflow.js";
 
+/**
+ * @param {number} width
+ * @param {import("../../resources/js/lib/toolbar-overflow.js").Placement} [placement]
+ * @returns {import("../../resources/js/lib/toolbar-overflow.js").OverflowItem}
+ */
 const item = (width, placement = "auto") => ({ width, placement });
 const MORE = 32;
 const GAP = 8;
