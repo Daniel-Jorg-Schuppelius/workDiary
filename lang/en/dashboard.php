@@ -135,6 +135,8 @@ return [
         ],
         'open_items' => [
             'description' => 'Open receivables and payables including the overdue share.',
+            'feed_link' => 'Document flow →',
+            'external_hint' => 'From the accounting system — the organization does not keep its books in WorkDiary.',
         ],
         'tax_filings' => [
             'description' => 'Upcoming filing and submission dates in accounting.',

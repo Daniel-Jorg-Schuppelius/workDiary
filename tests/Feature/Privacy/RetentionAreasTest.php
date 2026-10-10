@@ -196,4 +196,20 @@ final class RetentionAreasTest extends TestCase {
         $this->assertNull(Customer::query()->withoutGlobalScopes()->find($dormant->id));
         $this->assertNull(DB::table('projects')->where('id', $defaultProjectId)->first());
     }
+
+    /** MVP-1114: Belege im Buchhaltungsprogramm zählen wie lokale Rechnungen. */
+    public function test_customer_with_mirrored_vouchers_is_no_deletion_candidate(): void {
+        $org = $this->makeOrg();
+        $user = User::factory()->user()->create(['organization_id' => $org->id]);
+        $billedExternally = Customer::factory()->create(['organization_id' => $org->id, 'created_by' => $user->id]);
+        \App\Plugins\Lexoffice\Models\LexofficeVoucher::query()->create([
+            'organization_id' => $org->id, 'external_id' => 'lx-retention', 'customer_id' => $billedExternally->id,
+            'voucher_type' => 'invoice', 'voucher_status' => 'paid', 'voucher_date' => '2021-03-01', 'total_amount' => '119.00', 'currency' => 'EUR',
+        ]);
+        Customer::query()->withoutGlobalScopes()->whereKey($billedExternally->id)->update(['updated_at' => now()->subYears(4)]);
+
+        app(RetentionScanService::class)->scan($org);
+
+        $this->assertSame(0, RetentionProposal::query()->where('area', 'customer_master')->count());
+    }
 }

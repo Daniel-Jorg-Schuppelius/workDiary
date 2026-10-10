@@ -1,7 +1,7 @@
 ---
 title: "Valore cliente"
 topic: reports.customer-value
-version: 2
+version: 3
 keywords:
     - analisi ABC
     - clienti A
@@ -34,6 +34,11 @@ dove c'è rischio di concentrazione, quali clienti A sono a rischio?**
   in basso esattamente su quei clienti.
 - **Lista di rischio**: clienti ad alto fatturato senza prestazioni dalla
   soglia impostata, con andamento ricavi su 12 mesi (sparkline).
+- **Fatturato** (colonna dell'elenco clienti): tutti i documenti del cliente
+  emessi nel periodo tranne le fatture proforma; note di credito e documenti
+  di storno riducono l'importo. I documenti del programma di contabilità (ad
+  esempio Lexoffice) contano secondo la stessa regola. I punteggi usano
+  invece i ricavi dei tempi fatturabili.
 
 ## R, F e M — come nascono i punteggi
 

@@ -13,9 +13,11 @@ declare(strict_types=1);
 namespace App\Services\Sales;
 
 use App\Enums\Sales\{CommissionAssignmentSource, CommissionScope};
-use App\Models\Invoicing\{Invoice, InvoiceItem};
+use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
 use App\Models\Sales\{CommissionAgent, CommissionRule, Lead};
+use App\Services\Sales\Commission\CommissionDocuments;
+use App\Services\Sales\Contracts\CommissionDocument;
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Support\Carbon;
 
@@ -24,8 +26,9 @@ use Illuminate\Support\Carbon;
  *
  *  1. **Wem** gehoert der Beleg? Standard ist die Herkunft aus der
  *     Lead-Pipeline (Feature 091: der konvertierte Lead traegt den
- *     Verantwortlichen); `invoices.sales_user_id` schlaegt sie als manuelle
- *     Zuordnung.
+ *     Verantwortlichen); die Vertriebsperson am Beleg schlaegt sie als
+ *     manuelle Zuordnung. Beleg = lokale Rechnung oder gespiegelte Rechnung
+ *     des Buchhaltungsprogramms ({@see CommissionDocument}, MVP-1119).
  *  2. **Welche** Regel gilt? Genau eine: hoechste Prioritaet, bei Gleichstand
  *     der engere Geltungsbereich, zuletzt die juengere Regel. Es wird nichts
  *     summiert — zwei Regeln ergeben nie zwei Provisionen.
@@ -35,22 +38,25 @@ use Illuminate\Support\Carbon;
  * benutzt, damit beide dieselbe Antwort geben.
  */
 class CommissionRuleResolver {
+    public function __construct(private readonly CommissionDocuments $documents) {}
+
     /**
      * Zuordnung Beleg → Vertriebsperson. `null` = niemand zustaendig, also
      * keine Provision (das ist der Normalfall ohne Vertriebsorganisation).
      */
-    public function assignmentFor(Invoice $invoice): ?CommissionAssignment {
-        $manual = $invoice->sales_user_id !== null
-            ? User::query()->whereKey($invoice->sales_user_id)->first()
+    public function assignmentFor(Invoice|CommissionDocument $subject): ?CommissionAssignment {
+        $document = $this->documents->of($subject);
+        $manual = $document->salesUserId() !== null
+            ? User::query()->whereKey($document->salesUserId())->first()
             : null;
 
-        $lead = $this->originLead($invoice);
+        $lead = $this->originLead($document);
 
         if ($manual instanceof User) {
             return new CommissionAssignment($manual, CommissionAssignmentSource::Manual, $lead);
         }
 
-        $agent = $invoice->sales_agent_id !== null ? CommissionAgent::query()->whereKey($invoice->sales_agent_id)->first() : null;
+        $agent = $document->salesAgentId() !== null ? CommissionAgent::query()->whereKey($document->salesAgentId())->first() : null;
         if ($agent instanceof CommissionAgent) {
             return new CommissionAssignment(null, CommissionAssignmentSource::Manual, $lead, $agent);
         }
@@ -65,58 +71,42 @@ class CommissionRuleResolver {
         return null;
     }
 
-    /**
-     * Der Lead, aus dem der Kunde des Belegs entstanden ist — juengste
-     * Konvertierung gewinnt, falls ein Kunde mehrfach angebahnt wurde.
-     */
-    public function originLead(Invoice $invoice): ?Lead {
+    public function originLead(Invoice|CommissionDocument $subject): ?Lead {
+        $document = $this->documents->of($subject);
+        if ($document->customerId() === null) {
+            return null;
+        }
+
         return Lead::query()
-            ->where('organization_id', $invoice->organization_id)
-            ->where('customer_id', $invoice->customer_id)
+            ->where('organization_id', $document->organizationId())
+            ->where('customer_id', $document->customerId())
             ->whereNotNull('responsible_user_id')
             ->orderByDesc('id')
             ->first();
     }
 
-    /**
-     * Gueltige Regel fuer diesen Beleg am Stichtag; `null` = keine passende
-     * Regel, also keine Provision.
-     */
-    public function ruleFor(Invoice $invoice, CommissionAssignment $assignment, Carbon $on): ?CommissionRule {
+    public function ruleFor(Invoice|CommissionDocument $subject, CommissionAssignment $assignment, Carbon $on): ?CommissionRule {
+        $document = $this->documents->of($subject);
         $candidates = CommissionRule::query()
-            ->where('organization_id', $invoice->organization_id)
+            ->where('organization_id', $document->organizationId())
             ->validOn($on)
             ->get()
-            ->filter(fn (CommissionRule $rule): bool => $this->applies($rule, $invoice, $assignment))
+            ->filter(fn (CommissionRule $rule): bool => $this->applies($rule, $document, $assignment))
             ->sortByDesc(fn (CommissionRule $rule): string => $rule->selectionKey());
 
         return $candidates->first();
     }
 
-    /**
-     * Bemessungsgrundlage: der Nettobetrag des Belegs — bei einer
-     * Produktgruppen-Regel nur die Positionen dieser Gruppe. Nettobetrag,
-     * nicht Bruttobetrag: die Umsatzsteuer ist durchlaufender Posten und
-     * gehoert keinem Vertrieb.
-     */
-    public function baseAmountFor(Invoice $invoice, CommissionRule $rule): Money {
-        $currency = $invoice->currency;
-        $total = $invoice->subtotal ?? Money::zero($currency);
-
+    public function baseAmountFor(Invoice|CommissionDocument $subject, CommissionRule $rule): Money {
+        $document = $this->documents->of($subject);
         if ($rule->scope !== CommissionScope::ProductGroup) {
-            return $total;
+            return $document->netAmount();
         }
 
-        $amounts = [];
-        foreach ($this->itemsOfGroup($invoice, (string) $rule->scope_value) as $item) {
-            $amounts[] = $item->amount ?? Money::zero($currency);
-        }
-
-        return $amounts === [] ? Money::zero($currency) : Money::sum($amounts, $currency);
+        return $document->netOfCategory((string) $rule->scope_value) ?? Money::zero($document->currency());
     }
 
-    /** Passt die Regel auf diesen Beleg? */
-    private function applies(CommissionRule $rule, Invoice $invoice, CommissionAssignment $assignment): bool {
+    private function applies(CommissionRule $rule, CommissionDocument $document, CommissionAssignment $assignment): bool {
         return match ($rule->scope) {
             CommissionScope::All => true,
             CommissionScope::User => $rule->user_id !== null && $assignment->user !== null && (int) $rule->user_id === (int) $assignment->user->id,
@@ -125,29 +115,7 @@ class CommissionRuleResolver {
                 && $rule->scope_value !== null
                 && $assignment->lead->source->value === $rule->scope_value,
             CommissionScope::ProductGroup => $rule->scope_value !== null
-                && $this->itemsOfGroup($invoice, $rule->scope_value) !== [],
+                && $document->netOfCategory($rule->scope_value) !== null,
         };
-    }
-
-    /**
-     * Belegpositionen einer Produktgruppe. „Produktgruppe" ist die Kategorie
-     * des Artikelstamms (`articles.category`) — WorkDiary fuehrt keinen
-     * zweiten Gruppenbegriff nur fuer Provisionen ein.
-     *
-     * @return list<InvoiceItem>
-     */
-    private function itemsOfGroup(Invoice $invoice, string $group): array {
-        $invoice->loadMissing('items.article:id,category');
-
-        $matching = [];
-        foreach ($invoice->items as $item) {
-            // Waehrung der Position kommt vom Beleg (MoneyCast ':invoice.currency').
-            $item->setRelation('invoice', $invoice);
-            if ($item->article_id !== null && (string) $item->article?->category === $group) {
-                $matching[] = $item;
-            }
-        }
-
-        return $matching;
     }
 }

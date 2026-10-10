@@ -1,7 +1,7 @@
 ---
 title: "Conflictos de Lexoffice"
 topic: admin.lexoffice
-version: 4
+version: 5
 keywords:
     - Lexware Office
     - conflicto de sincronización
@@ -10,6 +10,8 @@ keywords:
     - conservar valores locales
     - aceptar valores externos
     - conciliación de datos
+    - espejo de comprobantes
+    - sincronización de comprobantes
 audience:
     - admin
     - buchhaltung
@@ -58,6 +60,16 @@ conflictos de artículos no aparecen en la Bandeja de conciliación, sino
 en la pestaña **Conflictos** del inventario (**Inventario** →
 **Conflictos**): allí elige **Mantener local**, **Adoptar el estado de
 Lexoffice** o **Descartar**, con el permiso **Gestionar artículos**.
+
+Espejo de comprobantes: la sincronización de comprobantes refleja los
+comprobantes de Lexoffice en WorkDiary. También se reflejan los
+comprobantes de contactos de Lexoffice que aún no están vinculados a ningún
+cliente o proveedor, al principio sin cliente ni proveedor; en cuanto el
+contacto se vincula, la siguiente sincronización los asigna. Un cliente solo
+se asigna a comprobantes de venta y un proveedor solo a comprobantes de
+compra, aunque un contacto esté vinculado a ambos. La sincronización de
+líneas guarda además el importe neto y, en un abono, su referencia a la
+factura.
 
 Permiso: la Bandeja de conciliación está abierta a los administradores
 y al rol **Contabilidad**.

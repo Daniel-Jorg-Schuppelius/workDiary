@@ -1,7 +1,7 @@
 ---
 title: "Facturación, gastos, pagos e ingresos"
 topic: reports.billing
-version: 3
+version: 4
 keywords:
     - cuentas por cobrar
     - antigüedad de saldos
@@ -15,6 +15,8 @@ keywords:
     - prever recargos
     - ingresos por artículo
     - ingresos por categoría
+    - facturas de Lexoffice
+    - programa contable
 audience:
     - admin
     - geschaeftsfuehrung
@@ -56,16 +58,26 @@ de facturación**. Se abre para los administradores y los roles con el
 permiso **Ver todos los registros de tiempo**; sin este permiso se deniega el
 acceso.
 
+Los comprobantes del programa contable proceden de Lexoffice y, a través del
+espejo general de comprobantes, de sevDesk, easybill, JTL-Wawi e
+InvoicePlane. Las líneas – y con ello las aportaciones a **Ingresos por
+producto** – solo proceden de Lexoffice.
+
 - Mosaicos:
   - **Emitido + pagado (Σ bruto)**: total bruto de las facturas con el estado
     **Emitida**, **Pagada parcialmente** o **Pagada** cuya fecha de factura
-    cae en el período (sin fecha de factura cuenta la fecha de creación).
+    cae en el período (sin fecha de factura cuenta la fecha de creación). Se
+    añaden las facturas y facturas de anticipo del programa de contabilidad
+    (por ejemplo, Lexoffice) con fecha de comprobante en el período; los
+    abonos restan. Las facturas proforma nunca cuentan.
   - **Cuentas por cobrar**: importe aún pendiente de todas las facturas con el
     estado **Emitida** o **Pagada parcialmente**, con independencia del
     período. Se descuentan los pagos recibidos y las retenciones de garantía
     abiertas; las facturas proforma, los abonos y los documentos de anulación
-    no cuentan. El mosaico se vuelve rojo en cuanto una de ellas lleva más de
-    30 días vencida; la indicación da su número.
+    no cuentan. Las facturas y anticipos abiertos del programa de
+    contabilidad se incluyen con su importe pendiente. El mosaico se vuelve
+    rojo en cuanto una de ellas lleva más de 30 días vencida; la indicación
+    da su número.
   - **Tiempo no facturado**: registros de tiempo facturables del período que
     aún no ha consumido ninguna vía de facturación, con el número de
     registros y los ingresos previstos según los importes guardados.
@@ -74,14 +86,25 @@ acceso.
   los comprobantes reflejados del programa de contabilidad. Un clic en un
   cliente abre **Clientes y proyectos** para ese cliente.
 - **Facturas por estado**: **Cantidad**, **Neto** y **Bruto** por estado.
+  Los comprobantes del programa de contabilidad cuentan en **Emitida**,
+  **Pagada parcialmente** o **Pagada**; si los hay, una columna adicional
+  **de ello programa contable** muestra su parte. Si no se conoce el importe
+  neto de un comprobante así, su importe solo cuenta en **Bruto**.
 - **Antigüedad – partidas pendientes**: las facturas abiertas según los días
   transcurridos desde el vencimiento (sin vencimiento, desde la fecha de
   factura) en los tramos **Actual**, 1–7, 8–14, 15–30 y más de 30 días, cada
-  uno con el importe pendiente, y **Total abierto**.
+  uno con el importe pendiente, y **Total abierto**. Las facturas y
+  anticipos abiertos del programa de contabilidad aparecen en los tramos con
+  su importe pendiente; la fila **de ello programa contable** bajo **Total
+  abierto** muestra su parte.
 - **Principales clientes (emitido + pagado en el período)**: **Cliente**,
   **Facturas** y **Bruto**; si hay importes del programa de contabilidad,
   aparece una columna adicional **de ello programa contable**. Las facturas
-  pagadas parcialmente se incluyen.
+  pagadas parcialmente se incluyen; las facturas proforma, no. Los
+  comprobantes de contactos del programa de contabilidad que no están
+  vinculados a ningún cliente se agrupan en la fila en cursiva **sin
+  asignación de cliente**; no aparecen en el gráfico **Facturación por
+  cliente (top 15)**.
 - **Facturas electrónicas entrantes (en el período)**: entradas por estado
   con número e importe bruto, así como el número de las entregadas a
   contabilidad.
@@ -97,8 +120,9 @@ Filtros: **Cliente**, **Proyecto**, **Empleado** e **Incluir clientes
 ocultos**. Cliente y proyecto actúan sobre facturas, presupuestos y tiempos;
 el empleado solo sobre los tiempos. Las facturas entrantes y los niveles de
 reclamación se refieren siempre a toda la organización. Con un proyecto
-seleccionado se excluyen los importes del programa de contabilidad, porque
-esos comprobantes no tienen proyecto. Exportación en PDF, CSV y Excel.
+seleccionado se excluyen los comprobantes del programa de contabilidad de los
+mosaicos, los estados, la antigüedad y los principales clientes, porque esos
+comprobantes no tienen proyecto. Exportación en PDF, CSV y Excel.
 
 ## Gastos
 
@@ -175,11 +199,16 @@ registros de tiempo**.
   comprobantes transferidos desde una factura local cuentan solo una vez; los
   borradores y comprobantes anulados, en absoluto.
 - Mosaicos: **Ingresos netos totales**, **de ello del programa contable**,
-  **Artículos con ingresos** y **Proporción sin referencia de artículo**
-  (líneas sin artículo seleccionado).
+  **Artículos con ingresos** (incluidos los artículos del programa de
+  contabilidad que no están vinculados a ningún artículo de su propio
+  maestro de artículos) y **Proporción sin referencia de artículo** (líneas
+  sin artículo seleccionado).
 - Gráfico de los artículos con más ingresos; cuántos muestra lo decide con
-  **Top N en el gráfico** (de 3 a 50, por defecto 10). Un clic abre el
-  artículo.
+  **Top N en el gráfico** (de 3 a 50, por defecto 10). También muestra los
+  artículos del programa de contabilidad no vinculados a su propio maestro de
+  artículos, estos sin enlace; un clic solo abre los artículos de su propio
+  maestro de artículos. Solo la fila colectiva **sin referencia de
+  artículo** queda fuera del gráfico.
 - **Ingresos por categoría**: **Categoría**, **Artículo**, **Ingresos netos**
   y **Proporción**.
 - Tabla: **Número de artículo**, **Artículo**, **Cantidad**, **Unidad**,

@@ -1230,6 +1230,7 @@ return [
         'follow_up' => 'Follow-up decision',
         'follow_up_amount' => 'Subsequent charge/refund (reference)',
         'follow_up_at' => 'Follow-up on',
+        'external_invoice_number' => 'invoice number in the accounting system',
         'follow_up_for_id' => 'Preceding sick note',
         'continuation_of_id' => 'Continuation of illness from',
         'all_plans' => 'For all duty plans',

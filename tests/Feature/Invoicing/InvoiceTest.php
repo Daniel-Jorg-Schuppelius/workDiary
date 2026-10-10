@@ -255,6 +255,39 @@ class InvoiceTest extends TestCase {
         $this->assertSame(1, Invoice::query()->count());
     }
 
+    public function test_material_invoice_line_carries_the_article_of_the_material(): void {
+        $article = \App\Models\Article\Article::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Kabel NYM']);
+        $material = \App\Models\Material\Material::create(['organization_id' => $this->organization->id, 'article_id' => $article->id, 'name' => 'Kabel NYM', 'unit' => 'm']);
+        $sheet = \App\Models\Time\Timesheet::create([
+            'organization_id' => $this->organization->id,
+            'project_id' => $this->project->id,
+            'user_id' => $this->admin->id,
+            'kind' => \App\Enums\Timesheet\TimesheetKind::Project->value,
+            'work_date' => '2030-05-10',
+            'status' => \App\Enums\Timesheet\TimesheetStatus::Draft->value,
+        ]);
+        foreach ([$material->id, null] as $materialId) {
+            \App\Models\Material\MaterialUsage::create([
+                'organization_id' => $this->organization->id,
+                'timesheet_id' => $sheet->id,
+                'material_id' => $materialId,
+                'description' => 'Kabel',
+                'quantity' => '2.000',
+                'unit' => 'm',
+                'unit_price' => '5.0000',
+            ]);
+        }
+
+        $this->postAsAdmin('invoices.store', [
+            'customer_id' => $this->customer->id,
+            'project_id' => $this->project->id,
+            'content' => 'material',
+        ])->assertRedirect();
+
+        $articleIds = Invoice::firstOrFail()->items()->orderBy('position')->pluck('article_id')->all();
+        $this->assertSame([$article->id, null], $articleIds);
+    }
+
     public function test_travel_charge_added_to_service_invoice_and_not_doubled(): void {
         config()->set('travel.enabled', true);
         config()->set('travel.mode', 'flat');

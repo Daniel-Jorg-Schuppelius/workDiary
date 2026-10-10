@@ -1,7 +1,7 @@
 ---
 title: "Provisionen"
 topic: commissions
-version: 1
+version: 2
 keywords:
     - Provisionsabrechnung
     - Vertriebsprovision
@@ -15,6 +15,7 @@ keywords:
     - Stornohaftung
     - Provision auszahlen
     - Jahresdeckel
+    - Provision Lexoffice-Rechnung
 audience:
     - admin
     - geschaeftsfuehrung
@@ -34,7 +35,8 @@ und die **Läufe**, mit denen abgerechnet wird.
 
 Genau dann, wenn eine Rechnung auf **bezahlt** wechselt — egal auf welchem
 Weg das passiert (Bankabgleich, Kassenbuch, Retainer-Abgleich, manuelle
-Aktion). **Ausgestellt-aber-offen erzeugt nie eine Provision.**
+Aktion, Beleg-Sync des Buchhaltungsprogramms). **Ausgestellt-aber-offen
+erzeugt nie eine Provision.**
 
 Das ist kein Detail: Wer auf den Rechnungsausgang provisioniert, zahlt für
 Umsätze, die vielleicht nie eingehen — und muss sie später zurückholen.
@@ -84,3 +86,30 @@ erneut ein, entsteht die Provision wieder.
 Provisionen können auch an **externe Vermittler** ohne Benutzerkonto gehen.
 Sie werden unter „Vermittler“ gepflegt, an der Rechnung zugeordnet und
 erscheinen im Lauf und im Export neben den Beschäftigten.
+
+## Rechnungen aus dem Buchhaltungsprogramm
+
+Auch Rechnungen, die aus dem Buchhaltungsprogramm (Lexoffice, sevDesk,
+easybill, JTL-Wawi oder InvoicePlane) gespiegelt werden, erzeugen
+Provisionen:
+
+- Stellt der Beleg-Sync fest, dass eine bereits gespiegelte Rechnung bezahlt
+  wurde, entsteht die Provision automatisch — bei vollständiger Zahlung,
+  mit **Schon auf Teilzahlungen** auch anteilig. Grundlage ist der
+  Nettobetrag.
+- Wird die Rechnung im Buchhaltungsprogramm storniert, rechnet WorkDiary die
+  Provision zurück. Eine bezahlte Gutschrift, die sich auf die Rechnung
+  bezieht, mindert sie. Den Bezug einer Gutschrift zur Rechnung liefert nur
+  Lexoffice; bei den anderen Programmen rechnen Sie eine Gutschrift von Hand
+  zurück.
+- Rechnungen, die beim ersten Spiegeln schon bezahlt waren (etwa
+  Altbestand), erzeugen nie von selbst eine Provision. Sie erscheinen unter
+  **Bezahlte Rechnungen ohne Provision** und werden dort von Hand
+  zugeordnet — mit demselben Dialog **Vertriebsperson zuordnen** wie lokale
+  Rechnungen.
+- Aus WorkDiary an das Buchhaltungsprogramm übergebene Rechnungen behalten
+  ihre Provision an der lokalen Rechnung; doppelt entsteht sie nicht.
+
+Wer die Provision erhält, bestimmt wie bei lokalen Rechnungen die manuelle
+Zuordnung oder sonst die zuständige Person des umgewandelten Leads des
+Kunden.

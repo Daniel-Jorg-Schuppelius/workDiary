@@ -12,7 +12,6 @@ declare(strict_types=1);
 
 namespace App\Services\Reporting;
 
-use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Invoicing\{Invoice, InvoiceItem};
 use App\Services\Billing\Contracts\ExternalRevenue;
 use App\Support\Query\DateRange;
@@ -33,13 +32,12 @@ use Carbon\CarbonImmutable;
  *    übergebene Belege zählen nicht ein zweites Mal; Entwürfe und stornierte
  *    Belege zählen nicht. Herkunft je Zeile = Plugin-ID der Quelle.
  *
- * Positionen ohne Artikelbezug laufen gebündelt als „ohne Artikelbezug" mit,
- * damit die Summe zu den Abrechnungsberichten passt.
+ * Positionen ohne Artikelbezug laufen gebündelt als „ohne Artikelbezug" mit
+ * (`collective`), damit die Summe zu den Abrechnungsberichten passt. Ein
+ * Artikel des Buchhaltungsprogramms ohne Zuordnung ist trotzdem ein Artikel —
+ * bei Lexoffice-Hoheit fehlt der eigene Stamm oft ganz.
  */
 class ProductRevenueReportBuilder {
-    /** Ausgestellt/(teil)bezahlt — Entwürfe und Stornos zählen nicht. */
-    public const STATUSES = [InvoiceStatus::Issued, InvoiceStatus::PartiallyPaid, InvoiceStatus::Paid];
-
     /**
      * Umsatztragende Belegarten; Gutschrift und Stornobeleg spiegeln die
      * Positionen mit negativer Menge und mindern (MVP-990) — sonst zählte eine
@@ -51,7 +49,7 @@ class ProductRevenueReportBuilder {
 
     /**
      * @return array{
-     *   rows: list<array{articleId: ?int, number: ?string, name: string, category: ?string, unit: ?string, quantity: float, net: float, share: ?float, invoices: int, sources: list<string>}>,
+     *   rows: list<array{articleId: ?int, number: ?string, name: string, category: ?string, unit: ?string, collective: bool, quantity: float, net: float, share: ?float, invoices: int, sources: list<string>}>,
      *   categories: list<array{category: ?string, net: float, share: ?float, articles: int}>,
      *   total: float,
      *   withoutArticle: float,
@@ -60,7 +58,7 @@ class ProductRevenueReportBuilder {
      * }
      */
     public function build(CarbonImmutable $from, CarbonImmutable $to): array {
-        /** @var array<string, array{articleId: ?int, number: ?string, name: string, category: ?string, unit: ?string, quantity: float, net: float, share: ?float, invoices: int, sources: list<string>}> $rows */
+        /** @var array<string, array{articleId: ?int, number: ?string, name: string, category: ?string, unit: ?string, collective: bool, quantity: float, net: float, share: ?float, invoices: int, sources: list<string>}> $rows */
         $rows = [];
         $externalNet = 0.0;
 
@@ -72,6 +70,7 @@ class ProductRevenueReportBuilder {
                 'name' => $articleId !== null ? (string) $row->getAttribute('article_name') : (string) __('ohne Artikelbezug'),
                 'category' => $articleId !== null ? ((string) $row->getAttribute('article_category') ?: null) : null,
                 'unit' => $articleId !== null ? ((string) $row->getAttribute('article_unit') ?: null) : null,
+                'collective' => $articleId === null,
             ], (float) $row->getAttribute('qty'), (float) $row->getAttribute('net'), (int) $row->getAttribute('document_count'), self::SOURCE_LOCAL);
         }
 
@@ -87,8 +86,8 @@ class ProductRevenueReportBuilder {
                     $key = 'none';
                 }
                 $identity = $key === 'none'
-                    ? ['articleId' => null, 'number' => null, 'name' => (string) __('ohne Artikelbezug'), 'category' => null, 'unit' => null]
-                    : ['articleId' => $line->articleId, 'number' => $line->number, 'name' => $line->name, 'category' => $line->category, 'unit' => $line->unit];
+                    ? ['articleId' => null, 'number' => null, 'name' => (string) __('ohne Artikelbezug'), 'category' => null, 'unit' => null, 'collective' => true]
+                    : ['articleId' => $line->articleId, 'number' => $line->number, 'name' => $line->name, 'category' => $line->category, 'unit' => $line->unit, 'collective' => false];
                 $this->add($rows, $key, $identity, $line->quantity, $line->net, $line->documents, $source);
             }
         }
@@ -118,7 +117,7 @@ class ProductRevenueReportBuilder {
             'total' => $total,
             'withoutArticle' => $withoutArticle,
             'externalNet' => round($externalNet, 2),
-            'articleCount' => count(array_filter($list, static fn(array $r): bool => $r['articleId'] !== null)),
+            'articleCount' => count(array_filter($list, static fn(array $r): bool => ! $r['collective'])),
         ];
     }
 
@@ -128,7 +127,7 @@ class ProductRevenueReportBuilder {
             ->join('invoices', 'invoices.id', '=', 'invoice_items.invoice_id')
             ->leftJoin('articles', 'articles.id', '=', 'invoice_items.article_id')
             ->whereBetween('invoices.issued_on', DateRange::days($from, $to))
-            ->whereIn('invoices.status', self::STATUSES)
+            ->whereIn('invoices.status', Invoice::ISSUED_STATUSES)
             ->whereIn('invoices.type', self::TYPES)
             ->where('invoice_items.line_kind', \App\Enums\Billing\DocumentLineKind::Item->value)
             ->groupBy('invoice_items.article_id', 'articles.number', 'articles.name', 'articles.base_unit', 'articles.category')
@@ -141,8 +140,8 @@ class ProductRevenueReportBuilder {
     }
 
     /**
-     * @param  array<string, array{articleId: ?int, number: ?string, name: string, category: ?string, unit: ?string, quantity: float, net: float, share: ?float, invoices: int, sources: list<string>}>  $rows
-     * @param  array{articleId: ?int, number: ?string, name: string, category: ?string, unit: ?string}  $identity
+     * @param  array<string, array{articleId: ?int, number: ?string, name: string, category: ?string, unit: ?string, collective: bool, quantity: float, net: float, share: ?float, invoices: int, sources: list<string>}>  $rows
+     * @param  array{articleId: ?int, number: ?string, name: string, category: ?string, unit: ?string, collective: bool}  $identity
      */
     private function add(array &$rows, string $key, array $identity, float $quantity, float $net, int $documents, string $source): void {
         if (! isset($rows[$key])) {
@@ -160,7 +159,7 @@ class ProductRevenueReportBuilder {
      * Umsatz je Artikelkategorie (MVP-804, Feature 107). Positionen ohne
      * zugeordneten Artikel oder ohne Kategorie laufen unter `null`.
      *
-     * @param  list<array{articleId: ?int, category: ?string, net: float}>  $rows
+     * @param  list<array{articleId: ?int, category: ?string, collective: bool, net: float}>  $rows
      * @return list<array{category: ?string, net: float, share: ?float, articles: int}>
      */
     private function categories(array $rows, float $total): array {
@@ -169,7 +168,7 @@ class ProductRevenueReportBuilder {
             $key = $row['articleId'] !== null ? ($row['category'] ?? '') : '';
             $groups[$key] ??= ['category' => $key !== '' ? $key : null, 'net' => 0.0, 'share' => null, 'articles' => 0];
             $groups[$key]['net'] += $row['net'];
-            if ($row['articleId'] !== null) {
+            if (! $row['collective']) {
                 $groups[$key]['articles']++;
             }
         }

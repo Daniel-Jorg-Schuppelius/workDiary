@@ -1,7 +1,7 @@
 ---
 title: "Commissions"
 topic: commissions
-version: 1
+version: 2
 keywords:
     - sales commission
     - commission statement
@@ -14,6 +14,7 @@ keywords:
     - commission payout
     - commission cap
     - broker commission
+    - commission Lexoffice invoice
 audience:
     - admin
     - geschaeftsfuehrung
@@ -32,7 +33,8 @@ used to settle them.
 ## The single moment a commission arises
 
 Exactly when an invoice switches to **paid** — no matter how that happens
-(bank reconciliation, cash book, retainer settlement, manual action).
+(bank reconciliation, cash book, retainer settlement, manual action, voucher
+sync of the accounting software).
 **Issued-but-open never creates a commission.**
 
 That is not a detail: whoever pays commission on invoicing pays for revenue
@@ -81,3 +83,26 @@ arrives again, the commission arises again.
 Commissions can also go to **external agents** without a user account. They
 are maintained under “Agents”, assigned on the invoice and appear in the run
 and in the export next to the employees.
+
+## Invoices from the accounting software
+
+Invoices mirrored from the accounting software (Lexoffice, sevDesk,
+easybill, JTL-Wawi or InvoicePlane) also create commissions:
+
+- When the voucher sync finds that an already mirrored invoice has been
+  paid, the commission arises automatically — on full payment, and with
+  **Accrue on partial payments** also pro rata. The basis is the net amount.
+- If the invoice is cancelled in the accounting software, WorkDiary reverses
+  the commission. A paid credit note that refers to the invoice reduces it.
+  Only Lexoffice supplies the link between a credit note and its invoice;
+  for the other programs, reverse a credit note by hand.
+- Invoices that were already paid when first mirrored (such as old stock)
+  never create a commission on their own. They appear under **Paid invoices
+  without a commission** and are assigned there by hand — with the same
+  dialog **Assign salesperson** as local invoices.
+- Invoices handed over from WorkDiary to the accounting software keep their
+  commission on the local invoice; it never arises twice.
+
+As with local invoices, the recipient of the commission is determined by the
+manual assignment or otherwise by the person responsible for the customer's
+converted lead.

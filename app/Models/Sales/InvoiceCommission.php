@@ -15,8 +15,10 @@ namespace App\Models\Sales;
 use App\Casts\{MoneyCast, PercentageCast};
 use App\Enums\Sales\{CommissionAssignmentSource, CommissionReversalKind, CommissionStatus};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
+use App\Services\Sales\Contracts\CommissionDocument;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\{Money, Percentage};
 use Illuminate\Database\Eloquent\{Builder, Model};
@@ -37,7 +39,11 @@ use Illuminate\Support\Carbon;
  *
  * @property int $id
  * @property int $organization_id
- * @property int $invoice_id
+ * @property int|null $invoice_id
+ * @property string|null $document_type
+ * @property int|null $document_id
+ * @property string|null $document_number
+ * @property int|null $customer_id
  * @property int|null $user_id
  * @property int|null $commission_agent_id
  * @property int|null $commission_rule_id
@@ -65,6 +71,10 @@ class InvoiceCommission extends Model {
     protected $fillable = [
         'organization_id',
         'invoice_id',
+        'document_type',
+        'document_id',
+        'document_number',
+        'customer_id',
         'user_id',
         'commission_agent_id',
         'commission_rule_id',
@@ -99,6 +109,40 @@ class InvoiceCommission extends Model {
     /** @return BelongsTo<Invoice, $this> */
     public function invoice(): BelongsTo {
         return $this->belongsTo(Invoice::class, 'invoice_id');
+    }
+
+    /**
+     * Kunde des Belegs, bei Entstehung festgehalten (MVP-1119).
+     *
+     * @return BelongsTo<Customer, $this>
+     */
+    public function customer(): BelongsTo {
+        return $this->belongsTo(Customer::class, 'customer_id');
+    }
+
+    /**
+     * Zeilen eines Belegs — lokal wie gespiegelt über den Morph `document`.
+     *
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    public function scopeForDocument(Builder $query, CommissionDocument $document): Builder {
+        return $query->where('document_type', $document->documentType())->where('document_id', $document->documentId());
+    }
+
+    /**
+     * Belegbezug einer neuen Zeile: Morph, lokale Rechnung, Nummer und Kunde.
+     *
+     * @return array{invoice_id: int|null, document_type: string, document_id: int, document_number: string, customer_id: int|null}
+     */
+    public static function documentAttributes(CommissionDocument $document): array {
+        return [
+            'invoice_id' => $document->invoiceId(),
+            'document_type' => $document->documentType(),
+            'document_id' => $document->documentId(),
+            'document_number' => mb_substr($document->number(), 0, 64),
+            'customer_id' => $document->customerId(),
+        ];
     }
 
     /** @return BelongsTo<User, $this> */

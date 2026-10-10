@@ -18,6 +18,7 @@ use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
 use App\Models\Time\TimeEntry;
 use App\Services\Billing\Contracts\ExternalRevenue;
+use App\Services\Billing\Dto\{ExternalInvoice, ExternalInvoiceQuery};
 use App\Services\Invoicing\DunningService;
 use App\Services\Reporting\ReportFilters;
 use App\Support\ChartBucket;
@@ -61,9 +62,11 @@ class BillingReportController extends Controller {
         $filterFields = ['customer', 'project', 'user', 'include_excluded'];
         $filters = $this->standardFilters($request, $filterFields, $fromDate, $toDate);
 
-        $status = $this->aggregateByStatus($from, $to, $filters);
+        $external = $this->externalInvoices($filters, $from, $to);
+        $status = $this->aggregateByStatus($from, $to, $filters, $external);
         $aging = $this->aggregateAging($today, $filters);
         $perCustomer = $this->aggregatePerCustomer($from, $to, $filters);
+        $unassigned = $this->aggregateUnassigned($external);
         $unbilled = $this->aggregateUnbilled($from, $to, $filters);
         $einvoicing = $this->aggregateEInvoicing($from, $to);
         // Vollaudit 2026-07 (N18): Angebots-/Belegketten-Kennzahlen.
@@ -72,10 +75,10 @@ class BillingReportController extends Controller {
         $monthly = $this->monthlyBillableSeries($filters);
 
         if (in_array($request->query('export'), ['csv', 'xlsx'], true)) {
-            return $this->exportCsv($status, $aging, $perCustomer, $unbilled, $einvoicing, $documentChain, $from, $to, $filters, $request);
+            return $this->exportCsv($status, $aging, $perCustomer, $unassigned, $unbilled, $einvoicing, $documentChain, $from, $to, $filters, $request);
         }
         if ($request->query('export') === 'pdf') {
-            return $this->exportPdf($status, $aging, $perCustomer, $unbilled, $from, $to, $monthly, $filters, $request);
+            return $this->exportPdf($status, $aging, $perCustomer, $unassigned, $unbilled, $from, $to, $monthly, $filters, $request);
         }
 
         return view('reports.billing', [
@@ -84,6 +87,7 @@ class BillingReportController extends Controller {
             'status' => $status,
             'aging' => $aging,
             'perCustomer' => $perCustomer,
+            'unassigned' => $unassigned,
             'unbilled' => $unbilled,
             'einvoicing' => $einvoicing,
             'documentChain' => $documentChain,
@@ -328,9 +332,14 @@ class BillingReportController extends Controller {
     }
 
     /**
-     * @return array<string, array{count:int, subtotal:float, tax:float, total:float}>
+     * Lokale Rechnungen plus die Belege des Buchhaltungsprogramms (MVP-1115);
+     * deren Anteil steht in `external`. Ohne bekanntes Netto zählt ein
+     * externer Beleg nur brutto.
+     *
+     * @param  list<ExternalInvoice>  $external
+     * @return array<string, array{count:int, subtotal:float, tax:float, total:float, external?:float}>
      */
-    private function aggregateByStatus(string $from, string $to, ReportFilters $filters): array {
+    private function aggregateByStatus(string $from, string $to, ReportFilters $filters, array $external): array {
         $statuses = InvoiceStatus::values();
         $result = [];
         foreach ($statuses as $st) {
@@ -360,7 +369,58 @@ class BillingReportController extends Controller {
             $result[$st]['total'] += ($inv->total?->toFloat() ?? 0.0);
         }
 
+        foreach ($external as $invoice) {
+            $st = $invoice->status->value;
+            $result[$st] ??= ['count' => 0, 'subtotal' => 0.0, 'tax' => 0.0, 'total' => 0.0];
+            $result[$st]['count']++;
+            $result[$st]['subtotal'] += $invoice->net ?? 0.0;
+            $result[$st]['tax'] += $invoice->net !== null ? $invoice->gross - $invoice->net : 0.0;
+            $result[$st]['total'] += $invoice->gross;
+            $result[$st]['external'] = ($result[$st]['external'] ?? 0.0) + $invoice->gross;
+        }
+
         return $result;
+    }
+
+    /**
+     * Belege des Buchhaltungsprogramms ohne Kundenzuordnung (MVP-1117): eigene
+     * Zeile unter den Top-Kunden, nicht im Pareto. Bei Kundenfilter leer, weil
+     * die Abfrage dann nur den Kunden liefert.
+     *
+     * @param  list<ExternalInvoice>  $external
+     * @return array{count:int, total:float}
+     */
+    private function aggregateUnassigned(array $external): array {
+        $result = ['count' => 0, 'total' => 0.0];
+        foreach ($external as $invoice) {
+            if ($invoice->customerId === null) {
+                $result['count']++;
+                $result['total'] += $invoice->gross;
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Belege des Buchhaltungsprogramms für die Kunden-/Ausblendfilter des
+     * Berichts; bei Projektfilter leer, externe Belege tragen kein Projekt.
+     *
+     * @return list<ExternalInvoice>
+     */
+    private function externalInvoices(ReportFilters $filters, ?string $from = null, ?string $to = null, bool $openOnly = false): array {
+        if ($filters->projectId !== null) {
+            return [];
+        }
+
+        return app(ExternalRevenue::class)->invoices(new ExternalInvoiceQuery(
+            issuedFrom: $from !== null ? CarbonImmutable::parse($from) : null,
+            issuedTo: $to !== null ? CarbonImmutable::parse($to) : null,
+            customerId: $filters->customerId,
+            excludedCustomerIds: $this->activeExcludedCustomerIds($filters),
+            withCreditNotes: ! $openOnly,
+            openOnly: $openOnly,
+        ));
     }
 
     /**
@@ -369,9 +429,13 @@ class BillingReportController extends Controller {
      * offenen Betrag ({@see DunningService::openAmount()}), in Aging-Buckets
      * relativ zu due_on (oder issued_on falls due_on null).
      *
+     * Dazu offene Rechnungen und Abschläge des Buchhaltungsprogramms
+     * (MVP-1115), ihr Anteil in `external_total`.
+     *
      * @return array{
      *   buckets: array<string, array{count:int, total:float}>,
-     *   open_total: float
+     *   open_total: float,
+     *   external_total: float
      * }
      */
     private function aggregateAging(Carbon $today, ReportFilters $filters): array {
@@ -401,7 +465,18 @@ class BillingReportController extends Controller {
             ];
         }
 
-        return ['buckets' => $buckets, 'open_total' => $openTotal];
+        $externalTotal = 0.0;
+        foreach ($this->externalInvoices($filters, openOnly: true) as $invoice) {
+            $externalTotal += $invoice->open;
+            $reference = $invoice->dueOn ?? $invoice->issuedOn;
+            $key = $bands->bucketFor($reference === null ? null : (int) $reference->startOfDay()->diffInDays($today, false));
+            $buckets[$key] = [
+                'count' => $buckets[$key]['count'] + 1,
+                'total' => $buckets[$key]['total'] + $invoice->open,
+            ];
+        }
+
+        return ['buckets' => $buckets, 'open_total' => $openTotal + $externalTotal, 'external_total' => $externalTotal];
     }
 
     /**
@@ -412,7 +487,8 @@ class BillingReportController extends Controller {
         $invoices = $this->applyInvoiceFilters(
             Invoice::query()
                 ->whereBetween('issued_on', [$from, $to])
-                ->whereIn('status', [InvoiceStatus::Issued, InvoiceStatus::PartiallyPaid, InvoiceStatus::Paid]),
+                ->whereIn('status', Invoice::ISSUED_STATUSES)
+                ->whereNotIn('type', Invoice::NON_REVENUE_TYPES),
             $filters,
         )->get(['customer_id', 'total']);
 
@@ -499,21 +575,15 @@ class BillingReportController extends Controller {
     }
 
     /**
-     * @param  array<string, array{count:int, subtotal:float, tax:float, total:float}>  $status
-     * @param  array{buckets: array<string, array{count:int, total:float}>, open_total: float}  $aging
-     * @param  array<int, array{customer: Customer, count:int, total:float, external:float}>  $perCustomer
-     * @param  array{count:int, minutes:int, projected_revenue:float}  $unbilled
-     * @param  array{incoming: array<string, array{count:int, gross:float}>, incoming_transferred: int, validation: array{checked:int, passed:int, failed:int}, dunning: array<int, int>}  $einvoicing
-     */
-    /**
      * @param  array<string, mixed>  $status
      * @param  array<string, mixed>  $aging
      * @param  array<int, array<string, mixed>>  $perCustomer
+     * @param  array{count:int, total:float}  $unassigned
      * @param  array<string, mixed>  $unbilled
      * @param  array<string, mixed>  $einvoicing
      * @param  array{quotes: array<string, int>, acceptance_rate: float|null, decision_median_days: float|null, conversions: array{quote_to_invoice: int, proforma_to_invoice: int}, correction: array{invoices: int, cancellations: int, credit_notes: int, rate: float|null}}  $documentChain
      */
-    private function exportCsv(array $status, array $aging, array $perCustomer, array $unbilled, array $einvoicing, array $documentChain, string $from, string $to, ReportFilters $filters, Request $request): Response {
+    private function exportCsv(array $status, array $aging, array $perCustomer, array $unassigned, array $unbilled, array $einvoicing, array $documentChain, string $from, string $to, ReportFilters $filters, Request $request): Response {
         $filename = sprintf('billing_%s_%s.csv', $from, $to);
         $rows = [];
         $agingLabel = (string) __('reporting.csv.aging');
@@ -527,16 +597,25 @@ class BillingReportController extends Controller {
         $rows[] = [(string) __('reporting.csv.area'), (string) __('reporting.csv.key'), (string) __('reporting.csv.count'), (string) __('reporting.csv.value_eur')];
         foreach ($status as $st => $s) {
             $rows[] = [(string) __('reporting.csv.status'), $st, $s['count'], NumberHelper::toUSFormat($s['total'], 2)];
+            if (($s['external'] ?? 0.0) != 0.0) {
+                $rows[] = [(string) __('reporting.csv.status'), $st . ' (' . __('reporting.external_share') . ')', '', NumberHelper::toUSFormat($s['external'], 2)];
+            }
         }
         foreach ($aging['buckets'] as $k => $b) {
             $rows[] = [$agingLabel, $k, $b['count'], NumberHelper::toUSFormat($b['total'], 2)];
         }
         $rows[] = [$agingLabel, (string) __('reporting.csv.open_total'), '', NumberHelper::toUSFormat($aging['open_total'], 2)];
+        if ($aging['external_total'] != 0.0) {
+            $rows[] = [$agingLabel, (string) __('reporting.csv.open_total') . ' (' . __('reporting.external_share') . ')', '', NumberHelper::toUSFormat($aging['external_total'], 2)];
+        }
         foreach ($perCustomer as $r) {
             $rows[] = [$customerLabel, $r['customer']->name, $r['count'], NumberHelper::toUSFormat($r['total'], 2)];
             if (($r['external'] ?? 0.0) != 0.0) {
                 $rows[] = [$customerLabel, $r['customer']->name . ' (' . __('reporting.external_share') . ')', '', NumberHelper::toUSFormat($r['external'], 2)];
             }
+        }
+        if ($unassigned['count'] > 0) {
+            $rows[] = [$customerLabel, (string) __('reporting.unassigned_customer'), $unassigned['count'], NumberHelper::toUSFormat($unassigned['total'], 2)];
         }
         $rows[] = [$unbilledLabel, (string) __('reporting.csv.entries'), $unbilled['count'], ''];
         $rows[] = [$unbilledLabel, (string) __('reporting.csv.minutes'), $unbilled['minutes'], ''];
@@ -567,18 +646,20 @@ class BillingReportController extends Controller {
     }
 
     /**
-     * @param  array<string, array{count:int, subtotal:float, tax:float, total:float}>  $status
-     * @param  array{buckets: array<string, array{count:int, total:float}>, open_total: float}  $aging
+     * @param  array<string, array{count:int, subtotal:float, tax:float, total:float, external?:float}>  $status
+     * @param  array{buckets: array<string, array{count:int, total:float}>, open_total: float, external_total: float}  $aging
      * @param  array<int, array{customer: Customer, count:int, total:float, external:float}>  $perCustomer
+     * @param  array{count:int, total:float}  $unassigned
      * @param  array{count:int, minutes:int, projected_revenue:float}  $unbilled
      * @param  array{series: list<array{x: string, billable: float, non_billable: float}>, bands: list<array{key: string, label: string}>}  $monthly
      */
-    private function exportPdf(array $status, array $aging, array $perCustomer, array $unbilled, string $from, string $to, array $monthly, ReportFilters $filters, Request $request): SymfonyResponse {
+    private function exportPdf(array $status, array $aging, array $perCustomer, array $unassigned, array $unbilled, string $from, string $to, array $monthly, ReportFilters $filters, Request $request): SymfonyResponse {
         $filename = sprintf('billing_%s_%s.pdf', $from, $to);
         return $this->pdfDownload('reports.pdf.billing', [
             'status' => $status,
             'aging' => $aging,
             'perCustomer' => $perCustomer,
+            'unassigned' => $unassigned,
             'unbilled' => $unbilled,
             'from' => $from,
             'to' => $to,

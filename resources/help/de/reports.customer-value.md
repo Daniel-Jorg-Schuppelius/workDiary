@@ -1,7 +1,7 @@
 ---
 title: "Kundenwert"
 topic: reports.customer-value
-version: 2
+version: 3
 keywords:
     - ABC-Analyse
     - A-Kunden
@@ -35,6 +35,11 @@ Unternehmen, wo liegt Klumpenrisiko, welche A-Kunden sind gefährdet?**
   unten auf genau diese Kunden.
 - **Risikoliste**: umsatzstarke Kunden ohne Leistung seit der eingestellten
   Schwelle, mit 12-Monats-Erlösverlauf (Sparkline).
+- **Fakturiert** (Spalte der Kundenliste): alle im Zeitraum ausgestellten
+  Belege des Kunden außer Pro-forma-Rechnungen; Gutschriften und
+  Stornobelege mindern. Belege aus dem Buchhaltungsprogramm (etwa Lexoffice)
+  zählen nach derselben Regel mit. Die Scores rechnen dagegen mit dem Erlös
+  aus den Zeit-Snapshots.
 
 ## R, F und M — so entstehen die Scores
 

@@ -1,7 +1,7 @@
 ---
 title: "Billing, expenses, payouts and revenue"
 topic: reports.billing
-version: 3
+version: 4
 keywords:
     - outstanding receivables
     - aging report
@@ -15,6 +15,8 @@ keywords:
     - surcharge preview
     - revenue per article
     - revenue by category
+    - Lexoffice invoices
+    - accounting software
 audience:
     - admin
     - geschaeftsfuehrung
@@ -52,16 +54,25 @@ audit**, the **Surcharge forecast** under **Reports** → **Team**.
 It opens for administrators and roles with the **See all time entries**
 permission; without this permission access is denied.
 
+Documents from the accounting system come from Lexoffice and, via the
+general document mirror, from sevDesk, easybill, JTL-Wawi and InvoicePlane.
+Line items – and thus contributions to **Revenue by product** – come from
+Lexoffice only.
+
 - Tiles:
   - **Issued + paid (Σ gross)**: gross total of the invoices with the status
     **Issued**, **Partially paid** or **Paid** whose invoice date lies in the
-    period (without an invoice date, the creation date counts).
+    period (without an invoice date, the creation date counts). In addition,
+    invoices and down-payment invoices from the accounting software (such as
+    Lexoffice) whose document date lies in the period are included; credit
+    notes reduce the total. Pro forma invoices never count.
   - **Outstanding receivables**: amount still open on all invoices with the
     status **Issued** or **Partially paid**, regardless of the period.
     Payments received and open retentions are deducted; pro forma invoices,
-    credit notes and cancellation documents do not count. The tile turns red
-    as soon as one of them is more than 30 days overdue; the hint states their
-    number.
+    credit notes and cancellation documents do not count. Open invoices and
+    down payments from the accounting software are included with their open
+    amount. The tile turns red as soon as one of them is more than 30 days
+    overdue; the hint states their number.
   - **Unbilled time**: billable time entries of the period that have not yet
     been used up by any billing path, with the number of entries and the
     expected revenue from the stored amounts.
@@ -70,14 +81,23 @@ permission; without this permission access is denied.
   accounting software. Clicking a customer opens **Customers & projects** for
   that customer.
 - **Invoices by status**: **Quantity**, **Net** and **Gross** per status.
+  Documents from the accounting software are counted under **Issued**,
+  **Partially paid** or **Paid**; if there are any, a further column
+  **thereof accounting system** shows their share. If the net amount of such
+  a document is not known, its amount counts only under **Gross**.
 - **Aging – outstanding items**: the open invoices by days past the due date
   (without a due date, from the invoice date) in the levels **Current**, 1–7,
   8–14, 15–30 and more than 30 days, each with the open amount, and **Open
-  total**.
+  total**. Open invoices and down payments from the accounting software
+  appear in the levels with their open amount; the row **thereof accounting
+  system** below **Open total** shows their share.
 - **Top customers (issued + paid in the period)**: **Customer**, **Invoices**
   and **Gross**; if amounts come from the accounting software, a further
   column **thereof accounting system** appears. Partially paid invoices are
-  included.
+  included, pro forma invoices are not. Documents of contacts in the
+  accounting software that are not linked to a customer are grouped in the
+  italic row **without customer assignment**; they are left out of the chart
+  **Revenue per customer (top 15)**.
 - **Incoming e-invoices (in period)**: incoming documents per status with
   number and gross amount, plus the number handed over to accounting.
 - **Incoming validation & dunning levels**: **Validation reviewed**,
@@ -90,8 +110,9 @@ permission; without this permission access is denied.
 Filters: **Customer**, **Project**, **Employee** and **Include hidden
 customers**. Customer and project apply to invoices, quotes and times, the
 employee only to the times. Incoming invoices and dunning levels always apply
-to the whole organization. When a project is selected, the amounts from the
-accounting software are left out because these vouchers have no project.
+to the whole organization. When a project is selected, the documents from the
+accounting software are left out of the tiles, status, aging and top
+customers because these vouchers have no project.
 Export as PDF, CSV and Excel.
 
 ## Expenses
@@ -165,10 +186,14 @@ and with the **See all time entries** permission.
   from a local invoice count only once, drafts and cancelled documents not at
   all.
 - Tiles: **Total net revenue**, **thereof from the accounting system**,
-  **Articles with revenue** and **Share without article link** (lines without
-  a selected article).
+  **Articles with revenue** (including articles of the accounting software
+  that are not mapped to an article of your own article master) and **Share
+  without article link** (lines without a selected article).
 - Chart of the articles with the highest revenue; you set how many it shows
-  with **Top N in chart** (3 to 50, default 10). A click opens the article.
+  with **Top N in chart** (3 to 50, default 10). It also shows articles of the
+  accounting software that are not mapped to your own article master, these
+  without a link; a click opens only articles of your own article master.
+  Only the collective row **without article link** is left out of the chart.
 - **Revenue by category**: **Category**, **Article**, **Net revenue** and
   **Share**.
 - Table: **Article number**, **Article**, **Quantity**, **Unit**, **Net

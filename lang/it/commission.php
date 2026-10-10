@@ -155,7 +155,7 @@ return [
         'assign' => 'Lasciare vuoto per tornare all’origine dalla pipeline dei lead.',
         'current_assignment' => 'Attualmente responsabile: :user (:source).',
         'no_assignment' => 'Al momento non è responsabile nessuno — senza assegnazione non nasce alcuna provvigione.',
-        'unassigned' => 'Queste fatture sono pagate ma non assegnate a nessuno: né manualmente né tramite un lead convertito.',
+        'unassigned' => 'Queste fatture sono pagate ma non assegnate a nessuno: né manualmente né tramite un lead convertito. Anche le fatture del programma contabile acquisite già pagate si assegnano qui.',
         'draft_preview' => 'Bozza: le righe vengono ricalcolate a ogni apertura. Solo la chiusura le congela.',
         'no_payout' => 'WorkDiary calcola ed esporta la provvigione — il pagamento avviene nel cedolino.',
     ],

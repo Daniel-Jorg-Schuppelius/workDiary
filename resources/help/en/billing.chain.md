@@ -1,7 +1,7 @@
 ---
 title: "To bill and to follow up (document chain)"
 topic: billing.chain
-version: 1
+version: 2
 keywords:
     - unbilled time
     - unbilled work
@@ -30,11 +30,13 @@ flow via "To bill and to follow up".
 Each group answers a question you would otherwise have to look up in a
 separate area:
 
-- **Accepted quotes without invoice** – the customer has agreed, but there is
-  no invoice yet.
+- **Accepted quotes without invoice** – the customer has agreed, but there
+  is   no invoice yet. Quotes you have marked as **Invoiced in the
+  accounting system** are left out.
 - **Quotes to follow up** – the follow-up date is due or the validity period
   has expired.
-- **Overdue invoices** – open and past the payment term.
+- **Overdue invoices** – open and past the payment term, including open
+  invoices from the accounting software (such as Lexoffice).
 - **Billable time per customer** – recorded time that has not been invoiced
   yet, with the number of entries and the duration.
 - **Progress above instalments (bill of quantities)** – more work has been
@@ -47,7 +49,8 @@ The number in the heading is the total of open items in the group. The first
 50 are listed; below them you see how many more there are. The arrow at the
 end of a row opens the item where it is dealt with: the quote, the invoice,
 the customer's open time, the billing of the bill of quantities or the
-takeoff. Amounts are net amounts.
+takeoff. An invoice from the accounting software opens the **Document flow**
+searching for its document number. Amounts are net amounts; overdue invoices show the gross amount.
 
 **What you see:** A group only appears if the related module is active for
 your organisation and you hold the permission for that area. If a group is

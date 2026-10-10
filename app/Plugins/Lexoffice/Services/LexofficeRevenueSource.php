@@ -10,191 +10,197 @@
 
 namespace App\Plugins\Lexoffice\Services;
 
+use App\Enums\Invoicing\InvoiceStatus;
+use App\Models\Integration\ExternalReference;
 use App\Models\Invoicing\Invoice;
-use App\Plugins\Lexoffice\LexofficePlugin;
+use App\Plugins\Lexoffice\{LexofficeConfig, LexofficePlugin};
 use App\Plugins\Lexoffice\Models\{LexofficeVoucher, LexofficeVoucherLine};
 use App\Services\Billing\Contracts\ExternalRevenueSource;
-use App\Services\Billing\Dto\ExternalProductRevenue;
-use App\Support\Query\{DateParts, DateRange};
+use App\Services\Billing\Dto\{ExternalInvoice, ExternalInvoiceFile, ExternalInvoiceQuery, ExternalProductRevenue};
+use App\Support\Query\DateRange;
 use Carbon\CarbonInterface;
-use Illuminate\Support\Collection;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Str;
 
 /**
  * Umsatz aus dem Lexoffice-Beleg-Spiegel (Phase-54-Nachtrag; seit MVP-1034
  * als {@see ExternalRevenueSource} im Plugin): Bei externer
  * Rechnungshoheit existieren die Rechnungen nur im Buchhaltungsprogramm —
- * `lexoffice_vouchers` liefert sie je Kunde in die Auswertungen nach
- * (Billing-Umsatz, Kundenwert-Fakturiert).
+ * `lexoffice_vouchers` liefert sie in die Auswertungen nach.
  *
- * Regeln: Rechnungen/Abschläge positiv, Gutschriften negativ; Entwürfe und
- * stornierte Belege zählen nicht. Belege, deren Nummer eine lokale Rechnung
- * trägt (`invoices.number`/`external_number` — von der App übergebene
- * Rechnungen übernehmen die Lexoffice-Nummer), werden übersprungen: keine
- * Doppelzählung mit der lokalen Fakturierung.
+ * Eine Regel für alle Auswertungen ({@see revenueVouchers()}, MVP-1114):
+ * Rechnungen und Abschläge positiv, Gutschriften negativ; Entwürfe und
+ * stornierte Belege zählen nicht, archivierte schon (Lexware: nur ein
+ * Anzeigekennzeichen). Übergebene lokale Rechnungen zählen nur lokal —
+ * erkannt an der Übergabe-Referenz oder an der Nummer einer lokalen Rechnung
+ * (`number`/`external_number`).
  */
 class LexofficeRevenueSource implements ExternalRevenueSource {
-    /** Umsatzbelege für den Kundentrend (Stand Kundenakte, MVP-1034 unverändert übernommen). */
-    private const TREND_TYPES = ['invoice', 'salesinvoice', 'purchaseinvoice'];
-
-    private const TREND_VOID_STATUSES = ['voided', 'cancelled'];
-
-    /** Gespiegelte Belege mit Umsatzwirkung im Produktumsatz; Gutschriften mindern. */
+    /** Gespiegelte Belege mit Positionen; nur Lexoffice-eigene Belege tragen welche. */
     private const PRODUCT_VOUCHER_TYPES = ['invoice', 'creditnote'];
 
-    private const PRODUCT_EXCLUDED_STATUSES = ['draft', 'voided'];
+    /** `paidoff` = Gutschrift vollständig zurückgezahlt (Lexware-Doku). */
+    private const PAID_STATUSES = ['paid', 'paidoff'];
 
     public function key(): string {
         return LexofficePlugin::ID;
     }
 
-    /**
-     * Rechnungsähnliche Spiegelbelege für den Zahlungsverhaltens-Report
-     * (Phase-54-Nachtrag): gleiche Zeilenform wie lokale Rechnungen.
-     * `paid_date` stammt aus der Payments-Anreicherung des Belegsyncs —
-     * bezahlte Belege OHNE nachgeladenes Datum fallen aus den
-     * Zahldauer-Statistiken heraus (ehrlich, statt geraten) und gelten in
-     * der DSO-Historie als geschlossen. Gutschriften bleiben hier außen
-     * vor (keine Fälligkeits-/Zahlungssemantik).
-     *
-     * @param  list<int>  $excludedCustomerIds
-     * @return list<array{id:?int, customerId:int, number:string, issuedOn:?string, dueOn:?string, paidOn:?string, total:float, paid:bool}>
-     */
-    public function invoiceRows(string $upTo, ?int $customerId = null, array $excludedCustomerIds = []): array {
-        /** @var Collection<int, LexofficeVoucher> $vouchers */
-        $vouchers = LexofficeVoucher::query()
-            ->whereNotNull('customer_id')
-            ->whereNotNull('voucher_date')
-            ->where('voucher_date', '<=', $upTo)
-            ->whereIn('voucher_type', VoucherTypes::REVENUE)
-            ->whereNotIn('voucher_status', ['draft', 'voided'])
-            ->when($customerId !== null, fn($q) => $q->where('customer_id', $customerId))
-            ->when($excludedCustomerIds !== [], fn($q) => $q->whereNotIn('customer_id', $excludedCustomerIds))
-            ->get(['customer_id', 'voucher_status', 'voucher_number', 'voucher_date', 'due_date', 'paid_date', 'total_amount']);
-
-        if ($vouchers->isEmpty()) {
-            return [];
-        }
-
-        $knownNumbers = $this->knownLocalNumbers();
-
-        $rows = [];
-        foreach ($vouchers as $voucher) {
-            $number = (string) $voucher->voucher_number;
-            if ($number !== '' && isset($knownNumbers[$number])) {
-                continue;
-            }
-            $rows[] = [
-                'id' => null,
-                'customerId' => (int) $voucher->customer_id,
-                'number' => $number,
-                'issuedOn' => $voucher->voucher_date?->toDateString(),
-                'dueOn' => $voucher->due_date?->toDateString(),
-                'paidOn' => $voucher->paid_date?->toDateString(),
-                'total' => $voucher->total_amount?->toFloat() ?? 0.0,
-                'paid' => $voucher->voucher_status === 'paid',
-            ];
-        }
-
-        return $rows;
-    }
-
-    /**
-     * @param  list<int>  $excludedCustomerIds
-     * @return array<int, array{count:int, total:float}> customerId → Aggregat
-     */
-    public function perCustomer(string $from, string $to, ?int $customerId = null, array $excludedCustomerIds = []): array {
-        /** @var Collection<int, LexofficeVoucher> $vouchers */
-        $vouchers = LexofficeVoucher::query()
-            ->whereNotNull('customer_id')
-            ->whereBetween('voucher_date', [$from, $to])
-            ->whereIn('voucher_type', VoucherTypes::REVENUE_WITH_CREDITS)
-            ->whereNotIn('voucher_status', ['draft', 'voided'])
-            ->when($customerId !== null, fn($q) => $q->where('customer_id', $customerId))
-            ->when($excludedCustomerIds !== [], fn($q) => $q->whereNotIn('customer_id', $excludedCustomerIds))
-            ->get(['customer_id', 'voucher_type', 'voucher_number', 'total_amount']);
-
-        if ($vouchers->isEmpty()) {
-            return [];
-        }
-
-        $knownNumbers = $this->knownLocalNumbers();
-
-        /** @var array<int, array{count:int, total:float}> $agg */
-        $agg = [];
-        foreach ($vouchers as $voucher) {
-            $number = (string) $voucher->voucher_number;
-            if ($number !== '' && isset($knownNumbers[$number])) {
-                continue;
-            }
-            $cid = (int) $voucher->customer_id;
-            $sign = (float) VoucherTypes::sign($voucher->voucher_type);
-            $agg[$cid] ??= ['count' => 0, 'total' => 0.0];
-            $agg[$cid]['count']++;
-            $agg[$cid]['total'] += $sign * ($voucher->total_amount?->toFloat() ?? 0.0);
-        }
-
-        return $agg;
-    }
-
-    /**
-     * Dedup-Anker: alle lokalen Rechnungsnummern der Org (number +
-     * external_number) — von der App an Lexoffice übergebene Rechnungen
-     * übernehmen die Lexoffice-Belegnummer und dürfen nicht doppelt zählen.
-     *
-     * @return array<string, true>
-     */
-    private function knownLocalNumbers(): array {
-        $knownNumbers = [];
-        Invoice::query()
-            ->get(['number', 'external_number'])
-            ->each(function (Invoice $inv) use (&$knownNumbers): void {
-                foreach ([(string) $inv->number, (string) $inv->external_number] as $number) {
-                    if ($number !== '') {
-                        $knownNumbers[$number] = true;
-                    }
-                }
-            });
-
-        return $knownNumbers;
-    }
-
-    public function monthlyRevenue(int $customerId, CarbonInterface $from, CarbonInterface $to): array {
-        [$year, $month] = DateParts::yearMonth('voucher_date');
-        /** @var iterable<int, object{y: int|string, m: int|string, amount: float|int|string}> $rows */
-        $rows = LexofficeVoucher::query()
-            ->where('customer_id', $customerId)
-            ->where('archived', false)
-            ->whereIn('voucher_type', self::TREND_TYPES)
-            ->whereNotIn('voucher_status', self::TREND_VOID_STATUSES)
-            ->whereBetween('voucher_date', [$from, $to])
-            ->toBase()
-            ->selectRaw("{$year} as y, {$month} as m, COALESCE(SUM(total_amount), 0) as amount")
-            ->groupBy('y', 'm')
+    public function invoices(ExternalInvoiceQuery $query): array {
+        $vouchers = $this->revenueVouchers($query->withCreditNotes ? VoucherTypes::REVENUE_WITH_CREDITS : VoucherTypes::REVENUE)
+            ->when($query->organizationId !== null, static fn (Builder $q) => $q->where('lexoffice_vouchers.organization_id', $query->organizationId))
+            ->when($query->issuedFrom, static fn (Builder $q, CarbonInterface $from) => $q->where('lexoffice_vouchers.voucher_date', '>=', DateRange::day($from)))
+            ->when($query->issuedTo, static fn (Builder $q, CarbonInterface $to) => $q->where('lexoffice_vouchers.voucher_date', '<', DateRange::dayAfter($to)))
+            ->when($query->customerId !== null, static fn (Builder $q) => $q->where('lexoffice_vouchers.customer_id', $query->customerId))
+            ->when($query->excludedCustomerIds !== [], static fn (Builder $q) => $q->where(static fn (Builder $w) => $w
+                ->whereNull('lexoffice_vouchers.customer_id')
+                ->orWhereNotIn('lexoffice_vouchers.customer_id', $query->excludedCustomerIds)))
+            ->when($query->openOnly, static fn (Builder $q) => $q->whereNotIn('lexoffice_vouchers.voucher_status', self::PAID_STATUSES))
+            ->select(['id', 'organization_id', 'customer_id', 'voucher_type', 'voucher_status', 'voucher_number', 'voucher_date', 'due_date', 'paid_date', 'total_amount', 'open_amount', 'net_amount', 'currency', 'recipient_name', 'contact_name'])
+            ->selectSub(LexofficeVoucherLine::query()->selectRaw('SUM(total_net)')->whereColumn('lexoffice_voucher_lines.voucher_id', 'lexoffice_vouchers.id'), 'lines_net')
+            ->orderBy('voucher_date')
+            ->orderBy('id')
             ->get();
 
-        $months = [];
-        foreach ($rows as $row) {
-            $months[sprintf('%04d-%02d', (int) $row->y, (int) $row->m)] = (float) $row->amount;
+        $withLink = Route::has('lexoffice.vouchers.file');
+        $invoices = [];
+        foreach ($vouchers as $voucher) {
+            $sign = VoucherTypes::sign($voucher->voucher_type) < 0 ? -1.0 : 1.0;
+            $gross = round($sign * abs($voucher->total_amount?->toFloat() ?? 0.0), 2);
+            $paid = in_array($voucher->voucher_status, self::PAID_STATUSES, true);
+            $open = $paid ? 0.0 : round($sign * abs($voucher->open_amount?->toFloat() ?? $gross), 2);
+            $linesNet = $voucher->getAttribute('lines_net');
+            $net = match (true) {
+                $voucher->net_amount !== null => round($sign * abs($voucher->net_amount->toFloat()), 2),
+                $linesNet !== null => round($sign * abs((float) $linesNet), 2),
+                default => null,
+            };
+
+            $invoices[] = new ExternalInvoice(
+                source: LexofficePlugin::ID,
+                key: (string) $voucher->id,
+                number: (string) $voucher->voucher_number,
+                customerId: $voucher->customer_id,
+                contactName: $voucher->contact_name ?? $voucher->recipient_name,
+                type: match ($voucher->voucher_type) {
+                    'downpaymentinvoice' => Invoice::TYPE_DOWN_PAYMENT,
+                    'creditnote', 'salescreditnote' => Invoice::TYPE_CREDIT_NOTE,
+                    default => Invoice::TYPE_INVOICE,
+                },
+                status: match (true) {
+                    $paid => InvoiceStatus::Paid,
+                    abs($open) > 0 && abs($open) < abs($gross) => InvoiceStatus::PartiallyPaid,
+                    default => InvoiceStatus::Issued,
+                },
+                issuedOn: $voucher->voucher_date?->toImmutable(),
+                dueOn: $voucher->due_date?->toImmutable(),
+                paidOn: $voucher->paid_date?->toImmutable(),
+                gross: $gross,
+                net: $net,
+                open: $open,
+                currency: $voucher->currency->value,
+                url: $withLink ? route('lexoffice.vouchers.file', $voucher) : null,
+            );
         }
 
-        return $months;
+        return $invoices;
     }
 
-    public function overdueCount(int $organizationId, string $today): int {
-        return LexofficeVoucher::query()
+    public function customerIdsWithDocuments(int $organizationId): array {
+        return array_values(LexofficeVoucher::query()
             ->where('organization_id', $organizationId)
-            ->where('archived', false)
-            ->whereIn('voucher_type', VoucherTypes::REVENUE)
-            ->whereNotIn('voucher_status', ['draft', 'voided', 'paid', 'paidoff'])
-            ->whereNotNull('due_date')
-            ->where('due_date', '<', $today)
-            ->count();
+            ->whereNotNull('customer_id')
+            ->distinct()
+            ->pluck('customer_id')
+            ->map(static fn (mixed $id): int => (int) $id)
+            ->all());
+    }
+
+    public function file(int $organizationId, string $source, string $key): ?ExternalInvoiceFile {
+        if ($source !== LexofficePlugin::ID) {
+            return null;
+        }
+        $voucher = LexofficeVoucher::query()->where('organization_id', $organizationId)->whereKey((int) $key)->first();
+
+        return $voucher === null ? null : $this->voucherFile($voucher);
+    }
+
+    public function fileForInvoice(Invoice $invoice): ?ExternalInvoiceFile {
+        $externalId = ExternalReference::query()
+            ->where('organization_id', $invoice->organization_id)
+            ->where('plugin_id', LexofficePlugin::ID)
+            ->where('external_type', LexofficeInvoiceService::EXT_TYPE_INVOICE)
+            ->where('referenceable_type', $invoice->getMorphClass())
+            ->where('referenceable_id', $invoice->getKey())
+            ->value('external_id');
+        if ($externalId === null) {
+            return null;
+        }
+        $voucher = LexofficeVoucher::query()->where('organization_id', $invoice->organization_id)->where('external_id', (string) $externalId)->first();
+
+        return $voucher === null ? null : $this->voucherFile($voucher);
+    }
+
+    /** Materialisiertes Belegbild zuerst (MVP-690), sonst der Abruf aus Lexoffice. */
+    private function voucherFile(LexofficeVoucher $voucher): ?ExternalInvoiceFile {
+        $config = LexofficeConfig::resolve((int) $voucher->organization_id);
+        $service = new LexofficeVoucherFileService($config['api_key'], $config['base_url'], $config['request_interval']);
+        $file = $service->localFile($voucher);
+        if ($file === null && $service->isConfigured()) {
+            try {
+                $file = $service->download($voucher);
+            } catch (\Throwable $e) {
+                report($e);
+            }
+        }
+        if ($file === null) {
+            return null;
+        }
+        $base = Str::slug((string) ($voucher->voucher_number ?: 'beleg-' . $voucher->id)) ?: ('beleg-' . $voucher->id);
+
+        return new ExternalInvoiceFile($file['body'], LexofficeVoucherFileService::safeContentType($file['content_type']), $base . '.' . $file['extension']);
+    }
+
+    /**
+     * Umsatzwirksame Spiegelbelege der Arten `$types` — die eine Regel aller
+     * Auswertungen. `$withVoided` nimmt stornierte Belege hinzu (Provisionen
+     * müssen den Storno sehen, MVP-1119).
+     *
+     * @param  list<string>  $types
+     * @return Builder<LexofficeVoucher>
+     */
+    public function revenueVouchers(array $types, bool $withVoided = false): Builder {
+        $ignored = $withVoided ? array_values(array_diff(VoucherTypes::IGNORED_STATUSES, ['voided'])) : VoucherTypes::IGNORED_STATUSES;
+
+        return LexofficeVoucher::query()
+            ->whereIn('lexoffice_vouchers.voucher_type', $types)
+            ->whereNotNull('lexoffice_vouchers.voucher_date')
+            ->where(static fn (Builder $q) => $q
+                ->whereNull('lexoffice_vouchers.voucher_status')
+                ->orWhereNotIn('lexoffice_vouchers.voucher_status', $ignored))
+            ->whereNotExists(static function ($query): void {
+                $query->selectRaw('1')
+                    ->from('external_references')
+                    ->where('external_references.plugin_id', LexofficePlugin::ID)
+                    ->where('external_references.external_type', LexofficeInvoiceService::EXT_TYPE_INVOICE)
+                    ->where('external_references.referenceable_type', (new Invoice)->getMorphClass())
+                    ->whereColumn('external_references.external_id', 'lexoffice_vouchers.external_id');
+            })
+            ->whereNotExists(static function ($query): void {
+                $query->selectRaw('1')
+                    ->from('invoices')
+                    ->whereColumn('invoices.organization_id', 'lexoffice_vouchers.organization_id')
+                    ->where(static fn ($w) => $w
+                        ->whereColumn('invoices.number', 'lexoffice_vouchers.voucher_number')
+                        ->orWhereColumn('invoices.external_number', 'lexoffice_vouchers.voucher_number'));
+            });
     }
 
     /**
      * Positionen gespiegelter Rechnungen und Gutschriften (MVP-760), über die
-     * Artikel-Zuordnung auf den eigenen Artikelstamm gelegt. Aus einer lokalen
-     * Rechnung übergebene Belege zählen bereits lokal.
+     * Artikel-Zuordnung auf den eigenen Artikelstamm gelegt; Belegauswahl wie
+     * {@see invoices()}.
      */
     public function productRevenue(CarbonInterface $from, CarbonInterface $to): array {
         $sign = "CASE WHEN lexoffice_vouchers.voucher_type = 'creditnote' THEN -1 ELSE 1 END";
@@ -207,18 +213,10 @@ class LexofficeRevenueSource implements ExternalRevenueSource {
             })
             ->leftJoin('articles', 'articles.id', '=', 'external_article_mappings.article_id')
             ->leftJoin('lexoffice_articles', 'lexoffice_articles.id', '=', 'lexoffice_voucher_lines.lexoffice_article_id')
-            ->whereIn('lexoffice_vouchers.voucher_type', self::PRODUCT_VOUCHER_TYPES)
-            ->whereBetween('lexoffice_vouchers.voucher_date', DateRange::days($from, $to))
-            ->where(static fn ($q) => $q->whereNull('lexoffice_vouchers.voucher_status')->orWhereNotIn('lexoffice_vouchers.voucher_status', self::PRODUCT_EXCLUDED_STATUSES))
+            ->whereIn('lexoffice_voucher_lines.voucher_id', $this->revenueVouchers(self::PRODUCT_VOUCHER_TYPES)
+                ->whereBetween('lexoffice_vouchers.voucher_date', DateRange::days($from, $to))
+                ->select('lexoffice_vouchers.id'))
             ->where(static fn ($q) => $q->whereNull('lexoffice_voucher_lines.type')->orWhere('lexoffice_voucher_lines.type', '<>', 'text'))
-            ->whereNotExists(static function ($query): void {
-                $query->selectRaw('1')
-                    ->from('external_references')
-                    ->where('external_references.plugin_id', LexofficePlugin::ID)
-                    ->where('external_references.external_type', LexofficeInvoiceService::EXT_TYPE_INVOICE)
-                    ->where('external_references.referenceable_type', (new Invoice)->getMorphClass())
-                    ->whereColumn('external_references.external_id', 'lexoffice_vouchers.external_id');
-            })
             ->groupBy(
                 'lexoffice_voucher_lines.external_article_id', 'external_article_mappings.article_id',
                 'articles.number', 'articles.name', 'articles.base_unit', 'articles.category',

@@ -49,6 +49,22 @@ class LexofficeVoucherFileService {
         'deliverynote' => 'delivery-notes',
     ];
 
+    /**
+     * Belegtypen, die inline angezeigt werden dürfen. Alles andere wird zum
+     * Download — auch `image/svg+xml`: SVG ist ein Dokument mit Skriptfähigkeit,
+     * kein Bild im harmlosen Sinn.
+     */
+    public const INLINE_CONTENT_TYPES = [
+        'application/pdf',
+        'image/jpeg',
+        'image/png',
+        'image/gif',
+        'image/tiff',
+        'image/webp',
+    ];
+
+    public const FALLBACK_CONTENT_TYPE = 'application/octet-stream';
+
     private ?PluginApiClient $api = null;
 
     public function __construct(
@@ -59,6 +75,18 @@ class LexofficeVoucherFileService {
 
     public function isConfigured(): bool {
         return $this->apiKey !== null && $this->apiKey !== '';
+    }
+
+    /**
+     * Gemeldeter Typ der Quelle gegen die Positivliste (Sicherheitsscan
+     * 2026-08-23, S-64): sonst rendert der Browser z. B. `text/html` inline im
+     * eigenen Origin.
+     */
+    public static function safeContentType(string $reported): string {
+        // Parameter abschneiden (`; charset=…`) und normalisieren.
+        $type = mb_strtolower(trim(explode(';', $reported, 2)[0]));
+
+        return in_array($type, self::INLINE_CONTENT_TYPES, true) ? $type : self::FALLBACK_CONTENT_TYPE;
     }
 
     /**

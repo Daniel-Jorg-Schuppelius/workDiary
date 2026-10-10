@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Lexoffice\Services;
 
+use App\Events\Invoicing\ExternalInvoicePaymentReceived;
 use App\Models\Platform\Organization;
 use App\Models\Reselling\ResalePeriodLink;
 use App\Plugins\Lexoffice\Api\LexofficeClientFactory;
@@ -136,7 +137,15 @@ final class LexofficeVoucherLineSync {
         }
         $articleIds = $this->articleIds($voucher->organization_id, array_column($parsed['lines'], 'external_article_id'));
 
-        DB::transaction(function () use ($voucher, $parsed, $articleIds): void {
+        $totalNet = $invoice['totalPrice']['totalNetAmount'] ?? null;
+        $related = array_values(array_filter(array_map(
+            static fn (mixed $entry): string => is_array($entry) ? (string) ($entry['id'] ?? '') : '',
+            (array) ($invoice['relatedVouchers'] ?? []),
+        )));
+
+        $firstRelation = $related !== [] && ($voucher->related_voucher_ids ?? []) === [];
+
+        DB::transaction(function () use ($voucher, $parsed, $articleIds, $totalNet, $related): void {
             /** @var \Illuminate\Database\Eloquent\Collection<int, LexofficeVoucherLine> $existing */
             $existing = LexofficeVoucherLine::query()->withoutGlobalScopes()->where('voucher_id', $voucher->id)->get()->keyBy('position');
             $seen = [];
@@ -188,9 +197,18 @@ final class LexofficeVoucherLineSync {
                 'recipient_name' => $parsed['recipient'] !== '' ? mb_substr($parsed['recipient'], 0, 255) : null,
                 'service_starts_on' => $parsed['service_from'],
                 'service_ends_on' => $parsed['service_to'],
+                // Netto und Belegbezug (MVP-1114): Berichte und Provisionen ohne eigenen Detailabruf.
+                'net_amount' => is_numeric($totalNet) ? (float) $totalNet : $voucher->net_amount,
+                'related_voucher_ids' => $related !== [] ? $related : null,
                 'lines_synced_at' => now(),
             ] + self::CLEARED_FAILURE)->save();
         });
+
+        // Bezug einer schon erstatteten Gutschrift erst jetzt bekannt (MVP-1122):
+        // die Minderung der Provision nachholen, die beim Statuswechsel ausblieb.
+        if ($firstRelation && $creditNote && in_array($voucher->voucher_status, ['paid', 'paidoff'], true)) {
+            event(new ExternalInvoicePaymentReceived($voucher->getMorphClass(), (int) $voucher->id, (int) $voucher->organization_id));
+        }
 
         return count($parsed['lines']);
     }

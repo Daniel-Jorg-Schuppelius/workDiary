@@ -157,7 +157,7 @@ return [
         'assign' => 'Leer lassen = wieder die Herkunft aus der Lead-Pipeline verwenden.',
         'current_assignment' => 'Aktuell zuständig: :user (:source).',
         'no_assignment' => 'Aktuell ist niemand zuständig — ohne Zuordnung entsteht keine Provision.',
-        'unassigned' => 'Diese Rechnungen sind bezahlt, aber niemandem zugeordnet: weder manuell noch über einen konvertierten Lead.',
+        'unassigned' => 'Diese Rechnungen sind bezahlt, aber niemandem zugeordnet: weder manuell noch über einen konvertierten Lead. Rechnungen aus dem Buchhaltungsprogramm, die schon bezahlt übernommen wurden, ordnen Sie hier ebenfalls zu.',
         'draft_preview' => 'Entwurf: Die Zeilen werden bei jedem Aufruf neu ermittelt. Erst das Schließen schreibt sie fest.',
         'no_payout' => 'WorkDiary rechnet die Provision aus und exportiert sie — die Auszahlung erfolgt in der Lohnabrechnung.',
     ],

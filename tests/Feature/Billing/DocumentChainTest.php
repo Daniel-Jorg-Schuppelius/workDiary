@@ -79,6 +79,47 @@ class DocumentChainTest extends TestCase {
         $this->assertSame(1, $counts['quotes_follow_up']);
     }
 
+    /** MVP-1124: im Buchhaltungsprogramm abgerechnete Angebote verlassen die Gruppe, aufhebbar. */
+    public function test_quote_marked_as_invoiced_externally_leaves_the_group(): void {
+        $quotes = app(QuoteService::class);
+        $quote = $quotes->create(['customer_id' => $this->customer->id], [['description' => 'Leistung', 'quantity' => '1', 'unit_price' => '100.00']], $this->admin);
+        $quotes->approve($quote, $this->admin);
+        $quotes->send($quote->fresh(), $this->admin);
+        $quotes->accept($quote->fresh());
+        $this->assertSame(1, $this->counts()['quotes_to_invoice']);
+
+        $this->get(route('quotes.external-invoice.form', $quote))->assertOk()->assertSee(__('quotes.external_invoice.number'));
+        $this->post(route('quotes.external-invoice.store', $quote), ['external_invoice_number' => 'LX-4711'])->assertRedirect();
+        $this->assertSame('LX-4711', $quote->fresh()?->external_invoice_number);
+        $this->assertSame(0, $this->counts()['quotes_to_invoice']);
+        $this->get(route('quotes.show', $quote))->assertOk()->assertSee('LX-4711');
+
+        $this->delete(route('quotes.external-invoice.destroy', $quote))->assertRedirect();
+        $this->assertNull($quote->fresh()?->invoiced_externally_at);
+        $this->assertSame(1, $this->counts()['quotes_to_invoice']);
+
+        $quotes->convertToInvoice($quote->fresh(), $this->admin);
+        $this->get(route('quotes.external-invoice.form', $quote))->assertStatus(409);
+    }
+
+    /** MVP-1116: überfällige Belege des Buchhaltungsprogramms zählen mit, offene ohne Fälligkeit nicht. */
+    public function test_overdue_mirrored_invoices_join_the_overdue_group(): void {
+        foreach ([['LX-OVERDUE', now()->subDays(5)], ['LX-LATER', now()->addDays(5)]] as [$number, $due]) {
+            \App\Plugins\Lexoffice\Models\LexofficeVoucher::query()->create([
+                'organization_id' => $this->organization->id, 'external_id' => 'ext-' . $number, 'contact_external_id' => 'contact-new',
+                'contact_name' => 'Neukunde GmbH', 'voucher_type' => 'invoice', 'voucher_status' => 'open', 'voucher_number' => $number,
+                'voucher_date' => now()->subDays(30)->toDateString(), 'due_date' => $due->toDateString(), 'total_amount' => '119.00', 'currency' => 'EUR',
+            ]);
+        }
+
+        $group = collect(app(DocumentChainService::class)->groups($this->organization->fresh(), $this->admin, 5))->firstWhere('key', 'invoices_overdue');
+
+        $this->assertSame(1, $group['count']);
+        $this->assertStringContainsString('LX-OVERDUE', $group['items'][0]->title);
+        $this->assertStringContainsString('Neukunde GmbH', $group['items'][0]->title);
+        $this->assertStringContainsString('q=LX-OVERDUE', $group['items'][0]->url);
+    }
+
     public function test_page_and_widget_render(): void {
         $this->get(route('billing.chain'))->assertOk()->assertSee(__('invoicing.chain.title'));
 

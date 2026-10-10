@@ -75,6 +75,28 @@ final class LexofficeSpendSource implements ExternalPurchaseSource {
         return ['rows' => $rows, 'pending' => $pending];
     }
 
+    public function openPayables(int $organizationId, string $today): array {
+        $result = ['open' => 0.0, 'overdue' => 0.0, 'count' => 0];
+        LexofficeVoucher::query()
+            ->where('organization_id', $organizationId)
+            ->whereIn('voucher_type', array_values(array_diff(VoucherTypes::EXPENSES, VoucherTypes::EXPENSE_CREDITS)))
+            ->whereNotIn('voucher_status', [...VoucherTypes::IGNORED_STATUSES, 'paid', 'paidoff'])
+            ->get(['due_date', 'total_amount', 'open_amount', 'currency'])
+            ->each(function (LexofficeVoucher $voucher) use (&$result, $today): void {
+                $open = abs(($voucher->open_amount ?? $voucher->total_amount)?->toFloat() ?? 0.0);
+                if ($open <= 0) {
+                    return;
+                }
+                $result['open'] += $open;
+                $result['count']++;
+                if ($voucher->due_date !== null && $voucher->due_date->toDateString() < $today) {
+                    $result['overdue'] += $open;
+                }
+            });
+
+        return $result;
+    }
+
     /** @return Builder<LexofficeVoucher> */
     private function vouchers(?CarbonInterface $from, ?CarbonInterface $to): Builder {
         $query = LexofficeVoucher::query()

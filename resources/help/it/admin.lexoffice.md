@@ -1,7 +1,7 @@
 ---
 title: "Conflitti Lexoffice"
 topic: admin.lexoffice
-version: 4
+version: 5
 keywords:
     - Lexware Office
     - conflitto di sincronizzazione
@@ -11,6 +11,8 @@ keywords:
     - accettare valori esterni
     - allineamento dati
     - conflitto sync
+    - specchio documenti
+    - sync documenti
 audience:
     - admin
     - buchhaltung
@@ -57,6 +59,15 @@ relativi agli articoli non compaiono nella Inbox di riconciliazione, ma
 nella scheda **Conflitti** del magazzino (**Magazzino** → **Conflitti**):
 lì sceglie **Mantieni locale**, **Applica lo stato di Lexoffice** oppure
 **Ignora** — con il diritto **Gestisci articoli**.
+
+Specchio documenti: il sync dei documenti rispecchia i documenti di
+Lexoffice in WorkDiary. Vengono rispecchiati anche i documenti di contatti
+Lexoffice non ancora collegati ad alcun cliente o fornitore – inizialmente
+senza cliente né fornitore; non appena il contatto è collegato, il sync
+successivo li assegna. Un cliente viene impostato solo sui documenti di
+vendita e un fornitore solo sui documenti di acquisto, anche se un contatto
+è collegato a entrambi. Il sync delle righe memorizza inoltre l'importo
+netto e, per una nota di credito, il suo riferimento alla fattura.
 
 Autorizzazione: la Inbox di riconciliazione è accessibile agli
 amministratori e al ruolo **Contabilità**.

@@ -16,39 +16,108 @@ use App\Models\Integration\ExternalReference;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
 use App\Services\Billing\BillingModeResolver;
+use App\Services\Billing\Contracts\ExternalRevenue;
+use App\Services\Billing\Dto\{ExternalInvoice, ExternalInvoiceFile, ExternalInvoiceQuery};
 use App\Services\Invoicing\EInvoice\XRechnungGenerator;
 use App\Services\Invoicing\InvoicePdfRenderer;
 use App\Services\Invoicing\OnlinePayment\InvoicePaymentLinkService;
 use App\Support\MorphMap;
 use ERechnungToolkit\Enums\ERechnungProfile;
+use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\{Auth, Route};
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class InvoiceController extends Controller {
-    public function index(): View {
+    /**
+     * Lokale Rechnungen und die des Buchhaltungsprogramms (MVP-1118) in einer
+     * Liste nach Datum; das Programm liefert dieselbe Belegregel wie die
+     * Auswertungen (ohne Entwürfe und Stornos).
+     */
+    public function index(Request $request): View {
         /** @var User $user */
         $user = Auth::guard('customer')->user();
 
         // Entwürfe sind interne Arbeitsstände (MVP-1019) — der Kunde sieht nur Ausgestelltes.
-        $invoices = Invoice::query()
+        $local = Invoice::query()
             ->where('customer_id', $user->customer_id)
             ->where('status', '!=', InvoiceStatus::Draft)
             ->orderByDesc('issued_on')
             ->orderByDesc('id')
-            ->paginate(25);
+            ->get();
+
+        $rows = $local->map(static fn (Invoice $invoice): array => [
+            'invoice' => $invoice,
+            'number' => (string) $invoice->number,
+            'date' => $invoice->issued_on,
+            'statusLabel' => $invoice->status->label(),
+            'total' => $invoice->total?->toFloat() ?? 0.0,
+            'currency' => $invoice->currency->value,
+            'pdf' => route('customer.invoices.pdf', $invoice),
+        ])->all();
+        foreach ($this->externalInvoices($user) as $invoice) {
+            $rows[] = [
+                'invoice' => null,
+                'number' => $invoice->number,
+                'date' => $invoice->issuedOn,
+                'statusLabel' => $invoice->status->label(),
+                'total' => $invoice->gross,
+                'currency' => $invoice->currency,
+                'pdf' => route('customer.invoices.external', ['source' => $invoice->source, 'key' => $invoice->key]),
+            ];
+        }
+        usort($rows, static fn (array $a, array $b): int => ($b['date']?->getTimestamp() ?? 0) <=> ($a['date']?->getTimestamp() ?? 0));
+
+        $page = LengthAwarePaginator::resolveCurrentPage();
+        $invoices = new LengthAwarePaginator(array_slice($rows, ($page - 1) * 25, 25), count($rows), 25, $page, [
+            'path' => $request->url(),
+            'query' => $request->query(),
+        ]);
 
         // Online-Zahlung (MVP-1067): im Portal unabhängig vom Schalter für PDF und Mail.
         $links = app(InvoicePaymentLinkService::class);
-        $payLinks = $invoices->getCollection()
+        $payLinks = collect($invoices->items())
+            ->map(static fn (array $row): ?Invoice => $row['invoice'])
+            ->filter()
             ->mapWithKeys(static fn (Invoice $invoice): array => [$invoice->id => $links->urlFor($invoice, onDocuments: false)])
             ->filter();
 
         return view('customer.invoices.index', [
             'invoices' => $invoices,
             'payLinks' => $payLinks,
-            'externallyLed' => $this->externallyLed($invoices->getCollection()),
+        ]);
+    }
+
+    /** Belegdatei einer Rechnung des Buchhaltungsprogramms — nur, wenn sie in der Liste des Kunden steht. */
+    public function external(string $source, string $key): SymfonyResponse {
+        /** @var User $user */
+        $user = Auth::guard('customer')->user();
+
+        $listed = collect($this->externalInvoices($user))
+            ->contains(static fn (ExternalInvoice $invoice): bool => $invoice->source === $source && $invoice->key === $key);
+        abort_unless($listed, 404);
+
+        $file = app(ExternalRevenue::class)->file($source, (int) $user->organization_id, $key);
+
+        return $file !== null
+            ? $this->download($file)
+            : redirect()->route('customer.invoices.index')->with('error', __('customer_portal.invoices.document_unavailable'));
+    }
+
+    /** @return list<ExternalInvoice> */
+    private function externalInvoices(User $user): array {
+        return app(ExternalRevenue::class)->invoices(new ExternalInvoiceQuery(
+            customerId: (int) $user->customer_id,
+            organizationId: (int) $user->organization_id,
+        ));
+    }
+
+    private function download(ExternalInvoiceFile $file): SymfonyResponse {
+        return response($file->body, 200, [
+            'Content-Type' => $file->contentType,
+            'Content-Disposition' => 'attachment; filename="' . $file->filename . '"',
         ]);
     }
 
@@ -69,8 +138,14 @@ class InvoiceController extends Controller {
             && $invoice->status !== InvoiceStatus::Draft,
             404,
         );
-        // Führt ein Fakturaprogramm die Rechnung, liegt das gültige Dokument dort.
-        abort_if($this->externallyLed(collect([$invoice]))->isNotEmpty(), 404);
+        // Führt ein Fakturaprogramm die Rechnung, liegt das gültige Dokument dort (MVP-1118).
+        if ($this->externallyLed(collect([$invoice]))->isNotEmpty()) {
+            $file = app(ExternalRevenue::class)->fileForInvoice($invoice);
+
+            return $file !== null
+                ? $this->download($file)
+                : redirect()->route('customer.invoices.index')->with('error', __('customer_portal.invoices.document_unavailable'));
+        }
 
         $invoice->load(['items', 'customer', 'project']);
         $number = preg_replace('/[^A-Za-z0-9._-]/', '_', (string) $invoice->number);

@@ -565,4 +565,50 @@ class CustomerControllerTest extends TestCase {
             ->assertOk()
             ->assertViewHas('invoicedRange', 100.0);
     }
+
+    /** MVP-1114: Kundenakte rechnet wie die Top-Kunden — lokal wie gespiegelt. */
+    public function test_customer_revenue_follows_the_shared_revenue_rule(): void {
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        foreach ([
+            [Invoice::TYPE_INVOICE, InvoiceStatus::Issued, '100.00', 'RE-LOCAL-1'],
+            [Invoice::TYPE_FINAL, InvoiceStatus::Paid, '30.00', null],
+            [Invoice::TYPE_CREDIT_NOTE, InvoiceStatus::Issued, '-10.00', null],
+            [Invoice::TYPE_INVOICE, InvoiceStatus::Draft, '50.00', null],
+            [Invoice::TYPE_PROFORMA, InvoiceStatus::Issued, '20.00', null],
+        ] as [$type, $status, $total, $number]) {
+            Invoice::factory()->create(array_filter([
+                'organization_id' => $this->organization->id,
+                'customer_id' => $customer->id,
+                'type' => $type,
+                'status' => $status,
+                'issued_on' => '2026-06-15',
+                'total' => $total,
+                'number' => $number,
+            ], static fn (mixed $value): bool => $value !== null));
+        }
+        foreach ([
+            ['salesinvoice', 'open', '200.00', 'LX-1'],
+            ['creditnote', 'open', '25.00', 'LX-2'],
+            ['purchaseinvoice', 'open', '70.00', 'ER-1'],
+            ['invoice', 'draft', '40.00', 'LX-3'],
+            ['invoice', 'paid', '100.00', 'RE-LOCAL-1'],
+        ] as $i => [$type, $status, $total, $number]) {
+            \App\Plugins\Lexoffice\Models\LexofficeVoucher::query()->create([
+                'organization_id' => $this->organization->id, 'external_id' => 'rule-' . $i,
+                'customer_id' => $customer->id, 'voucher_type' => $type, 'voucher_status' => $status,
+                'voucher_number' => $number, 'voucher_date' => '2026-06-16',
+                'total_amount' => $total, 'currency' => 'EUR',
+            ]);
+        }
+
+        $this->actingAs($this->admin)
+            ->withSession([
+                'ui.daterange.preset' => 'custom',
+                'ui.daterange.from' => '2026-06-01',
+                'ui.daterange.to' => '2026-06-30',
+            ])
+            ->get(route('customers.show', $customer))
+            ->assertOk()
+            ->assertViewHas('invoicedRange', 295.0);
+    }
 }

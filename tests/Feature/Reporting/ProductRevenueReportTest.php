@@ -103,14 +103,14 @@ class ProductRevenueReportTest extends TestCase {
         return $invoice;
     }
 
-    /** @return array{rows: list<array{articleId: ?int, number: ?string, name: string, unit: ?string, quantity: float, net: float, share: ?float, invoices: int}>, total: float, withoutArticle: float, articleCount: int} */
+    /** @return array{rows: list<array{articleId: ?int, number: ?string, name: string, unit: ?string, collective: bool, quantity: float, net: float, share: ?float, invoices: int}>, total: float, withoutArticle: float, articleCount: int} */
     private function build(string $from = '2030-06-01', string $to = '2030-06-30'): array {
         return app(ProductRevenueReportBuilder::class)->build(CarbonImmutable::parse($from), CarbonImmutable::parse($to));
     }
 
     /**
-     * @param  list<array{articleId: ?int, number: ?string, name: string, unit: ?string, quantity: float, net: float, share: ?float, invoices: int}>  $rows
-     * @return array<string, array{articleId: ?int, number: ?string, name: string, unit: ?string, quantity: float, net: float, share: ?float, invoices: int}>
+     * @param  list<array{articleId: ?int, number: ?string, name: string, unit: ?string, collective: bool, quantity: float, net: float, share: ?float, invoices: int}>  $rows
+     * @return array<string, array{articleId: ?int, number: ?string, name: string, unit: ?string, collective: bool, quantity: float, net: float, share: ?float, invoices: int}>
      */
     private function byName(array $rows): array {
         $out = [];
@@ -217,23 +217,41 @@ class ProductRevenueReportTest extends TestCase {
         $this->assertSame(6.0, $result['externalNet']);
     }
 
-    public function test_lexoffice_article_without_mapping_gets_its_own_row(): void {
-        LexofficeArticle::query()->create([
+    private function unmappedLexofficeCable(): void {
+        $article = LexofficeArticle::query()->create([
             'organization_id' => $this->organization->id,
             'external_id' => 'lx-cable',
             'name' => 'Kabel NYM (nur Lexoffice)',
             'article_number' => 'LX-9',
         ]);
         $voucher = $this->lexofficeVoucher('invoice', '2030-06-11', [['lx-cable', '10', '30.00']]);
-        LexofficeVoucherLine::query()->where('voucher_id', $voucher->id)->update([
-            'lexoffice_article_id' => LexofficeArticle::query()->where('external_id', 'lx-cable')->value('id'),
-        ]);
+        LexofficeVoucherLine::query()->where('voucher_id', $voucher->id)->update(['lexoffice_article_id' => $article->id]);
+    }
 
-        $row = $this->byName($this->build()['rows'])['Kabel NYM (nur Lexoffice)'];
+    public function test_lexoffice_article_without_mapping_gets_its_own_row(): void {
+        $this->unmappedLexofficeCable();
+
+        $result = $this->build();
+        $row = $this->byName($result['rows'])['Kabel NYM (nur Lexoffice)'];
 
         $this->assertNull($row['articleId']);
+        $this->assertFalse($row['collective']);
         $this->assertSame('LX-9', $row['number']);
         $this->assertSame([LexofficePlugin::ID], $row['sources']);
+        $this->assertSame(3, $result['articleCount']);
+    }
+
+    public function test_chart_shows_unmapped_lexoffice_article_without_link(): void {
+        $this->unmappedLexofficeCable();
+
+        $this->getWithRange()->assertOk()->assertViewHas('series', function (array $series): bool {
+            $byLabel = array_column($series, null, 'x');
+            $this->assertSame(['x' => 'Kabel NYM (nur Lexoffice)', 'y' => 30.0, 'url' => null], $byLabel['Kabel NYM (nur Lexoffice)'] ?? null);
+            $this->assertNotNull($byLabel['Schraube M8']['url'] ?? null);
+            $this->assertArrayNotHasKey(__('ohne Artikelbezug'), $byLabel);
+
+            return true;
+        });
     }
 
     public function test_voucher_created_from_a_local_invoice_is_not_counted_twice(): void {
@@ -268,7 +286,7 @@ class ProductRevenueReportTest extends TestCase {
 
     public function test_items_without_article_are_bundled(): void {
         $result = $this->build();
-        $bucket = collect($result['rows'])->firstWhere('articleId', null);
+        $bucket = collect($result['rows'])->firstWhere('collective', true);
 
         $this->assertNotNull($bucket);
         $this->assertSame(50.0, $bucket['net']);

@@ -17,7 +17,8 @@ use App\Enums\Sales\{CommissionAssignmentSource, CommissionReversalKind, Commiss
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\User;
 use App\Models\Sales\{CommissionAgent, CommissionRule, InvoiceCommission};
-use App\Services\Invoicing\DunningService;
+use App\Services\Sales\Commission\CommissionDocuments;
+use App\Services\Sales\Contracts\CommissionDocument;
 use App\Support\Query\DateRange;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\{Decimal, Money, Percentage};
@@ -48,11 +49,15 @@ use Illuminate\Support\Facades\DB;
  *    der Periode ihres Entstehungsdatums.
  *
  * Es gibt bewusst keine Auszahlung: WorkDiary rechnet und exportiert.
+ *
+ * Beleg ist die lokale Rechnung oder eine gespiegelte Rechnung des
+ * Buchhaltungsprogramms ({@see CommissionDocument}, MVP-1119); deren Auslöser
+ * sind die Statuswechsel, die der Belegsync beobachtet.
  */
 class CommissionAccrualService {
     public function __construct(
         private readonly CommissionRuleResolver $resolver,
-        private readonly DunningService $payments,
+        private readonly CommissionDocuments $documents,
     ) {}
 
     /**
@@ -62,20 +67,21 @@ class CommissionAccrualService {
      *
      * @return list<InvoiceCommission> neu geschriebene Zeilen (leer = nichts zu tun)
      */
-    public function onInvoicePaid(Invoice $invoice): array {
-        if ($this->isReducingDocument($invoice)) {
-            $origin = $invoice->parent;
+    public function onInvoicePaid(Invoice|CommissionDocument $subject): array {
+        $document = $this->documents->of($subject);
+        if ($document->isReducing()) {
+            $origin = $document->origin();
 
             return $origin === null ? [] : $this->reverse(
                 $origin,
-                $invoice->subtotal?->abs() ?? Money::zero($invoice->currency),
-                $this->dateOf($invoice),
-                (string) __('commission.note.credit_note', ['number' => (string) ($invoice->number ?? $invoice->sqid)]),
+                $document->netAmount()->abs(),
+                $document->earnedOn(),
+                (string) __('commission.note.credit_note', ['number' => $document->number()]),
                 CommissionReversalKind::CreditNote,
             );
         }
 
-        $commission = $this->accrue($invoice);
+        $commission = $this->accrue($document);
 
         return $commission === null ? [] : [$commission];
     }
@@ -85,13 +91,14 @@ class CommissionAccrualService {
      *
      * @return list<InvoiceCommission>
      */
-    public function onInvoiceCancelled(Invoice $invoice): array {
+    public function onInvoiceCancelled(Invoice|CommissionDocument $subject): array {
+        $document = $this->documents->of($subject);
         // Stichtag ist der Storno, NICHT der urspruengliche Zahltag: sonst
         // fiele die Rueckrechnung in eine womoeglich laengst geschlossene
         // Periode und taeuchte in keinem Lauf mehr auf.
-        $on = $invoice->cancelled_at instanceof Carbon ? $invoice->cancelled_at->copy()->startOfDay() : Carbon::today();
+        $on = $document->cancelledOn() ?? Carbon::today();
 
-        return $this->reverse($invoice, null, $on, (string) __('commission.note.cancelled'), CommissionReversalKind::Cancellation);
+        return $this->reverse($document, null, $on, (string) __('commission.note.cancelled'), CommissionReversalKind::Cancellation);
     }
 
     /**
@@ -102,33 +109,34 @@ class CommissionAccrualService {
      *
      * @return list<InvoiceCommission>
      */
-    public function onPaymentReverted(Invoice $invoice): array {
-        if ($this->isReducingDocument($invoice) || $invoice->status === InvoiceStatus::Paid) {
+    public function onPaymentReverted(Invoice|CommissionDocument $subject): array {
+        $document = $this->documents->of($subject);
+        if ($document->isReducing() || $document->status() === InvoiceStatus::Paid) {
             return [];
         }
 
-        return DB::transaction(function () use ($invoice): array {
-            $rows = InvoiceCommission::query()->where('invoice_id', $invoice->id)->lockForUpdate()->get();
-            $currency = $invoice->currency;
+        return DB::transaction(function () use ($document): array {
+            $rows = InvoiceCommission::query()->forDocument($document)->lockForUpdate()->get();
+            $currency = $document->currency();
             $accrued = $this->accruedBase($rows, $currency);
             if (! $accrued->isPositive()) {
                 return [];
             }
 
             $target = Money::zero($currency);
-            if ($invoice->status === InvoiceStatus::PartiallyPaid) {
+            if ($document->status() === InvoiceStatus::PartiallyPaid) {
                 $ruleId = $rows->whereNull('reversal_of_id')->sortByDesc('id')->first()?->commission_rule_id;
                 $rule = $ruleId === null ? null : CommissionRule::query()->find($ruleId);
                 // Gelöschte Regel: bezahlter Anteil der bisherigen Grundlage, eine Prüfung ist nicht mehr möglich.
                 if ($rule === null || $rule->is_partial_accrual) {
-                    $base = $rule === null ? $this->grossBase($rows, $currency) : $this->resolver->baseAmountFor($invoice, $rule);
-                    $target = $base->times($this->paidShare($invoice));
+                    $base = $rule === null ? $this->grossBase($rows, $currency) : $this->resolver->baseAmountFor($document, $rule);
+                    $target = $base->times($document->paidShare());
                 }
             }
             $excess = $accrued->minus($target);
 
             return $excess->isPositive()
-                ? $this->reverse($invoice, $excess, Carbon::today(), (string) __('commission.note.payment_reverted'), CommissionReversalKind::Payment)
+                ? $this->reverse($document, $excess, Carbon::today(), (string) __('commission.note.payment_reverted'), CommissionReversalKind::Payment)
                 : [];
         });
     }
@@ -141,34 +149,35 @@ class CommissionAccrualService {
      * Staffel, gedeckelt auf den Jahresrest (MVP-988), auszahlbar nach der
      * Haftungsfrist.
      */
-    public function accrue(Invoice $invoice): ?InvoiceCommission {
-        if ($this->isReducingDocument($invoice) || ! in_array($invoice->status, [InvoiceStatus::Paid, InvoiceStatus::PartiallyPaid], true)) {
+    public function accrue(Invoice|CommissionDocument $subject): ?InvoiceCommission {
+        $document = $this->documents->of($subject);
+        if ($document->isReducing() || ! in_array($document->status(), [InvoiceStatus::Paid, InvoiceStatus::PartiallyPaid], true)) {
             return null;
         }
 
-        $assignment = $this->resolver->assignmentFor($invoice);
+        $assignment = $this->resolver->assignmentFor($document);
         if ($assignment === null) {
             return null;
         }
 
-        $earnedOn = $invoice->status === InvoiceStatus::Paid ? $this->dateOf($invoice) : Carbon::today();
-        $rule = $this->resolver->ruleFor($invoice, $assignment, $earnedOn);
+        $earnedOn = $document->status() === InvoiceStatus::Paid ? $document->earnedOn() : Carbon::today();
+        $rule = $this->resolver->ruleFor($document, $assignment, $earnedOn);
         if ($rule === null) {
             return null;
         }
 
-        $base = $this->resolver->baseAmountFor($invoice, $rule);
+        $base = $this->resolver->baseAmountFor($document, $rule);
         if (! $base->isPositive()) {
             return null;
         }
         $target = match (true) {
-            $invoice->status === InvoiceStatus::Paid => $base,
-            $rule->is_partial_accrual => $base->times($this->paidShare($invoice)),
+            $document->status() === InvoiceStatus::Paid => $base,
+            $rule->is_partial_accrual => $base->times($document->paidShare()),
             default => Money::zero($base->getCurrency()),
         };
 
-        return DB::transaction(function () use ($invoice, $assignment, $rule, $base, $target, $earnedOn): ?InvoiceCommission {
-            $rows = $this->recipientRows(InvoiceCommission::query()->where('invoice_id', $invoice->id), $assignment)->lockForUpdate()->get();
+        return DB::transaction(function () use ($document, $assignment, $rule, $base, $target, $earnedOn): ?InvoiceCommission {
+            $rows = $this->recipientRows(InvoiceCommission::query()->forDocument($document), $assignment)->lockForUpdate()->get();
             $accrued = $this->accruedBase($rows, $base->getCurrency());
             $delta = Money::min($target, $base)->minus($accrued);
             if (! $delta->isPositive()) {
@@ -179,13 +188,13 @@ class CommissionAccrualService {
             [$amount, $note] = $this->capped($rule, $assignment, $rate->amountOf($delta), $earnedOn);
 
             return InvoiceCommission::create([
-                'organization_id' => $invoice->organization_id,
-                'invoice_id' => $invoice->id,
+                'organization_id' => $document->organizationId(),
+                ...InvoiceCommission::documentAttributes($document),
                 ...$assignment->recipient(),
                 'commission_rule_id' => $rule->id,
                 'assignment_source' => $assignment->source,
                 'lead_id' => $assignment->source === CommissionAssignmentSource::Lead ? $assignment->lead?->id : null,
-                'currency' => $invoice->currency,
+                'currency' => $document->currency(),
                 'base_amount' => $delta,
                 'rate_percent' => $rate,
                 'commission_amount' => $amount,
@@ -273,21 +282,6 @@ class CommissionAccrualService {
     }
 
     /**
-     * Anteil der Zahlungen am Rechnungsbetrag, höchstens 1.
-     *
-     * @return numeric-string
-     */
-    private function paidShare(Invoice $invoice): string {
-        $total = $invoice->total;
-        if ($total === null || ! $total->isPositive()) {
-            return '0';
-        }
-        $paid = $this->payments->paidAmount($invoice);
-
-        return $paid->greaterThanOrEqual($total) ? '1' : Decimal::of($paid->getAmount())->dividedBy(Decimal::of($total->getAmount()), 10)->getValue();
-    }
-
-    /**
      * Zeilen aller anderen Empfänger — NULL-sicher, weil Vermittlerzeilen keine
      * Person tragen und `user_id != X` sie sonst still ausließe.
      *
@@ -321,17 +315,16 @@ class CommissionAccrualService {
      *
      * @return list<InvoiceCommission>
      */
-    public function assign(Invoice $invoice, ?User $user, ?CommissionAgent $agent = null): array {
-        $invoice->sales_user_id = $user?->id;
-        $invoice->sales_agent_id = $user === null ? $agent?->id : null;
-        $invoice->save();
+    public function assign(Invoice|CommissionDocument $subject, ?User $user, ?CommissionAgent $agent = null): array {
+        $document = $this->documents->of($subject);
+        $document->assignSales($user?->id, $user === null ? $agent?->id : null);
 
-        if (! in_array($invoice->status, [InvoiceStatus::Paid, InvoiceStatus::PartiallyPaid], true)) {
+        if (! in_array($document->status(), [InvoiceStatus::Paid, InvoiceStatus::PartiallyPaid], true)) {
             return [];
         }
 
         $written = $this->reverse(
-            $invoice,
+            $document,
             null,
             Carbon::today(),
             (string) __('commission.note.reassigned'),
@@ -339,7 +332,7 @@ class CommissionAccrualService {
             keep: $user !== null || $agent !== null ? new CommissionAssignment($user, CommissionAssignmentSource::Manual, null, $agent) : null,
         );
 
-        $commission = $this->accrue($invoice->refresh());
+        $commission = $this->accrue($document);
 
         return $commission === null ? $written : [...$written, $commission];
     }
@@ -354,10 +347,12 @@ class CommissionAccrualService {
      *                                         (Umzuordnung auf denselben Empfänger).
      * @return list<InvoiceCommission>
      */
-    public function reverse(Invoice $invoice, ?Money $limit, Carbon $on, string $note, CommissionReversalKind $kind, ?CommissionAssignment $keep = null): array {
-        return DB::transaction(function () use ($invoice, $limit, $on, $note, $kind, $keep): array {
+    public function reverse(Invoice|CommissionDocument $subject, ?Money $limit, Carbon $on, string $note, CommissionReversalKind $kind, ?CommissionAssignment $keep = null): array {
+        $document = $this->documents->of($subject);
+
+        return DB::transaction(function () use ($document, $limit, $on, $note, $kind, $keep): array {
             $query = InvoiceCommission::query()
-                ->where('invoice_id', $invoice->id)
+                ->forDocument($document)
                 ->whereNull('reversal_of_id')
                 ->where('status', '!=', CommissionStatus::Reversed->value);
             if ($keep !== null) {
@@ -393,6 +388,10 @@ class CommissionAccrualService {
                 $reversal = InvoiceCommission::create([
                     'organization_id' => $original->organization_id,
                     'invoice_id' => $original->invoice_id,
+                    'document_type' => $original->document_type,
+                    'document_id' => $original->document_id,
+                    'document_number' => $original->document_number,
+                    'customer_id' => $original->customer_id,
                     'user_id' => $original->user_id,
                     'commission_agent_id' => $original->commission_agent_id,
                     'commission_rule_id' => $original->commission_rule_id,
@@ -453,17 +452,5 @@ class CommissionAccrualService {
         $already = $reversed->isEmpty() ? Money::zero($currency) : Money::sum($reversed, $currency);
 
         return Money::max($base->minus($already), Money::zero($currency));
-    }
-
-    /** Gutschrift/Storno-Beleg mit Ursprungsbeleg? */
-    private function isReducingDocument(Invoice $invoice): bool {
-        return in_array($invoice->type, [Invoice::TYPE_CREDIT_NOTE, Invoice::TYPE_CANCELLATION], true);
-    }
-
-    /** Stichtag der Periodenzuordnung: der Zahltag des Belegs. */
-    private function dateOf(Invoice $invoice): Carbon {
-        $date = $invoice->paid_on ?? $invoice->issued_on;
-
-        return $date instanceof Carbon ? $date->copy()->startOfDay() : Carbon::today();
     }
 }

@@ -634,6 +634,7 @@ return [
 
     // Finanzberichte (Feature 125, MVP-676).
     'reports' => [
+        'external_ledger_notice' => 'L’organizzazione tiene la contabilità in un programma contabile, non in WorkDiary. Questi report valutano solo le registrazioni locali e restano quindi vuoti o incompleti.',
         'replacement' => [
             'subtitle' => 'Alla data :from, orizzonte fino al :to, aumento dei prezzi :inflation % annuo',
             'horizon' => 'Orizzonte',

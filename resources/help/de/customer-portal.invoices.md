@@ -1,7 +1,7 @@
 ---
 title: "Meine Rechnungen"
 topic: customer-portal.invoices
-version: 4
+version: 5
 keywords:
     - Rechnungen ansehen
     - Rechnungsübersicht
@@ -18,6 +18,8 @@ keywords:
     - Rechnung herunterladen
     - Rechnungs-PDF
     - ZUGFeRD
+    - Lexoffice-Rechnungen
+    - Buchhaltungsprogramm
 audience: []
 related:
     - customer-portal.overview
@@ -26,7 +28,7 @@ related:
     - customer-portal.billing
 ---
 
-Unter **Rechnungen** sehen Sie die Rechnungen, die Ihr Auftragnehmer für Ihr Unternehmen ausgestellt hat, mit ihrem aktuellen Zahlungsstand. Offene Rechnungen bezahlen Sie hier direkt online, wenn Ihr Auftragnehmer das anbietet.
+Unter **Rechnungen** sehen Sie die Rechnungen, die Ihr Auftragnehmer für Ihr Unternehmen ausgestellt hat, mit ihrem aktuellen Zahlungsstand – auch die Rechnungen, die er in seinem Buchhaltungsprogramm (etwa Lexoffice) ausgestellt hat. Offene Rechnungen bezahlen Sie hier direkt online, wenn Ihr Auftragnehmer das anbietet.
 
 ## Die Rechnungsliste
 
@@ -38,7 +40,7 @@ Die Liste zeigt je Rechnung:
 - **Betrag** – der Rechnungsbetrag mit Währung,
 - rechts das PDF-Symbol zum Herunterladen und gegebenenfalls den Knopf **Online bezahlen**.
 
-Die neueste Rechnung steht oben. Bei mehr als 25 Rechnungen blättern Sie über die Seitennummerierung am unteren Rand. Entwürfe, an denen Ihr Auftragnehmer noch arbeitet, erscheinen nicht – Sie sehen nur ausgestellte Rechnungen.
+Alle Rechnungen stehen gemeinsam nach Datum sortiert, die neueste oben – die Rechnungen aus dem Buchhaltungsprogramm Ihres Auftragnehmers zwischen den übrigen. Bei mehr als 25 Rechnungen blättern Sie über die Seitennummerierung am unteren Rand. Die Kachel **Rechnungen** auf der Startseite zählt beide. Entwürfe, an denen Ihr Auftragnehmer noch arbeitet, erscheinen nicht – Sie sehen nur ausgestellte Rechnungen.
 
 ### Die Status
 
@@ -49,15 +51,15 @@ Die neueste Rechnung steht oben. Bei mehr als 25 Rechnungen blättern Sie über 
 
 ## Rechnung herunterladen
 
-Klicken Sie in der Zeile der Rechnung auf das PDF-Symbol (Hinweis beim Darüberfahren: **Rechnung … als PDF herunterladen**). Sie erhalten dasselbe Dokument, das auch Ihr Auftragnehmer zu dieser Rechnung ausgibt.
+Klicken Sie in der Zeile der Rechnung auf das PDF-Symbol (Hinweis beim Darüberfahren: **Rechnung … als PDF herunterladen**); es steht bei jeder Rechnung. Sie erhalten dasselbe Dokument, das auch Ihr Auftragnehmer zu dieser Rechnung ausgibt.
 
 - Erhalten Sie Ihre Rechnungen als ZUGFeRD-E-Rechnung, ist auch die heruntergeladene Datei ein ZUGFeRD-PDF mit eingebetteten Rechnungsdaten.
 - Bei allen anderen Zustellwegen erhalten Sie die Rechnung als PDF – auch dann, wenn Ihnen die Rechnung als XRechnung (XML) zugestellt wurde.
-- Fehlt das Symbol bei einer Rechnung, führt Ihr Auftragnehmer diese Rechnung in einem anderen Rechnungsprogramm. Das Dokument erhalten Sie dann direkt von ihm.
+- Führt Ihr Auftragnehmer eine Rechnung in seinem Buchhaltungsprogramm, holt das Portal das Dokument von dort. Liegt es dort noch nicht vor, kehren Sie zur Liste zurück und sehen den Hinweis **Das Dokument liegt im Buchhaltungsprogramm noch nicht vor. Bitte versuchen Sie es später erneut.**
 
 ## Online bezahlen
 
-Den Knopf **Online bezahlen** sehen Sie nur, wenn Ihr Auftragnehmer einen Zahlungsanbieter angebunden hat und die Rechnung noch einen offenen Betrag hat, also im Status **Gestellt** oder **Teilweise bezahlt** ist. Gutschriften, stornierte Rechnungen und Proforma-Rechnungen lassen sich nicht online bezahlen.
+Den Knopf **Online bezahlen** sehen Sie nur, wenn Ihr Auftragnehmer einen Zahlungsanbieter angebunden hat und die Rechnung noch einen offenen Betrag hat, also im Status **Gestellt** oder **Teilweise bezahlt** ist. Ihn gibt es nur bei Rechnungen, die Ihr Auftragnehmer direkt im System dieses Portals ausgestellt hat, nicht bei Rechnungen aus seinem Buchhaltungsprogramm. Gutschriften, stornierte Rechnungen und Proforma-Rechnungen lassen sich nicht online bezahlen.
 
 1. Klicken Sie bei der Rechnung auf **Online bezahlen**.
 2. Sie werden zur Bezahlseite des Zahlungsanbieters weitergeleitet. Zu zahlen ist der noch offene Betrag – bei einer teilweise bezahlten Rechnung also nur der Rest.

@@ -383,6 +383,21 @@ class LexofficeVoucherLineSyncTest extends TestCase {
             ->assertSuccessful();
     }
 
+    public function test_net_amount_and_related_vouchers_come_from_the_detail_call(): void {
+        $creditNote = $this->voucher('cn-2', 'GS/2025/0002', '2025-09-01', 'creditnote');
+        $payload = $this->invoicePayload();
+        $payload['id'] = 'cn-2';
+        $payload['totalPrice'] = ['currency' => 'EUR', 'totalNetAmount' => 247.2];
+        $payload['relatedVouchers'] = [['id' => 'inv-1', 'voucherNumber' => 'RE-1', 'voucherType' => 'invoice']];
+        FakePluginHttp::fake(['https://api.lexware.io/v1/credit-notes/cn-2' => FakePluginHttp::response($payload)]);
+
+        $this->lineSync()->syncMissing($this->organization, 10);
+
+        $fresh = $creditNote->fresh();
+        $this->assertSame('247.20', $fresh?->net_amount?->getAmount());
+        $this->assertSame(['inv-1'], $fresh?->related_voucher_ids);
+    }
+
     public function test_credit_notes_are_mirrored_with_negative_totals(): void {
         $creditNote = $this->voucher('cn-1', 'GS/2025/0001', '2025-09-01', 'creditnote');
         $payload = $this->invoicePayload();

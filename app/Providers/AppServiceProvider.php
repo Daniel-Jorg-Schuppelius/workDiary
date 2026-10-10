@@ -283,10 +283,21 @@ class AppServiceProvider extends ServiceProvider {
         $this->app->singleton(\App\Services\Integration\InboxGroupBookerRegistry::class);
         $this->app->singleton(\App\Services\Finance\Targets\FacturationTargetRegistry::class);
         $this->app->singleton(\App\Services\Material\MaterialProviderRegistry::class);
-        // Umsatz aus Buchhaltungsprogrammen (MVP-1034): Plugins tragen ihre Quelle ein.
-        $this->app->singleton(\App\Services\Billing\ExternalRevenueSources::class);
+        // Umsatz aus Buchhaltungsprogrammen (MVP-1034): Plugins tragen ihre Quelle ein; der
+        // allgemeine Belegspiegel (sevDesk, easybill, JTL, InvoicePlane …) ist von Haus aus dabei (MVP-1127/1129).
+        $this->app->singleton(\App\Services\Billing\ExternalRevenueSources::class, static function (): \App\Services\Billing\ExternalRevenueSources {
+            $sources = new \App\Services\Billing\ExternalRevenueSources;
+            $sources->register(new \App\Services\Finance\Accounting\Vouchers\AccountingVoucherRevenueSource);
+
+            return $sources;
+        });
         $this->app->alias(\App\Services\Billing\ExternalRevenueSources::class, \App\Services\Billing\Contracts\ExternalRevenue::class);
-        $this->app->singleton(\App\Services\Billing\ExternalPurchaseSources::class);
+        $this->app->singleton(\App\Services\Billing\ExternalPurchaseSources::class, static function (): \App\Services\Billing\ExternalPurchaseSources {
+            $sources = new \App\Services\Billing\ExternalPurchaseSources;
+            $sources->register(new \App\Services\Finance\Accounting\Vouchers\AccountingVoucherPurchaseSource);
+
+            return $sources;
+        });
         $this->app->alias(\App\Services\Billing\ExternalPurchaseSources::class, \App\Services\Billing\Contracts\ExternalPurchases::class);
         $this->app->singleton(\App\Services\Billing\PartyDocumentSources::class);
         $this->app->singleton(\App\Services\Collections\Import\NotebookSources::class);

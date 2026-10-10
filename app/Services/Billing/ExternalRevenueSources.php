@@ -12,12 +12,16 @@ declare(strict_types=1);
 
 namespace App\Services\Billing;
 
+use App\Models\Invoicing\Invoice;
 use App\Services\Billing\Contracts\{ExternalRevenue, ExternalRevenueSource};
-use Carbon\CarbonInterface;
+use App\Services\Billing\Dto\{ExternalInvoiceFile, ExternalInvoiceQuery};
+use Carbon\{CarbonImmutable, CarbonInterface};
 
 /**
  * Registry der {@see ExternalRevenueSource}s (MVP-1034): Buchhaltungs-Plugins
  * tragen sich beim Booten ein; Auswertungen lesen die Summe aller Quellen.
+ * Summen je Kunde, je Monat und Überfälliges entstehen hier aus den Belegen
+ * der Quellen (MVP-1114) — eine Belegregel je Quelle statt einer je Methode.
  */
 final class ExternalRevenueSources implements ExternalRevenue {
     /** @var array<string, ExternalRevenueSource> */
@@ -27,23 +31,24 @@ final class ExternalRevenueSources implements ExternalRevenue {
         $this->sources[$source->key()] = $source;
     }
 
-    public function invoiceRows(string $upTo, ?int $customerId = null, array $excludedCustomerIds = []): array {
-        $rows = [];
+    public function invoices(ExternalInvoiceQuery $query): array {
+        $invoices = [];
         foreach ($this->sources as $source) {
-            array_push($rows, ...$source->invoiceRows($upTo, $customerId, $excludedCustomerIds));
+            array_push($invoices, ...$source->invoices($query));
         }
 
-        return $rows;
+        return $invoices;
     }
 
     public function perCustomer(string $from, string $to, ?int $customerId = null, array $excludedCustomerIds = []): array {
         $totals = [];
-        foreach ($this->sources as $source) {
-            foreach ($source->perCustomer($from, $to, $customerId, $excludedCustomerIds) as $id => $aggregate) {
-                $totals[$id] ??= ['count' => 0, 'total' => 0.0];
-                $totals[$id]['count'] += $aggregate['count'];
-                $totals[$id]['total'] += $aggregate['total'];
+        foreach ($this->invoices(new ExternalInvoiceQuery(CarbonImmutable::parse($from), CarbonImmutable::parse($to), $customerId, $excludedCustomerIds)) as $invoice) {
+            if ($invoice->customerId === null) {
+                continue;
             }
+            $totals[$invoice->customerId] ??= ['count' => 0, 'total' => 0.0];
+            $totals[$invoice->customerId]['count']++;
+            $totals[$invoice->customerId]['total'] += $invoice->gross;
         }
 
         return $totals;
@@ -51,22 +56,21 @@ final class ExternalRevenueSources implements ExternalRevenue {
 
     public function monthlyRevenue(int $customerId, CarbonInterface $from, CarbonInterface $to): array {
         $months = [];
-        foreach ($this->sources as $source) {
-            foreach ($source->monthlyRevenue($customerId, $from, $to) as $month => $amount) {
-                $months[$month] = ($months[$month] ?? 0.0) + $amount;
+        foreach ($this->invoices(new ExternalInvoiceQuery($from, $to, $customerId)) as $invoice) {
+            if ($invoice->issuedOn === null) {
+                continue;
             }
+            $month = $invoice->issuedOn->format('Y-m');
+            $months[$month] = ($months[$month] ?? 0.0) + $invoice->gross;
         }
 
         return $months;
     }
 
     public function overdueCount(int $organizationId, string $today): int {
-        $count = 0;
-        foreach ($this->sources as $source) {
-            $count += $source->overdueCount($organizationId, $today);
-        }
+        $open = $this->invoices(new ExternalInvoiceQuery(withCreditNotes: false, openOnly: true, organizationId: $organizationId));
 
-        return $count;
+        return count(array_filter($open, static fn ($invoice): bool => $invoice->dueOn !== null && $invoice->dueOn->toDateString() < $today));
     }
 
     public function productRevenue(CarbonInterface $from, CarbonInterface $to): array {
@@ -76,5 +80,36 @@ final class ExternalRevenueSources implements ExternalRevenue {
         }
 
         return $rows;
+    }
+
+    public function customerIdsWithDocuments(int $organizationId): array {
+        $ids = [];
+        foreach ($this->sources as $source) {
+            array_push($ids, ...$source->customerIdsWithDocuments($organizationId));
+        }
+
+        return array_values(array_unique($ids));
+    }
+
+    public function file(string $source, int $organizationId, string $key): ?ExternalInvoiceFile {
+        foreach ($this->sources as $registered) {
+            $file = $registered->file($organizationId, $source, $key);
+            if ($file !== null) {
+                return $file;
+            }
+        }
+
+        return null;
+    }
+
+    public function fileForInvoice(Invoice $invoice): ?ExternalInvoiceFile {
+        foreach ($this->sources as $source) {
+            $file = $source->fileForInvoice($invoice);
+            if ($file !== null) {
+                return $file;
+            }
+        }
+
+        return null;
     }
 }

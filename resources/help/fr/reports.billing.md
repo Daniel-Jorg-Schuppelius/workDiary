@@ -1,7 +1,7 @@
 ---
 title: "Facturation, frais, paiements et chiffre d’affaires"
 topic: reports.billing
-version: 3
+version: 4
 keywords:
     - créances ouvertes
     - balance âgée
@@ -15,6 +15,8 @@ keywords:
     - prévoir les majorations
     - chiffre d’affaires par article
     - chiffre d’affaires par catégorie
+    - factures Lexoffice
+    - logiciel comptable
 audience:
     - admin
     - geschaeftsfuehrung
@@ -56,16 +58,26 @@ facturation**. Il s’ouvre pour les administrateurs et les rôles disposant du
 droit **Voir toutes les saisies de temps** ; sans ce droit, l’accès est
 refusé.
 
+Les pièces du logiciel comptable proviennent de Lexoffice et, via le miroir
+général des pièces, de sevDesk, easybill, JTL-Wawi et InvoicePlane. Les
+lignes – et donc les contributions au **Chiffre d’affaires par produit** –
+ne proviennent que de Lexoffice.
+
 - Tuiles :
   - **Émis + payé (Σ brut)** : total brut des factures au statut **Émise**,
     **Partiellement payée** ou **Payée** dont la date de facture se situe dans
-    la période (sans date de facture, la date de création compte).
+    la période (sans date de facture, la date de création compte). S’y
+    ajoutent les factures et factures d’acompte du logiciel comptable (par
+    exemple Lexoffice) dont la date de pièce se situe dans la période ; les
+    avoirs diminuent le total. Les factures pro forma ne comptent jamais.
   - **Créances ouvertes** : montant restant dû de toutes les factures au
     statut **Émise** ou **Partiellement payée**, indépendamment de la
     période. Les paiements reçus et les retenues de garantie ouvertes sont
     déduits ; les factures pro forma, avoirs et documents d’annulation ne
-    comptent pas. La tuile devient rouge dès que l’une d’elles a plus de
-    30 jours de retard ; l’indication en donne le nombre.
+    comptent pas. Les factures et acomptes ouverts du logiciel comptable
+    sont inclus avec leur montant restant dû. La tuile devient rouge dès que
+    l’une d’elles a plus de 30 jours de retard ; l’indication en donne le
+    nombre.
   - **Temps non facturé** : saisies de temps facturables de la période qui
     n’ont encore été consommées par aucun circuit de facturation, avec le
     nombre de saisies et le revenu attendu d’après les montants enregistrés.
@@ -74,14 +86,26 @@ refusé.
   des pièces reprises en miroir du logiciel comptable. Un clic sur un client
   ouvre **Clients et projets** pour ce client.
 - **Factures par statut** : **Quantité**, **Net** et **Brut** par statut.
+  Les pièces du logiciel comptable sont comptées sous **Émise**,
+  **Partiellement payée** ou **Payée** ; s’il y en a, une colonne
+  supplémentaire **dont logiciel comptable** montre leur part. Si le montant
+  net d’une telle pièce n’est pas connu, son montant ne compte que sous
+  **Brut**.
 - **Ancienneté – postes ouverts** : les factures ouvertes selon le nombre de
   jours après l’échéance (sans échéance, à partir de la date de facture) dans
   les tranches **Actuel**, 1–7, 8–14, 15–30 et plus de 30 jours, chacune avec
-  le montant restant dû, et **Total ouvert**.
+  le montant restant dû, et **Total ouvert**. Les factures et acomptes
+  ouverts du logiciel comptable figurent dans les tranches avec leur montant
+  restant dû ; la ligne **dont logiciel comptable** sous **Total ouvert**
+  montre leur part.
 - **Top clients (émis + payés sur la période)** : **Client**, **Factures** et
   **Brut** ; si des montants proviennent du logiciel comptable, une colonne
   supplémentaire **dont logiciel comptable** apparaît. Les factures
-  partiellement payées sont incluses.
+  partiellement payées sont incluses, les factures pro forma non. Les pièces
+  de contacts du logiciel comptable qui ne sont rattachés à aucun client sont
+  regroupées dans la ligne en italique **sans affectation client** ; elles
+  n’apparaissent pas dans le graphique **Chiffre d'affaires par client
+  (top 15)**.
 - **Factures électroniques entrantes (sur la période)** : entrées par statut
   avec nombre et montant brut, ainsi que le nombre transmis à la
   comptabilité.
@@ -97,8 +121,9 @@ Filtres : **Client**, **Projet**, **Employé** et **Inclure les clients
 masqués**. Le client et le projet s’appliquent aux factures, devis et temps,
 l’employé uniquement aux temps. Les factures entrantes et les niveaux de
 relance portent toujours sur toute l’organisation. Lorsqu’un projet est
-choisi, les montants du logiciel comptable sont exclus, car ces pièces ne
-connaissent pas de projet. Export en PDF, CSV et Excel.
+choisi, les pièces du logiciel comptable sont exclues des tuiles, des
+statuts, de l’ancienneté et des top clients, car ces pièces ne connaissent
+pas de projet. Export en PDF, CSV et Excel.
 
 ## Notes de frais
 
@@ -176,11 +201,16 @@ toutes les saisies de temps**.
   comptable. Les pièces transmises depuis une facture locale ne comptent
   qu’une fois, les brouillons et pièces annulées pas du tout.
 - Tuiles : **Chiffre d’affaires net total**, **dont issu du logiciel
-  comptable**, **Articles avec chiffre d’affaires** et **Part sans référence
-  article** (lignes sans article choisi).
+  comptable**, **Articles avec chiffre d’affaires** (y compris les articles
+  du logiciel comptable qui ne sont rattachés à aucun article de votre
+  propre fichier articles) et **Part sans référence article** (lignes sans
+  article choisi).
 - Graphique des articles au chiffre d’affaires le plus élevé ; vous en
   fixez le nombre avec **Top N dans le graphique** (3 à 50, 10 par défaut).
-  Un clic ouvre l’article.
+  Il montre aussi les articles du logiciel comptable non rattachés à votre
+  propre fichier articles, ceux-ci sans lien ; un clic n’ouvre que les
+  articles de votre propre fichier articles. Seule la ligne collective
+  **sans référence article** est absente du graphique.
 - **Chiffre d'affaires par catégorie** : **Catégorie**, **Article**,
   **Chiffre d’affaires net** et **Part**.
 - Tableau : **Numéro d’article**, **Article**, **Quantité**, **Unité**,

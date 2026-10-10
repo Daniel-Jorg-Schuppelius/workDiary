@@ -10,6 +10,27 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
 
 ### Added
 
+- Belege des Buchhaltungsprogramms in Auswertungen (Phase 139,
+  MVP-1113–1129): Lexoffice und der allgemeine Belegspiegel (sevDesk,
+  easybill, JTL-Wawi, InvoicePlane) fließen nach einer gemeinsamen Belegregel
+  in Abrechnungs-Auswertung (Status, Ausgestellt + Bezahlt, offene
+  Forderungen, Aging, Top-Kunden), Kundenakte, Kundenwert, Zahlungsverhalten,
+  Belegkette, KI-Werkzeuge `invoices`/`open_items`, Lieferantenberichte und
+  die Kachel „Offene Posten“. Das Artikelumsatz-Diagramm zeigt auch
+  Lexoffice-Artikel ohne Zuordnung zum Artikelstamm. Belege nicht verknüpfter
+  Lexoffice-Kontakte werden gespiegelt („ohne Kundenzuordnung“). Das
+  Kundenportal listet Rechnungen des Buchhaltungsprogramms mit PDF (Lexoffice).
+  Provisionen entstehen auch an in Lexoffice oder im allgemeinen Spiegel
+  bezahlten Rechnungen (bei beobachtetem Statuswechsel). Angebote lassen sich
+  als „im Buchhaltungsprogramm abgerechnet“ markieren. Buchhaltungsberichte
+  zeigen ohne lokale Buchhaltung einen Hinweis. Materialrechnungen tragen den
+  Artikel des Materials.
+  **Manueller Schritt nach dem Deploy:** je Organisation mit Lexoffice einmal
+  `php artisan lexoffice:sync-voucher-lines --all --refresh` (füllt Nettobetrag
+  und Gutschrift-Bezug der schon gespiegelten Belege, etwa zehn Minuten je
+  1000 Belege). Der nächste stündliche Belegsync ruft einmal alle Belege ohne
+  Kontakt ab.
+
 - Vereinsverwaltung (Feature 159, MVP-842): **Mitglieder, Gruppen und
   Vertretungen** als neues Plan-Modul `module.club`. Mitglieder existieren ohne
   Benutzerkonto mit laufender Mitgliedsnummer je Organisation, Mitgliedschafts-

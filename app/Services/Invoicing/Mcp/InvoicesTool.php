@@ -17,10 +17,15 @@ use App\Http\Resources\InvoiceResource;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\{Invoice, InvoiceItem};
 use App\Models\Platform\{Organization, User};
+use App\Services\Billing\Contracts\ExternalRevenue;
+use App\Services\Billing\Dto\{ExternalInvoice, ExternalInvoiceQuery};
 use App\Services\Invoicing\DunningService;
 use App\Services\Mcp\GuardedTool;
 use App\Support\Query\DateRange;
 use App\Support\Sqid;
+use Carbon\CarbonImmutable;
+use CommonToolkit\Enums\CurrencyCode;
+use CommonToolkit\ValueObjects\Money;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\{Request, Response, ResponseFactory};
 use Laravel\Mcp\Server\Attributes\{Description, Name};
@@ -28,7 +33,7 @@ use Laravel\Mcp\Server\Tools\Annotations\{IsIdempotent, IsReadOnly};
 
 /** MCP (MVP-1063): Rechnungen auflisten oder eine mit Positionen und offenem Betrag zeigen. */
 #[Name('invoices')]
-#[Description('Rechnungen nach Status, Kunde oder Rechnungsdatum auflisten; mit `id` eine Rechnung mit Positionen und offenem Betrag anzeigen.')]
+#[Description('Rechnungen nach Status, Kunde oder Rechnungsdatum auflisten, dazu Rechnungen und Gutschriften aus dem Buchhaltungsprogramm (`external_invoices`); mit `id` eine lokale Rechnung mit Positionen und offenem Betrag anzeigen.')]
 #[IsReadOnly]
 #[IsIdempotent]
 final class InvoicesTool extends GuardedTool {
@@ -93,6 +98,52 @@ final class InvoicesTool extends GuardedTool {
             ->limit($this->limit($request))
             ->get();
 
-        return Response::structured(['invoices' => $list->map(static fn (Invoice $invoice): array => InvoiceResource::make($invoice)->resolve())->all()]);
+        return Response::structured([
+            'invoices' => $list->map(static fn (Invoice $invoice): array => InvoiceResource::make($invoice)->resolve())->all(),
+            'external_invoices' => $this->external($data, $organization, $this->limit($request)),
+        ]);
+    }
+
+    /**
+     * Belege des Buchhaltungsprogramms (MVP-1116) — dieselbe Belegregel wie
+     * die Auswertungen; Entwürfe und Stornos gibt es dort nicht.
+     *
+     * @param  array<string, mixed>  $data
+     * @return list<array<string, mixed>>
+     */
+    private function external(array $data, Organization $organization, int $limit): array {
+        if (isset($data['status']) && ! in_array($data['status'], array_map(static fn (InvoiceStatus $s): string => $s->value, Invoice::ISSUED_STATUSES), true)) {
+            return [];
+        }
+        $invoices = app(ExternalRevenue::class)->invoices(new ExternalInvoiceQuery(
+            issuedFrom: isset($data['from']) ? CarbonImmutable::parse((string) $data['from']) : null,
+            issuedTo: isset($data['to']) ? CarbonImmutable::parse((string) $data['to']) : null,
+            customerId: isset($data['customer']) ? (Sqid::decode(Customer::class, (string) $data['customer']) ?? 0) : null,
+            organizationId: (int) $organization->id,
+        ));
+        if (isset($data['status'])) {
+            $invoices = array_filter($invoices, static fn (ExternalInvoice $invoice): bool => $invoice->status->value === $data['status']);
+        }
+        $invoices = array_slice(array_reverse(array_values($invoices)), 0, $limit);
+        $customers = Customer::query()->whereIn('id', array_filter(array_map(static fn (ExternalInvoice $invoice): ?int => $invoice->customerId, $invoices)))->get(['id', 'name'])->keyBy('id');
+
+        return array_map(static function (ExternalInvoice $invoice) use ($customers): array {
+            $currency = CurrencyCode::tryFrom($invoice->currency) ?? CurrencyCode::Euro;
+            $customer = $invoice->customerId !== null ? $customers->get($invoice->customerId) : null;
+
+            return [
+                'source' => $invoice->source,
+                'number' => $invoice->number,
+                'type' => $invoice->type,
+                'status' => $invoice->status->value,
+                'customer' => $customer !== null ? ['id' => $customer->sqid, 'name' => $customer->name] : null,
+                'contact_name' => $customer === null ? $invoice->contactName : null,
+                'issued_on' => $invoice->issuedOn?->toDateString(),
+                'due_on' => $invoice->dueOn?->toDateString(),
+                'paid_on' => $invoice->paidOn?->toDateString(),
+                'total' => Money::ofFloat($invoice->gross, $currency),
+                'open_amount' => Money::ofFloat($invoice->open, $currency),
+            ];
+        }, $invoices);
     }
 }

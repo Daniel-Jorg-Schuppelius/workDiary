@@ -22,6 +22,8 @@ use App\Models\Project\Project;
 use App\Models\Reselling\ResaleSubscription;
 use App\Models\Time\TimeEntry;
 use App\Modules\ModuleRegistry;
+use App\Services\Billing\Contracts\ExternalRevenue;
+use App\Services\Billing\Dto\ExternalInvoiceQuery;
 use App\Services\Customer\Intake\CustomerIntakeStages;
 use App\Services\CustomerPortal\Contracts\PortalNoticeSource;
 use App\Services\CustomerPortal\PortalVisibility;
@@ -53,8 +55,10 @@ class DashboardController extends Controller {
             $stats['time_entries'] = $timeQuery->count();
         }
         if ($customer !== null && $visibility->allows($customer, PortalCapability::Invoices)) {
-            // Wie die Liste: Entwürfe sind interne Arbeitsstände (MVP-1019).
-            $stats['invoices'] = Invoice::query()->where('customer_id', $customerId)->where('status', '!=', InvoiceStatus::Draft)->count();
+            // Wie die Liste: Entwürfe sind interne Arbeitsstände (MVP-1019), dazu die
+            // Rechnungen des Buchhaltungsprogramms (MVP-1118).
+            $stats['invoices'] = Invoice::query()->where('customer_id', $customerId)->where('status', '!=', InvoiceStatus::Draft)->count()
+                + count(app(ExternalRevenue::class)->invoices(new ExternalInvoiceQuery(customerId: $customerId, organizationId: (int) $customer->organization_id)));
         }
         if ($customer !== null && $visibility->allows($customer, PortalCapability::OpenIssues)) {
             $stats['open_issues'] = OpenIssue::query()

@@ -1,7 +1,7 @@
 ---
 title: "Mis facturas"
 topic: customer-portal.invoices
-version: 4
+version: 5
 keywords:
     - ver facturas
     - listado de facturas
@@ -16,6 +16,8 @@ keywords:
     - descargar factura
     - factura en PDF
     - ZUGFeRD
+    - facturas de Lexoffice
+    - programa contable
 audience: []
 related:
     - customer-portal.overview
@@ -24,7 +26,7 @@ related:
     - customer-portal.billing
 ---
 
-En **Facturas** ve las facturas que su proveedor ha emitido para su empresa, con su estado de pago actual. Si su proveedor lo ofrece, aquí paga directamente en línea las facturas pendientes.
+En **Facturas** ve las facturas que su proveedor ha emitido para su empresa, con su estado de pago actual, incluidas las facturas que ha emitido en su programa de contabilidad (por ejemplo, Lexoffice). Si su proveedor lo ofrece, aquí paga directamente en línea las facturas pendientes.
 
 ## La lista de facturas
 
@@ -36,7 +38,7 @@ La lista muestra para cada factura:
 - **Importe** – el importe de la factura con la moneda,
 - a la derecha, el icono PDF para descargar y, si procede, el botón **Pagar en línea**.
 
-La factura más reciente aparece arriba. Con más de 25 facturas, usted pasa de página con la paginación en la parte inferior. Los borradores en los que su proveedor aún trabaja no aparecen – solo ve facturas emitidas.
+Todas las facturas aparecen juntas ordenadas por fecha, la más reciente arriba; las facturas del programa de contabilidad de su proveedor figuran entre las demás. Con más de 25 facturas, usted pasa de página con la paginación en la parte inferior. El mosaico **Facturas** de la página de inicio cuenta ambas. Los borradores en los que su proveedor aún trabaja no aparecen – solo ve facturas emitidas.
 
 ### Los estados
 
@@ -47,15 +49,15 @@ La factura más reciente aparece arriba. Con más de 25 facturas, usted pasa de 
 
 ## Descargar una factura
 
-Haga clic en el icono PDF de la fila de la factura (texto al pasar el ratón: **Descargar la factura … en PDF**). Recibirá el mismo documento que su proveedor emite para esta factura.
+Haga clic en el icono PDF de la fila de la factura (texto al pasar el ratón: **Descargar la factura … en PDF**); aparece en todas las facturas. Recibirá el mismo documento que su proveedor emite para esta factura.
 
 - Si recibe sus facturas como factura electrónica ZUGFeRD, el archivo descargado también es un PDF ZUGFeRD con los datos de la factura incorporados.
 - Con cualquier otra forma de envío recibirá la factura en PDF, aunque se la hayan enviado como XRechnung (XML).
-- Si en una factura falta el icono, su proveedor gestiona esa factura en otro programa de facturación. En ese caso recibirá el documento directamente de él.
+- Si su proveedor gestiona una factura en su programa de contabilidad, el portal obtiene el documento de allí. Si todavía no está disponible allí, usted vuelve a la lista y ve el aviso **El documento aún no está disponible en el programa contable. Vuelva a intentarlo más tarde.**
 
 ## Pagar en línea
 
-El botón **Pagar en línea** solo aparece si su proveedor ha conectado un proveedor de pagos y la factura todavía tiene un importe pendiente, es decir, tiene el estado **Emitida** o **Pagada parcialmente**. Los abonos, las facturas canceladas y las facturas proforma no se pueden pagar en línea.
+El botón **Pagar en línea** solo aparece si su proveedor ha conectado un proveedor de pagos y la factura todavía tiene un importe pendiente, es decir, tiene el estado **Emitida** o **Pagada parcialmente**. Solo existe para las facturas que su proveedor ha emitido directamente en el sistema de este portal, no para las facturas de su programa de contabilidad. Los abonos, las facturas canceladas y las facturas proforma no se pueden pagar en línea.
 
 1. Haga clic en **Pagar en línea** junto a la factura.
 2. Se le redirige a la página de pago del proveedor de pagos. El importe a pagar es el que sigue pendiente – en una factura pagada parcialmente, solo el resto.

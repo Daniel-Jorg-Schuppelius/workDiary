@@ -1,7 +1,7 @@
 ---
 title: "Por facturar y por hacer seguimiento (cadena de documentos)"
 topic: billing.chain
-version: 1
+version: 2
 keywords:
     - horas sin facturar
     - presupuestos aceptados sin factura
@@ -30,10 +30,13 @@ Cada grupo responde a una pregunta que de otro modo tendría que consultar en
 un área aparte:
 
 - **Presupuestos aceptados sin factura** – el cliente ha aceptado, pero aún
-  no hay factura.
+  no hay factura. Las ofertas marcadas como **Facturado en el programa
+  contable** no aparecen.
 - **Presupuestos para seguimiento** – ha llegado la fecha de seguimiento o ha
   vencido el plazo de validez.
-- **Facturas vencidas** – pendientes y fuera del plazo de pago.
+- **Facturas vencidas** – pendientes y fuera del plazo de pago, incluidas
+  las facturas abiertas del programa de contabilidad (por ejemplo,
+  Lexoffice).
 - **Horas facturables por cliente** – tiempos registrados aún no facturados,
   con número de entradas y duración.
 - **Avance por encima de los pagos a cuenta (listado)** – en el listado de
@@ -46,7 +49,8 @@ El número del título indica todos los elementos pendientes del grupo. Se
 listan los primeros 50; debajo se indica cuántos más hay. La flecha al final
 de la fila abre el elemento donde se gestiona: el presupuesto, la factura,
 los tiempos abiertos del cliente, la facturación del listado o la medición.
-Los importes son netos.
+Una factura del programa de contabilidad abre el **Flujo de documentos** con
+la búsqueda de su número de comprobante. Los importes son netos; las facturas vencidas muestran el importe bruto.
 
 **Lo que ve:** un grupo solo aparece si el módulo correspondiente está activo
 para su organización y usted tiene el permiso del área. Si falta un grupo, es

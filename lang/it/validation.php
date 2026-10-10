@@ -1196,6 +1196,7 @@ return [
         'follow_up' => 'Decisione successiva',
         'follow_up_amount' => 'Addebito successivo/rimborso (riferimento)',
         'follow_up_at' => 'Promemoria il',
+        'external_invoice_number' => 'numero di fattura nel programma contabile',
         'follow_up_for_id' => 'Certificato di malattia precedente',
         'continuation_of_id' => 'Prosecuzione della malattia del',
         'all_plans' => 'Per tutti i piani di servizio',

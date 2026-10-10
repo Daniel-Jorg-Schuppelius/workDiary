@@ -36,4 +36,12 @@ interface ExternalPurchaseSource {
      * @return array{rows: list<ExternalCategorySpend>, pending: int}
      */
     public function categorySpend(CarbonInterface $from, CarbonInterface $to): array;
+
+    /**
+     * Offene Verbindlichkeiten der Organisation, auch ohne Lieferantenzuordnung
+     * (Kachel „Offene Posten“, MVP-1125); `overdue` mit Fälligkeit vor `$today`.
+     *
+     * @return array{open: float, overdue: float, count: int}
+     */
+    public function openPayables(int $organizationId, string $today): array;
 }

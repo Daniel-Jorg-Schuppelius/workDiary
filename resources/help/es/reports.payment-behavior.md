@@ -1,7 +1,7 @@
 ---
 title: "Comportamiento de pago"
 topic: reports.payment-behavior
-version: 2
+version: 3
 keywords:
     - DSO
     - periodo medio de cobro
@@ -13,16 +13,18 @@ keywords:
     - plazo de pago
     - morosidad
     - análisis de deudores
+    - facturas de Lexoffice
 audience: []
 related:
     - reports.economics
     - reports.customer-value
 ---
 
-Vista de comportamiento y tendencia de las **facturas gestionadas
-localmente** — el informe de facturación muestra el inventario (estado,
-antigüedad), este informe el comportamiento subyacente. La fecha de
-referencia es siempre el **fin del período** (informes reproducibles).
+Vista de comportamiento y tendencia de las **facturas locales y las
+facturas del programa de contabilidad** (por ejemplo, Lexoffice) — el
+informe de facturación muestra el inventario (estado, antigüedad), este
+informe el comportamiento subyacente. La fecha de referencia es siempre el
+**fin del período** (informes reproducibles).
 
 ## DSO con ejemplo numérico
 
@@ -57,3 +59,12 @@ filtra este informe a ese cliente; si Lexoffice gestiona las facturas, entran a 
 espejo de comprobantes del plugin — la sincronización también carga
 los datos de pago. Sin ninguna fuente, el informe lo indica
 abiertamente.
+
+Los comprobantes cuyo contacto en el programa de contabilidad no está
+vinculado a ningún cliente cuentan en los indicadores **DSO (días)**,
+**Plazo medio de pago (días)**, **Pagado a tiempo** y **Facturas vencidas**.
+En **Facturas abiertas vencidas (top 15)** aparecen como «Nombre del
+contacto (sin asignación de cliente)», sin enlace. No figuran en los
+desgloses por cliente: en las cajas por cliente de la **Distribución del
+plazo de pago (emisión a pago)** —la caja **Todos los clientes** sí los
+incluye— ni en **Retraso medio por cliente (top 10)**.

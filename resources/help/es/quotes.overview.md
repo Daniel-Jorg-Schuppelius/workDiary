@@ -1,7 +1,7 @@
 ---
 title: "Ofertas"
 topic: quotes.overview
-version: 1
+version: 2
 keywords:
     - crear presupuesto
     - presupuesto
@@ -63,6 +63,13 @@ camino desde la oferta hasta el documento es trazable.
 
 Los borradores de oferta sin envío pueden eliminarse; todo lo posterior
 al envío se conserva como historial.
+
+**Facturado en el programa contable:** si una oferta aceptada se factura en
+el programa contable y no aquí, márquela desde el menú de la página de la
+oferta con **Facturado en el programa contable**, si lo desea con el número
+de factura utilizado allí. La oferta sale así de la lista **Presupuestos
+aceptados sin factura**; la marca puede quitarse de nuevo. La acción está
+disponible mientras no exista ninguna factura para la oferta.
 
 **PDF y confirmación de pedido:** cada oferta puede descargarse como
 PDF (con marcado de opciones y desglose de impuestos); las ofertas

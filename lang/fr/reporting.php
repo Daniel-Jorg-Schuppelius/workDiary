@@ -231,12 +231,14 @@ return [
     ],
     'product_revenue' => [
         'subtitle' => 'Quantité, chiffre d’affaires net et part par article issus des factures locales et des documents mis en miroir depuis le logiciel comptable.',
-        'chart_note' => 'Base de données : positions des factures locales émises, partiellement payées et payées (facture, acompte, facture finale) ; les avoirs et documents d’annulation viennent en déduction. S’y ajoutent les factures et avoirs mis en miroir depuis le logiciel comptable ; les brouillons et documents annulés ne comptent pas. Un clic ouvre l’article.',
+        'chart_note' => 'Base de données : positions des factures locales émises, partiellement payées et payées (facture, acompte, facture finale) ; les avoirs et documents d’annulation viennent en déduction. S’y ajoutent les factures et avoirs mis en miroir depuis le logiciel comptable ; les brouillons et documents annulés ne comptent pas. Un clic ouvre l’article ; les articles du logiciel comptable non rattachés au référentiel articles apparaissent sans lien.',
         'external_net' => 'dont issu du logiciel comptable',
         'external_net_hint' => 'Factures et avoirs mis en miroir ; les documents transmis depuis des factures locales ne comptent qu’une fois.',
         'source_local' => 'local',
     ],
     'external_share' => 'dont logiciel comptable',
+    'unassigned_customer' => 'sans affectation client',
+    'unassigned_contact' => ':name (sans affectation client)',
     // Spaltenköpfe und feste Zellwerte der Auswertungs-Exporte (CSV/Excel, E11 · MVP-1101).
     'csv' => [
         'area' => 'Rubrique',

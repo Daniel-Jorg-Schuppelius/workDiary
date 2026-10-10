@@ -43,7 +43,7 @@ final class InvoicingDemoBlock implements DemoBlock {
     public function purge(Organization $organization): void {
         $incomings = \App\Models\Invoicing\IncomingEInvoice::query()->withoutGlobalScopes()
             ->where('organization_id', $organization->id)
-            ->whereIn('sha256', array_map(static fn (string $key): ?string => self::demoSha($organization, $key), self::DEMO_INCOMING_KEYS))
+            ->whereIn('sha256', array_map(static fn (string $key): string => self::demoSha($organization, $key), self::DEMO_INCOMING_KEYS))
             ->get(['id', 'document_id']);
         \App\Models\Invoicing\IncomingEInvoice::query()->withoutGlobalScopes()->whereKey($incomings->pluck('id'))->delete();
         \App\Models\Document\Document::query()->withoutGlobalScopes()->withTrashed()->whereKey($incomings->pluck('document_id'))->forceDelete();
@@ -52,7 +52,7 @@ final class InvoicingDemoBlock implements DemoBlock {
     /** @var list<string> */
     private const DEMO_INCOMING_KEYS = ['demo-incoming-assigned', 'demo-incoming-unrecognized'];
 
-    private static function demoSha(Organization $organization, string $key): ?string {
+    private static function demoSha(Organization $organization, string $key): string {
         return \CommonToolkit\Helper\Data\CryptoHelper::hash($organization->id . ':' . $key);
     }
 

@@ -1,7 +1,7 @@
 ---
 title: "Mes factures"
 topic: customer-portal.invoices
-version: 4
+version: 5
 keywords:
     - consulter les factures
     - liste des factures
@@ -16,6 +16,8 @@ keywords:
     - télécharger une facture
     - facture PDF
     - ZUGFeRD
+    - factures Lexoffice
+    - logiciel comptable
 audience: []
 related:
     - customer-portal.overview
@@ -24,7 +26,7 @@ related:
     - customer-portal.billing
 ---
 
-Sous **Factures**, vous voyez les factures que votre prestataire a émises pour votre entreprise, avec leur état de paiement actuel. Si votre prestataire le propose, vous réglez ici directement en ligne les factures ouvertes.
+Sous **Factures**, vous voyez les factures que votre prestataire a émises pour votre entreprise, avec leur état de paiement actuel – y compris les factures qu'il a émises dans son logiciel comptable (par exemple Lexoffice). Si votre prestataire le propose, vous réglez ici directement en ligne les factures ouvertes.
 
 ## La liste des factures
 
@@ -36,7 +38,7 @@ La liste affiche pour chaque facture :
 - **Montant** – le montant de la facture avec la devise,
 - à droite, l'icône PDF pour le téléchargement et, le cas échéant, le bouton **Payer en ligne**.
 
-La facture la plus récente figure en haut. Au-delà de 25 factures, vous parcourez la liste avec la pagination en bas de page. Les brouillons sur lesquels votre prestataire travaille encore n'apparaissent pas – vous ne voyez que les factures émises.
+Toutes les factures sont triées ensemble par date, la plus récente en haut – les factures du logiciel comptable de votre prestataire figurent parmi les autres. Au-delà de 25 factures, vous parcourez la liste avec la pagination en bas de page. La tuile **Factures** de la page d'accueil compte les deux. Les brouillons sur lesquels votre prestataire travaille encore n'apparaissent pas – vous ne voyez que les factures émises.
 
 ### Les statuts
 
@@ -47,15 +49,15 @@ La facture la plus récente figure en haut. Au-delà de 25 factures, vous parcou
 
 ## Télécharger une facture
 
-Cliquez sur l'icône PDF dans la ligne de la facture (info-bulle : **Télécharger la facture … au format PDF**). Vous obtenez le même document que celui que votre prestataire émet pour cette facture.
+Cliquez sur l'icône PDF dans la ligne de la facture (info-bulle : **Télécharger la facture … au format PDF**) ; elle figure pour chaque facture. Vous obtenez le même document que celui que votre prestataire émet pour cette facture.
 
 - Si vous recevez vos factures sous forme de facture électronique ZUGFeRD, le fichier téléchargé est lui aussi un PDF ZUGFeRD avec les données de facture intégrées.
 - Pour tous les autres modes de transmission, vous obtenez la facture au format PDF – même si elle vous a été transmise sous forme de XRechnung (XML).
-- Si l'icône manque pour une facture, votre prestataire gère cette facture dans un autre logiciel de facturation. Vous recevez alors le document directement de sa part.
+- Si votre prestataire gère une facture dans son logiciel comptable, le portail y récupère le document. S'il n'y est pas encore disponible, vous revenez à la liste avec le message **Le document n’est pas encore disponible dans le logiciel comptable. Veuillez réessayer plus tard.**
 
 ## Payer en ligne
 
-Le bouton **Payer en ligne** n'apparaît que si votre prestataire a raccordé un prestataire de paiement et que la facture présente encore un montant ouvert, c'est-à-dire qu'elle a le statut **Émise** ou **Partiellement payée**. Les avoirs, les factures annulées et les factures pro forma ne peuvent pas être payés en ligne.
+Le bouton **Payer en ligne** n'apparaît que si votre prestataire a raccordé un prestataire de paiement et que la facture présente encore un montant ouvert, c'est-à-dire qu'elle a le statut **Émise** ou **Partiellement payée**. Il n'existe que pour les factures que votre prestataire a émises directement dans le système de ce portail, pas pour les factures de son logiciel comptable. Les avoirs, les factures annulées et les factures pro forma ne peuvent pas être payés en ligne.
 
 1. Cliquez sur **Payer en ligne** à côté de la facture.
 2. Vous êtes redirigé vers la page de paiement du prestataire de paiement. Le montant à payer est le montant encore ouvert – pour une facture partiellement payée, seulement le reste.

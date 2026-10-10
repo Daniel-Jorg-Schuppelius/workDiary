@@ -1,7 +1,7 @@
 ---
 title: "Conflits Lexoffice"
 topic: admin.lexoffice
-version: 4
+version: 5
 keywords:
     - Lexware Office
     - conflit de synchronisation
@@ -10,6 +10,8 @@ keywords:
     - garder valeurs locales
     - reprendre valeurs externes
     - rapprochement des données
+    - miroir des pièces
+    - synchronisation des pièces
 audience:
     - admin
     - buchhaltung
@@ -58,6 +60,15 @@ conflits d'articles n'apparaissent pas dans la Boîte de rapprochement,
 mais dans l'onglet **Conflits** du stock (**Stock** → **Conflits**) :
 vous y choisissez **Conserver local**, **Reprendre l'état Lexoffice**
 ou **Rejeter** — avec le droit **Gérer les articles**.
+
+Miroir des pièces : la synchronisation des pièces reprend en miroir les
+pièces Lexoffice dans WorkDiary. Les pièces de contacts Lexoffice qui ne
+sont encore rattachés à aucun client ou fournisseur sont elles aussi
+reprises – d'abord sans client ni fournisseur ; dès que le contact est
+rattaché, la synchronisation suivante les affecte. Un client n'est attribué
+qu'aux pièces de vente et un fournisseur qu'aux pièces d'achat, même si un
+contact est rattaché aux deux. La synchronisation des lignes enregistre en
+outre le montant net et, pour un avoir, sa référence à la facture.
 
 Autorisation : la Boîte de rapprochement est ouverte aux administrateurs
 et au rôle **Comptabilité**.

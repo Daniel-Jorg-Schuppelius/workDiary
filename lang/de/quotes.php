@@ -77,4 +77,17 @@ return [
         'no_owner' => 'Ohne Zuständigkeit',
         'link' => 'Trefferquote',
     ],
+    'external_invoice' => [
+        'action' => 'Im Buchhaltungsprogramm abgerechnet',
+        'title' => 'Angebot :number im Buchhaltungsprogramm abgerechnet',
+        'hint' => 'Das Angebot wurde im Buchhaltungsprogramm in Rechnung gestellt. Es verlässt damit die Liste „Angenommene Angebote ohne Rechnung“. Die Rechnungsnummer ist freiwillig.',
+        'number' => 'Rechnungsnummer im Buchhaltungsprogramm',
+        'submit' => 'Als abgerechnet markieren',
+        'marked' => 'Angebot als im Buchhaltungsprogramm abgerechnet markiert.',
+        'unmarked' => 'Markierung aufgehoben.',
+        'unmark' => 'Markierung „abgerechnet“ aufheben',
+        'unmark_confirm' => 'Markierung aufheben? Das Angebot erscheint dann wieder unter „Angenommene Angebote ohne Rechnung“.',
+        'marked_on' => 'Im Buchhaltungsprogramm abgerechnet (markiert am :date)',
+        'marked_with_number' => 'Im Buchhaltungsprogramm abgerechnet: :number (markiert am :date)',
+    ],
 ];

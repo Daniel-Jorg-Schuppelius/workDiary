@@ -16,9 +16,12 @@ use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\{Organization, User};
+use App\Services\Billing\Contracts\ExternalRevenue;
+use App\Services\Billing\Dto\{ExternalInvoice, ExternalInvoiceQuery};
 use App\Services\Invoicing\DunningService;
 use App\Services\Mcp\GuardedTool;
 use App\Support\Sqid;
+use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\{Request, Response, ResponseFactory};
@@ -31,7 +34,7 @@ use Laravel\Mcp\Server\Tools\Annotations\{IsIdempotent, IsReadOnly};
  * und Summen je Währung.
  */
 #[Name('open_items')]
-#[Description('Offene Posten: ausgestellte, nicht vollständig bezahlte Rechnungen mit offenem Betrag, Fälligkeit und Verzugstagen; Summen je Währung.')]
+#[Description('Offene Posten: ausgestellte, nicht vollständig bezahlte Rechnungen mit offenem Betrag, Fälligkeit und Verzugstagen, auch aus dem Buchhaltungsprogramm (`source`); Summen je Währung.')]
 #[IsReadOnly]
 #[IsIdempotent]
 final class OpenItemsTool extends GuardedTool {
@@ -80,6 +83,7 @@ final class OpenItemsTool extends GuardedTool {
             $totals[$currency] = isset($totals[$currency]) ? $totals[$currency]->plus($open) : $open;
             $items[] = [
                 'id' => $invoice->sqid,
+                'source' => 'local',
                 'number' => $invoice->number,
                 'customer' => ['id' => $invoice->customer->sqid, 'name' => $invoice->customer->name],
                 'issued_on' => $invoice->issued_on?->toDateString(),
@@ -88,6 +92,37 @@ final class OpenItemsTool extends GuardedTool {
                 'total' => $invoice->total,
                 'open_amount' => $open,
                 'dunning_blocked' => $invoice->isDunningBlocked(),
+            ];
+        }
+
+        // Offene Rechnungen des Buchhaltungsprogramms (MVP-1116), ohne Detailkennung.
+        $external = app(ExternalRevenue::class)->invoices(new ExternalInvoiceQuery(
+            customerId: isset($data['customer']) ? (Sqid::decode(Customer::class, (string) $data['customer']) ?? 0) : null,
+            withCreditNotes: false,
+            openOnly: true,
+            organizationId: (int) $organization->id,
+        ));
+        if ($data['overdue_only'] ?? false) {
+            $external = array_filter($external, static fn (ExternalInvoice $invoice): bool => $invoice->dueOn !== null && $invoice->dueOn->toDateString() < $today);
+        }
+        $external = array_slice(array_values($external), 0, $this->limit($request, 50));
+        $customers = Customer::query()->whereIn('id', array_filter(array_map(static fn (ExternalInvoice $invoice): ?int => $invoice->customerId, $external)))->get(['id', 'name'])->keyBy('id');
+        foreach ($external as $invoice) {
+            $currency = CurrencyCode::tryFrom($invoice->currency) ?? CurrencyCode::Euro;
+            $open = Money::ofFloat($invoice->open, $currency);
+            $totals[$currency->value] = isset($totals[$currency->value]) ? $totals[$currency->value]->plus($open) : $open;
+            $customer = $invoice->customerId !== null ? $customers->get($invoice->customerId) : null;
+            $items[] = [
+                'id' => null,
+                'source' => $invoice->source,
+                'number' => $invoice->number,
+                'customer' => $customer !== null ? ['id' => $customer->sqid, 'name' => $customer->name] : ['id' => null, 'name' => $invoice->contactName],
+                'issued_on' => $invoice->issuedOn?->toDateString(),
+                'due_on' => $invoice->dueOn?->toDateString(),
+                'days_overdue' => $invoice->dueOn !== null && $invoice->dueOn->toDateString() < $today ? (int) $invoice->dueOn->startOfDay()->diffInDays(now()->startOfDay()) : 0,
+                'total' => Money::ofFloat($invoice->gross, $currency),
+                'open_amount' => $open,
+                'dunning_blocked' => null,
             ];
         }
 

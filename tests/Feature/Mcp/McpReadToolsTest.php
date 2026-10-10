@@ -117,6 +117,20 @@ class McpReadToolsTest extends TestCase {
         WorkDiaryMcpServer::tool(OpenItemsTool::class, ['overdue_only' => true])->assertOk()->assertSee('RE-2026-0042')->assertSee('days_overdue');
     }
 
+    /** MVP-1116: Belege des Buchhaltungsprogramms erscheinen in invoices und open_items. */
+    public function test_invoice_tools_include_mirrored_vouchers(): void {
+        \App\Plugins\Lexoffice\Models\LexofficeVoucher::query()->create([
+            'organization_id' => $this->organization->id, 'external_id' => 'ext-mcp', 'contact_external_id' => 'contact-new',
+            'contact_name' => 'Neukunde GmbH', 'voucher_type' => 'invoice', 'voucher_status' => 'open', 'voucher_number' => 'LX-MCP-1',
+            'voucher_date' => now()->subDays(30)->toDateString(), 'due_date' => now()->subDays(5)->toDateString(), 'total_amount' => '119.00', 'currency' => 'EUR',
+        ]);
+        $this->mcpAs($this->admin);
+
+        WorkDiaryMcpServer::tool(OpenItemsTool::class, ['overdue_only' => true])->assertOk()->assertSee('LX-MCP-1')->assertSee('Neukunde GmbH');
+        WorkDiaryMcpServer::tool(\App\Services\Invoicing\Mcp\InvoicesTool::class, [])->assertOk()->assertSee('external_invoices')->assertSee('LX-MCP-1');
+        WorkDiaryMcpServer::tool(\App\Services\Invoicing\Mcp\InvoicesTool::class, ['status' => 'draft'])->assertOk()->assertDontSee('LX-MCP-1');
+    }
+
     public function test_module_gate_and_policy_hide_tools(): void {
         $free = Organization::factory()->free()->create(['settings' => ['mcp' => ['enabled' => '1']]]);
         $user = User::factory()->admin()->create(['organization_id' => $free->id]);

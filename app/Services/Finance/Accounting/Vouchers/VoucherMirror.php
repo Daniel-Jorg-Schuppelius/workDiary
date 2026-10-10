@@ -12,6 +12,9 @@ declare(strict_types=1);
 
 namespace App\Services\Finance\Accounting\Vouchers;
 
+use App\Enums\Billing\{DocumentDirection, DocumentKind};
+use App\Enums\Finance\AccountingVoucherState;
+use App\Events\Invoicing\{ExternalInvoiceCancelled, ExternalInvoicePaymentReceived, ExternalInvoicePaymentReverted};
 use App\Models\Customer\Customer;
 use App\Models\Finance\AccountingVoucher;
 use App\Models\Integration\ExternalReference;
@@ -48,6 +51,7 @@ class VoucherMirror {
             'external_id' => $voucher->externalId,
         ]);
         $existed = $row->exists;
+        $before = $existed ? [AccountingVoucherRevenueSource::state($row), $row->open_amount] : null;
 
         [$customerId, $supplierId] = $this->resolveContact($organizationId, $pluginId, $voucher);
 
@@ -78,6 +82,37 @@ class VoucherMirror {
         $row->save();
 
         $counters[$existed ? 'updated' : 'created']++;
+        if ($before !== null) {
+            $this->announcePaymentChange($row, $before[0], $before[1]);
+        }
+    }
+
+    /**
+     * Zahlungs- und Stornowechsel einer schon gespiegelten Ausgangsrechnung
+     * (MVP-1128, Provisionen). Neu gespiegelte Belege lösen nichts aus:
+     * Altbestand und Erstläufe dürfen keine rückwirkenden Provisionen erzeugen.
+     */
+    private function announcePaymentChange(AccountingVoucher $row, AccountingVoucherState $stateBefore, mixed $openBefore): void {
+        $direction = $row->direction ?? ($row->voucher_type === 'C' ? DocumentDirection::Outgoing->value : null);
+        $kind = DocumentKind::tryFrom((string) $row->document_kind) ?? DocumentKind::Other;
+        if ($direction !== DocumentDirection::Outgoing->value || $kind->sign() === 0 || in_array($kind, [DocumentKind::Cancellation, DocumentKind::DownPaymentDeduction], true)) {
+            return;
+        }
+        $stateAfter = AccountingVoucherRevenueSource::state($row);
+        $openAfter = $row->open_amount;
+        $args = [$row->getMorphClass(), (int) $row->id, (int) $row->organization_id];
+
+        $event = match (true) {
+            $stateAfter === AccountingVoucherState::Cancelled && $stateBefore !== AccountingVoucherState::Cancelled => new ExternalInvoiceCancelled(...$args),
+            $stateAfter === AccountingVoucherState::Paid && $stateBefore !== AccountingVoucherState::Paid => new ExternalInvoicePaymentReceived(...$args),
+            $stateBefore === AccountingVoucherState::Paid && $stateAfter === AccountingVoucherState::Open => new ExternalInvoicePaymentReverted(...$args),
+            $openBefore !== null && $openAfter !== null && (float) $openAfter < (float) $openBefore => new ExternalInvoicePaymentReceived(...$args),
+            $openBefore !== null && $openAfter !== null && (float) $openAfter > (float) $openBefore => new ExternalInvoicePaymentReverted(...$args),
+            default => null,
+        };
+        if ($event !== null) {
+            event($event);
+        }
     }
 
     /**

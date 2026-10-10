@@ -1,7 +1,7 @@
 ---
 title: "Abschluss und Auswertungen"
 topic: accounting.closing
-version: 2
+version: 3
 keywords:
     - Monatsabschluss
     - Jahresabschluss
@@ -36,6 +36,13 @@ Nachweiskette. Ohne diese drei wäre der Abschluss nur eine Sichtbarkeit.
 Buchungen — ein Entwurf ist eine Absicht, keine Zahl. Umsatzsteuer- und
 EÜR-Auswertung sind prüfbare **Vorschauen**: Der MVP übermittelt nichts an
 ELSTER.
+
+**Ohne lokale Buchhaltung:** Bucht die Organisation in einem
+Buchhaltungsprogramm, öffnen sich diese Berichte zwar, zeigen aber oben
+einen Hinweis: Sie werten nur Buchungen in WorkDiary aus und bleiben deshalb
+leer oder unvollständig. Umsätze und offene Posten aus dem
+Buchhaltungsprogramm stehen in der Abrechnungs-Auswertung, im Belegfluss und
+in der Kachel **Offene Posten**.
 
 **Export der Berichte:** PDF, CSV und Excel der Finanzberichte, der BWA und
 des Budgets setzen neben dem Leserecht das Recht **Auswertungen exportieren**

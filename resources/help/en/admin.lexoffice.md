@@ -1,7 +1,7 @@
 ---
 title: "Lexoffice Conflicts"
 topic: admin.lexoffice
-version: 4
+version: 5
 keywords:
     - Lexware Office
     - sync conflict
@@ -12,6 +12,8 @@ keywords:
     - accept remote values
     - data reconciliation
     - contact sync
+    - voucher mirror
+    - voucher sync
 audience:
     - admin
     - buchhaltung
@@ -59,6 +61,14 @@ conflicts do not appear in the Mapping Inbox but in the **Conflicts**
 tab of the inventory (**Inventory** → **Conflicts**): there you choose
 **Keep local**, **Take Lexoffice state** or **Dismiss** — with the
 **Manage articles** permission.
+
+Voucher mirror: the voucher sync mirrors the Lexoffice vouchers into
+WorkDiary. Vouchers of Lexoffice contacts that are not yet linked to a
+customer or supplier are mirrored too – initially without customer and
+supplier; once the contact is linked, the next sync assigns them. A customer
+is set only on sales documents and a supplier only on purchase documents,
+even if a contact is linked as both. The line sync also stores the net
+amount and, for a credit note, its reference to the invoice.
 
 Permission: the Mapping Inbox is open to administrators and the
 **Accounting** role.

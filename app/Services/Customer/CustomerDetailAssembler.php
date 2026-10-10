@@ -106,11 +106,11 @@ class CustomerDetailAssembler {
             ->get()
             : collect();
 
-        // Tatsächlich fakturierter Umsatz im Zeitraum — dieselbe Abgrenzung wie
-        // der Umsatztrend (Rechnungsarten ohne Stornos, ohne archivierte Belege).
+        // Fakturierter Umsatz im Zeitraum — dieselbe Abgrenzung wie der
+        // Umsatztrend und die Top-Kunden (MVP-1114).
         $invoicedRange = array_sum($this->externalRevenue->monthlyRevenue((int) $customer->getKey(), $rangeFrom, $rangeTo));
         foreach ($localInvoices as $inv) {
-            if (in_array($inv->type, CustomerTrendBuilder::INVOICE_TYPES, true) && ! in_array($inv->status->value, CustomerTrendBuilder::VOID_STATUSES, true)) {
+            if (in_array($inv->status, Invoice::ISSUED_STATUSES, true) && ! in_array($inv->type, Invoice::NON_REVENUE_TYPES, true)) {
                 $invoicedRange += $inv->total?->toFloat() ?? 0.0;
             }
         }

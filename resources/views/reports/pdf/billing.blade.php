@@ -54,8 +54,9 @@
         <tr>
             <td class="col">
                 <h2>{{ __('Rechnungen nach Status') }}</h2>
+                @php($statusExternal = collect($status)->contains(fn (array $s): bool => ($s['external'] ?? 0.0) != 0.0))
                 <table class="data">
-                    <thead><tr><th>{{ __('Status') }}</th><th class="right">{{ __('Anzahl') }}</th><th class="right">{{ __('Netto') }}</th><th class="right">{{ __('Brutto') }}</th></tr></thead>
+                    <thead><tr><th>{{ __('Status') }}</th><th class="right">{{ __('Anzahl') }}</th><th class="right">{{ __('Netto') }}</th><th class="right">{{ __('Brutto') }}</th>@if ($statusExternal)<th class="right">{{ __('reporting.external_share') }}</th>@endif</tr></thead>
                     <tbody>
                         @foreach ($status as $st => $s)
                             <tr>
@@ -63,6 +64,9 @@
                                 <td class="right">{{ $s['count'] }}</td>
                                 <td class="right">{{ $eur($s['subtotal']) }}</td>
                                 <td class="right">{{ $eur($s['total']) }}</td>
+                                @if ($statusExternal)
+                                    <td class="right">{{ ($s['external'] ?? 0.0) != 0.0 ? $eur($s['external']) : '—' }}</td>
+                                @endif
                             </tr>
                         @endforeach
                     </tbody>
@@ -81,6 +85,9 @@
                             </tr>
                         @endforeach
                         <tr class="totals"><td>{{ __('Offen gesamt') }}</td><td></td><td class="right">{{ $eur($aging['open_total']) }}</td></tr>
+                        @if ($aging['external_total'] != 0.0)
+                            <tr><td>{{ __('reporting.external_share') }}</td><td></td><td class="right">{{ $eur($aging['external_total']) }}</td></tr>
+                        @endif
                     </tbody>
                 </table>
             </td>
@@ -98,8 +105,13 @@
                     <td class="right">{{ $eur($r['total']) }}</td>
                 </tr>
             @empty
-                <tr><td colspan="3" style="text-align:center; padding:12px; color:#888;">{{ __('Keine Rechnungen im Zeitraum.') }}</td></tr>
+                @if ($unassigned['count'] === 0)
+                    <tr><td colspan="3" style="text-align:center; padding:12px; color:#888;">{{ __('Keine Rechnungen im Zeitraum.') }}</td></tr>
+                @endif
             @endforelse
+            @if ($unassigned['count'] > 0)
+                <tr><td><em>{{ __('reporting.unassigned_customer') }}</em></td><td class="right">{{ $unassigned['count'] }}</td><td class="right">{{ $eur($unassigned['total']) }}</td></tr>
+            @endif
         </tbody>
     </table>
 @endsection

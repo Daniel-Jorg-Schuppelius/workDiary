@@ -135,6 +135,8 @@ return [
         ],
         'open_items' => [
             'description' => 'Crediti e debiti aperti, inclusa la quota scaduta.',
+            'feed_link' => 'Flusso documenti →',
+            'external_hint' => 'Dal programma contabile — l’organizzazione non tiene la contabilità in WorkDiary.',
         ],
         'tax_filings' => [
             'description' => 'Prossime scadenze di dichiarazione in contabilità.',

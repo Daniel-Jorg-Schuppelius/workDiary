@@ -55,8 +55,6 @@ final class LocalInvoiceMirrorSource implements InvoiceMirrorSource {
 
     private const KIND_CREDIT_NOTE = 'creditnote';
 
-    private const ISSUED = [InvoiceStatus::Issued, InvoiceStatus::PartiallyPaid, InvoiceStatus::Paid];
-
     private const NOT_INVOICES = [Invoice::TYPE_CREDIT_NOTE, Invoice::TYPE_CANCELLATION, Invoice::TYPE_PROFORMA];
 
     public function __construct(
@@ -210,9 +208,9 @@ final class LocalInvoiceMirrorSource implements InvoiceMirrorSource {
         if ($kind === self::KIND_VOIDED) {
             $query->whereNotIn('type', self::NOT_INVOICES)->where(static fn(Builder $w) => $w->where('status', InvoiceStatus::Cancelled)->orWhereNotNull('cancelled_at'));
         } elseif ($kind === self::KIND_CREDIT_NOTE) {
-            $query->where('type', Invoice::TYPE_CREDIT_NOTE)->whereIn('status', self::ISSUED);
+            $query->where('type', Invoice::TYPE_CREDIT_NOTE)->whereIn('status', Invoice::ISSUED_STATUSES);
         } else {
-            $query->whereNotIn('type', self::NOT_INVOICES)->whereIn('status', self::ISSUED);
+            $query->whereNotIn('type', self::NOT_INVOICES)->whereIn('status', Invoice::ISSUED_STATUSES);
         }
         if ($recipientCustomerIds !== null) {
             $query->whereIn('customer_id', $recipientCustomerIds);

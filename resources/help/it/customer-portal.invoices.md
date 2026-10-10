@@ -1,7 +1,7 @@
 ---
 title: "Le mie fatture"
 topic: customer-portal.invoices
-version: 4
+version: 5
 keywords:
     - visualizzare le fatture
     - elenco fatture
@@ -16,6 +16,8 @@ keywords:
     - scaricare fattura
     - fattura PDF
     - ZUGFeRD
+    - fatture Lexoffice
+    - programma contabile
 audience: []
 related:
     - customer-portal.overview
@@ -24,7 +26,7 @@ related:
     - customer-portal.billing
 ---
 
-In **Fatture** vede le fatture che il Suo fornitore ha emesso per la Sua azienda, con il loro stato di pagamento attuale. Se il Suo fornitore lo offre, qui paga direttamente online le fatture aperte.
+In **Fatture** vede le fatture che il Suo fornitore ha emesso per la Sua azienda, con il loro stato di pagamento attuale – comprese le fatture che ha emesso nel suo programma di contabilità (ad esempio Lexoffice). Se il Suo fornitore lo offre, qui paga direttamente online le fatture aperte.
 
 ## L'elenco delle fatture
 
@@ -36,7 +38,7 @@ L'elenco mostra per ogni fattura:
 - **Importo** – l'importo della fattura con la valuta,
 - a destra, l'icona PDF per scaricare e, se previsto, il pulsante **Paga online**.
 
-La fattura più recente è in alto. Con più di 25 fatture sfoglia l'elenco tramite la paginazione in fondo alla pagina. Le bozze a cui il Suo fornitore sta ancora lavorando non compaiono – vede solo le fatture emesse.
+Tutte le fatture sono ordinate insieme per data, la più recente in alto – le fatture del programma di contabilità del Suo fornitore compaiono tra le altre. Con più di 25 fatture sfoglia l'elenco tramite la paginazione in fondo alla pagina. Il riquadro **Fatture** della pagina iniziale le conta entrambe. Le bozze a cui il Suo fornitore sta ancora lavorando non compaiono – vede solo le fatture emesse.
 
 ### Gli stati
 
@@ -47,15 +49,15 @@ La fattura più recente è in alto. Con più di 25 fatture sfoglia l'elenco tram
 
 ## Scaricare una fattura
 
-Clicchi sull'icona PDF nella riga della fattura (suggerimento al passaggio del mouse: **Scaricare la fattura … in PDF**). Riceve lo stesso documento che il Suo fornitore emette per questa fattura.
+Clicchi sull'icona PDF nella riga della fattura (suggerimento al passaggio del mouse: **Scaricare la fattura … in PDF**); è presente per ogni fattura. Riceve lo stesso documento che il Suo fornitore emette per questa fattura.
 
 - Se riceve le Sue fatture come fattura elettronica ZUGFeRD, anche il file scaricato è un PDF ZUGFeRD con i dati della fattura incorporati.
 - Per tutte le altre modalità di recapito riceve la fattura in PDF – anche se Le è stata recapitata come XRechnung (XML).
-- Se per una fattura manca l'icona, il Suo fornitore gestisce questa fattura in un altro programma di fatturazione. In tal caso riceve il documento direttamente da lui.
+- Se il Suo fornitore gestisce una fattura nel suo programma di contabilità, il portale recupera il documento da lì. Se lì non è ancora disponibile, torna all'elenco e vede l'avviso **Il documento non è ancora disponibile nel programma contabile. Riprovi più tardi.**
 
 ## Pagare online
 
-Il pulsante **Paga online** compare solo se il Suo fornitore ha collegato un fornitore di pagamento e la fattura ha ancora un importo aperto, cioè ha lo stato **Emessa** o **Parzialmente pagata**. Note di credito, fatture annullate e fatture proforma non si possono pagare online.
+Il pulsante **Paga online** compare solo se il Suo fornitore ha collegato un fornitore di pagamento e la fattura ha ancora un importo aperto, cioè ha lo stato **Emessa** o **Parzialmente pagata**. Esiste solo per le fatture che il Suo fornitore ha emesso direttamente nel sistema di questo portale, non per le fatture del suo programma di contabilità. Note di credito, fatture annullate e fatture proforma non si possono pagare online.
 
 1. Clicchi su **Paga online** accanto alla fattura.
 2. Viene reindirizzato alla pagina di pagamento del fornitore di pagamento. L'importo da pagare è quello ancora aperto – per una fattura parzialmente pagata, solo il residuo.

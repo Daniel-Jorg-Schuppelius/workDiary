@@ -129,6 +129,69 @@ class BillingReportTest extends TestCase {
         $response->assertSee(__('reporting.external_share'));
     }
 
+    /** MVP-1115: Status, KPI und offene Posten zählen die gespiegelten Belege mit. */
+    public function test_status_and_open_items_include_mirrored_invoices(): void {
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        $voucher = fn (string $number, string $status, float $total, ?float $open, int $dueAgo, ?float $net = null) => LexofficeVoucher::create([
+            'organization_id' => $this->organization->id,
+            'external_id' => 'ext-' . $number,
+            'customer_id' => $customer->id,
+            'voucher_type' => 'invoice',
+            'voucher_status' => $status,
+            'voucher_number' => $number,
+            'voucher_date' => now()->subDays(50)->toDateString(),
+            'due_date' => now()->subDays($dueAgo)->toDateString(),
+            'total_amount' => $total,
+            'open_amount' => $open,
+            'net_amount' => $net,
+            'currency' => 'EUR',
+        ]);
+        $voucher('LX-1', 'open', 119.0, 119.0, 40, 100.0);
+        $voucher('LX-2', 'open', 238.0, 38.0, 3);
+        $voucher('LX-3', 'paid', 59.5, 0.0, 40, 50.0);
+
+        $response = $this->actingAs($this->admin)
+            ->withSession($this->dateRangeSession(now()->subDays(60)->toDateString(), now()->toDateString()))
+            ->get(route('reports.billing'))
+            ->assertOk()
+            ->assertSee(__('reporting.external_share'));
+
+        $status = $response->viewData('status');
+        $this->assertSame(1, $status['issued']['count']);
+        $this->assertSame(100.0, $status['issued']['subtotal']);
+        $this->assertSame(119.0, $status['issued']['external']);
+        $this->assertSame(1, $status['partially_paid']['count']);
+        $this->assertSame(0.0, $status['partially_paid']['subtotal'], 'Ohne bekanntes Netto zählt der Beleg nur brutto.');
+        $this->assertSame(59.5, $status['paid']['total']);
+
+        $aging = $response->viewData('aging');
+        $this->assertEqualsWithDelta(157.0, $aging['open_total'], 0.001);
+        $this->assertEqualsWithDelta(157.0, $aging['external_total'], 0.001);
+        $this->assertSame(1, $aging['buckets']['30_plus']['count']);
+        $this->assertSame(1, $aging['buckets']['1_7']['count']);
+
+        $this->actingAs($this->admin)
+            ->withSession($this->dateRangeSession(now()->subDays(60)->toDateString(), now()->toDateString()))
+            ->get(route('reports.billing', ['project' => \App\Support\Sqid::encode(Project::class, (int) Project::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $customer->id])->id)]))
+            ->assertOk()
+            ->assertViewHas('aging', fn (array $aging): bool => $aging['external_total'] === 0.0);
+    }
+
+    /** MVP-1117: Belege nicht verknüpfter Kontakte stehen als eigene Zeile unter den Top-Kunden. */
+    public function test_unassigned_mirrored_invoices_get_their_own_row(): void {
+        LexofficeVoucher::create([
+            'organization_id' => $this->organization->id, 'external_id' => 'ext-fremd', 'contact_external_id' => 'contact-new',
+            'voucher_type' => 'invoice', 'voucher_status' => 'open', 'voucher_number' => 'RE-77',
+            'voucher_date' => now()->subDays(5)->toDateString(), 'total_amount' => 238.0, 'currency' => 'EUR',
+        ]);
+
+        $response = $this->getWithRange()->assertOk()->assertSee(__('reporting.unassigned_customer'));
+
+        $this->assertSame(['count' => 1, 'total' => 238.0], $response->viewData('unassigned'));
+        $this->assertSame([], $response->viewData('perCustomer'));
+        $this->assertStringContainsString(__('reporting.unassigned_customer'), (string) $this->getWithRange(['export' => 'csv'])->getContent());
+    }
+
     public function test_open_items_include_partially_paid_and_skip_non_receivables(): void {
         $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Teilzahler GmbH']);
         $other = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Proforma AG']);

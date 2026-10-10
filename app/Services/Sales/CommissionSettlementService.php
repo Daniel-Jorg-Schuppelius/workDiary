@@ -52,7 +52,7 @@ class CommissionSettlementService {
             ->where(fn (Builder $q): Builder => $q
                 ->where(fn (Builder $inner): Builder => $inner->whereNull('payable_on')->whereBetween('earned_on', DateRange::days($start, $end)))
                 ->orWhereBetween('payable_on', DateRange::days($start, $end)))
-            ->with(['user:id,name', 'agent:id,name,company', 'invoice:id,number,customer_id', 'invoice.customer:id,name,company', 'rule:id,name'])
+            ->with(['user:id,name', 'agent:id,name,company', 'customer:id,name,company', 'rule:id,name'])
             ->orderBy('user_id')
             ->orderBy('earned_on')
             ->orderBy('id')
@@ -68,7 +68,7 @@ class CommissionSettlementService {
     public function rowsOf(CommissionSettlementRun $run): Collection {
         if ($run->isClosed()) {
             return $run->commissions()
-                ->with(['user:id,name', 'agent:id,name,company', 'invoice:id,number,customer_id', 'invoice.customer:id,name,company', 'rule:id,name'])
+                ->with(['user:id,name', 'agent:id,name,company', 'customer:id,name,company', 'rule:id,name'])
                 ->orderBy('user_id')->orderBy('earned_on')->orderBy('id')
                 ->get();
         }
@@ -196,8 +196,8 @@ class CommissionSettlementService {
             $rows[] = [
                 $run->period,
                 $row->recipientName(),
-                (string) ($row->invoice->number ?? ''),
-                (string) ($row->invoice->customer->name ?? ''),
+                (string) ($row->document_number ?? ''),
+                (string) ($row->customer->name ?? ''),
                 $row->earned_on->toDateString(),
                 $row->currency->value,
                 ($row->base_amount ?? Money::zero($run->currency))->getAmount(),

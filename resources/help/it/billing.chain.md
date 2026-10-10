@@ -1,7 +1,7 @@
 ---
 title: "Da fatturare e da sollecitare (catena dei documenti)"
 topic: billing.chain
-version: 1
+version: 2
 keywords:
     - ore non fatturate
     - preventivi accettati senza fattura
@@ -30,10 +30,12 @@ Ogni gruppo risponde a una domanda che altrimenti dovrebbe cercare in un'area
 separata:
 
 - **Preventivi accettati senza fattura** – il cliente ha accettato, la
-  fattura non esiste ancora.
+  fattura non esiste ancora. Le offerte contrassegnate come **Fatturato nel
+  programma contabile** non compaiono.
 - **Preventivi da sollecitare** – la data di ricontatto è arrivata o il
   termine di validità è scaduto.
-- **Fatture scadute** – aperte e oltre il termine di pagamento.
+- **Fatture scadute** – aperte e oltre il termine di pagamento, comprese le
+  fatture aperte del programma di contabilità (ad esempio Lexoffice).
 - **Ore fatturabili per cliente** – tempi registrati non ancora fatturati,
   con numero di voci e durata.
 - **Avanzamento oltre gli acconti (computo)** – nel computo è stata
@@ -45,8 +47,9 @@ separata:
 Il numero nel titolo indica tutte le voci in sospeso del gruppo. Sono
 elencate le prime 50; sotto è indicato quante altre ce ne sono. La freccia a
 fine riga apre la voce dove viene gestita: il preventivo, la fattura, i tempi
-aperti del cliente, la fatturazione del computo o la misurazione. Gli importi
-sono netti.
+aperti del cliente, la fatturazione del computo o la misurazione. Una fattura
+del programma di contabilità apre il **Flusso documenti** con la ricerca del
+suo numero di documento. Gli importi sono netti; per le fatture scadute è indicato l’importo lordo.
 
 **Che cosa vede:** un gruppo compare solo se il modulo corrispondente è
 attivo per la sua organizzazione e lei dispone del permesso per l'area. Se un

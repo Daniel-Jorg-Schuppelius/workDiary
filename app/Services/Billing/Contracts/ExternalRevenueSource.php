@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Billing\Contracts;
 
-use App\Services\Billing\Dto\ExternalProductRevenue;
+use App\Models\Invoicing\Invoice;
+use App\Services\Billing\Dto\{ExternalInvoice, ExternalInvoiceFile, ExternalInvoiceQuery, ExternalProductRevenue};
 use Carbon\CarbonInterface;
 
 /**
@@ -20,38 +21,42 @@ use Carbon\CarbonInterface;
  * Bei externer Rechnungshoheit liefert das Plugin sie für Auswertungen nach.
  * Belege, die aus einer lokalen Rechnung übergeben wurden, zählt die Quelle
  * nicht mit — keine Doppelzählung mit der lokalen Fakturierung.
+ *
+ * Seit MVP-1114 liefert die Quelle ihre Belege über EINE Methode
+ * ({@see invoices()}); Summen je Kunde, je Monat und Überfälliges leitet
+ * {@see \App\Services\Billing\ExternalRevenueSources} daraus ab. So rechnen alle
+ * Auswertungen nach denselben Beleg- und Statusregeln.
  */
 interface ExternalRevenueSource {
-    /** Plugin-ID; zugleich Herkunftskennung in Berichten. */
+    /**
+     * Schlüssel der Quelle im Register. Die Herkunft je Beleg (Plugin-ID) steht
+     * in {@see ExternalInvoice::$source} — eine Quelle kann mehrere Programme
+     * führen (allgemeiner Belegspiegel, MVP-1127).
+     */
     public function key(): string;
 
     /**
-     * Rechnungsähnliche Belege für den Zahlungsverhaltens-Report, gleiche
-     * Zeilenform wie lokale Rechnungen.
+     * Gestellte und (teil)bezahlte Rechnungen, Abschläge und Gutschriften —
+     * ohne Entwürfe, Stornos und aus lokalen Rechnungen übergebene Belege.
      *
-     * @param  list<int>  $excludedCustomerIds
-     * @return list<array{id:?int, customerId:int, number:string, issuedOn:?string, dueOn:?string, paidOn:?string, total:float, paid:bool}>
+     * @return list<ExternalInvoice>
      */
-    public function invoiceRows(string $upTo, ?int $customerId = null, array $excludedCustomerIds = []): array;
-
-    /**
-     * Umsatz je Kunde im Zeitraum (Gutschriften mindern).
-     *
-     * @param  list<int>  $excludedCustomerIds
-     * @return array<int, array{count:int, total:float}> Kunden-ID → Aggregat
-     */
-    public function perCustomer(string $from, string $to, ?int $customerId = null, array $excludedCustomerIds = []): array;
-
-    /**
-     * Fakturierter Umsatz eines Kunden je Monat.
-     *
-     * @return array<string, float> `Y-m` → Betrag
-     */
-    public function monthlyRevenue(int $customerId, CarbonInterface $from, CarbonInterface $to): array;
-
-    /** Offene, überfällige Umsatzbelege der Organisation. */
-    public function overdueCount(int $organizationId, string $today): int;
+    public function invoices(ExternalInvoiceQuery $query): array;
 
     /** @return list<ExternalProductRevenue> Umsatz je Artikel im Zeitraum */
     public function productRevenue(CarbonInterface $from, CarbonInterface $to): array;
+
+    /**
+     * Kunden mit gespiegelten Belegen jeder Art — sie haben Belege, auch ohne
+     * lokale Rechnung (Löschprüfung, MVP-1114).
+     *
+     * @return list<int>
+     */
+    public function customerIdsWithDocuments(int $organizationId): array;
+
+    /** Belegdatei zu {@see ExternalInvoice::$source}/`$key`; null, wenn die Quelle sie nicht führt (MVP-1118). */
+    public function file(int $organizationId, string $source, string $key): ?ExternalInvoiceFile;
+
+    /** Belegdatei einer an das Programm übergebenen lokalen Rechnung; null, wenn nicht übergeben. */
+    public function fileForInvoice(Invoice $invoice): ?ExternalInvoiceFile;
 }

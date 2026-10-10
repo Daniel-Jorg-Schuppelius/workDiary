@@ -1,7 +1,7 @@
 ---
 title: "À facturer et à relancer (chaîne de documents)"
 topic: billing.chain
-version: 1
+version: 2
 keywords:
     - temps non facturés
     - devis acceptés non facturés
@@ -31,10 +31,13 @@ Chaque groupe répond à une question que vous devriez sinon chercher dans un
 domaine distinct :
 
 - **Devis acceptés sans facture** – le client a accepté, la facture n'existe
-  pas encore.
+  pas encore. Les devis marqués **Facturé dans le logiciel comptable** n’y
+  figurent pas.
 - **Devis à relancer** – la date de relance est atteinte ou le délai de
   validité est échu.
-- **Factures en retard** – en cours et au-delà du délai de paiement.
+- **Factures en retard** – en cours et au-delà du délai de paiement, y
+  compris les factures ouvertes du logiciel comptable (par exemple
+  Lexoffice).
 - **Temps facturable par client** – temps saisis non encore facturés, avec le
   nombre d'entrées et la durée.
 - **Avancement supérieur aux acomptes (bordereau)** – le bordereau annonce
@@ -46,7 +49,8 @@ Le nombre du titre indique tous les éléments en attente du groupe. Les 50
 premiers sont listés ; en dessous figure le nombre d'éléments restants. La
 flèche en fin de ligne ouvre l'élément là où il se traite : le devis, la
 facture, les temps ouverts du client, la facturation du bordereau ou le
-métré. Les montants sont hors taxes.
+métré. Une facture du logiciel comptable ouvre le **Flux de documents** avec
+une recherche sur son numéro de pièce. Les montants sont hors taxes ; les factures en retard indiquent le montant TTC.
 
 **Ce que vous voyez :** un groupe n'apparaît que si le module concerné est
 actif pour votre organisation et que vous disposez du droit sur ce domaine.

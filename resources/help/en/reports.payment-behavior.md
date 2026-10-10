@@ -1,7 +1,7 @@
 ---
 title: "Payment behavior"
 topic: reports.payment-behavior
-version: 2
+version: 3
 keywords:
     - DSO
     - days sales outstanding
@@ -14,16 +14,17 @@ keywords:
     - payment discipline
     - debtor analysis
     - accounts receivable
+    - Lexoffice invoices
 audience: []
 related:
     - reports.economics
     - reports.customer-value
 ---
 
-Behavior and trend view of **locally managed invoices** — the billing
-report shows the inventory (status, aging), this report the behavior
-behind it. The reference date is always the **period end** (reproducible
-reports).
+Behavior and trend view of **local invoices and invoices from the
+accounting software** (such as Lexoffice) — the billing report shows the
+inventory (status, aging), this report the behavior behind it. The
+reference date is always the **period end** (reproducible reports).
 
 ## DSO with an example
 
@@ -58,3 +59,11 @@ report to them; if Lexoffice manages the invoices, they flow in via the
 plugin's voucher mirror — the voucher sync also fetches the payment
 data (payments endpoint). Without any data source the report states
 this openly.
+
+Documents whose contact in the accounting software is not linked to a
+customer count in the key figures **DSO (days)**, **Ø days to pay**, **Paid
+on time** and **Overdue invoices**. In **Overdue open invoices (top 15)**
+they appear as “Contact name (without customer assignment)” without a link.
+They are left out of the per-customer breakdowns: the customer boxes of the
+**Days-to-pay distribution (issue to payment)** — the **All customers** box
+includes them — and **Ø delay days per customer (top 10)**.

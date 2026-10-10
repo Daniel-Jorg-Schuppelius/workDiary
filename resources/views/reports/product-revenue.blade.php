@@ -89,7 +89,7 @@
             </tr>
         </x-slot:head>
         @forelse ($rows as $row)
-            <tr @class(['text-base-content/70 italic' => $row['articleId'] === null])>
+            <tr @class(['text-base-content/70 italic' => $row['collective']])>
                 <td class="font-mono text-xs">{{ $row['number'] ?? '—' }}</td>
                 <td class="font-medium">
                     @if ($row['articleId'] !== null)

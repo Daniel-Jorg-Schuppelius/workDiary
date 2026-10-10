@@ -1,7 +1,7 @@
 ---
 title: "Fatturazione, spese, pagamenti e fatturato"
 topic: reports.billing
-version: 3
+version: 4
 keywords:
     - crediti aperti
     - scadenzario
@@ -15,6 +15,8 @@ keywords:
     - prevedere le maggiorazioni
     - fatturato per articolo
     - fatturato per categoria
+    - fatture Lexoffice
+    - programma contabile
 audience:
     - admin
     - geschaeftsfuehrung
@@ -56,16 +58,25 @@ fatturazione**. Si apre per gli amministratori e per i ruoli con il diritto
 **Visualizza tutte le registrazioni di tempo**; senza questo diritto
 l’accesso viene negato.
 
+I documenti del programma contabile provengono da Lexoffice e, tramite lo
+specchio generale dei documenti, da sevDesk, easybill, JTL-Wawi e
+InvoicePlane. Le righe – e quindi i contributi a **Fatturato per prodotto**
+– provengono solo da Lexoffice.
+
 - Riquadri:
   - **Emesso + pagato (Σ lordo)**: totale lordo delle fatture nello stato
     **Emessa**, **Parzialmente pagata** o **Pagata** la cui data fattura cade
-    nel periodo (senza data fattura conta la data di creazione).
+    nel periodo (senza data fattura conta la data di creazione). Si
+    aggiungono le fatture e le fatture di acconto del programma di
+    contabilità (ad esempio Lexoffice) con data documento nel periodo; le
+    note di credito riducono il totale. Le fatture proforma non contano mai.
   - **Crediti aperti**: importo ancora aperto di tutte le fatture nello stato
     **Emessa** o **Parzialmente pagata**, indipendentemente dal periodo. I
     pagamenti ricevuti e le ritenute a garanzia aperte sono detratti; fatture
-    proforma, note di credito e documenti di storno non contano. Il riquadro
-    diventa rosso non appena una di esse è scaduta da più di 30 giorni;
-    l’indicazione ne riporta il numero.
+    proforma, note di credito e documenti di storno non contano. Le fatture e
+    gli acconti aperti del programma di contabilità sono inclusi con il loro
+    importo aperto. Il riquadro diventa rosso non appena una di esse è
+    scaduta da più di 30 giorni; l’indicazione ne riporta il numero.
   - **Tempo non fatturato**: registrazioni di tempo fatturabili del periodo
     non ancora utilizzate da alcun percorso di fatturazione, con il numero di
     registrazioni e il ricavo previsto dagli importi memorizzati.
@@ -74,14 +85,23 @@ l’accesso viene negato.
   programma di contabilità. Un clic su un cliente apre **Clienti e progetti**
   per quel cliente.
 - **Fatture per stato**: **Quantità**, **Netto** e **Lordo** per stato.
+  I documenti del programma di contabilità sono conteggiati in **Emessa**,
+  **Parzialmente pagata** o **Pagata**; se ce ne sono, un’ulteriore colonna
+  **di cui programma contabile** ne mostra la quota. Se l’importo netto di un
+  tale documento non è noto, il suo importo conta solo in **Lordo**.
 - **Scadenzario – partite aperte**: le fatture aperte in base ai giorni oltre
   la scadenza (senza scadenza, dalla data fattura) nelle fasce **Attuale**,
   1–7, 8–14, 15–30 e oltre 30 giorni, ciascuna con l’importo aperto, e
-  **Totale aperti**.
+  **Totale aperti**. Le fatture e gli acconti aperti del programma di
+  contabilità compaiono nelle fasce con il loro importo aperto; la riga **di
+  cui programma contabile** sotto **Totale aperti** ne mostra la quota.
 - **Clienti principali (emesso + pagato nel periodo)**: **Cliente**,
   **Fatture** e **Lordo**; se alcuni importi provengono dal programma di
   contabilità, compare un’ulteriore colonna **di cui programma contabile**.
-  Le fatture parzialmente pagate sono incluse.
+  Le fatture parzialmente pagate sono incluse, le fatture proforma no. I
+  documenti di contatti del programma di contabilità non collegati ad alcun
+  cliente sono raggruppati nella riga in corsivo **senza assegnazione
+  cliente**; nel grafico **Fatturato per cliente (top 15)** non compaiono.
 - **Fatture elettroniche in entrata (nel periodo)**: documenti in entrata per
   stato con numero e importo lordo, nonché il numero di quelli trasferiti
   alla contabilità.
@@ -96,9 +116,10 @@ l’accesso viene negato.
 Filtri: **Cliente**, **Progetto**, **Dipendente** e **Includi i clienti
 nascosti**. Cliente e progetto agiscono su fatture, preventivi e tempi, il
 dipendente solo sui tempi. Le fatture in entrata e i livelli di sollecito
-valgono sempre per l’intera organizzazione. Con un progetto selezionato, gli
-importi dal programma di contabilità vengono esclusi, perché questi
-documenti non conoscono alcun progetto. Esportazione in PDF, CSV ed Excel.
+valgono sempre per l’intera organizzazione. Con un progetto selezionato, i
+documenti del programma di contabilità vengono esclusi da riquadri, stati,
+scadenzario e clienti principali, perché questi documenti non conoscono
+alcun progetto. Esportazione in PDF, CSV ed Excel.
 
 ## Spese
 
@@ -176,11 +197,16 @@ tempo**.
   trasferiti da una fattura locale contano una sola volta, bozze e documenti
   annullati per nulla.
 - Riquadri: **Fatturato netto totale**, **di cui dal programma contabile**,
-  **Articoli con fatturato** e **Quota senza riferimento articolo** (righe
-  senza articolo selezionato).
+  **Articoli con fatturato** (compresi gli articoli del programma di
+  contabilità non collegati ad alcun articolo della propria anagrafica
+  articoli) e **Quota senza riferimento articolo** (righe senza articolo
+  selezionato).
 - Grafico degli articoli con il fatturato più alto; quanti ne mostra lo
-  stabilisce con **Top N nel grafico** (da 3 a 50, predefinito 10). Un clic
-  apre l’articolo.
+  stabilisce con **Top N nel grafico** (da 3 a 50, predefinito 10). Mostra
+  anche gli articoli del programma di contabilità non collegati alla propria
+  anagrafica articoli, questi senza link; un clic apre solo gli articoli
+  della propria anagrafica articoli. Solo la riga cumulativa **senza
+  riferimento articolo** resta fuori dal grafico.
 - **Ricavo per categoria**: **Categoria**, **Articolo**, **Fatturato netto**
   e **Quota**.
 - Tabella: **Numero articolo**, **Articolo**, **Quantità**, **Unità**,

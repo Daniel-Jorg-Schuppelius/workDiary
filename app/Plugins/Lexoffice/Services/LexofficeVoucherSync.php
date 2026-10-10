@@ -10,6 +10,7 @@
 
 namespace App\Plugins\Lexoffice\Services;
 
+use App\Events\Invoicing\{ExternalInvoiceCancelled, ExternalInvoicePaymentReceived, ExternalInvoicePaymentReverted};
 use App\Models\Customer\Customer;
 use App\Models\Integration\ExternalReference;
 use App\Models\Platform\Organization;
@@ -19,6 +20,7 @@ use App\Plugins\Lexoffice\Exceptions\LexofficeApiException;
 use App\Plugins\Lexoffice\{LexofficeConfig, LexofficePlugin};
 use App\Plugins\Lexoffice\Models\LexofficeVoucher;
 use App\Plugins\Support\PluginApiClient;
+use CommonToolkit\ValueObjects\Money;
 use Illuminate\Support\Carbon;
 use RuntimeException;
 
@@ -167,9 +169,11 @@ class LexofficeVoucherSync {
     /**
      * Belege am Sammelkontakt (MVP-1112) tragen keine `contactId` und fehlen
      * deshalb in den Kontaktabfragen. Eine Abfrage ohne Kontakt ab dem letzten
-     * Lauf holt sie; Belege mit Kontakt überspringt sie, die liefert der
-     * Kontaktlauf. Archiviert wird hier nicht: eine Abfrage nach Änderungsdatum
-     * sieht gelöschte Belege nicht.
+     * Lauf holt sie; Belege verknüpfter Kontakte überspringt sie, die liefert
+     * der Kontaktlauf. Belege nicht verknüpfter Kontakte landen ohne Kunde und
+     * Lieferant im Spiegel (MVP-1117); wird der Kontakt verknüpft, setzt der
+     * Kontaktlauf beides nach. Archiviert wird hier nicht: eine Abfrage nach
+     * Änderungsdatum sieht gelöschte Belege nicht.
      *
      * @return array{created: int, updated: int}
      */
@@ -179,9 +183,11 @@ class LexofficeVoucherSync {
             ->whereNull('contact_external_id')
             ->whereNotNull('payload')
             ->max('synced_at');
+        $customerId = Customer::query()->where('organization_id', $organization->id)->where('is_collective', true)->value('id');
+        $supplierId = Supplier::query()->where('organization_id', $organization->id)->where('is_collective', true)->value('id');
         $collective = [
-            'customer_id' => Customer::query()->where('organization_id', $organization->id)->where('is_collective', true)->value('id'),
-            'supplier_id' => Supplier::query()->where('organization_id', $organization->id)->where('is_collective', true)->value('id'),
+            'customer_id' => $customerId !== null ? (int) $customerId : null,
+            'supplier_id' => $supplierId !== null ? (int) $supplierId : null,
         ];
 
         // Ein Beleg, den der Kontaktlauf schon kennt, wechselt nie zum Sammelkontakt.
@@ -192,16 +198,19 @@ class LexofficeVoucherSync {
 
         $counts = ['created' => 0, 'updated' => 0];
         $from = $since !== null ? Carbon::parse((string) $since)->subDay()->toDateString() : null;
+        $linked = $this->buildContactMap($organization);
         foreach ($this->fetchVouchers(null, $from) as $item) {
-            if (! empty($item['contactId']) || isset($withContact[(string) ($item['id'] ?? '')])) {
+            $contactId = (string) ($item['contactId'] ?? '');
+            if ($contactId !== '') {
+                if (isset($linked[$contactId])) {
+                    continue;
+                }
+                $verb = $this->upsertVoucherItem($organization->id, $contactId, ['customer_id' => null, 'supplier_id' => null], $item);
+            } elseif (isset($withContact[(string) ($item['id'] ?? '')])) {
                 continue;
+            } else {
+                $verb = $this->upsertVoucherItem($organization->id, null, $collective, $item);
             }
-            $isPurchase = in_array($item['voucherType'] ?? null, VoucherTypes::EXPENSES, true);
-            $owners = [
-                'customer_id' => ! $isPurchase && $collective['customer_id'] !== null ? (int) $collective['customer_id'] : null,
-                'supplier_id' => $isPurchase && $collective['supplier_id'] !== null ? (int) $collective['supplier_id'] : null,
-            ];
-            $verb = $this->upsertVoucherItem($organization->id, null, $owners, $item);
             if ($verb !== null) {
                 $counts[$verb]++;
             }
@@ -321,10 +330,13 @@ class LexofficeVoucherSync {
         }
         $externalId = (string) $item['id'];
 
+        // Kunde nur an Verkaufs-, Lieferant nur an Einkaufsbelegen (MVP-1114):
+        // sonst zählten Einkaufsrechnungen eines Kontakts mit Doppelrolle als Kundenumsatz.
+        $isPurchase = in_array($item['voucherType'] ?? null, VoucherTypes::EXPENSES, true);
         $attrs = $this->itemToAttrs($item) + [
             'contact_external_id' => $contactExternalId,
-            'customer_id' => $owners['customer_id'],
-            'supplier_id' => $owners['supplier_id'],
+            'customer_id' => $isPurchase ? null : $owners['customer_id'],
+            'supplier_id' => $isPurchase ? $owners['supplier_id'] : null,
             'archived' => (bool) ($item['archived'] ?? false),
             'payload' => $item,
             'synced_at' => now(),
@@ -353,9 +365,39 @@ class LexofficeVoucherSync {
             && ($existing->isDirty(['voucher_status', 'total_amount']) || $previousUpdatedDate !== ($item['updatedDate'] ?? null))) {
             $existing->lines_synced_at = null;
         }
+        $paymentEvent = $this->paymentEvent($existing);
         $existing->save();
+        if ($paymentEvent !== null) {
+            event($paymentEvent);
+        }
 
         return 'updated';
+    }
+
+    /**
+     * Zahlungs- und Stornowechsel eines schon gespiegelten Umsatzbelegs
+     * (MVP-1119, Provisionen). Neu gespiegelte Belege lösen nichts aus: Altbestand
+     * und Vollabfragen dürfen keine rückwirkenden Provisionen erzeugen.
+     */
+    private function paymentEvent(LexofficeVoucher $voucher): ExternalInvoicePaymentReceived|ExternalInvoicePaymentReverted|ExternalInvoiceCancelled|null {
+        if (! in_array($voucher->voucher_type, VoucherTypes::REVENUE_WITH_CREDITS, true)) {
+            return null;
+        }
+        $paid = ['paid', 'paidoff'];
+        $before = (string) $voucher->getOriginal('voucher_status');
+        $after = (string) $voucher->voucher_status;
+        $openBefore = $voucher->getOriginal('open_amount');
+        $openAfter = $voucher->open_amount;
+        $args = [$voucher->getMorphClass(), (int) $voucher->id, (int) $voucher->organization_id];
+
+        return match (true) {
+            $after === 'voided' && $before !== 'voided' => new ExternalInvoiceCancelled(...$args),
+            in_array($after, $paid, true) && ! in_array($before, $paid, true) => new ExternalInvoicePaymentReceived(...$args),
+            in_array($before, $paid, true) && ! in_array($after, $paid, true) => new ExternalInvoicePaymentReverted(...$args),
+            $openBefore instanceof Money && $openAfter instanceof Money && $openAfter->lessThan($openBefore) => new ExternalInvoicePaymentReceived(...$args),
+            $openBefore instanceof Money && $openAfter instanceof Money && $openAfter->greaterThan($openBefore) => new ExternalInvoicePaymentReverted(...$args),
+            default => null,
+        };
     }
 
     /**
@@ -479,6 +521,7 @@ class LexofficeVoucherSync {
             'voucher_number' => $this->str($item, 'voucherNumber'),
             'voucher_date' => $this->date($item, 'voucherDate'),
             'due_date' => $this->date($item, 'dueDate'),
+            'contact_name' => ($name = $this->str($item, 'contactName')) !== null ? mb_substr($name, 0, 255) : null,
             'total_amount' => isset($item['totalAmount']) ? (float) $item['totalAmount'] : null,
             'open_amount' => isset($item['openAmount']) ? (float) $item['openAmount'] : null,
             'currency' => $this->str($item, 'currency') ?: 'EUR',

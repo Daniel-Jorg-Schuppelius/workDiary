@@ -1,7 +1,7 @@
 ---
 title: "Quotes"
 topic: quotes.overview
-version: 1
+version: 2
 keywords:
     - create quote
     - estimate
@@ -59,6 +59,13 @@ path from quote to final document remains traceable.
 
 Draft quotes that were never sent can be deleted; everything from the
 moment of sending is kept as history.
+
+**Invoiced in the accounting system:** If an accepted quote is invoiced in
+the accounting system rather than here, mark it via the menu of the quote
+page with **Invoiced in the accounting system**, optionally with the invoice
+number used there. The quote then leaves the list **Accepted quotes without
+invoice**; the mark can be removed again. The action is available as long as
+there is no invoice for the quote.
 
 **PDF & order confirmation:** Every quote can be downloaded as a PDF
 (including option markers and per-rate tax breakdown); sent quotes

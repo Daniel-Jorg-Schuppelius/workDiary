@@ -7,15 +7,16 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 
   Manuelle Zuordnung Beleg → Vertriebsperson (Feature 146).
-  Variablen: $invoice, $users, $agents, $suggestion (CommissionAssignment|null)
+  Variablen: $number, $action, $currentUser/$currentAgent (Sqid|null), $users, $agents,
+  $suggestion (CommissionAssignment|null) — lokale wie gespiegelte Rechnung (MVP-1119).
 --}}
 <x-modal
     :title="__('commission.action.assign')"
-    :eyebrow="$invoice->number ?? $invoice->sqid"
+    :eyebrow="$number"
     icon="person_add"
     tone="primary"
     size="md"
-    :action="route('commissions.assign', $invoice)"
+    :action="$action"
     method="POST"
     :form-data="['data-entry-form' => '']"
     :submit-label="__('commission.action.save')">
@@ -24,7 +25,7 @@
         <x-select-field name="user_id" :label="__('commission.field.user')" :hint="__('commission.hint.assign')">
             <option value="">—</option>
             @foreach ($users as $user)
-                <option value="{{ $user->sqid }}" @selected((string) old('user_id', $invoice->salesUser?->sqid) === $user->sqid)>{{ $user->name }}</option>
+                <option value="{{ $user->sqid }}" @selected((string) old('user_id', $currentUser) === $user->sqid)>{{ $user->name }}</option>
             @endforeach
         </x-select-field>
 
@@ -32,7 +33,7 @@
             <x-select-field name="commission_agent_id" :label="__('commission.field.agent')" :hint="__('commission.hint.agent')">
                 <option value="">—</option>
                 @foreach ($agents as $agent)
-                    <option value="{{ $agent->sqid }}" @selected((string) old('commission_agent_id', $invoice->salesAgent?->sqid) === $agent->sqid)>{{ $agent->displayName() }}</option>
+                    <option value="{{ $agent->sqid }}" @selected((string) old('commission_agent_id', $currentAgent) === $agent->sqid)>{{ $agent->displayName() }}</option>
                 @endforeach
             </x-select-field>
         @endif

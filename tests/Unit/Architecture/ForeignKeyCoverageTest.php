@@ -51,6 +51,10 @@ class ForeignKeyCoverageTest extends TestCase {
         'resale_purchase_entries.document_id',
         // MVP-1024: derselbe Beleg-Morph am Lizenzpaket (optionaler Einkaufsbeleg).
         'resale_license_batches.document_id',
+        // MVP-1119: Beleg-Morph der Provisionszeile (lokale Rechnung oder
+        // gespiegelte Rechnung eines Plugins, Auflösung über CommissionDocuments);
+        // die lokale Rechnung trägt zusätzlich den FK `invoice_id`.
+        'invoice_commissions.document_id',
         // Feature 149 (MVP-743): `statement_id` ist die UUID, die der Inhalt
         // dem xAPI-Statement selbst gibt — eine Fremdkennung, kein Verweis
         // auf eine eigene Tabelle. Sie dient der Dublettenerkennung.

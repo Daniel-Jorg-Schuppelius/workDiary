@@ -1,7 +1,7 @@
 ---
 title: "Comportamento di pagamento"
 topic: reports.payment-behavior
-version: 2
+version: 3
 keywords:
     - DSO
     - tempi di pagamento
@@ -13,16 +13,18 @@ keywords:
     - giorni medi di incasso
     - termini di pagamento
     - analisi debitori
+    - fatture Lexoffice
 audience: []
 related:
     - reports.economics
     - reports.customer-value
 ---
 
-Vista comportamentale e di tendenza sulle **fatture gestite localmente** —
-il report di fatturazione mostra lo stato (status, anzianità), questo
-report il comportamento sottostante. La data di riferimento è sempre la
-**fine periodo** (report riproducibili).
+Vista comportamentale e di tendenza sulle **fatture locali e sulle fatture
+del programma di contabilità** (ad esempio Lexoffice) — il report di
+fatturazione mostra lo stato (status, anzianità), questo report il
+comportamento sottostante. La data di riferimento è sempre la **fine
+periodo** (report riproducibili).
 
 ## DSO con esempio numerico
 
@@ -58,3 +60,12 @@ report su di lui; se Lexoffice gestisce le fatture, entrano tramite lo
 specchio documenti del plugin — il sync carica anche i dati di pagamento
 (endpoint payments). Senza alcuna fonte il report lo dichiara
 apertamente.
+
+I documenti il cui contatto nel programma di contabilità non è collegato ad
+alcun cliente contano negli indicatori **DSO (giorni)**, **Tempi medi di
+pagamento (giorni)**, **Pagato puntualmente** e **Fatture scadute**. In
+**Fatture aperte scadute (top 15)** compaiono come «Nome contatto (senza
+assegnazione cliente)», senza link. Non compaiono nelle ripartizioni per
+cliente: nei box per cliente della **Distribuzione dei tempi di pagamento
+(emissione a pagamento)** — il box **Tutti i clienti** li include — e in
+**Ritardo medio per cliente (top 10)**.

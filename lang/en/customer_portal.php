@@ -42,5 +42,6 @@ return [
     ],
     'invoices' => [
         'pdf_label' => 'Download invoice :number as PDF',
+        'document_unavailable' => 'The document is not yet available in the accounting system. Please try again later.',
     ],
 ];

@@ -1,7 +1,7 @@
 ---
 title: "Valeur client"
 topic: reports.customer-value
-version: 2
+version: 3
 keywords:
     - analyse ABC
     - clients A
@@ -35,6 +35,11 @@ où se situe le risque de concentration, quels clients A sont menacés ?**
   clients en bas sur exactement ces clients.
 - **Liste de risque** : clients à fort chiffre d'affaires sans prestation
   depuis le seuil configuré, avec l'évolution sur 12 mois (sparkline).
+- **Facturé** (colonne de la liste des clients) : toutes les pièces du
+  client émises sur la période, sauf les factures pro forma ; les avoirs et
+  pièces d'annulation diminuent le montant. Les pièces du logiciel comptable
+  (par exemple Lexoffice) comptent selon la même règle. Les scores, eux,
+  utilisent le chiffre d'affaires des temps facturables.
 
 ## R, F et M — comment naissent les scores
 

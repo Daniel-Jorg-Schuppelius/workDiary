@@ -14,6 +14,7 @@ use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
 use App\Services\Billing\Contracts\ExternalRevenue;
+use App\Services\Billing\Dto\ExternalInvoiceQuery;
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\NumberHelper;
@@ -26,7 +27,7 @@ use CommonToolkit\Helper\Data\NumberHelper;
  *
  * Quellen: lokale Rechnungen (Typen invoice/partial/final, Status ohne
  * draft/cancelled) PLUS die Belege der Buchhaltungsprogramme (Phase-54-Nachtrag,
- * {@see ExternalRevenue::invoiceRows()}, MVP-1034) — bei externer
+ * {@see ExternalRevenue::invoices()}, MVP-1034) — bei externer
  * Rechnungshoheit kämen sonst keine Zahlungsdaten zusammen. Zahldaten der
  * Spiegelbelege stammen aus der Payments-Anreicherung des Belegsyncs.
  *
@@ -46,7 +47,7 @@ class PaymentBehaviorReportBuilder {
      *   monthly: list<array{month:string, dso:?float, avgPayDays:?float}>,
      *   payBox: list<array{x:string, min:float, q1:float, median:float, q3:float, max:float, n:int, customerId:?int}>,
      *   delayTop: list<array{customerId:int, customerName:string, avgDelay:float, invoices:int}>,
-     *   overdue: list<array{invoiceId:?int, number:string, customerId:int, customerName:string, dueOn:string, daysOverdue:int, total:float}>,
+     *   overdue: list<array{invoiceId:?int, source:?string, number:string, customerId:?int, customerName:string, dueOn:string, daysOverdue:int, total:float}>,
      *   hasData: bool,
      * }
      */
@@ -55,7 +56,7 @@ class PaymentBehaviorReportBuilder {
             ->whereNotNull('issued_on')
             ->where('issued_on', '<', DateRange::dayAfter($to))
             ->whereIn('type', [Invoice::TYPE_INVOICE, Invoice::TYPE_PARTIAL, Invoice::TYPE_FINAL])
-            ->whereIn('status', [InvoiceStatus::Issued, InvoiceStatus::PartiallyPaid, InvoiceStatus::Paid])
+            ->whereIn('status', Invoice::ISSUED_STATUSES)
             ->when($customerId !== null, fn($q) => $q->where('customer_id', $customerId))
             ->when($customerId === null && $excludedCustomerIds !== [], fn($q) => $q->whereNotIn('customer_id', $excludedCustomerIds))
             ->get(['id', 'customer_id', 'number', 'issued_on', 'due_on', 'paid_on', 'total', 'status'])
@@ -72,11 +73,29 @@ class PaymentBehaviorReportBuilder {
             ->values()
             ->all();
 
-        $invoices = array_merge($invoices, $this->externalInvoices->invoiceRows(
-            $to->toDateString(),
-            $customerId,
-            $customerId === null ? $excludedCustomerIds : [],
+        // Gutschriften bleiben außen vor: keine Fälligkeits-/Zahlungssemantik.
+        $external = $this->externalInvoices->invoices(new ExternalInvoiceQuery(
+            issuedTo: $to,
+            customerId: $customerId,
+            excludedCustomerIds: $customerId === null ? $excludedCustomerIds : [],
+            withCreditNotes: false,
         ));
+        // Ohne Kundenzuordnung (MVP-1117): zählt in den Kennzahlen und der
+        // Überfälligkeitsliste, nicht in den Aufschlüsselungen je Kunde.
+        foreach ($external as $invoice) {
+            $invoices[] = [
+                'id' => null,
+                'customerId' => $invoice->customerId,
+                'contactName' => $invoice->contactName,
+                'source' => $invoice->source,
+                'number' => $invoice->number,
+                'issuedOn' => $invoice->issuedOn?->toDateString(),
+                'dueOn' => $invoice->dueOn?->toDateString(),
+                'paidOn' => $invoice->paidOn?->toDateString(),
+                'total' => $invoice->gross,
+                'paid' => $invoice->status === InvoiceStatus::Paid,
+            ];
+        }
 
         if ($invoices === []) {
             return [
@@ -90,7 +109,7 @@ class PaymentBehaviorReportBuilder {
         }
 
         $names = Customer::query()
-            ->whereIn('id', array_values(array_unique(array_column($invoices, 'customerId'))))
+            ->whereIn('id', array_values(array_unique(array_filter(array_column($invoices, 'customerId')))))
             ->pluck('name', 'id')
             ->mapWithKeys(static fn($name, $id): array => [(int) $id => (string) $name])
             ->all();
@@ -118,9 +137,12 @@ class PaymentBehaviorReportBuilder {
             }
             $overdue[] = [
                 'invoiceId' => $inv['id'],
+                'source' => $inv['source'] ?? null,
                 'number' => $inv['number'],
                 'customerId' => $inv['customerId'],
-                'customerName' => $names[$inv['customerId']] ?? ('#' . $inv['customerId']),
+                'customerName' => $inv['customerId'] !== null
+                    ? ($names[$inv['customerId']] ?? ('#' . $inv['customerId']))
+                    : (string) __('reporting.unassigned_contact', ['name' => $inv['contactName'] ?? '—']),
                 'dueOn' => $inv['dueOn'],
                 'daysOverdue' => (int) max(0, CarbonImmutable::parse($inv['dueOn'])->diffInDays($to, false)),
                 'total' => $inv['total'],
@@ -146,7 +168,7 @@ class PaymentBehaviorReportBuilder {
     }
 
     /**
-     * @param  array<int, array{id:?int, customerId:int, number:string, issuedOn:?string, dueOn:?string, paidOn:?string, total:float, paid:bool}>  $invoices
+     * @param  array<int, array{id:?int, customerId:?int, contactName?:?string, source?:string, number:string, issuedOn:?string, dueOn:?string, paidOn:?string, total:float, paid:bool}>  $invoices
      */
     private function dsoAt(array $invoices, CarbonImmutable $at): ?float {
         $atDate = $at->toDateString();
@@ -170,7 +192,7 @@ class PaymentBehaviorReportBuilder {
     }
 
     /**
-     * @param  array<int, array{id:?int, customerId:int, number:string, issuedOn:?string, dueOn:?string, paidOn:?string, total:float, paid:bool}>  $invoices
+     * @param  array<int, array{id:?int, customerId:?int, contactName?:?string, source?:string, number:string, issuedOn:?string, dueOn:?string, paidOn:?string, total:float, paid:bool}>  $invoices
      * @param  callable(array{issuedOn:?string, paidOn:?string}): int  $payDays
      * @return list<array{month:string, dso:?float, avgPayDays:?float}>
      */
@@ -202,7 +224,7 @@ class PaymentBehaviorReportBuilder {
      * Zahldauer-Verteilung (Boxplot): alle Kunden gesamt plus die fünf
      * Kunden mit den meisten bezahlten Rechnungen (n ≥ 3).
      *
-     * @param  list<array{id:?int, customerId:int, number:string, issuedOn:?string, dueOn:?string, paidOn:?string, total:float, paid:bool}>  $paidInPeriod
+     * @param  list<array{id:?int, customerId:?int, contactName?:?string, source?:string, number:string, issuedOn:?string, dueOn:?string, paidOn:?string, total:float, paid:bool}>  $paidInPeriod
      * @param  array<int, string>  $names
      * @param  callable(array{issuedOn:?string, paidOn:?string}): int  $payDays
      * @return list<array{x:string, min:float, q1:float, median:float, q3:float, max:float, n:int, customerId:?int}>
@@ -232,7 +254,9 @@ class PaymentBehaviorReportBuilder {
 
         $byCustomer = [];
         foreach ($paidInPeriod as $inv) {
-            $byCustomer[$inv['customerId']][] = $payDays($inv);
+            if ($inv['customerId'] !== null) {
+                $byCustomer[$inv['customerId']][] = $payDays($inv);
+            }
         }
         uasort($byCustomer, static fn(array $a, array $b): int => count($b) <=> count($a));
         foreach (array_slice($byCustomer, 0, 5, true) as $cid => $values) {
@@ -246,7 +270,7 @@ class PaymentBehaviorReportBuilder {
     }
 
     /**
-     * @param  list<array{id:?int, customerId:int, number:string, issuedOn:?string, dueOn:?string, paidOn:?string, total:float, paid:bool}>  $withDue
+     * @param  list<array{id:?int, customerId:?int, contactName?:?string, source?:string, number:string, issuedOn:?string, dueOn:?string, paidOn:?string, total:float, paid:bool}>  $withDue
      * @param  array<int, string>  $names
      * @param  callable(array{dueOn:?string, paidOn:?string}): int  $delayDays
      * @return list<array{customerId:int, customerName:string, avgDelay:float, invoices:int}>
@@ -254,7 +278,9 @@ class PaymentBehaviorReportBuilder {
     private function delayTop(array $withDue, array $names, callable $delayDays): array {
         $byCustomer = [];
         foreach ($withDue as $inv) {
-            $byCustomer[$inv['customerId']][] = $delayDays($inv);
+            if ($inv['customerId'] !== null) {
+                $byCustomer[$inv['customerId']][] = $delayDays($inv);
+            }
         }
 
         $rows = [];

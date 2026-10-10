@@ -155,7 +155,7 @@ return [
         'assign' => 'Laisser vide pour revenir à l’origine issue du pipeline de prospects.',
         'current_assignment' => 'Responsable actuel : :user (:source).',
         'no_assignment' => 'Personne n’est responsable — sans affectation, aucune commission n’est créée.',
-        'unassigned' => 'Ces factures sont payées mais affectées à personne : ni manuellement ni via un prospect converti.',
+        'unassigned' => 'Ces factures sont payées mais affectées à personne : ni manuellement ni via un prospect converti. Les factures du logiciel comptable reprises déjà payées s’affectent également ici.',
         'draft_preview' => 'Brouillon : les lignes sont recalculées à chaque affichage. Seule la clôture les fige.',
         'no_payout' => 'WorkDiary calcule et exporte la commission — le versement se fait dans la paie.',
     ],

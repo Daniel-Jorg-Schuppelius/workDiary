@@ -25,4 +25,7 @@ interface ExternalPurchases {
 
     /** @return array{rows: list<ExternalCategorySpend>, pending: int} */
     public function categorySpend(CarbonInterface $from, CarbonInterface $to): array;
+
+    /** @return array{open: float, overdue: float, count: int} */
+    public function openPayables(int $organizationId, string $today): array;
 }

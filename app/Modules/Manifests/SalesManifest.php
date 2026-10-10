@@ -135,6 +135,15 @@ final class SalesManifest extends Manifest {
             \App\Events\Invoicing\InvoicePaymentReverted::class => [
                 \App\Listeners\Sales\ReverseCommissionOnPaymentRevert::class,
             ],
+            \App\Events\Invoicing\ExternalInvoicePaymentReceived::class => [
+                \App\Listeners\Sales\SettleCommissionOnExternalInvoice::class,
+            ],
+            \App\Events\Invoicing\ExternalInvoicePaymentReverted::class => [
+                \App\Listeners\Sales\SettleCommissionOnExternalInvoice::class,
+            ],
+            \App\Events\Invoicing\ExternalInvoiceCancelled::class => [
+                \App\Listeners\Sales\SettleCommissionOnExternalInvoice::class,
+            ],
         ];
     }
 }

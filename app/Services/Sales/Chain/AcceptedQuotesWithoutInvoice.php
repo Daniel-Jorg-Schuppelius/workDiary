@@ -63,6 +63,8 @@ final class AcceptedQuotesWithoutInvoice implements DocumentChainSource {
         return Quote::query()
             ->where('organization_id', $organization->id)
             ->whereIn('status', QuoteStatus::won())
+            // Im Buchhaltungsprogramm abgerechnet, von Hand markiert (MVP-1124).
+            ->whereNull('invoiced_externally_at')
             ->whereNotExists(fn ($q) => $q->selectRaw('1')->from('invoices')
                 ->whereColumn('invoices.quote_id', 'quotes.id')
                 ->where('invoices.status', '!=', InvoiceStatus::Cancelled));

@@ -634,6 +634,7 @@ return [
 
     // Finanzberichte (Feature 125, MVP-676).
     'reports' => [
+        'external_ledger_notice' => 'L’organisation tient sa comptabilité dans un logiciel comptable, pas dans WorkDiary. Ces rapports n’évaluent que les écritures locales et restent donc vides ou incomplets.',
         'replacement' => [
             'subtitle' => 'Au :from, horizon jusqu\'au :to, hausse des prix :inflation % par an',
             'horizon' => 'Horizon',

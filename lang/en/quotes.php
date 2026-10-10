@@ -77,4 +77,17 @@ return [
         'no_owner' => 'No one responsible',
         'link' => 'Win rate',
     ],
+    'external_invoice' => [
+        'action' => 'Invoiced in the accounting system',
+        'title' => 'Quote :number invoiced in the accounting system',
+        'hint' => 'The quote was invoiced in the accounting system. It then leaves the list “Accepted quotes without invoice”. The invoice number is optional.',
+        'number' => 'Invoice number in the accounting system',
+        'submit' => 'Mark as invoiced',
+        'marked' => 'Quote marked as invoiced in the accounting system.',
+        'unmarked' => 'Mark removed.',
+        'unmark' => 'Remove “invoiced” mark',
+        'unmark_confirm' => 'Remove the mark? The quote will appear again under “Accepted quotes without invoice”.',
+        'marked_on' => 'Invoiced in the accounting system (marked on :date)',
+        'marked_with_number' => 'Invoiced in the accounting system: :number (marked on :date)',
+    ],
 ];

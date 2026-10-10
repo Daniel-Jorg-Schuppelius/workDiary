@@ -135,6 +135,8 @@ return [
         ],
         'open_items' => [
             'description' => 'Créances et dettes ouvertes, part échue comprise.',
+            'feed_link' => 'Flux de documents →',
+            'external_hint' => 'Depuis le logiciel comptable — l’organisation ne tient pas sa comptabilité dans WorkDiary.',
         ],
         'tax_filings' => [
             'description' => 'Prochaines échéances de déclaration en comptabilité.',

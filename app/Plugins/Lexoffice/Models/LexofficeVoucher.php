@@ -27,6 +27,8 @@ use Illuminate\Support\Carbon;
  * @property ?string $contact_external_id
  * @property ?int $customer_id
  * @property ?int $supplier_id
+ * @property ?int $sales_user_id
+ * @property ?int $sales_agent_id
  * @property ?string $voucher_type
  * @property ?string $voucher_status
  * @property ?string $voucher_number
@@ -35,12 +37,14 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $paid_date
  * @property ?string $voucher_text
  * @property ?string $recipient_name
+ * @property ?string $contact_name
  * @property ?Carbon $service_starts_on
  * @property ?Carbon $service_ends_on
  * @property ?Carbon $lines_synced_at
  * @property ?Carbon $categories_synced_at
  * @property ?Carbon $lines_sync_failed_at
  * @property int $lines_sync_attempts
+ * @property list<string>|null $related_voucher_ids
  * @property-read \Illuminate\Database\Eloquent\Collection<int, LexofficeVoucherLine> $lines
  * @property \CommonToolkit\ValueObjects\Money|null $total_amount
  * @property \CommonToolkit\ValueObjects\Money|null $open_amount
@@ -62,6 +66,8 @@ class LexofficeVoucher extends Model {
         'contact_external_id',
         'customer_id',
         'supplier_id',
+        'sales_user_id',
+        'sales_agent_id',
         'voucher_type',
         'voucher_status',
         'voucher_number',
@@ -70,12 +76,14 @@ class LexofficeVoucher extends Model {
         'paid_date',
         'voucher_text',
         'recipient_name',
+        'contact_name',
         'service_starts_on',
         'service_ends_on',
         'lines_synced_at',
         'categories_synced_at',
         'lines_sync_failed_at',
         'lines_sync_attempts',
+        'related_voucher_ids',
         'total_amount',
         'open_amount',
         'net_amount',
@@ -90,6 +98,8 @@ class LexofficeVoucher extends Model {
         'currency' => \CommonToolkit\Enums\CurrencyCode::class,
         'customer_id' => 'integer',
         'supplier_id' => 'integer',
+        'sales_user_id' => 'integer',
+        'sales_agent_id' => 'integer',
         'voucher_date' => 'date',
         'due_date' => 'date',
         'paid_date' => 'date',
@@ -99,6 +109,7 @@ class LexofficeVoucher extends Model {
         'categories_synced_at' => 'datetime',
         'lines_sync_failed_at' => 'datetime',
         'lines_sync_attempts' => 'integer',
+        'related_voucher_ids' => 'array',
         'total_amount' => MoneyCast::class . ':currency,2',
         'open_amount' => MoneyCast::class . ':currency,2',
         // Nur der Nettobetrag der voucherlist-Belege ist NICHT enthalten — er

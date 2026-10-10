@@ -1,7 +1,7 @@
 ---
 title: "Customer value"
 topic: reports.customer-value
-version: 2
+version: 3
 keywords:
     - ABC analysis
     - key accounts
@@ -34,6 +34,11 @@ live on, where is concentration risk, which A-customers are at risk?**
   below to exactly those customers.
 - **Risk list**: high-revenue customers without service since the
   configured threshold, with a 12-month revenue sparkline.
+- **Invoiced** (column of the customer list): all documents of the customer
+  issued in the period except pro forma invoices; credit notes and
+  cancellation documents reduce the amount. Documents from the accounting
+  software (such as Lexoffice) count under the same rule. The scores, in
+  contrast, use the revenue from the billable time snapshots.
 
 ## R, F and M — how the scores are built
 

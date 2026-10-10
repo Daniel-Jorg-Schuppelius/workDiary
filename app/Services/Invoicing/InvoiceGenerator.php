@@ -403,6 +403,7 @@ class InvoiceGenerator {
                     'timesheet:id,work_date,project_id',
                     'timesheet.project:id,name,foreign_customer_id',
                     'timesheet.project.foreignCustomer:id,name,company',
+                    'material:id,article_id',
                 ])
                 ->lockForUpdate()
                 ->get();
@@ -446,6 +447,7 @@ class InvoiceGenerator {
 
                 $invoice->items()->create([
                     'material_usage_id' => $usage->id,
+                    'article_id' => $usage->material?->article_id,
                     'service_date' => optional($usage->timesheet?->work_date)->toDateString(),
                     'description' => $this->bookingLine($materialDesc, $usage->timesheet?->project?->foreignCustomer, (int) $invoice->organization_id),
                     'quantity' => $usage->quantity?->getNumericValue() ?? '0',
@@ -780,7 +782,7 @@ class InvoiceGenerator {
             ->where('organization_id', $customer->organization_id)
             ->where('customer_id', $customer->id)
             ->where('type', Invoice::TYPE_DOWN_PAYMENT)
-            ->whereIn('status', [InvoiceStatus::Issued, InvoiceStatus::PartiallyPaid, InvoiceStatus::Paid])
+            ->whereIn('status', Invoice::ISSUED_STATUSES)
             ->when($projectId !== null, fn($q) => $q->where('project_id', $projectId), fn($q) => $q->whereNull('project_id'))
             ->when($currency !== null, fn($q) => $q->where('currency', $currency))
             ->whereDoesntHave('settlementItems', fn($q) => $q->whereHas(

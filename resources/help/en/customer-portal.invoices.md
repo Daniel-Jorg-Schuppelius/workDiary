@@ -1,7 +1,7 @@
 ---
 title: "My Invoices"
 topic: customer-portal.invoices
-version: 4
+version: 5
 keywords:
     - view invoices
     - invoice list
@@ -18,6 +18,8 @@ keywords:
     - download invoice
     - invoice PDF
     - ZUGFeRD
+    - Lexoffice invoices
+    - accounting software
 audience: []
 related:
     - customer-portal.overview
@@ -26,7 +28,7 @@ related:
     - customer-portal.billing
 ---
 
-Under **Invoices** you see the invoices your contractor has issued for your company, together with their current payment status. You can pay open invoices online right here if your contractor offers this.
+Under **Invoices** you see the invoices your contractor has issued for your company, together with their current payment status – including the invoices they have issued in their accounting software (such as Lexoffice). You can pay open invoices online right here if your contractor offers this.
 
 ## The invoice list
 
@@ -38,7 +40,7 @@ The list shows for each invoice:
 - **Amount** – the invoice amount with currency,
 - on the right, the PDF icon for downloading and, where applicable, the button **Pay online**.
 
-The newest invoice is at the top. With more than 25 invoices you page through the list using the pagination at the bottom. Drafts your contractor is still working on do not appear – you only see issued invoices.
+All invoices are sorted together by date, newest first – the invoices from your contractor's accounting software appear among the others. With more than 25 invoices you page through the list using the pagination at the bottom. The **Invoices** tile on the start page counts both. Drafts your contractor is still working on do not appear – you only see issued invoices.
 
 ### The statuses
 
@@ -49,15 +51,15 @@ The newest invoice is at the top. With more than 25 invoices you page through th
 
 ## Downloading an invoice
 
-Click the PDF icon in the row of the invoice (tooltip: **Download invoice … as PDF**). You receive the same document that your contractor issues for this invoice.
+Click the PDF icon in the row of the invoice (tooltip: **Download invoice … as PDF**); it is shown for every invoice. You receive the same document that your contractor issues for this invoice.
 
 - If you receive your invoices as ZUGFeRD e-invoices, the downloaded file is also a ZUGFeRD PDF with embedded invoice data.
 - For all other delivery methods you receive the invoice as a PDF – even if the invoice was delivered to you as an XRechnung (XML).
-- If the icon is missing for an invoice, your contractor manages this invoice in a different invoicing program. You then receive the document directly from your contractor.
+- If your contractor manages an invoice in their accounting software, the portal fetches the document from there. If it is not yet available there, you return to the list and see the notice **The document is not yet available in the accounting system. Please try again later.**
 
 ## Paying online
 
-You only see the button **Pay online** if your contractor has connected a payment provider and the invoice still has an open amount, i.e. has the status **Issued** or **Partially paid**. Credit notes, cancelled invoices and pro forma invoices cannot be paid online.
+You only see the button **Pay online** if your contractor has connected a payment provider and the invoice still has an open amount, i.e. has the status **Issued** or **Partially paid**. It is only offered for invoices your contractor has issued directly in this portal's system, not for invoices from their accounting software. Credit notes, cancelled invoices and pro forma invoices cannot be paid online.
 
 1. Click **Pay online** next to the invoice.
 2. You are forwarded to the payment page of the payment provider. The amount to pay is the amount still open – for a partially paid invoice, only the remainder.

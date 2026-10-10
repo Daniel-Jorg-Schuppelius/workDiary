@@ -1196,6 +1196,7 @@ return [
         'follow_up' => 'Décision de suite',
         'follow_up_amount' => 'Facturation complémentaire/remboursement (référence)',
         'follow_up_at' => 'Relance le',
+        'external_invoice_number' => 'numéro de facture dans le logiciel comptable',
         'follow_up_for_id' => 'Arrêt maladie précédent',
         'continuation_of_id' => 'Rechute de la maladie du',
         'all_plans' => 'Pour tous les plannings de service',

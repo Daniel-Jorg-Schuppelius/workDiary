@@ -181,11 +181,36 @@ class PaymentBehaviorReportTest extends TestCase {
         $byNumber = collect($result['overdue'])->keyBy('number');
         $this->assertSame(40, $byNumber['LX-B']['daysOverdue']);
         $this->assertNull($byNumber['LX-B']['invoiceId']);
+        $this->assertSame('lexoffice', $byNumber['LX-B']['source']);
+        // MVP-1123: Badge mit dem Plugin-Namen, nicht fest verdrahtet.
+        $this->actingAs($this->admin)
+            ->withSession($this->dateRangeSession('2030-01-01', '2030-03-31'))
+            ->get(route('reports.payment-behavior'))
+            ->assertOk()
+            ->assertViewHas('sourceLabels', static fn (array $labels): bool => isset($labels['lexoffice']) && $labels['lexoffice'] !== 'lexoffice');
         $this->assertNotNull($byNumber['R-3']['invoiceId']);
 
         // Zahldauer-Verteilung über beide Quellen (n = 3, Median 10 Tage).
         $this->assertSame(3, $result['payBox'][0]['n']);
         $this->assertSame(10.0, $result['payBox'][0]['median']);
+    }
+
+    /** MVP-1117: Belege ohne Kundenzuordnung zählen in Kennzahl und Liste, nicht je Kunde. */
+    public function test_unassigned_mirrored_invoices_count_without_customer_breakdown(): void {
+        $before = $this->build()['kpis']['overdueCount'];
+        LexofficeVoucher::create([
+            'organization_id' => $this->organization->id, 'external_id' => 'v-fremd', 'contact_external_id' => 'contact-new',
+            'contact_name' => 'Neukunde GmbH', 'voucher_type' => 'invoice', 'voucher_status' => 'open', 'voucher_number' => 'LX-FREMD',
+            'voucher_date' => '2030-02-01', 'due_date' => '2030-02-15', 'total_amount' => 70.0, 'currency' => 'EUR',
+        ]);
+
+        $result = $this->build();
+
+        $this->assertSame($before + 1, $result['kpis']['overdueCount']);
+        $row = collect($result['overdue'])->firstWhere('number', 'LX-FREMD');
+        $this->assertNull($row['customerId']);
+        $this->assertSame(__('reporting.unassigned_contact', ['name' => 'Neukunde GmbH']), $row['customerName']);
+        $this->assertNotContains(null, array_column($result['delayTop'], 'customerId'));
     }
 
     public function test_customer_charts_link_to_self_filtered_report(): void {

@@ -155,7 +155,7 @@ return [
         'assign' => 'Dejar vacío para volver al origen del pipeline de leads.',
         'current_assignment' => 'Responsable actual: :user (:source).',
         'no_assignment' => 'Ahora mismo no hay responsable — sin asignación no se genera ninguna comisión.',
-        'unassigned' => 'Estas facturas están pagadas pero sin asignar: ni manualmente ni mediante un lead convertido.',
+        'unassigned' => 'Estas facturas están pagadas pero sin asignar: ni manualmente ni mediante un lead convertido. Las facturas del programa contable importadas ya pagadas también se asignan aquí.',
         'draft_preview' => 'Borrador: las líneas se recalculan en cada visita. Solo el cierre las congela.',
         'no_payout' => 'WorkDiary calcula y exporta la comisión — el pago se realiza en la nómina.',
     ],

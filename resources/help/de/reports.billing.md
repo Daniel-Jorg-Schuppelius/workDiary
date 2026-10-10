@@ -1,7 +1,7 @@
 ---
 title: "Abrechnung, Spesen, Auszahlungen und Umsatz"
 topic: reports.billing
-version: 3
+version: 4
 keywords:
     - offene Forderungen
     - Fälligkeitsübersicht
@@ -15,6 +15,8 @@ keywords:
     - Zuschläge vorausplanen
     - Umsatz je Artikel
     - Kategorieumsatz
+    - Lexoffice-Rechnungen
+    - Buchhaltungsprogramm
 audience:
     - admin
     - geschaeftsfuehrung
@@ -56,16 +58,25 @@ unter **Auswertungen** → **Team**.
 mit dem Recht **Alle Zeiteinträge sehen**; ohne dieses Recht wird der Zugriff
 verweigert.
 
+Belege aus dem Buchhaltungsprogramm liefern Lexoffice sowie über den
+allgemeinen Belegspiegel sevDesk, easybill, JTL-Wawi und InvoicePlane.
+Positionen – und damit Beiträge zu **Umsatz je Produkt** – liefert nur
+Lexoffice.
+
 - Kacheln:
   - **Ausgestellt + Bezahlt (Σ Brutto)**: Bruttosumme der Rechnungen im
     Status **Gestellt**, **Teilweise bezahlt** oder **Bezahlt** mit
     Rechnungsdatum im Zeitraum (ohne Rechnungsdatum zählt das Anlagedatum).
+    Dazu kommen Rechnungen und Abschlagsrechnungen aus dem
+    Buchhaltungsprogramm (etwa Lexoffice) mit Belegdatum im Zeitraum;
+    Gutschriften mindern. Pro-forma-Rechnungen zählen nie.
   - **Offene Forderungen**: noch offener Betrag aller Rechnungen im Status
     **Gestellt** oder **Teilweise bezahlt**, unabhängig vom Zeitraum.
     Eingegangene Zahlungen und offene Sicherheitseinbehalte sind abgezogen;
-    Pro-forma-Rechnungen, Gutschriften und Stornobelege zählen nicht. Die
-    Kachel färbt sich rot, sobald
-    eine davon mehr als 30 Tage überfällig ist; der Hinweis nennt ihre Zahl.
+    Pro-forma-Rechnungen, Gutschriften und Stornobelege zählen nicht. Offene
+    Rechnungen und Abschläge aus dem Buchhaltungsprogramm gehen mit ihrem
+    offenen Betrag ein. Die Kachel färbt sich rot, sobald eine davon mehr als
+    30 Tage überfällig ist; der Hinweis nennt ihre Zahl.
   - **Unbillte Zeit**: abrechenbare Zeiteinträge des Zeitraums, die noch
     über keinen Abrechnungsweg verbraucht wurden, mit Zahl der Einträge und
     dem voraussichtlichen Erlös aus den gespeicherten Beträgen.
@@ -74,14 +85,25 @@ verweigert.
   Buchhaltungsprogramm gespiegelten Belegen. Ein Klick auf einen Kunden
   öffnet **Kunden & Projekte** für diesen Kunden.
 - **Rechnungen nach Status**: **Anzahl**, **Netto** und **Brutto** je Status.
+  Belege aus dem Buchhaltungsprogramm zählen unter **Gestellt**, **Teilweise
+  bezahlt** oder **Bezahlt** mit; gibt es solche, zeigt eine weitere Spalte
+  **davon Buchhaltungsprogramm** ihren Anteil. Ist das Netto eines solchen
+  Belegs nicht bekannt, zählt sein Betrag nur unter **Brutto**.
 - **Aging – offene Posten**: die offenen Rechnungen nach Tagen über der
   Fälligkeit (ohne Fälligkeit ab Rechnungsdatum) in den Stufen **Aktuell**,
   1–7, 8–14, 15–30 und mehr als 30 Tage, jeweils mit dem offenen Betrag, und
-  **Offen gesamt**.
+  **Offen gesamt**. Offene Rechnungen und Abschläge aus dem
+  Buchhaltungsprogramm stehen mit ihrem offenen Betrag in den Stufen; ihren
+  Anteil zeigt die Zeile **davon Buchhaltungsprogramm** unter **Offen
+  gesamt**.
 - **Top-Kunden (ausgestellt + bezahlt im Zeitraum)**: **Kunde**,
   **Rechnungen** und **Brutto**; stammen Beträge aus dem
   Buchhaltungsprogramm, zeigt eine weitere Spalte **davon
-  Buchhaltungsprogramm**. Teilweise bezahlte Rechnungen zählen mit.
+  Buchhaltungsprogramm**. Teilweise bezahlte Rechnungen zählen mit,
+  Pro-forma-Rechnungen nicht. Belege von Kontakten des
+  Buchhaltungsprogramms, die keinem Kunden zugeordnet sind, stehen gesammelt
+  in der kursiven Zeile **ohne Kundenzuordnung**; im Diagramm **Umsatz je
+  Kunde (Top 15)** fehlen sie.
 - **Eingangs-E-Rechnungen (im Zeitraum)**: Eingänge je Status mit Anzahl und
   Bruttobetrag sowie die Zahl der an die Buchhaltung übergebenen.
 - **Eingangs-Validierung & Mahnstufen**: **Validierung geprüft**,
@@ -96,7 +118,8 @@ Filter: **Kunde**, **Projekt**, **Mitarbeiter** und **Ausgeblendete Kunden
 einbeziehen**. Kunde und Projekt wirken auf Rechnungen, Angebote und Zeiten,
 der Mitarbeiter nur auf die Zeiten. Eingangsrechnungen und Mahnstufen
 gelten immer für die ganze Organisation. Bei gewähltem Projekt entfallen die
-Beträge aus dem Buchhaltungsprogramm, weil diese Belege kein Projekt kennen.
+Belege aus dem Buchhaltungsprogramm in Kacheln, Status, Aging und
+Top-Kunden, weil diese Belege kein Projekt kennen.
 Export als PDF, CSV und Excel.
 
 ## Spesen
@@ -173,11 +196,14 @@ Administratoren und mit dem Recht **Alle Zeiteinträge sehen**.
   übergebene Belege zählen nur einmal, Entwürfe und stornierte Belege gar
   nicht.
 - Kacheln: **Nettoumsatz gesamt**, **davon aus dem Buchhaltungsprogramm**,
-  **Artikel mit Umsatz** und **Anteil ohne Artikelbezug** (Positionen ohne
-  gewählten Artikel).
+  **Artikel mit Umsatz** (auch Artikel des Buchhaltungsprogramms, die keinem
+  Artikel des eigenen Artikelstamms zugeordnet sind) und **Anteil ohne
+  Artikelbezug** (Positionen ohne gewählten Artikel).
 - Diagramm der umsatzstärksten Artikel; wie viele es zeigt, legen Sie mit
-  **Top-N im Diagramm** fest (3 bis 50, Vorgabe 10). Ein Klick öffnet den
-  Artikel.
+  **Top-N im Diagramm** fest (3 bis 50, Vorgabe 10). Es zeigt auch Artikel
+  des Buchhaltungsprogramms ohne Zuordnung zum eigenen Artikelstamm, diese
+  ohne Link; ein Klick öffnet nur Artikel des eigenen Artikelstamms. Allein
+  die Sammelzeile **ohne Artikelbezug** fehlt im Diagramm.
 - **Umsatz nach Kategorie**: **Kategorie**, **Artikel**, **Nettoumsatz** und
   **Anteil**.
 - Tabelle: **Artikelnummer**, **Artikel**, **Menge**, **Einheit**,

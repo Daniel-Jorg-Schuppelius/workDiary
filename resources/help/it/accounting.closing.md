@@ -1,7 +1,7 @@
 ---
 title: "Chiusura e analisi"
 topic: accounting.closing
-version: 2
+version: 3
 keywords:
     - chiusura mensile
     - chiusura annuale
@@ -33,6 +33,13 @@ registrata nella catena di prova.
 
 Le **analisi** leggono solo registrazioni definitive. IVA e contabilità per
 cassa sono **anteprime** verificabili: l'MVP non trasmette nulla al fisco.
+
+**Senza contabilità locale:** se l’organizzazione tiene la contabilità in un
+programma contabile, questi report si aprono comunque ma mostrano un avviso
+in alto: valutano solo le registrazioni in WorkDiary e restano quindi vuoti
+o incompleti. Fatturato e partite aperte del programma contabile si trovano
+nell’analisi di fatturazione, nel flusso documenti e nel riquadro **Partite
+aperte**.
 
 **Esportazione dei report:** PDF, CSV ed Excel dei report finanziari,
 dell'analisi di gestione e del budget richiedono, oltre al permesso di

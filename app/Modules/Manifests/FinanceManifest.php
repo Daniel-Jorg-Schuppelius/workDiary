@@ -185,6 +185,10 @@ final class FinanceManifest extends Manifest {
             \App\Services\Demo\Contracts\DemoBlock::class => [
                 \App\Services\Finance\Demo\FinanceDemoBlock::class,
             ],
+            // Provisionen an Rechnungen des allgemeinen Belegspiegels (MVP-1128).
+            \App\Services\Sales\Contracts\CommissionDocumentSource::class => [
+                \App\Services\Finance\Accounting\Vouchers\AccountingVoucherCommissionDocuments::class,
+            ],
             \App\Plugins\Support\Contracts\PluginCapabilitySource::class => [
                 \App\Services\Finance\Targets\FacturationCapabilitySource::class,
             ],

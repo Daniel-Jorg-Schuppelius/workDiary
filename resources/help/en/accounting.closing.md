@@ -1,7 +1,7 @@
 ---
 title: "Closing and reports"
 topic: accounting.closing
-version: 2
+version: 3
 keywords:
     - month-end close
     - year-end closing
@@ -34,6 +34,12 @@ audit chain.
 **Reports** read posted entries only — a draft is an intention, not a figure.
 VAT and cash-basis reports are auditable **previews**: the MVP files nothing
 with the tax authority.
+
+**Without local bookkeeping:** If the organization keeps its books in an
+accounting system, these reports still open but show a notice at the top:
+they evaluate postings in WorkDiary only and therefore remain empty or
+incomplete. Revenue and open items from the accounting system appear in the
+billing report, the document flow and the **Open items** tile.
 
 **Exporting reports:** PDF, CSV and Excel of the financial reports, the
 management report and the budget require the permission **Export reports** in

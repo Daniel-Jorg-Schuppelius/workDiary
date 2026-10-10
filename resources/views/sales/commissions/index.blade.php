@@ -30,7 +30,7 @@
         </x-filter-field>
     </x-filter-bar>
 
-    @if ($unassigned->isNotEmpty())
+    @if ($unassigned !== [])
         <x-card>
             <h3 class="mb-3 flex items-center gap-2 text-sm font-semibold">
                 <x-icon name="person_alert" class="text-muted" /> {{ __('commission.section.unassigned') }}
@@ -45,17 +45,17 @@
                         <th></th>
                     </tr>
                 </x-slot:head>
-                @foreach ($unassigned as $invoice)
+                @foreach ($unassigned as $row)
                     <tr class="hover">
-                        <td class="font-mono text-sm">{{ $invoice->number ?? $invoice->sqid }}</td>
-                        <td class="text-sm">{{ $invoice->customer?->name ?? '–' }}</td>
-                        <td class="text-sm">{{ $invoice->paid_on?->fdate() ?? '–' }}</td>
+                        <td class="font-mono text-sm">{{ $row['number'] }}</td>
+                        <td class="text-sm">{{ $row['customer'] ?? '–' }}</td>
+                        <td class="text-sm">{{ $row['paidOn']?->fdate() ?? '–' }}</td>
                         <td class="text-right">
                             <div class="flex justify-end gap-1">
-                                @if ($canManage)
+                                @if ($canManage && $row['assignUrl'] !== null)
                                     <x-icon-btn icon="person_add" tone="outline" size="xs"
                                                 data-entry-modal-trigger
-                                                :href="route('commissions.assign.form', $invoice)"
+                                                :href="$row['assignUrl']"
                                                 :label="__('commission.action.assign')" />
                                 @endif
                             </div>
@@ -86,12 +86,12 @@
                 <td class="text-sm">{{ $commission->earned_on?->fdate() ?? '–' }}</td>
                 <td class="text-sm font-medium">{{ $commission->recipientName() }}</td>
                 <td class="font-mono text-sm">
-                    {{ $commission->invoice?->number ?? '–' }}
+                    {{ $commission->document_number ?? '–' }}
                     @if ($commission->isReversal())
                         <x-status-badge tone="error" size="sm" outline>{{ __('commission.badge.reversal') }}</x-status-badge>
                     @endif
                 </td>
-                <td class="text-sm text-base-content/70">{{ $commission->invoice?->customer?->name ?? '–' }}</td>
+                <td class="text-sm text-base-content/70">{{ $commission->customer?->name ?? '–' }}</td>
                 <td class="text-right font-mono text-sm">{{ $commission->base_amount?->format() ?? '–' }}</td>
                 <td class="text-right font-mono text-sm">{{ $commission->rate_percent?->format() ?? '0,00' }} %</td>
                 <td class="text-right font-mono text-sm">{{ $commission->commission_amount?->format() ?? '–' }}</td>
@@ -101,10 +101,10 @@
                 <td class="text-sm">{{ $commission->settlementRun?->period ?? '–' }}</td>
                 <td class="text-right">
                     <div class="flex justify-end gap-1">
-                        @if ($canManage && $commission->invoice !== null)
+                        @if ($canManage && $assignUrls->get($commission->id) !== null)
                             <x-icon-btn icon="person_add" tone="ghost" size="xs"
                                         data-entry-modal-trigger
-                                        :href="route('commissions.assign.form', $commission->invoice)"
+                                        :href="$assignUrls->get($commission->id)"
                                         :label="__('commission.action.assign')" />
                         @endif
                     </div>

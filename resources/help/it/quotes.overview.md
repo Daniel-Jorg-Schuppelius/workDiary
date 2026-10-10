@@ -1,7 +1,7 @@
 ---
 title: "Offerte"
 topic: quotes.overview
-version: 1
+version: 2
 keywords:
     - creare un'offerta
     - preventivo
@@ -61,6 +61,14 @@ cosicché il percorso dall'offerta al documento è tracciabile.
 
 Le bozze di offerta non inviate possono essere eliminate; tutto ciò che
 segue l'invio resta conservato come cronologia.
+
+**Fatturato nel programma contabile:** se un’offerta accettata viene
+fatturata nel programma contabile anziché qui, la contrassegni dal menu
+della pagina dell’offerta con **Fatturato nel programma contabile**,
+eventualmente con il numero di fattura usato lì. L’offerta esce così
+dall’elenco **Preventivi accettati senza fattura**; il contrassegno può
+essere rimosso. L’azione è disponibile finché per l’offerta non esiste
+alcuna fattura.
 
 **PDF e conferma d'ordine:** ogni offerta può essere scaricata come PDF
 (con marcatura delle opzioni e ripartizione delle imposte); le offerte

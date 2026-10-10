@@ -27,11 +27,6 @@ use Illuminate\Support\Facades\Gate;
  * aggregiert per SQL je Monat statt Einzelzeilen zu hydrieren (A9).
  */
 class CustomerTrendBuilder {
-    /** Gleiche Typ-/Statuslogik wie die Umsatz-KPI im CustomerDetailAssembler. */
-    public const INVOICE_TYPES = ['invoice', 'salesinvoice', 'purchaseinvoice'];
-
-    public const VOID_STATUSES = ['voided', 'cancelled'];
-
     /**
      * @param  array<int>  $projectIds
      * @return array{hours: list<array<string, float|string>>, revenue: list<array<string, float|string>>}
@@ -98,8 +93,8 @@ class CustomerTrendBuilder {
             /** @var iterable<int, object{y: int|string, m: int|string, amount: float|int|string}> $invoiceRows */
             $invoiceRows = Invoice::query()
                 ->where('customer_id', $customer->getKey())
-                ->whereIn('type', self::INVOICE_TYPES)
-                ->whereNotIn('status', self::VOID_STATUSES)
+                ->whereIn('status', Invoice::ISSUED_STATUSES)
+                ->whereNotIn('type', Invoice::NON_REVENUE_TYPES)
                 ->whereBetween('issued_on', DateRange::days($prevStart, $end))
                 ->toBase()
                 ->selectRaw("{$yearExpr} as y, {$monthExpr} as m, COALESCE(SUM(total), 0) as amount")

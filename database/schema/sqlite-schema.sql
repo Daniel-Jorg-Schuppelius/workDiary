@@ -5611,61 +5611,6 @@ CREATE UNIQUE INDEX "etsyl_org_entry_unique" on "etsy_ledger_entries"(
 );
 CREATE INDEX "etsyl_receipt_idx" on "etsy_ledger_entries"("receipt_id");
 CREATE INDEX "etsyl_posted_idx" on "etsy_ledger_entries"("posted_at");
-CREATE TABLE IF NOT EXISTS "lexoffice_vouchers"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "external_id" varchar not null,
-  "contact_external_id" varchar,
-  "customer_id" integer,
-  "supplier_id" integer,
-  "voucher_type" varchar,
-  "voucher_status" varchar,
-  "voucher_number" varchar,
-  "voucher_date" date,
-  "due_date" date,
-  "total_amount" numeric,
-  "open_amount" numeric,
-  "currency" varchar not null default 'EUR',
-  "archived" tinyint(1) not null default '0',
-  "payload" text,
-  "synced_at" datetime,
-  "created_at" datetime,
-  "updated_at" datetime,
-  "paid_date" date,
-  "net_amount" numeric,
-  "file_path" varchar,
-  "file_materialized_at" datetime,
-  "voucher_text" text,
-  "recipient_name" varchar,
-  "lines_synced_at" datetime,
-  "service_starts_on" date,
-  "service_ends_on" date,
-  "lines_sync_failed_at" datetime,
-  "lines_sync_attempts" integer not null default '0',
-  "categories_synced_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("customer_id") references "customers"("id") on delete set null,
-  foreign key("supplier_id") references "suppliers"("id") on delete set null
-);
-CREATE UNIQUE INDEX "lexoffice_vouchers_organization_id_external_id_unique" on "lexoffice_vouchers"(
-  "organization_id",
-  "external_id"
-);
-CREATE INDEX "lexoffice_vouchers_organization_id_customer_id_index" on "lexoffice_vouchers"(
-  "organization_id",
-  "customer_id"
-);
-CREATE INDEX "lexoffice_vouchers_organization_id_supplier_id_index" on "lexoffice_vouchers"(
-  "organization_id",
-  "supplier_id"
-);
-CREATE INDEX "lexoffice_vouchers_organization_id_voucher_type_index" on "lexoffice_vouchers"(
-  "organization_id",
-  "voucher_type"
-);
-CREATE INDEX "lexoffice_vouchers_contact_external_id_index" on "lexoffice_vouchers"(
-  "contact_external_id"
-);
 CREATE TABLE IF NOT EXISTS "contact_addresses"(
   "id" integer primary key autoincrement not null,
   "organization_id" integer,
@@ -14913,6 +14858,8 @@ CREATE TABLE IF NOT EXISTS "quotes"(
   "follow_up_user_id" integer,
   "followed_up_at" datetime,
   "is_labour_cost_disclosed" tinyint(1),
+  "invoiced_externally_at" datetime,
+  "external_invoice_number" varchar,
   foreign key("created_by") references users("id") on delete set null on update no action,
   foreign key("previous_version_id") references quotes("id") on delete set null on update no action,
   foreign key("project_id") references projects("id") on delete set null on update no action,
@@ -15231,52 +15178,6 @@ CREATE INDEX "payment_run_org_exec_idx" on "payment_runs"(
 CREATE UNIQUE INDEX "payment_run_org_msg_unique" on "payment_runs"(
   "organization_id",
   "message_id"
-);
-CREATE TABLE IF NOT EXISTS "accounting_vouchers"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "plugin_id" varchar not null,
-  "external_id" varchar not null,
-  "contact_external_id" varchar,
-  "customer_id" integer,
-  "supplier_id" integer,
-  "voucher_type" varchar,
-  "voucher_status" varchar,
-  "voucher_number" varchar,
-  "voucher_date" date,
-  "due_date" date,
-  "paid_date" date,
-  "total_amount" numeric,
-  "net_amount" numeric,
-  "open_amount" numeric,
-  "currency" varchar not null default 'EUR',
-  "archived" tinyint(1) not null default '0',
-  "payload" text,
-  "synced_at" datetime,
-  "created_at" datetime,
-  "updated_at" datetime,
-  "direction" varchar,
-  "document_kind" varchar,
-  "voucher_state" varchar,
-  "is_cancellation" tinyint(1) not null default '0',
-  "cancels_external_id" varchar,
-  "source_changed_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("customer_id") references "customers"("id") on delete set null,
-  foreign key("supplier_id") references "suppliers"("id") on delete set null
-);
-CREATE UNIQUE INDEX "acc_voucher_org_plugin_ext_unique" on "accounting_vouchers"(
-  "organization_id",
-  "plugin_id",
-  "external_id"
-);
-CREATE INDEX "acc_voucher_org_date_idx" on "accounting_vouchers"(
-  "organization_id",
-  "voucher_date"
-);
-CREATE INDEX "acc_voucher_org_supplier_idx" on "accounting_vouchers"(
-  "organization_id",
-  "supplier_id"
 );
 CREATE TABLE IF NOT EXISTS "time_tracking_webhook_deliveries"(
   "id" integer primary key autoincrement not null,
@@ -16625,11 +16526,6 @@ CREATE INDEX "ndl_org_channel_created_idx" on "notification_dispatch_log"(
   "organization_id",
   "channel",
   "created_at"
-);
-CREATE INDEX "acc_voucher_org_plugin_chg_idx" on "accounting_vouchers"(
-  "organization_id",
-  "plugin_id",
-  "source_changed_at"
 );
 CREATE TABLE IF NOT EXISTS "user_workspaces"(
   "id" integer primary key autoincrement not null,
@@ -21857,51 +21753,6 @@ CREATE UNIQUE INDEX "comm_tier_rule_threshold_uq" on "commission_rule_tiers"(
   "commission_rule_id",
   "threshold_amount"
 );
-CREATE TABLE IF NOT EXISTS "invoice_commissions"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "invoice_id" integer not null,
-  "user_id" integer,
-  "commission_rule_id" integer,
-  "assignment_source" varchar not null default('lead'),
-  "lead_id" integer,
-  "currency" varchar not null default('EUR'),
-  "base_amount" numeric not null default('0'),
-  "rate_percent" numeric not null default('0'),
-  "commission_amount" numeric not null default('0'),
-  "earned_on" date not null,
-  "status" varchar not null default('pending'),
-  "settlement_run_id" integer,
-  "reversal_of_id" integer,
-  "note" varchar,
-  "created_at" datetime,
-  "updated_at" datetime,
-  "commission_agent_id" integer,
-  "payable_on" date,
-  "reversal_kind" varchar,
-  foreign key("reversal_of_id") references invoice_commissions("id") on delete set null on update no action,
-  foreign key("settlement_run_id") references commission_settlement_runs("id") on delete set null on update no action,
-  foreign key("lead_id") references leads("id") on delete set null on update no action,
-  foreign key("commission_rule_id") references commission_rules("id") on delete set null on update no action,
-  foreign key("user_id") references users("id") on delete cascade on update no action,
-  foreign key("invoice_id") references invoices("id") on delete cascade on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
-  foreign key("commission_agent_id") references "commission_agents"("id") on delete set null
-);
-CREATE INDEX "inv_comm_invoice_user_idx" on "invoice_commissions"(
-  "invoice_id",
-  "user_id"
-);
-CREATE INDEX "inv_comm_org_status_idx" on "invoice_commissions"(
-  "organization_id",
-  "status",
-  "earned_on"
-);
-CREATE INDEX "inv_comm_org_user_idx" on "invoice_commissions"(
-  "organization_id",
-  "user_id",
-  "earned_on"
-);
 CREATE TABLE IF NOT EXISTS "invoices"(
   "id" integer primary key autoincrement not null,
   "organization_id" integer,
@@ -23512,6 +23363,176 @@ CREATE INDEX "incoming_einv_transfer_org_status_idx" on "incoming_einvoice_trans
   "organization_id",
   "status"
 );
+CREATE TABLE IF NOT EXISTS "invoice_commissions"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "invoice_id" integer,
+  "user_id" integer,
+  "commission_rule_id" integer,
+  "assignment_source" varchar not null default('lead'),
+  "lead_id" integer,
+  "currency" varchar not null default('EUR'),
+  "base_amount" numeric not null default('0'),
+  "rate_percent" numeric not null default('0'),
+  "commission_amount" numeric not null default('0'),
+  "earned_on" date not null,
+  "status" varchar not null default('pending'),
+  "settlement_run_id" integer,
+  "reversal_of_id" integer,
+  "note" varchar,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "commission_agent_id" integer,
+  "payable_on" date,
+  "reversal_kind" varchar,
+  "document_type" varchar,
+  "document_id" integer,
+  "document_number" varchar,
+  "customer_id" integer,
+  foreign key("commission_agent_id") references commission_agents("id") on delete set null on update no action,
+  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("invoice_id") references invoices("id") on delete cascade on update no action,
+  foreign key("user_id") references users("id") on delete cascade on update no action,
+  foreign key("commission_rule_id") references commission_rules("id") on delete set null on update no action,
+  foreign key("lead_id") references leads("id") on delete set null on update no action,
+  foreign key("settlement_run_id") references commission_settlement_runs("id") on delete set null on update no action,
+  foreign key("reversal_of_id") references invoice_commissions("id") on delete set null on update no action,
+  foreign key("customer_id") references "customers"("id") on delete set null
+);
+CREATE INDEX "inv_comm_invoice_user_idx" on "invoice_commissions"(
+  "invoice_id",
+  "user_id"
+);
+CREATE INDEX "inv_comm_org_status_idx" on "invoice_commissions"(
+  "organization_id",
+  "status",
+  "earned_on"
+);
+CREATE INDEX "inv_comm_org_user_idx" on "invoice_commissions"(
+  "organization_id",
+  "user_id",
+  "earned_on"
+);
+CREATE INDEX "inv_comm_document_idx" on "invoice_commissions"(
+  "document_type",
+  "document_id"
+);
+CREATE TABLE IF NOT EXISTS "lexoffice_vouchers"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "external_id" varchar not null,
+  "contact_external_id" varchar,
+  "customer_id" integer,
+  "supplier_id" integer,
+  "voucher_type" varchar,
+  "voucher_status" varchar,
+  "voucher_number" varchar,
+  "voucher_date" date,
+  "due_date" date,
+  "total_amount" numeric,
+  "open_amount" numeric,
+  "currency" varchar not null default('EUR'),
+  "archived" tinyint(1) not null default('0'),
+  "payload" text,
+  "synced_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "paid_date" date,
+  "net_amount" numeric,
+  "file_path" varchar,
+  "file_materialized_at" datetime,
+  "voucher_text" text,
+  "recipient_name" varchar,
+  "lines_synced_at" datetime,
+  "service_starts_on" date,
+  "service_ends_on" date,
+  "lines_sync_failed_at" datetime,
+  "lines_sync_attempts" integer not null default('0'),
+  "categories_synced_at" datetime,
+  "related_voucher_ids" text,
+  "contact_name" varchar,
+  "sales_user_id" integer,
+  "sales_agent_id" integer,
+  foreign key("supplier_id") references suppliers("id") on delete set null on update no action,
+  foreign key("customer_id") references customers("id") on delete set null on update no action,
+  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("sales_user_id") references "users"("id") on delete set null,
+  foreign key("sales_agent_id") references "commission_agents"("id") on delete set null
+);
+CREATE INDEX "lexoffice_vouchers_contact_external_id_index" on "lexoffice_vouchers"(
+  "contact_external_id"
+);
+CREATE INDEX "lexoffice_vouchers_organization_id_customer_id_index" on "lexoffice_vouchers"(
+  "organization_id",
+  "customer_id"
+);
+CREATE UNIQUE INDEX "lexoffice_vouchers_organization_id_external_id_unique" on "lexoffice_vouchers"(
+  "organization_id",
+  "external_id"
+);
+CREATE INDEX "lexoffice_vouchers_organization_id_supplier_id_index" on "lexoffice_vouchers"(
+  "organization_id",
+  "supplier_id"
+);
+CREATE INDEX "lexoffice_vouchers_organization_id_voucher_type_index" on "lexoffice_vouchers"(
+  "organization_id",
+  "voucher_type"
+);
+CREATE TABLE IF NOT EXISTS "accounting_vouchers"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "plugin_id" varchar not null,
+  "external_id" varchar not null,
+  "contact_external_id" varchar,
+  "customer_id" integer,
+  "supplier_id" integer,
+  "voucher_type" varchar,
+  "voucher_status" varchar,
+  "voucher_number" varchar,
+  "voucher_date" date,
+  "due_date" date,
+  "paid_date" date,
+  "total_amount" numeric,
+  "net_amount" numeric,
+  "open_amount" numeric,
+  "currency" varchar not null default('EUR'),
+  "archived" tinyint(1) not null default('0'),
+  "payload" text,
+  "synced_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "direction" varchar,
+  "document_kind" varchar,
+  "voucher_state" varchar,
+  "is_cancellation" tinyint(1) not null default('0'),
+  "cancels_external_id" varchar,
+  "source_changed_at" datetime,
+  "sales_user_id" integer,
+  "sales_agent_id" integer,
+  foreign key("supplier_id") references suppliers("id") on delete set null on update no action,
+  foreign key("customer_id") references customers("id") on delete set null on update no action,
+  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("sales_user_id") references "users"("id") on delete set null,
+  foreign key("sales_agent_id") references "commission_agents"("id") on delete set null
+);
+CREATE INDEX "acc_voucher_org_date_idx" on "accounting_vouchers"(
+  "organization_id",
+  "voucher_date"
+);
+CREATE INDEX "acc_voucher_org_plugin_chg_idx" on "accounting_vouchers"(
+  "organization_id",
+  "plugin_id",
+  "source_changed_at"
+);
+CREATE UNIQUE INDEX "acc_voucher_org_plugin_ext_unique" on "accounting_vouchers"(
+  "organization_id",
+  "plugin_id",
+  "external_id"
+);
+CREATE INDEX "acc_voucher_org_supplier_idx" on "accounting_vouchers"(
+  "organization_id",
+  "supplier_id"
+);
 
 INSERT INTO migrations VALUES(1,'0001_01_01_000000_create_users_table',1);
 INSERT INTO migrations VALUES(2,'0001_01_01_000001_create_cache_table',1);
@@ -24482,3 +24503,10 @@ INSERT INTO migrations VALUES(966,'2027_03_14_110100_add_counterparty_matching_t
 INSERT INTO migrations VALUES(967,'2027_03_14_110200_add_is_collective_to_suppliers_and_customers',1);
 INSERT INTO migrations VALUES(968,'2027_03_14_110300_create_incoming_einvoice_transfers_table',1);
 INSERT INTO migrations VALUES(969,'2027_03_14_110400_move_lexoffice_base_url_to_lexware',1);
+INSERT INTO migrations VALUES(971,'2027_03_16_100000_split_lexoffice_voucher_sides',1);
+INSERT INTO migrations VALUES(972,'2027_03_16_100100_add_related_voucher_ids_to_lexoffice_vouchers',1);
+INSERT INTO migrations VALUES(973,'2027_03_16_100200_add_contact_name_to_lexoffice_vouchers',1);
+INSERT INTO migrations VALUES(974,'2027_03_16_100300_add_document_to_invoice_commissions',2);
+INSERT INTO migrations VALUES(975,'2027_03_16_100400_add_sales_assignment_to_lexoffice_vouchers',2);
+INSERT INTO migrations VALUES(976,'2027_03_16_100500_add_external_invoice_to_quotes',3);
+INSERT INTO migrations VALUES(977,'2027_03_16_100600_add_sales_assignment_to_accounting_vouchers',3);

@@ -135,6 +135,8 @@ return [
         ],
         'open_items' => [
             'description' => 'Cuentas por cobrar y pagar abiertas, con la parte vencida.',
+            'feed_link' => 'Flujo de documentos →',
+            'external_hint' => 'Desde el programa contable — la organización no lleva su contabilidad en WorkDiary.',
         ],
         'tax_filings' => [
             'description' => 'Próximos plazos de declaración en contabilidad.',

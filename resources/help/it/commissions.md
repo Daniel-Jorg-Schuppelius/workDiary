@@ -1,7 +1,7 @@
 ---
 title: "Provvigioni"
 topic: commissions
-version: 1
+version: 2
 keywords:
     - provvigione vendite
     - provvigioni agenti
@@ -13,6 +13,7 @@ keywords:
     - tetto provvigioni
     - pagamento provvigioni
     - procacciatore d'affari
+    - provvigione fattura Lexoffice
 audience:
     - admin
     - geschaeftsfuehrung
@@ -32,7 +33,7 @@ Le provvigioni nascono da fatture **pagate**. Le pagine mostrano tre cose: le
 
 Esattamente quando una fattura passa a **pagata** — indipendentemente dalla
 via (riconciliazione bancaria, prima nota di cassa, conguaglio del forfait,
-azione manuale). **Emessa ma non pagata non genera mai una provvigione.**
+azione manuale, sync dei documenti del programma di contabilità). **Emessa ma non pagata non genera mai una provvigione.**
 
 Non è un dettaglio: chi provvigiona all’emissione paga per un fatturato che
 forse non arriverà mai — e deve poi recuperarlo.
@@ -81,3 +82,27 @@ arriva di nuovo, la provvigione nasce di nuovo.
 Le provvigioni possono andare anche a **intermediari esterni** senza account
 utente. Si gestiscono in «Intermediari», si assegnano sulla fattura e compaiono
 nella liquidazione e nell'esportazione accanto ai dipendenti.
+
+## Fatture del programma di contabilità
+
+Anche le fatture rispecchiate dal programma di contabilità (Lexoffice, sevDesk, easybill, JTL-Wawi o InvoicePlane) generano provvigioni:
+
+- Quando il sync dei documenti rileva che una fattura già rispecchiata è
+  stata pagata, la provvigione nasce automaticamente — al pagamento completo
+  e, con **«Già sui pagamenti parziali»**, anche pro rata. La base è
+  l'importo netto.
+- Se la fattura viene stornata nel programma di contabilità, WorkDiary
+  storna la provvigione. Una nota di credito pagata che si riferisce alla
+  fattura la riduce. Solo Lexoffice fornisce il collegamento tra nota di
+  credito e fattura; per gli altri programmi stornate a mano la nota di
+  credito.
+- Le fatture già pagate al momento del primo rispecchiamento (ad esempio lo
+  storico) non generano mai da sole una provvigione. Compaiono in **Fatture
+  pagate senza provvigione** e lì si assegnano a mano — con la stessa
+  finestra di dialogo **Assegna venditore** delle fatture locali.
+- Le fatture trasferite da WorkDiary al programma di contabilità mantengono
+  la provvigione sulla fattura locale; non nasce mai due volte.
+
+Come per le fatture locali, chi riceve la provvigione lo stabilisce
+l'assegnazione manuale o, in mancanza, la persona responsabile del lead
+convertito del cliente.

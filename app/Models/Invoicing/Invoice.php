@@ -129,6 +129,18 @@ class Invoice extends Model implements HasDocumentLines {
     /** @var array<int, string> */
     public const TYPES = [self::TYPE_INVOICE, self::TYPE_CREDIT_NOTE, self::TYPE_CANCELLATION, self::TYPE_DOWN_PAYMENT, self::TYPE_PARTIAL, self::TYPE_FINAL, self::TYPE_PROFORMA, self::TYPE_RETAINER];
 
+    /** Ausgestellt und nicht storniert. */
+    public const ISSUED_STATUSES = [InvoiceStatus::Issued, InvoiceStatus::PartiallyPaid, InvoiceStatus::Paid];
+
+    /**
+     * Ohne Umsatz (MVP-1114). Alle übrigen ausgestellten Belege zählen als
+     * fakturiert: Gutschrift und Storno mit negativen Summen, die
+     * Schlussrechnung zieht Abschläge als Minusposition ab.
+     *
+     * @var list<string>
+     */
+    public const NON_REVENUE_TYPES = [self::TYPE_PROFORMA];
+
     /**
      * Nach der Ausstellung fachlich unveränderlich (MVP-162) — nur diese
      * Felder dürfen sich über normale save()-Wege noch ändern.

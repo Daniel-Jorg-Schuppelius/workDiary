@@ -77,4 +77,17 @@ return [
         'no_owner' => 'Senza responsabile',
         'link' => 'Tasso di successo',
     ],
+    'external_invoice' => [
+        'action' => 'Fatturato nel programma contabile',
+        'title' => 'Preventivo :number fatturato nel programma contabile',
+        'hint' => 'Il preventivo è stato fatturato nel programma contabile. Esce così dall’elenco «Preventivi accettati senza fattura». Il numero di fattura è facoltativo.',
+        'number' => 'Numero di fattura nel programma contabile',
+        'submit' => 'Segna come fatturato',
+        'marked' => 'Preventivo segnato come fatturato nel programma contabile.',
+        'unmarked' => 'Contrassegno rimosso.',
+        'unmark' => 'Rimuovi il contrassegno «fatturato»',
+        'unmark_confirm' => 'Rimuovere il contrassegno? Il preventivo ricomparirà tra «Preventivi accettati senza fattura».',
+        'marked_on' => 'Fatturato nel programma contabile (segnato il :date)',
+        'marked_with_number' => 'Fatturato nel programma contabile: :number (segnato il :date)',
+    ],
 ];

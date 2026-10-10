@@ -91,12 +91,12 @@
                     <td class="text-sm">{{ $row->earned_on?->fdate() ?? '–' }}</td>
                     <td class="text-sm">{{ $row->recipientName() }}</td>
                     <td class="font-mono text-sm">
-                        {{ $row->invoice?->number ?? '–' }}
+                        {{ $row->document_number ?? '–' }}
                         @if ($row->isReversal())
                             <x-status-badge tone="error" size="sm" outline>{{ __('commission.badge.reversal') }}</x-status-badge>
                         @endif
                     </td>
-                    <td class="text-sm text-base-content/70">{{ $row->invoice?->customer?->name ?? '–' }}</td>
+                    <td class="text-sm text-base-content/70">{{ $row->customer?->name ?? '–' }}</td>
                     <td class="text-right font-mono text-sm">{{ $row->base_amount?->format() ?? '–' }}</td>
                     <td class="text-right font-mono text-sm">{{ $row->rate_percent?->format() ?? '0,00' }} %</td>
                     <td class="text-right font-mono text-sm">{{ $row->commission_amount?->format() ?? '–' }}</td>

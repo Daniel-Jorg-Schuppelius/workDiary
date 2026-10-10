@@ -13,7 +13,6 @@ declare(strict_types=1);
 namespace App\Services\Accounting\Posting\Adapters;
 
 use App\Enums\Finance\{PostingAccountRole, PostingSourceKind};
-use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Customer\Customer;
 use App\Models\Invoicing\Invoice;
 use App\Models\Platform\Organization;
@@ -41,7 +40,7 @@ class SalesInvoiceAdapter extends AbstractPostingAdapter {
         /** @var Collection<int, Model> $invoices */
         $invoices = Invoice::query()
             ->where('organization_id', $organization->id)
-            ->whereIn('status', [InvoiceStatus::Issued, InvoiceStatus::PartiallyPaid, InvoiceStatus::Paid])
+            ->whereIn('status', Invoice::ISSUED_STATUSES)
             // MVP-707: Altrechnungen sind Eröffnungs-OP ohne Journalbuchung —
             // ihr Erlös wurde im Vorsystem gebucht.
             ->where('number_source', '!=', \App\Services\Invoicing\Import\InvoiceSpec::NUMBER_SOURCE)

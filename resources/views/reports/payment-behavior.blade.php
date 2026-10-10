@@ -20,7 +20,7 @@
 
 <x-page-shell>
     <x-slot:toolbar>
-        <x-page-toolbar :subtitle="__('DSO-Trend, Zahldauer und überfällige Forderungen — Verhaltenssicht auf lokale Rechnungen.')">
+        <x-page-toolbar :subtitle="__('DSO-Trend, Zahldauer und überfällige Forderungen — Verhaltenssicht auf lokale Rechnungen und Rechnungen aus dem Buchhaltungsprogramm.')">
             <x-slot:actions>
                 <x-report-export :url="fn (string $format) => route('reports.payment-behavior', array_merge($linkParams, ['export' => $format]))" />
                 <x-help-button topic="reports.payment-behavior" />
@@ -93,11 +93,17 @@
                                     <a href="{{ route('invoices.show', \App\Support\Sqid::encode(\App\Models\Invoicing\Invoice::class, $row['invoiceId'])) }}" class="link link-hover">{{ $row['number'] }}</a>
                                 @else
                                     {{ $row['number'] }}
-                                    <x-status-badge size="xs" class="ml-1">Lexoffice</x-status-badge>
+                                    @if ($row['source'] !== null)
+                                        <x-status-badge size="xs" class="ml-1">{{ $sourceLabels[$row['source']] ?? $row['source'] }}</x-status-badge>
+                                    @endif
                                 @endif
                             </td>
                             <td>
-                                <a href="{{ route('invoices.index', ['customer' => \App\Support\Sqid::encode(\App\Models\Customer\Customer::class, $row['customerId']), 'status' => \App\Enums\Invoicing\InvoiceStatus::Issued]) }}" class="link link-hover">{{ $row['customerName'] }}</a>
+                                @if ($row['customerId'] !== null)
+                                    <a href="{{ route('invoices.index', ['customer' => \App\Support\Sqid::encode(\App\Models\Customer\Customer::class, $row['customerId']), 'status' => \App\Enums\Invoicing\InvoiceStatus::Issued]) }}" class="link link-hover">{{ $row['customerName'] }}</a>
+                                @else
+                                    {{ $row['customerName'] }}
+                                @endif
                             </td>
                             <td class="text-right tabular-nums">{{ $row['dueOn'] }}</td>
                             <td class="text-right tabular-nums">{{ $row['daysOverdue'] }}</td>

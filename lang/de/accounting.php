@@ -634,6 +634,7 @@ return [
 
     // Finanzberichte (Feature 125, MVP-676).
     'reports' => [
+        'external_ledger_notice' => 'Die Organisation bucht in einem Buchhaltungsprogramm, nicht in WorkDiary. Diese Berichte werten nur lokale Buchungen aus und bleiben deshalb leer oder unvollständig.',
         'replacement' => [
             'subtitle' => 'Stichtag :from, Horizont bis :to, Preissteigerung :inflation % p. a.',
             'horizon' => 'Horizont',

@@ -1,7 +1,7 @@
 ---
 title: "Lexoffice-Konflikte"
 topic: admin.lexoffice
-version: 4
+version: 5
 keywords:
     - Lexware Office
     - Synchronisationskonflikt
@@ -13,6 +13,8 @@ keywords:
     - lokale Werte behalten
     - Werte übernehmen
     - Kontakte abgleichen
+    - Belegspiegel
+    - Beleg-Sync
 audience:
     - admin
     - buchhaltung
@@ -59,6 +61,15 @@ erscheinen nicht in der Zuordnungs-Inbox, sondern im Reiter
 **Konflikte** des Lagers (**Lager** → **Konflikte**): Dort wählen Sie
 **Lokal belassen**, **Lexoffice-Stand übernehmen** oder **Verwerfen** —
 mit dem Recht **Artikel verwalten**.
+
+Belegspiegel: Der Beleg-Sync spiegelt die Lexoffice-Belege nach WorkDiary.
+Auch Belege von Lexoffice-Kontakten, die noch keinem Kunden oder Lieferanten
+zugeordnet sind, werden gespiegelt – zunächst ohne Kunde und Lieferant;
+sobald der Kontakt zugeordnet ist, ordnet der nächste Sync sie zu. Ein Kunde
+wird nur an Verkaufsbelegen gesetzt, ein Lieferant nur an Einkaufsbelegen,
+auch wenn ein Kontakt beiden zugeordnet ist. Der Positionsabgleich speichert
+zusätzlich den Nettobetrag und bei einer Gutschrift ihren Bezug zur
+Rechnung.
 
 Berechtigung: Die Zuordnungs-Inbox steht Administratoren und der Rolle
 **Buchhaltung** offen.

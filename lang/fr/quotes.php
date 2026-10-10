@@ -77,4 +77,17 @@ return [
         'no_owner' => 'Sans responsable',
         'link' => 'Taux de réussite',
     ],
+    'external_invoice' => [
+        'action' => 'Facturé dans le logiciel comptable',
+        'title' => 'Devis :number facturé dans le logiciel comptable',
+        'hint' => 'Le devis a été facturé dans le logiciel comptable. Il quitte ainsi la liste « Devis acceptés sans facture ». Le numéro de facture est facultatif.',
+        'number' => 'Numéro de facture dans le logiciel comptable',
+        'submit' => 'Marquer comme facturé',
+        'marked' => 'Devis marqué comme facturé dans le logiciel comptable.',
+        'unmarked' => 'Marquage supprimé.',
+        'unmark' => 'Supprimer le marquage « facturé »',
+        'unmark_confirm' => 'Supprimer le marquage ? Le devis réapparaîtra sous « Devis acceptés sans facture ».',
+        'marked_on' => 'Facturé dans le logiciel comptable (marqué le :date)',
+        'marked_with_number' => 'Facturé dans le logiciel comptable : :number (marqué le :date)',
+    ],
 ];

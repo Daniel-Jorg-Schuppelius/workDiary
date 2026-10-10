@@ -44,4 +44,16 @@ final class ExternalPurchaseSources implements ExternalPurchases {
 
         return ['rows' => $rows, 'pending' => $pending];
     }
+
+    public function openPayables(int $organizationId, string $today): array {
+        $total = ['open' => 0.0, 'overdue' => 0.0, 'count' => 0];
+        foreach ($this->sources as $source) {
+            $payables = $source->openPayables($organizationId, $today);
+            $total['open'] += $payables['open'];
+            $total['overdue'] += $payables['overdue'];
+            $total['count'] += $payables['count'];
+        }
+
+        return $total;
+    }
 }

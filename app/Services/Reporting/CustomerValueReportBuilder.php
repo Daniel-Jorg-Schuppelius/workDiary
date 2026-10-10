@@ -10,7 +10,6 @@
 
 namespace App\Services\Reporting;
 
-use App\Enums\Invoicing\InvoiceStatus;
 use App\Models\Customer\Customer;
 use App\Models\Diary\DiaryEntry;
 use App\Models\Invoicing\Invoice;
@@ -301,8 +300,8 @@ class CustomerValueReportBuilder {
         $sums = [];
         Invoice::query()
             ->whereBetween('issued_on', DateRange::days($from, $to))
-            ->whereIn('status', [InvoiceStatus::Issued, InvoiceStatus::PartiallyPaid, InvoiceStatus::Paid])
-            ->whereIn('type', [Invoice::TYPE_INVOICE, Invoice::TYPE_PARTIAL, Invoice::TYPE_FINAL])
+            ->whereIn('status', Invoice::ISSUED_STATUSES)
+            ->whereNotIn('type', Invoice::NON_REVENUE_TYPES)
             ->get(['customer_id', 'total'])
             ->each(function (Invoice $inv) use (&$sums): void {
                 $sums[(int) $inv->customer_id] = ($sums[(int) $inv->customer_id] ?? 0.0) + ($inv->total?->toFloat() ?? 0.0);

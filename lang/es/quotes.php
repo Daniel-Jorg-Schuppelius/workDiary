@@ -77,4 +77,17 @@ return [
         'no_owner' => 'Sin responsable',
         'link' => 'Tasa de éxito',
     ],
+    'external_invoice' => [
+        'action' => 'Facturado en el programa contable',
+        'title' => 'Presupuesto :number facturado en el programa contable',
+        'hint' => 'El presupuesto se facturó en el programa contable. Así sale de la lista «Presupuestos aceptados sin factura». El número de factura es opcional.',
+        'number' => 'Número de factura en el programa contable',
+        'submit' => 'Marcar como facturado',
+        'marked' => 'Presupuesto marcado como facturado en el programa contable.',
+        'unmarked' => 'Marca eliminada.',
+        'unmark' => 'Quitar la marca «facturado»',
+        'unmark_confirm' => '¿Quitar la marca? El presupuesto volverá a aparecer en «Presupuestos aceptados sin factura».',
+        'marked_on' => 'Facturado en el programa contable (marcado el :date)',
+        'marked_with_number' => 'Facturado en el programa contable: :number (marcado el :date)',
+    ],
 ];

@@ -1,7 +1,7 @@
 ---
 title: "Commissions"
 topic: commissions
-version: 1
+version: 2
 keywords:
     - commission sur ventes
     - commission commerciale
@@ -12,6 +12,7 @@ keywords:
     - reprise de commission
     - paiement des commissions
     - plafond de commission
+    - commission facture Lexoffice
 audience:
     - admin
     - geschaeftsfuehrung
@@ -31,7 +32,7 @@ et les **campagnes** de règlement.
 
 Exactement lorsqu’une facture passe à **payée** — quel que soit le chemin
 (rapprochement bancaire, livre de caisse, règlement de forfait, action
-manuelle). **Émise mais impayée ne crée jamais de commission.**
+manuelle, synchronisation des pièces du logiciel comptable). **Émise mais impayée ne crée jamais de commission.**
 
 Ce n’est pas un détail : commissionner à l’émission, c’est payer pour un
 chiffre d’affaires qui n’arrivera peut-être jamais — et devoir le récupérer
@@ -81,3 +82,28 @@ Si le paiement arrive de nouveau, la commission naît à nouveau.
 Les commissions peuvent aussi revenir à des **intermédiaires externes** sans
 compte utilisateur. Ils sont gérés sous « Intermédiaires », affectés à la
 facture et apparaissent dans le décompte et l'export aux côtés des salariés.
+
+## Factures du logiciel comptable
+
+Les factures reprises en miroir du logiciel comptable (Lexoffice, sevDesk, easybill, JTL-Wawi ou
+InvoicePlane) génèrent elles aussi des commissions :
+
+- Lorsque la synchronisation des pièces constate qu'une facture déjà reprise
+  en miroir a été payée, la commission naît automatiquement — au paiement
+  intégral et, avec **« Dès les paiements partiels »**, aussi au prorata. La
+  base est le montant net.
+- Si la facture est annulée dans le logiciel comptable, WorkDiary
+  contre-passe la commission. Un avoir payé qui se rapporte à la facture la
+  diminue. Seul Lexoffice fournit le lien entre un avoir et sa facture ;
+  pour les autres logiciels, contre-passez un avoir à la main.
+- Les factures déjà payées lors de leur première reprise en miroir (par
+  exemple l'historique) ne génèrent jamais de commission d'elles-mêmes.
+  Elles apparaissent sous **Factures payées sans commission** et y sont
+  affectées à la main — avec la même boîte de dialogue **Affecter un
+  commercial** que les factures locales.
+- Les factures transmises de WorkDiary au logiciel comptable conservent leur
+  commission sur la facture locale ; elle ne naît jamais deux fois.
+
+Comme pour les factures locales, le bénéficiaire de la commission est
+déterminé par l'affectation manuelle ou, à défaut, par la personne
+responsable du prospect converti du client.

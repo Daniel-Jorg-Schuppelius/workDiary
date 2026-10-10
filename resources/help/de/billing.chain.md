@@ -1,7 +1,7 @@
 ---
 title: "Abzurechnen und nachzufassen (Belegkette)"
 topic: billing.chain
-version: 1
+version: 2
 keywords:
     - Abrechnungsvorrat
     - nicht abgerechnete Zeiten
@@ -31,10 +31,12 @@ Jede Gruppe beantwortet eine Frage, die Sie sonst in einem eigenen Bereich
 nachschlagen müssten:
 
 - **Angenommene Angebote ohne Rechnung** – der Kunde hat zugesagt, eine
-  Rechnung gibt es noch nicht.
+  Rechnung gibt es noch nicht. Angebote, die Sie als **Im
+  Buchhaltungsprogramm abgerechnet** markiert haben, fehlen hier.
 - **Angebote nachfassen** – die Wiedervorlage ist fällig oder die Bindefrist
   ist abgelaufen.
-- **Überfällige Rechnungen** – offen und über dem Zahlungsziel.
+- **Überfällige Rechnungen** – offen und über dem Zahlungsziel, auch die
+  offenen Rechnungen aus dem Buchhaltungsprogramm (etwa Lexoffice).
 - **Abrechenbare Zeiten je Kunde** – erfasste, noch nicht abgerechnete Zeiten
   mit Anzahl der Einträge und Dauer.
 - **Leistungsstand über Abschlägen (LV)** – im Leistungsverzeichnis ist mehr
@@ -46,7 +48,9 @@ Die Zahl in der Überschrift nennt alle offenen Vorgänge der Gruppe.
 Aufgelistet werden die ersten 50; darunter steht, wie viele weitere es gibt.
 Der Pfeil am Zeilenende öffnet den Vorgang dort, wo er erledigt wird: das
 Angebot, die Rechnung, die offenen Zeiten des Kunden, die Abrechnung des
-Leistungsverzeichnisses oder das Aufmaß. Beträge sind Nettobeträge.
+Leistungsverzeichnisses oder das Aufmaß. Eine Rechnung aus dem
+Buchhaltungsprogramm öffnet den **Belegfluss** mit der Suche nach ihrer
+Belegnummer. Beträge sind Nettobeträge, bei überfälligen Rechnungen der Bruttobetrag.
 
 **Was Sie sehen:** Eine Gruppe erscheint nur, wenn das zugehörige Modul für
 Ihre Organisation aktiv ist und Sie das Recht für den Bereich haben. Fehlt

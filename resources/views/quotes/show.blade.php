@@ -37,6 +37,11 @@
             @if ($quote->valid_until)
                 <div class="text-sm text-base-content/70">{{ __('Bindefrist: :date', ['date' => $quote->valid_until->fdate()]) }}</div>
             @endif
+            @if ($quote->invoiced_externally_at !== null)
+                <div class="text-sm text-base-content/70">{{ $quote->external_invoice_number !== null
+                    ? __('quotes.external_invoice.marked_with_number', ['date' => $quote->invoiced_externally_at->fdate(), 'number' => $quote->external_invoice_number])
+                    : __('quotes.external_invoice.marked_on', ['date' => $quote->invoiced_externally_at->fdate()]) }}</div>
+            @endif
             <x-slot:actions>
                 {{-- MVP-650: Angebots-PDF + Auftragsbestätigung (Design-Pipeline). --}}
                 <x-icon-btn icon="picture_as_pdf" tone="ghost" size="sm"
@@ -89,6 +94,21 @@
                           :confirm-label="__('Überführen')">
                         <x-icon-btn icon="receipt_long" tone="primary" size="sm" type="submit" placement="bar" show-label>{{ __('In Rechnung überführen') }}</x-icon-btn>
                     </x-action-form>
+                    {{-- MVP-1124: abgerechnet im Buchhaltungsprogramm — nur ohne lokale Rechnung. --}}
+                    @if ($quote->invoiced_externally_at !== null)
+                        <x-action-form :action="route('quotes.external-invoice.destroy', $quote)" method="DELETE"
+                              :confirm="__('quotes.external_invoice.unmark_confirm')"
+                              confirm-icon="undo"
+                              confirm-tone="primary"
+                              :confirm-label="__('quotes.external_invoice.unmark')">
+                            <x-icon-btn icon="undo" tone="ghost" size="sm" type="submit" placement="menu" show-label>{{ __('quotes.external_invoice.unmark') }}</x-icon-btn>
+                        </x-action-form>
+                    @elseif ($invoices->doesntContain(fn ($invoice) => $invoice->status !== \App\Enums\Invoicing\InvoiceStatus::Cancelled))
+                        <x-icon-btn icon="task_alt" tone="ghost" size="sm" placement="menu"
+                                    data-entry-modal-trigger
+                                    :href="route('quotes.external-invoice.form', $quote)"
+                                    show-label>{{ __('quotes.external_invoice.action') }}</x-icon-btn>
+                    @endif
                 @endcan
                 @can('delete', $quote)
                     <x-action-form :action="route('quotes.destroy', $quote)" method="DELETE"

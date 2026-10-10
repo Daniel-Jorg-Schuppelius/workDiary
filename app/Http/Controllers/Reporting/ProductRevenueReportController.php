@@ -75,25 +75,26 @@ class ProductRevenueReportController extends Controller {
 
     /**
      * Top-N-Artikel nach Nettoumsatz; der Sammelposten ohne Artikel bleibt
-     * dem Chart fern (er würde jede Rangfolge dominieren).
+     * dem Chart fern (er würde jede Rangfolge dominieren). Artikel des
+     * Buchhaltungsprogramms ohne Zuordnung zählen mit, nur ohne Link.
      *
-     * @param  list<array{articleId: ?int, number: ?string, name: string, category: ?string, unit: ?string, quantity: float, net: float, share: ?float, invoices: int, sources: list<string>}>  $rows
-     * @return list<array{x: string, y: float, url: string}>
+     * @param  list<array{articleId: ?int, number: ?string, name: string, category: ?string, unit: ?string, collective: bool, quantity: float, net: float, share: ?float, invoices: int, sources: list<string>}>  $rows
+     * @return list<array{x: string, y: float, url: ?string}>
      */
     private function topSeries(array $rows, int $topN): array {
         return array_values(collect($rows)
-            ->filter(static fn(array $row): bool => $row['articleId'] !== null && $row['net'] > 0)
+            ->filter(static fn(array $row): bool => ! $row['collective'] && $row['net'] > 0)
             ->take($topN)
             ->map(static fn(array $row): array => [
                 'x' => $row['name'],
                 'y' => round($row['net'], 2),
-                'url' => route('articles.show', \App\Support\Sqid::encode(Article::class, $row['articleId'])),
+                'url' => $row['articleId'] !== null ? route('articles.show', \App\Support\Sqid::encode(Article::class, $row['articleId'])) : null,
             ])
             ->all());
     }
 
     /**
-     * @param  list<array{articleId: ?int, number: ?string, name: string, category: ?string, unit: ?string, quantity: float, net: float, share: ?float, invoices: int, sources: list<string>}>  $rows
+     * @param  list<array{articleId: ?int, number: ?string, name: string, category: ?string, unit: ?string, collective: bool, quantity: float, net: float, share: ?float, invoices: int, sources: list<string>}>  $rows
      * @param  array<string, mixed>  $filters
      */
     private function exportCsv(array $rows, string $from, string $to, array $filters, Request $request): Response {
@@ -127,8 +128,8 @@ class ProductRevenueReportController extends Controller {
     }
 
     /**
-     * @param  array{rows: list<array{articleId: ?int, number: ?string, name: string, category: ?string, unit: ?string, quantity: float, net: float, share: ?float, invoices: int, sources: list<string>}>, categories: list<array{category: ?string, net: float, share: ?float, articles: int}>, total: float, withoutArticle: float, externalNet: float, articleCount: int}  $result
-     * @param  list<array{x: string, y: float, url: string}>  $series
+     * @param  array{rows: list<array{articleId: ?int, number: ?string, name: string, category: ?string, unit: ?string, collective: bool, quantity: float, net: float, share: ?float, invoices: int, sources: list<string>}>, categories: list<array{category: ?string, net: float, share: ?float, articles: int}>, total: float, withoutArticle: float, externalNet: float, articleCount: int}  $result
+     * @param  list<array{x: string, y: float, url: ?string}>  $series
      * @param  array<string, mixed>  $filters
      */
     private function exportPdf(array $result, string $label, string $from, string $to, array $series, array $filters, Request $request): SymfonyResponse {

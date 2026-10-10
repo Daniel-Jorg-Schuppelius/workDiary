@@ -1,7 +1,7 @@
 ---
 title: "Cierre e informes"
 topic: accounting.closing
-version: 2
+version: 3
 keywords:
     - cierre mensual
     - cierre anual
@@ -33,6 +33,13 @@ cadena de prueba.
 
 Los **informes** solo leen asientos contabilizados. IVA y criterio de caja son
 **vistas previas** verificables: el MVP no presenta nada ante Hacienda.
+
+**Sin contabilidad local:** si la organización lleva su contabilidad en un
+programa contable, estos informes se abren igualmente pero muestran un aviso
+arriba: solo evalúan los asientos de WorkDiary y por eso quedan vacíos o
+incompletos. Los ingresos y las partidas abiertas del programa contable
+aparecen en el análisis de facturación, el flujo de documentos y el mosaico
+**Partidas abiertas**.
 
 **Exportación de los informes:** PDF, CSV y Excel de los informes
 financieros, del informe económico y del presupuesto requieren, además del

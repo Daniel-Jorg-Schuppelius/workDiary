@@ -135,6 +135,8 @@ return [
         ],
         'open_items' => [
             'description' => 'Offene Forderungen und Verbindlichkeiten samt überfälligem Anteil.',
+            'feed_link' => 'Belegfluss →',
+            'external_hint' => 'Aus dem Buchhaltungsprogramm — die Organisation bucht nicht in WorkDiary.',
         ],
         'tax_filings' => [
             'description' => 'Anstehende Melde- und Abgabetermine der Buchhaltung.',

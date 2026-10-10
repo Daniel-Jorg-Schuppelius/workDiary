@@ -155,7 +155,7 @@ return [
         'assign' => 'Leave empty to fall back to the origin from the lead pipeline.',
         'current_assignment' => 'Currently responsible: :user (:source).',
         'no_assignment' => 'Nobody is responsible right now — without an assignment no commission is created.',
-        'unassigned' => 'These invoices are paid but assigned to nobody: neither manually nor via a converted lead.',
+        'unassigned' => 'These invoices are paid but assigned to nobody: neither manually nor via a converted lead. Invoices from the accounting system that were already paid when imported are also assigned here.',
         'draft_preview' => 'Draft: entries are recomputed on every visit. Only closing freezes them.',
         'no_payout' => 'WorkDiary calculates and exports the commission — the payout happens in payroll.',
     ],

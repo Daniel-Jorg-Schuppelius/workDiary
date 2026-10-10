@@ -1196,6 +1196,7 @@ return [
         'follow_up' => 'Folgeentscheidung',
         'follow_up_amount' => 'Nachberechnung/Erstattung (Referenz)',
         'follow_up_at' => 'Wiedervorlage am',
+        'external_invoice_number' => 'Rechnungsnummer im Buchhaltungsprogramm',
         'follow_up_for_id' => 'Vorausgehende Krankmeldung',
         'continuation_of_id' => 'Fortsetzungserkrankung von',
         'all_plans' => 'Für alle Dienstpläne',

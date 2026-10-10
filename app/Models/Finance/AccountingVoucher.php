@@ -29,6 +29,8 @@ use Illuminate\Support\Carbon;
  * zurück.
  *
  * @property AccountingVoucherState|null $voucher_state
+ * @property int|null $sales_user_id
+ * @property int|null $sales_agent_id
  * @property Carbon|null $voucher_date
  * @property Carbon|null $due_date
  * @property Carbon|null $paid_date
@@ -43,7 +45,7 @@ class AccountingVoucher extends Model {
 
     protected $fillable = [
         'organization_id', 'plugin_id', 'external_id', 'contact_external_id',
-        'customer_id', 'supplier_id', 'voucher_type', 'voucher_status',
+        'customer_id', 'supplier_id', 'sales_user_id', 'sales_agent_id', 'voucher_type', 'voucher_status',
         'voucher_state', 'direction', 'document_kind', 'is_cancellation',
         'cancels_external_id',
         'voucher_number', 'voucher_date', 'due_date', 'paid_date',

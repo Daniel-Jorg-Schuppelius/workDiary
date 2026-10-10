@@ -66,6 +66,7 @@ class Quote extends Model implements AuditsChanges, HasDocumentLines {
         'follow_up_at', 'follow_up_user_id', 'followed_up_at',
         'subtotal', 'tax_amount', 'total', 'acceptance_token_hash',
         'decided_at', 'decision_snapshot', 'created_by', 'is_labour_cost_disclosed',
+        'invoiced_externally_at', 'external_invoice_number',
     ];
 
     /** @var array<string, string> */
@@ -76,6 +77,7 @@ class Quote extends Model implements AuditsChanges, HasDocumentLines {
         'follow_up_at' => 'date',
         'followed_up_at' => 'datetime',
         'decided_at' => 'datetime',
+        'invoiced_externally_at' => 'datetime',
         'decision_snapshot' => 'array',
         'version' => 'integer',
         // Angebote führen keine Währungsspalte — der Cast fällt auf Euro zurück.

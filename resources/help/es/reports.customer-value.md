@@ -1,7 +1,7 @@
 ---
 title: "Valor del cliente"
 topic: reports.customer-value
-version: 2
+version: 3
 keywords:
     - análisis ABC
     - clientes A
@@ -36,6 +36,12 @@ riesgo?**
   clientes de abajo exactamente a esos clientes.
 - **Lista de riesgo**: clientes de altos ingresos sin servicio desde el
   umbral configurado, con evolución de 12 meses (sparkline).
+- **Facturado** (columna de la lista de clientes): todos los comprobantes
+  del cliente emitidos en el período salvo las facturas proforma; los
+  abonos y los comprobantes de anulación restan. Los comprobantes del
+  programa de contabilidad (por ejemplo, Lexoffice) cuentan con la misma
+  regla. Las puntuaciones, en cambio, usan los ingresos de los tiempos
+  facturables.
 
 ## R, F y M — así nacen las puntuaciones
 

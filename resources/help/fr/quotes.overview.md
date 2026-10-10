@@ -1,7 +1,7 @@
 ---
 title: "Devis"
 topic: quotes.overview
-version: 1
+version: 2
 keywords:
     - créer un devis
     - estimation
@@ -62,6 +62,13 @@ traçable.
 
 Les brouillons de devis non envoyés peuvent être supprimés ; tout ce qui
 suit l'envoi est conservé comme historique.
+
+**Facturé dans le logiciel comptable :** si un devis accepté est facturé
+dans le logiciel comptable et non ici, marquez-le via le menu de la page du
+devis avec **Facturé dans le logiciel comptable**, au besoin avec le numéro
+de facture utilisé là-bas. Le devis quitte alors la liste **Devis acceptés
+sans facture** ; le marquage peut être supprimé. L’action est disponible
+tant qu’aucune facture n’existe pour le devis.
 
 **PDF & confirmation de commande :** chaque devis peut être téléchargé
 en PDF (avec repérage des options et ventilation de la TVA) ; les devis

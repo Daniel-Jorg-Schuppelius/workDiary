@@ -796,6 +796,8 @@ CREATE TABLE `accounting_vouchers` (
   `contact_external_id` varchar(128) DEFAULT NULL,
   `customer_id` bigint(20) unsigned DEFAULT NULL,
   `supplier_id` bigint(20) unsigned DEFAULT NULL,
+  `sales_user_id` bigint(20) unsigned DEFAULT NULL,
+  `sales_agent_id` bigint(20) unsigned DEFAULT NULL,
   `voucher_type` varchar(32) DEFAULT NULL,
   `direction` varchar(16) DEFAULT NULL,
   `document_kind` varchar(24) DEFAULT NULL,
@@ -824,8 +826,12 @@ CREATE TABLE `accounting_vouchers` (
   KEY `acc_voucher_org_date_idx` (`organization_id`,`voucher_date`),
   KEY `acc_voucher_org_supplier_idx` (`organization_id`,`supplier_id`),
   KEY `acc_voucher_org_plugin_chg_idx` (`organization_id`,`plugin_id`,`source_changed_at`),
+  KEY `accounting_vouchers_sales_user_id_foreign` (`sales_user_id`),
+  KEY `accounting_vouchers_sales_agent_id_foreign` (`sales_agent_id`),
   CONSTRAINT `accounting_vouchers_customer_id_foreign` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE SET NULL,
   CONSTRAINT `accounting_vouchers_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `accounting_vouchers_sales_agent_id_foreign` FOREIGN KEY (`sales_agent_id`) REFERENCES `commission_agents` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `accounting_vouchers_sales_user_id_foreign` FOREIGN KEY (`sales_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `accounting_vouchers_supplier_id_foreign` FOREIGN KEY (`supplier_id`) REFERENCES `suppliers` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -12195,7 +12201,11 @@ DROP TABLE IF EXISTS `invoice_commissions`;
 CREATE TABLE `invoice_commissions` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `organization_id` bigint(20) unsigned NOT NULL,
-  `invoice_id` bigint(20) unsigned NOT NULL,
+  `invoice_id` bigint(20) unsigned DEFAULT NULL,
+  `document_type` varchar(64) DEFAULT NULL,
+  `document_id` bigint(20) unsigned DEFAULT NULL,
+  `document_number` varchar(64) DEFAULT NULL,
+  `customer_id` bigint(20) unsigned DEFAULT NULL,
   `user_id` bigint(20) unsigned DEFAULT NULL,
   `commission_agent_id` bigint(20) unsigned DEFAULT NULL,
   `commission_rule_id` bigint(20) unsigned DEFAULT NULL,
@@ -12224,8 +12234,11 @@ CREATE TABLE `invoice_commissions` (
   KEY `inv_comm_org_user_idx` (`organization_id`,`user_id`,`earned_on`),
   KEY `inv_comm_invoice_user_idx` (`invoice_id`,`user_id`),
   KEY `inv_comm_agent_fk` (`commission_agent_id`),
+  KEY `invoice_commissions_customer_id_foreign` (`customer_id`),
+  KEY `inv_comm_document_idx` (`document_type`,`document_id`),
   CONSTRAINT `inv_comm_agent_fk` FOREIGN KEY (`commission_agent_id`) REFERENCES `commission_agents` (`id`) ON DELETE SET NULL,
   CONSTRAINT `invoice_commissions_commission_rule_id_foreign` FOREIGN KEY (`commission_rule_id`) REFERENCES `commission_rules` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `invoice_commissions_customer_id_foreign` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE SET NULL,
   CONSTRAINT `invoice_commissions_invoice_id_foreign` FOREIGN KEY (`invoice_id`) REFERENCES `invoices` (`id`) ON DELETE CASCADE,
   CONSTRAINT `invoice_commissions_lead_id_foreign` FOREIGN KEY (`lead_id`) REFERENCES `leads` (`id`) ON DELETE SET NULL,
   CONSTRAINT `invoice_commissions_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
@@ -15137,6 +15150,8 @@ CREATE TABLE `lexoffice_vouchers` (
   `contact_external_id` varchar(64) DEFAULT NULL,
   `customer_id` bigint(20) unsigned DEFAULT NULL,
   `supplier_id` bigint(20) unsigned DEFAULT NULL,
+  `sales_user_id` bigint(20) unsigned DEFAULT NULL,
+  `sales_agent_id` bigint(20) unsigned DEFAULT NULL,
   `voucher_type` varchar(32) DEFAULT NULL,
   `voucher_status` varchar(32) DEFAULT NULL,
   `voucher_number` varchar(64) DEFAULT NULL,
@@ -15151,11 +15166,13 @@ CREATE TABLE `lexoffice_vouchers` (
   `payload` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`payload`)),
   `voucher_text` text DEFAULT NULL,
   `recipient_name` varchar(255) DEFAULT NULL,
+  `contact_name` varchar(255) DEFAULT NULL,
   `service_starts_on` date DEFAULT NULL,
   `service_ends_on` date DEFAULT NULL,
   `lines_synced_at` timestamp NULL DEFAULT NULL,
   `lines_sync_failed_at` timestamp NULL DEFAULT NULL,
   `lines_sync_attempts` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `related_voucher_ids` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`related_voucher_ids`)),
   `file_path` varchar(255) DEFAULT NULL,
   `file_materialized_at` timestamp NULL DEFAULT NULL,
   `synced_at` timestamp NULL DEFAULT NULL,
@@ -15170,8 +15187,12 @@ CREATE TABLE `lexoffice_vouchers` (
   KEY `lexoffice_vouchers_organization_id_supplier_id_index` (`organization_id`,`supplier_id`),
   KEY `lexoffice_vouchers_organization_id_voucher_type_index` (`organization_id`,`voucher_type`),
   KEY `lexoffice_vouchers_contact_external_id_index` (`contact_external_id`),
+  KEY `lexoffice_vouchers_sales_user_id_foreign` (`sales_user_id`),
+  KEY `lexoffice_vouchers_sales_agent_id_foreign` (`sales_agent_id`),
   CONSTRAINT `lexoffice_vouchers_customer_id_foreign` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE SET NULL,
   CONSTRAINT `lexoffice_vouchers_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `lexoffice_vouchers_sales_agent_id_foreign` FOREIGN KEY (`sales_agent_id`) REFERENCES `commission_agents` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `lexoffice_vouchers_sales_user_id_foreign` FOREIGN KEY (`sales_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `lexoffice_vouchers_supplier_id_foreign` FOREIGN KEY (`supplier_id`) REFERENCES `suppliers` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -19439,6 +19460,8 @@ CREATE TABLE `quotes` (
   `total` decimal(12,2) NOT NULL DEFAULT 0.00,
   `acceptance_token_hash` varchar(64) DEFAULT NULL,
   `decided_at` timestamp NULL DEFAULT NULL,
+  `invoiced_externally_at` timestamp NULL DEFAULT NULL,
+  `external_invoice_number` varchar(64) DEFAULT NULL,
   `decision_snapshot` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`decision_snapshot`)),
   `created_by` bigint(20) unsigned DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
@@ -26556,3 +26579,10 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (966,'2027_03_14_11
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (967,'2027_03_14_110200_add_is_collective_to_suppliers_and_customers',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (968,'2027_03_14_110300_create_incoming_einvoice_transfers_table',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (969,'2027_03_14_110400_move_lexoffice_base_url_to_lexware',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (971,'2027_03_16_100000_split_lexoffice_voucher_sides',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (972,'2027_03_16_100100_add_related_voucher_ids_to_lexoffice_vouchers',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (973,'2027_03_16_100200_add_contact_name_to_lexoffice_vouchers',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (974,'2027_03_16_100300_add_document_to_invoice_commissions',2);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (975,'2027_03_16_100400_add_sales_assignment_to_lexoffice_vouchers',2);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (976,'2027_03_16_100500_add_external_invoice_to_quotes',3);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (977,'2027_03_16_100600_add_sales_assignment_to_accounting_vouchers',3);

@@ -231,12 +231,14 @@ return [
     ],
     'product_revenue' => [
         'subtitle' => 'Cantidad, facturación neta y cuota por artículo a partir de facturas locales y de documentos reflejados desde el programa contable.',
-        'chart_note' => 'Base de datos: posiciones de facturas locales emitidas, parcialmente pagadas y pagadas (factura, anticipo, factura final); los abonos y documentos de anulación restan. Se suman las facturas y abonos reflejados desde el programa contable; los borradores y documentos anulados no cuentan. Un clic abre el artículo.',
+        'chart_note' => 'Base de datos: posiciones de facturas locales emitidas, parcialmente pagadas y pagadas (factura, anticipo, factura final); los abonos y documentos de anulación restan. Se suman las facturas y abonos reflejados desde el programa contable; los borradores y documentos anulados no cuentan. Un clic abre el artículo; los artículos del programa contable sin asignación al maestro de artículos aparecen sin enlace.',
         'external_net' => 'de ello del programa contable',
         'external_net_hint' => 'Facturas y abonos reflejados; los documentos transferidos desde facturas locales cuentan solo una vez.',
         'source_local' => 'local',
     ],
     'external_share' => 'de ello programa contable',
+    'unassigned_customer' => 'sin asignación de cliente',
+    'unassigned_contact' => ':name (sin asignación de cliente)',
     // Spaltenköpfe und feste Zellwerte der Auswertungs-Exporte (CSV/Excel, E11 · MVP-1101).
     'csv' => [
         'area' => 'Sección',

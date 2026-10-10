@@ -1,7 +1,7 @@
 ---
 title: "Comisiones"
 topic: commissions
-version: 1
+version: 2
 keywords:
     - comisión de ventas
     - comisiones comerciales
@@ -13,6 +13,7 @@ keywords:
     - tope de comisiones
     - pago de comisiones
     - agente comercial
+    - comisión factura Lexoffice
 audience:
     - admin
     - geschaeftsfuehrung
@@ -31,7 +32,8 @@ las **liquidaciones**.
 ## El único momento en que nace una comisión
 
 Exactamente cuando una factura pasa a **pagada**, sea cual sea la vía
-(conciliación bancaria, libro de caja, ajuste de iguala, acción manual).
+(conciliación bancaria, libro de caja, ajuste de iguala, acción manual,
+sincronización de comprobantes del programa de contabilidad).
 **Emitida pero pendiente nunca genera comisión.**
 
 No es un detalle: quien comisiona por la emisión paga por una facturación que
@@ -81,3 +83,27 @@ comisión se genera de nuevo.
 Las comisiones también pueden ir a **intermediarios externos** sin cuenta de
 usuario. Se gestionan en «Intermediarios», se asignan en la factura y aparecen
 en la liquidación y la exportación junto a los empleados.
+
+## Facturas del programa de contabilidad
+
+También las facturas reflejadas del programa de contabilidad (Lexoffice, sevDesk, easybill, JTL-Wawi o
+InvoicePlane) generan comisiones:
+
+- Cuando la sincronización de comprobantes detecta que una factura ya
+  reflejada se ha pagado, la comisión nace automáticamente: con el pago
+  completo y, con **«Ya en pagos parciales»**, también de forma
+  proporcional. La base es el importe neto.
+- Si la factura se anula en el programa de contabilidad, WorkDiary revierte
+  la comisión. Un abono pagado que se refiere a la factura la reduce. Solo
+  Lexoffice facilita la relación entre un abono y su factura; en los demás
+  programas, anule el abono a mano.
+- Las facturas que ya estaban pagadas al reflejarse por primera vez (por
+  ejemplo, el histórico) nunca generan una comisión por sí solas. Aparecen
+  en **Facturas pagadas sin comisión** y se asignan allí a mano, con el
+  mismo diálogo **Asignar comercial** que las facturas locales.
+- Las facturas transferidas de WorkDiary al programa de contabilidad
+  conservan su comisión en la factura local; nunca nace dos veces.
+
+Como en las facturas locales, quién recibe la comisión lo determina la
+asignación manual o, en su defecto, la persona responsable del lead
+convertido del cliente.

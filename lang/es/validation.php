@@ -1196,6 +1196,7 @@ return [
         'follow_up' => 'Decisión posterior',
         'follow_up_amount' => 'Cargo posterior/reembolso (referencia)',
         'follow_up_at' => 'Seguimiento el',
+        'external_invoice_number' => 'número de factura en el programa contable',
         'follow_up_for_id' => 'Baja por enfermedad anterior',
         'continuation_of_id' => 'Continuación de la enfermedad del',
         'all_plans' => 'Para todos los planes de turnos',

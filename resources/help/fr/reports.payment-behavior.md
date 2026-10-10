@@ -1,7 +1,7 @@
 ---
 title: "Comportement de paiement"
 topic: reports.payment-behavior
-version: 2
+version: 3
 keywords:
     - DSO
     - délai de paiement
@@ -13,16 +13,18 @@ keywords:
     - délai moyen de recouvrement
     - conditions de paiement
     - analyse des débiteurs
+    - factures Lexoffice
 audience: []
 related:
     - reports.economics
     - reports.customer-value
 ---
 
-Vue comportementale et tendancielle des **factures gérées localement** —
-le rapport de facturation montre l'état des lieux (statut, ancienneté),
-ce rapport le comportement sous-jacent. La date de référence est toujours
-la **fin de période** (rapports reproductibles).
+Vue comportementale et tendancielle des **factures locales et des factures
+du logiciel comptable** (par exemple Lexoffice) — le rapport de facturation
+montre l'état des lieux (statut, ancienneté), ce rapport le comportement
+sous-jacent. La date de référence est toujours la **fin de période**
+(rapports reproductibles).
 
 ## DSO avec exemple chiffré
 
@@ -58,3 +60,12 @@ filtre ce rapport sur lui ; si Lexoffice gère les factures, elles
 arrivent via le miroir de pièces du plugin — la synchronisation récupère
 aussi les données de paiement (endpoint payments). Sans aucune source,
 le rapport l'indique ouvertement.
+
+Les pièces dont le contact dans le logiciel comptable n’est rattaché à
+aucun client comptent dans les indicateurs **DSO (jours)**, **Délai de
+paiement moyen (jours)**, **Payé à temps** et **Factures en retard**. Dans
+**Factures ouvertes en retard (top 15)**, elles figurent sous la forme
+« Nom du contact (sans affectation client) », sans lien. Elles sont absentes
+des ventilations par client : des boîtes par client de la **Distribution des
+délais de paiement (émission à paiement)** — la boîte **Tous les clients**
+les inclut — et du **Retard moyen par client (top 10)**.

@@ -231,12 +231,14 @@ return [
     ],
     'product_revenue' => [
         'subtitle' => 'Menge, Nettoumsatz und Anteil je Artikel aus lokalen Rechnungen und aus dem Buchhaltungsprogramm gespiegelten Belegen.',
-        'chart_note' => 'Datenbasis: Positionen gestellter, teilweise bezahlter und bezahlter lokaler Rechnungen (Rechnung, Abschlag, Schluss); Gutschriften und Stornobelege mindern. Dazu gespiegelte Rechnungen und Gutschriften aus dem Buchhaltungsprogramm; Entwürfe und stornierte Belege zählen nicht. Ein Klick öffnet den Artikel.',
+        'chart_note' => 'Datenbasis: Positionen gestellter, teilweise bezahlter und bezahlter lokaler Rechnungen (Rechnung, Abschlag, Schluss); Gutschriften und Stornobelege mindern. Dazu gespiegelte Rechnungen und Gutschriften aus dem Buchhaltungsprogramm; Entwürfe und stornierte Belege zählen nicht. Ein Klick öffnet den Artikel; Artikel des Buchhaltungsprogramms ohne Zuordnung zum Artikelstamm stehen ohne Link im Diagramm.',
         'external_net' => 'davon aus dem Buchhaltungsprogramm',
         'external_net_hint' => 'Gespiegelte Rechnungen und Gutschriften; aus lokalen Rechnungen übergebene Belege zählen nur einmal.',
         'source_local' => 'lokal',
     ],
     'external_share' => 'davon Buchhaltungsprogramm',
+    'unassigned_customer' => 'ohne Kundenzuordnung',
+    'unassigned_contact' => ':name (ohne Kundenzuordnung)',
     // Spaltenköpfe und feste Zellwerte der Auswertungs-Exporte (CSV/Excel, E11 · MVP-1101).
     'csv' => [
         'area' => 'Bereich',

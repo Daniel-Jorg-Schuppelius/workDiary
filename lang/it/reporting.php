@@ -231,12 +231,14 @@ return [
     ],
     'product_revenue' => [
         'subtitle' => 'Quantità, fatturato netto e quota per articolo da fatture locali e da documenti rispecchiati dal programma contabile.',
-        'chart_note' => 'Base dati: posizioni di fatture locali emesse, parzialmente pagate e pagate (fattura, acconto, saldo); note di credito e documenti di storno riducono i valori. Si aggiungono fatture e note di credito rispecchiate dal programma contabile; bozze e documenti stornati non contano. Un clic apre l’articolo.',
+        'chart_note' => 'Base dati: posizioni di fatture locali emesse, parzialmente pagate e pagate (fattura, acconto, saldo); note di credito e documenti di storno riducono i valori. Si aggiungono fatture e note di credito rispecchiate dal programma contabile; bozze e documenti stornati non contano. Un clic apre l’articolo; gli articoli del programma contabile non collegati all’anagrafica articoli compaiono senza link.',
         'external_net' => 'di cui dal programma contabile',
         'external_net_hint' => 'Fatture e note di credito rispecchiate; i documenti trasferiti da fatture locali contano una sola volta.',
         'source_local' => 'locale',
     ],
     'external_share' => 'di cui programma contabile',
+    'unassigned_customer' => 'senza assegnazione cliente',
+    'unassigned_contact' => ':name (senza assegnazione cliente)',
     // Spaltenköpfe und feste Zellwerte der Auswertungs-Exporte (CSV/Excel, E11 · MVP-1101).
     'csv' => [
         'area' => 'Sezione',

@@ -56,6 +56,7 @@
     <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <x-card>
             <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Rechnungen nach Status') }}</h3>
+            @php($statusExternal = collect($status)->contains(fn (array $s): bool => ($s['external'] ?? 0.0) != 0.0))
             <x-table table-sort="client" bare>
                 <x-slot:head>
                     <tr>
@@ -63,6 +64,9 @@
                         <x-table.th sort type="number" align="right">{{ __('Anzahl') }}</x-table.th>
                         <x-table.th sort type="number" align="right">{{ __('Netto') }}</x-table.th>
                         <x-table.th sort type="number" align="right">{{ __('Brutto') }}</x-table.th>
+                        @if ($statusExternal)
+                            <x-table.th sort type="number" align="right">{{ __('reporting.external_share') }}</x-table.th>
+                        @endif
                     </tr>
                 </x-slot:head>
                 @foreach ($status as $st => $s)
@@ -71,6 +75,9 @@
                         <td class="text-right tabular-nums">{{ $s['count'] }}</td>
                         <td class="text-right tabular-nums" data-sort-value="{{ (float) $s['subtotal'] }}">{{ $eur($s['subtotal']) }}</td>
                         <td class="text-right tabular-nums" data-sort-value="{{ (float) $s['total'] }}">{{ $eur($s['total']) }}</td>
+                        @if ($statusExternal)
+                            <td class="text-right tabular-nums" data-sort-value="{{ (float) ($s['external'] ?? 0.0) }}">{{ ($s['external'] ?? 0.0) != 0.0 ? $eur($s['external']) : '—' }}</td>
+                        @endif
                     </tr>
                 @endforeach
             </x-table>
@@ -92,6 +99,13 @@
                         <td></td>
                         <td class="text-right tabular-nums">{{ $eur($aging['open_total']) }}</td>
                     </tr>
+                    @if ($aging['external_total'] != 0.0)
+                        <tr>
+                            <td>{{ __('reporting.external_share') }}</td>
+                            <td></td>
+                            <td class="text-right tabular-nums">{{ $eur($aging['external_total']) }}</td>
+                        </tr>
+                    @endif
                 </x-slot:foot>
                 @foreach ($aging['buckets'] as $k => $b)
                     <tr class="{{ $k === '30_plus' && $b['count'] > 0 ? 'text-error font-semibold' : '' }}">
@@ -106,10 +120,10 @@
 
     <x-card>
         <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Top-Kunden (ausgestellt + bezahlt im Zeitraum)') }}</h3>
-        @if (empty($perCustomer))
+        @if (empty($perCustomer) && $unassigned['count'] === 0)
             <x-empty-state icon="payments" :title="__('Keine Rechnungen im Zeitraum.')" />
         @else
-            @php($hasExternal = collect($perCustomer)->contains(fn (array $r): bool => ($r['external'] ?? 0.0) != 0.0))
+            @php($hasExternal = $unassigned['count'] > 0 || collect($perCustomer)->contains(fn (array $r): bool => ($r['external'] ?? 0.0) != 0.0))
             <x-table table-sort="client" bare>
                 <x-slot:head>
                     <tr>
@@ -131,6 +145,14 @@
                         @endif
                     </tr>
                 @endforeach
+                @if ($unassigned['count'] > 0)
+                    <tr class="text-base-content/70 italic">
+                        <td>{{ __('reporting.unassigned_customer') }}</td>
+                        <td class="text-right tabular-nums">{{ $unassigned['count'] }}</td>
+                        <td class="text-right tabular-nums" data-sort-value="{{ (float) $unassigned['total'] }}">{{ $eur($unassigned['total']) }}</td>
+                        <td class="text-right tabular-nums" data-sort-value="{{ (float) $unassigned['total'] }}">{{ $eur($unassigned['total']) }}</td>
+                    </tr>
+                @endif
             </x-table>
         @endif
     </x-card>

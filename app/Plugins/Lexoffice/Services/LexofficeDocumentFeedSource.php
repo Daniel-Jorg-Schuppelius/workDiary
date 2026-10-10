@@ -99,7 +99,8 @@ class LexofficeDocumentFeedSource implements DocumentFeedSource, MarksLinkedExpe
                 'COALESCE(lexoffice_vouchers.customer_id, lexoffice_vouchers.supplier_id) AS contact_id',
                 'COALESCE(
                     (SELECT customers.name FROM customers WHERE customers.id = lexoffice_vouchers.customer_id),
-                    (SELECT suppliers.name FROM suppliers WHERE suppliers.id = lexoffice_vouchers.supplier_id)
+                    (SELECT suppliers.name FROM suppliers WHERE suppliers.id = lexoffice_vouchers.supplier_id),
+                    lexoffice_vouchers.contact_name
                 ) AS contact_name',
                 '0 AS dunning_level',
                 'COALESCE(lexoffice_vouchers.total_amount, 0) AS amount_gross',

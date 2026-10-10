@@ -21,7 +21,7 @@ use Laravel\Mcp\Server\Tools\Annotations\{IsIdempotent, IsReadOnly};
 
 /** MCP (MVP-1063): Kennzahlen des Dashboards — dieselben, die die Person dort sieht. */
 #[Name('key_figures')]
-#[Description('Kennzahlen aus dem Dashboard: eigene Zeiten und Aufträge, für Berechtigte Team und Finanzen (Umsatz, offene Forderungen).')]
+#[Description('Kennzahlen aus dem Dashboard: eigene Zeiten und Aufträge, für Berechtigte Team und Finanzen (Auslagen, Fahrten, Urlaub, offene Freigaben). Umsätze und offene Rechnungen liefern die Werkzeuge invoices und open_items.')]
 #[IsReadOnly]
 #[IsIdempotent]
 final class KeyFiguresTool extends GuardedTool {

@@ -120,6 +120,23 @@ class LexofficeVoucherSyncTest extends TestCase {
         ]);
     }
 
+    public function test_contact_with_both_roles_keeps_purchase_vouchers_off_the_customer(): void {
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        $supplier = Supplier::factory()->create(['organization_id' => $this->organization->id]);
+        $this->linkContact('contact-both', $customer);
+        $this->linkContact('contact-both', $supplier);
+
+        $this->fakeVoucherlist([
+            ['id' => 'v-sale', 'contactId' => 'contact-both', 'voucherType' => 'invoice', 'voucherStatus' => 'open', 'voucherNumber' => 'RE-1', 'voucherDate' => '2026-04-02', 'totalAmount' => 119.0, 'currency' => 'EUR'],
+            ['id' => 'v-buy', 'contactId' => 'contact-both', 'voucherType' => 'purchaseinvoice', 'voucherStatus' => 'open', 'voucherNumber' => 'ER-1', 'voucherDate' => '2026-04-02', 'totalAmount' => 50.0, 'currency' => 'EUR'],
+        ]);
+
+        (new LexofficeVoucherSync('test-key'))->sync($this->organization);
+
+        $this->assertDatabaseHas('lexoffice_vouchers', ['external_id' => 'v-sale', 'customer_id' => $customer->id, 'supplier_id' => null]);
+        $this->assertDatabaseHas('lexoffice_vouchers', ['external_id' => 'v-buy', 'customer_id' => null, 'supplier_id' => $supplier->id]);
+    }
+
     public function test_sync_is_idempotent_and_archives_disappeared(): void {
         $customer = Customer::factory()->create([
             'organization_id' => $this->organization->id,
@@ -226,6 +243,28 @@ class LexofficeVoucherSyncTest extends TestCase {
         $fake->assertSent(static fn (RequestInterface $request): bool => ! str_contains((string) $request->getUri(), 'contactId=')
             && str_contains((string) $request->getUri(), 'updatedDateFrom=' . now()->subDay()->toDateString()));
         $this->assertDatabaseHas('lexoffice_vouchers', ['external_id' => 'v-sammel', 'archived' => false]);
+    }
+
+    /** MVP-1117: Belege nicht verknüpfter Kontakte kommen ohne Partei in den Spiegel. */
+    public function test_vouchers_of_unlinked_contacts_are_mirrored_and_assigned_once_linked(): void {
+        $unlinked = ['id' => 'v-fremd', 'contactId' => 'contact-new', 'contactName' => 'Neukunde GmbH', 'voucherType' => 'invoice', 'voucherStatus' => 'open', 'voucherNumber' => 'RE-77', 'voucherDate' => '2026-04-02', 'totalAmount' => 238.0, 'currency' => 'EUR'];
+        FakePluginHttp::fake([
+            'https://api.lexware.io/v1/voucherlist*' => static fn (RequestInterface $request): \GuzzleHttp\Psr7\Response => FakePluginHttp::response(['content' => [$unlinked], 'totalPages' => 1]),
+        ]);
+
+        (new LexofficeVoucherSync('test-key'))->sync($this->organization);
+
+        $this->assertDatabaseHas('lexoffice_vouchers', [
+            'external_id' => 'v-fremd', 'contact_external_id' => 'contact-new', 'contact_name' => 'Neukunde GmbH',
+            'customer_id' => null, 'supplier_id' => null,
+        ]);
+
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        $this->linkContact('contact-new', $customer);
+        (new LexofficeVoucherSync('test-key'))->sync($this->organization);
+
+        $this->assertDatabaseHas('lexoffice_vouchers', ['external_id' => 'v-fremd', 'customer_id' => $customer->id]);
+        $this->assertSame(1, LexofficeVoucher::query()->where('external_id', 'v-fremd')->count());
     }
 
     public function test_sync_for_unlinked_owner_is_noop(): void {

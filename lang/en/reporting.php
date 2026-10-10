@@ -231,12 +231,14 @@ return [
     ],
     'product_revenue' => [
         'subtitle' => 'Quantity, net revenue and share per article from local invoices and documents mirrored from the accounting system.',
-        'chart_note' => 'Data basis: line items of issued, partially paid and paid local invoices (invoice, down payment, final); credit notes and cancellation documents reduce the figures. Plus invoices and credit notes mirrored from the accounting system; drafts and cancelled documents do not count. A click opens the article.',
+        'chart_note' => 'Data basis: line items of issued, partially paid and paid local invoices (invoice, down payment, final); credit notes and cancellation documents reduce the figures. Plus invoices and credit notes mirrored from the accounting system; drafts and cancelled documents do not count. A click opens the article; articles from the accounting system that are not mapped to the article master are shown without a link.',
         'external_net' => 'thereof from the accounting system',
         'external_net_hint' => 'Mirrored invoices and credit notes; documents handed over from local invoices count only once.',
         'source_local' => 'local',
     ],
     'external_share' => 'thereof accounting system',
+    'unassigned_customer' => 'without customer assignment',
+    'unassigned_contact' => ':name (without customer assignment)',
     // Spaltenköpfe und feste Zellwerte der Auswertungs-Exporte (CSV/Excel, E11 · MVP-1101).
     'csv' => [
         'area' => 'Section',

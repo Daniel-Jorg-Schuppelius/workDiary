@@ -6,12 +6,21 @@
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 
-  Kachel „Offene Posten" — Daten: OpenItemsWidget.
+  Kachel „Offene Posten" — Daten: OpenItemsWidget; ohne lokale Buchhaltung aus
+  dem Buchhaltungsprogramm (MVP-1125).
 --}}
 <x-card :title="__('Offene Posten')" icon="account_balance">
     <x-slot:actions>
-        <x-button href="{{ route('finance.accounting.open-items.index') }}" tone="ghost" size="xs">{{ __('OPOS →') }}</x-button>
+        @if ($external)
+            <x-button :href="route('billing.feed', ['state' => 'open'])" tone="ghost" size="xs">{{ __('dashboard.widget.open_items.feed_link') }}</x-button>
+        @else
+            <x-button href="{{ route('finance.accounting.open-items.index') }}" tone="ghost" size="xs">{{ __('OPOS →') }}</x-button>
+        @endif
     </x-slot:actions>
+
+    @if ($external)
+        <p class="mb-2 text-xs text-muted">{{ __('dashboard.widget.open_items.external_hint') }}</p>
+    @endif
 
     @if ($rows->isEmpty())
         <x-empty-state compact icon="check_circle"

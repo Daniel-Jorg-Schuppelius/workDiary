@@ -1,7 +1,7 @@
 ---
 title: "Angebote"
 topic: quotes.overview
-version: 1
+version: 2
 keywords:
     - Angebot erstellen
     - Kostenvoranschlag
@@ -61,6 +61,14 @@ Angebot bis zum Beleg nachvollziehbar ist.
 
 Angebots-Entwürfe ohne Versand können gelöscht werden; alles ab Versand
 bleibt als Historie erhalten.
+
+**Im Buchhaltungsprogramm abgerechnet:** Wird ein angenommenes Angebot nicht
+hier, sondern im Buchhaltungsprogramm in Rechnung gestellt, markieren Sie es
+über das Menü der Angebotsseite mit **Im Buchhaltungsprogramm abgerechnet**,
+wahlweise mit der dortigen Rechnungsnummer. Das Angebot verlässt damit die
+Liste **Angenommene Angebote ohne Rechnung**; die Markierung lässt sich
+wieder aufheben. Die Aktion steht bereit, solange es zum Angebot keine
+Rechnung gibt.
 
 **PDF & Auftragsbestätigung:** Jedes Angebot lässt sich als PDF
 herunterladen (inklusive Optionen-Ausweis und Steueraufriss); versendete

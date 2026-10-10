@@ -69,6 +69,10 @@ class PaymentBehaviorReportController extends Controller {
             'payBox' => $this->withCustomerUrls($result['payBox'], $filters),
             'delayTop' => $result['delayTop'],
             'overdue' => $result['overdue'],
+            // Herkunft je Fremdbeleg über den Plugin-Namen (MVP-1123), nie fest verdrahtet.
+            'sourceLabels' => collect($result['overdue'])->pluck('source')->filter()->unique()
+                ->mapWithKeys(static fn (string $source): array => [$source => app(\App\Plugins\PluginManager::class)->find($source)?->name() ?? $source])
+                ->all(),
             'hasData' => $result['hasData'],
             'from' => $from,
             'to' => $to,
@@ -130,7 +134,7 @@ class PaymentBehaviorReportController extends Controller {
     }
 
     /**
-     * @param  array{kpis: array{dso:?float, avgPayDays:?float, onTimeShare:?float, overdueCount:int, overdueTotal:float, paidCount:int}, monthly: list<array{month:string, dso:?float, avgPayDays:?float}>, payBox: list<array{x:string, min:float, q1:float, median:float, q3:float, max:float, n:int}>, delayTop: list<array{customerId:int, customerName:string, avgDelay:float, invoices:int}>, overdue: list<array{invoiceId:?int, number:string, customerId:int, customerName:string, dueOn:string, daysOverdue:int, total:float}>, hasData: bool}  $result
+     * @param  array{kpis: array{dso:?float, avgPayDays:?float, onTimeShare:?float, overdueCount:int, overdueTotal:float, paidCount:int}, monthly: list<array{month:string, dso:?float, avgPayDays:?float}>, payBox: list<array{x:string, min:float, q1:float, median:float, q3:float, max:float, n:int}>, delayTop: list<array{customerId:int, customerName:string, avgDelay:float, invoices:int}>, overdue: list<array{invoiceId:?int, source:?string, number:string, customerId:?int, customerName:string, dueOn:string, daysOverdue:int, total:float}>, hasData: bool}  $result
      * @param  array<string, mixed>  $filters
      */
     private function exportCsv(array $result, string $from, string $to, array $filters, Request $request): Response {
@@ -171,7 +175,7 @@ class PaymentBehaviorReportController extends Controller {
     }
 
     /**
-     * @param  array{kpis: array{dso:?float, avgPayDays:?float, onTimeShare:?float, overdueCount:int, overdueTotal:float, paidCount:int}, monthly: list<array{month:string, dso:?float, avgPayDays:?float}>, payBox: list<array{x:string, min:float, q1:float, median:float, q3:float, max:float, n:int}>, delayTop: list<array{customerId:int, customerName:string, avgDelay:float, invoices:int}>, overdue: list<array{invoiceId:?int, number:string, customerId:int, customerName:string, dueOn:string, daysOverdue:int, total:float}>, hasData: bool}  $result
+     * @param  array{kpis: array{dso:?float, avgPayDays:?float, onTimeShare:?float, overdueCount:int, overdueTotal:float, paidCount:int}, monthly: list<array{month:string, dso:?float, avgPayDays:?float}>, payBox: list<array{x:string, min:float, q1:float, median:float, q3:float, max:float, n:int}>, delayTop: list<array{customerId:int, customerName:string, avgDelay:float, invoices:int}>, overdue: list<array{invoiceId:?int, source:?string, number:string, customerId:?int, customerName:string, dueOn:string, daysOverdue:int, total:float}>, hasData: bool}  $result
      * @param  array<string, mixed>  $filters
      */
     private function exportPdf(array $result, string $label, string $from, string $to, array $filters, Request $request): SymfonyResponse {

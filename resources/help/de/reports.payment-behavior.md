@@ -1,7 +1,7 @@
 ---
 title: "Zahlungsverhalten"
 topic: reports.payment-behavior
-version: 2
+version: 3
 keywords:
     - Zahlungsmoral
     - DSO
@@ -15,16 +15,18 @@ keywords:
     - Kapitalbindung
     - Zahlungsziel
     - Debitorenanalyse
+    - Lexoffice-Rechnungen
 audience: []
 related:
     - reports.economics
     - reports.customer-value
 ---
 
-Verhaltens- und Trendsicht auf **lokal geführte Rechnungen** — der
-Abrechnungsbericht zeigt die Bestandsaufnahme (Status, Altersstruktur),
-dieser Bericht das Verhalten dahinter. Stichtag ist immer das
-**Zeitraumende** (reproduzierbare Berichte).
+Verhaltens- und Trendsicht auf **lokale Rechnungen und Rechnungen aus dem
+Buchhaltungsprogramm** (etwa Lexoffice) — der Abrechnungsbericht zeigt die
+Bestandsaufnahme (Status, Altersstruktur), dieser Bericht das Verhalten
+dahinter. Stichtag ist immer das **Zeitraumende** (reproduzierbare
+Berichte).
 
 ## DSO mit Zahlenbeispiel
 
@@ -59,3 +61,12 @@ Bericht auf ihn. Führt Lexoffice die Rechnungen, fließen sie über den
 Beleg-Spiegel des Plugins ein — der Beleg-Sync lädt dabei auch die
 Zahlungsdaten (Payments-Endpunkt) nach. Ohne jede Datenquelle weist der
 Bericht das offen aus.
+
+Belege, deren Kontakt im Buchhaltungsprogramm keinem Kunden zugeordnet ist,
+zählen in den Kennzahlen **DSO (Tage)**, **Ø Zahldauer (Tage)**, **Pünktlich
+bezahlt** und **Überfällige Rechnungen** mit. In **Überfällige offene
+Rechnungen (Top 15)** stehen sie als „Kontaktname (ohne Kundenzuordnung)“
+ohne Link. In den Aufschlüsselungen je Kunde fehlen sie: in den
+Kunden-Boxen der **Zahldauer-Verteilung (Ausstellung bis Zahlung)** — die
+Box **Alle Kunden** enthält sie — und in **Ø Verzugstage je Kunde (Top
+10)**.

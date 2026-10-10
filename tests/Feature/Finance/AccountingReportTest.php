@@ -193,6 +193,17 @@ class AccountingReportTest extends TestCase {
         }
     }
 
+    /** MVP-1126: ohne lokale Buchhaltung ein Hinweis, mit lokaler Buchhaltung keiner. */
+    public function test_reports_announce_an_external_ledger(): void {
+        $notice = __('accounting.reports.external_ledger_notice');
+        $this->actingAs($this->admin)->get(route('reports.accounting.euer'))->assertOk()->assertDontSee($notice);
+
+        $external = Organization::factory()->create();
+        $externalAdmin = User::factory()->admin()->create(['organization_id' => $external->id]);
+        app()->instance('currentOrganization', $external);
+        $this->actingAs($externalAdmin)->get(route('reports.accounting.euer'))->assertOk()->assertSee($notice);
+    }
+
     /** Export und Liste stammen aus derselben Quelle. */
     public function test_csv_export_matches_the_report_rows(): void {
         $response = $this->actingAs($this->admin)

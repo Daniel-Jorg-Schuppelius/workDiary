@@ -1,7 +1,7 @@
 ---
 title: "Clôture et analyses"
 topic: accounting.closing
-version: 2
+version: 3
 keywords:
     - clôture mensuelle
     - clôture annuelle
@@ -34,6 +34,13 @@ chaîne de preuve.
 Les **analyses** ne lisent que les écritures comptabilisées. TVA et
 recettes-dépenses sont des **aperçus** vérifiables : le MVP ne transmet rien à
 l'administration.
+
+**Sans comptabilité locale :** si l’organisation tient sa comptabilité dans
+un logiciel comptable, ces rapports s’ouvrent quand même mais affichent un
+avis en haut : ils n’évaluent que les écritures de WorkDiary et restent donc
+vides ou incomplets. Le chiffre d’affaires et les postes ouverts du logiciel
+comptable figurent dans l’analyse de facturation, le flux de documents et la
+tuile **Postes ouverts**.
 
 **Export des rapports :** les exports PDF, CSV et Excel des rapports
 financiers, de l'analyse de gestion et du budget nécessitent, outre le droit de

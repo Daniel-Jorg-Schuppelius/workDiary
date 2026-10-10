@@ -634,6 +634,7 @@ return [
 
     // Finanzberichte (Feature 125, MVP-676).
     'reports' => [
+        'external_ledger_notice' => 'The organization keeps its books in an accounting system, not in WorkDiary. These reports evaluate local postings only and therefore remain empty or incomplete.',
         'replacement' => [
             'subtitle' => 'As of :from, horizon until :to, price increase :inflation % p.a.',
             'horizon' => 'Horizon',

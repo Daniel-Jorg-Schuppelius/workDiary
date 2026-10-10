@@ -18,7 +18,7 @@ use App\Models\Platform\User;
 use App\Services\Licensing\FeatureFlagResolver;
 use App\Support\MorphMap;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\{Route, Storage};
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\{WithOrganization, WithPortalVisibility};
 use Tests\TestCase;
@@ -146,7 +146,9 @@ class PortalInvoiceDocumentTest extends TestCase {
         $this->actingAs($this->portalUser->fresh(), 'customer')->get(route('customer.invoices.pdf', $own))->assertNotFound();
     }
 
-    public function test_externally_led_invoice_has_no_portal_document(): void {
+    /** MVP-1118: Das gültige Dokument einer übergebenen Rechnung liefert das Buchhaltungsprogramm. */
+    public function test_externally_led_invoice_serves_the_document_of_the_accounting_system(): void {
+        Storage::fake('local');
         $this->assertTrue(Route::has('invoices.lexoffice.pdf'));
         $invoice = $this->invoice();
         ExternalReference::create([
@@ -162,8 +164,54 @@ class PortalInvoiceDocumentTest extends TestCase {
             ->get(route('customer.invoices.index'))
             ->assertOk()
             ->assertSee($invoice->number)
-            ->assertDontSee(route('customer.invoices.pdf', $invoice));
-        $this->actingAs($this->portalUser, 'customer')->get(route('customer.invoices.pdf', $invoice))->assertNotFound();
+            ->assertSee(route('customer.invoices.pdf', $invoice));
+        $this->actingAs($this->portalUser, 'customer')->get(route('customer.invoices.pdf', $invoice))
+            ->assertRedirect(route('customer.invoices.index'))
+            ->assertSessionHas('error', __('customer_portal.invoices.document_unavailable'));
+
+        $this->mirroredVoucher('lx-4711', (string) $invoice->number, $this->customer);
+        $response = $this->actingAs($this->portalUser, 'customer')->get(route('customer.invoices.pdf', $invoice))->assertOk();
+        $this->assertSame('application/pdf', $response->headers->get('Content-Type'));
+        $this->assertStringStartsWith('attachment;', (string) $response->headers->get('Content-Disposition'));
+    }
+
+    /** MVP-1118: Rechnungen aus dem Buchhaltungsprogramm stehen in der Liste, das PDF nur für eigene. */
+    public function test_mirrored_invoices_are_listed_and_downloadable_only_for_the_own_customer(): void {
+        Storage::fake('local');
+        $own = $this->mirroredVoucher('lx-own', 'LX-PORTAL-1', $this->customer);
+        $foreignCustomer = Customer::create(['organization_id' => $this->organization->id, 'name' => 'Fremd AG', 'currency' => 'EUR']);
+        $foreign = $this->mirroredVoucher('lx-foreign', 'LX-FOREIGN', $foreignCustomer);
+        $draft = $this->mirroredVoucher('lx-draft', 'LX-DRAFT', $this->customer, 'draft');
+
+        $this->actingAs($this->portalUser, 'customer')
+            ->get(route('customer.invoices.index'))
+            ->assertOk()
+            ->assertSee('LX-PORTAL-1')
+            ->assertDontSee('LX-FOREIGN')
+            ->assertDontSee('LX-DRAFT');
+
+        $this->actingAs($this->portalUser, 'customer')->get(route('customer.invoices.external', ['source' => 'lexoffice', 'key' => $own->id]))->assertOk();
+        $this->actingAs($this->portalUser, 'customer')->get(route('customer.invoices.external', ['source' => 'lexoffice', 'key' => $foreign->id]))->assertNotFound();
+        $this->actingAs($this->portalUser, 'customer')->get(route('customer.invoices.external', ['source' => 'lexoffice', 'key' => $draft->id]))->assertNotFound();
+        $own->forceFill(['file_path' => null])->save();
+        $this->actingAs($this->portalUser, 'customer')->get(route('customer.invoices.external', ['source' => 'lexoffice', 'key' => $own->id]))
+            ->assertRedirect(route('customer.invoices.index'))
+            ->assertSessionHas('error', __('customer_portal.invoices.document_unavailable'));
+        $this->actingAs($this->portalUser, 'customer')
+            ->get(route('customer.dashboard'))
+            ->assertViewHas('stats', static fn (array $stats): bool => $stats['invoices'] === 1);
+    }
+
+    private function mirroredVoucher(string $externalId, string $number, Customer $customer, string $status = 'open'): \App\Plugins\Lexoffice\Models\LexofficeVoucher {
+        Storage::disk('local')->put('lexoffice/' . $externalId . '.pdf', '%PDF-1.4 Testbeleg');
+        $voucher = \App\Plugins\Lexoffice\Models\LexofficeVoucher::query()->create([
+            'organization_id' => $this->organization->id, 'external_id' => $externalId, 'customer_id' => $customer->id,
+            'voucher_type' => 'invoice', 'voucher_status' => $status, 'voucher_number' => $number,
+            'voucher_date' => now()->subDays(3)->toDateString(), 'total_amount' => '119.00', 'currency' => 'EUR',
+        ]);
+        $voucher->forceFill(['file_path' => 'lexoffice/' . $externalId . '.pdf'])->save();
+
+        return $voucher;
     }
 
     public function test_dashboard_tile_counts_issued_invoices_only(): void {

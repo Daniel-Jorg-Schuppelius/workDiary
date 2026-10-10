@@ -21,7 +21,8 @@ final class CustomerRetentionPolicies implements RetentionPolicyProvider {
         return [
             // Kundenstammdaten ohne Geschäftsvorfälle (Feature 130, MVP-694 —
             // H21): nur Review-Ausweis — Kandidaten sind Kunden OHNE Belege/
-            // Zeiten (keine Rechnungen, keine Diary-Einträge, keine Zeiten auf
+            // Zeiten (keine Rechnungen, auch keine gespiegelten Belege des
+            // Buchhaltungsprogramms, keine Diary-Einträge, keine Zeiten auf
             // Kundenprojekten) und ohne Kontakt seit Frist (updated_at als
             // Anker). Strukturdaten (echte Projekte/Standorte/Assets/Portal-
             // Konten) blocken als Ausnahme — das vom CustomerObserver
@@ -40,6 +41,8 @@ final class CustomerRetentionPolicies implements RetentionPolicyProvider {
                         ->from('diary_entries')->whereColumn('diary_entries.customer_id', 'customers.id'))
                     ->whereNotExists(fn($query) => $query->select(\Illuminate\Support\Facades\DB::raw(1))
                         ->from('invoices')->whereColumn('invoices.customer_id', 'customers.id'))
+                    // Belege im Buchhaltungsprogramm zählen wie Rechnungen (MVP-1114).
+                    ->whereNotIn('id', app(\App\Services\Billing\Contracts\ExternalRevenue::class)->customerIdsWithDocuments((int) $organization->id))
                     ->whereNotExists(fn($query) => $query->select(\Illuminate\Support\Facades\DB::raw(1))
                         ->from('time_entries')
                         ->join('projects', 'projects.id', '=', 'time_entries.project_id')

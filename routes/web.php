@@ -1428,6 +1428,10 @@ Route::middleware('auth')->group(function () {
             Route::delete('laeufe/{run}', [\App\Http\Controllers\Sales\CommissionRunController::class, 'destroy'])->name('commission-runs.destroy');
 
             Route::get('/', [\App\Http\Controllers\Sales\CommissionController::class, 'index'])->name('commissions.index');
+            Route::get('zuordnung/beleg/{type}/{document}', [\App\Http\Controllers\Sales\CommissionController::class, 'assignDocumentForm'])
+                ->where('type', '[a-z0-9_]+')->name('commissions.document.assign.form');
+            Route::post('zuordnung/beleg/{type}/{document}', [\App\Http\Controllers\Sales\CommissionController::class, 'assignDocument'])
+                ->where('type', '[a-z0-9_]+')->name('commissions.document.assign');
             Route::get('zuordnung/{invoice}', [\App\Http\Controllers\Sales\CommissionController::class, 'assignForm'])->name('commissions.assign.form');
             Route::post('zuordnung/{invoice}', [\App\Http\Controllers\Sales\CommissionController::class, 'assign'])->name('commissions.assign');
         });
@@ -2891,6 +2895,10 @@ Route::middleware('auth')->group(function () {
             Route::post('{quote}/entscheiden', [\App\Http\Controllers\Sales\QuoteController::class, 'decide'])->name('decide');
             Route::post('{quote}/neue-version', [\App\Http\Controllers\Sales\QuoteController::class, 'newVersion'])->name('new-version');
             Route::post('{quote}/ueberfuehren', [\App\Http\Controllers\Sales\QuoteController::class, 'convert'])->name('convert');
+            // MVP-1124: im Buchhaltungsprogramm abgerechnet (Belegkette).
+            Route::get('{quote}/extern-abgerechnet', [\App\Http\Controllers\Sales\QuoteExternalInvoiceController::class, 'form'])->name('external-invoice.form');
+            Route::post('{quote}/extern-abgerechnet', [\App\Http\Controllers\Sales\QuoteExternalInvoiceController::class, 'store'])->name('external-invoice.store');
+            Route::delete('{quote}/extern-abgerechnet', [\App\Http\Controllers\Sales\QuoteExternalInvoiceController::class, 'destroy'])->name('external-invoice.destroy');
             Route::get('{quote}/positionen/neu', [\App\Http\Controllers\Sales\QuoteController::class, 'itemForm'])->name('items.create');
             Route::post('{quote}/positionen', [\App\Http\Controllers\Sales\QuoteController::class, 'addItem'])->name('items.store');
             Route::get('{quote}/positionen/{item}/bearbeiten', [\App\Http\Controllers\Sales\QuoteController::class, 'itemForm'])->name('items.edit');
@@ -5014,7 +5022,8 @@ Route::middleware('auth')->group(function () {
         Route::get('reports/product-revenue', [\App\Http\Controllers\Reporting\ProductRevenueReportController::class, 'index'])->name('reports.product-revenue');
         // Finanzberichte der lokalen Buchhaltung (Feature 125, MVP-676):
         // gemeinsamer Zeitraum, gemeinsame Datenquelle.
-        Route::prefix('reports/buchhaltung')->name('reports.accounting.')->group(function (): void {
+        // Ohne lokale Buchhaltung ein Hinweis statt stillschweigend leerer Berichte (MVP-1126).
+        Route::prefix('reports/buchhaltung')->name('reports.accounting.')->middleware(\App\Http\Middleware\AnnounceExternalLedger::class)->group(function (): void {
             // Zusammenfassende Meldung (MVP-687).
             Route::get('zusammenfassende-meldung', [\App\Http\Controllers\Finance\AccountingReportController::class, 'recapitulative'])->name('recapitulative');
             Route::get('/', [\App\Http\Controllers\Finance\AccountingReportController::class, 'index'])->name('index');

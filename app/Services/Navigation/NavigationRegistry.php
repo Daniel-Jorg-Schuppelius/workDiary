@@ -2090,7 +2090,7 @@ class NavigationRegistry {
     }
 
     /** Sichtbarkeitsbedingung eines Fachmoduls; ohne registrierte Bedingung (Modul fehlt) verborgen. */
-    private function condition(string $key, ?User $user, ?\App\Models\Platform\Organization $organization): bool {
+    public function condition(string $key, ?User $user, ?\App\Models\Platform\Organization $organization): bool {
         foreach ($this->modules->extensions(NavigationCondition::class) as $class) {
             $condition = app($class);
             if ($condition->key() === $key) {

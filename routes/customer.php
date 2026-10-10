@@ -89,6 +89,10 @@ Route::prefix('customer-portal')->name('customer.')->group(function (): void {
 
         Route::middleware('portal.capability:invoices')->group(function (): void {
             Route::get('/invoices', [InvoiceController::class, 'index'])->name('invoices.index');
+            // Belegdatei des Buchhaltungsprogramms (MVP-1118), nur aus der eigenen Liste.
+            Route::get('/invoices/external/{source}/{key}', [InvoiceController::class, 'external'])
+                ->where(['source' => '[a-z0-9_-]+', 'key' => '[A-Za-z0-9_-]+'])
+                ->name('invoices.external');
             // Rechnungsdokument (MVP-1097): dasselbe PDF wie intern, nur Ausgestelltes.
             Route::get('/invoices/{invoice}/pdf', [InvoiceController::class, 'pdf'])->name('invoices.pdf');
             // Abrechnungskonto (Feature 098): Monatsübersicht + Monatsdetail, nur

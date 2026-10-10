@@ -42,5 +42,6 @@ return [
     ],
     'invoices' => [
         'pdf_label' => 'Scaricare la fattura :number in PDF',
+        'document_unavailable' => 'Il documento non è ancora disponibile nel programma contabile. Riprovi più tardi.',
     ],
 ];
